@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.base.json",
+  "files": [],
+  "references": [
+    {
+      "path": "./core"
+    },
+    {
+      "path": "./adapters/file-local"
+    },
+    {
+      "path": "./adapters/db-memory"
+    },
+    {
+      "path": "./adapters/db-sqlite"
+    },
+    {
+      "path": "./adapters/db-postgres"
+    },
+    {
+      "path": "./adapters/db-mariadb"
+    },
+    {
+      "path": "./api"
+    },
+    {
+      "path": "./tooling/cli"
+    }
+  ]
+}

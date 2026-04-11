@@ -1,0 +1,23 @@
+{
+  "name": "cognis",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Cognis monorepo scaffold",
+  "workspaces": [
+    "api",
+    "core",
+    "adapters/*",
+    "tooling/*"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "node ./tooling/scripts/lint-placeholder.mjs",
+    "test": "node --import tsx --test $(find . -name \"*.test.ts\" -print)",
+    "start": "node --import tsx api/src/main.ts",
+    "ci:test": "npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "tsx": "^4.20.6"
+  }
+}
