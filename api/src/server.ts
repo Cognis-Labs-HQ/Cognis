@@ -3,6 +3,7 @@ import { HealthService, ModuleService, type ModuleRuntimeGateway } from '@cognis
 import { createModuleRoutes } from './routes/module-routes.js';
 import { createSystemRoutes } from './routes/system-routes.js';
 import { createDocsRoutes } from './routes/docs-routes.js';
+import { createUiRoutes } from './routes/ui-routes.js';
 
 export interface ApiDependencies {
   moduleRuntimeGateway: ModuleRuntimeGateway;
@@ -15,6 +16,7 @@ export function buildServer(deps: ApiDependencies) {
   const moduleRoutes = createModuleRoutes(moduleService);
   const systemRoutes = createSystemRoutes(healthService);
   const docsRoutes = createDocsRoutes();
+  const uiRoutes = createUiRoutes();
 
   return createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://localhost');
@@ -28,6 +30,9 @@ export function buildServer(deps: ApiDependencies) {
 
       const handledByDocs = await docsRoutes(req, res, url);
       if (handledByDocs) return;
+
+      const handledByUi = await uiRoutes(req, res, url);
+      if (handledByUi) return;
 
       res.writeHead(404, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ error: { code: 'not_found', message: 'Route not found' } }));

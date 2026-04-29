@@ -17,14 +17,8 @@ function getActivePage() {
 }
 
 async function loadDemoMode() {
-  const queryDemo = new URLSearchParams(window.location.search).get('demo');
-  if (queryDemo === '1') {
-    state.demoMode = true;
-    return;
-  }
-
   try {
-    const response = await fetch('http://localhost:3000/api/v1/system/ui-config');
+    const response = await fetch('/api/v1/system/ui-config');
     const payload = await response.json();
     state.demoMode = payload?.data?.demoMode === true;
   } catch {
@@ -67,7 +61,7 @@ function render(banner) {
   root.innerHTML = `
     <section class="shell">
       <aside class="sidebar">
-        <img src="./public/assets/icons/cognis-icon.png" alt="Cognis" class="brand" />
+        <img src="/dashboard/static/assets/icons/cognis-icon.png" alt="Cognis" class="brand" />
         <h1>Page Builder</h1>
         <p>Compose each page with configurable widgets.</p>
         <p class="badge">Demo mode: ${state.demoMode ? 'ON' : 'OFF'}</p>

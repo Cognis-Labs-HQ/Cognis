@@ -12,8 +12,10 @@ Pluggable UI shell with a Jira-like page builder experience.
 ## Demo mode switch
 The API route `GET /api/v1/system/ui-config` reads `COGNIS_UI_DEMO_MODE` from the server environment and enables the puppeteered UI demo flow when set to `1` or `true`.
 
+## UX + security defaults
+- Clean URI: UI shell is served from `/dashboard`.
+- Security headers + CSP are applied by server-side UI route handling.
+- Demo mode can only be enabled via environment configuration (no URL toggles).
+
 ## Sandbox page
 The `Sandbox` page is intentionally packed with all default widgets so feature behavior can be validated quickly in one place.
-
-## Local run
-Open `ui/index.html` in a browser (or serve via a static web server). To force demo mode locally without API env wiring, use `?demo=1` in the URL.
