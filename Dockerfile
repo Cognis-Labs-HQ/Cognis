@@ -14,5 +14,6 @@ RUN npm ci --ignore-scripts
 
 EXPOSE 3000
 ENV NODE_ENV=production
+ENV COGNIS_UI_DEMO_MODE=0
 
 CMD ["npm", "run", "start"]

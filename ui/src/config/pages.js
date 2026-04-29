@@ -22,24 +22,36 @@ export const PAGE_WIDGET_LIBRARY = [
     title: 'Quick Notes',
     description: 'Scratch pad for teachers and learners.',
     defaultConfig: { placeholder: 'Add a note...' }
+  },
+  {
+    id: 'calendar',
+    title: 'Calendar',
+    description: 'Upcoming deadlines and events.',
+    defaultConfig: { range: 'month' }
+  },
+  {
+    id: 'announcements',
+    title: 'Announcements',
+    description: 'Pinned updates from admins.',
+    defaultConfig: { maxItems: 3 }
   }
 ];
 
 export const DEFAULT_PAGES = [
+  {
+    id: 'sandbox',
+    name: 'Sandbox',
+    widgets: PAGE_WIDGET_LIBRARY.map((widget) => ({
+      id: widget.id,
+      config: { ...widget.defaultConfig }
+    }))
+  },
   {
     id: 'home',
     name: 'Home',
     widgets: [
       { id: 'learning-progress', config: { timeframe: '30d', showStreak: true } },
       { id: 'activity-feed', config: { itemLimit: 8 } }
-    ]
-  },
-  {
-    id: 'classroom',
-    name: 'Classroom',
-    widgets: [
-      { id: 'module-health', config: { severity: 'warning' } },
-      { id: 'notes', config: { placeholder: 'Class notes...' } }
     ]
   }
 ];
