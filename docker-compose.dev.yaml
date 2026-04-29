@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  cognis-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cognis:dev
+    environment:
+      NODE_ENV: development
+      COGNIS_UI_DEMO_MODE: '1'
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    command: sh -c "npm ci --ignore-scripts && npm run start"

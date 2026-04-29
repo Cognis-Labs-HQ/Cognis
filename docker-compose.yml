@@ -1,0 +1,13 @@
+version: '3.9'
+services:
+  cognis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cognis:prod
+    environment:
+      NODE_ENV: production
+      COGNIS_UI_DEMO_MODE: '0'
+    ports:
+      - '3000:3000'
+    restart: unless-stopped

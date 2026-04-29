@@ -21,3 +21,8 @@ API handlers define **what** to do. Gateways/adapters decide **how** to execute 
 - GitLab CI:
   - Tests on branch and tag commits.
   - Docker build+push on tags or manual runs to `registry.gitlab.firehawk-systems.com/firehawk/cognis`.
+
+
+## Container orchestration
+- `docker-compose.yml`: production-like run profile (`NODE_ENV=production`, `COGNIS_UI_DEMO_MODE=0`).
+- `docker-compose.dev.yaml`: development/demo profile (`NODE_ENV=development`, `COGNIS_UI_DEMO_MODE=1`) with bind mounts for in-flight UI/API edits.
