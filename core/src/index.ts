@@ -1,3 +1,4 @@
+export * from './contracts/auth-account.js';
 export * from './contracts/module-manifest.js';
 export * from './gateways/database-gateway.js';
 export * from './gateways/file-storage-gateway.js';

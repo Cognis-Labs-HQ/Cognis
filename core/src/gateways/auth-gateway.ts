@@ -1,4 +1,5 @@
 export interface AuthContext {
+  accountId: string;
   provider: string;
   externalUserId: string;
   email?: string;
@@ -7,5 +8,5 @@ export interface AuthContext {
 
 export interface AuthGateway {
   authenticate(token: string): Promise<AuthContext | null>;
-  createLocalAdmin(username: string, password: string): Promise<void>;
+  createLocalAdmin(username: string, password: string): Promise<AuthContext>;
 }
