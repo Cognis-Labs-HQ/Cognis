@@ -52,3 +52,12 @@
 - Default `DB_TYPE` is `sqlite`.
 - If no DB connection env vars are provided, startup creates a local SQLite database at `./data/cognis.sqlite`.
 - For `postgresql` and `mariadb`, `DATABASE_URL` must be provided.
+
+
+## Core schema + module presence
+- During startup, API initializes core persistence tables for:
+  - `accounts`
+  - `user_preferences`
+  - `modules`
+- Core module presence is recorded in `modules` (seeded with `cognis-core`).
+- External modules should provide their own schema migration entrypoints and register module IDs in `modules` so operational tools can detect install/enable state from the DB.

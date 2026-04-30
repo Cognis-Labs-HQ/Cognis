@@ -6,11 +6,11 @@ import type { LocalAccountStore } from './local-auth-gateway.js';
 
 export type SupportedDbType = 'sqlite' | 'postgresql' | 'mariadb';
 
-interface DbExecutor {
+export interface DbExecutor {
   execute(sql: string, params?: unknown[]): Promise<{ rows?: any[]; rowCount?: number }>;
 }
 
-class SqliteExecutor implements DbExecutor {
+export class SqliteExecutor implements DbExecutor {
   private dbPromise: Promise<any> | null = null;
   constructor(private readonly dbPath: string) {}
 
@@ -37,7 +37,7 @@ class SqliteExecutor implements DbExecutor {
   }
 }
 
-class PostgresExecutor implements DbExecutor {
+export class PostgresExecutor implements DbExecutor {
   private clientPromise: Promise<any> | null = null;
   constructor(private readonly databaseUrl: string) {}
   private async getClient() {
@@ -58,7 +58,7 @@ class PostgresExecutor implements DbExecutor {
   }
 }
 
-class MariadbExecutor implements DbExecutor {
+export class MariadbExecutor implements DbExecutor {
   private connPromise: Promise<any> | null = null;
   constructor(private readonly databaseUrl: string) {}
   private async getConn() {
@@ -78,29 +78,25 @@ class MariadbExecutor implements DbExecutor {
   }
 }
 
+
+
+export async function createDbExecutor(dbType: SupportedDbType): Promise<DbExecutor> {
+  if (dbType === 'sqlite') {
+    const dbPath = process.env.SQLITE_PATH ?? path.resolve(process.cwd(), 'data', 'cognis.sqlite');
+    return new SqliteExecutor(dbPath);
+  }
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error(`DATABASE_URL is required for DB_TYPE=${dbType}`);
+  if (dbType === 'postgresql') return new PostgresExecutor(url);
+  return new MariadbExecutor(url);
+}
 function hash(input: string) { return createHash('sha256').update(input).digest('hex'); }
 
 export class DbLocalAccountStore implements LocalAccountStore {
   constructor(private readonly db: DbExecutor, private readonly dbType: SupportedDbType) {}
 
   static async create(dbType: SupportedDbType): Promise<DbLocalAccountStore> {
-    if (dbType === 'sqlite') {
-      const dbPath = process.env.SQLITE_PATH ?? path.resolve(process.cwd(), 'data', 'cognis.sqlite');
-      const store = new DbLocalAccountStore(new SqliteExecutor(dbPath), dbType);
-      await store.ensureSchema();
-      return store;
-    }
-
-    const url = process.env.DATABASE_URL;
-    if (!url) throw new Error(`DATABASE_URL is required for DB_TYPE=${dbType}`);
-
-    if (dbType === 'postgresql') {
-      const store = new DbLocalAccountStore(new PostgresExecutor(url), dbType);
-      await store.ensureSchema();
-      return store;
-    }
-
-    const store = new DbLocalAccountStore(new MariadbExecutor(url), dbType);
+    const store = new DbLocalAccountStore(await createDbExecutor(dbType), dbType);
     await store.ensureSchema();
     return store;
   }
@@ -110,7 +106,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
     return '?';
   }
 
-  private async ensureSchema() {
+  async ensureSchema() {
     await this.db.execute(`CREATE TABLE IF NOT EXISTS accounts (
       username VARCHAR(255) PRIMARY KEY,
       password_hash VARCHAR(255) NOT NULL,

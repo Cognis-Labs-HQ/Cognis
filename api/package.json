@@ -6,8 +6,8 @@
   "main": "src/server.ts",
   "dependencies": {
     "@cognis/core": "0.1.0",
-    "sqlite3": "^5.1.7",
-    "pg": "^8.13.1",
-    "mysql2": "^3.12.0"
+    "sqlite3": "^6.0.1",
+    "pg": "^8.20.0",
+    "mysql2": "^3.22.3"
   }
 }

@@ -1,14 +1,18 @@
 import { requireAuth } from '../auth/guard.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-export class UserPreferenceStore {
+export interface UserPreferenceStore {
+  get(accountId: string, pageId: string): Promise<string | null>;
+  set(accountId: string, pageId: string, layoutJson: string): Promise<void>;
+  clearUser(accountId: string): Promise<void>;
+}
+
+export class VolatileUserPreferenceStore implements UserPreferenceStore {
   private readonly data = new Map<string, string>();
-  get(accountId: string, pageId: string) { return this.data.get(`${accountId}:${pageId}`) ?? null; }
-  set(accountId: string, pageId: string, layoutJson: string) { this.data.set(`${accountId}:${pageId}`, layoutJson); }
-  clearUser(accountId: string) {
-    for (const key of this.data.keys()) {
-      if (key.startsWith(`${accountId}:`)) this.data.delete(key);
-    }
+  async get(accountId: string, pageId: string) { return this.data.get(`${accountId}:${pageId}`) ?? null; }
+  async set(accountId: string, pageId: string, layoutJson: string) { this.data.set(`${accountId}:${pageId}`, layoutJson); }
+  async clearUser(accountId: string) {
+    for (const key of this.data.keys()) if (key.startsWith(`${accountId}:`)) this.data.delete(key);
   }
 }
 
@@ -34,13 +38,13 @@ export function createPreferencesRoutes(store: UserPreferenceStore) {
 
     if (req.method === 'GET') {
       res.writeHead(200, { 'content-type': 'application/json' });
-      res.end(JSON.stringify({ data: { accountId, pageId, layoutJson: store.get(accountId, pageId) } }));
+      res.end(JSON.stringify({ data: { accountId, pageId, layoutJson: await store.get(accountId, pageId) } }));
       return true;
     }
 
     if (req.method === 'PUT') {
       const body = await readJson(req);
-      store.set(accountId, pageId, JSON.stringify(body.layout ?? {}));
+      await store.set(accountId, pageId, JSON.stringify(body.layout ?? {}));
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: { saved: true } }));
       return true;

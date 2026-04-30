@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createPreferencesRoutes, UserPreferenceStore } from '../src/routes/preferences-routes.js';
+import { createPreferencesRoutes, VolatileUserPreferenceStore } from '../src/routes/preferences-routes.js';
 import { issueAccessToken } from '../src/auth/access-tokens.js';
 
 test('preferences routes save and load layout preferences', async () => {
-  const route = createPreferencesRoutes(new UserPreferenceStore());
+  const route = createPreferencesRoutes(new VolatileUserPreferenceStore());
   let body = '';
   const token = issueAccessToken('u1', 'user', 60);
   const reqHeaders = { authorization: `Bearer ${token}` };

@@ -3,8 +3,8 @@ import type { ModuleManifest, ModuleRuntimeGateway, ModuleState } from '@cognis/
 import { Logger } from './logger.js';
 import { initializeDatabaseSchema } from './bootstrap/db-init.js';
 import { LocalAuthGateway } from './adapters/local-auth-gateway.js';
-import { DbLocalAccountStore, type SupportedDbType } from './adapters/db-account-store.js';
-import { UserPreferenceStore } from './routes/preferences-routes.js';
+import { DbLocalAccountStore, createDbExecutor, type SupportedDbType } from './adapters/db-account-store.js';
+import { DbUserPreferenceStore } from './adapters/db-preference-store.js';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { issueAccessToken } from './auth/access-tokens.js';
 
@@ -26,9 +26,18 @@ const logLevel = (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error' |
 const logFile = process.env.LOG_FILE ?? '/var/log/cognis/app.log';
 
 const logger = new Logger(logLevel, logFile);
-const accountStore = await DbLocalAccountStore.create(dbType);
+const dbExecutor = await createDbExecutor(dbType);
+const accountStore = new DbLocalAccountStore(dbExecutor, dbType);
+await accountStore.ensureSchema();
 const authGateway = new LocalAuthGateway(accountStore);
-const preferenceStore = new UserPreferenceStore();
+const preferenceStore = new DbUserPreferenceStore(dbExecutor, dbType);
+await preferenceStore.ensureSchema();
+await dbExecutor.execute('CREATE TABLE IF NOT EXISTS modules (module_id VARCHAR(255) PRIMARY KEY, enabled BOOLEAN NOT NULL DEFAULT TRUE)');
+if (dbType === 'postgresql') {
+  await dbExecutor.execute('INSERT INTO modules (module_id, enabled) VALUES ($1, $2) ON CONFLICT (module_id) DO NOTHING', ['cognis-core', true]);
+} else {
+  await dbExecutor.execute('INSERT OR IGNORE INTO modules (module_id, enabled) VALUES (?, ?)', ['cognis-core', true]);
+}
 
 await initializeDatabaseSchema(dbType, logger);
 const adminPassword = LocalAuthGateway.generatePassword();
