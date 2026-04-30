@@ -136,3 +136,9 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .docs-viewer th { background: var(--surface-soft); }
 .docs-viewer a { color: var(--link-docs); }
 .docs-viewer p code, .docs-viewer li code { background: var(--inline-code-bg); border: 0; border-radius: 6px; padding: 1px 6px; }
+
+
+.page-context h1 { color: var(--text); }
+.toolbar h3, .toolbar p, .docs-viewer { color: var(--text); }
+.content-grid { color: var(--text); }
+#run-demo:disabled { opacity: 0.55; }

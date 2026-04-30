@@ -48,6 +48,27 @@ function applyUiPreferences(prefs) {
   document.body.setAttribute('data-animation', prefs.animation || 'none');
 }
 
+
+function applyTheme(mode) {
+  const normalized = mode === 'light' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', normalized);
+  document.body.classList.toggle('binary-theme--dark', normalized === 'dark');
+  document.body.classList.toggle('binary-theme--light', normalized === 'light');
+
+  const shell = document.querySelector('.app-shell');
+  if (shell) {
+    shell.setAttribute('data-theme', normalized);
+    shell.classList.toggle('binary-theme--dark', normalized === 'dark');
+    shell.classList.toggle('binary-theme--light', normalized === 'light');
+  }
+
+  const toggle = document.querySelector('#theme-toggle');
+  if (toggle) {
+    toggle.dataset.mode = normalized;
+    toggle.textContent = normalized === 'dark' ? '💡 Off' : '💡 On';
+  }
+}
+
 async function bindThemeToggle() {
   const toggle = document.querySelector('#theme-toggle');
   const prefs = await loadUiPreferences();
@@ -55,19 +76,11 @@ async function bindThemeToggle() {
   const local = localStorage.getItem('cognis_theme');
   const mode = prefs?.mode || local || 'dark';
 
-  document.body.setAttribute('data-theme', mode);
-  if (toggle) {
-    toggle.dataset.mode = mode;
-    toggle.textContent = mode === 'dark' ? '💡 Off' : '💡 On';
-  }
+  applyTheme(mode);
 
   toggle?.addEventListener('click', async () => {
     const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    document.body.setAttribute('data-theme', next);
-    if (toggle) {
-      toggle.dataset.mode = next;
-      toggle.textContent = next === 'dark' ? '💡 Off' : '💡 On';
-    }
+    applyTheme(next);
     localStorage.setItem('cognis_theme', next);
     await saveUiPreferences({ mode: next });
   });
