@@ -116,3 +116,9 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .main-window--content-only { grid-template-columns: minmax(0, 1fr); }
 .toolbar { overflow-wrap: anywhere; word-break: break-word; }
 @media (max-width: 900px) { .main-window--with-toolbar { grid-template-columns: 1fr; } }
+
+.docs-viewer table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+.docs-viewer th, .docs-viewer td { border: 1px solid var(--border); padding: 8px; text-align: left; }
+.docs-viewer th { background: var(--surface-soft); }
+.docs-viewer a { color: #93c5fd; }
+.docs-viewer p code, .docs-viewer li code { background: rgba(2, 6, 23, 0.8); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; }
