@@ -37,3 +37,4 @@ API handlers define **what** to do. Gateways/adapters decide **how** to execute 
 - Configure API target with `COGNIS_API_URL` (default `http://localhost:3000`).
 - User lifecycle controls are namespaced under `user:*` (including `user:preferences:clear`).
 - Modules may provide subcommands via `modules/<moduleId>/cli/index.js`.
+- Inside Docker image shells, `cognisctl` is available directly on PATH.
