@@ -127,6 +127,24 @@
 .workspace { padding: 24px; width: 95%; margin: 0 auto; }
 .layout-grid .content-grid, .content-grid { display: grid; gap: 14px; }
 
+.app-shell button,
+.app-shell select,
+.app-shell input,
+.app-shell textarea {
+  background: var(--control-bg);
+  color: var(--control-text);
+  border: 1px solid var(--control-border);
+}
+
+.app-shell button:hover,
+.app-shell select:hover {
+  background: var(--control-hover-bg);
+}
+
+.app-shell .badge {
+  color: var(--badge-text);
+}
+
 @media (max-width: 900px) {
   .global-topbar, .global-navrow { grid-template-columns: 1fr; gap: 10px; padding-left: 18px; padding-right: 18px; }
   .page-context { align-items: flex-start; }
