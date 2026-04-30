@@ -1,9 +1,12 @@
+import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
+
 const root = document.querySelector('#app');
-root.innerHTML = `
-<section class="auth-page"><main class="panel"><h1>Login</h1>
-<form id="login-form" class="stack"><input name="username" placeholder="Username" required />
-<input name="password" type="password" placeholder="Password" required />
-<button type="submit">Login</button></form><p id="msg"></p></main></section>`;
+
+await renderDashboardLayout(root, {
+  sidebar: '<h1>Welcome</h1><p>Sign in to continue.</p>',
+  topbar: 'Login',
+  content: '<section class="auth-page"><main class="panel"><h1>Login</h1><form id="login-form" class="stack"><input name="username" placeholder="Username" required /><input name="password" type="password" placeholder="Password" required /><button type="submit">Login</button></form><p id="msg"></p></main></section>'
+});
 
 document.querySelector('#login-form')?.addEventListener('submit', async (event) => {
   event.preventDefault();

@@ -1,21 +1,56 @@
 function escapeHtml(value) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;');
-}
-
-function renderCodeBlocks(markdown) {
-  return markdown.replace(/```([\s\S]*?)```/g, (_match, block) => `<pre><code>${escapeHtml(block.trim())}</code></pre>`);
+  return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 }
 
 export function renderMarkdown(markdown) {
-  const withCode = renderCodeBlocks(markdown);
-  return withCode
-    .replace(/^###\s+(.*)$/gm, '<h3>$1</h3>')
-    .replace(/^##\s+(.*)$/gm, '<h2>$1</h2>')
-    .replace(/^#\s+(.*)$/gm, '<h1>$1</h1>')
-    .replace(/^-\s+(.*)$/gm, '<li>$1</li>')
-    .replace(/(<li>[\s\S]*<\/li>)/g, '<ul>$1</ul>')
-    .replace(/\n\n/g, '<p></p>');
+  const lines = markdown.split('\n');
+  const html = [];
+  let inCode = false;
+  let inList = false;
+
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+
+    if (line.startsWith('```')) {
+      if (!inCode) {
+        if (inList) { html.push('</ul>'); inList = false; }
+        html.push('<pre><code>');
+        inCode = true;
+      } else {
+        html.push('</code></pre>');
+        inCode = false;
+      }
+      continue;
+    }
+
+    if (inCode) {
+      html.push(`${escapeHtml(raw)}\n`);
+      continue;
+    }
+
+    if (line.startsWith('- ')) {
+      if (!inList) { html.push('<ul>'); inList = true; }
+      html.push(`<li>${escapeHtml(line.slice(2))}</li>`);
+      continue;
+    }
+
+    if (inList) {
+      html.push('</ul>');
+      inList = false;
+    }
+
+    if (line.startsWith('### ')) { html.push(`<h3>${escapeHtml(line.slice(4))}</h3>`); continue; }
+    if (line.startsWith('## ')) { html.push(`<h2>${escapeHtml(line.slice(3))}</h2>`); continue; }
+    if (line.startsWith('# ')) { html.push(`<h1>${escapeHtml(line.slice(2))}</h1>`); continue; }
+
+    if (line.length === 0) {
+      html.push('');
+    } else {
+      html.push(`<p>${escapeHtml(line)}</p>`);
+    }
+  }
+
+  if (inList) html.push('</ul>');
+  if (inCode) html.push('</code></pre>');
+  return html.join('\n');
 }

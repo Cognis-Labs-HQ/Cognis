@@ -24,7 +24,15 @@ const docs = await loadDocsIndex();
 await renderDashboardLayout(root, {
   sidebar: '<h1>Product Docs</h1><p>Production feature documentation.</p>',
   topbar: 'Docs',
-  content: `<ul>${renderSidebarLinks(docs)}</ul><article id="doc" class="panel"></article>`
+  content: `
+    <section class="docs-layout">
+      <aside class="docs-sidebar">
+        <h3>Navigation</h3>
+        <ul>${renderSidebarLinks(docs)}</ul>
+      </aside>
+      <article id="doc" class="docs-viewer"></article>
+    </section>
+  `
 });
 
 root.querySelectorAll('[data-slug]').forEach((button) => {

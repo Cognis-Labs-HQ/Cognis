@@ -11,3 +11,8 @@ select, button, textarea, input { border-radius: 8px; border: 1px solid #475569;
 .widgets { display: grid; gap: 12px; }
 .widget-card { border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: var(--surface); }
 .auth-page { min-height: 100vh; display: grid; place-items: center; }
+.docs-layout { display: grid; grid-template-columns: 33% 67%; gap: 12px; }
+.docs-sidebar { border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: var(--surface); }
+.docs-viewer { border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: var(--surface); overflow: auto; }
+pre { background: #020617; border: 1px solid var(--border); padding: 12px; border-radius: 8px; overflow: auto; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
