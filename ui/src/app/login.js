@@ -30,9 +30,12 @@ async function runTypingShowcase() {
 
     await new Promise((resolve) => window.setTimeout(resolve, 60_000));
 
-    for (let charIndex = sample.length; charIndex >= 0; charIndex -= 1) {
-      typingTarget.textContent = sample.slice(0, charIndex);
-      await new Promise((resolve) => window.setTimeout(resolve, 42));
+    const isLastSample = sampleIndex === orderedSamples.length - 1;
+    if (!isLastSample) {
+      for (let charIndex = sample.length; charIndex >= 0; charIndex -= 1) {
+        typingTarget.textContent = sample.slice(0, charIndex);
+        await new Promise((resolve) => window.setTimeout(resolve, 42));
+      }
     }
   }
 
