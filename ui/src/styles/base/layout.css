@@ -36,7 +36,8 @@
   border-top: 1px solid rgba(76, 108, 148, 0.15);
   border-bottom-left-radius: 22px;
   border-bottom-right-radius: 22px;
-  background: var(--nav-bg);
+  background-color: rgba(5, 72, 12, 1);
+  background: linear-gradient(30deg, rgba(5, 72, 12, 1) 0%, rgba(13, 29, 3, 1) 42.52%);
   position: sticky;
   top: 78px;
   z-index: 30;
@@ -47,7 +48,7 @@
 .topnav a:hover, .topnav a.active { color: var(--text); opacity: 1; border-bottom: 2px solid var(--accent-2); }
 
 .account-cluster { display: flex; align-items: center; gap: 18px; }
-.user-greeting { color: #9fb4cf; font-size: 1.4rem; font-weight: 700; }
+.user-greeting { color: #9fb4cf; font-style: italic; font-family: var(--user-greeting-font, Inter, Arial, sans-serif); font-size: var(--user-greeting-size, 1.4rem); font-weight: 700; }
 
 .notification-button {
   position: relative;
@@ -134,3 +135,16 @@
 .theme-toggle { position: fixed; right: 18px; bottom: 18px; width: 48px; height: 48px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); color: #facc15; cursor: pointer; box-shadow: var(--shadow); z-index: 1000; font-size: 1.25rem; }
 .theme-toggle[data-mode="light"] { color: #f59e0b; }
 .theme-toggle[data-mode="dark"] { color: #94a3b8; }
+
+body[data-animation='fade'] .dropdown,
+body[data-animation='fade'] .widget-card,
+body[data-animation='fade'] .toolbar,
+body[data-animation='fade'] .docs-viewer { transition: opacity 0.22s ease; }
+
+body[data-animation='float'] .dropdown,
+body[data-animation='float'] .widget-card,
+body[data-animation='float'] .toolbar,
+body[data-animation='float'] .docs-viewer { transition: transform 0.22s ease, opacity 0.22s ease; }
+body[data-animation='float'] .widget-card:hover,
+body[data-animation='float'] .toolbar:hover,
+body[data-animation='float'] .docs-viewer:hover { transform: translateY(-2px); }

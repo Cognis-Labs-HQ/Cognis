@@ -69,6 +69,17 @@ export function createUiRoutes() {
       return true;
     }
 
+
+    if (url.pathname === '/settings') {
+      if (!isLoggedIn(req)) {
+        res.writeHead(302, { location: '/login' });
+        res.end();
+        return true;
+      }
+      await serveFile(res, path.join(UI_ROOT, 'settings.html'), 'text/html; charset=utf-8');
+      return true;
+    }
+
     if (url.pathname === '/docs') {
       if (!isLoggedIn(req)) {
         res.writeHead(302, { location: '/login' });

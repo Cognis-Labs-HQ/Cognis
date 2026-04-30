@@ -17,37 +17,43 @@ function applyActiveNavigation() {
 }
 
 
-async function saveThemePreference(mode) {
+async function saveUiPreferences(patch) {
   const account = localStorage.getItem('cognis_account');
   if (!account) return;
-
-  await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/ui-theme`, {
-    method: 'PUT',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ layout: { mode } })
+  const current = await loadUiPreferences();
+  const merged = { ...(current || {}), ...patch };
+  await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/ui-preferences`, {
+    method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ layout: merged })
   });
 }
 
-async function loadThemePreference() {
+async function loadUiPreferences() {
   const account = localStorage.getItem('cognis_account');
   if (!account) return null;
-
   try {
-    const response = await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/ui-theme`);
+    const response = await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/ui-preferences`);
     const payload = await response.json();
     const raw = payload?.data?.layoutJson;
     if (!raw) return null;
-    return JSON.parse(raw)?.mode ?? null;
+    return JSON.parse(raw) || null;
   } catch {
     return null;
   }
 }
 
+function applyUiPreferences(prefs) {
+  if (!prefs) return;
+  if (prefs.greetingFont) document.body.style.setProperty('--user-greeting-font', prefs.greetingFont);
+  if (prefs.greetingFontSize) document.body.style.setProperty('--user-greeting-size', `${prefs.greetingFontSize}rem`);
+  document.body.setAttribute('data-animation', prefs.animation || 'none');
+}
+
 async function bindThemeToggle() {
   const toggle = document.querySelector('#theme-toggle');
-  const preferred = await loadThemePreference();
+  const prefs = await loadUiPreferences();
+  applyUiPreferences(prefs);
   const local = localStorage.getItem('cognis_theme');
-  const mode = preferred || local || 'dark';
+  const mode = prefs?.mode || local || 'dark';
 
   document.body.setAttribute('data-theme', mode);
   if (toggle) {
@@ -63,7 +69,7 @@ async function bindThemeToggle() {
       toggle.textContent = next === 'dark' ? '💡 Off' : '💡 On';
     }
     localStorage.setItem('cognis_theme', next);
-    await saveThemePreference(next);
+    await saveUiPreferences({ mode: next });
   });
 }
 
@@ -86,12 +92,6 @@ function bindTopbarActions() {
     dropdown?.classList.add('hidden');
     profileMenu?.classList.remove('open');
   };
-
-  toggle?.addEventListener('click', (event) => {
-    event.stopPropagation();
-    if (dropdown?.classList.contains('hidden')) openMenu();
-    else closeMenu();
-  });
 
   toggle?.addEventListener('mouseenter', openMenu);
   profileMenu?.addEventListener('mouseleave', closeMenu);
