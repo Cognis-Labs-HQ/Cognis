@@ -1,23 +1,43 @@
 import { bindThemeToggle } from '../reuse/theme-toggle.js';
 
-const typingSamples = ['Template'];
+const typingSamples = [
+  'Template',
+  'Self-study courses',
+  'Learn with tutors',
+  'Join classrooms',
+  'Do your homework',
+  "It's a social space!",
+  'Powered by FOSS'
+];
 
 bindThemeToggle();
 
 const typingTarget = document.querySelector('#typing-text');
-const selectedPhrase = typingSamples[Math.floor(Math.random() * typingSamples.length)] ?? '';
-let typeIndex = 0;
+const typingCursor = document.querySelector('.typing-cursor');
 
-function tickTyping() {
+async function runTypingShowcase() {
   if (!typingTarget) return;
-  typingTarget.textContent = selectedPhrase.slice(0, typeIndex);
-  if (typeIndex < selectedPhrase.length) {
-    typeIndex += 1;
-    window.setTimeout(tickTyping, 110);
+
+  for (let sampleIndex = 0; sampleIndex < typingSamples.length; sampleIndex += 1) {
+    const sample = typingSamples[sampleIndex];
+
+    for (let charIndex = 0; charIndex <= sample.length; charIndex += 1) {
+      typingTarget.textContent = sample.slice(0, charIndex);
+      await new Promise((resolve) => window.setTimeout(resolve, 85));
+    }
+
+    await new Promise((resolve) => window.setTimeout(resolve, 60_000));
+
+    for (let charIndex = sample.length; charIndex >= 0; charIndex -= 1) {
+      typingTarget.textContent = sample.slice(0, charIndex);
+      await new Promise((resolve) => window.setTimeout(resolve, 42));
+    }
   }
+
+  if (typingCursor) typingCursor.textContent = '';
 }
 
-window.setTimeout(tickTyping, 250);
+runTypingShowcase();
 
 document.querySelector('#login-form')?.addEventListener('submit', async (event) => {
   event.preventDefault();
