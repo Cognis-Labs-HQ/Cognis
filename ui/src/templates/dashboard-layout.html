@@ -1,22 +1,27 @@
 <section class="app-shell app-page binary-theme--dark" data-theme="dark">
-  <header class="global-topbar site-header app-page__header">
-    <a class="brandline" href="/dashboard" aria-label="Cognis home">
-      <img src="/dashboard/static/assets/icons/cognis-icon.png" alt="Cognis" class="topbar-icon" />
-      <strong>Cognis</strong>
-    </a>
-    <nav class="topnav app-page__nav-surface">
-      <a href="/dashboard">Dashboard</a>
-      <a href="/docs">Docs</a>
-    </nav>
-    <div class="topbar-spacer" aria-hidden="true"></div>
-    <div class="page-context">{{pageContext}}</div>
-    <div class="profile-menu">
-      <button id="profile-toggle">👤 <span id="profile-name">User</span></button>
-      <div id="profile-dropdown" class="dropdown hidden">
-        <button id="profile-logout">Logout</button>
-      </div>
+  <header class="site-header app-page__header">
+    <div class="global-topbar">
+      <a class="brandline" href="/dashboard" aria-label="Cognis home">
+        <img src="/dashboard/static/assets/icons/cognis-icon.png" alt="Cognis" class="topbar-icon" />
+        <strong>Cognis</strong>
+      </a>
+      <div class="page-context">{{pageContext}}</div>
     </div>
+
+    <nav class="app-page__nav" aria-label="Primary navigation">
+      <div class="topnav app-page__nav-surface">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/docs">Docs</a>
+      </div>
+      <div class="profile-menu">
+        <button id="profile-toggle">👤 <span id="profile-name">User</span></button>
+        <div id="profile-dropdown" class="dropdown hidden">
+          <button id="profile-logout">Logout</button>
+        </div>
+      </div>
+    </nav>
   </header>
+
   <main class="workspace app-page__main">
     <section class="main-window {{workspaceClass}}">
       {{toolbar}}

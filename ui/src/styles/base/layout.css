@@ -1,18 +1,18 @@
 .app-shell { min-height: 100vh; }
 
 .global-topbar {
-  height: 56px;
+  min-height: 56px;
   display: grid;
-  grid-template-columns: auto auto 1fr auto auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 14px;
-  padding: 0 16px;
+  gap: 16px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--border);
   background: rgba(15, 23, 42, 0.72);
   backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 31;
 }
 
 .brandline {
@@ -26,27 +26,38 @@
 
 .topbar-icon { width: 24px; height: 24px; }
 
-.topnav { display: flex; gap: 12px; }
-.topnav a { color: var(--text); text-decoration: none; opacity: 0.9; }
-.topnav a:hover { color: #fff; opacity: 1; }
-.topnav a.active {
-  color: #fff;
-  opacity: 1;
-  border-bottom: 2px solid var(--accent-2);
-  padding-bottom: 2px;
-}
-
-.topbar-spacer { min-width: 20px; }
-
 .page-context {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 12px;
   min-width: 0;
 }
 
 .page-context h1 { margin: 0; font-size: 1rem; white-space: nowrap; }
 .page-context p { margin: 0; color: var(--text-muted); font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.app-page__nav {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, rgba(30, 58, 138, 0.25), rgba(22, 101, 52, 0.25));
+  position: sticky;
+  top: 76px;
+  z-index: 30;
+}
+
+.topnav { display: flex; gap: 12px; }
+.topnav a { color: var(--text); text-decoration: none; opacity: 0.9; padding: 4px 2px; }
+.topnav a:hover { color: #fff; opacity: 1; }
+.topnav a.active {
+  color: #fff;
+  opacity: 1;
+  border-bottom: 2px solid var(--accent-2);
+}
 
 .profile-menu { position: relative; }
 .dropdown {
@@ -68,11 +79,15 @@
 @media (max-width: 900px) {
   .global-topbar {
     grid-template-columns: 1fr;
-    height: auto;
-    padding: 12px 16px;
     gap: 10px;
   }
 
-  .topbar-spacer { display: none; }
+  .page-context { justify-content: flex-start; }
+
+  .app-page__nav {
+    grid-template-columns: 1fr;
+    top: 92px;
+  }
+
   .profile-menu { justify-self: end; }
 }
