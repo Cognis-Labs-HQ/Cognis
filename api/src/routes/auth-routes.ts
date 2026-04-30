@@ -31,8 +31,9 @@ export function createAuthRoutes(authGateway: AuthGateway, accountStore: LocalAc
         return true;
       }
       const role = session.isAdmin ? 'admin' : 'user';
-      const defaultTtlSeconds = Number.parseInt(process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? '43200', 10);
-      const apiToken = issueAccessToken(session.accountId, role, Number.isFinite(defaultTtlSeconds) ? defaultTtlSeconds : 43200);
+      const parsedTtlSeconds = Number.parseInt(process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? '43200', 10);
+      const accessTokenTtlSeconds = Number.isFinite(parsedTtlSeconds) && parsedTtlSeconds >= 1 ? parsedTtlSeconds : 43200;
+      const apiToken = issueAccessToken(session.accountId, role, accessTokenTtlSeconds);
       res.writeHead(200, { 'content-type': 'application/json', 'set-cookie': `cognis_access_token=${apiToken}; Path=/; HttpOnly; SameSite=Lax` });
       res.end(JSON.stringify({ data: { accountId: session.accountId, displayName: session.accountId, provider: session.provider, role, token: apiToken } }));
       return true;

@@ -12,7 +12,7 @@ export interface LocalAccountStore {
   verify(username: string, password: string): Promise<AuthContext | null>;
   has(username: string): Promise<boolean>;
   list(): Promise<Array<{ username: string; isAdmin: boolean; enabled: boolean }>>;
-  setRole(username: string, role: 'user' | 'teacher' | 'moderator' | 'admin'): Promise<void>;
+  setRole(username: string, role: 'user' | 'admin'): Promise<void>;
   setPassword(username: string, password: string): Promise<void>;
   setEnabled(username: string, enabled: boolean): Promise<void>;
   delete(username: string): Promise<void>;
@@ -39,7 +39,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
     return [...this.accounts.entries()].map(([username, account]) => ({ username, isAdmin: account.isAdmin, enabled: account.enabled }));
   }
 
-  async setRole(username: string, role: 'user' | 'teacher' | 'moderator' | 'admin') {
+  async setRole(username: string, role: 'user' | 'admin') {
     const account = this.accounts.get(username);
     if (!account) throw new Error('not_found');
     account.isAdmin = role === 'admin';

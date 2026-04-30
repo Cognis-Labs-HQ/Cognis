@@ -64,7 +64,7 @@ export function createUserRoutes(accountStore: LocalAccountStore, preferenceStor
     }
 
     if (req.method === 'POST' && action === 'preferences/clear') {
-      preferenceStore.clearUser(username);
+      await preferenceStore.clearUser(username);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: { cleared: true } }));
       return true;

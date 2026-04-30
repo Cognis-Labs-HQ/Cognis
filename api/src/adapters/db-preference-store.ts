@@ -31,8 +31,30 @@ export class DbUserPreferenceStore {
 
   async set(accountId: string, pageId: string, layoutJson: string) {
     const key = cacheKey(accountId, pageId);
-    await this.db.execute(`DELETE FROM user_preferences WHERE pref_key = ${this.placeholder(1)}`, [key]);
-    await this.db.execute(`INSERT INTO user_preferences (pref_key, account_id, page_id, layout_json) VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)})`, [key, accountId, pageId, layoutJson]);
+    const params = [key, accountId, pageId, layoutJson];
+
+    if (this.dbType === 'mariadb') {
+      await this.db.execute(
+        `INSERT INTO user_preferences (pref_key, account_id, page_id, layout_json)
+         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)})
+         ON DUPLICATE KEY UPDATE
+           account_id = VALUES(account_id),
+           page_id = VALUES(page_id),
+           layout_json = VALUES(layout_json)`,
+        params
+      );
+      return;
+    }
+
+    await this.db.execute(
+      `INSERT INTO user_preferences (pref_key, account_id, page_id, layout_json)
+       VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)})
+       ON CONFLICT (pref_key) DO UPDATE SET
+         account_id = EXCLUDED.account_id,
+         page_id = EXCLUDED.page_id,
+         layout_json = EXCLUDED.layout_json`,
+      params
+    );
   }
 
   async clearUser(accountId: string) {

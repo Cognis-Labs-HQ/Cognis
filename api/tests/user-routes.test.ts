@@ -10,7 +10,7 @@ const headers = { authorization: `Bearer ${adminToken}` };
 
 test('user routes create/list/update lifecycle', async () => {
   const accounts = new VolatileLocalAccountStore();
-  accounts.register('admin', 'x', true);
+  await accounts.register('admin', 'x', true);
   const prefs = new VolatileUserPreferenceStore();
   const route = createUserRoutes(accounts, prefs);
   let body = '';

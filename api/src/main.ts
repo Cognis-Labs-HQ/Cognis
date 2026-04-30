@@ -6,6 +6,7 @@ import { LocalAuthGateway } from './adapters/local-auth-gateway.js';
 import { DbLocalAccountStore, createDbExecutor, type SupportedDbType } from './adapters/db-account-store.js';
 import { DbUserPreferenceStore } from './adapters/db-preference-store.js';
 import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { issueAccessToken } from './auth/access-tokens.js';
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
@@ -35,8 +36,10 @@ await preferenceStore.ensureSchema();
 await dbExecutor.execute('CREATE TABLE IF NOT EXISTS modules (module_id VARCHAR(255) PRIMARY KEY, enabled BOOLEAN NOT NULL DEFAULT TRUE)');
 if (dbType === 'postgresql') {
   await dbExecutor.execute('INSERT INTO modules (module_id, enabled) VALUES ($1, $2) ON CONFLICT (module_id) DO NOTHING', ['cognis-core', true]);
-} else {
+} else if (dbType === 'sqlite') {
   await dbExecutor.execute('INSERT OR IGNORE INTO modules (module_id, enabled) VALUES (?, ?)', ['cognis-core', true]);
+} else {
+  await dbExecutor.execute('INSERT IGNORE INTO modules (module_id, enabled) VALUES (?, ?)', ['cognis-core', true]);
 }
 
 await initializeDatabaseSchema(dbType, logger);
@@ -44,12 +47,19 @@ const adminPassword = LocalAuthGateway.generatePassword();
 await authGateway.createLocalAdmin('admin', adminPassword);
 await logger.warn('Default admin account created.', { username: 'admin', generatedPassword: adminPassword });
 
-const cliTokenPath = '/var/run/cognis/cli-access.token';
+const cliTokenPath = process.env.COGNIS_CLI_TOKEN_PATH ?? '/var/run/cognis/cli-access.token';
 const cliAccessToken = issueAccessToken('cognis-cli', 'admin', null);
-await mkdir('/var/run/cognis', { recursive: true });
-await writeFile(cliTokenPath, `${cliAccessToken}
+try {
+  await mkdir(path.dirname(cliTokenPath), { recursive: true });
+  await writeFile(cliTokenPath, `${cliAccessToken}
 `, { mode: 0o600 });
-await logger.info('CLI access token initialized.', { path: cliTokenPath });
+  await logger.info('CLI access token initialized.', { path: cliTokenPath });
+} catch (error) {
+  await logger.warn('Failed to persist CLI access token; continuing without file bootstrap token.', {
+    path: cliTokenPath,
+    error: error instanceof Error ? error.message : String(error)
+  });
+}
 
 const server = buildServer({ moduleRuntimeGateway: new InMemoryModuleRuntimeGateway(), authGateway, accountStore, preferenceStore });
 server.listen(port, host, async () => {
