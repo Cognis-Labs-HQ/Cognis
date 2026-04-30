@@ -89,3 +89,26 @@
   .login-layout { grid-template-columns: 1fr; }
   .login-intro, .login-panel { padding: 24px; }
 }
+
+body[data-theme='light'] .login-intro,
+body[data-theme='light'] .login-panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(244, 248, 255, 0.92));
+}
+
+body[data-theme='light'] .login-title,
+body[data-theme='light'] .login-heading,
+body[data-theme='light'] .login-form label span {
+  color: #0f172a;
+}
+
+body[data-theme='light'] .login-template-box {
+  background: rgba(191, 219, 254, 0.45);
+  border-color: rgba(96, 165, 250, 0.35);
+  color: #0f172a;
+}
+
+body[data-theme='light'] .login-form button {
+  border: 1px solid rgba(37, 99, 235, 0.45);
+  background: linear-gradient(145deg, #3b82f6, #2563eb);
+  color: #eff6ff;
+}
