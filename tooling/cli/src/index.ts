@@ -62,6 +62,34 @@ async function apiPost(apiBaseUrl: string, route: string, body?: unknown, apiTok
   return apiRequest(apiBaseUrl, route, { method: 'POST', body, apiToken });
 }
 
+
+function randomSuffix() {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+async function bootstrapAdminToken(apiBaseUrl: string): Promise<string> {
+  const username = process.env.COGNIS_CLI_USERNAME ?? `cognisctl-${randomSuffix()}`;
+  const password = process.env.COGNIS_CLI_PASSWORD ?? `cognisctl-${randomSuffix()}-${Date.now()}`;
+
+  try {
+    await apiRequest(apiBaseUrl, '/api/v1/auth/register', {
+      method: 'POST',
+      body: { username, password, isAdmin: true }
+    });
+  } catch {
+    // user may already exist; proceed to login
+  }
+
+  const login = await apiRequest(apiBaseUrl, '/api/v1/auth/login', {
+    method: 'POST',
+    body: { username, password }
+  }) as { data?: { token?: string } };
+
+  const token = login?.data?.token;
+  if (!token) throw new Error('Unable to bootstrap admin session token from /api/v1/auth/login');
+  return token;
+}
+
 function printGlobalHelp() {
   console.log('Cognis CLI (cognisctl)');
   console.log('');
@@ -75,6 +103,8 @@ function printGlobalHelp() {
   console.log('Environment:');
   console.log('  COGNIS_API_URL           API base URL (default: http://localhost:3000)');
   console.log('  COGNIS_API_TOKEN         Optional bearer token for authenticated API requests');
+  console.log('  COGNIS_CLI_USERNAME      Optional username for automatic admin bootstrap login');
+  console.log('  COGNIS_CLI_PASSWORD      Optional password for automatic admin bootstrap login');
   console.log('');
   console.log('Commands:');
 
@@ -240,7 +270,7 @@ async function main() {
   if (args.includes('-h') || args.includes('--help')) return printCommandHelp(command);
 
   const apiBaseUrl = process.env.COGNIS_API_URL ?? 'http://localhost:3000';
-  const apiToken = process.env.COGNIS_API_TOKEN;
+  const apiToken = process.env.COGNIS_API_TOKEN ?? await bootstrapAdminToken(apiBaseUrl);
   const spec = registry.get(command);
 
   if (!spec) {
