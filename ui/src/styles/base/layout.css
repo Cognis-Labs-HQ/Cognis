@@ -14,7 +14,7 @@
   align-items: center;
   gap: 16px;
   padding: 14px 30px;
-  background: linear-gradient(180deg, rgba(6, 18, 36, 0.97) 0%, rgba(8, 26, 50, 0.93) 70%, rgba(8, 28, 54, 0.9) 100%);
+  background: radial-gradient(circle at bottom left, rgba(60, 180, 132, 0.28), transparent 40%), linear-gradient(180deg, rgba(6, 18, 36, 0.97) 0%, rgba(8, 26, 50, 0.93) 70%, rgba(8, 28, 54, 0.9) 100%);
   border: 1px solid rgba(76, 108, 148, 0.2);
   border-bottom: 0;
 }
@@ -23,8 +23,8 @@
 .topbar-icon { width: 34px; height: 34px; }
 
 .page-context { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 0; }
-.page-context h1 { margin: 0; font-size: 2rem; font-weight: 700; }
-.page-context p { margin: 0; color: #93a4bf; font-size: 1.05rem; font-style: italic; }
+.page-context h1 { margin: 0; font-size: 1.2rem; font-weight: 700; }
+.page-context p { margin: 0; color: #93a4bf; font-size: 0.63rem; font-style: italic; }
 
 .global-navrow {
   display: grid;
@@ -44,19 +44,12 @@
   z-index: 30;
 }
 
-.topnav { display: flex; gap: 12px; font-size: 1.05rem; font-weight: 500; }
-.topnav a {
-  color: #c7d6ea;
-  text-decoration: none;
-  opacity: 0.92;
-  padding: 10px 16px;
-  border-radius: 12px;
-}
-.topnav a:hover { color: #fff; background: rgba(41, 80, 152, 0.35); }
-.topnav a.active { color: #fff; background: #1e3a8a; }
+.topnav { display: flex; gap: 18px; font-size: 0.97rem; font-weight: 600; letter-spacing: 0.01em; }
+.topnav a { color: var(--text); text-decoration: none; opacity: 0.92; padding: 6px 2px; }
+.topnav a:hover, .topnav a.active { color: #fff; opacity: 1; border-bottom: 2px solid var(--accent-2); }
 
 .account-cluster { display: flex; align-items: center; gap: 18px; }
-.user-greeting { color: #9fb4cf; font-size: 2rem; font-weight: 700; }
+.user-greeting { color: #9fb4cf; font-size: 1.4rem; font-weight: 700; }
 
 .notification-button {
   position: relative;
@@ -106,10 +99,22 @@
   padding: 8px;
   min-width: 170px;
   box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+  pointer-events: none;
+}
+
+.profile-menu.open .dropdown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 .dropdown-item { display: block; width: 100%; text-align: left; padding: 8px; background: transparent; color: var(--text); border: 0; text-decoration: none; border-radius: 6px; font: inherit; font-size: 0.95rem; font-weight: 500; line-height: 1.25; }
 .dropdown-item:hover { background: var(--surface-soft); }
 .hidden { display: none; }
+
+.page-surface { padding: 18px; }
 
 .workspace { padding: 24px; width: 95%; margin: 0 auto; }
 .layout-grid .content-grid, .content-grid { display: grid; gap: 14px; }

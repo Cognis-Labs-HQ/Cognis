@@ -23,12 +23,34 @@ function bindTopbarActions() {
 
   if (nameEl) nameEl.textContent = getDisplayName();
 
-  toggle?.addEventListener('click', () => {
-    dropdown?.classList.toggle('hidden');
+  const profileMenu = document.querySelector('.profile-menu');
+
+  const openMenu = () => {
+    dropdown?.classList.remove('hidden');
+    profileMenu?.classList.add('open');
+  };
+
+  const closeMenu = () => {
+    dropdown?.classList.add('hidden');
+    profileMenu?.classList.remove('open');
+  };
+
+  toggle?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    if (dropdown?.classList.contains('hidden')) openMenu();
+    else closeMenu();
   });
 
-  toggle?.addEventListener('mouseenter', () => dropdown?.classList.remove('hidden'));
-  dropdown?.addEventListener('mouseleave', () => dropdown?.classList.add('hidden'));
+  toggle?.addEventListener('mouseenter', openMenu);
+  profileMenu?.addEventListener('mouseleave', closeMenu);
+
+  document.addEventListener('click', (event) => {
+    if (!profileMenu?.contains(event.target)) closeMenu();
+  });
+
+  document.addEventListener('focusin', (event) => {
+    if (!profileMenu?.contains(event.target)) closeMenu();
+  });
 
   logout?.addEventListener('click', () => {
     localStorage.removeItem('cognis_token');
