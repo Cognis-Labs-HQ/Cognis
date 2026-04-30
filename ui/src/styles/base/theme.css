@@ -1,5 +1,5 @@
 :root {
-  --bg: radial-gradient(circle at top left, rgba(86, 190, 150, 0.22), transparent 42%), radial-gradient(circle at top right, #1f3d3d 0%, #132a2a 35%, #0b1220 100%);
+  --bg: radial-gradient(circle at top left, rgba(72, 201, 160, 0.34), transparent 42%), linear-gradient(180deg, #0b172d 0%, #0b1220 100%);
   --surface: rgba(15, 23, 42, 0.84);
   --surface-2: rgba(19, 29, 51, 0.92);
   --surface-soft: rgba(255, 255, 255, 0.06);
@@ -38,7 +38,7 @@ a {
 .stack { display: grid; gap: 8px; }
 
 body[data-theme='dark'] {
-  --bg: radial-gradient(circle at top left, rgba(86, 190, 150, 0.22), transparent 42%), radial-gradient(circle at top right, #1f3d3d 0%, #132a2a 35%, #0b1220 100%);
+  --bg: radial-gradient(circle at top left, rgba(72, 201, 160, 0.34), transparent 42%), linear-gradient(180deg, #0b172d 0%, #0b1220 100%);
   --surface: rgba(15, 23, 42, 0.84);
   --surface-2: rgba(19, 29, 51, 0.92);
   --text: #e2e8f0;

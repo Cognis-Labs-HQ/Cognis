@@ -14,7 +14,7 @@
   align-items: center;
   gap: 16px;
   padding: 14px 30px;
-  background: linear-gradient(180deg, rgba(6, 18, 36, 0.97) 0%, rgba(8, 26, 50, 0.93) 70%, rgba(8, 28, 54, 0.9) 100%);
+  background: linear-gradient(180deg, rgba(4, 12, 24, 0.98) 0%, rgba(6, 18, 36, 0.96) 72%, rgba(8, 22, 42, 0.94) 100%);
   border: 1px solid rgba(76, 108, 148, 0.2);
   border-bottom: 0;
 }
@@ -24,7 +24,7 @@
 
 .page-context { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 0; }
 .page-context h1 { margin: 0; font-size: 1.2rem; font-weight: 700; }
-.page-context p { margin: 0; color: #93a4bf; font-size: 0.63rem; font-style: italic; }
+.page-context p { margin: 0; color: #93a4bf; font-size: 0.82rem; font-style: italic; }
 
 .global-navrow {
   display: grid;
@@ -37,8 +37,8 @@
   border-bottom-left-radius: 22px;
   border-bottom-right-radius: 22px;
   background:
-    radial-gradient(circle at bottom left, rgba(47, 184, 138, 0.34), transparent 45%),
-    linear-gradient(180deg, rgba(7, 29, 51, 0.95), rgba(9, 32, 58, 0.88));
+    radial-gradient(circle at bottom left, rgba(72, 201, 160, 0.36), transparent 42%),
+    linear-gradient(180deg, rgba(7, 29, 51, 0.96), rgba(9, 32, 58, 0.9));
   position: sticky;
   top: 78px;
   z-index: 30;
@@ -60,11 +60,16 @@
   width: 34px;
   height: 34px;
   padding: 0;
-  font-size: 1.35rem;
-  line-height: 1;
+}
+.notification-badge-wrap {
+  position: relative;
+  width: 34px;
+  height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.35rem;
+  line-height: 1;
 }
 .notification-icon { display: inline-block; }
 .notification-count {
