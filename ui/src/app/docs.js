@@ -27,6 +27,13 @@ async function showDoc(slug) {
   const response = await apiFetch(`/api/v1/docs/${slug}`);
   const payload = await response.json();
   root.querySelector('#doc').innerHTML = renderMarkdown(payload.data.markdown);
+
+  root.querySelectorAll('[data-slug]').forEach((button) => {
+    const isActive = button.dataset.slug === slug;
+    button.classList.toggle('active', isActive);
+    if (isActive) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
 }
 
 const docs = await loadDocsIndex();

@@ -90,6 +90,12 @@ button:hover {
   background: var(--surface-soft);
 }
 
+.toolbar button.active {
+  color: var(--text);
+  border-color: var(--accent-2);
+  background: var(--surface-soft);
+}
+
 .docs-viewer { overflow: auto; min-height: 380px; }
 
 pre {

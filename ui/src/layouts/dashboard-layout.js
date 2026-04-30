@@ -4,6 +4,17 @@ function getDisplayName() {
   return localStorage.getItem('cognis_display_name') || localStorage.getItem('cognis_account') || 'User';
 }
 
+
+function applyActiveNavigation() {
+  const currentPath = window.location.pathname;
+  document.querySelectorAll('.topnav a').forEach((link) => {
+    const isActive = link.getAttribute('href') === currentPath;
+    link.classList.toggle('active', isActive);
+    if (isActive) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  });
+}
+
 function bindTopbarActions() {
   const toggle = document.querySelector('#profile-toggle');
   const dropdown = document.querySelector('#profile-dropdown');
@@ -35,4 +46,5 @@ export async function renderDashboardLayout(root, slots) {
     .replace('{{content}}', slots.content)
     .replace('{{toolbar}}', hasToolbar ? `<aside class="toolbar">${slots.toolbar}</aside>` : '');
   bindTopbarActions();
+  applyActiveNavigation();
 }

@@ -29,6 +29,12 @@
 .topnav { display: flex; gap: 12px; }
 .topnav a { color: var(--text); text-decoration: none; opacity: 0.9; }
 .topnav a:hover { color: #fff; opacity: 1; }
+.topnav a.active {
+  color: #fff;
+  opacity: 1;
+  border-bottom: 2px solid var(--accent-2);
+  padding-bottom: 2px;
+}
 
 .topbar-spacer { min-width: 20px; }
 
