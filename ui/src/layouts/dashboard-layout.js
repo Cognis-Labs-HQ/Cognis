@@ -27,10 +27,12 @@ function bindTopbarActions() {
 
 export async function renderDashboardLayout(root, slots) {
   const template = await loadTemplate('dashboard-layout');
+  const hasToolbar = Boolean(slots.toolbar);
   root.innerHTML = template
     .replace('{{pageContext}}', slots.pageContext || '')
     .replace('{{topbar}}', slots.topbar)
+    .replace('{{workspaceClass}}', hasToolbar ? 'main-window--with-toolbar' : 'main-window--content-only')
     .replace('{{content}}', slots.content)
-    .replace('{{toolbar}}', slots.toolbar ? `<aside class="toolbar">${slots.toolbar}</aside>` : '');
+    .replace('{{toolbar}}', hasToolbar ? `<aside class="toolbar">${slots.toolbar}</aside>` : '');
   bindTopbarActions();
 }

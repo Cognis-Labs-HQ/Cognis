@@ -83,8 +83,9 @@ async function render(banner) {
     .replace('{{widgets}}', widgets);
 
   await renderDashboardLayout(root, {
-    pageContext: `<img src="/dashboard/static/assets/icons/cognis-icon.png" alt="Cognis" class="brand" /><h1>Page Builder</h1><p>Guardrailed rows/columns keep customizations sane.</p><p class="badge">Demo mode: ${state.demoMode ? 'ON' : 'OFF'}</p>`,
+    pageContext: `<h1>Page Builder</h1><p>Guardrailed rows/columns keep customizations sane.</p>`,
     topbar: '<strong>Dashboard Layout</strong>',
+    toolbar: `<h3>Builder Status</h3><p class="badge">Demo mode: ${state.demoMode ? 'ON' : 'OFF'}</p>`,
     content
   });
 

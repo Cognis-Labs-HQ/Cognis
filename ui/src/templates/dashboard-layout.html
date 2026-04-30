@@ -19,7 +19,9 @@
   </header>
   <main class="workspace app-page__main">
     <header class="topbar">{{topbar}}</header>
-    {{toolbar}}
-    <section class="content-grid page-surface">{{content}}</section>
+    <section class="main-window {{workspaceClass}}">
+      {{toolbar}}
+      <section class="content-grid page-surface">{{content}}</section>
+    </section>
   </main>
 </section>

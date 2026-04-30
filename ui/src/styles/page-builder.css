@@ -94,3 +94,9 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 
 .page-context .brand { width: 30px; height: 30px; margin: 0; }
+
+.main-window { display: grid; gap: 12px; align-items: start; }
+.main-window--with-toolbar { grid-template-columns: minmax(20%, 30%) minmax(0, 1fr); }
+.main-window--content-only { grid-template-columns: minmax(0, 1fr); }
+.toolbar { overflow-wrap: anywhere; word-break: break-word; }
+@media (max-width: 900px) { .main-window--with-toolbar { grid-template-columns: 1fr; } }
