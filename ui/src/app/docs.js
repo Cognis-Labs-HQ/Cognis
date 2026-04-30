@@ -46,7 +46,7 @@ async function showDoc(slug) {
 
 const docs = await loadDocsIndex();
 await renderDashboardLayout(root, {
-  pageContext: '<h1>Cognis - Docs</h1><p>Developer documentation.</p>',
+  pageContext: '<h1>Docs</h1><p>Developer documentation.</p>',
   topbar: '',
   toolbar: `<h3>Navigation</h3><ul>${renderSidebarLinks(docs)}</ul>`,
   content: `<article id="doc" class="docs-viewer"></article>`

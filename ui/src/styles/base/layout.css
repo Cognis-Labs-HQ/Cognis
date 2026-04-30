@@ -1,5 +1,12 @@
 .app-shell { min-height: 100vh; }
 
+.site-header {
+  margin: 0 8px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  overflow: hidden;
+}
+
 .global-topbar {
   min-height: 62px;
   display: grid;
