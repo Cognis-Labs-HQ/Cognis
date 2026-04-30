@@ -16,7 +16,7 @@ export function createAuthRoutes(authGateway: AuthGateway, accountStore: LocalAc
       const body = await readJson(req);
       const username = String(body.username ?? '');
       const password = String(body.password ?? '');
-      const result = accountStore.register(username, password, Boolean(body.isAdmin));
+      const result = await accountStore.register(username, password, Boolean(body.isAdmin));
       res.writeHead(201, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: result }));
       return true;

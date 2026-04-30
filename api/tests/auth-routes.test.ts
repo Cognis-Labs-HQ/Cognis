@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createAuthRoutes } from '../src/routes/auth-routes.js';
-import { InMemoryLocalAccountStore, LocalAuthGateway } from '../src/adapters/local-auth-gateway.js';
+import { VolatileLocalAccountStore, LocalAuthGateway } from '../src/adapters/local-auth-gateway.js';
 
 function requestWithBody(method: string, body: Record<string, unknown>) {
   const chunks = [Buffer.from(JSON.stringify(body))];
@@ -9,7 +9,7 @@ function requestWithBody(method: string, body: Record<string, unknown>) {
 }
 
 test('auth routes register and login via gateway', async () => {
-  const accountStore = new InMemoryLocalAccountStore();
+  const accountStore = new VolatileLocalAccountStore();
   const gateway = new LocalAuthGateway(accountStore);
   const route = createAuthRoutes(gateway, accountStore);
   let status = 0;

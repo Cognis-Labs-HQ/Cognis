@@ -8,56 +8,56 @@ interface StoredAccount {
 }
 
 export interface LocalAccountStore {
-  register(username: string, password: string, isAdmin?: boolean): { username: string; isAdmin: boolean; enabled: boolean };
-  verify(username: string, password: string): AuthContext | null;
-  has(username: string): boolean;
-  list(): Array<{ username: string; isAdmin: boolean; enabled: boolean }>;
-  setRole(username: string, role: 'user' | 'teacher' | 'moderator' | 'admin'): void;
-  setPassword(username: string, password: string): void;
-  setEnabled(username: string, enabled: boolean): void;
-  delete(username: string): void;
+  register(username: string, password: string, isAdmin?: boolean): Promise<{ username: string; isAdmin: boolean; enabled: boolean }>;
+  verify(username: string, password: string): Promise<AuthContext | null>;
+  has(username: string): Promise<boolean>;
+  list(): Promise<Array<{ username: string; isAdmin: boolean; enabled: boolean }>>;
+  setRole(username: string, role: 'user' | 'teacher' | 'moderator' | 'admin'): Promise<void>;
+  setPassword(username: string, password: string): Promise<void>;
+  setEnabled(username: string, enabled: boolean): Promise<void>;
+  delete(username: string): Promise<void>;
 }
 
-export class InMemoryLocalAccountStore implements LocalAccountStore {
+export class VolatileLocalAccountStore implements LocalAccountStore {
   private readonly accounts = new Map<string, StoredAccount>();
 
-  register(username: string, password: string, isAdmin = false) {
+  async register(username: string, password: string, isAdmin = false) {
     if (this.accounts.has(username)) throw new Error('username_taken');
     this.accounts.set(username, { passwordHash: hash(password), isAdmin, enabled: true });
     return { username, isAdmin, enabled: true };
   }
 
-  verify(username: string, password: string): AuthContext | null {
+  async verify(username: string, password: string): Promise<AuthContext | null> {
     const account = this.accounts.get(username);
     if (!account || !account.enabled || account.passwordHash !== hash(password)) return null;
     return { accountId: username, provider: 'local', externalUserId: username, isAdmin: account.isAdmin };
   }
 
-  has(username: string) { return this.accounts.has(username); }
+  async has(username: string) { return this.accounts.has(username); }
 
-  list() {
+  async list() {
     return [...this.accounts.entries()].map(([username, account]) => ({ username, isAdmin: account.isAdmin, enabled: account.enabled }));
   }
 
-  setRole(username: string, role: 'user' | 'teacher' | 'moderator' | 'admin') {
+  async setRole(username: string, role: 'user' | 'teacher' | 'moderator' | 'admin') {
     const account = this.accounts.get(username);
     if (!account) throw new Error('not_found');
     account.isAdmin = role === 'admin';
   }
 
-  setPassword(username: string, password: string) {
+  async setPassword(username: string, password: string) {
     const account = this.accounts.get(username);
     if (!account) throw new Error('not_found');
     account.passwordHash = hash(password);
   }
 
-  setEnabled(username: string, enabled: boolean) {
+  async setEnabled(username: string, enabled: boolean) {
     const account = this.accounts.get(username);
     if (!account) throw new Error('not_found');
     account.enabled = enabled;
   }
 
-  delete(username: string) {
+  async delete(username: string) {
     this.accounts.delete(username);
   }
 }
@@ -73,7 +73,7 @@ export class LocalAuthGateway implements AuthGateway {
   }
 
   async createLocalAdmin(username: string, password: string): Promise<AuthContext> {
-    if (!this.store.has(username)) this.store.register(username, password, true);
+    if (!(await this.store.has(username))) await this.store.register(username, password, true);
     return { accountId: username, provider: 'local', externalUserId: username, isAdmin: true };
   }
 

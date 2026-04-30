@@ -5,6 +5,9 @@
   "type": "module",
   "main": "src/server.ts",
   "dependencies": {
-    "@cognis/core": "0.1.0"
+    "@cognis/core": "0.1.0",
+    "sqlite3": "^5.1.7",
+    "pg": "^8.13.1",
+    "mysql2": "^3.12.0"
   }
 }

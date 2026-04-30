@@ -2,7 +2,8 @@ import { buildServer } from './server.js';
 import type { ModuleManifest, ModuleRuntimeGateway, ModuleState } from '@cognis/core';
 import { Logger } from './logger.js';
 import { initializeDatabaseSchema } from './bootstrap/db-init.js';
-import { InMemoryLocalAccountStore, LocalAuthGateway } from './adapters/local-auth-gateway.js';
+import { LocalAuthGateway } from './adapters/local-auth-gateway.js';
+import { DbLocalAccountStore, type SupportedDbType } from './adapters/db-account-store.js';
 import { UserPreferenceStore } from './routes/preferences-routes.js';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { issueAccessToken } from './auth/access-tokens.js';
@@ -20,12 +21,12 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
 
 const port = Number.parseInt(process.env.PORT ?? '3000', 10);
 const host = process.env.HOST ?? '0.0.0.0';
-const dbType = process.env.DB_TYPE ?? 'sqlite';
+const dbType = (process.env.DB_TYPE as SupportedDbType | undefined) ?? 'sqlite';
 const logLevel = (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error' | undefined) ?? 'info';
 const logFile = process.env.LOG_FILE ?? '/var/log/cognis/app.log';
 
 const logger = new Logger(logLevel, logFile);
-const accountStore = new InMemoryLocalAccountStore();
+const accountStore = await DbLocalAccountStore.create(dbType);
 const authGateway = new LocalAuthGateway(accountStore);
 const preferenceStore = new UserPreferenceStore();
 
