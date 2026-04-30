@@ -36,3 +36,21 @@ a {
 }
 
 .stack { display: grid; gap: 8px; }
+
+body[data-theme='dark'] {
+  --bg: radial-gradient(circle at top left, rgba(86, 190, 150, 0.22), transparent 42%), radial-gradient(circle at top right, #1f3d3d 0%, #132a2a 35%, #0b1220 100%);
+  --surface: rgba(15, 23, 42, 0.84);
+  --surface-2: rgba(19, 29, 51, 0.92);
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+}
+
+body[data-theme='light'] {
+  --bg: radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 40%), linear-gradient(180deg, #f4f8ff 0%, #e8eef9 100%);
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-2: rgba(248, 250, 255, 0.96);
+  --text: #0f172a;
+  --text-muted: #475569;
+  --border: rgba(100, 116, 139, 0.3);
+  --border-strong: rgba(100, 116, 139, 0.45);
+}

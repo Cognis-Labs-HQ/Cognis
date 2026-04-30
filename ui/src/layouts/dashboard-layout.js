@@ -1,3 +1,4 @@
+import { apiFetch } from '../reuse/api-client.js';
 import { loadTemplate } from '../reuse/template-loader.js';
 
 function getDisplayName() {
@@ -12,6 +13,49 @@ function applyActiveNavigation() {
     link.classList.toggle('active', isActive);
     if (isActive) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
+  });
+}
+
+
+async function saveThemePreference(mode) {
+  const account = localStorage.getItem('cognis_account');
+  if (!account) return;
+
+  await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/ui-theme`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ layout: { mode } })
+  });
+}
+
+async function loadThemePreference() {
+  const account = localStorage.getItem('cognis_account');
+  if (!account) return null;
+
+  try {
+    const response = await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/ui-theme`);
+    const payload = await response.json();
+    const raw = payload?.data?.layoutJson;
+    if (!raw) return null;
+    return JSON.parse(raw)?.mode ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function bindThemeToggle() {
+  const toggle = document.querySelector('#theme-toggle');
+  const preferred = await loadThemePreference();
+  const local = localStorage.getItem('cognis_theme');
+  const mode = preferred || local || 'dark';
+
+  document.body.setAttribute('data-theme', mode);
+
+  toggle?.addEventListener('click', async () => {
+    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', next);
+    localStorage.setItem('cognis_theme', next);
+    await saveThemePreference(next);
   });
 }
 
@@ -72,4 +116,5 @@ export async function renderDashboardLayout(root, slots) {
     .replace('{{toolbar}}', hasToolbar ? `<aside class="toolbar">${slots.toolbar}</aside>` : '');
   bindTopbarActions();
   applyActiveNavigation();
+  bindThemeToggle();
 }
