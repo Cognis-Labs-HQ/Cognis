@@ -56,8 +56,8 @@
 
 .notification-button {
   position: relative;
-  background: transparent;
-  border: 0;
+  background: transparent !important;
+  border: 0 !important;
   color: var(--text);
   border-radius: 999px;
   width: 34px;
@@ -142,7 +142,9 @@
 }
 
 .app-shell .badge {
-  color: var(--badge-text);
+  background: var(--badge-bg) !important;
+  color: var(--badge-text) !important;
+  border: 1px solid var(--control-border);
 }
 
 @media (max-width: 900px) {
@@ -170,3 +172,13 @@ body[data-animation='float'] .docs-viewer { transition: transform 0.22s ease, op
 body[data-animation='float'] .widget-card:hover,
 body[data-animation='float'] .toolbar:hover,
 body[data-animation='float'] .docs-viewer:hover { transform: translateY(-2px); }
+
+
+.app-shell, .app-shell * {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.app-shell ::-webkit-scrollbar { width: 10px; height: 10px; }
+.app-shell ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+.app-shell ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 999px; }
+.app-shell ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }

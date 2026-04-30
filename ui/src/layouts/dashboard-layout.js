@@ -65,7 +65,7 @@ function applyTheme(mode) {
   const toggle = document.querySelector('#theme-toggle');
   if (toggle) {
     toggle.dataset.mode = normalized;
-    toggle.textContent = normalized === 'dark' ? '💡 Off' : '💡 On';
+    toggle.textContent = normalized === 'dark' ? '🌙' : '☀️';
   }
 }
 
