@@ -1,0 +1,25 @@
+<section class="app-shell">
+  <header class="global-topbar">
+    <div class="brandline">
+      <img src="/dashboard/static/assets/icons/cognis-icon.png" alt="Cognis" class="topbar-icon" />
+      <strong>Cognis</strong>
+    </div>
+    <nav class="topnav">
+      <a href="/dashboard">Dashboard</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="profile-menu">
+      <button id="profile-toggle">👤 <span id="profile-name">User</span></button>
+      <div id="profile-dropdown" class="dropdown hidden">
+        <button id="profile-logout">Logout</button>
+      </div>
+    </div>
+  </header>
+  <section class="shell layout-grid">
+    <aside class="sidebar">{{sidebar}}</aside>
+    <main class="workspace">
+      <header class="topbar">{{topbar}}</header>
+      <section class="content-grid">{{content}}</section>
+    </main>
+  </section>
+</section>

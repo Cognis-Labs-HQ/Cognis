@@ -1,14 +1,19 @@
 # Core Component
 
 ## Purpose
-`core/` holds Cognis domain contracts and orchestration services that must not depend on backend/provider specifics.
+`core/` contains provider-agnostic contracts and services.
 
-## Key contents
-- `contracts/module-manifest.ts`: JSON-driven module metadata contract.
-- `gateways/*`: integration interfaces for DB, file storage, auth, and module runtime.
-- `services/module-service.ts`: core module lifecycle policy checks.
-- `services/health-service.ts`: health status abstraction.
+## Key domains
+- Contracts (`core/src/contracts/*`)
+- Gateway interfaces (`core/src/gateways/*`)
+- Services (`core/src/services/*`)
 
-## Rules
-- Core defines **what must happen**, never **how a provider executes it**.
-- No direct imports of DB drivers or external auth SDKs in `core/`.
+## Important rule
+```text
+Core defines WHAT happens.
+Adapters/gateways define HOW it happens.
+```
+
+## Current services
+- `ModuleService` (module lifecycle policy)
+- `HealthService` (status + uptime metadata)

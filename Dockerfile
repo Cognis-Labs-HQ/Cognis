@@ -1,4 +1,4 @@
-FROM node:22-alpine AS base
+FROM node:22 AS base
 WORKDIR /app
 
 COPY package.json package-lock.json tsconfig.json tsconfig.base.json ./
@@ -10,9 +10,15 @@ COPY docs ./docs
 COPY modules ./modules
 COPY ui ./ui
 
-RUN npm ci --ignore-scripts
+RUN npm ci --ignore-scripts \
+  && printf '#!/usr/bin/env bash\nnode --import tsx /app/tooling/cli/src/index.ts "$@"\n' > /usr/local/bin/cognisctl \
+  && chmod +x /usr/local/bin/cognisctl
 
 EXPOSE 3000
 ENV NODE_ENV=production
+ENV COGNIS_UI_DEMO_MODE=0
+ENV DB_TYPE=sqlite
+ENV LOG_LEVEL=info
+ENV LOG_FILE=/var/log/cognis/app.log
 
 CMD ["npm", "run", "start"]

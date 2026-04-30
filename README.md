@@ -21,3 +21,20 @@ API handlers define **what** to do. Gateways/adapters decide **how** to execute 
 - GitLab CI:
   - Tests on branch and tag commits.
   - Docker build+push on tags or manual runs to `registry.gitlab.firehawk-systems.com/firehawk/cognis`.
+
+
+## Container orchestration
+- `docker-compose.yml`: production-like run profile (`NODE_ENV=production`, `COGNIS_UI_DEMO_MODE=0`).
+- `docker-compose.dev.yaml`: development/demo profile (`NODE_ENV=development`, `COGNIS_UI_DEMO_MODE=1`) with bind mounts for in-flight UI/API edits.
+
+
+## AI guidance
+- AI-specific contribution reminders are isolated in `AI_GUIDELINES.md` (kept separate from product/user docs).
+
+
+## CLI
+- Use `tooling/cli/src/index.ts` (`cognisctl`) as the operational control entrypoint.
+- Configure API target with `COGNIS_API_URL` (default `http://localhost:3000`).
+- User lifecycle controls are namespaced under `user:*` (including `user:preferences:clear`).
+- Modules may provide subcommands via `modules/<moduleId>/cli/index.js`.
+- Inside Docker image shells, `cognisctl` is available directly on PATH.

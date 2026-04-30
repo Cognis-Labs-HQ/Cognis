@@ -1,0 +1,12 @@
+:root {
+  --bg: #0b1220;
+  --surface: #111827;
+  --surface-2: #131d33;
+  --text: #e2e8f0;
+  --border: #334155;
+  --accent: #2563eb;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, Arial, sans-serif; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.stack { display: grid; gap: 8px; }
