@@ -1,7 +1,6 @@
 import { bindThemeToggle } from '../reuse/theme-toggle.js';
 
 const typingSamples = [
-  'Template',
   'Self-study courses',
   'Learn with tutors',
   'Join classrooms',
@@ -15,11 +14,14 @@ bindThemeToggle();
 const typingTarget = document.querySelector('#typing-text');
 const typingCursor = document.querySelector('.typing-cursor');
 
+const startIndex = Math.floor(Math.random() * typingSamples.length);
+const orderedSamples = typingSamples.map((_, index) => typingSamples[(startIndex + index) % typingSamples.length]);
+
 async function runTypingShowcase() {
   if (!typingTarget) return;
 
-  for (let sampleIndex = 0; sampleIndex < typingSamples.length; sampleIndex += 1) {
-    const sample = typingSamples[sampleIndex];
+  for (let sampleIndex = 0; sampleIndex < orderedSamples.length; sampleIndex += 1) {
+    const sample = orderedSamples[sampleIndex];
 
     for (let charIndex = 0; charIndex <= sample.length; charIndex += 1) {
       typingTarget.textContent = sample.slice(0, charIndex);
