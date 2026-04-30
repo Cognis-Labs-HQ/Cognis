@@ -50,10 +50,18 @@ async function bindThemeToggle() {
   const mode = preferred || local || 'dark';
 
   document.body.setAttribute('data-theme', mode);
+  if (toggle) {
+    toggle.dataset.mode = mode;
+    toggle.textContent = mode === 'dark' ? '💡 Off' : '💡 On';
+  }
 
   toggle?.addEventListener('click', async () => {
     const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.body.setAttribute('data-theme', next);
+    if (toggle) {
+      toggle.dataset.mode = next;
+      toggle.textContent = next === 'dark' ? '💡 Off' : '💡 On';
+    }
     localStorage.setItem('cognis_theme', next);
     await saveThemePreference(next);
   });

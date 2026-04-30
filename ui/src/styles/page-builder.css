@@ -66,16 +66,16 @@ button:hover {
 }
 
 .toolbar > *, .docs-viewer > * {
-  padding-left: 14px;
-  padding-right: 14px;
+  padding-left: 28px;
+  padding-right: 28px;
 }
 
 .toolbar > :first-child, .docs-viewer > :first-child {
-  padding-top: 14px;
+  padding-top: 28px;
 }
 
 .toolbar > :last-child, .docs-viewer > :last-child {
-  padding-bottom: 14px;
+  padding-bottom: 28px;
 }
 
 .toolbar {

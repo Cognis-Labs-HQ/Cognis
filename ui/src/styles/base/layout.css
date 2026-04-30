@@ -14,7 +14,7 @@
   align-items: center;
   gap: 16px;
   padding: 14px 30px;
-  background: linear-gradient(180deg, rgba(4, 12, 24, 0.98) 0%, rgba(6, 18, 36, 0.96) 72%, rgba(8, 22, 42, 0.94) 100%);
+  background: var(--header-top-bg);
   border: 1px solid rgba(76, 108, 148, 0.2);
   border-bottom: 0;
 }
@@ -24,7 +24,7 @@
 
 .page-context { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 0; }
 .page-context h1 { margin: 0; font-size: 1.2rem; font-weight: 700; }
-.page-context p { margin: 0; color: #93a4bf; font-size: 0.82rem; font-style: italic; }
+.page-context p { margin: 0; color: var(--context-muted); font-size: 0.82rem; font-style: italic; }
 
 .global-navrow {
   display: grid;
@@ -36,9 +36,7 @@
   border-top: 1px solid rgba(76, 108, 148, 0.15);
   border-bottom-left-radius: 22px;
   border-bottom-right-radius: 22px;
-  background:
-    radial-gradient(circle at bottom left, rgba(72, 201, 160, 0.36), transparent 42%),
-    linear-gradient(180deg, rgba(7, 29, 51, 0.96), rgba(9, 32, 58, 0.9));
+  background: var(--nav-bg);
   position: sticky;
   top: 78px;
   z-index: 30;
@@ -46,7 +44,7 @@
 
 .topnav { display: flex; gap: 18px; font-size: 0.97rem; font-weight: 600; letter-spacing: 0.01em; }
 .topnav a { color: var(--text); text-decoration: none; opacity: 0.92; padding: 6px 2px; }
-.topnav a:hover, .topnav a.active { color: #fff; opacity: 1; border-bottom: 2px solid var(--accent-2); }
+.topnav a:hover, .topnav a.active { color: var(--text); opacity: 1; border-bottom: 2px solid var(--accent-2); }
 
 .account-cluster { display: flex; align-items: center; gap: 18px; }
 .user-greeting { color: #9fb4cf; font-size: 1.4rem; font-weight: 700; }
@@ -133,4 +131,6 @@
   .account-cluster { justify-self: end; }
 }
 
-.theme-toggle { position: fixed; right: 18px; bottom: 18px; width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; box-shadow: var(--shadow); z-index: 1000; }
+.theme-toggle { position: fixed; right: 18px; bottom: 18px; width: 48px; height: 48px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); color: #facc15; cursor: pointer; box-shadow: var(--shadow); z-index: 1000; font-size: 1.25rem; }
+.theme-toggle[data-mode="light"] { color: #f59e0b; }
+.theme-toggle[data-mode="dark"] { color: #94a3b8; }
