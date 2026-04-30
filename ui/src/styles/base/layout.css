@@ -25,20 +25,21 @@
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 12px;
-  padding: 10px 24px;
-  background: linear-gradient(180deg, rgba(30, 58, 138, 0.35), rgba(22, 101, 52, 0.3));
+  gap: 16px;
+  padding: 12px 28px;
+  background: linear-gradient(90deg, rgba(17, 24, 39, 0.92) 0%, rgba(30, 58, 138, 0.42) 52%, rgba(22, 101, 52, 0.38) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   position: sticky;
   top: 62px;
   z-index: 30;
 }
 
-.topnav { display: flex; gap: 14px; }
-.topnav a { color: var(--text); text-decoration: none; opacity: 0.9; padding: 4px 2px; }
+.topnav { display: flex; gap: 18px; font-size: 0.97rem; font-weight: 600; letter-spacing: 0.01em; }
+.topnav a { color: var(--text); text-decoration: none; opacity: 0.92; padding: 6px 2px; }
 .topnav a:hover, .topnav a.active { color: #fff; opacity: 1; border-bottom: 2px solid var(--accent-2); }
 
-.account-cluster { display: flex; align-items: center; gap: 12px; }
-.user-greeting { color: var(--text-muted); font-size: 0.9rem; }
+.account-cluster { display: flex; align-items: center; gap: 18px; }
+.user-greeting { color: var(--text); font-size: 0.97rem; font-weight: 500; }
 
 .notification-button {
   background: transparent;
@@ -73,7 +74,7 @@
 .layout-grid .content-grid, .content-grid { display: grid; gap: 12px; }
 
 @media (max-width: 900px) {
-  .global-topbar, .global-navrow { grid-template-columns: 1fr; gap: 10px; padding-left: 16px; padding-right: 16px; }
+  .global-topbar, .global-navrow { grid-template-columns: 1fr; gap: 10px; padding-left: 18px; padding-right: 18px; }
   .page-context { align-items: flex-start; }
   .global-navrow { top: 62px; }
   .account-cluster { justify-self: end; }

@@ -83,7 +83,7 @@ async function render(banner) {
     .replace('{{widgets}}', widgets);
 
   await renderDashboardLayout(root, {
-    pageContext: `<h1>Page Builder</h1><p>Guardrailed rows/columns keep customizations sane.</p>`,
+    pageContext: `<h1>Cognis - Page Builder</h1><p>Guardrailed rows/columns keep customizations sane.</p>`,
     topbar: '<strong>Dashboard Layout</strong>',
     toolbar: `<h3>Builder Status</h3><p class="badge">Demo mode: ${state.demoMode ? 'ON' : 'OFF'}</p>`,
     content
