@@ -46,6 +46,11 @@ export function createUiRoutes() {
       return true;
     }
 
+    if (url.pathname === '/docs') {
+      await serveFile(res, path.join(UI_ROOT, 'docs.html'), 'text/html; charset=utf-8');
+      return true;
+    }
+
     if (!url.pathname.startsWith('/dashboard/static/')) return false;
 
     const relative = url.pathname.replace('/dashboard/static/', '');

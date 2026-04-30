@@ -5,10 +5,12 @@ import { createSystemRoutes } from './routes/system-routes.js';
 import { createDocsRoutes } from './routes/docs-routes.js';
 import { createUiRoutes } from './routes/ui-routes.js';
 import { createAuthRoutes, type LocalAuthStore } from './routes/auth-routes.js';
+import { createPreferencesRoutes, type UserPreferenceStore } from './routes/preferences-routes.js';
 
 export interface ApiDependencies {
   moduleRuntimeGateway: ModuleRuntimeGateway;
   authStore: LocalAuthStore;
+  preferenceStore: UserPreferenceStore;
 }
 
 export function buildServer(deps: ApiDependencies) {
@@ -20,6 +22,7 @@ export function buildServer(deps: ApiDependencies) {
   const docsRoutes = createDocsRoutes();
   const uiRoutes = createUiRoutes();
   const authRoutes = createAuthRoutes(deps.authStore);
+  const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
 
   return createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://localhost');
@@ -33,6 +36,9 @@ export function buildServer(deps: ApiDependencies) {
 
       const handledByAuth = await authRoutes(req, res, url);
       if (handledByAuth) return;
+
+      const handledByPreferences = await preferencesRoutes(req, res, url);
+      if (handledByPreferences) return;
 
       const handledByDocs = await docsRoutes(req, res, url);
       if (handledByDocs) return;

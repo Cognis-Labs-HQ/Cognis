@@ -16,3 +16,13 @@ CREATE TABLE IF NOT EXISTS local_auth_credentials (
   updated_at TEXT NOT NULL,
   FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
 );
+
+
+CREATE TABLE IF NOT EXISTS ui_page_preferences (
+  account_id TEXT NOT NULL,
+  page_id TEXT NOT NULL,
+  layout_json TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY (account_id, page_id),
+  FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+);

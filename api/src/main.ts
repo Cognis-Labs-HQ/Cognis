@@ -3,6 +3,7 @@ import type { ModuleManifest, ModuleRuntimeGateway, ModuleState } from '@cognis/
 import { Logger } from './logger.js';
 import { initializeDatabaseSchema } from './bootstrap/db-init.js';
 import { LocalAuthStore } from './routes/auth-routes.js';
+import { UserPreferenceStore } from './routes/preferences-routes.js';
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
   private readonly manifests: ModuleManifest[] = [
@@ -23,6 +24,7 @@ const logFile = process.env.LOG_FILE ?? '/var/log/cognis/app.log';
 
 const logger = new Logger(logLevel, logFile);
 const authStore = new LocalAuthStore();
+const preferenceStore = new UserPreferenceStore();
 
 await initializeDatabaseSchema(dbType, logger);
 const defaultAdmin = authStore.ensureDefaultAdmin();
@@ -30,7 +32,7 @@ if (defaultAdmin) {
   await logger.warn('Default admin account created.', { username: defaultAdmin.username, generatedPassword: defaultAdmin.password });
 }
 
-const server = buildServer({ moduleRuntimeGateway: new InMemoryModuleRuntimeGateway(), authStore });
+const server = buildServer({ moduleRuntimeGateway: new InMemoryModuleRuntimeGateway(), authStore, preferenceStore });
 server.listen(port, host, async () => {
   await logger.info('Cognis API listening.', { host, port, dbType });
 });
