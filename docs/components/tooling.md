@@ -4,14 +4,26 @@
 `tooling/` contains developer scripts and the `cognisctl` operational CLI.
 
 ## Cognis CLI (`cognisctl`)
+
+### Authentication model
+- `cognisctl` authenticates using the API bootstrap token generated at app startup.
+- Token path: `/var/run/cognis/cli-access.token`.
+- The CLI includes `Authorization: Bearer <token>` on API requests.
+
+### Help & command UX
+- Global help: `cognisctl --help`
+- Per-command help: `cognisctl help <command>` or `cognisctl <command> --help`
+- Missing required args return explicit missing argument names and usage.
+
 ### Built-in commands
-- `help`
+- `help [command]`
+- `api:request <method> <route> [--body-json <json>]`
 - `system:health`
 - `modules:list`
 - `modules:enable <moduleId>`
 - `modules:disable <moduleId>`
 - `user:list`
-- `user:create <username> [password] [role]`
+- `user:create <username> <password> <role>`
 - `user:role <username> <role>`
 - `user:set-password <username> <password>`
 - `user:disable <username>`

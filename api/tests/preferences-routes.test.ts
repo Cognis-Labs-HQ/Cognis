@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createPreferencesRoutes, UserPreferenceStore } from '../src/routes/preferences-routes.js';
-import { signJwt } from '../src/auth/jwt.js';
+import { issueAccessToken } from '../src/auth/access-tokens.js';
 
 test('preferences routes save and load layout preferences', async () => {
   const route = createPreferencesRoutes(new UserPreferenceStore());
   let body = '';
-  const token = signJwt({ sub: 'u1', role: 'user', iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 60 });
+  const token = issueAccessToken('u1', 'user', 60);
   const reqHeaders = { authorization: `Bearer ${token}` };
 
   await route({ method: 'PUT', headers: reqHeaders, [Symbol.asyncIterator]: async function* () { yield Buffer.from('{"layout":{"a":1}}'); } } as any, {
