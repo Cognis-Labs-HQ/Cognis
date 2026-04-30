@@ -28,3 +28,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 
 STOPSIGNAL SIGTERM
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["node", "--import", "tsx", "/app/api/src/main.ts"]

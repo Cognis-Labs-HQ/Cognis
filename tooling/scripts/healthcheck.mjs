@@ -2,7 +2,8 @@
 import { request } from 'node:http';
 
 const port = Number.parseInt(process.env.PORT ?? '3000', 10);
-const host = process.env.HOST ?? '127.0.0.1';
+const configuredHost = process.env.HEALTHCHECK_HOST ?? process.env.HOST ?? '127.0.0.1';
+const host = configuredHost === '0.0.0.0' || configuredHost === '::' ? '127.0.0.1' : configuredHost;
 
 const req = request({
   host,
