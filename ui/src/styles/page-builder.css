@@ -47,6 +47,13 @@ button:hover {
   transform: translateY(-1px);
 }
 
+#run-demo,
+#save-prefs {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
 .widgets { display: grid; gap: 12px; }
 .widget-card {
   border: 0;
@@ -111,6 +118,28 @@ button:hover {
 }
 
 .docs-viewer { overflow: auto; min-height: 380px; }
+.docs-viewer,
+.docs-viewer p,
+.docs-viewer li,
+.docs-viewer h1,
+.docs-viewer h2,
+.docs-viewer h3,
+.docs-viewer h4,
+.docs-viewer h5,
+.docs-viewer h6,
+.toolbar h3,
+.content-grid,
+.content-grid p,
+.content-grid span,
+.content-grid label {
+  color: var(--text);
+}
+
+.docs-viewer .widget-card,
+.content-grid .widget-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
 
 pre {
   background: var(--code-bg);
@@ -138,7 +167,4 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .docs-viewer p code, .docs-viewer li code { background: var(--inline-code-bg); border: 0; border-radius: 6px; padding: 1px 6px; }
 
 
-.page-context h1 { color: var(--text); }
-.toolbar h3, .toolbar p, .docs-viewer { color: var(--text); }
-.content-grid { color: var(--text); }
 #run-demo:disabled { opacity: 0.55; }
