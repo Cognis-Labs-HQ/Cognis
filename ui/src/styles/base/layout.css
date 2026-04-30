@@ -56,8 +56,7 @@
 
 .hidden { display: none; }
 
-.workspace { padding: 24px; max-width: 1200px; margin: 0 auto; }
-.topbar { margin-bottom: 12px; }
+.workspace { padding: 24px; width: 100%; }
 .layout-grid .content-grid, .content-grid { display: grid; gap: 12px; }
 
 @media (max-width: 900px) {

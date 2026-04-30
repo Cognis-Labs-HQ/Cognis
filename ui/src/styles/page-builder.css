@@ -65,7 +65,7 @@ button:hover {
 }
 
 .toolbar {
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .toolbar ul {
@@ -79,6 +79,15 @@ button:hover {
 .toolbar button {
   width: 100%;
   text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+}
+
+.toolbar button:hover {
+  color: var(--text);
+  border-color: var(--border);
+  background: var(--surface-soft);
 }
 
 .docs-viewer { overflow: auto; min-height: 380px; }
@@ -95,8 +104,9 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 .page-context .brand { width: 30px; height: 30px; margin: 0; }
 
-.main-window { display: grid; gap: 12px; align-items: start; }
+.main-window { display: grid; gap: 0; align-items: start; width: 100%; }
 .main-window--with-toolbar { grid-template-columns: minmax(20%, 30%) minmax(0, 1fr); }
+.main-window--with-toolbar .toolbar { margin-right: 12px; }
 .main-window--content-only { grid-template-columns: minmax(0, 1fr); }
 .toolbar { overflow-wrap: anywhere; word-break: break-word; }
 @media (max-width: 900px) { .main-window--with-toolbar { grid-template-columns: 1fr; } }
