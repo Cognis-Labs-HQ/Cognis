@@ -3,9 +3,25 @@
 ## Purpose
 `tooling/` contains developer scripts and the `cognisctl` operational CLI.
 
-## Current state
-- `tooling/cli`: command placeholder.
-- `tooling/scripts/lint-placeholder.mjs`: temporary lint command.
+## Cognis CLI (`cognisctl`)
+### Built-in commands
+- `help`
+- `system:health`
+- `modules:list`
+- `modules:enable <moduleId>`
+- `modules:disable <moduleId>`
+- `auth:create-admin [username] [password]`
+- `preferences:get <accountId> <pageId>`
 
-## Direction
-- Expand CLI with module management and maintenance commands.
+### Module plugin system
+Modules can contribute CLI subcommands by exporting `registerCommands` from:
+
+```text
+modules/<moduleId>/cli/index.js
+```
+
+The plugin receives a registrar and can register namespaced subcommands.
+
+## Scripts
+- `tooling/scripts/lint-placeholder.mjs`
+- `tooling/scripts/lint-readable.mjs`

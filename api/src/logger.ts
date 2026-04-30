@@ -14,7 +14,13 @@ export class Logger {
   async log(level: LogLevel, message: string, meta?: Record<string, unknown>) {
     if (priorities[level] < priorities[this.level]) return;
     const line = JSON.stringify({ ts: new Date().toISOString(), level, message, ...meta });
-    console.log(line);
+
+    if (level === 'error') {
+      process.stderr.write(`${line}\n`);
+    } else {
+      process.stdout.write(`${line}\n`);
+    }
+
     await mkdir(path.dirname(this.filePath), { recursive: true });
     await appendFile(this.filePath, `${line}\n`, 'utf8');
   }

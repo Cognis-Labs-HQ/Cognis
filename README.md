@@ -30,3 +30,9 @@ API handlers define **what** to do. Gateways/adapters decide **how** to execute 
 
 ## AI guidance
 - AI-specific contribution reminders are isolated in `AI_GUIDELINES.md` (kept separate from product/user docs).
+
+
+## CLI
+- Use `tooling/cli/src/index.ts` (`cognisctl`) as the operational control entrypoint.
+- Configure API target with `COGNIS_API_URL` (default `http://localhost:3000`).
+- Modules may provide subcommands via `modules/<moduleId>/cli/index.js`.

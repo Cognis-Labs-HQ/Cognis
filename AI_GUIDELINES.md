@@ -7,6 +7,8 @@ Use this file for implementation reminders specific to AI-assisted coding.
 - Prefer gateway/adapter abstractions for provider-specific execution.
 - Promote reusable logic into `ui/src/reuse` and shared layout primitives.
 - Avoid duplicated request/serialization logic across routes and pages.
+- Treat `cognisctl` as the operational control surface; add mechanism controls there before embedding ad-hoc scripts.
+- For module-specific controls, prefer pluggable CLI subcommands (`modules/<id>/cli/index.js`).
 
 ## Code quality reminders
 - Prioritize readability over terseness.

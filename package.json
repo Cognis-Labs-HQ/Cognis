@@ -14,7 +14,8 @@
     "lint": "node ./tooling/scripts/lint-placeholder.mjs && node ./tooling/scripts/lint-readable.mjs",
     "test": "node --import tsx --test $(find . -name \"*.test.ts\" -print)",
     "start": "node --import tsx api/src/main.ts",
-    "ci:test": "npm run typecheck && npm test"
+    "ci:test": "npm run typecheck && npm test",
+    "cli": "node --import tsx tooling/cli/src/index.ts"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
