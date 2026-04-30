@@ -9,8 +9,6 @@ COPY tooling ./tooling
 COPY docs ./docs
 COPY modules ./modules
 COPY ui ./ui
-COPY db ./db
-COPY AI_GUIDELINES.md README.md ./
 
 RUN npm ci --ignore-scripts \
   && printf '#!/usr/bin/env bash\nnode --import tsx /app/tooling/cli/src/index.ts "$@"\n' > /usr/local/bin/cognisctl \
