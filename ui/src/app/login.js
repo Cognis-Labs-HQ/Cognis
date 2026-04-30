@@ -1,12 +1,48 @@
-import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
+import { bindThemeToggle } from '../reuse/theme-toggle.js';
 
-const root = document.querySelector('#app');
+const typingSamples = [
+  'Self-study courses',
+  'Learn with tutors',
+  'Join classrooms',
+  'Do your homework',
+  "It's a social space!",
+  'Powered by FOSS'
+];
 
-await renderDashboardLayout(root, {
-  sidebar: '<h1>Welcome</h1><p>Sign in to continue.</p>',
-  topbar: 'Login',
-  content: '<section class="auth-page"><main class="panel"><h1>Login</h1><form id="login-form" class="stack"><input name="username" placeholder="Username" required /><input name="password" type="password" placeholder="Password" required /><button type="submit">Login</button></form><p id="msg"></p></main></section>'
-});
+bindThemeToggle();
+
+const typingTarget = document.querySelector('#typing-text');
+const typingCursor = document.querySelector('.typing-cursor');
+
+const startIndex = Math.floor(Math.random() * typingSamples.length);
+const orderedSamples = typingSamples.map((_, index) => typingSamples[(startIndex + index) % typingSamples.length]);
+
+async function runTypingShowcase() {
+  if (!typingTarget) return;
+
+  for (let sampleIndex = 0; sampleIndex < orderedSamples.length; sampleIndex += 1) {
+    const sample = orderedSamples[sampleIndex];
+
+    for (let charIndex = 0; charIndex <= sample.length; charIndex += 1) {
+      typingTarget.textContent = sample.slice(0, charIndex);
+      await new Promise((resolve) => window.setTimeout(resolve, 85));
+    }
+
+    await new Promise((resolve) => window.setTimeout(resolve, 60_000));
+
+    const isLastSample = sampleIndex === orderedSamples.length - 1;
+    if (!isLastSample) {
+      for (let charIndex = sample.length; charIndex >= 0; charIndex -= 1) {
+        typingTarget.textContent = sample.slice(0, charIndex);
+        await new Promise((resolve) => window.setTimeout(resolve, 42));
+      }
+    }
+  }
+
+  if (typingCursor) typingCursor.textContent = '';
+}
+
+runTypingShowcase();
 
 document.querySelector('#login-form')?.addEventListener('submit', async (event) => {
   event.preventDefault();

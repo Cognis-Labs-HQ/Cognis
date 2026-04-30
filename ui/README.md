@@ -3,7 +3,7 @@
 ## Structure
 - `src/layouts/`: reusable page layout guardrails.
 - `src/reuse/`: shared utilities.
-- `src/templates/`: HTML templates imported by JS.
+- `public/templates/`: HTML templates imported by JS and served as static assets.
 - `src/app/`: page behavior (dashboard, login, docs).
 
 ## UX model

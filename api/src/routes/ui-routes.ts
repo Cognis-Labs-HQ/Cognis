@@ -60,12 +60,12 @@ export function createUiRoutes() {
         res.end();
         return true;
       }
-      await serveFile(res, path.join(UI_ROOT, 'index.html'), 'text/html; charset=utf-8');
+      await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'index.html'), 'text/html; charset=utf-8');
       return true;
     }
 
     if (url.pathname === '/login') {
-      await serveFile(res, path.join(UI_ROOT, 'login.html'), 'text/html; charset=utf-8');
+      await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'login.html'), 'text/html; charset=utf-8');
       return true;
     }
 
@@ -76,7 +76,7 @@ export function createUiRoutes() {
         res.end();
         return true;
       }
-      await serveFile(res, path.join(UI_ROOT, 'settings.html'), 'text/html; charset=utf-8');
+      await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'settings.html'), 'text/html; charset=utf-8');
       return true;
     }
 
@@ -86,7 +86,7 @@ export function createUiRoutes() {
         res.end();
         return true;
       }
-      await serveFile(res, path.join(UI_ROOT, 'docs.html'), 'text/html; charset=utf-8');
+      await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'docs.html'), 'text/html; charset=utf-8');
       return true;
     }
 
@@ -99,7 +99,7 @@ export function createUiRoutes() {
       return true;
     }
 
-    const filePath = relative.startsWith('assets/icons/')
+    const filePath = (relative.startsWith('assets/') || relative.startsWith('templates/'))
       ? path.join(PUBLIC_ROOT, relative)
       : path.join(STATIC_ROOT, relative);
 
