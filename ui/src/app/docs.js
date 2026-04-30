@@ -19,6 +19,14 @@ function toTitleCase(slug) {
     .join(' ');
 }
 
+function normalizeDocSlug(href) {
+  return href
+    .replace(/^\.\//, '')
+    .replace(/^\//, '')
+    .replace(/^api\/v1\/docs\//, '')
+    .replace(/\.md$/i, '');
+}
+
 function renderSidebarLinks(items) {
   return items.map((item) => `<li><button data-slug="${item.slug}">${toTitleCase(item.slug)}</button></li>`).join('');
 }
@@ -46,6 +54,20 @@ await renderDashboardLayout(root, {
 
 root.querySelectorAll('[data-slug]').forEach((button) => {
   button.addEventListener('click', () => showDoc(button.dataset.slug));
+});
+
+root.querySelector('#doc')?.addEventListener('click', async (event) => {
+  const link = event.target.closest('a[href]');
+  if (!link) return;
+
+  const href = link.getAttribute('href') || '';
+  if (href.startsWith('http://') || href.startsWith('https://')) return;
+
+  const slug = normalizeDocSlug(href);
+  if (!slug) return;
+
+  event.preventDefault();
+  await showDoc(slug);
 });
 
 const defaultDoc = docs.find((doc) => doc.slug === 'overview')?.slug ?? docs[0]?.slug;

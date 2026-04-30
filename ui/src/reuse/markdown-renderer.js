@@ -8,7 +8,11 @@ function renderInline(markdown) {
   rendered = rendered.replace(/`([^`]+)`/g, '<code>$1</code>');
   rendered = rendered.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   rendered = rendered.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-  rendered = rendered.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  rendered = rendered.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (match, label, href) => {
+    const isExternal = href.startsWith('http://') || href.startsWith('https://');
+    if (isExternal) return `<a href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    return `<a href="${href}">${label}</a>`;
+  });
 
   return rendered;
 }

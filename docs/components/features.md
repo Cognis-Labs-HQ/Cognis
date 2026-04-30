@@ -20,8 +20,9 @@ This page gives a broad tour of what Cognis provides today.
 
 ## Useful links
 
-- [Core package overview](https://github.com/)
-- [API route docs](https://github.com/)
+- [Core package overview](./core.md)
+- [API route docs](./api.md)
+- [UI docs](./ui.md)
 
 ## Example configuration snippet
 
