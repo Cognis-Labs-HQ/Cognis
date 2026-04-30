@@ -27,6 +27,9 @@ function bindTopbarActions() {
     dropdown?.classList.toggle('hidden');
   });
 
+  toggle?.addEventListener('mouseenter', () => dropdown?.classList.remove('hidden'));
+  dropdown?.addEventListener('mouseleave', () => dropdown?.classList.add('hidden'));
+
   logout?.addEventListener('click', () => {
     localStorage.removeItem('cognis_token');
     localStorage.removeItem('cognis_account');

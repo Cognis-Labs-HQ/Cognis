@@ -11,12 +11,22 @@
     <nav class="global-navrow" aria-label="Primary navigation">
       <div class="topnav global-navrow-surface">
         <a href="/dashboard">Dashboard</a>
-        <a href="/docs">Docs</a>
       </div>
-      <div class="profile-menu">
-        <button id="profile-toggle">👤 <span id="profile-name">User</span></button>
-        <div id="profile-dropdown" class="dropdown hidden">
-          <button id="profile-logout">Logout</button>
+      <div class="account-cluster">
+        <span class="user-greeting">Hello, <span id="profile-name">User</span></span>
+        <button id="notification-toggle" class="notification-button" aria-label="Notifications">
+          🔔 <span id="notification-count" class="notification-count">0</span>
+        </button>
+        <div class="profile-menu">
+          <button id="profile-toggle" class="avatar-button" aria-label="Account options">
+            <img src="/dashboard/static/assets/icons/cognis.png" alt="User avatar" class="avatar-image" />
+          </button>
+          <ul id="profile-dropdown" class="dropdown hidden user-dropdown-content">
+            <li><a class="dropdown-item" href="/user">Profile</a></li>
+            <li><a class="dropdown-item" href="/settings">Settings</a></li>
+            <li><a class="dropdown-item" href="/docs">Docs</a></li>
+            <li><button id="profile-logout" class="dropdown-item">Logout</button></li>
+          </ul>
         </div>
       </div>
     </nav>
