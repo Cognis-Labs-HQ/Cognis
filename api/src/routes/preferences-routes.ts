@@ -1,3 +1,4 @@
+import { requireAuth } from '../auth/guard.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 export class UserPreferenceStore {
@@ -16,7 +17,14 @@ export function createPreferencesRoutes(store: UserPreferenceStore) {
   return async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
     const match = url.pathname.match(/^\/api\/v1\/users\/([^/]+)\/preferences\/([^/]+)$/);
     if (!match) return false;
+    const claims = requireAuth(req, res, 'user');
+    if (!claims) return true;
     const accountId = decodeURIComponent(match[1]);
+    if (claims.sub !== accountId && claims.role !== 'admin') {
+      res.writeHead(403, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ error: { code: 'forbidden', message: 'Cannot access another user preferences' } }));
+      return true;
+    }
     const pageId = decodeURIComponent(match[2]);
 
     if (req.method === 'GET') {

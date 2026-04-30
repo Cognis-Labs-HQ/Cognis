@@ -3,12 +3,20 @@ import { getWidgetDefinition, getWidgetLibrary, mergeWidgetConfig } from '../com
 import { runDemoPuppeteer } from './demo-puppeteer.js';
 import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
 import { loadTemplate } from '../reuse/template-loader.js';
+import { apiFetch } from '../reuse/api-client.js';
 
 const state = { pages: structuredClone(DEFAULT_PAGES), activePageId: DEFAULT_PAGES[0].id, banner: 'Ready.', demoMode: false, demoRunning: { value: false } };
 const root = document.querySelector('#app');
 
 function getActivePage() { return state.pages.find((page) => page.id === state.activePageId); }
-async function loadDemoMode() { try { const response = await fetch('/api/v1/system/ui-config'); const payload = await response.json(); state.demoMode = payload?.data?.demoMode === true; } catch { state.demoMode = false; } }
+async function loadDemoMode() { try { const response = await apiFetch('/api/v1/system/ui-config'); const payload = await response.json(); state.demoMode = payload?.data?.demoMode === true; } catch { state.demoMode = false; } }
+
+async function savePreferences() {
+  const account = localStorage.getItem('cognis_account');
+  if (!account) return;
+  const activePage = getActivePage();
+  await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(activePage.id)}`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ layout: activePage.widgets }) });
+}
 
 function createWidgetCard(widget, index) {
   const definition = getWidgetDefinition(widget.id);
@@ -25,20 +33,16 @@ async function render(banner) {
   const pageTemplate = await loadTemplate('page-builder');
   const content = pageTemplate.replace('{{tabs}}', tabs).replace('{{options}}', options).replace('{{demoDisabled}}', state.demoMode ? '' : 'disabled').replace('{{banner}}', state.banner).replace('{{widgets}}', widgets);
 
-  await renderDashboardLayout(root, {
-    sidebar: `<img src="/dashboard/static/assets/icons/cognis-icon.png" alt="Cognis" class="brand" /><h1>Page Builder</h1><p>Guardrailed rows/columns keep customizations sane.</p><p class="badge">Demo mode: ${state.demoMode ? 'ON' : 'OFF'}</p>`,
-    topbar: '<strong>Dashboard Layout</strong>',
-    content
-  });
+  await renderDashboardLayout(root, { sidebar: `<img src="/dashboard/static/assets/icons/cognis-icon.png" alt="Cognis" class="brand" /><h1>Page Builder</h1><p>Guardrailed rows/columns keep customizations sane.</p><p class="badge">Demo mode: ${state.demoMode ? 'ON' : 'OFF'}</p>`, topbar: '<strong>Dashboard Layout</strong>', content });
   bindEvents();
 }
 
 function bindEvents() {
   root.querySelectorAll('[data-page]').forEach((button) => button.addEventListener('click', () => { state.activePageId = button.dataset.page; render(); }));
-  root.querySelector('#add-widget')?.addEventListener('click', () => { const selected = root.querySelector('#widget-selector'); const activePage = getActivePage(); activePage.widgets.push({ id: selected.value, config: mergeWidgetConfig(selected.value) }); render('Widget added.'); });
+  root.querySelector('#add-widget')?.addEventListener('click', async () => { const selected = root.querySelector('#widget-selector'); const activePage = getActivePage(); activePage.widgets.push({ id: selected.value, config: mergeWidgetConfig(selected.value) }); await savePreferences(); render('Widget added.'); });
   root.querySelector('#run-demo')?.addEventListener('click', async () => { if (!state.demoMode || state.demoRunning.value) return; state.demoRunning.value = true; await runDemoPuppeteer({ state, render, isRunningRef: state.demoRunning }); });
-  root.querySelectorAll('[data-action="remove"]').forEach((button) => button.addEventListener('click', () => { const activePage = getActivePage(); activePage.widgets.splice(Number(button.dataset.index), 1); render('Widget removed.'); }));
-  root.querySelectorAll('[data-action="config"]').forEach((textarea) => textarea.addEventListener('change', () => { const activePage = getActivePage(); const index = Number(textarea.dataset.index); try { activePage.widgets[index].config = JSON.parse(textarea.value); } catch { textarea.classList.add('invalid'); state.banner = 'Invalid JSON. Fix and retry.'; return; } textarea.classList.remove('invalid'); render('Widget configuration updated.'); }));
+  root.querySelectorAll('[data-action="remove"]').forEach((button) => button.addEventListener('click', async () => { const activePage = getActivePage(); activePage.widgets.splice(Number(button.dataset.index), 1); await savePreferences(); render('Widget removed.'); }));
+  root.querySelectorAll('[data-action="config"]').forEach((textarea) => textarea.addEventListener('change', async () => { const activePage = getActivePage(); const index = Number(textarea.dataset.index); try { activePage.widgets[index].config = JSON.parse(textarea.value); } catch { textarea.classList.add('invalid'); state.banner = 'Invalid JSON. Fix and retry.'; return; } textarea.classList.remove('invalid'); await savePreferences(); render('Widget configuration updated.'); }));
 }
 
 await loadDemoMode();

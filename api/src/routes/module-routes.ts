@@ -1,3 +1,4 @@
+import { requireAuth } from '../auth/guard.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { ModuleService } from '@cognis/core';
 
@@ -7,6 +8,9 @@ export function createModuleRoutes(moduleService: ModuleService) {
     if (!match || req.method !== 'POST') {
       return false;
     }
+
+    const claims = requireAuth(req, res, 'admin');
+    if (!claims) return true;
 
     const moduleId = decodeURIComponent(match[1]);
     const action = match[2];

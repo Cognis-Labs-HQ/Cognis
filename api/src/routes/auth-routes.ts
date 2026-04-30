@@ -1,3 +1,4 @@
+import { signJwt } from '../auth/jwt.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AuthGateway } from '@cognis/core';
 import type { LocalAccountStore } from '../adapters/local-auth-gateway.js';
@@ -29,8 +30,10 @@ export function createAuthRoutes(authGateway: AuthGateway, accountStore: LocalAc
         res.end(JSON.stringify({ error: { code: 'invalid_credentials', message: 'Invalid username or password' } }));
         return true;
       }
+      const role = session.isAdmin ? 'admin' : 'user';
+      const token = signJwt({ sub: session.accountId, role, iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 60 * 60 * 12 });
       res.writeHead(200, { 'content-type': 'application/json' });
-      res.end(JSON.stringify({ data: { accountId: session.accountId, provider: session.provider, isAdmin: session.isAdmin } }));
+      res.end(JSON.stringify({ data: { accountId: session.accountId, provider: session.provider, role, token } }));
       return true;
     }
 
