@@ -42,7 +42,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: Inter, Arial, sans-serif;
+  font-family: Orbitron, 'Audiowide', 'Rajdhani', 'Exo 2', 'Trebuchet MS', Arial, sans-serif;
   line-height: 1.45;
 }
 
