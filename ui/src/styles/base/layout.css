@@ -37,7 +37,7 @@
 .page-context h1 { margin: 0; font-size: 1rem; white-space: nowrap; }
 .page-context p { margin: 0; color: var(--text-muted); font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.app-page__nav {
+.global-navrow {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -84,7 +84,7 @@
 
   .page-context { justify-content: flex-start; }
 
-  .app-page__nav {
+  .global-navrow {
     grid-template-columns: 1fr;
     top: 92px;
   }
