@@ -1,4 +1,4 @@
-import { signJwt } from '../auth/jwt.js';
+import { issueAccessToken } from '../auth/access-tokens.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AuthGateway } from '@cognis/core';
 import type { LocalAccountStore } from '../adapters/local-auth-gateway.js';
@@ -31,9 +31,10 @@ export function createAuthRoutes(authGateway: AuthGateway, accountStore: LocalAc
         return true;
       }
       const role = session.isAdmin ? 'admin' : 'user';
-      const token = signJwt({ sub: session.accountId, role, name: session.accountId, iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 60 * 60 * 12 });
-      res.writeHead(200, { 'content-type': 'application/json', 'set-cookie': `cognis_token=${token}; Path=/; HttpOnly; SameSite=Lax` });
-      res.end(JSON.stringify({ data: { accountId: session.accountId, displayName: session.accountId, provider: session.provider, role, token } }));
+      const defaultTtlSeconds = Number.parseInt(process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? '43200', 10);
+      const apiToken = issueAccessToken(session.accountId, role, Number.isFinite(defaultTtlSeconds) ? defaultTtlSeconds : 43200);
+      res.writeHead(200, { 'content-type': 'application/json', 'set-cookie': `cognis_access_token=${apiToken}; Path=/; HttpOnly; SameSite=Lax` });
+      res.end(JSON.stringify({ data: { accountId: session.accountId, displayName: session.accountId, provider: session.provider, role, token: apiToken } }));
       return true;
     }
 

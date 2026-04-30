@@ -20,5 +20,6 @@ ENV COGNIS_UI_DEMO_MODE=0
 ENV DB_TYPE=sqlite
 ENV LOG_LEVEL=info
 ENV LOG_FILE=/var/log/cognis/app.log
+ENV COGNIS_ACCESS_TOKEN_TTL_SECONDS=43200
 
 CMD ["npm", "run", "start"]

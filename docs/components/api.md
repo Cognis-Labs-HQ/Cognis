@@ -36,3 +36,12 @@
   }
 }
 ```
+
+
+## API auth model
+- API authorization uses **opaque bearer access tokens** only (no JWT bearer tokens for API routes).
+- Obtain a token with `POST /api/v1/auth/login`; response includes `data.token`.
+- Send tokens as `Authorization: Bearer <token>`.
+- Login also sets `cognis_access_token` as an HttpOnly cookie for server-rendered UI route guards.
+- Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200`, 12 hours).
+- API startup mints a non-expiring CLI bootstrap token at `/var/run/cognis/cli-access.token` (permission mode `0600`) for trusted local CLI usage.

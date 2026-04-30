@@ -4,6 +4,8 @@ import { Logger } from './logger.js';
 import { initializeDatabaseSchema } from './bootstrap/db-init.js';
 import { InMemoryLocalAccountStore, LocalAuthGateway } from './adapters/local-auth-gateway.js';
 import { UserPreferenceStore } from './routes/preferences-routes.js';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { issueAccessToken } from './auth/access-tokens.js';
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
   private readonly manifests: ModuleManifest[] = [
@@ -31,6 +33,13 @@ await initializeDatabaseSchema(dbType, logger);
 const adminPassword = LocalAuthGateway.generatePassword();
 await authGateway.createLocalAdmin('admin', adminPassword);
 await logger.warn('Default admin account created.', { username: 'admin', generatedPassword: adminPassword });
+
+const cliTokenPath = '/var/run/cognis/cli-access.token';
+const cliAccessToken = issueAccessToken('cognis-cli', 'admin', null);
+await mkdir('/var/run/cognis', { recursive: true });
+await writeFile(cliTokenPath, `${cliAccessToken}
+`, { mode: 0o600 });
+await logger.info('CLI access token initialized.', { path: cliTokenPath });
 
 const server = buildServer({ moduleRuntimeGateway: new InMemoryModuleRuntimeGateway(), authGateway, accountStore, preferenceStore });
 server.listen(port, host, async () => {
