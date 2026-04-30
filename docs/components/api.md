@@ -39,7 +39,7 @@
 
 
 ## API auth model
-- API authorization uses **opaque bearer access tokens** only (no JWT bearer tokens for API routes).
+- API authorization uses **opaque bearer access tokens** only for API routes.
 - Obtain a token with `POST /api/v1/auth/login`; response includes `data.token`.
 - Send tokens as `Authorization: Bearer <token>`.
 - Login also sets `cognis_access_token` as an HttpOnly cookie for server-rendered UI route guards.
