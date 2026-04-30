@@ -17,6 +17,7 @@ document.querySelector('#login-form')?.addEventListener('submit', async (event) 
   if (response.ok) {
     localStorage.setItem('cognis_token', body.data.token);
     localStorage.setItem('cognis_account', body.data.accountId);
+    localStorage.setItem('cognis_display_name', body.data.displayName || body.data.accountId);
     window.location.href = '/dashboard';
     return;
   }

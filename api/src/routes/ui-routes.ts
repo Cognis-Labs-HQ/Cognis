@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { verifyJwt } from '../auth/jwt.js';
 
 const UI_ROOT = path.resolve(process.cwd(), 'ui');
 const STATIC_ROOT = path.join(UI_ROOT, 'src');
@@ -22,6 +23,17 @@ function resolveContentType(filePath: string) {
   return 'image/png';
 }
 
+function getCookie(req: IncomingMessage, name: string) {
+  const cookie = req.headers.cookie ?? '';
+  const match = cookie.match(new RegExp(`(?:^|; )${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function isLoggedIn(req: IncomingMessage) {
+  const token = getCookie(req, 'cognis_token');
+  return token ? verifyJwt(token) : null;
+}
+
 async function serveFile(res: ServerResponse, filePath: string, contentType: string) {
   try {
     const file = await readFile(filePath);
@@ -35,8 +47,19 @@ async function serveFile(res: ServerResponse, filePath: string, contentType: str
 }
 
 export function createUiRoutes() {
-  return async (_req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
+  return async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
+    if (url.pathname === '/') {
+      res.writeHead(302, { location: '/dashboard' });
+      res.end();
+      return true;
+    }
+
     if (url.pathname === '/dashboard') {
+      if (!isLoggedIn(req)) {
+        res.writeHead(302, { location: '/login' });
+        res.end();
+        return true;
+      }
       await serveFile(res, path.join(UI_ROOT, 'index.html'), 'text/html; charset=utf-8');
       return true;
     }
@@ -47,6 +70,11 @@ export function createUiRoutes() {
     }
 
     if (url.pathname === '/docs') {
+      if (!isLoggedIn(req)) {
+        res.writeHead(302, { location: '/login' });
+        res.end();
+        return true;
+      }
       await serveFile(res, path.join(UI_ROOT, 'docs.html'), 'text/html; charset=utf-8');
       return true;
     }

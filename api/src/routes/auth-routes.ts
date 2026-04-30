@@ -31,9 +31,9 @@ export function createAuthRoutes(authGateway: AuthGateway, accountStore: LocalAc
         return true;
       }
       const role = session.isAdmin ? 'admin' : 'user';
-      const token = signJwt({ sub: session.accountId, role, iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 60 * 60 * 12 });
-      res.writeHead(200, { 'content-type': 'application/json' });
-      res.end(JSON.stringify({ data: { accountId: session.accountId, provider: session.provider, role, token } }));
+      const token = signJwt({ sub: session.accountId, role, name: session.accountId, iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 60 * 60 * 12 });
+      res.writeHead(200, { 'content-type': 'application/json', 'set-cookie': `cognis_token=${token}; Path=/; HttpOnly; SameSite=Lax` });
+      res.end(JSON.stringify({ data: { accountId: session.accountId, displayName: session.accountId, provider: session.provider, role, token } }));
       return true;
     }
 

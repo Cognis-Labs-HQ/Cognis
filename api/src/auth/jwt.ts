@@ -5,6 +5,7 @@ export interface JwtClaims {
   role: 'user' | 'teacher' | 'moderator' | 'admin';
   iat: number;
   exp: number;
+  name?: string;
 }
 
 const secret = process.env.JWT_SECRET ?? 'dev-secret-change-me';
