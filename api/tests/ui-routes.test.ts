@@ -3,40 +3,71 @@ import assert from 'node:assert/strict';
 import { createUiRoutes } from '../src/routes/ui-routes.js';
 import { issueAccessToken } from '../src/auth/access-tokens.js';
 
-test('ui routes redirect root to dashboard', async () => {
-  const route = createUiRoutes();
+function createResponseRecorder() {
   let status = 0;
   let headers: Record<string, string> = {};
+  const chunks: string[] = [];
+  return {
+    res: {
+      setHeader() {},
+      writeHead(code: number, nextHeaders: Record<string, string>) { status = code; headers = nextHeaders ?? {}; },
+      end(body?: string | Buffer) { if (body) chunks.push(body.toString()); }
+    },
+    get status() { return status; },
+    get headers() { return headers; },
+    get body() { return chunks.join(''); }
+  };
+}
 
-  const handled = await route({ headers: {} } as any, {
-    writeHead(code: number, nextHeaders: Record<string, string>) { status = code; headers = nextHeaders; },
-    end() {}
-  } as any, new URL('http://localhost/'));
+test('ui routes redirect root to dashboard', async () => {
+  const route = createUiRoutes();
+  const recorder = createResponseRecorder();
+
+  const handled = await route({ headers: {} } as any, recorder.res as any, new URL('http://localhost/'));
 
   assert.equal(handled, true);
-  assert.equal(status, 302);
-  assert.equal(headers.location, '/dashboard');
+  assert.equal(recorder.status, 302);
+  assert.equal(recorder.headers.location, '/dashboard');
 });
 
 test('dashboard route requires login cookie', async () => {
   const route = createUiRoutes();
-  let status = 0;
-  let headers: Record<string, string> = {};
+  const anonymous = createResponseRecorder();
 
-  await route({ headers: {} } as any, {
-    writeHead(code: number, nextHeaders: Record<string, string>) { status = code; headers = nextHeaders; },
-    end() {}
-  } as any, new URL('http://localhost/dashboard'));
+  await route({ headers: {} } as any, anonymous.res as any, new URL('http://localhost/dashboard'));
 
-  assert.equal(status, 302);
-  assert.equal(headers.location, '/login');
+  assert.equal(anonymous.status, 302);
+  assert.equal(anonymous.headers.location, '/login');
 
   const token = issueAccessToken('u1', 'user', 60);
-  let authedStatus = 0;
-  await route({ headers: { cookie: `cognis_access_token=${token}` } } as any, {
-    writeHead(code: number) { authedStatus = code; },
-    end() {}
-  } as any, new URL('http://localhost/dashboard'));
+  const authed = createResponseRecorder();
+  await route({ headers: { cookie: `cognis_access_token=${token}` } } as any, authed.res as any, new URL('http://localhost/dashboard'));
 
-  assert.notEqual(authedStatus, 302);
+  assert.equal(authed.status, 200);
+  assert.match(authed.body, /page-builder\.js/);
+});
+
+test('login page is served as standalone page html', async () => {
+  const route = createUiRoutes();
+  const recorder = createResponseRecorder();
+
+  await route({ headers: {} } as any, recorder.res as any, new URL('http://localhost/login'));
+
+  assert.equal(recorder.status, 200);
+  assert.match(recorder.body, /id="login-form"/);
+  assert.match(recorder.body, /app\/login\.js/);
+});
+
+test('ui static route serves templates and assets from public folder', async () => {
+  const route = createUiRoutes();
+
+  const templateRes = createResponseRecorder();
+  await route({ headers: {} } as any, templateRes.res as any, new URL('http://localhost/dashboard/static/templates/dashboard-layout.html'));
+  assert.equal(templateRes.status, 200);
+  assert.match(templateRes.body, /topbar-icon/);
+
+  const assetRes = createResponseRecorder();
+  await route({ headers: {} } as any, assetRes.res as any, new URL('http://localhost/dashboard/static/assets/icons/cognis-icon.png'));
+  assert.equal(assetRes.status, 200);
+  assert.equal(assetRes.headers['content-type'], 'image/png');
 });

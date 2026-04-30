@@ -8,7 +8,7 @@
 ## Rules
 1. 2-space indentation, semicolons required, single quotes for JS/TS strings.
 2. One responsibility per module; extract shared logic into `reuse/`.
-3. HTML structure lives in `ui/src/templates/*.html`; JS imports templates via loader utilities.
+3. HTML structure lives in `ui/public/templates/*.html`; JS imports templates via loader utilities.
 4. Page shells/layout guardrails live in `ui/src/layouts/`.
 5. API routes should delegate business logic to services; avoid inline persistence logic.
 
