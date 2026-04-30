@@ -22,7 +22,7 @@ async function showDoc(slug) {
 
 const docs = await loadDocsIndex();
 await renderDashboardLayout(root, {
-  sidebar: '<h1>Product Docs</h1><p>Production feature documentation.</p>',
+  pageContext: '<h1>Product Docs</h1><p>Production feature documentation.</p>',
   topbar: 'Docs',
   toolbar: `<h3>Navigation</h3><ul>${renderSidebarLinks(docs)}</ul>`,
   content: `<article id="doc" class="docs-viewer"></article>`

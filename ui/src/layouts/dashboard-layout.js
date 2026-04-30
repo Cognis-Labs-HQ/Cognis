@@ -28,7 +28,7 @@ function bindTopbarActions() {
 export async function renderDashboardLayout(root, slots) {
   const template = await loadTemplate('dashboard-layout');
   root.innerHTML = template
-    .replace('{{sidebar}}', slots.sidebar)
+    .replace('{{pageContext}}', slots.pageContext || '')
     .replace('{{topbar}}', slots.topbar)
     .replace('{{content}}', slots.content)
     .replace('{{toolbar}}', slots.toolbar ? `<aside class="toolbar">${slots.toolbar}</aside>` : '');

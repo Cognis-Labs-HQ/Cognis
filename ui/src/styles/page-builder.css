@@ -92,3 +92,5 @@ pre {
 }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
+
+.page-context .brand { width: 30px; height: 30px; margin: 0; }

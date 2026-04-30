@@ -1,13 +1,10 @@
 <section class="app-shell app-page binary-theme--dark" data-theme="dark">
   <header class="global-topbar site-header app-page__header">
-    <div class="brandline">
-      <img src="/dashboard/static/assets/icons/cognis-icon.png" alt="Cognis" class="topbar-icon" />
-      <strong>Cognis</strong>
-    </div>
     <nav class="topnav app-page__nav-surface">
       <a href="/dashboard">Dashboard</a>
       <a href="/docs">Docs</a>
     </nav>
+    <div class="page-context">{{pageContext}}</div>
     <div class="profile-menu">
       <button id="profile-toggle">👤 <span id="profile-name">User</span></button>
       <div id="profile-dropdown" class="dropdown hidden">
@@ -15,12 +12,9 @@
       </div>
     </div>
   </header>
-  <section class="shell layout-grid">
-    <aside class="sidebar">{{sidebar}}</aside>
-    <main class="workspace app-page__main">
-      <header class="topbar">{{topbar}}</header>
-      {{toolbar}}
-      <section class="content-grid page-surface">{{content}}</section>
-    </main>
-  </section>
+  <main class="workspace app-page__main">
+    <header class="topbar">{{topbar}}</header>
+    {{toolbar}}
+    <section class="content-grid page-surface">{{content}}</section>
+  </main>
 </section>
