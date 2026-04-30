@@ -1,28 +1,8 @@
+import { bindThemeToggle } from '../reuse/theme-toggle.js';
+
 const typingSamples = ['Template'];
 
-function applyTheme(mode) {
-  const normalized = mode === 'light' ? 'light' : 'dark';
-  document.body.setAttribute('data-theme', normalized);
-  document.body.classList.toggle('binary-theme--dark', normalized === 'dark');
-  document.body.classList.toggle('binary-theme--light', normalized === 'light');
-
-  const toggle = document.querySelector('#theme-toggle');
-  if (toggle) {
-    toggle.dataset.mode = normalized;
-    toggle.textContent = normalized === 'dark' ? '🌙' : '☀️';
-  }
-}
-
-function bindThemeToggle() {
-  const local = localStorage.getItem('cognis_theme') || 'dark';
-  applyTheme(local);
-
-  document.querySelector('#theme-toggle')?.addEventListener('click', () => {
-    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-    localStorage.setItem('cognis_theme', next);
-  });
-}
+bindThemeToggle();
 
 const typingTarget = document.querySelector('#typing-text');
 const selectedPhrase = typingSamples[Math.floor(Math.random() * typingSamples.length)] ?? '';
@@ -37,7 +17,6 @@ function tickTyping() {
   }
 }
 
-bindThemeToggle();
 window.setTimeout(tickTyping, 250);
 
 document.querySelector('#login-form')?.addEventListener('submit', async (event) => {

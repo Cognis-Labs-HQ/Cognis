@@ -1,0 +1,33 @@
+export function applyTheme(mode) {
+  const normalized = mode === 'light' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', normalized);
+  document.body.classList.toggle('binary-theme--dark', normalized === 'dark');
+  document.body.classList.toggle('binary-theme--light', normalized === 'light');
+
+  const shell = document.querySelector('.app-shell');
+  if (shell) {
+    shell.setAttribute('data-theme', normalized);
+    shell.classList.toggle('binary-theme--dark', normalized === 'dark');
+    shell.classList.toggle('binary-theme--light', normalized === 'light');
+  }
+
+  const toggle = document.querySelector('#theme-toggle');
+  if (toggle) {
+    toggle.dataset.mode = normalized;
+    toggle.textContent = normalized === 'dark' ? '🌙' : '☀️';
+  }
+}
+
+export function bindThemeToggle(options = {}) {
+  const readInitialTheme = options.readInitialTheme || (() => localStorage.getItem('cognis_theme') || 'dark');
+  const onThemeChange = options.onThemeChange || (async () => {});
+
+  applyTheme(readInitialTheme());
+
+  document.querySelector('#theme-toggle')?.addEventListener('click', async () => {
+    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    localStorage.setItem('cognis_theme', next);
+    await onThemeChange(next);
+  });
+}

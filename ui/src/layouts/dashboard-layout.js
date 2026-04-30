@@ -1,5 +1,6 @@
 import { apiFetch } from '../reuse/api-client.js';
 import { loadTemplate } from '../reuse/template-loader.js';
+import { applyTheme, bindThemeToggle as bindSharedThemeToggle } from '../reuse/theme-toggle.js';
 
 function getDisplayName() {
   return localStorage.getItem('cognis_display_name') || localStorage.getItem('cognis_account') || 'User';
@@ -49,40 +50,14 @@ function applyUiPreferences(prefs) {
 }
 
 
-function applyTheme(mode) {
-  const normalized = mode === 'light' ? 'light' : 'dark';
-  document.body.setAttribute('data-theme', normalized);
-  document.body.classList.toggle('binary-theme--dark', normalized === 'dark');
-  document.body.classList.toggle('binary-theme--light', normalized === 'light');
-
-  const shell = document.querySelector('.app-shell');
-  if (shell) {
-    shell.setAttribute('data-theme', normalized);
-    shell.classList.toggle('binary-theme--dark', normalized === 'dark');
-    shell.classList.toggle('binary-theme--light', normalized === 'light');
-  }
-
-  const toggle = document.querySelector('#theme-toggle');
-  if (toggle) {
-    toggle.dataset.mode = normalized;
-    toggle.textContent = normalized === 'dark' ? '🌙' : '☀️';
-  }
-}
-
 async function bindThemeToggle() {
-  const toggle = document.querySelector('#theme-toggle');
   const prefs = await loadUiPreferences();
   applyUiPreferences(prefs);
-  const local = localStorage.getItem('cognis_theme');
-  const mode = prefs?.mode || local || 'dark';
-
-  applyTheme(mode);
-
-  toggle?.addEventListener('click', async () => {
-    const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-    localStorage.setItem('cognis_theme', next);
-    await saveUiPreferences({ mode: next });
+  bindSharedThemeToggle({
+    readInitialTheme: () => prefs?.mode || localStorage.getItem('cognis_theme') || 'dark',
+    onThemeChange: async (mode) => {
+      await saveUiPreferences({ mode });
+    }
   });
 }
 
