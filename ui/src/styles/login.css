@@ -1,9 +1,16 @@
+:root {
+  --color-primary-accent: 58, 167, 131;
+}
+
 @import url('/dashboard/static/styles/base/theme.css');
 
 .auth-page--login-frame {
   min-height: 100vh;
   padding: 34px;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at top right, rgba(var(--color-primary-accent), 0.22), transparent 48%),
+    radial-gradient(circle at 12% 18%, rgba(45, 212, 191, 0.2), transparent 55%),
+    linear-gradient(150deg, #030a14 0%, #071421 45%, #020813 100%);
 }
 
 .login-layout {
@@ -19,7 +26,7 @@
 .login-panel {
   padding: 34px;
   background: linear-gradient(180deg, rgba(4, 18, 36, 0.94), rgba(3, 14, 30, 0.9));
-  border: 1px solid rgba(56, 139, 255, 0.2);
+  border: 0;
 }
 
 .login-brandline {
