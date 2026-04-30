@@ -40,20 +40,17 @@
   color: #d6e7ff;
 }
 
-.login-feature-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 14px;
-}
-
-.login-feature-list li {
-  background: rgba(31, 69, 133, 0.42);
-  border: 1px solid rgba(80, 128, 208, 0.25);
+.login-template-box {
+  margin-top: 8px;
   border-radius: 12px;
+  border: 1px solid rgba(80, 128, 208, 0.3);
+  background: rgba(31, 69, 133, 0.42);
   padding: 14px;
-  font-size: 1.3rem;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  font-size: 1.35rem;
+  font-family: Orbitron, 'Audiowide', 'Rajdhani', 'Exo 2', 'Trebuchet MS', Arial, sans-serif;
 }
 
 .login-heading { margin: 0 0 20px; font-size: 2.5rem; }
