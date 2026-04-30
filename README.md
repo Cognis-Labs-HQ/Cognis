@@ -35,4 +35,5 @@ API handlers define **what** to do. Gateways/adapters decide **how** to execute 
 ## CLI
 - Use `tooling/cli/src/index.ts` (`cognisctl`) as the operational control entrypoint.
 - Configure API target with `COGNIS_API_URL` (default `http://localhost:3000`).
+- User lifecycle controls are namespaced under `user:*` (including `user:preferences:clear`).
 - Modules may provide subcommands via `modules/<moduleId>/cli/index.js`.

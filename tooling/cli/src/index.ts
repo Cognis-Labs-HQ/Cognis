@@ -20,8 +20,12 @@ async function apiGet(apiBaseUrl: string, route: string) {
   return response.json();
 }
 
-async function apiPost(apiBaseUrl: string, route: string) {
-  const response = await fetch(`${apiBaseUrl}${route}`, { method: 'POST' });
+async function apiPost(apiBaseUrl: string, route: string, body?: unknown) {
+  const response = await fetch(`${apiBaseUrl}${route}`, {
+    method: 'POST',
+    headers: body ? { 'content-type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined
+  });
   return response.json();
 }
 
@@ -55,19 +59,49 @@ register('modules:disable', async ({ args, apiBaseUrl }) => {
   console.log(JSON.stringify(payload, null, 2));
 });
 
-register('auth:create-admin', async ({ args }) => {
-  const username = args[0] ?? 'admin';
-  const password = args[1] ?? 'admin';
-  console.log(`Create admin request prepared for username=${username}.`);
-  console.log('Bootstrap path currently provisions admin at server startup; persistent provider implementation is pluggable.');
-  console.log(`Suggested credentials override -> username: ${username}, password: ${password}`);
+register('user:create', async ({ args }) => {
+  const [username, password = 'changeme', role = 'user'] = args;
+  if (!username) throw new Error('Usage: cognisctl user:create <username> [password] [role]');
+  console.log(`Prepared user creation: username=${username}, role=${role}`);
+  console.log('Persistent user provisioning is adapter-backed and should be implemented via provider-specific user gateway.');
+  console.log(`Temporary credentials: ${password}`);
 });
 
-register('preferences:get', async ({ args, apiBaseUrl }) => {
-  const [accountId, pageId] = args;
-  if (!accountId || !pageId) throw new Error('Usage: cognisctl preferences:get <accountId> <pageId>');
-  const payload = await apiGet(apiBaseUrl, `/api/v1/users/${encodeURIComponent(accountId)}/preferences/${encodeURIComponent(pageId)}`);
-  console.log(JSON.stringify(payload, null, 2));
+register('user:role', async ({ args }) => {
+  const [username, role] = args;
+  if (!username || !role) throw new Error('Usage: cognisctl user:role <username> <role>');
+  console.log(`Prepared role change: ${username} -> ${role}`);
+});
+
+register('user:set-password', async ({ args }) => {
+  const [username, password] = args;
+  if (!username || !password) throw new Error('Usage: cognisctl user:set-password <username> <password>');
+  console.log(`Prepared password reset for user ${username}.`);
+});
+
+register('user:disable', async ({ args }) => {
+  const [username] = args;
+  if (!username) throw new Error('Usage: cognisctl user:disable <username>');
+  console.log(`Prepared disable action for user ${username}.`);
+});
+
+register('user:enable', async ({ args }) => {
+  const [username] = args;
+  if (!username) throw new Error('Usage: cognisctl user:enable <username>');
+  console.log(`Prepared enable action for user ${username}.`);
+});
+
+register('user:delete', async ({ args }) => {
+  const [username] = args;
+  if (!username) throw new Error('Usage: cognisctl user:delete <username>');
+  console.log(`Prepared delete action for user ${username}.`);
+});
+
+register('user:preferences:clear', async ({ args }) => {
+  const [username] = args;
+  if (!username) throw new Error('Usage: cognisctl user:preferences:clear <username>');
+  console.log(`Prepared preferences reset for user ${username}.`);
+  console.log('Granular preference mutations are intentionally excluded from CLI scope.');
 });
 
 async function loadModuleCliPlugins() {
