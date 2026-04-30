@@ -1,17 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createUserRoutes } from '../src/routes/user-routes.js';
-import { InMemoryLocalAccountStore } from '../src/adapters/local-auth-gateway.js';
-import { UserPreferenceStore } from '../src/routes/preferences-routes.js';
-import { signJwt } from '../src/auth/jwt.js';
+import { VolatileLocalAccountStore } from '../src/adapters/local-auth-gateway.js';
+import { VolatileUserPreferenceStore } from '../src/routes/preferences-routes.js';
+import { issueAccessToken } from '../src/auth/access-tokens.js';
 
-const adminToken = signJwt({ sub: 'admin', role: 'admin', iat: Math.floor(Date.now()/1000), exp: Math.floor(Date.now()/1000)+60 });
+const adminToken = issueAccessToken('admin', 'admin', 60);
 const headers = { authorization: `Bearer ${adminToken}` };
 
 test('user routes create/list/update lifecycle', async () => {
-  const accounts = new InMemoryLocalAccountStore();
-  accounts.register('admin', 'x', true);
-  const prefs = new UserPreferenceStore();
+  const accounts = new VolatileLocalAccountStore();
+  await accounts.register('admin', 'x', true);
+  const prefs = new VolatileUserPreferenceStore();
   const route = createUserRoutes(accounts, prefs);
   let body = '';
   let status = 0;

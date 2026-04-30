@@ -20,6 +20,7 @@ services:
       COGNIS_UI_DEMO_MODE: '1'
       DB_TYPE: postgresql
       DATABASE_URL: postgresql://cognis:cognis@db:5432/cognis
+      COGNIS_ACCESS_TOKEN_TTL_SECONDS: 43200
       LOG_LEVEL: debug
       LOG_FILE: /var/log/cognis/dev.log
     ports:

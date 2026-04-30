@@ -14,7 +14,7 @@ export function createUserRoutes(accountStore: LocalAccountStore, preferenceStor
     if (url.pathname === '/api/v1/users' && req.method === 'GET') {
       if (!requireAuth(req, res, 'admin')) return true;
       res.writeHead(200, { 'content-type': 'application/json' });
-      res.end(JSON.stringify({ data: accountStore.list() }));
+      res.end(JSON.stringify({ data: await accountStore.list() }));
       return true;
     }
 
@@ -27,7 +27,7 @@ export function createUserRoutes(accountStore: LocalAccountStore, preferenceStor
 
     if (req.method === 'POST' && !action) {
       const body = await readJson(req);
-      const created = accountStore.register(username, String(body.password ?? 'changeme'), String(body.role ?? 'user') === 'admin');
+      const created = await accountStore.register(username, String(body.password ?? 'changeme'), String(body.role ?? 'user') === 'admin');
       res.writeHead(201, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: created }));
       return true;
@@ -35,7 +35,7 @@ export function createUserRoutes(accountStore: LocalAccountStore, preferenceStor
 
     if (req.method === 'POST' && action === 'role') {
       const body = await readJson(req);
-      accountStore.setRole(username, body.role);
+      await accountStore.setRole(username, body.role);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: { updated: true } }));
       return true;
@@ -43,35 +43,35 @@ export function createUserRoutes(accountStore: LocalAccountStore, preferenceStor
 
     if (req.method === 'POST' && action === 'password') {
       const body = await readJson(req);
-      accountStore.setPassword(username, String(body.password ?? 'changeme'));
+      await accountStore.setPassword(username, String(body.password ?? 'changeme'));
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: { updated: true } }));
       return true;
     }
 
     if (req.method === 'POST' && action === 'enable') {
-      accountStore.setEnabled(username, true);
+      await accountStore.setEnabled(username, true);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: { updated: true } }));
       return true;
     }
 
     if (req.method === 'POST' && action === 'disable') {
-      accountStore.setEnabled(username, false);
+      await accountStore.setEnabled(username, false);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: { updated: true } }));
       return true;
     }
 
     if (req.method === 'POST' && action === 'preferences/clear') {
-      preferenceStore.clearUser(username);
+      await preferenceStore.clearUser(username);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: { cleared: true } }));
       return true;
     }
 
     if (req.method === 'DELETE' && !action) {
-      accountStore.delete(username);
+      await accountStore.delete(username);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: { deleted: true } }));
       return true;

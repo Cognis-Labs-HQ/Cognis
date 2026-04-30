@@ -36,3 +36,28 @@
   }
 }
 ```
+
+
+## API auth model
+- API authorization uses **opaque bearer access tokens** only for API routes.
+- Obtain a token with `POST /api/v1/auth/login`; response includes `data.token`.
+- Send tokens as `Authorization: Bearer <token>`.
+- Login also sets `cognis_access_token` as an HttpOnly cookie for server-rendered UI route guards.
+- Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200`, 12 hours).
+- API startup mints a non-expiring CLI bootstrap token at `/var/run/cognis/cli-access.token` (permission mode `0600`) for trusted local CLI usage.
+
+
+## Persistence defaults
+- Supported account persistence backends: `sqlite`, `postgresql`, `mariadb`.
+- Default `DB_TYPE` is `sqlite`.
+- If no DB connection env vars are provided, startup creates a local SQLite database at `./data/cognis.sqlite`.
+- For `postgresql` and `mariadb`, `DATABASE_URL` must be provided.
+
+
+## Core schema + module presence
+- During startup, API initializes core persistence tables for:
+  - `accounts`
+  - `user_preferences`
+  - `modules`
+- Core module presence is recorded in `modules` (seeded with `cognis-core`).
+- External modules should provide their own schema migration entrypoints and register module IDs in `modules` so operational tools can detect install/enable state from the DB.

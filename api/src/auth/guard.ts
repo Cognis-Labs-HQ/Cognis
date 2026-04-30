@@ -1,12 +1,20 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { verifyJwt, type JwtClaims } from './jwt.js';
+import { verifyAccessToken, type AccessRole } from './access-tokens.js';
+
+interface AuthClaims {
+  sub: string;
+  role: AccessRole;
+}
 
 const roleRank = { user: 1, teacher: 2, moderator: 3, admin: 4 };
 
-export function getAuthClaims(req: IncomingMessage): JwtClaims | null {
+export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
   const raw = req.headers.authorization;
   if (!raw?.startsWith('Bearer ')) return null;
-  return verifyJwt(raw.slice('Bearer '.length));
+  const token = raw.slice('Bearer '.length);
+  const access = verifyAccessToken(token);
+  if (!access) return null;
+  return { sub: access.sub, role: access.role };
 }
 
 export function requireAuth(req: IncomingMessage, res: ServerResponse, minRole: keyof typeof roleRank = 'user') {

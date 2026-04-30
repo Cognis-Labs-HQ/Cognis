@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { verifyJwt } from '../auth/jwt.js';
+import { verifyAccessToken } from '../auth/access-tokens.js';
 
 const UI_ROOT = path.resolve(process.cwd(), 'ui');
 const STATIC_ROOT = path.join(UI_ROOT, 'src');
@@ -30,8 +30,8 @@ function getCookie(req: IncomingMessage, name: string) {
 }
 
 function isLoggedIn(req: IncomingMessage) {
-  const token = getCookie(req, 'cognis_token');
-  return token ? verifyJwt(token) : null;
+  const token = getCookie(req, 'cognis_access_token');
+  return token ? verifyAccessToken(token) : null;
 }
 
 async function serveFile(res: ServerResponse, filePath: string, contentType: string) {
