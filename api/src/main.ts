@@ -2,7 +2,7 @@ import { buildServer } from './server.js';
 import type { ModuleManifest, ModuleRuntimeGateway, ModuleState } from '@cognis/core';
 import { Logger } from './logger.js';
 import { initializeDatabaseSchema } from './bootstrap/db-init.js';
-import { LocalAuthStore } from './routes/auth-routes.js';
+import { InMemoryLocalAccountStore, LocalAuthGateway } from './adapters/local-auth-gateway.js';
 import { UserPreferenceStore } from './routes/preferences-routes.js';
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
@@ -23,16 +23,16 @@ const logLevel = (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error' |
 const logFile = process.env.LOG_FILE ?? '/var/log/cognis/app.log';
 
 const logger = new Logger(logLevel, logFile);
-const authStore = new LocalAuthStore();
+const accountStore = new InMemoryLocalAccountStore();
+const authGateway = new LocalAuthGateway(accountStore);
 const preferenceStore = new UserPreferenceStore();
 
 await initializeDatabaseSchema(dbType, logger);
-const defaultAdmin = authStore.ensureDefaultAdmin();
-if (defaultAdmin) {
-  await logger.warn('Default admin account created.', { username: defaultAdmin.username, generatedPassword: defaultAdmin.password });
-}
+const adminPassword = LocalAuthGateway.generatePassword();
+await authGateway.createLocalAdmin('admin', adminPassword);
+await logger.warn('Default admin account created.', { username: 'admin', generatedPassword: adminPassword });
 
-const server = buildServer({ moduleRuntimeGateway: new InMemoryModuleRuntimeGateway(), authStore, preferenceStore });
+const server = buildServer({ moduleRuntimeGateway: new InMemoryModuleRuntimeGateway(), authGateway, accountStore, preferenceStore });
 server.listen(port, host, async () => {
   await logger.info('Cognis API listening.', { host, port, dbType });
 });

@@ -4,12 +4,15 @@ import { createModuleRoutes } from './routes/module-routes.js';
 import { createSystemRoutes } from './routes/system-routes.js';
 import { createDocsRoutes } from './routes/docs-routes.js';
 import { createUiRoutes } from './routes/ui-routes.js';
-import { createAuthRoutes, type LocalAuthStore } from './routes/auth-routes.js';
+import { createAuthRoutes } from './routes/auth-routes.js';
+import type { AuthGateway } from '@cognis/core';
+import type { LocalAccountStore } from './adapters/local-auth-gateway.js';
 import { createPreferencesRoutes, type UserPreferenceStore } from './routes/preferences-routes.js';
 
 export interface ApiDependencies {
   moduleRuntimeGateway: ModuleRuntimeGateway;
-  authStore: LocalAuthStore;
+  authGateway: AuthGateway;
+  accountStore: LocalAccountStore;
   preferenceStore: UserPreferenceStore;
 }
 
@@ -21,7 +24,7 @@ export function buildServer(deps: ApiDependencies) {
   const systemRoutes = createSystemRoutes(healthService);
   const docsRoutes = createDocsRoutes();
   const uiRoutes = createUiRoutes();
-  const authRoutes = createAuthRoutes(deps.authStore);
+  const authRoutes = createAuthRoutes(deps.authGateway, deps.accountStore);
   const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
 
   return createServer(async (req, res) => {
