@@ -18,6 +18,7 @@ function resolveContentType(filePath: string) {
   if (ext === '.css') return 'text/css; charset=utf-8';
   if (ext === '.js') return 'text/javascript; charset=utf-8';
   if (ext === '.webp') return 'image/webp';
+  if (ext === '.html') return 'text/html; charset=utf-8';
   return 'image/png';
 }
 
@@ -37,6 +38,11 @@ export function createUiRoutes() {
   return async (_req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
     if (url.pathname === '/dashboard') {
       await serveFile(res, path.join(UI_ROOT, 'index.html'), 'text/html; charset=utf-8');
+      return true;
+    }
+
+    if (url.pathname === '/login') {
+      await serveFile(res, path.join(UI_ROOT, 'login.html'), 'text/html; charset=utf-8');
       return true;
     }
 

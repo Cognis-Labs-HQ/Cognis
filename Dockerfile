@@ -15,5 +15,8 @@ RUN npm ci --ignore-scripts
 EXPOSE 3000
 ENV NODE_ENV=production
 ENV COGNIS_UI_DEMO_MODE=0
+ENV DB_TYPE=sqlite
+ENV LOG_LEVEL=info
+ENV LOG_FILE=/var/log/cognis/app.log
 
 CMD ["npm", "run", "start"]
