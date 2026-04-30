@@ -1,16 +1,24 @@
 # UI Component
 
 ## Purpose
-`ui/` hosts the Cognis frontend and includes a centralized documentation center consuming `/api/v1/docs`.
+`ui/` hosts the Cognis frontend and documentation center.
 
-## Principles
-- Layout guardrails first: pages use shared layout shells (`ui/src/layouts`) to constrain rows/columns and preserve sane UX.
-- Reuse by default: generalized logic lives in `ui/src/reuse` and page-specific behavior stays in `ui/src/app`.
-- Template separation: HTML templates live in `ui/src/templates` and are loaded by JS modules.
-- API-first state: account login and per-page preferences are persisted via API routes, not hardcoded UI hacks.
+## Architecture
+- **Layouts**: shared shells in `ui/src/layouts`.
+- **Templates**: reusable markup in `ui/src/templates`.
+- **Reuse**: shared utilities in `ui/src/reuse`.
+- **Pages**: route behavior in `ui/src/app`.
 
-## Current UI scaffold
-- Dashboard UI: `/dashboard`
-- Login UI: `/login`
-- Docs UI: `/docs`
-- Preferences API: `/api/v1/users/:accountId/preferences/:pageId`
+## UX routes
+| Route | Purpose |
+|---|---|
+| `/login` | User sign-in |
+| `/dashboard` | Modular page builder |
+| `/docs` | Browse production docs |
+
+## State model
+- Auth token and account id stored client-side.
+- Page preferences saved via API (`/api/v1/users/:accountId/preferences/:pageId`).
+
+## Guardrails
+> Non-login pages should render through layout shells so customization stays safe and coherent.

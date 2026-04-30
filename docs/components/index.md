@@ -1,6 +1,6 @@
 # Cognis Component Documentation Index
 
-This folder is the single documentation source consumed by `/api/v1/docs` and can be rendered in the UI documentation center.
+This folder is the single markdown source consumed by `/api/v1/docs`.
 
 ## Components
 - [core](./core.md)
@@ -11,7 +11,7 @@ This folder is the single documentation source consumed by `/api/v1/docs` and ca
 - [tooling](./tooling.md)
 - [devops](./devops.md)
 
-## Documentation conventions
-- One file per component root.
-- Include purpose, boundaries, contracts, and extension points.
-- Keep endpoint and gateway references versioned (`/api/v1`).
+## Writing standard
+- Use `#`/`##` sectioning.
+- Prefer bullet lists for responsibilities.
+- Include examples (`json`, `bash`) when behavior is operational.
