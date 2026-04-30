@@ -1,12 +1,38 @@
 :root {
-  --bg: #0b1220;
-  --surface: #111827;
-  --surface-2: #131d33;
+  --bg: radial-gradient(circle at top right, #1f3d3d 0%, #132a2a 35%, #0b1220 100%);
+  --surface: rgba(15, 23, 42, 0.84);
+  --surface-2: rgba(19, 29, 51, 0.92);
+  --surface-soft: rgba(255, 255, 255, 0.06);
   --text: #e2e8f0;
-  --border: #334155;
-  --accent: #2563eb;
+  --text-muted: #94a3b8;
+  --border: rgba(148, 163, 184, 0.28);
+  --border-strong: rgba(148, 163, 184, 0.42);
+  --accent: #2a7f62;
+  --accent-2: #3aa783;
+  --shadow: 0 14px 34px rgba(2, 6, 23, 0.35);
 }
+
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, Arial, sans-serif; }
-.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, Arial, sans-serif;
+  line-height: 1.45;
+}
+
+a {
+  color: #9fd6ff;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+}
+
 .stack { display: grid; gap: 8px; }
