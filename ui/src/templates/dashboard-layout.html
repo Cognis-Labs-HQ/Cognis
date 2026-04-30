@@ -1,10 +1,10 @@
-<section class="app-shell">
-  <header class="global-topbar">
+<section class="app-shell app-page binary-theme--dark" data-theme="dark">
+  <header class="global-topbar site-header app-page__header">
     <div class="brandline">
       <img src="/dashboard/static/assets/icons/cognis-icon.png" alt="Cognis" class="topbar-icon" />
       <strong>Cognis</strong>
     </div>
-    <nav class="topnav">
+    <nav class="topnav app-page__nav-surface">
       <a href="/dashboard">Dashboard</a>
       <a href="/docs">Docs</a>
     </nav>
@@ -17,9 +17,10 @@
   </header>
   <section class="shell layout-grid">
     <aside class="sidebar">{{sidebar}}</aside>
-    <main class="workspace">
+    <main class="workspace app-page__main">
       <header class="topbar">{{topbar}}</header>
-      <section class="content-grid">{{content}}</section>
+      {{toolbar}}
+      <section class="content-grid page-surface">{{content}}</section>
     </main>
   </section>
 </section>

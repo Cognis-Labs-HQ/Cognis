@@ -57,14 +57,31 @@ button:hover {
 }
 
 .auth-page { min-height: 100vh; display: grid; place-items: center; }
-.docs-layout { display: grid; grid-template-columns: 33% 67%; gap: 12px; }
-.docs-sidebar, .docs-viewer {
+.toolbar, .docs-viewer {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;
   background: var(--surface);
 }
-.docs-viewer { overflow: auto; }
+
+.toolbar {
+  margin-bottom: 12px;
+}
+
+.toolbar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.toolbar button {
+  width: 100%;
+  text-align: left;
+}
+
+.docs-viewer { overflow: auto; min-height: 380px; }
 
 pre {
   background: rgba(2, 6, 23, 0.95);
@@ -75,6 +92,3 @@ pre {
 }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-@media (max-width: 900px) {
-  .docs-layout { grid-template-columns: 1fr; }
-}

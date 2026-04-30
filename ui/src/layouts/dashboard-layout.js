@@ -30,6 +30,7 @@ export async function renderDashboardLayout(root, slots) {
   root.innerHTML = template
     .replace('{{sidebar}}', slots.sidebar)
     .replace('{{topbar}}', slots.topbar)
-    .replace('{{content}}', slots.content);
+    .replace('{{content}}', slots.content)
+    .replace('{{toolbar}}', slots.toolbar ? `<aside class="toolbar">${slots.toolbar}</aside>` : '');
   bindTopbarActions();
 }
