@@ -1,16 +1,9 @@
-:root {
-  --color-primary-accent: 58, 167, 131;
-}
-
 @import url('/dashboard/static/styles/base/theme.css');
 
 .auth-page--login-frame {
   min-height: 100vh;
   padding: 34px;
-  background:
-    radial-gradient(circle at top right, rgba(var(--color-primary-accent), 0.22), transparent 48%),
-    radial-gradient(circle at 12% 18%, rgba(45, 212, 191, 0.2), transparent 55%),
-    linear-gradient(150deg, #030a14 0%, #071421 45%, #020813 100%);
+  background: var(--bg);
 }
 
 .login-layout {
@@ -99,6 +92,10 @@ body[data-theme='light'] .login-title,
 body[data-theme='light'] .login-heading,
 body[data-theme='light'] .login-form label span {
   color: #0f172a;
+}
+
+body[data-theme='light'] .login-intro-copy {
+  color: #1e293b;
 }
 
 body[data-theme='light'] .login-template-box {
