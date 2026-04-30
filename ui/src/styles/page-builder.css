@@ -171,11 +171,11 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 .login-frame {
   min-height: 100vh;
-  width: min(960px, 94vw);
+  width: min(920px, 94vw);
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(280px, 1fr) minmax(340px, 1fr);
-  gap: 26px;
+  gap: 20px;
   align-items: center;
 }
 
@@ -215,32 +215,49 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 }
 
 .login-form-card {
-  padding: 34px;
+  padding: 26px;
   display: grid;
   align-content: center;
   gap: 10px;
 }
 
+
 .login-form-card h2 {
-  margin: 0 0 6px;
+  margin: 0 0 10px;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.login-form-card .stack {
+  gap: 12px;
+}
+
+.login-form-card input {
+  min-height: 52px;
+  padding: 12px 14px;
+  font-size: 1.05rem;
+  border-radius: 12px;
 }
 
 .login-field-label {
-  font-weight: 600;
-  font-size: 0.92rem;
+  font-weight: 700;
+  font-size: 1rem;
 }
 
 .login-form-card button {
-  margin-top: 8px;
+  min-height: 52px;
+  margin-top: 10px;
   background: linear-gradient(145deg, #2f62e0, #1f48a5);
   color: #f8fafc;
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 1.05rem;
 }
 
 .login-message {
-  min-height: 1.2em;
+  min-height: 1.4em;
   color: #fda4af;
   margin: 0;
+  font-size: 1rem;
 }
 
 @media (max-width: 860px) {
