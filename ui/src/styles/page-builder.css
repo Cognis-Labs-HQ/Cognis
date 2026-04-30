@@ -5,7 +5,7 @@
 
 .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
 .tab {
-  background: rgba(30, 41, 59, 0.8);
+  background: var(--tab-bg);
   color: var(--text);
   border: 0;
   padding: 8px 14px;
@@ -22,18 +22,18 @@
 .controls { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
 .badge {
   font-size: 12px;
-  background: rgba(30, 41, 59, 0.65);
+  background: var(--badge-bg);
   border: 0;
   border-radius: 999px;
   display: inline-block;
   padding: 4px 10px;
 }
-.banner { margin: 0 0 16px; color: #86efac; }
+.banner { margin: 0 0 16px; color: var(--banner-success); }
 
 select, button, textarea, input {
   border-radius: 10px;
   border: 0;
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--input-bg);
   color: var(--text);
   padding: 8px 10px;
 }
@@ -45,6 +45,13 @@ button {
 button:hover {
   border-color: var(--accent-2);
   transform: translateY(-1px);
+}
+
+#run-demo,
+#save-prefs {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
 .widgets { display: grid; gap: 12px; }
@@ -111,9 +118,31 @@ button:hover {
 }
 
 .docs-viewer { overflow: auto; min-height: 380px; }
+.docs-viewer,
+.docs-viewer p,
+.docs-viewer li,
+.docs-viewer h1,
+.docs-viewer h2,
+.docs-viewer h3,
+.docs-viewer h4,
+.docs-viewer h5,
+.docs-viewer h6,
+.toolbar h3,
+.content-grid,
+.content-grid p,
+.content-grid span,
+.content-grid label {
+  color: var(--text);
+}
+
+.docs-viewer .widget-card,
+.content-grid .widget-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
 
 pre {
-  background: rgba(2, 6, 23, 0.95);
+  background: var(--code-bg);
   border: 0;
   padding: 12px;
   border-radius: 8px;
@@ -134,5 +163,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .docs-viewer table { width: 100%; border-collapse: collapse; margin: 10px 0; }
 .docs-viewer th, .docs-viewer td { border: 0; padding: 8px; text-align: left; }
 .docs-viewer th { background: var(--surface-soft); }
-.docs-viewer a { color: #93c5fd; }
-.docs-viewer p code, .docs-viewer li code { background: rgba(2, 6, 23, 0.8); border: 0; border-radius: 6px; padding: 1px 6px; }
+.docs-viewer a { color: var(--link-docs); }
+.docs-viewer p code, .docs-viewer li code { background: var(--inline-code-bg); border: 0; border-radius: 6px; padding: 1px 6px; }
+
+
+#run-demo:disabled { opacity: 0.55; }

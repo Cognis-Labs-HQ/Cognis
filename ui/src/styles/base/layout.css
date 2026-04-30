@@ -1,4 +1,8 @@
-.app-shell { min-height: 100vh; }
+.app-shell {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
 
 .site-header {
   margin: 0 9px;
@@ -15,7 +19,7 @@
   gap: 16px;
   padding: 14px 30px;
   background: var(--header-top-bg);
-  border: 1px solid rgba(76, 108, 148, 0.2);
+  border: 1px solid var(--nav-border);
   border-bottom: 0;
 }
 
@@ -25,6 +29,7 @@
 .page-context { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 0; }
 .page-context h1 { margin: 0; font-size: 1.2rem; font-weight: 700; }
 .page-context p { margin: 0; color: var(--context-muted); font-size: 0.82rem; font-style: italic; }
+.page-context h1, .page-context p { color: var(--text); }
 
 .global-navrow {
   display: grid;
@@ -32,12 +37,11 @@
   align-items: center;
   gap: 18px;
   padding: 10px 30px;
-  border: 1px solid rgba(76, 108, 148, 0.2);
-  border-top: 1px solid rgba(76, 108, 148, 0.15);
+  border: 1px solid var(--nav-border);
+  border-top: 1px solid var(--nav-border-top);
   border-bottom-left-radius: 22px;
   border-bottom-right-radius: 22px;
-  background-color: rgba(5, 72, 12, 1);
-  background: linear-gradient(30deg, rgba(5, 72, 12, 1) 0%, rgba(13, 29, 3, 1) 42.52%);
+  background: var(--nav-bg);
   position: sticky;
   top: 78px;
   z-index: 30;
@@ -48,12 +52,12 @@
 .topnav a:hover, .topnav a.active { color: var(--text); opacity: 1; border-bottom: 2px solid var(--accent-2); }
 
 .account-cluster { display: flex; align-items: center; gap: 18px; }
-.user-greeting { color: #9fb4cf; font-style: italic; font-family: var(--user-greeting-font, Inter, Arial, sans-serif); font-size: var(--user-greeting-size, 1.4rem); font-weight: 700; }
+.user-greeting { color: var(--user-greeting); font-style: italic; font-family: var(--user-greeting-font, Inter, Arial, sans-serif); font-size: var(--user-greeting-size, 1.4rem); font-weight: 700; }
 
 .notification-button {
   position: relative;
-  background: transparent;
-  border: 0;
+  background: transparent !important;
+  border: 0 !important;
   color: var(--text);
   border-radius: 999px;
   width: 34px;
@@ -123,6 +127,26 @@
 .workspace { padding: 24px; width: 95%; margin: 0 auto; }
 .layout-grid .content-grid, .content-grid { display: grid; gap: 14px; }
 
+.app-shell button,
+.app-shell select,
+.app-shell input,
+.app-shell textarea {
+  background: var(--control-bg);
+  color: var(--control-text);
+  border: 1px solid var(--control-border);
+}
+
+.app-shell button:hover,
+.app-shell select:hover {
+  background: var(--control-hover-bg);
+}
+
+.app-shell .badge {
+  background: var(--badge-bg) !important;
+  color: var(--badge-text) !important;
+  border: 1px solid var(--control-border);
+}
+
 @media (max-width: 900px) {
   .global-topbar, .global-navrow { grid-template-columns: 1fr; gap: 10px; padding-left: 18px; padding-right: 18px; }
   .page-context { align-items: flex-start; }
@@ -132,7 +156,7 @@
   .account-cluster { justify-self: end; }
 }
 
-.theme-toggle { position: fixed; right: 18px; bottom: 18px; width: 48px; height: 48px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); color: #facc15; cursor: pointer; box-shadow: var(--shadow); z-index: 1000; font-size: 1.25rem; }
+.theme-toggle { position: fixed; right: 18px; bottom: 18px; width: 48px; height: 48px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); color: var(--theme-toggle-color); cursor: pointer; box-shadow: var(--shadow); z-index: 1000; font-size: 1.25rem; }
 .theme-toggle[data-mode="light"] { color: #f59e0b; }
 .theme-toggle[data-mode="dark"] { color: #94a3b8; }
 
@@ -148,3 +172,13 @@ body[data-animation='float'] .docs-viewer { transition: transform 0.22s ease, op
 body[data-animation='float'] .widget-card:hover,
 body[data-animation='float'] .toolbar:hover,
 body[data-animation='float'] .docs-viewer:hover { transform: translateY(-2px); }
+
+
+.app-shell, .app-shell * {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.app-shell ::-webkit-scrollbar { width: 10px; height: 10px; }
+.app-shell ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+.app-shell ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 999px; }
+.app-shell ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
