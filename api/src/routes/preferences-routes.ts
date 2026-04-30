@@ -5,6 +5,11 @@ export class UserPreferenceStore {
   private readonly data = new Map<string, string>();
   get(accountId: string, pageId: string) { return this.data.get(`${accountId}:${pageId}`) ?? null; }
   set(accountId: string, pageId: string, layoutJson: string) { this.data.set(`${accountId}:${pageId}`, layoutJson); }
+  clearUser(accountId: string) {
+    for (const key of this.data.keys()) {
+      if (key.startsWith(`${accountId}:`)) this.data.delete(key);
+    }
+  }
 }
 
 async function readJson(req: IncomingMessage) {

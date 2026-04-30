@@ -59,49 +59,59 @@ register('modules:disable', async ({ args, apiBaseUrl }) => {
   console.log(JSON.stringify(payload, null, 2));
 });
 
-register('user:create', async ({ args }) => {
+register('user:list', async ({ apiBaseUrl }) => {
+  const payload = await apiGet(apiBaseUrl, '/api/v1/users');
+  console.log(JSON.stringify(payload, null, 2));
+});
+
+register('user:create', async ({ args, apiBaseUrl }) => {
   const [username, password = 'changeme', role = 'user'] = args;
   if (!username) throw new Error('Usage: cognisctl user:create <username> [password] [role]');
-  console.log(`Prepared user creation: username=${username}, role=${role}`);
-  console.log('Persistent user provisioning is adapter-backed and should be implemented via provider-specific user gateway.');
-  console.log(`Temporary credentials: ${password}`);
+  const payload = await apiPost(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}`, { password, role });
+  console.log(JSON.stringify(payload, null, 2));
 });
 
-register('user:role', async ({ args }) => {
+register('user:role', async ({ args, apiBaseUrl }) => {
   const [username, role] = args;
   if (!username || !role) throw new Error('Usage: cognisctl user:role <username> <role>');
-  console.log(`Prepared role change: ${username} -> ${role}`);
+  const payload = await apiPost(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}/role`, { role });
+  console.log(JSON.stringify(payload, null, 2));
 });
 
-register('user:set-password', async ({ args }) => {
+register('user:set-password', async ({ args, apiBaseUrl }) => {
   const [username, password] = args;
   if (!username || !password) throw new Error('Usage: cognisctl user:set-password <username> <password>');
-  console.log(`Prepared password reset for user ${username}.`);
+  const payload = await apiPost(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}/password`, { password });
+  console.log(JSON.stringify(payload, null, 2));
 });
 
-register('user:disable', async ({ args }) => {
+register('user:disable', async ({ args, apiBaseUrl }) => {
   const [username] = args;
   if (!username) throw new Error('Usage: cognisctl user:disable <username>');
-  console.log(`Prepared disable action for user ${username}.`);
+  const payload = await apiPost(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}/disable`);
+  console.log(JSON.stringify(payload, null, 2));
 });
 
-register('user:enable', async ({ args }) => {
+register('user:enable', async ({ args, apiBaseUrl }) => {
   const [username] = args;
   if (!username) throw new Error('Usage: cognisctl user:enable <username>');
-  console.log(`Prepared enable action for user ${username}.`);
+  const payload = await apiPost(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}/enable`);
+  console.log(JSON.stringify(payload, null, 2));
 });
 
-register('user:delete', async ({ args }) => {
+register('user:delete', async ({ args, apiBaseUrl }) => {
   const [username] = args;
   if (!username) throw new Error('Usage: cognisctl user:delete <username>');
-  console.log(`Prepared delete action for user ${username}.`);
+  const response = await fetch(`${apiBaseUrl}/api/v1/users/${encodeURIComponent(username)}`, { method: 'DELETE' });
+  const payload = await response.json();
+  console.log(JSON.stringify(payload, null, 2));
 });
 
-register('user:preferences:clear', async ({ args }) => {
+register('user:preferences:clear', async ({ args, apiBaseUrl }) => {
   const [username] = args;
   if (!username) throw new Error('Usage: cognisctl user:preferences:clear <username>');
-  console.log(`Prepared preferences reset for user ${username}.`);
-  console.log('Granular preference mutations are intentionally excluded from CLI scope.');
+  const payload = await apiPost(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}/preferences/clear`);
+  console.log(JSON.stringify(payload, null, 2));
 });
 
 async function loadModuleCliPlugins() {

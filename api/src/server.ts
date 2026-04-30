@@ -8,6 +8,7 @@ import { createAuthRoutes } from './routes/auth-routes.js';
 import type { AuthGateway } from '@cognis/core';
 import type { LocalAccountStore } from './adapters/local-auth-gateway.js';
 import { createPreferencesRoutes, type UserPreferenceStore } from './routes/preferences-routes.js';
+import { createUserRoutes } from './routes/user-routes.js';
 
 export interface ApiDependencies {
   moduleRuntimeGateway: ModuleRuntimeGateway;
@@ -26,6 +27,7 @@ export function buildServer(deps: ApiDependencies) {
   const uiRoutes = createUiRoutes();
   const authRoutes = createAuthRoutes(deps.authGateway, deps.accountStore);
   const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
+  const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore);
 
   return createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://localhost');
@@ -42,6 +44,9 @@ export function buildServer(deps: ApiDependencies) {
 
       const handledByPreferences = await preferencesRoutes(req, res, url);
       if (handledByPreferences) return;
+
+      const handledByUsers = await userRoutes(req, res, url);
+      if (handledByUsers) return;
 
       const handledByDocs = await docsRoutes(req, res, url);
       if (handledByDocs) return;

@@ -10,6 +10,7 @@
 - `modules:list`
 - `modules:enable <moduleId>`
 - `modules:disable <moduleId>`
+- `user:list`
 - `user:create <username> [password] [role]`
 - `user:role <username> <role>`
 - `user:set-password <username> <password>`
