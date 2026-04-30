@@ -168,3 +168,90 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 
 #run-demo:disabled { opacity: 0.55; }
+
+.login-frame {
+  min-height: 100vh;
+  width: min(960px, 94vw);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(340px, 1fr);
+  gap: 26px;
+  align-items: center;
+}
+
+.login-brand-card,
+.login-form-card {
+  min-height: 420px;
+}
+
+.login-brand-card {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  align-content: center;
+  justify-items: start;
+  padding: 40px;
+  background: linear-gradient(180deg, rgba(8, 23, 42, 0.88), rgba(5, 15, 29, 0.95));
+}
+
+.login-brand-icon {
+  width: 78px;
+  height: 78px;
+}
+
+.login-brand-name {
+  margin: 14px 0 8px;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  letter-spacing: 0.01em;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.login-typed-text {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  color: var(--text-muted);
+  min-height: 1.5em;
+}
+
+.login-form-card {
+  padding: 34px;
+  display: grid;
+  align-content: center;
+  gap: 10px;
+}
+
+.login-form-card h2 {
+  margin: 0 0 6px;
+}
+
+.login-field-label {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.login-form-card button {
+  margin-top: 8px;
+  background: linear-gradient(145deg, #2f62e0, #1f48a5);
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.login-message {
+  min-height: 1.2em;
+  color: #fda4af;
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .login-frame {
+    grid-template-columns: 1fr;
+    width: min(540px, 94vw);
+    padding: 20px 0;
+  }
+
+  .login-brand-card,
+  .login-form-card {
+    min-height: auto;
+  }
+}

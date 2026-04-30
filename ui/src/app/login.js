@@ -1,12 +1,47 @@
-import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
+import { loadTemplate } from '../reuse/template-loader.js';
 
 const root = document.querySelector('#app');
 
-await renderDashboardLayout(root, {
-  sidebar: '<h1>Welcome</h1><p>Sign in to continue.</p>',
-  topbar: 'Login',
-  content: '<section class="auth-page"><main class="panel"><h1>Login</h1><form id="login-form" class="stack"><input name="username" placeholder="Username" required /><input name="password" type="password" placeholder="Password" required /><button type="submit">Login</button></form><p id="msg"></p></main></section>'
-});
+const animatedTexts = ['Template'];
+
+function pickAnimatedText(options) {
+  if (!Array.isArray(options) || options.length === 0) return '';
+  const index = Math.floor(Math.random() * options.length);
+  return options[index] || '';
+}
+
+root.innerHTML = await loadTemplate('login');
+
+
+function startTypingAnimation(element, value) {
+  let index = 0;
+  let showCursor = true;
+
+  const render = () => {
+    const typedValue = value.slice(0, index);
+    element.textContent = `${typedValue}${showCursor ? '_' : ' '}`;
+  };
+
+  const typingTimer = window.setInterval(() => {
+    if (index < value.length) {
+      index += 1;
+      render();
+      return;
+    }
+    window.clearInterval(typingTimer);
+  }, 115);
+
+  window.setInterval(() => {
+    showCursor = !showCursor;
+    render();
+  }, 480);
+
+  render();
+}
+
+const typedTextElement = document.querySelector('#typed-template');
+const selectedText = pickAnimatedText(animatedTexts);
+if (typedTextElement) startTypingAnimation(typedTextElement, selectedText);
 
 document.querySelector('#login-form')?.addEventListener('submit', async (event) => {
   event.preventDefault();
