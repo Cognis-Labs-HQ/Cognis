@@ -27,5 +27,4 @@ export function applyUiPreferences(prefs) {
     const ptSize = size < 8 ? Math.round(size * 12) : size;
     document.documentElement.style.setProperty('--app-font-size', `${ptSize}pt`);
   }
-  document.body.setAttribute('data-animation', prefs.animation || 'none');
 }

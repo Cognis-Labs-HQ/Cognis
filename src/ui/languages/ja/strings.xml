@@ -59,10 +59,6 @@
   <string name="ui.app.settings.page_title">設定</string>
   <string name="ui.app.settings.page_subtitle">ユーザー設定を管理します。</string>
   <string name="ui.app.settings.toolbar_title">設定項目</string>
-  <string name="ui.app.settings.animation">アニメーション</string>
-  <string name="ui.app.settings.animation_off">オフ</string>
-  <string name="ui.app.settings.animation_fade">フェード</string>
-  <string name="ui.app.settings.animation_float">フロート</string>
   <string name="ui.app.settings.font">フォント</string>
   <string name="ui.app.settings.font_size">フォントサイズ</string>
   <string name="ui.app.settings.reset_font">フォントをリセット</string>

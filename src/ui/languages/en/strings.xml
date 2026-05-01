@@ -59,10 +59,6 @@
   <string name="ui.app.settings.page_title">Settings</string>
   <string name="ui.app.settings.page_subtitle">Manage your user preferences.</string>
   <string name="ui.app.settings.toolbar_title">Preferences</string>
-  <string name="ui.app.settings.animation">Animation</string>
-  <string name="ui.app.settings.animation_off">Off</string>
-  <string name="ui.app.settings.animation_fade">Fade</string>
-  <string name="ui.app.settings.animation_float">Float</string>
   <string name="ui.app.settings.font">Font</string>
   <string name="ui.app.settings.font_size">Font size</string>
   <string name="ui.app.settings.reset_font">Reset font defaults</string>

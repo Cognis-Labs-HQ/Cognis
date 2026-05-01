@@ -239,36 +239,6 @@
 .theme-toggle[data-mode="light"] { color: #f59e0b; }
 .theme-toggle[data-mode="dark"] { color: #94a3b8; }
 
-body[data-animation='fade'] .dropdown,
-body[data-animation='fade'] .widget-card,
-body[data-animation='fade'] .toolbar,
-body[data-animation='fade'] .docs-viewer { transition: opacity 0.22s ease; }
-
-body[data-animation='float'] .dropdown,
-body[data-animation='float'] .widget-card,
-body[data-animation='float'] .toolbar,
-body[data-animation='float'] .docs-viewer { transition: transform 0.22s ease, opacity 0.22s ease; }
-body[data-animation='float'] .widget-card:hover,
-body[data-animation='float'] .toolbar:hover,
-body[data-animation='float'] .docs-viewer:hover { transform: translateY(-2px); }
-
-/*
- * Animation kill switch: when the user has disabled animations entirely,
- * halt the sky-drift on the shell and suppress all decorative transitions.
- * Functional UI transitions (e.g. dropdown visibility) are left intact.
- */
-body[data-animation='none'] .app-shell {
-  animation: none;
-}
-body[data-animation='none'] .dropdown-item,
-body[data-animation='none'] .widget-card,
-body[data-animation='none'] .toolbar,
-body[data-animation='none'] .docs-viewer {
-  transition: none !important;
-  animation: none !important;
-}
-
-
 .app-shell, .app-shell * {
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }

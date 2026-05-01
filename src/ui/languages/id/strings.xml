@@ -59,10 +59,6 @@
   <string name="ui.app.settings.page_title">Pengaturan</string>
   <string name="ui.app.settings.page_subtitle">Kelola preferensi pengguna Anda.</string>
   <string name="ui.app.settings.toolbar_title">Preferensi</string>
-  <string name="ui.app.settings.animation">Animasi</string>
-  <string name="ui.app.settings.animation_off">Nonaktif</string>
-  <string name="ui.app.settings.animation_fade">Pudar</string>
-  <string name="ui.app.settings.animation_float">Mengambang</string>
   <string name="ui.app.settings.font">Font</string>
   <string name="ui.app.settings.font_size">Ukuran font</string>
   <string name="ui.app.settings.reset_font">Setel ulang font</string>
