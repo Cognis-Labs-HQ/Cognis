@@ -1,6 +1,6 @@
 import { apiFetch } from '../reuse/api-client.js';
 import { loadTemplate } from '../reuse/template-loader.js';
-import { applyTheme, bindThemeToggle as bindSharedThemeToggle } from '../reuse/theme-toggle.js';
+import { bindThemeToggle as bindSharedThemeToggle } from '../reuse/theme-toggle.js';
 
 function isAdminRole() {
   return localStorage.getItem('cognis_role') === 'admin';

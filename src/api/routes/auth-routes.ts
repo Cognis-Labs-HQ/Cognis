@@ -2,13 +2,7 @@ import { issueAccessToken } from '../auth/access-tokens.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AuthGateway } from '@cognis/core';
 import type { LocalAccountStore } from '../adapters/local-auth-gateway.js';
-
-async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> {
-  const chunks: Buffer[] = [];
-  for await (const chunk of req) chunks.push(Buffer.from(chunk));
-  const text = Buffer.concat(chunks).toString('utf8') || '{}';
-  return JSON.parse(text);
-}
+import { readJson } from './read-json.js';
 
 export function createAuthRoutes(authGateway: AuthGateway, accountStore: LocalAccountStore) {
   return async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {

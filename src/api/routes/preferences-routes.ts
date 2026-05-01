@@ -1,5 +1,6 @@
 import { requireAuth } from '../auth/guard.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { readJson } from './read-json.js';
 
 export interface UserPreferenceStore {
   get(accountId: string, pageId: string): Promise<string | null>;
@@ -9,17 +10,20 @@ export interface UserPreferenceStore {
 
 export class VolatileUserPreferenceStore implements UserPreferenceStore {
   private readonly data = new Map<string, string>();
-  async get(accountId: string, pageId: string) { return this.data.get(`${accountId}:${pageId}`) ?? null; }
-  async set(accountId: string, pageId: string, layoutJson: string) { this.data.set(`${accountId}:${pageId}`, layoutJson); }
-  async clearUser(accountId: string) {
-    for (const key of this.data.keys()) if (key.startsWith(`${accountId}:`)) this.data.delete(key);
-  }
-}
 
-async function readJson(req: IncomingMessage) {
-  const chunks: Buffer[] = [];
-  for await (const chunk of req) chunks.push(Buffer.from(chunk));
-  return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
+  async get(accountId: string, pageId: string) {
+    return this.data.get(`${accountId}:${pageId}`) ?? null;
+  }
+
+  async set(accountId: string, pageId: string, layoutJson: string) {
+    this.data.set(`${accountId}:${pageId}`, layoutJson);
+  }
+
+  async clearUser(accountId: string) {
+    for (const key of this.data.keys()) {
+      if (key.startsWith(`${accountId}:`)) this.data.delete(key);
+    }
+  }
 }
 
 export function createPreferencesRoutes(store: UserPreferenceStore) {
