@@ -15,8 +15,11 @@ export function createModuleRoutes(moduleService: ModuleService) {
     const moduleId = decodeURIComponent(match[1]);
     const action = match[2];
 
+    const acknowledged = req.headers['x-cognis-external-module-disclaimer'] === 'accepted' || url.searchParams.get('acknowledgeExternalDisclaimer') === 'true';
     const result =
-      action === 'enable' ? await moduleService.enable(moduleId) : await moduleService.disable(moduleId);
+      action === 'enable'
+        ? await moduleService.enable(moduleId, { acknowledgeExternalDisclaimer: acknowledged })
+        : await moduleService.disable(moduleId);
 
     res.writeHead(200, { 'content-type': 'application/json' });
     res.end(JSON.stringify({ data: result }));

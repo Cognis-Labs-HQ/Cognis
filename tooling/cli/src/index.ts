@@ -164,9 +164,11 @@ register('modules:list', async ({ apiBaseUrl, getApiToken }) => {
 register('modules:enable', async ({ args, apiBaseUrl, getApiToken }) => {
   const [moduleId] = args;
   requireArgs(args, ['moduleId'], 'cognisctl modules:enable <moduleId>');
-  const payload = await apiPost(apiBaseUrl, `/api/v1/modules/${encodeURIComponent(moduleId)}/enable`, undefined, await getApiToken());
+    const acknowledge = args.includes('--ack-external-disclaimer');
+  const route = `/api/v1/modules/${encodeURIComponent(moduleId)}/enable${acknowledge ? '?acknowledgeExternalDisclaimer=true' : ''}`;
+  const payload = await apiPost(apiBaseUrl, route, undefined, await getApiToken());
   console.log(JSON.stringify(payload, null, 2));
-}, { usage: 'cognisctl modules:enable <moduleId>', description: 'Enable a module by ID.' });
+}, { usage: 'cognisctl modules:enable <moduleId> [--ack-external-disclaimer]', description: 'Enable a module by ID.' });
 
 register('modules:disable', async ({ args, apiBaseUrl, getApiToken }) => {
   const [moduleId] = args;
@@ -230,21 +232,25 @@ register('user:preferences:clear', async ({ args, apiBaseUrl, getApiToken }) => 
 }, { usage: 'cognisctl user:preferences:clear <username>', description: 'Clear saved user preferences.' });
 
 async function loadModuleCliPlugins() {
-  const modulesRoot = path.resolve(process.cwd(), 'modules');
-  let entries: string[] = [];
-  try {
-    entries = await readdir(modulesRoot);
-  } catch {
-    return;
-  }
+  const configured = process.env.COGNIS_MODULE_CLI_PATHS ?? path.resolve(process.cwd(), 'modules');
+  const roots = configured.split(path.delimiter).filter(Boolean);
 
-  for (const moduleName of entries) {
-    const pluginPath = path.join(modulesRoot, moduleName, 'cli', 'index.js');
+  for (const modulesRoot of roots) {
+    let entries: string[] = [];
     try {
-      const plugin = await import(pluginPath);
-      if (typeof plugin.registerCommands === 'function') plugin.registerCommands({ register });
+      entries = await readdir(modulesRoot);
     } catch {
-      // module has no cli plugin
+      continue;
+    }
+
+    for (const moduleName of entries) {
+      const pluginPath = path.join(modulesRoot, moduleName, 'cli', 'index.js');
+      try {
+        const plugin = await import(pluginPath);
+        if (typeof plugin.registerCommands === 'function') plugin.registerCommands({ register, apiGet });
+      } catch {
+        // module has no cli plugin
+      }
     }
   }
 }
