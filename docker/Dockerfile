@@ -6,7 +6,7 @@ WORKDIR /app
 RUN groupadd --system cognis \
   && useradd --system --gid cognis --no-create-home cognis \
   && mkdir -p /app/logs /app/data /app/config \
-  && chown cognis:cognis /app/logs /app/data /app/config
+  && chown -R cognis:cognis /app
 
 # Install the entrypoint script, the cognisctl wrapper, and the healthcheck into PATH while still root.
 COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint.sh
