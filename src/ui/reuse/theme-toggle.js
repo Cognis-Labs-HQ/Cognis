@@ -1,3 +1,22 @@
+const THEME_KEY = 'cognis_theme';
+
+function readCookie(name) {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
+function writeThemeCookie(mode) {
+  document.cookie = `${THEME_KEY}=${encodeURIComponent(mode)}; Path=/; Max-Age=31536000; SameSite=Lax`;
+}
+
+export function getStoredTheme() {
+  const localTheme = localStorage.getItem(THEME_KEY);
+  if (localTheme === 'dark' || localTheme === 'light') return localTheme;
+
+  const cookieTheme = readCookie(THEME_KEY);
+  return cookieTheme === 'light' ? 'light' : 'dark';
+}
+
 export function applyTheme(mode) {
   const normalized = mode === 'light' ? 'light' : 'dark';
   document.body.setAttribute('data-theme', normalized);
@@ -19,7 +38,7 @@ export function applyTheme(mode) {
 }
 
 export function bindThemeToggle(options = {}) {
-  const readInitialTheme = options.readInitialTheme || (() => localStorage.getItem('cognis_theme') || 'dark');
+  const readInitialTheme = options.readInitialTheme || (() => getStoredTheme());
   const onThemeChange = options.onThemeChange || (async () => {});
 
   applyTheme(readInitialTheme());
@@ -27,7 +46,8 @@ export function bindThemeToggle(options = {}) {
   document.querySelector('#theme-toggle')?.addEventListener('click', async () => {
     const next = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     applyTheme(next);
-    localStorage.setItem('cognis_theme', next);
+    localStorage.setItem(THEME_KEY, next);
+    writeThemeCookie(next);
     await onThemeChange(next);
   });
 }

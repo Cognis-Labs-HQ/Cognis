@@ -1,6 +1,6 @@
 import { apiFetch } from '../reuse/api-client.js';
 import { loadTemplate } from '../reuse/template-loader.js';
-import { bindThemeToggle as bindSharedThemeToggle } from '../reuse/theme-toggle.js';
+import { bindThemeToggle as bindSharedThemeToggle, getStoredTheme } from '../reuse/theme-toggle.js';
 import { applyStaticTranslations, createI18n } from '../reuse/i18n.js';
 
 function isAdminRole() {
@@ -58,8 +58,13 @@ function applyUiPreferences(prefs) {
 async function bindThemeToggle() {
   const prefs = await loadUiPreferences();
   applyUiPreferences(prefs);
+  const storedMode = getStoredTheme();
+  const initialMode = storedMode || prefs?.mode || 'dark';
+  if (prefs?.mode !== initialMode) {
+    await saveUiPreferences({ mode: initialMode });
+  }
   bindSharedThemeToggle({
-    readInitialTheme: () => prefs?.mode || localStorage.getItem('cognis_theme') || 'dark',
+    readInitialTheme: () => initialMode,
     onThemeChange: async (mode) => {
       await saveUiPreferences({ mode });
     }
