@@ -51,7 +51,7 @@
 .topnav a:hover, .topnav a.active { color: var(--text); opacity: 1; border-bottom: 2px solid var(--accent-2); }
 
 .account-cluster { display: flex; align-items: center; gap: 18px; }
-.user-greeting { color: var(--user-greeting); font-style: italic; font-family: var(--user-greeting-font, Orbitron), Inter, Arial, sans-serif; font-size: var(--user-greeting-size, 1.4rem); font-weight: 700; }
+.user-greeting { color: var(--user-greeting); font-style: italic; font-size: 1.4em; font-weight: 700; }
 
 .notification-button {
   position: relative;

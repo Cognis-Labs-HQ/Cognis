@@ -49,8 +49,13 @@ async function loadUiPreferences() {
 
 function applyUiPreferences(prefs) {
   if (!prefs) return;
-  if (prefs.greetingFont) document.body.style.setProperty('--user-greeting-font', prefs.greetingFont);
-  if (prefs.greetingFontSize) document.body.style.setProperty('--user-greeting-size', `${prefs.greetingFontSize}rem`);
+  if (prefs.greetingFont) {
+    const fallbacks = ", 'Audiowide', 'Rajdhani', 'Exo 2', 'Trebuchet MS', Arial, sans-serif";
+    document.documentElement.style.setProperty('--app-font', prefs.greetingFont + fallbacks);
+  }
+  if (prefs.greetingFontSize) {
+    document.documentElement.style.setProperty('--app-font-size', `${prefs.greetingFontSize}rem`);
+  }
   document.body.setAttribute('data-animation', prefs.animation || 'none');
 }
 

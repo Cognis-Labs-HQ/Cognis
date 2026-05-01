@@ -7,7 +7,9 @@ let languagePriority = readPreferredLanguages();
 const i18n = await createI18n({ preferredLanguages: languagePriority });
 applyDocumentTitle(i18n, 'ui.page.title.settings');
 
-const FALLBACK_FONTS = ['Orbitron', 'Inter', 'Arial', 'sans-serif'];
+const DEFAULT_FONT = 'Orbitron';
+const DEFAULT_FONT_SIZE = 1.0;
+const FALLBACK_FONTS = [DEFAULT_FONT, 'Inter', 'Arial', 'sans-serif'];
 
 function section(label, content) {
   return `<section class="widget-card"><h3>${label}</h3>${content}</section>`;
