@@ -4,10 +4,17 @@ import type { ModuleService } from '@cognis/core';
 
 export function createModuleRoutes(moduleService: ModuleService) {
   return async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
-    const match = url.pathname.match(/^\/api\/v1\/modules\/([^/]+)\/(enable|disable)$/);
-    if (!match || req.method !== 'POST') {
-      return false;
+    if (url.pathname === '/api/v1/modules' && req.method === 'GET') {
+      const claims = requireAuth(req, res, 'admin');
+      if (!claims) return true;
+      const data = await moduleService.list();
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ data }));
+      return true;
     }
+
+    const match = url.pathname.match(/^\/api\/v1\/modules\/([^/]+)\/(enable|disable)$/);
+    if (!match || req.method !== 'POST') return false;
 
     const claims = requireAuth(req, res, 'admin');
     if (!claims) return true;

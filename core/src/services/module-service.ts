@@ -18,6 +18,11 @@ export class ModuleService {
     this.runtimeExtractPath = resolver?.runtimeExtractPath ?? path.join(os.tmpdir(), 'cognis-module-runtime');
   }
 
+
+  async list(): Promise<ModuleManifest[]> {
+    return this.runtime.listManifests();
+  }
+
   async enable(moduleId: string, options?: { acknowledgeExternalDisclaimer?: boolean }): Promise<{ moduleId: string; enabled: boolean }> {
     const manifests = await this.runtime.listManifests();
     const found = manifests.find((manifest) => manifest.id === moduleId);

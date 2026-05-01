@@ -5,15 +5,40 @@ import { initializeDatabaseSchema } from './bootstrap/db-init.js';
 import { LocalAuthGateway } from './adapters/local-auth-gateway.js';
 import { DbLocalAccountStore, createDbExecutor, type SupportedDbType } from './adapters/db-account-store.js';
 import { DbUserPreferenceStore } from './adapters/db-preference-store.js';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { issueAccessToken } from './auth/access-tokens.js';
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
-  private readonly manifests: ModuleManifest[] = [
-    { id: 'cognis-core', name: 'Cognis Core', version: '0.1.0', class: 'core', coreApiVersion: 'v1', capabilities: ['system:health'], entrypoints: {} }
-  ];
-  private readonly states = new Map<string, ModuleState>([['cognis-core', { moduleId: 'cognis-core', enabled: true }]]);
+  private readonly manifests: ModuleManifest[];
+  private readonly states = new Map<string, ModuleState>();
+
+  constructor(manifests: ModuleManifest[]) {
+    this.manifests = manifests;
+    for (const manifest of manifests) {
+      const enabled = manifest.class === 'core';
+      this.states.set(manifest.id, { moduleId: manifest.id, enabled });
+    }
+  }
+
+  static async bootstrap(): Promise<InMemoryModuleRuntimeGateway> {
+    const manifests: ModuleManifest[] = [
+      { id: 'cognis-core', name: 'Cognis Core', version: '0.1.0', class: 'core', coreApiVersion: 'v1', capabilities: ['system:health'], entrypoints: {} }
+    ];
+    const modulesRoot = path.resolve(process.cwd(), 'modules');
+    try {
+      const entries = await readdir(modulesRoot);
+      for (const entry of entries) {
+        const manifestPath = path.join(modulesRoot, entry, 'manifest.json');
+        try {
+          const raw = await readFile(manifestPath, 'utf8');
+          manifests.push(JSON.parse(raw));
+        } catch {}
+      }
+    } catch {}
+    return new InMemoryModuleRuntimeGateway(manifests);
+  }
+
   async listManifests() { return this.manifests; }
   async installFromZip(_binary: Uint8Array) { throw new Error('ZIP module installation is not wired in bootstrap runtime yet'); }
   async enable(moduleId: string) { const state = { moduleId, enabled: true }; this.states.set(moduleId, state); return state; }
@@ -51,8 +76,7 @@ const cliTokenPath = process.env.COGNIS_CLI_TOKEN_PATH ?? '/var/run/cognis/cli-a
 const cliAccessToken = issueAccessToken('cognis-cli', 'admin', null);
 try {
   await mkdir(path.dirname(cliTokenPath), { recursive: true });
-  await writeFile(cliTokenPath, `${cliAccessToken}
-`, { mode: 0o600 });
+  await writeFile(cliTokenPath, `${cliAccessToken}\n`, { mode: 0o600 });
   await logger.info('CLI access token initialized.', { path: cliTokenPath });
 } catch (error) {
   await logger.warn('Failed to persist CLI access token; continuing without file bootstrap token.', {
@@ -61,7 +85,8 @@ try {
   });
 }
 
-const server = buildServer({ moduleRuntimeGateway: new InMemoryModuleRuntimeGateway(), authGateway, accountStore, preferenceStore });
+const runtime = await InMemoryModuleRuntimeGateway.bootstrap();
+const server = buildServer({ moduleRuntimeGateway: runtime, authGateway, accountStore, preferenceStore });
 server.listen(port, host, async () => {
   await logger.info('Cognis API listening.', { host, port, dbType });
 });

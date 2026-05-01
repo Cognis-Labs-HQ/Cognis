@@ -156,9 +156,9 @@ register('system:health', async ({ apiBaseUrl, getApiToken }) => {
 }, { usage: 'cognisctl system:health', description: 'Check the API system health endpoint.' });
 
 register('modules:list', async ({ apiBaseUrl, getApiToken }) => {
-  const payload = await apiGet(apiBaseUrl, '/api/v1/docs', await getApiToken()) as { data: Array<{ slug: string }> };
-  console.log('Available docs slugs (placeholder for module registry):');
-  for (const item of payload.data) console.log(`- ${item.slug}`);
+  const payload = await apiGet(apiBaseUrl, '/api/v1/modules', await getApiToken()) as { data: Array<{ id: string; version: string; class: string }> };
+  console.log('Available modules:');
+  for (const item of payload.data) console.log(`- ${item.id} (${item.class} ${item.version})`);
 }, { usage: 'cognisctl modules:list', description: 'List available modules/docs from the API.' });
 
 register('modules:enable', async ({ args, apiBaseUrl, getApiToken }) => {
