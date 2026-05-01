@@ -62,6 +62,7 @@
   <string name="ui.app.settings.animation">Animation</string>
   <string name="ui.app.settings.greeting_font">Greeting font</string>
   <string name="ui.app.settings.greeting_size">Greeting size</string>
+  <string name="ui.app.settings.language">Language</string>
   <string name="ui.app.settings.save">Save Preferences</string>
   <string name="ui.app.settings.saved_alert">Preferences saved.</string>
 

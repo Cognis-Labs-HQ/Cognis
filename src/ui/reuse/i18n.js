@@ -3,7 +3,29 @@ const STRINGS_BASE_PATH = '/dashboard/static/public/strings';
 
 const cache = new Map();
 
+const LANGUAGE_COOKIE = 'cognis_lang';
+
+function readCookie(name) {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function writeLanguageCookie(locale) {
+  document.cookie = `${LANGUAGE_COOKIE}=${encodeURIComponent(locale)}; Path=/; Max-Age=31536000; SameSite=Lax`;
+}
+
+export function setPreferredLanguage(locale) {
+  const normalized = normalizeLocale(locale || DEFAULT_LOCALE);
+  localStorage.setItem('cognis_language', normalized);
+  writeLanguageCookie(normalized);
+}
+
+
 function detectLocale() {
+  const preferred = localStorage.getItem('cognis_language');
+  if (preferred) return preferred.toLowerCase();
+  const cookieLocale = readCookie(LANGUAGE_COOKIE);
+  if (cookieLocale) return cookieLocale.toLowerCase();
   const htmlLang = document.documentElement.lang?.trim();
   if (htmlLang) return htmlLang.toLowerCase();
   const browserLocale = navigator.language || DEFAULT_LOCALE;
@@ -69,6 +91,8 @@ export async function createI18n(options = {}) {
   const moduleStrings = await loadModuleStrings(activeLocale, options.moduleIds || []);
   moduleStrings.forEach((value, key) => strings.set(key, value));
 
+  writeLanguageCookie(activeLocale);
+  localStorage.setItem('cognis_language', activeLocale);
   document.documentElement.lang = activeLocale;
 
   return {
