@@ -13,7 +13,7 @@ RUN npm ci --ignore-scripts \
   && printf '#!/usr/bin/env bash\nnode --import tsx /app/src/tooling/cli/index.ts "$@"\n' > /usr/local/bin/cognisctl \
   && chmod +x /usr/local/bin/cognisctl /usr/local/bin/entrypoint.sh \
   && mkdir -p /app/logs /app/data /app/config \
-  && chown -R cognis:cognis /app/logs /app/data /app/config
+  && chown -R cognis:cognis /app/node_modules /app/logs /app/data /app/config
 
 # Copy application source after installing dependencies.
 COPY src ./src
