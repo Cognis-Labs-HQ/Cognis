@@ -1,9 +1,10 @@
 import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
 import { apiFetch } from '../reuse/api-client.js';
-import { applyDocumentTitle, createI18n, setPreferredLanguage } from '../reuse/i18n.js';
+import { applyDocumentTitle, createI18n, readPreferredLanguages, setPreferredLanguages } from '../reuse/i18n.js';
 
 const root = document.querySelector('#app');
-const i18n = await createI18n();
+let languagePriority = readPreferredLanguages();
+const i18n = await createI18n({ preferredLanguages: languagePriority });
 applyDocumentTitle(i18n, 'ui.page.title.settings');
 
 function section(label, content) {
@@ -34,27 +35,57 @@ await renderDashboardLayout(root, {
       <label>${i18n.t('ui.app.settings.animation')} <select id="pref-animation"><option>none</option><option>fade</option><option>float</option></select></label><br/>
       <label>${i18n.t('ui.app.settings.greeting_font')} <input id="pref-font" placeholder="Inter, Arial, sans-serif"/></label><br/>
       <label>${i18n.t('ui.app.settings.greeting_size')} <input id="pref-font-size" type="number" min="0.8" max="2" step="0.05"/></label><br/>
-      <label>${i18n.t('ui.app.settings.language')} <select id="pref-language"><option value="en">English</option></select></label><br/>
+      <section><h4>${i18n.t('ui.app.settings.language')}</h4><div class="language-preferences"><div><h5>${i18n.t('ui.app.settings.available_languages')}</h5><table id="available-languages"></table></div><div><h5>${i18n.t('ui.app.settings.preferred_languages')}</h5><table id="preferred-languages"></table></div></div></section>
       <button id="save-prefs">${i18n.t('ui.app.settings.save')}</button>
     `)}</article>`
 });
 
 const existingPrefs = await loadPrefs().catch(() => null);
-if (existingPrefs?.language) {
-  const languageInput = root.querySelector('#pref-language');
-  if (languageInput) languageInput.value = existingPrefs.language;
-}
+if (Array.isArray(existingPrefs?.languagePriority)) languagePriority = existingPrefs.languagePriority;
 
 root.querySelector('#save-prefs')?.addEventListener('click', async () => {
   const prefs = {
     animation: root.querySelector('#pref-animation')?.value || 'none',
     greetingFont: root.querySelector('#pref-font')?.value || 'Inter, Arial, sans-serif',
     greetingFontSize: Number(root.querySelector('#pref-font-size')?.value || 1.4),
-    language: root.querySelector('#pref-language')?.value || 'en'
+    languagePriority
   };
   await savePrefs(prefs);
-  setPreferredLanguage(prefs.language);
+  setPreferredLanguages(prefs.languagePriority);
   localStorage.setItem('cognis_ui_preferences', JSON.stringify(prefs));
   alert(i18n.t('ui.app.settings.saved_alert'));
   window.location.reload();
+});
+
+
+async function loadLanguagesCatalog() {
+  const response = await apiFetch('/api/v1/system/languages');
+  const payload = await response.json();
+  return payload.data || [];
+}
+
+function renderLanguageTables(catalog) {
+  const preferred = root.querySelector('#preferred-languages');
+  const available = root.querySelector('#available-languages');
+  if (!preferred || !available) return;
+  const preferredSet = new Set(languagePriority);
+  preferred.innerHTML = languagePriority.map((iso, index) => `<tr><td>${iso}</td><td><button data-lang-up='${iso}'>↑</button><button data-lang-down='${iso}'>↓</button><button data-lang-remove='${iso}'>←</button></td></tr>`).join('');
+  available.innerHTML = catalog.filter((item) => !preferredSet.has(item.iso_code)).map((item) => `<tr><td>${item.name}</td><td>${item.iso_code}</td><td><button data-lang-add='${item.iso_code}'>→</button></td></tr>`).join('');
+}
+
+const languageCatalog = await loadLanguagesCatalog().catch(() => [{ iso_code: 'en', name: 'English' }]);
+renderLanguageTables(languageCatalog);
+root.addEventListener('click', (event) => {
+  const button = event.target.closest('button');
+  if (!button) return;
+  const add = button.getAttribute('data-lang-add');
+  const remove = button.getAttribute('data-lang-remove');
+  const up = button.getAttribute('data-lang-up');
+  const down = button.getAttribute('data-lang-down');
+  if (add) languagePriority = [...languagePriority, add];
+  if (remove) languagePriority = languagePriority.filter((item) => item !== remove);
+  if (up) { const i = languagePriority.indexOf(up); if (i > 0) [languagePriority[i-1], languagePriority[i]] = [languagePriority[i], languagePriority[i-1]]; }
+  if (down) { const i = languagePriority.indexOf(down); if (i >= 0 && i < languagePriority.length -1) [languagePriority[i+1], languagePriority[i]] = [languagePriority[i], languagePriority[i+1]]; }
+  languagePriority = [...new Set(languagePriority)];
+  renderLanguageTables(languageCatalog);
 });

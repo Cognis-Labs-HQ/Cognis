@@ -1,9 +1,9 @@
 const DEFAULT_LOCALE = 'en';
-const STRINGS_BASE_PATH = '/dashboard/static/public/strings';
+const STRINGS_BASE_PATH = '/dashboard/static/languages';
 
 const cache = new Map();
 
-const LANGUAGE_COOKIE = 'cognis_lang';
+const LANGUAGE_COOKIE = 'cognis_lang_priority';
 
 function readCookie(name) {
   const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]+)`));
@@ -14,18 +14,26 @@ function writeLanguageCookie(locale) {
   document.cookie = `${LANGUAGE_COOKIE}=${encodeURIComponent(locale)}; Path=/; Max-Age=31536000; SameSite=Lax`;
 }
 
-export function setPreferredLanguage(locale) {
-  const normalized = normalizeLocale(locale || DEFAULT_LOCALE);
-  localStorage.setItem('cognis_language', normalized);
-  writeLanguageCookie(normalized);
+export function setPreferredLanguages(languages) {
+  const normalized = [...new Set((languages || [DEFAULT_LOCALE]).map((item) => normalizeLocale(item)).filter(Boolean))];
+  localStorage.setItem('cognis_language_priority', JSON.stringify(normalized));
+  writeLanguageCookie(normalized.join(','));
+}
+
+export function readPreferredLanguages() {
+  try {
+    const local = JSON.parse(localStorage.getItem('cognis_language_priority') || 'null');
+    if (Array.isArray(local) && local.length) return local;
+  } catch {}
+  const cookie = readCookie(LANGUAGE_COOKIE);
+  if (cookie) return cookie.split(',').map((item) => item.trim()).filter(Boolean);
+  return [detectLocale(), DEFAULT_LOCALE];
 }
 
 
 function detectLocale() {
-  const preferred = localStorage.getItem('cognis_language');
-  if (preferred) return preferred.toLowerCase();
-  const cookieLocale = readCookie(LANGUAGE_COOKIE);
-  if (cookieLocale) return cookieLocale.toLowerCase();
+  const preferredList = readPreferredLanguages();
+  if (preferredList?.[0]) return preferredList[0].toLowerCase();
   const htmlLang = document.documentElement.lang?.trim();
   if (htmlLang) return htmlLang.toLowerCase();
   const browserLocale = navigator.language || DEFAULT_LOCALE;
@@ -50,7 +58,7 @@ async function loadLocaleStrings(locale) {
   const normalized = normalizeLocale(locale);
   if (cache.has(normalized)) return cache.get(normalized);
 
-  const response = await fetch(`${STRINGS_BASE_PATH}/${normalized}.xml`);
+  const response = await fetch(`${STRINGS_BASE_PATH}/${normalized}/strings.xml`);
   if (!response.ok) throw new Error(`Unable to load strings for locale: ${normalized}`);
   const parsed = parseStringsXml(await response.text());
   cache.set(normalized, parsed);
@@ -78,12 +86,20 @@ async function loadModuleStrings(activeLocale, moduleIds) {
 
 export async function createI18n(options = {}) {
   const requested = detectLocale();
-  let activeLocale = normalizeLocale(requested);
-  let strings;
+  const preferredLanguages = options.preferredLanguages || [requested, DEFAULT_LOCALE];
+  const normalizedPriority = [...new Set(preferredLanguages.map((item) => normalizeLocale(item)).filter(Boolean))];
+  let activeLocale = normalizedPriority[0] || DEFAULT_LOCALE;
+  let strings = new Map();
 
-  try {
-    strings = await loadLocaleStrings(activeLocale);
-  } catch {
+  for (const locale of normalizedPriority) {
+    try {
+      const part = await loadLocaleStrings(locale);
+      part.forEach((value, key) => { if (!strings.has(key)) strings.set(key, value); });
+      if (strings.size && activeLocale === normalizedPriority[0]) activeLocale = locale;
+    } catch {}
+  }
+
+  if (!strings.size) {
     activeLocale = DEFAULT_LOCALE;
     strings = await loadLocaleStrings(activeLocale);
   }
@@ -91,8 +107,7 @@ export async function createI18n(options = {}) {
   const moduleStrings = await loadModuleStrings(activeLocale, options.moduleIds || []);
   moduleStrings.forEach((value, key) => strings.set(key, value));
 
-  writeLanguageCookie(activeLocale);
-  localStorage.setItem('cognis_language', activeLocale);
+  setPreferredLanguages(normalizedPriority);
   document.documentElement.lang = activeLocale;
 
   return {
