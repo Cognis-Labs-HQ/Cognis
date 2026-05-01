@@ -69,8 +69,13 @@ function renderLanguageTables(catalog) {
   const available = root.querySelector('#available-languages');
   if (!preferred || !available) return;
   const preferredSet = new Set(languagePriority);
-  preferred.innerHTML = languagePriority.map((iso) => `<tr draggable="true" data-lang-row="${iso}"><td>${iso}</td><td><button data-lang-up='${iso}'>↑</button><button data-lang-down='${iso}'>↓</button><button data-lang-remove='${iso}'>←</button></td></tr>`).join('');
-  available.innerHTML = catalog.filter((item) => !preferredSet.has(item.iso_code)).map((item) => `<tr draggable="true" data-lang-row="${item.iso_code}"><td>${item.name}</td><td>${item.iso_code}</td><td><button data-lang-add='${item.iso_code}'>→</button></td></tr>`).join('');
+  preferred.innerHTML = languagePriority.map((iso) => {
+    const match = catalog.find((item) => item.iso_code === iso);
+    const label = match ? `${match.name} (${iso})` : iso;
+    const removeDisabled = iso === 'en' ? 'disabled' : '';
+    return `<tr draggable=\"true\" data-lang-row=\"${iso}\"><td>${label}</td><td><button data-lang-up='${iso}'>↑</button><button data-lang-down='${iso}'>↓</button><button data-lang-remove='${iso}' ${removeDisabled}>←</button></td></tr>`;
+  }).join('');
+  available.innerHTML = catalog.filter((item) => !preferredSet.has(item.iso_code)).map((item) => `<tr draggable=\"true\" data-lang-row=\"${item.iso_code}\"><td>${item.name} (${item.iso_code})</td><td><button data-lang-add='${item.iso_code}'>→</button></td></tr>`).join('');
 }
 
 const languageCatalog = await loadLanguagesCatalog().catch(() => [{ iso_code: 'en', name: 'English' }]);
@@ -83,10 +88,11 @@ root.addEventListener('click', (event) => {
   const up = button.getAttribute('data-lang-up');
   const down = button.getAttribute('data-lang-down');
   if (add) languagePriority = [...languagePriority, add];
-  if (remove) languagePriority = languagePriority.filter((item) => item !== remove);
+  if (remove && remove !== 'en') languagePriority = languagePriority.filter((item) => item !== remove);
   if (up) { const i = languagePriority.indexOf(up); if (i > 0) [languagePriority[i-1], languagePriority[i]] = [languagePriority[i], languagePriority[i-1]]; }
   if (down) { const i = languagePriority.indexOf(down); if (i >= 0 && i < languagePriority.length -1) [languagePriority[i+1], languagePriority[i]] = [languagePriority[i], languagePriority[i+1]]; }
   languagePriority = [...new Set(languagePriority)];
+  if (!languagePriority.includes('en')) languagePriority.push('en');
   renderLanguageTables(languageCatalog);
 });
 
@@ -123,10 +129,11 @@ root.addEventListener('drop', (event) => {
   }
 
   if (targetTable?.id === 'available-languages') {
-    languagePriority = languagePriority.filter((item) => item !== lang);
+    if (lang !== 'en') languagePriority = languagePriority.filter((item) => item !== lang);
   }
 
   languagePriority = [...new Set(languagePriority)];
+  if (!languagePriority.includes('en')) languagePriority.push('en');
   renderLanguageTables(languageCatalog);
   dragLanguage = null;
 });
