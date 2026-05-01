@@ -329,3 +329,33 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   background: rgba(239, 68, 68, 0.24);
   color: #ef4444;
 }
+
+
+.language-preferences {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.language-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.language-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 8px;
+}
+
+.language-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.language-table tr[draggable="true"] {
+  cursor: grab;
+}

@@ -16,6 +16,7 @@ function isAllowed(value){
   if(/^Inter, Arial, sans-serif$/.test(v)) return true;
   if(v.includes('${')) return true;
   if(v.startsWith('.')) return true;
+  if(v.includes('#') && v.includes(',')) return true;
   if(/^(none|fade|float|dark|admin|user|enabled|disabled|available|ok|core|page|active)$/.test(v)) return true;
   return false;
 }

@@ -35,7 +35,7 @@ await renderDashboardLayout(root, {
       <label>${i18n.t('ui.app.settings.animation')} <select id="pref-animation"><option>none</option><option>fade</option><option>float</option></select></label><br/>
       <label>${i18n.t('ui.app.settings.greeting_font')} <input id="pref-font" placeholder="Inter, Arial, sans-serif"/></label><br/>
       <label>${i18n.t('ui.app.settings.greeting_size')} <input id="pref-font-size" type="number" min="0.8" max="2" step="0.05"/></label><br/>
-      <section><h4>${i18n.t('ui.app.settings.language')}</h4><div class="language-preferences"><div><h5>${i18n.t('ui.app.settings.available_languages')}</h5><table id="available-languages"></table></div><div><h5>${i18n.t('ui.app.settings.preferred_languages')}</h5><table id="preferred-languages"></table></div></div></section>
+      <section><h4>${i18n.t('ui.app.settings.language')}</h4><div class="language-preferences"><div><h5>${i18n.t('ui.app.settings.available_languages')}</h5><table id="available-languages" class="language-table"></table></div><div><h5>${i18n.t('ui.app.settings.preferred_languages')}</h5><table id="preferred-languages" class="language-table"></table></div></div></section>
       <button id="save-prefs">${i18n.t('ui.app.settings.save')}</button>
     `)}</article>`
 });
@@ -69,8 +69,8 @@ function renderLanguageTables(catalog) {
   const available = root.querySelector('#available-languages');
   if (!preferred || !available) return;
   const preferredSet = new Set(languagePriority);
-  preferred.innerHTML = languagePriority.map((iso, index) => `<tr><td>${iso}</td><td><button data-lang-up='${iso}'>↑</button><button data-lang-down='${iso}'>↓</button><button data-lang-remove='${iso}'>←</button></td></tr>`).join('');
-  available.innerHTML = catalog.filter((item) => !preferredSet.has(item.iso_code)).map((item) => `<tr><td>${item.name}</td><td>${item.iso_code}</td><td><button data-lang-add='${item.iso_code}'>→</button></td></tr>`).join('');
+  preferred.innerHTML = languagePriority.map((iso) => `<tr draggable="true" data-lang-row="${iso}"><td>${iso}</td><td><button data-lang-up='${iso}'>↑</button><button data-lang-down='${iso}'>↓</button><button data-lang-remove='${iso}'>←</button></td></tr>`).join('');
+  available.innerHTML = catalog.filter((item) => !preferredSet.has(item.iso_code)).map((item) => `<tr draggable="true" data-lang-row="${item.iso_code}"><td>${item.name}</td><td>${item.iso_code}</td><td><button data-lang-add='${item.iso_code}'>→</button></td></tr>`).join('');
 }
 
 const languageCatalog = await loadLanguagesCatalog().catch(() => [{ iso_code: 'en', name: 'English' }]);
@@ -88,4 +88,45 @@ root.addEventListener('click', (event) => {
   if (down) { const i = languagePriority.indexOf(down); if (i >= 0 && i < languagePriority.length -1) [languagePriority[i+1], languagePriority[i]] = [languagePriority[i], languagePriority[i+1]]; }
   languagePriority = [...new Set(languagePriority)];
   renderLanguageTables(languageCatalog);
+});
+
+
+let dragLanguage = null;
+root.addEventListener('dragstart', (event) => {
+  const row = event.target.closest('tr[data-lang-row]');
+  if (!row) return;
+  dragLanguage = row.getAttribute('data-lang-row');
+  event.dataTransfer?.setData('text/plain', dragLanguage || '');
+});
+
+root.addEventListener('dragover', (event) => {
+  if (!event.target.closest('#available-languages, #preferred-languages, tr[data-lang-row]')) return;
+  event.preventDefault();
+});
+
+root.addEventListener('drop', (event) => {
+  const targetTable = event.target.closest('#available-languages, #preferred-languages');
+  const targetRow = event.target.closest('tr[data-lang-row]');
+  const lang = dragLanguage || event.dataTransfer?.getData('text/plain');
+  if (!lang) return;
+
+  if (targetTable?.id === 'preferred-languages') {
+    languagePriority = languagePriority.filter((item) => item !== lang);
+    if (targetRow) {
+      const before = targetRow.getAttribute('data-lang-row');
+      const index = languagePriority.indexOf(before);
+      if (index >= 0) languagePriority.splice(index, 0, lang);
+      else languagePriority.push(lang);
+    } else {
+      languagePriority.push(lang);
+    }
+  }
+
+  if (targetTable?.id === 'available-languages') {
+    languagePriority = languagePriority.filter((item) => item !== lang);
+  }
+
+  languagePriority = [...new Set(languagePriority)];
+  renderLanguageTables(languageCatalog);
+  dragLanguage = null;
 });
