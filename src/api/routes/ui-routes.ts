@@ -5,7 +5,7 @@ import { verifyAccessToken } from '../auth/access-tokens.js';
 import type { ModuleRuntimeGateway } from '@cognis/core';
 
 const UI_ROOT = path.resolve(process.cwd(), 'src', 'ui');
-const STATIC_ROOT = path.join(UI_ROOT, 'src');
+const STATIC_ROOT = UI_ROOT;
 const PUBLIC_ROOT = path.join(UI_ROOT, 'public');
 const MODULES_ROOT = process.env.COGNIS_MODULES_ROOT ?? path.resolve(process.cwd(), 'src', 'modules');
 
