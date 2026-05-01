@@ -5,6 +5,7 @@ import { createSystemRoutes } from './routes/system-routes.js';
 import { createDocsRoutes } from './routes/docs-routes.js';
 import { createUiRoutes } from './routes/ui-routes.js';
 import { createAuthRoutes } from './routes/auth-routes.js';
+import { createModuleExtensionRoutes } from './routes/module-extension-routes.js';
 import type { AuthGateway } from '@cognis/core';
 import type { LocalAccountStore } from './adapters/local-auth-gateway.js';
 import { createPreferencesRoutes, type UserPreferenceStore } from './routes/preferences-routes.js';
@@ -24,7 +25,8 @@ export function buildServer(deps: ApiDependencies) {
   const moduleRoutes = createModuleRoutes(moduleService);
   const systemRoutes = createSystemRoutes(healthService);
   const docsRoutes = createDocsRoutes();
-  const uiRoutes = createUiRoutes();
+  const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway);
+  const moduleExtensionRoutes = createModuleExtensionRoutes(deps.moduleRuntimeGateway);
   const authRoutes = createAuthRoutes(deps.authGateway, deps.accountStore);
   const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
   const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore);
@@ -47,6 +49,9 @@ export function buildServer(deps: ApiDependencies) {
 
       const handledByUsers = await userRoutes(req, res, url);
       if (handledByUsers) return;
+
+      const handledByExtensions = await moduleExtensionRoutes(req, res, url);
+      if (handledByExtensions) return;
 
       const handledByDocs = await docsRoutes(req, res, url);
       if (handledByDocs) return;

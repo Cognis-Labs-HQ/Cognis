@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createUiRoutes } from '../src/routes/ui-routes.js';
+import path from 'node:path';
 import { issueAccessToken } from '../src/auth/access-tokens.js';
 
 function createResponseRecorder() {
@@ -86,4 +87,16 @@ test('modules page requires login and serves html when authenticated', async () 
   await route({ headers: { cookie: `cognis_access_token=${token}` } } as any, authed.res as any, new URL('http://localhost/modules'));
   assert.equal(authed.status, 200);
   assert.match(authed.body, /app\/modules\.js/);
+});
+
+
+test('module ui routes can be published outside /modules prefix', async () => {
+  const route = createUiRoutes({
+    listManifests: async () => [{ id: 'sample-analytics', entrypoints: { ui: './ui/pages/analytics.html' } }]
+  } as any);
+  const token = issueAccessToken('u1', 'admin', 60);
+  const recorder = createResponseRecorder();
+  await route({ headers: { cookie: `cognis_access_token=${token}` } } as any, recorder.res as any, new URL('http://localhost/analytics'));
+  assert.equal(recorder.status, 200);
+  assert.match(recorder.body, /Sample Analytics Module/);
 });
