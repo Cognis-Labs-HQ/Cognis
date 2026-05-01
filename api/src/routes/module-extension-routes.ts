@@ -5,30 +5,39 @@ import path from 'node:path';
 interface RouteHandler {
   method: string;
   routePath: string;
+  moduleId: string;
   handler: (req: IncomingMessage, res: ServerResponse) => Promise<void> | void;
 }
 
-export function createModuleExtensionRoutes(runtime: ModuleRuntimeGateway) {
-  const handlers: RouteHandler[] = [];
-  let loaded = false;
+export interface ModuleExtensionRoutes {
+  handle(req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean>;
+  refresh(): Promise<void>;
+}
 
-  async function loadHandlers() {
-    if (loaded) return;
-    loaded = true;
+export function createModuleExtensionRoutes(
+  runtime: ModuleRuntimeGateway,
+  isModuleEnabled: (moduleId: string) => boolean
+): ModuleExtensionRoutes {
+  let handlers: RouteHandler[] = [];
+
+  async function refresh() {
+    const nextHandlers: RouteHandler[] = [];
     const manifests = await runtime.listManifests();
+
     for (const manifest of manifests) {
-      if (!manifest.entrypoints?.api) continue;
+      if (!manifest.entrypoints?.api || !isModuleEnabled(manifest.id)) continue;
+
       const moduleRoot = path.resolve(process.cwd(), 'modules', manifest.id);
       const pluginPath = path.join(moduleRoot, manifest.entrypoints.api);
       try {
-        const plugin = await import(pluginPath);
+        const plugin = await import(`${pluginPath}?t=${Date.now()}`);
         if (typeof plugin.registerApiRoutes === 'function') {
           plugin.registerApiRoutes({
             get(routePath: string, handler: RouteHandler['handler']) {
-              handlers.push({ method: 'GET', routePath, handler });
+              nextHandlers.push({ method: 'GET', routePath, moduleId: manifest.id, handler });
             },
             post(routePath: string, handler: RouteHandler['handler']) {
-              handlers.push({ method: 'POST', routePath, handler });
+              nextHandlers.push({ method: 'POST', routePath, moduleId: manifest.id, handler });
             }
           });
         }
@@ -36,14 +45,18 @@ export function createModuleExtensionRoutes(runtime: ModuleRuntimeGateway) {
         // ignore invalid module route plugin
       }
     }
+
+    handlers = nextHandlers;
   }
 
-  return async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
-    await loadHandlers();
-    const method = (req.method || 'GET').toUpperCase();
-    const match = handlers.find((entry) => entry.method === method && entry.routePath === url.pathname);
-    if (!match) return false;
-    await match.handler(req, res);
-    return true;
+  return {
+    async handle(req, res, url) {
+      const method = (req.method || 'GET').toUpperCase();
+      const match = handlers.find((entry) => entry.method === method && entry.routePath === url.pathname);
+      if (!match) return false;
+      await match.handler(req, res);
+      return true;
+    },
+    refresh
   };
 }

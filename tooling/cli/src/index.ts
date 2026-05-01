@@ -257,7 +257,12 @@ register('user:preferences:clear', async ({ args, apiBaseUrl, getApiToken }) => 
   console.log(JSON.stringify(payload, null, 2));
 }, { usage: 'cognisctl user:preferences:clear <username>', description: 'Clear saved user preferences.' });
 
-async function loadModuleCliPlugins() {
+async function loadModuleCliPlugins(options?: { refresh?: boolean }) {
+  if (options?.refresh) {
+    for (const [name, spec] of registry.entries()) {
+      if (spec.section === 'Extensions') registry.delete(name);
+    }
+  }
   const configured = process.env.COGNIS_MODULE_CLI_PATHS ?? path.resolve(process.cwd(), 'modules');
   const roots = configured.split(path.delimiter).filter(Boolean);
 
@@ -282,16 +287,22 @@ async function loadModuleCliPlugins() {
 }
 
 async function main() {
-  await loadModuleCliPlugins();
+  await loadModuleCliPlugins({ refresh: true });
 
   const packageJson = await import('../package.json', { with: { type: 'json' } });
   const argv = process.argv.slice(2);
 
-  if (argv.length === 0 || argv[0] === '-h' || argv[0] === '--help') return printGlobalHelp();
+  if (argv.length === 0 || argv[0] === '-h' || argv[0] === '--help') {
+    await loadModuleCliPlugins({ refresh: true });
+    return printGlobalHelp();
+  }
   if (argv[0] === '-v' || argv[0] === '--version') return console.log(packageJson.default.version);
 
   const [command, ...args] = argv;
-  if (args.includes('-h') || args.includes('--help')) return printCommandHelp(command);
+  if (args.includes('-h') || args.includes('--help')) {
+    await loadModuleCliPlugins({ refresh: true });
+    return printCommandHelp(command);
+  }
 
   const apiBaseUrl = process.env.COGNIS_API_URL ?? 'http://localhost:3000';
   let apiTokenPromise: Promise<string> | null = null;

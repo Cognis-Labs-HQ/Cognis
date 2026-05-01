@@ -3,14 +3,15 @@ import assert from 'node:assert/strict';
 import { createModuleExtensionRoutes } from '../src/routes/module-extension-routes.js';
 
 test('module extension routes expose module API endpoints', async () => {
-  const route = createModuleExtensionRoutes({
+  const extensions = createModuleExtensionRoutes({
     listManifests: async () => [{ id: 'sample-analytics', entrypoints: { api: './api/index.js' } }]
-  } as any);
+  } as any, () => true);
+  await extensions.refresh();
 
   let status = 0;
   let body = '';
 
-  const handled = await route(
+  const handled = await extensions.handle(
     { method: 'GET' } as any,
     {
       writeHead(code: number) {
