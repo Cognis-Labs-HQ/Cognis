@@ -14,6 +14,7 @@ Use this file for implementation reminders specific to AI-assisted coding.
 
 ## Code quality reminders
 - Prioritize readability over terseness.
+- Format all new or modified code for human readability first; do not compress logic, markup, or styles into dense one-liners when a multi-line structure is clearer.
 - Keep modules focused and cohesive.
 - Avoid speculative comments; annotate only non-obvious technical constraints.
 - Keep docs user/product oriented; keep AI process guidance out of product docs.

@@ -66,7 +66,16 @@ function renderModulesPanel(modules) {
 
 function renderIntegrityPanel(integrityRows) {
   if (!integrityRows.length) return '<p>No tracked module files reported.</p>';
-  return `<ul class="integrity-list">${integrityRows.map((row) => `<li class="integrity-${row.status}"><strong>${row.moduleId}</strong> / ${row.file}: ${row.status}${row.status !== 'ok' ? ` (expected ${row.expected}, got ${row.actual ?? 'missing'})` : ''}</li>`).join('')}</ul>`;
+  const items = integrityRows
+    .map((row) => {
+      const mismatchDetails =
+        row.status !== 'ok'
+          ? ` (expected ${row.expected}, got ${row.actual ?? 'missing'})`
+          : '';
+      return `<li class="integrity-${row.status}"><strong>${row.moduleId}</strong> / ${row.file}: ${row.status}${mismatchDetails}</li>`;
+    })
+    .join('');
+  return `<ul class="integrity-list">${items}</ul>`;
 }
 
 const modules = await loadModules();
