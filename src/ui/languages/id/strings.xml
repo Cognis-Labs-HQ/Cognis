@@ -13,8 +13,8 @@
   <string name="ui.reuse.actions">Aksi</string>
   <string name="ui.reuse.navigation">Navigasi</string>
   <string name="ui.reuse.id">ID</string>
-  <string name="ui.reuse.version">Version</string>
-  <string name="ui.reuse.class">Class</string>
+  <string name="ui.reuse.version">Versi</string>
+  <string name="ui.reuse.class">Kelas</string>
   <string name="ui.reuse.appearance">Tampilan</string>
 
   <string name="ui.layout.brand.aria">Beranda Cognis</string>
@@ -36,25 +36,25 @@
   <string name="ui.app.login.typing.sample.2">Belajar dengan tutor</string>
   <string name="ui.app.login.typing.sample.3">Gabung kelas</string>
   <string name="ui.app.login.typing.sample.4">Kerjakan PR-mu</string>
-  <string name="ui.app.login.typing.sample.5">It's a social space!</string>
+  <string name="ui.app.login.typing.sample.5">Ini ruang sosial!</string>
   <string name="ui.app.login.typing.sample.6">Didukung FOSS</string>
   <string name="ui.app.builder.banner.ready">Siap.</string>
-  <string name="ui.app.builder.remove">Remove</string>
+  <string name="ui.app.builder.remove">Hapus</string>
   <string name="ui.app.builder.custom_widget">Widget kustom</string>
   <string name="ui.app.builder.json_config">Konfigurasi JSON</string>
   <string name="ui.app.builder.empty">Belum ada widget. Tambahkan dari pustaka.</string>
-  <string name="ui.app.builder.add_widget">Add Widget</string>
+  <string name="ui.app.builder.add_widget">Tambah Widget</string>
   <string name="ui.app.builder.run_demo">Jalankan alur demo</string>
   <string name="ui.app.builder.page_title">Pembangun Halaman</string>
   <string name="ui.app.builder.page_subtitle">Baris/kolom berpagar menjaga kustomisasi tetap aman.</string>
-  <string name="ui.app.builder.topbar">Dashboard Layout</string>
+  <string name="ui.app.builder.topbar">Tata Letak Dasbor</string>
   <string name="ui.app.builder.status">Status Builder</string>
   <string name="ui.app.builder.demo_mode">Mode demo</string>
   <string name="ui.app.builder.on">AKTIF</string>
   <string name="ui.app.builder.off">NONAKTIF</string>
   <string name="ui.app.builder.banner.added">Widget ditambahkan.</string>
   <string name="ui.app.builder.banner.removed">Widget dihapus.</string>
-  <string name="ui.app.builder.banner.invalid_json">Invalid JSON. Fix and retry.</string>
+  <string name="ui.app.builder.banner.invalid_json">JSON tidak valid. Perbaiki lalu coba lagi.</string>
   <string name="ui.app.builder.banner.updated">Konfigurasi widget diperbarui.</string>
   <string name="ui.app.settings.page_title">Pengaturan</string>
   <string name="ui.app.settings.page_subtitle">Kelola preferensi pengguna Anda.</string>
@@ -87,10 +87,10 @@
   <string name="ui.app.admin.page_subtitle">Alat dan kontrol khusus admin.</string>
   <string name="ui.app.admin.disable_confirm">Nonaktifkan modul</string>
   <string name="ui.app.admin.checking">Memeriksa...</string>
-  <string name="ui.app.demo.switched">Demo: switched to sandbox page.</string>
-  <string name="ui.app.demo.added">Demo: added a learning progress widget.</string>
-  <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>
-  <string name="ui.app.demo.removed">Demo: removed the most recent widget.</string>
+  <string name="ui.app.demo.switched">Demo: berpindah ke halaman sandbox.</string>
+  <string name="ui.app.demo.added">Demo: menambahkan widget progres belajar.</string>
+  <string name="ui.app.demo.tweaked">Demo: menyesuaikan konfigurasi widget pertama.</string>
+  <string name="ui.app.demo.removed">Demo: menghapus widget terbaru.</string>
   <string name="ui.app.demo.complete">Demo selesai.</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>

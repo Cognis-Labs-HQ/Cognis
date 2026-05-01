@@ -14,7 +14,7 @@
   <string name="ui.reuse.navigation">Navigation</string>
   <string name="ui.reuse.id">ID</string>
   <string name="ui.reuse.version">Version</string>
-  <string name="ui.reuse.class">Class</string>
+  <string name="ui.reuse.class">Klasse</string>
   <string name="ui.reuse.appearance">Darstellung</string>
 
   <string name="ui.layout.brand.aria">Cognis-Startseite</string>
@@ -36,25 +36,25 @@
   <string name="ui.app.login.typing.sample.2">Mit Tutor:innen lernen</string>
   <string name="ui.app.login.typing.sample.3">Kursen beitreten</string>
   <string name="ui.app.login.typing.sample.4">Hausaufgaben machen</string>
-  <string name="ui.app.login.typing.sample.5">It's a social space!</string>
+  <string name="ui.app.login.typing.sample.5">Es ist ein sozialer Raum!</string>
   <string name="ui.app.login.typing.sample.6">Betrieben mit FOSS</string>
   <string name="ui.app.builder.banner.ready">Bereit.</string>
-  <string name="ui.app.builder.remove">Remove</string>
+  <string name="ui.app.builder.remove">Entfernen</string>
   <string name="ui.app.builder.custom_widget">Benutzerdefiniertes Widget</string>
   <string name="ui.app.builder.json_config">JSON-Konfiguration</string>
   <string name="ui.app.builder.empty">Noch keine Widgets. Füge eines aus der Bibliothek hinzu.</string>
-  <string name="ui.app.builder.add_widget">Add Widget</string>
+  <string name="ui.app.builder.add_widget">Widget hinzufügen</string>
   <string name="ui.app.builder.run_demo">Demo ausführen</string>
   <string name="ui.app.builder.page_title">Seiten-Builder</string>
   <string name="ui.app.builder.page_subtitle">Leitplanken für Zeilen/Spalten halten Anpassungen stabil.</string>
-  <string name="ui.app.builder.topbar">Dashboard Layout</string>
+  <string name="ui.app.builder.topbar">Dashboard-Layout</string>
   <string name="ui.app.builder.status">Builder-Status</string>
   <string name="ui.app.builder.demo_mode">Demo-Modus</string>
   <string name="ui.app.builder.on">AN</string>
   <string name="ui.app.builder.off">AUS</string>
   <string name="ui.app.builder.banner.added">Widget hinzugefügt.</string>
   <string name="ui.app.builder.banner.removed">Widget entfernt.</string>
-  <string name="ui.app.builder.banner.invalid_json">Invalid JSON. Fix and retry.</string>
+  <string name="ui.app.builder.banner.invalid_json">Ungültiges JSON. Bitte korrigieren und erneut versuchen.</string>
   <string name="ui.app.builder.banner.updated">Widget-Konfiguration aktualisiert.</string>
   <string name="ui.app.settings.page_title">Einstellungen</string>
   <string name="ui.app.settings.page_subtitle">Verwalte deine Benutzereinstellungen.</string>
@@ -87,10 +87,10 @@
   <string name="ui.app.admin.page_subtitle">Werkzeuge und Steuerung nur für Admins.</string>
   <string name="ui.app.admin.disable_confirm">Modul deaktivieren</string>
   <string name="ui.app.admin.checking">Prüfe...</string>
-  <string name="ui.app.demo.switched">Demo: switched to sandbox page.</string>
-  <string name="ui.app.demo.added">Demo: added a learning progress widget.</string>
-  <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>
-  <string name="ui.app.demo.removed">Demo: removed the most recent widget.</string>
+  <string name="ui.app.demo.switched">Demo: zur Sandbox-Seite gewechselt.</string>
+  <string name="ui.app.demo.added">Demo: ein Lernfortschritts-Widget hinzugefügt.</string>
+  <string name="ui.app.demo.tweaked">Demo: die erste Widget-Konfiguration angepasst.</string>
+  <string name="ui.app.demo.removed">Demo: das zuletzt hinzugefügte Widget entfernt.</string>
   <string name="ui.app.demo.complete">Demo abgeschlossen.</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>

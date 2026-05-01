@@ -13,8 +13,8 @@
   <string name="ui.reuse.actions">操作</string>
   <string name="ui.reuse.navigation">ナビゲーション</string>
   <string name="ui.reuse.id">ID</string>
-  <string name="ui.reuse.version">Version</string>
-  <string name="ui.reuse.class">Class</string>
+  <string name="ui.reuse.version">バージョン</string>
+  <string name="ui.reuse.class">クラス</string>
   <string name="ui.reuse.appearance">外観</string>
 
   <string name="ui.layout.brand.aria">Cognis ホーム</string>
@@ -36,25 +36,25 @@
   <string name="ui.app.login.typing.sample.2">講師と学ぶ</string>
   <string name="ui.app.login.typing.sample.3">クラスに参加</string>
   <string name="ui.app.login.typing.sample.4">宿題をしよう</string>
-  <string name="ui.app.login.typing.sample.5">It's a social space!</string>
+  <string name="ui.app.login.typing.sample.5">交流の場です！</string>
   <string name="ui.app.login.typing.sample.6">FOSS により提供</string>
   <string name="ui.app.builder.banner.ready">準備完了。</string>
-  <string name="ui.app.builder.remove">Remove</string>
+  <string name="ui.app.builder.remove">削除</string>
   <string name="ui.app.builder.custom_widget">カスタムウィジェット</string>
   <string name="ui.app.builder.json_config">JSON 設定</string>
   <string name="ui.app.builder.empty">ウィジェットはまだありません。ライブラリから追加してください。</string>
-  <string name="ui.app.builder.add_widget">Add Widget</string>
+  <string name="ui.app.builder.add_widget">ウィジェット追加</string>
   <string name="ui.app.builder.run_demo">デモを実行</string>
   <string name="ui.app.builder.page_title">ページビルダー</string>
   <string name="ui.app.builder.page_subtitle">ガードされた行/列で安全にカスタマイズできます。</string>
-  <string name="ui.app.builder.topbar">Dashboard Layout</string>
+  <string name="ui.app.builder.topbar">ダッシュボードレイアウト</string>
   <string name="ui.app.builder.status">ビルダー状態</string>
   <string name="ui.app.builder.demo_mode">デモモード</string>
   <string name="ui.app.builder.on">オン</string>
   <string name="ui.app.builder.off">オフ</string>
   <string name="ui.app.builder.banner.added">ウィジェットを追加しました。</string>
   <string name="ui.app.builder.banner.removed">ウィジェットを削除しました。</string>
-  <string name="ui.app.builder.banner.invalid_json">Invalid JSON. Fix and retry.</string>
+  <string name="ui.app.builder.banner.invalid_json">無効な JSON です。修正して再試行してください。</string>
   <string name="ui.app.builder.banner.updated">ウィジェット設定を更新しました。</string>
   <string name="ui.app.settings.page_title">設定</string>
   <string name="ui.app.settings.page_subtitle">ユーザー設定を管理します。</string>
@@ -87,10 +87,10 @@
   <string name="ui.app.admin.page_subtitle">管理者専用ツールとコントロール。</string>
   <string name="ui.app.admin.disable_confirm">モジュールを無効化</string>
   <string name="ui.app.admin.checking">確認中...</string>
-  <string name="ui.app.demo.switched">Demo: switched to sandbox page.</string>
-  <string name="ui.app.demo.added">Demo: added a learning progress widget.</string>
-  <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>
-  <string name="ui.app.demo.removed">Demo: removed the most recent widget.</string>
+  <string name="ui.app.demo.switched">デモ: サンドボックスページに切り替えました。</string>
+  <string name="ui.app.demo.added">デモ: 学習進捗ウィジェットを追加しました。</string>
+  <string name="ui.app.demo.tweaked">デモ: 最初のウィジェット設定を調整しました。</string>
+  <string name="ui.app.demo.removed">デモ: 最新のウィジェットを削除しました。</string>
   <string name="ui.app.demo.complete">デモ完了。</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>
