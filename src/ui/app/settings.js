@@ -7,8 +7,20 @@ let languagePriority = readPreferredLanguages();
 const i18n = await createI18n({ preferredLanguages: languagePriority });
 applyDocumentTitle(i18n, 'ui.page.title.settings');
 
+const FALLBACK_FONTS = ['Orbitron', 'Inter', 'Arial', 'sans-serif'];
+
 function section(label, content) {
   return `<section class="widget-card"><h3>${label}</h3>${content}</section>`;
+}
+
+function toFontFamilyValue(font) {
+  if (!font) return 'Orbitron';
+  return /^[a-zA-Z0-9-]+$/.test(font) ? font : `"${font.replace(/"/g, '\\"')}"`;
+}
+
+function parseSavedFont(fontValue) {
+  if (!fontValue || typeof fontValue !== 'string') return 'Orbitron';
+  return fontValue.split(',')[0].trim().replace(/^['"]|['"]$/g, '') || 'Orbitron';
 }
 
 async function loadPrefs() {
@@ -30,8 +42,9 @@ async function savePrefs(prefs) {
 
 async function loadFontsCatalog() {
   const response = await apiFetch('/api/v1/system/fonts');
+  if (!response.ok) throw new Error('font_catalog_load_failed');
   const payload = await response.json();
-  return Array.isArray(payload.data) ? payload.data : [];
+  return Array.isArray(payload?.data) && payload.data.length > 0 ? payload.data : [...FALLBACK_FONTS];
 }
 
 await renderDashboardLayout(root, {
@@ -40,8 +53,9 @@ await renderDashboardLayout(root, {
   toolbar: `<h3>${i18n.t('ui.app.settings.toolbar_title')}</h3><ul><li><button disabled>${i18n.t('ui.reuse.menu.profile')}</button></li><li><button disabled>${i18n.t('ui.reuse.appearance')}</button></li></ul>`,
   content: `<article class="docs-viewer">${section(i18n.t('ui.reuse.appearance'), `
       <label>${i18n.t('ui.app.settings.animation')} <select id="pref-animation"><option>none</option><option>fade</option><option>float</option></select></label><br/>
-      <label>${i18n.t('ui.app.settings.greeting_font')} <select id="pref-font"></select></label><br/>
-      <label>${i18n.t('ui.app.settings.greeting_size')} <input id="pref-font-size" type="number" min="0.8" max="2" step="0.05"/></label><br/>
+      <label>Font <select id="pref-font"></select></label>
+      <span id="pref-font-preview" style="margin-left:8px;font-size:1.1rem;">AaBbCc</span><br/>
+      <label>${i18n.t('ui.app.settings.greeting_size')} <button id="pref-font-size-down" type="button" aria-label="${i18n.t('ui.app.settings.greeting_size')} -">▼</button> <span id="pref-font-size-value">1.4</span> <button id="pref-font-size-up" type="button" aria-label="${i18n.t('ui.app.settings.greeting_size')} +">▲</button></label><br/>
       <section><h4>${i18n.t('ui.app.settings.language')}</h4><div class="language-preferences"><div><h5>${i18n.t('ui.app.settings.available_languages')}</h5><table id="available-languages" class="language-table"></table></div><div><h5>${i18n.t('ui.app.settings.preferred_languages')}</h5><table id="preferred-languages" class="language-table"></table></div></div></section>
       <button id="save-prefs">${i18n.t('ui.app.settings.save')}</button>
     `)}</article>`
@@ -49,26 +63,63 @@ await renderDashboardLayout(root, {
 
 const existingPrefs = await loadPrefs().catch(() => null);
 if (Array.isArray(existingPrefs?.languagePriority)) languagePriority = existingPrefs.languagePriority;
-const fontOptions = await loadFontsCatalog().catch(() => ['Orbitron', 'Inter', 'Arial', 'sans-serif']);
 
+const fontOptions = await loadFontsCatalog().catch(() => [...FALLBACK_FONTS]);
 const fontSelector = root.querySelector('#pref-font');
+const fontPreview = root.querySelector('#pref-font-preview');
+
 if (fontSelector) {
-  const fonts = Array.from(new Set(['Orbitron', ...fontOptions]));
-  fontSelector.innerHTML = fonts.map((font) => `<option value="${font}">${font}</option>`).join('');
+  const fonts = Array.from(new Set([...FALLBACK_FONTS, ...fontOptions]));
+  fonts.forEach((font) => {
+    const option = document.createElement('option');
+    option.value = font;
+    option.textContent = font;
+    option.style.fontFamily = `${toFontFamilyValue(font)}, Inter, Arial, sans-serif`;
+    fontSelector.append(option);
+  });
 }
 
-const defaultGreetingFont = existingPrefs?.greetingFont || 'Orbitron';
+const defaultGreetingFont = parseSavedFont(existingPrefs?.greetingFont);
+if (fontSelector && !Array.from(fontSelector.options).some((option) => option.value === defaultGreetingFont)) {
+  const customOption = document.createElement('option');
+  customOption.value = defaultGreetingFont;
+  customOption.textContent = `${defaultGreetingFont} (current)`;
+  fontSelector.prepend(customOption);
+}
 if (fontSelector) fontSelector.value = defaultGreetingFont;
+
+function updatePreview() {
+  if (!fontSelector || !fontPreview) return;
+  const selected = fontSelector.value || 'Orbitron';
+  fontPreview.style.fontFamily = `${toFontFamilyValue(selected)}, Inter, Arial, sans-serif`;
+}
+updatePreview();
+fontSelector?.addEventListener('change', updatePreview);
+
 const animationSelector = root.querySelector('#pref-animation');
 if (animationSelector) animationSelector.value = existingPrefs?.animation || 'none';
-const fontSizeInput = root.querySelector('#pref-font-size');
-if (fontSizeInput) fontSizeInput.value = String(existingPrefs?.greetingFontSize || 1.4);
+
+const fontSizeValue = root.querySelector('#pref-font-size-value');
+const initialFontSize = Math.max(0.8, Math.min(2, Number(existingPrefs?.greetingFontSize || 1.4)));
+let greetingFontSize = Number(initialFontSize.toFixed(2));
+if (fontSizeValue) fontSizeValue.textContent = greetingFontSize.toFixed(2);
+
+function setFontSize(nextSize) {
+  greetingFontSize = Math.max(0.8, Math.min(2, Number(nextSize.toFixed(2))));
+  if (fontSizeValue) fontSizeValue.textContent = greetingFontSize.toFixed(2);
+  if (fontPreview) fontPreview.style.fontSize = `${greetingFontSize}rem`;
+}
+
+root.querySelector('#pref-font-size-down')?.addEventListener('click', () => setFontSize(greetingFontSize - 0.05));
+root.querySelector('#pref-font-size-up')?.addEventListener('click', () => setFontSize(greetingFontSize + 0.05));
+setFontSize(greetingFontSize);
 
 root.querySelector('#save-prefs')?.addEventListener('click', async () => {
+  const selectedFont = root.querySelector('#pref-font')?.value || 'Orbitron';
   const prefs = {
     animation: root.querySelector('#pref-animation')?.value || 'none',
-    greetingFont: root.querySelector('#pref-font')?.value || 'Orbitron',
-    greetingFontSize: Number(root.querySelector('#pref-font-size')?.value || 1.4),
+    greetingFont: toFontFamilyValue(selectedFont),
+    greetingFontSize,
     languagePriority
   };
   await savePrefs(prefs);
@@ -78,14 +129,13 @@ root.querySelector('#save-prefs')?.addEventListener('click', async () => {
   window.location.reload();
 });
 
-
 async function loadLanguagesCatalog() {
   const response = await apiFetch('/api/v1/system/languages');
   const payload = await response.json();
   return payload.data || [];
 }
 
-function renderLanguageTables(catalog) {
+function renderLanguageTables(catalog) { /* unchanged below */
   const preferred = root.querySelector('#preferred-languages');
   const available = root.querySelector('#available-languages');
   if (!preferred || !available) return;
@@ -93,9 +143,9 @@ function renderLanguageTables(catalog) {
   preferred.innerHTML = languagePriority.map((iso) => {
     const match = catalog.find((item) => item.iso_code === iso);
     const label = match ? `${match.name} (${iso})` : iso;
-    return `<tr draggable=\"true\" data-lang-row=\"${iso}\"><td>${label}</td><td class=\"drag-handle\">⬍</td></tr>`;
+    return `<tr draggable="true" data-lang-row="${iso}"><td>${label}</td><td class="drag-handle">⬍</td></tr>`;
   }).join('');
-  available.innerHTML = catalog.filter((item) => !preferredSet.has(item.iso_code)).map((item) => `<tr draggable=\"true\" data-lang-row=\"${item.iso_code}\"><td>${item.name} (${item.iso_code})</td><td class=\"drag-handle\">⬍</td></tr>`).join('');
+  available.innerHTML = catalog.filter((item) => !preferredSet.has(item.iso_code)).map((item) => `<tr draggable="true" data-lang-row="${item.iso_code}"><td>${item.name} (${item.iso_code})</td><td class="drag-handle">⬍</td></tr>`).join('');
 }
 
 const languageCatalog = await loadLanguagesCatalog().catch(() => [{ iso_code: 'en', name: 'English' }]);

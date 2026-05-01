@@ -6,6 +6,9 @@ import { promisify } from 'node:util';
 import type { HealthService } from '@cognis/core';
 
 const execFileAsync = promisify(execFile);
+const DEFAULT_FONT_CATALOG = ['Orbitron', 'Inter', 'Arial', 'sans-serif'];
+const FONT_CACHE_TTL_MS = 5 * 60 * 1000;
+let fontsCache: { expiresAt: number; data: string[] } | null = null;
 
 async function listLanguages() {
   const root = join(process.cwd(), 'src', 'ui', 'languages');
@@ -28,7 +31,10 @@ async function listLanguages() {
 
 async function listInstalledFonts() {
   try {
-    const { stdout } = await execFileAsync('fc-list', [':', 'family']);
+    const now = Date.now();
+    if (fontsCache && fontsCache.expiresAt > now) return fontsCache.data;
+
+    const { stdout } = await execFileAsync('fc-list', [':', 'family'], { timeout: 3000, maxBuffer: 10 * 1024 * 1024 });
     const fonts = stdout
       .split(/\r?\n/)
       .map((line) => line.trim())
@@ -37,9 +43,12 @@ async function listInstalledFonts() {
       .map((font) => font.trim())
       .filter(Boolean);
 
-    return [...new Set(fonts)].sort((a, b) => a.localeCompare(b));
+    const mergedFonts = Array.from(new Set([...DEFAULT_FONT_CATALOG, ...fonts])).sort((a, b) => a.localeCompare(b));
+    const resolvedFonts = mergedFonts.length > 0 ? mergedFonts : [...DEFAULT_FONT_CATALOG];
+    fontsCache = { data: resolvedFonts, expiresAt: now + FONT_CACHE_TTL_MS };
+    return resolvedFonts;
   } catch {
-    return ['Orbitron', 'Inter', 'Arial', 'sans-serif'];
+    return [...DEFAULT_FONT_CATALOG];
   }
 }
 
