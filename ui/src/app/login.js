@@ -54,6 +54,7 @@ document.querySelector('#login-form')?.addEventListener('submit', async (event) 
     localStorage.setItem('cognis_token', body.data.token);
     localStorage.setItem('cognis_account', body.data.accountId);
     localStorage.setItem('cognis_display_name', body.data.displayName || body.data.accountId);
+    localStorage.setItem('cognis_role', body.data.role || 'user');
     window.location.href = '/dashboard';
     return;
   }

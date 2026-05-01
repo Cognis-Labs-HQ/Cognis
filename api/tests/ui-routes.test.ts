@@ -82,6 +82,12 @@ test('modules page requires login and serves html when authenticated', async () 
   assert.equal(anonymous.status, 302);
   assert.equal(anonymous.headers.location, '/login');
 
+  const userToken = issueAccessToken('u1', 'user', 60);
+  const nonAdmin = createResponseRecorder();
+  await route({ headers: { cookie: `cognis_access_token=${userToken}` } } as any, nonAdmin.res as any, new URL('http://localhost/modules'));
+  assert.equal(nonAdmin.status, 302);
+  assert.equal(nonAdmin.headers.location, '/dashboard');
+
   const token = issueAccessToken('u1', 'admin', 60);
   const authed = createResponseRecorder();
   await route({ headers: { cookie: `cognis_access_token=${token}` } } as any, authed.res as any, new URL('http://localhost/modules'));
@@ -99,4 +105,26 @@ test('module ui routes can be published outside /modules prefix', async () => {
   await route({ headers: { cookie: `cognis_access_token=${token}` } } as any, recorder.res as any, new URL('http://localhost/analytics'));
   assert.equal(recorder.status, 200);
   assert.match(recorder.body, /Sample Analytics Module/);
+});
+
+
+test('administration page is visible to admins only', async () => {
+  const route = createUiRoutes();
+
+  const anonymous = createResponseRecorder();
+  await route({ headers: {} } as any, anonymous.res as any, new URL('http://localhost/administration'));
+  assert.equal(anonymous.status, 302);
+  assert.equal(anonymous.headers.location, '/login');
+
+  const userToken = issueAccessToken('u1', 'user', 60);
+  const userRes = createResponseRecorder();
+  await route({ headers: { cookie: `cognis_access_token=${userToken}` } } as any, userRes.res as any, new URL('http://localhost/administration'));
+  assert.equal(userRes.status, 302);
+  assert.equal(userRes.headers.location, '/dashboard');
+
+  const adminToken = issueAccessToken('u1', 'admin', 60);
+  const adminRes = createResponseRecorder();
+  await route({ headers: { cookie: `cognis_access_token=${adminToken}` } } as any, adminRes.res as any, new URL('http://localhost/administration'));
+  assert.equal(adminRes.status, 200);
+  assert.match(adminRes.body, /app\/administration\.js/);
 });

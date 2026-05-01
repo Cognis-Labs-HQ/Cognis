@@ -35,9 +35,17 @@ function getCookie(req: IncomingMessage, name: string) {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-function isLoggedIn(req: IncomingMessage) {
+function getSessionClaims(req: IncomingMessage) {
   const token = getCookie(req, 'cognis_access_token');
   return token ? verifyAccessToken(token) : null;
+}
+
+function isLoggedIn(req: IncomingMessage) {
+  return Boolean(getSessionClaims(req));
+}
+
+function isAdmin(req: IncomingMessage) {
+  return getSessionClaims(req)?.role === 'admin';
 }
 
 async function serveFile(res: ServerResponse, filePath: string, contentType: string) {
@@ -87,9 +95,31 @@ export function createUiRoutes(runtime?: ModuleRuntimeGateway) {
       return true;
     }
 
+
+    if (url.pathname === '/administration') {
+      if (!isLoggedIn(req)) {
+        res.writeHead(302, { location: '/login' });
+        res.end();
+        return true;
+      }
+      if (!isAdmin(req)) {
+        res.writeHead(302, { location: '/dashboard' });
+        res.end();
+        return true;
+      }
+
+      await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'administration.html'), 'text/html; charset=utf-8');
+      return true;
+    }
+
     if (url.pathname === '/modules') {
       if (!isLoggedIn(req)) {
         res.writeHead(302, { location: '/login' });
+        res.end();
+        return true;
+      }
+      if (!isAdmin(req)) {
+        res.writeHead(302, { location: '/dashboard' });
         res.end();
         return true;
       }
