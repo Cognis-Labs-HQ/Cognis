@@ -143,49 +143,142 @@ export class DbLocalAccountStore implements LocalAccountStore {
     return '?';
   }
 
+  private currentTimestampExpression() {
+    if (this.dbType === 'postgresql') return 'NOW()';
+    return 'CURRENT_TIMESTAMP';
+  }
+
   async ensureSchema() {
+    if (this.dbType === 'postgresql') {
+      await this.db.execute(`CREATE TABLE IF NOT EXISTS accounts (
+        id TEXT PRIMARY KEY,
+        email TEXT,
+        display_name TEXT,
+        is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`);
+      await this.db.execute(`CREATE TABLE IF NOT EXISTS local_auth_credentials (
+        account_id TEXT PRIMARY KEY,
+        username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        password_algorithm TEXT NOT NULL DEFAULT 'sha256',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      )`);
+      return;
+    }
+
+    if (this.dbType === 'mariadb') {
+      await this.db.execute(`CREATE TABLE IF NOT EXISTS accounts (
+        id VARCHAR(191) PRIMARY KEY,
+        email VARCHAR(320) NULL,
+        display_name VARCHAR(255) NULL,
+        is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )`);
+      await this.db.execute(`CREATE TABLE IF NOT EXISTS local_auth_credentials (
+        account_id VARCHAR(191) PRIMARY KEY,
+        username VARCHAR(191) NOT NULL UNIQUE,
+        password_hash VARCHAR(255) NOT NULL,
+        password_algorithm VARCHAR(64) NOT NULL DEFAULT 'sha256',
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+      )`);
+      return;
+    }
+
     await this.db.execute(`CREATE TABLE IF NOT EXISTS accounts (
-      username VARCHAR(255) PRIMARY KEY,
-      password_hash VARCHAR(255) NOT NULL,
-      role VARCHAR(32) NOT NULL,
-      enabled BOOLEAN NOT NULL DEFAULT TRUE
+      id TEXT PRIMARY KEY,
+      email TEXT,
+      display_name TEXT,
+      is_admin INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`);
+    await this.db.execute(`CREATE TABLE IF NOT EXISTS local_auth_credentials (
+      account_id TEXT PRIMARY KEY,
+      username TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      password_algorithm TEXT NOT NULL DEFAULT 'sha256',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
     )`);
   }
 
   async register(username: string, password: string, isAdmin = false) {
     if (await this.has(username)) throw new Error('username_taken');
     const role = isAdmin ? 'admin' : 'user';
-    await this.db.execute(`INSERT INTO accounts (username, password_hash, role, enabled) VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)})`, [username, hash(password), role, true]);
+    await this.db.execute('BEGIN');
+    try {
+      await this.db.execute(
+        `INSERT INTO accounts (id, display_name, is_admin)
+         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)})`,
+        [username, username, role === 'admin']
+      );
+      await this.db.execute(
+        `INSERT INTO local_auth_credentials (account_id, username, password_hash, password_algorithm)
+         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)})`,
+        [username, username, hash(password), 'sha256']
+      );
+      await this.db.execute('COMMIT');
+    } catch (error) {
+      await this.db.execute('ROLLBACK');
+      throw error;
+    }
     return { username, isAdmin, enabled: true };
   }
 
   async verify(username: string, password: string): Promise<AuthContext | null> {
-    const result = await this.db.execute(`SELECT username, password_hash, role, enabled FROM accounts WHERE username = ${this.placeholder(1)}`, [username]);
+    const result = await this.db.execute(
+      `SELECT c.username, c.password_hash, a.is_admin
+       FROM local_auth_credentials c
+       JOIN accounts a ON a.id = c.account_id
+       WHERE c.username = ${this.placeholder(1)}`,
+      [username]
+    );
     const account = result.rows?.[0];
-    if (!account || !account.enabled || account.password_hash !== hash(password)) return null;
-    return { accountId: username, provider: 'local', externalUserId: username, isAdmin: account.role === 'admin' };
+    if (!account || account.password_hash !== hash(password)) return null;
+    return { accountId: username, provider: 'local', externalUserId: username, isAdmin: Boolean(account.is_admin) };
   }
 
   async has(username: string) {
-    const result = await this.db.execute(`SELECT username FROM accounts WHERE username = ${this.placeholder(1)}`, [username]);
+    const result = await this.db.execute(`SELECT username FROM local_auth_credentials WHERE username = ${this.placeholder(1)}`, [username]);
     return Boolean(result.rows && result.rows.length > 0);
   }
 
   async list() {
-    const result = await this.db.execute('SELECT username, role, enabled FROM accounts ORDER BY username');
-    return (result.rows ?? []).map((row) => ({ username: row.username, isAdmin: row.role === 'admin', enabled: Boolean(row.enabled) }));
+    const result = await this.db.execute(
+      'SELECT c.username, a.is_admin FROM local_auth_credentials c JOIN accounts a ON a.id = c.account_id ORDER BY c.username'
+    );
+    return (result.rows ?? []).map((row) => ({ username: row.username, isAdmin: Boolean(row.is_admin), enabled: true }));
   }
 
   async setRole(username: string, role: 'user' | 'admin') {
-    await this.db.execute(`UPDATE accounts SET role = ${this.placeholder(1)} WHERE username = ${this.placeholder(2)}`, [role, username]);
+    await this.db.execute(
+      `UPDATE accounts SET is_admin = ${this.placeholder(1)}, updated_at = ${this.currentTimestampExpression()}
+       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(2)})`,
+      [role === 'admin', username]
+    );
   }
   async setPassword(username: string, password: string) {
-    await this.db.execute(`UPDATE accounts SET password_hash = ${this.placeholder(1)} WHERE username = ${this.placeholder(2)}`, [hash(password), username]);
+    await this.db.execute(
+      `UPDATE local_auth_credentials
+       SET password_hash = ${this.placeholder(1)}, updated_at = ${this.currentTimestampExpression()}
+       WHERE username = ${this.placeholder(2)}`,
+      [hash(password), username]
+    );
   }
   async setEnabled(username: string, enabled: boolean) {
-    await this.db.execute(`UPDATE accounts SET enabled = ${this.placeholder(1)} WHERE username = ${this.placeholder(2)}`, [enabled, username]);
+    if (!enabled) {
+      throw new Error('disable_not_supported');
+    }
   }
   async delete(username: string) {
-    await this.db.execute(`DELETE FROM accounts WHERE username = ${this.placeholder(1)}`, [username]);
+    await this.db.execute(`DELETE FROM accounts WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(1)})`, [username]);
   }
 }
