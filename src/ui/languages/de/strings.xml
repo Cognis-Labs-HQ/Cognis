@@ -66,6 +66,7 @@
   <string name="ui.app.settings.language">Sprache</string>
   <string name="ui.app.settings.save">Einstellungen speichern</string>
   <string name="ui.app.settings.saved_alert">Einstellungen gespeichert.</string>
+  <string name="ui.app.settings.sidebar.preferences">Einstellungen</string>
 
   <string name="ui.app.docs.page_title">Dokumente</string>
   <string name="ui.app.docs.page_subtitle">Entwicklerdokumentation.</string>

@@ -66,6 +66,7 @@
   <string name="ui.app.settings.language">言語</string>
   <string name="ui.app.settings.save">設定を保存</string>
   <string name="ui.app.settings.saved_alert">設定を保存しました。</string>
+  <string name="ui.app.settings.sidebar.preferences">環境設定</string>
 
   <string name="ui.app.docs.page_title">ドキュメント</string>
   <string name="ui.app.docs.page_subtitle">開発者ドキュメント。</string>

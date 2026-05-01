@@ -66,6 +66,7 @@
   <string name="ui.app.settings.language">Bahasa</string>
   <string name="ui.app.settings.save">Simpan Preferensi</string>
   <string name="ui.app.settings.saved_alert">Preferensi tersimpan.</string>
+  <string name="ui.app.settings.sidebar.preferences">Preferensi</string>
 
   <string name="ui.app.docs.page_title">Dokumentasi</string>
   <string name="ui.app.docs.page_subtitle">Dokumentasi pengembang.</string>

@@ -1,5 +1,5 @@
 export const DEFAULT_FONT = 'Orbitron';
-export const DEFAULT_FONT_SIZE = 12;
+export const DEFAULT_FONT_SIZE = 14;
 const FALLBACK_FONTS = [DEFAULT_FONT, 'Inter', 'Arial', 'sans-serif'];
 
 export function toFontFamilyValue(font) {

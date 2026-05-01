@@ -34,7 +34,7 @@ async function savePrefs(prefs) {
 await renderDashboardLayout(root, {
   i18n,
   pageContext: `<h1>${i18n.t('ui.app.settings.page_title')}</h1><p>${i18n.t('ui.app.settings.page_subtitle')}</p>`,
-  toolbar: `<h3>${i18n.t('ui.app.settings.toolbar_title')}</h3><ul><li><button disabled>${i18n.t('ui.reuse.menu.profile')}</button></li><li><button disabled>${i18n.t('ui.reuse.appearance')}</button></li></ul>`,
+  toolbar: `<h3>${i18n.t('ui.app.settings.page_title')}</h3><ul><li><button disabled>${i18n.t('ui.app.settings.sidebar.preferences')}</button></li></ul>`,
   content: `<article class="docs-viewer">${section(i18n.t('ui.reuse.appearance'), `
       <label>${i18n.t('ui.app.settings.animation')} <select id="pref-animation"><option>none</option><option>fade</option><option>float</option></select></label><br/>
       <label class="font-picker-label">${i18n.t('ui.app.settings.font')} <div id="pref-font-picker"></div></label>

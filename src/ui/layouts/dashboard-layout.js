@@ -66,14 +66,23 @@ function bindTopbarActions() {
     item.hidden = !isAdminRole();
   });
 
+  let closeTimeout = null;
+
   const openMenu = () => {
+    if (closeTimeout) {
+      clearTimeout(closeTimeout);
+      closeTimeout = null;
+    }
     dropdown?.classList.remove('hidden');
     profileMenu?.classList.add('open');
   };
 
   const closeMenu = () => {
-    dropdown?.classList.add('hidden');
-    profileMenu?.classList.remove('open');
+    closeTimeout = setTimeout(() => {
+      dropdown?.classList.add('hidden');
+      profileMenu?.classList.remove('open');
+      closeTimeout = null;
+    }, 300);
   };
 
   toggle?.addEventListener('mouseenter', openMenu);
