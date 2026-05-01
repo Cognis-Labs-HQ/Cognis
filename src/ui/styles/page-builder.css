@@ -92,7 +92,7 @@ button:hover {
 .toolbar ul {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 6px;
   display: grid;
   gap: 10px;
 }

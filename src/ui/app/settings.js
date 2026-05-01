@@ -34,16 +34,47 @@ async function savePrefs(prefs) {
 await renderDashboardLayout(root, {
   i18n,
   pageContext: `<h1>${i18n.t('ui.app.settings.page_title')}</h1><p>${i18n.t('ui.app.settings.page_subtitle')}</p>`,
-  toolbar: `<h3>${i18n.t('ui.app.settings.page_title')}</h3><ul><li><button disabled>${i18n.t('ui.app.settings.sidebar.preferences')}</button></li></ul>`,
+  toolbar: `<h3>${i18n.t('ui.app.settings.page_title')}</h3><ul>
+    <li><button data-section="appearance">${i18n.t('ui.reuse.appearance')}</button></li>
+  </ul>`,
   content: `<article class="docs-viewer">${section(i18n.t('ui.reuse.appearance'), `
       <label class="font-picker-label">${i18n.t('ui.app.settings.font')} <div id="pref-font-picker"></div></label>
       <span id="pref-font-preview" style="margin-left:8px;font-size:1.1em;">AaBbCc</span><br/>
-      <label>${i18n.t('ui.app.settings.font_size')} <button id="pref-font-size-down" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} -">▼</button> <span id="pref-font-size-value">${DEFAULT_FONT_SIZE} pt</span> <button id="pref-font-size-up" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} +">▲</button></label>
+      <div class="font-size-control">
+        <span>${i18n.t('ui.app.settings.font_size')}</span>
+        <div class="font-size-stepper">
+          <button id="pref-font-size-up" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} +">▲</button>
+          <span id="pref-font-size-value">${DEFAULT_FONT_SIZE} pt</span>
+          <button id="pref-font-size-down" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} -">▼</button>
+        </div>
+      </div>
       <button id="pref-font-reset" class="font-reset-btn" type="button">${i18n.t('ui.app.settings.reset_font')}</button><br/>
       <section><h4>${i18n.t('ui.app.settings.language')}</h4><div class="language-preferences"><div><h5>${i18n.t('ui.app.settings.available_languages')}</h5><table id="available-languages" class="language-table"></table></div><div><h5>${i18n.t('ui.app.settings.preferred_languages')}</h5><table id="preferred-languages" class="language-table"></table></div></div></section>
       <button id="save-prefs">${i18n.t('ui.app.settings.save')}</button>
     `)}</article>`
 });
+
+const DEFAULT_SECTION = 'appearance';
+
+function applyToolbarActiveState() {
+  const hash = window.location.hash.slice(1) || DEFAULT_SECTION;
+  root.querySelectorAll('.toolbar button[data-section]').forEach((btn) => {
+    const isActive = btn.dataset.section === hash;
+    btn.classList.toggle('active', isActive);
+    if (isActive) btn.setAttribute('aria-current', 'page');
+    else btn.removeAttribute('aria-current');
+  });
+}
+
+root.querySelectorAll('.toolbar button[data-section]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    window.location.hash = btn.dataset.section;
+  });
+});
+
+window.addEventListener('hashchange', applyToolbarActiveState);
+
+applyToolbarActiveState();
 
 const existingPrefs = await loadPrefs().catch(() => null);
 if (Array.isArray(existingPrefs?.languagePriority)) languagePriority = existingPrefs.languagePriority;
