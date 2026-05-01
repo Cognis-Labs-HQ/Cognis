@@ -14,17 +14,28 @@ interface CommandSpec {
   name: string;
   usage: string;
   description: string;
+  section: string;
   handler: CommandHandler;
 }
 
 const registry = new Map<string, CommandSpec>();
 
-function register(name: string, handler: CommandHandler, options?: { usage?: string; description?: string }) {
+function inferSection(name: string): string {
+  if (name.startsWith('user:')) return 'User';
+  if (name.startsWith('system:')) return 'System';
+  if (name.startsWith('modules:')) return 'Modules';
+  if (name.startsWith('api:')) return 'API';
+  if (name === 'help') return 'General';
+  return 'Extensions';
+}
+
+function register(name: string, handler: CommandHandler, options?: { usage?: string; description?: string; section?: string }) {
   registry.set(name, {
     name,
     handler,
     usage: options?.usage ?? `cognisctl ${name}`,
-    description: options?.description ?? 'No description provided.'
+    description: options?.description ?? 'No description provided.',
+    section: options?.section ?? inferSection(name)
   });
 }
 
@@ -77,6 +88,15 @@ async function apiPost(apiBaseUrl: string, route: string, body?: unknown, apiTok
 
 
 
+
+function printStructured(value: unknown) {
+  if (typeof value === 'string') {
+    console.log(value);
+    return;
+  }
+  console.log(JSON.stringify(value, null, 2));
+}
+
 async function resolveCliToken() {
   const tokenPath = process.env.COGNIS_CLI_TOKEN_PATH ?? '/var/run/cognis/cli-access.token';
   const token = (await readFile(tokenPath, 'utf8')).trim();
@@ -100,8 +120,23 @@ function printGlobalHelp() {
 
   const commands = [...registry.values()].sort((a, b) => a.name.localeCompare(b.name));
   const maxName = commands.reduce((acc, item) => Math.max(acc, item.name.length), 0);
+  const grouped = new Map<string, CommandSpec[]>();
+
   for (const command of commands) {
-    console.log(`  ${command.name.padEnd(maxName + 2)}${command.description}`);
+    const bucket = grouped.get(command.section) ?? [];
+    bucket.push(command);
+    grouped.set(command.section, bucket);
+  }
+
+  const sectionOrder = ['General', 'System', 'Modules', 'User', 'API', 'Extensions'];
+  for (const sectionName of sectionOrder) {
+    const sectionCommands = grouped.get(sectionName);
+    if (!sectionCommands || sectionCommands.length === 0) continue;
+
+    console.log(`\n  ${sectionName}:`);
+    for (const command of sectionCommands) {
+      console.log(`    ${command.name.padEnd(maxName + 2)}${command.description}`);
+    }
   }
 }
 
@@ -143,123 +178,139 @@ register('api:request', async ({ args, apiBaseUrl, getApiToken }) => {
   }
 
   const payload = await apiRequest(apiBaseUrl, route, { method: method.toUpperCase(), body, apiToken: await getApiToken() });
-  if (typeof payload === 'string') {
-    console.log(payload);
-    return;
-  }
-  console.log(JSON.stringify(payload, null, 2));
+  printStructured(payload);
 }, { usage: 'cognisctl api:request <method> <route> [--body-json <json>]', description: 'Make an authenticated request to any API route.' });
 
 register('system:health', async ({ apiBaseUrl, getApiToken }) => {
   const payload = await apiGet(apiBaseUrl, '/api/v1/system/health', await getApiToken());
-  console.log(JSON.stringify(payload, null, 2));
+  printStructured(payload);
 }, { usage: 'cognisctl system:health', description: 'Check the API system health endpoint.' });
 
 register('modules:list', async ({ apiBaseUrl, getApiToken }) => {
-  const payload = await apiGet(apiBaseUrl, '/api/v1/docs', await getApiToken()) as { data: Array<{ slug: string }> };
-  console.log('Available docs slugs (placeholder for module registry):');
-  for (const item of payload.data) console.log(`- ${item.slug}`);
-}, { usage: 'cognisctl modules:list', description: 'List available modules/docs from the API.' });
+  const payload = await apiGet(apiBaseUrl, '/api/v1/modules', await getApiToken()) as { data: Array<{ id: string; version: string; class: string }> };
+  const data = payload.data.map((module) => ({
+    ...module,
+    status: module.class === 'core' ? 'enabled' : 'available'
+  }));
+  printStructured({ data });
+}, { usage: 'cognisctl modules:list', description: 'List available modules from the API with status.' });
 
 register('modules:enable', async ({ args, apiBaseUrl, getApiToken }) => {
   const [moduleId] = args;
   requireArgs(args, ['moduleId'], 'cognisctl modules:enable <moduleId>');
-  const payload = await apiPost(apiBaseUrl, `/api/v1/modules/${encodeURIComponent(moduleId)}/enable`, undefined, await getApiToken());
-  console.log(JSON.stringify(payload, null, 2));
-}, { usage: 'cognisctl modules:enable <moduleId>', description: 'Enable a module by ID.' });
+    const acknowledge = args.includes('--ack-external-disclaimer');
+  const route = `/api/v1/modules/${encodeURIComponent(moduleId)}/enable${acknowledge ? '?acknowledgeExternalDisclaimer=true' : ''}`;
+  const payload = await apiPost(apiBaseUrl, route, undefined, await getApiToken());
+  printStructured(payload);
+}, { usage: 'cognisctl modules:enable <moduleId> [--ack-external-disclaimer]', description: 'Enable a module by ID.' });
 
 register('modules:disable', async ({ args, apiBaseUrl, getApiToken }) => {
   const [moduleId] = args;
   requireArgs(args, ['moduleId'], 'cognisctl modules:disable <moduleId>');
   const payload = await apiPost(apiBaseUrl, `/api/v1/modules/${encodeURIComponent(moduleId)}/disable`, undefined, await getApiToken());
-  console.log(JSON.stringify(payload, null, 2));
+  printStructured(payload);
 }, { usage: 'cognisctl modules:disable <moduleId>', description: 'Disable a module by ID.' });
 
 register('user:list', async ({ apiBaseUrl, getApiToken }) => {
   const payload = await apiGet(apiBaseUrl, '/api/v1/users', await getApiToken());
-  console.log(JSON.stringify(payload, null, 2));
+  printStructured(payload);
 }, { usage: 'cognisctl user:list', description: 'List users.' });
 
 register('user:create', async ({ args, apiBaseUrl, getApiToken }) => {
   const [username, password, role] = args;
   requireArgs(args, ['username', 'password', 'role'], 'cognisctl user:create <username> <password> <role>');
   const payload = await apiPost(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}`, { password, role }, await getApiToken());
-  console.log(JSON.stringify(payload, null, 2));
+  printStructured(payload);
 }, { usage: 'cognisctl user:create <username> <password> <role>', description: 'Create a user.' });
 
 register('user:role', async ({ args, apiBaseUrl, getApiToken }) => {
   const [username, role] = args;
   requireArgs(args, ['username', 'role'], 'cognisctl user:role <username> <role>');
   const payload = await apiPost(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}/role`, { role }, await getApiToken());
-  console.log(JSON.stringify(payload, null, 2));
+  printStructured(payload);
 }, { usage: 'cognisctl user:role <username> <role>', description: 'Update a user role.' });
 
 register('user:set-password', async ({ args, apiBaseUrl, getApiToken }) => {
   const [username, password] = args;
   requireArgs(args, ['username', 'password'], 'cognisctl user:set-password <username> <password>');
   const payload = await apiPost(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}/password`, { password }, await getApiToken());
-  console.log(JSON.stringify(payload, null, 2));
+  printStructured(payload);
 }, { usage: 'cognisctl user:set-password <username> <password>', description: 'Set a user password.' });
 
 register('user:disable', async ({ args, apiBaseUrl, getApiToken }) => {
   const [username] = args;
   requireArgs(args, ['username'], 'cognisctl user:disable <username>');
   const payload = await apiPost(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}/disable`, undefined, await getApiToken());
-  console.log(JSON.stringify(payload, null, 2));
+  printStructured(payload);
 }, { usage: 'cognisctl user:disable <username>', description: 'Disable a user.' });
 
 register('user:enable', async ({ args, apiBaseUrl, getApiToken }) => {
   const [username] = args;
   requireArgs(args, ['username'], 'cognisctl user:enable <username>');
   const payload = await apiPost(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}/enable`, undefined, await getApiToken());
-  console.log(JSON.stringify(payload, null, 2));
+  printStructured(payload);
 }, { usage: 'cognisctl user:enable <username>', description: 'Enable a user.' });
 
 register('user:delete', async ({ args, apiBaseUrl, getApiToken }) => {
   const [username] = args;
   requireArgs(args, ['username'], 'cognisctl user:delete <username>');
   const payload = await apiRequest(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}`, { method: 'DELETE', apiToken: await getApiToken() });
-  console.log(JSON.stringify(payload, null, 2));
+  printStructured(payload);
 }, { usage: 'cognisctl user:delete <username>', description: 'Delete a user.' });
 
 register('user:preferences:clear', async ({ args, apiBaseUrl, getApiToken }) => {
   const [username] = args;
   requireArgs(args, ['username'], 'cognisctl user:preferences:clear <username>');
   const payload = await apiPost(apiBaseUrl, `/api/v1/users/${encodeURIComponent(username)}/preferences/clear`, undefined, await getApiToken());
-  console.log(JSON.stringify(payload, null, 2));
+  printStructured(payload);
 }, { usage: 'cognisctl user:preferences:clear <username>', description: 'Clear saved user preferences.' });
 
-async function loadModuleCliPlugins() {
-  const modulesRoot = path.resolve(process.cwd(), 'modules');
-  let entries: string[] = [];
-  try {
-    entries = await readdir(modulesRoot);
-  } catch {
-    return;
+async function loadModuleCliPlugins(options?: { refresh?: boolean }) {
+  if (options?.refresh) {
+    for (const [name, spec] of registry.entries()) {
+      if (spec.section === 'Extensions') registry.delete(name);
+    }
   }
+  const configured = process.env.COGNIS_MODULE_CLI_PATHS ?? path.resolve(process.cwd(), 'modules');
+  const roots = configured.split(path.delimiter).filter(Boolean);
 
-  for (const moduleName of entries) {
-    const pluginPath = path.join(modulesRoot, moduleName, 'cli', 'index.js');
+  for (const modulesRoot of roots) {
+    let entries: string[] = [];
     try {
-      const plugin = await import(pluginPath);
-      if (typeof plugin.registerCommands === 'function') plugin.registerCommands({ register });
+      entries = await readdir(modulesRoot);
     } catch {
-      // module has no cli plugin
+      continue;
+    }
+
+    for (const moduleName of entries) {
+      const pluginPath = path.join(modulesRoot, moduleName, 'cli', 'index.js');
+      try {
+        const plugin = await import(pluginPath);
+        if (typeof plugin.registerCommands === 'function') plugin.registerCommands({ register, apiGet });
+      } catch {
+        // module has no cli plugin
+      }
     }
   }
 }
 
 async function main() {
-  await loadModuleCliPlugins();
+  await loadModuleCliPlugins({ refresh: true });
 
   const packageJson = await import('../package.json', { with: { type: 'json' } });
   const argv = process.argv.slice(2);
 
-  if (argv.length === 0 || argv[0] === '-h' || argv[0] === '--help') return printGlobalHelp();
+  if (argv.length === 0 || argv[0] === '-h' || argv[0] === '--help') {
+    await loadModuleCliPlugins({ refresh: true });
+    return printGlobalHelp();
+  }
   if (argv[0] === '-v' || argv[0] === '--version') return console.log(packageJson.default.version);
 
   const [command, ...args] = argv;
-  if (args.includes('-h') || args.includes('--help')) return printCommandHelp(command);
+  if (args.includes('-h') || args.includes('--help')) {
+    await loadModuleCliPlugins({ refresh: true });
+    return printCommandHelp(command);
+  }
 
   const apiBaseUrl = process.env.COGNIS_API_URL ?? 'http://localhost:3000';
   let apiTokenPromise: Promise<string> | null = null;

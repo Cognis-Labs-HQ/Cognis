@@ -1,0 +1,19 @@
+{
+  "id": "sample-analytics",
+  "name": "Sample Analytics",
+  "version": "1.0.0",
+  "class": "extension",
+  "coreApiVersion": "v1",
+  "capabilities": [
+    "metrics:read",
+    "ui:page",
+    "db:migrations"
+  ],
+  "entrypoints": {
+    "api": "./api/index.js",
+    "ui": "./ui/pages/analytics.html",
+    "cli": "./cli/index.js",
+    "db": "./db/001_sample_analytics.sql"
+  },
+  "publisher": "Cognis Labs"
+}

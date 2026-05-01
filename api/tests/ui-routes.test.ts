@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createUiRoutes } from '../src/routes/ui-routes.js';
+import path from 'node:path';
 import { issueAccessToken } from '../src/auth/access-tokens.js';
 
 function createResponseRecorder() {
@@ -71,4 +72,60 @@ test('ui static route serves templates and assets from public folder', async () 
   await route({ headers: {} } as any, assetRes.res as any, new URL('http://localhost/dashboard/static/assets/icons/cognis-icon.png'));
   assert.equal(assetRes.status, 200);
   assert.equal(assetRes.headers['content-type'], 'image/png');
+});
+
+
+test('modules page requires login and serves html when authenticated', async () => {
+  const route = createUiRoutes();
+  const anonymous = createResponseRecorder();
+  await route({ headers: {} } as any, anonymous.res as any, new URL('http://localhost/modules'));
+  assert.equal(anonymous.status, 302);
+  assert.equal(anonymous.headers.location, '/login');
+
+  const userToken = issueAccessToken('u1', 'user', 60);
+  const nonAdmin = createResponseRecorder();
+  await route({ headers: { cookie: `cognis_access_token=${userToken}` } } as any, nonAdmin.res as any, new URL('http://localhost/modules'));
+  assert.equal(nonAdmin.status, 302);
+  assert.equal(nonAdmin.headers.location, '/dashboard');
+
+  const token = issueAccessToken('u1', 'admin', 60);
+  const authed = createResponseRecorder();
+  await route({ headers: { cookie: `cognis_access_token=${token}` } } as any, authed.res as any, new URL('http://localhost/modules'));
+  assert.equal(authed.status, 302);
+  assert.equal(authed.headers.location, '/administration');
+});
+
+
+test('module ui routes can be published outside /modules prefix', async () => {
+  const route = createUiRoutes({
+    listManifests: async () => [{ id: 'sample-analytics', entrypoints: { ui: './ui/pages/analytics.html' } }]
+  } as any);
+  const token = issueAccessToken('u1', 'admin', 60);
+  const recorder = createResponseRecorder();
+  await route({ headers: { cookie: `cognis_access_token=${token}` } } as any, recorder.res as any, new URL('http://localhost/analytics'));
+  assert.equal(recorder.status, 200);
+  assert.match(recorder.body, /Sample Analytics Module/);
+});
+
+
+test('administration page is visible to admins only', async () => {
+  const route = createUiRoutes();
+
+  const anonymous = createResponseRecorder();
+  await route({ headers: {} } as any, anonymous.res as any, new URL('http://localhost/administration'));
+  assert.equal(anonymous.status, 302);
+  assert.equal(anonymous.headers.location, '/login');
+
+  const userToken = issueAccessToken('u1', 'user', 60);
+  const userRes = createResponseRecorder();
+  await route({ headers: { cookie: `cognis_access_token=${userToken}` } } as any, userRes.res as any, new URL('http://localhost/administration'));
+  assert.equal(userRes.status, 302);
+  assert.equal(userRes.headers.location, '/dashboard');
+
+  const adminToken = issueAccessToken('u1', 'admin', 60);
+  const adminRes = createResponseRecorder();
+  await route({ headers: { cookie: `cognis_access_token=${adminToken}` } } as any, adminRes.res as any, new URL('http://localhost/administration'));
+  assert.equal(adminRes.status, 200);
+  assert.match(adminRes.body, /app\/administration\.js/);
+  assert.match(adminRes.body, /id="app"/);
 });

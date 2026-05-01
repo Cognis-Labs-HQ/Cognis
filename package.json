@@ -12,7 +12,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "node ./tooling/scripts/lint-placeholder.mjs && node ./tooling/scripts/lint-readable.mjs",
-    "test": "node --import tsx --test $(find . -name \"*.test.ts\" -not -path \"*/node_modules/*\" -print)",
+    "test": "node --import tsx --test $(find . \\( -name \"*.test.ts\" -o -name \"*.test.js\" \\) -not -path \"*/node_modules/*\" -print)",
     "start": "node --import tsx api/src/main.ts",
     "ci:test": "npm run typecheck && npm test",
     "cli": "node --import tsx tooling/cli/src/index.ts"

@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { verifyAccessToken } from '../auth/access-tokens.js';
+import type { ModuleRuntimeGateway } from '@cognis/core';
 
 const UI_ROOT = path.resolve(process.cwd(), 'ui');
 const STATIC_ROOT = path.join(UI_ROOT, 'src');
@@ -11,15 +12,20 @@ function setSecurityHeaders(res: ServerResponse) {
   res.setHeader('x-content-type-options', 'nosniff');
   res.setHeader('x-frame-options', 'DENY');
   res.setHeader('referrer-policy', 'no-referrer');
-  res.setHeader('content-security-policy', "default-src 'self'; img-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'");
+  res.setHeader(
+    'content-security-policy',
+    "default-src 'self'; img-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'"
+  );
 }
 
 function resolveContentType(filePath: string) {
   const ext = path.extname(filePath);
+
   if (ext === '.css') return 'text/css; charset=utf-8';
   if (ext === '.js') return 'text/javascript; charset=utf-8';
   if (ext === '.webp') return 'image/webp';
   if (ext === '.html') return 'text/html; charset=utf-8';
+
   return 'image/png';
 }
 
@@ -29,9 +35,17 @@ function getCookie(req: IncomingMessage, name: string) {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-function isLoggedIn(req: IncomingMessage) {
+function getSessionClaims(req: IncomingMessage) {
   const token = getCookie(req, 'cognis_access_token');
   return token ? verifyAccessToken(token) : null;
+}
+
+function isLoggedIn(req: IncomingMessage) {
+  return Boolean(getSessionClaims(req));
+}
+
+function isAdmin(req: IncomingMessage) {
+  return getSessionClaims(req)?.role === 'admin';
 }
 
 async function serveFile(res: ServerResponse, filePath: string, contentType: string) {
@@ -46,7 +60,7 @@ async function serveFile(res: ServerResponse, filePath: string, contentType: str
   }
 }
 
-export function createUiRoutes() {
+export function createUiRoutes(runtime?: ModuleRuntimeGateway) {
   return async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
     if (url.pathname === '/') {
       res.writeHead(302, { location: '/dashboard' });
@@ -60,6 +74,7 @@ export function createUiRoutes() {
         res.end();
         return true;
       }
+
       await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'index.html'), 'text/html; charset=utf-8');
       return true;
     }
@@ -69,14 +84,48 @@ export function createUiRoutes() {
       return true;
     }
 
-
     if (url.pathname === '/settings') {
       if (!isLoggedIn(req)) {
         res.writeHead(302, { location: '/login' });
         res.end();
         return true;
       }
+
       await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'settings.html'), 'text/html; charset=utf-8');
+      return true;
+    }
+
+
+    if (url.pathname === '/administration') {
+      if (!isLoggedIn(req)) {
+        res.writeHead(302, { location: '/login' });
+        res.end();
+        return true;
+      }
+      if (!isAdmin(req)) {
+        res.writeHead(302, { location: '/dashboard' });
+        res.end();
+        return true;
+      }
+
+      await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'administration.html'), 'text/html; charset=utf-8');
+      return true;
+    }
+
+    if (url.pathname === '/modules') {
+      if (!isLoggedIn(req)) {
+        res.writeHead(302, { location: '/login' });
+        res.end();
+        return true;
+      }
+      if (!isAdmin(req)) {
+        res.writeHead(302, { location: '/dashboard' });
+        res.end();
+        return true;
+      }
+
+      res.writeHead(302, { location: '/administration' });
+      res.end();
       return true;
     }
 
@@ -86,8 +135,30 @@ export function createUiRoutes() {
         res.end();
         return true;
       }
+
       await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'docs.html'), 'text/html; charset=utf-8');
       return true;
+    }
+
+    if (runtime && isLoggedIn(req)) {
+      const manifests = await runtime.listManifests();
+
+      for (const manifest of manifests) {
+        if (!manifest.entrypoints?.ui) continue;
+
+        try {
+          const routeFile = path.resolve(process.cwd(), 'modules', manifest.id, 'routes.json');
+          const routes = JSON.parse(await readFile(routeFile, 'utf8')) as string[];
+
+          if (routes.includes(url.pathname) && !url.pathname.startsWith('/api/')) {
+            const uiFile = path.resolve(process.cwd(), 'modules', manifest.id, manifest.entrypoints.ui);
+            await serveFile(res, uiFile, 'text/html; charset=utf-8');
+            return true;
+          }
+        } catch {
+          // ignore missing/invalid module route declarations
+        }
+      }
     }
 
     if (!url.pathname.startsWith('/dashboard/static/')) return false;
@@ -99,9 +170,10 @@ export function createUiRoutes() {
       return true;
     }
 
-    const filePath = (relative.startsWith('assets/') || relative.startsWith('templates/'))
-      ? path.join(PUBLIC_ROOT, relative)
-      : path.join(STATIC_ROOT, relative);
+    const filePath =
+      relative.startsWith('assets/') || relative.startsWith('templates/')
+        ? path.join(PUBLIC_ROOT, relative)
+        : path.join(STATIC_ROOT, relative);
 
     await serveFile(res, filePath, resolveContentType(filePath));
     return true;

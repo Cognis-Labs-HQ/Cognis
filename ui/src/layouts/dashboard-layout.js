@@ -2,6 +2,10 @@ import { apiFetch } from '../reuse/api-client.js';
 import { loadTemplate } from '../reuse/template-loader.js';
 import { applyTheme, bindThemeToggle as bindSharedThemeToggle } from '../reuse/theme-toggle.js';
 
+function isAdminRole() {
+  return localStorage.getItem('cognis_role') === 'admin';
+}
+
 function getDisplayName() {
   return localStorage.getItem('cognis_display_name') || localStorage.getItem('cognis_account') || 'User';
 }
@@ -70,6 +74,11 @@ function bindTopbarActions() {
   if (nameEl) nameEl.textContent = getDisplayName();
 
   const profileMenu = document.querySelector('.profile-menu');
+  const adminOnlyItems = document.querySelectorAll('.admin-only');
+
+  adminOnlyItems.forEach((item) => {
+    item.hidden = !isAdminRole();
+  });
 
   const openMenu = () => {
     dropdown?.classList.remove('hidden');
@@ -96,6 +105,7 @@ function bindTopbarActions() {
     localStorage.removeItem('cognis_token');
     localStorage.removeItem('cognis_account');
     localStorage.removeItem('cognis_display_name');
+    localStorage.removeItem('cognis_role');
     document.cookie = 'cognis_token=; Path=/; Max-Age=0';
     window.location.href = '/login';
   });
