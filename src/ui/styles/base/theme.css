@@ -19,7 +19,9 @@
   --header-top-bg:
     radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 40%),
     linear-gradient(180deg, rgba(10, 22, 42, 0.97) 0%, rgba(7, 16, 32, 0.94) 100%);
-  --nav-bg: linear-gradient(135deg, rgba(13, 33, 25, 0.94), rgba(8, 21, 15, 0.94));
+  --nav-bg:
+    radial-gradient(ellipse at 50% 110%, rgba(18, 49, 52, 0.30) 0%, transparent 58%),
+    linear-gradient(90deg, #133033 0%, #172b48 100%);
   --nav-link: #c7d6ea;
   --context-muted: #93a4bf;
   --link: #9fd6ff;
