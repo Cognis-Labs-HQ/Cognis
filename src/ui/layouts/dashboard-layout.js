@@ -2,6 +2,7 @@ import { apiFetch } from '../reuse/api-client.js';
 import { loadTemplate } from '../reuse/template-loader.js';
 import { bindThemeToggle as bindSharedThemeToggle, getStoredTheme } from '../reuse/theme-toggle.js';
 import { applyStaticTranslations, createI18n } from '../reuse/i18n.js';
+import { loadUiPreferences, applyUiPreferences } from '../reuse/ui-preferences.js';
 
 function isAdminRole() {
   return localStorage.getItem('cognis_role') === 'admin';
@@ -31,27 +32,6 @@ async function saveUiPreferences(patch) {
   await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/ui-preferences`, {
     method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ layout: merged })
   });
-}
-
-async function loadUiPreferences() {
-  const account = localStorage.getItem('cognis_account');
-  if (!account) return null;
-  try {
-    const response = await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/ui-preferences`);
-    const payload = await response.json();
-    const raw = payload?.data?.layoutJson;
-    if (!raw) return null;
-    return JSON.parse(raw) || null;
-  } catch {
-    return null;
-  }
-}
-
-function applyUiPreferences(prefs) {
-  if (!prefs) return;
-  if (prefs.greetingFont) document.body.style.setProperty('--user-greeting-font', prefs.greetingFont);
-  if (prefs.greetingFontSize) document.body.style.setProperty('--user-greeting-size', `${prefs.greetingFontSize}rem`);
-  document.body.setAttribute('data-animation', prefs.animation || 'none');
 }
 
 

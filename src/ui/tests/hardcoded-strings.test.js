@@ -26,6 +26,8 @@ function isAllowed(value) {
   if (/^cognis_|^application\/|^content-type$/.test(v)) return true;
   if (/^\/?[a-z0-9_./:-]+$/i.test(v)) return true;
   if (/^Inter, Arial, sans-serif$/.test(v)) return true;
+  // Space-separated CSS class name tokens are not user-facing strings.
+  if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)+$/.test(v)) return true;
   if (v.includes('${')) return true;
   if (v.startsWith('.')) return true;
   if (v.includes('#') && v.includes(',')) return true;

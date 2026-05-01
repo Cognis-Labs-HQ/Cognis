@@ -3,7 +3,6 @@ import { join } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { HealthService } from '@cognis/core';
 
-
 async function listLanguages() {
   const root = join(process.cwd(), 'src', 'ui', 'languages');
   const entries = await readdir(root, { withFileTypes: true });

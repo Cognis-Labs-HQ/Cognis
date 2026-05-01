@@ -60,8 +60,9 @@
   <string name="ui.app.settings.page_subtitle">Kelola preferensi pengguna Anda.</string>
   <string name="ui.app.settings.toolbar_title">Preferensi</string>
   <string name="ui.app.settings.animation">Animasi</string>
-  <string name="ui.app.settings.greeting_font">Font sapaan</string>
-  <string name="ui.app.settings.greeting_size">Ukuran sapaan</string>
+  <string name="ui.app.settings.font">Font</string>
+  <string name="ui.app.settings.font_size">Ukuran font</string>
+  <string name="ui.app.settings.reset_font">Setel ulang font</string>
   <string name="ui.app.settings.language">Bahasa</string>
   <string name="ui.app.settings.save">Simpan Preferensi</string>
   <string name="ui.app.settings.saved_alert">Preferensi tersimpan.</string>

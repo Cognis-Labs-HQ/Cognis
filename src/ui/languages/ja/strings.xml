@@ -60,8 +60,9 @@
   <string name="ui.app.settings.page_subtitle">ユーザー設定を管理します。</string>
   <string name="ui.app.settings.toolbar_title">設定項目</string>
   <string name="ui.app.settings.animation">アニメーション</string>
-  <string name="ui.app.settings.greeting_font">挨拶フォント</string>
-  <string name="ui.app.settings.greeting_size">挨拶サイズ</string>
+  <string name="ui.app.settings.font">フォント</string>
+  <string name="ui.app.settings.font_size">フォントサイズ</string>
+  <string name="ui.app.settings.reset_font">フォントをリセット</string>
   <string name="ui.app.settings.language">言語</string>
   <string name="ui.app.settings.save">設定を保存</string>
   <string name="ui.app.settings.saved_alert">設定を保存しました。</string>
