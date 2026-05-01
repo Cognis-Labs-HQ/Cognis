@@ -8,7 +8,7 @@ const i18n = await createI18n({ preferredLanguages: languagePriority });
 applyDocumentTitle(i18n, 'ui.page.title.settings');
 
 const DEFAULT_FONT = 'Orbitron';
-const DEFAULT_FONT_SIZE = 1.0;
+const DEFAULT_FONT_SIZE = 12;
 const FALLBACK_FONTS = [DEFAULT_FONT, 'Inter', 'Arial', 'sans-serif'];
 
 function section(label, content) {
@@ -60,7 +60,7 @@ await renderDashboardLayout(root, {
       <label>${i18n.t('ui.app.settings.animation')} <select id="pref-animation"><option>none</option><option>fade</option><option>float</option></select></label><br/>
       <label class="font-picker-label">${i18n.t('ui.app.settings.greeting_font')} <div id="pref-font-picker"></div></label>
       <span id="pref-font-preview" style="margin-left:8px;font-size:1.1em;">AaBbCc</span><br/>
-      <label>${i18n.t('ui.app.settings.greeting_size')} <button id="pref-font-size-down" class="font-size-btn font-size-btn--down" type="button" aria-label="${i18n.t('ui.app.settings.greeting_size')} -">▼</button> <span id="pref-font-size-value">${DEFAULT_FONT_SIZE.toFixed(2)}</span> <button id="pref-font-size-up" class="font-size-btn font-size-btn--up" type="button" aria-label="${i18n.t('ui.app.settings.greeting_size')} +">▲</button></label>
+      <label>${i18n.t('ui.app.settings.greeting_size')} <button id="pref-font-size-down" class="font-size-btn font-size-btn--down" type="button" aria-label="${i18n.t('ui.app.settings.greeting_size')} -">▼</button> <span id="pref-font-size-value">${DEFAULT_FONT_SIZE} pt</span> <button id="pref-font-size-up" class="font-size-btn font-size-btn--up" type="button" aria-label="${i18n.t('ui.app.settings.greeting_size')} +">▲</button></label>
       <button id="pref-font-reset" class="font-reset-btn" type="button">${i18n.t('ui.app.settings.reset_font')}</button><br/>
       <section><h4>${i18n.t('ui.app.settings.language')}</h4><div class="language-preferences"><div><h5>${i18n.t('ui.app.settings.available_languages')}</h5><table id="available-languages" class="language-table"></table></div><div><h5>${i18n.t('ui.app.settings.preferred_languages')}</h5><table id="preferred-languages" class="language-table"></table></div></div></section>
       <button id="save-prefs">${i18n.t('ui.app.settings.save')}</button>
@@ -139,8 +139,18 @@ function buildFontPicker(container, fontList, initialValue, onChange) {
     onChange(font);
   }
 
+  function positionDropdown() {
+    const rect = trigger.getBoundingClientRect();
+    dropdown.style.position = 'fixed';
+    dropdown.style.top = `${rect.bottom + 4}px`;
+    dropdown.style.left = `${rect.left}px`;
+    dropdown.style.minWidth = `${rect.width}px`;
+    dropdown.style.zIndex = '9999';
+  }
+
   function openDropdown() {
     isOpen = true;
+    positionDropdown();
     dropdown.hidden = false;
     picker.setAttribute('aria-expanded', 'true');
     const activeLi = dropdown.querySelector(`li[data-value="${CSS.escape(selectedFont)}"]`);
@@ -168,6 +178,9 @@ function buildFontPicker(container, fontList, initialValue, onChange) {
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && isOpen) closeDropdown();
   }, { signal });
+
+  window.addEventListener('scroll', closeDropdown, { signal, capture: true });
+  window.addEventListener('resize', closeDropdown, { signal });
 
   picker.append(trigger, dropdown);
   container.append(picker);
@@ -200,18 +213,21 @@ const animationSelector = root.querySelector('#pref-animation');
 if (animationSelector) animationSelector.value = existingPrefs?.animation || 'none';
 
 const fontSizeValue = root.querySelector('#pref-font-size-value');
-const initialFontSize = Math.max(0.75, Math.min(2, Number(existingPrefs?.greetingFontSize || DEFAULT_FONT_SIZE)));
-let greetingFontSize = Number(initialFontSize.toFixed(2));
-if (fontSizeValue) fontSizeValue.textContent = greetingFontSize.toFixed(2);
+const rawStoredSize = Number(existingPrefs?.greetingFontSize || DEFAULT_FONT_SIZE);
+// Values below 8 are legacy rem values; convert to pt (1rem ≈ 12pt at default browser zoom).
+const normalizedSize = rawStoredSize < 8 ? Math.round(rawStoredSize * 12) : rawStoredSize;
+const initialFontSize = Math.max(8, Math.min(24, Math.round(normalizedSize)));
+let greetingFontSize = initialFontSize;
+if (fontSizeValue) fontSizeValue.textContent = `${greetingFontSize} pt`;
 
 function setFontSize(nextSize) {
-  greetingFontSize = Math.max(0.75, Math.min(2, Number(nextSize.toFixed(2))));
-  if (fontSizeValue) fontSizeValue.textContent = greetingFontSize.toFixed(2);
-  if (fontPreview) fontPreview.style.fontSize = `${greetingFontSize}rem`;
+  greetingFontSize = Math.max(8, Math.min(24, Math.round(nextSize)));
+  if (fontSizeValue) fontSizeValue.textContent = `${greetingFontSize} pt`;
+  if (fontPreview) fontPreview.style.fontSize = `${greetingFontSize}pt`;
 }
 
-root.querySelector('#pref-font-size-down')?.addEventListener('click', () => setFontSize(greetingFontSize - 0.05));
-root.querySelector('#pref-font-size-up')?.addEventListener('click', () => setFontSize(greetingFontSize + 0.05));
+root.querySelector('#pref-font-size-down')?.addEventListener('click', () => setFontSize(greetingFontSize - 1));
+root.querySelector('#pref-font-size-up')?.addEventListener('click', () => setFontSize(greetingFontSize + 1));
 setFontSize(greetingFontSize);
 
 root.querySelector('#pref-font-reset')?.addEventListener('click', () => {

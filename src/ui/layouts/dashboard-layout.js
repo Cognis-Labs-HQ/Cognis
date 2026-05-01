@@ -53,7 +53,10 @@ function applyUiPreferences(prefs) {
     document.documentElement.style.setProperty('--app-font', prefs.greetingFont);
   }
   if (prefs.greetingFontSize) {
-    document.documentElement.style.setProperty('--app-font-size', `${prefs.greetingFontSize}rem`);
+    const size = Number(prefs.greetingFontSize);
+    // Values below 8 are legacy rem values; convert to pt (1rem ≈ 12pt at default browser zoom).
+    const ptSize = size < 8 ? Math.round(size * 12) : size;
+    document.documentElement.style.setProperty('--app-font-size', `${ptSize}pt`);
   }
   document.body.setAttribute('data-animation', prefs.animation || 'none');
 }
