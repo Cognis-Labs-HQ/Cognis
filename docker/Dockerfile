@@ -8,9 +8,10 @@ RUN groupadd --system cognis \
   && mkdir -p /app/logs /app/data /app/config \
   && chown cognis:cognis /app/logs /app/data /app/config
 
-# Install the entrypoint script and the cognisctl wrapper into PATH while still root.
-COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
-COPY --chmod=755 cognisctl /usr/local/bin/cognisctl
+# Install the entrypoint script, the cognisctl wrapper, and the healthcheck into PATH while still root.
+COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY --chmod=755 docker/cognisctl /usr/local/bin/cognisctl
+COPY --chmod=755 docker/healthcheck.sh /usr/local/bin/healthcheck.sh
 
 # All remaining steps run as the non-root user; no chown is needed.
 USER cognis
@@ -35,7 +36,7 @@ ENV COGNIS_MODULES_ROOT=/app/src/modules
 ENV COGNIS_CLI_TOKEN_PATH=/app/config/cli-access.token
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD ["node", "/app/src/tooling/scripts/healthcheck.mjs"]
+  CMD ["/usr/local/bin/healthcheck.sh"]
 
 STOPSIGNAL SIGTERM
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
