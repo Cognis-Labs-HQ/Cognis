@@ -1,4 +1,5 @@
 export const DEFAULT_FONT = 'Orbitron';
+// Font size in points (pt). Applied via CSS custom property --app-font-size.
 export const DEFAULT_FONT_SIZE = 14;
 const FALLBACK_FONTS = [DEFAULT_FONT, 'Inter', 'Arial', 'sans-serif'];
 
