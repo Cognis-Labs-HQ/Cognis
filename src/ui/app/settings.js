@@ -111,6 +111,7 @@ root.addEventListener('dragover', (event) => {
 root.addEventListener('drop' , (event) => {
   const targetTable = event.target.closest('#available-languages, #preferred-languages');
   const targetRow = event.target.closest('tr[data-lang-row]');
+  const targetIsAfter = Boolean(targetRow?.classList.contains('drop-target-after'));
   clearDropMarkers();
   const lang = dragLanguage || event.dataTransfer?.getData('text/plain');
   if (!lang) return;
@@ -120,8 +121,7 @@ root.addEventListener('drop' , (event) => {
     if (targetRow) {
       const targetIso = targetRow.getAttribute('data-lang-row');
       const index = languagePriority.indexOf(targetIso);
-      const isAfter = targetRow.classList.contains('drop-target-after');
-      if (index >= 0) languagePriority.splice(isAfter ? index + 1 : index, 0, lang);
+      if (index >= 0) languagePriority.splice(targetIsAfter ? index + 1 : index, 0, lang);
       else languagePriority.push(lang);
     } else {
       languagePriority.push(lang);
