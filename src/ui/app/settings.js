@@ -1,7 +1,9 @@
 import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
 import { apiFetch } from '../reuse/api-client.js';
+import { createI18n } from '../reuse/i18n.js';
 
 const root = document.querySelector('#app');
+const i18n = await createI18n();
 
 function section(label, content) {
   return `<section class="widget-card"><h3>${label}</h3>${content}</section>`;
@@ -16,13 +18,13 @@ async function savePrefs(prefs) {
 }
 
 await renderDashboardLayout(root, {
-  pageContext: '<h1>Settings</h1><p>Manage your user preferences.</p>',
-  toolbar: '<h3>Preferences</h3><ul><li><button disabled>Profile</button></li><li><button disabled>Appearance</button></li></ul>',
-  content: `<article class="docs-viewer">${section('Appearance', `
-      <label>Animation <select id="pref-animation"><option>none</option><option>fade</option><option>float</option></select></label><br/>
-      <label>Greeting font <input id="pref-font" placeholder="Inter, Arial, sans-serif"/></label><br/>
-      <label>Greeting size <input id="pref-font-size" type="number" min="0.8" max="2" step="0.05"/></label><br/>
-      <button id="save-prefs">Save Preferences</button>
+  pageContext: `<h1>${i18n.t('ui.app.settings.page_title')}</h1><p>${i18n.t('ui.app.settings.page_subtitle')}</p>`,
+  toolbar: `<h3>${i18n.t('ui.app.settings.toolbar_title')}</h3><ul><li><button disabled>${i18n.t('ui.reuse.menu.profile')}</button></li><li><button disabled>${i18n.t('ui.reuse.appearance')}</button></li></ul>`,
+  content: `<article class="docs-viewer">${section(i18n.t('ui.reuse.appearance'), `
+      <label>${i18n.t('ui.app.settings.animation')} <select id="pref-animation"><option>none</option><option>fade</option><option>float</option></select></label><br/>
+      <label>${i18n.t('ui.app.settings.greeting_font')} <input id="pref-font" placeholder="Inter, Arial, sans-serif"/></label><br/>
+      <label>${i18n.t('ui.app.settings.greeting_size')} <input id="pref-font-size" type="number" min="0.8" max="2" step="0.05"/></label><br/>
+      <button id="save-prefs">${i18n.t('ui.app.settings.save')}</button>
     `)}</article>`
 });
 
@@ -34,5 +36,5 @@ root.querySelector('#save-prefs')?.addEventListener('click', async () => {
   };
   await savePrefs(prefs);
   localStorage.setItem('cognis_ui_preferences', JSON.stringify(prefs));
-  alert('Preferences saved.');
+  alert(i18n.t('ui.app.settings.saved_alert'));
 });

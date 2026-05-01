@@ -1,12 +1,16 @@
 import { bindThemeToggle } from '../reuse/theme-toggle.js';
+import { applyStaticTranslations, createI18n } from '../reuse/i18n.js';
+
+const i18n = await createI18n();
+applyStaticTranslations(i18n);
 
 const typingSamples = [
-  'Self-study courses',
-  'Learn with tutors',
-  'Join classrooms',
-  'Do your homework',
-  "It's a social space!",
-  'Powered by FOSS'
+  i18n.t('ui.app.login.typing.sample.1'),
+  i18n.t('ui.app.login.typing.sample.2'),
+  i18n.t('ui.app.login.typing.sample.3'),
+  i18n.t('ui.app.login.typing.sample.4'),
+  i18n.t('ui.app.login.typing.sample.5'),
+  i18n.t('ui.app.login.typing.sample.6')
 ];
 
 bindThemeToggle();

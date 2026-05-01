@@ -4,11 +4,14 @@ import { runDemoPuppeteer } from './demo-puppeteer.js';
 import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
 import { loadTemplate } from '../reuse/template-loader.js';
 import { apiFetch } from '../reuse/api-client.js';
+import { createI18n } from '../reuse/i18n.js';
+
+const i18n = await createI18n();
 
 const state = {
   pages: structuredClone(DEFAULT_PAGES),
   activePageId: DEFAULT_PAGES[0].id,
-  banner: 'Ready.',
+  banner: i18n.t('ui.app.builder.banner.ready'),
   demoMode: false,
   demoRunning: { value: false }
 };
@@ -50,11 +53,11 @@ function createWidgetCard(widget, index) {
     <article class="widget-card">
       <header>
         <h3>${definition?.title ?? widget.id}</h3>
-        <button data-action="remove" data-index="${index}">Remove</button>
+        <button data-action="remove" data-index="${index}">${i18n.t('ui.app.builder.remove')}</button>
       </header>
-      <p>${definition?.description ?? 'Custom widget'}</p>
+      <p>${definition?.description ?? i18n.t('ui.app.builder.custom_widget')}</p>
       <label>
-        JSON Config
+        ${i18n.t('ui.app.builder.json_config')}
         <textarea data-action="config" data-index="${index}">${JSON.stringify(config, null, 2)}</textarea>
       </label>
     </article>
@@ -71,21 +74,23 @@ async function render(banner) {
 
   const widgets = activePage.widgets.length
     ? activePage.widgets.map((widget, index) => createWidgetCard(widget, index)).join('')
-    : '<p class="empty">No widgets yet. Add one from the library.</p>';
+    : `<p class="empty">${i18n.t('ui.app.builder.empty')}</p>`;
 
   const options = getWidgetLibrary().map((widget) => `<option value="${widget.id}">${widget.title}</option>`).join('');
   const pageTemplate = await loadTemplate('page-builder');
   const content = pageTemplate
     .replace('{{tabs}}', tabs)
     .replace('{{options}}', options)
+    .replace('{{addWidget}}', i18n.t('ui.app.builder.add_widget'))
+    .replace('{{runDemo}}', i18n.t('ui.app.builder.run_demo'))
     .replace('{{demoDisabled}}', state.demoMode ? '' : 'disabled')
     .replace('{{banner}}', state.banner)
     .replace('{{widgets}}', widgets);
 
   await renderDashboardLayout(root, {
-    pageContext: `<h1>Page Builder</h1><p>Guardrailed rows/columns keep customizations sane.</p>`,
-    topbar: '<strong>Dashboard Layout</strong>',
-    toolbar: `<h3>Builder Status</h3><p class="badge">Demo mode: ${state.demoMode ? 'ON' : 'OFF'}</p>`,
+    pageContext: `<h1>${i18n.t('ui.app.builder.page_title')}</h1><p>${i18n.t('ui.app.builder.page_subtitle')}</p>`,
+    topbar: `<strong>${i18n.t('ui.app.builder.topbar')}</strong>`,
+    toolbar: `<h3>${i18n.t('ui.app.builder.status')}</h3><p class="badge">${i18n.t('ui.app.builder.demo_mode')}: ${state.demoMode ? i18n.t('ui.app.builder.on') : i18n.t('ui.app.builder.off')}</p>`,
     content
   });
 
@@ -105,13 +110,13 @@ function bindEvents() {
     const activePage = getActivePage();
     activePage.widgets.push({ id: selected.value, config: mergeWidgetConfig(selected.value) });
     await savePreferences();
-    render('Widget added.');
+    render(i18n.t('ui.app.builder.banner.added'));
   });
 
   root.querySelector('#run-demo')?.addEventListener('click', async () => {
     if (!state.demoMode || state.demoRunning.value) return;
     state.demoRunning.value = true;
-    await runDemoPuppeteer({ state, render, isRunningRef: state.demoRunning });
+    await runDemoPuppeteer({ state, render, isRunningRef: state.demoRunning, i18n });
   });
 
   root.querySelectorAll('[data-action="remove"]').forEach((button) => {
@@ -119,7 +124,7 @@ function bindEvents() {
       const activePage = getActivePage();
       activePage.widgets.splice(Number(button.dataset.index), 1);
       await savePreferences();
-      render('Widget removed.');
+      render(i18n.t('ui.app.builder.banner.removed'));
     });
   });
 
@@ -132,13 +137,13 @@ function bindEvents() {
         activePage.widgets[index].config = JSON.parse(textarea.value);
       } catch {
         textarea.classList.add('invalid');
-        state.banner = 'Invalid JSON. Fix and retry.';
+        state.banner = i18n.t('ui.app.builder.banner.invalid_json');
         return;
       }
 
       textarea.classList.remove('invalid');
       await savePreferences();
-      render('Widget configuration updated.');
+      render(i18n.t('ui.app.builder.banner.updated'));
     });
   });
 }
