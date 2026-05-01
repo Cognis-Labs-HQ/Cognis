@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { issueAccessToken, verifyAccessToken } from '../auth/access-tokens.js';
 import { requireAuth } from '../auth/guard.js';
 
@@ -24,7 +23,7 @@ test('guard enforces role scopes', () => {
 test('token store persists tokens to disk across module reload', async () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), 'cognis-token-store-'));
   const tokenStorePath = path.join(tempDir, 'access-tokens.json');
-  const tokenModulePath = pathToFileURL(path.resolve('src/api/auth/access-tokens.ts')).href;
+  const tokenModulePath = new URL('../auth/access-tokens.ts', import.meta.url).href;
 
   process.env.COGNIS_ACCESS_TOKEN_STORE_PATH = tokenStorePath;
 

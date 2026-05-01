@@ -1,5 +1,5 @@
 import { randomBytes, createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 export type AccessRole = 'user' | 'admin';
@@ -13,6 +13,8 @@ interface AccessTokenRecord {
 const tokenStore = new Map<string, AccessTokenRecord>();
 const MAX_TOKEN_STORE_SIZE = 10_000;
 const tokenStorePath = process.env.COGNIS_ACCESS_TOKEN_STORE_PATH ?? '/app/config/access-tokens.json';
+let hasWarnedPersistFailure = false;
+let hasWarnedLoadFailure = false;
 
 function isAccessRole(value: unknown): value is AccessRole {
   return value === 'user' || value === 'admin';
@@ -23,8 +25,16 @@ function persistTokenStore() {
     const parent = path.dirname(tokenStorePath);
     mkdirSync(parent, { recursive: true });
     const payload = JSON.stringify({ version: 1, tokens: Array.from(tokenStore.entries()) }, null, 2);
-    writeFileSync(tokenStorePath, payload, 'utf8');
-  } catch {
+    const tempPath = `${tokenStorePath}.${process.pid}.tmp`;
+    writeFileSync(tempPath, payload, { encoding: 'utf8', mode: 0o600 });
+    renameSync(tempPath, tokenStorePath);
+    hasWarnedPersistFailure = false;
+  } catch (error) {
+    if (!hasWarnedPersistFailure) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`[auth] failed to persist access token store at ${tokenStorePath}: ${message}`);
+      hasWarnedPersistFailure = true;
+    }
     // Keep API available even if persistence is not writable in a given runtime.
   }
 }
@@ -56,8 +66,14 @@ function loadTokenStore(now = Date.now()) {
       tokenStore.set(tokenHash, { subject, role, expiresAt });
       if (tokenStore.size >= MAX_TOKEN_STORE_SIZE) break;
     }
-  } catch {
+    hasWarnedLoadFailure = false;
+  } catch (error) {
     tokenStore.clear();
+    if (!hasWarnedLoadFailure) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`[auth] failed to load access token store at ${tokenStorePath}: ${message}`);
+      hasWarnedLoadFailure = true;
+    }
   }
 }
 
