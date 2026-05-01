@@ -112,8 +112,8 @@ function bindTopbarActions() {
   });
 }
 
-export async function renderDashboardLayout(root, slots) {
-  const i18n = await createI18n();
+export async function renderDashboardLayout(root, slots = {}) {
+  const i18n = slots.i18n || await createI18n();
   const template = await loadTemplate('dashboard-layout');
   const hasToolbar = Boolean(slots.toolbar);
   root.innerHTML = template

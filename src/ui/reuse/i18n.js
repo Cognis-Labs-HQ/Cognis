@@ -48,7 +48,10 @@ function detectLocale() {
 }
 
 function normalizeLocale(locale) {
-  const lower = locale.toLowerCase();
+  if (typeof locale !== 'string') return null;
+  const trimmed = locale.trim();
+  if (!trimmed) return null;
+  const lower = trimmed.toLowerCase();
   return lower.split('-')[0];
 }
 
@@ -94,7 +97,7 @@ async function loadModuleStrings(activeLocale, moduleIds) {
 export async function createI18n(options = {}) {
   const requested = detectLocale();
   const preferredLanguages = options.preferredLanguages || [requested, DEFAULT_LOCALE];
-  const normalizedPriority = [...new Set(preferredLanguages.map((item) => normalizeLocale(item)).filter(Boolean))];
+  const normalizedPriority = [...new Set(preferredLanguages.filter((item) => typeof item === 'string').map((item) => normalizeLocale(item)).filter(Boolean))];
   let activeLocale = normalizedPriority[0] || DEFAULT_LOCALE;
   let strings = new Map();
 
@@ -120,7 +123,8 @@ export async function createI18n(options = {}) {
   return {
     locale: activeLocale,
     t(key) {
-      return strings.get(key);
+      const value = strings.get(key);
+      return typeof value === 'string' && value.trim() ? value : '';
     }
   };
 }
@@ -129,22 +133,32 @@ export function applyStaticTranslations(i18n, root = document) {
   root.querySelectorAll('[data-i18n]').forEach((element) => {
     const key = element.getAttribute('data-i18n');
     if (!key) return;
-    element.textContent = i18n.t(key);
+    const value = i18n.t(key);
+    if (value) element.textContent = value;
   });
 
   root.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
     const key = element.getAttribute('data-i18n-placeholder');
     if (!key) return;
-    element.setAttribute('placeholder', i18n.t(key));
+    const value = i18n.t(key);
+    if (value) element.setAttribute('placeholder', value);
   });
 
   root.querySelectorAll('[data-i18n-aria-label]').forEach((element) => {
     const key = element.getAttribute('data-i18n-aria-label');
     if (!key) return;
-    element.setAttribute('aria-label', i18n.t(key));
+    const value = i18n.t(key);
+    if (value) element.setAttribute('aria-label', value);
+  });
+
+
+  root.querySelectorAll('[data-i18n-alt]').forEach((element) => {
+    const key = element.getAttribute('data-i18n-alt');
+    if (!key) return;
+    const value = i18n.t(key);
+    if (value) element.setAttribute('alt', value);
   });
 }
-
 
 export function applyDocumentTitle(i18n, key) {
   const value = i18n.t(key);

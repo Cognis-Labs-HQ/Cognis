@@ -29,6 +29,7 @@ async function savePrefs(prefs) {
 }
 
 await renderDashboardLayout(root, {
+  i18n,
   pageContext: `<h1>${i18n.t('ui.app.settings.page_title')}</h1><p>${i18n.t('ui.app.settings.page_subtitle')}</p>`,
   toolbar: `<h3>${i18n.t('ui.app.settings.toolbar_title')}</h3><ul><li><button disabled>${i18n.t('ui.reuse.menu.profile')}</button></li><li><button disabled>${i18n.t('ui.reuse.appearance')}</button></li></ul>`,
   content: `<article class="docs-viewer">${section(i18n.t('ui.reuse.appearance'), `
@@ -72,8 +73,7 @@ function renderLanguageTables(catalog) {
   preferred.innerHTML = languagePriority.map((iso) => {
     const match = catalog.find((item) => item.iso_code === iso);
     const label = match ? `${match.name} (${iso})` : iso;
-    const removeDisabled = iso === 'en' ? 'disabled' : '';
-    return `<tr draggable=\"true\" data-lang-row=\"${iso}\"><td>${label}</td><td>⬍</td></tr>`;
+    return `<tr draggable=\"true\" data-lang-row=\"${iso}\"><td>${label}</td><td class=\"drag-handle\">⬍</td></tr>`;
   }).join('');
   available.innerHTML = catalog.filter((item) => !preferredSet.has(item.iso_code)).map((item) => `<tr draggable=\"true\" data-lang-row=\"${item.iso_code}\"><td>${item.name} (${item.iso_code})</td><td class=\"drag-handle\">⬍</td></tr>`).join('');
 }
