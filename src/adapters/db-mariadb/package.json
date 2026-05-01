@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "src/mariadb-db-gateway.ts",
+  "main": "mariadb-db-gateway.ts",
   "dependencies": {
     "@cognis/core": "0.1.0"
   }

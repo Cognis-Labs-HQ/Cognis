@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ensureSqliteAuthSchema } from '../src/auth-schema.js';
+import { ensureSqliteAuthSchema } from '../auth-schema.js';
 
 test('sqlite auth schema applies all statements', async () => {
   const statements: string[] = [];

@@ -41,7 +41,7 @@ Each module ships a manifest with frontend assets:
 ## Guardrails
 - Module CSS should use prefixed classes (`.mod-<id>-*`).
 - Module HTML should render inside layout slots, not replace page shell.
-- Module JS should only call public API helpers in `ui/src/reuse`.
+- Module JS should only call public API helpers in `ui/reuse`.
 - Module route definitions (e.g. `routes.json`) are sanity checked to block collisions with protected prefixes (`/api/v1/system`, `/api/v1/auth`, `/api/v1/users`, `/public`, `/ui`).
 - Module files are loaded from module-owned directories, not copied into trusted core paths such as `ui/public`.
 

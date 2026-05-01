@@ -6,7 +6,7 @@ COPY src ./src
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN npm ci --ignore-scripts \
-  && printf '#!/usr/bin/env bash\nnode --import tsx /app/src/tooling/cli/src/index.ts "$@"\n' > /usr/local/bin/cognisctl \
+  && printf '#!/usr/bin/env bash\nnode --import tsx /app/src/tooling/cli/index.ts "$@"\n' > /usr/local/bin/cognisctl \
   && chmod +x /usr/local/bin/cognisctl /usr/local/bin/entrypoint.sh
 
 EXPOSE 3000
@@ -23,4 +23,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 
 STOPSIGNAL SIGTERM
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["node", "--import", "tsx", "/app/src/api/src/main.ts"]
+CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { AuthAccountStore } from '@cognis/core';
-import { SamlAuthGateway } from '../src/saml-auth-gateway.js';
+import { SamlAuthGateway } from '../saml-auth-gateway.js';
 
 function createStore(): AuthAccountStore {
   return {

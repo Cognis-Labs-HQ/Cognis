@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { issueAccessToken, verifyAccessToken } from '../src/auth/access-tokens.js';
-import { requireAuth } from '../src/auth/guard.js';
+import { issueAccessToken, verifyAccessToken } from '../auth/access-tokens.js';
+import { requireAuth } from '../auth/guard.js';
 
 test('access tokens issue and verify', () => {
   const token = issueAccessToken('u1', 'admin', 60);

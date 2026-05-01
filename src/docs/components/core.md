@@ -4,9 +4,9 @@
 `core/` contains provider-agnostic contracts and services.
 
 ## Key domains
-- Contracts (`core/src/contracts/*`)
-- Gateway interfaces (`core/src/gateways/*`)
-- Services (`core/src/services/*`)
+- Contracts (`core/contracts/*`)
+- Gateway interfaces (`core/gateways/*`)
+- Services (`core/services/*`)
 
 ## Important rule
 ```text

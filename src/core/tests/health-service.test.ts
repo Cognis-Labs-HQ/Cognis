@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { HealthService } from '../src/services/health-service.js';
+import { HealthService } from '../services/health-service.js';
 
 test('health service returns uptime and lifecycle timestamps', () => {
   const service = new HealthService();

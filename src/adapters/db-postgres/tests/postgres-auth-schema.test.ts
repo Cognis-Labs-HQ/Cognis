@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ensurePostgresAuthSchema } from '../src/auth-schema.js';
+import { ensurePostgresAuthSchema } from '../auth-schema.js';
 
 test('postgres auth schema applies all statements', async () => {
   const statements: string[] = [];

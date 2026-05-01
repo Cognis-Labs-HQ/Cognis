@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createDocsRoutes } from '../src/routes/docs-routes.js';
+import { createDocsRoutes } from '../routes/docs-routes.js';
 
 test('docs route handles docs index with markdown slugs', async () => {
   const route = createDocsRoutes();

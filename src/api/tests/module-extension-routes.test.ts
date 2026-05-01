@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createModuleExtensionRoutes } from '../src/routes/module-extension-routes.js';
+import { createModuleExtensionRoutes } from '../routes/module-extension-routes.js';
 
 test('module extension routes expose module API endpoints', async () => {
   const extensions = createModuleExtensionRoutes({

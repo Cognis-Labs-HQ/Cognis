@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { AuthAccountStore, ExternalIdentity } from '@cognis/core';
-import { OidcAuthGateway } from '../src/oidc-auth-gateway.js';
+import { OidcAuthGateway } from '../oidc-auth-gateway.js';
 
 function createStore(created: ExternalIdentity[]): AuthAccountStore {
   return {

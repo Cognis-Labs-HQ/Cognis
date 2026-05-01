@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ensureMariaDbAuthSchema } from '../src/auth-schema.js';
+import { ensureMariaDbAuthSchema } from '../auth-schema.js';
 
 test('mariadb auth schema applies all statements', async () => {
   const statements: string[] = [];

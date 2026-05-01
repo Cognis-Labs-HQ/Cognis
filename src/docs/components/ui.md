@@ -4,10 +4,10 @@
 `ui/` hosts the Cognis frontend and documentation center.
 
 ## Architecture
-- **Layouts**: shared shells in `ui/src/layouts`.
+- **Layouts**: shared shells in `ui/layouts`.
 - **Templates**: reusable markup in `ui/public/templates`.
-- **Reuse**: shared utilities in `ui/src/reuse`.
-- **Pages**: route behavior in `ui/src/app`.
+- **Reuse**: shared utilities in `ui/reuse`.
+- **Pages**: route behavior in `ui/app`.
 
 ## UX routes
 | Route | Purpose |
@@ -24,9 +24,9 @@
 > Non-login pages should render through layout shells so customization stays safe and coherent.
 
 ## Theme coverage requirement (light/dark)
-- Every new HTML element added to `ui/public/templates` or injected from `ui/src/app` **must** resolve its visual colors from theme tokens (CSS variables), not hard-coded hex/rgb values.
+- Every new HTML element added to `ui/public/templates` or injected from `ui/app` **must** resolve its visual colors from theme tokens (CSS variables), not hard-coded hex/rgb values.
 - Interactive HTML elements (`button`, `select`, `input`, `textarea`, links, badges, status chips) must inherit or explicitly use shared theme variables so both `light` and `dark` modes remain readable.
-- If an element cannot use shared classes, add a scoped selector under `ui/src/styles/base/layout.css` or `ui/src/styles/page-builder.css` that maps it to existing theme variables.
+- If an element cannot use shared classes, add a scoped selector under `ui/styles/base/layout.css` or `ui/styles/page-builder.css` that maps it to existing theme variables.
 - PRs that touch UI markup must verify theme parity for both modes before merge.
 
 ### Why this is critical for future work
@@ -38,5 +38,5 @@
 ### Ongoing maintenance checklist
 - Validate each changed screen in both themes before marking work complete.
 - Confirm dynamic/injected markup (template strings, API-rendered HTML, docs markdown output) inherits theme-safe colors.
-- Reuse existing tokens first; if a new token is needed, define both dark and light values in `ui/src/styles/base/theme.css`.
+- Reuse existing tokens first; if a new token is needed, define both dark and light values in `ui/styles/base/theme.css`.
 - Keep this requirement visible in future UI PR descriptions to avoid regressions over time.

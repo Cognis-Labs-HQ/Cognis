@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createSystemRoutes } from '../src/routes/system-routes.js';
+import { createSystemRoutes } from '../routes/system-routes.js';
 
 const healthService = {
   status() {

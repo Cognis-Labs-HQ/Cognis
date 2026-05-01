@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { AuthAccountStore } from '@cognis/core';
-import { LdapAuthGateway } from '../src/ldap-auth-gateway.js';
+import { LdapAuthGateway } from '../ldap-auth-gateway.js';
 
 function createStore(): AuthAccountStore {
   const identities = new Map<string, { id: string }>();

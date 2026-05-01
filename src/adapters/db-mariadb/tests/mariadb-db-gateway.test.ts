@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MariaDbGateway, type MariaDbClient } from '../src/mariadb-db-gateway.js';
+import { MariaDbGateway, type MariaDbClient } from '../mariadb-db-gateway.js';
 
 test('mariadb adapter executes and commits transaction', async () => {
   let committed = false;

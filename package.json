@@ -13,9 +13,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "node ./src/tooling/scripts/lint-placeholder.mjs && node ./src/tooling/scripts/lint-readable.mjs",
     "test": "node --import tsx --test $(find . \\( -name \"*.test.ts\" -o -name \"*.test.js\" \\) -not -path \"*/node_modules/*\" -print)",
-    "start": "node --import tsx src/api/src/main.ts",
+    "start": "node --import tsx src/api/main.ts",
     "ci:test": "npm run typecheck && npm test",
-    "cli": "node --import tsx src/tooling/cli/src/index.ts"
+    "cli": "node --import tsx src/tooling/cli/index.ts"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
