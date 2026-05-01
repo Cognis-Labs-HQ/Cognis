@@ -69,7 +69,7 @@ button:hover {
   border-radius: 12px;
   padding: 0;
   margin-top: 0;
-  background: rgba(15, 23, 42, 0.10);
+  background: rgba(15, 23, 42, 0.50);
 }
 
 .toolbar > *, .docs-viewer > * {
@@ -142,9 +142,13 @@ button:hover {
   color: var(--text);
 }
 
-.docs-viewer .widget-card,
-.content-grid .widget-card {
+.docs-viewer .widget-card {
   background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.content-grid .widget-card {
+  background: rgba(19, 29, 51, 0.10);
   border: 1px solid var(--border);
 }
 
