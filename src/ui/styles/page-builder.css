@@ -69,7 +69,7 @@ button:hover {
   border-radius: 12px;
   padding: 0;
   margin-top: 0;
-  background: rgba(15, 23, 42, 0.50);
+  background: var(--toolbar-bg);
 }
 
 .toolbar > *, .docs-viewer > * {
@@ -148,7 +148,7 @@ button:hover {
 }
 
 .content-grid .widget-card {
-  background: rgba(19, 29, 51, 0.10);
+  background: var(--widget-card-tint);
   border: 1px solid var(--border);
 }
 
