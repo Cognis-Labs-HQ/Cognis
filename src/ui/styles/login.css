@@ -4,6 +4,9 @@
   min-height: 100vh;
   padding: 34px;
   background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .login-layout {
@@ -18,7 +21,7 @@
 .login-intro,
 .login-panel {
   padding: 34px;
-  background: linear-gradient(180deg, rgba(4, 18, 36, 0.94), rgba(3, 14, 30, 0.9));
+  background: linear-gradient(180deg, rgba(4, 18, 36, 0.89), rgba(3, 14, 30, 0.85));
   border: 0;
 }
 
@@ -60,7 +63,7 @@
 .login-form button {
   padding: 12px 14px;
   font-size: 1.15rem;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .login-form button {
@@ -85,7 +88,7 @@
 
 body[data-theme='light'] .login-intro,
 body[data-theme='light'] .login-panel {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(244, 248, 255, 0.92));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.89), rgba(244, 248, 255, 0.87));
 }
 
 body[data-theme='light'] .login-title,

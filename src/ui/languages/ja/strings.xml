@@ -59,13 +59,13 @@
   <string name="ui.app.settings.page_title">設定</string>
   <string name="ui.app.settings.page_subtitle">ユーザー設定を管理します。</string>
   <string name="ui.app.settings.toolbar_title">設定項目</string>
-  <string name="ui.app.settings.animation">アニメーション</string>
   <string name="ui.app.settings.font">フォント</string>
   <string name="ui.app.settings.font_size">フォントサイズ</string>
   <string name="ui.app.settings.reset_font">フォントをリセット</string>
   <string name="ui.app.settings.language">言語</string>
   <string name="ui.app.settings.save">設定を保存</string>
   <string name="ui.app.settings.saved_alert">設定を保存しました。</string>
+  <string name="ui.app.settings.sidebar.preferences">環境設定</string>
 
   <string name="ui.app.docs.page_title">ドキュメント</string>
   <string name="ui.app.docs.page_subtitle">開発者ドキュメント。</string>

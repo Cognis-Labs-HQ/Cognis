@@ -34,9 +34,8 @@ async function savePrefs(prefs) {
 await renderDashboardLayout(root, {
   i18n,
   pageContext: `<h1>${i18n.t('ui.app.settings.page_title')}</h1><p>${i18n.t('ui.app.settings.page_subtitle')}</p>`,
-  toolbar: `<h3>${i18n.t('ui.app.settings.toolbar_title')}</h3><ul><li><button disabled>${i18n.t('ui.reuse.menu.profile')}</button></li><li><button disabled>${i18n.t('ui.reuse.appearance')}</button></li></ul>`,
+  toolbar: `<h3>${i18n.t('ui.app.settings.page_title')}</h3><ul><li><button disabled>${i18n.t('ui.app.settings.sidebar.preferences')}</button></li></ul>`,
   content: `<article class="docs-viewer">${section(i18n.t('ui.reuse.appearance'), `
-      <label>${i18n.t('ui.app.settings.animation')} <select id="pref-animation"><option>none</option><option>fade</option><option>float</option></select></label><br/>
       <label class="font-picker-label">${i18n.t('ui.app.settings.font')} <div id="pref-font-picker"></div></label>
       <span id="pref-font-preview" style="margin-left:8px;font-size:1.1em;">AaBbCc</span><br/>
       <label>${i18n.t('ui.app.settings.font_size')} <button id="pref-font-size-down" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} -">▼</button> <span id="pref-font-size-value">${DEFAULT_FONT_SIZE} pt</span> <button id="pref-font-size-up" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} +">▲</button></label>
@@ -49,9 +48,6 @@ await renderDashboardLayout(root, {
 const existingPrefs = await loadPrefs().catch(() => null);
 if (Array.isArray(existingPrefs?.languagePriority)) languagePriority = existingPrefs.languagePriority;
 
-const animationSelector = root.querySelector('#pref-animation');
-if (animationSelector) animationSelector.value = existingPrefs?.animation || 'none';
-
 const fontPrefs = initFontPrefs(root, { existingPrefs, i18n });
 await fontPrefs.init();
 
@@ -61,7 +57,6 @@ await languagePrefs.init();
 root.querySelector('#save-prefs')?.addEventListener('click', async () => {
   const selectedFont = fontPrefs.getFont();
   const prefs = {
-    animation: root.querySelector('#pref-animation')?.value || 'none',
     appFont: toFontFamilyValue(selectedFont),
     appFontSize: fontPrefs.getFontSize(),
     languagePriority: languagePrefs.getPriority()

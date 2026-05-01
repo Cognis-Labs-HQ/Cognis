@@ -1,7 +1,11 @@
 :root {
   --app-font: Orbitron;
-  --app-font-size: 1rem;
-  --bg: radial-gradient(circle at top left, rgba(72, 201, 160, 0.34), transparent 42%), linear-gradient(180deg, #0b172d 0%, #0b1220 100%);
+  /* Default font size in rem; the JS preference system overrides this with pt units at runtime. */
+  --app-font-size: 1.17rem;
+  --bg:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.22), transparent 48%),
+    radial-gradient(circle at 12% 18%, rgba(45, 212, 191, 0.2), transparent 55%),
+    linear-gradient(150deg, #030a14 0%, #071421 45%, #020813 100%);
   --surface: rgba(15, 23, 42, 0.84);
   --surface-2: rgba(19, 29, 51, 0.92);
   --surface-soft: rgba(255, 255, 255, 0.06);
@@ -12,8 +16,12 @@
   --accent: #2a7f62;
   --accent-2: #3aa783;
   --shadow: 0 14px 34px rgba(2, 6, 23, 0.35);
-  --header-top-bg: linear-gradient(180deg, rgba(4, 12, 24, 0.98) 0%, rgba(6, 18, 36, 0.96) 72%, rgba(8, 22, 42, 0.94) 100%);
-  --nav-bg: radial-gradient(circle at bottom left, rgba(72, 201, 160, 0.36), transparent 42%), linear-gradient(180deg, rgba(7, 29, 51, 0.96), rgba(9, 32, 58, 0.9));
+  --header-top-bg:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 40%),
+    linear-gradient(180deg, rgba(10, 22, 42, 0.97) 0%, rgba(7, 16, 32, 0.94) 100%);
+  --nav-bg:
+    radial-gradient(ellipse at 50% 110%, rgba(18, 49, 52, 0.30) 0%, transparent 58%),
+    linear-gradient(90deg, #133033 0%, #172b48 100%);
   --nav-link: #c7d6ea;
   --context-muted: #93a4bf;
   --link: #9fd6ff;
@@ -33,6 +41,8 @@
   --control-border: var(--border);
   --control-hover-bg: var(--surface-soft);
   --badge-text: var(--text);
+  --toolbar-bg: rgba(15, 23, 42, 0.50);
+  --widget-card-tint: rgba(19, 29, 51, 0.10);
   --scrollbar-track: rgba(15, 23, 42, 0.45);
   --scrollbar-thumb: rgba(148, 163, 184, 0.5);
   --scrollbar-thumb-hover: rgba(148, 163, 184, 0.75);
@@ -93,10 +103,12 @@ body[data-theme='light'] {
   --user-greeting: #1e3a5f;
   --theme-toggle-color: #0f172a;
   --header-top-bg: linear-gradient(180deg, rgba(240, 247, 255, 0.98) 0%, rgba(226, 239, 251, 0.96) 72%, rgba(220, 234, 248, 0.94) 100%);
-  --nav-bg: radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.26), transparent 42%), linear-gradient(180deg, rgba(219, 234, 254, 0.96), rgba(203, 223, 249, 0.9));
+  --nav-bg: linear-gradient(180deg, rgba(219, 234, 254, 0.96) 0%, rgba(203, 223, 249, 0.9) 100%);
   --control-bg: rgba(255, 255, 255, 0.98);
   --control-text: var(--text);
   --control-border: var(--border);
   --control-hover-bg: rgba(148, 163, 184, 0.12);
   --badge-text: var(--text);
+  --toolbar-bg: rgba(255, 255, 255, 0.50);
+  --widget-card-tint: rgba(248, 250, 255, 0.10);
 }

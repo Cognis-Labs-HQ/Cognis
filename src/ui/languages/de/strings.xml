@@ -59,13 +59,13 @@
   <string name="ui.app.settings.page_title">Einstellungen</string>
   <string name="ui.app.settings.page_subtitle">Verwalte deine Benutzereinstellungen.</string>
   <string name="ui.app.settings.toolbar_title">Einstellungen</string>
-  <string name="ui.app.settings.animation">Animation</string>
   <string name="ui.app.settings.font">Schriftart</string>
   <string name="ui.app.settings.font_size">Schriftgröße</string>
   <string name="ui.app.settings.reset_font">Schriftart zurücksetzen</string>
   <string name="ui.app.settings.language">Sprache</string>
   <string name="ui.app.settings.save">Einstellungen speichern</string>
   <string name="ui.app.settings.saved_alert">Einstellungen gespeichert.</string>
+  <string name="ui.app.settings.sidebar.preferences">Einstellungen</string>
 
   <string name="ui.app.docs.page_title">Dokumente</string>
   <string name="ui.app.docs.page_subtitle">Entwicklerdokumentation.</string>
