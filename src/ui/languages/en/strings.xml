@@ -60,8 +60,8 @@
   <string name="ui.app.settings.page_subtitle">Manage your user preferences.</string>
   <string name="ui.app.settings.toolbar_title">Preferences</string>
   <string name="ui.app.settings.animation">Animation</string>
-  <string name="ui.app.settings.greeting_font">Font</string>
-  <string name="ui.app.settings.greeting_size">Font size</string>
+  <string name="ui.app.settings.font">Font</string>
+  <string name="ui.app.settings.font_size">Font size</string>
   <string name="ui.app.settings.reset_font">Reset font defaults</string>
   <string name="ui.app.settings.language">Language</string>
   <string name="ui.app.settings.save">Save Preferences</string>
