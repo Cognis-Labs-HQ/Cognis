@@ -51,7 +51,7 @@ async function bindThemeToggle() {
   });
 }
 
-const MENU_CLOSE_DELAY_MS = 300;
+const PROFILE_MENU_CLOSE_DELAY_MS = 300;
 
 function bindTopbarActions() {
   const toggle = document.querySelector('#profile-toggle');
@@ -84,7 +84,7 @@ function bindTopbarActions() {
       dropdown?.classList.add('hidden');
       profileMenu?.classList.remove('open');
       closeTimeout = null;
-    }, MENU_CLOSE_DELAY_MS);
+    }, PROFILE_MENU_CLOSE_DELAY_MS);
   };
 
   toggle?.addEventListener('mouseenter', openMenu);

@@ -75,9 +75,9 @@ await languagePrefs.init();
 
 root.querySelector('#save-prefs')?.addEventListener('click', async () => {
   const selectedFont = fontPrefs.getFont();
-  const sliderVal = parseInt(root.querySelector('#pref-animation')?.value ?? '0', 10);
+  const animationSliderValue = parseInt(root.querySelector('#pref-animation')?.value ?? '0', 10);
   const prefs = {
-    animation: ANIMATION_LEVELS[sliderVal] || 'none',
+    animation: ANIMATION_LEVELS[animationSliderValue] || 'none',
     appFont: toFontFamilyValue(selectedFont),
     appFontSize: fontPrefs.getFontSize(),
     languagePriority: languagePrefs.getPriority()
