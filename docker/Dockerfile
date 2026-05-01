@@ -6,7 +6,7 @@ COPY src ./src
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN npm ci --ignore-scripts \
-  && printf '%s\n' '#!/bin/sh' 'exec node --import tsx /app/src/tooling/cli/index.ts "$@"' > /usr/local/bin/cognisctl \
+  && printf '#!/usr/bin/env bash\nnode --import tsx /app/src/tooling/cli/index.ts "$@"\n' > /usr/local/bin/cognisctl \
   && chmod +x /usr/local/bin/cognisctl /usr/local/bin/entrypoint.sh
 
 EXPOSE 3000
