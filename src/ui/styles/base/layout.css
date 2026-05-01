@@ -5,6 +5,9 @@
  * semi-transparent, both act as windows into the same moving backdrop — giving
  * the composite appearance of a single animated surface. Vertical movement is
  * natural scroll; horizontal drift is driven by the keyframe below.
+ *
+ * Accessibility: the animation is suppressed for users who prefer reduced motion
+ * via the @media (prefers-reduced-motion: reduce) rule further below.
  */
 @keyframes app-sky-drift {
   0%   { background-position: 0% 50%, center; }
