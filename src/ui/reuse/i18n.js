@@ -1,5 +1,5 @@
 const DEFAULT_LOCALE = 'en';
-const STRINGS_BASE_PATH = '/dashboard/static/strings';
+const STRINGS_BASE_PATH = '/dashboard/static/public/strings';
 
 const cache = new Map();
 
