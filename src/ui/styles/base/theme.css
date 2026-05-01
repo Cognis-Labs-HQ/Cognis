@@ -16,10 +16,10 @@
   --accent: #2a7f62;
   --accent-2: #3aa783;
   --shadow: 0 14px 34px rgba(2, 6, 23, 0.35);
-  --header-top-bg: linear-gradient(135deg, rgba(13, 33, 25, 0.94), rgba(8, 21, 15, 0.94));
-  --nav-bg:
+  --header-top-bg:
     radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 40%),
     linear-gradient(180deg, rgba(10, 22, 42, 0.97) 0%, rgba(7, 16, 32, 0.94) 100%);
+  --nav-bg: linear-gradient(135deg, rgba(13, 33, 25, 0.94), rgba(8, 21, 15, 0.94));
   --nav-link: #c7d6ea;
   --context-muted: #93a4bf;
   --link: #9fd6ff;
