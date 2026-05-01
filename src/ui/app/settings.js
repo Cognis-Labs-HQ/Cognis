@@ -75,28 +75,11 @@ function renderLanguageTables(catalog) {
     const removeDisabled = iso === 'en' ? 'disabled' : '';
     return `<tr draggable=\"true\" data-lang-row=\"${iso}\"><td>${label}</td><td><button data-lang-up='${iso}'>↑</button><button data-lang-down='${iso}'>↓</button><button data-lang-remove='${iso}' ${removeDisabled}>←</button></td></tr>`;
   }).join('');
-  available.innerHTML = catalog.filter((item) => !preferredSet.has(item.iso_code)).map((item) => `<tr draggable=\"true\" data-lang-row=\"${item.iso_code}\"><td>${item.name} (${item.iso_code})</td><td><button data-lang-add='${item.iso_code}'>→</button></td></tr>`).join('');
+  available.innerHTML = catalog.filter((item) => !preferredSet.has(item.iso_code)).map((item) => `<tr draggable=\"true\" data-lang-row=\"${item.iso_code}\"><td>${item.name} (${item.iso_code})</td><td class=\"drag-handle\">⬍</td></tr>`).join('');
 }
 
 const languageCatalog = await loadLanguagesCatalog().catch(() => [{ iso_code: 'en', name: 'English' }]);
 renderLanguageTables(languageCatalog);
-root.addEventListener('click', (event) => {
-  const button = event.target.closest('button');
-  if (!button) return;
-  const add = button.getAttribute('data-lang-add');
-  const remove = button.getAttribute('data-lang-remove');
-  const up = button.getAttribute('data-lang-up');
-  const down = button.getAttribute('data-lang-down');
-  if (add) languagePriority = [...languagePriority, add];
-  if (remove && remove !== 'en') languagePriority = languagePriority.filter((item) => item !== remove);
-  if (up) { const i = languagePriority.indexOf(up); if (i > 0) [languagePriority[i-1], languagePriority[i]] = [languagePriority[i], languagePriority[i-1]]; }
-  if (down) { const i = languagePriority.indexOf(down); if (i >= 0 && i < languagePriority.length -1) [languagePriority[i+1], languagePriority[i]] = [languagePriority[i], languagePriority[i+1]]; }
-  languagePriority = [...new Set(languagePriority)];
-  if (!languagePriority.includes('en')) languagePriority.push('en');
-  renderLanguageTables(languageCatalog);
-});
-
-
 let dragLanguage = null;
 root.addEventListener('dragstart', (event) => {
   const row = event.target.closest('tr[data-lang-row]');
@@ -105,14 +88,23 @@ root.addEventListener('dragstart', (event) => {
   event.dataTransfer?.setData('text/plain', dragLanguage || '');
 });
 
+function clearDropMarkers() {
+  root.querySelectorAll('.drop-target').forEach((row) => row.classList.remove('drop-target'));
+}
+
 root.addEventListener('dragover', (event) => {
-  if (!event.target.closest('#available-languages, #preferred-languages, tr[data-lang-row]')) return;
+  const zone = event.target.closest('#available-languages, #preferred-languages, tr[data-lang-row]');
+  if (!zone) return;
   event.preventDefault();
+  clearDropMarkers();
+  const row = event.target.closest('tr[data-lang-row]');
+  if (row) row.classList.add('drop-target');
 });
 
 root.addEventListener('drop', (event) => {
   const targetTable = event.target.closest('#available-languages, #preferred-languages');
   const targetRow = event.target.closest('tr[data-lang-row]');
+  clearDropMarkers();
   const lang = dragLanguage || event.dataTransfer?.getData('text/plain');
   if (!lang) return;
 
