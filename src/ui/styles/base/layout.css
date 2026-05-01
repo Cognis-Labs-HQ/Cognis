@@ -1,11 +1,34 @@
+/*
+ * The app-shell background is animated: the first gradient layer (radial glow)
+ * is expanded to 250% of the element width and slowly oscillates left-to-right,
+ * creating an ambient sky-drift effect. Because .site-header and .workspace are
+ * semi-transparent, both act as windows into the same moving backdrop — giving
+ * the composite appearance of a single animated surface. Vertical movement is
+ * natural scroll; horizontal drift is driven by the keyframe below.
+ */
+@keyframes app-sky-drift {
+  0%   { background-position: 0% 50%, center; }
+  50%  { background-position: 100% 50%, center; }
+  100% { background-position: 0% 50%, center; }
+}
+
 .app-shell {
   min-height: 100vh;
   background: var(--bg);
+  background-size: 250% 100%, cover;
   color: var(--text);
+  animation: app-sky-drift 120s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell {
+    animation: none;
+  }
 }
 
 .site-header {
-  margin: 0 9px;
+  width: 95%;
+  margin: 0 auto;
   border-bottom-left-radius: 9px;
   border-bottom-right-radius: 9px;
   overflow: visible;
@@ -126,8 +149,8 @@
 .workspace {
   padding: 24px;
   width: 95%;
-  margin: 0 auto;
-  background: rgba(6, 12, 28, 0.52);
+  margin: 12px auto 0;
+  background: rgba(6, 12, 28, 0.20);
   border-radius: 16px;
   border: 1px solid rgba(148, 163, 184, 0.08);
   backdrop-filter: blur(2px);
