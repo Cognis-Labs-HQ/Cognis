@@ -91,7 +91,7 @@ await logger.info('Core module baseline state ensured.');
 await dbExecutor.execute('CREATE TABLE IF NOT EXISTS bootstrap_state (state_key VARCHAR(255) PRIMARY KEY, state_value VARCHAR(255) NOT NULL)');
 await logger.info('Bootstrap state schema ensured.');
 
-await initializeDatabaseSchema(dbType, logger);
+await initializeDatabaseSchema(dbType, logger, dbExecutor);
 await logger.info('Database provider schema initialization complete.');
 
 const adminState = await dbExecutor.execute(
