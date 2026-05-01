@@ -91,8 +91,8 @@ test('modules page requires login and serves html when authenticated', async () 
   const token = issueAccessToken('u1', 'admin', 60);
   const authed = createResponseRecorder();
   await route({ headers: { cookie: `cognis_access_token=${token}` } } as any, authed.res as any, new URL('http://localhost/modules'));
-  assert.equal(authed.status, 200);
-  assert.match(authed.body, /app\/modules\.js/);
+  assert.equal(authed.status, 302);
+  assert.equal(authed.headers.location, '/administration');
 });
 
 
@@ -127,4 +127,5 @@ test('administration page is visible to admins only', async () => {
   await route({ headers: { cookie: `cognis_access_token=${adminToken}` } } as any, adminRes.res as any, new URL('http://localhost/administration'));
   assert.equal(adminRes.status, 200);
   assert.match(adminRes.body, /app\/administration\.js/);
+  assert.match(adminRes.body, /id="app"/);
 });

@@ -4,6 +4,7 @@ export interface ModuleManifest {
   id: string;
   name: string;
   version: string;
+  publisher?: string;
   class: ModuleClass;
   coreApiVersion: string;
   capabilities: string[];

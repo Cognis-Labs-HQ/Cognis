@@ -33,7 +33,8 @@ export function buildServer(deps: ApiDependencies) {
     onDisabled: async (moduleId) => {
       enabledModules.delete(moduleId);
       await moduleExtensionRoutes.refresh();
-    }
+    },
+    getStatus: (moduleId) => (enabledModules.has(moduleId) ? 'enabled' : 'disabled')
   });
   const systemRoutes = createSystemRoutes(healthService);
   const docsRoutes = createDocsRoutes();

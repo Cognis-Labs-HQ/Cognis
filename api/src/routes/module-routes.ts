@@ -5,6 +5,7 @@ import type { ModuleService } from '@cognis/core';
 export interface ModuleRouteHooks {
   onEnabled?: (moduleId: string) => Promise<void> | void;
   onDisabled?: (moduleId: string) => Promise<void> | void;
+  getStatus?: (moduleId: string) => 'enabled' | 'disabled' | 'available';
 }
 
 export function createModuleRoutes(moduleService: ModuleService, hooks?: ModuleRouteHooks) {
@@ -12,7 +13,11 @@ export function createModuleRoutes(moduleService: ModuleService, hooks?: ModuleR
     if (url.pathname === '/api/v1/modules' && req.method === 'GET') {
       const claims = requireAuth(req, res, 'admin');
       if (!claims) return true;
-      const data = await moduleService.list();
+      const manifests = await moduleService.list();
+      const data = manifests.map((manifest) => ({
+        ...manifest,
+        status: hooks?.getStatus?.(manifest.id) ?? (manifest.class === 'core' ? 'enabled' : 'available')
+      }));
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data }));
       return true;

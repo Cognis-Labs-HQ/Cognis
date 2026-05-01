@@ -168,3 +168,42 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 
 #run-demo:disabled { opacity: 0.55; }
+
+.module-row {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin: 10px 0;
+  background: var(--surface-2);
+}
+
+.module-row summary {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+  padding: 14px;
+}
+
+.module-row[open] .module-chevron {
+  transform: rotate(180deg);
+}
+
+.module-chevron {
+  transition: transform 0.2s ease;
+}
+
+.module-meta {
+  padding: 0 14px 14px;
+}
+
+.badge-enabled {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+}
+
+.badge-disabled {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+}

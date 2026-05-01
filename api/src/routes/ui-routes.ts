@@ -124,7 +124,8 @@ export function createUiRoutes(runtime?: ModuleRuntimeGateway) {
         return true;
       }
 
-      await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'modules.html'), 'text/html; charset=utf-8');
+      res.writeHead(302, { location: '/administration' });
+      res.end();
       return true;
     }
 
