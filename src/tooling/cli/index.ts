@@ -297,7 +297,7 @@ async function loadModuleCliPlugins(options?: { refresh?: boolean }) {
 async function main() {
   await loadModuleCliPlugins({ refresh: true });
 
-  const packageJson = await import('../package.json', { with: { type: 'json' } });
+  const packageJson = await import('./package.json', { with: { type: 'json' } });
   const argv = process.argv.slice(2);
 
   if (argv.length === 0 || argv[0] === '-h' || argv[0] === '--help') {
