@@ -43,10 +43,13 @@ async function savePrefs(prefs) {
 }
 
 async function loadFontsCatalog() {
-  const response = await apiFetch('/api/v1/system/fonts');
-  if (!response.ok) throw new Error('font_catalog_load_failed');
-  const payload = await response.json();
-  return Array.isArray(payload?.data) && payload.data.length > 0 ? payload.data : [...FALLBACK_FONTS];
+  await document.fonts.ready;
+  const seen = new Set(FALLBACK_FONTS);
+  document.fonts.forEach((face) => {
+    const family = face.family.replace(/^['"]|['"]$/g, '').trim();
+    if (family) seen.add(family);
+  });
+  return Array.from(seen).sort((a, b) => a.localeCompare(b));
 }
 
 await renderDashboardLayout(root, {

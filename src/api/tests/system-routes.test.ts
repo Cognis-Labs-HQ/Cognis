@@ -35,20 +35,3 @@ test('system route exposes env-backed ui config', async () => {
 
   assert.match(body, /"demoMode":true/);
 });
-
-test('system route exposes installed font families', async () => {
-  const route = createSystemRoutes(healthService as any);
-  let status = 0;
-  let body = '';
-
-  const handled = await route({ method: 'GET' } as any, {
-    writeHead(code: number) { status = code; },
-    end(payload: string) { body = payload; }
-  } as any, new URL('http://localhost/api/v1/system/fonts'));
-
-  assert.equal(handled, true);
-  assert.equal(status, 200);
-  const payload = JSON.parse(body);
-  assert.equal(Array.isArray(payload.data), true);
-  assert.ok(payload.data.length > 0);
-});

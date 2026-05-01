@@ -1,14 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import type { HealthService } from '@cognis/core';
-
-const execFileAsync = promisify(execFile);
-const DEFAULT_FONT_CATALOG = ['Orbitron', 'Inter', 'Arial', 'sans-serif'];
-const FONT_CACHE_TTL_MS = 5 * 60 * 1000;
-let fontsCache: { expiresAt: number; data: string[] } | null = null;
 
 async function listLanguages() {
   const root = join(process.cwd(), 'src', 'ui', 'languages');
@@ -27,29 +20,6 @@ async function listLanguages() {
     } catch {}
   }
   return languages;
-}
-
-async function listInstalledFonts() {
-  try {
-    const now = Date.now();
-    if (fontsCache && fontsCache.expiresAt > now) return fontsCache.data;
-
-    const { stdout } = await execFileAsync('fc-list', [':', 'family'], { timeout: 3000, maxBuffer: 10 * 1024 * 1024 });
-    const fonts = stdout
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .flatMap((line) => line.split(','))
-      .map((font) => font.trim())
-      .filter(Boolean);
-
-    const mergedFonts = Array.from(new Set([...DEFAULT_FONT_CATALOG, ...fonts])).sort((a, b) => a.localeCompare(b));
-    const resolvedFonts = mergedFonts.length > 0 ? mergedFonts : [...DEFAULT_FONT_CATALOG];
-    fontsCache = { data: resolvedFonts, expiresAt: now + FONT_CACHE_TTL_MS };
-    return resolvedFonts;
-  } catch {
-    return [...DEFAULT_FONT_CATALOG];
-  }
 }
 
 function parseDemoModeFromEnv() {
@@ -71,13 +41,6 @@ export function createSystemRoutes(healthService: HealthService) {
       const languages = await listLanguages();
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: languages }));
-      return true;
-    }
-
-    if (url.pathname === '/api/v1/system/fonts' && req.method === 'GET') {
-      const fonts = await listInstalledFonts();
-      res.writeHead(200, { 'content-type': 'application/json' });
-      res.end(JSON.stringify({ data: fonts }));
       return true;
     }
 
