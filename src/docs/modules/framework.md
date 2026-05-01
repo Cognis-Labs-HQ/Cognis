@@ -14,7 +14,7 @@ Cognis now follows an nginx-like convention:
 
 ## Module source conventions
 - **Internal modules**: unpacked directories; trusted by default.
-- **External modules**: must be `.zip` or `.tar.gz` files under `MODULES_PATH` (default `/app/modules/external`).
+- **External modules**: must be `.zip` or `.tar.gz` files under `$COGNIS_MODULES_ROOT/external` (default `/app/src/modules/external`).
 - External modules require explicit disclaimer acknowledgement before `enable` succeeds.
 
 ## Contract

@@ -23,6 +23,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-cognis}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@db:5432/${POSTGRES_DB:-cognis}
     volumes:
       - applogs:/app/logs
+      - appconfig:/app/config
     ports:
       - '${PORT:-3000}:3000'
     depends_on:
@@ -33,3 +34,4 @@ services:
 volumes:
   pgdata:
   applogs:
+  appconfig:

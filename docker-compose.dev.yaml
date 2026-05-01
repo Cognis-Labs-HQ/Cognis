@@ -33,6 +33,7 @@ services:
       - ./:/app
       - /app/node_modules
       - applogs-dev:/app/logs
+      - appconfig-dev:/app/config
     command: sh -c "npm ci --ignore-scripts && npm run start"
     depends_on:
       db:
@@ -41,3 +42,4 @@ services:
 volumes:
   pgdata-dev:
   applogs-dev:
+  appconfig-dev:
