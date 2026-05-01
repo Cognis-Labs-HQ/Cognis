@@ -2,7 +2,7 @@
   --app-font: Orbitron;
   /* Default font size in rem; the JS preference system overrides this with pt units at runtime. */
   --app-font-size: 1.17rem;
-  --bg: radial-gradient(ellipse at top left, rgba(15, 50, 100, 0.45) 0%, transparent 55%), linear-gradient(160deg, #0c1a2e 0%, #071020 55%, #040a16 100%);
+  --bg: linear-gradient(160deg, #0c1a2e 0%, #071020 55%, #040a16 100%);
   --surface: rgba(15, 23, 42, 0.84);
   --surface-2: rgba(19, 29, 51, 0.92);
   --surface-soft: rgba(255, 255, 255, 0.06);
@@ -14,7 +14,7 @@
   --accent-2: #3aa783;
   --shadow: 0 14px 34px rgba(2, 6, 23, 0.35);
   --header-top-bg: linear-gradient(180deg, rgba(4, 12, 24, 0.98) 0%, rgba(6, 18, 36, 0.96) 72%, rgba(8, 22, 42, 0.94) 100%);
-  --nav-bg: radial-gradient(circle at bottom left, rgba(72, 201, 160, 0.36), transparent 42%), linear-gradient(180deg, rgba(7, 29, 51, 0.96), rgba(9, 32, 58, 0.9));
+  --nav-bg: linear-gradient(180deg, rgba(14, 28, 52, 0.97) 0%, rgba(9, 18, 38, 0.94) 100%);
   --nav-link: #c7d6ea;
   --context-muted: #93a4bf;
   --link: #9fd6ff;
@@ -94,7 +94,7 @@ body[data-theme='light'] {
   --user-greeting: #1e3a5f;
   --theme-toggle-color: #0f172a;
   --header-top-bg: linear-gradient(180deg, rgba(240, 247, 255, 0.98) 0%, rgba(226, 239, 251, 0.96) 72%, rgba(220, 234, 248, 0.94) 100%);
-  --nav-bg: radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.26), transparent 42%), linear-gradient(180deg, rgba(219, 234, 254, 0.96), rgba(203, 223, 249, 0.9));
+  --nav-bg: linear-gradient(180deg, rgba(219, 234, 254, 0.96) 0%, rgba(203, 223, 249, 0.9) 100%);
   --control-bg: rgba(255, 255, 255, 0.98);
   --control-text: var(--text);
   --control-border: var(--border);
