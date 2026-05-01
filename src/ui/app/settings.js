@@ -73,7 +73,7 @@ function renderLanguageTables(catalog) {
     const match = catalog.find((item) => item.iso_code === iso);
     const label = match ? `${match.name} (${iso})` : iso;
     const removeDisabled = iso === 'en' ? 'disabled' : '';
-    return `<tr draggable=\"true\" data-lang-row=\"${iso}\"><td>${label}</td><td><button data-lang-up='${iso}'>↑</button><button data-lang-down='${iso}'>↓</button><button data-lang-remove='${iso}' ${removeDisabled}>←</button></td></tr>`;
+    return `<tr draggable=\"true\" data-lang-row=\"${iso}\"><td>${label}</td><td>⬍</td></tr>`;
   }).join('');
   available.innerHTML = catalog.filter((item) => !preferredSet.has(item.iso_code)).map((item) => `<tr draggable=\"true\" data-lang-row=\"${item.iso_code}\"><td>${item.name} (${item.iso_code})</td><td class=\"drag-handle\">⬍</td></tr>`).join('');
 }
@@ -89,7 +89,10 @@ root.addEventListener('dragstart', (event) => {
 });
 
 function clearDropMarkers() {
-  root.querySelectorAll('.drop-target').forEach((row) => row.classList.remove('drop-target'));
+  root.querySelectorAll('.drop-target-before, .drop-target-after').forEach((row) => {
+    row.classList.remove('drop-target-before');
+    row.classList.remove('drop-target-after');
+  });
 }
 
 root.addEventListener('dragover', (event) => {
@@ -97,11 +100,15 @@ root.addEventListener('dragover', (event) => {
   if (!zone) return;
   event.preventDefault();
   clearDropMarkers();
+
   const row = event.target.closest('tr[data-lang-row]');
-  if (row) row.classList.add('drop-target');
+  if (!row) return;
+  const rect = row.getBoundingClientRect();
+  const isAfter = event.clientY > rect.top + rect.height / 2;
+  row.classList.add(isAfter ? 'drop-target-after' : 'drop-target-before');
 });
 
-root.addEventListener('drop', (event) => {
+root.addEventListener('drop' , (event) => {
   const targetTable = event.target.closest('#available-languages, #preferred-languages');
   const targetRow = event.target.closest('tr[data-lang-row]');
   clearDropMarkers();
@@ -111,9 +118,10 @@ root.addEventListener('drop', (event) => {
   if (targetTable?.id === 'preferred-languages') {
     languagePriority = languagePriority.filter((item) => item !== lang);
     if (targetRow) {
-      const before = targetRow.getAttribute('data-lang-row');
-      const index = languagePriority.indexOf(before);
-      if (index >= 0) languagePriority.splice(index, 0, lang);
+      const targetIso = targetRow.getAttribute('data-lang-row');
+      const index = languagePriority.indexOf(targetIso);
+      const isAfter = targetRow.classList.contains('drop-target-after');
+      if (index >= 0) languagePriority.splice(isAfter ? index + 1 : index, 0, lang);
       else languagePriority.push(lang);
     } else {
       languagePriority.push(lang);
