@@ -28,6 +28,8 @@ export interface ApiDependencies {
   accountStore: LocalAccountStore;
   preferenceStore: UserPreferenceStore;
   moduleIntegrityChecker?: () => Promise<Array<{ moduleId: string; file: string; expected: string; actual: string | null; status: 'ok' | 'mismatch' | 'missing' }>>;
+  loadModuleStates?: () => Promise<Array<{ moduleId: string; enabled: boolean }>>;
+  persistModuleState?: (moduleId: string, enabled: boolean) => Promise<void>;
 }
 
 export function buildServer(deps: ApiDependencies) {
@@ -40,10 +42,12 @@ export function buildServer(deps: ApiDependencies) {
   const moduleRoutes = createModuleRoutes(moduleService, {
     onEnabled: async (moduleId) => {
       enabledModules.add(moduleId);
+      await deps.persistModuleState?.(moduleId, true);
       await moduleExtensionRoutes.refresh();
     },
     onDisabled: async (moduleId) => {
       enabledModules.delete(moduleId);
+      await deps.persistModuleState?.(moduleId, false);
       await moduleExtensionRoutes.refresh();
     },
     getStatus: (moduleId) => (enabledModules.has(moduleId) ? 'enabled' : 'disabled'),
@@ -56,9 +60,14 @@ export function buildServer(deps: ApiDependencies) {
   const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
   const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore);
 
-  deps.moduleRuntimeGateway.listManifests().then((manifests) => {
+  Promise.all([
+    deps.moduleRuntimeGateway.listManifests(),
+    deps.loadModuleStates?.() ?? Promise.resolve([])
+  ]).then(([manifests, savedStates]) => {
+    const saved = new Map(savedStates.map((row) => [row.moduleId, row.enabled]));
     for (const manifest of manifests) {
-      if (manifest.class === 'core') enabledModules.add(manifest.id);
+      const persisted = saved.get(manifest.id);
+      if (manifest.class === 'core' || persisted === true) enabledModules.add(manifest.id);
     }
     return moduleExtensionRoutes.refresh();
   }).catch(() => undefined);

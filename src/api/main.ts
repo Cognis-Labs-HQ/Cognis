@@ -131,6 +131,30 @@ const server = buildServer({
   authGateway,
   accountStore,
   preferenceStore,
+  loadModuleStates: async () => {
+    const result = await dbExecutor.execute('SELECT module_id, enabled FROM modules');
+    return (result.rows ?? []).map((row) => ({ moduleId: row.module_id, enabled: Boolean(row.enabled) }));
+  },
+  persistModuleState: async (moduleId, enabled) => {
+    if (dbType === 'postgresql') {
+      await dbExecutor.execute(
+        'INSERT INTO modules (module_id, enabled) VALUES ($1, $2) ON CONFLICT (module_id) DO UPDATE SET enabled = EXCLUDED.enabled',
+        [moduleId, enabled]
+      );
+      return;
+    }
+    if (dbType === 'sqlite') {
+      await dbExecutor.execute(
+        'INSERT INTO modules (module_id, enabled) VALUES (?, ?) ON CONFLICT(module_id) DO UPDATE SET enabled = excluded.enabled',
+        [moduleId, enabled]
+      );
+      return;
+    }
+    await dbExecutor.execute(
+      'INSERT INTO modules (module_id, enabled) VALUES (?, ?) ON DUPLICATE KEY UPDATE enabled = VALUES(enabled)',
+      [moduleId, enabled]
+    );
+  },
   moduleIntegrityChecker: async () => {
     const manifests = await runtime.listManifests();
     const report = [] as Array<{ moduleId: string; file: string; expected: string; actual: string | null; status: 'ok' | 'mismatch' | 'missing' }>;
