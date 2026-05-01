@@ -6,6 +6,7 @@ const root = document.querySelector('#app');
 const i18n = await createI18n();
 applyDocumentTitle(i18n, 'ui.page.title.administration');
 let activeView = 'modules';
+let moduleAdminPanels = [];
 
 async function loadModules() {
   const response = await apiFetch('/api/v1/modules');
@@ -16,6 +17,25 @@ async function loadModules() {
 async function toggleModule(moduleId, action) {
   await apiFetch(`/api/v1/modules/${encodeURIComponent(moduleId)}/${action}`, { method: 'POST' });
 }
+async function loadAdminPanels() {
+  const modules = await loadModules();
+  const enabled = modules.filter((mod) => mod.status === 'enabled');
+  const panels = [];
+
+  for (const mod of enabled) {
+    try {
+      const response = await apiFetch(`/api/v1/modules/${encodeURIComponent(mod.id)}/admin-panel`);
+      if (!response.ok) continue;
+      const payload = await response.json();
+      if (payload.data) panels.push(payload.data);
+    } catch {
+      // module does not provide admin panel
+    }
+  }
+
+  return panels;
+}
+
 async function loadIntegrity() {
   const response = await apiFetch('/api/v1/modules/integrity');
   const payload = await response.json();
@@ -88,6 +108,7 @@ function renderToolbar() {
     <ul>
       <li><button data-view="modules" class="${activeView === 'modules' ? 'active' : ''}" ${activeView === 'modules' ? 'aria-current="page"' : ''}>${i18n.t('ui.reuse.modules')}</button></li>
       <li><button data-view="integrity" class="${activeView === 'integrity' ? 'active' : ''}" ${activeView === 'integrity' ? 'aria-current="page"' : ''}>${i18n.t('ui.reuse.file_integrity')}</button></li>
+      <li><button data-view="notifications" class="${activeView === 'notifications' ? 'active' : ''}" ${activeView === 'notifications' ? 'aria-current="page"' : ''}>{i18n.t('ui.app.admin.notifications')}</button></li>
     </ul>
   `;
 }
@@ -95,11 +116,18 @@ function renderToolbar() {
 async function renderPage() {
   const modules = await loadModules();
   const integrityRows = activeView === 'integrity' ? await loadIntegrity() : [];
+  moduleAdminPanels = activeView === 'notifications' ? await loadAdminPanels() : moduleAdminPanels;
+
+  const notificationContent = moduleAdminPanels.length
+    ? `<article class=\"docs-viewer\"><h2>${i18n.t('ui.app.admin.notification_modules')}</h2><ul>${moduleAdminPanels.map((panel) => `<li><strong>${panel.title}</strong> - ${panel.description} <a href=\"${panel.route}\">Open</a></li>`).join('')}</ul></article>`
+    : `<article class=\"docs-viewer\"><h2>${i18n.t('ui.app.admin.notification_modules')}</h2><p>${i18n.t('ui.app.admin.no_notification_panels')}</p></article>`;
 
   const content =
     activeView === 'modules'
-      ? `<article class="docs-viewer"><h2>${i18n.t('ui.reuse.modules')}</h2>${renderModulesPanel(modules)}</article>`
-      : `<article class="docs-viewer"><div class="integrity-header"><h2>${i18n.t('ui.reuse.file_integrity')}</h2><button id="rerun-integrity">${i18n.t('ui.app.admin.rerun')}</button></div>${renderIntegrityPanel(integrityRows)}</article>`;
+      ? `<article class=\"docs-viewer\"><h2>${i18n.t('ui.reuse.modules')}</h2>${renderModulesPanel(modules)}</article>`
+      : activeView === 'integrity'
+        ? `<article class=\"docs-viewer\"><div class=\"integrity-header\"><h2>${i18n.t('ui.reuse.file_integrity')}</h2><button id=\"rerun-integrity\">${i18n.t('ui.app.admin.rerun')}</button></div>${renderIntegrityPanel(integrityRows)}</article>`
+        : notificationContent;
 
   await renderDashboardLayout(root, {
     pageContext: `<h1>${i18n.t('ui.app.admin.page_title')}</h1><p>${i18n.t('ui.app.admin.page_subtitle')}</p>`,

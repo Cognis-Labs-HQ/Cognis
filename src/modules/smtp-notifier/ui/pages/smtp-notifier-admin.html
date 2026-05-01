@@ -1,0 +1,41 @@
+<section class="mod-smtp-notifier">
+  <h2>SMTP Notifier</h2>
+  <p>Configure SMTP transport used by the core notification gateway.</p>
+  <form id="smtp-form">
+    <label>SMTP Host <input name="host" /></label>
+    <label>Port <input name="port" type="number" value="587" /></label>
+    <label>Secure <input name="secure" type="checkbox" /></label>
+    <label>Username <input name="username" /></label>
+    <label>Password <input name="password" type="password" /></label>
+    <label>From Address <input name="fromAddress" /></label>
+    <label>Enabled <input name="enabled" type="checkbox" /></label>
+    <button type="submit">Save</button>
+  </form>
+  <p id="status"></p>
+</section>
+<script type="module">
+  const form = document.querySelector('#smtp-form');
+  const status = document.querySelector('#status');
+  const req = async (path, init = {}) => {
+    const r = await fetch(path, { credentials: 'include', headers: { 'content-type': 'application/json' }, ...init });
+    if (!r.ok) throw new Error('Request failed');
+    return r.json();
+  };
+  const cfg = (await req('/api/v1/modules/smtp-notifier/smtp-config')).data;
+  form.host.value = cfg.host || '';
+  form.port.value = cfg.port || 587;
+  form.secure.checked = !!cfg.secure;
+  form.username.value = cfg.username || '';
+  form.password.value = '';
+  form.fromAddress.value = cfg.fromAddress || '';
+  form.enabled.checked = !!cfg.enabled;
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    await req('/api/v1/modules/smtp-notifier/smtp-config', { method: 'POST', body: JSON.stringify({
+      host: form.host.value, port: Number(form.port.value), secure: form.secure.checked,
+      username: form.username.value, password: form.password.value, fromAddress: form.fromAddress.value,
+      enabled: form.enabled.checked
+    })});
+    status.textContent = 'Saved';
+  });
+</script>

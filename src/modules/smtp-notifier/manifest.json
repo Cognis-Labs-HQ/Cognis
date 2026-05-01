@@ -1,0 +1,17 @@
+{
+  "id": "smtp-notifier",
+  "name": "SMTP Notifier",
+  "version": "1.0.0",
+  "class": "extension",
+  "coreApiVersion": "v1",
+  "capabilities": [
+    "notifications:email:smtp",
+    "ui:administration"
+  ],
+  "entrypoints": {
+    "api": "./api/index.js",
+    "ui": "./ui/pages/smtp-notifier-admin.html"
+  },
+  "publisher": "Cognis Labs",
+  "files": []
+}

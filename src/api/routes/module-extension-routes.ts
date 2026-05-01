@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { ModuleRuntimeGateway } from '@cognis/core';
+import type { NotificationService } from '@cognis/core';
 import path from 'node:path';
 
 interface RouteHandler {
@@ -16,13 +17,15 @@ export interface ModuleExtensionRoutes {
 
 export function createModuleExtensionRoutes(
   runtime: ModuleRuntimeGateway,
-  isModuleEnabled: (moduleId: string) => boolean
+  isModuleEnabled: (moduleId: string) => boolean,
+  notificationService?: NotificationService
 ): ModuleExtensionRoutes {
   let handlers: RouteHandler[] = [];
   const modulesRoot = process.env.COGNIS_MODULES_ROOT ?? path.resolve(process.cwd(), 'src', 'modules');
 
   async function refresh() {
     const nextHandlers: RouteHandler[] = [];
+    notificationService?.clearAdapters();
     const manifests = await runtime.listManifests();
 
     for (const manifest of manifests) {
@@ -32,6 +35,9 @@ export function createModuleExtensionRoutes(
       const pluginPath = path.join(moduleRoot, manifest.entrypoints.api);
       try {
         const plugin = await import(`${pluginPath}?t=${Date.now()}`);
+        if (notificationService && typeof plugin.registerNotificationAdapters === 'function') {
+          plugin.registerNotificationAdapters(notificationService);
+        }
         if (typeof plugin.registerApiRoutes === 'function') {
           plugin.registerApiRoutes({
             get(routePath: string, handler: RouteHandler['handler']) {

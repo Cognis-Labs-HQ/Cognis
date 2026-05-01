@@ -88,6 +88,9 @@
   <string name="ui.app.admin.page_subtitle">Admin-only tools and controls.</string>
   <string name="ui.app.admin.disable_confirm">Disable module</string>
   <string name="ui.app.admin.checking">Checking...</string>
+  <string name="ui.app.admin.notifications">Notifications</string>
+  <string name="ui.app.admin.notification_modules">Notification Modules</string>
+  <string name="ui.app.admin.no_notification_panels">No enabled module has exposed a notification administration panel yet.</string>
   <string name="ui.app.demo.switched">Demo: switched to sandbox page.</string>
   <string name="ui.app.demo.added">Demo: added a learning progress widget.</string>
   <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>

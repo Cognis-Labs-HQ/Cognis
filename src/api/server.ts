@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { HealthService, ModuleService, type ModuleRuntimeGateway } from '@cognis/core';
+import { HealthService, ModuleService, NotificationService, type ModuleRuntimeGateway } from '@cognis/core';
 import { createModuleRoutes } from './routes/module-routes.js';
 import { createSystemRoutes } from './routes/system-routes.js';
 import { createDocsRoutes } from './routes/docs-routes.js';
@@ -10,6 +10,7 @@ import type { AuthGateway } from '@cognis/core';
 import type { LocalAccountStore } from './adapters/local-auth-gateway.js';
 import { createPreferencesRoutes, type UserPreferenceStore } from './routes/preferences-routes.js';
 import { createUserRoutes } from './routes/user-routes.js';
+import { createNotificationRoutes } from './routes/notification-routes.js';
 
 const LOG_LEVEL = process.env.LOG_LEVEL ?? 'info';
 const isDebug = LOG_LEVEL === 'debug';
@@ -36,8 +37,9 @@ export function buildServer(deps: ApiDependencies) {
   const moduleService = new ModuleService(deps.moduleRuntimeGateway);
   const healthService = new HealthService();
   const enabledModules = new Set<string>();
+  const notificationService = new NotificationService();
 
-  const moduleExtensionRoutes = createModuleExtensionRoutes(deps.moduleRuntimeGateway, (moduleId) => enabledModules.has(moduleId));
+  const moduleExtensionRoutes = createModuleExtensionRoutes(deps.moduleRuntimeGateway, (moduleId) => enabledModules.has(moduleId), notificationService);
 
   const moduleRoutes = createModuleRoutes(moduleService, {
     onEnabled: async (moduleId) => {
@@ -59,6 +61,7 @@ export function buildServer(deps: ApiDependencies) {
   const authRoutes = createAuthRoutes(deps.authGateway, deps.accountStore);
   const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
   const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore);
+  const notificationRoutes = createNotificationRoutes(notificationService);
 
   Promise.all([
     deps.moduleRuntimeGateway.listManifests(),
@@ -105,6 +108,12 @@ export function buildServer(deps: ApiDependencies) {
       const handledByUsers = await userRoutes(req, res, url);
       if (handledByUsers) {
         logEvent('info', 'Request handled by user routes.', { method: req.method ?? 'GET', path: url.pathname, durationMs: Date.now() - startedAt });
+        return;
+      }
+
+      const handledByNotifications = await notificationRoutes(req, res, url);
+      if (handledByNotifications) {
+        logEvent('info', 'Request handled by notification routes.', { method: req.method ?? 'GET', path: url.pathname, durationMs: Date.now() - startedAt });
         return;
       }
 
