@@ -35,7 +35,26 @@ async function loadLocaleStrings(locale) {
   return parsed;
 }
 
-export async function createI18n() {
+async function loadModuleStrings(activeLocale, moduleIds) {
+  const collected = new Map();
+  if (!Array.isArray(moduleIds) || !moduleIds.length) return collected;
+
+  await Promise.all(moduleIds.map(async (moduleId) => {
+    try {
+      const response = await fetch(`/modules/${encodeURIComponent(moduleId)}/strings/${activeLocale}.xml`);
+      if (!response.ok) return;
+      const parsed = parseStringsXml(await response.text());
+      parsed.forEach((value, key) => {
+        if (!key.startsWith(`module.${moduleId}.`)) return;
+        collected.set(key, value);
+      });
+    } catch {}
+  }));
+
+  return collected;
+}
+
+export async function createI18n(options = {}) {
   const requested = detectLocale();
   let activeLocale = normalizeLocale(requested);
   let strings;
@@ -46,6 +65,9 @@ export async function createI18n() {
     activeLocale = DEFAULT_LOCALE;
     strings = await loadLocaleStrings(activeLocale);
   }
+
+  const moduleStrings = await loadModuleStrings(activeLocale, options.moduleIds || []);
+  moduleStrings.forEach((value, key) => strings.set(key, value));
 
   document.documentElement.lang = activeLocale;
 
@@ -75,4 +97,10 @@ export function applyStaticTranslations(i18n, root = document) {
     if (!key) return;
     element.setAttribute('aria-label', i18n.t(key));
   });
+}
+
+
+export function applyDocumentTitle(i18n, key) {
+  const value = i18n.t(key);
+  if (value) document.title = value;
 }

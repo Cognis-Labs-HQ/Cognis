@@ -4,9 +4,10 @@ import { runDemoPuppeteer } from './demo-puppeteer.js';
 import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
 import { loadTemplate } from '../reuse/template-loader.js';
 import { apiFetch } from '../reuse/api-client.js';
-import { createI18n } from '../reuse/i18n.js';
+import { applyDocumentTitle, createI18n } from '../reuse/i18n.js';
 
 const i18n = await createI18n();
+applyDocumentTitle(i18n, 'ui.page.title.dashboard');
 
 const state = {
   pages: structuredClone(DEFAULT_PAGES),

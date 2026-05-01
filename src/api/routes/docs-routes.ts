@@ -4,6 +4,12 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 
 const DOCS_ROOT = join(process.cwd(), 'src', 'docs', 'components');
 
+function resolveLang(url: URL) {
+  const queryLang = (url.searchParams.get('lang') || '').toLowerCase();
+  if (queryLang) return queryLang;
+  return 'en';
+}
+
 async function collectMarkdownFiles(root: string, dir = root): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
   const files: string[] = [];
@@ -24,7 +30,7 @@ export function createDocsRoutes() {
 
     if (url.pathname === '/api/v1/docs') {
       const files = await collectMarkdownFiles(DOCS_ROOT);
-      const docs = files.map((file) => ({ slug: file.replace(/\.md$/, ''), path: `/api/v1/docs/${file.replace(/\.md$/, '')}` }));
+      const docs = files.map((file) => ({ slug: file.replace(/\.md$/, '').replace(/\.[a-z]{2}$/i, ''), path: `/api/v1/docs/${file.replace(/\.md$/, '').replace(/\.[a-z]{2}$/i, '')}` }));
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: docs }));
       return true;
@@ -34,7 +40,15 @@ export function createDocsRoutes() {
     if (!match) return false;
 
     const slug = match[1].replace(/\.\./g, '');
-    const content = await readFile(join(DOCS_ROOT, `${slug}.md`), 'utf-8');
+    const lang = resolveLang(url);
+    let markdownPath = join(DOCS_ROOT, `${slug}.${lang}.md`);
+    let content;
+    try {
+      content = await readFile(markdownPath, 'utf-8');
+    } catch {
+      markdownPath = join(DOCS_ROOT, `${slug}.md`);
+      content = await readFile(markdownPath, 'utf-8');
+    }
     res.writeHead(200, { 'content-type': 'application/json' });
     res.end(JSON.stringify({ data: { slug, markdown: content } }));
     return true;

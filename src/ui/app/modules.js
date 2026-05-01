@@ -1,9 +1,10 @@
 import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
 import { apiFetch } from '../reuse/api-client.js';
-import { createI18n } from '../reuse/i18n.js';
+import { applyDocumentTitle, createI18n } from '../reuse/i18n.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
+applyDocumentTitle(i18n, 'ui.page.title.modules');
 
 async function loadModules() {
   const response = await apiFetch('/api/v1/modules');

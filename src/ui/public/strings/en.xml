@@ -91,4 +91,11 @@
   <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>
   <string name="ui.app.demo.removed">Demo: removed the most recent widget.</string>
   <string name="ui.app.demo.complete">Demo complete.</string>
+
+  <string name="ui.page.title.login">Cognis - Login</string>
+  <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
+  <string name="ui.page.title.docs">Cognis - Docs</string>
+  <string name="ui.page.title.modules">Cognis - Modules</string>
+  <string name="ui.page.title.administration">Cognis - Administration</string>
+  <string name="ui.page.title.settings">Cognis - Settings</string>
 </resources>
