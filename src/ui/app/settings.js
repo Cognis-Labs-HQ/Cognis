@@ -28,13 +28,19 @@ async function savePrefs(prefs) {
   });
 }
 
+async function loadFontsCatalog() {
+  const response = await apiFetch('/api/v1/system/fonts');
+  const payload = await response.json();
+  return Array.isArray(payload.data) ? payload.data : [];
+}
+
 await renderDashboardLayout(root, {
   i18n,
   pageContext: `<h1>${i18n.t('ui.app.settings.page_title')}</h1><p>${i18n.t('ui.app.settings.page_subtitle')}</p>`,
   toolbar: `<h3>${i18n.t('ui.app.settings.toolbar_title')}</h3><ul><li><button disabled>${i18n.t('ui.reuse.menu.profile')}</button></li><li><button disabled>${i18n.t('ui.reuse.appearance')}</button></li></ul>`,
   content: `<article class="docs-viewer">${section(i18n.t('ui.reuse.appearance'), `
       <label>${i18n.t('ui.app.settings.animation')} <select id="pref-animation"><option>none</option><option>fade</option><option>float</option></select></label><br/>
-      <label>${i18n.t('ui.app.settings.greeting_font')} <input id="pref-font" placeholder="Inter, Arial, sans-serif"/></label><br/>
+      <label>${i18n.t('ui.app.settings.greeting_font')} <select id="pref-font"></select></label><br/>
       <label>${i18n.t('ui.app.settings.greeting_size')} <input id="pref-font-size" type="number" min="0.8" max="2" step="0.05"/></label><br/>
       <section><h4>${i18n.t('ui.app.settings.language')}</h4><div class="language-preferences"><div><h5>${i18n.t('ui.app.settings.available_languages')}</h5><table id="available-languages" class="language-table"></table></div><div><h5>${i18n.t('ui.app.settings.preferred_languages')}</h5><table id="preferred-languages" class="language-table"></table></div></div></section>
       <button id="save-prefs">${i18n.t('ui.app.settings.save')}</button>
@@ -43,11 +49,25 @@ await renderDashboardLayout(root, {
 
 const existingPrefs = await loadPrefs().catch(() => null);
 if (Array.isArray(existingPrefs?.languagePriority)) languagePriority = existingPrefs.languagePriority;
+const fontOptions = await loadFontsCatalog().catch(() => ['Orbitron', 'Inter', 'Arial', 'sans-serif']);
+
+const fontSelector = root.querySelector('#pref-font');
+if (fontSelector) {
+  const fonts = Array.from(new Set(['Orbitron', ...fontOptions]));
+  fontSelector.innerHTML = fonts.map((font) => `<option value="${font}">${font}</option>`).join('');
+}
+
+const defaultGreetingFont = existingPrefs?.greetingFont || 'Orbitron';
+if (fontSelector) fontSelector.value = defaultGreetingFont;
+const animationSelector = root.querySelector('#pref-animation');
+if (animationSelector) animationSelector.value = existingPrefs?.animation || 'none';
+const fontSizeInput = root.querySelector('#pref-font-size');
+if (fontSizeInput) fontSizeInput.value = String(existingPrefs?.greetingFontSize || 1.4);
 
 root.querySelector('#save-prefs')?.addEventListener('click', async () => {
   const prefs = {
     animation: root.querySelector('#pref-animation')?.value || 'none',
-    greetingFont: root.querySelector('#pref-font')?.value || 'Inter, Arial, sans-serif',
+    greetingFont: root.querySelector('#pref-font')?.value || 'Orbitron',
     greetingFontSize: Number(root.querySelector('#pref-font-size')?.value || 1.4),
     languagePriority
   };

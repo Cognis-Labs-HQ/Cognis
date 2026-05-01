@@ -8,6 +8,16 @@ RUN groupadd --system cognis \
   && mkdir -p /app/logs /app/data /app/config \
   && chown -R cognis:cognis /app
 
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    fontconfig \
+    fonts-dejavu-core \
+    fonts-liberation \
+    fonts-noto-core \
+    fonts-noto-cjk \
+    fonts-freefont-ttf \
+  && rm -rf /var/lib/apt/lists/*
+
 # Install the entrypoint script, the cognisctl wrapper, and the healthcheck into PATH while still root.
 COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY --chmod=755 docker/cognisctl /usr/local/bin/cognisctl

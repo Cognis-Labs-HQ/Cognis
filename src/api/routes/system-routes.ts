@@ -1,8 +1,11 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import type { HealthService } from '@cognis/core';
 
+const execFileAsync = promisify(execFile);
 
 async function listLanguages() {
   const root = join(process.cwd(), 'src', 'ui', 'languages');
@@ -21,6 +24,23 @@ async function listLanguages() {
     } catch {}
   }
   return languages;
+}
+
+async function listInstalledFonts() {
+  try {
+    const { stdout } = await execFileAsync('fc-list', [':', 'family']);
+    const fonts = stdout
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .flatMap((line) => line.split(','))
+      .map((font) => font.trim())
+      .filter(Boolean);
+
+    return [...new Set(fonts)].sort((a, b) => a.localeCompare(b));
+  } catch {
+    return ['Orbitron', 'Inter', 'Arial', 'sans-serif'];
+  }
 }
 
 function parseDemoModeFromEnv() {
@@ -42,6 +62,13 @@ export function createSystemRoutes(healthService: HealthService) {
       const languages = await listLanguages();
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: languages }));
+      return true;
+    }
+
+    if (url.pathname === '/api/v1/system/fonts' && req.method === 'GET') {
+      const fonts = await listInstalledFonts();
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ data: fonts }));
       return true;
     }
 
