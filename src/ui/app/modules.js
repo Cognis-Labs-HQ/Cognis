@@ -23,7 +23,7 @@ const rows = modules.map((mod) => `<tr><td>${mod.id}</td><td>${mod.version}</td>
 await renderDashboardLayout(root, {
   pageContext: `<h1>${i18n.t('ui.app.modules.page_title')}</h1><p>${i18n.t('ui.app.modules.page_subtitle')}</p>`,
   toolbar: `<h3>${i18n.t('ui.reuse.modules')}</h3><p>${i18n.t('ui.app.modules.toolbar_subtitle')}</p>`,
-  content: `<article class="docs-viewer"><table><thead><tr><th>ID</th><th>Version</th><th>Class</th><th>${i18n.t('ui.reuse.actions')}</th></tr></thead><tbody>${rows}</tbody></table></article>`
+  content: `<article class="docs-viewer"><table><thead><tr><th>${i18n.t('ui.reuse.id')}</th><th>${i18n.t('ui.reuse.version')}</th><th>${i18n.t('ui.reuse.class')}</th><th>${i18n.t('ui.reuse.actions')}</th></tr></thead><tbody>${rows}</tbody></table></article>`
 });
 
 root.querySelectorAll('button[data-module]').forEach((button) => {
