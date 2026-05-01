@@ -20,24 +20,31 @@ export function setPreferredLanguages(languages) {
   writeLanguageCookie(normalized.join(','));
 }
 
+function detectBrowserLocale() {
+  const htmlLang = document.documentElement.lang?.trim();
+  if (htmlLang) return htmlLang.toLowerCase();
+  const browserLocale = navigator.language || DEFAULT_LOCALE;
+  return browserLocale.toLowerCase();
+}
+
 export function readPreferredLanguages() {
   try {
     const local = JSON.parse(localStorage.getItem('cognis_language_priority') || 'null');
     if (Array.isArray(local) && local.length) return local;
   } catch {}
   const cookie = readCookie(LANGUAGE_COOKIE);
-  if (cookie) return cookie.split(',').map((item) => item.trim()).filter(Boolean);
-  return [detectLocale(), DEFAULT_LOCALE];
+  if (cookie) {
+    const parsed = cookie.split(',').map((item) => item.trim()).filter(Boolean);
+    if (parsed.length) return parsed;
+  }
+  return [detectBrowserLocale(), DEFAULT_LOCALE];
 }
 
 
 function detectLocale() {
   const preferredList = readPreferredLanguages();
   if (preferredList?.[0]) return preferredList[0].toLowerCase();
-  const htmlLang = document.documentElement.lang?.trim();
-  if (htmlLang) return htmlLang.toLowerCase();
-  const browserLocale = navigator.language || DEFAULT_LOCALE;
-  return browserLocale.toLowerCase();
+  return detectBrowserLocale();
 }
 
 function normalizeLocale(locale) {
