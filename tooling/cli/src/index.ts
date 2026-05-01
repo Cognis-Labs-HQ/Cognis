@@ -14,17 +14,28 @@ interface CommandSpec {
   name: string;
   usage: string;
   description: string;
+  section: string;
   handler: CommandHandler;
 }
 
 const registry = new Map<string, CommandSpec>();
 
-function register(name: string, handler: CommandHandler, options?: { usage?: string; description?: string }) {
+function inferSection(name: string): string {
+  if (name.startsWith('user:')) return 'User';
+  if (name.startsWith('system:')) return 'System';
+  if (name.startsWith('modules:')) return 'Modules';
+  if (name.startsWith('api:')) return 'API';
+  if (name === 'help') return 'General';
+  return 'Extensions';
+}
+
+function register(name: string, handler: CommandHandler, options?: { usage?: string; description?: string; section?: string }) {
   registry.set(name, {
     name,
     handler,
     usage: options?.usage ?? `cognisctl ${name}`,
-    description: options?.description ?? 'No description provided.'
+    description: options?.description ?? 'No description provided.',
+    section: options?.section ?? inferSection(name)
   });
 }
 
@@ -100,8 +111,23 @@ function printGlobalHelp() {
 
   const commands = [...registry.values()].sort((a, b) => a.name.localeCompare(b.name));
   const maxName = commands.reduce((acc, item) => Math.max(acc, item.name.length), 0);
+  const grouped = new Map<string, CommandSpec[]>();
+
   for (const command of commands) {
-    console.log(`  ${command.name.padEnd(maxName + 2)}${command.description}`);
+    const bucket = grouped.get(command.section) ?? [];
+    bucket.push(command);
+    grouped.set(command.section, bucket);
+  }
+
+  const sectionOrder = ['General', 'System', 'Modules', 'User', 'API', 'Extensions'];
+  for (const sectionName of sectionOrder) {
+    const sectionCommands = grouped.get(sectionName);
+    if (!sectionCommands || sectionCommands.length === 0) continue;
+
+    console.log(`\n  ${sectionName}:`);
+    for (const command of sectionCommands) {
+      console.log(`    ${command.name.padEnd(maxName + 2)}${command.description}`);
+    }
   }
 }
 
