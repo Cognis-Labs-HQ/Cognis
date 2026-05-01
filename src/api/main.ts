@@ -53,13 +53,18 @@ const logLevel = (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error' |
 const logFile = process.env.LOG_FILE ?? '/app/logs/app.log';
 
 const logger = new Logger(logLevel, logFile);
+await logger.info('Starting Cognis API bootstrap.', { host, port, dbType, logLevel, logFile });
 const dbExecutor = await createDbExecutor(dbType);
+await logger.info('Database executor initialized.', { dbType });
 const accountStore = new DbLocalAccountStore(dbExecutor, dbType);
 await accountStore.ensureSchema();
+await logger.info('Account schema ensured.');
 const authGateway = new LocalAuthGateway(accountStore);
 const preferenceStore = new DbUserPreferenceStore(dbExecutor, dbType);
 await preferenceStore.ensureSchema();
+await logger.info('Preference schema ensured.');
 await dbExecutor.execute('CREATE TABLE IF NOT EXISTS modules (module_id VARCHAR(255) PRIMARY KEY, enabled BOOLEAN NOT NULL DEFAULT TRUE)');
+await logger.info('Module state schema ensured.');
 if (dbType === 'postgresql') {
   await dbExecutor.execute('INSERT INTO modules (module_id, enabled) VALUES ($1, $2) ON CONFLICT (module_id) DO NOTHING', ['cognis-core', true]);
 } else if (dbType === 'sqlite') {
@@ -67,11 +72,44 @@ if (dbType === 'postgresql') {
 } else {
   await dbExecutor.execute('INSERT IGNORE INTO modules (module_id, enabled) VALUES (?, ?)', ['cognis-core', true]);
 }
+await logger.info('Core module baseline state ensured.');
+await dbExecutor.execute('CREATE TABLE IF NOT EXISTS bootstrap_state (state_key VARCHAR(255) PRIMARY KEY, state_value VARCHAR(255) NOT NULL)');
+await logger.info('Bootstrap state schema ensured.');
 
 await initializeDatabaseSchema(dbType, logger);
-const adminPassword = LocalAuthGateway.generatePassword();
-await authGateway.createLocalAdmin('admin', adminPassword);
-await logger.warn('Default admin account created.', { username: 'admin', generatedPassword: adminPassword });
+await logger.info('Database provider schema initialization complete.');
+
+const adminState = await dbExecutor.execute(
+  dbType === 'postgresql'
+    ? 'SELECT state_value FROM bootstrap_state WHERE state_key = $1'
+    : 'SELECT state_value FROM bootstrap_state WHERE state_key = ?',
+  ['default_admin_initialized']
+);
+const adminInitialized = adminState.rows?.[0]?.state_value === 'true';
+
+if (!adminInitialized) {
+  const adminPassword = LocalAuthGateway.generatePassword();
+  await authGateway.createLocalAdmin('admin', adminPassword);
+  if (dbType === 'postgresql') {
+    await dbExecutor.execute(
+      'INSERT INTO bootstrap_state (state_key, state_value) VALUES ($1, $2) ON CONFLICT (state_key) DO UPDATE SET state_value = EXCLUDED.state_value',
+      ['default_admin_initialized', 'true']
+    );
+  } else if (dbType === 'sqlite') {
+    await dbExecutor.execute(
+      'INSERT INTO bootstrap_state (state_key, state_value) VALUES (?, ?) ON CONFLICT(state_key) DO UPDATE SET state_value = excluded.state_value',
+      ['default_admin_initialized', 'true']
+    );
+  } else {
+    await dbExecutor.execute(
+      'INSERT INTO bootstrap_state (state_key, state_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE state_value = VALUES(state_value)',
+      ['default_admin_initialized', 'true']
+    );
+  }
+  await logger.warn('Default admin account created.', { username: 'admin', generatedPassword: adminPassword });
+} else {
+  await logger.info('Default admin bootstrap skipped (already initialized).');
+}
 
 const cliTokenPath = process.env.COGNIS_CLI_TOKEN_PATH ?? '/app/config/cli-access.token';
 const cliAccessToken = issueAccessToken('cognis-cli', 'admin', null);
@@ -87,6 +125,7 @@ try {
 }
 
 const runtime = await InMemoryModuleRuntimeGateway.bootstrap();
+await logger.info('Module runtime bootstrapped.');
 const server = buildServer({
   moduleRuntimeGateway: runtime,
   authGateway,
