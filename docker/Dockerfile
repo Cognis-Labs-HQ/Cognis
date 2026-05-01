@@ -4,7 +4,7 @@ WORKDIR /app
 # Root-only setup: create the non-root user, runtime directories, and system-wide scripts.
 # Everything that requires root is done here so subsequent layers run as cognis.
 RUN groupadd --system cognis \
-  && useradd --system --gid cognis --no-create-home cognis \
+  && useradd --system --gid cognis --home-dir /home/cognis --create-home cognis \
   && mkdir -p /app/logs /app/data /app/config \
   && chown -R cognis:cognis /app
 
