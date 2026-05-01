@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+node --import tsx /app/src/tooling/cli/index.ts "$@"
