@@ -1,5 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import type { DbExecutor } from '../adapters/db-account-store.js';
 import type { Logger } from '../logger.js';
 
 export function resolveDbProviderDir(dbType: string) {
@@ -8,11 +9,28 @@ export function resolveDbProviderDir(dbType: string) {
   return 'sqlite';
 }
 
-export async function initializeDatabaseSchema(dbType: string, logger: Logger) {
+function splitSqlStatements(sql: string): string[] {
+  // Splits on semicolons at statement boundaries. Init scripts must not contain
+  // semicolons inside string literals.
+  return sql
+    .split(';')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+    .map((s) => `${s};`);
+}
+
+export async function initializeDatabaseSchema(dbType: string, logger: Logger, executor: DbExecutor) {
   const dir = resolveDbProviderDir(dbType);
   const initRoot = path.resolve(process.cwd(), 'db', 'init', dir);
   const files = (await readdir(initRoot)).filter((name) => name.endsWith('.sql')).sort();
-  const sql = await Promise.all(files.map((name) => readFile(path.join(initRoot, name), 'utf8')));
-  await logger.info('Database initialization prepared.', { dbType, dir, files });
-  return { dbType: dir, files, sqlCount: sql.length };
+  const contents = await Promise.all(files.map((name) => readFile(path.join(initRoot, name), 'utf8')));
+  await logger.info('Running database initialization scripts.', { dbType, dir, files });
+  for (let i = 0; i < files.length; i++) {
+    const statements = splitSqlStatements(contents[i]);
+    for (const statement of statements) {
+      await executor.execute(statement);
+    }
+    await logger.info('Database initialization script applied.', { file: files[i] });
+  }
+  return { dbType: dir, files, sqlCount: contents.length };
 }
