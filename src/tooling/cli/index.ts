@@ -98,7 +98,7 @@ function printStructured(value: unknown) {
 }
 
 async function resolveCliToken() {
-  const tokenPath = process.env.COGNIS_CLI_TOKEN_PATH ?? '/var/run/cognis/cli-access.token';
+  const tokenPath = process.env.COGNIS_CLI_TOKEN_PATH ?? '/app/config/cli-access.token';
   const token = (await readFile(tokenPath, 'utf8')).trim();
   if (!token) throw new Error('CLI access token file is empty');
   return token;
