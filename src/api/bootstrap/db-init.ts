@@ -10,6 +10,8 @@ export function resolveDbProviderDir(dbType: string) {
 }
 
 function splitSqlStatements(sql: string): string[] {
+  // Splits on semicolons at statement boundaries. Init scripts must not contain
+  // semicolons inside string literals.
   return sql
     .split(';')
     .map((s) => s.trim())

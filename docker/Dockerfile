@@ -1,6 +1,10 @@
 FROM node:22 AS base
 WORKDIR /app
 
+# Create a non-root user before installing dependencies.
+RUN groupadd --system cognis \
+  && useradd --system --gid cognis --no-create-home cognis
+
 # Copy dependency manifests first so npm ci is cached independently of source changes.
 COPY package.json package-lock.json tsconfig.json tsconfig.base.json ./
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -8,8 +12,6 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN npm ci --ignore-scripts \
   && printf '#!/usr/bin/env bash\nnode --import tsx /app/src/tooling/cli/index.ts "$@"\n' > /usr/local/bin/cognisctl \
   && chmod +x /usr/local/bin/cognisctl /usr/local/bin/entrypoint.sh \
-  && groupadd --system cognis \
-  && useradd --system --gid cognis --no-create-home cognis \
   && mkdir -p /app/logs /app/data /app/config \
   && chown -R cognis:cognis /app/logs /app/data /app/config
 
@@ -22,7 +24,6 @@ ENV NODE_ENV=production
 ENV COGNIS_UI_DEMO_MODE=0
 ENV DB_TYPE=sqlite
 ENV SQLITE_PATH=/app/data/cognis.sqlite
-ENV DATABASE_URL=""
 ENV LOG_LEVEL=info
 ENV LOG_FILE=/app/logs/app.log
 ENV COGNIS_ACCESS_TOKEN_TTL_SECONDS=43200
