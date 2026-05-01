@@ -21,7 +21,7 @@ async function loadIntegrity() {
 
 function getStatePill(status) {
   if (status === 'enabled') return { label: 'Active', className: 'pill-active' };
-  if (status === 'available') return { label: 'Error', className: 'pill-error' };
+  if (status === 'available') return { label: 'Available', className: 'pill-available' };
   return { label: 'Disabled', className: 'pill-disabled' };
 }
 

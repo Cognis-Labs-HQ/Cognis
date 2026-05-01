@@ -40,10 +40,25 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
     return new InMemoryModuleRuntimeGateway(manifests);
   }
 
-  async listManifests() { return this.manifests; }
-  async installFromZip(_binary: Uint8Array) { throw new Error('ZIP module installation is not wired in bootstrap runtime yet'); }
-  async enable(moduleId: string) { const state = { moduleId, enabled: true }; this.states.set(moduleId, state); return state; }
-  async disable(moduleId: string) { const state = { moduleId, enabled: false }; this.states.set(moduleId, state); return state; }
+  async listManifests() {
+    return this.manifests;
+  }
+
+  async installFromZip(_binary: Uint8Array) {
+    throw new Error('ZIP module installation is not wired in bootstrap runtime yet');
+  }
+
+  async enable(moduleId: string) {
+    const state = { moduleId, enabled: true };
+    this.states.set(moduleId, state);
+    return state;
+  }
+
+  async disable(moduleId: string) {
+    const state = { moduleId, enabled: false };
+    this.states.set(moduleId, state);
+    return state;
+  }
 }
 
 const port = Number.parseInt(process.env.PORT ?? '3000', 10);

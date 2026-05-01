@@ -39,8 +39,6 @@ function register(name: string, handler: CommandHandler, options?: { usage?: str
   });
 }
 
-
-
 function failMissingArgs(missing: string[], usage: string) {
   const names = missing.map((name) => `"${name}"`).join(', ');
   throw new Error(`Not enough arguments (missing: ${names})\n\nUsage:
@@ -51,6 +49,7 @@ function requireArgs(args: string[], names: string[], usage: string) {
   const missing = names.filter((_, idx) => !args[idx]);
   if (missing.length > 0) failMissingArgs(missing, usage);
 }
+
 function buildHeaders(apiToken?: string, includeJsonContentType = false) {
   const headers: Record<string, string> = {};
   if (includeJsonContentType) headers['content-type'] = 'application/json';
@@ -85,10 +84,6 @@ async function apiPost(apiBaseUrl: string, route: string, body?: unknown, apiTok
   return apiRequest(apiBaseUrl, route, { method: 'POST', body, apiToken });
 }
 
-
-
-
-
 function printStructured(value: unknown) {
   if (typeof value === 'string') {
     console.log(value);
@@ -103,6 +98,7 @@ async function resolveCliToken() {
   if (!token) throw new Error('CLI access token file is empty');
   return token;
 }
+
 function printGlobalHelp() {
   console.log('Cognis CLI (cognisctl)');
   console.log('');
@@ -198,7 +194,7 @@ register('modules:list', async ({ apiBaseUrl, getApiToken }) => {
 register('modules:enable', async ({ args, apiBaseUrl, getApiToken }) => {
   const [moduleId] = args;
   requireArgs(args, ['moduleId'], 'cognisctl modules:enable <moduleId>');
-    const acknowledge = args.includes('--ack-external-disclaimer');
+  const acknowledge = args.includes('--ack-external-disclaimer');
   const route = `/api/v1/modules/${encodeURIComponent(moduleId)}/enable${acknowledge ? '?acknowledgeExternalDisclaimer=true' : ''}`;
   const payload = await apiPost(apiBaseUrl, route, undefined, await getApiToken());
   printStructured(payload);
@@ -301,14 +297,12 @@ async function main() {
   const argv = process.argv.slice(2);
 
   if (argv.length === 0 || argv[0] === '-h' || argv[0] === '--help') {
-    await loadModuleCliPlugins({ refresh: true });
     return printGlobalHelp();
   }
   if (argv[0] === '-v' || argv[0] === '--version') return console.log(packageJson.default.version);
 
   const [command, ...args] = argv;
   if (args.includes('-h') || args.includes('--help')) {
-    await loadModuleCliPlugins({ refresh: true });
     return printCommandHelp(command);
   }
 

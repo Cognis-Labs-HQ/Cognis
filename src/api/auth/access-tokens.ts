@@ -1,6 +1,6 @@
 import { randomBytes, createHash } from 'node:crypto';
 
-export type AccessRole = 'user' | 'teacher' | 'moderator' | 'admin';
+export type AccessRole = 'user' | 'admin';
 
 interface AccessTokenRecord {
   subject: string;

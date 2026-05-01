@@ -40,10 +40,21 @@ export class SqliteExecutor implements DbExecutor {
     const db = await this.getDb();
     const command = sql.trim().toLowerCase();
     if (command.startsWith('select')) {
-      const rows = await new Promise<any[]>((resolve, reject) => db.all(sql, params, (err: Error | null, result: any[]) => err ? reject(err) : resolve(result)));
+      const rows = await new Promise<any[]>((resolve, reject) => {
+        db.all(sql, params, (err: Error | null, result: any[]) => {
+          if (err) reject(err);
+          else resolve(result);
+        });
+      });
       return { rows, rowCount: rows.length };
     }
-    const rowCount = await new Promise<number>((resolve, reject) => db.run(sql, params, function (this: { changes: number }, err: Error | null) { err ? reject(err) : resolve(this.changes ?? 0); }));
+
+    const rowCount = await new Promise<number>((resolve, reject) => {
+      db.run(sql, params, function (this: { changes: number }, err: Error | null) {
+        if (err) reject(err);
+        else resolve(this.changes ?? 0);
+      });
+    });
     return { rowCount };
   }
 }
@@ -165,7 +176,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
     return (result.rows ?? []).map((row) => ({ username: row.username, isAdmin: row.role === 'admin', enabled: Boolean(row.enabled) }));
   }
 
-  async setRole(username: string, role: 'user' | 'teacher' | 'moderator' | 'admin') {
+  async setRole(username: string, role: 'user' | 'admin') {
     await this.db.execute(`UPDATE accounts SET role = ${this.placeholder(1)} WHERE username = ${this.placeholder(2)}`, [role, username]);
   }
   async setPassword(username: string, password: string) {

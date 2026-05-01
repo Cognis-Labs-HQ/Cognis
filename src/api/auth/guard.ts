@@ -6,7 +6,7 @@ interface AuthClaims {
   role: AccessRole;
 }
 
-const roleRank = { user: 1, teacher: 2, moderator: 3, admin: 4 };
+const roleRank = { user: 1, admin: 2 };
 
 export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
   const raw = req.headers.authorization;
