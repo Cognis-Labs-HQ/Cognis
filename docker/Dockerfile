@@ -10,12 +10,18 @@ RUN groupadd --system cognis \
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
+    curl \
     fontconfig \
     fonts-dejavu-core \
     fonts-liberation \
     fonts-noto-core \
     fonts-noto-cjk \
     fonts-freefont-ttf \
+  && mkdir -p /usr/local/share/fonts/truetype/orbitron \
+  && curl -sSfL \
+    "https://github.com/google/fonts/raw/main/ofl/orbitron/Orbitron%5Bwght%5D.ttf" \
+    -o /usr/local/share/fonts/truetype/orbitron/Orbitron.ttf \
+  && fc-cache -fv \
   && rm -rf /var/lib/apt/lists/*
 
 # Install the entrypoint script, the cognisctl wrapper, and the healthcheck into PATH while still root.

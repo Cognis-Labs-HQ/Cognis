@@ -1,5 +1,5 @@
 :root {
-  --app-font: Orbitron, 'Audiowide', 'Rajdhani', 'Exo 2', 'Trebuchet MS', Arial, sans-serif;
+  --app-font: Orbitron;
   --app-font-size: 1rem;
   --bg: radial-gradient(circle at top left, rgba(72, 201, 160, 0.34), transparent 42%), linear-gradient(180deg, #0b172d 0%, #0b1220 100%);
   --surface: rgba(15, 23, 42, 0.84);
@@ -36,6 +36,12 @@
   --scrollbar-track: rgba(15, 23, 42, 0.45);
   --scrollbar-thumb: rgba(148, 163, 184, 0.5);
   --scrollbar-thumb-hover: rgba(148, 163, 184, 0.75);
+  --color-danger: rgba(239, 68, 68, 0.22);
+  --color-danger-text: #f87171;
+  --color-danger-border: rgba(239, 68, 68, 0.4);
+  --color-success: rgba(52, 211, 153, 0.22);
+  --color-success-text: #34d399;
+  --color-success-border: rgba(52, 211, 153, 0.4);
 }
 
 * { box-sizing: border-box; }
@@ -44,7 +50,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--app-font);
+  font-family: var(--app-font), 'Audiowide', 'Rajdhani', 'Exo 2', 'Trebuchet MS', Arial, sans-serif;
   font-size: var(--app-font-size);
   line-height: 1.45;
 }

@@ -50,8 +50,7 @@ async function loadUiPreferences() {
 function applyUiPreferences(prefs) {
   if (!prefs) return;
   if (prefs.greetingFont) {
-    const fallbacks = ", 'Audiowide', 'Rajdhani', 'Exo 2', 'Trebuchet MS', Arial, sans-serif";
-    document.documentElement.style.setProperty('--app-font', prefs.greetingFont + fallbacks);
+    document.documentElement.style.setProperty('--app-font', prefs.greetingFont);
   }
   if (prefs.greetingFontSize) {
     document.documentElement.style.setProperty('--app-font-size', `${prefs.greetingFontSize}rem`);
