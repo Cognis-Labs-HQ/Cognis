@@ -89,14 +89,19 @@
   height: 40px;
   padding: 0;
 }
+/*
+ * notification-badge-wrap is sized to match the avatar-image content area
+ * (avatar-button is 38px with 2px padding on each side → 34px image).
+ * The wrap is kept at the same 34px so both feel visually balanced.
+ */
 .notification-badge-wrap {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.55rem;
+  font-size: 1.35rem;
   line-height: 1;
 }
 .notification-icon { display: inline-block; }
@@ -143,8 +148,24 @@
   transform: translateY(0);
   pointer-events: auto;
 }
-.dropdown-item { display: block; width: 100%; text-align: left; padding: 8px; color: var(--text); text-decoration: none; border-radius: 6px; font: inherit; font-size: 0.95rem; font-weight: 500; line-height: 1.25; }
-.dropdown-item:hover { background: var(--surface-soft); }
+.dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.25;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.dropdown-item:hover {
+  background: var(--surface-soft);
+  transform: translateX(3px);
+}
 .hidden { display: none; }
 
 .page-surface { padding: 18px; }
@@ -199,6 +220,10 @@
   background: var(--badge-bg);
   color: var(--badge-text);
   border: 1px solid var(--control-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 @media (max-width: 900px) {
@@ -226,6 +251,22 @@ body[data-animation='float'] .docs-viewer { transition: transform 0.22s ease, op
 body[data-animation='float'] .widget-card:hover,
 body[data-animation='float'] .toolbar:hover,
 body[data-animation='float'] .docs-viewer:hover { transform: translateY(-2px); }
+
+/*
+ * Animation kill switch: when the user has disabled animations entirely,
+ * halt the sky-drift on the shell and suppress all decorative transitions.
+ * Functional UI transitions (e.g. dropdown visibility) are left intact.
+ */
+body[data-animation='none'] .app-shell {
+  animation: none;
+}
+body[data-animation='none'] .dropdown-item,
+body[data-animation='none'] .widget-card,
+body[data-animation='none'] .toolbar,
+body[data-animation='none'] .docs-viewer {
+  transition: none !important;
+  animation: none !important;
+}
 
 
 .app-shell, .app-shell * {

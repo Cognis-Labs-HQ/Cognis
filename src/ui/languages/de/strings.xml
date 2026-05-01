@@ -60,6 +60,9 @@
   <string name="ui.app.settings.page_subtitle">Verwalte deine Benutzereinstellungen.</string>
   <string name="ui.app.settings.toolbar_title">Einstellungen</string>
   <string name="ui.app.settings.animation">Animation</string>
+  <string name="ui.app.settings.animation_off">Aus</string>
+  <string name="ui.app.settings.animation_fade">Überblendung</string>
+  <string name="ui.app.settings.animation_float">Schweben</string>
   <string name="ui.app.settings.font">Schriftart</string>
   <string name="ui.app.settings.font_size">Schriftgröße</string>
   <string name="ui.app.settings.reset_font">Schriftart zurücksetzen</string>
