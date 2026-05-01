@@ -49,6 +49,5 @@ child_pid=$!
 set +e
 wait "${child_pid}"
 exit_code=$?
-set -e
 app_log "info" "App process exited with status ${exit_code}."
 exit "${exit_code}"

@@ -10,6 +10,16 @@ export interface DbExecutor {
   execute(sql: string, params?: unknown[]): Promise<{ rows?: any[]; rowCount?: number }>;
 }
 
+const LOG_LEVEL = process.env.LOG_LEVEL ?? 'info';
+function shouldLogDebug() { return LOG_LEVEL === 'debug'; }
+function logDbDebug(message: string, meta?: Record<string, unknown>) {
+  if (!shouldLogDebug()) return;
+  console.debug(JSON.stringify({ ts: new Date().toISOString(), level: 'debug', component: 'db', message, ...meta }));
+}
+function logDbWarn(message: string, meta?: Record<string, unknown>) {
+  console.warn(JSON.stringify({ ts: new Date().toISOString(), level: 'warn', component: 'db', message, ...meta }));
+}
+
 export class SqliteExecutor implements DbExecutor {
   private dbPromise: Promise<any> | null = null;
   constructor(private readonly dbPath: string) {}
@@ -26,6 +36,7 @@ export class SqliteExecutor implements DbExecutor {
   }
 
   async execute(sql: string, params: unknown[] = []) {
+    logDbDebug('Executing SQL statement.', { provider: 'sqlite', sql, params });
     const db = await this.getDb();
     const command = sql.trim().toLowerCase();
     if (command.startsWith('select')) {
@@ -45,6 +56,9 @@ export class PostgresExecutor implements DbExecutor {
       this.clientPromise = (async () => {
         const { Client } = await import('pg');
         const client = new Client({ connectionString: this.databaseUrl });
+        client.on('error', (error: Error) => {
+          logDbWarn('PostgreSQL client emitted error event.', { error: error.message });
+        });
         await client.connect();
         return client;
       })();
@@ -52,9 +66,15 @@ export class PostgresExecutor implements DbExecutor {
     return this.clientPromise;
   }
   async execute(sql: string, params: unknown[] = []) {
+    logDbDebug('Executing SQL statement.', { provider: 'postgresql', sql, params });
     const client = await this.getClient();
-    const result = await client.query(sql, params);
-    return { rows: result.rows, rowCount: result.rowCount };
+    try {
+      const result = await client.query(sql, params);
+      return { rows: result.rows, rowCount: result.rowCount };
+    } catch (error) {
+      logDbWarn('SQL execution failed.', { provider: 'postgresql', sql, error: error instanceof Error ? error.message : String(error) });
+      throw error;
+    }
   }
 }
 
@@ -71,10 +91,16 @@ export class MariadbExecutor implements DbExecutor {
     return this.connPromise;
   }
   async execute(sql: string, params: unknown[] = []) {
+    logDbDebug('Executing SQL statement.', { provider: 'mariadb', sql, params });
     const conn = await this.getConn();
-    const [rows] = await conn.execute(sql, params);
-    if (Array.isArray(rows)) return { rows, rowCount: rows.length };
-    return { rowCount: (rows as any).affectedRows ?? 0 };
+    try {
+      const [rows] = await conn.execute(sql, params);
+      if (Array.isArray(rows)) return { rows, rowCount: rows.length };
+      return { rowCount: (rows as any).affectedRows ?? 0 };
+    } catch (error) {
+      logDbWarn('SQL execution failed.', { provider: 'mariadb', sql, error: error instanceof Error ? error.message : String(error) });
+      throw error;
+    }
   }
 }
 
