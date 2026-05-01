@@ -86,3 +86,10 @@ API sanity and security are paramount.
 - Do not introduce new third-party dependencies without discussion.
 - Do not perform speculative or cosmetic changes outside the files directly relevant to the task.
 - Do not add AI process notes, agent reasoning, or session context to any product-facing documentation.
+
+
+## i18n requirements
+- Resolve all user-facing text via language keys from XML resources; do not hardcode UI copy in JS/HTML.
+- Use shared `ui.reuse.*` keys for common labels before adding new app-specific keys.
+- Module-owned locale keys must be namespaced as `module.<moduleId>.*` and loaded without leaking into global namespaces.
+- For docs, prefer language-suffixed markdown files (`*.en.md`, `*.es.md`) and resolve by language key first, then fallback.

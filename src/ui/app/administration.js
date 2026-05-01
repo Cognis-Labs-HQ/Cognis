@@ -1,7 +1,10 @@
 import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
 import { apiFetch } from '../reuse/api-client.js';
+import { applyDocumentTitle, createI18n } from '../reuse/i18n.js';
 
 const root = document.querySelector('#app');
+const i18n = await createI18n();
+applyDocumentTitle(i18n, 'ui.page.title.administration');
 let activeView = 'modules';
 
 async function loadModules() {
@@ -20,18 +23,18 @@ async function loadIntegrity() {
 }
 
 function getStatePill(status) {
-  if (status === 'enabled') return { label: 'Active', className: 'pill-active' };
-  if (status === 'available') return { label: 'Available', className: 'pill-available' };
-  return { label: 'Disabled', className: 'pill-disabled' };
+  if (status === 'enabled') return { label: i18n.t('ui.app.admin.state.active'), className: 'pill-active' };
+  if (status === 'available') return { label: i18n.t('ui.app.admin.state.available'), className: 'pill-available' };
+  return { label: i18n.t('ui.app.admin.state.disabled'), className: 'pill-disabled' };
 }
 
 function renderDetailsList(mod) {
   const details = [
-    ['ID', mod.id],
-    ['Version', mod.version],
-    ['Publisher', mod.publisher || 'Unknown'],
-    ['Class', mod.class],
-    ['Capabilities', (mod.capabilities || []).join(', ') || 'None']
+    [i18n.t('ui.reuse.id'), mod.id],
+    [i18n.t('ui.reuse.version'), mod.version],
+    [i18n.t('ui.app.admin.publisher'), mod.publisher || i18n.t('ui.app.admin.unknown')],
+    [i18n.t('ui.reuse.class'), mod.class],
+    [i18n.t('ui.app.admin.capabilities'), (mod.capabilities || []).join(', ') || i18n.t('ui.app.admin.none')]
   ];
 
   return details
@@ -66,12 +69,12 @@ function renderModulesPanel(modules) {
 }
 
 function renderIntegrityPanel(integrityRows) {
-  if (!integrityRows.length) return '<p>No tracked module files reported.</p>';
+  if (!integrityRows.length) return `<p>${i18n.t('ui.app.admin.no_integrity')}</p>`;
   const items = integrityRows
     .map((row) => {
       const mismatchDetails =
         row.status !== 'ok'
-          ? ` (expected ${row.expected}, got ${row.actual ?? 'missing'})`
+          ? ` (${i18n.t('ui.app.admin.expected')} ${row.expected}, ${i18n.t('ui.app.admin.got')} ${row.actual ?? i18n.t('ui.app.admin.missing')})`
           : '';
       return `<li class="integrity-${row.status}"><strong>${row.moduleId}</strong> / ${row.file}: ${row.status}${mismatchDetails}</li>`;
     })
@@ -81,10 +84,10 @@ function renderIntegrityPanel(integrityRows) {
 
 function renderToolbar() {
   return `
-    <h3>Navigation</h3>
+    <h3>${i18n.t('ui.reuse.navigation')}</h3>
     <ul>
-      <li><button data-view="modules" class="${activeView === 'modules' ? 'active' : ''}" ${activeView === 'modules' ? 'aria-current="page"' : ''}>Modules</button></li>
-      <li><button data-view="integrity" class="${activeView === 'integrity' ? 'active' : ''}" ${activeView === 'integrity' ? 'aria-current="page"' : ''}>File Integrity</button></li>
+      <li><button data-view="modules" class="${activeView === 'modules' ? 'active' : ''}" ${activeView === 'modules' ? 'aria-current="page"' : ''}>${i18n.t('ui.reuse.modules')}</button></li>
+      <li><button data-view="integrity" class="${activeView === 'integrity' ? 'active' : ''}" ${activeView === 'integrity' ? 'aria-current="page"' : ''}>${i18n.t('ui.reuse.file_integrity')}</button></li>
     </ul>
   `;
 }
@@ -95,11 +98,11 @@ async function renderPage() {
 
   const content =
     activeView === 'modules'
-      ? `<article class="docs-viewer"><h2>Modules</h2>${renderModulesPanel(modules)}</article>`
-      : `<article class="docs-viewer"><div class="integrity-header"><h2>File Integrity</h2><button id="rerun-integrity">Re-run integrity check</button></div>${renderIntegrityPanel(integrityRows)}</article>`;
+      ? `<article class="docs-viewer"><h2>${i18n.t('ui.reuse.modules')}</h2>${renderModulesPanel(modules)}</article>`
+      : `<article class="docs-viewer"><div class="integrity-header"><h2>${i18n.t('ui.reuse.file_integrity')}</h2><button id="rerun-integrity">${i18n.t('ui.app.admin.rerun')}</button></div>${renderIntegrityPanel(integrityRows)}</article>`;
 
   await renderDashboardLayout(root, {
-    pageContext: '<h1>Administration</h1><p>Admin-only tools and controls.</p>',
+    pageContext: `<h1>${i18n.t('ui.app.admin.page_title')}</h1><p>${i18n.t('ui.app.admin.page_subtitle')}</p>`,
     toolbar: renderToolbar(),
     content
   });
@@ -117,7 +120,7 @@ async function renderPage() {
       const action = toggle.checked ? 'enable' : 'disable';
 
       if (action === 'disable') {
-        const confirmed = window.confirm(`Disable module "${moduleId}"?`);
+        const confirmed = window.confirm(`${i18n.t('ui.app.admin.disable_confirm')} "${moduleId}"?`);
         if (!confirmed) {
           window.location.reload();
           return;
@@ -134,7 +137,7 @@ async function renderPage() {
     rerunButton.addEventListener('click', async () => {
       const button = /** @type {HTMLButtonElement} */ (rerunButton);
       button.disabled = true;
-      button.textContent = 'Checking...';
+      button.textContent = i18n.t('ui.app.admin.checking');
       await renderPage();
     });
   }

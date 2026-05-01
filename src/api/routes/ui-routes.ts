@@ -26,6 +26,7 @@ function resolveContentType(filePath: string) {
   if (ext === '.js') return 'text/javascript; charset=utf-8';
   if (ext === '.webp') return 'image/webp';
   if (ext === '.html') return 'text/html; charset=utf-8';
+  if (ext === '.xml') return 'application/xml; charset=utf-8';
 
   return 'image/png';
 }

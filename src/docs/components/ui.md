@@ -23,6 +23,35 @@
 ## Guardrails
 > Non-login pages should render through layout shells so customization stays safe and coherent.
 
+## Internationalisation (i18n)
+
+All user-visible text must go through the i18n helper in `ui/reuse/i18n.js` — no hardcoded copy in JS or HTML templates.
+
+### Key conventions
+
+| Prefix | Use |
+|---|---|
+| `ui.reuse.*` | Labels shared across multiple pages |
+| `ui.app.<page>.*` | Page-specific copy |
+| `ui.layout.*` | Layout shell text and ARIA labels |
+| `ui.page.title.*` | Document `<title>` values |
+| `module.<id>.*` | Module-owned strings (loaded on demand) |
+
+### Adding a string
+
+1. Add the key to `src/ui/languages/en/strings.xml` (and mirror it in all other language packs under `src/ui/languages/`).
+2. Reference it in JS with `i18n.t('ui.app.mypage.my_key')`.
+3. For static HTML, use `data-i18n="..."` and call `applyStaticTranslations(i18n, root)` once after the template is rendered into the DOM.
+
+### Enforcement
+
+Two automated checks in `src/ui/tests/hardcoded-strings.test.js` guard against regressions:
+
+- **Quoted literal check** — flags multi-word strings in regular quoted literals.
+- **Template text-node check** — scans JS template literals for literal text between HTML tags (e.g. `<th>ID</th>`) and fails if any alphabetic content is found outside an interpolated `i18n.t()` call.
+
+Run with `node --test src/ui/tests/hardcoded-strings.test.js`.
+
 ## Theme coverage requirement (light/dark)
 - Every new HTML element added to `ui/public/templates` or injected from `ui/app` **must** resolve its visual colors from theme tokens (CSS variables), not hard-coded hex/rgb values.
 - Interactive HTML elements (`button`, `select`, `input`, `textarea`, links, badges, status chips) must inherit or explicitly use shared theme variables so both `light` and `dark` modes remain readable.

@@ -1,13 +1,14 @@
 import { apiFetch } from '../reuse/api-client.js';
 import { loadTemplate } from '../reuse/template-loader.js';
 import { bindThemeToggle as bindSharedThemeToggle } from '../reuse/theme-toggle.js';
+import { applyStaticTranslations, createI18n } from '../reuse/i18n.js';
 
 function isAdminRole() {
   return localStorage.getItem('cognis_role') === 'admin';
 }
 
 function getDisplayName() {
-  return localStorage.getItem('cognis_display_name') || localStorage.getItem('cognis_account') || 'User';
+  return localStorage.getItem('cognis_display_name') || localStorage.getItem('cognis_account') || '';
 }
 
 
@@ -111,7 +112,8 @@ function bindTopbarActions() {
   });
 }
 
-export async function renderDashboardLayout(root, slots) {
+export async function renderDashboardLayout(root, slots = {}) {
+  const i18n = slots.i18n || await createI18n();
   const template = await loadTemplate('dashboard-layout');
   const hasToolbar = Boolean(slots.toolbar);
   root.innerHTML = template
@@ -120,6 +122,7 @@ export async function renderDashboardLayout(root, slots) {
     .replace('{{workspaceClass}}', hasToolbar ? 'main-window--with-toolbar' : 'main-window--content-only')
     .replace('{{content}}', slots.content)
     .replace('{{toolbar}}', hasToolbar ? `<aside class="toolbar">${slots.toolbar}</aside>` : '');
+  applyStaticTranslations(i18n, root);
   bindTopbarActions();
   applyActiveNavigation();
   bindThemeToggle();
