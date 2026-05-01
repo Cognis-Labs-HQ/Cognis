@@ -26,7 +26,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
     const manifests: ModuleManifest[] = [
       { id: 'cognis-core', name: 'Cognis Core', version: '1.0.0', class: 'core', coreApiVersion: 'v1', capabilities: ['system:health', 'auth:accounts', 'modules:lifecycle', 'ui:shell'], entrypoints: {}, publisher: 'Cognis Labs' }
     ];
-    const modulesRoot = process.env.COGNIS_MODULES_ROOT ?? path.resolve(process.cwd(), 'modules');
+    const modulesRoot = process.env.COGNIS_MODULES_ROOT ?? path.resolve(process.cwd(), 'src', 'modules');
     try {
       const entries = await readdir(modulesRoot);
       for (const entry of entries) {
@@ -97,7 +97,7 @@ const server = buildServer({
     const report = [] as Array<{ moduleId: string; file: string; expected: string; actual: string | null; status: 'ok' | 'mismatch' | 'missing' }>;
     for (const manifest of manifests) {
       for (const file of manifest.files ?? []) {
-        const candidate = path.resolve(process.cwd(), 'modules', manifest.id, file.path);
+        const candidate = path.resolve(process.env.COGNIS_MODULES_ROOT ?? path.resolve(process.cwd(), 'src', 'modules'), manifest.id, file.path);
         try {
           const raw = await readFile(candidate);
           const actual = createHash('sha256').update(raw).digest('hex');

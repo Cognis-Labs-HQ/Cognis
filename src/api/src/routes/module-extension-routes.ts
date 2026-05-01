@@ -19,7 +19,7 @@ export function createModuleExtensionRoutes(
   isModuleEnabled: (moduleId: string) => boolean
 ): ModuleExtensionRoutes {
   let handlers: RouteHandler[] = [];
-  const modulesRoot = process.env.COGNIS_MODULES_ROOT ?? path.resolve(process.cwd(), 'modules');
+  const modulesRoot = process.env.COGNIS_MODULES_ROOT ?? path.resolve(process.cwd(), 'src', 'modules');
 
   async function refresh() {
     const nextHandlers: RouteHandler[] = [];

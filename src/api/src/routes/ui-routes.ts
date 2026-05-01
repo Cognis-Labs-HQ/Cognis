@@ -4,10 +4,10 @@ import path from 'node:path';
 import { verifyAccessToken } from '../auth/access-tokens.js';
 import type { ModuleRuntimeGateway } from '@cognis/core';
 
-const UI_ROOT = path.resolve(process.cwd(), 'ui');
+const UI_ROOT = path.resolve(process.cwd(), 'src', 'ui');
 const STATIC_ROOT = path.join(UI_ROOT, 'src');
 const PUBLIC_ROOT = path.join(UI_ROOT, 'public');
-const MODULES_ROOT = process.env.COGNIS_MODULES_ROOT ?? path.resolve(process.cwd(), 'modules');
+const MODULES_ROOT = process.env.COGNIS_MODULES_ROOT ?? path.resolve(process.cwd(), 'src', 'modules');
 
 function setSecurityHeaders(res: ServerResponse) {
   res.setHeader('x-content-type-options', 'nosniff');

@@ -13,7 +13,7 @@ services:
   cognis-dev:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     image: cognis:dev
     environment:
       NODE_ENV: development
@@ -22,7 +22,7 @@ services:
       DATABASE_URL: postgresql://cognis:cognis@db:5432/cognis
       COGNIS_ACCESS_TOKEN_TTL_SECONDS: 43200
       LOG_LEVEL: debug
-      LOG_FILE: /var/log/cognis/dev.log
+      LOG_FILE: /app/logs/dev.log
     ports:
       - '3000:3000'
     volumes:

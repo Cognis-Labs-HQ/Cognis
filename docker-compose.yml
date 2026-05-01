@@ -16,7 +16,7 @@ services:
   cognis:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     image: cognis:prod
     environment:
       DB_TYPE: postgresql

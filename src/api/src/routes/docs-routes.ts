@@ -2,7 +2,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-const DOCS_ROOT = join(process.cwd(), 'docs', 'components');
+const DOCS_ROOT = join(process.cwd(), 'src', 'docs', 'components');
 
 async function collectMarkdownFiles(root: string, dir = root): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
