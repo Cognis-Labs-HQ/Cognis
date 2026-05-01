@@ -46,7 +46,9 @@ export function buildServer(deps: ApiDependencies) {
   const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore);
 
   deps.moduleRuntimeGateway.listManifests().then((manifests) => {
-    for (const manifest of manifests) enabledModules.add(manifest.id);
+    for (const manifest of manifests) {
+      if (manifest.class === 'core') enabledModules.add(manifest.id);
+    }
     return moduleExtensionRoutes.refresh();
   }).catch(() => undefined);
 

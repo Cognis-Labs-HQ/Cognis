@@ -38,10 +38,7 @@ function renderDetailsList(mod) {
     .join('');
 }
 
-function renderModulesPanel(modules, integrityRows) {
-  const integrityHtml = integrityRows.length
-    ? `<h3>Module Integrity</h3><ul class="integrity-list">${integrityRows.map((row) => `<li class="integrity-${row.status}"><strong>${row.moduleId}</strong> / ${row.file}: ${row.status}${row.status !== 'ok' ? ` (expected ${row.expected}, got ${row.actual ?? 'missing'})` : ''}</li>`).join('')}</ul>`
-    : '<h3>Module Integrity</h3><p>No tracked module files reported.</p>';
+function renderModulesPanel(modules) {
   return modules
     .map((mod) => {
       const pill = getStatePill(mod.status);
@@ -57,15 +54,19 @@ function renderModulesPanel(modules, integrityRows) {
           <div class="module-meta">
             <ul class="module-details">${renderDetailsList(mod)}</ul>
             <label class="switch">
-              <input type="checkbox" data-module="${mod.id}" data-action="${mod.status === 'enabled' ? 'disable' : 'enable'}" ${mod.status === 'enabled' ? 'checked' : ''} ${disableBlocked ? 'disabled' : ''} />
+              <input type="checkbox" data-module="${mod.id}" ${mod.status === 'enabled' ? 'checked' : ''} ${disableBlocked ? 'disabled' : ''} />
               <span class="slider"></span>
-              <span>${disableBlocked ? 'Core module (always enabled)' : 'Enabled / Disabled'}</span>
             </label>
           </div>
         </details>
       `;
     })
-    .join('') + integrityHtml;
+    .join('');
+}
+
+function renderIntegrityPanel(integrityRows) {
+  if (!integrityRows.length) return '<p>No tracked module files reported.</p>';
+  return `<ul class="integrity-list">${integrityRows.map((row) => `<li class="integrity-${row.status}"><strong>${row.moduleId}</strong> / ${row.file}: ${row.status}${row.status !== 'ok' ? ` (expected ${row.expected}, got ${row.actual ?? 'missing'})` : ''}</li>`).join('')}</ul>`;
 }
 
 const modules = await loadModules();
@@ -74,7 +75,7 @@ const integrityRows = await loadIntegrity();
 await renderDashboardLayout(root, {
   pageContext: '<h1>Administration</h1><p>Admin-only tools and controls.</p>',
   toolbar: '<h3>Navigation</h3><ul><li><button class="active" aria-current="page">Modules</button></li></ul>',
-  content: `<article class="docs-viewer"><h2>Modules</h2>${renderModulesPanel(modules, integrityRows)}</article>`
+  content: `<article class="docs-viewer"><h2>Modules</h2>${renderModulesPanel(modules)}<h2>File Integrity</h2>${renderIntegrityPanel(integrityRows)}</article>`
 });
 
 root.querySelectorAll('input[type="checkbox"][data-module]').forEach((toggle) => {
