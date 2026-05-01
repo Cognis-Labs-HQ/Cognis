@@ -2,6 +2,7 @@ import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
 import { apiFetch } from '../reuse/api-client.js';
 
 const root = document.querySelector('#app');
+let activeView = 'modules';
 
 async function loadModules() {
   const response = await apiFetch('/api/v1/modules');
@@ -78,29 +79,65 @@ function renderIntegrityPanel(integrityRows) {
   return `<ul class="integrity-list">${items}</ul>`;
 }
 
-const modules = await loadModules();
-const integrityRows = await loadIntegrity();
+function renderToolbar() {
+  return `
+    <h3>Navigation</h3>
+    <ul>
+      <li><button data-view="modules" class="${activeView === 'modules' ? 'active' : ''}" ${activeView === 'modules' ? 'aria-current="page"' : ''}>Modules</button></li>
+      <li><button data-view="integrity" class="${activeView === 'integrity' ? 'active' : ''}" ${activeView === 'integrity' ? 'aria-current="page"' : ''}>File Integrity</button></li>
+    </ul>
+  `;
+}
 
-await renderDashboardLayout(root, {
-  pageContext: '<h1>Administration</h1><p>Admin-only tools and controls.</p>',
-  toolbar: '<h3>Navigation</h3><ul><li><button class="active" aria-current="page">Modules</button></li></ul>',
-  content: `<article class="docs-viewer"><h2>Modules</h2>${renderModulesPanel(modules)}<h2>File Integrity</h2>${renderIntegrityPanel(integrityRows)}</article>`
-});
+async function renderPage() {
+  const modules = await loadModules();
+  const integrityRows = activeView === 'integrity' ? await loadIntegrity() : [];
 
-root.querySelectorAll('input[type="checkbox"][data-module]').forEach((toggle) => {
-  toggle.addEventListener('change', async () => {
-    const moduleId = toggle.dataset.module;
-    const action = toggle.checked ? 'enable' : 'disable';
+  const content =
+    activeView === 'modules'
+      ? `<article class="docs-viewer"><h2>Modules</h2>${renderModulesPanel(modules)}</article>`
+      : `<article class="docs-viewer"><div class="integrity-header"><h2>File Integrity</h2><button id="rerun-integrity">Re-run integrity check</button></div>${renderIntegrityPanel(integrityRows)}</article>`;
 
-    if (action === 'disable') {
-      const confirmed = window.confirm(`Disable module "${moduleId}"?`);
-      if (!confirmed) {
-        window.location.reload();
-        return;
-      }
-    }
-
-    await toggleModule(moduleId, action);
-    window.location.reload();
+  await renderDashboardLayout(root, {
+    pageContext: '<h1>Administration</h1><p>Admin-only tools and controls.</p>',
+    toolbar: renderToolbar(),
+    content
   });
-});
+
+  root.querySelectorAll('button[data-view]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      activeView = button.dataset.view;
+      await renderPage();
+    });
+  });
+
+  root.querySelectorAll('input[type="checkbox"][data-module]').forEach((toggle) => {
+    toggle.addEventListener('change', async () => {
+      const moduleId = toggle.dataset.module;
+      const action = toggle.checked ? 'enable' : 'disable';
+
+      if (action === 'disable') {
+        const confirmed = window.confirm(`Disable module "${moduleId}"?`);
+        if (!confirmed) {
+          window.location.reload();
+          return;
+        }
+      }
+
+      await toggleModule(moduleId, action);
+      await renderPage();
+    });
+  });
+
+  const rerunButton = root.querySelector('#rerun-integrity');
+  if (rerunButton) {
+    rerunButton.addEventListener('click', async () => {
+      const button = /** @type {HTMLButtonElement} */ (rerunButton);
+      button.disabled = true;
+      button.textContent = 'Checking...';
+      await renderPage();
+    });
+  }
+}
+
+await renderPage();

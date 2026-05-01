@@ -291,6 +291,17 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   filter: grayscale(0.2);
 }
 .integrity-list { padding-left: 20px; }
+.integrity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#rerun-integrity {
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+}
 .integrity-ok { color: #22c55e; }
 .integrity-mismatch, .integrity-missing { color: #f59e0b; }
 
