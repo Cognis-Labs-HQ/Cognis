@@ -15,5 +15,12 @@
     "cli": "./cli/index.js",
     "db": "./db/001_sample_analytics.sql"
   },
-  "publisher": "Cognis Labs"
+  "publisher": "Cognis Labs",
+  "files": [
+    { "path": "api/index.js", "sha256": "b4176ed90b66b3e99fb532f19bc7f5dbb125c00677d1cf7594c01fc3ae6cd86d" },
+    { "path": "ui/pages/analytics.html", "sha256": "adaf6a8ef132313ac70e09d3ea35b6564c38cc770da25556602f85b941f4d0df" },
+    { "path": "cli/index.js", "sha256": "382f8ad4fba662a9ed809e324ff4778ca41326905f5173cf3406a32326f43f77" },
+    { "path": "db/001_sample_analytics.sql", "sha256": "ce32c37e42fb73ced351b34b3bfd1b08b49912bd1c018280aa28fd096644a114" },
+    { "path": "content/README.md", "sha256": "60e8f61c0c739592c3f7b450361afce2c1774e6b901a19b594ec076519ab8f50" }
+  ]
 }

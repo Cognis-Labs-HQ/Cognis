@@ -7,6 +7,7 @@ import type { ModuleRuntimeGateway } from '@cognis/core';
 const UI_ROOT = path.resolve(process.cwd(), 'ui');
 const STATIC_ROOT = path.join(UI_ROOT, 'src');
 const PUBLIC_ROOT = path.join(UI_ROOT, 'public');
+const MODULES_ROOT = process.env.COGNIS_MODULES_ROOT ?? path.resolve(process.cwd(), 'modules');
 
 function setSecurityHeaders(res: ServerResponse) {
   res.setHeader('x-content-type-options', 'nosniff');
@@ -147,11 +148,11 @@ export function createUiRoutes(runtime?: ModuleRuntimeGateway) {
         if (!manifest.entrypoints?.ui) continue;
 
         try {
-          const routeFile = path.resolve(process.cwd(), 'modules', manifest.id, 'routes.json');
+          const routeFile = path.resolve(MODULES_ROOT, manifest.id, 'routes.json');
           const routes = JSON.parse(await readFile(routeFile, 'utf8')) as string[];
 
           if (routes.includes(url.pathname) && !url.pathname.startsWith('/api/')) {
-            const uiFile = path.resolve(process.cwd(), 'modules', manifest.id, manifest.entrypoints.ui);
+            const uiFile = path.resolve(MODULES_ROOT, manifest.id, manifest.entrypoints.ui);
             await serveFile(res, uiFile, 'text/html; charset=utf-8');
             return true;
           }

@@ -8,6 +8,7 @@ import { DbUserPreferenceStore } from './adapters/db-preference-store.js';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { issueAccessToken } from './auth/access-tokens.js';
+import { createHash } from 'node:crypto';
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
   private readonly manifests: ModuleManifest[];
@@ -23,9 +24,9 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
 
   static async bootstrap(): Promise<InMemoryModuleRuntimeGateway> {
     const manifests: ModuleManifest[] = [
-      { id: 'cognis-core', name: 'Cognis Core', version: '0.1.0', class: 'core', coreApiVersion: 'v1', capabilities: ['system:health'], entrypoints: {} }
+      { id: 'cognis-core', name: 'Cognis Core', version: '1.0.0', class: 'core', coreApiVersion: 'v1', capabilities: ['system:health', 'auth:accounts', 'modules:lifecycle', 'ui:shell'], entrypoints: {}, publisher: 'Cognis Labs' }
     ];
-    const modulesRoot = path.resolve(process.cwd(), 'modules');
+    const modulesRoot = process.env.COGNIS_MODULES_ROOT ?? path.resolve(process.cwd(), 'modules');
     try {
       const entries = await readdir(modulesRoot);
       for (const entry of entries) {
@@ -49,7 +50,7 @@ const port = Number.parseInt(process.env.PORT ?? '3000', 10);
 const host = process.env.HOST ?? '0.0.0.0';
 const dbType = (process.env.DB_TYPE as SupportedDbType | undefined) ?? 'sqlite';
 const logLevel = (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error' | undefined) ?? 'info';
-const logFile = process.env.LOG_FILE ?? '/var/log/cognis/app.log';
+const logFile = process.env.LOG_FILE ?? '/app/logs/app.log';
 
 const logger = new Logger(logLevel, logFile);
 const dbExecutor = await createDbExecutor(dbType);
@@ -72,7 +73,7 @@ const adminPassword = LocalAuthGateway.generatePassword();
 await authGateway.createLocalAdmin('admin', adminPassword);
 await logger.warn('Default admin account created.', { username: 'admin', generatedPassword: adminPassword });
 
-const cliTokenPath = process.env.COGNIS_CLI_TOKEN_PATH ?? '/var/run/cognis/cli-access.token';
+const cliTokenPath = process.env.COGNIS_CLI_TOKEN_PATH ?? '/app/config/cli-access.token';
 const cliAccessToken = issueAccessToken('cognis-cli', 'admin', null);
 try {
   await mkdir(path.dirname(cliTokenPath), { recursive: true });
@@ -86,7 +87,29 @@ try {
 }
 
 const runtime = await InMemoryModuleRuntimeGateway.bootstrap();
-const server = buildServer({ moduleRuntimeGateway: runtime, authGateway, accountStore, preferenceStore });
+const server = buildServer({
+  moduleRuntimeGateway: runtime,
+  authGateway,
+  accountStore,
+  preferenceStore,
+  moduleIntegrityChecker: async () => {
+    const manifests = await runtime.listManifests();
+    const report = [] as Array<{ moduleId: string; file: string; expected: string; actual: string | null; status: 'ok' | 'mismatch' | 'missing' }>;
+    for (const manifest of manifests) {
+      for (const file of manifest.files ?? []) {
+        const candidate = path.resolve(process.cwd(), 'modules', manifest.id, file.path);
+        try {
+          const raw = await readFile(candidate);
+          const actual = createHash('sha256').update(raw).digest('hex');
+          report.push({ moduleId: manifest.id, file: file.path, expected: file.sha256, actual, status: actual === file.sha256 ? 'ok' : 'mismatch' });
+        } catch {
+          report.push({ moduleId: manifest.id, file: file.path, expected: file.sha256, actual: null, status: 'missing' });
+        }
+      }
+    }
+    return report;
+  }
+});
 server.listen(port, host, async () => {
   await logger.info('Cognis API listening.', { host, port, dbType });
 });

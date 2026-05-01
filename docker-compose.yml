@@ -22,7 +22,8 @@ services:
       DB_TYPE: postgresql
       DATABASE_URL: postgresql://cognis:cognis@db:5432/cognis
       COGNIS_ACCESS_TOKEN_TTL_SECONDS: 43200
-      MODULES_PATH: /app/modules/external
+      MODULES_PATH: /app/src/modules/external
+      COGNIS_MODULES_ROOT: /app/src/modules
     ports:
       - '3000:3000'
     depends_on:

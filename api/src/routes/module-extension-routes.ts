@@ -19,6 +19,7 @@ export function createModuleExtensionRoutes(
   isModuleEnabled: (moduleId: string) => boolean
 ): ModuleExtensionRoutes {
   let handlers: RouteHandler[] = [];
+  const modulesRoot = process.env.COGNIS_MODULES_ROOT ?? path.resolve(process.cwd(), 'modules');
 
   async function refresh() {
     const nextHandlers: RouteHandler[] = [];
@@ -27,7 +28,7 @@ export function createModuleExtensionRoutes(
     for (const manifest of manifests) {
       if (!manifest.entrypoints?.api || !isModuleEnabled(manifest.id)) continue;
 
-      const moduleRoot = path.resolve(process.cwd(), 'modules', manifest.id);
+      const moduleRoot = path.resolve(modulesRoot, manifest.id);
       const pluginPath = path.join(moduleRoot, manifest.entrypoints.api);
       try {
         const plugin = await import(`${pluginPath}?t=${Date.now()}`);

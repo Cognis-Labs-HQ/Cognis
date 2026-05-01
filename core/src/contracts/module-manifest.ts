@@ -11,5 +11,11 @@ export interface ModuleManifest {
   entrypoints: {
     api?: string;
     ui?: string;
+    cli?: string;
+    db?: string;
   };
+  files?: Array<{
+    path: string;
+    sha256: string;
+  }>;
 }

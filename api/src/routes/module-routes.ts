@@ -6,6 +6,7 @@ export interface ModuleRouteHooks {
   onEnabled?: (moduleId: string) => Promise<void> | void;
   onDisabled?: (moduleId: string) => Promise<void> | void;
   getStatus?: (moduleId: string) => 'enabled' | 'disabled' | 'available';
+  getIntegrityReport?: () => Promise<Array<{ moduleId: string; file: string; expected: string; actual: string | null; status: 'ok' | 'mismatch' | 'missing' }>>;
 }
 
 export function createModuleRoutes(moduleService: ModuleService, hooks?: ModuleRouteHooks) {
@@ -18,6 +19,14 @@ export function createModuleRoutes(moduleService: ModuleService, hooks?: ModuleR
         ...manifest,
         status: hooks?.getStatus?.(manifest.id) ?? (manifest.class === 'core' ? 'enabled' : 'available')
       }));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ data }));
+      return true;
+    }
+    if (url.pathname === '/api/v1/modules/integrity' && req.method === 'GET') {
+      const claims = requireAuth(req, res, 'admin');
+      if (!claims) return true;
+      const data = await hooks?.getIntegrityReport?.() ?? [];
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data }));
       return true;

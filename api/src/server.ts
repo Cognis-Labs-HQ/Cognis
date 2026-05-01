@@ -16,6 +16,7 @@ export interface ApiDependencies {
   authGateway: AuthGateway;
   accountStore: LocalAccountStore;
   preferenceStore: UserPreferenceStore;
+  moduleIntegrityChecker?: () => Promise<Array<{ moduleId: string; file: string; expected: string; actual: string | null; status: 'ok' | 'mismatch' | 'missing' }>>;
 }
 
 export function buildServer(deps: ApiDependencies) {
@@ -34,7 +35,8 @@ export function buildServer(deps: ApiDependencies) {
       enabledModules.delete(moduleId);
       await moduleExtensionRoutes.refresh();
     },
-    getStatus: (moduleId) => (enabledModules.has(moduleId) ? 'enabled' : 'disabled')
+    getStatus: (moduleId) => (enabledModules.has(moduleId) ? 'enabled' : 'disabled'),
+    getIntegrityReport: deps.moduleIntegrityChecker
   });
   const systemRoutes = createSystemRoutes(healthService);
   const docsRoutes = createDocsRoutes();

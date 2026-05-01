@@ -12,6 +12,11 @@ async function loadModules() {
 async function toggleModule(moduleId, action) {
   await apiFetch(`/api/v1/modules/${encodeURIComponent(moduleId)}/${action}`, { method: 'POST' });
 }
+async function loadIntegrity() {
+  const response = await apiFetch('/api/v1/modules/integrity');
+  const payload = await response.json();
+  return payload.data ?? [];
+}
 
 function getStatePill(status) {
   if (status === 'enabled') return { label: 'Active', className: 'pill-active' };
@@ -33,7 +38,10 @@ function renderDetailsList(mod) {
     .join('');
 }
 
-function renderModulesPanel(modules) {
+function renderModulesPanel(modules, integrityRows) {
+  const integrityHtml = integrityRows.length
+    ? `<h3>Module Integrity</h3><ul class="integrity-list">${integrityRows.map((row) => `<li class="integrity-${row.status}"><strong>${row.moduleId}</strong> / ${row.file}: ${row.status}${row.status !== 'ok' ? ` (expected ${row.expected}, got ${row.actual ?? 'missing'})` : ''}</li>`).join('')}</ul>`
+    : '<h3>Module Integrity</h3><p>No tracked module files reported.</p>';
   return modules
     .map((mod) => {
       const pill = getStatePill(mod.status);
@@ -48,37 +56,31 @@ function renderModulesPanel(modules) {
           </summary>
           <div class="module-meta">
             <ul class="module-details">${renderDetailsList(mod)}</ul>
-            <fieldset class="module-toggle-group">
-              <label>
-                <input type="radio" name="module-${mod.id}" data-module="${mod.id}" data-action="enable" ${mod.status === 'enabled' ? 'checked' : ''} />
-                Enable
-              </label>
-              <label>
-                <input type="radio" name="module-${mod.id}" data-module="${mod.id}" data-action="disable" ${mod.status !== 'enabled' ? 'checked' : ''} ${disableBlocked ? 'disabled' : ''} />
-                Disable${disableBlocked ? ' (blocked for core in UI)' : ''}
-              </label>
-            </fieldset>
+            <label class="switch">
+              <input type="checkbox" data-module="${mod.id}" data-action="${mod.status === 'enabled' ? 'disable' : 'enable'}" ${mod.status === 'enabled' ? 'checked' : ''} ${disableBlocked ? 'disabled' : ''} />
+              <span class="slider"></span>
+              <span>${disableBlocked ? 'Core module (always enabled)' : 'Enabled / Disabled'}</span>
+            </label>
           </div>
         </details>
       `;
     })
-    .join('');
+    .join('') + integrityHtml;
 }
 
 const modules = await loadModules();
+const integrityRows = await loadIntegrity();
 
 await renderDashboardLayout(root, {
   pageContext: '<h1>Administration</h1><p>Admin-only tools and controls.</p>',
   toolbar: '<h3>Navigation</h3><ul><li><button class="active" aria-current="page">Modules</button></li></ul>',
-  content: `<article class="docs-viewer"><h2>Modules</h2>${renderModulesPanel(modules)}</article>`
+  content: `<article class="docs-viewer"><h2>Modules</h2>${renderModulesPanel(modules, integrityRows)}</article>`
 });
 
-root.querySelectorAll('input[type="radio"][data-module]').forEach((radio) => {
-  radio.addEventListener('change', async () => {
-    if (!radio.checked) return;
-
-    const action = radio.dataset.action;
-    const moduleId = radio.dataset.module;
+root.querySelectorAll('input[type="checkbox"][data-module]').forEach((toggle) => {
+  toggle.addEventListener('change', async () => {
+    const moduleId = toggle.dataset.module;
+    const action = toggle.checked ? 'enable' : 'disable';
 
     if (action === 'disable') {
       const confirmed = window.confirm(`Disable module "${moduleId}"?`);
