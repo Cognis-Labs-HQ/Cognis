@@ -2,7 +2,10 @@
   --app-font: Orbitron;
   /* Default font size in rem; the JS preference system overrides this with pt units at runtime. */
   --app-font-size: 1.17rem;
-  --bg: linear-gradient(160deg, #0c1a2e 0%, #071020 55%, #040a16 100%);
+  --bg:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.22), transparent 48%),
+    radial-gradient(circle at 12% 18%, rgba(45, 212, 191, 0.2), transparent 55%),
+    linear-gradient(150deg, #030a14 0%, #071421 45%, #020813 100%);
   --surface: rgba(15, 23, 42, 0.84);
   --surface-2: rgba(19, 29, 51, 0.92);
   --surface-soft: rgba(255, 255, 255, 0.06);
@@ -13,8 +16,10 @@
   --accent: #2a7f62;
   --accent-2: #3aa783;
   --shadow: 0 14px 34px rgba(2, 6, 23, 0.35);
-  --header-top-bg: linear-gradient(180deg, rgba(4, 12, 24, 0.98) 0%, rgba(6, 18, 36, 0.96) 72%, rgba(8, 22, 42, 0.94) 100%);
-  --nav-bg: linear-gradient(180deg, rgba(14, 28, 52, 0.97) 0%, rgba(9, 18, 38, 0.94) 100%);
+  --header-top-bg: linear-gradient(135deg, rgba(13, 33, 25, 0.94), rgba(8, 21, 15, 0.94));
+  --nav-bg:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 40%),
+    linear-gradient(180deg, rgba(10, 22, 42, 0.97) 0%, rgba(7, 16, 32, 0.94) 100%);
   --nav-link: #c7d6ea;
   --context-muted: #93a4bf;
   --link: #9fd6ff;
