@@ -155,6 +155,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         email TEXT,
         display_name TEXT,
         is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+        last_login TIMESTAMPTZ,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )`);
@@ -176,6 +177,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         email VARCHAR(320) NULL,
         display_name VARCHAR(255) NULL,
         is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+        last_login TIMESTAMP NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )`);
@@ -196,6 +198,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
       email TEXT,
       display_name TEXT,
       is_admin INTEGER NOT NULL DEFAULT 0,
+      last_login TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )`);
@@ -281,15 +284,27 @@ export class DbLocalAccountStore implements LocalAccountStore {
   async delete(username: string) {
     await this.db.execute(`DELETE FROM accounts WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(1)})`, [username]);
   }
-  async getInfo(username: string): Promise<{ username: string; createdAt: string | null } | null> {
+  async getInfo(username: string): Promise<{ username: string; createdAt: string | null; lastLogin: string | null } | null> {
     const result = await this.db.execute(
-      `SELECT c.username, a.created_at FROM local_auth_credentials c
+      `SELECT c.username, a.created_at, a.last_login FROM local_auth_credentials c
        JOIN accounts a ON a.id = c.account_id
        WHERE c.username = ${this.placeholder(1)}`,
       [username]
     );
     const row = result.rows?.[0];
     if (!row) return null;
-    return { username: String(row.username), createdAt: row.created_at ? String(row.created_at) : null };
+    return {
+      username: String(row.username),
+      createdAt: row.created_at ? String(row.created_at) : null,
+      lastLogin: row.last_login ? String(row.last_login) : null,
+    };
+  }
+
+  async updateLastLogin(username: string): Promise<void> {
+    await this.db.execute(
+      `UPDATE accounts SET last_login = ${this.currentTimestampExpression()}, updated_at = ${this.currentTimestampExpression()}
+       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(1)})`,
+      [username]
+    );
   }
 }

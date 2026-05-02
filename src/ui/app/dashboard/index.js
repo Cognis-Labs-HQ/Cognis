@@ -9,7 +9,6 @@ applyDocumentTitle(i18n, 'ui.page.title.dashboard');
 const account = localStorage.getItem('cognis_account') ?? '';
 const displayName = localStorage.getItem('cognis_display_name') ?? account;
 const role = localStorage.getItem('cognis_role') ?? 'user';
-const loginTime = localStorage.getItem('cognis_login_time');
 
 async function loadAccountInfo() {
   if (!account) return null;
@@ -86,7 +85,7 @@ const elements = [
     render: () => `
       <h3>${i18n.t('ui.app.dashboard.element.last_login.label')}</h3>
       <p class="dashboard-last-seen">
-        ${i18n.t('ui.app.dashboard.last_seen')}: <strong>${formatDateTime(loginTime)}</strong>
+        ${i18n.t('ui.app.dashboard.last_seen')}: <strong>${formatDateTime(info?.lastLogin ?? null)}</strong>
       </p>
     `,
   },

@@ -45,7 +45,7 @@ test('dashboard route requires login cookie', async () => {
   await route({ headers: { cookie: `cognis_access_token=${token}` } } as any, authed.res as any, new URL('http://localhost/dashboard'));
 
   assert.equal(authed.status, 200);
-  assert.match(authed.body, /page-builder\/index\.js/);
+  assert.match(authed.body, /dashboard\/index\.js/);
 });
 
 test('login page is served as standalone page html', async () => {
