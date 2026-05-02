@@ -1,52 +1,63 @@
 /**
- * Page composer — manages widget-card layout within a content-grid, with optional
- * user-controlled drag-to-reorder and show/hide customisation per page section.
+ * Page composer — orchestrates the full dashboard layout for a page, managing
+ * widget-card sections within the main content grid with optional user-controlled
+ * drag-to-reorder and show/hide customisation. Also creates the aside toolbar and
+ * floating menu on behalf of the page so that page JS only needs to declare elements.
  *
  * Layouts are persisted to the user-preferences API under the caller-supplied key
  * so each page retains its own arrangement independently.
  *
  * Public exports:
- *   createPageComposer(contentGrid, options) — creates a layout composer and returns
+ *   createPageComposer(root, options) — creates a layout composer and returns
  *     an instance with init() and refresh() methods.
  *
  * Usage:
- *   const composer = createPageComposer(root.querySelector('.content-grid'), {
+ *   const composer = createPageComposer(document.querySelector('#app'), {
  *     allowCustomization: true,
  *     elements: [
  *       { id: 'modules', label: 'Modules', render: () => '<h2>Modules</h2>...' },
  *     ],
  *     preferenceKey: 'administration-layout',
  *     i18n,
+ *     pageContext: { title: 'Administration', subtitle: 'Admin tools and controls.' },
  *     onRender: () => bindMyPageEvents(),
  *   });
  *   await composer.init();
  *   // Later, re-render with fresh data:
  *   composer.refresh(updatedElements);
  *
- * @param {HTMLElement} contentGrid - The .content-grid element to manage.
+ * @param {HTMLElement} root - The #app root element for the page.
  * @param {{
  *   allowCustomization: boolean,
  *   elements: Array<{id: string, label: string, render: () => string}>,
  *   preferenceKey: string,
  *   i18n: object,
  *   onRender?: () => void,
+ *   pageContext?: { title: string, subtitle: string },
+ *   toolbar?: { render: () => string },
+ *   floatingMenu?: { render: () => string },
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array<{id: string, label: string, render: () => string}>): void }}
  */
 
 import { apiFetch } from './api-client.js';
+import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
 
-export function createPageComposer(contentGrid, {
+export function createPageComposer(root, {
   allowCustomization,
   elements: initialElements,
   preferenceKey,
   i18n,
   onRender,
+  pageContext,
+  toolbar,
+  floatingMenu,
 }) {
   let elements = initialElements;
   let layout = null;
   let editing = false;
   let dragSourceId = null;
+  let contentGrid = null;
 
   async function loadLayout() {
     const account = localStorage.getItem('cognis_account');
@@ -131,6 +142,7 @@ export function createPageComposer(contentGrid, {
   }
 
   function render() {
+    if (!contentGrid) return;
     const effectiveLayout = getEffectiveLayout();
     let html = '';
 
@@ -240,6 +252,19 @@ export function createPageComposer(contentGrid, {
   }
 
   async function init() {
+    const pageContextHtml = pageContext
+      ? `<h1>${pageContext.title}</h1><p>${pageContext.subtitle}</p>`
+      : '';
+
+    await renderDashboardLayout(root, {
+      i18n,
+      pageContext: pageContextHtml,
+      toolbar: toolbar ? toolbar.render() : undefined,
+      floatingToolbar: floatingMenu ? floatingMenu.render() : undefined,
+      content: '',
+    });
+
+    contentGrid = root.querySelector('.content-grid');
     layout = await loadLayout();
     render();
   }
@@ -252,3 +277,4 @@ export function createPageComposer(contentGrid, {
 
   return { init, refresh };
 }
+

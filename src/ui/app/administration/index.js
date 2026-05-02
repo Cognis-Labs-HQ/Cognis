@@ -1,4 +1,3 @@
-import { renderDashboardLayout } from '../../layouts/dashboard-layout.js';
 import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 import { createPageComposer } from '../../reuse/page-composer.js';
@@ -155,16 +154,15 @@ const elements = [
   },
 ];
 
-await renderDashboardLayout(root, {
-  pageContext: `<h1>${i18n.t('ui.app.admin.page_title')}</h1><p>${i18n.t('ui.app.admin.page_subtitle')}</p>`,
-  content: '',
-});
-
-composer = createPageComposer(root.querySelector('.content-grid'), {
-  allowCustomization: true,
+composer = createPageComposer(root, {
+  allowCustomization: false,
   elements,
   preferenceKey: 'administration-layout',
   i18n,
+  pageContext: {
+    title: i18n.t('ui.app.admin.page_title'),
+    subtitle: i18n.t('ui.app.admin.page_subtitle'),
+  },
   onRender: () => {
     bindModuleToggles();
     bindIntegrityRerun();

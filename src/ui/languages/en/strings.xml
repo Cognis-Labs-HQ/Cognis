@@ -118,6 +118,8 @@
   <string name="ui.page.title.modules">Cognis - Modules</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
+  <string name="ui.app.settings.font_preview">Font Preview</string>
+  <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Available languages</string>
   <string name="ui.app.settings.preferred_languages">Preferred languages</string>
   <string name="ui.reuse.page_composer.edit_layout">Edit Layout</string>

@@ -1,4 +1,3 @@
-import { renderDashboardLayout } from '../../layouts/dashboard-layout.js';
 import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 import { renderMarkdown } from '../../reuse/markdown-renderer.js';
@@ -58,18 +57,18 @@ const elements = [
   },
 ];
 
-await renderDashboardLayout(root, {
-  pageContext: `<h1>${i18n.t('ui.app.docs.page_title')}</h1><p>${i18n.t('ui.app.docs.page_subtitle')}</p>`,
-  topbar: '',
-  toolbar: `<h3>${i18n.t('ui.reuse.navigation')}</h3><ul>${renderSidebarLinks(docs)}</ul>`,
-  content: '',
-});
-
-const composer = createPageComposer(root.querySelector('.content-grid'), {
+const composer = createPageComposer(root, {
   allowCustomization: false,
   elements,
   preferenceKey: 'docs-layout',
   i18n,
+  pageContext: {
+    title: i18n.t('ui.app.docs.page_title'),
+    subtitle: i18n.t('ui.app.docs.page_subtitle'),
+  },
+  toolbar: {
+    render: () => `<h3>${i18n.t('ui.reuse.navigation')}</h3><ul>${renderSidebarLinks(docs)}</ul>`,
+  },
   onRender: () => {
     root.querySelectorAll('[data-slug]').forEach((button) => {
       button.addEventListener('click', () => showDoc(button.dataset.slug));
@@ -94,4 +93,3 @@ await composer.init();
 
 const defaultDoc = docs.find((doc) => doc.slug === 'overview')?.slug ?? docs[0]?.slug;
 if (defaultDoc) await showDoc(defaultDoc);
-

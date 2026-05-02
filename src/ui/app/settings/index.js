@@ -1,19 +1,15 @@
-import { renderDashboardLayout } from '../../layouts/dashboard-layout.js';
 import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n, readPreferredLanguages, setPreferredLanguages } from '../../reuse/i18n.js';
 import { applyTheme, persistTheme } from '../../reuse/theme-toggle.js';
 import { toFontFamilyValue, initFontPrefs, DEFAULT_FONT_SIZE } from './font-prefs.js';
 import { initLanguagePrefs } from './language-prefs.js';
 import { createUnsavedChangesBar } from '../../reuse/unsaved-changes.js';
+import { createPageComposer } from '../../reuse/page-composer.js';
 
 const root = document.querySelector('#app');
 let languagePriority = readPreferredLanguages();
 const i18n = await createI18n({ preferredLanguages: languagePriority });
 applyDocumentTitle(i18n, 'ui.page.title.settings');
-
-function section(label, content) {
-  return `<section class="widget-card"><h2>${label}</h2>${content}</section>`;
-}
 
 async function loadPrefs() {
   const account = localStorage.getItem('cognis_account');
@@ -33,9 +29,12 @@ async function savePrefs(prefs) {
   });
 }
 
-const appearanceContent = `
-  <div class="content-section" data-section="appearance">
-    ${section(i18n.t('ui.reuse.appearance'), `
+const elements = [
+  {
+    id: 'appearance',
+    label: i18n.t('ui.reuse.appearance'),
+    render: () => `
+      <h2>${i18n.t('ui.reuse.appearance')}</h2>
       <div class="font-heading-row">
         <h3>${i18n.t('ui.app.settings.font_heading')}</h3>
         <button id="pref-font-reset" type="button" disabled>${i18n.t('ui.reuse.generic.reset')}</button>
@@ -53,7 +52,7 @@ const appearanceContent = `
       </div>
       <div class="font-preview-box">
         <h4>${i18n.t('ui.app.settings.font_preview')}</h4>
-        <span id="pref-font-preview">AaBbCc</span>
+        <span id="pref-font-preview">${i18n.t('ui.app.settings.font_preview_sample')}</span>
       </div>
       <div class="theme-subsection">
         <h3>${i18n.t('ui.app.settings.theme')}</h3>
@@ -62,12 +61,13 @@ const appearanceContent = `
           <button type="button" class="theme-btn" data-theme-value="light">${i18n.t('ui.app.settings.theme_light')}</button>
         </div>
       </div>
-    `)}
-  </div>`;
-
-const languageContent = `
-  <div class="content-section" data-section="language">
-    ${section(i18n.t('ui.reuse.language'), `
+    `,
+  },
+  {
+    id: 'language',
+    label: i18n.t('ui.reuse.language'),
+    render: () => `
+      <h2>${i18n.t('ui.reuse.language')}</h2>
       <div class="language-preferences">
         <div>
           <h3>${i18n.t('ui.app.settings.available_languages')}</h3>
@@ -78,65 +78,60 @@ const languageContent = `
           <table id="preferred-languages" class="language-table"></table>
         </div>
       </div>
-    `)}
-  </div>`;
-
-const advancedContent = `
-  <div class="content-section" data-section="advanced">
-    ${section(i18n.t('ui.app.settings.advanced'), `
+    `,
+  },
+  {
+    id: 'advanced',
+    label: i18n.t('ui.app.settings.advanced'),
+    render: () => `
+      <h2>${i18n.t('ui.app.settings.advanced')}</h2>
       <h3>${i18n.t('ui.app.settings.preferences')}</h3>
       <pre id="prefs-dump" class="prefs-dump">${i18n.t('ui.app.settings.prefs_loading')}</pre>
-    `)}
-  </div>`;
+    `,
+  },
+];
 
-await renderDashboardLayout(root, {
+const composer = createPageComposer(root, {
+  allowCustomization: false,
+  elements,
+  preferenceKey: 'settings-layout',
   i18n,
-  pageContext: `<h1>${i18n.t('ui.app.settings.page_title')}</h1><p>${i18n.t('ui.app.settings.page_subtitle')}</p>`,
-  toolbar: `
-    <h2>${i18n.t('ui.app.settings.page_title')}</h2>
-    <ul>
-      <li><button data-section="appearance">${i18n.t('ui.reuse.appearance')}</button></li>
-      <li><button data-section="language">${i18n.t('ui.reuse.language')}</button></li>
-      <li><button data-section="advanced">${i18n.t('ui.app.settings.advanced')}</button></li>
-    </ul>
-  `,
-  content: `<article class="content-panel">${appearanceContent}${languageContent}${advancedContent}</article>`,
-  floatingToolbar: `
-    <span>${i18n.t('ui.reuse.unsaved_changes')}</span>
-    <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t('ui.reuse.generic.discard')}</button>
-    <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t('ui.reuse.generic.save')}</button>
-  `,
-});
+  pageContext: {
+    title: i18n.t('ui.app.settings.page_title'),
+    subtitle: i18n.t('ui.app.settings.page_subtitle'),
+  },
+  toolbar: {
+    render: () => `
+      <h2>${i18n.t('ui.app.settings.page_title')}</h2>
+      <ul>
+        <li><button data-composer-scroll="appearance">${i18n.t('ui.reuse.appearance')}</button></li>
+        <li><button data-composer-scroll="language">${i18n.t('ui.reuse.language')}</button></li>
+        <li><button data-composer-scroll="advanced">${i18n.t('ui.app.settings.advanced')}</button></li>
+      </ul>
+    `,
+  },
+  floatingMenu: {
+    render: () => `
+      <span>${i18n.t('ui.reuse.unsaved_changes')}</span>
+      <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t('ui.reuse.generic.discard')}</button>
+      <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t('ui.reuse.generic.save')}</button>
+    `,
+  },
+  onRender: () => {
+    root.querySelectorAll('[data-composer-scroll]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        root.querySelector(`[data-composer-element="${btn.dataset.composerScroll}"]`)
+          ?.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
 
-const DEFAULT_SECTION = 'appearance';
+    const themeToggle = document.querySelector('#theme-toggle');
+    if (themeToggle) themeToggle.hidden = true;
+  },
+});
+await composer.init();
+
 const DEFAULT_THEME = 'dark';
-
-function applyToolbarActiveState() {
-  const hash = window.location.hash.slice(1) || DEFAULT_SECTION;
-  root.querySelectorAll('.toolbar button[data-section]').forEach((btn) => {
-    const isActive = btn.dataset.section === hash;
-    btn.classList.toggle('active', isActive);
-    if (isActive) btn.setAttribute('aria-current', 'page');
-    else btn.removeAttribute('aria-current');
-  });
-  root.querySelectorAll('.content-section[data-section]').forEach((sec) => {
-    sec.classList.toggle('active', sec.dataset.section === hash);
-  });
-
-  // The floating theme toggle is redundant on the Appearance page (it has its own selector).
-  const themeToggle = document.querySelector('#theme-toggle');
-  if (themeToggle) themeToggle.hidden = (hash === DEFAULT_SECTION);
-}
-
-root.querySelectorAll('.toolbar button[data-section]').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    window.location.hash = btn.dataset.section;
-  });
-});
-
-window.addEventListener('hashchange', applyToolbarActiveState);
-
-applyToolbarActiveState();
 
 const floatingToolbarEl = root.querySelector('.floating-toolbar');
 
@@ -164,7 +159,6 @@ function initThemePrefs({ onDirtyChange }) {
   root.querySelectorAll('.theme-btn[data-theme-value]').forEach((btn) => {
     btn.addEventListener('click', () => {
       currentMode = btn.dataset.themeValue;
-      // Only update the active button state; theme is applied on Save.
       updateSelector();
       onDirtyChange?.(currentMode !== savedMode);
     });
@@ -207,7 +201,6 @@ const changesBar = createUnsavedChangesBar(floatingToolbarEl, {
       mode,
     };
     await savePrefs(prefs);
-    // Persist theme to localStorage + cookie so getStoredTheme() reads it correctly on reload.
     persistTheme(mode);
     applyTheme(mode);
     setPreferredLanguages(prefs.languagePriority);

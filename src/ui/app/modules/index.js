@@ -1,4 +1,3 @@
-import { renderDashboardLayout } from '../../layouts/dashboard-layout.js';
 import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 import { createPageComposer } from '../../reuse/page-composer.js';
@@ -58,17 +57,18 @@ const elements = [
   },
 ];
 
-await renderDashboardLayout(root, {
-  pageContext: `<h1>${i18n.t('ui.app.modules.page_title')}</h1><p>${i18n.t('ui.app.modules.page_subtitle')}</p>`,
-  toolbar: `<h3>${i18n.t('ui.reuse.modules')}</h3><p>${i18n.t('ui.app.modules.toolbar_subtitle')}</p>`,
-  content: '',
-});
-
-const composer = createPageComposer(root.querySelector('.content-grid'), {
+const composer = createPageComposer(root, {
   allowCustomization: false,
   elements,
   preferenceKey: 'modules-layout',
   i18n,
+  pageContext: {
+    title: i18n.t('ui.app.modules.page_title'),
+    subtitle: i18n.t('ui.app.modules.page_subtitle'),
+  },
+  toolbar: {
+    render: () => `<h3>${i18n.t('ui.reuse.modules')}</h3><p>${i18n.t('ui.app.modules.toolbar_subtitle')}</p>`,
+  },
   onRender: () => {
     root.querySelectorAll('button[data-module]').forEach((button) => {
       button.addEventListener('click', async () => {
@@ -78,4 +78,3 @@ const composer = createPageComposer(root.querySelector('.content-grid'), {
   },
 });
 await composer.init();
-

@@ -1,13 +1,3 @@
-.content-section {
-  display: none;
-}
-
-.content-section.active {
-  display: block;
-  padding-top: 28px;
-  padding-bottom: 28px;
-}
-
 .widget-card > h2,
 .widget-card > h3 {
   margin: 0 0 14px;
