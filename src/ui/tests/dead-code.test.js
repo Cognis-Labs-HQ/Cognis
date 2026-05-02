@@ -56,7 +56,6 @@ const DYNAMIC_CLASS_NAMES = new Set([
 // any consuming page. Wire them up and remove from this list, or delete
 // the export if it is no longer needed.
 const PENDING_INTEGRATION_EXPORTS = new Set([
-  'createPageComposer',
 ]);
 
 test('no dead CSS classes (defined but never referenced in scripts or templates)', () => {
@@ -84,7 +83,7 @@ test('no dead CSS classes (defined but never referenced in scripts or templates)
 
 test('no dead exports in reuse modules (exported but never imported by any page or layout)', () => {
   const reusePath = join(ROOT, 'src/ui/reuse');
-  const consumerRoots = [join(ROOT, 'src/ui/app'), join(ROOT, 'src/ui/layouts')];
+  const consumerRoots = [join(ROOT, 'src/ui/app'), join(ROOT, 'src/ui/layouts'), reusePath];
 
   const consumerContent = consumerRoots
     .flatMap((root) => walk(root).filter((f) => f.endsWith('.js')))

@@ -1,7 +1,7 @@
-import { renderDashboardLayout } from '../../layouts/dashboard-layout.js';
 import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 import { renderMarkdown } from '../../reuse/markdown-renderer.js';
+import { createPageComposer } from '../../reuse/page-composer.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
@@ -48,20 +48,42 @@ async function showDoc(slug) {
 }
 
 const docs = await loadDocsIndex();
-await renderDashboardLayout(root, {
-  pageContext: `<h1>${i18n.t('ui.app.docs.page_title')}</h1><p>${i18n.t('ui.app.docs.page_subtitle')}</p>`,
-  topbar: '',
-  toolbar: `<h3>${i18n.t('ui.reuse.navigation')}</h3><ul>${renderSidebarLinks(docs)}</ul>`,
-  content: `<article id="doc" class="content-panel"></article>`
+
+const elements = [
+  {
+    id: 'doc-reader',
+    label: i18n.t('ui.app.docs.page_title'),
+    gridSize: { default: [4, 8], min: [2, 4], max: 'full' },
+    render: () => `<article id="doc" class="content-panel"></article>`,
+  },
+];
+
+const composer = createPageComposer(root, {
+  allowCustomization: false,
+  elements,
+  preferenceKey: 'docs-layout',
+  i18n,
+  pageContext: {
+    title: i18n.t('ui.app.docs.page_title'),
+    subtitle: i18n.t('ui.app.docs.page_subtitle'),
+  },
+  toolbar: [
+    {
+      id: 'docs-nav',
+      label: i18n.t('ui.reuse.navigation'),
+      render: () => `<h3>${i18n.t('ui.reuse.navigation')}</h3><ul>${renderSidebarLinks(docs)}</ul>`,
+    },
+  ],
 });
+await composer.init();
 
 root.querySelectorAll('[data-slug]').forEach((button) => {
   button.addEventListener('click', () => showDoc(button.dataset.slug));
 });
 
-root.querySelector('#doc')?.addEventListener('click', async (event) => {
+root.addEventListener('click', async (event) => {
   const link = event.target.closest('a[href]');
-  if (!link) return;
+  if (!link || !link.closest('#doc')) return;
 
   const href = link.getAttribute('href') || '';
   if (href.startsWith('http://') || href.startsWith('https://')) return;

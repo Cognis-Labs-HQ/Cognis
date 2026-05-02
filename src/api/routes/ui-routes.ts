@@ -163,9 +163,9 @@ export function createUiRoutes(runtime?: ModuleRuntimeGateway) {
       }
     }
 
-    if (!url.pathname.startsWith('/dashboard/static/')) return false;
+    if (!url.pathname.startsWith('/static/')) return false;
 
-    const relative = url.pathname.replace('/dashboard/static/', '');
+    const relative = url.pathname.replace('/static/', '');
     if (!/^[a-zA-Z0-9_./-]+$/.test(relative) || relative.includes('..')) {
       res.writeHead(400, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ error: { code: 'bad_request', message: 'Invalid path.' } }));

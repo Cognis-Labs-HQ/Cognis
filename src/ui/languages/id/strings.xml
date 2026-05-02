@@ -121,6 +121,10 @@
   <string name="ui.app.settings.available_languages">Bahasa tersedia</string>
   <string name="ui.app.settings.preferred_languages">Bahasa prioritas</string>
   <string name="ui.reuse.page_composer.edit_layout">Edit Tata Letak</string>
-  <string name="ui.reuse.page_composer.sections">Bagian</string>
-  <string name="ui.reuse.page_composer.all_visible">Semua bagian ditampilkan.</string>
+  <string name="ui.reuse.page_composer.sections">Elemen</string>
+  <string name="ui.reuse.page_composer.elements">Elemen</string>
+  <string name="ui.reuse.page_composer.all_visible">Semua elemen ditampilkan.</string>
+  <string name="ui.reuse.page_composer.zone_toolbar">Bilah alat</string>
+  <string name="ui.reuse.page_composer.zone_floating">Menu mengambang</string>
+  <string name="ui.reuse.page_composer.zone_main">Utama</string>
 </resources>

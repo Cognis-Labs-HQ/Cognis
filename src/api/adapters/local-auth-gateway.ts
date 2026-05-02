@@ -5,6 +5,7 @@ interface StoredAccount {
   passwordHash: string;
   isAdmin: boolean;
   enabled: boolean;
+  lastLogin: string | null;
 }
 
 export interface LocalAccountStore {
@@ -16,6 +17,8 @@ export interface LocalAccountStore {
   setPassword(username: string, password: string): Promise<void>;
   setEnabled(username: string, enabled: boolean): Promise<void>;
   delete(username: string): Promise<void>;
+  getInfo(username: string): Promise<{ username: string; createdAt: string | null; lastLogin: string | null } | null>;
+  updateLastLogin(username: string): Promise<void>;
 }
 
 export class VolatileLocalAccountStore implements LocalAccountStore {
@@ -23,7 +26,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
 
   async register(username: string, password: string, isAdmin = false) {
     if (this.accounts.has(username)) throw new Error('username_taken');
-    this.accounts.set(username, { passwordHash: hash(password), isAdmin, enabled: true });
+    this.accounts.set(username, { passwordHash: hash(password), isAdmin, enabled: true, lastLogin: null });
     return { username, isAdmin, enabled: true };
   }
 
@@ -59,6 +62,18 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
 
   async delete(username: string) {
     this.accounts.delete(username);
+  }
+
+  async getInfo(username: string): Promise<{ username: string; createdAt: string | null; lastLogin: string | null } | null> {
+    const account = this.accounts.get(username);
+    if (!account) return null;
+    return { username, createdAt: null, lastLogin: account.lastLogin };
+  }
+
+  async updateLastLogin(username: string): Promise<void> {
+    const account = this.accounts.get(username);
+    if (!account) return;
+    account.lastLogin = new Date().toISOString();
   }
 }
 

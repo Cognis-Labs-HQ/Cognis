@@ -60,6 +60,7 @@ document.querySelector('#login-form')?.addEventListener('submit', async (event) 
     localStorage.setItem('cognis_account', body.data.accountId);
     localStorage.setItem('cognis_display_name', body.data.displayName || body.data.accountId);
     localStorage.setItem('cognis_role', body.data.role || 'user');
+    localStorage.setItem('cognis_login_time', new Date().toISOString());
     window.location.href = '/dashboard';
     return;
   }

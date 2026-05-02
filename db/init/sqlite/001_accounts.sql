@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   email TEXT,
   display_name TEXT,
   is_admin INTEGER NOT NULL DEFAULT 0,
+  last_login TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );

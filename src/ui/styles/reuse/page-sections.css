@@ -1,11 +1,9 @@
 .content-section {
-  display: none;
+  min-width: 0;
 }
 
-.content-section.active {
-  display: block;
-  padding-top: 28px;
-  padding-bottom: 28px;
+.content-panel > .content-section {
+  padding: 28px;
 }
 
 .widget-card > h2,

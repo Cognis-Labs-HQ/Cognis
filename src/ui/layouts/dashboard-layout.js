@@ -124,4 +124,13 @@ export async function renderDashboardLayout(root, slots = {}) {
   bindTopbarActions();
   applyActiveNavigation();
   bindThemeToggle();
+
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    const observer = new MutationObserver(() => {
+      document.body.classList.toggle('composer-theme-hidden', themeToggle.hidden);
+    });
+    observer.observe(themeToggle, { attributes: true, attributeFilter: ['hidden'] });
+    document.body.classList.toggle('composer-theme-hidden', themeToggle.hidden);
+  }
 }

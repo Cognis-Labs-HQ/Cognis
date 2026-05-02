@@ -1,7 +1,7 @@
 const cache = new Map();
 
 /**
- * Loads an HTML template by name from /dashboard/static/templates/.
+ * Loads an HTML template by name from /static/templates/.
  * Results are cached in memory so repeated calls are free.
  *
  * Usage:
@@ -12,7 +12,7 @@ const cache = new Map();
  */
 export async function loadTemplate(name) {
   if (cache.has(name)) return cache.get(name);
-  const response = await fetch(`/dashboard/static/templates/${name}.html`);
+  const response = await fetch(`/static/templates/${name}.html`);
   const html = await response.text();
   cache.set(name, html);
   return html;

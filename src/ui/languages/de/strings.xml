@@ -121,6 +121,10 @@
   <string name="ui.app.settings.available_languages">Verfügbare Sprachen</string>
   <string name="ui.app.settings.preferred_languages">Bevorzugte Sprachen</string>
   <string name="ui.reuse.page_composer.edit_layout">Layout bearbeiten</string>
-  <string name="ui.reuse.page_composer.sections">Bereiche</string>
-  <string name="ui.reuse.page_composer.all_visible">Alle Bereiche sind sichtbar.</string>
+  <string name="ui.reuse.page_composer.sections">Elemente</string>
+  <string name="ui.reuse.page_composer.elements">Elemente</string>
+  <string name="ui.reuse.page_composer.all_visible">Alle Elemente sind sichtbar.</string>
+  <string name="ui.reuse.page_composer.zone_toolbar">Werkzeugleiste</string>
+  <string name="ui.reuse.page_composer.zone_floating">Schwebendes Menü</string>
+  <string name="ui.reuse.page_composer.zone_main">Hauptbereich</string>
 </resources>

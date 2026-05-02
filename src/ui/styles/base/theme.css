@@ -36,22 +36,26 @@
   --nav-border-top: rgba(76, 108, 148, 0.15);
   --user-greeting: #9fb4cf;
   --theme-toggle-color: #facc15;
+  --theme-toggle-bg: rgb(19, 29, 51);
+  --theme-toggle-bg-hover: rgb(27, 40, 70);
   --control-bg: rgba(15, 23, 42, 0.9);
   --control-text: var(--text);
   --control-border: var(--border);
   --control-hover-bg: var(--surface-soft);
   --badge-text: var(--text);
   --toolbar-bg: rgba(15, 23, 42, 0.50);
-  --widget-card-tint: rgba(19, 29, 51, 0.10);
+  --widget-card-tint: var(--surface);
   --scrollbar-track: rgba(15, 23, 42, 0.45);
   --scrollbar-thumb: rgba(148, 163, 184, 0.5);
   --scrollbar-thumb-hover: rgba(148, 163, 184, 0.75);
   --color-danger: rgba(239, 68, 68, 0.22);
   --color-danger-text: #f87171;
   --color-danger-border: rgba(239, 68, 68, 0.4);
+  --color-danger-hover-bg: rgba(239, 68, 68, 0.12);
   --color-success: rgba(52, 211, 153, 0.22);
   --color-success-text: #34d399;
   --color-success-border: rgba(52, 211, 153, 0.4);
+  --color-success-hover-bg: rgba(52, 211, 153, 0.12);
   --shadow-btn: 0 4px 14px rgba(2, 6, 23, 0.35);
   --shadow-floating: 0 -4px 24px rgba(2, 6, 23, 0.28);
 }
@@ -60,9 +64,13 @@ body[data-theme='light'] {
   --color-danger: #ef4444;
   --color-danger-text: #fff;
   --color-danger-border: #dc2626;
+  --color-danger-outline-text: #dc2626;
+  --color-danger-hover-bg: rgba(220, 38, 38, 0.08);
   --color-success: #10b981;
   --color-success-text: #fff;
   --color-success-border: #059669;
+  --color-success-outline-text: #059669;
+  --color-success-hover-bg: rgba(5, 150, 105, 0.08);
   --shadow-btn: 0 4px 14px rgba(15, 23, 42, 0.20);
   --shadow-floating: 0 -4px 24px rgba(15, 23, 42, 0.15);
 }
@@ -115,6 +123,8 @@ body[data-theme='light'] {
   --context-muted: #475569;
   --user-greeting: #1e3a5f;
   --theme-toggle-color: #0f172a;
+  --theme-toggle-bg: rgb(248, 250, 255);
+  --theme-toggle-bg-hover: rgb(232, 238, 252);
   --accent: #0f766e;
   --accent-2: #0d9488;
   --header-top-bg: linear-gradient(180deg, rgba(240, 247, 255, 0.98) 0%, rgba(226, 239, 251, 0.96) 72%, rgba(220, 234, 248, 0.94) 100%);
@@ -125,5 +135,5 @@ body[data-theme='light'] {
   --control-hover-bg: rgba(148, 163, 184, 0.12);
   --badge-text: var(--text);
   --toolbar-bg: rgba(255, 255, 255, 0.50);
-  --widget-card-tint: rgba(248, 250, 255, 0.10);
+  --widget-card-tint: var(--surface);
 }

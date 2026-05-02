@@ -174,7 +174,7 @@
 }
 
 .app-shell .theme-toggle {
-  background: var(--surface-2);
+  background: var(--theme-toggle-bg);
   border: 1px solid var(--border);
 }
 
@@ -183,7 +183,7 @@ button.dropdown-item {
   appearance: none;
 }
 
-.app-shell button:hover:not(.dropdown-item):not([class*="btn-"]),
+.app-shell button:hover:not(.dropdown-item):not([class*="btn-"]):not(.theme-toggle):not(.font-size-btn):not(:disabled),
 .app-shell select:hover {
   background: var(--control-hover-bg);
 }
@@ -191,6 +191,10 @@ button.dropdown-item {
 .app-shell .notification-button:hover,
 .app-shell .avatar-button:hover {
   background: var(--surface-soft);
+}
+
+.app-shell .theme-toggle:hover {
+  background: var(--theme-toggle-bg-hover);
 }
 
 .app-shell .badge {
@@ -212,7 +216,7 @@ button.dropdown-item {
   .account-cluster { justify-self: end; }
 }
 
-.theme-toggle { position: fixed; right: 18px; bottom: 18px; width: 48px; height: 48px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); color: var(--theme-toggle-color); cursor: pointer; box-shadow: var(--shadow); z-index: 1000; font-size: 1.25rem; }
+.theme-toggle { position: fixed; right: 18px; bottom: 18px; width: 48px; height: 48px; border-radius: 999px; border: 1px solid var(--border); background: var(--theme-toggle-bg); color: var(--theme-toggle-color); cursor: pointer; box-shadow: var(--shadow); z-index: 1000; font-size: 1.25rem; }
 .theme-toggle[data-mode="light"] { color: #f59e0b; }
 .theme-toggle[data-mode="dark"] { color: #94a3b8; }
 

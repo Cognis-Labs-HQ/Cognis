@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { LocalAccountStore } from '../adapters/local-auth-gateway.js';
-import { requireAuth } from '../auth/guard.js';
+import { getAuthClaims, requireAuth } from '../auth/guard.js';
 import type { UserPreferenceStore } from './preferences-routes.js';
 import { readJson } from './read-json.js';
 
@@ -10,6 +10,31 @@ export function createUserRoutes(accountStore: LocalAccountStore, preferenceStor
       if (!requireAuth(req, res, 'admin')) return true;
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: await accountStore.list() }));
+      return true;
+    }
+
+    const infoMatch = url.pathname.match(/^\/api\/v1\/users\/([^/]+)\/info$/);
+    if (infoMatch && req.method === 'GET') {
+      const claims = getAuthClaims(req);
+      if (!claims) {
+        res.writeHead(401, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'unauthorized', message: 'Login required' } }));
+        return true;
+      }
+      const target = decodeURIComponent(infoMatch[1]);
+      if (claims.sub !== target && claims.role !== 'admin') {
+        res.writeHead(403, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'forbidden', message: 'Access denied' } }));
+        return true;
+      }
+      const info = await accountStore.getInfo(target);
+      if (!info) {
+        res.writeHead(404, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'not_found', message: 'User not found' } }));
+        return true;
+      }
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ data: info }));
       return true;
     }
 

@@ -2,7 +2,7 @@
   <header class="site-header app-page__header">
     <div class="global-topbar">
       <a class="brandline" href="/dashboard" data-i18n-aria-label="ui.layout.brand.aria" aria-label="Cognis home">
-        <img src="/dashboard/static/assets/icons/cognis-icon.png" alt="" class="topbar-icon" />
+        <img src="/static/assets/icons/cognis-icon.png" alt="" class="topbar-icon" />
         <strong data-i18n="ui.shared.brand.name">Cognis</strong>
       </a>
       <div class="page-context">{{pageContext}}</div>
@@ -19,7 +19,7 @@
         </button>
         <div class="profile-menu">
           <button id="profile-toggle" class="avatar-button" data-i18n-aria-label="ui.layout.account.aria" aria-label="Account options">
-            <img src="/dashboard/static/assets/icons/cognis.png" data-i18n-alt="ui.layout.avatar.alt" alt="User avatar" class="avatar-image" />
+            <img src="/static/assets/icons/cognis.png" data-i18n-alt="ui.layout.avatar.alt" alt="User avatar" class="avatar-image" />
           </button>
           <ul id="profile-dropdown" class="dropdown hidden user-dropdown-content">
             <li><a class="dropdown-item" href="/user" data-i18n="ui.reuse.menu.profile"></a></li>
@@ -40,5 +40,6 @@
     </section>
     </main>
   <button id="theme-toggle" class="theme-toggle" data-i18n-aria-label="ui.layout.theme.aria" aria-label="Toggle theme">🌙</button>
+  <button id="composer-edit-toggle" class="composer-edit-toggle" hidden>✏</button>
   {{floatingToolbar}}
 </section>
