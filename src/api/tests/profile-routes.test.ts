@@ -448,7 +448,6 @@ test('profile routes - avatar DELETE clears avatarKey', async () => {
     const profileStore = await setupUser(executor, 'alice');
     const gateway = fakeFileGateway();
     await profileStore.updateProfile('alice', { avatarKey: 'profile/avatars/alice.png' });
-    gateway._has('profile/avatars/alice.png');
     const route = createProfileRoutes(profileStore, gateway);
     const token = issueAccessToken('alice', 'user', 60);
     let status = 0;

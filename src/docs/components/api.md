@@ -75,7 +75,7 @@ Account-level visibility controls API exposure of a profile and its content:
 
 | Tier | Profile visible to | Counts/posts visible to |
 |---|---|---|
-| `hidden` (default) | nobody (except self/admin) | — (cannot post) |
+| `hidden` (default) | nobody (except self/admin) | — (cannot post; attempting returns 403) |
 | `private` | existing followers only | followers only |
 | `friends` | anyone with an account | followers only |
 | `community` | anyone with an account | anyone with an account |
