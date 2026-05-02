@@ -72,6 +72,11 @@ When editing a file, make opportunistic improvements to the surrounding code tha
 
 ## Testing
 
+Before running unit tests, ensure the following prerequisites are met:
+
+- `ripgrep` is installed (used by tooling scripts). Install with `apt-get install -y ripgrep` or equivalent for your platform.
+- `npm install` has been run to ensure all dependencies are present.
+
 Write unit tests that verify the API responds correctly under defined conditions, for example:
 
 - An invalid or expired user token cannot make authenticated API calls.
@@ -83,6 +88,11 @@ Tests live alongside the code they cover. All new features require tests, loggin
 ---
 
 ## Linting and formatting
+
+Before running linting, ensure the following prerequisites are met:
+
+- `ripgrep` is installed (used by tooling scripts). Install with `apt-get install -y ripgrep` or equivalent for your platform.
+- `npm install` has been run to ensure all dependencies are present.
 
 The project enforces readability via `src/tooling/scripts/lint-readable.mjs` (no tabs, no trailing whitespace) and `src/tooling/scripts/lint-placeholder.mjs`. Run `npm run lint` to check. All committed code must pass these checks.
 
