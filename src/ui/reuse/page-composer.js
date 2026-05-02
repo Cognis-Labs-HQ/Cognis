@@ -639,7 +639,7 @@ export function createPageComposer(root, {
       }
     }
 
-    panel.style.right = 'auto';
+    panel.style.right = 'auto'; // prevent right/left conflict when dragging after initial right-edge placement
     document.body.appendChild(panel);
     bindPanelDrag(panel);
 
