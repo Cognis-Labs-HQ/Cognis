@@ -188,6 +188,13 @@ export function createPageComposer(root, {
     return true;
   }
 
+  function applyGravity(col, row, w, h, excludeId) {
+    for (let r = 0; r <= row; r++) {
+      if (canPlace(col, r, w, h, excludeId)) return r;
+    }
+    return row;
+  }
+
   function initializePlacements() {
     if (!layout.placements) layout.placements = [];
     if (!layout.hidden) layout.hidden = [];
@@ -283,10 +290,11 @@ export function createPageComposer(root, {
           const x = e.clientX - gridRect.left;
           const y = e.clientY - gridRect.top;
           const col = Math.max(0, Math.min(gridCols - placement.w, Math.round(x / UNIT - placement.w / 2)));
-          const row = Math.max(0, Math.round(y / UNIT - placement.h / 2));
+          const rawRow = Math.max(0, Math.round(y / UNIT - placement.h / 2));
+          const row = applyGravity(col, rawRow, placement.w, placement.h, el.id);
 
-          if (row + placement.h > gridRows) {
-            gridRows = row + placement.h + 1;
+          if (rawRow + placement.h > gridRows) {
+            gridRows = rawRow + placement.h + 1;
             contentGrid.style.minHeight = `${gridRows * UNIT}px`;
           }
 
@@ -527,7 +535,8 @@ export function createPageComposer(root, {
             contentGrid.appendChild(shade);
           }
           const col = Math.max(0, Math.min(gridCols - w, Math.floor(x / UNIT)));
-          const row = Math.max(0, Math.floor(y / UNIT));
+          const rawRow = Math.max(0, Math.floor(y / UNIT));
+          const row = applyGravity(col, rawRow, w, h, null);
           currentCol = col;
           currentRow = row;
           shade.style.left = `${col * UNIT}px`;
