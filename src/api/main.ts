@@ -5,6 +5,8 @@ import { initializeDatabaseSchema } from './bootstrap/db-init.js';
 import { LocalAuthGateway } from './adapters/local-auth-gateway.js';
 import { DbLocalAccountStore, createDbExecutor, type SupportedDbType } from './adapters/db-account-store.js';
 import { DbUserPreferenceStore } from './adapters/db-preference-store.js';
+import { DbProfileStore } from './adapters/db-profile-store.js';
+import { LocalFileGateway } from '../adapters/file-local/local-file-gateway.js';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { issueAccessToken } from './auth/access-tokens.js';
@@ -94,6 +96,14 @@ await logger.info('Bootstrap state schema ensured.');
 await initializeDatabaseSchema(dbType, logger, dbExecutor);
 await logger.info('Database provider schema initialization complete.');
 
+const profileStore = new DbProfileStore(dbExecutor, dbType);
+await profileStore.ensureSchema();
+await logger.info('Profile schema ensured.');
+
+const fileStorePath = process.env.COGNIS_FILE_STORE_PATH ?? '/app/files';
+const fileGateway = new LocalFileGateway(fileStorePath);
+await logger.info('File gateway initialized.', { provider: 'local', path: fileStorePath });
+
 const adminState = await dbExecutor.execute(
   dbType === 'postgresql'
     ? 'SELECT state_value FROM bootstrap_state WHERE state_key = $1'
@@ -105,6 +115,7 @@ const adminInitialized = adminState.rows?.[0]?.state_value === 'true';
 if (!adminInitialized) {
   const adminPassword = LocalAuthGateway.generatePassword();
   await authGateway.createLocalAdmin('admin', adminPassword);
+  await profileStore.createProfile('admin', 'admin', 'admin');
   if (dbType === 'postgresql') {
     await dbExecutor.execute(
       'INSERT INTO bootstrap_state (state_key, state_value) VALUES ($1, $2) ON CONFLICT (state_key) DO UPDATE SET state_value = EXCLUDED.state_value',
@@ -146,6 +157,8 @@ const server = buildServer({
   authGateway,
   accountStore,
   preferenceStore,
+  profileStore,
+  fileGateway,
   loadModuleStates: async () => {
     const result = await dbExecutor.execute('SELECT module_id, enabled FROM modules');
     return (result.rows ?? []).map((row) => ({ moduleId: row.module_id, enabled: Boolean(row.enabled) }));
