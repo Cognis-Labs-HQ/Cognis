@@ -1,7 +1,7 @@
 import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 import { createPageComposer } from '../../reuse/page-composer.js';
-import { createUnsavedChangesBar } from '../../reuse/unsaved-changes.js';
+import { generateInitialsDataUrl } from '../../reuse/avatar-utils.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
@@ -94,8 +94,8 @@ let editState = {
   visibility: profile?.visibility ?? 'hidden',
 };
 
-let changesBar;
 let composer;
+let mediaPopupTarget = null;
 
 function visibilityClass(v) {
   const map = {
@@ -107,15 +107,70 @@ function visibilityClass(v) {
   return map[v] ?? 'visibility-hidden';
 }
 
-function renderVisibilityBadge(v) {
-  return `<span class="visibility-badge ${visibilityClass(v)}">${i18n.t(`ui.app.profile.visibility.${v}`)}</span>`;
+function renderAvatarContent() {
+  if (avatarBlobUrl) {
+    return `<img src="${escapeHtml(avatarBlobUrl)}" class="profile-hero-avatar-img" alt="${i18n.t('ui.layout.avatar.alt')}" />`;
+  }
+  const dataUrl = generateInitialsDataUrl(profile?.handle ?? '', 80);
+  return `<img src="${escapeHtml(dataUrl)}" class="profile-hero-avatar-img" alt="${i18n.t('ui.layout.avatar.alt')}" />`;
 }
 
-function renderAvatarImg(blobUrl) {
-  if (blobUrl) {
-    return `<img src="${escapeHtml(blobUrl)}" class="profile-avatar-img" alt="${i18n.t('ui.layout.avatar.alt')}" />`;
-  }
-  return `<span class="profile-avatar-placeholder" aria-hidden="true">👤</span>`;
+function renderHero() {
+  const bannerContent = bannerBlobUrl
+    ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" alt="" />`
+    : `<div class="profile-hero-banner-placeholder"></div>`;
+
+  const bio = profile?.bio ? `<p class="profile-hero-bio">${escapeHtml(profile.bio)}</p>` : '';
+
+  const details = [
+    profile?.location ? `<span class="profile-hero-detail-item">📍 ${escapeHtml(profile.location)}</span>` : '',
+    profile?.website
+      ? `<span class="profile-hero-detail-item">🌐 <a class="profile-hero-link" href="${escapeHtml(profile.website)}" target="_blank" rel="noopener noreferrer">${escapeHtml(profile.website)}</a></span>`
+      : '',
+  ].filter(Boolean).join('');
+
+  return `
+    <div class="profile-hero">
+      <button
+        class="profile-hero-banner-btn"
+        type="button"
+        aria-label="${i18n.t('ui.app.profile.change_banner')}"
+      >${bannerContent}</button>
+      <button
+        class="profile-hero-edit-btn"
+        type="button"
+        aria-label="${i18n.t('ui.app.profile.edit_profile')}"
+      >✏</button>
+      <div class="profile-hero-body">
+        <button
+          class="profile-hero-avatar-btn"
+          type="button"
+          aria-label="${i18n.t('ui.app.profile.change_avatar')}"
+        >${renderAvatarContent()}</button>
+        <div class="profile-hero-identity">
+          <div class="profile-hero-handle-row">
+            <strong class="profile-hero-handle">@${escapeHtml(profile?.handle ?? '')}</strong>
+            ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ''}
+            <span class="visibility-badge ${visibilityClass(profile?.visibility ?? 'hidden')}">${i18n.t(`ui.app.profile.visibility.${profile?.visibility ?? 'hidden'}`)}</span>
+          </div>
+          ${bio}
+          ${details ? `<div class="profile-hero-details">${details}</div>` : ''}
+          <div class="profile-hero-stats">
+            <span class="profile-hero-stat"><strong>${followers.length}</strong> ${i18n.t('ui.app.profile.followers_stat')}</span>
+            <span class="profile-hero-stat-sep" aria-hidden="true">·</span>
+            <span class="profile-hero-stat"><strong>${following.length}</strong> ${i18n.t('ui.app.profile.following_stat')}</span>
+            <span class="profile-hero-stat-sep" aria-hidden="true">·</span>
+            <span class="profile-hero-stat"><strong>${posts.length}</strong> ${i18n.t('ui.app.profile.posts_stat')}</span>
+            ${profile?.createdAt
+              ? `<span class="profile-hero-stat-sep" aria-hidden="true">·</span>
+                 <span class="profile-member-since">${i18n.t('ui.app.profile.member_since')} ${formatDate(profile.createdAt)}</span>`
+              : ''
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function renderUserList(list, emptyKey) {
@@ -129,6 +184,27 @@ function renderUserList(list, emptyKey) {
         </li>
       `).join('')}
     </ul>
+  `;
+}
+
+function renderSocial() {
+  return `
+    <div class="profile-social-grid">
+      <div class="profile-social-col">
+        <h3 class="profile-social-heading">
+          ${i18n.t('ui.app.profile.followers')}
+          <span class="profile-count-badge">${followers.length}</span>
+        </h3>
+        ${renderUserList(followers, 'ui.app.profile.no_followers')}
+      </div>
+      <div class="profile-social-col">
+        <h3 class="profile-social-heading">
+          ${i18n.t('ui.app.profile.following')}
+          <span class="profile-count-badge">${following.length}</span>
+        </h3>
+        ${renderUserList(following, 'ui.app.profile.no_following')}
+      </div>
+    </div>
   `;
 }
 
@@ -155,42 +231,189 @@ function renderPostsList() {
   `;
 }
 
-function bindProfileEdit() {
-  const bioEl = root.querySelector('#profile-bio');
-  const locationEl = root.querySelector('#profile-location');
-  const websiteEl = root.querySelector('#profile-website');
-  const visibilityEl = root.querySelector('#profile-visibility');
-
-  if (bioEl) {
-    bioEl.addEventListener('input', () => {
-      editState.bio = bioEl.value;
-      changesBar?.markDirty('profile', true);
-    });
-  }
-
-  if (locationEl) {
-    locationEl.addEventListener('input', () => {
-      editState.location = locationEl.value;
-      changesBar?.markDirty('profile', true);
-    });
-  }
-
-  if (websiteEl) {
-    websiteEl.addEventListener('input', () => {
-      editState.website = websiteEl.value;
-      changesBar?.markDirty('profile', true);
-    });
-  }
-
-  if (visibilityEl) {
-    visibilityEl.addEventListener('change', () => {
-      editState.visibility = visibilityEl.value;
-      changesBar?.markDirty('profile', true);
-    });
-  }
+function renderPosts() {
+  return `
+    <div class="profile-posts-section">
+      <h3 class="profile-posts-heading">
+        ${i18n.t('ui.app.profile.new_post')}
+      </h3>
+      <div class="new-post-form">
+        <input
+          type="text"
+          id="post-title"
+          class="profile-field-input"
+          placeholder="${i18n.t('ui.app.profile.post_title')}"
+        />
+        <textarea
+          id="post-content"
+          class="profile-field-input"
+          rows="3"
+          placeholder="${i18n.t('ui.app.profile.post_content')}"
+        ></textarea>
+        <div class="post-form-footer">
+          <select id="post-visibility" class="profile-field-input">
+            ${['only_me', 'private', 'friends', 'community'].map((v) =>
+              `<option value="${v}">${i18n.t(`ui.app.profile.post_visibility.${v}`)}</option>`
+            ).join('')}
+          </select>
+          <button type="button" id="post-submit" class="btn-confirm btn-animated">
+            ${i18n.t('ui.app.profile.post_submit')}
+          </button>
+        </div>
+      </div>
+      <h3 class="profile-posts-heading">
+        ${i18n.t('ui.app.profile.section.posts')}
+        <span class="profile-count-badge">${posts.length}</span>
+      </h3>
+      ${renderPostsList()}
+    </div>
+  `;
 }
 
-async function doAvatarUpload(file) {
+const editDialog = document.createElement('dialog');
+editDialog.className = 'profile-edit-dialog';
+document.body.appendChild(editDialog);
+
+function buildEditDialogHtml() {
+  return `
+    <div class="profile-edit-dialog-header">
+      <h2 class="profile-edit-dialog-title">${i18n.t('ui.app.profile.edit_profile')}</h2>
+      <button class="profile-edit-dialog-close btn-animated" type="button" id="edit-dialog-close">✕</button>
+    </div>
+    <div class="profile-edit-dialog-body">
+      <label class="profile-field-label">
+        ${i18n.t('ui.app.profile.bio')}
+        <textarea id="edit-bio" class="profile-field-input" rows="3">${escapeHtml(editState.bio)}</textarea>
+      </label>
+      <label class="profile-field-label">
+        ${i18n.t('ui.app.profile.location')}
+        <input type="text" id="edit-location" class="profile-field-input" value="${escapeHtml(editState.location)}" />
+      </label>
+      <label class="profile-field-label">
+        ${i18n.t('ui.app.profile.website')}
+        <input type="url" id="edit-website" class="profile-field-input" value="${escapeHtml(editState.website)}" />
+      </label>
+      <label class="profile-field-label">
+        ${i18n.t('ui.app.profile.visibility')}
+        <select id="edit-visibility" class="profile-field-input">
+          ${['hidden', 'private', 'friends', 'community'].map((v) =>
+            `<option value="${v}"${editState.visibility === v ? ' selected' : ''}>${i18n.t(`ui.app.profile.visibility.${v}`)}</option>`
+          ).join('')}
+        </select>
+      </label>
+    </div>
+    <div class="profile-edit-dialog-actions">
+      <button class="btn-cancel btn-animated" type="button" id="edit-dialog-discard">
+        ${i18n.t('ui.reuse.generic.discard')}
+      </button>
+      <button class="btn-confirm btn-animated" type="button" id="edit-dialog-save">
+        ${i18n.t('ui.reuse.generic.save')}
+      </button>
+    </div>
+  `;
+}
+
+function openEditDialog() {
+  editDialog.innerHTML = buildEditDialogHtml();
+  editDialog.querySelector('#edit-dialog-close')?.addEventListener('click', () => editDialog.close());
+  editDialog.querySelector('#edit-dialog-discard')?.addEventListener('click', () => {
+    editState = {
+      bio: profile?.bio ?? '',
+      location: profile?.location ?? '',
+      website: profile?.website ?? '',
+      visibility: profile?.visibility ?? 'hidden',
+    };
+    editDialog.close();
+  });
+  editDialog.querySelector('#edit-dialog-save')?.addEventListener('click', async () => {
+    editState.bio = editDialog.querySelector('#edit-bio')?.value ?? editState.bio;
+    editState.location = editDialog.querySelector('#edit-location')?.value ?? editState.location;
+    editState.website = editDialog.querySelector('#edit-website')?.value ?? editState.website;
+    editState.visibility = editDialog.querySelector('#edit-visibility')?.value ?? editState.visibility;
+    await apiFetch('/api/v1/profile', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(editState),
+    });
+    profile = await loadOwnProfile();
+    editDialog.close();
+    composer.refresh(elements);
+  });
+  editDialog.showModal();
+}
+
+editDialog.addEventListener('click', (e) => {
+  if (e.target === editDialog) editDialog.close();
+});
+
+const mediaPopup = document.createElement('div');
+mediaPopup.id = 'profile-media-popup';
+mediaPopup.className = 'profile-media-popup';
+mediaPopup.hidden = true;
+mediaPopup.innerHTML = `
+  <button class="profile-media-popup-remove btn-animated" type="button" id="media-popup-remove" aria-label="${i18n.t('ui.app.profile.photo_remove')}">✕</button>
+  <button class="profile-media-popup-upload btn-animated" type="button" id="media-popup-upload" aria-label="${i18n.t('ui.app.profile.photo_set')}">⬆</button>
+`;
+document.body.appendChild(mediaPopup);
+
+const avatarFileInput = document.createElement('input');
+avatarFileInput.type = 'file';
+avatarFileInput.accept = 'image/jpeg,image/png,image/webp';
+avatarFileInput.hidden = true;
+document.body.appendChild(avatarFileInput);
+
+const bannerFileInput = document.createElement('input');
+bannerFileInput.type = 'file';
+bannerFileInput.accept = 'image/jpeg,image/png,image/webp,image/gif';
+bannerFileInput.hidden = true;
+document.body.appendChild(bannerFileInput);
+
+function openMediaPopup(e, target) {
+  mediaPopupTarget = target;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const popupWidth = 96;
+  let left = rect.left;
+  if (left + popupWidth > window.innerWidth - 8) left = window.innerWidth - popupWidth - 8;
+  mediaPopup.style.top = `${rect.bottom + 8}px`;
+  mediaPopup.style.left = `${Math.max(8, left)}px`;
+  mediaPopup.hidden = false;
+}
+
+function closeMediaPopup() {
+  mediaPopup.hidden = true;
+  mediaPopupTarget = null;
+}
+
+document.addEventListener('click', (e) => {
+  if (!mediaPopup.hidden && !mediaPopup.contains(e.target)) closeMediaPopup();
+}, true);
+
+mediaPopup.querySelector('#media-popup-remove')?.addEventListener('click', async () => {
+  const target = mediaPopupTarget;
+  closeMediaPopup();
+  if (target === 'avatar') {
+    await apiFetch('/api/v1/profile/avatar', { method: 'DELETE' });
+    if (avatarBlobUrl) URL.revokeObjectURL(avatarBlobUrl);
+    avatarBlobUrl = null;
+  } else if (target === 'banner') {
+    await apiFetch('/api/v1/profile/banner', { method: 'DELETE' });
+    if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
+    bannerBlobUrl = null;
+  }
+  profile = await loadOwnProfile();
+  composer.refresh(elements);
+});
+
+mediaPopup.querySelector('#media-popup-upload')?.addEventListener('click', () => {
+  const target = mediaPopupTarget;
+  closeMediaPopup();
+  if (target === 'avatar') avatarFileInput.click();
+  else if (target === 'banner') bannerFileInput.click();
+});
+
+avatarFileInput.addEventListener('change', async () => {
+  const file = avatarFileInput.files?.[0];
+  if (!file) return;
   const buffer = await file.arrayBuffer();
   const res = await apiFetch('/api/v1/profile/avatar', {
     method: 'PUT',
@@ -202,17 +425,12 @@ async function doAvatarUpload(file) {
   avatarBlobUrl = URL.createObjectURL(file);
   profile = await loadOwnProfile();
   composer.refresh(elements);
-}
+  avatarFileInput.value = '';
+});
 
-async function doAvatarRemove() {
-  await apiFetch('/api/v1/profile/avatar', { method: 'DELETE' });
-  if (avatarBlobUrl) URL.revokeObjectURL(avatarBlobUrl);
-  avatarBlobUrl = null;
-  profile = await loadOwnProfile();
-  composer.refresh(elements);
-}
-
-async function doBannerUpload(file) {
+bannerFileInput.addEventListener('change', async () => {
+  const file = bannerFileInput.files?.[0];
+  if (!file) return;
   const buffer = await file.arrayBuffer();
   const res = await apiFetch('/api/v1/profile/banner', {
     method: 'PUT',
@@ -224,38 +442,8 @@ async function doBannerUpload(file) {
   bannerBlobUrl = URL.createObjectURL(file);
   profile = await loadOwnProfile();
   composer.refresh(elements);
-}
-
-async function doBannerRemove() {
-  await apiFetch('/api/v1/profile/banner', { method: 'DELETE' });
-  if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
-  bannerBlobUrl = null;
-  profile = await loadOwnProfile();
-  composer.refresh(elements);
-}
-
-function bindMediaUploads() {
-  const avatarInput = root.querySelector('#avatar-upload');
-  const avatarBtn = root.querySelector('#avatar-upload-btn');
-  const avatarRemoveBtn = root.querySelector('#avatar-remove-btn');
-  const bannerInput = root.querySelector('#banner-upload');
-  const bannerBtn = root.querySelector('#banner-upload-btn');
-  const bannerRemoveBtn = root.querySelector('#banner-remove-btn');
-
-  avatarBtn?.addEventListener('click', () => avatarInput?.click());
-  avatarInput?.addEventListener('change', () => {
-    const file = avatarInput.files?.[0];
-    if (file) doAvatarUpload(file);
-  });
-  avatarRemoveBtn?.addEventListener('click', doAvatarRemove);
-
-  bannerBtn?.addEventListener('click', () => bannerInput?.click());
-  bannerInput?.addEventListener('change', () => {
-    const file = bannerInput.files?.[0];
-    if (file) doBannerUpload(file);
-  });
-  bannerRemoveBtn?.addEventListener('click', doBannerRemove);
-}
+  bannerFileInput.value = '';
+});
 
 async function doCreatePost() {
   const titleEl = root.querySelector('#post-title');
@@ -290,10 +478,6 @@ async function doCreatePost() {
   }
 }
 
-function bindNewPost() {
-  root.querySelector('#post-submit')?.addEventListener('click', doCreatePost);
-}
-
 async function doDeletePost(postId) {
   const confirmed = window.confirm(i18n.t('ui.app.profile.delete_post_confirm'));
   if (!confirmed) return;
@@ -304,7 +488,11 @@ async function doDeletePost(postId) {
   }
 }
 
-function bindPostDeletes() {
+function bindPageEvents() {
+  root.querySelector('.profile-hero-edit-btn')?.addEventListener('click', openEditDialog);
+  root.querySelector('.profile-hero-banner-btn')?.addEventListener('click', (e) => openMediaPopup(e, 'banner'));
+  root.querySelector('.profile-hero-avatar-btn')?.addEventListener('click', (e) => openMediaPopup(e, 'avatar'));
+  root.querySelector('#post-submit')?.addEventListener('click', doCreatePost);
   root.querySelectorAll('.post-delete-btn[data-post-id]').forEach((btn) => {
     btn.addEventListener('click', () => doDeletePost(btn.dataset.postId));
   });
@@ -312,209 +500,30 @@ function bindPostDeletes() {
 
 const elements = [
   {
-    id: 'profile-info',
+    id: 'hero',
     label: i18n.t('ui.app.profile.section.profile'),
-    subComposerOptions: {
-      allowCustomization: false,
-      preferenceKey: 'profile-info-layout',
-      heading: i18n.t('ui.app.profile.section.profile'),
-      elements: [
-        {
-          id: 'profile-card',
-          label: i18n.t('ui.app.profile.section.profile'),
-          pinned: true,
-          render: () => `
-            <div class="profile-banner-wrap">
-              ${bannerBlobUrl
-                ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-banner-img" alt="" />`
-                : `<div class="profile-banner-placeholder"></div>`
-              }
-            </div>
-            <div class="profile-identity">
-              <div class="profile-avatar-wrap">
-                ${renderAvatarImg(avatarBlobUrl)}
-              </div>
-              <div class="profile-handle-row">
-                <strong class="profile-handle">@${escapeHtml(profile?.handle ?? '')}</strong>
-                ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ''}
-                ${renderVisibilityBadge(profile?.visibility ?? 'hidden')}
-              </div>
-              ${profile?.createdAt
-                ? `<p class="profile-member-since">${i18n.t('ui.app.profile.member_since')} ${formatDate(profile.createdAt)}</p>`
-                : ''
-              }
-            </div>
-          `,
-        },
-        {
-          id: 'profile-edit',
-          label: i18n.t('ui.app.profile.section.profile'),
-          pinned: true,
-          render: () => `
-            <div class="profile-edit-form">
-              <label class="profile-field-label">
-                ${i18n.t('ui.app.profile.bio')}
-                <textarea id="profile-bio" class="profile-field-input" rows="3">${escapeHtml(editState.bio)}</textarea>
-              </label>
-              <label class="profile-field-label">
-                ${i18n.t('ui.app.profile.location')}
-                <input type="text" id="profile-location" class="profile-field-input" value="${escapeHtml(editState.location)}" />
-              </label>
-              <label class="profile-field-label">
-                ${i18n.t('ui.app.profile.website')}
-                <input type="url" id="profile-website" class="profile-field-input" value="${escapeHtml(editState.website)}" />
-              </label>
-              <label class="profile-field-label">
-                ${i18n.t('ui.app.profile.visibility')}
-                <select id="profile-visibility" class="profile-field-input">
-                  ${['hidden', 'private', 'friends', 'community'].map((v) =>
-                    `<option value="${v}"${editState.visibility === v ? ' selected' : ''}>${i18n.t(`ui.app.profile.visibility.${v}`)}</option>`
-                  ).join('')}
-                </select>
-              </label>
-            </div>
-          `,
-        },
-        {
-          id: 'profile-media',
-          label: i18n.t('ui.app.profile.avatar'),
-          pinned: true,
-          render: () => `
-            <div class="profile-media-row">
-              <div class="profile-media-item">
-                <h4>${i18n.t('ui.app.profile.avatar')}</h4>
-                <input type="file" id="avatar-upload" accept="image/jpeg,image/png,image/webp" hidden />
-                <button type="button" id="avatar-upload-btn" class="btn-confirm btn-animated">
-                  ${i18n.t('ui.app.profile.upload_avatar')}
-                </button>
-                ${profile?.avatarKey
-                  ? `<button type="button" id="avatar-remove-btn" class="btn-cancel btn-animated">
-                      ${i18n.t('ui.app.profile.remove_avatar')}
-                    </button>`
-                  : ''
-                }
-              </div>
-              <div class="profile-media-item">
-                <h4>${i18n.t('ui.app.profile.banner')}</h4>
-                <input type="file" id="banner-upload" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
-                <button type="button" id="banner-upload-btn" class="btn-confirm btn-animated">
-                  ${i18n.t('ui.app.profile.upload_banner')}
-                </button>
-                ${profile?.bannerKey
-                  ? `<button type="button" id="banner-remove-btn" class="btn-cancel btn-animated">
-                      ${i18n.t('ui.app.profile.remove_banner')}
-                    </button>`
-                  : ''
-                }
-              </div>
-            </div>
-          `,
-        },
-      ],
-      onRender: () => {
-        bindProfileEdit();
-        bindMediaUploads();
-      },
-    },
+    pinned: true,
+    gridSize: { default: [4, 4], min: [2, 3], max: 'full' },
+    render: renderHero,
   },
   {
     id: 'social',
     label: i18n.t('ui.app.profile.section.social'),
-    subComposerOptions: {
-      allowCustomization: false,
-      preferenceKey: 'profile-social-layout',
-      columns: 2,
-      heading: i18n.t('ui.app.profile.section.social'),
-      elements: [
-        {
-          id: 'followers',
-          label: i18n.t('ui.app.profile.followers'),
-          pinned: true,
-          render: () => `
-            <h3>${i18n.t('ui.app.profile.followers')}
-              <span class="profile-count-badge">${followers.length}</span>
-            </h3>
-            ${renderUserList(followers, 'ui.app.profile.no_followers')}
-          `,
-        },
-        {
-          id: 'following',
-          label: i18n.t('ui.app.profile.following'),
-          pinned: true,
-          render: () => `
-            <h3>${i18n.t('ui.app.profile.following')}
-              <span class="profile-count-badge">${following.length}</span>
-            </h3>
-            ${renderUserList(following, 'ui.app.profile.no_following')}
-          `,
-        },
-      ],
-      onRender: () => {},
-    },
+    pinned: true,
+    gridSize: { default: [4, 3], min: [2, 2], max: 'full' },
+    render: renderSocial,
   },
   {
     id: 'posts',
     label: i18n.t('ui.app.profile.section.posts'),
-    subComposerOptions: {
-      allowCustomization: false,
-      preferenceKey: 'profile-posts-layout',
-      heading: i18n.t('ui.app.profile.section.posts'),
-      elements: [
-        {
-          id: 'new-post',
-          label: i18n.t('ui.app.profile.new_post'),
-          pinned: true,
-          render: () => `
-            <h3>${i18n.t('ui.app.profile.new_post')}</h3>
-            <div class="new-post-form">
-              <input
-                type="text"
-                id="post-title"
-                class="profile-field-input"
-                placeholder="${i18n.t('ui.app.profile.post_title')}"
-              />
-              <textarea
-                id="post-content"
-                class="profile-field-input"
-                rows="3"
-                placeholder="${i18n.t('ui.app.profile.post_content')}"
-              ></textarea>
-              <div class="post-form-footer">
-                <select id="post-visibility" class="profile-field-input">
-                  ${['only_me', 'private', 'friends', 'community'].map((v) =>
-                    `<option value="${v}">${i18n.t(`ui.app.profile.post_visibility.${v}`)}</option>`
-                  ).join('')}
-                </select>
-                <button type="button" id="post-submit" class="btn-confirm btn-animated">
-                  ${i18n.t('ui.app.profile.post_submit')}
-                </button>
-              </div>
-            </div>
-          `,
-        },
-        {
-          id: 'my-posts',
-          label: i18n.t('ui.app.profile.section.posts'),
-          pinned: true,
-          render: () => `
-            <h3>${i18n.t('ui.app.profile.section.posts')}
-              <span class="profile-count-badge">${posts.length}</span>
-            </h3>
-            ${renderPostsList()}
-          `,
-        },
-      ],
-      onRender: () => {
-        bindNewPost();
-        bindPostDeletes();
-      },
-    },
+    pinned: true,
+    gridSize: { default: [4, 4], min: [2, 2], max: 'full' },
+    render: renderPosts,
   },
 ];
 
 composer = createPageComposer(root, {
   allowCustomization: false,
-  subPageNavigation: true,
   elements,
   preferenceKey: 'profile-layout',
   i18n,
@@ -522,59 +531,7 @@ composer = createPageComposer(root, {
     title: i18n.t('ui.app.profile.page_title'),
     subtitle: i18n.t('ui.app.profile.page_subtitle'),
   },
-  toolbar: [
-    {
-      id: 'profile-nav',
-      label: i18n.t('ui.app.profile.page_title'),
-      render: () => `
-        <h2>${i18n.t('ui.app.profile.page_title')}</h2>
-        <ul>
-          <li><button data-composer-scroll="profile-info">${i18n.t('ui.app.profile.section.profile')}</button></li>
-          <li><button data-composer-scroll="social">${i18n.t('ui.app.profile.section.social')}</button></li>
-          <li><button data-composer-scroll="posts">${i18n.t('ui.app.profile.section.posts')}</button></li>
-        </ul>
-      `,
-    },
-  ],
-  floatingMenu: [
-    {
-      id: 'profile-changes-bar',
-      label: i18n.t('ui.reuse.unsaved_changes'),
-      render: () => `
-        <span>${i18n.t('ui.reuse.unsaved_changes')}</span>
-        <button class="btn-cancel btn-animated" type="button" data-action="discard">
-          ${i18n.t('ui.reuse.generic.discard')}
-        </button>
-        <button class="btn-confirm btn-animated" type="button" data-action="save">
-          ${i18n.t('ui.reuse.generic.save')}
-        </button>
-      `,
-    },
-  ],
+  onRender: bindPageEvents,
 });
 
 await composer.init();
-
-const floatingSlot = composer.getFloatingSlot('profile-changes-bar');
-
-changesBar = createUnsavedChangesBar(floatingSlot, {
-  onSave: async () => {
-    await apiFetch('/api/v1/profile', {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(editState),
-    });
-    profile = await loadOwnProfile();
-    composer.refresh(elements);
-    changesBar.markDirty('profile', false);
-  },
-  onDiscard: () => {
-    editState = {
-      bio: profile?.bio ?? '',
-      location: profile?.location ?? '',
-      website: profile?.website ?? '',
-      visibility: profile?.visibility ?? 'hidden',
-    };
-    composer.refresh(elements);
-  },
-});

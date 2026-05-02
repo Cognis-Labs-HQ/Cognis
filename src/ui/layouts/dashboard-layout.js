@@ -1,4 +1,5 @@
 import { apiFetch } from '../reuse/api-client.js';
+import { generateInitialsDataUrl } from '../reuse/avatar-utils.js';
 import { loadTemplate } from '../reuse/template-loader.js';
 import { bindThemeToggle as bindSharedThemeToggle, getStoredTheme } from '../reuse/theme-toggle.js';
 import { applyStaticTranslations, createI18n } from '../reuse/i18n.js';
@@ -108,6 +109,29 @@ function bindTopbarActions() {
   });
 }
 
+async function updateNavbarAvatar() {
+  const avatarImg = document.querySelector('.avatar-button .avatar-image');
+  if (!avatarImg) return;
+  const handle = localStorage.getItem('cognis_account') ?? '';
+  try {
+    const res = await apiFetch('/api/v1/profile');
+    if (res.ok) {
+      const payload = await res.json();
+      const avatarKey = payload?.data?.avatarKey;
+      if (avatarKey) {
+        const fileRes = await apiFetch(`/api/v1/files/${avatarKey}`);
+        if (fileRes.ok) {
+          avatarImg.src = URL.createObjectURL(await fileRes.blob());
+          return;
+        }
+      }
+    }
+  } catch {
+    // fall through to initials
+  }
+  avatarImg.src = generateInitialsDataUrl(handle, 38);
+}
+
 export async function renderDashboardLayout(root, slots = {}) {
   const i18n = slots.i18n || await createI18n();
   const template = await loadTemplate('dashboard-layout');
@@ -122,6 +146,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     .replace('{{floatingToolbar}}', hasFloatingToolbar ? `<div class="floating-toolbar" hidden>${slots.floatingToolbar}</div>` : '');
   applyStaticTranslations(i18n, root);
   bindTopbarActions();
+  updateNavbarAvatar().catch(() => {});
   applyActiveNavigation();
   bindThemeToggle();
 

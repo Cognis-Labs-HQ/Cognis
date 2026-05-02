@@ -180,4 +180,13 @@
   <string name="ui.app.profile.post_visibility.private">Followers only</string>
   <string name="ui.app.profile.post_visibility.friends">Friends</string>
   <string name="ui.app.profile.post_visibility.community">Everyone</string>
+  <string name="ui.app.profile.edit_profile">Edit Profile</string>
+  <string name="ui.app.profile.close">Close</string>
+  <string name="ui.app.profile.photo_set">Upload photo</string>
+  <string name="ui.app.profile.photo_remove">Remove photo</string>
+  <string name="ui.app.profile.followers_stat">followers</string>
+  <string name="ui.app.profile.following_stat">following</string>
+  <string name="ui.app.profile.posts_stat">posts</string>
+  <string name="ui.app.profile.change_banner">Change banner photo</string>
+  <string name="ui.app.profile.change_avatar">Change profile photo</string>
 </resources>
