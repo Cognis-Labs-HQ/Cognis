@@ -12,10 +12,10 @@ test('all supported db gateways simulate query/execute/transaction operations', 
   const memory = new MemoryDatabaseGateway();
 
   for (const db of [sqlite, postgres, mariadb, memory]) {
-    const q = await db.query('select 1');
-    assert.ok(q.rowCount >= 0);
-    const e = await db.execute('update test');
-    assert.ok(e.affectedRows >= 0);
+    const queryResult = await db.query('select 1');
+    assert.ok(queryResult.rowCount >= 0);
+    const execResult = await db.execute('update test');
+    assert.ok(execResult.affectedRows >= 0);
     const value = await db.transaction(async () => 'ok');
     assert.equal(value, 'ok');
   }

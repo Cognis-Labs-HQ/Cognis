@@ -23,8 +23,8 @@ export function createUnsavedChangesBar(floatingEl, { onSave, onDiscard } = {}) 
   const dirtyMap = new Map();
 
   function isAnyDirty() {
-    for (const v of dirtyMap.values()) {
-      if (v) return true;
+    for (const isDirty of dirtyMap.values()) {
+      if (isDirty) return true;
     }
     return false;
   }

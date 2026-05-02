@@ -1,0 +1,102 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+
+function walk(dir) {
+  const out = [];
+  for (const entry of readdirSync(dir)) {
+    const fullPath = join(dir, entry);
+    const stat = statSync(fullPath);
+    if (stat.isDirectory()) out.push(...walk(fullPath));
+    else out.push(fullPath);
+  }
+  return out;
+}
+
+const SCAN_ROOTS = [
+  join(ROOT, 'src/ui/app'),
+  join(ROOT, 'src/ui/reuse'),
+  join(ROOT, 'src/ui/layouts'),
+  join(ROOT, 'src/api'),
+  join(ROOT, 'src/core'),
+  join(ROOT, 'src/adapters'),
+  join(ROOT, 'src/tooling'),
+];
+
+// Single-letter names that are always acceptable as standalone variable declarations.
+// x, y: spatial coordinates; w, h: layout width/height; _: intentional ignore.
+const ALLOWED_STANDALONE = new Set(['x', 'y', 'w', 'h', '_']);
+
+// Single-letter names acceptable only as the loop counter in a numeric for-loop
+// initialiser (e.g. `for (let i = 0; ...)`). r and c are row/column indices used
+// in nested grid-cell iterations, which follow the same convention as i/j/k.
+const ALLOWED_COUNTER = new Set(['i', 'j', 'k', 'r', 'c']);
+
+// Matches the counter variable in a numeric for-loop initialiser.
+// Captures the variable name at group 2.
+const FOR_COUNTER_RE = /^\s*for\s*\(\s*(let|var)\s+([a-zA-Z])\s*=/;
+
+// Matches the binding in a for-of or for-in loop.
+// Captures the variable name at group 2.
+const FOR_OF_IN_RE = /^\s*for\s*\(\s*(const|let|var)\s+([a-zA-Z])\s+(of|in)\s/;
+
+// Matches a plain variable declaration.
+// Captures the variable name at group 2.
+const DECL_RE = /^\s*(const|let|var)\s+([a-zA-Z])\s*=/;
+
+test('no ambiguous single-letter variable names in source files', () => {
+  const hits = [];
+
+  for (const root of SCAN_ROOTS) {
+    for (const file of walk(root)) {
+      if (!file.endsWith('.js') && !file.endsWith('.ts')) continue;
+
+      const lines = readFileSync(file, 'utf8').split('\n');
+      for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+        const line = lines[lineIndex];
+        const trimmed = line.trimStart();
+
+        if (trimmed.startsWith('//') || trimmed.startsWith('*')) continue;
+
+        let name = null;
+        let isCounter = false;
+
+        const counterMatch = FOR_COUNTER_RE.exec(line);
+        if (counterMatch) {
+          name = counterMatch[2];
+          isCounter = true;
+        } else {
+          const forOfInMatch = FOR_OF_IN_RE.exec(line);
+          if (forOfInMatch) {
+            name = forOfInMatch[2];
+          } else {
+            const declMatch = DECL_RE.exec(line);
+            if (declMatch) {
+              name = declMatch[2];
+            }
+          }
+        }
+
+        if (!name) continue;
+
+        if (isCounter) {
+          if (ALLOWED_COUNTER.has(name)) continue;
+          hits.push(`${file}:${lineIndex + 1}: ambiguous for-loop counter '${name}'`);
+        } else {
+          if (ALLOWED_STANDALONE.has(name)) continue;
+          hits.push(`${file}:${lineIndex + 1}: ambiguous variable name '${name}'`);
+        }
+      }
+    }
+  }
+
+  assert.equal(
+    hits.length,
+    0,
+    `Ambiguous single-letter variable names found:\n${hits.join('\n')}`,
+  );
+});

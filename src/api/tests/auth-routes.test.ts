@@ -5,7 +5,7 @@ import { VolatileLocalAccountStore, LocalAuthGateway } from '../adapters/local-a
 
 function requestWithBody(method: string, body: Record<string, unknown>) {
   const chunks = [Buffer.from(JSON.stringify(body))];
-  return { method, [Symbol.asyncIterator]: async function* () { for (const c of chunks) yield c; } } as any;
+  return { method, [Symbol.asyncIterator]: async function* () { for (const chunk of chunks) yield chunk; } } as any;
 }
 
 test('auth routes register and login via gateway', async () => {
