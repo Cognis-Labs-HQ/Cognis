@@ -105,6 +105,7 @@ export function createPageComposer(root, {
   let resizeObserver = null;
   let lastObservedCols = 0;
   let gridSection = null;
+  let editToggleAbortController = null;
 
   const UNIT = 90; // grid cell size in pixels
 
@@ -1395,27 +1396,28 @@ export function createPageComposer(root, {
       return;
     }
     editBtn.hidden = false;
-    const fresh = editBtn.cloneNode(true);
-    editBtn.parentNode?.replaceChild(fresh, editBtn);
+    state.editToggleAbortController?.abort();
+    state.editToggleAbortController = new AbortController();
+    const { signal } = state.editToggleAbortController;
     if (!state.editing) {
-      fresh.textContent = '✏';
-      fresh.title = i18n.t('ui.reuse.page_composer.edit_layout');
-      fresh.addEventListener('click', () => {
+      editBtn.textContent = '✏';
+      editBtn.title = i18n.t('ui.reuse.page_composer.edit_layout');
+      editBtn.addEventListener('click', () => {
         state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
         state.editing = true;
         beginEditMode();
         renderSubGrid(state);
-      });
+      }, { signal });
     } else {
-      fresh.textContent = '✓';
-      fresh.title = i18n.t('ui.reuse.generic.done');
-      fresh.addEventListener('click', async () => {
+      editBtn.textContent = '✓';
+      editBtn.title = i18n.t('ui.reuse.generic.done');
+      editBtn.addEventListener('click', async () => {
         compactSubPlacements(state);
         state.editing = false;
         endEditMode();
         await saveLayoutFor(state.preferenceKey, state.layout);
         renderSubGrid(state);
-      });
+      }, { signal });
     }
   }
 
@@ -1427,21 +1429,22 @@ export function createPageComposer(root, {
       return;
     }
     editBtn.hidden = false;
-    const fresh = editBtn.cloneNode(true);
-    editBtn.parentNode?.replaceChild(fresh, editBtn);
+    editToggleAbortController?.abort();
+    editToggleAbortController = new AbortController();
+    const { signal } = editToggleAbortController;
     if (!editing) {
-      fresh.textContent = '✏';
-      fresh.title = i18n.t('ui.reuse.page_composer.edit_layout');
-      fresh.addEventListener('click', () => {
+      editBtn.textContent = '✏';
+      editBtn.title = i18n.t('ui.reuse.page_composer.edit_layout');
+      editBtn.addEventListener('click', () => {
         layoutSnapshot = JSON.parse(JSON.stringify(layout));
         editing = true;
         beginEditMode();
         render();
-      });
+      }, { signal });
     } else {
-      fresh.textContent = '✓';
-      fresh.title = i18n.t('ui.reuse.generic.done');
-      fresh.addEventListener('click', async () => {
+      editBtn.textContent = '✓';
+      editBtn.title = i18n.t('ui.reuse.generic.done');
+      editBtn.addEventListener('click', async () => {
         if (!subPageNavigation) {
           compactPlacements();
         }
@@ -1449,7 +1452,7 @@ export function createPageComposer(root, {
         endEditMode();
         await saveLayout();
         render();
-      });
+      }, { signal });
     }
   }
 
