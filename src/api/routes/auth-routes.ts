@@ -5,8 +5,6 @@ import type { LocalAccountStore } from '../adapters/local-auth-gateway.js';
 import type { ProfileCreateStore } from '../adapters/db-profile-store.js';
 import { readJson } from './read-json.js';
 
-const VALID_SELF_REGISTER_ROLES: ReadonlySet<AccessRole> = new Set(['user']);
-
 function resolveRole(sessionRole: string | undefined, isAdmin: boolean | undefined): AccessRole {
   if (sessionRole === 'admin' || sessionRole === 'teacher' || sessionRole === 'moderator' || sessionRole === 'user') {
     return sessionRole;
@@ -30,7 +28,7 @@ export function createAuthRoutes(
         return true;
       }
       const result = await accountStore.register(username, password, false);
-      await profileStore?.createProfile(username, username, VALID_SELF_REGISTER_ROLES.has('user') ? 'user' : 'user');
+      await profileStore?.createProfile(username, username, 'user');
       res.writeHead(201, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: result }));
       return true;

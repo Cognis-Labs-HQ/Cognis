@@ -69,7 +69,7 @@ export function createPostRoutes(profileStore: DbProfileStore) {
       const maxAllowed: PostVisibility = visibilityRank(profile.visibility) >= visibilityRank('community')
         ? 'community'
         : 'private';
-      if (VALID_POST_VISIBILITY.has(visibility) && postVisibilityRank(visibility) > postVisibilityRank(maxAllowed)) {
+      if (postVisibilityRank(visibility) > postVisibilityRank(maxAllowed)) {
         res.writeHead(400, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ error: { code: 'bad_request', message: `Visibility ${visibility} not allowed for your account visibility` } }));
         return true;
