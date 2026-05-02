@@ -46,9 +46,8 @@ export class CoreNotificationGateway implements NotificationGateway {
         const mod = await import(`${entryPath}?t=${Date.now()}`);
 
         if (typeof mod.createNotificationSender === 'function') {
-          const sender = (mod.createNotificationSender as (env: Record<string, string | undefined>) => NotificationSender | null)(
-            process.env as Record<string, string | undefined>
-          );
+          const factory = mod.createNotificationSender as (env: Record<string, string | undefined>) => NotificationSender | null;
+          const sender = factory(process.env as Record<string, string | undefined>);
           if (sender) {
             this.registerSender(sender);
           }

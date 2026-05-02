@@ -77,6 +77,8 @@ class SmtpSession {
   }
 }
 
+const SMTP_TIMEOUT_MS = 30_000;
+
 async function openSession(host: string, port: number, secure: 'tls' | 'none' | 'starttls'): Promise<SmtpSession> {
   if (secure === 'tls') {
     const sock = await new Promise<tls.TLSSocket>((resolve, reject) => {
@@ -128,7 +130,7 @@ async function sendMail(config: SmtpConfig, to: string, subject: string, body: s
   let session = await openSession(config.host, config.port, config.secure);
 
   try {
-    session.socket.setTimeout(30_000);
+    session.socket.setTimeout(SMTP_TIMEOUT_MS);
 
     const greeting = await session.read();
     if (greeting.code !== 220) {
@@ -153,6 +155,7 @@ async function sendMail(config: SmtpConfig, to: string, subject: string, body: s
     }
 
     if (config.user && config.password) {
+      // SASL PLAIN format: \0authcid\0password (RFC 4616)
       const creds = Buffer.from(`\0${config.user}\0${config.password}`).toString('base64');
       const auth = await session.cmd(`AUTH PLAIN ${creds}`);
       if (auth.code !== 235) {
