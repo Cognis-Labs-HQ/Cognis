@@ -72,16 +72,32 @@ function renderModulesContent(modules) {
 
 function renderIntegrityContent(integrityRows) {
   if (!integrityRows.length) return `<p>${i18n.t('ui.app.admin.no_integrity')}</p>`;
-  const items = integrityRows
-    .map((row) => {
-      const mismatchDetails =
-        row.status !== 'ok'
-          ? ` (${i18n.t('ui.app.admin.expected')} ${row.expected}, ${i18n.t('ui.app.admin.got')} ${row.actual ?? i18n.t('ui.app.admin.missing')})`
-          : '';
-      return `<li class="integrity-${row.status}"><strong>${row.moduleId}</strong> / ${row.file}: ${row.status}${mismatchDetails}</li>`;
-    })
-    .join('');
-  return `<ul class="integrity-list">${items}</ul>`;
+
+  const byModule = new Map();
+  for (const row of integrityRows) {
+    if (!byModule.has(row.moduleId)) byModule.set(row.moduleId, []);
+    byModule.get(row.moduleId).push(row);
+  }
+
+  const sections = [];
+  for (const [moduleId, rows] of byModule) {
+    const items = rows
+      .map((row) => {
+        const mismatchDetails =
+          row.status !== 'ok'
+            ? ` (${i18n.t('ui.app.admin.expected')} ${row.expected}, ${i18n.t('ui.app.admin.got')} ${row.actual ?? i18n.t('ui.app.admin.missing')})`
+            : '';
+        return `<li class="integrity-${row.status}">${row.file}: ${row.status}${mismatchDetails}</li>`;
+      })
+      .join('');
+    sections.push(`
+      <div class="integrity-module">
+        <h3>${moduleId}</h3>
+        <ul class="integrity-list">${items}</ul>
+      </div>
+    `);
+  }
+  return sections.join('');
 }
 
 function applyToolbarActiveState() {
@@ -136,7 +152,7 @@ function bindIntegrityRerun() {
       integrityCard.innerHTML = `
         <div class="integrity-header">
           <h2>${i18n.t('ui.reuse.file_integrity')}</h2>
-          <button id="rerun-integrity" type="button">${i18n.t('ui.app.admin.rerun')}</button>
+          <button id="rerun-integrity" class="btn-confirm" type="button">${i18n.t('ui.reuse.refresh')}</button>
         </div>
         ${renderIntegrityContent(integrityRows)}
       `;
@@ -160,7 +176,7 @@ const integritySection = `
     <section class="widget-card">
       <div class="integrity-header">
         <h2>${i18n.t('ui.reuse.file_integrity')}</h2>
-        <button id="rerun-integrity" type="button">${i18n.t('ui.app.admin.rerun')}</button>
+        <button id="rerun-integrity" class="btn-confirm" type="button">${i18n.t('ui.reuse.refresh')}</button>
       </div>
       ${renderIntegrityContent(integrityRows)}
     </section>

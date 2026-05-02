@@ -18,6 +18,7 @@
   <string name="ui.reuse.appearance">Tampilan</string>
   <string name="ui.reuse.language">Bahasa</string>
   <string name="ui.reuse.reset">Setel ulang</string>
+  <string name="ui.reuse.refresh">Segarkan</string>
   <string name="ui.reuse.unsaved_changes">Ada perubahan yang belum disimpan.</string>
   <string name="ui.reuse.save">Simpan</string>
   <string name="ui.reuse.discard">Batalkan</string>
@@ -97,7 +98,6 @@
   <string name="ui.app.admin.expected">diharapkan</string>
   <string name="ui.app.admin.got">didapat</string>
   <string name="ui.app.admin.missing">hilang</string>
-  <string name="ui.app.admin.rerun">Jalankan ulang pemeriksaan integritas</string>
   <string name="ui.app.admin.page_title">Administrasi</string>
   <string name="ui.app.admin.page_subtitle">Alat dan kontrol khusus admin.</string>
   <string name="ui.app.admin.disable_confirm">Nonaktifkan modul</string>

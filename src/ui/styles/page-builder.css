@@ -43,7 +43,7 @@ button {
   cursor: pointer;
   transition: border-color 0.2s ease, transform 0.15s ease;
 }
-button:hover:not(:disabled):not(.dropdown-item) {
+button:hover:not(:disabled):not(.dropdown-item):not(.btn-confirm):not(.btn-cancel) {
   border-color: var(--accent-2);
   transform: translateY(-1px);
 }
@@ -305,10 +305,15 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   gap: 12px;
 }
 
-#rerun-integrity {
-  border: 1px solid var(--border);
-  background: var(--surface-soft);
+.integrity-module {
+  margin-bottom: 16px;
 }
+
+.integrity-module h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
 .integrity-ok { color: #22c55e; }
 .integrity-mismatch, .integrity-missing { color: #f59e0b; }
 

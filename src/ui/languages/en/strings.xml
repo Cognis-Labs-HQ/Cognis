@@ -18,6 +18,7 @@
   <string name="ui.reuse.appearance">Appearance</string>
   <string name="ui.reuse.language">Language</string>
   <string name="ui.reuse.reset">Reset</string>
+  <string name="ui.reuse.refresh">Refresh</string>
   <string name="ui.reuse.unsaved_changes">You have unsaved changes.</string>
   <string name="ui.reuse.save">Save</string>
   <string name="ui.reuse.discard">Discard</string>
@@ -97,7 +98,6 @@
   <string name="ui.app.admin.expected">expected</string>
   <string name="ui.app.admin.got">got</string>
   <string name="ui.app.admin.missing">missing</string>
-  <string name="ui.app.admin.rerun">Re-run integrity check</string>
   <string name="ui.app.admin.page_title">Administration</string>
   <string name="ui.app.admin.page_subtitle">Admin-only tools and controls.</string>
   <string name="ui.app.admin.disable_confirm">Disable module</string>

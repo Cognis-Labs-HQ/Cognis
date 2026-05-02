@@ -18,6 +18,7 @@
   <string name="ui.reuse.appearance">Darstellung</string>
   <string name="ui.reuse.language">Sprache</string>
   <string name="ui.reuse.reset">Zurücksetzen</string>
+  <string name="ui.reuse.refresh">Aktualisieren</string>
   <string name="ui.reuse.unsaved_changes">Es gibt ungespeicherte Änderungen.</string>
   <string name="ui.reuse.save">Speichern</string>
   <string name="ui.reuse.discard">Verwerfen</string>
@@ -97,7 +98,6 @@
   <string name="ui.app.admin.expected">erwartet</string>
   <string name="ui.app.admin.got">erhalten</string>
   <string name="ui.app.admin.missing">fehlt</string>
-  <string name="ui.app.admin.rerun">Integritätsprüfung erneut ausführen</string>
   <string name="ui.app.admin.page_title">Administration</string>
   <string name="ui.app.admin.page_subtitle">Werkzeuge und Steuerung nur für Admins.</string>
   <string name="ui.app.admin.disable_confirm">Modul deaktivieren</string>

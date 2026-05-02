@@ -18,6 +18,7 @@
   <string name="ui.reuse.appearance">外観</string>
   <string name="ui.reuse.language">言語</string>
   <string name="ui.reuse.reset">リセット</string>
+  <string name="ui.reuse.refresh">更新</string>
   <string name="ui.reuse.unsaved_changes">未保存の変更があります。</string>
   <string name="ui.reuse.save">保存</string>
   <string name="ui.reuse.discard">元に戻す</string>
@@ -97,7 +98,6 @@
   <string name="ui.app.admin.expected">期待値</string>
   <string name="ui.app.admin.got">実際値</string>
   <string name="ui.app.admin.missing">欠落</string>
-  <string name="ui.app.admin.rerun">整合性チェックを再実行</string>
   <string name="ui.app.admin.page_title">管理</string>
   <string name="ui.app.admin.page_subtitle">管理者専用ツールとコントロール。</string>
   <string name="ui.app.admin.disable_confirm">モジュールを無効化</string>
