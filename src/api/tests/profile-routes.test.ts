@@ -23,16 +23,33 @@ function fakeFileGateway() {
     async get(key: string) { return store.get(key) ?? null; },
     async delete(key: string) { store.delete(key); return true; },
     async list() { return []; },
+    _has(key: string) { return store.has(key); },
   };
 }
 
-function makeReq(method: string, token: string, body?: string) {
-  const chunks = body ? [Buffer.from(body)] : [];
+function makeReq(method: string, token: string | null, body?: string | Buffer, contentType?: string) {
+  const chunks = body ? [Buffer.isBuffer(body) ? body : Buffer.from(body)] : [];
   return {
     method,
-    headers: { authorization: `Bearer ${token}` },
+    headers: {
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+      ...(contentType ? { 'content-type': contentType } : {}),
+    },
     [Symbol.asyncIterator]: async function* () { for (const c of chunks) yield c; },
   } as any;
+}
+
+async function setupUser(executor: any, username: string, visibility = 'hidden') {
+  const accountStore = new DbLocalAccountStore(executor, 'sqlite');
+  await accountStore.ensureSchema();
+  const profileStore = new DbProfileStore(executor, 'sqlite');
+  await profileStore.ensureSchema();
+  await accountStore.register(username, 'pw');
+  await profileStore.createProfile(username, username);
+  if (visibility !== 'hidden') {
+    await profileStore.updateProfile(username, { visibility: visibility as any });
+  }
+  return profileStore;
 }
 
 test('profile routes - get own profile returns not_found when no profile exists', async () => {
@@ -51,6 +68,24 @@ test('profile routes - get own profile returns not_found when no profile exists'
     );
     assert.equal(status, 404);
     assert.match(body, /not_found/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('profile routes - unauthenticated GET /api/v1/profile returns 401', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = new DbProfileStore(executor, 'sqlite');
+    await profileStore.ensureSchema();
+    const route = createProfileRoutes(profileStore, fakeFileGateway());
+    let status = 0;
+    await route(
+      makeReq('GET', null),
+      { writeHead(c: number) { status = c; }, end() {} } as any,
+      new URL('http://localhost/api/v1/profile')
+    );
+    assert.equal(status, 401);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -158,6 +193,99 @@ test('profile routes - hidden profile not visible to other users', async () => {
   }
 });
 
+test('profile routes - admin always sees hidden profile', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = await setupUser(executor, 'hidden-user', 'hidden');
+    const adminToken = issueAccessToken('admin', 'admin', 60);
+    const route = createProfileRoutes(profileStore, fakeFileGateway());
+    let status = 0;
+    let body = '';
+    await route(
+      makeReq('GET', adminToken),
+      { writeHead(c: number) { status = c; }, end(p: string) { body = p; } } as any,
+      new URL('http://localhost/api/v1/users/hidden-user/profile')
+    );
+    assert.equal(status, 200);
+    assert.match(body, /hidden-user/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('profile routes - private profile: follower can see, non-follower cannot', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const accountStore = new DbLocalAccountStore(executor, 'sqlite');
+    await accountStore.ensureSchema();
+    await accountStore.register('alice', 'pw');
+    await accountStore.register('bob', 'pw');
+    await accountStore.register('carol', 'pw');
+    const profileStore = new DbProfileStore(executor, 'sqlite');
+    await profileStore.ensureSchema();
+    await profileStore.createProfile('alice', 'alice');
+    await profileStore.createProfile('bob', 'bob');
+    await profileStore.createProfile('carol', 'carol');
+    await profileStore.updateProfile('alice', { visibility: 'private' });
+    await profileStore.follow('bob', 'alice');
+
+    const route = createProfileRoutes(profileStore, fakeFileGateway());
+
+    const bobToken = issueAccessToken('bob', 'user', 60);
+    let status = 0;
+    let body = '';
+    await route(
+      makeReq('GET', bobToken),
+      { writeHead(c: number) { status = c; }, end(p: string) { body = p; } } as any,
+      new URL('http://localhost/api/v1/users/alice/profile')
+    );
+    assert.equal(status, 200);
+    assert.match(body, /alice/);
+
+    const carolToken = issueAccessToken('carol', 'user', 60);
+    await route(
+      makeReq('GET', carolToken),
+      { writeHead(c: number) { status = c; }, end() {} } as any,
+      new URL('http://localhost/api/v1/users/alice/profile')
+    );
+    assert.equal(status, 404);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('profile routes - friends visibility: profile visible but counts hidden for non-follower', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const accountStore = new DbLocalAccountStore(executor, 'sqlite');
+    await accountStore.ensureSchema();
+    await accountStore.register('alice', 'pw');
+    await accountStore.register('bob', 'pw');
+    const profileStore = new DbProfileStore(executor, 'sqlite');
+    await profileStore.ensureSchema();
+    await profileStore.createProfile('alice', 'alice');
+    await profileStore.createProfile('bob', 'bob');
+    await profileStore.updateProfile('alice', { visibility: 'friends' });
+
+    const bobToken = issueAccessToken('bob', 'user', 60);
+    const route = createProfileRoutes(profileStore, fakeFileGateway());
+    let status = 0;
+    let body = '';
+    await route(
+      makeReq('GET', bobToken),
+      { writeHead(c: number) { status = c; }, end(p: string) { body = p; } } as any,
+      new URL('http://localhost/api/v1/users/alice/profile')
+    );
+    assert.equal(status, 200);
+    const parsed = JSON.parse(body);
+    assert.equal(parsed.data.handle, 'alice');
+    assert.equal(parsed.data.followerCount, null);
+    assert.equal(parsed.data.followingCount, null);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('profile routes - community profile visible to other users', async () => {
   const { dir, executor } = makeTempDb();
   try {
@@ -180,6 +308,184 @@ test('profile routes - community profile visible to other users', async () => {
     );
     assert.equal(status, 200);
     assert.match(body, /frank/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('profile routes - blocked caller gets 404 on public profile', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const accountStore = new DbLocalAccountStore(executor, 'sqlite');
+    await accountStore.ensureSchema();
+    await accountStore.register('alice', 'pw');
+    await accountStore.register('bob', 'pw');
+    const profileStore = new DbProfileStore(executor, 'sqlite');
+    await profileStore.ensureSchema();
+    await profileStore.createProfile('alice', 'alice');
+    await profileStore.createProfile('bob', 'bob');
+    await profileStore.updateProfile('alice', { visibility: 'community' });
+    await profileStore.block('alice', 'bob');
+
+    const bobToken = issueAccessToken('bob', 'user', 60);
+    const route = createProfileRoutes(profileStore, fakeFileGateway());
+    let status = 0;
+    await route(
+      makeReq('GET', bobToken),
+      { writeHead(c: number) { status = c; }, end() {} } as any,
+      new URL('http://localhost/api/v1/users/alice/profile')
+    );
+    assert.equal(status, 404);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('profile routes - avatar upload succeeds and sets avatarKey', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = await setupUser(executor, 'alice');
+    const gateway = fakeFileGateway();
+    const route = createProfileRoutes(profileStore, gateway);
+    const token = issueAccessToken('alice', 'user', 60);
+    const imageData = Buffer.from('fake png data');
+    let status = 0;
+    let body = '';
+    await route(
+      makeReq('PUT', token, imageData, 'image/png'),
+      { writeHead(c: number) { status = c; }, end(p: string) { body = p; } } as any,
+      new URL('http://localhost/api/v1/profile/avatar')
+    );
+    assert.equal(status, 200);
+    const parsed = JSON.parse(body);
+    assert.match(parsed.data.avatarKey, /^profile\/avatars\/alice\./);
+    assert.ok(gateway._has(parsed.data.avatarKey));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('profile routes - avatar upload rejects disallowed MIME type', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = await setupUser(executor, 'alice');
+    const route = createProfileRoutes(profileStore, fakeFileGateway());
+    const token = issueAccessToken('alice', 'user', 60);
+    let status = 0;
+    await route(
+      makeReq('PUT', token, Buffer.from('fake gif data'), 'image/gif'),
+      { writeHead(c: number) { status = c; }, end() {} } as any,
+      new URL('http://localhost/api/v1/profile/avatar')
+    );
+    assert.equal(status, 415);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('profile routes - avatar upload rejects oversized image', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = await setupUser(executor, 'alice');
+    await profileStore.setFileSizeLimit('image', 10);
+    const route = createProfileRoutes(profileStore, fakeFileGateway());
+    const token = issueAccessToken('alice', 'user', 60);
+    let status = 0;
+    await route(
+      makeReq('PUT', token, Buffer.alloc(20, 'x'), 'image/png'),
+      { writeHead(c: number) { status = c; }, end() {} } as any,
+      new URL('http://localhost/api/v1/profile/avatar')
+    );
+    assert.equal(status, 413);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('profile routes - banner upload allows gif', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = await setupUser(executor, 'alice');
+    const gateway = fakeFileGateway();
+    const route = createProfileRoutes(profileStore, gateway);
+    const token = issueAccessToken('alice', 'user', 60);
+    let status = 0;
+    let body = '';
+    await route(
+      makeReq('PUT', token, Buffer.from('fake gif data'), 'image/gif'),
+      { writeHead(c: number) { status = c; }, end(p: string) { body = p; } } as any,
+      new URL('http://localhost/api/v1/profile/banner')
+    );
+    assert.equal(status, 200);
+    const parsed = JSON.parse(body);
+    assert.match(parsed.data.bannerKey, /\.gif$/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('profile routes - banner upload rejects unsupported type', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = await setupUser(executor, 'alice');
+    const route = createProfileRoutes(profileStore, fakeFileGateway());
+    const token = issueAccessToken('alice', 'user', 60);
+    let status = 0;
+    await route(
+      makeReq('PUT', token, Buffer.from('bmp data'), 'image/bmp'),
+      { writeHead(c: number) { status = c; }, end() {} } as any,
+      new URL('http://localhost/api/v1/profile/banner')
+    );
+    assert.equal(status, 415);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('profile routes - avatar DELETE clears avatarKey', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = await setupUser(executor, 'alice');
+    const gateway = fakeFileGateway();
+    await profileStore.updateProfile('alice', { avatarKey: 'profile/avatars/alice.png' });
+    gateway._has('profile/avatars/alice.png');
+    const route = createProfileRoutes(profileStore, gateway);
+    const token = issueAccessToken('alice', 'user', 60);
+    let status = 0;
+    let body = '';
+    await route(
+      makeReq('DELETE', token),
+      { writeHead(c: number) { status = c; }, end(p: string) { body = p; } } as any,
+      new URL('http://localhost/api/v1/profile/avatar')
+    );
+    assert.equal(status, 200);
+    assert.match(body, /removed/);
+    const profile = await profileStore.getProfile('alice');
+    assert.equal(profile?.avatarKey, null);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('profile routes - banner DELETE clears bannerKey', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = await setupUser(executor, 'alice');
+    await profileStore.updateProfile('alice', { bannerKey: 'profile/banners/alice.gif' });
+    const gateway = fakeFileGateway();
+    const route = createProfileRoutes(profileStore, gateway);
+    const token = issueAccessToken('alice', 'user', 60);
+    let status = 0;
+    let body = '';
+    await route(
+      makeReq('DELETE', token),
+      { writeHead(c: number) { status = c; }, end(p: string) { body = p; } } as any,
+      new URL('http://localhost/api/v1/profile/banner')
+    );
+    assert.equal(status, 200);
+    assert.match(body, /removed/);
+    const profile = await profileStore.getProfile('alice');
+    assert.equal(profile?.bannerKey, null);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

@@ -28,15 +28,16 @@ function fakeFileGateway() {
       return true;
     },
     async list() { return []; },
+    _has(key: string) { return store.has(key); },
   };
 }
 
-function makeReq(method: string, token: string, body?: Buffer, contentType?: string) {
+function makeReq(method: string, token: string | null, body?: Buffer, contentType?: string) {
   const chunks = body ? [body] : [];
   return {
     method,
     headers: {
-      authorization: `Bearer ${token}`,
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
       ...(contentType ? { 'content-type': contentType } : {}),
     },
     [Symbol.asyncIterator]: async function* () { for (const c of chunks) yield c; },
@@ -81,6 +82,27 @@ test('file routes - upload and download a file', async () => {
   }
 });
 
+test('file routes - GET non-existent file returns 404', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = new DbProfileStore(executor, 'sqlite');
+    await profileStore.ensureSchema();
+    const gateway = fakeFileGateway();
+    const route = createFileRoutes(profileStore, gateway);
+    const token = issueAccessToken('alice', 'user', 60);
+    let status = 0;
+
+    await route(
+      makeReq('GET', token),
+      { writeHead(c: number) { status = c; }, end() {} } as any,
+      new URL('http://localhost/api/v1/files/avatars/no-such-file.png')
+    );
+    assert.equal(status, 404);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('file routes - upload blocked when exceeding size limit', async () => {
   const { dir, executor } = makeTempDb();
   try {
@@ -101,6 +123,53 @@ test('file routes - upload blocked when exceeding size limit', async () => {
       new URL('http://localhost/api/v1/files/avatars/test.png')
     );
     assert.equal(status, 413);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('file routes - non-admin DELETE is rejected', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = new DbProfileStore(executor, 'sqlite');
+    await profileStore.ensureSchema();
+    const gateway = fakeFileGateway();
+    const route = createFileRoutes(profileStore, gateway);
+    const token = issueAccessToken('alice', 'user', 60);
+    let status = 0;
+
+    await route(
+      makeReq('DELETE', token),
+      { writeHead(c: number) { status = c; }, end() {} } as any,
+      new URL('http://localhost/api/v1/files/avatars/alice.png')
+    );
+    assert.equal(status, 403);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('file routes - admin can DELETE a file', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = new DbProfileStore(executor, 'sqlite');
+    await profileStore.ensureSchema();
+    const gateway = fakeFileGateway();
+    await gateway.put('avatars/alice.png', Buffer.from('data'), 'image/png');
+    const route = createFileRoutes(profileStore, gateway);
+    const adminToken = issueAccessToken('admin', 'admin', 60);
+    let status = 0;
+    let body = '';
+
+    await route(
+      makeReq('DELETE', adminToken),
+      { writeHead(c: number) { status = c; }, end(p: string) { body = p; } } as any,
+      new URL('http://localhost/api/v1/files/avatars/alice.png')
+    );
+    assert.equal(status, 200);
+    const result = JSON.parse(body);
+    assert.equal(result.data.deleted, true);
+    assert.ok(!gateway._has('avatars/alice.png'));
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -160,6 +229,28 @@ test('file routes - admin can update file size limit', async () => {
     const result = JSON.parse(body);
     assert.equal(result.data.category, 'video');
     assert.equal(result.data.maxBytes, 1048576);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('file routes - invalid maxBytes returns 400', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const profileStore = new DbProfileStore(executor, 'sqlite');
+    await profileStore.ensureSchema();
+    const gateway = fakeFileGateway();
+    const route = createFileRoutes(profileStore, gateway);
+    const adminToken = issueAccessToken('admin', 'admin', 60);
+    let status = 0;
+
+    const badPayload = Buffer.from(JSON.stringify({ maxBytes: -5 }));
+    await route(
+      makeReq('PUT', adminToken, badPayload, 'application/json'),
+      { writeHead(c: number) { status = c; }, end() {} } as any,
+      new URL('http://localhost/api/v1/admin/file-limits/image')
+    );
+    assert.equal(status, 400);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
