@@ -38,14 +38,10 @@ export function getStoredTheme() {
 export function applyTheme(mode) {
   const normalized = mode === 'light' ? 'light' : 'dark';
   document.body.setAttribute('data-theme', normalized);
-  document.body.classList.toggle('binary-theme--dark', normalized === 'dark');
-  document.body.classList.toggle('binary-theme--light', normalized === 'light');
 
   const shell = document.querySelector('.app-shell');
   if (shell) {
     shell.setAttribute('data-theme', normalized);
-    shell.classList.toggle('binary-theme--dark', normalized === 'dark');
-    shell.classList.toggle('binary-theme--light', normalized === 'light');
   }
 
   const toggle = document.querySelector('#theme-toggle');

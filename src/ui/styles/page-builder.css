@@ -2,7 +2,6 @@
 @import url('/dashboard/static/styles/base/theme.css');
 @import url('/dashboard/static/styles/base/layout.css');
 
-.brand { width: 56px; height: 56px; margin-bottom: 12px; }
 
 .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
 .tab {
@@ -43,7 +42,7 @@ button {
   cursor: pointer;
   transition: border-color 0.2s ease, transform 0.15s ease;
 }
-button:hover:not(:disabled):not(.dropdown-item):not(.btn-confirm):not(.btn-cancel) {
+button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
   border-color: var(--accent-2);
   transform: translateY(-1px);
 }
@@ -52,6 +51,16 @@ button:hover:not(:disabled):not(.dropdown-item):not(.btn-confirm):not(.btn-cance
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
+}
+
+.empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.invalid {
+  border-color: var(--color-danger-border);
+  outline: none;
 }
 
 .widgets { display: grid; gap: 12px; }
@@ -161,9 +170,6 @@ pre {
 }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-
-.page-context .brand { width: 30px; height: 30px; margin: 0; }
-
 .main-window { display: grid; gap: 12px; align-items: start; width: 100%; }
 .main-window--with-toolbar { grid-template-columns: minmax(min-content, max-content) minmax(0, 1fr); }
 .main-window--with-toolbar .toolbar { margin-right: 12px; }
@@ -234,19 +240,6 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   color: var(--text);
 }
 
-.module-toggle-group {
-  margin-top: 18px;
-  border: 0;
-  padding: 0;
-  display: flex;
-  gap: 18px;
-}
-
-.module-toggle-group label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
 .switch {
   display: inline-flex;
   align-items: center;
@@ -330,7 +323,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   color: #22c55e;
 }
 
-.pill-error {
+.pill-available {
   background: rgba(245, 158, 11, 0.24);
   color: #f59e0b;
 }
@@ -361,10 +354,6 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .btn-cancel:hover {
   background: color-mix(in srgb, var(--color-danger) 60%, #fff 40%);
   border-color: var(--color-danger-border);
-}
-
-.btn-reset:hover {
-  background: var(--color-danger);
 }
 
 .btn-animated {
