@@ -107,6 +107,27 @@ export function createPageComposer(root, {
 
   const UNIT = 90; // grid cell size in pixels
 
+  function handleBeforeUnload(e) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+
+  let activeEdits = 0;
+
+  function beginEditMode() {
+    activeEdits++;
+    if (activeEdits === 1) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+  }
+
+  function endEditMode() {
+    activeEdits = Math.max(0, activeEdits - 1);
+    if (activeEdits === 0) {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+  }
+
   async function loadLayout() {
     const account = localStorage.getItem('cognis_account');
     if (!account) return null;
@@ -666,6 +687,7 @@ export function createPageComposer(root, {
     panel.querySelector('.composer-done-btn').addEventListener('click', async () => {
       compactPlacements();
       editing = false;
+      endEditMode();
       await saveLayout();
       renderGridComposer();
     });
@@ -673,6 +695,7 @@ export function createPageComposer(root, {
     panel.querySelector('.composer-discard-btn').addEventListener('click', () => {
       layout = layoutSnapshot;
       editing = false;
+      endEditMode();
       renderGridComposer();
     });
 
@@ -1216,6 +1239,7 @@ export function createPageComposer(root, {
     panel.querySelector('.composer-done-btn').addEventListener('click', async () => {
       compactSubPlacements(state);
       state.editing = false;
+      endEditMode();
       await saveLayoutFor(state.preferenceKey, state.layout);
       renderSubGrid(state);
     });
@@ -1223,6 +1247,7 @@ export function createPageComposer(root, {
     panel.querySelector('.composer-discard-btn').addEventListener('click', () => {
       state.layout = state.layoutSnapshot;
       state.editing = false;
+      endEditMode();
       renderSubGrid(state);
     });
 
@@ -1248,6 +1273,7 @@ export function createPageComposer(root, {
       btns.querySelector('.composer-edit-btn').addEventListener('click', () => {
         state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
         state.editing = true;
+        beginEditMode();
         renderSubGrid(state);
       });
     } else {
@@ -1383,6 +1409,7 @@ export function createPageComposer(root, {
       btns.querySelector('.composer-edit-btn').addEventListener('click', () => {
         layoutSnapshot = JSON.parse(JSON.stringify(layout));
         editing = true;
+        beginEditMode();
         renderGridComposer();
       });
     } else {
@@ -1524,11 +1551,13 @@ export function createPageComposer(root, {
   function bindSubPageComposerEvents() {
     contentGrid.querySelector('.composer-edit-btn')?.addEventListener('click', () => {
       editing = true;
+      beginEditMode();
       renderSubPageComposer();
     });
 
     contentGrid.querySelector('.composer-done-btn')?.addEventListener('click', async () => {
       editing = false;
+      endEditMode();
       await saveLayout();
       renderSubPageComposer();
     });
@@ -1694,6 +1723,7 @@ export function createPageComposer(root, {
   }
 
   function refresh(newElements) {
+    if (editing) endEditMode();
     editing = false;
     elements = newElements;
     render();
