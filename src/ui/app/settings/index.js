@@ -93,6 +93,7 @@ const elements = [
 
 const composer = createPageComposer(root, {
   allowCustomization: false,
+  subPageNavigation: true,
   elements,
   preferenceKey: 'settings-layout',
   i18n,

@@ -26,6 +26,12 @@
  *   // Later, re-render with fresh data:
  *   composer.refresh(updatedElements);
  *
+ * Sub-page navigation:
+ *   Pass subPageNavigation: true to show only one element at a time. Toolbar
+ *   buttons with [data-composer-scroll] become section selectors — clicking one
+ *   shows that section, hides the others, and marks the button active. The active
+ *   section is also reflected in the URL hash so deep-links work.
+ *
  * @param {HTMLElement} root - The #app root element for the page.
  * @param {{
  *   allowCustomization: boolean,
@@ -36,6 +42,7 @@
  *   pageContext?: { title: string, subtitle: string },
  *   toolbar?: { render: () => string },
  *   floatingMenu?: { render: () => string },
+ *   subPageNavigation?: boolean,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array<{id: string, label: string, render: () => string}>): void }}
  */
@@ -53,12 +60,14 @@ export function createPageComposer(root, {
   pageContext,
   toolbar,
   floatingMenu,
+  subPageNavigation = false,
 }) {
   let elements = initialElements;
   let layout = null;
   let editing = false;
   let dragSourceId = null;
   let contentGrid = null;
+  let activeSubPageId = null;
 
   async function loadLayout() {
     const account = localStorage.getItem('cognis_account');
@@ -114,7 +123,8 @@ export function createPageComposer(root, {
              </div>`
           : '';
         const editingClass = editing ? ' composer-editing' : '';
-        return `<div class="content-section" id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
+        const hiddenAttr = subPageNavigation && el.id !== activeSubPageId ? ' hidden' : '';
+        return `<div class="content-section"${hiddenAttr} id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
       })
       .join('');
   }
@@ -252,6 +262,17 @@ export function createPageComposer(root, {
     });
   }
 
+  function switchSubPage(id) {
+    activeSubPageId = id;
+    contentGrid.querySelectorAll('.content-section').forEach((section) => {
+      section.hidden = section.id !== activeSubPageId;
+    });
+    root.querySelectorAll('[data-composer-scroll]').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.composerScroll === activeSubPageId);
+    });
+    history.replaceState(null, '', `#${activeSubPageId}`);
+  }
+
   async function init() {
     const pageContextHtml = pageContext
       ? `<h1>${pageContext.title}</h1><p>${pageContext.subtitle}</p>`
@@ -267,11 +288,24 @@ export function createPageComposer(root, {
 
     contentGrid = root.querySelector('.content-grid');
 
+    if (subPageNavigation) {
+      const hashId = window.location.hash.slice(1);
+      const validIds = elements.map((e) => e.id);
+      activeSubPageId = (hashId && validIds.includes(hashId)) ? hashId : (validIds[0] ?? null);
+    }
+
     root.querySelectorAll('[data-composer-scroll]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        root.querySelector(`#${btn.dataset.composerScroll}`)
-          ?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
-      });
+      if (subPageNavigation) {
+        btn.classList.toggle('active', btn.dataset.composerScroll === activeSubPageId);
+        btn.addEventListener('click', () => switchSubPage(btn.dataset.composerScroll));
+      } else {
+        btn.addEventListener('click', () => {
+          root.querySelector(`#${btn.dataset.composerScroll}`)
+            ?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+          root.querySelectorAll('[data-composer-scroll]').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      }
     });
 
     layout = await loadLayout();
