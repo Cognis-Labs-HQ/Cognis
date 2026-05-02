@@ -343,7 +343,6 @@ export function createPageComposer(root, {
           if (overPanel && !el.pinned) {
             layout.hidden.push(el.id);
             layout.placements = layout.placements.filter((p) => p.id !== el.id);
-            await saveLayout();
             renderGridComposer();
             return;
           }
@@ -355,7 +354,6 @@ export function createPageComposer(root, {
               p.col = currentCol;
               p.row = currentRow;
             }
-            await saveLayout();
             renderGridComposer();
           }
         }
@@ -372,10 +370,9 @@ export function createPageComposer(root, {
         closeBtn.textContent = '×';
         closeBtn.setAttribute('aria-label', i18n.t('ui.reuse.generic.remove'));
         closeBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
-        closeBtn.addEventListener('click', async () => {
+        closeBtn.addEventListener('click', () => {
           layout.hidden.push(el.id);
           layout.placements = layout.placements.filter((p) => p.id !== el.id);
-          await saveLayout();
           renderGridComposer();
         });
         cell.appendChild(closeBtn);
@@ -478,7 +475,7 @@ export function createPageComposer(root, {
             p.w = currentW;
             p.h = currentH;
           }
-          saveLayout().then(() => renderGridComposer());
+          renderGridComposer();
         }
       }
 
@@ -581,7 +578,7 @@ export function createPageComposer(root, {
         if (overGrid && canPlace(currentCol, currentRow, w, h, null)) {
           layout.hidden = layout.hidden.filter((id) => id !== el.id);
           layout.placements.push({ id: el.id, col: currentCol, row: currentRow, w, h });
-          saveLayout().then(() => renderGridComposer());
+          renderGridComposer();
         }
       }
 
@@ -922,7 +919,7 @@ export function createPageComposer(root, {
             p.w = currentW;
             p.h = currentH;
           }
-          saveLayoutFor(state.preferenceKey, state.layout).then(() => renderSubGrid(state));
+          renderSubGrid(state);
         }
       }
 
@@ -1013,7 +1010,6 @@ export function createPageComposer(root, {
           if (overPanel && !el.pinned) {
             state.layout.hidden.push(el.id);
             state.layout.placements = state.layout.placements.filter((p) => p.id !== el.id);
-            await saveLayoutFor(state.preferenceKey, state.layout);
             renderSubGrid(state);
             return;
           }
@@ -1025,7 +1021,6 @@ export function createPageComposer(root, {
               p.col = currentCol;
               p.row = currentRow;
             }
-            await saveLayoutFor(state.preferenceKey, state.layout);
             renderSubGrid(state);
           }
         }
@@ -1042,10 +1037,9 @@ export function createPageComposer(root, {
         closeBtn.textContent = '×';
         closeBtn.setAttribute('aria-label', i18n.t('ui.reuse.generic.remove'));
         closeBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
-        closeBtn.addEventListener('click', async () => {
+        closeBtn.addEventListener('click', () => {
           state.layout.hidden.push(el.id);
           state.layout.placements = state.layout.placements.filter((p) => p.id !== el.id);
-          await saveLayoutFor(state.preferenceKey, state.layout);
           renderSubGrid(state);
         });
         cell.appendChild(closeBtn);
@@ -1139,7 +1133,7 @@ export function createPageComposer(root, {
         if (overGrid && canSubPlace(state, currentCol, currentRow, w, h, null)) {
           state.layout.hidden = state.layout.hidden.filter((id) => id !== el.id);
           state.layout.placements.push({ id: el.id, col: currentCol, row: currentRow, w, h });
-          saveLayoutFor(state.preferenceKey, state.layout).then(() => renderSubGrid(state));
+          renderSubGrid(state);
         }
       }
 
@@ -1563,21 +1557,19 @@ export function createPageComposer(root, {
     });
 
     contentGrid.querySelectorAll('[data-composer-remove]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => {
         const id = btn.dataset.composerRemove;
         const effective = getEffectiveLayout();
         layout = { order: effective.order, hidden: [...effective.hidden, id] };
-        await saveLayout();
         renderSubPageComposer();
       });
     });
 
     contentGrid.querySelectorAll('[data-composer-add]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => {
         const id = btn.dataset.composerAdd;
         const effective = getEffectiveLayout();
         layout = { order: effective.order, hidden: effective.hidden.filter((h) => h !== id) };
-        await saveLayout();
         renderSubPageComposer();
       });
     });
@@ -1628,7 +1620,6 @@ export function createPageComposer(root, {
           ...effective.order.filter((id) => effective.hidden.includes(id)),
         ];
         layout = { order: newOrder, hidden: effective.hidden };
-        await saveLayout();
         renderSubPageComposer();
       });
     });
