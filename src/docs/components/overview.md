@@ -1,24 +1,27 @@
 # Cognis Overview
 
-Cognis is a modular platform for building and running configurable dashboard-style web experiences.
+Cognis is a modular language-study platform for independent learners, teachers, and communities. It combines open-source real-time collaboration technologies (including Jitsi-based session workflows) with structured learning content, so teams can deliver scalable language learning experiences across different formats.
 
-## What it includes
+## What it includes today
 
-- **API layer** for auth, preferences, docs, and system routes.
-- **Core domain services** that define contracts and behavior.
+- **Language-learning foundation** with modular content architecture that supports self-study and instructor-guided learning.
+- **Real-time collaboration support** designed to integrate open-source communication tooling such as Jitsi for live study sessions.
+- **Social learning capabilities** including public profiles, microblog-style posting, achievements, and direct messaging.
+- **API layer** for auth, preferences, docs, user operations, system routes, and module extension points.
+- **Core domain services** that define provider-agnostic contracts and policy boundaries.
 - **Adapters** for storage/auth integrations (memory, sqlite, postgres, mariadb, ldap, saml, oidc, etc).
-- **UI app** with page builder and docs experiences.
+- **UI app** for study workflows, administration, modules, and embedded documentation.
 
 ## Key concepts
 
-- **Page layouts** are rendered through a shared dashboard layout.
-- **Toolbar** is optional and appears only when a page provides one.
-- **Page context** appears in the top bar for concise page-specific context.
-- **Widgets** can be configured per page and persisted as user preferences.
+- **Modular content system** allows curriculum or activity units to be composed and scaled for different language goals.
+- **Gateway-first architecture** keeps domain behavior portable across infrastructure backends.
+- **Role-aware workflows** support solo learning, teacher-led instruction, and community participation.
+- **Lightweight social layer** increases retention through identity, progress signals, and learner-to-learner communication.
 
 ## Typical local workflow
 
 1. Start services locally.
-2. Open the dashboard UI.
-3. Configure page layouts/widgets.
-4. Use docs to explore architecture and module responsibilities.
+2. Open the Cognis web app.
+3. Sign in and explore learning, module, and account surfaces.
+4. Use docs to review architecture, component responsibilities, and extension patterns.
