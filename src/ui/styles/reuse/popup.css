@@ -1,0 +1,125 @@
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 6, 23, 0.65);
+  backdrop-filter: blur(3px);
+  padding: 24px;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.popup-overlay--visible {
+  opacity: 1;
+}
+
+.popup-dialog {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transform: translateY(8px);
+  transition: transform 0.18s ease;
+}
+
+.popup-overlay--visible .popup-dialog {
+  transform: translateY(0);
+}
+
+.popup-dialog--danger {
+  border-color: var(--color-danger-border);
+}
+
+.popup-dialog--warning {
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.popup-dialog--confirm {
+  border-color: var(--color-success-border);
+}
+
+.popup-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 0;
+}
+
+.popup-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+}
+
+.popup-close-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  padding: 0;
+}
+
+.popup-close-btn:hover {
+  background: var(--surface-soft);
+  color: var(--text);
+  border-color: var(--border);
+  transform: none;
+}
+
+.popup-body {
+  padding: 16px 20px;
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.popup-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 0 20px 20px;
+  flex-wrap: wrap;
+}
+
+.popup-action-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.popup-action-btn--neutral {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.popup-action-btn--neutral:hover:not(:disabled) {
+  background: var(--surface-soft);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
