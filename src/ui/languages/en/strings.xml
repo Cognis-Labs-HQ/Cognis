@@ -189,4 +189,5 @@
   <string name="ui.app.profile.posts_stat">posts</string>
   <string name="ui.app.profile.change_banner">Change banner photo</string>
   <string name="ui.app.profile.change_avatar">Change profile photo</string>
+  <string name="ui.app.profile.achievements">Achievements</string>
 </resources>

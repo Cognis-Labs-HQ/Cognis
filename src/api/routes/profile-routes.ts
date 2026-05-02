@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { getAuthClaims, requireAuth } from '../auth/guard.js';
-import type { DbProfileStore, AccountProfile, AccountVisibility } from '../adapters/db-profile-store.js';
+import type { DbProfileStore, AccountProfile, AccountVisibility, AccountRole } from '../adapters/db-profile-store.js';
 import { visibilityRank } from '../adapters/db-profile-store.js';
 import type { FileStorageGateway } from '@cognis/core';
 import { readRawBody } from './read-json.js';
@@ -65,7 +65,14 @@ export function createProfileRoutes(profileStore: DbProfileStore, fileGateway: F
 
     if (url.pathname === '/api/v1/profile' && req.method === 'GET') {
       if (!requireAuth(req, res, 'user')) return true;
-      const profile = await profileStore.getProfile(claims!.sub);
+      let profile = await profileStore.getProfile(claims!.sub);
+      if (!profile) {
+        profile = await profileStore.createProfile(
+          claims!.sub,
+          claims!.sub,
+          (claims!.role as AccountRole) ?? 'user'
+        );
+      }
       if (!profile) {
         res.writeHead(404, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ error: { code: 'not_found', message: 'Profile not found' } }));

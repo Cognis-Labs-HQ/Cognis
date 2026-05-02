@@ -52,7 +52,7 @@ async function setupUser(executor: any, username: string, visibility = 'hidden')
   return profileStore;
 }
 
-test('profile routes - get own profile returns not_found when no profile exists', async () => {
+test('profile routes - get own profile auto-creates profile when none exists', async () => {
   const { dir, executor } = makeTempDb();
   try {
     const profileStore = new DbProfileStore(executor, 'sqlite');
@@ -66,8 +66,9 @@ test('profile routes - get own profile returns not_found when no profile exists'
       { writeHead(c: number) { status = c; }, end(p: string) { body = p; } } as any,
       new URL('http://localhost/api/v1/profile')
     );
-    assert.equal(status, 404);
-    assert.match(body, /not_found/);
+    assert.equal(status, 200);
+    const parsed = JSON.parse(body);
+    assert.equal(parsed.data.handle, 'alice');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

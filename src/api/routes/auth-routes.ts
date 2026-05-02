@@ -47,6 +47,7 @@ export function createAuthRoutes(
       const accessTokenTtlSeconds = Number.isFinite(parsedTtlSeconds) && parsedTtlSeconds >= 1 ? parsedTtlSeconds : 43200;
       const apiToken = issueAccessToken(session.accountId, role, accessTokenTtlSeconds);
       await accountStore.updateLastLogin(session.accountId);
+      await profileStore?.createProfile(session.accountId, session.accountId, role);
       res.writeHead(200, { 'content-type': 'application/json', 'set-cookie': `cognis_access_token=${apiToken}; Path=/; HttpOnly; SameSite=Lax` });
       res.end(JSON.stringify({ data: { accountId: session.accountId, displayName: session.accountId, provider: session.provider, role, token: apiToken } }));
       return true;

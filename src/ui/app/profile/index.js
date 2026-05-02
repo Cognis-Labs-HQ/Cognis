@@ -1,7 +1,8 @@
 import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 import { createPageComposer } from '../../reuse/page-composer.js';
-import { generateInitialsDataUrl } from '../../reuse/avatar-utils.js';
+import { openPopup } from '../../reuse/popup.js';
+import { getInitialsText, pickInitialsColor } from '../../reuse/avatar-utils.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
@@ -87,15 +88,7 @@ let [followers, following, posts] = await Promise.all([
 let avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
 let bannerBlobUrl = await loadImageAsBlob(profile?.bannerKey);
 
-let editState = {
-  bio: profile?.bio ?? '',
-  location: profile?.location ?? '',
-  website: profile?.website ?? '',
-  visibility: profile?.visibility ?? 'hidden',
-};
-
 let composer;
-let mediaPopupTarget = null;
 
 function visibilityClass(v) {
   const map = {
@@ -111,8 +104,9 @@ function renderAvatarContent() {
   if (avatarBlobUrl) {
     return `<img src="${escapeHtml(avatarBlobUrl)}" class="profile-hero-avatar-img" alt="${i18n.t('ui.layout.avatar.alt')}" />`;
   }
-  const dataUrl = generateInitialsDataUrl(profile?.handle ?? '', 80);
-  return `<img src="${escapeHtml(dataUrl)}" class="profile-hero-avatar-img" alt="${i18n.t('ui.layout.avatar.alt')}" />`;
+  const initials = getInitialsText(profile?.handle ?? '');
+  const color = pickInitialsColor(profile?.handle ?? '');
+  return `<div class="profile-avatar-initials" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(initials)}</div>`;
 }
 
 function renderHero() {
@@ -131,22 +125,35 @@ function renderHero() {
 
   return `
     <div class="profile-hero">
-      <button
-        class="profile-hero-banner-btn"
-        type="button"
-        aria-label="${i18n.t('ui.app.profile.change_banner')}"
-      >${bannerContent}</button>
-      <button
-        class="profile-hero-edit-btn"
-        type="button"
-        aria-label="${i18n.t('ui.app.profile.edit_profile')}"
-      >✏</button>
-      <div class="profile-hero-body">
+      <div class="profile-hero-banner-wrap">
         <button
-          class="profile-hero-avatar-btn"
+          class="profile-hero-banner-btn"
           type="button"
-          aria-label="${i18n.t('ui.app.profile.change_avatar')}"
-        >${renderAvatarContent()}</button>
+          aria-label="${i18n.t('ui.app.profile.change_banner')}"
+        >${bannerContent}</button>
+        ${bannerBlobUrl ? `
+          <button
+            class="profile-banner-remove-btn"
+            type="button"
+            aria-label="${i18n.t('ui.app.profile.remove_banner')}"
+          >&#x2715;</button>
+        ` : ''}
+      </div>
+      <div class="profile-hero-body">
+        <div class="profile-avatar-wrap">
+          <button
+            class="profile-hero-avatar-btn"
+            type="button"
+            aria-label="${i18n.t('ui.app.profile.change_avatar')}"
+          >${renderAvatarContent()}</button>
+          ${avatarBlobUrl ? `
+            <button
+              class="profile-avatar-remove-btn"
+              type="button"
+              aria-label="${i18n.t('ui.app.profile.remove_avatar')}"
+            >&#x2715;</button>
+          ` : ''}
+        </div>
         <div class="profile-hero-identity">
           <div class="profile-hero-handle-row">
             <strong class="profile-hero-handle">@${escapeHtml(profile?.handle ?? '')}</strong>
@@ -155,19 +162,28 @@ function renderHero() {
           </div>
           ${bio}
           ${details ? `<div class="profile-hero-details">${details}</div>` : ''}
-          <div class="profile-hero-stats">
-            <span class="profile-hero-stat"><strong>${followers.length}</strong> ${i18n.t('ui.app.profile.followers_stat')}</span>
-            <span class="profile-hero-stat-sep" aria-hidden="true">·</span>
-            <span class="profile-hero-stat"><strong>${following.length}</strong> ${i18n.t('ui.app.profile.following_stat')}</span>
-            <span class="profile-hero-stat-sep" aria-hidden="true">·</span>
-            <span class="profile-hero-stat"><strong>${posts.length}</strong> ${i18n.t('ui.app.profile.posts_stat')}</span>
-            ${profile?.createdAt
-              ? `<span class="profile-hero-stat-sep" aria-hidden="true">·</span>
-                 <span class="profile-member-since">${i18n.t('ui.app.profile.member_since')} ${formatDate(profile.createdAt)}</span>`
-              : ''
-            }
-          </div>
         </div>
+        <button
+          class="profile-hero-edit-btn"
+          type="button"
+          aria-label="${i18n.t('ui.app.profile.edit_profile')}"
+        >✏</button>
+      </div>
+      <div class="profile-hero-stats">
+        <div class="profile-stat-block">
+          <span class="profile-stat-number">${posts.length}</span>
+          <span class="profile-stat-label">${i18n.t('ui.app.profile.posts_stat')}</span>
+        </div>
+        <div class="profile-stat-block">
+          <span class="profile-stat-number">${following.length}</span>
+          <span class="profile-stat-label">${i18n.t('ui.app.profile.following_stat')}</span>
+        </div>
+        <div class="profile-stat-block">
+          <span class="profile-stat-number">${followers.length}</span>
+          <span class="profile-stat-label">${i18n.t('ui.app.profile.followers_stat')}</span>
+        </div>
+      </div>
+      <div class="profile-achievement-row" aria-label="${i18n.t('ui.app.profile.achievements')}">
       </div>
     </div>
   `;
@@ -270,92 +286,6 @@ function renderPosts() {
   `;
 }
 
-const editDialog = document.createElement('dialog');
-editDialog.className = 'profile-edit-dialog';
-document.body.appendChild(editDialog);
-
-function buildEditDialogHtml() {
-  return `
-    <div class="profile-edit-dialog-header">
-      <h2 class="profile-edit-dialog-title">${i18n.t('ui.app.profile.edit_profile')}</h2>
-      <button class="profile-edit-dialog-close btn-animated" type="button" id="edit-dialog-close">✕</button>
-    </div>
-    <div class="profile-edit-dialog-body">
-      <label class="profile-field-label">
-        ${i18n.t('ui.app.profile.bio')}
-        <textarea id="edit-bio" class="profile-field-input" rows="3">${escapeHtml(editState.bio)}</textarea>
-      </label>
-      <label class="profile-field-label">
-        ${i18n.t('ui.app.profile.location')}
-        <input type="text" id="edit-location" class="profile-field-input" value="${escapeHtml(editState.location)}" />
-      </label>
-      <label class="profile-field-label">
-        ${i18n.t('ui.app.profile.website')}
-        <input type="url" id="edit-website" class="profile-field-input" value="${escapeHtml(editState.website)}" />
-      </label>
-      <label class="profile-field-label">
-        ${i18n.t('ui.app.profile.visibility')}
-        <select id="edit-visibility" class="profile-field-input">
-          ${['hidden', 'private', 'friends', 'community'].map((v) =>
-            `<option value="${v}"${editState.visibility === v ? ' selected' : ''}>${i18n.t(`ui.app.profile.visibility.${v}`)}</option>`
-          ).join('')}
-        </select>
-      </label>
-    </div>
-    <div class="profile-edit-dialog-actions">
-      <button class="btn-cancel btn-animated" type="button" id="edit-dialog-discard">
-        ${i18n.t('ui.reuse.generic.discard')}
-      </button>
-      <button class="btn-confirm btn-animated" type="button" id="edit-dialog-save">
-        ${i18n.t('ui.reuse.generic.save')}
-      </button>
-    </div>
-  `;
-}
-
-function openEditDialog() {
-  editDialog.innerHTML = buildEditDialogHtml();
-  editDialog.querySelector('#edit-dialog-close')?.addEventListener('click', () => editDialog.close());
-  editDialog.querySelector('#edit-dialog-discard')?.addEventListener('click', () => {
-    editState = {
-      bio: profile?.bio ?? '',
-      location: profile?.location ?? '',
-      website: profile?.website ?? '',
-      visibility: profile?.visibility ?? 'hidden',
-    };
-    editDialog.close();
-  });
-  editDialog.querySelector('#edit-dialog-save')?.addEventListener('click', async () => {
-    editState.bio = editDialog.querySelector('#edit-bio')?.value ?? editState.bio;
-    editState.location = editDialog.querySelector('#edit-location')?.value ?? editState.location;
-    editState.website = editDialog.querySelector('#edit-website')?.value ?? editState.website;
-    editState.visibility = editDialog.querySelector('#edit-visibility')?.value ?? editState.visibility;
-    await apiFetch('/api/v1/profile', {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(editState),
-    });
-    profile = await loadOwnProfile();
-    editDialog.close();
-    composer.refresh(elements);
-  });
-  editDialog.showModal();
-}
-
-editDialog.addEventListener('click', (e) => {
-  if (e.target === editDialog) editDialog.close();
-});
-
-const mediaPopup = document.createElement('div');
-mediaPopup.id = 'profile-media-popup';
-mediaPopup.className = 'profile-media-popup';
-mediaPopup.hidden = true;
-mediaPopup.innerHTML = `
-  <button class="profile-media-popup-remove btn-animated" type="button" id="media-popup-remove" aria-label="${i18n.t('ui.app.profile.photo_remove')}">✕</button>
-  <button class="profile-media-popup-upload btn-animated" type="button" id="media-popup-upload" aria-label="${i18n.t('ui.app.profile.photo_set')}">⬆</button>
-`;
-document.body.appendChild(mediaPopup);
-
 const avatarFileInput = document.createElement('input');
 avatarFileInput.type = 'file';
 avatarFileInput.accept = 'image/jpeg,image/png,image/webp';
@@ -368,48 +298,75 @@ bannerFileInput.accept = 'image/jpeg,image/png,image/webp,image/gif';
 bannerFileInput.hidden = true;
 document.body.appendChild(bannerFileInput);
 
-function openMediaPopup(e, target) {
-  mediaPopupTarget = target;
-  const rect = e.currentTarget.getBoundingClientRect();
-  const popupWidth = 96;
-  let left = rect.left;
-  if (left + popupWidth > window.innerWidth - 8) left = window.innerWidth - popupWidth - 8;
-  mediaPopup.style.top = `${rect.bottom + 8}px`;
-  mediaPopup.style.left = `${Math.max(8, left)}px`;
-  mediaPopup.hidden = false;
-}
-
-function closeMediaPopup() {
-  mediaPopup.hidden = true;
-  mediaPopupTarget = null;
-}
-
-document.addEventListener('click', (e) => {
-  if (!mediaPopup.hidden && !mediaPopup.contains(e.target)) closeMediaPopup();
-}, true);
-
-mediaPopup.querySelector('#media-popup-remove')?.addEventListener('click', async () => {
-  const target = mediaPopupTarget;
-  closeMediaPopup();
-  if (target === 'avatar') {
-    await apiFetch('/api/v1/profile/avatar', { method: 'DELETE' });
-    if (avatarBlobUrl) URL.revokeObjectURL(avatarBlobUrl);
-    avatarBlobUrl = null;
-  } else if (target === 'banner') {
-    await apiFetch('/api/v1/profile/banner', { method: 'DELETE' });
-    if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
-    bannerBlobUrl = null;
-  }
+async function doRemoveAvatar() {
+  await apiFetch('/api/v1/profile/avatar', { method: 'DELETE' });
+  if (avatarBlobUrl) URL.revokeObjectURL(avatarBlobUrl);
+  avatarBlobUrl = null;
   profile = await loadOwnProfile();
   composer.refresh(elements);
-});
+}
 
-mediaPopup.querySelector('#media-popup-upload')?.addEventListener('click', () => {
-  const target = mediaPopupTarget;
-  closeMediaPopup();
-  if (target === 'avatar') avatarFileInput.click();
-  else if (target === 'banner') bannerFileInput.click();
-});
+async function doRemoveBanner() {
+  await apiFetch('/api/v1/profile/banner', { method: 'DELETE' });
+  if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
+  bannerBlobUrl = null;
+  profile = await loadOwnProfile();
+  composer.refresh(elements);
+}
+
+async function openEditPopup() {
+  const currentBio = profile?.bio ?? '';
+  const currentLocation = profile?.location ?? '';
+  const currentWebsite = profile?.website ?? '';
+  const currentVisibility = profile?.visibility ?? 'hidden';
+
+  const result = await openPopup({
+    title: i18n.t('ui.app.profile.edit_profile'),
+    body: () => `
+      <div class="profile-edit-form">
+        <label class="profile-field-label">
+          ${escapeHtml(i18n.t('ui.app.profile.bio'))}
+          <textarea id="popup-edit-bio" class="profile-field-input" rows="3">${escapeHtml(currentBio)}</textarea>
+        </label>
+        <label class="profile-field-label">
+          ${escapeHtml(i18n.t('ui.app.profile.location'))}
+          <input type="text" id="popup-edit-location" class="profile-field-input" value="${escapeHtml(currentLocation)}" />
+        </label>
+        <label class="profile-field-label">
+          ${escapeHtml(i18n.t('ui.app.profile.website'))}
+          <input type="url" id="popup-edit-website" class="profile-field-input" value="${escapeHtml(currentWebsite)}" />
+        </label>
+        <label class="profile-field-label">
+          ${escapeHtml(i18n.t('ui.app.profile.visibility'))}
+          <select id="popup-edit-visibility" class="profile-field-input">
+            ${['hidden', 'private', 'friends', 'community'].map((v) =>
+              `<option value="${v}"${currentVisibility === v ? ' selected' : ''}>${escapeHtml(i18n.t(`ui.app.profile.visibility.${v}`))}</option>`
+            ).join('')}
+          </select>
+        </label>
+      </div>
+    `,
+    variant: 'info',
+    actions: [
+      { id: 'cancel', label: i18n.t('ui.reuse.generic.discard'), variant: 'cancel' },
+      { id: 'save', label: i18n.t('ui.reuse.generic.save'), variant: 'confirm' },
+    ],
+  });
+
+  if (result === 'save') {
+    const bio = document.getElementById('popup-edit-bio')?.value ?? currentBio;
+    const location = document.getElementById('popup-edit-location')?.value ?? currentLocation;
+    const website = document.getElementById('popup-edit-website')?.value ?? currentWebsite;
+    const visibility = document.getElementById('popup-edit-visibility')?.value ?? currentVisibility;
+    await apiFetch('/api/v1/profile', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ bio, location, website, visibility }),
+    });
+    profile = await loadOwnProfile();
+    composer.refresh(elements);
+  }
+}
 
 avatarFileInput.addEventListener('change', async () => {
   const file = avatarFileInput.files?.[0];
@@ -479,8 +436,16 @@ async function doCreatePost() {
 }
 
 async function doDeletePost(postId) {
-  const confirmed = window.confirm(i18n.t('ui.app.profile.delete_post_confirm'));
-  if (!confirmed) return;
+  const result = await openPopup({
+    title: i18n.t('ui.app.profile.delete_post_confirm'),
+    body: '',
+    variant: 'danger',
+    actions: [
+      { id: 'cancel', label: i18n.t('ui.reuse.generic.discard'), variant: 'cancel' },
+      { id: 'confirm', label: i18n.t('ui.app.profile.delete_post'), variant: 'confirm' },
+    ],
+  });
+  if (result !== 'confirm') return;
   const res = await apiFetch(`/api/v1/posts/${encodeURIComponent(postId)}`, { method: 'DELETE' });
   if (res.ok) {
     posts = await loadOwnPosts();
@@ -489,9 +454,11 @@ async function doDeletePost(postId) {
 }
 
 function bindPageEvents() {
-  root.querySelector('.profile-hero-edit-btn')?.addEventListener('click', openEditDialog);
-  root.querySelector('.profile-hero-banner-btn')?.addEventListener('click', (e) => openMediaPopup(e, 'banner'));
-  root.querySelector('.profile-hero-avatar-btn')?.addEventListener('click', (e) => openMediaPopup(e, 'avatar'));
+  root.querySelector('.profile-hero-edit-btn')?.addEventListener('click', openEditPopup);
+  root.querySelector('.profile-hero-banner-btn')?.addEventListener('click', () => bannerFileInput.click());
+  root.querySelector('.profile-banner-remove-btn')?.addEventListener('click', doRemoveBanner);
+  root.querySelector('.profile-hero-avatar-btn')?.addEventListener('click', () => avatarFileInput.click());
+  root.querySelector('.profile-avatar-remove-btn')?.addEventListener('click', doRemoveAvatar);
   root.querySelector('#post-submit')?.addEventListener('click', doCreatePost);
   root.querySelectorAll('.post-delete-btn[data-post-id]').forEach((btn) => {
     btn.addEventListener('click', () => doDeletePost(btn.dataset.postId));

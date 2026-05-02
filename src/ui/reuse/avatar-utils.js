@@ -2,17 +2,17 @@
  * Avatar utilities: initials-based fallback avatar generation.
  *
  * Public exports:
- *   generateInitialsDataUrl(handle, size) — returns a PNG data URL (canvas-rendered circle
- *     with the user's uppercased initials on a deterministic solid background colour).
+ *   getInitialsText(handle) — returns a 1-2 letter initials string for the given handle.
+ *   pickInitialsColor(handle) — returns a deterministic hex color string for the given handle.
+ *   generateInitialsDataUrl(handle, size) — canvas PNG data URL (kept for environments where
+ *     a data: URI is acceptable; prefer CSS initials for CSP-restricted pages).
  *
  * Usage:
- *   import { generateInitialsDataUrl } from '../reuse/avatar-utils.js';
- *   imgEl.src = generateInitialsDataUrl('@alice_smith', 64);
- *   // → a data:image/png;base64,… URL showing "AS" on a coloured circle
+ *   import { getInitialsText, pickInitialsColor } from '../reuse/avatar-utils.js';
+ *   span.textContent = getInitialsText('@alice_smith');        // → "AS"
+ *   div.style.background = pickInitialsColor('@alice_smith');  // → "#3b82f6"
  *
  * @param {string} handle — the user's handle (leading '@' is stripped automatically).
- * @param {number} [size=64] — canvas square size in pixels; result is a round image.
- * @returns {string} PNG data URL.
  */
 
 const INITIALS_PALETTE = [
@@ -28,7 +28,7 @@ const INITIALS_PALETTE = [
   '#6366f1',
 ];
 
-function getInitials(handle) {
+export function getInitialsText(handle) {
   if (!handle) return '?';
   const clean = handle.replace(/^@/, '');
   const parts = clean.split(/[\s._-]+/).filter(Boolean);
@@ -36,7 +36,7 @@ function getInitials(handle) {
   return clean.slice(0, 2).toUpperCase();
 }
 
-function pickColor(handle) {
+export function pickInitialsColor(handle) {
   let hash = 0;
   for (const ch of (handle ?? '')) {
     hash = (hash * 31 + ch.charCodeAt(0)) | 0;
@@ -45,8 +45,8 @@ function pickColor(handle) {
 }
 
 export function generateInitialsDataUrl(handle, size = 64) {
-  const initials = getInitials(handle);
-  const color = pickColor(handle);
+  const initials = getInitialsText(handle);
+  const color = pickInitialsColor(handle);
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;

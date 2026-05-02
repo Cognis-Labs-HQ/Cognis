@@ -1,5 +1,5 @@
 import { apiFetch } from '../reuse/api-client.js';
-import { generateInitialsDataUrl } from '../reuse/avatar-utils.js';
+import { getInitialsText, pickInitialsColor } from '../reuse/avatar-utils.js';
 import { loadTemplate } from '../reuse/template-loader.js';
 import { bindThemeToggle as bindSharedThemeToggle, getStoredTheme } from '../reuse/theme-toggle.js';
 import { applyStaticTranslations, createI18n } from '../reuse/i18n.js';
@@ -110,8 +110,9 @@ function bindTopbarActions() {
 }
 
 async function updateNavbarAvatar() {
-  const avatarImg = document.querySelector('.avatar-button .avatar-image');
-  if (!avatarImg) return;
+  const avatarBtn = document.querySelector('.avatar-button');
+  if (!avatarBtn) return;
+  const avatarImg = avatarBtn.querySelector('.avatar-image');
   const handle = localStorage.getItem('cognis_account') ?? '';
   try {
     const res = await apiFetch('/api/v1/profile');
@@ -121,7 +122,7 @@ async function updateNavbarAvatar() {
       if (avatarKey) {
         const fileRes = await apiFetch(`/api/v1/files/${avatarKey}`);
         if (fileRes.ok) {
-          avatarImg.src = URL.createObjectURL(await fileRes.blob());
+          if (avatarImg) avatarImg.src = URL.createObjectURL(await fileRes.blob());
           return;
         }
       }
@@ -129,7 +130,15 @@ async function updateNavbarAvatar() {
   } catch {
     // fall through to initials
   }
-  avatarImg.src = generateInitialsDataUrl(handle, 38);
+  if (avatarImg) avatarImg.hidden = true;
+  let initialsEl = avatarBtn.querySelector('.avatar-initials');
+  if (!initialsEl) {
+    initialsEl = document.createElement('span');
+    initialsEl.className = 'avatar-initials';
+    avatarBtn.appendChild(initialsEl);
+  }
+  initialsEl.textContent = getInitialsText(handle);
+  initialsEl.style.background = pickInitialsColor(handle);
 }
 
 export async function renderDashboardLayout(root, slots = {}) {
