@@ -15,7 +15,7 @@
  *   applyStaticTranslations(i18n);
  */
 const DEFAULT_LOCALE = 'en';
-const STRINGS_BASE_PATH = '/dashboard/static/languages';
+const STRINGS_BASE_PATH = '/static/languages';
 
 const cache = new Map();
 

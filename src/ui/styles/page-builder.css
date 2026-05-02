@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-@import url('/dashboard/static/styles/base/theme.css');
-@import url('/dashboard/static/styles/base/layout.css');
+@import url('/static/styles/base/theme.css');
+@import url('/static/styles/base/layout.css');
 
 
 .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }

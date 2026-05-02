@@ -1,4 +1,4 @@
-@import url('/dashboard/static/styles/base/theme.css');
+@import url('/static/styles/base/theme.css');
 
 .auth-page--login-frame {
   min-height: 100vh;
