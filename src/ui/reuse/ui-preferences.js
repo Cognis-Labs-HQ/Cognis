@@ -1,3 +1,15 @@
+/**
+ * Loads and applies persisted UI preferences (font family and font size).
+ *
+ * - loadUiPreferences()       — fetches the current account's ui-preferences from the API.
+ *                               Returns the parsed prefs object or null on failure.
+ * - applyUiPreferences(prefs) — writes --app-font and --app-font-size CSS custom properties
+ *                               onto <html> immediately (legacy rem values are converted to pt).
+ *
+ * Usage:
+ *   const prefs = await loadUiPreferences();
+ *   applyUiPreferences(prefs);
+ */
 import { apiFetch } from './api-client.js';
 
 export async function loadUiPreferences() {

@@ -1,7 +1,7 @@
-import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
-import { apiFetch } from '../reuse/api-client.js';
-import { applyDocumentTitle, createI18n } from '../reuse/i18n.js';
-import { renderMarkdown } from '../reuse/markdown-renderer.js';
+import { renderDashboardLayout } from '../../layouts/dashboard-layout.js';
+import { apiFetch } from '../../reuse/api-client.js';
+import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
+import { renderMarkdown } from '../../reuse/markdown-renderer.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();

@@ -4,12 +4,6 @@
   display: none;
 }
 
-/*
- * Always apply symmetric top/bottom padding for every active section so the
- * widget-card looks consistent regardless of whether the section is the
- * :first-child or :last-child of the docs-viewer (those pseudo-class rules
- * cannot track `display:none` toggling reliably).
- */
 .settings-section.active {
   display: block;
   padding-top: 28px;

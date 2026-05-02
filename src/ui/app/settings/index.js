@@ -1,10 +1,10 @@
-import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
-import { apiFetch } from '../reuse/api-client.js';
-import { applyDocumentTitle, createI18n, readPreferredLanguages, setPreferredLanguages } from '../reuse/i18n.js';
-import { applyTheme, persistTheme } from '../reuse/theme-toggle.js';
-import { toFontFamilyValue, initFontPrefs, DEFAULT_FONT_SIZE } from './settings-font-prefs.js';
-import { initLanguagePrefs } from './settings-language-prefs.js';
-import { createUnsavedChangesBar } from '../reuse/unsaved-changes.js';
+import { renderDashboardLayout } from '../../layouts/dashboard-layout.js';
+import { apiFetch } from '../../reuse/api-client.js';
+import { applyDocumentTitle, createI18n, readPreferredLanguages, setPreferredLanguages } from '../../reuse/i18n.js';
+import { applyTheme, persistTheme } from '../../reuse/theme-toggle.js';
+import { toFontFamilyValue, initFontPrefs, DEFAULT_FONT_SIZE } from './font-prefs.js';
+import { initLanguagePrefs } from './language-prefs.js';
+import { createUnsavedChangesBar } from '../../reuse/unsaved-changes.js';
 
 const root = document.querySelector('#app');
 let languagePriority = readPreferredLanguages();
@@ -33,9 +33,6 @@ async function savePrefs(prefs) {
   });
 }
 
-/*
- * Appearance: subsections ordered alphabetically (Font, then Theme).
- */
 const appearanceContent = `
   <div class="settings-section" data-section="appearance">
     ${section(i18n.t('ui.reuse.appearance'), `
@@ -146,7 +143,6 @@ const floatingToolbarEl = root.querySelector('.floating-toolbar');
 const existingPrefs = await loadPrefs().catch(() => null);
 if (Array.isArray(existingPrefs?.languagePriority)) languagePriority = existingPrefs.languagePriority;
 
-// ── Populate preferences dump ─────────────────────────────────────────────
 const prefsDumpEl = root.querySelector('#prefs-dump');
 if (prefsDumpEl) {
   prefsDumpEl.textContent = existingPrefs != null
@@ -154,7 +150,6 @@ if (prefsDumpEl) {
     : 'null';
 }
 
-// ── Theme prefs (queued; only written on Save) ────────────────────────────
 const savedMode = document.body.getAttribute('data-theme') || DEFAULT_THEME;
 
 function initThemePrefs({ onDirtyChange }) {
@@ -180,7 +175,6 @@ function initThemePrefs({ onDirtyChange }) {
   return {
     getMode: () => currentMode,
     discard: () => {
-      // Reset selection without touching the DOM theme (it was never changed).
       currentMode = savedMode;
       updateSelector();
       onDirtyChange?.(false);
@@ -188,7 +182,6 @@ function initThemePrefs({ onDirtyChange }) {
   };
 }
 
-// ── Wire up the reusable unsaved-changes bar ──────────────────────────────
 const fontPrefs = initFontPrefs(root, {
   existingPrefs,
   i18n,

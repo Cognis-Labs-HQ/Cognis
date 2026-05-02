@@ -1,4 +1,4 @@
-import { apiFetch } from '../reuse/api-client.js';
+import { apiFetch } from '../../reuse/api-client.js';
 
 async function loadLanguagesCatalog() {
   const response = await apiFetch('/api/v1/system/languages');

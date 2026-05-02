@@ -1,3 +1,19 @@
+/**
+ * Lightweight i18n layer backed by per-locale strings.xml files.
+ *
+ * - createI18n(options)              — loads locale strings for the user's preferred language(s)
+ *                                      and returns a `{ t(key) }` resolver.
+ * - applyStaticTranslations(i18n)    — resolves data-i18n / data-i18n-placeholder /
+ *                                      data-i18n-aria-label / data-i18n-alt attributes in the DOM.
+ * - applyDocumentTitle(i18n, key)    — sets document.title from a locale key.
+ * - readPreferredLanguages()         — returns the stored language-priority array.
+ * - setPreferredLanguages(languages) — persists a language-priority array to localStorage + cookie.
+ *
+ * Usage:
+ *   const i18n = await createI18n({ preferredLanguages: ['es', 'en'] });
+ *   i18n.t('ui.reuse.save');   // → 'Guardar'
+ *   applyStaticTranslations(i18n);
+ */
 const DEFAULT_LOCALE = 'en';
 const STRINGS_BASE_PATH = '/dashboard/static/languages';
 

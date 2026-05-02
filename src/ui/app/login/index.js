@@ -1,5 +1,5 @@
-import { bindThemeToggle } from '../reuse/theme-toggle.js';
-import { applyDocumentTitle, applyStaticTranslations, createI18n } from '../reuse/i18n.js';
+import { bindThemeToggle } from '../../reuse/theme-toggle.js';
+import { applyDocumentTitle, applyStaticTranslations, createI18n } from '../../reuse/i18n.js';
 
 const i18n = await createI18n();
 applyDocumentTitle(i18n, 'ui.page.title.login');

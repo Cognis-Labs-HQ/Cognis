@@ -1,3 +1,15 @@
+/**
+ * Theme persistence and DOM application helpers.
+ *
+ * - persistTheme(mode)      — writes theme to localStorage + cookie.
+ * - getStoredTheme()        — reads stored theme (localStorage → cookie fallback), returns 'dark' | 'light'.
+ * - applyTheme(mode)        — updates data-theme on <body> and the theme-toggle button.
+ * - bindThemeToggle(opts)   — applies the initial theme and wires the #theme-toggle click handler.
+ *
+ * Usage:
+ *   import { bindThemeToggle } from '../reuse/theme-toggle.js';
+ *   bindThemeToggle({ onThemeChange: async (mode) => savePrefs({ mode }) });
+ */
 const THEME_KEY = 'cognis_theme';
 
 function readCookie(name) {

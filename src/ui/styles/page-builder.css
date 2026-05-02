@@ -336,8 +336,6 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 }
 
 
-/* ── Confirm / cancel buttons ────────────────────────────────────────────── */
-
 .btn-confirm {
   background: var(--color-success);
   color: var(--color-success-text);
@@ -364,8 +362,6 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   background: var(--color-danger);
 }
 
-/* ── Animated button (shadow + raise) ───────────────────────────────────── */
-
 .btn-animated {
   transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease,
     box-shadow 0.18s ease, transform 0.18s ease;
@@ -380,8 +376,6 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   transform: translateY(0);
   box-shadow: none;
 }
-
-/* ── Floating toolbar (bottom of screen) ────────────────────────────────── */
 
 .floating-toolbar {
   position: fixed;
@@ -404,8 +398,6 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .floating-toolbar[hidden] {
   display: none;
 }
-
-/* ── Theme-aware select ──────────────────────────────────────────────────── */
 
 .theme-select {
   min-width: 220px;

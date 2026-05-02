@@ -1,4 +1,4 @@
-import { mergeWidgetConfig } from '../components/widget-registry.js';
+import { mergeWidgetConfig } from '../../components/widget-registry.js';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
