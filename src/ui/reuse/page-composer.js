@@ -42,6 +42,7 @@
 
 import { apiFetch } from './api-client.js';
 import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
+import { prefersReducedMotion } from './motion.js';
 
 export function createPageComposer(root, {
   allowCustomization,
@@ -113,7 +114,7 @@ export function createPageComposer(root, {
              </div>`
           : '';
         const editingClass = editing ? ' composer-editing' : '';
-        return `<div class="content-section"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
+        return `<div class="content-section" id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
       })
       .join('');
   }
@@ -265,6 +266,14 @@ export function createPageComposer(root, {
     });
 
     contentGrid = root.querySelector('.content-grid');
+
+    root.querySelectorAll('[data-composer-scroll]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        root.querySelector(`#${btn.dataset.composerScroll}`)
+          ?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+      });
+    });
+
     layout = await loadLayout();
     render();
   }
