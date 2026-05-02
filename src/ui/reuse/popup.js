@@ -54,10 +54,13 @@ export function openPopup({ title, body, variant = 'info', actions } = {}) {
       return String(value)
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;');
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
     }
 
     function dismiss(actionId) {
+      document.removeEventListener('keydown', onKeyDown);
       overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
       overlay.classList.remove('popup-overlay--visible');
       resolve(actionId ?? null);
@@ -105,7 +108,6 @@ export function openPopup({ title, body, variant = 'info', actions } = {}) {
 
     function onKeyDown(e) {
       if (e.key === 'Escape') {
-        document.removeEventListener('keydown', onKeyDown);
         dismiss(null);
       }
     }

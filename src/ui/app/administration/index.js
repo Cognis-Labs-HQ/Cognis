@@ -103,6 +103,7 @@ function bindModuleToggles() {
   root.querySelectorAll('input[type="checkbox"][data-module]').forEach((toggle) => {
     toggle.addEventListener('change', async () => {
       const moduleId = toggle.dataset.module;
+      const previousState = !toggle.checked;
       const action = toggle.checked ? 'enable' : 'disable';
 
       if (action === 'disable') {
@@ -116,7 +117,7 @@ function bindModuleToggles() {
           ],
         });
         if (result !== 'confirm') {
-          toggle.checked = true;
+          toggle.checked = previousState;
           return;
         }
       }
