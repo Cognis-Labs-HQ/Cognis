@@ -1,8 +1,9 @@
 /**
- * Page composer — orchestrates the full dashboard layout for a page, managing
- * widget-card sections within the main content grid with optional user-controlled
- * drag-to-reorder and show/hide customisation. Also creates the aside toolbar and
- * floating menu on behalf of the page so that page JS only needs to declare elements.
+ * Page composer — orchestrates the full dashboard layout for a page. For pages
+ * without sub-page navigation, renders a free-form grid (Android-widget-style)
+ * where elements are absolutely positioned, draggable, and resizable. For
+ * sub-page navigation pages (settings, administration, docs), renders the
+ * traditional vertical list with section switching.
  *
  * Layouts are persisted to the user-preferences API under the caller-supplied key
  * so each page retains its own arrangement independently.
@@ -15,7 +16,12 @@
  *   const composer = createPageComposer(document.querySelector('#app'), {
  *     allowCustomization: true,
  *     elements: [
- *       { id: 'modules', label: 'Modules', render: () => '<h2>Modules</h2>...' },
+ *       {
+ *         id: 'modules',
+ *         label: 'Modules',
+ *         render: () => '<h2>Modules</h2>...',
+ *         gridSize: { default: [4, 3], min: [2, 2], max: [6, 4] },
+ *       },
  *       { id: 'pinned-widget', label: 'Widget', render: () => '...', pinned: true },
  *     ],
  *     preferenceKey: 'administration-layout',
@@ -38,14 +44,26 @@
  *   Pinned elements still appear in the drag handle for reordering but have no
  *   remove button.
  *
+ * Grid size:
+ *   Each element may declare a gridSize field to control its size on the grid.
+ *   Example: gridSize: { default: [4, 3], min: [2, 2], max: [6, 4] }
+ *   When absent, defaults to { default: [4, 3], min: [2, 2] }.
+ *   Each value is [width, height] in grid units (90 px each).
+ *
  * Multi-column layout:
- *   Pass columns: 2 to render the content grid in two columns. Elements can be
- *   reordered via drag-and-drop, which changes their column placement naturally.
+ *   Pass columns: 2 to render the content grid in two columns (sub-page navigation
+ *   path only). Grid mode handles layout natively and ignores this option.
  *
  * @param {HTMLElement} root - The #app root element for the page.
  * @param {{
  *   allowCustomization: boolean,
- *   elements: Array<{id: string, label: string, render: () => string, pinned?: boolean}>,
+ *   elements: Array<{
+ *     id: string,
+ *     label: string,
+ *     render: () => string,
+ *     pinned?: boolean,
+ *     gridSize?: { default: [number, number], min: [number, number], max?: [number, number] },
+ *   }>,
  *   preferenceKey: string,
  *   i18n: object,
  *   onRender?: () => void,
@@ -55,7 +73,7 @@
  *   subPageNavigation?: boolean,
  *   columns?: number,
  * }} options
- * @returns {{ init(): Promise<void>, refresh(elements: Array<{id: string, label: string, render: () => string, pinned?: boolean}>): void }}
+ * @returns {{ init(): Promise<void>, refresh(elements: Array): void }}
  */
 
 import { apiFetch } from './api-client.js';
@@ -80,6 +98,12 @@ export function createPageComposer(root, {
   let dragSourceId = null;
   let contentGrid = null;
   let activeSubPageId = null;
+  let gridCols = 1;
+  let gridRows = 6;
+  let resizeObserver = null;
+  let lastObservedCols = 0;
+
+  const UNIT = 90;
 
   async function loadLayout() {
     const account = localStorage.getItem('cognis_account');
@@ -108,6 +132,488 @@ export function createPageComposer(root, {
         body: JSON.stringify({ layout }),
       }
     );
+  }
+
+  function getGridSize(el) {
+    return {
+      default: el.gridSize?.default ?? [4, 3],
+      min: el.gridSize?.min ?? [2, 2],
+      max: el.gridSize?.max ?? null,
+    };
+  }
+
+  function computeGridDimensions() {
+    if (!contentGrid) return;
+    const width = contentGrid.getBoundingClientRect().width;
+    gridCols = Math.max(1, Math.floor(width / UNIT));
+    const visiblePlacements = (layout?.placements ?? []).filter(
+      (p) => !(layout?.hidden ?? []).includes(p.id)
+    );
+    const maxBottom = visiblePlacements.reduce((m, p) => Math.max(m, p.row + p.h), 0);
+    gridRows = Math.max(6, maxBottom + 1);
+    contentGrid.style.minHeight = `${gridRows * UNIT}px`;
+  }
+
+  function canPlace(col, row, w, h, excludeId) {
+    if (col < 0 || row < 0 || col + w > gridCols) return false;
+    const occupied = new Set();
+    for (const p of (layout?.placements ?? [])) {
+      if (p.id === excludeId) continue;
+      if ((layout?.hidden ?? []).includes(p.id)) continue;
+      for (let r = p.row; r < p.row + p.h; r++) {
+        for (let c = p.col; c < p.col + p.w; c++) {
+          occupied.add(`${c},${r}`);
+        }
+      }
+    }
+    for (let r = row; r < row + h; r++) {
+      for (let c = col; c < col + w; c++) {
+        if (occupied.has(`${c},${r}`)) return false;
+      }
+    }
+    return true;
+  }
+
+  function initializePlacements() {
+    if (!layout.placements) layout.placements = [];
+    if (!layout.hidden) layout.hidden = [];
+    layout.placements = layout.placements.filter((p) => elements.some((e) => e.id === p.id));
+    layout.hidden = layout.hidden.filter((id) => elements.some((e) => e.id === id));
+    for (const el of elements) {
+      if (layout.hidden.includes(el.id)) continue;
+      if (layout.placements.some((p) => p.id === el.id)) continue;
+      const gs = getGridSize(el);
+      const w = Math.min(gs.default[0], gridCols);
+      const h = gs.default[1];
+      let placed = false;
+      for (let row = 0; !placed; row++) {
+        for (let col = 0; col <= Math.max(0, gridCols - w); col++) {
+          if (canPlace(col, row, w, h, null)) {
+            layout.placements.push({ id: el.id, col, row, w, h });
+            placed = true;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  function createGridOverlay() {
+    const overlay = document.createElement('div');
+    overlay.className = 'composer-grid-overlay';
+    overlay.style.left = '0';
+    overlay.style.top = '0';
+    overlay.style.width = `${gridCols * UNIT}px`;
+    overlay.style.height = `${gridRows * UNIT}px`;
+    for (let r = 0; r < gridRows; r++) {
+      for (let c = 0; c < gridCols; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'composer-grid-cell';
+        cell.style.left = `${c * UNIT}px`;
+        cell.style.top = `${r * UNIT}px`;
+        cell.style.width = `${UNIT}px`;
+        cell.style.height = `${UNIT}px`;
+        overlay.appendChild(cell);
+      }
+    }
+    return overlay;
+  }
+
+  function bindDragHandle(handle, el, placement) {
+    handle.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      handle.setPointerCapture(e.pointerId);
+
+      const shade = document.createElement('div');
+      shade.className = 'composer-shade';
+      shade.style.left = `${placement.col * UNIT}px`;
+      shade.style.top = `${placement.row * UNIT}px`;
+      shade.style.width = `${placement.w * UNIT}px`;
+      shade.style.height = `${placement.h * UNIT}px`;
+      contentGrid.appendChild(shade);
+
+      const cell = handle.closest('.composer-cell');
+      cell.classList.add('composer-cell--dragging');
+
+      let currentCol = placement.col;
+      let currentRow = placement.row;
+
+      function onMove(e) {
+        const gridRect = contentGrid.getBoundingClientRect();
+        const x = e.clientX - gridRect.left;
+        const y = e.clientY - gridRect.top;
+        const col = Math.max(0, Math.min(gridCols - placement.w, Math.round(x / UNIT - placement.w / 2)));
+        const row = Math.max(0, Math.round(y / UNIT - placement.h / 2));
+        currentCol = col;
+        currentRow = row;
+        shade.style.left = `${col * UNIT}px`;
+        shade.style.top = `${row * UNIT}px`;
+        shade.classList.toggle('composer-shade--invalid', !canPlace(col, row, placement.w, placement.h, el.id));
+      }
+
+      function onUp() {
+        handle.removeEventListener('pointermove', onMove);
+        handle.removeEventListener('pointerup', onUp);
+        handle.removeEventListener('pointercancel', onUp);
+        shade.remove();
+        cell.classList.remove('composer-cell--dragging');
+        const moved = currentCol !== placement.col || currentRow !== placement.row;
+        if (moved && canPlace(currentCol, currentRow, placement.w, placement.h, el.id)) {
+          const p = layout.placements.find((lp) => lp.id === el.id);
+          if (p) {
+            p.col = currentCol;
+            p.row = currentRow;
+          }
+          saveLayout().then(() => renderGridComposer());
+        }
+      }
+
+      handle.addEventListener('pointermove', onMove);
+      handle.addEventListener('pointerup', onUp);
+      handle.addEventListener('pointercancel', onUp);
+    });
+  }
+
+  function bindResizeHandle(handle, direction, el, placement) {
+    handle.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      handle.setPointerCapture(e.pointerId);
+
+      const gs = getGridSize(el);
+
+      const shade = document.createElement('div');
+      shade.className = 'composer-shade';
+      shade.style.left = `${placement.col * UNIT}px`;
+      shade.style.top = `${placement.row * UNIT}px`;
+      shade.style.width = `${placement.w * UNIT}px`;
+      shade.style.height = `${placement.h * UNIT}px`;
+      contentGrid.appendChild(shade);
+
+      const cell = handle.closest('.composer-cell');
+      cell.classList.add('composer-cell--resizing');
+
+      let currentW = placement.w;
+      let currentH = placement.h;
+
+      function clampVal(val, min, max) {
+        if (max != null) return Math.max(min, Math.min(max, val));
+        return Math.max(min, val);
+      }
+
+      function onMove(e) {
+        const gridRect = contentGrid.getBoundingClientRect();
+        const x = e.clientX - gridRect.left;
+        const y = e.clientY - gridRect.top;
+        if (direction === 'e' || direction === 'se') {
+          const rawW = Math.round((x - placement.col * UNIT) / UNIT);
+          const maxW = gs.max ? gs.max[0] : gridCols - placement.col;
+          currentW = clampVal(rawW, gs.min[0], Math.min(maxW, gridCols - placement.col));
+        }
+        if (direction === 's' || direction === 'se') {
+          const rawH = Math.round((y - placement.row * UNIT) / UNIT);
+          currentH = clampVal(rawH, gs.min[1], gs.max ? gs.max[1] : null);
+        }
+        shade.style.width = `${currentW * UNIT}px`;
+        shade.style.height = `${currentH * UNIT}px`;
+        shade.classList.toggle(
+          'composer-shade--invalid',
+          !canPlace(placement.col, placement.row, currentW, currentH, el.id)
+        );
+      }
+
+      function onUp() {
+        handle.removeEventListener('pointermove', onMove);
+        handle.removeEventListener('pointerup', onUp);
+        handle.removeEventListener('pointercancel', onUp);
+        shade.remove();
+        cell.classList.remove('composer-cell--resizing');
+        const sizeChanged = currentW !== placement.w || currentH !== placement.h;
+        const valid = canPlace(placement.col, placement.row, currentW, currentH, el.id);
+        if (sizeChanged && valid) {
+          const p = layout.placements.find((lp) => lp.id === el.id);
+          if (p) {
+            p.w = currentW;
+            p.h = currentH;
+          }
+          saveLayout().then(() => renderGridComposer());
+        }
+      }
+
+      handle.addEventListener('pointermove', onMove);
+      handle.addEventListener('pointerup', onUp);
+      handle.addEventListener('pointercancel', onUp);
+    });
+  }
+
+  function createCell(el, placement) {
+    const cell = document.createElement('div');
+    cell.className = 'composer-cell';
+    cell.dataset.composerElement = el.id;
+    cell.style.left = `${placement.col * UNIT}px`;
+    cell.style.top = `${placement.row * UNIT}px`;
+    cell.style.width = `${placement.w * UNIT}px`;
+    cell.style.height = `${placement.h * UNIT}px`;
+
+    if (editing) {
+      const handle = document.createElement('div');
+      handle.className = 'composer-drag-handle';
+      handle.innerHTML = `
+        <span class="composer-drag-icon">⠿</span>
+        <span class="composer-drag-label">${el.label}</span>
+        ${!el.pinned
+          ? `<button class="composer-remove-btn" type="button">${i18n.t('ui.reuse.generic.remove')}</button>`
+          : ''}
+      `;
+      cell.appendChild(handle);
+      bindDragHandle(handle, el, placement);
+
+      if (!el.pinned) {
+        handle.querySelector('.composer-remove-btn').addEventListener('click', async () => {
+          layout.hidden.push(el.id);
+          layout.placements = layout.placements.filter((p) => p.id !== el.id);
+          await saveLayout();
+          renderGridComposer();
+        });
+      }
+    }
+
+    const content = document.createElement('div');
+    content.className = 'widget-card composer-cell-content';
+    content.innerHTML = el.render();
+    cell.appendChild(content);
+
+    if (editing) {
+      const gs = getGridSize(el);
+      const canResizeE = !gs.max || gs.max[0] > gs.min[0];
+      const canResizeS = !gs.max || gs.max[1] > gs.min[1];
+
+      if (canResizeE) {
+        const handleE = document.createElement('div');
+        handleE.className = 'composer-resize-handle composer-resize-e';
+        bindResizeHandle(handleE, 'e', el, placement);
+        cell.appendChild(handleE);
+      }
+      if (canResizeS) {
+        const handleS = document.createElement('div');
+        handleS.className = 'composer-resize-handle composer-resize-s';
+        bindResizeHandle(handleS, 's', el, placement);
+        cell.appendChild(handleS);
+      }
+      if (canResizeE && canResizeS) {
+        const handleSE = document.createElement('div');
+        handleSE.className = 'composer-resize-handle composer-resize-se';
+        bindResizeHandle(handleSE, 'se', el, placement);
+        cell.appendChild(handleSE);
+      }
+    }
+
+    return cell;
+  }
+
+  function bindPanelItemDrag(item, el) {
+    item.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      item.setPointerCapture(e.pointerId);
+
+      const gs = getGridSize(el);
+      const w = Math.min(gs.default[0], gridCols);
+      const h = gs.default[1];
+
+      let shade = null;
+      let currentCol = -1;
+      let currentRow = -1;
+      let overGrid = false;
+
+      function onMove(e) {
+        const gridRect = contentGrid.getBoundingClientRect();
+        const x = e.clientX - gridRect.left;
+        const y = e.clientY - gridRect.top;
+        const inGrid = x >= 0 && x <= gridRect.width && y >= 0;
+
+        if (inGrid) {
+          if (!shade) {
+            shade = document.createElement('div');
+            shade.className = 'composer-shade';
+            shade.style.width = `${w * UNIT}px`;
+            shade.style.height = `${h * UNIT}px`;
+            contentGrid.appendChild(shade);
+          }
+          const col = Math.max(0, Math.min(gridCols - w, Math.floor(x / UNIT)));
+          const row = Math.max(0, Math.floor(y / UNIT));
+          currentCol = col;
+          currentRow = row;
+          shade.style.left = `${col * UNIT}px`;
+          shade.style.top = `${row * UNIT}px`;
+          shade.classList.toggle('composer-shade--invalid', !canPlace(col, row, w, h, null));
+          overGrid = true;
+        } else {
+          if (shade) {
+            shade.remove();
+            shade = null;
+          }
+          overGrid = false;
+        }
+      }
+
+      function onUp() {
+        item.removeEventListener('pointermove', onMove);
+        item.removeEventListener('pointerup', onUp);
+        item.removeEventListener('pointercancel', onUp);
+        if (shade) shade.remove();
+        if (overGrid && canPlace(currentCol, currentRow, w, h, null)) {
+          layout.hidden = layout.hidden.filter((id) => id !== el.id);
+          layout.placements.push({ id: el.id, col: currentCol, row: currentRow, w, h });
+          saveLayout().then(() => renderGridComposer());
+        }
+      }
+
+      item.addEventListener('pointermove', onMove);
+      item.addEventListener('pointerup', onUp);
+      item.addEventListener('pointercancel', onUp);
+    });
+  }
+
+  function bindPanelDrag(panel) {
+    const handle = panel.querySelector('#composer-panel-drag-handle');
+    if (!handle) return;
+
+    handle.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      handle.setPointerCapture(e.pointerId);
+
+      const startX = e.clientX - panel.offsetLeft;
+      const startY = e.clientY - panel.offsetTop;
+
+      function onMove(e) {
+        panel.style.left = `${e.clientX - startX}px`;
+        panel.style.top = `${e.clientY - startY}px`;
+      }
+
+      function onUp() {
+        handle.removeEventListener('pointermove', onMove);
+        handle.removeEventListener('pointerup', onUp);
+        handle.removeEventListener('pointercancel', onUp);
+      }
+
+      handle.addEventListener('pointermove', onMove);
+      handle.addEventListener('pointerup', onUp);
+      handle.addEventListener('pointercancel', onUp);
+    });
+  }
+
+  function createElementsPanel() {
+    const hiddenElements = elements.filter((e) => layout.hidden.includes(e.id));
+
+    const panel = document.createElement('div');
+    panel.id = 'composer-elements-panel';
+    panel.className = 'composer-panel';
+
+    const listHtml = hiddenElements.length === 0
+      ? `<li class="composer-library-empty">${i18n.t('ui.reuse.page_composer.all_visible')}</li>`
+      : hiddenElements.map(
+        (el) => `<li class="composer-library-item" data-composer-panel-item="${el.id}"><span>${el.label}</span></li>`
+      ).join('');
+
+    panel.innerHTML = `
+      <div id="composer-panel-drag-handle" class="composer-panel-header">
+        <span class="composer-panel-title">${i18n.t('ui.reuse.page_composer.sections')}</span>
+        <button class="composer-panel-minimize-btn" type="button">−</button>
+      </div>
+      <div class="composer-panel-body">
+        <ul class="composer-library-list">${listHtml}</ul>
+      </div>
+    `;
+
+    const gridRect = contentGrid.getBoundingClientRect();
+    const panelLeft = gridRect.right + 12;
+    const panelTop = gridRect.top + window.scrollY;
+    const viewportWidth = window.innerWidth;
+
+    if (panelLeft < 0 || panelLeft + 240 > viewportWidth) {
+      panel.style.top = '80px';
+      panel.style.right = '12px';
+      panel.style.left = 'auto';
+    } else {
+      panel.style.top = `${Math.max(80, panelTop)}px`;
+      panel.style.left = `${panelLeft}px`;
+    }
+
+    document.body.appendChild(panel);
+    bindPanelDrag(panel);
+
+    panel.querySelector('.composer-panel-minimize-btn').addEventListener('click', () => {
+      const minimized = panel.classList.toggle('composer-panel--minimized');
+      panel.querySelector('.composer-panel-minimize-btn').textContent = minimized ? '+' : '−';
+    });
+
+    panel.querySelectorAll('[data-composer-panel-item]').forEach((item) => {
+      const elId = item.dataset.composerPanelItem;
+      const el = elements.find((e) => e.id === elId);
+      if (el) bindPanelItemDrag(item, el);
+    });
+  }
+
+  function renderGridComposer() {
+    document.getElementById('composer-elements-panel')?.remove();
+
+    if (!layout || (layout.order && !layout.placements)) {
+      layout = { placements: [], hidden: [] };
+    }
+
+    computeGridDimensions();
+    initializePlacements();
+    computeGridDimensions();
+
+    contentGrid.classList.add('composer-grid-active');
+    contentGrid.innerHTML = '';
+
+    if (editing) {
+      contentGrid.appendChild(createGridOverlay());
+    }
+
+    const visiblePlacements = layout.placements.filter(
+      (p) => !layout.hidden.includes(p.id)
+    );
+    for (const placement of visiblePlacements) {
+      const el = elements.find((e) => e.id === placement.id);
+      if (!el) continue;
+      contentGrid.appendChild(createCell(el, placement));
+    }
+
+    if (allowCustomization) {
+      const headerOverlay = document.createElement('div');
+      headerOverlay.className = 'composer-header-overlay';
+      const btnClass = editing ? 'composer-done-btn' : 'composer-edit-btn';
+      const btnLabel = editing
+        ? i18n.t('ui.reuse.generic.done')
+        : i18n.t('ui.reuse.page_composer.edit_layout');
+      const btn = document.createElement('button');
+      btn.className = btnClass;
+      btn.type = 'button';
+      btn.textContent = btnLabel;
+      btn.addEventListener('click', async () => {
+        if (editing) {
+          editing = false;
+          await saveLayout();
+        } else {
+          editing = true;
+        }
+        renderGridComposer();
+      });
+      headerOverlay.appendChild(btn);
+      contentGrid.appendChild(headerOverlay);
+    }
+
+    if (editing) {
+      createElementsPanel();
+    }
+
+    onRender?.();
   }
 
   function getEffectiveLayout() {
@@ -167,8 +673,7 @@ export function createPageComposer(root, {
     `;
   }
 
-  function render() {
-    if (!contentGrid) return;
+  function renderSubPageComposer() {
     const effectiveLayout = getEffectiveLayout();
     let html = '';
 
@@ -183,29 +688,27 @@ export function createPageComposer(root, {
     }
 
     const cardsHtml = renderCards(effectiveLayout);
-    html += subPageNavigation
-      ? `<article class="content-panel">${cardsHtml}</article>`
-      : cardsHtml;
+    html += `<article class="content-panel">${cardsHtml}</article>`;
 
     if (editing) {
       html += renderLibraryPanel(effectiveLayout);
     }
 
     contentGrid.innerHTML = html;
-    bindComposerEvents();
+    bindSubPageComposerEvents();
     onRender?.();
   }
 
-  function bindComposerEvents() {
+  function bindSubPageComposerEvents() {
     contentGrid.querySelector('.composer-edit-btn')?.addEventListener('click', () => {
       editing = true;
-      render();
+      renderSubPageComposer();
     });
 
     contentGrid.querySelector('.composer-done-btn')?.addEventListener('click', async () => {
       editing = false;
       await saveLayout();
-      render();
+      renderSubPageComposer();
     });
 
     contentGrid.querySelectorAll('[data-composer-remove]').forEach((btn) => {
@@ -214,7 +717,7 @@ export function createPageComposer(root, {
         const effective = getEffectiveLayout();
         layout = { order: effective.order, hidden: [...effective.hidden, id] };
         await saveLayout();
-        render();
+        renderSubPageComposer();
       });
     });
 
@@ -224,7 +727,7 @@ export function createPageComposer(root, {
         const effective = getEffectiveLayout();
         layout = { order: effective.order, hidden: effective.hidden.filter((h) => h !== id) };
         await saveLayout();
-        render();
+        renderSubPageComposer();
       });
     });
 
@@ -275,9 +778,18 @@ export function createPageComposer(root, {
         ];
         layout = { order: newOrder, hidden: effective.hidden };
         await saveLayout();
-        render();
+        renderSubPageComposer();
       });
     });
+  }
+
+  function render() {
+    if (!contentGrid) return;
+    if (subPageNavigation) {
+      renderSubPageComposer();
+    } else {
+      renderGridComposer();
+    }
   }
 
   function switchSubPage(id) {
@@ -332,6 +844,20 @@ export function createPageComposer(root, {
     });
 
     layout = await loadLayout();
+
+    if (!subPageNavigation && contentGrid) {
+      resizeObserver = new ResizeObserver(() => {
+        const width = contentGrid.getBoundingClientRect().width;
+        const newCols = Math.max(1, Math.floor(width / UNIT));
+        if (newCols !== lastObservedCols) {
+          lastObservedCols = newCols;
+          computeGridDimensions();
+          renderGridComposer();
+        }
+      });
+      resizeObserver.observe(contentGrid);
+    }
+
     render();
   }
 
