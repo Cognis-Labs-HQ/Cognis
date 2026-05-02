@@ -1339,6 +1339,10 @@ export function createPageComposer(root, {
 
     state.container = sectionContainer;
 
+    if (!state.layout || (state.layout.order && !state.layout.placements)) {
+      state.layout = { placements: [], hidden: [] };
+    }
+
     computeSubGridDimensions(state);
     initializeSubPlacements(state);
     computeSubGridDimensions(state);
