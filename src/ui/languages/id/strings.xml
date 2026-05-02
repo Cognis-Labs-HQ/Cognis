@@ -130,4 +130,28 @@
   <string name="ui.reuse.popup.close">Tutup</string>
   <string name="ui.reuse.popup.confirm">Konfirmasi</string>
   <string name="ui.reuse.popup.cancel">Batal</string>
+
+  <string name="ui.tour.skip">Lewati tur</string>
+  <string name="ui.tour.next">Berikutnya</string>
+  <string name="ui.tour.done">Selesai</string>
+  <string name="ui.tour.step_label">Langkah</string>
+  <string name="ui.tour.step_of_label">dari</string>
+  <string name="ui.tour.spotlight_aria">Sorotan tur</string>
+
+  <string name="ui.tour.first_login.welcome.title">Selamat datang di Cognis</string>
+  <string name="ui.tour.first_login.welcome.body">Mari ikuti tur singkat untuk membantu Anda memulai.</string>
+  <string name="ui.tour.first_login.app_icon.message">Ini adalah Cognis. Gunakan bilah navigasi di atas untuk berpindah antara halaman.</string>
+  <string name="ui.tour.first_login.account.message">Detail akun Anda ada di sini — peran, tanggal bergabung, dan waktu login terakhir.</string>
+  <string name="ui.tour.first_login.finish.title">Anda siap!</string>
+  <string name="ui.tour.first_login.finish.body">Jelajahi menu untuk mengakses Pengaturan, Dokumentasi, dan lainnya. Selamat menikmati Cognis!</string>
+
+  <string name="ui.app.admin.tutorials">Tutorial</string>
+  <string name="ui.app.admin.tutorials_heading">Pengaturan Tutorial</string>
+  <string name="ui.app.admin.tutorials_env_allowed">Variabel lingkungan ALLOW_TUTORIALS telah diatur — tutorial dapat dialihkan saat runtime.</string>
+  <string name="ui.app.admin.tutorials_env_blocked">Variabel lingkungan ALLOW_TUTORIALS dinonaktifkan. Atur ALLOW_TUTORIALS=1 untuk mengizinkan tutorial.</string>
+  <string name="ui.app.admin.tutorials_runtime_on">Tur terpandu saat ini diaktifkan untuk pengguna.</string>
+  <string name="ui.app.admin.tutorials_runtime_off">Tur terpandu saat ini dinonaktifkan saat runtime.</string>
+  <string name="ui.app.admin.tutorials_toggle_disable">Nonaktifkan tutorial</string>
+  <string name="ui.app.admin.tutorials_toggle_enable">Aktifkan tutorial</string>
+  <string name="ui.app.admin.tutorials_toggle_error">Gagal memperbarui pengaturan tutorial.</string>
 </resources>

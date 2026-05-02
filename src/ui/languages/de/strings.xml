@@ -130,4 +130,28 @@
   <string name="ui.reuse.popup.close">Schließen</string>
   <string name="ui.reuse.popup.confirm">Bestätigen</string>
   <string name="ui.reuse.popup.cancel">Abbrechen</string>
+
+  <string name="ui.tour.skip">Tour überspringen</string>
+  <string name="ui.tour.next">Weiter</string>
+  <string name="ui.tour.done">Fertig</string>
+  <string name="ui.tour.step_label">Schritt</string>
+  <string name="ui.tour.step_of_label">von</string>
+  <string name="ui.tour.spotlight_aria">Tour-Hervorhebung</string>
+
+  <string name="ui.tour.first_login.welcome.title">Willkommen bei Cognis</string>
+  <string name="ui.tour.first_login.welcome.body">Lass uns eine kurze Tour machen, um dir den Einstieg zu erleichtern.</string>
+  <string name="ui.tour.first_login.app_icon.message">Das ist Cognis. Nutze die Navigationsleiste oben, um zwischen den Seiten zu wechseln.</string>
+  <string name="ui.tour.first_login.account.message">Hier findest du deine Kontodaten — Rolle, Mitgliedschaft und letzten Login.</string>
+  <string name="ui.tour.first_login.finish.title">Du bist startklar!</string>
+  <string name="ui.tour.first_login.finish.body">Erkunde das Menü für Einstellungen, Dokumente und mehr. Viel Spaß mit Cognis!</string>
+
+  <string name="ui.app.admin.tutorials">Tutorials</string>
+  <string name="ui.app.admin.tutorials_heading">Tutorial-Einstellungen</string>
+  <string name="ui.app.admin.tutorials_env_allowed">Die Umgebungsvariable ALLOW_TUTORIALS ist gesetzt — Tutorials können zur Laufzeit umgeschaltet werden.</string>
+  <string name="ui.app.admin.tutorials_env_blocked">Die Umgebungsvariable ALLOW_TUTORIALS ist deaktiviert. Setze ALLOW_TUTORIALS=1, um Tutorials zu erlauben.</string>
+  <string name="ui.app.admin.tutorials_runtime_on">Geführte Touren sind für Benutzer derzeit aktiviert.</string>
+  <string name="ui.app.admin.tutorials_runtime_off">Geführte Touren sind zur Laufzeit derzeit deaktiviert.</string>
+  <string name="ui.app.admin.tutorials_toggle_disable">Tutorials deaktivieren</string>
+  <string name="ui.app.admin.tutorials_toggle_enable">Tutorials aktivieren</string>
+  <string name="ui.app.admin.tutorials_toggle_error">Tutorial-Einstellungen konnten nicht aktualisiert werden.</string>
 </resources>

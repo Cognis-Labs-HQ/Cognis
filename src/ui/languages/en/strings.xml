@@ -143,4 +143,28 @@
   <string name="ui.reuse.popup.close">Close</string>
   <string name="ui.reuse.popup.confirm">Confirm</string>
   <string name="ui.reuse.popup.cancel">Cancel</string>
+
+  <string name="ui.tour.skip">Skip tour</string>
+  <string name="ui.tour.next">Next</string>
+  <string name="ui.tour.done">Done</string>
+  <string name="ui.tour.step_label">Step</string>
+  <string name="ui.tour.step_of_label">of</string>
+  <string name="ui.tour.spotlight_aria">Tour highlight</string>
+
+  <string name="ui.tour.first_login.welcome.title">Welcome to Cognis</string>
+  <string name="ui.tour.first_login.welcome.body">Let's take a quick tour to help you get started.</string>
+  <string name="ui.tour.first_login.app_icon.message">This is Cognis. Use the navigation bar above to move between pages.</string>
+  <string name="ui.tour.first_login.account.message">Your account details live here — role, membership date, and last login time.</string>
+  <string name="ui.tour.first_login.finish.title">You are all set!</string>
+  <string name="ui.tour.first_login.finish.body">Explore the menu to access Settings, Docs, and more. Enjoy Cognis!</string>
+
+  <string name="ui.app.admin.tutorials">Tutorials</string>
+  <string name="ui.app.admin.tutorials_heading">Tutorial Settings</string>
+  <string name="ui.app.admin.tutorials_env_allowed">The ALLOW_TUTORIALS environment variable is set — tutorials can be toggled at runtime.</string>
+  <string name="ui.app.admin.tutorials_env_blocked">The ALLOW_TUTORIALS environment variable is disabled. Set ALLOW_TUTORIALS=1 to allow tutorials.</string>
+  <string name="ui.app.admin.tutorials_runtime_on">Guided tours are currently enabled for users.</string>
+  <string name="ui.app.admin.tutorials_runtime_off">Guided tours are currently disabled at runtime.</string>
+  <string name="ui.app.admin.tutorials_toggle_disable">Disable tutorials</string>
+  <string name="ui.app.admin.tutorials_toggle_enable">Enable tutorials</string>
+  <string name="ui.app.admin.tutorials_toggle_error">Failed to update tutorial settings.</string>
 </resources>

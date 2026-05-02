@@ -130,4 +130,28 @@
   <string name="ui.reuse.popup.close">閉じる</string>
   <string name="ui.reuse.popup.confirm">確認</string>
   <string name="ui.reuse.popup.cancel">キャンセル</string>
+
+  <string name="ui.tour.skip">ツアーをスキップ</string>
+  <string name="ui.tour.next">次へ</string>
+  <string name="ui.tour.done">完了</string>
+  <string name="ui.tour.step_label">ステップ</string>
+  <string name="ui.tour.step_of_label">/</string>
+  <string name="ui.tour.spotlight_aria">ツアーのハイライト</string>
+
+  <string name="ui.tour.first_login.welcome.title">Cognisへようこそ</string>
+  <string name="ui.tour.first_login.welcome.body">はじめに、簡単なツアーをご案内します。</string>
+  <string name="ui.tour.first_login.app_icon.message">これがCognisです。上のナビゲーションバーでページ間を移動できます。</string>
+  <string name="ui.tour.first_login.account.message">アカウントの詳細（役割・登録日・最終ログイン）はここに表示されます。</string>
+  <string name="ui.tour.first_login.finish.title">準備完了です！</string>
+  <string name="ui.tour.first_login.finish.body">メニューから設定・ドキュメントなどを確認してください。Cognisをお楽しみください！</string>
+
+  <string name="ui.app.admin.tutorials">チュートリアル</string>
+  <string name="ui.app.admin.tutorials_heading">チュートリアル設定</string>
+  <string name="ui.app.admin.tutorials_env_allowed">ALLOW_TUTORIALS環境変数が設定されています。チュートリアルの実行時切り替えが可能です。</string>
+  <string name="ui.app.admin.tutorials_env_blocked">ALLOW_TUTORIALS環境変数が無効です。チュートリアルを許可するには ALLOW_TUTORIALS=1 を設定してください。</string>
+  <string name="ui.app.admin.tutorials_runtime_on">ガイドツアーは現在ユーザーに対して有効です。</string>
+  <string name="ui.app.admin.tutorials_runtime_off">ガイドツアーは現在実行時に無効です。</string>
+  <string name="ui.app.admin.tutorials_toggle_disable">チュートリアルを無効にする</string>
+  <string name="ui.app.admin.tutorials_toggle_enable">チュートリアルを有効にする</string>
+  <string name="ui.app.admin.tutorials_toggle_error">チュートリアル設定を更新できませんでした。</string>
 </resources>

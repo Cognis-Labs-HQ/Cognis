@@ -1,0 +1,194 @@
+.tour-spotlight-container {
+  display: contents;
+}
+
+.tour-spotlight-panel {
+  position: fixed;
+  background: rgba(2, 6, 23, 0.65);
+  z-index: 9000;
+  pointer-events: all;
+  transition: opacity 0.2s ease;
+}
+
+.tour-spotlight-panel--top {
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.tour-spotlight-panel--bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.tour-spotlight-panel--left {
+  left: 0;
+}
+
+.tour-spotlight-panel--right {
+  right: 0;
+}
+
+.tour-spotlight-active {
+  position: relative !important;
+  z-index: 9001 !important;
+  outline: 2px solid var(--color-focus, #6366f1);
+  outline-offset: 4px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.tour-badge {
+  position: fixed;
+  z-index: 9002;
+  background: var(--surface-2, #1e2130);
+  border: 1px solid var(--border, rgba(255,255,255,0.12));
+  border-radius: 12px;
+  box-shadow: var(--shadow, 0 8px 32px rgba(0,0,0,0.45));
+  padding: 14px 18px;
+  max-width: 320px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  opacity: 0;
+  pointer-events: all;
+}
+
+.tour-badge--visible {
+  opacity: 1;
+}
+
+.tour-badge--above {
+  transform: translateY(6px);
+}
+
+.tour-badge--above.tour-badge--visible {
+  transform: translateY(0);
+}
+
+.tour-badge--below {
+  transform: translateY(-6px);
+}
+
+.tour-badge--below.tour-badge--visible {
+  transform: translateY(0);
+}
+
+.tour-badge--left {
+  transform: translateX(6px);
+}
+
+.tour-badge--left.tour-badge--visible {
+  transform: translateX(0);
+}
+
+.tour-badge--right {
+  transform: translateX(-6px);
+}
+
+.tour-badge--right.tour-badge--visible {
+  transform: translateX(0);
+}
+
+.tour-badge-message {
+  font-size: 0.9rem;
+  color: var(--text, #f1f5f9);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.tour-badge-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tour-next-btn {
+  background: var(--color-accent, #6366f1);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 16px;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.tour-next-btn:hover {
+  opacity: 0.88;
+}
+
+.tour-skip-link {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #94a3b8);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tour-skip-link:hover {
+  color: var(--text, #f1f5f9);
+}
+
+.tour-progress {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 9002;
+  background: var(--surface-2, #1e2130);
+  border: 1px solid var(--border, rgba(255,255,255,0.12));
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  color: var(--text-muted, #94a3b8);
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  opacity: 0;
+}
+
+.tour-progress--visible {
+  opacity: 1;
+}
+
+.tutorials-env-note {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin: 0 0 12px;
+}
+
+.tutorials-env-note--allowed {
+  background: var(--color-success-bg, rgba(34, 197, 94, 0.1));
+  color: var(--text, #f1f5f9);
+  border: 1px solid var(--color-success-border, rgba(34, 197, 94, 0.3));
+}
+
+.tutorials-env-note--blocked {
+  background: var(--color-warning-bg, rgba(245, 158, 11, 0.1));
+  color: var(--text, #f1f5f9);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.tutorials-status {
+  font-size: 0.9rem;
+  margin: 0 0 16px;
+}
+
+.tutorials-status--on {
+  color: var(--color-success, #22c55e);
+}
+
+.tutorials-status--off {
+  color: var(--text-muted, #94a3b8);
+}

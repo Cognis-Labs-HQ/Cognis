@@ -23,6 +23,34 @@ async function toggleModule(moduleId, action) {
   await apiFetch(`/api/v1/modules/${encodeURIComponent(moduleId)}/${action}`, { method: 'POST' });
 }
 
+async function loadTutorialsConfig() {
+  try {
+    const response = await fetch('/api/v1/system/ui-config');
+    if (!response.ok) return { tutorialsEnabled: false, envAllowed: false };
+    const payload = await response.json();
+    return {
+      tutorialsEnabled: payload.data?.tutorialsEnabled !== false,
+      envAllowed: payload.data?.tutorialsEnabled !== false || typeof payload.data?.tutorialsEnabled === 'undefined',
+    };
+  } catch {
+    return { tutorialsEnabled: false, envAllowed: false };
+  }
+}
+
+async function setTutorialsRuntime(enabled) {
+  const response = await apiFetch('/api/v1/system/config/tutorials', {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ enabled }),
+  });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload?.error?.message ?? i18n.t('ui.app.admin.tutorials_toggle_error'));
+  }
+  const payload = await response.json();
+  return payload.data?.tutorialsEnabled;
+}
+
 function getStatePill(status) {
   if (status === 'enabled') return { label: i18n.t('ui.app.admin.state.active'), className: 'pill-active' };
   if (status === 'available') return { label: i18n.t('ui.app.admin.state.available'), className: 'pill-available' };
@@ -99,6 +127,33 @@ function renderIntegrityContent(integrityRows) {
   return sections.join('');
 }
 
+function renderTutorialsContent(config) {
+  const envNote = config.envAllowed
+    ? `<p class="tutorials-env-note tutorials-env-note--allowed">${i18n.t('ui.app.admin.tutorials_env_allowed')}</p>`
+    : `<p class="tutorials-env-note tutorials-env-note--blocked">${i18n.t('ui.app.admin.tutorials_env_blocked')}</p>`;
+
+  const statusNote = config.tutorialsEnabled
+    ? `<p class="tutorials-status tutorials-status--on">${i18n.t('ui.app.admin.tutorials_runtime_on')}</p>`
+    : `<p class="tutorials-status tutorials-status--off">${i18n.t('ui.app.admin.tutorials_runtime_off')}</p>`;
+
+  const toggleLabel = config.tutorialsEnabled
+    ? i18n.t('ui.app.admin.tutorials_toggle_disable')
+    : i18n.t('ui.app.admin.tutorials_toggle_enable');
+
+  const toggleDisabled = !config.envAllowed ? 'disabled' : '';
+
+  return `
+    ${envNote}
+    ${statusNote}
+    <button
+      id="tutorials-toggle-btn"
+      class="btn-confirm btn-animated"
+      type="button"
+      ${toggleDisabled}
+    >${toggleLabel}</button>
+  `;
+}
+
 function bindModuleToggles() {
   root.querySelectorAll('input[type="checkbox"][data-module]').forEach((toggle) => {
     toggle.addEventListener('change', async () => {
@@ -142,7 +197,35 @@ function bindIntegrityRerun() {
   });
 }
 
-let [modules, integrityRows] = await Promise.all([loadModules(), loadIntegrity()]);
+function bindTutorialsToggle() {
+  const btn = root.querySelector('#tutorials-toggle-btn');
+  if (!btn) return;
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    try {
+      const newEnabled = await setTutorialsRuntime(!tutorialsConfig.tutorialsEnabled);
+      tutorialsConfig = {
+        tutorialsEnabled: newEnabled,
+        envAllowed: tutorialsConfig.envAllowed,
+      };
+      composer.refresh(elements);
+    } catch (err) {
+      await openPopup({
+        title: i18n.t('ui.app.admin.tutorials_toggle_error'),
+        body: err.message || i18n.t('ui.app.admin.tutorials_toggle_error'),
+        variant: 'danger',
+      });
+      btn.disabled = false;
+    }
+  });
+}
+
+let [modules, integrityRows, tutorialsConfig] = await Promise.all([
+  loadModules(),
+  loadIntegrity(),
+  loadTutorialsConfig(),
+]);
 let composer;
 
 const elements = [
@@ -191,6 +274,26 @@ const elements = [
       },
     },
   },
+  {
+    id: 'tutorials',
+    label: i18n.t('ui.app.admin.tutorials'),
+    subComposerOptions: {
+      allowCustomization: false,
+      preferenceKey: 'administration-tutorials-layout',
+      heading: i18n.t('ui.app.admin.tutorials_heading'),
+      elements: [
+        {
+          id: 'tutorials-content',
+          label: i18n.t('ui.app.admin.tutorials'),
+          pinned: true,
+          render: () => renderTutorialsContent(tutorialsConfig),
+        },
+      ],
+      onRender: () => {
+        bindTutorialsToggle();
+      },
+    },
+  },
 ];
 
 composer = createPageComposer(root, {
@@ -212,6 +315,7 @@ composer = createPageComposer(root, {
         <ul>
           <li><button data-composer-scroll="modules">${i18n.t('ui.reuse.modules')}</button></li>
           <li><button data-composer-scroll="integrity">${i18n.t('ui.reuse.file_integrity')}</button></li>
+          <li><button data-composer-scroll="tutorials">${i18n.t('ui.app.admin.tutorials')}</button></li>
         </ul>
       `,
     },

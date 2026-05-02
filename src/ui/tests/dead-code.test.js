@@ -54,6 +54,14 @@ const DYNAMIC_CLASS_NAMES = new Set([
   'popup-dialog--warning',
   'popup-dialog--danger',
   'popup-dialog--confirm',
+  'tour-badge--above',
+  'tour-badge--below',
+  'tour-badge--left',
+  'tour-badge--right',
+  'tutorials-env-note--allowed',
+  'tutorials-env-note--blocked',
+  'tutorials-status--on',
+  'tutorials-status--off',
 ]);
 
 // Reuse module exports that are fully implemented but not yet wired up to

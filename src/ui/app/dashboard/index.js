@@ -1,6 +1,7 @@
 import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 import { createPageComposer } from '../../reuse/page-composer.js';
+import { startTour, resumeTourIfPending } from '../../reuse/guided-tour.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
@@ -38,6 +39,84 @@ function formatDateTime(iso) {
   } catch {
     return iso;
   }
+}
+
+async function isTourCompleted() {
+  if (!account) return true;
+  try {
+    const response = await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/system-tour-completed`);
+    if (!response.ok) return true;
+    const payload = await response.json();
+    const raw = payload?.data?.layoutJson;
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    return parsed?.completed === true;
+  } catch {
+    return true;
+  }
+}
+
+async function markTourCompleted() {
+  if (!account) return;
+  try {
+    await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/system-tour-completed`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ layout: { completed: true } }),
+    });
+  } catch {}
+}
+
+function buildFirstLoginTour() {
+  return {
+    id: 'first-login',
+    steps: [
+      {
+        path: '/dashboard',
+        actions: [
+          {
+            type: 'popup',
+            title: i18n.t('ui.tour.first_login.welcome.title'),
+            body: i18n.t('ui.tour.first_login.welcome.body'),
+            variant: 'info',
+          },
+        ],
+      },
+      {
+        path: '/dashboard',
+        actions: [
+          {
+            type: 'spotlight',
+            target: '.dashboard-app-icon',
+            message: i18n.t('ui.tour.first_login.app_icon.message'),
+            position: 'right',
+          },
+        ],
+      },
+      {
+        path: '/dashboard',
+        actions: [
+          {
+            type: 'spotlight',
+            target: '.dashboard-info-list',
+            message: i18n.t('ui.tour.first_login.account.message'),
+            position: 'below',
+          },
+        ],
+      },
+      {
+        path: '/dashboard',
+        actions: [
+          {
+            type: 'popup',
+            title: i18n.t('ui.tour.first_login.finish.title'),
+            body: i18n.t('ui.tour.first_login.finish.body'),
+            variant: 'confirm',
+          },
+        ],
+      },
+    ],
+  };
 }
 
 const info = await loadAccountInfo();
@@ -103,3 +182,18 @@ const composer = createPageComposer(root, {
 });
 
 await composer.init();
+
+const firstLoginTour = buildFirstLoginTour();
+
+await resumeTourIfPending({ 'first-login': firstLoginTour }, {
+  i18n,
+  onComplete: markTourCompleted,
+});
+
+const tourAlreadyDone = await isTourCompleted();
+if (!tourAlreadyDone) {
+  await startTour(firstLoginTour, {
+    i18n,
+    onComplete: markTourCompleted,
+  });
+}
