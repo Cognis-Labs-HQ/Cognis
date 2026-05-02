@@ -68,8 +68,8 @@
  *   i18n: object,
  *   onRender?: () => void,
  *   pageContext?: { title: string, subtitle: string },
- *   toolbar?: { render: () => string },
- *   floatingMenu?: { render: () => string },
+ *   toolbar?: Array<{ id: string, label: string, render: () => string }>,
+ *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
  *   subPageNavigation?: boolean,
  *   columns?: number,
  * }} options
@@ -87,8 +87,8 @@ export function createPageComposer(root, {
   i18n,
   onRender,
   pageContext,
-  toolbar,
-  floatingMenu,
+  toolbar = [],
+  floatingMenu = [],
   subPageNavigation = false,
   columns = 1,
 }) {
@@ -104,6 +104,7 @@ export function createPageComposer(root, {
   let gridRows = 6;
   let resizeObserver = null;
   let lastObservedCols = 0;
+  let gridSection = null;
 
   const UNIT = 90; // grid cell size in pixels
 
@@ -187,6 +188,10 @@ export function createPageComposer(root, {
     gridRows = Math.max(editing ? 6 : 1, maxBottom + extra);
     contentGrid.style.minHeight = `${gridRows * UNIT}px`;
     contentGrid.style.width = `${gridCols * UNIT}px`;
+    if (editing && gridSection) {
+      gridSection.style.minHeight = `${gridRows * UNIT}px`;
+      gridSection.style.width = `${gridCols * UNIT}px`;
+    }
   }
 
   function canPlace(col, row, w, h, excludeId) {
@@ -285,7 +290,7 @@ export function createPageComposer(root, {
         shade.style.top = `${placement.row * UNIT}px`;
         shade.style.width = `${placement.w * UNIT}px`;
         shade.style.height = `${placement.h * UNIT}px`;
-        contentGrid.appendChild(shade);
+        gridSection.appendChild(shade);
 
         cell.classList.add('composer-cell--dragging');
 
@@ -307,7 +312,7 @@ export function createPageComposer(root, {
           shade.classList.remove('composer-shade--invalid');
           panel?.classList.remove('composer-panel--drop-target');
 
-          const gridRect = contentGrid.getBoundingClientRect();
+          const gridRect = gridSection.getBoundingClientRect();
           const x = e.clientX - gridRect.left;
           const y = e.clientY - gridRect.top;
           const col = Math.max(0, Math.min(gridCols - placement.w, Math.round(x / UNIT - placement.w / 2)));
@@ -316,7 +321,7 @@ export function createPageComposer(root, {
 
           if (rawRow + placement.h > gridRows) {
             gridRows = rawRow + placement.h + 1;
-            contentGrid.style.minHeight = `${gridRows * UNIT}px`;
+            gridSection.style.minHeight = `${gridRows * UNIT}px`;
           }
 
           currentCol = col;
@@ -427,7 +432,7 @@ export function createPageComposer(root, {
       shade.style.top = `${placement.row * UNIT}px`;
       shade.style.width = `${placement.w * UNIT}px`;
       shade.style.height = `${placement.h * UNIT}px`;
-      contentGrid.appendChild(shade);
+      gridSection.appendChild(shade);
 
       const cell = handle.closest('.composer-cell');
       cell.classList.add('composer-cell--resizing');
@@ -441,7 +446,7 @@ export function createPageComposer(root, {
       }
 
       function onMove(e) {
-        const gridRect = contentGrid.getBoundingClientRect();
+        const gridRect = gridSection.getBoundingClientRect();
         const x = e.clientX - gridRect.left;
         const y = e.clientY - gridRect.top;
         if (direction === 'e' || direction === 'se') {
@@ -539,7 +544,7 @@ export function createPageComposer(root, {
       let overGrid = false;
 
       function onMove(e) {
-        const gridRect = contentGrid.getBoundingClientRect();
+        const gridRect = gridSection.getBoundingClientRect();
         const x = e.clientX - gridRect.left;
         const y = e.clientY - gridRect.top;
         const inGrid = x >= 0 && x <= gridRect.width && y >= 0;
@@ -550,7 +555,7 @@ export function createPageComposer(root, {
             shade.className = 'composer-shade';
             shade.style.width = `${w * UNIT}px`;
             shade.style.height = `${h * UNIT}px`;
-            contentGrid.appendChild(shade);
+            gridSection.appendChild(shade);
           }
           const col = Math.max(0, Math.min(gridCols - w, Math.floor(x / UNIT)));
           const rawRow = Math.max(0, Math.floor(y / UNIT));
@@ -641,7 +646,7 @@ export function createPageComposer(root, {
 
     panel.innerHTML = `
       <div id="composer-panel-drag-handle" class="composer-panel-header">
-        <span class="composer-panel-title">${i18n.t('ui.reuse.page_composer.sections')}</span>
+        <span class="composer-panel-title">${i18n.t('ui.reuse.page_composer.elements')}</span>
         <button class="composer-panel-minimize-btn" type="button">−</button>
       </div>
       <div class="composer-panel-body">
@@ -1162,7 +1167,7 @@ export function createPageComposer(root, {
 
     panel.innerHTML = `
       <div id="${panelId}-drag-handle" class="composer-panel-header">
-        <span class="composer-panel-title">${i18n.t('ui.reuse.page_composer.sections')}</span>
+        <span class="composer-panel-title">${i18n.t('ui.reuse.page_composer.elements')}</span>
         <button class="composer-panel-minimize-btn" type="button">−</button>
       </div>
       <div class="composer-panel-body">
@@ -1252,33 +1257,6 @@ export function createPageComposer(root, {
     });
   }
 
-  function syncSubFloatingToolbar(state) {
-    if (!state.allowCustomization) return;
-    const ft = getOrCreateFloatingToolbar();
-    let btns = ft.querySelector('.composer-toolbar-btns');
-    if (!btns) {
-      btns = document.createElement('div');
-      btns.className = 'composer-toolbar-btns';
-      ft.appendChild(btns);
-    }
-    ft.hidden = false;
-    if (!state.editing) {
-      btns.innerHTML = `<button class="composer-edit-btn" type="button">${i18n.t('ui.reuse.page_composer.edit_layout')}</button>`;
-      btns.querySelector('.composer-edit-btn').addEventListener('click', () => {
-        state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
-        state.editing = true;
-        beginEditMode();
-        renderSubGrid(state);
-      });
-    } else {
-      btns.innerHTML = `<button class="composer-reset-btn" type="button">${i18n.t('ui.reuse.generic.reset')}</button>`;
-      btns.querySelector('.composer-reset-btn').addEventListener('click', () => {
-        state.layout = { placements: [], hidden: [] };
-        renderSubGrid(state);
-      });
-    }
-  }
-
   function renderSubGrid(state) {
     document.getElementById(getSubPanelId(state.preferenceKey))?.remove();
 
@@ -1290,23 +1268,43 @@ export function createPageComposer(root, {
     initializeSubPlacements(state);
     computeSubGridDimensions(state);
 
-    state.container.classList.add('composer-grid-active');
     state.container.innerHTML = '';
 
     if (state.editing) {
+      state.container.classList.add('composer-grid-active');
+      state.container.style.minHeight = `${state.gridRows * UNIT}px`;
+      state.container.style.width = `${state.gridCols * UNIT}px`;
       state.container.appendChild(createSubGridOverlay(state));
+
+      const visiblePlacements = state.layout.placements.filter(
+        (p) => !state.layout.hidden.includes(p.id)
+      );
+      for (const placement of visiblePlacements) {
+        const el = state.elements.find((e) => e.id === placement.id);
+        if (!el) continue;
+        state.container.appendChild(createSubCell(el, placement, state));
+      }
+    } else {
+      state.container.classList.remove('composer-grid-active');
+      state.container.style.minHeight = '';
+      state.container.style.width = '';
+
+      const sorted = state.layout.placements
+        .filter((p) => !state.layout.hidden.includes(p.id))
+        .sort((a, b) => a.row - b.row || a.col - b.col);
+
+      for (const placement of sorted) {
+        const el = state.elements.find((e) => e.id === placement.id);
+        if (!el) continue;
+        const card = document.createElement('div');
+        card.className = 'widget-card';
+        card.dataset.composerElement = el.id;
+        card.innerHTML = el.render();
+        state.container.appendChild(card);
+      }
     }
 
-    const visiblePlacements = state.layout.placements.filter(
-      (p) => !state.layout.hidden.includes(p.id)
-    );
-    for (const placement of visiblePlacements) {
-      const el = state.elements.find((e) => e.id === placement.id);
-      if (!el) continue;
-      state.container.appendChild(createSubCell(el, placement, state));
-    }
-
-    syncSubFloatingToolbar(state);
+    syncSubEditToggle(state);
 
     if (state.editing) {
       createSubElementsPanel(state);
@@ -1376,9 +1374,6 @@ export function createPageComposer(root, {
       state.container.innerHTML = '';
     }
     state.container = null;
-    const ft = root.querySelector('.floating-toolbar');
-    ft?.querySelector('.composer-toolbar-btns')?.remove();
-    if (ft && !floatingMenu) ft.hidden = true;
   }
 
   function getOrCreateFloatingToolbar() {
@@ -1392,29 +1387,68 @@ export function createPageComposer(root, {
     return ft;
   }
 
-  function syncFloatingToolbar() {
-    if (!allowCustomization) return;
-    const ft = getOrCreateFloatingToolbar();
-    let btns = ft.querySelector('.composer-toolbar-btns');
-    if (!btns) {
-      btns = document.createElement('div');
-      btns.className = 'composer-toolbar-btns';
-      ft.appendChild(btns);
+  function syncSubEditToggle(state) {
+    const editBtn = document.getElementById('composer-edit-toggle');
+    if (!editBtn) return;
+    if (!state.allowCustomization) {
+      editBtn.hidden = true;
+      return;
     }
-    ft.hidden = false;
+    editBtn.hidden = false;
+    const fresh = editBtn.cloneNode(true);
+    editBtn.parentNode?.replaceChild(fresh, editBtn);
+    if (!state.editing) {
+      fresh.textContent = '✏';
+      fresh.title = i18n.t('ui.reuse.page_composer.edit_layout');
+      fresh.addEventListener('click', () => {
+        state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
+        state.editing = true;
+        beginEditMode();
+        renderSubGrid(state);
+      });
+    } else {
+      fresh.textContent = '✓';
+      fresh.title = i18n.t('ui.reuse.generic.done');
+      fresh.addEventListener('click', async () => {
+        compactSubPlacements(state);
+        state.editing = false;
+        endEditMode();
+        await saveLayoutFor(state.preferenceKey, state.layout);
+        renderSubGrid(state);
+      });
+    }
+  }
+
+  function syncEditToggle() {
+    const editBtn = document.getElementById('composer-edit-toggle');
+    if (!editBtn) return;
+    if (!allowCustomization) {
+      editBtn.hidden = true;
+      return;
+    }
+    editBtn.hidden = false;
+    const fresh = editBtn.cloneNode(true);
+    editBtn.parentNode?.replaceChild(fresh, editBtn);
     if (!editing) {
-      btns.innerHTML = `<button class="composer-edit-btn" type="button">${i18n.t('ui.reuse.page_composer.edit_layout')}</button>`;
-      btns.querySelector('.composer-edit-btn').addEventListener('click', () => {
+      fresh.textContent = '✏';
+      fresh.title = i18n.t('ui.reuse.page_composer.edit_layout');
+      fresh.addEventListener('click', () => {
         layoutSnapshot = JSON.parse(JSON.stringify(layout));
         editing = true;
         beginEditMode();
-        renderGridComposer();
+        render();
       });
     } else {
-      btns.innerHTML = `<button class="composer-reset-btn" type="button">${i18n.t('ui.reuse.generic.reset')}</button>`;
-      btns.querySelector('.composer-reset-btn').addEventListener('click', () => {
-        layout = { placements: [], hidden: [] };
-        renderGridComposer();
+      fresh.textContent = '✓';
+      fresh.title = i18n.t('ui.reuse.generic.done');
+      fresh.addEventListener('click', async () => {
+        if (!subPageNavigation) {
+          compactPlacements();
+        }
+        editing = false;
+        endEditMode();
+        await saveLayout();
+        render();
       });
     }
   }
@@ -1430,23 +1464,48 @@ export function createPageComposer(root, {
     initializePlacements();
     computeGridDimensions();
 
-    contentGrid.classList.add('composer-grid-active');
+    contentGrid.classList.remove('composer-grid-active');
     contentGrid.innerHTML = '';
 
+    const panel = document.createElement('article');
+    panel.className = 'content-panel';
+    const section = document.createElement('div');
+    section.className = 'content-section';
+    panel.appendChild(section);
+    contentGrid.appendChild(panel);
+    gridSection = section;
+
     if (editing) {
-      contentGrid.appendChild(createGridOverlay());
+      section.classList.add('composer-grid-active');
+      section.style.minHeight = `${gridRows * UNIT}px`;
+      section.style.width = `${gridCols * UNIT}px`;
+      section.appendChild(createGridOverlay());
+    } else {
+      section.style.setProperty('--grid-cols', String(gridCols));
+      section.classList.add('composer-view-grid');
     }
 
-    const visiblePlacements = layout.placements.filter(
-      (p) => !layout.hidden.includes(p.id)
-    );
+    const visiblePlacements = layout.placements
+      .filter((p) => !layout.hidden.includes(p.id))
+      .sort((a, b) => a.row - b.row || a.col - b.col);
+
     for (const placement of visiblePlacements) {
       const el = elements.find((e) => e.id === placement.id);
       if (!el) continue;
-      contentGrid.appendChild(createCell(el, placement));
+      if (editing) {
+        section.appendChild(createCell(el, placement));
+      } else {
+        const card = document.createElement('section');
+        card.className = 'widget-card';
+        card.dataset.composerElement = el.id;
+        card.style.gridColumn = `${placement.col + 1} / span ${placement.w}`;
+        card.style.gridRow = `${placement.row + 1} / span ${placement.h}`;
+        card.innerHTML = el.render();
+        section.appendChild(card);
+      }
     }
 
-    syncFloatingToolbar();
+    syncEditToggle();
 
     if (editing) {
       createElementsPanel();
@@ -1508,7 +1567,7 @@ export function createPageComposer(root, {
     return `
       <aside class="composer-library">
         <div class="composer-library-header">
-          <h3>${i18n.t('ui.reuse.page_composer.sections')}</h3>
+          <h3>${i18n.t('ui.reuse.page_composer.elements')}</h3>
         </div>
         <ul class="composer-library-list">${listItems}${emptyMsg}</ul>
       </aside>
@@ -1519,16 +1578,6 @@ export function createPageComposer(root, {
     const effectiveLayout = getEffectiveLayout();
     let html = '';
 
-    if (allowCustomization) {
-      const btnLabel = editing
-        ? i18n.t('ui.reuse.generic.done')
-        : i18n.t('ui.reuse.page_composer.edit_layout');
-      const btnClass = editing ? 'composer-done-btn' : 'composer-edit-btn';
-      html += `<div class="composer-header">
-        <button class="${btnClass}" type="button">${btnLabel}</button>
-      </div>`;
-    }
-
     const cardsHtml = renderCards(effectiveLayout);
     html += `<article class="content-panel">${cardsHtml}</article>`;
 
@@ -1538,6 +1587,7 @@ export function createPageComposer(root, {
 
     contentGrid.innerHTML = html;
     bindSubPageComposerEvents();
+    syncEditToggle();
     onRender?.();
     const activeEl = elements.find((e) => e.id === activeSubPageId);
     if (activeEl?.subComposerOptions) {
@@ -1547,19 +1597,6 @@ export function createPageComposer(root, {
   }
 
   function bindSubPageComposerEvents() {
-    contentGrid.querySelector('.composer-edit-btn')?.addEventListener('click', () => {
-      editing = true;
-      beginEditMode();
-      renderSubPageComposer();
-    });
-
-    contentGrid.querySelector('.composer-done-btn')?.addEventListener('click', async () => {
-      editing = false;
-      endEditMode();
-      await saveLayout();
-      renderSubPageComposer();
-    });
-
     contentGrid.querySelectorAll('[data-composer-remove]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.composerRemove;
@@ -1666,11 +1703,19 @@ export function createPageComposer(root, {
       ? `<h1>${pageContext.title}</h1><p>${pageContext.subtitle}</p>`
       : '';
 
+    const toolbarHtml = Array.isArray(toolbar) && toolbar.length > 0
+      ? toolbar.map((t) => t.render()).join('')
+      : undefined;
+
+    const floatingHtml = Array.isArray(floatingMenu) && floatingMenu.length > 0
+      ? floatingMenu.map((t) => t.render()).join('')
+      : undefined;
+
     await renderDashboardLayout(root, {
       i18n,
       pageContext: pageContextHtml,
-      toolbar: toolbar ? toolbar.render() : undefined,
-      floatingToolbar: floatingMenu ? floatingMenu.render() : undefined,
+      toolbar: toolbarHtml,
+      floatingToolbar: floatingHtml,
       content: '',
     });
 

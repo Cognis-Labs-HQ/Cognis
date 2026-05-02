@@ -134,6 +134,10 @@
   <string name="ui.app.settings.available_languages">Available languages</string>
   <string name="ui.app.settings.preferred_languages">Preferred languages</string>
   <string name="ui.reuse.page_composer.edit_layout">Edit Layout</string>
-  <string name="ui.reuse.page_composer.sections">Sections</string>
-  <string name="ui.reuse.page_composer.all_visible">All sections are visible.</string>
+  <string name="ui.reuse.page_composer.sections">Elements</string>
+  <string name="ui.reuse.page_composer.elements">Elements</string>
+  <string name="ui.reuse.page_composer.all_visible">All elements are visible.</string>
+  <string name="ui.reuse.page_composer.zone_toolbar">Toolbar</string>
+  <string name="ui.reuse.page_composer.zone_floating">Floating menu</string>
+  <string name="ui.reuse.page_composer.zone_main">Main</string>
 </resources>

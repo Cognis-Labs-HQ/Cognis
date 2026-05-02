@@ -67,9 +67,13 @@ const composer = createPageComposer(root, {
     title: i18n.t('ui.app.docs.page_title'),
     subtitle: i18n.t('ui.app.docs.page_subtitle'),
   },
-  toolbar: {
-    render: () => `<h3>${i18n.t('ui.reuse.navigation')}</h3><ul>${renderSidebarLinks(docs)}</ul>`,
-  },
+  toolbar: [
+    {
+      id: 'docs-nav',
+      label: i18n.t('ui.reuse.navigation'),
+      render: () => `<h3>${i18n.t('ui.reuse.navigation')}</h3><ul>${renderSidebarLinks(docs)}</ul>`,
+    },
+  ],
   onRender: () => {
     root.querySelectorAll('[data-slug]').forEach((button) => {
       button.addEventListener('click', () => showDoc(button.dataset.slug));

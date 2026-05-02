@@ -213,8 +213,11 @@ const composer = createPageComposer(root, {
     title: i18n.t('ui.app.settings.page_title'),
     subtitle: i18n.t('ui.app.settings.page_subtitle'),
   },
-  toolbar: {
-    render: () => `
+  toolbar: [
+    {
+      id: 'settings-nav',
+      label: i18n.t('ui.app.settings.page_title'),
+      render: () => `
       <h2>${i18n.t('ui.app.settings.page_title')}</h2>
       <ul>
         <li><button data-composer-scroll="appearance">${i18n.t('ui.reuse.appearance')}</button></li>
@@ -222,14 +225,19 @@ const composer = createPageComposer(root, {
         <li><button data-composer-scroll="advanced">${i18n.t('ui.app.settings.advanced')}</button></li>
       </ul>
     `,
-  },
-  floatingMenu: {
-    render: () => `
+    },
+  ],
+  floatingMenu: [
+    {
+      id: 'settings-changes-bar',
+      label: i18n.t('ui.reuse.unsaved_changes'),
+      render: () => `
       <span>${i18n.t('ui.reuse.unsaved_changes')}</span>
       <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t('ui.reuse.generic.discard')}</button>
       <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t('ui.reuse.generic.save')}</button>
     `,
-  },
+    },
+  ],
   onRender: () => {
     updateThemeToggleForSettings();
   },

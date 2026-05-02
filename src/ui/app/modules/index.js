@@ -66,9 +66,13 @@ const composer = createPageComposer(root, {
     title: i18n.t('ui.app.modules.page_title'),
     subtitle: i18n.t('ui.app.modules.page_subtitle'),
   },
-  toolbar: {
-    render: () => `<h3>${i18n.t('ui.reuse.modules')}</h3><p>${i18n.t('ui.app.modules.toolbar_subtitle')}</p>`,
-  },
+  toolbar: [
+    {
+      id: 'modules-nav',
+      label: i18n.t('ui.reuse.modules'),
+      render: () => `<h3>${i18n.t('ui.reuse.modules')}</h3><p>${i18n.t('ui.app.modules.toolbar_subtitle')}</p>`,
+    },
+  ],
   onRender: () => {
     root.querySelectorAll('button[data-module]').forEach((button) => {
       button.addEventListener('click', async () => {
