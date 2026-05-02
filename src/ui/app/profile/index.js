@@ -140,7 +140,7 @@ function renderPostsList() {
         <li class="profile-post-card" data-post-id="${escapeHtml(p.id)}">
           <div class="profile-post-header">
             ${p.title ? `<strong class="profile-post-title">${escapeHtml(p.title)}</strong>` : ''}
-            <span class="visibility-badge ${visibilityClass(p.visibility ?? 'community')}">${escapeHtml(p.visibility ?? '')}</span>
+            ${p.visibility ? `<span class="visibility-badge ${visibilityClass(p.visibility)}">${escapeHtml(p.visibility)}</span>` : ''}
             <time class="profile-post-date" datetime="${escapeHtml(p.createdAt ?? '')}">${formatDate(p.createdAt)}</time>
           </div>
           <p class="profile-post-body">${escapeHtml(p.content)}</p>

@@ -93,8 +93,9 @@
 }
 
 .visibility-hidden {
-  background: rgba(100, 116, 139, 0.22);
-  color: #94a3b8;
+  background: var(--surface-soft);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
 }
 
 .visibility-private {
@@ -108,8 +109,8 @@
 }
 
 .visibility-community {
-  background: rgba(16, 185, 129, 0.22);
-  color: #34d399;
+  background: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .profile-edit-form {
