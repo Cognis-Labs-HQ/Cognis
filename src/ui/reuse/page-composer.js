@@ -279,6 +279,7 @@ export function createPageComposer(root, {
       btn.classList.toggle('active', btn.dataset.composerScroll === activeSubPageId);
     });
     history.replaceState(null, '', `#${activeSubPageId}`);
+    onRender?.();
   }
 
   async function init() {

@@ -42,6 +42,9 @@ button {
   cursor: pointer;
   transition: border-color 0.2s ease, transform 0.15s ease;
 }
+button:disabled {
+  cursor: not-allowed;
+}
 button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
   border-color: var(--accent-2);
   transform: translateY(-1px);
