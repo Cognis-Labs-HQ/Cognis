@@ -5,6 +5,7 @@ import { toFontFamilyValue, initFontPrefs, DEFAULT_FONT_SIZE } from './font-pref
 import { initLanguagePrefs } from './language-prefs.js';
 import { createUnsavedChangesBar } from '../../reuse/unsaved-changes.js';
 import { createPageComposer } from '../../reuse/page-composer.js';
+import { prefersReducedMotion } from '../../reuse/motion.js';
 
 const root = document.querySelector('#app');
 let languagePriority = readPreferredLanguages();
@@ -121,7 +122,7 @@ const composer = createPageComposer(root, {
     root.querySelectorAll('[data-composer-scroll]').forEach((btn) => {
       btn.addEventListener('click', () => {
         root.querySelector(`[data-composer-element="${btn.dataset.composerScroll}"]`)
-          ?.scrollIntoView({ behavior: 'smooth' });
+          ?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
       });
     });
 

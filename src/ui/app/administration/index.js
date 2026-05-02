@@ -133,7 +133,7 @@ function bindIntegrityRerun() {
 }
 
 let [modules, integrityRows] = await Promise.all([loadModules(), loadIntegrity()]);
-let composer = null;
+let composer;
 
 const elements = [
   {
