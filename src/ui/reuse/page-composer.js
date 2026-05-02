@@ -686,21 +686,32 @@ export function createPageComposer(root, {
   const subStates = new Map();
 
   async function loadLayoutFor(key) {
+    const account = localStorage.getItem('cognis_account');
+    if (!account) return null;
     try {
-      const data = await apiFetch(`/api/v1/preferences/${key}`);
-      return data?.value || null;
+      const response = await apiFetch(
+        `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`
+      );
+      if (!response.ok) return null;
+      const payload = await response.json();
+      const raw = payload?.data?.layoutJson;
+      return raw ? JSON.parse(raw) : null;
     } catch {
       return null;
     }
   }
 
   async function saveLayoutFor(key, layoutData) {
-    try {
-      await apiFetch(`/api/v1/preferences/${key}`, {
+    const account = localStorage.getItem('cognis_account');
+    if (!account) return;
+    await apiFetch(
+      `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
+      {
         method: 'PUT',
-        body: JSON.stringify({ value: layoutData }),
-      });
-    } catch {}
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ layout: layoutData }),
+      }
+    );
   }
 
   function getSubPanelId(preferenceKey) {
