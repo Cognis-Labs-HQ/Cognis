@@ -54,6 +54,11 @@
  *   Pass columns: 2 to render the content grid in two columns (sub-page navigation
  *   path only). Grid mode handles layout natively and ignores this option.
  *
+ * Sub-composer heading:
+ *   Pass heading: 'Section title' in subComposerOptions to render an h2 above the
+ *   sub-composer grid. The heading is rendered outside the inner grid container so
+ *   it is preserved across re-renders triggered by resize or sub-page switching.
+ *
  * @param {HTMLElement} root - The #app root element for the page.
  * @param {{
  *   allowCustomization: boolean,
@@ -92,6 +97,13 @@ export function createPageComposer(root, {
   subPageNavigation = false,
   columns = 1,
 }) {
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
+  }
+
   let elements = initialElements;
   let layout = null;
   let editing = false;
@@ -1554,7 +1566,7 @@ export function createPageComposer(root, {
         const hiddenAttr = subPageNavigation && !isActive ? ' hidden' : '';
         if (el.subComposerOptions) {
           const headingHtml = el.subComposerOptions.heading
-            ? `<h2 class="sub-composer-heading">${el.subComposerOptions.heading}</h2>`
+            ? `<h2 class="sub-composer-heading">${escapeHtml(el.subComposerOptions.heading)}</h2>`
             : '';
           return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
         }
