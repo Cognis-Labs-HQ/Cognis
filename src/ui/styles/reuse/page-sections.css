@@ -2,14 +2,7 @@
   min-width: 0;
 }
 
-.content-section.active {
-  background: var(--toolbar-bg);
-  border-radius: 12px;
-  overflow: auto;
-  min-height: 380px;
-}
-
-.content-section.active .content-body {
+.content-panel > .content-section {
   padding: 28px;
 }
 

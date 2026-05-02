@@ -183,7 +183,7 @@ button.dropdown-item {
   appearance: none;
 }
 
-.app-shell button:hover:not(.dropdown-item):not([class*="btn-"]),
+.app-shell button:hover:not(.dropdown-item):not([class*="btn-"]):not(.theme-toggle),
 .app-shell select:hover {
   background: var(--control-hover-bg);
 }

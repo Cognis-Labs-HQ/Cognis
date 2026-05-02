@@ -126,10 +126,7 @@ export function createPageComposer(root, {
         const isActive = subPageNavigation && el.id === activeSubPageId;
         const activeClass = isActive ? ' active' : '';
         const hiddenAttr = subPageNavigation && !isActive ? ' hidden' : '';
-        const innerHtml = subPageNavigation
-          ? `<div class="content-body" data-composer-element="${el.id}">${el.render()}</div>`
-          : `<section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section>`;
-        return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}">${innerHtml}</div>`;
+        return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
       })
       .join('');
   }
@@ -172,7 +169,10 @@ export function createPageComposer(root, {
       </div>`;
     }
 
-    html += renderCards(effectiveLayout);
+    const cardsHtml = renderCards(effectiveLayout);
+    html += subPageNavigation
+      ? `<article class="content-panel">${cardsHtml}</article>`
+      : cardsHtml;
 
     if (editing) {
       html += renderLibraryPanel(effectiveLayout);
@@ -269,7 +269,8 @@ export function createPageComposer(root, {
 
   function switchSubPage(id) {
     activeSubPageId = id;
-    contentGrid.querySelectorAll('.content-section').forEach((section) => {
+    const panel = contentGrid.querySelector('.content-panel') ?? contentGrid;
+    panel.querySelectorAll('.content-section').forEach((section) => {
       const isActive = section.id === activeSubPageId;
       section.hidden = !isActive;
       section.classList.toggle('active', isActive);

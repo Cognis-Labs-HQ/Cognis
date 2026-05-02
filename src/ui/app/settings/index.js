@@ -91,6 +91,13 @@ const elements = [
   },
 ];
 
+function updateThemeToggleForSettings() {
+  const themeToggle = document.querySelector('#theme-toggle');
+  if (!themeToggle) return;
+  const activeId = window.location.hash.slice(1) || elements[0].id;
+  themeToggle.hidden = activeId === 'appearance';
+}
+
 const composer = createPageComposer(root, {
   allowCustomization: false,
   subPageNavigation: true,
@@ -119,11 +126,11 @@ const composer = createPageComposer(root, {
     `,
   },
   onRender: () => {
-    const themeToggle = document.querySelector('#theme-toggle');
-    if (themeToggle) themeToggle.hidden = true;
+    updateThemeToggleForSettings();
   },
 });
 await composer.init();
+window.addEventListener('hashchange', updateThemeToggleForSettings);
 
 const DEFAULT_THEME = 'dark';
 
