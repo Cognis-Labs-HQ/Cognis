@@ -43,7 +43,7 @@ button {
   cursor: pointer;
   transition: border-color 0.2s ease, transform 0.15s ease;
 }
-button:hover:not(:disabled) {
+button:hover:not(:disabled):not(.dropdown-item) {
   border-color: var(--accent-2);
   transform: translateY(-1px);
 }
