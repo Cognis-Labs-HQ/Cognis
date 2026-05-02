@@ -45,7 +45,7 @@ test('dashboard route requires login cookie', async () => {
   await route({ headers: { cookie: `cognis_access_token=${token}` } } as any, authed.res as any, new URL('http://localhost/dashboard'));
 
   assert.equal(authed.status, 200);
-  assert.match(authed.body, /page-builder\.js/);
+  assert.match(authed.body, /page-builder\/index\.js/);
 });
 
 test('login page is served as standalone page html', async () => {
@@ -57,7 +57,7 @@ test('login page is served as standalone page html', async () => {
   assert.equal(recorder.status, 200);
   assert.match(recorder.body, /id="login-form"/);
   assert.match(recorder.body, /id="theme-toggle"/);
-  assert.match(recorder.body, /app\/login\.js/);
+  assert.match(recorder.body, /app\/login\/index\.js/);
 });
 
 test('ui static route serves templates and assets from public folder', async () => {
@@ -126,6 +126,6 @@ test('administration page is visible to admins only', async () => {
   const adminRes = createResponseRecorder();
   await route({ headers: { cookie: `cognis_access_token=${adminToken}` } } as any, adminRes.res as any, new URL('http://localhost/administration'));
   assert.equal(adminRes.status, 200);
-  assert.match(adminRes.body, /app\/administration\.js/);
+  assert.match(adminRes.body, /app\/administration\/index\.js/);
   assert.match(adminRes.body, /id="app"/);
 });
