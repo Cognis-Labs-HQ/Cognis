@@ -43,22 +43,32 @@ function extractDefinedCssClasses() {
   return map;
 }
 
+// A valid CSS class name token: starts with a letter, ends with a letter/digit/underscore,
+// and contains only letters, digits, hyphens, or underscores.
+const CSS_IDENT = /^[a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]$|^[a-zA-Z]$/;
+
+// Inline CSS_IDENT as a capture group for use inside larger regex patterns.
+const CSS_IDENT_CAPTURE = '([a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]|[a-zA-Z])';
+
 function extractAppliedCssClasses(content) {
   const classes = new Set();
 
   const addTokens = (str) => {
     for (const tok of str.trim().split(/\s+/)) {
-      if (/^[a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]$|^[a-zA-Z]$/.test(tok)) classes.add(tok);
+      if (CSS_IDENT.test(tok)) classes.add(tok);
     }
   };
 
+  // Stop at `$` so that template-literal interpolations (${...}) are never read
+  // as part of the class attribute value — e.g. class="tab ${active}" → only "tab".
   for (const m of content.matchAll(/\bclass="([^"$]*)/g)) addTokens(m[1]);
   for (const m of content.matchAll(/\bclass='([^'$]*)/g)) addTokens(m[1]);
 
+  const identRe = new RegExp(`['"]${CSS_IDENT_CAPTURE}['"]`, 'g');
   for (const m of content.matchAll(/classList\.(?:add|remove)\([^)]+\)/g)) {
-    for (const arg of m[0].matchAll(/['"]([a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]|[a-zA-Z])['"]/g)) classes.add(arg[1]);
+    for (const arg of m[0].matchAll(identRe)) classes.add(arg[1]);
   }
-  for (const m of content.matchAll(/classList\.(?:toggle|contains)\(\s*['"]([a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]|[a-zA-Z])['"]/g)) {
+  for (const m of content.matchAll(new RegExp(`classList\\.(?:toggle|contains)\\(\\s*['"]${CSS_IDENT_CAPTURE}['"]`, 'g'))) {
     classes.add(m[1]);
   }
 
