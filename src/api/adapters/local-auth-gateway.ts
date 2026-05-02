@@ -16,6 +16,7 @@ export interface LocalAccountStore {
   setPassword(username: string, password: string): Promise<void>;
   setEnabled(username: string, enabled: boolean): Promise<void>;
   delete(username: string): Promise<void>;
+  getInfo(username: string): Promise<{ username: string; createdAt: string | null } | null>;
 }
 
 export class VolatileLocalAccountStore implements LocalAccountStore {
@@ -59,6 +60,11 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
 
   async delete(username: string) {
     this.accounts.delete(username);
+  }
+
+  async getInfo(username: string): Promise<{ username: string; createdAt: string | null } | null> {
+    if (!this.accounts.has(username)) return null;
+    return { username, createdAt: null };
   }
 }
 

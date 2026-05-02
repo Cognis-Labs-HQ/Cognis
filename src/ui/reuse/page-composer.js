@@ -16,6 +16,7 @@
  *     allowCustomization: true,
  *     elements: [
  *       { id: 'modules', label: 'Modules', render: () => '<h2>Modules</h2>...' },
+ *       { id: 'pinned-widget', label: 'Widget', render: () => '...', pinned: true },
  *     ],
  *     preferenceKey: 'administration-layout',
  *     i18n,
@@ -32,10 +33,19 @@
  *   shows that section, hides the others, and marks the button active. The active
  *   section is also reflected in the URL hash so deep-links work.
  *
+ * Pinned elements:
+ *   Set pinned: true on an element to prevent it from being removed by the user.
+ *   Pinned elements still appear in the drag handle for reordering but have no
+ *   remove button.
+ *
+ * Multi-column layout:
+ *   Pass columns: 2 to render the content grid in two columns. Elements can be
+ *   reordered via drag-and-drop, which changes their column placement naturally.
+ *
  * @param {HTMLElement} root - The #app root element for the page.
  * @param {{
  *   allowCustomization: boolean,
- *   elements: Array<{id: string, label: string, render: () => string}>,
+ *   elements: Array<{id: string, label: string, render: () => string, pinned?: boolean}>,
  *   preferenceKey: string,
  *   i18n: object,
  *   onRender?: () => void,
@@ -43,8 +53,9 @@
  *   toolbar?: { render: () => string },
  *   floatingMenu?: { render: () => string },
  *   subPageNavigation?: boolean,
+ *   columns?: number,
  * }} options
- * @returns {{ init(): Promise<void>, refresh(elements: Array<{id: string, label: string, render: () => string}>): void }}
+ * @returns {{ init(): Promise<void>, refresh(elements: Array<{id: string, label: string, render: () => string, pinned?: boolean}>): void }}
  */
 
 import { apiFetch } from './api-client.js';
@@ -61,6 +72,7 @@ export function createPageComposer(root, {
   toolbar,
   floatingMenu,
   subPageNavigation = false,
+  columns = 1,
 }) {
   let elements = initialElements;
   let layout = null;
@@ -100,10 +112,11 @@ export function createPageComposer(root, {
 
   function getEffectiveLayout() {
     const allIds = elements.map((e) => e.id);
+    const pinnedIds = elements.filter((e) => e.pinned).map((e) => e.id);
     const storedOrder = (layout?.order ?? []).filter((id) => allIds.includes(id));
     const missing = allIds.filter((id) => !storedOrder.includes(id));
     const order = [...storedOrder, ...missing];
-    const hidden = (layout?.hidden ?? []).filter((id) => allIds.includes(id));
+    const hidden = (layout?.hidden ?? []).filter((id) => allIds.includes(id) && !pinnedIds.includes(id));
     return { order, hidden };
   }
 
@@ -119,7 +132,7 @@ export function createPageComposer(root, {
           ? `<div class="composer-drag-handle" aria-hidden="true">
                <span class="composer-drag-icon">⠿</span>
                <span class="composer-drag-label">${el.label}</span>
-               <button class="composer-remove-btn" data-composer-remove="${el.id}" type="button">${i18n.t('ui.reuse.generic.remove')}</button>
+               ${!el.pinned ? `<button class="composer-remove-btn" data-composer-remove="${el.id}" type="button">${i18n.t('ui.reuse.generic.remove')}</button>` : ''}
              </div>`
           : '';
         const editingClass = editing ? ' composer-editing' : '';
@@ -296,6 +309,7 @@ export function createPageComposer(root, {
     });
 
     contentGrid = root.querySelector('.content-grid');
+    if (columns === 2) contentGrid?.classList.add('content-grid--two-column');
 
     if (subPageNavigation) {
       const hashId = window.location.hash.slice(1);

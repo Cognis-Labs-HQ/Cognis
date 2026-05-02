@@ -61,11 +61,6 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
   font-style: italic;
 }
 
-.invalid {
-  border-color: var(--color-danger-border);
-  outline: none;
-}
-
 .widgets { display: grid; gap: 12px; }
 .widget-card {
   border: 0;
@@ -475,6 +470,19 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   background: color-mix(in srgb, var(--accent-2) 10%, transparent);
 }
 
+.content-grid--two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+@media (max-width: 700px) {
+  .content-grid--two-column {
+    grid-template-columns: 1fr;
+  }
+}
+
 .composer-header {
   display: flex;
   justify-content: flex-end;
@@ -637,4 +645,59 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   font-size: 0.85rem;
   color: var(--text-muted);
   font-style: italic;
+}
+
+.dashboard-app-icon {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 4px;
+}
+
+.dashboard-app-icon-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.dashboard-app-icon-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dashboard-welcome-heading {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+}
+
+.dashboard-welcome-account {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.dashboard-info-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 14px;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.dashboard-info-list dt {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.dashboard-info-list dd {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.dashboard-last-seen {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
 }

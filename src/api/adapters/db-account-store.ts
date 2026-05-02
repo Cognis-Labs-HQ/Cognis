@@ -216,13 +216,13 @@ export class DbLocalAccountStore implements LocalAccountStore {
     await this.db.execute('BEGIN');
     try {
       await this.db.execute(
-        `INSERT INTO accounts (id, display_name, is_admin)
-         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)})`,
+        `INSERT INTO accounts (id, display_name, is_admin, created_at, updated_at)
+         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.currentTimestampExpression()}, ${this.currentTimestampExpression()})`,
         [username, username, role === 'admin']
       );
       await this.db.execute(
-        `INSERT INTO local_auth_credentials (account_id, username, password_hash, password_algorithm)
-         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)})`,
+        `INSERT INTO local_auth_credentials (account_id, username, password_hash, password_algorithm, created_at, updated_at)
+         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)}, ${this.currentTimestampExpression()}, ${this.currentTimestampExpression()})`,
         [username, username, hash(password), 'sha256']
       );
       await this.db.execute('COMMIT');
@@ -280,5 +280,16 @@ export class DbLocalAccountStore implements LocalAccountStore {
   }
   async delete(username: string) {
     await this.db.execute(`DELETE FROM accounts WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(1)})`, [username]);
+  }
+  async getInfo(username: string): Promise<{ username: string; createdAt: string | null } | null> {
+    const result = await this.db.execute(
+      `SELECT c.username, a.created_at FROM local_auth_credentials c
+       JOIN accounts a ON a.id = c.account_id
+       WHERE c.username = ${this.placeholder(1)}`,
+      [username]
+    );
+    const row = result.rows?.[0];
+    if (!row) return null;
+    return { username: String(row.username), createdAt: row.created_at ? String(row.created_at) : null };
   }
 }
