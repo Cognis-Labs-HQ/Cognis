@@ -103,7 +103,7 @@ export function createPageComposer(root, {
   let resizeObserver = null;
   let lastObservedCols = 0;
 
-  const UNIT = 90;
+  const UNIT = 90; // grid cell size in pixels
 
   async function loadLayout() {
     const account = localStorage.getItem('cognis_account');
@@ -298,7 +298,7 @@ export function createPageComposer(root, {
       let currentW = placement.w;
       let currentH = placement.h;
 
-      function clampVal(val, min, max) {
+      function clampValue(val, min, max) {
         if (max != null) return Math.max(min, Math.min(max, val));
         return Math.max(min, val);
       }
@@ -310,11 +310,11 @@ export function createPageComposer(root, {
         if (direction === 'e' || direction === 'se') {
           const rawW = Math.round((x - placement.col * UNIT) / UNIT);
           const maxW = gs.max ? gs.max[0] : gridCols - placement.col;
-          currentW = clampVal(rawW, gs.min[0], Math.min(maxW, gridCols - placement.col));
+          currentW = clampValue(rawW, gs.min[0], Math.min(maxW, gridCols - placement.col));
         }
         if (direction === 's' || direction === 'se') {
           const rawH = Math.round((y - placement.row * UNIT) / UNIT);
-          currentH = clampVal(rawH, gs.min[1], gs.max ? gs.max[1] : null);
+          currentH = clampValue(rawH, gs.min[1], gs.max ? gs.max[1] : null);
         }
         shade.style.width = `${currentW * UNIT}px`;
         shade.style.height = `${currentH * UNIT}px`;
@@ -513,11 +513,14 @@ export function createPageComposer(root, {
     panel.id = 'composer-elements-panel';
     panel.className = 'composer-panel';
 
-    const listHtml = hiddenElements.length === 0
-      ? `<li class="composer-library-empty">${i18n.t('ui.reuse.page_composer.all_visible')}</li>`
-      : hiddenElements.map(
+    let listHtml;
+    if (hiddenElements.length === 0) {
+      listHtml = `<li class="composer-library-empty">${i18n.t('ui.reuse.page_composer.all_visible')}</li>`;
+    } else {
+      listHtml = hiddenElements.map(
         (el) => `<li class="composer-library-item" data-composer-panel-item="${el.id}"><span>${el.label}</span></li>`
       ).join('');
+    }
 
     panel.innerHTML = `
       <div id="composer-panel-drag-handle" class="composer-panel-header">
