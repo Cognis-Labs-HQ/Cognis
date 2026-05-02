@@ -139,13 +139,11 @@ const elements = [
   {
     id: 'modules',
     label: i18n.t('ui.reuse.modules'),
-    gridSize: { default: [4, 5], min: [3, 3] },
     render: () => `<h2>${i18n.t('ui.reuse.modules')}</h2>${renderModulesContent(modules)}`,
   },
   {
     id: 'integrity',
     label: i18n.t('ui.reuse.file_integrity'),
-    gridSize: { default: [4, 4], min: [3, 3] },
     render: () => `
       <div class="integrity-header">
         <h2>${i18n.t('ui.reuse.file_integrity')}</h2>
@@ -157,7 +155,8 @@ const elements = [
 ];
 
 composer = createPageComposer(root, {
-  allowCustomization: true,
+  allowCustomization: false,
+  subPageNavigation: true,
   elements,
   preferenceKey: 'administration-layout',
   i18n,

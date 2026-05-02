@@ -423,13 +423,6 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 }
 
 
-.language-preferences {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  align-items: start;
-}
-
 .language-table {
   width: 100%;
   border-collapse: separate;
@@ -488,6 +481,10 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   justify-content: flex-end;
   align-items: center;
   padding: 0 4px;
+}
+
+.composer-toolbar-btns {
+  display: contents;
 }
 
 .composer-edit-btn {
@@ -725,10 +722,6 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   display: block;
 }
 
-.content-grid.composer-grid-active {
-  background: var(--surface);
-}
-
 .composer-grid-overlay {
   position: absolute;
   pointer-events: none;
@@ -822,13 +815,6 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   cursor: nwse-resize;
 }
 
-.composer-header-overlay {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 200;
-}
-
 .composer-panel {
   position: fixed;
   z-index: 500;
@@ -863,6 +849,14 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .composer-panel--minimized .composer-panel-header {
   border-bottom: 0;
   border-radius: 12px;
+}
+
+.composer-panel--drop-target {
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow);
+}
+
+.composer-panel--drop-target .composer-panel-body {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .composer-panel-title {
@@ -942,4 +936,14 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   background: var(--control-hover-bg);
   border-color: var(--border-strong);
   color: var(--text);
+}
+
+.sub-composer-mount {
+  position: relative;
+  width: 100%;
+}
+
+.sub-composer-grid {
+  position: relative;
+  display: block;
 }

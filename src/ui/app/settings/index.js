@@ -29,124 +29,25 @@ async function savePrefs(prefs) {
   });
 }
 
-const elements = [
-  {
-    id: 'appearance',
-    label: i18n.t('ui.reuse.appearance'),
-    gridSize: { default: [4, 4], min: [3, 3] },
-    render: () => `
-      <h2>${i18n.t('ui.reuse.appearance')}</h2>
-      <div class="font-heading-row">
-        <h3>${i18n.t('ui.app.settings.font_heading')}</h3>
-        <button id="pref-font-reset" type="button" disabled>${i18n.t('ui.reuse.generic.reset')}</button>
-      </div>
-      <div class="font-picker-row">
-        <label class="font-picker-label">
-          ${i18n.t('ui.app.settings.font')}
-          <div id="pref-font-picker"></div>
-        </label>
-        <div class="font-size-stepper">
-          <button id="pref-font-size-up" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} +">▲</button>
-          <span id="pref-font-size-value">${DEFAULT_FONT_SIZE} pt</span>
-          <button id="pref-font-size-down" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} -">▼</button>
-        </div>
-      </div>
-      <div class="font-preview-box">
-        <h4>${i18n.t('ui.app.settings.font_preview')}</h4>
-        <span id="pref-font-preview">${i18n.t('ui.app.settings.font_preview_sample')}</span>
-      </div>
-      <div class="theme-subsection">
-        <h3>${i18n.t('ui.app.settings.theme')}</h3>
-        <div class="theme-selector" id="pref-theme-selector">
-          <button type="button" class="theme-btn" data-theme-value="dark">${i18n.t('ui.app.settings.theme_dark')}</button>
-          <button type="button" class="theme-btn" data-theme-value="light">${i18n.t('ui.app.settings.theme_light')}</button>
-        </div>
-      </div>
-    `,
-  },
-  {
-    id: 'language',
-    label: i18n.t('ui.reuse.language'),
-    gridSize: { default: [4, 4], min: [3, 3] },
-    render: () => `
-      <h2>${i18n.t('ui.reuse.language')}</h2>
-      <div class="language-preferences">
-        <div>
-          <h3>${i18n.t('ui.app.settings.available_languages')}</h3>
-          <table id="available-languages" class="language-table"></table>
-        </div>
-        <div>
-          <h3>${i18n.t('ui.app.settings.preferred_languages')}</h3>
-          <table id="preferred-languages" class="language-table"></table>
-        </div>
-      </div>
-    `,
-  },
-  {
-    id: 'advanced',
-    label: i18n.t('ui.app.settings.advanced'),
-    gridSize: { default: [4, 3], min: [2, 2] },
-    render: () => `
-      <h2>${i18n.t('ui.app.settings.advanced')}</h2>
-      <h3>${i18n.t('ui.app.settings.preferences')}</h3>
-      <pre id="prefs-dump" class="prefs-dump">${i18n.t('ui.app.settings.prefs_loading')}</pre>
-    `,
-  },
-];
+const existingPrefs = await loadPrefs().catch(() => null);
+if (Array.isArray(existingPrefs?.languagePriority)) languagePriority = existingPrefs.languagePriority;
+
+const DEFAULT_THEME = 'dark';
+const savedMode = document.body.getAttribute('data-theme') || DEFAULT_THEME;
+
+let fontPrefs;
+let languagePrefs;
+let themePrefs;
+let changesBar;
 
 function updateThemeToggleForSettings() {
   const themeToggle = document.querySelector('#theme-toggle');
   if (!themeToggle) return;
-  themeToggle.hidden = false;
+  const hash = window.location.hash.slice(1);
+  themeToggle.hidden = hash !== '' && hash !== 'appearance';
 }
 
-const composer = createPageComposer(root, {
-  allowCustomization: true,
-  elements,
-  preferenceKey: 'settings-layout',
-  i18n,
-  pageContext: {
-    title: i18n.t('ui.app.settings.page_title'),
-    subtitle: i18n.t('ui.app.settings.page_subtitle'),
-  },
-  toolbar: {
-    render: () => `
-      <h2>${i18n.t('ui.app.settings.page_title')}</h2>
-      <ul>
-        <li><button data-composer-scroll="appearance">${i18n.t('ui.reuse.appearance')}</button></li>
-        <li><button data-composer-scroll="language">${i18n.t('ui.reuse.language')}</button></li>
-        <li><button data-composer-scroll="advanced">${i18n.t('ui.app.settings.advanced')}</button></li>
-      </ul>
-    `,
-  },
-  floatingMenu: {
-    render: () => `
-      <span>${i18n.t('ui.reuse.unsaved_changes')}</span>
-      <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t('ui.reuse.generic.discard')}</button>
-      <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t('ui.reuse.generic.save')}</button>
-    `,
-  },
-  onRender: () => {
-    updateThemeToggleForSettings();
-  },
-});
-await composer.init();
-
-const DEFAULT_THEME = 'dark';
-
-const floatingToolbarEl = root.querySelector('.floating-toolbar');
-
-const existingPrefs = await loadPrefs().catch(() => null);
-if (Array.isArray(existingPrefs?.languagePriority)) languagePriority = existingPrefs.languagePriority;
-
-const prefsDumpEl = root.querySelector('#prefs-dump');
-if (prefsDumpEl) {
-  prefsDumpEl.textContent = existingPrefs != null
-    ? JSON.stringify(existingPrefs, null, 2)
-    : 'null';
-}
-
-const savedMode = document.body.getAttribute('data-theme') || DEFAULT_THEME;
+window.addEventListener('hashchange', updateThemeToggleForSettings);
 
 function initThemePrefs({ onDirtyChange }) {
   let currentMode = savedMode;
@@ -177,28 +78,174 @@ function initThemePrefs({ onDirtyChange }) {
   };
 }
 
-const fontPrefs = initFontPrefs(root, {
-  existingPrefs,
+const elements = [
+  {
+    id: 'appearance',
+    label: i18n.t('ui.reuse.appearance'),
+    subComposerOptions: {
+      allowCustomization: false,
+      preferenceKey: 'settings-appearance-layout',
+      elements: [
+        {
+          id: 'font-prefs',
+          label: i18n.t('ui.app.settings.font_heading'),
+          render: () => `
+            <h2>${i18n.t('ui.reuse.appearance')}</h2>
+            <div class="font-heading-row">
+              <h3>${i18n.t('ui.app.settings.font_heading')}</h3>
+              <button id="pref-font-reset" type="button" disabled>${i18n.t('ui.reuse.generic.reset')}</button>
+            </div>
+            <div class="font-picker-row">
+              <label class="font-picker-label">
+                ${i18n.t('ui.app.settings.font')}
+                <div id="pref-font-picker"></div>
+              </label>
+              <div class="font-size-stepper">
+                <button id="pref-font-size-up" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} +">▲</button>
+                <span id="pref-font-size-value">${DEFAULT_FONT_SIZE} pt</span>
+                <button id="pref-font-size-down" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} -">▼</button>
+              </div>
+            </div>
+            <div class="font-preview-box">
+              <h4>${i18n.t('ui.app.settings.font_preview')}</h4>
+              <span id="pref-font-preview">${i18n.t('ui.app.settings.font_preview_sample')}</span>
+            </div>
+          `,
+        },
+        {
+          id: 'theme-prefs',
+          label: i18n.t('ui.app.settings.theme'),
+          render: () => `
+            <div class="theme-subsection">
+              <h3>${i18n.t('ui.app.settings.theme')}</h3>
+              <div class="theme-selector" id="pref-theme-selector">
+                <button type="button" class="theme-btn" data-theme-value="dark">${i18n.t('ui.app.settings.theme_dark')}</button>
+                <button type="button" class="theme-btn" data-theme-value="light">${i18n.t('ui.app.settings.theme_light')}</button>
+              </div>
+            </div>
+          `,
+        },
+      ],
+      onRender: () => {
+        fontPrefs = initFontPrefs(root, {
+          existingPrefs,
+          i18n,
+          onDirtyChange: (dirty) => changesBar?.markDirty('font', dirty),
+        });
+        fontPrefs.init();
+        themePrefs = initThemePrefs({
+          onDirtyChange: (dirty) => changesBar?.markDirty('theme', dirty),
+        });
+        updateThemeToggleForSettings();
+      },
+    },
+  },
+  {
+    id: 'language',
+    label: i18n.t('ui.reuse.language'),
+    subComposerOptions: {
+      allowCustomization: false,
+      preferenceKey: 'settings-language-layout',
+      elements: [
+        {
+          id: 'available-languages',
+          label: i18n.t('ui.app.settings.available_languages'),
+          render: () => `
+            <h2>${i18n.t('ui.reuse.language')}</h2>
+            <h3>${i18n.t('ui.app.settings.available_languages')}</h3>
+            <table id="available-languages" class="language-table"></table>
+          `,
+        },
+        {
+          id: 'preferred-languages',
+          label: i18n.t('ui.app.settings.preferred_languages'),
+          render: () => `
+            <h3>${i18n.t('ui.app.settings.preferred_languages')}</h3>
+            <table id="preferred-languages" class="language-table"></table>
+          `,
+        },
+      ],
+      onRender: () => {
+        languagePrefs = initLanguagePrefs(root, languagePriority, {
+          onDirtyChange: (dirty) => changesBar?.markDirty('language', dirty),
+        });
+        languagePrefs.init();
+      },
+    },
+  },
+  {
+    id: 'advanced',
+    label: i18n.t('ui.app.settings.advanced'),
+    subComposerOptions: {
+      allowCustomization: false,
+      preferenceKey: 'settings-advanced-layout',
+      elements: [
+        {
+          id: 'prefs-dump',
+          label: i18n.t('ui.app.settings.preferences'),
+          pinned: true,
+          render: () => `
+            <h2>${i18n.t('ui.app.settings.advanced')}</h2>
+            <h3>${i18n.t('ui.app.settings.preferences')}</h3>
+            <pre id="prefs-dump" class="prefs-dump">${i18n.t('ui.app.settings.prefs_loading')}</pre>
+          `,
+        },
+      ],
+      onRender: () => {
+        const prefsDumpEl = root.querySelector('#prefs-dump');
+        if (prefsDumpEl) {
+          prefsDumpEl.textContent = existingPrefs != null
+            ? JSON.stringify(existingPrefs, null, 2)
+            : 'null';
+        }
+      },
+    },
+  },
+];
+
+const composer = createPageComposer(root, {
+  allowCustomization: false,
+  subPageNavigation: true,
+  elements,
+  preferenceKey: 'settings-layout',
   i18n,
-  onDirtyChange: (dirty) => changesBar.markDirty('font', dirty),
+  pageContext: {
+    title: i18n.t('ui.app.settings.page_title'),
+    subtitle: i18n.t('ui.app.settings.page_subtitle'),
+  },
+  toolbar: {
+    render: () => `
+      <h2>${i18n.t('ui.app.settings.page_title')}</h2>
+      <ul>
+        <li><button data-composer-scroll="appearance">${i18n.t('ui.reuse.appearance')}</button></li>
+        <li><button data-composer-scroll="language">${i18n.t('ui.reuse.language')}</button></li>
+        <li><button data-composer-scroll="advanced">${i18n.t('ui.app.settings.advanced')}</button></li>
+      </ul>
+    `,
+  },
+  floatingMenu: {
+    render: () => `
+      <span>${i18n.t('ui.reuse.unsaved_changes')}</span>
+      <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t('ui.reuse.generic.discard')}</button>
+      <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t('ui.reuse.generic.save')}</button>
+    `,
+  },
+  onRender: () => {
+    updateThemeToggleForSettings();
+  },
 });
+await composer.init();
 
-const languagePrefs = initLanguagePrefs(root, languagePriority, {
-  onDirtyChange: (dirty) => changesBar.markDirty('language', dirty),
-});
+const floatingToolbarEl = root.querySelector('.floating-toolbar');
 
-const themePrefs = initThemePrefs({
-  onDirtyChange: (dirty) => changesBar.markDirty('theme', dirty),
-});
-
-const changesBar = createUnsavedChangesBar(floatingToolbarEl, {
+changesBar = createUnsavedChangesBar(floatingToolbarEl, {
   onSave: async () => {
-    const selectedFont = fontPrefs.getFont();
-    const mode = themePrefs.getMode();
+    const selectedFont = fontPrefs?.getFont();
+    const mode = themePrefs?.getMode() ?? savedMode;
     const prefs = {
-      appFont: toFontFamilyValue(selectedFont),
-      appFontSize: fontPrefs.getFontSize(),
-      languagePriority: languagePrefs.getPriority(),
+      appFont: selectedFont ? toFontFamilyValue(selectedFont) : undefined,
+      appFontSize: fontPrefs?.getFontSize(),
+      languagePriority: languagePrefs?.getPriority() ?? languagePriority,
       mode,
     };
     await savePrefs(prefs);
@@ -210,11 +257,8 @@ const changesBar = createUnsavedChangesBar(floatingToolbarEl, {
     window.location.reload();
   },
   onDiscard: () => {
-    fontPrefs.discard();
-    languagePrefs.discard();
-    themePrefs.discard();
+    fontPrefs?.discard();
+    languagePrefs?.discard();
+    themePrefs?.discard();
   },
 });
-
-await fontPrefs.init();
-await languagePrefs.init();
