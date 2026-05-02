@@ -1,7 +1,7 @@
 # UI Component
 
 ## Purpose
-`ui/` hosts the Cognis frontend and documentation center.
+`ui/` hosts the Cognis frontend for study workflows, social interaction surfaces, administration, and the embedded documentation center.
 
 ## Architecture
 - **Layouts**: shared shells in `ui/layouts`.
@@ -13,7 +13,10 @@
 | Route | Purpose |
 |---|---|
 | `/login` | User sign-in |
-| `/dashboard` | Modular page builder |
+| `/` | Study app landing surface |
+| `/modules` | Module and feature management |
+| `/settings` | User settings and preferences |
+| `/administration` | Administrative controls |
 | `/docs` | Browse production docs |
 
 ## State model

@@ -1,12 +1,12 @@
 # Cognis
 
-Cognis is an API-first, modular language-learning and social platform scaffold.
+Cognis is an API-first, modular language-study platform with lightweight social networking features.
 
 ## Current scaffold
 - `core/`: contracts, gateway interfaces, and core services.
 - `api/`: `/api/v1` route skeleton expressing domain intent and docs endpoints.
 - `adapters/`: backend-specific gateway implementations.
-- `ui/`: frontend root directory (to be implemented).
+- `ui/`: frontend app for study, docs, administration, and user settings.
 - `modules/`: compile-time module root.
 - `tooling/cli/`: `cognisctl` placeholder utility.
 - `docs/components/`: centralized component docs consumable from UI via API.
