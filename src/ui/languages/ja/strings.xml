@@ -116,4 +116,10 @@
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.app.settings.available_languages">利用可能な言語</string>
   <string name="ui.app.settings.preferred_languages">優先言語</string>
+  <string name="ui.reuse.page_composer.edit_layout">レイアウトを編集</string>
+  <string name="ui.reuse.page_composer.done">完了</string>
+  <string name="ui.reuse.page_composer.sections">セクション</string>
+  <string name="ui.reuse.page_composer.add">追加</string>
+  <string name="ui.reuse.page_composer.remove">削除</string>
+  <string name="ui.reuse.page_composer.all_visible">すべてのセクションが表示されています。</string>
 </resources>

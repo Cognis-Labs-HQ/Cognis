@@ -116,4 +116,10 @@
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.app.settings.available_languages">Available languages</string>
   <string name="ui.app.settings.preferred_languages">Preferred languages</string>
+  <string name="ui.reuse.page_composer.edit_layout">Edit Layout</string>
+  <string name="ui.reuse.page_composer.done">Done</string>
+  <string name="ui.reuse.page_composer.sections">Sections</string>
+  <string name="ui.reuse.page_composer.add">Add</string>
+  <string name="ui.reuse.page_composer.remove">Remove</string>
+  <string name="ui.reuse.page_composer.all_visible">All sections are visible.</string>
 </resources>

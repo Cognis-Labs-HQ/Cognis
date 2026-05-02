@@ -100,7 +100,7 @@ await renderDashboardLayout(root, {
       <li><button data-section="advanced">${i18n.t('ui.app.settings.advanced')}</button></li>
     </ul>
   `,
-  content: `<article class="docs-viewer">${appearanceContent}${languageContent}${advancedContent}</article>`,
+  content: `<article class="content-panel">${appearanceContent}${languageContent}${advancedContent}</article>`,
   floatingToolbar: `
     <span>${i18n.t('ui.reuse.unsaved_changes')}</span>
     <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t('ui.reuse.discard')}</button>
