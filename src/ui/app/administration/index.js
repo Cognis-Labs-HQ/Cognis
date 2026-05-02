@@ -92,7 +92,7 @@ function applyToolbarActiveState() {
     if (isActive) btn.setAttribute('aria-current', 'page');
     else btn.removeAttribute('aria-current');
   });
-  root.querySelectorAll('.settings-section[data-section]').forEach((sec) => {
+  root.querySelectorAll('.content-section[data-section]').forEach((sec) => {
     sec.classList.toggle('active', sec.dataset.section === hash);
   });
 }
@@ -113,7 +113,7 @@ function bindModuleToggles() {
 
       await toggleModule(moduleId, action);
       const modules = await loadModules();
-      const modulesCard = root.querySelector('.settings-section[data-section="modules"] .widget-card');
+      const modulesCard = root.querySelector('.content-section[data-section="modules"] .widget-card');
       if (modulesCard) {
         modulesCard.innerHTML = `<h2>${i18n.t('ui.reuse.modules')}</h2>${renderModulesContent(modules)}`;
         bindModuleToggles();
@@ -131,7 +131,7 @@ function bindIntegrityRerun() {
     btn.disabled = true;
     btn.textContent = i18n.t('ui.app.admin.checking');
     const integrityRows = await loadIntegrity();
-    const integrityCard = root.querySelector('.settings-section[data-section="integrity"] .widget-card');
+    const integrityCard = root.querySelector('.content-section[data-section="integrity"] .widget-card');
     if (integrityCard) {
       integrityCard.innerHTML = `
         <div class="integrity-header">
@@ -148,7 +148,7 @@ function bindIntegrityRerun() {
 const [modules, integrityRows] = await Promise.all([loadModules(), loadIntegrity()]);
 
 const modulesSection = `
-  <div class="settings-section" data-section="modules">
+  <div class="content-section" data-section="modules">
     <section class="widget-card">
       <h2>${i18n.t('ui.reuse.modules')}</h2>
       ${renderModulesContent(modules)}
@@ -156,7 +156,7 @@ const modulesSection = `
   </div>`;
 
 const integritySection = `
-  <div class="settings-section" data-section="integrity">
+  <div class="content-section" data-section="integrity">
     <section class="widget-card">
       <div class="integrity-header">
         <h2>${i18n.t('ui.reuse.file_integrity')}</h2>

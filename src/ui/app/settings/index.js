@@ -34,7 +34,7 @@ async function savePrefs(prefs) {
 }
 
 const appearanceContent = `
-  <div class="settings-section" data-section="appearance">
+  <div class="content-section" data-section="appearance">
     ${section(i18n.t('ui.reuse.appearance'), `
       <div class="font-heading-row">
         <h3>${i18n.t('ui.app.settings.font_heading')}</h3>
@@ -66,7 +66,7 @@ const appearanceContent = `
   </div>`;
 
 const languageContent = `
-  <div class="settings-section" data-section="language">
+  <div class="content-section" data-section="language">
     ${section(i18n.t('ui.reuse.language'), `
       <div class="language-preferences">
         <div>
@@ -82,7 +82,7 @@ const languageContent = `
   </div>`;
 
 const advancedContent = `
-  <div class="settings-section" data-section="advanced">
+  <div class="content-section" data-section="advanced">
     ${section(i18n.t('ui.app.settings.advanced'), `
       <h3>${i18n.t('ui.app.settings.preferences')}</h3>
       <pre id="prefs-dump" class="prefs-dump">${i18n.t('ui.app.settings.prefs_loading')}</pre>
@@ -119,7 +119,7 @@ function applyToolbarActiveState() {
     if (isActive) btn.setAttribute('aria-current', 'page');
     else btn.removeAttribute('aria-current');
   });
-  root.querySelectorAll('.settings-section[data-section]').forEach((sec) => {
+  root.querySelectorAll('.content-section[data-section]').forEach((sec) => {
     sec.classList.toggle('active', sec.dataset.section === hash);
   });
 

@@ -1,22 +1,3 @@
-/* ── Settings section visibility ─────────────────────────────────────────── */
-
-.settings-section {
-  display: none;
-}
-
-.settings-section.active {
-  display: block;
-  padding-top: 28px;
-  padding-bottom: 28px;
-}
-
-/* ── Widget-card heading normalisation ───────────────────────────────────── */
-
-.widget-card > h2,
-.widget-card > h3 {
-  margin: 0 0 14px;
-}
-
 /* ── Font picker row (dropdown + size stepper inline) ────────────────────── */
 
 .font-picker-row {
