@@ -29,8 +29,8 @@ async function loadTutorialsConfig() {
     if (!response.ok) return { tutorialsEnabled: false, envAllowed: false };
     const payload = await response.json();
     return {
-      tutorialsEnabled: payload.data?.tutorialsEnabled !== false,
-      envAllowed: payload.data?.tutorialsEnabled !== false || typeof payload.data?.tutorialsEnabled === 'undefined',
+      tutorialsEnabled: payload.data?.tutorialsEnabled === true,
+      envAllowed: payload.data?.tutorialsEnvAllowed === true,
     };
   } catch {
     return { tutorialsEnabled: false, envAllowed: false };
@@ -133,8 +133,8 @@ function renderTutorialsContent(config) {
     : `<p class="tutorials-env-note tutorials-env-note--blocked">${i18n.t('ui.app.admin.tutorials_env_blocked')}</p>`;
 
   const statusNote = config.tutorialsEnabled
-    ? `<p class="tutorials-status tutorials-status--on">${i18n.t('ui.app.admin.tutorials_runtime_on')}</p>`
-    : `<p class="tutorials-status tutorials-status--off">${i18n.t('ui.app.admin.tutorials_runtime_off')}</p>`;
+    ? `<p class="tutorials-status tutorials-status--enabled">${i18n.t('ui.app.admin.tutorials_runtime_on')}</p>`
+    : `<p class="tutorials-status tutorials-status--disabled">${i18n.t('ui.app.admin.tutorials_runtime_off')}</p>`;
 
   const toggleLabel = config.tutorialsEnabled
     ? i18n.t('ui.app.admin.tutorials_toggle_disable')

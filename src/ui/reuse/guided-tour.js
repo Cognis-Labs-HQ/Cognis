@@ -109,7 +109,7 @@ const VALID_VARIANTS = new Set(['info', 'warning', 'danger', 'confirm']);
 const VALID_POSITIONS = new Set(['above', 'below', 'left', 'right']);
 const VALID_TYPES = new Set(['popup', 'spotlight', 'wait']);
 
-let tutorialsEnabledCache = null;
+let tutorialsEnabledCache = null; // cached for the lifetime of the current page load; refreshed on next navigation
 let activeTour = false;
 
 async function isTutorialsEnabled() {
@@ -349,15 +349,6 @@ function runPopupAction(action, stepIndex, stepCount, i18n) {
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'tour-popup-title');
 
-    function escapeHtml(value) {
-      return String(value ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
-    }
-
     function dismiss(result) {
       document.removeEventListener('keydown', onKeyDown);
       overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
@@ -366,28 +357,50 @@ function runPopupAction(action, stepIndex, stepCount, i18n) {
     }
 
     const isLast = stepIndex >= stepCount - 1;
-    const nextLabel = isLast ? t(i18n, 'ui.tour.done') : t(i18n, 'ui.tour.next');
-    const skipLabel = t(i18n, 'ui.tour.skip');
     const variant = VALID_VARIANTS.has(action.variant) ? action.variant : 'info';
 
-    overlay.innerHTML = `
-      <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
-        <div class="popup-header">
-          <h2 class="popup-title" id="tour-popup-title">${escapeHtml(action.title)}</h2>
-          <button class="popup-close-btn" data-tour-action="skip" type="button" aria-label="${escapeHtml(t(i18n, 'ui.tour.skip'))}">&#x2715;</button>
-        </div>
-        <div class="popup-body">${escapeHtml(action.body)}</div>
-        <div class="popup-footer">
-          <button class="popup-action-btn popup-action-btn--neutral btn-animated" data-tour-action="skip" type="button">${escapeHtml(skipLabel)}</button>
-          <button class="btn-confirm btn-animated popup-action-btn" data-tour-action="next" type="button">${escapeHtml(nextLabel)}</button>
-        </div>
-      </div>
-    `;
+    const dialog = document.createElement('div');
+    dialog.className = `popup-dialog popup-dialog--${variant}`;
 
-    overlay.querySelector('[data-tour-action="next"]').addEventListener('click', () => dismiss('next'));
-    overlay.querySelectorAll('[data-tour-action="skip"]').forEach((btn) => {
-      btn.addEventListener('click', () => dismiss('skip'));
-    });
+    const header = document.createElement('div');
+    header.className = 'popup-header';
+
+    const titleEl = document.createElement('h2');
+    titleEl.className = 'popup-title';
+    titleEl.id = 'tour-popup-title';
+    titleEl.textContent = action.title;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'popup-close-btn';
+    closeBtn.setAttribute('aria-label', t(i18n, 'ui.tour.skip'));
+    closeBtn.textContent = '\u2715';
+    closeBtn.addEventListener('click', () => dismiss('skip'));
+
+    header.append(titleEl, closeBtn);
+
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'popup-body';
+    bodyEl.textContent = action.body;
+
+    const footer = document.createElement('div');
+    footer.className = 'popup-footer';
+
+    const skipBtn = document.createElement('button');
+    skipBtn.type = 'button';
+    skipBtn.className = 'popup-action-btn popup-action-btn--neutral btn-animated';
+    skipBtn.textContent = t(i18n, 'ui.tour.skip');
+    skipBtn.addEventListener('click', () => dismiss('skip'));
+
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.className = 'btn-confirm btn-animated popup-action-btn';
+    nextBtn.textContent = isLast ? t(i18n, 'ui.tour.done') : t(i18n, 'ui.tour.next');
+    nextBtn.addEventListener('click', () => dismiss('next'));
+
+    footer.append(skipBtn, nextBtn);
+    dialog.append(header, bodyEl, footer);
+    overlay.appendChild(dialog);
 
     function onKeyDown(e) {
       if (e.key === 'Escape') dismiss('skip');
@@ -397,8 +410,7 @@ function runPopupAction(action, stepIndex, stepCount, i18n) {
     document.body.appendChild(overlay);
     requestAnimationFrame(() => overlay.classList.add('popup-overlay--visible'));
 
-    const firstFocus = overlay.querySelector('button');
-    firstFocus?.focus();
+    nextBtn.focus();
   });
 }
 

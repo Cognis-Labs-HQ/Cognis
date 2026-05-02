@@ -22,8 +22,41 @@ For module-specific operational controls, add pluggable CLI subcommands at `modu
 ### User namespace
 Use the `user:*` command namespace for account operations (`create`, `role`, `set-password`, `disable`, `enable`, `delete`). Expose user preference resets only via `user:preferences:clear`; avoid granular per-key mutations.
 
-### Shared UI logic
-Reusable UI logic belongs in `ui/src/reuse`. Promote code reactively: when writing a new feature in area B, if you notice similar logic already exists in area A, move it to `reuse`, update area A to import it, and use it in area B. The threshold for promotion is any parameterisable snippet of 5 or more lines that provides distinct enough functionality to be worth a named function.
+### Guided tour (puppeteering)
+The reusable guided tour component lives at `src/ui/reuse/guided-tour.js`. It exposes two functions:
+
+- `startTour(tourDef, options)` — validates, checks the feature flag, then runs each step.
+- `resumeTourIfPending(tours, options)` — resumes a cross-page tour from sessionStorage after a navigation. Call this early in the initialisation of every page that may be a tour destination, passing a map of `{ [tourId]: tourDef }`.
+
+A tour definition is:
+```js
+{
+  id: 'my-tour',   // lower-case alphanumeric + hyphens only
+  steps: [
+    {
+      path: '/dashboard',   // optional; navigate before executing actions
+      actions: [
+        { type: 'popup',     title: 'Hello',  body: 'Text here.',          variant: 'info' },
+        { type: 'spotlight', target: '.css-selector', message: '...', position: 'below' },
+        { type: 'wait',      ms: 500 },
+      ],
+    },
+  ],
+}
+```
+
+The `ALLOW_TUTORIALS` environment variable is the hard kill switch. Set it to `0` to disable all tours regardless of runtime state. Admins can additionally toggle tours at runtime via `PUT /api/v1/system/config/tutorials { enabled: boolean }` (admin role required). The combined state is exposed as `tutorialsEnabled` in `GET /api/v1/system/ui-config`; env-only state is in `tutorialsEnvAllowed`. When `envAllowed` is false the runtime toggle is blocked.
+
+The first-login tour is triggered from `src/ui/app/dashboard/index.js`. Tour completion is persisted via the user preferences API at key `system-tour-completed`.
+
+Security requirements for tour definitions:
+- Target CSS selectors are validated against a safe-character allowlist before reaching `querySelector`.
+- Navigation paths must begin with `/` and contain only path-safe characters.
+- All text is rendered via `textContent`, never `innerHTML`.
+- Maximum 30 steps and 20 actions per step are enforced.
+- Only one tour may run at a time; concurrent calls are silently dropped.
+
+
 
 Every module in `ui/src/reuse` must open with a JSDoc block that documents: what the module does, its public exports with a one-line description each, a concrete usage example, and `@param` / `@returns` annotations on non-trivial exported functions. See `unsaved-changes.js` for the canonical form.
 

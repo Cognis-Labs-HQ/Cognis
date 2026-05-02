@@ -135,7 +135,7 @@
   <string name="ui.tour.next">次へ</string>
   <string name="ui.tour.done">完了</string>
   <string name="ui.tour.step_label">ステップ</string>
-  <string name="ui.tour.step_of_label">/</string>
+  <string name="ui.tour.step_of_label">の</string>
   <string name="ui.tour.spotlight_aria">ツアーのハイライト</string>
 
   <string name="ui.tour.first_login.welcome.title">Cognisへようこそ</string>

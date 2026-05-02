@@ -54,9 +54,10 @@ export function createSystemRoutes(healthService: HealthService) {
     }
 
     if (url.pathname === '/api/v1/system/ui-config' && req.method === 'GET') {
-      const tutorialsEnabled = parseTutorialsAllowedByEnv() && tutorialsRuntimeEnabled;
+      const tutorialsEnvAllowed = parseTutorialsAllowedByEnv();
+      const tutorialsEnabled = tutorialsEnvAllowed && tutorialsRuntimeEnabled;
       res.writeHead(200, { 'content-type': 'application/json' });
-      res.end(JSON.stringify({ data: { demoMode: parseDemoModeFromEnv(), tutorialsEnabled } }));
+      res.end(JSON.stringify({ data: { demoMode: parseDemoModeFromEnv(), tutorialsEnabled, tutorialsEnvAllowed } }));
       return true;
     }
 

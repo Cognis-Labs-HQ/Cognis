@@ -60,8 +60,8 @@ const DYNAMIC_CLASS_NAMES = new Set([
   'tour-badge--right',
   'tutorials-env-note--allowed',
   'tutorials-env-note--blocked',
-  'tutorials-status--on',
-  'tutorials-status--off',
+  'tutorials-status--enabled',
+  'tutorials-status--disabled',
 ]);
 
 // Reuse module exports that are fully implemented but not yet wired up to

@@ -185,10 +185,10 @@
   margin: 0 0 16px;
 }
 
-.tutorials-status--on {
+.tutorials-status--enabled {
   color: var(--color-success, #22c55e);
 }
 
-.tutorials-status--off {
+.tutorials-status--disabled {
   color: var(--text-muted, #94a3b8);
 }
