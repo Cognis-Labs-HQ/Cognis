@@ -340,9 +340,10 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   border: 1px solid var(--color-success-border);
 }
 
-.btn-confirm:hover {
-  background: var(--color-success);
-  border-color: var(--color-success-border);
+.btn-confirm:hover:not(:disabled) {
+  background: var(--color-success-hover-bg);
+  border-color: var(--color-success-outline-text, var(--color-success-text));
+  color: var(--color-success-outline-text, var(--color-success-text));
 }
 
 .btn-cancel {
@@ -351,9 +352,10 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   border: 1px solid var(--color-danger-border);
 }
 
-.btn-cancel:hover {
-  background: var(--color-danger);
-  border-color: var(--color-danger-border);
+.btn-cancel:hover:not(:disabled) {
+  background: var(--color-danger-hover-bg);
+  border-color: var(--color-danger-outline-text, var(--color-danger-text));
+  color: var(--color-danger-outline-text, var(--color-danger-text));
 }
 
 .btn-animated {
@@ -369,6 +371,11 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .btn-animated:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: none;
+}
+
+[class*="btn-"]:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
 }
 
 .floating-toolbar {
