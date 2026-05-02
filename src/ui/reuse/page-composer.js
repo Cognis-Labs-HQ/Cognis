@@ -113,7 +113,7 @@ export function createPageComposer(root, {
              </div>`
           : '';
         const editingClass = editing ? ' composer-editing' : '';
-        return `<section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section>`;
+        return `<div class="content-section"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
       })
       .join('');
   }

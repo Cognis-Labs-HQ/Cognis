@@ -1,3 +1,7 @@
+.content-section {
+  min-width: 0;
+}
+
 .widget-card > h2,
 .widget-card > h3 {
   margin: 0 0 14px;

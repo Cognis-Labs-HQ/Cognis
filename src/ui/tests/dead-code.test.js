@@ -56,7 +56,6 @@ const DYNAMIC_CLASS_NAMES = new Set([
 // any consuming page. Wire them up and remove from this list, or delete
 // the export if it is no longer needed.
 const PENDING_INTEGRATION_EXPORTS = new Set([
-  'createPageComposer',
 ]);
 
 test('no dead CSS classes (defined but never referenced in scripts or templates)', () => {
