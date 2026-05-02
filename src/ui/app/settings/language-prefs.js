@@ -1,4 +1,4 @@
-import { apiFetch } from '../reuse/api-client.js';
+import { apiFetch } from '../../reuse/api-client.js';
 
 async function loadLanguagesCatalog() {
   const response = await apiFetch('/api/v1/system/languages');
@@ -6,9 +6,15 @@ async function loadLanguagesCatalog() {
   return payload.data || [];
 }
 
-export function initLanguagePrefs(root, initialPriority) {
+export function initLanguagePrefs(root, initialPriority, { onDirtyChange } = {}) {
   let languagePriority = [...initialPriority];
+  const savedPriority = [...initialPriority];
   let catalog = [];
+
+  function notifyDirty() {
+    const dirty = JSON.stringify(languagePriority) !== JSON.stringify(savedPriority);
+    onDirtyChange?.(dirty);
+  }
 
   function makeRow(isoCode, labelText) {
     const tr = document.createElement('tr');
@@ -102,8 +108,15 @@ export function initLanguagePrefs(root, initialPriority) {
     languagePriority = [...new Set(languagePriority)];
     if (!languagePriority.includes('en')) languagePriority.push('en');
     renderTables();
+    notifyDirty();
     dragLanguage = null;
   });
+
+  function discard() {
+    languagePriority = [...savedPriority];
+    renderTables();
+    notifyDirty();
+  }
 
   async function init() {
     catalog = await loadLanguagesCatalog().catch(() => [{ iso_code: 'en', name: 'English' }]);
@@ -113,5 +126,7 @@ export function initLanguagePrefs(root, initialPriority) {
   return {
     init,
     getPriority: () => languagePriority,
+    isDirty: () => JSON.stringify(languagePriority) !== JSON.stringify(savedPriority),
+    discard,
   };
 }

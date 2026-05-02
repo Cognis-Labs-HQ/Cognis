@@ -25,6 +25,27 @@ Use the `user:*` command namespace for account operations (`create`, `role`, `se
 ### Shared UI logic
 Reusable UI logic belongs in `ui/src/reuse`. Promote code reactively: when writing a new feature in area B, if you notice similar logic already exists in area A, move it to `reuse`, update area A to import it, and use it in area B. The threshold for promotion is any parameterisable snippet of 5 or more lines that provides distinct enough functionality to be worth a named function.
 
+Every module in `ui/src/reuse` must open with a JSDoc block that documents: what the module does, its public exports with a one-line description each, a concrete usage example, and `@param` / `@returns` annotations on non-trivial exported functions. See `unsaved-changes.js` for the canonical form.
+
+### UI app page structure
+Each page entry point lives in its own subdirectory under `ui/src/app/` as `index.js`, alongside any sub-modules it owns. The directory name is the page name; sub-modules drop any shared prefix. For example:
+
+```
+app/
+  settings/
+    index.js          ← was settings.js
+    font-prefs.js     ← was settings-font-prefs.js
+    language-prefs.js ← was settings-language-prefs.js
+  administration/
+    index.js
+  page-builder/
+    index.js
+  demo-puppeteer/
+    index.js
+```
+
+Apply this layout to every new page and sub-module; never place a page entry point directly in `app/` as a flat `.js` file.
+
 ---
 
 ## Code quality
@@ -37,6 +58,12 @@ Keep modules focused and cohesive. Avoid duplicated request/serialization logic 
 
 ### Comments
 Avoid speculative comments. Annotate only non-obvious technical constraints. Keep docs user/product-oriented; AI process guidance stays in this file.
+
+Never let AI session reasoning, agent process notes, or session-specific observations enter the codebase — for example, remarks like "it was never changed", "queued; only written on Save", or "subsections ordered alphabetically" are agent artefacts and must be removed before committing.
+
+Do not use section-indicator dividers (e.g. `/* ── Section name ─── */` or `// ── Section name ─── //`) in any file. These add noise without value.
+
+Do not add any comments at all in CSS files. CSS is self-describing through its selectors and property names; inline or block annotations should not appear.
 
 ### Opportunistic improvement
 When editing a file, make opportunistic improvements to the surrounding code that align with these principles — within the scope of the files being touched. Do not perform project-wide refactors as a side-effect of a targeted change.

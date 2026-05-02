@@ -16,6 +16,11 @@
   <string name="ui.reuse.version">Versi</string>
   <string name="ui.reuse.class">Kelas</string>
   <string name="ui.reuse.appearance">Tampilan</string>
+  <string name="ui.reuse.language">Bahasa</string>
+  <string name="ui.reuse.reset">Setel ulang</string>
+  <string name="ui.reuse.unsaved_changes">Ada perubahan yang belum disimpan.</string>
+  <string name="ui.reuse.save">Simpan</string>
+  <string name="ui.reuse.discard">Batalkan</string>
 
   <string name="ui.layout.brand.aria">Beranda Cognis</string>
   <string name="ui.layout.nav.primary">Navigasi utama</string>
@@ -66,6 +71,15 @@
   <string name="ui.app.settings.save">Simpan Preferensi</string>
   <string name="ui.app.settings.saved_alert">Preferensi tersimpan.</string>
   <string name="ui.app.settings.sidebar.preferences">Preferensi</string>
+  <string name="ui.app.settings.sidebar.language">Bahasa</string>
+  <string name="ui.app.settings.font_heading">Font</string>
+  <string name="ui.app.settings.theme">Tema</string>
+  <string name="ui.app.settings.theme_dark">Gelap</string>
+  <string name="ui.app.settings.theme_light">Terang</string>
+  <string name="ui.app.settings.advanced">Lanjutan</string>
+  <string name="ui.app.settings.preferences">Preferensi</string>
+  <string name="ui.app.settings.prefs_dump_label">Preferensi tersimpan</string>
+  <string name="ui.app.settings.prefs_loading">Memuat...</string>
 
   <string name="ui.app.docs.page_title">Dokumentasi</string>
   <string name="ui.app.docs.page_subtitle">Dokumentasi pengembang.</string>

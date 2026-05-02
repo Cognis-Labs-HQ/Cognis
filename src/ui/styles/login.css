@@ -30,11 +30,14 @@
   grid-template-columns: auto 1fr;
   align-items: center;
   gap: 16px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 10px 14px;
 }
 
 .login-icon { width: 70px; height: 70px; }
 .login-title { margin: 0; font-size: 3.1rem; line-height: 0.95; }
-.login-typing { margin: 7px 0 0; min-height: 1.5rem; font-size: 1.1rem; color: #5ad47a; }
+.login-typing { margin: 7px 0 0; min-height: 1.5rem; font-size: 1.1rem; font-weight: 700; color: #5ad47a; }
 .typing-cursor { animation: blink-cursor 0.95s steps(1, end) infinite; }
 
 .login-intro-copy {
@@ -99,6 +102,10 @@ body[data-theme='light'] .login-form label span {
 
 body[data-theme='light'] .login-intro-copy {
   color: #1e293b;
+}
+
+body[data-theme='light'] .login-typing {
+  color: #0d7a3e;
 }
 
 body[data-theme='light'] .login-template-box {

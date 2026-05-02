@@ -1,4 +1,32 @@
-/* ── Font picker custom dropdown ─────────────────────────────────────────── */
+/* ── Settings section visibility ─────────────────────────────────────────── */
+
+.settings-section {
+  display: none;
+}
+
+.settings-section.active {
+  display: block;
+  padding-top: 28px;
+  padding-bottom: 28px;
+}
+
+/* ── Widget-card heading normalisation ───────────────────────────────────── */
+
+.widget-card > h2,
+.widget-card > h3 {
+  margin: 0 0 14px;
+}
+
+/* ── Font picker row (dropdown + size stepper inline) ────────────────────── */
+
+.font-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+/* ── Font picker label ───────────────────────────────────────────────────── */
 
 .font-picker-label {
   display: inline-flex;
@@ -7,94 +35,35 @@
   flex-wrap: wrap;
 }
 
-.font-picker {
-  position: relative;
+/* ── Font preview box ────────────────────────────────────────────────────── */
+
+.font-preview-box {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 10px 0 0;
   display: inline-block;
+  min-width: 160px;
 }
 
-.font-picker__trigger {
-  display: inline-flex;
+.font-preview-box h4 {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+#pref-font-preview {
+  font-size: 0.95em;
+}
+
+.font-size-stepper {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-width: 220px;
-  padding: 8px 12px;
-  background: var(--control-bg);
-  color: var(--control-text);
-  border: 1px solid var(--control-border);
-  border-radius: 10px;
-  cursor: pointer;
-  font: inherit;
-  text-align: left;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  gap: 2px;
 }
-
-.font-picker__trigger:hover {
-  background: var(--control-hover-bg);
-  border-color: var(--border-strong);
-  transform: none;
-}
-
-.font-picker__selected {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.font-picker__arrow {
-  flex-shrink: 0;
-  font-size: 0.8em;
-  opacity: 0.7;
-  transition: transform 0.15s ease;
-}
-
-.font-picker[aria-expanded='true'] .font-picker__arrow {
-  transform: scaleY(-1);
-}
-
-.font-picker__dropdown {
-  position: absolute;
-  left: 0;
-  top: calc(100% + 4px);
-  z-index: 200;
-  min-width: 100%;
-  max-height: 280px;
-  overflow-y: auto;
-  background: var(--surface-2);
-  border: 1px solid var(--control-border);
-  border-radius: 10px;
-  padding: 4px;
-  box-shadow: var(--shadow);
-  list-style: none;
-  margin: 0;
-}
-
-.font-picker__option {
-  display: block;
-  width: 100%;
-  padding: 8px 12px;
-  background: transparent;
-  color: var(--control-text);
-  border: 0;
-  border-radius: 6px;
-  text-align: left;
-  cursor: pointer;
-  font-size: 0.97rem;
-  transition: background 0.1s ease;
-}
-
-.font-picker__option:hover {
-  background: var(--surface-soft);
-  transform: none;
-}
-
-.font-picker__option[aria-selected='true'] {
-  background: color-mix(in srgb, var(--accent-2) 20%, transparent);
-  color: var(--control-text);
-}
-
-/* ── Font size up/down buttons ───────────────────────────────────────────── */
 
 .font-size-btn {
   min-width: 28px;
@@ -112,22 +81,71 @@
   transform: none;
 }
 
-/* ── Font reset button ───────────────────────────────────────────────────── */
+/* ── Font heading row ────────────────────────────────────────────────────── */
 
-.font-reset-btn {
-  margin-top: 6px;
-  font-size: 0.88rem;
-  padding: 5px 12px;
-  background: transparent;
-  border: 1px solid var(--control-border);
-  border-radius: 8px;
-  color: var(--text-muted);
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+.font-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 6px;
 }
 
-.font-reset-btn:hover {
+.font-heading-row h3 {
+  margin: 0;
+}
+
+/* ── Theme selector ──────────────────────────────────────────────────────── */
+
+.theme-subsection {
+  margin: 18px 0 0;
+}
+
+.theme-subsection h3 {
+  margin: 0 0 8px;
+}
+
+.theme-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-btn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--control-border);
+  background: var(--control-bg);
   color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.theme-btn:hover {
+  background: var(--control-hover-bg);
   border-color: var(--border-strong);
-  background: var(--surface-soft);
-  transform: none;
+  transform: translateY(-1px);
+}
+
+.theme-btn.active {
+  background: var(--accent-2);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* ── Preferences dump ────────────────────────────────────────────────────── */
+
+.prefs-dump {
+  background: rgba(10, 22, 42, 0.90);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.82rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+}
+
+body[data-theme='light'] .prefs-dump {
+  background: var(--code-bg);
 }

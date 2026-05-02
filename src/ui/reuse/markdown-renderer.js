@@ -30,6 +30,17 @@ function parseTableRow(line) {
     .map((cell) => renderInline(cell.trim()));
 }
 
+/**
+ * Renders a Markdown string to an HTML string.
+ * Supports headings (h1–h3), bold, italic, inline code, fenced code blocks,
+ * unordered lists, tables, and links (external links open in a new tab).
+ *
+ * Usage:
+ *   element.innerHTML = renderMarkdown(payload.data.markdown);
+ *
+ * @param {string} markdown
+ * @returns {string}
+ */
 export function renderMarkdown(markdown) {
   const lines = markdown.split('\n');
   const html = [];

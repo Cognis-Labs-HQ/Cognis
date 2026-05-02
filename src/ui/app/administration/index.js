@@ -1,6 +1,6 @@
-import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
-import { apiFetch } from '../reuse/api-client.js';
-import { applyDocumentTitle, createI18n } from '../reuse/i18n.js';
+import { renderDashboardLayout } from '../../layouts/dashboard-layout.js';
+import { apiFetch } from '../../reuse/api-client.js';
+import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
@@ -84,7 +84,7 @@ function renderIntegrityPanel(integrityRows) {
 
 function renderToolbar() {
   return `
-    <h3>${i18n.t('ui.reuse.navigation')}</h3>
+    <h2>${i18n.t('ui.reuse.navigation')}</h2>
     <ul>
       <li><button data-view="modules" class="${activeView === 'modules' ? 'active' : ''}" ${activeView === 'modules' ? 'aria-current="page"' : ''}>${i18n.t('ui.reuse.modules')}</button></li>
       <li><button data-view="integrity" class="${activeView === 'integrity' ? 'active' : ''}" ${activeView === 'integrity' ? 'aria-current="page"' : ''}>${i18n.t('ui.reuse.file_integrity')}</button></li>

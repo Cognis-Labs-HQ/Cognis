@@ -1,10 +1,10 @@
-import { DEFAULT_PAGES } from '../config/pages.js';
-import { getWidgetDefinition, getWidgetLibrary, mergeWidgetConfig } from '../components/widget-registry.js';
-import { runDemoPuppeteer } from './demo-puppeteer.js';
-import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
-import { loadTemplate } from '../reuse/template-loader.js';
-import { apiFetch } from '../reuse/api-client.js';
-import { applyDocumentTitle, createI18n } from '../reuse/i18n.js';
+import { DEFAULT_PAGES } from '../../config/pages.js';
+import { getWidgetDefinition, getWidgetLibrary, mergeWidgetConfig } from '../../components/widget-registry.js';
+import { runDemoPuppeteer } from '../demo-puppeteer/index.js';
+import { renderDashboardLayout } from '../../layouts/dashboard-layout.js';
+import { loadTemplate } from '../../reuse/template-loader.js';
+import { apiFetch } from '../../reuse/api-client.js';
+import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 
 const i18n = await createI18n();
 applyDocumentTitle(i18n, 'ui.page.title.dashboard');

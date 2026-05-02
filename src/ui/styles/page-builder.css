@@ -43,13 +43,12 @@ button {
   cursor: pointer;
   transition: border-color 0.2s ease, transform 0.15s ease;
 }
-button:hover {
+button:hover:not(:disabled):not(.dropdown-item) {
   border-color: var(--accent-2);
   transform: translateY(-1px);
 }
 
-#run-demo,
-#save-prefs {
+#run-demo {
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
@@ -92,7 +91,7 @@ button:hover {
 .toolbar ul {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 6px;
   display: grid;
   gap: 10px;
 }
@@ -134,6 +133,7 @@ button:hover {
 .docs-viewer h4,
 .docs-viewer h5,
 .docs-viewer h6,
+.toolbar h2,
 .toolbar h3,
 .content-grid,
 .content-grid p,
@@ -333,6 +333,94 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .pill-disabled {
   background: rgba(239, 68, 68, 0.24);
   color: #ef4444;
+}
+
+
+.btn-confirm {
+  background: var(--color-success);
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
+}
+
+.btn-confirm:hover {
+  background: color-mix(in srgb, var(--color-success) 60%, #fff 40%);
+  border-color: var(--color-success-border);
+}
+
+.btn-cancel {
+  background: var(--color-danger);
+  color: var(--color-danger-text);
+  border: 1px solid var(--color-danger-border);
+}
+
+.btn-cancel:hover {
+  background: color-mix(in srgb, var(--color-danger) 60%, #fff 40%);
+  border-color: var(--color-danger-border);
+}
+
+.btn-reset:hover {
+  background: var(--color-danger);
+}
+
+.btn-animated {
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease,
+    box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.btn-animated:hover:not(:disabled) {
+  box-shadow: var(--shadow-btn);
+  transform: translateY(-2px);
+}
+
+.btn-animated:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.floating-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: var(--toolbar-bg);
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-floating);
+}
+
+.floating-toolbar[hidden] {
+  display: none;
+}
+
+.theme-select {
+  min-width: 220px;
+  padding: 8px 12px;
+  background: var(--control-bg);
+  color: var(--control-text);
+  border: 1px solid var(--control-border);
+  border-radius: 10px;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  appearance: auto;
+}
+
+.theme-select:hover {
+  background: var(--control-hover-bg);
+  border-color: var(--border-strong);
+  transform: none;
+}
+
+.theme-select option {
+  background: var(--input-bg);
+  color: var(--text);
 }
 
 
