@@ -84,7 +84,7 @@ function renderIntegrityPanel(integrityRows) {
 
 function renderToolbar() {
   return `
-    <h3>${i18n.t('ui.reuse.navigation')}</h3>
+    <h2>${i18n.t('ui.reuse.navigation')}</h2>
     <ul>
       <li><button data-view="modules" class="${activeView === 'modules' ? 'active' : ''}" ${activeView === 'modules' ? 'aria-current="page"' : ''}>${i18n.t('ui.reuse.modules')}</button></li>
       <li><button data-view="integrity" class="${activeView === 'integrity' ? 'active' : ''}" ${activeView === 'integrity' ? 'aria-current="page"' : ''}>${i18n.t('ui.reuse.file_integrity')}</button></li>

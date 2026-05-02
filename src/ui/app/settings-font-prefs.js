@@ -128,6 +128,12 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
     updateResetButton();
   }
 
+  function discard() {
+    pickerControl?.setValue(savedFont);
+    updatePreview(savedFont);
+    setFontSize(savedSize);
+  }
+
   return {
     init,
     getFont: () => pickerControl?.getValue() || DEFAULT_FONT,
@@ -136,6 +142,7 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
       const current = pickerControl?.getValue() || DEFAULT_FONT;
       return current !== savedFont || fontSize !== savedSize;
     },
+    discard,
   };
 }
 

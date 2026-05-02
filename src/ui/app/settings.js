@@ -1,8 +1,10 @@
 import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
 import { apiFetch } from '../reuse/api-client.js';
 import { applyDocumentTitle, createI18n, readPreferredLanguages, setPreferredLanguages } from '../reuse/i18n.js';
+import { applyTheme } from '../reuse/theme-toggle.js';
 import { toFontFamilyValue, initFontPrefs, DEFAULT_FONT_SIZE } from './settings-font-prefs.js';
 import { initLanguagePrefs } from './settings-language-prefs.js';
+import { createUnsavedChangesBar } from '../reuse/unsaved-changes.js';
 
 const root = document.querySelector('#app');
 let languagePriority = readPreferredLanguages();
@@ -10,7 +12,7 @@ const i18n = await createI18n({ preferredLanguages: languagePriority });
 applyDocumentTitle(i18n, 'ui.page.title.settings');
 
 function section(label, content) {
-  return `<section class="widget-card"><h3>${label}</h3>${content}</section>`;
+  return `<section class="widget-card"><h2>${label}</h2>${content}</section>`;
 }
 
 async function loadPrefs() {
@@ -34,8 +36,15 @@ async function savePrefs(prefs) {
 const appearanceContent = `
   <div class="settings-section" data-section="appearance">
     ${section(i18n.t('ui.reuse.appearance'), `
+      <div class="theme-subsection">
+        <h3>${i18n.t('ui.app.settings.theme')}</h3>
+        <div class="theme-selector" id="pref-theme-selector">
+          <button type="button" class="theme-btn" data-theme-value="dark">${i18n.t('ui.app.settings.theme_dark')}</button>
+          <button type="button" class="theme-btn" data-theme-value="light">${i18n.t('ui.app.settings.theme_light')}</button>
+        </div>
+      </div>
       <div class="font-heading-row">
-        <h4>${i18n.t('ui.app.settings.font_heading')}</h4>
+        <h3>${i18n.t('ui.app.settings.font_heading')}</h3>
         <button id="pref-font-reset" type="button" disabled>${i18n.t('ui.reuse.reset')}</button>
       </div>
       <label class="font-picker-label">
@@ -59,32 +68,49 @@ const languageContent = `
     ${section(i18n.t('ui.reuse.language'), `
       <div class="language-preferences">
         <div>
-          <h5>${i18n.t('ui.app.settings.available_languages')}</h5>
+          <h3>${i18n.t('ui.app.settings.available_languages')}</h3>
           <table id="available-languages" class="language-table"></table>
         </div>
         <div>
-          <h5>${i18n.t('ui.app.settings.preferred_languages')}</h5>
+          <h3>${i18n.t('ui.app.settings.preferred_languages')}</h3>
           <table id="preferred-languages" class="language-table"></table>
         </div>
       </div>
     `)}
   </div>`;
 
+const advancedPreferencesContent = `
+  <div class="settings-section" data-section="advanced-preferences">
+    ${section(i18n.t('ui.app.settings.preferences'), `
+      <h3>${i18n.t('ui.app.settings.prefs_dump_label')}</h3>
+      <pre id="prefs-dump" class="prefs-dump">${i18n.t('ui.app.settings.prefs_loading')}</pre>
+    `)}
+  </div>`;
+
 await renderDashboardLayout(root, {
   i18n,
   pageContext: `<h1>${i18n.t('ui.app.settings.page_title')}</h1><p>${i18n.t('ui.app.settings.page_subtitle')}</p>`,
-  toolbar: `<h3>${i18n.t('ui.app.settings.page_title')}</h3><ul>
-    <li><button data-section="appearance">${i18n.t('ui.reuse.appearance')}</button></li>
-    <li><button data-section="language">${i18n.t('ui.reuse.language')}</button></li>
-  </ul>`,
-  content: `<article class="docs-viewer">${appearanceContent}${languageContent}</article>`,
+  toolbar: `
+    <h2>${i18n.t('ui.app.settings.page_title')}</h2>
+    <ul>
+      <li><button data-section="appearance">${i18n.t('ui.reuse.appearance')}</button></li>
+      <li><button data-section="language">${i18n.t('ui.reuse.language')}</button></li>
+    </ul>
+    <p class="toolbar-group-heading">${i18n.t('ui.app.settings.advanced')}</p>
+    <ul>
+      <li><button data-section="advanced-preferences">${i18n.t('ui.app.settings.preferences')}</button></li>
+    </ul>
+  `,
+  content: `<article class="docs-viewer">${appearanceContent}${languageContent}${advancedPreferencesContent}</article>`,
   floatingToolbar: `
     <span>${i18n.t('ui.reuse.unsaved_changes')}</span>
-    <button id="save-prefs" class="btn-confirm btn-animated" type="button">${i18n.t('ui.app.settings.save')}</button>
+    <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t('ui.reuse.discard')}</button>
+    <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t('ui.reuse.save')}</button>
   `,
 });
 
 const DEFAULT_SECTION = 'appearance';
+const DEFAULT_THEME = 'dark';
 
 function applyToolbarActiveState() {
   const hash = window.location.hash.slice(1) || DEFAULT_SECTION;
@@ -111,46 +137,88 @@ applyToolbarActiveState();
 
 const floatingToolbarEl = root.querySelector('.floating-toolbar');
 
-let fontDirty = false;
-let langDirty = false;
-
-function updateFloatingToolbar() {
-  if (!floatingToolbarEl) return;
-  floatingToolbarEl.hidden = !(fontDirty || langDirty);
-}
-
 const existingPrefs = await loadPrefs().catch(() => null);
 if (Array.isArray(existingPrefs?.languagePriority)) languagePriority = existingPrefs.languagePriority;
 
+// ── Populate preferences dump ─────────────────────────────────────────────
+const prefsDumpEl = root.querySelector('#prefs-dump');
+if (prefsDumpEl) {
+  prefsDumpEl.textContent = existingPrefs != null
+    ? JSON.stringify(existingPrefs, null, 2)
+    : 'null';
+}
+
+// ── Theme prefs (queued; only written on Save) ────────────────────────────
+const savedMode = document.body.getAttribute('data-theme') || DEFAULT_THEME;
+
+function initThemePrefs({ onDirtyChange }) {
+  let currentMode = savedMode;
+
+  function updateSelector() {
+    root.querySelectorAll('.theme-btn[data-theme-value]').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.themeValue === currentMode);
+    });
+  }
+
+  root.querySelectorAll('.theme-btn[data-theme-value]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      currentMode = btn.dataset.themeValue;
+      applyTheme(currentMode);
+      updateSelector();
+      onDirtyChange?.(currentMode !== savedMode);
+    });
+  });
+
+  updateSelector();
+
+  return {
+    getMode: () => currentMode,
+    discard: () => {
+      currentMode = savedMode;
+      applyTheme(savedMode);
+      updateSelector();
+      onDirtyChange?.(false);
+    },
+  };
+}
+
+// ── Wire up the reusable unsaved-changes bar ──────────────────────────────
 const fontPrefs = initFontPrefs(root, {
   existingPrefs,
   i18n,
-  onDirtyChange: (dirty) => {
-    fontDirty = dirty;
-    updateFloatingToolbar();
-  },
+  onDirtyChange: (dirty) => changesBar.markDirty('font', dirty),
 });
-await fontPrefs.init();
 
 const languagePrefs = initLanguagePrefs(root, languagePriority, {
-  onDirtyChange: (dirty) => {
-    langDirty = dirty;
-    updateFloatingToolbar();
+  onDirtyChange: (dirty) => changesBar.markDirty('language', dirty),
+});
+
+const themePrefs = initThemePrefs({
+  onDirtyChange: (dirty) => changesBar.markDirty('theme', dirty),
+});
+
+const changesBar = createUnsavedChangesBar(floatingToolbarEl, {
+  onSave: async () => {
+    const selectedFont = fontPrefs.getFont();
+    const prefs = {
+      appFont: toFontFamilyValue(selectedFont),
+      appFontSize: fontPrefs.getFontSize(),
+      languagePriority: languagePrefs.getPriority(),
+      mode: themePrefs.getMode(),
+    };
+    await savePrefs(prefs);
+    setPreferredLanguages(prefs.languagePriority);
+    localStorage.setItem('cognis_ui_preferences', JSON.stringify(prefs));
+    alert(i18n.t('ui.app.settings.saved_alert'));
+    window.location.reload();
+  },
+  onDiscard: () => {
+    fontPrefs.discard();
+    languagePrefs.discard();
+    themePrefs.discard();
   },
 });
-await languagePrefs.init();
 
-root.querySelector('#save-prefs')?.addEventListener('click', async () => {
-  const selectedFont = fontPrefs.getFont();
-  const prefs = {
-    appFont: toFontFamilyValue(selectedFont),
-    appFontSize: fontPrefs.getFontSize(),
-    languagePriority: languagePrefs.getPriority()
-  };
-  await savePrefs(prefs);
-  setPreferredLanguages(prefs.languagePriority);
-  localStorage.setItem('cognis_ui_preferences', JSON.stringify(prefs));
-  alert(i18n.t('ui.app.settings.saved_alert'));
-  window.location.reload();
-});
+await fontPrefs.init();
+await languagePrefs.init();
 

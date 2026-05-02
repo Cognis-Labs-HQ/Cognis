@@ -19,6 +19,8 @@
   <string name="ui.reuse.language">Sprache</string>
   <string name="ui.reuse.reset">Zurücksetzen</string>
   <string name="ui.reuse.unsaved_changes">Es gibt ungespeicherte Änderungen.</string>
+  <string name="ui.reuse.save">Speichern</string>
+  <string name="ui.reuse.discard">Verwerfen</string>
 
   <string name="ui.layout.brand.aria">Cognis-Startseite</string>
   <string name="ui.layout.nav.primary">Hauptnavigation</string>
@@ -71,6 +73,13 @@
   <string name="ui.app.settings.sidebar.preferences">Einstellungen</string>
   <string name="ui.app.settings.sidebar.language">Sprache</string>
   <string name="ui.app.settings.font_heading">Schriftart</string>
+  <string name="ui.app.settings.theme">Thema</string>
+  <string name="ui.app.settings.theme_dark">Dunkel</string>
+  <string name="ui.app.settings.theme_light">Hell</string>
+  <string name="ui.app.settings.advanced">Erweitert</string>
+  <string name="ui.app.settings.preferences">Einstellungen</string>
+  <string name="ui.app.settings.prefs_dump_label">Gespeicherte Einstellungen</string>
+  <string name="ui.app.settings.prefs_loading">Wird geladen...</string>
 
   <string name="ui.app.docs.page_title">Dokumente</string>
   <string name="ui.app.docs.page_subtitle">Entwicklerdokumentation.</string>

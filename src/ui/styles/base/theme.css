@@ -52,6 +52,20 @@
   --color-success: rgba(52, 211, 153, 0.22);
   --color-success-text: #34d399;
   --color-success-border: rgba(52, 211, 153, 0.4);
+  --shadow-btn: 0 4px 14px rgba(2, 6, 23, 0.35);
+  --shadow-floating: 0 -4px 24px rgba(2, 6, 23, 0.28);
+}
+
+body[data-theme='light'] {
+  /* In light mode, semi-transparent tints are invisible — use solid fills. */
+  --color-danger: #ef4444;
+  --color-danger-text: #fff;
+  --color-danger-border: #dc2626;
+  --color-success: #10b981;
+  --color-success-text: #fff;
+  --color-success-border: #059669;
+  --shadow-btn: 0 4px 14px rgba(15, 23, 42, 0.20);
+  --shadow-floating: 0 -4px 24px rgba(15, 23, 42, 0.15);
 }
 
 * { box-sizing: border-box; }

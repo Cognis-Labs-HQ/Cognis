@@ -133,6 +133,7 @@ button:hover {
 .docs-viewer h4,
 .docs-viewer h5,
 .docs-viewer h6,
+.toolbar h2,
 .toolbar h3,
 .content-grid,
 .content-grid p,
@@ -367,7 +368,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 }
 
 .btn-animated:hover:not(:disabled) {
-  box-shadow: 0 4px 14px rgba(2, 6, 23, 0.35);
+  box-shadow: var(--shadow-btn);
   transform: translateY(-2px);
 }
 
@@ -393,7 +394,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   border-bottom: 0;
   border-radius: 12px 12px 0 0;
   backdrop-filter: blur(10px);
-  box-shadow: 0 -4px 24px rgba(2, 6, 23, 0.28);
+  box-shadow: var(--shadow-floating);
 }
 
 .floating-toolbar[hidden] {

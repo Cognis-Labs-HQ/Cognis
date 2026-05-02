@@ -4,8 +4,23 @@
   display: none;
 }
 
+/*
+ * Always apply symmetric top/bottom padding for every active section so the
+ * widget-card looks consistent regardless of whether the section is the
+ * :first-child or :last-child of the docs-viewer (those pseudo-class rules
+ * cannot track `display:none` toggling reliably).
+ */
 .settings-section.active {
   display: block;
+  padding-top: 28px;
+  padding-bottom: 28px;
+}
+
+/* ── Widget-card heading normalisation ───────────────────────────────────── */
+
+.widget-card > h2,
+.widget-card > h3 {
+  margin: 0 0 14px;
 }
 
 /* ── Font picker label ───────────────────────────────────────────────────── */
@@ -56,5 +71,73 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 8px 0 4px;
+  margin: 16px 0 6px;
+}
+
+.font-heading-row h3 {
+  margin: 0;
+}
+
+/* ── Theme selector ──────────────────────────────────────────────────────── */
+
+.theme-subsection {
+  margin: 0 0 18px;
+}
+
+.theme-subsection h3 {
+  margin: 0 0 8px;
+}
+
+.theme-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-btn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--control-border);
+  background: var(--control-bg);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.theme-btn:hover {
+  background: var(--control-hover-bg);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.theme-btn.active {
+  background: var(--accent-2);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* ── Advanced section toolbar group ─────────────────────────────────────── */
+
+.toolbar-group-heading {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 18px 0 4px;
+  padding: 0 14px;
+}
+
+/* ── Preferences dump ────────────────────────────────────────────────────── */
+
+.prefs-dump {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.82rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
 }

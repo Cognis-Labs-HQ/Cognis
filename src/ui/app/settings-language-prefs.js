@@ -112,6 +112,12 @@ export function initLanguagePrefs(root, initialPriority, { onDirtyChange } = {})
     dragLanguage = null;
   });
 
+  function discard() {
+    languagePriority = [...savedPriority];
+    renderTables();
+    notifyDirty();
+  }
+
   async function init() {
     catalog = await loadLanguagesCatalog().catch(() => [{ iso_code: 'en', name: 'English' }]);
     renderTables();
@@ -121,5 +127,6 @@ export function initLanguagePrefs(root, initialPriority, { onDirtyChange } = {})
     init,
     getPriority: () => languagePriority,
     isDirty: () => JSON.stringify(languagePriority) !== JSON.stringify(savedPriority),
+    discard,
   };
 }
