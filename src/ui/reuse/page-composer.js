@@ -210,11 +210,11 @@ export function createPageComposer(root, {
   function canPlace(col, row, w, h, excludeId) {
     if (col < 0 || row < 0 || col + w > gridCols) return false;
     const occupied = new Set();
-    for (const p of (layout?.placements ?? [])) {
-      if (p.id === excludeId) continue;
-      if ((layout?.hidden ?? []).includes(p.id)) continue;
-      for (let r = p.row; r < p.row + p.h; r++) {
-        for (let c = p.col; c < p.col + p.w; c++) {
+    for (const placement of (layout?.placements ?? [])) {
+      if (placement.id === excludeId) continue;
+      if ((layout?.hidden ?? []).includes(placement.id)) continue;
+      for (let r = placement.row; r < placement.row + placement.h; r++) {
+        for (let c = placement.col; c < placement.col + placement.w; c++) {
           occupied.add(`${c},${r}`);
         }
       }
@@ -313,8 +313,8 @@ export function createPageComposer(root, {
         function onMove(e) {
           const panel = document.getElementById('composer-elements-panel');
           const overPanel = panel && (() => {
-            const r = panel.getBoundingClientRect();
-            return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+            const panelRect = panel.getBoundingClientRect();
+            return e.clientX >= panelRect.left && e.clientX <= panelRect.right && e.clientY >= panelRect.top && e.clientY <= panelRect.bottom;
           })();
 
           if (overPanel && !el.pinned) {
@@ -354,8 +354,8 @@ export function createPageComposer(root, {
 
           const panel = document.getElementById('composer-elements-panel');
           const overPanel = panel && (() => {
-            const r = panel.getBoundingClientRect();
-            return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+            const panelRect = panel.getBoundingClientRect();
+            return e.clientX >= panelRect.left && e.clientX <= panelRect.right && e.clientY >= panelRect.top && e.clientY <= panelRect.bottom;
           })();
 
           if (overPanel && !el.pinned) {
@@ -367,10 +367,10 @@ export function createPageComposer(root, {
 
           const moved = currentCol !== placement.col || currentRow !== placement.row;
           if (moved && canPlace(currentCol, currentRow, placement.w, placement.h, el.id)) {
-            const p = layout.placements.find((lp) => lp.id === el.id);
-            if (p) {
-              p.col = currentCol;
-              p.row = currentRow;
+            const targetPlacement = layout.placements.find((lp) => lp.id === el.id);
+            if (targetPlacement) {
+              targetPlacement.col = currentCol;
+              targetPlacement.row = currentRow;
             }
             renderGridComposer();
           }
@@ -488,10 +488,10 @@ export function createPageComposer(root, {
         const sizeChanged = currentW !== placement.w || currentH !== placement.h;
         const valid = canPlace(placement.col, placement.row, currentW, currentH, el.id);
         if (sizeChanged && valid) {
-          const p = layout.placements.find((lp) => lp.id === el.id);
-          if (p) {
-            p.w = currentW;
-            p.h = currentH;
+          const targetPlacement = layout.placements.find((lp) => lp.id === el.id);
+          if (targetPlacement) {
+            targetPlacement.w = currentW;
+            targetPlacement.h = currentH;
           }
           renderGridComposer();
         }
@@ -506,9 +506,9 @@ export function createPageComposer(root, {
   function canPlaceInSet(set, col, row, w, h) {
     if (col < 0 || row < 0 || col + w > gridCols) return false;
     const occupied = new Set();
-    for (const p of set) {
-      for (let r = p.row; r < p.row + p.h; r++) {
-        for (let c = p.col; c < p.col + p.w; c++) {
+    for (const placement of set) {
+      for (let r = placement.row; r < placement.row + placement.h; r++) {
+        for (let c = placement.col; c < placement.col + placement.w; c++) {
           occupied.add(`${c},${r}`);
         }
       }
@@ -525,19 +525,19 @@ export function createPageComposer(root, {
     const visible = layout.placements.filter((p) => !layout.hidden.includes(p.id));
     visible.sort((a, b) => a.row - b.row || a.col - b.col);
     const settled = [];
-    for (const p of visible) {
-      let bestRow = p.row;
-      for (let r = 0; r < p.row; r++) {
-        if (canPlaceInSet(settled, p.col, r, p.w, p.h)) {
+    for (const placement of visible) {
+      let bestRow = placement.row;
+      for (let r = 0; r < placement.row; r++) {
+        if (canPlaceInSet(settled, placement.col, r, placement.w, placement.h)) {
           bestRow = r;
           break;
         }
       }
-      settled.push({ ...p, row: bestRow });
+      settled.push({ ...placement, row: bestRow });
     }
-    for (const s of settled) {
-      const orig = layout.placements.find((lp) => lp.id === s.id);
-      if (orig) orig.row = s.row;
+    for (const placement of settled) {
+      const orig = layout.placements.find((lp) => lp.id === placement.id);
+      if (orig) orig.row = placement.row;
     }
   }
 
@@ -774,11 +774,11 @@ export function createPageComposer(root, {
   function canSubPlace(state, col, row, w, h, excludeId) {
     if (col < 0 || row < 0 || col + w > state.gridCols) return false;
     const occupied = new Set();
-    for (const p of (state.layout?.placements ?? [])) {
-      if (p.id === excludeId) continue;
-      if ((state.layout?.hidden ?? []).includes(p.id)) continue;
-      for (let r = p.row; r < p.row + p.h; r++) {
-        for (let c = p.col; c < p.col + p.w; c++) {
+    for (const placement of (state.layout?.placements ?? [])) {
+      if (placement.id === excludeId) continue;
+      if ((state.layout?.hidden ?? []).includes(placement.id)) continue;
+      for (let r = placement.row; r < placement.row + placement.h; r++) {
+        for (let c = placement.col; c < placement.col + placement.w; c++) {
           occupied.add(`${c},${r}`);
         }
       }
@@ -794,9 +794,9 @@ export function createPageComposer(root, {
   function canSubPlaceInSet(state, set, col, row, w, h) {
     if (col < 0 || row < 0 || col + w > state.gridCols) return false;
     const occupied = new Set();
-    for (const p of set) {
-      for (let r = p.row; r < p.row + p.h; r++) {
-        for (let c = p.col; c < p.col + p.w; c++) {
+    for (const placement of set) {
+      for (let r = placement.row; r < placement.row + placement.h; r++) {
+        for (let c = placement.col; c < placement.col + placement.w; c++) {
           occupied.add(`${c},${r}`);
         }
       }
@@ -837,19 +837,19 @@ export function createPageComposer(root, {
     const visible = state.layout.placements.filter((p) => !state.layout.hidden.includes(p.id));
     visible.sort((a, b) => a.row - b.row || a.col - b.col);
     const settled = [];
-    for (const p of visible) {
-      let bestRow = p.row;
-      for (let r = 0; r < p.row; r++) {
-        if (canSubPlaceInSet(state, settled, p.col, r, p.w, p.h)) {
+    for (const placement of visible) {
+      let bestRow = placement.row;
+      for (let r = 0; r < placement.row; r++) {
+        if (canSubPlaceInSet(state, settled, placement.col, r, placement.w, placement.h)) {
           bestRow = r;
           break;
         }
       }
-      settled.push({ ...p, row: bestRow });
+      settled.push({ ...placement, row: bestRow });
     }
-    for (const s of settled) {
-      const orig = state.layout.placements.find((lp) => lp.id === s.id);
-      if (orig) orig.row = s.row;
+    for (const placement of settled) {
+      const orig = state.layout.placements.find((lp) => lp.id === placement.id);
+      if (orig) orig.row = placement.row;
     }
   }
 
@@ -932,10 +932,10 @@ export function createPageComposer(root, {
         const sizeChanged = currentW !== placement.w || currentH !== placement.h;
         const valid = canSubPlace(state, placement.col, placement.row, currentW, currentH, el.id);
         if (sizeChanged && valid) {
-          const p = state.layout.placements.find((lp) => lp.id === el.id);
-          if (p) {
-            p.w = currentW;
-            p.h = currentH;
+          const targetPlacement = state.layout.placements.find((lp) => lp.id === el.id);
+          if (targetPlacement) {
+            targetPlacement.w = currentW;
+            targetPlacement.h = currentH;
           }
           renderSubGrid(state);
         }
@@ -981,8 +981,8 @@ export function createPageComposer(root, {
         function onMove(e) {
           const panel = document.getElementById(getSubPanelId(state.preferenceKey));
           const overPanel = panel && (() => {
-            const r = panel.getBoundingClientRect();
-            return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+            const panelRect = panel.getBoundingClientRect();
+            return e.clientX >= panelRect.left && e.clientX <= panelRect.right && e.clientY >= panelRect.top && e.clientY <= panelRect.bottom;
           })();
 
           if (overPanel && !el.pinned) {
@@ -1021,8 +1021,8 @@ export function createPageComposer(root, {
 
           const panel = document.getElementById(getSubPanelId(state.preferenceKey));
           const overPanel = panel && (() => {
-            const r = panel.getBoundingClientRect();
-            return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+            const panelRect = panel.getBoundingClientRect();
+            return e.clientX >= panelRect.left && e.clientX <= panelRect.right && e.clientY >= panelRect.top && e.clientY <= panelRect.bottom;
           })();
 
           if (overPanel && !el.pinned) {
@@ -1034,10 +1034,10 @@ export function createPageComposer(root, {
 
           const moved = currentCol !== placement.col || currentRow !== placement.row;
           if (moved && canSubPlace(state, currentCol, currentRow, placement.w, placement.h, el.id)) {
-            const p = state.layout.placements.find((lp) => lp.id === el.id);
-            if (p) {
-              p.col = currentCol;
-              p.row = currentRow;
+            const targetPlacement = state.layout.placements.find((lp) => lp.id === el.id);
+            if (targetPlacement) {
+              targetPlacement.col = currentCol;
+              targetPlacement.row = currentRow;
             }
             renderSubGrid(state);
           }

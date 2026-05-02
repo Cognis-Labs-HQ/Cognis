@@ -25,8 +25,8 @@ export class DbUserPreferenceStore {
 
   async get(accountId: string, pageId: string) {
     const key = cacheKey(accountId, pageId);
-    const r = await this.db.execute(`SELECT layout_json FROM user_preferences WHERE pref_key = ${this.placeholder(1)}`, [key]);
-    return r.rows?.[0]?.layout_json ?? null;
+    const result = await this.db.execute(`SELECT layout_json FROM user_preferences WHERE pref_key = ${this.placeholder(1)}`, [key]);
+    return result.rows?.[0]?.layout_json ?? null;
   }
 
   async set(accountId: string, pageId: string, layoutJson: string) {
