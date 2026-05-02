@@ -140,4 +140,7 @@
   <string name="ui.reuse.page_composer.zone_toolbar">Toolbar</string>
   <string name="ui.reuse.page_composer.zone_floating">Floating menu</string>
   <string name="ui.reuse.page_composer.zone_main">Main</string>
+  <string name="ui.reuse.popup.close">Close</string>
+  <string name="ui.reuse.popup.confirm">Confirm</string>
+  <string name="ui.reuse.popup.cancel">Cancel</string>
 </resources>

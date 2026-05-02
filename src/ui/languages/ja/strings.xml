@@ -127,4 +127,7 @@
   <string name="ui.reuse.page_composer.zone_toolbar">ツールバー</string>
   <string name="ui.reuse.page_composer.zone_floating">フローティングメニュー</string>
   <string name="ui.reuse.page_composer.zone_main">メイン</string>
+  <string name="ui.reuse.popup.close">閉じる</string>
+  <string name="ui.reuse.popup.confirm">確認</string>
+  <string name="ui.reuse.popup.cancel">キャンセル</string>
 </resources>

@@ -50,6 +50,10 @@ const DYNAMIC_CLASS_NAMES = new Set([
   'integrity-ok',
   'integrity-mismatch',
   'integrity-missing',
+  'popup-dialog--info',
+  'popup-dialog--warning',
+  'popup-dialog--danger',
+  'popup-dialog--confirm',
 ]);
 
 // Reuse module exports that are fully implemented but not yet wired up to

@@ -1,6 +1,7 @@
 import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 import { createPageComposer } from '../../reuse/page-composer.js';
+import { openPopup } from '../../reuse/popup.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
@@ -102,12 +103,21 @@ function bindModuleToggles() {
   root.querySelectorAll('input[type="checkbox"][data-module]').forEach((toggle) => {
     toggle.addEventListener('change', async () => {
       const moduleId = toggle.dataset.module;
+      const previousState = !toggle.checked;
       const action = toggle.checked ? 'enable' : 'disable';
 
       if (action === 'disable') {
-        const confirmed = window.confirm(`${i18n.t('ui.app.admin.disable_confirm')} "${moduleId}"?`);
-        if (!confirmed) {
-          window.location.reload();
+        const result = await openPopup({
+          title: i18n.t('ui.app.admin.disable_confirm'),
+          body: `<strong>${moduleId}</strong>`,
+          variant: 'danger',
+          actions: [
+            { id: 'confirm', label: i18n.t('ui.reuse.generic.disable'), variant: 'confirm' },
+            { id: 'cancel',  label: i18n.t('ui.reuse.popup.cancel'),    variant: 'cancel'  },
+          ],
+        });
+        if (result !== 'confirm') {
+          toggle.checked = previousState;
           return;
         }
       }
