@@ -463,6 +463,14 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   background: color-mix(in srgb, var(--accent-2) 10%, transparent);
 }
 
+.sub-composer-heading {
+  margin: 0 0 12px;
+}
+
+.sub-composer-inner {
+  display: block;
+}
+
 .content-grid--two-column {
   display: grid;
   grid-template-columns: 1fr 1fr;

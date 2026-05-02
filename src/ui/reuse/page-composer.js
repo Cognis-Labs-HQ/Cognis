@@ -1377,6 +1377,7 @@ export function createPageComposer(root, {
     state.resizeObserver = null;
     if (state.container) {
       state.container.classList.remove('composer-grid-active');
+      state.container.classList.remove('content-grid--two-column');
       state.container.innerHTML = '';
     }
     state.container = null;
@@ -1552,7 +1553,10 @@ export function createPageComposer(root, {
         const activeClass = isActive ? ' active' : '';
         const hiddenAttr = subPageNavigation && !isActive ? ' hidden' : '';
         if (el.subComposerOptions) {
-          return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}"></div>`;
+          const headingHtml = el.subComposerOptions.heading
+            ? `<h2 class="sub-composer-heading">${el.subComposerOptions.heading}</h2>`
+            : '';
+          return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
         }
         return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
       })
@@ -1599,7 +1603,8 @@ export function createPageComposer(root, {
     onRender?.();
     const activeEl = elements.find((e) => e.id === activeSubPageId);
     if (activeEl?.subComposerOptions) {
-      const sectionDiv = contentGrid.querySelector(`#${activeSubPageId}`) ?? contentGrid;
+      const outerDiv = contentGrid.querySelector(`#${activeSubPageId}`);
+      const sectionDiv = outerDiv?.querySelector('.sub-composer-inner') ?? outerDiv ?? contentGrid;
       mountSubComposer(activeEl, sectionDiv).catch(() => {});
     }
   }
@@ -1699,7 +1704,8 @@ export function createPageComposer(root, {
     if (prevEl?.subComposerOptions) unmountSubComposer(prevEl);
     const newEl = elements.find((e) => e.id === id);
     if (newEl?.subComposerOptions) {
-      const sectionDiv = contentGrid.querySelector(`#${id}`) ?? contentGrid;
+      const outerDiv = contentGrid.querySelector(`#${id}`);
+      const sectionDiv = outerDiv?.querySelector('.sub-composer-inner') ?? outerDiv ?? contentGrid;
       mountSubComposer(newEl, sectionDiv).catch(() => {});
     }
     history.replaceState(null, '', `#${activeSubPageId}`);

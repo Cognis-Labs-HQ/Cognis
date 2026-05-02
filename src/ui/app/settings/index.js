@@ -82,8 +82,8 @@ const elements = [
       preferenceKey: 'settings-appearance-layout',
       elements: [
         {
-          id: 'font-prefs',
-          label: i18n.t('ui.app.settings.font_heading'),
+          id: 'appearance-prefs',
+          label: i18n.t('ui.reuse.appearance'),
           render: () => `
             <h2>${i18n.t('ui.reuse.appearance')}</h2>
             <div class="font-heading-row">
@@ -105,12 +105,6 @@ const elements = [
               <h4>${i18n.t('ui.app.settings.font_preview')}</h4>
               <span id="pref-font-preview">${i18n.t('ui.app.settings.font_preview_sample')}</span>
             </div>
-          `,
-        },
-        {
-          id: 'theme-prefs',
-          label: i18n.t('ui.app.settings.theme'),
-          render: () => `
             <div class="theme-subsection">
               <h3>${i18n.t('ui.app.settings.theme')}</h3>
               <div class="theme-selector" id="pref-theme-selector">
@@ -142,12 +136,12 @@ const elements = [
       allowCustomization: false,
       preferenceKey: 'settings-language-layout',
       columns: 2,
+      heading: i18n.t('ui.reuse.language'),
       elements: [
         {
           id: 'available-languages',
           label: i18n.t('ui.app.settings.available_languages'),
           render: () => `
-            <h2>${i18n.t('ui.reuse.language')}</h2>
             <h3>${i18n.t('ui.app.settings.available_languages')}</h3>
             <table id="available-languages" class="language-table"></table>
           `,
