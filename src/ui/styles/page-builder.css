@@ -938,12 +938,3 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   color: var(--text);
 }
 
-.sub-composer-mount {
-  position: relative;
-  width: 100%;
-}
-
-.sub-composer-grid {
-  position: relative;
-  display: block;
-}

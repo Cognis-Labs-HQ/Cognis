@@ -1317,20 +1317,7 @@ export function createPageComposer(root, {
       subStates.set(el.id, state);
     }
 
-    let mount = sectionContainer.querySelector('.sub-composer-mount');
-    if (!mount) {
-      mount = document.createElement('div');
-      mount.className = 'sub-composer-mount';
-      sectionContainer.appendChild(mount);
-    }
-
-    let container = mount.querySelector('.sub-composer-grid');
-    if (!container) {
-      container = document.createElement('div');
-      container.className = 'content-grid sub-composer-grid';
-      mount.appendChild(container);
-    }
-    state.container = container;
+    state.container = sectionContainer;
 
     computeSubGridDimensions(state);
     initializeSubPlacements(state);
@@ -1351,7 +1338,7 @@ export function createPageComposer(root, {
         renderSubGrid(state);
       }
     });
-    state.resizeObserver.observe(mount);
+    state.resizeObserver.observe(sectionContainer);
   }
 
   function unmountSubComposer(el) {
@@ -1360,6 +1347,10 @@ export function createPageComposer(root, {
     document.getElementById(getSubPanelId(state.preferenceKey))?.remove();
     state.resizeObserver?.disconnect();
     state.resizeObserver = null;
+    if (state.container) {
+      state.container.classList.remove('composer-grid-active');
+      state.container.innerHTML = '';
+    }
     state.container = null;
     const ft = root.querySelector('.floating-toolbar');
     ft?.querySelector('.composer-toolbar-btns')?.remove();
