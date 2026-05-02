@@ -9,6 +9,12 @@ function writeThemeCookie(mode) {
   document.cookie = `${THEME_KEY}=${encodeURIComponent(mode)}; Path=/; Max-Age=31536000; SameSite=Lax`;
 }
 
+export function persistTheme(mode) {
+  const normalized = mode === 'light' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, normalized);
+  writeThemeCookie(normalized);
+}
+
 export function getStoredTheme() {
   const localTheme = localStorage.getItem(THEME_KEY);
   if (localTheme === 'dark' || localTheme === 'light') return localTheme;

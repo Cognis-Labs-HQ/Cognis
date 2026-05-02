@@ -1,7 +1,7 @@
 import { renderDashboardLayout } from '../layouts/dashboard-layout.js';
 import { apiFetch } from '../reuse/api-client.js';
 import { applyDocumentTitle, createI18n, readPreferredLanguages, setPreferredLanguages } from '../reuse/i18n.js';
-import { applyTheme } from '../reuse/theme-toggle.js';
+import { applyTheme, persistTheme } from '../reuse/theme-toggle.js';
 import { toFontFamilyValue, initFontPrefs, DEFAULT_FONT_SIZE } from './settings-font-prefs.js';
 import { initLanguagePrefs } from './settings-language-prefs.js';
 import { createUnsavedChangesBar } from '../reuse/unsaved-changes.js';
@@ -33,16 +33,12 @@ async function savePrefs(prefs) {
   });
 }
 
+/*
+ * Appearance: subsections ordered alphabetically (Font, then Theme).
+ */
 const appearanceContent = `
   <div class="settings-section" data-section="appearance">
     ${section(i18n.t('ui.reuse.appearance'), `
-      <div class="theme-subsection">
-        <h3>${i18n.t('ui.app.settings.theme')}</h3>
-        <div class="theme-selector" id="pref-theme-selector">
-          <button type="button" class="theme-btn" data-theme-value="dark">${i18n.t('ui.app.settings.theme_dark')}</button>
-          <button type="button" class="theme-btn" data-theme-value="light">${i18n.t('ui.app.settings.theme_light')}</button>
-        </div>
-      </div>
       <div class="font-heading-row">
         <h3>${i18n.t('ui.app.settings.font_heading')}</h3>
         <button id="pref-font-reset" type="button" disabled>${i18n.t('ui.reuse.reset')}</button>
@@ -58,6 +54,13 @@ const appearanceContent = `
           <button id="pref-font-size-up" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} +">▲</button>
           <span id="pref-font-size-value">${DEFAULT_FONT_SIZE} pt</span>
           <button id="pref-font-size-down" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} -">▼</button>
+        </div>
+      </div>
+      <div class="theme-subsection">
+        <h3>${i18n.t('ui.app.settings.theme')}</h3>
+        <div class="theme-selector" id="pref-theme-selector">
+          <button type="button" class="theme-btn" data-theme-value="dark">${i18n.t('ui.app.settings.theme_dark')}</button>
+          <button type="button" class="theme-btn" data-theme-value="light">${i18n.t('ui.app.settings.theme_light')}</button>
         </div>
       </div>
     `)}
@@ -79,10 +82,10 @@ const languageContent = `
     `)}
   </div>`;
 
-const advancedPreferencesContent = `
-  <div class="settings-section" data-section="advanced-preferences">
-    ${section(i18n.t('ui.app.settings.preferences'), `
-      <h3>${i18n.t('ui.app.settings.prefs_dump_label')}</h3>
+const advancedContent = `
+  <div class="settings-section" data-section="advanced">
+    ${section(i18n.t('ui.app.settings.advanced'), `
+      <h3>${i18n.t('ui.app.settings.preferences')}</h3>
       <pre id="prefs-dump" class="prefs-dump">${i18n.t('ui.app.settings.prefs_loading')}</pre>
     `)}
   </div>`;
@@ -95,13 +98,10 @@ await renderDashboardLayout(root, {
     <ul>
       <li><button data-section="appearance">${i18n.t('ui.reuse.appearance')}</button></li>
       <li><button data-section="language">${i18n.t('ui.reuse.language')}</button></li>
-    </ul>
-    <p class="toolbar-group-heading">${i18n.t('ui.app.settings.advanced')}</p>
-    <ul>
-      <li><button data-section="advanced-preferences">${i18n.t('ui.app.settings.preferences')}</button></li>
+      <li><button data-section="advanced">${i18n.t('ui.app.settings.advanced')}</button></li>
     </ul>
   `,
-  content: `<article class="docs-viewer">${appearanceContent}${languageContent}${advancedPreferencesContent}</article>`,
+  content: `<article class="docs-viewer">${appearanceContent}${languageContent}${advancedContent}</article>`,
   floatingToolbar: `
     <span>${i18n.t('ui.reuse.unsaved_changes')}</span>
     <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t('ui.reuse.discard')}</button>
@@ -123,6 +123,10 @@ function applyToolbarActiveState() {
   root.querySelectorAll('.settings-section[data-section]').forEach((sec) => {
     sec.classList.toggle('active', sec.dataset.section === hash);
   });
+
+  // The floating theme toggle is redundant on the Appearance page (it has its own selector).
+  const themeToggle = document.querySelector('#theme-toggle');
+  if (themeToggle) themeToggle.hidden = (hash === DEFAULT_SECTION);
 }
 
 root.querySelectorAll('.toolbar button[data-section]').forEach((btn) => {
@@ -163,7 +167,7 @@ function initThemePrefs({ onDirtyChange }) {
   root.querySelectorAll('.theme-btn[data-theme-value]').forEach((btn) => {
     btn.addEventListener('click', () => {
       currentMode = btn.dataset.themeValue;
-      applyTheme(currentMode);
+      // Only update the active button state; theme is applied on Save.
       updateSelector();
       onDirtyChange?.(currentMode !== savedMode);
     });
@@ -174,8 +178,8 @@ function initThemePrefs({ onDirtyChange }) {
   return {
     getMode: () => currentMode,
     discard: () => {
+      // Reset selection without touching the DOM theme (it was never changed).
       currentMode = savedMode;
-      applyTheme(savedMode);
       updateSelector();
       onDirtyChange?.(false);
     },
@@ -200,13 +204,17 @@ const themePrefs = initThemePrefs({
 const changesBar = createUnsavedChangesBar(floatingToolbarEl, {
   onSave: async () => {
     const selectedFont = fontPrefs.getFont();
+    const mode = themePrefs.getMode();
     const prefs = {
       appFont: toFontFamilyValue(selectedFont),
       appFontSize: fontPrefs.getFontSize(),
       languagePriority: languagePrefs.getPriority(),
-      mode: themePrefs.getMode(),
+      mode,
     };
     await savePrefs(prefs);
+    // Persist theme to localStorage + cookie so getStoredTheme() reads it correctly on reload.
+    persistTheme(mode);
+    applyTheme(mode);
     setPreferredLanguages(prefs.languagePriority);
     localStorage.setItem('cognis_ui_preferences', JSON.stringify(prefs));
     alert(i18n.t('ui.app.settings.saved_alert'));
@@ -221,4 +229,3 @@ const changesBar = createUnsavedChangesBar(floatingToolbarEl, {
 
 await fontPrefs.init();
 await languagePrefs.init();
-

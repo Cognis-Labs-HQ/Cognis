@@ -81,7 +81,7 @@
 /* ── Theme selector ──────────────────────────────────────────────────────── */
 
 .theme-subsection {
-  margin: 0 0 18px;
+  margin: 18px 0 0;
 }
 
 .theme-subsection h3 {
@@ -114,18 +114,6 @@
   background: var(--accent-2);
   color: #fff;
   border-color: transparent;
-}
-
-/* ── Advanced section toolbar group ─────────────────────────────────────── */
-
-.toolbar-group-heading {
-  color: var(--text-muted);
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 18px 0 4px;
-  padding: 0 14px;
 }
 
 /* ── Preferences dump ────────────────────────────────────────────────────── */

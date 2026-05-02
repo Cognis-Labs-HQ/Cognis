@@ -17,7 +17,7 @@
  *
  * @param {HTMLElement|null} floatingEl
  * @param {{ onSave?: () => Promise<void>, onDiscard?: () => void }} options
- * @returns {{ markDirty(id: string, dirty: boolean): void, isAnyDirty(): boolean, sync(): void }}
+ * @returns {{ markDirty(id: string, dirty: boolean): void, isAnyDirty(): boolean }}
  */
 export function createUnsavedChangesBar(floatingEl, { onSave, onDiscard } = {}) {
   const dirtyMap = new Map();
