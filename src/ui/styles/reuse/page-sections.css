@@ -9,6 +9,10 @@
   min-height: 380px;
 }
 
+.content-section.active .content-body {
+  padding: 28px;
+}
+
 .widget-card > h2,
 .widget-card > h3 {
   margin: 0 0 14px;

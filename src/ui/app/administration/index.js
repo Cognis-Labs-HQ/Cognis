@@ -163,6 +163,16 @@ composer = createPageComposer(root, {
     title: i18n.t('ui.app.admin.page_title'),
     subtitle: i18n.t('ui.app.admin.page_subtitle'),
   },
+  toolbar: {
+    render: () => `
+      <h2>${i18n.t('ui.app.admin.page_title')}</h2>
+      <ul>
+        <li><button data-composer-scroll="modules">${i18n.t('ui.reuse.modules')}</button></li>
+        <li><button data-composer-scroll="integrity">${i18n.t('ui.reuse.file_integrity')}</button></li>
+      </ul>
+    `,
+  },
+  subPageNavigation: true,
   onRender: () => {
     bindModuleToggles();
     bindIntegrityRerun();

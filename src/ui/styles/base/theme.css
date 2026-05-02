@@ -60,9 +60,11 @@ body[data-theme='light'] {
   --color-danger: #ef4444;
   --color-danger-text: #fff;
   --color-danger-border: #dc2626;
+  --color-danger-outline-text: #dc2626;
   --color-success: #10b981;
   --color-success-text: #fff;
   --color-success-border: #059669;
+  --color-success-outline-text: #059669;
   --shadow-btn: 0 4px 14px rgba(15, 23, 42, 0.20);
   --shadow-floating: 0 -4px 24px rgba(15, 23, 42, 0.15);
 }

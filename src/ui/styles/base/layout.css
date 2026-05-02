@@ -189,7 +189,8 @@ button.dropdown-item {
 }
 
 .app-shell .notification-button:hover,
-.app-shell .avatar-button:hover {
+.app-shell .avatar-button:hover,
+.app-shell .theme-toggle:hover {
   background: var(--surface-soft);
 }
 
