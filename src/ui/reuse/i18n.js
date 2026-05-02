@@ -11,7 +11,7 @@
  *
  * Usage:
  *   const i18n = await createI18n({ preferredLanguages: ['es', 'en'] });
- *   i18n.t('ui.reuse.save');   // → 'Guardar'
+ *   i18n.t('ui.reuse.generic.save');   // → 'Guardar'
  *   applyStaticTranslations(i18n);
  */
 const DEFAULT_LOCALE = 'en';

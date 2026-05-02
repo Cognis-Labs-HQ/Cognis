@@ -52,7 +52,7 @@ await renderDashboardLayout(root, {
   pageContext: `<h1>${i18n.t('ui.app.docs.page_title')}</h1><p>${i18n.t('ui.app.docs.page_subtitle')}</p>`,
   topbar: '',
   toolbar: `<h3>${i18n.t('ui.reuse.navigation')}</h3><ul>${renderSidebarLinks(docs)}</ul>`,
-  content: `<article id="doc" class="docs-viewer"></article>`
+  content: `<article id="doc" class="content-panel"></article>`
 });
 
 root.querySelectorAll('[data-slug]').forEach((button) => {

@@ -34,11 +34,11 @@ async function savePrefs(prefs) {
 }
 
 const appearanceContent = `
-  <div class="settings-section" data-section="appearance">
+  <div class="content-section" data-section="appearance">
     ${section(i18n.t('ui.reuse.appearance'), `
       <div class="font-heading-row">
         <h3>${i18n.t('ui.app.settings.font_heading')}</h3>
-        <button id="pref-font-reset" type="button" disabled>${i18n.t('ui.reuse.reset')}</button>
+        <button id="pref-font-reset" type="button" disabled>${i18n.t('ui.reuse.generic.reset')}</button>
       </div>
       <div class="font-picker-row">
         <label class="font-picker-label">
@@ -66,7 +66,7 @@ const appearanceContent = `
   </div>`;
 
 const languageContent = `
-  <div class="settings-section" data-section="language">
+  <div class="content-section" data-section="language">
     ${section(i18n.t('ui.reuse.language'), `
       <div class="language-preferences">
         <div>
@@ -82,7 +82,7 @@ const languageContent = `
   </div>`;
 
 const advancedContent = `
-  <div class="settings-section" data-section="advanced">
+  <div class="content-section" data-section="advanced">
     ${section(i18n.t('ui.app.settings.advanced'), `
       <h3>${i18n.t('ui.app.settings.preferences')}</h3>
       <pre id="prefs-dump" class="prefs-dump">${i18n.t('ui.app.settings.prefs_loading')}</pre>
@@ -100,11 +100,11 @@ await renderDashboardLayout(root, {
       <li><button data-section="advanced">${i18n.t('ui.app.settings.advanced')}</button></li>
     </ul>
   `,
-  content: `<article class="docs-viewer">${appearanceContent}${languageContent}${advancedContent}</article>`,
+  content: `<article class="content-panel">${appearanceContent}${languageContent}${advancedContent}</article>`,
   floatingToolbar: `
     <span>${i18n.t('ui.reuse.unsaved_changes')}</span>
-    <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t('ui.reuse.discard')}</button>
-    <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t('ui.reuse.save')}</button>
+    <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t('ui.reuse.generic.discard')}</button>
+    <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t('ui.reuse.generic.save')}</button>
   `,
 });
 
@@ -119,7 +119,7 @@ function applyToolbarActiveState() {
     if (isActive) btn.setAttribute('aria-current', 'page');
     else btn.removeAttribute('aria-current');
   });
-  root.querySelectorAll('.settings-section[data-section]').forEach((sec) => {
+  root.querySelectorAll('.content-section[data-section]').forEach((sec) => {
     sec.classList.toggle('active', sec.dataset.section === hash);
   });
 

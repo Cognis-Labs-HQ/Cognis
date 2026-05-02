@@ -117,6 +117,7 @@ API sanity and security are paramount.
 
 ## i18n requirements
 - Resolve all user-facing text via language keys from XML resources; do not hardcode UI copy in JS/HTML.
-- Use shared `ui.reuse.*` keys for common labels before adding new app-specific keys.
+- Use `ui.reuse.generic.*` for standalone action words and common UI labels that are not feature-specific (e.g. `save`, `discard`, `reset`, `refresh`, `add`, `remove`, `done`, `enable`, `disable`, `id`, `version`, `class`, `actions`). Check for an existing `ui.reuse.generic.*` key before introducing a new app-specific one.
+- Use shared `ui.reuse.*` keys for labels with meaningful context (section headings, menu items, named features). Reserve `ui.reuse.generic.*` strictly for context-free words usable in any feature area.
 - Module-owned locale keys must be namespaced as `module.<moduleId>.*` and loaded without leaking into global namespaces.
 - For docs, prefer language-suffixed markdown files (`*.en.md`, `*.es.md`) and resolve by language key first, then fallback.

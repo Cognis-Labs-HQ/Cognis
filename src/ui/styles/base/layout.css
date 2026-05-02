@@ -142,8 +142,6 @@
 }
 .hidden { display: none; }
 
-.page-surface { padding: 18px; }
-
 .workspace {
   padding: 24px;
   width: 96%;
@@ -153,7 +151,7 @@
   border: 1px solid rgba(148, 163, 184, 0.08);
   backdrop-filter: blur(2px);
 }
-.layout-grid .content-grid, .content-grid { display: grid; gap: 14px; }
+.content-grid { display: grid; gap: 14px; }
 
 .app-shell button,
 .app-shell select,
@@ -185,7 +183,7 @@ button.dropdown-item {
   appearance: none;
 }
 
-.app-shell button:hover:not(.dropdown-item),
+.app-shell button:hover:not(.dropdown-item):not([class*="btn-"]),
 .app-shell select:hover {
   background: var(--control-hover-bg);
 }

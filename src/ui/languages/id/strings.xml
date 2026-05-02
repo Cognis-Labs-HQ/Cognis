@@ -8,19 +8,24 @@
   <string name="ui.reuse.menu.logout">Keluar</string>
   <string name="ui.reuse.modules">Modul</string>
   <string name="ui.reuse.file_integrity">Integritas Berkas</string>
-  <string name="ui.reuse.enable">Aktifkan</string>
-  <string name="ui.reuse.disable">Nonaktifkan</string>
-  <string name="ui.reuse.actions">Aksi</string>
   <string name="ui.reuse.navigation">Navigasi</string>
-  <string name="ui.reuse.id">ID</string>
-  <string name="ui.reuse.version">Versi</string>
-  <string name="ui.reuse.class">Kelas</string>
   <string name="ui.reuse.appearance">Tampilan</string>
   <string name="ui.reuse.language">Bahasa</string>
-  <string name="ui.reuse.reset">Setel ulang</string>
   <string name="ui.reuse.unsaved_changes">Ada perubahan yang belum disimpan.</string>
-  <string name="ui.reuse.save">Simpan</string>
-  <string name="ui.reuse.discard">Batalkan</string>
+
+  <string name="ui.reuse.generic.enable">Aktifkan</string>
+  <string name="ui.reuse.generic.disable">Nonaktifkan</string>
+  <string name="ui.reuse.generic.actions">Aksi</string>
+  <string name="ui.reuse.generic.id">ID</string>
+  <string name="ui.reuse.generic.version">Versi</string>
+  <string name="ui.reuse.generic.class">Kelas</string>
+  <string name="ui.reuse.generic.reset">Setel ulang</string>
+  <string name="ui.reuse.generic.refresh">Segarkan</string>
+  <string name="ui.reuse.generic.save">Simpan</string>
+  <string name="ui.reuse.generic.discard">Batalkan</string>
+  <string name="ui.reuse.generic.done">Selesai</string>
+  <string name="ui.reuse.generic.add">Tambah</string>
+  <string name="ui.reuse.generic.remove">Hapus</string>
 
   <string name="ui.layout.brand.aria">Beranda Cognis</string>
   <string name="ui.layout.nav.primary">Navigasi utama</string>
@@ -97,7 +102,6 @@
   <string name="ui.app.admin.expected">diharapkan</string>
   <string name="ui.app.admin.got">didapat</string>
   <string name="ui.app.admin.missing">hilang</string>
-  <string name="ui.app.admin.rerun">Jalankan ulang pemeriksaan integritas</string>
   <string name="ui.app.admin.page_title">Administrasi</string>
   <string name="ui.app.admin.page_subtitle">Alat dan kontrol khusus admin.</string>
   <string name="ui.app.admin.disable_confirm">Nonaktifkan modul</string>
@@ -116,4 +120,7 @@
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.app.settings.available_languages">Bahasa tersedia</string>
   <string name="ui.app.settings.preferred_languages">Bahasa prioritas</string>
+  <string name="ui.reuse.page_composer.edit_layout">Edit Tata Letak</string>
+  <string name="ui.reuse.page_composer.sections">Bagian</string>
+  <string name="ui.reuse.page_composer.all_visible">Semua bagian ditampilkan.</string>
 </resources>

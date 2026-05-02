@@ -18,12 +18,12 @@ async function toggleModule(moduleId, action) {
 }
 
 const modules = await loadModules();
-const rows = modules.map((mod) => `<tr><td>${mod.id}</td><td>${mod.version}</td><td>${mod.class}</td><td><button data-module="${mod.id}" data-action="enable">${i18n.t('ui.reuse.enable')}</button> <button data-module="${mod.id}" data-action="disable">${i18n.t('ui.reuse.disable')}</button></td></tr>`).join('');
+const rows = modules.map((mod) => `<tr><td>${mod.id}</td><td>${mod.version}</td><td>${mod.class}</td><td><button data-module="${mod.id}" data-action="enable">${i18n.t('ui.reuse.generic.enable')}</button> <button data-module="${mod.id}" data-action="disable">${i18n.t('ui.reuse.generic.disable')}</button></td></tr>`).join('');
 
 await renderDashboardLayout(root, {
   pageContext: `<h1>${i18n.t('ui.app.modules.page_title')}</h1><p>${i18n.t('ui.app.modules.page_subtitle')}</p>`,
   toolbar: `<h3>${i18n.t('ui.reuse.modules')}</h3><p>${i18n.t('ui.app.modules.toolbar_subtitle')}</p>`,
-  content: `<article class="docs-viewer"><table><thead><tr><th>${i18n.t('ui.reuse.id')}</th><th>${i18n.t('ui.reuse.version')}</th><th>${i18n.t('ui.reuse.class')}</th><th>${i18n.t('ui.reuse.actions')}</th></tr></thead><tbody>${rows}</tbody></table></article>`
+  content: `<article class="content-panel"><table><thead><tr><th>${i18n.t('ui.reuse.generic.id')}</th><th>${i18n.t('ui.reuse.generic.version')}</th><th>${i18n.t('ui.reuse.generic.class')}</th><th>${i18n.t('ui.reuse.generic.actions')}</th></tr></thead><tbody>${rows}</tbody></table></article>`
 });
 
 root.querySelectorAll('button[data-module]').forEach((button) => {

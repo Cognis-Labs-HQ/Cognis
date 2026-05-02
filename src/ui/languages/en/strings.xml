@@ -8,19 +8,24 @@
   <string name="ui.reuse.menu.logout">Logout</string>
   <string name="ui.reuse.modules">Modules</string>
   <string name="ui.reuse.file_integrity">File Integrity</string>
-  <string name="ui.reuse.enable">Enable</string>
-  <string name="ui.reuse.disable">Disable</string>
-  <string name="ui.reuse.actions">Actions</string>
   <string name="ui.reuse.navigation">Navigation</string>
-  <string name="ui.reuse.id">ID</string>
-  <string name="ui.reuse.version">Version</string>
-  <string name="ui.reuse.class">Class</string>
   <string name="ui.reuse.appearance">Appearance</string>
   <string name="ui.reuse.language">Language</string>
-  <string name="ui.reuse.reset">Reset</string>
   <string name="ui.reuse.unsaved_changes">You have unsaved changes.</string>
-  <string name="ui.reuse.save">Save</string>
-  <string name="ui.reuse.discard">Discard</string>
+
+  <string name="ui.reuse.generic.enable">Enable</string>
+  <string name="ui.reuse.generic.disable">Disable</string>
+  <string name="ui.reuse.generic.actions">Actions</string>
+  <string name="ui.reuse.generic.id">ID</string>
+  <string name="ui.reuse.generic.version">Version</string>
+  <string name="ui.reuse.generic.class">Class</string>
+  <string name="ui.reuse.generic.reset">Reset</string>
+  <string name="ui.reuse.generic.refresh">Refresh</string>
+  <string name="ui.reuse.generic.save">Save</string>
+  <string name="ui.reuse.generic.discard">Discard</string>
+  <string name="ui.reuse.generic.done">Done</string>
+  <string name="ui.reuse.generic.add">Add</string>
+  <string name="ui.reuse.generic.remove">Remove</string>
 
   <string name="ui.layout.brand.aria">Cognis home</string>
   <string name="ui.layout.nav.primary">Primary navigation</string>
@@ -97,7 +102,6 @@
   <string name="ui.app.admin.expected">expected</string>
   <string name="ui.app.admin.got">got</string>
   <string name="ui.app.admin.missing">missing</string>
-  <string name="ui.app.admin.rerun">Re-run integrity check</string>
   <string name="ui.app.admin.page_title">Administration</string>
   <string name="ui.app.admin.page_subtitle">Admin-only tools and controls.</string>
   <string name="ui.app.admin.disable_confirm">Disable module</string>
@@ -116,4 +120,7 @@
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.app.settings.available_languages">Available languages</string>
   <string name="ui.app.settings.preferred_languages">Preferred languages</string>
+  <string name="ui.reuse.page_composer.edit_layout">Edit Layout</string>
+  <string name="ui.reuse.page_composer.sections">Sections</string>
+  <string name="ui.reuse.page_composer.all_visible">All sections are visible.</string>
 </resources>
