@@ -1716,7 +1716,7 @@ export function createPageComposer(root, {
       : undefined;
 
     const floatingHtml = Array.isArray(floatingMenu) && floatingMenu.length > 0
-      ? floatingMenu.map((t) => `<div data-floating-slot="${t.id}" hidden>${t.render()}</div>`).join('')
+      ? '\u200b'
       : undefined;
 
     await renderDashboardLayout(root, {
@@ -1727,9 +1727,17 @@ export function createPageComposer(root, {
       content: '',
     });
 
-    if (floatingMenu.length > 0) {
+    if (Array.isArray(floatingMenu) && floatingMenu.length > 0) {
       const ft = root.querySelector('.floating-toolbar');
       if (ft) {
+        ft.innerHTML = '';
+        for (const item of floatingMenu) {
+          const slot = document.createElement('div');
+          slot.dataset.floatingSlot = item.id;
+          slot.hidden = true;
+          slot.innerHTML = item.render();
+          ft.appendChild(slot);
+        }
         const updateToolbarVisibility = () => {
           const anyVisible = [...ft.querySelectorAll('[data-floating-slot]')].some((s) => !s.hidden);
           ft.hidden = !anyVisible;
@@ -1786,7 +1794,7 @@ export function createPageComposer(root, {
   }
 
   function getFloatingSlot(id) {
-    return root.querySelector(`[data-floating-slot="${id}"]`);
+    return root.querySelector(`[data-floating-slot="${CSS.escape(id)}"]`);
   }
 
   function refresh(newElements) {
