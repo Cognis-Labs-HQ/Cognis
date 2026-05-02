@@ -623,6 +623,7 @@ export function createPageComposer(root, {
     if (panelPosition !== null) {
       panel.style.top = `${panelPosition.top}px`;
       panel.style.left = `${panelPosition.left}px`;
+      panel.style.right = 'auto';
     } else {
       const gridRect = contentGrid.getBoundingClientRect();
       const panelLeft = gridRect.right + 12;
@@ -636,10 +637,9 @@ export function createPageComposer(root, {
       } else {
         panel.style.top = `${Math.max(80, panelTop)}px`;
         panel.style.left = `${panelLeft}px`;
+        panel.style.right = 'auto';
       }
     }
-
-    panel.style.right = 'auto'; // prevent right/left conflict when dragging after initial right-edge placement
     document.body.appendChild(panel);
     bindPanelDrag(panel);
 
