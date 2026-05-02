@@ -44,6 +44,11 @@ function updateThemeToggleForSettings() {
   if (themeToggle) themeToggle.hidden = true;
 }
 
+function showThemeToggle() {
+  const themeToggle = document.querySelector('#theme-toggle');
+  if (themeToggle) themeToggle.hidden = false;
+}
+
 function initThemePrefs({ onDirtyChange }) {
   let currentMode = savedMode;
 
@@ -80,12 +85,12 @@ const elements = [
     subComposerOptions: {
       allowCustomization: false,
       preferenceKey: 'settings-appearance-layout',
+      heading: i18n.t('ui.reuse.appearance'),
       elements: [
         {
           id: 'appearance-prefs',
           label: i18n.t('ui.reuse.appearance'),
           render: () => `
-            <h2>${i18n.t('ui.reuse.appearance')}</h2>
             <div class="font-heading-row">
               <h3>${i18n.t('ui.app.settings.font_heading')}</h3>
               <button id="pref-font-reset" type="button" disabled>${i18n.t('ui.reuse.generic.reset')}</button>
@@ -156,6 +161,7 @@ const elements = [
         },
       ],
       onRender: () => {
+        showThemeToggle();
         if (!languagePrefs) {
           languagePrefs = initLanguagePrefs(root, languagePriority, {
             onDirtyChange: (dirty) => changesBar?.markDirty('language', dirty),
@@ -173,19 +179,20 @@ const elements = [
     subComposerOptions: {
       allowCustomization: false,
       preferenceKey: 'settings-advanced-layout',
+      heading: i18n.t('ui.app.settings.advanced'),
       elements: [
         {
           id: 'prefs-dump',
           label: i18n.t('ui.app.settings.preferences'),
           pinned: true,
           render: () => `
-            <h2>${i18n.t('ui.app.settings.advanced')}</h2>
             <h3>${i18n.t('ui.app.settings.preferences')}</h3>
             <pre id="prefs-dump" class="prefs-dump">${i18n.t('ui.app.settings.prefs_loading')}</pre>
           `,
         },
       ],
       onRender: () => {
+        showThemeToggle();
         const prefsDumpEl = root.querySelector('#prefs-dump');
         if (prefsDumpEl) {
           prefsDumpEl.textContent = existingPrefs != null

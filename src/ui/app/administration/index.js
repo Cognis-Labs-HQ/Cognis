@@ -139,25 +139,53 @@ const elements = [
   {
     id: 'modules',
     label: i18n.t('ui.reuse.modules'),
-    render: () => `<h2>${i18n.t('ui.reuse.modules')}</h2>${renderModulesContent(modules)}`,
-    gridSize: { default: [8, 6], min: [4, 3], max: 'full' },
+    subComposerOptions: {
+      allowCustomization: false,
+      preferenceKey: 'administration-modules-layout',
+      heading: i18n.t('ui.reuse.modules'),
+      elements: [
+        {
+          id: 'modules-list',
+          label: i18n.t('ui.reuse.modules'),
+          pinned: true,
+          render: () => renderModulesContent(modules),
+        },
+      ],
+      onRender: () => {
+        bindModuleToggles();
+      },
+    },
   },
   {
     id: 'integrity',
     label: i18n.t('ui.reuse.file_integrity'),
-    render: () => `
-      <div class="integrity-header">
-        <h2>${i18n.t('ui.reuse.file_integrity')}</h2>
-        <button id="rerun-integrity" class="btn-confirm btn-animated" type="button">${i18n.t('ui.reuse.generic.refresh')}</button>
-      </div>
-      ${renderIntegrityContent(integrityRows)}
-    `,
-    gridSize: { default: [8, 4], min: [4, 3], max: 'full' },
+    subComposerOptions: {
+      allowCustomization: false,
+      preferenceKey: 'administration-integrity-layout',
+      heading: i18n.t('ui.reuse.file_integrity'),
+      elements: [
+        {
+          id: 'integrity-content',
+          label: i18n.t('ui.reuse.file_integrity'),
+          pinned: true,
+          render: () => `
+            <div class="integrity-header">
+              <button id="rerun-integrity" class="btn-confirm btn-animated" type="button">${i18n.t('ui.reuse.generic.refresh')}</button>
+            </div>
+            ${renderIntegrityContent(integrityRows)}
+          `,
+        },
+      ],
+      onRender: () => {
+        bindIntegrityRerun();
+      },
+    },
   },
 ];
 
 composer = createPageComposer(root, {
   allowCustomization: false,
+  subPageNavigation: true,
   elements,
   preferenceKey: 'administration-layout',
   i18n,
@@ -165,10 +193,19 @@ composer = createPageComposer(root, {
     title: i18n.t('ui.app.admin.page_title'),
     subtitle: i18n.t('ui.app.admin.page_subtitle'),
   },
-  onRender: () => {
-    bindModuleToggles();
-    bindIntegrityRerun();
-  },
+  toolbar: [
+    {
+      id: 'admin-nav',
+      label: i18n.t('ui.app.admin.page_title'),
+      render: () => `
+        <h2>${i18n.t('ui.app.admin.page_title')}</h2>
+        <ul>
+          <li><button data-composer-scroll="modules">${i18n.t('ui.reuse.modules')}</button></li>
+          <li><button data-composer-scroll="integrity">${i18n.t('ui.reuse.file_integrity')}</button></li>
+        </ul>
+      `,
+    },
+  ],
 });
 await composer.init();
 
