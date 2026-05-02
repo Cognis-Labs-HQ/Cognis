@@ -31,14 +31,17 @@ async function savePrefs(prefs) {
   });
 }
 
-await renderDashboardLayout(root, {
-  i18n,
-  pageContext: `<h1>${i18n.t('ui.app.settings.page_title')}</h1><p>${i18n.t('ui.app.settings.page_subtitle')}</p>`,
-  toolbar: `<h3>${i18n.t('ui.app.settings.page_title')}</h3><ul>
-    <li><button data-section="appearance">${i18n.t('ui.reuse.appearance')}</button></li>
-  </ul>`,
-  content: `<article class="docs-viewer">${section(i18n.t('ui.reuse.appearance'), `
-      <label class="font-picker-label">${i18n.t('ui.app.settings.font')} <div id="pref-font-picker"></div></label>
+const appearanceContent = `
+  <div class="settings-section" data-section="appearance">
+    ${section(i18n.t('ui.reuse.appearance'), `
+      <div class="font-heading-row">
+        <h4>${i18n.t('ui.app.settings.font_heading')}</h4>
+        <button id="pref-font-reset" type="button" disabled>${i18n.t('ui.reuse.reset')}</button>
+      </div>
+      <label class="font-picker-label">
+        ${i18n.t('ui.app.settings.font')}
+        <div id="pref-font-picker"></div>
+      </label>
       <span id="pref-font-preview" style="margin-left:8px;font-size:1.1em;">AaBbCc</span><br/>
       <div class="font-size-control">
         <span>${i18n.t('ui.app.settings.font_size')}</span>
@@ -48,10 +51,37 @@ await renderDashboardLayout(root, {
           <button id="pref-font-size-down" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} -">▼</button>
         </div>
       </div>
-      <button id="pref-font-reset" class="font-reset-btn" type="button">${i18n.t('ui.app.settings.reset_font')}</button><br/>
-      <section><h4>${i18n.t('ui.app.settings.language')}</h4><div class="language-preferences"><div><h5>${i18n.t('ui.app.settings.available_languages')}</h5><table id="available-languages" class="language-table"></table></div><div><h5>${i18n.t('ui.app.settings.preferred_languages')}</h5><table id="preferred-languages" class="language-table"></table></div></div></section>
-      <button id="save-prefs">${i18n.t('ui.app.settings.save')}</button>
-    `)}</article>`
+    `)}
+  </div>`;
+
+const languageContent = `
+  <div class="settings-section" data-section="language">
+    ${section(i18n.t('ui.reuse.language'), `
+      <div class="language-preferences">
+        <div>
+          <h5>${i18n.t('ui.app.settings.available_languages')}</h5>
+          <table id="available-languages" class="language-table"></table>
+        </div>
+        <div>
+          <h5>${i18n.t('ui.app.settings.preferred_languages')}</h5>
+          <table id="preferred-languages" class="language-table"></table>
+        </div>
+      </div>
+    `)}
+  </div>`;
+
+await renderDashboardLayout(root, {
+  i18n,
+  pageContext: `<h1>${i18n.t('ui.app.settings.page_title')}</h1><p>${i18n.t('ui.app.settings.page_subtitle')}</p>`,
+  toolbar: `<h3>${i18n.t('ui.app.settings.page_title')}</h3><ul>
+    <li><button data-section="appearance">${i18n.t('ui.reuse.appearance')}</button></li>
+    <li><button data-section="language">${i18n.t('ui.reuse.language')}</button></li>
+  </ul>`,
+  content: `<article class="docs-viewer">${appearanceContent}${languageContent}</article>`,
+  floatingToolbar: `
+    <span>${i18n.t('ui.reuse.unsaved_changes')}</span>
+    <button id="save-prefs" class="btn-confirm btn-animated" type="button">${i18n.t('ui.app.settings.save')}</button>
+  `,
 });
 
 const DEFAULT_SECTION = 'appearance';
@@ -63,6 +93,9 @@ function applyToolbarActiveState() {
     btn.classList.toggle('active', isActive);
     if (isActive) btn.setAttribute('aria-current', 'page');
     else btn.removeAttribute('aria-current');
+  });
+  root.querySelectorAll('.settings-section[data-section]').forEach((sec) => {
+    sec.classList.toggle('active', sec.dataset.section === hash);
   });
 }
 
@@ -76,13 +109,35 @@ window.addEventListener('hashchange', applyToolbarActiveState);
 
 applyToolbarActiveState();
 
+const floatingToolbarEl = root.querySelector('.floating-toolbar');
+
+let fontDirty = false;
+let langDirty = false;
+
+function updateFloatingToolbar() {
+  if (!floatingToolbarEl) return;
+  floatingToolbarEl.hidden = !(fontDirty || langDirty);
+}
+
 const existingPrefs = await loadPrefs().catch(() => null);
 if (Array.isArray(existingPrefs?.languagePriority)) languagePriority = existingPrefs.languagePriority;
 
-const fontPrefs = initFontPrefs(root, { existingPrefs, i18n });
+const fontPrefs = initFontPrefs(root, {
+  existingPrefs,
+  i18n,
+  onDirtyChange: (dirty) => {
+    fontDirty = dirty;
+    updateFloatingToolbar();
+  },
+});
 await fontPrefs.init();
 
-const languagePrefs = initLanguagePrefs(root, languagePriority);
+const languagePrefs = initLanguagePrefs(root, languagePriority, {
+  onDirtyChange: (dirty) => {
+    langDirty = dirty;
+    updateFloatingToolbar();
+  },
+});
 await languagePrefs.init();
 
 root.querySelector('#save-prefs')?.addEventListener('click', async () => {
@@ -98,3 +153,4 @@ root.querySelector('#save-prefs')?.addEventListener('click', async () => {
   alert(i18n.t('ui.app.settings.saved_alert'));
   window.location.reload();
 });
+

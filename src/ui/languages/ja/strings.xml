@@ -16,6 +16,9 @@
   <string name="ui.reuse.version">バージョン</string>
   <string name="ui.reuse.class">クラス</string>
   <string name="ui.reuse.appearance">外観</string>
+  <string name="ui.reuse.language">言語</string>
+  <string name="ui.reuse.reset">リセット</string>
+  <string name="ui.reuse.unsaved_changes">未保存の変更があります。</string>
 
   <string name="ui.layout.brand.aria">Cognis ホーム</string>
   <string name="ui.layout.nav.primary">メインナビゲーション</string>
@@ -66,6 +69,8 @@
   <string name="ui.app.settings.save">設定を保存</string>
   <string name="ui.app.settings.saved_alert">設定を保存しました。</string>
   <string name="ui.app.settings.sidebar.preferences">環境設定</string>
+  <string name="ui.app.settings.sidebar.language">言語</string>
+  <string name="ui.app.settings.font_heading">フォント</string>
 
   <string name="ui.app.docs.page_title">ドキュメント</string>
   <string name="ui.app.docs.page_subtitle">開発者ドキュメント。</string>

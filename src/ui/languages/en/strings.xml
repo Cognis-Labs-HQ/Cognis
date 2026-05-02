@@ -16,6 +16,9 @@
   <string name="ui.reuse.version">Version</string>
   <string name="ui.reuse.class">Class</string>
   <string name="ui.reuse.appearance">Appearance</string>
+  <string name="ui.reuse.language">Language</string>
+  <string name="ui.reuse.reset">Reset</string>
+  <string name="ui.reuse.unsaved_changes">You have unsaved changes.</string>
 
   <string name="ui.layout.brand.aria">Cognis home</string>
   <string name="ui.layout.nav.primary">Primary navigation</string>
@@ -66,6 +69,8 @@
   <string name="ui.app.settings.save">Save Preferences</string>
   <string name="ui.app.settings.saved_alert">Preferences saved.</string>
   <string name="ui.app.settings.sidebar.preferences">Preferences</string>
+  <string name="ui.app.settings.sidebar.language">Language</string>
+  <string name="ui.app.settings.font_heading">Font</string>
 
   <string name="ui.app.docs.page_title">Docs</string>
   <string name="ui.app.docs.page_subtitle">Developer documentation.</string>

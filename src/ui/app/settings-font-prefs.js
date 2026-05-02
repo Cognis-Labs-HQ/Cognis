@@ -23,130 +23,65 @@ export async function loadFontsCatalog() {
   return Array.from(seen).sort((a, b) => a.localeCompare(b));
 }
 
-export function buildFontPicker(container, fontList, initialValue, onChange) {
-  let selectedFont = initialValue;
-  let isOpen = false;
-
-  const picker = document.createElement('div');
-  picker.className = 'font-picker';
-  picker.setAttribute('role', 'combobox');
-  picker.setAttribute('aria-haspopup', 'listbox');
-  picker.setAttribute('aria-expanded', 'false');
-
-  const trigger = document.createElement('button');
-  trigger.type = 'button';
-  trigger.className = 'font-picker__trigger';
-
-  const selectedLabel = document.createElement('span');
-  selectedLabel.className = 'font-picker__selected';
-
-  const arrow = document.createElement('span');
-  arrow.className = 'font-picker__arrow';
-  arrow.textContent = '▾';
-  arrow.setAttribute('aria-hidden', 'true');
-
-  trigger.append(selectedLabel, arrow);
-
-  const dropdown = document.createElement('ul');
-  dropdown.className = 'font-picker__dropdown';
-  dropdown.setAttribute('role', 'listbox');
-  dropdown.hidden = true;
+export function buildFontSelect(container, fontList, initialValue, onChange) {
+  const select = document.createElement('select');
+  select.className = 'theme-select';
 
   fontList.forEach((font) => {
-    const li = document.createElement('li');
-    li.setAttribute('role', 'option');
-    li.setAttribute('data-value', font);
-
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'font-picker__option';
-    btn.textContent = font;
-    btn.style.fontFamily = `${toFontFamilyValue(font)}, Arial, sans-serif`;
-
-    btn.addEventListener('click', () => {
-      applySelection(font);
-      closeDropdown();
-    });
-
-    li.append(btn);
-    dropdown.append(li);
+    const option = document.createElement('option');
+    option.value = font;
+    option.textContent = font;
+    option.style.fontFamily = `${toFontFamilyValue(font)}, Arial, sans-serif`;
+    if (font === initialValue) option.selected = true;
+    select.append(option);
   });
 
-  function applySelection(font) {
-    selectedFont = font;
-    selectedLabel.textContent = font;
-    selectedLabel.style.fontFamily = `${toFontFamilyValue(font)}, Arial, sans-serif`;
-    dropdown.querySelectorAll('li[data-value]').forEach((li) => {
-      const isSelected = li.getAttribute('data-value') === font;
-      li.querySelector('button').setAttribute('aria-selected', String(isSelected));
-    });
-    onChange(font);
-  }
+  select.addEventListener('change', () => onChange(select.value));
 
-  function positionDropdown() {
-    const rect = trigger.getBoundingClientRect();
-    dropdown.style.position = 'fixed';
-    dropdown.style.top = `${rect.bottom + 4}px`;
-    dropdown.style.left = `${rect.left}px`;
-    dropdown.style.minWidth = `${rect.width}px`;
-    dropdown.style.zIndex = '9999';
-  }
-
-  function openDropdown() {
-    isOpen = true;
-    positionDropdown();
-    dropdown.hidden = false;
-    picker.setAttribute('aria-expanded', 'true');
-    const activeLi = dropdown.querySelector(`li[data-value="${CSS.escape(selectedFont)}"]`);
-    activeLi?.scrollIntoView({ block: 'nearest' });
-  }
-
-  function closeDropdown() {
-    isOpen = false;
-    dropdown.hidden = true;
-    picker.setAttribute('aria-expanded', 'false');
-  }
-
-  trigger.addEventListener('click', () => {
-    if (isOpen) closeDropdown();
-    else openDropdown();
-  });
-
-  const listenerController = new AbortController();
-  const { signal } = listenerController;
-
-  document.addEventListener('click', (event) => {
-    if (!picker.contains(event.target)) closeDropdown();
-  }, { signal });
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && isOpen) closeDropdown();
-  }, { signal });
-
-  window.addEventListener('scroll', closeDropdown, { signal, capture: true });
-  window.addEventListener('resize', closeDropdown, { signal });
-
-  picker.append(trigger, dropdown);
-  container.append(picker);
-
-  applySelection(selectedFont);
+  container.append(select);
 
   return {
-    getValue: () => selectedFont,
-    setValue: (font) => applySelection(font),
-    destroy: () => listenerController.abort(),
+    getValue: () => select.value,
+    setValue: (font) => {
+      select.value = font;
+    },
+    destroy: () => select.remove(),
   };
 }
 
-export function initFontPrefs(root, { existingPrefs, i18n }) {
+export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
   const fontPreview = root.querySelector('#pref-font-preview');
   const fontPickerContainer = root.querySelector('#pref-font-picker');
   const fontSizeValue = root.querySelector('#pref-font-size-value');
+  const resetBtn = root.querySelector('#pref-font-reset');
 
   const rawStoredSize = Number(existingPrefs?.appFontSize ?? existingPrefs?.greetingFontSize ?? DEFAULT_FONT_SIZE);
   // Values below 8 are legacy rem values; convert to pt (1rem ≈ 12pt at default browser zoom).
   const normalizedSize = rawStoredSize < 8 ? Math.round(rawStoredSize * 12) : rawStoredSize;
   let fontSize = Math.max(8, Math.min(24, Math.round(normalizedSize)));
+
+  const savedFont = parseSavedFont(existingPrefs?.appFont || existingPrefs?.greetingFont);
+  const savedSize = fontSize;
+
+  function isAtDefault() {
+    const current = pickerControl?.getValue() || DEFAULT_FONT;
+    return current === DEFAULT_FONT && fontSize === DEFAULT_FONT_SIZE;
+  }
+
+  function updateResetButton() {
+    if (!resetBtn) return;
+    const atDefault = isAtDefault();
+    resetBtn.disabled = atDefault;
+    resetBtn.classList.toggle('btn-cancel', !atDefault);
+    resetBtn.classList.toggle('btn-animated', !atDefault);
+  }
+
+  function notifyDirty() {
+    const current = pickerControl?.getValue() || DEFAULT_FONT;
+    const dirty = current !== savedFont || fontSize !== savedSize;
+    onDirtyChange?.(dirty);
+    updateResetButton();
+  }
 
   function updatePreview(selectedFont) {
     if (!fontPreview) return;
@@ -157,6 +92,7 @@ export function initFontPrefs(root, { existingPrefs, i18n }) {
     fontSize = Math.max(8, Math.min(24, Math.round(nextSize)));
     if (fontSizeValue) fontSizeValue.textContent = `${fontSize} pt`;
     if (fontPreview) fontPreview.style.fontSize = `${fontSize}pt`;
+    notifyDirty();
   }
 
   let pickerControl = null;
@@ -165,12 +101,12 @@ export function initFontPrefs(root, { existingPrefs, i18n }) {
     const fontOptions = await loadFontsCatalog().catch(() => [...FALLBACK_FONTS]);
     const fonts = Array.from(new Set([...FALLBACK_FONTS, ...fontOptions])).sort((a, b) => a.localeCompare(b));
 
-    const savedFont = parseSavedFont(existingPrefs?.appFont || existingPrefs?.greetingFont);
     if (!fonts.includes(savedFont)) fonts.unshift(savedFont);
 
     if (fontPickerContainer) {
-      pickerControl = buildFontPicker(fontPickerContainer, fonts, savedFont, (font) => {
+      pickerControl = buildFontSelect(fontPickerContainer, fonts, savedFont, (font) => {
         updatePreview(font);
+        notifyDirty();
       });
     }
 
@@ -182,16 +118,24 @@ export function initFontPrefs(root, { existingPrefs, i18n }) {
     root.querySelector('#pref-font-size-down')?.addEventListener('click', () => setFontSize(fontSize - 1));
     root.querySelector('#pref-font-size-up')?.addEventListener('click', () => setFontSize(fontSize + 1));
 
-    root.querySelector('#pref-font-reset')?.addEventListener('click', () => {
+    resetBtn?.addEventListener('click', () => {
+      if (isAtDefault()) return;
       pickerControl?.setValue(DEFAULT_FONT);
-      setFontSize(DEFAULT_FONT_SIZE);
       updatePreview(DEFAULT_FONT);
+      setFontSize(DEFAULT_FONT_SIZE);
     });
+
+    updateResetButton();
   }
 
   return {
     init,
     getFont: () => pickerControl?.getValue() || DEFAULT_FONT,
     getFontSize: () => fontSize,
+    isDirty: () => {
+      const current = pickerControl?.getValue() || DEFAULT_FONT;
+      return current !== savedFont || fontSize !== savedSize;
+    },
   };
 }
+

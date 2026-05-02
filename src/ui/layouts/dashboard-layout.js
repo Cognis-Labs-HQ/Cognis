@@ -112,12 +112,14 @@ export async function renderDashboardLayout(root, slots = {}) {
   const i18n = slots.i18n || await createI18n();
   const template = await loadTemplate('dashboard-layout');
   const hasToolbar = Boolean(slots.toolbar);
+  const hasFloatingToolbar = Boolean(slots.floatingToolbar);
   root.innerHTML = template
     .replace('{{pageContext}}', slots.pageContext || '')
     .replace('{{topbar}}', slots.topbar)
     .replace('{{workspaceClass}}', hasToolbar ? 'main-window--with-toolbar' : 'main-window--content-only')
     .replace('{{content}}', slots.content)
-    .replace('{{toolbar}}', hasToolbar ? `<aside class="toolbar">${slots.toolbar}</aside>` : '');
+    .replace('{{toolbar}}', hasToolbar ? `<aside class="toolbar">${slots.toolbar}</aside>` : '')
+    .replace('{{floatingToolbar}}', hasFloatingToolbar ? `<div class="floating-toolbar" hidden>${slots.floatingToolbar}</div>` : '');
   applyStaticTranslations(i18n, root);
   bindTopbarActions();
   applyActiveNavigation();
