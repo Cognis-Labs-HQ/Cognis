@@ -123,8 +123,10 @@ export function createPageComposer(root, {
              </div>`
           : '';
         const editingClass = editing ? ' composer-editing' : '';
-        const hiddenAttr = subPageNavigation && el.id !== activeSubPageId ? ' hidden' : '';
-        return `<div class="content-section"${hiddenAttr} id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
+        const isActive = subPageNavigation && el.id === activeSubPageId;
+        const activeClass = isActive ? ' active' : '';
+        const hiddenAttr = subPageNavigation && !isActive ? ' hidden' : '';
+        return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
       })
       .join('');
   }
@@ -265,7 +267,9 @@ export function createPageComposer(root, {
   function switchSubPage(id) {
     activeSubPageId = id;
     contentGrid.querySelectorAll('.content-section').forEach((section) => {
-      section.hidden = section.id !== activeSubPageId;
+      const isActive = section.id === activeSubPageId;
+      section.hidden = !isActive;
+      section.classList.toggle('active', isActive);
     });
     root.querySelectorAll('[data-composer-scroll]').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.composerScroll === activeSubPageId);
