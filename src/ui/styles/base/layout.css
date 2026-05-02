@@ -180,7 +180,7 @@
   border: 1px solid var(--border);
 }
 
-.app-shell button:hover,
+.app-shell button:hover:not(.dropdown-item),
 .app-shell select:hover {
   background: var(--control-hover-bg);
 }
