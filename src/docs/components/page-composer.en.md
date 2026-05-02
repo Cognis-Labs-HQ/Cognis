@@ -72,9 +72,9 @@ slot.hidden = false;
 
 ### `onRender` callback
 
-`onRender` is called after every content re-render — including resizes driven by `ResizeObserver`. Use it to bind events to content elements that are recreated on each render.
+`onRender` is called after every content render — including the initial render during `init()` and subsequent re-renders driven by `ResizeObserver`. Use it to bind events to content elements that are recreated on each render.
 
-**Do not** attach listeners to toolbar or floating-menu DOM in `onRender` — those nodes are persistent and should be wired once after `init()`.
+**Do not** attach listeners to toolbar or floating-menu DOM in `onRender` — those nodes are persistent and should be wired once after `init()` (see the usage example below).
 
 ### `refresh(elements)`
 
