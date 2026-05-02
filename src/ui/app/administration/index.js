@@ -1,11 +1,11 @@
 import { renderDashboardLayout } from '../../layouts/dashboard-layout.js';
 import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
-import { createPageComposer } from '../../reuse/page-composer.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
 applyDocumentTitle(i18n, 'ui.page.title.administration');
+let activeView = 'modules';
 
 async function loadModules() {
   const response = await apiFetch('/api/v1/modules');
@@ -17,16 +17,6 @@ async function loadIntegrity() {
   const response = await apiFetch('/api/v1/modules/integrity');
   const payload = await response.json();
   return payload.data ?? [];
-}
-
-async function loadData() {
-  const [modulesRes, integrityRes] = await Promise.all([
-    apiFetch('/api/v1/modules'),
-    apiFetch('/api/v1/modules/integrity'),
-  ]);
-  const modules = (await modulesRes.json()).data ?? [];
-  const integrityRows = (await integrityRes.json()).data ?? [];
-  return { modules, integrityRows };
 }
 
 async function toggleModule(moduleId, action) {
@@ -93,33 +83,39 @@ function renderIntegrityPanel(integrityRows) {
   return `<ul class="integrity-list">${items}</ul>`;
 }
 
-function makeElements(data) {
-  return [
-    {
-      id: 'modules',
-      label: i18n.t('ui.reuse.modules'),
-      render: () => `<h2>${i18n.t('ui.reuse.modules')}</h2>${renderModulesPanel(data.modules)}`,
-    },
-    {
-      id: 'integrity',
-      label: i18n.t('ui.reuse.file_integrity'),
-      render: () => `
-        <div class="integrity-header">
-          <h2>${i18n.t('ui.reuse.file_integrity')}</h2>
-          <button id="rerun-integrity" type="button">${i18n.t('ui.app.admin.rerun')}</button>
-        </div>
-        ${renderIntegrityPanel(data.integrityRows)}
-      `,
-    },
-  ];
+function renderToolbar() {
+  return `
+    <h2>${i18n.t('ui.reuse.navigation')}</h2>
+    <ul>
+      <li><button data-view="modules" class="${activeView === 'modules' ? 'active' : ''}" ${activeView === 'modules' ? 'aria-current="page"' : ''}>${i18n.t('ui.reuse.modules')}</button></li>
+      <li><button data-view="integrity" class="${activeView === 'integrity' ? 'active' : ''}" ${activeView === 'integrity' ? 'aria-current="page"' : ''}>${i18n.t('ui.reuse.file_integrity')}</button></li>
+    </ul>
+  `;
 }
 
-let composer = null;
+async function renderPage() {
+  const modules = activeView === 'modules' ? await loadModules() : [];
+  const integrityRows = activeView === 'integrity' ? await loadIntegrity() : [];
 
-function bindEvents() {
-  const contentGrid = root.querySelector('.content-grid');
+  const content =
+    activeView === 'modules'
+      ? `<section class="widget-card"><h2>${i18n.t('ui.reuse.modules')}</h2>${renderModulesPanel(modules)}</section>`
+      : `<section class="widget-card"><div class="integrity-header"><h2>${i18n.t('ui.reuse.file_integrity')}</h2><button id="rerun-integrity" type="button">${i18n.t('ui.app.admin.rerun')}</button></div>${renderIntegrityPanel(integrityRows)}</section>`;
 
-  contentGrid.querySelectorAll('input[type="checkbox"][data-module]').forEach((toggle) => {
+  await renderDashboardLayout(root, {
+    pageContext: `<h1>${i18n.t('ui.app.admin.page_title')}</h1><p>${i18n.t('ui.app.admin.page_subtitle')}</p>`,
+    toolbar: renderToolbar(),
+    content,
+  });
+
+  root.querySelectorAll('button[data-view]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      activeView = button.dataset.view;
+      await renderPage();
+    });
+  });
+
+  root.querySelectorAll('input[type="checkbox"][data-module]').forEach((toggle) => {
     toggle.addEventListener('change', async () => {
       const moduleId = toggle.dataset.module;
       const action = toggle.checked ? 'enable' : 'disable';
@@ -133,38 +129,21 @@ function bindEvents() {
       }
 
       await toggleModule(moduleId, action);
-      const newData = await loadData();
-      composer.refresh(makeElements(newData));
+      await renderPage();
     });
   });
 
-  const rerunButton = contentGrid.querySelector('#rerun-integrity');
+  const rerunButton = root.querySelector('#rerun-integrity');
   if (rerunButton) {
     rerunButton.addEventListener('click', async () => {
       /** @type {HTMLButtonElement} */
       const btn = rerunButton;
       btn.disabled = true;
       btn.textContent = i18n.t('ui.app.admin.checking');
-      const newData = await loadData();
-      composer.refresh(makeElements(newData));
+      await renderPage();
     });
   }
 }
 
-const data = await loadData();
-
-await renderDashboardLayout(root, {
-  pageContext: `<h1>${i18n.t('ui.app.admin.page_title')}</h1><p>${i18n.t('ui.app.admin.page_subtitle')}</p>`,
-  content: '',
-});
-
-composer = createPageComposer(root.querySelector('.content-grid'), {
-  allowCustomization: true,
-  elements: makeElements(data),
-  preferenceKey: 'administration-layout',
-  i18n,
-  onRender: bindEvents,
-});
-
-await composer.init();
+await renderPage();
 
