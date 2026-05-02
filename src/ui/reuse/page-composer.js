@@ -367,10 +367,10 @@ export function createPageComposer(root, {
 
           const moved = currentCol !== placement.col || currentRow !== placement.row;
           if (moved && canPlace(currentCol, currentRow, placement.w, placement.h, el.id)) {
-            const placement2 = layout.placements.find((lp) => lp.id === el.id);
-            if (placement2) {
-              placement2.col = currentCol;
-              placement2.row = currentRow;
+            const targetPlacement = layout.placements.find((lp) => lp.id === el.id);
+            if (targetPlacement) {
+              targetPlacement.col = currentCol;
+              targetPlacement.row = currentRow;
             }
             renderGridComposer();
           }
@@ -488,10 +488,10 @@ export function createPageComposer(root, {
         const sizeChanged = currentW !== placement.w || currentH !== placement.h;
         const valid = canPlace(placement.col, placement.row, currentW, currentH, el.id);
         if (sizeChanged && valid) {
-          const found = layout.placements.find((lp) => lp.id === el.id);
-          if (found) {
-            found.w = currentW;
-            found.h = currentH;
+          const targetPlacement = layout.placements.find((lp) => lp.id === el.id);
+          if (targetPlacement) {
+            targetPlacement.w = currentW;
+            targetPlacement.h = currentH;
           }
           renderGridComposer();
         }
@@ -932,10 +932,10 @@ export function createPageComposer(root, {
         const sizeChanged = currentW !== placement.w || currentH !== placement.h;
         const valid = canSubPlace(state, placement.col, placement.row, currentW, currentH, el.id);
         if (sizeChanged && valid) {
-          const found = state.layout.placements.find((lp) => lp.id === el.id);
-          if (found) {
-            found.w = currentW;
-            found.h = currentH;
+          const targetPlacement = state.layout.placements.find((lp) => lp.id === el.id);
+          if (targetPlacement) {
+            targetPlacement.w = currentW;
+            targetPlacement.h = currentH;
           }
           renderSubGrid(state);
         }
@@ -1034,10 +1034,10 @@ export function createPageComposer(root, {
 
           const moved = currentCol !== placement.col || currentRow !== placement.row;
           if (moved && canSubPlace(state, currentCol, currentRow, placement.w, placement.h, el.id)) {
-            const found = state.layout.placements.find((lp) => lp.id === el.id);
-            if (found) {
-              found.col = currentCol;
-              found.row = currentRow;
+            const targetPlacement = state.layout.placements.find((lp) => lp.id === el.id);
+            if (targetPlacement) {
+              targetPlacement.col = currentCol;
+              targetPlacement.row = currentRow;
             }
             renderSubGrid(state);
           }
