@@ -1,5 +1,3 @@
-/* ── Font picker row (dropdown + size stepper inline) ────────────────────── */
-
 .font-picker-row {
   display: flex;
   align-items: center;
@@ -7,16 +5,12 @@
   margin: 4px 0;
 }
 
-/* ── Font picker label ───────────────────────────────────────────────────── */
-
 .font-picker-label {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
-
-/* ── Font preview box ────────────────────────────────────────────────────── */
 
 .font-preview-box {
   border: 1px solid var(--border);
@@ -56,13 +50,11 @@
 }
 
 .font-size-btn:hover {
-  background: var(--color-success);
-  color: var(--color-success-text);
-  border-color: var(--color-success-border);
+  background: var(--color-success-hover-bg);
+  color: var(--color-success-outline-text, var(--color-success-text));
+  border-color: var(--color-success-outline-text, var(--color-success-text));
   transform: none;
 }
-
-/* ── Font heading row ────────────────────────────────────────────────────── */
 
 .font-heading-row {
   display: flex;
@@ -74,8 +66,6 @@
 .font-heading-row h3 {
   margin: 0;
 }
-
-/* ── Theme selector ──────────────────────────────────────────────────────── */
 
 .theme-subsection {
   margin: 18px 0 0;
@@ -112,8 +102,6 @@
   color: #fff;
   border-color: transparent;
 }
-
-/* ── Preferences dump ────────────────────────────────────────────────────── */
 
 .prefs-dump {
   background: rgba(10, 22, 42, 0.90);
