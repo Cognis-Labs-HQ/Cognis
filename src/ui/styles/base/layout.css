@@ -180,6 +180,11 @@
   border: 1px solid var(--border);
 }
 
+button.dropdown-item {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .app-shell button:hover:not(.dropdown-item),
 .app-shell select:hover {
   background: var(--control-hover-bg);
