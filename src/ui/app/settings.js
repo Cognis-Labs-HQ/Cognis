@@ -43,18 +43,20 @@ const appearanceContent = `
         <h3>${i18n.t('ui.app.settings.font_heading')}</h3>
         <button id="pref-font-reset" type="button" disabled>${i18n.t('ui.reuse.reset')}</button>
       </div>
-      <label class="font-picker-label">
-        ${i18n.t('ui.app.settings.font')}
-        <div id="pref-font-picker"></div>
-      </label>
-      <span id="pref-font-preview" style="margin-left:8px;font-size:1.1em;">AaBbCc</span><br/>
-      <div class="font-size-control">
-        <span>${i18n.t('ui.app.settings.font_size')}</span>
+      <div class="font-picker-row">
+        <label class="font-picker-label">
+          ${i18n.t('ui.app.settings.font')}
+          <div id="pref-font-picker"></div>
+        </label>
         <div class="font-size-stepper">
           <button id="pref-font-size-up" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} +">▲</button>
           <span id="pref-font-size-value">${DEFAULT_FONT_SIZE} pt</span>
           <button id="pref-font-size-down" class="font-size-btn" type="button" aria-label="${i18n.t('ui.app.settings.font_size')} -">▼</button>
         </div>
+      </div>
+      <div class="font-preview-box">
+        <h4>${i18n.t('ui.app.settings.font_preview')}</h4>
+        <span id="pref-font-preview">AaBbCc</span>
       </div>
       <div class="theme-subsection">
         <h3>${i18n.t('ui.app.settings.theme')}</h3>

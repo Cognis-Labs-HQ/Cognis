@@ -23,6 +23,15 @@
   margin: 0 0 14px;
 }
 
+/* ── Font picker row (dropdown + size stepper inline) ────────────────────── */
+
+.font-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+}
+
 /* ── Font picker label ───────────────────────────────────────────────────── */
 
 .font-picker-label {
@@ -30,16 +39,29 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  margin: 4px 0;
 }
 
-/* ── Font size up/down buttons ───────────────────────────────────────────── */
+/* ── Font preview box ────────────────────────────────────────────────────── */
 
-.font-size-control {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 4px 0;
+.font-preview-box {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 10px 0 0;
+  display: inline-block;
+  min-width: 160px;
+}
+
+.font-preview-box h4 {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+#pref-font-preview {
+  font-size: 0.95em;
 }
 
 .font-size-stepper {
@@ -119,7 +141,7 @@
 /* ── Preferences dump ────────────────────────────────────────────────────── */
 
 .prefs-dump {
-  background: var(--code-bg);
+  background: rgba(10, 22, 42, 0.90);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px;
@@ -128,4 +150,8 @@
   white-space: pre-wrap;
   word-break: break-all;
   margin: 0;
+}
+
+body[data-theme='light'] .prefs-dump {
+  background: var(--code-bg);
 }

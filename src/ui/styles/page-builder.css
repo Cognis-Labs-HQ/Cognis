@@ -43,7 +43,7 @@ button {
   cursor: pointer;
   transition: border-color 0.2s ease, transform 0.15s ease;
 }
-button:hover {
+button:hover:not(:disabled) {
   border-color: var(--accent-2);
   transform: translateY(-1px);
 }
@@ -358,6 +358,10 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .btn-cancel:hover {
   background: color-mix(in srgb, var(--color-danger) 60%, #fff 40%);
   border-color: var(--color-danger-border);
+}
+
+.btn-reset:hover {
+  background: var(--color-danger);
 }
 
 /* ── Animated button (shadow + raise) ───────────────────────────────────── */
