@@ -510,9 +510,13 @@ body.composer-theme-hidden .composer-edit-toggle {
 
 .composer-view-grid {
   display: grid;
-  grid-template-columns: repeat(var(--grid-cols, 1), 90px);
-  grid-auto-rows: 90px;
-  gap: 0;
+  grid-template-columns: repeat(var(--grid-cols, 1), 1fr);
+  grid-auto-rows: minmax(90px, auto);
+  gap: 8px;
+}
+
+.composer-view-grid .widget-card {
+  min-width: 0;
 }
 
 .composer-grid-active {

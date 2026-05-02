@@ -18,7 +18,7 @@
     "cli": "node --import tsx src/tooling/cli/index.ts"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "tsx": "^4.20.6"
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }

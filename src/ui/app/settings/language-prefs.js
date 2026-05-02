@@ -125,6 +125,7 @@ export function initLanguagePrefs(root, initialPriority, { onDirtyChange } = {})
 
   return {
     init,
+    renderTables,
     getPriority: () => languagePriority,
     isDirty: () => JSON.stringify(languagePriority) !== JSON.stringify(savedPriority),
     discard,

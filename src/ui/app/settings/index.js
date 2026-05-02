@@ -1,6 +1,6 @@
 import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n, readPreferredLanguages, setPreferredLanguages } from '../../reuse/i18n.js';
-import { applyTheme, persistTheme } from '../../reuse/theme-toggle.js';
+import { applyTheme, persistTheme, getStoredTheme } from '../../reuse/theme-toggle.js';
 import { toFontFamilyValue, initFontPrefs, DEFAULT_FONT_SIZE } from './font-prefs.js';
 import { initLanguagePrefs } from './language-prefs.js';
 import { createUnsavedChangesBar } from '../../reuse/unsaved-changes.js';
@@ -32,8 +32,7 @@ async function savePrefs(prefs) {
 const existingPrefs = await loadPrefs().catch(() => null);
 if (Array.isArray(existingPrefs?.languagePriority)) languagePriority = existingPrefs.languagePriority;
 
-const DEFAULT_THEME = 'dark';
-const savedMode = document.body.getAttribute('data-theme') || DEFAULT_THEME;
+const savedMode = getStoredTheme();
 
 let fontPrefs;
 let languagePrefs;
@@ -42,12 +41,8 @@ let changesBar;
 
 function updateThemeToggleForSettings() {
   const themeToggle = document.querySelector('#theme-toggle');
-  if (!themeToggle) return;
-  const hash = window.location.hash.slice(1);
-  themeToggle.hidden = hash !== '' && hash !== 'appearance';
+  if (themeToggle) themeToggle.hidden = true;
 }
-
-window.addEventListener('hashchange', updateThemeToggleForSettings);
 
 function initThemePrefs({ onDirtyChange }) {
   let currentMode = savedMode;
@@ -146,6 +141,7 @@ const elements = [
     subComposerOptions: {
       allowCustomization: false,
       preferenceKey: 'settings-language-layout',
+      columns: 2,
       elements: [
         {
           id: 'available-languages',
@@ -166,10 +162,14 @@ const elements = [
         },
       ],
       onRender: () => {
-        languagePrefs = initLanguagePrefs(root, languagePriority, {
-          onDirtyChange: (dirty) => changesBar?.markDirty('language', dirty),
-        });
-        languagePrefs.init();
+        if (!languagePrefs) {
+          languagePrefs = initLanguagePrefs(root, languagePriority, {
+            onDirtyChange: (dirty) => changesBar?.markDirty('language', dirty),
+          });
+          languagePrefs.init();
+        } else {
+          languagePrefs.renderTables();
+        }
       },
     },
   },
@@ -244,9 +244,9 @@ const composer = createPageComposer(root, {
 });
 await composer.init();
 
-const floatingToolbarEl = root.querySelector('.floating-toolbar');
+const floatingSlot = composer.getFloatingSlot('settings-changes-bar');
 
-changesBar = createUnsavedChangesBar(floatingToolbarEl, {
+changesBar = createUnsavedChangesBar(floatingSlot, {
   onSave: async () => {
     const selectedFont = fontPrefs?.getFont();
     const mode = themePrefs?.getMode() ?? savedMode;

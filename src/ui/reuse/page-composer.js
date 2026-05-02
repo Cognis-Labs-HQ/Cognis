@@ -1290,6 +1290,10 @@ export function createPageComposer(root, {
       state.container.style.minHeight = '';
       state.container.style.width = '';
 
+      if (state.columns === 2) {
+        state.container.classList.add('content-grid--two-column');
+      }
+
       const sorted = state.layout.placements
         .filter((p) => !state.layout.hidden.includes(p.id))
         .sort((a, b) => a.row - b.row || a.col - b.col);
@@ -1327,6 +1331,7 @@ export function createPageComposer(root, {
         panelPosition: null,
         resizeObserver: null,
         container: null,
+        columns: el.subComposerOptions.columns ?? 1,
         elements: el.subComposerOptions.elements,
         allowCustomization: el.subComposerOptions.allowCustomization ?? false,
         preferenceKey: el.subComposerOptions.preferenceKey,
@@ -1711,7 +1716,7 @@ export function createPageComposer(root, {
       : undefined;
 
     const floatingHtml = Array.isArray(floatingMenu) && floatingMenu.length > 0
-      ? floatingMenu.map((t) => t.render()).join('')
+      ? floatingMenu.map((t) => `<div data-floating-slot="${t.id}" hidden>${t.render()}</div>`).join('')
       : undefined;
 
     await renderDashboardLayout(root, {
@@ -1721,6 +1726,21 @@ export function createPageComposer(root, {
       floatingToolbar: floatingHtml,
       content: '',
     });
+
+    if (floatingMenu.length > 0) {
+      const ft = root.querySelector('.floating-toolbar');
+      if (ft) {
+        const updateToolbarVisibility = () => {
+          const anyVisible = [...ft.querySelectorAll('[data-floating-slot]')].some((s) => !s.hidden);
+          ft.hidden = !anyVisible;
+        };
+        const slotObserver = new MutationObserver(updateToolbarVisibility);
+        ft.querySelectorAll('[data-floating-slot]').forEach((slot) => {
+          slotObserver.observe(slot, { attributes: true, attributeFilter: ['hidden'] });
+        });
+        updateToolbarVisibility();
+      }
+    }
 
     contentGrid = root.querySelector('.content-grid');
     if (columns === 2) contentGrid?.classList.add('content-grid--two-column');
@@ -1765,6 +1785,10 @@ export function createPageComposer(root, {
     render();
   }
 
+  function getFloatingSlot(id) {
+    return root.querySelector(`[data-floating-slot="${id}"]`);
+  }
+
   function refresh(newElements) {
     if (editing) endEditMode();
     editing = false;
@@ -1772,6 +1796,6 @@ export function createPageComposer(root, {
     render();
   }
 
-  return { init, refresh };
+  return { init, refresh, getFloatingSlot };
 }
 
