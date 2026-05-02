@@ -137,10 +137,19 @@ export function createPageComposer(root, {
   }
 
   function getGridSize(el) {
+    if (el.gridSize?.max === 'full') {
+      return {
+        default: el.gridSize.default ?? [4, 3],
+        min: el.gridSize.min ?? [2, 2],
+        max: null,
+        fullWidth: true,
+      };
+    }
     return {
       default: el.gridSize?.default ?? [4, 3],
       min: el.gridSize?.min ?? [2, 2],
       max: el.gridSize?.max ?? null,
+      fullWidth: false,
     };
   }
 
@@ -186,7 +195,7 @@ export function createPageComposer(root, {
       if (layout.hidden.includes(el.id)) continue;
       if (layout.placements.some((p) => p.id === el.id)) continue;
       const gs = getGridSize(el);
-      const w = Math.min(gs.default[0], gridCols);
+      const w = gs.fullWidth ? gridCols : Math.min(gs.default[0], gridCols);
       const h = gs.default[1];
       let placed = false;
       for (let row = 0; !placed; row++) {
@@ -345,7 +354,7 @@ export function createPageComposer(root, {
 
     if (editing) {
       const gs = getGridSize(el);
-      const canResizeE = !gs.max || gs.max[0] > gs.min[0];
+      const canResizeE = !gs.fullWidth && (!gs.max || gs.max[0] > gs.min[0]);
       const canResizeS = !gs.max || gs.max[1] > gs.min[1];
 
       if (canResizeE) {
@@ -489,7 +498,7 @@ export function createPageComposer(root, {
       item.setPointerCapture(e.pointerId);
 
       const gs = getGridSize(el);
-      const w = Math.min(gs.default[0], gridCols);
+      const w = gs.fullWidth ? gridCols : Math.min(gs.default[0], gridCols);
       const h = gs.default[1];
 
       let shade = null;
@@ -552,6 +561,7 @@ export function createPageComposer(root, {
 
     handle.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return;
+      if (e.target.closest('button')) return;
       e.preventDefault();
       handle.setPointerCapture(e.pointerId);
 
@@ -559,9 +569,13 @@ export function createPageComposer(root, {
       const startY = e.clientY - panel.offsetTop;
 
       function onMove(e) {
-        panel.style.left = `${e.clientX - startX}px`;
-        panel.style.top = `${e.clientY - startY}px`;
-        panelPosition = { top: e.clientY - startY, left: e.clientX - startX };
+        const maxLeft = window.innerWidth - panel.offsetWidth - 4;
+        const maxTop = window.innerHeight - panel.offsetHeight - 4;
+        const newLeft = Math.max(4, Math.min(maxLeft, e.clientX - startX));
+        const newTop = Math.max(4, Math.min(maxTop, e.clientY - startY));
+        panel.style.left = `${newLeft}px`;
+        panel.style.top = `${newTop}px`;
+        panelPosition = { top: newTop, left: newLeft };
       }
 
       function onUp() {
@@ -625,6 +639,7 @@ export function createPageComposer(root, {
       }
     }
 
+    panel.style.right = 'auto';
     document.body.appendChild(panel);
     bindPanelDrag(panel);
 
@@ -651,6 +666,39 @@ export function createPageComposer(root, {
       const el = elements.find((e) => e.id === elId);
       if (el) bindPanelItemDrag(item, el);
     });
+  }
+
+  function getOrCreateFloatingToolbar() {
+    let ft = root.querySelector('.floating-toolbar');
+    if (!ft) {
+      ft = document.createElement('div');
+      ft.className = 'floating-toolbar';
+      ft.hidden = true;
+      root.appendChild(ft);
+    }
+    return ft;
+  }
+
+  function syncFloatingToolbar() {
+    if (floatingMenu) return;
+    if (!allowCustomization) return;
+    const ft = getOrCreateFloatingToolbar();
+    if (!editing) {
+      ft.innerHTML = `<button class="composer-edit-btn" type="button">${i18n.t('ui.reuse.page_composer.edit_layout')}</button>`;
+      ft.hidden = false;
+      ft.querySelector('.composer-edit-btn').addEventListener('click', () => {
+        layoutSnapshot = JSON.parse(JSON.stringify(layout));
+        editing = true;
+        renderGridComposer();
+      });
+    } else {
+      ft.innerHTML = `<button class="composer-reset-btn" type="button">${i18n.t('ui.reuse.generic.reset')}</button>`;
+      ft.hidden = false;
+      ft.querySelector('.composer-reset-btn').addEventListener('click', () => {
+        layout = { placements: [], hidden: [] };
+        renderGridComposer();
+      });
+    }
   }
 
   function renderGridComposer() {
@@ -680,7 +728,7 @@ export function createPageComposer(root, {
       contentGrid.appendChild(createCell(el, placement));
     }
 
-    if (allowCustomization && !editing) {
+    if (!editing && allowCustomization && floatingMenu) {
       const headerOverlay = document.createElement('div');
       headerOverlay.className = 'composer-header-overlay';
       const btn = document.createElement('button');
@@ -695,6 +743,8 @@ export function createPageComposer(root, {
       headerOverlay.appendChild(btn);
       contentGrid.appendChild(headerOverlay);
     }
+
+    syncFloatingToolbar();
 
     if (editing) {
       createElementsPanel();

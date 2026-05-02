@@ -522,6 +522,23 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   transform: translateY(-1px);
 }
 
+.composer-reset-btn {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.composer-reset-btn:hover {
+  background: var(--control-hover-bg);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
 .composer-drag-handle {
   display: flex;
   align-items: center;
@@ -622,6 +639,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   justify-content: space-between;
   gap: 8px;
   font-size: 0.88rem;
+  cursor: grab;
 }
 
 .composer-add-btn {
@@ -705,6 +723,10 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .composer-grid-active {
   position: relative;
   display: block;
+}
+
+.content-grid.composer-grid-active {
+  background: var(--surface);
 }
 
 .composer-grid-overlay {

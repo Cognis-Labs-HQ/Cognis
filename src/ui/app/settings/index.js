@@ -33,6 +33,7 @@ const elements = [
   {
     id: 'appearance',
     label: i18n.t('ui.reuse.appearance'),
+    gridSize: { default: [4, 4], min: [3, 3] },
     render: () => `
       <h2>${i18n.t('ui.reuse.appearance')}</h2>
       <div class="font-heading-row">
@@ -66,6 +67,7 @@ const elements = [
   {
     id: 'language',
     label: i18n.t('ui.reuse.language'),
+    gridSize: { default: [4, 4], min: [3, 3] },
     render: () => `
       <h2>${i18n.t('ui.reuse.language')}</h2>
       <div class="language-preferences">
@@ -83,6 +85,7 @@ const elements = [
   {
     id: 'advanced',
     label: i18n.t('ui.app.settings.advanced'),
+    gridSize: { default: [4, 3], min: [2, 2] },
     render: () => `
       <h2>${i18n.t('ui.app.settings.advanced')}</h2>
       <h3>${i18n.t('ui.app.settings.preferences')}</h3>
@@ -94,13 +97,11 @@ const elements = [
 function updateThemeToggleForSettings() {
   const themeToggle = document.querySelector('#theme-toggle');
   if (!themeToggle) return;
-  const activeId = window.location.hash.slice(1) || elements[0].id;
-  themeToggle.hidden = activeId === 'appearance';
+  themeToggle.hidden = false;
 }
 
 const composer = createPageComposer(root, {
-  allowCustomization: false,
-  subPageNavigation: true,
+  allowCustomization: true,
   elements,
   preferenceKey: 'settings-layout',
   i18n,
@@ -130,7 +131,6 @@ const composer = createPageComposer(root, {
   },
 });
 await composer.init();
-window.addEventListener('hashchange', updateThemeToggleForSettings);
 
 const DEFAULT_THEME = 'dark';
 

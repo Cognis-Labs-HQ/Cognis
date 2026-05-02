@@ -53,6 +53,7 @@ const elements = [
   {
     id: 'doc-reader',
     label: i18n.t('ui.app.docs.page_title'),
+    gridSize: { default: [4, 8], min: [2, 4], max: 'full' },
     render: () => `<article id="doc" class="content-panel"></article>`,
   },
 ];
