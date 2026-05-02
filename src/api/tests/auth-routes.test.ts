@@ -27,3 +27,24 @@ test('auth routes register and login via gateway', async () => {
   assert.equal(status, 200);
   assert.match(payload, /"provider":"local"/);
 });
+
+test('login records lastLogin on the account', async () => {
+  const accountStore = new VolatileLocalAccountStore();
+  const gateway = new LocalAuthGateway(accountStore);
+  const route = createAuthRoutes(gateway, accountStore);
+
+  await route(requestWithBody('POST', { username: 'u2', password: 'p2' }), {
+    writeHead() {}, end() {}
+  } as any, new URL('http://localhost/api/v1/auth/register'));
+
+  const beforeLogin = await accountStore.getInfo('u2');
+  assert.equal(beforeLogin?.lastLogin, null, 'lastLogin should be null before first login');
+
+  await route(requestWithBody('POST', { username: 'u2', password: 'p2' }), {
+    writeHead() {}, end() {}
+  } as any, new URL('http://localhost/api/v1/auth/login'));
+
+  const afterLogin = await accountStore.getInfo('u2');
+  assert.notEqual(afterLogin?.lastLogin, null, 'lastLogin should be set after login');
+  assert.match(afterLogin!.lastLogin!, /^\d{4}-\d{2}-\d{2}T/, 'lastLogin should be an ISO 8601 timestamp');
+});

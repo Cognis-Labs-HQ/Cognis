@@ -56,3 +56,27 @@ test('user info endpoint allows self-access and admin access, blocks others', as
   await route({ method: 'GET', headers: aliceHeaders } as any, { writeHead(c:number){status=c;}, end(p:string){body=p;} } as any, new URL('http://localhost/api/v1/users/nonexistent/info'));
   assert.equal(status, 403);
 });
+
+test('getInfo endpoint returns lastLogin field', async () => {
+  const accounts = new VolatileLocalAccountStore();
+  await accounts.register('carol', 'pw', false);
+  const prefs = new VolatileUserPreferenceStore();
+  const route = createUserRoutes(accounts, prefs);
+  let body = '';
+  let status = 0;
+
+  const carolToken = issueAccessToken('carol', 'user', 60);
+  const carolHeaders = { authorization: `Bearer ${carolToken}` };
+
+  await route({ method: 'GET', headers: carolHeaders } as any, { writeHead(c:number){status=c;}, end(p:string){body=p;} } as any, new URL('http://localhost/api/v1/users/carol/info'));
+  assert.equal(status, 200);
+  const parsed = JSON.parse(body);
+  assert.ok('lastLogin' in parsed.data, 'response should contain lastLogin field');
+  assert.equal(parsed.data.lastLogin, null, 'lastLogin should be null before any login');
+
+  await accounts.updateLastLogin('carol');
+
+  await route({ method: 'GET', headers: carolHeaders } as any, { writeHead(c:number){status=c;}, end(p:string){body=p;} } as any, new URL('http://localhost/api/v1/users/carol/info'));
+  const parsedAfter = JSON.parse(body);
+  assert.notEqual(parsedAfter.data.lastLogin, null, 'lastLogin should be set after updateLastLogin');
+});

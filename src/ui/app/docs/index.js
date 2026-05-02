@@ -74,27 +74,26 @@ const composer = createPageComposer(root, {
       render: () => `<h3>${i18n.t('ui.reuse.navigation')}</h3><ul>${renderSidebarLinks(docs)}</ul>`,
     },
   ],
-  onRender: () => {
-    root.querySelectorAll('[data-slug]').forEach((button) => {
-      button.addEventListener('click', () => showDoc(button.dataset.slug));
-    });
-
-    root.querySelector('#doc')?.addEventListener('click', async (event) => {
-      const link = event.target.closest('a[href]');
-      if (!link) return;
-
-      const href = link.getAttribute('href') || '';
-      if (href.startsWith('http://') || href.startsWith('https://')) return;
-
-      const slug = normalizeDocSlug(href);
-      if (!slug) return;
-
-      event.preventDefault();
-      await showDoc(slug);
-    });
-  },
 });
 await composer.init();
+
+root.querySelectorAll('[data-slug]').forEach((button) => {
+  button.addEventListener('click', () => showDoc(button.dataset.slug));
+});
+
+root.addEventListener('click', async (event) => {
+  const link = event.target.closest('a[href]');
+  if (!link || !link.closest('#doc')) return;
+
+  const href = link.getAttribute('href') || '';
+  if (href.startsWith('http://') || href.startsWith('https://')) return;
+
+  const slug = normalizeDocSlug(href);
+  if (!slug) return;
+
+  event.preventDefault();
+  await showDoc(slug);
+});
 
 const defaultDoc = docs.find((doc) => doc.slug === 'overview')?.slug ?? docs[0]?.slug;
 if (defaultDoc) await showDoc(defaultDoc);
