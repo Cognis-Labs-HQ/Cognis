@@ -129,3 +129,19 @@ test('administration page is visible to admins only', async () => {
   assert.match(adminRes.body, /static\/app\/administration\/index\.js/);
   assert.match(adminRes.body, /id="app"/);
 });
+
+test('profile page requires login and serves html when authenticated', async () => {
+  const route = createUiRoutes();
+
+  const anonymous = createResponseRecorder();
+  await route({ headers: {} } as any, anonymous.res as any, new URL('http://localhost/user'));
+  assert.equal(anonymous.status, 302);
+  assert.equal(anonymous.headers.location, '/login');
+
+  const token = issueAccessToken('u1', 'user', 60);
+  const authed = createResponseRecorder();
+  await route({ headers: { cookie: `cognis_access_token=${token}` } } as any, authed.res as any, new URL('http://localhost/user'));
+  assert.equal(authed.status, 200);
+  assert.match(authed.body, /static\/app\/profile\/index\.js/);
+  assert.match(authed.body, /id="app"/);
+});
