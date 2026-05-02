@@ -98,7 +98,7 @@ export function createPageComposer(contentGrid, {
           ? `<div class="composer-drag-handle" aria-hidden="true">
                <span class="composer-drag-icon">⠿</span>
                <span class="composer-drag-label">${el.label}</span>
-               <button class="composer-remove-btn" data-composer-remove="${el.id}" type="button">${i18n.t('ui.reuse.page_composer.remove')}</button>
+               <button class="composer-remove-btn" data-composer-remove="${el.id}" type="button">${i18n.t('ui.reuse.generic.remove')}</button>
              </div>`
           : '';
         const editingClass = editing ? ' composer-editing' : '';
@@ -113,7 +113,7 @@ export function createPageComposer(contentGrid, {
       .map(
         (el) => `<li class="composer-library-item">
            <span>${el.label}</span>
-           <button class="composer-add-btn" data-composer-add="${el.id}" type="button">${i18n.t('ui.reuse.page_composer.add')}</button>
+           <button class="composer-add-btn" data-composer-add="${el.id}" type="button">${i18n.t('ui.reuse.generic.add')}</button>
          </li>`
       )
       .join('');
@@ -136,7 +136,7 @@ export function createPageComposer(contentGrid, {
 
     if (allowCustomization) {
       const btnLabel = editing
-        ? i18n.t('ui.reuse.page_composer.done')
+        ? i18n.t('ui.reuse.generic.done')
         : i18n.t('ui.reuse.page_composer.edit_layout');
       const btnClass = editing ? 'composer-done-btn' : 'composer-edit-btn';
       html += `<div class="composer-header">

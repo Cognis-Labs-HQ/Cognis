@@ -38,7 +38,7 @@ const appearanceContent = `
     ${section(i18n.t('ui.reuse.appearance'), `
       <div class="font-heading-row">
         <h3>${i18n.t('ui.app.settings.font_heading')}</h3>
-        <button id="pref-font-reset" type="button" disabled>${i18n.t('ui.reuse.reset')}</button>
+        <button id="pref-font-reset" type="button" disabled>${i18n.t('ui.reuse.generic.reset')}</button>
       </div>
       <div class="font-picker-row">
         <label class="font-picker-label">
@@ -103,8 +103,8 @@ await renderDashboardLayout(root, {
   content: `<article class="content-panel">${appearanceContent}${languageContent}${advancedContent}</article>`,
   floatingToolbar: `
     <span>${i18n.t('ui.reuse.unsaved_changes')}</span>
-    <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t('ui.reuse.discard')}</button>
-    <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t('ui.reuse.save')}</button>
+    <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t('ui.reuse.generic.discard')}</button>
+    <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t('ui.reuse.generic.save')}</button>
   `,
 });
 

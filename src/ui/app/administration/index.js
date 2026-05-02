@@ -32,10 +32,10 @@ function getStatePill(status) {
 
 function renderDetailsList(mod) {
   const details = [
-    [i18n.t('ui.reuse.id'), mod.id],
-    [i18n.t('ui.reuse.version'), mod.version],
+    [i18n.t('ui.reuse.generic.id'), mod.id],
+    [i18n.t('ui.reuse.generic.version'), mod.version],
     [i18n.t('ui.app.admin.publisher'), mod.publisher || i18n.t('ui.app.admin.unknown')],
-    [i18n.t('ui.reuse.class'), mod.class],
+    [i18n.t('ui.reuse.generic.class'), mod.class],
     [i18n.t('ui.app.admin.capabilities'), (mod.capabilities || []).join(', ') || i18n.t('ui.app.admin.none')],
   ];
 
@@ -152,7 +152,7 @@ function bindIntegrityRerun() {
       integrityCard.innerHTML = `
         <div class="integrity-header">
           <h2>${i18n.t('ui.reuse.file_integrity')}</h2>
-          <button id="rerun-integrity" class="btn-confirm" type="button">${i18n.t('ui.reuse.refresh')}</button>
+          <button id="rerun-integrity" class="btn-confirm" type="button">${i18n.t('ui.reuse.generic.refresh')}</button>
         </div>
         ${renderIntegrityContent(integrityRows)}
       `;
@@ -176,7 +176,7 @@ const integritySection = `
     <section class="widget-card">
       <div class="integrity-header">
         <h2>${i18n.t('ui.reuse.file_integrity')}</h2>
-        <button id="rerun-integrity" class="btn-confirm" type="button">${i18n.t('ui.reuse.refresh')}</button>
+        <button id="rerun-integrity" class="btn-confirm" type="button">${i18n.t('ui.reuse.generic.refresh')}</button>
       </div>
       ${renderIntegrityContent(integrityRows)}
     </section>
