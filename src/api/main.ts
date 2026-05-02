@@ -6,6 +6,7 @@ import { LocalAuthGateway } from './adapters/local-auth-gateway.js';
 import { DbLocalAccountStore, createDbExecutor, type SupportedDbType } from './adapters/db/account-store.js';
 import { DbUserPreferenceStore } from './adapters/db/preference-store.js';
 import { DbProfileStore } from './adapters/db/profile-store.js';
+import { CoreNotificationGateway, VolatileNotificationPreferenceStore } from './gateways/notification-gateway.js';
 import { LocalFileGateway } from '../adapters/file-local/local-file-gateway.js';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -153,6 +154,13 @@ try {
 
 const runtime = await InMemoryModuleRuntimeGateway.bootstrap();
 await logger.info('Module runtime bootstrapped.');
+
+const notificationPrefStore = new VolatileNotificationPreferenceStore();
+const notificationGateway = new CoreNotificationGateway(notificationPrefStore);
+const adaptersRoot = process.env.COGNIS_ADAPTERS_ROOT ?? path.resolve(process.cwd(), 'src', 'adapters');
+await notificationGateway.discoverSenders(adaptersRoot);
+await logger.info('Notification gateway bootstrapped.', { adaptersRoot });
+
 const server = buildServer({
   moduleRuntimeGateway: runtime,
   authGateway,
@@ -160,6 +168,7 @@ const server = buildServer({
   preferenceStore,
   profileStore,
   fileGateway,
+  notificationGateway,
   loadModuleStates: async () => {
     const result = await dbExecutor.execute('SELECT module_id, enabled FROM modules');
     return (result.rows ?? []).map((row) => ({ moduleId: row.module_id, enabled: Boolean(row.enabled) }));

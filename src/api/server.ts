@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { HealthService, ModuleService, type ModuleRuntimeGateway, type FileStorageGateway } from '@cognis/core';
+import { HealthService, ModuleService, type ModuleRuntimeGateway, type FileStorageGateway, type NotificationGateway } from '@cognis/core';
 import { createModuleRoutes } from './routes/module-routes.js';
 import { createSystemRoutes } from './routes/system-routes.js';
 import { createDocsRoutes } from './routes/docs-routes.js';
@@ -11,6 +11,7 @@ import type { LocalAccountStore } from './adapters/local-auth-gateway.js';
 import { createPreferencesRoutes, type UserPreferenceStore } from './routes/preferences-routes.js';
 import { createUserRoutes } from './routes/user-routes.js';
 import { createProfileRoutes } from './routes/profile/index.js';
+import { createNotificationRoutes } from './routes/notification-routes.js';
 import { createSocialRoutes } from './routes/social/index.js';
 import { createPostRoutes } from './routes/posts/index.js';
 import { createFileRoutes } from './routes/file-routes.js';
@@ -34,6 +35,7 @@ export interface ApiDependencies {
   preferenceStore: UserPreferenceStore;
   profileStore?: DbProfileStore;
   fileGateway?: FileStorageGateway;
+  notificationGateway?: NotificationGateway;
   moduleIntegrityChecker?: () => Promise<Array<{ moduleId: string; file: string; expected: string; actual: string | null; status: 'ok' | 'mismatch' | 'missing' }>>;
   loadModuleStates?: () => Promise<Array<{ moduleId: string; enabled: boolean }>>;
   persistModuleState?: (moduleId: string, enabled: boolean) => Promise<void>;
@@ -65,6 +67,7 @@ export function buildServer(deps: ApiDependencies) {
   const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway);
   const authRoutes = createAuthRoutes(deps.authGateway, deps.accountStore, deps.profileStore);
   const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
+<<<<<<< HEAD
   const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore, deps.profileStore);
   const profileRoutes = deps.profileStore && deps.fileGateway
     ? createProfileRoutes(deps.profileStore, deps.fileGateway)
@@ -73,6 +76,11 @@ export function buildServer(deps: ApiDependencies) {
   const postRoutes = deps.profileStore ? createPostRoutes(deps.profileStore) : null;
   const fileRoutes = deps.profileStore && deps.fileGateway
     ? createFileRoutes(deps.profileStore, deps.fileGateway)
+=======
+  const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore);
+  const notificationRoutes = deps.notificationGateway
+    ? createNotificationRoutes(deps.notificationGateway)
+>>>>>>> 4bb16dc (feat: implement notification gateway and SMTP adapter)
     : null;
 
   Promise.all([
@@ -123,6 +131,7 @@ export function buildServer(deps: ApiDependencies) {
         return;
       }
 
+<<<<<<< HEAD
       if (profileRoutes) {
         const handledByProfile = await profileRoutes(req, res, url);
         if (handledByProfile) {
@@ -151,6 +160,12 @@ export function buildServer(deps: ApiDependencies) {
         const handledByFiles = await fileRoutes(req, res, url);
         if (handledByFiles) {
           logEvent('info', 'Request handled by file routes.', { method: req.method ?? 'GET', path: url.pathname, durationMs: Date.now() - startedAt });
+=======
+      if (notificationRoutes) {
+        const handledByNotifications = await notificationRoutes(req, res, url);
+        if (handledByNotifications) {
+          logEvent('info', 'Request handled by notification routes.', { method: req.method ?? 'GET', path: url.pathname, durationMs: Date.now() - startedAt });
+>>>>>>> 4bb16dc (feat: implement notification gateway and SMTP adapter)
           return;
         }
       }
