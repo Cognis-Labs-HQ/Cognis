@@ -2,6 +2,7 @@ import { renderDashboardLayout } from '../../layouts/dashboard-layout.js';
 import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 import { renderMarkdown } from '../../reuse/markdown-renderer.js';
+import { createPageComposer } from '../../reuse/page-composer.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
@@ -48,30 +49,49 @@ async function showDoc(slug) {
 }
 
 const docs = await loadDocsIndex();
+
+const elements = [
+  {
+    id: 'doc-reader',
+    label: i18n.t('ui.app.docs.page_title'),
+    render: () => `<article id="doc" class="content-panel"></article>`,
+  },
+];
+
 await renderDashboardLayout(root, {
   pageContext: `<h1>${i18n.t('ui.app.docs.page_title')}</h1><p>${i18n.t('ui.app.docs.page_subtitle')}</p>`,
   topbar: '',
   toolbar: `<h3>${i18n.t('ui.reuse.navigation')}</h3><ul>${renderSidebarLinks(docs)}</ul>`,
-  content: `<article id="doc" class="content-panel"></article>`
+  content: '',
 });
 
-root.querySelectorAll('[data-slug]').forEach((button) => {
-  button.addEventListener('click', () => showDoc(button.dataset.slug));
+const composer = createPageComposer(root.querySelector('.content-grid'), {
+  allowCustomization: false,
+  elements,
+  preferenceKey: 'docs-layout',
+  i18n,
+  onRender: () => {
+    root.querySelectorAll('[data-slug]').forEach((button) => {
+      button.addEventListener('click', () => showDoc(button.dataset.slug));
+    });
+
+    root.querySelector('#doc')?.addEventListener('click', async (event) => {
+      const link = event.target.closest('a[href]');
+      if (!link) return;
+
+      const href = link.getAttribute('href') || '';
+      if (href.startsWith('http://') || href.startsWith('https://')) return;
+
+      const slug = normalizeDocSlug(href);
+      if (!slug) return;
+
+      event.preventDefault();
+      await showDoc(slug);
+    });
+  },
 });
-
-root.querySelector('#doc')?.addEventListener('click', async (event) => {
-  const link = event.target.closest('a[href]');
-  if (!link) return;
-
-  const href = link.getAttribute('href') || '';
-  if (href.startsWith('http://') || href.startsWith('https://')) return;
-
-  const slug = normalizeDocSlug(href);
-  if (!slug) return;
-
-  event.preventDefault();
-  await showDoc(slug);
-});
+await composer.init();
 
 const defaultDoc = docs.find((doc) => doc.slug === 'overview')?.slug ?? docs[0]?.slug;
 if (defaultDoc) await showDoc(defaultDoc);
+
