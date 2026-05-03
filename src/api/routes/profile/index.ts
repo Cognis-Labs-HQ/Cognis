@@ -1,10 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { getAuthClaims, requireAuth } from '../auth/guard.js';
-import type { DbProfileStore, AccountProfile, AccountVisibility, AccountRole } from '../adapters/db-profile-store.js';
-import { visibilityRank } from '../adapters/db-profile-store.js';
+import { getAuthClaims, requireAuth } from '../../auth/guard.js';
+import type { DbProfileStore, AccountProfile, AccountVisibility, AccountRole } from '../../adapters/db-profile-store.js';
+import { visibilityRank } from '../../adapters/db-profile-store.js';
 import type { FileStorageGateway } from '@cognis/core';
-import { readRawBody } from './read-json.js';
-import { readJson } from './read-json.js';
+import { readRawBody } from '../read-json.js';
+import { readJson } from '../read-json.js';
 
 const VALID_VISIBILITY = new Set<AccountVisibility>(['hidden', 'private', 'friends', 'community']);
 
@@ -20,6 +20,7 @@ function profileResponse(
   return {
     accountId: profile.accountId,
     handle: profile.handle,
+    displayName: profile.displayName,
     role: profile.role,
     bio: profile.bio,
     location: profile.location,
@@ -87,6 +88,7 @@ export function createProfileRoutes(profileStore: DbProfileStore, fileGateway: F
       if ('bio' in body) updates.bio = body.bio != null ? String(body.bio) : null;
       if ('location' in body) updates.location = body.location != null ? String(body.location) : null;
       if ('website' in body) updates.website = body.website != null ? String(body.website) : null;
+      if ('displayName' in body) updates.displayName = body.displayName != null ? String(body.displayName) : null;
       if ('visibility' in body) {
         const visibility = String(body.visibility);
         if (!VALID_VISIBILITY.has(visibility as AccountVisibility)) {

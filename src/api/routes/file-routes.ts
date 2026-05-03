@@ -10,17 +10,11 @@ const MIME_FROM_EXT: Record<string, string> = {
   png: 'image/png',
   webp: 'image/webp',
   gif: 'image/gif',
-  mp4: 'video/mp4',
-  webm: 'video/webm',
-  txt: 'text/plain',
-  pdf: 'application/pdf',
 };
 
-const BUCKET_CATEGORY: Record<string, 'image' | 'video' | 'text'> = {
+const BUCKET_CATEGORY: Record<string, 'image'> = {
   avatars: 'image',
   banners: 'image',
-  documents: 'text',
-  videos: 'video',
 };
 
 function mimeFromKey(key: string): string {

@@ -442,9 +442,16 @@
   gap: 8px;
 }
 
-.profile-hero-handle {
-  font-size: 1.1rem;
+.profile-hero-display-name {
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--text);
+}
+
+.profile-hero-handle {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--text-muted);
 }
 
 .profile-hero-bio {

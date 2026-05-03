@@ -4,18 +4,12 @@ import { createPageComposer } from '../../reuse/page-composer.js';
 import { openPopup } from '../../reuse/popup.js';
 import { getInitialsText, pickInitialsColor } from '../../reuse/avatar-utils.js';
 import { updateNavbarAvatar } from '../../layouts/dashboard-layout.js';
+import { escapeHtml } from '../../reuse/escape-html.js';
+import { attachCharCounter } from '../../reuse/char-counter.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
 applyDocumentTitle(i18n, 'ui.page.title.profile');
-
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
-}
 
 function toAbsoluteUrl(url) {
   if (!url) return url;
@@ -276,9 +270,11 @@ function renderHero() {
       </div>
     `;
 
+  const displayName = profile?.displayName ?? (profile?.handle ?? '').replace(/^@/, '');
   const handleRow = `
     <div class="profile-hero-handle-row">
-      <strong class="profile-hero-handle">@${escapeHtml(profile?.handle ?? '')}</strong>
+      <span class="profile-hero-display-name">${escapeHtml(displayName)}</span>
+      <em class="profile-hero-handle">@${escapeHtml(profile?.handle ?? '')}</em>
       ${isOwnProfile ? `<span class="profile-its-you-pill">${i18n.t('ui.app.profile.its_you')}</span>` : ''}
       ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ''}
       <span class="visibility-badge ${visibilityClass(profile?.visibility ?? 'hidden')}">${i18n.t(`ui.app.profile.visibility.${profile?.visibility ?? 'hidden'}`)}</span>
@@ -563,14 +559,22 @@ async function openEditPopup() {
   const currentLocation = profile?.location ?? '';
   const currentWebsite = profile?.website ?? '';
   const currentVisibility = profile?.visibility ?? 'hidden';
+  const currentDisplayName = profile?.displayName ?? '';
 
   const result = await openPopup({
     title: i18n.t('ui.app.profile.edit_profile'),
     body: () => `
       <div class="profile-edit-form">
         <label class="profile-field-label">
+          ${escapeHtml(i18n.t('ui.app.profile.display_name'))}
+          <input type="text" id="popup-edit-display-name" class="profile-field-input" value="${escapeHtml(currentDisplayName)}" />
+        </label>
+        <label class="profile-field-label">
           ${escapeHtml(i18n.t('ui.app.profile.bio'))}
-          <textarea id="popup-edit-bio" class="profile-field-input" rows="3">${escapeHtml(currentBio)}</textarea>
+          <textarea id="popup-edit-bio" class="profile-field-input" rows="3" maxlength="200"
+            oninput="document.getElementById('bio-char-count').textContent = \`\${this.value.length} / 200\`"
+          >${escapeHtml(currentBio)}</textarea>
+          <span id="bio-char-count" class="char-counter">${currentBio.length} / 200</span>
         </label>
         <label class="profile-field-label">
           ${escapeHtml(i18n.t('ui.app.profile.location'))}
@@ -599,6 +603,7 @@ async function openEditPopup() {
   });
 
   if (result === 'save') {
+    const displayName = document.getElementById('popup-edit-display-name')?.value ?? currentDisplayName;
     const bio = document.getElementById('popup-edit-bio')?.value ?? currentBio;
     const location = document.getElementById('popup-edit-location')?.value ?? currentLocation;
     const website = document.getElementById('popup-edit-website')?.value ?? currentWebsite;
@@ -606,7 +611,7 @@ async function openEditPopup() {
     await apiFetch('/api/v1/profile', {
       method: 'PATCH',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ bio, location, website, visibility }),
+      body: JSON.stringify({ displayName, bio, location, website, visibility }),
     });
     profile = await loadOwnProfile();
     composer.refresh(elements);

@@ -12,6 +12,7 @@ export type PostVisibility = 'only_me' | 'private' | 'friends' | 'community';
 export interface AccountProfile {
   accountId: string;
   handle: string;
+  displayName: string | null;
   role: AccountRole;
   bio: string | null;
   location: string | null;
@@ -58,6 +59,7 @@ function rowToProfile(row: any): AccountProfile {
   return {
     accountId: row.account_id,
     handle: row.handle,
+    displayName: row.display_name ?? null,
     role: row.role as AccountRole,
     bio: row.bio ?? null,
     location: row.location ?? null,
@@ -111,6 +113,7 @@ export class DbProfileStore implements ProfileCreateStore {
     await this.db.execute(`CREATE TABLE IF NOT EXISTS account_profiles (
       account_id TEXT PRIMARY KEY,
       handle TEXT NOT NULL UNIQUE,
+      display_name TEXT,
       role TEXT NOT NULL DEFAULT 'user',
       bio TEXT,
       location TEXT,
@@ -152,30 +155,13 @@ export class DbProfileStore implements ProfileCreateStore {
       category TEXT PRIMARY KEY,
       max_bytes INTEGER NOT NULL
     )`);
-    await this.db.execute(`CREATE TABLE IF NOT EXISTS direct_message_channels (
-      id TEXT PRIMARY KEY,
-      participant_a TEXT NOT NULL,
-      participant_b TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE (participant_a, participant_b),
-      FOREIGN KEY (participant_a) REFERENCES accounts(id) ON DELETE CASCADE,
-      FOREIGN KEY (participant_b) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-    await this.db.execute(`CREATE TABLE IF NOT EXISTS direct_messages (
-      id TEXT PRIMARY KEY,
-      channel_id TEXT NOT NULL,
-      sender_id TEXT NOT NULL,
-      content TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (channel_id) REFERENCES direct_message_channels(id) ON DELETE CASCADE,
-      FOREIGN KEY (sender_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
   }
 
   private async ensureSchemaPostgresql(): Promise<void> {
     await this.db.execute(`CREATE TABLE IF NOT EXISTS account_profiles (
       account_id TEXT PRIMARY KEY,
       handle TEXT NOT NULL UNIQUE,
+      display_name TEXT,
       role TEXT NOT NULL DEFAULT 'user',
       bio TEXT,
       location TEXT,
@@ -217,30 +203,13 @@ export class DbProfileStore implements ProfileCreateStore {
       category TEXT PRIMARY KEY,
       max_bytes BIGINT NOT NULL
     )`);
-    await this.db.execute(`CREATE TABLE IF NOT EXISTS direct_message_channels (
-      id TEXT PRIMARY KEY,
-      participant_a TEXT NOT NULL,
-      participant_b TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      UNIQUE (participant_a, participant_b),
-      FOREIGN KEY (participant_a) REFERENCES accounts(id) ON DELETE CASCADE,
-      FOREIGN KEY (participant_b) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-    await this.db.execute(`CREATE TABLE IF NOT EXISTS direct_messages (
-      id TEXT PRIMARY KEY,
-      channel_id TEXT NOT NULL,
-      sender_id TEXT NOT NULL,
-      content TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      FOREIGN KEY (channel_id) REFERENCES direct_message_channels(id) ON DELETE CASCADE,
-      FOREIGN KEY (sender_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
   }
 
   private async ensureSchemaMariadb(): Promise<void> {
     await this.db.execute(`CREATE TABLE IF NOT EXISTS account_profiles (
       account_id VARCHAR(191) PRIMARY KEY,
       handle VARCHAR(191) NOT NULL UNIQUE,
+      display_name VARCHAR(255) DEFAULT NULL,
       role VARCHAR(32) NOT NULL DEFAULT 'user',
       bio TEXT,
       location VARCHAR(255),
@@ -281,24 +250,6 @@ export class DbProfileStore implements ProfileCreateStore {
     await this.db.execute(`CREATE TABLE IF NOT EXISTS file_size_limits (
       category VARCHAR(64) PRIMARY KEY,
       max_bytes BIGINT NOT NULL
-    )`);
-    await this.db.execute(`CREATE TABLE IF NOT EXISTS direct_message_channels (
-      id VARCHAR(191) PRIMARY KEY,
-      participant_a VARCHAR(191) NOT NULL,
-      participant_b VARCHAR(191) NOT NULL,
-      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE KEY uq_dm_channel (participant_a, participant_b),
-      FOREIGN KEY (participant_a) REFERENCES accounts(id) ON DELETE CASCADE,
-      FOREIGN KEY (participant_b) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-    await this.db.execute(`CREATE TABLE IF NOT EXISTS direct_messages (
-      id VARCHAR(191) PRIMARY KEY,
-      channel_id VARCHAR(191) NOT NULL,
-      sender_id VARCHAR(191) NOT NULL,
-      content LONGTEXT NOT NULL,
-      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (channel_id) REFERENCES direct_message_channels(id) ON DELETE CASCADE,
-      FOREIGN KEY (sender_id) REFERENCES accounts(id) ON DELETE CASCADE
     )`);
   }
 
@@ -377,7 +328,7 @@ export class DbProfileStore implements ProfileCreateStore {
 
   async updateProfile(
     accountId: string,
-    updates: Partial<Pick<AccountProfile, 'bio' | 'location' | 'website' | 'visibility' | 'avatarKey' | 'bannerKey'>>
+    updates: Partial<Pick<AccountProfile, 'bio' | 'location' | 'website' | 'visibility' | 'avatarKey' | 'bannerKey' | 'displayName'>>
   ): Promise<AccountProfile | null> {
     const fieldMap: Record<string, string> = {
       bio: 'bio',
@@ -386,6 +337,7 @@ export class DbProfileStore implements ProfileCreateStore {
       visibility: 'visibility',
       avatarKey: 'avatar_key',
       bannerKey: 'banner_key',
+      displayName: 'display_name',
     };
 
     const setClauses: string[] = [];

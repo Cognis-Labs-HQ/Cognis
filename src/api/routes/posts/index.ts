@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { requireAuth, getAuthClaims } from '../auth/guard.js';
-import type { DbProfileStore, AccountProfile, Post, PostVisibility } from '../adapters/db-profile-store.js';
-import { visibilityRank } from '../adapters/db-profile-store.js';
-import { readJson } from './read-json.js';
+import { requireAuth, getAuthClaims } from '../../auth/guard.js';
+import type { DbProfileStore, AccountProfile, Post, PostVisibility } from '../../adapters/db-profile-store.js';
+import { visibilityRank } from '../../adapters/db-profile-store.js';
+import { readJson } from '../read-json.js';
 
 const VALID_POST_VISIBILITY = new Set<PostVisibility>(['only_me', 'private', 'friends', 'community']);
 

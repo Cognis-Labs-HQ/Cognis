@@ -10,9 +10,9 @@ import type { AuthGateway } from '@cognis/core';
 import type { LocalAccountStore } from './adapters/local-auth-gateway.js';
 import { createPreferencesRoutes, type UserPreferenceStore } from './routes/preferences-routes.js';
 import { createUserRoutes } from './routes/user-routes.js';
-import { createProfileRoutes } from './routes/profile-routes.js';
-import { createSocialRoutes } from './routes/social-routes.js';
-import { createPostRoutes } from './routes/post-routes.js';
+import { createProfileRoutes } from './routes/profile/index.js';
+import { createSocialRoutes } from './routes/social/index.js';
+import { createPostRoutes } from './routes/posts/index.js';
 import { createFileRoutes } from './routes/file-routes.js';
 import type { DbProfileStore } from './adapters/db-profile-store.js';
 

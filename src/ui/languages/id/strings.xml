@@ -155,6 +155,7 @@
   <string name="ui.app.profile.section.social_links">Tautan Sosial</string>
   <string name="ui.app.profile.section.suggested">Kontak yang Disarankan</string>
   <string name="ui.app.profile.bio">Bio</string>
+  <string name="ui.app.profile.display_name">Nama Tampilan</string>
   <string name="ui.app.profile.location">Lokasi</string>
   <string name="ui.app.profile.website">Situs Web</string>
   <string name="ui.app.profile.visibility">Visibilitas</string>

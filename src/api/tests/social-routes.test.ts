@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { DbProfileStore } from '../adapters/db-profile-store.js';
 import { DbLocalAccountStore, SqliteExecutor } from '../adapters/db-account-store.js';
-import { createSocialRoutes } from '../routes/social-routes.js';
+import { createSocialRoutes } from '../routes/social/index.js';
 import { issueAccessToken } from '../auth/access-tokens.js';
 
 function makeTempDb() {

@@ -155,6 +155,7 @@
   <string name="ui.app.profile.section.social_links">Social Links</string>
   <string name="ui.app.profile.section.suggested">Suggested Contacts</string>
   <string name="ui.app.profile.bio">Bio</string>
+  <string name="ui.app.profile.display_name">Display Name</string>
   <string name="ui.app.profile.location">Location</string>
   <string name="ui.app.profile.website">Website</string>
   <string name="ui.app.profile.visibility">Visibility</string>
