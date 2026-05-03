@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { SupportedDbType } from './db-account-store.js';
+import type { SupportedDbType } from './account-store.js';
 
 interface DbExecutor {
   execute(sql: string, params?: unknown[]): Promise<{ rows?: any[]; rowCount?: number }>;
@@ -155,6 +155,13 @@ export class DbProfileStore implements ProfileCreateStore {
       category TEXT PRIMARY KEY,
       max_bytes INTEGER NOT NULL
     )`);
+    try {
+      await this.db.execute(
+        `ALTER TABLE account_profiles ADD COLUMN display_name TEXT`
+      );
+    } catch {
+      // Column already exists on databases created before display_name was added.
+    }
   }
 
   private async ensureSchemaPostgresql(): Promise<void> {

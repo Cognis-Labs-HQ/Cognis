@@ -1,0 +1,1 @@
+ALTER TABLE account_profiles ADD COLUMN IF NOT EXISTS display_name VARCHAR(255) DEFAULT NULL;

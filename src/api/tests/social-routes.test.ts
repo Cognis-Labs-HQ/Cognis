@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { DbProfileStore } from '../adapters/db-profile-store.js';
-import { DbLocalAccountStore, SqliteExecutor } from '../adapters/db-account-store.js';
+import { DbProfileStore } from '../adapters/db/profile-store.js';
+import { DbLocalAccountStore, SqliteExecutor } from '../adapters/db/account-store.js';
 import { createSocialRoutes } from '../routes/social/index.js';
 import { issueAccessToken } from '../auth/access-tokens.js';
 

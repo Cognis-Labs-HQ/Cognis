@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { getAuthClaims, requireAuth } from '../../auth/guard.js';
-import type { DbProfileStore, AccountProfile, AccountVisibility, AccountRole } from '../../adapters/db-profile-store.js';
-import { visibilityRank } from '../../adapters/db-profile-store.js';
+import type { DbProfileStore, AccountProfile, AccountVisibility, AccountRole } from '../../adapters/db/profile-store.js';
+import { visibilityRank } from '../../adapters/db/profile-store.js';
 import type { FileStorageGateway } from '@cognis/core';
 import { readRawBody } from '../read-json.js';
 import { readJson } from '../read-json.js';

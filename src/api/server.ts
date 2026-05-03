@@ -14,7 +14,7 @@ import { createProfileRoutes } from './routes/profile/index.js';
 import { createSocialRoutes } from './routes/social/index.js';
 import { createPostRoutes } from './routes/posts/index.js';
 import { createFileRoutes } from './routes/file-routes.js';
-import type { DbProfileStore } from './adapters/db-profile-store.js';
+import type { DbProfileStore } from './adapters/db/profile-store.js';
 
 const LOG_LEVEL = process.env.LOG_LEVEL ?? 'info';
 const isDebug = LOG_LEVEL === 'debug';

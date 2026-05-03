@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS account_profiles (
   account_id TEXT PRIMARY KEY,
   handle TEXT NOT NULL UNIQUE,
+  display_name TEXT,
   role TEXT NOT NULL DEFAULT 'user',
   bio TEXT,
   location TEXT,

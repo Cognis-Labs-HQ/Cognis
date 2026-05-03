@@ -3,9 +3,9 @@ import type { ModuleManifest, ModuleRuntimeGateway, ModuleState } from '@cognis/
 import { Logger } from './logger.js';
 import { initializeDatabaseSchema } from './bootstrap/db-init.js';
 import { LocalAuthGateway } from './adapters/local-auth-gateway.js';
-import { DbLocalAccountStore, createDbExecutor, type SupportedDbType } from './adapters/db-account-store.js';
-import { DbUserPreferenceStore } from './adapters/db-preference-store.js';
-import { DbProfileStore } from './adapters/db-profile-store.js';
+import { DbLocalAccountStore, createDbExecutor, type SupportedDbType } from './adapters/db/account-store.js';
+import { DbUserPreferenceStore } from './adapters/db/preference-store.js';
+import { DbProfileStore } from './adapters/db/profile-store.js';
 import { LocalFileGateway } from '../adapters/file-local/local-file-gateway.js';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';

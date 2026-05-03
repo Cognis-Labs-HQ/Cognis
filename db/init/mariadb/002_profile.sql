@@ -53,7 +53,3 @@ INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('video', 10485
 INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('text', 1048576);
 INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('global', 10485760);
 
--- Migrate existing databases that pre-date the display_name column.
--- CREATE TABLE IF NOT EXISTS above handles fresh installs; this covers upgrades.
-ALTER TABLE account_profiles ADD COLUMN IF NOT EXISTS display_name VARCHAR(255) DEFAULT NULL;
-
