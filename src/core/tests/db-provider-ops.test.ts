@@ -6,17 +6,17 @@ import { MariaDbGateway } from '../../adapters/db-mariadb/mariadb-db-gateway.js'
 import { MemoryDatabaseGateway } from '../../adapters/db-memory/memory-db-gateway.js';
 
 test('all supported db gateways simulate query/execute/transaction operations', async () => {
-    const sqlite = new SqliteDbGateway({ all: async () => [{ ok: 1 }], run: async () => ({ changes: 1 }), exec: async () => {} });
-    const postgres = new PostgresDbGateway({ query: async () => ({ rows: [{ ok: 1 }], rowCount: 1 }) });
-    const mariadb = new MariaDbGateway({ query: async () => [[{ ok: 1 }], { affectedRows: 1 }], beginTransaction: async () => {}, commit: async () => {}, rollback: async () => {} });
-    const memory = new MemoryDatabaseGateway();
+  const sqlite = new SqliteDbGateway({ all: async () => [{ ok: 1 }], run: async () => ({ changes: 1 }), exec: async () => {} });
+  const postgres = new PostgresDbGateway({ query: async () => ({ rows: [{ ok: 1 }], rowCount: 1 }) });
+  const mariadb = new MariaDbGateway({ query: async () => [[{ ok: 1 }], { affectedRows: 1 }], beginTransaction: async () => {}, commit: async () => {}, rollback: async () => {} });
+  const memory = new MemoryDatabaseGateway();
 
-    for (const db of [sqlite, postgres, mariadb, memory]) {
-        const queryResult = await db.query('select 1');
-        assert.ok(queryResult.rowCount >= 0);
-        const execResult = await db.execute('update test');
-        assert.ok(execResult.affectedRows >= 0);
-        const value = await db.transaction(async () => 'ok');
-        assert.equal(value, 'ok');
-    }
+  for (const db of [sqlite, postgres, mariadb, memory]) {
+    const queryResult = await db.query('select 1');
+    assert.ok(queryResult.rowCount >= 0);
+    const execResult = await db.execute('update test');
+    assert.ok(execResult.affectedRows >= 0);
+    const value = await db.transaction(async () => 'ok');
+    assert.equal(value, 'ok');
+  }
 });

@@ -1,120 +1,120 @@
 .font-picker-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
 }
 
 .font-picker-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .font-preview-box {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin: 10px 0 0;
-    display: inline-block;
-    min-width: 160px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 10px 0 0;
+  display: inline-block;
+  min-width: 160px;
 }
 
 .font-preview-box h4 {
-    margin: 0 0 6px;
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-muted);
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
 }
 
 #pref-font-preview {
-    font-size: 0.95em;
+  font-size: 0.95em;
 }
 
 .font-size-stepper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
 .font-size-btn {
-    min-width: 28px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    line-height: 1;
-    transition: background 0.15s ease, color 0.15s ease;
+  min-width: 28px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  line-height: 1;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .font-size-btn:hover {
-    background: var(--color-success-hover-bg);
-    color: var(--color-success-outline-text, var(--color-success-text));
-    border-color: var(--color-success-outline-text, var(--color-success-text));
-    transform: none;
+  background: var(--color-success-hover-bg);
+  color: var(--color-success-outline-text, var(--color-success-text));
+  border-color: var(--color-success-outline-text, var(--color-success-text));
+  transform: none;
 }
 
 .font-heading-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 16px 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 6px;
 }
 
 .font-heading-row h3 {
-    margin: 0;
+  margin: 0;
 }
 
 .theme-subsection {
-    margin: 18px 0 0;
+  margin: 18px 0 0;
 }
 
 .theme-subsection h3 {
-    margin: 0 0 8px;
+  margin: 0 0 8px;
 }
 
 .theme-selector {
-    display: flex;
-    gap: 8px;
+  display: flex;
+  gap: 8px;
 }
 
 .theme-btn {
-    padding: 8px 20px;
-    border-radius: 8px;
-    border: 1px solid var(--control-border);
-    background: var(--control-bg);
-    color: var(--text);
-    font: inherit;
-    cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--control-border);
+  background: var(--control-bg);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .theme-btn:hover {
-    background: var(--control-hover-bg);
-    border-color: var(--border-strong);
-    transform: translateY(-1px);
+  background: var(--control-hover-bg);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
 }
 
 .theme-btn.active {
-    background: var(--accent-2);
-    color: #fff;
-    border-color: transparent;
+  background: var(--accent-2);
+  color: #fff;
+  border-color: transparent;
 }
 
 .prefs-dump {
-    background: rgba(10, 22, 42, 0.90);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 0.82rem;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-break: break-all;
-    margin: 0;
+  background: rgba(10, 22, 42, 0.90);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.82rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
 }
 
 body[data-theme='light'] .prefs-dump {
-    background: var(--code-bg);
+  background: var(--code-bg);
 }

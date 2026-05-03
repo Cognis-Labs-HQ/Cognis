@@ -5,137 +5,137 @@ import type { ModuleRuntimeGateway } from '../gateways/module-runtime-gateway.js
 import type { ModuleManifest } from '../contracts/module-manifest.js';
 
 export interface ModulePathResolver {
-    internalModulesPath: string;
-    externalModulesPath: string;
-    enabledPointersPath: string;
-    runtimeExtractPath?: string;
+  internalModulesPath: string;
+  externalModulesPath: string;
+  enabledPointersPath: string;
+  runtimeExtractPath?: string;
 }
 
 export class ModuleService {
-    private readonly runtimeExtractPath: string;
+  private readonly runtimeExtractPath: string;
 
-    constructor(private readonly runtime: ModuleRuntimeGateway, private readonly resolver?: ModulePathResolver) {
-        this.runtimeExtractPath = resolver?.runtimeExtractPath ?? path.join(os.tmpdir(), 'cognis-module-runtime');
+  constructor(private readonly runtime: ModuleRuntimeGateway, private readonly resolver?: ModulePathResolver) {
+    this.runtimeExtractPath = resolver?.runtimeExtractPath ?? path.join(os.tmpdir(), 'cognis-module-runtime');
+  }
+
+
+  async list(): Promise<ModuleManifest[]> {
+    return this.runtime.listManifests();
+  }
+
+  async enable(moduleId: string, options?: { acknowledgeExternalDisclaimer?: boolean }): Promise<{ moduleId: string; enabled: boolean }> {
+    const manifests = await this.runtime.listManifests();
+    const found = manifests.find((manifest) => manifest.id === moduleId);
+
+    if (!found) {
+      throw new Error(`Unknown module: ${moduleId}`);
     }
 
+    this.assertToggleAllowed(found);
+    if (!this.resolver) return this.runtime.enable(moduleId);
 
-    async list(): Promise<ModuleManifest[]> {
-        return this.runtime.listManifests();
+    const resolvedPath = await this.resolveModulePath(moduleId);
+    if (!resolvedPath) throw new Error(`Module artifact not found in configured module paths: ${moduleId}`);
+
+    if (resolvedPath.kind === 'external') {
+      if (!options?.acknowledgeExternalDisclaimer) {
+        throw new Error(`External module ${moduleId} requires disclaimer acknowledgement before enabling`);
+      }
+      this.assertSupportedArchive(resolvedPath.path);
     }
 
-    async enable(moduleId: string, options?: { acknowledgeExternalDisclaimer?: boolean }): Promise<{ moduleId: string; enabled: boolean }> {
-        const manifests = await this.runtime.listManifests();
-        const found = manifests.find((manifest) => manifest.id === moduleId);
+    const activationPath = await this.materializeActivationPath(moduleId, resolvedPath);
+    await this.ensureRouteSafety(moduleId, activationPath);
+    await this.writePointer(moduleId, activationPath);
 
-        if (!found) {
-            throw new Error(`Unknown module: ${moduleId}`);
-        }
+    return this.runtime.enable(moduleId);
+  }
 
-        this.assertToggleAllowed(found);
-        if (!this.resolver) return this.runtime.enable(moduleId);
+  async disable(moduleId: string): Promise<{ moduleId: string; enabled: boolean }> {
+    const manifests = await this.runtime.listManifests();
+    const found = manifests.find((manifest) => manifest.id === moduleId);
 
-        const resolvedPath = await this.resolveModulePath(moduleId);
-        if (!resolvedPath) throw new Error(`Module artifact not found in configured module paths: ${moduleId}`);
-
-        if (resolvedPath.kind === 'external') {
-            if (!options?.acknowledgeExternalDisclaimer) {
-                throw new Error(`External module ${moduleId} requires disclaimer acknowledgement before enabling`);
-            }
-            this.assertSupportedArchive(resolvedPath.path);
-        }
-
-        const activationPath = await this.materializeActivationPath(moduleId, resolvedPath);
-        await this.ensureRouteSafety(moduleId, activationPath);
-        await this.writePointer(moduleId, activationPath);
-
-        return this.runtime.enable(moduleId);
+    if (!found) {
+      throw new Error(`Unknown module: ${moduleId}`);
     }
 
-    async disable(moduleId: string): Promise<{ moduleId: string; enabled: boolean }> {
-        const manifests = await this.runtime.listManifests();
-        const found = manifests.find((manifest) => manifest.id === moduleId);
-
-        if (!found) {
-            throw new Error(`Unknown module: ${moduleId}`);
-        }
-
-        this.assertToggleAllowed(found);
-        if (this.resolver) {
-            await this.removePointer(moduleId);
-            await rm(path.join(this.runtimeExtractPath, moduleId), { recursive: true, force: true });
-        }
-        return this.runtime.disable(moduleId);
+    this.assertToggleAllowed(found);
+    if (this.resolver) {
+      await this.removePointer(moduleId);
+      await rm(path.join(this.runtimeExtractPath, moduleId), { recursive: true, force: true });
     }
+    return this.runtime.disable(moduleId);
+  }
 
-    private assertToggleAllowed(manifest: ModuleManifest): void {
-        if (manifest.class === 'core') throw new Error(`Core module ${manifest.id} cannot be toggled at runtime`);
+  private assertToggleAllowed(manifest: ModuleManifest): void {
+    if (manifest.class === 'core') throw new Error(`Core module ${manifest.id} cannot be toggled at runtime`);
+  }
+
+  private async resolveModulePath(moduleId: string): Promise<{ kind: 'internal' | 'external'; path: string } | null> {
+    const internalPath = path.join(this.resolver!.internalModulesPath, moduleId);
+    if (await this.existsDirectory(internalPath)) return { kind: 'internal', path: internalPath };
+
+    const externalItems = await this.safeReaddir(this.resolver!.externalModulesPath);
+    const artifact = externalItems.find((item) => item === `${moduleId}.zip` || item === `${moduleId}.tar.gz`);
+    if (!artifact) return null;
+    return { kind: 'external', path: path.join(this.resolver!.externalModulesPath, artifact) };
+  }
+
+  private assertSupportedArchive(filePath: string): void {
+    if (!filePath.endsWith('.zip') && !filePath.endsWith('.tar.gz')) throw new Error('External modules must be .zip or .tar.gz archives');
+  }
+
+  private async materializeActivationPath(moduleId: string, resolved: { kind: 'internal' | 'external'; path: string }): Promise<string> {
+    if (resolved.kind === 'internal') return resolved.path;
+
+    const extractRoot = path.join(this.runtimeExtractPath, moduleId);
+    await rm(extractRoot, { recursive: true, force: true });
+    await mkdir(extractRoot, { recursive: true });
+    const artifactName = path.basename(resolved.path);
+    await writeFile(path.join(extractRoot, '.artifact'), artifactName, 'utf8');
+    return extractRoot;
+  }
+
+  private async writePointer(moduleId: string, activationPath: string): Promise<void> {
+    await mkdir(this.resolver!.enabledPointersPath, { recursive: true });
+    const pointerPath = path.join(this.resolver!.enabledPointersPath, `${moduleId}.load`);
+    await rm(pointerPath, { force: true });
+    await symlink(activationPath, pointerPath);
+  }
+
+  private async removePointer(moduleId: string): Promise<void> {
+    const pointerPath = path.join(this.resolver!.enabledPointersPath, `${moduleId}.load`);
+    await unlink(pointerPath).catch(() => undefined);
+  }
+
+  private async ensureRouteSafety(moduleId: string, activationPath: string): Promise<void> {
+    const routeFile = path.join(activationPath, 'routes.json');
+    try {
+      const raw = await readFile(routeFile, 'utf8');
+      const routes = JSON.parse(raw) as string[];
+      const blockedPrefixes = ['/api/v1/system', '/api/v1/auth', '/api/v1/users', '/public', '/ui'];
+      const conflict = routes.find((route) => blockedPrefixes.some((prefix) => route.startsWith(prefix)));
+      if (conflict) throw new Error(`Module ${moduleId} attempts to register protected route: ${conflict}`);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+      throw error;
     }
+  }
 
-    private async resolveModulePath(moduleId: string): Promise<{ kind: 'internal' | 'external'; path: string } | null> {
-        const internalPath = path.join(this.resolver!.internalModulesPath, moduleId);
-        if (await this.existsDirectory(internalPath)) return { kind: 'internal', path: internalPath };
-
-        const externalItems = await this.safeReaddir(this.resolver!.externalModulesPath);
-        const artifact = externalItems.find((item) => item === `${moduleId}.zip` || item === `${moduleId}.tar.gz`);
-        if (!artifact) return null;
-        return { kind: 'external', path: path.join(this.resolver!.externalModulesPath, artifact) };
+  private async existsDirectory(candidate: string): Promise<boolean> {
+    try {
+      const info = await stat(candidate);
+      return info.isDirectory();
+    } catch {
+      return false;
     }
+  }
 
-    private assertSupportedArchive(filePath: string): void {
-        if (!filePath.endsWith('.zip') && !filePath.endsWith('.tar.gz')) throw new Error('External modules must be .zip or .tar.gz archives');
+  private async safeReaddir(dirPath: string): Promise<string[]> {
+    try {
+      return await readdir(dirPath);
+    } catch {
+      return [];
     }
-
-    private async materializeActivationPath(moduleId: string, resolved: { kind: 'internal' | 'external'; path: string }): Promise<string> {
-        if (resolved.kind === 'internal') return resolved.path;
-
-        const extractRoot = path.join(this.runtimeExtractPath, moduleId);
-        await rm(extractRoot, { recursive: true, force: true });
-        await mkdir(extractRoot, { recursive: true });
-        const artifactName = path.basename(resolved.path);
-        await writeFile(path.join(extractRoot, '.artifact'), artifactName, 'utf8');
-        return extractRoot;
-    }
-
-    private async writePointer(moduleId: string, activationPath: string): Promise<void> {
-        await mkdir(this.resolver!.enabledPointersPath, { recursive: true });
-        const pointerPath = path.join(this.resolver!.enabledPointersPath, `${moduleId}.load`);
-        await rm(pointerPath, { force: true });
-        await symlink(activationPath, pointerPath);
-    }
-
-    private async removePointer(moduleId: string): Promise<void> {
-        const pointerPath = path.join(this.resolver!.enabledPointersPath, `${moduleId}.load`);
-        await unlink(pointerPath).catch(() => undefined);
-    }
-
-    private async ensureRouteSafety(moduleId: string, activationPath: string): Promise<void> {
-        const routeFile = path.join(activationPath, 'routes.json');
-        try {
-            const raw = await readFile(routeFile, 'utf8');
-            const routes = JSON.parse(raw) as string[];
-            const blockedPrefixes = ['/api/v1/system', '/api/v1/auth', '/api/v1/users', '/public', '/ui'];
-            const conflict = routes.find((route) => blockedPrefixes.some((prefix) => route.startsWith(prefix)));
-            if (conflict) throw new Error(`Module ${moduleId} attempts to register protected route: ${conflict}`);
-        } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
-            throw error;
-        }
-    }
-
-    private async existsDirectory(candidate: string): Promise<boolean> {
-        try {
-            const info = await stat(candidate);
-            return info.isDirectory();
-        } catch {
-            return false;
-        }
-    }
-
-    private async safeReaddir(dirPath: string): Promise<string[]> {
-        try {
-            return await readdir(dirPath);
-        } catch {
-            return [];
-        }
-    }
+  }
 }
