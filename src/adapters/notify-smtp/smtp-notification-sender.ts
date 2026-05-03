@@ -1,11 +1,14 @@
 import net from 'node:net';
 import tls from 'node:tls';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import type { NotificationEnvelope, NotificationSender } from '@cognis/core';
 
 export interface SmtpConfig {
   host: string;
   port: number;
   from: string;
+  senderName?: string;
   user?: string;
   password?: string;
   secure: 'none' | 'tls' | 'starttls';
@@ -25,6 +28,24 @@ export class SmtpTemporaryError extends Error {
 
 function isTemporaryCode(code: number): boolean {
   return code >= 400 && code < 500;
+}
+
+let cachedEmailTemplate: string | null = null;
+
+async function loadEmailTemplate(): Promise<string> {
+  if (cachedEmailTemplate !== null) return cachedEmailTemplate;
+  const templatePath = fileURLToPath(new URL('./templates/notification.html', import.meta.url));
+  cachedEmailTemplate = await readFile(templatePath, 'utf8');
+  return cachedEmailTemplate;
+}
+
+function escapeHtmlForEmail(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
 }
 
 interface SmtpResponse {
@@ -124,19 +145,29 @@ async function upgradeToTls(session: SmtpSession, allowSelfSigned?: boolean): Pr
   return new SmtpSession(tlsSock);
 }
 
-function buildMessage(from: string, to: string, subject: string, body: string): string {
-  const normalised = body.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+async function buildMessage(from: string, senderName: string | undefined, to: string, subject: string, body: string): Promise<string> {
+  const template = await loadEmailTemplate();
+  const htmlBody = template
+    .replace('{{subject}}', escapeHtmlForEmail(subject))
+    .replace('{{body}}', escapeHtmlForEmail(body).replace(/\n/g, '<br>'))
+    .replace('{{senderName}}', escapeHtmlForEmail(senderName ?? 'Cognis'));
+
+  const fromHeader = senderName
+    ? `"${senderName.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}" <${from}>`
+    : from;
+
+  const normalised = htmlBody.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const dotStuffed = normalised
     .split('\n')
     .map((line) => (line.startsWith('.') ? `.${line}` : line))
     .join('\r\n');
 
   return [
-    `From: ${from}`,
+    `From: ${fromHeader}`,
     `To: ${to}`,
     `Subject: ${subject}`,
     'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=utf-8',
+    'Content-Type: text/html; charset=utf-8',
     '',
     dotStuffed,
   ].join('\r\n') + '\r\n.\r\n';
@@ -198,7 +229,7 @@ async function sendMail(config: SmtpConfig, to: string, subject: string, body: s
       throw isTemporaryCode(dataCmd.code) ? new SmtpTemporaryError(msg) : new Error(msg);
     }
 
-    session.writeRaw(buildMessage(config.from, to, subject, body));
+    session.writeRaw(await buildMessage(config.from, config.senderName, to, subject, body));
     const sent = await session.read();
     if (sent.code !== 250) {
       const msg = `smtp_message_rejected:${sent.code}`;
@@ -276,6 +307,7 @@ export class SmtpNotificationSender implements NotificationSender {
       host: this.config.host,
       port: this.config.port,
       from: this.config.from,
+      senderName: this.config.senderName ?? '',
       user: this.config.user,
       secure: this.config.secure,
       allowSelfSigned: this.config.allowSelfSigned ?? false,
@@ -289,6 +321,7 @@ export class SmtpNotificationSender implements NotificationSender {
     if (typeof config.host === 'string') this.config.host = config.host;
     if (typeof config.port === 'number') this.config.port = config.port;
     if (typeof config.from === 'string') this.config.from = config.from;
+    if (typeof config.senderName === 'string') this.config.senderName = config.senderName;
     if (typeof config.user === 'string') this.config.user = config.user;
     if (typeof config.password === 'string') this.config.password = config.password;
     if (config.secure === 'none' || config.secure === 'tls' || config.secure === 'starttls') {
@@ -317,6 +350,7 @@ export function createNotificationSender(env: Record<string, string | undefined>
   const host = env['COGNIS_SMTP_HOST'] ?? '';
   const port = Number.parseInt(env['COGNIS_SMTP_PORT'] ?? '587', 10);
   const from = env['COGNIS_SMTP_FROM'] ?? (host ? `cognis@${host}` : '');
+  const senderName = env['COGNIS_SMTP_SENDER_NAME'];
   const user = env['COGNIS_SMTP_USER'];
   const password = env['COGNIS_SMTP_PASS'];
   const rawSecure = env['COGNIS_SMTP_SECURE'] ?? 'starttls';
@@ -329,11 +363,12 @@ export function createNotificationSender(env: Record<string, string | undefined>
     host: env['COGNIS_SMTP_HOST'],
     port: env['COGNIS_SMTP_PORT'],
     from: env['COGNIS_SMTP_FROM'],
+    senderName: env['COGNIS_SMTP_SENDER_NAME'],
     user: env['COGNIS_SMTP_USER'],
     secure: env['COGNIS_SMTP_SECURE'],
     allowSelfSigned: env['COGNIS_SMTP_ALLOW_SELF_SIGNED'],
     authDisabled: env['COGNIS_SMTP_AUTH_DISABLED'],
   };
 
-  return new SmtpNotificationSender({ host, port, from, user, password, secure, allowSelfSigned, authDisabled, ehloHostname }, envSnapshot);
+  return new SmtpNotificationSender({ host, port, from, senderName, user, password, secure, allowSelfSigned, authDisabled, ehloHostname }, envSnapshot);
 }

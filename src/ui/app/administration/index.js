@@ -156,6 +156,7 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
   const host = val('host');
   const port = val('port', '587');
   const from = val('from');
+  const senderName = val('senderName');
   const user = val('user');
   const secure = val('secure', 'starttls');
   const allowSelfSigned = descriptors['allowSelfSigned']?.effectiveValue === 'true'
@@ -179,6 +180,11 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
     return `<label class="provider-popup-field${requiredClass}"${labelTitle}>${labelText}${inputHtml}${conflictWarning}</label>`;
   }
 
+  const senderNameField = fieldLabel(
+    'senderName',
+    i18n.t('ui.app.admin.notif.smtp_sender_name'),
+    `<input name="senderName" type="text" value="${senderName}" placeholder="${i18n.t('ui.app.admin.notif.smtp_sender_name_placeholder')}" />`,
+  );
   const hostField = fieldLabel(
     'host',
     i18n.t('ui.app.admin.notif.smtp_host'),
@@ -224,12 +230,15 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
         </label>
       </div>
       <div class="provider-fields">
+        ${senderNameField}
         ${hostField}
         ${portField}
         ${fromField}
+        ${secureField}
+      </div>
+      <div class="provider-auth-fields">
         ${userField}
         ${passwordField}
-        ${secureField}
       </div>
       <div class="provider-option-toggles">
         <div class="provider-option-row">
@@ -320,6 +329,15 @@ async function openProviderConfig(senderId, name, isActive) {
         updateRequiredHighlights();
         syncToggle();
       });
+
+      const authDisabledCheckbox = popupFormEl.querySelector('[name="authDisabled"]');
+      const authFieldsEl = popupFormEl.querySelector('.provider-auth-fields');
+      if (authDisabledCheckbox instanceof HTMLInputElement && authFieldsEl instanceof HTMLElement) {
+        authFieldsEl.style.display = authDisabledCheckbox.checked ? 'none' : 'grid';
+        authDisabledCheckbox.addEventListener('change', () => {
+          authFieldsEl.style.display = authDisabledCheckbox.checked ? 'none' : 'grid';
+        });
+      }
 
       const testBtn = popupFormEl.querySelector('.provider-test-btn');
       const testInput = popupFormEl.querySelector('.provider-test-input');
