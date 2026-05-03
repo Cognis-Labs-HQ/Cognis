@@ -17,6 +17,7 @@ export interface SmtpConfig {
   ehloHostname?: string;
   greylistRetries?: number;
   greylistRetryDelayMs?: number;
+  externalHost?: string;
 }
 
 export class SmtpTemporaryError extends Error {
@@ -46,6 +47,108 @@ function escapeHtmlForEmail(text: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;');
+}
+
+interface ThemePalette {
+  bgOuter: string;
+  bgHeader: string;
+  bgContent: string;
+  bgCard: string;
+  bgFooter: string;
+  colorAccent: string;
+  colorAccent2: string;
+  colorText: string;
+  colorBodyText: string;
+  colorMuted: string;
+  colorFooterText: string;
+  colorDivider: string;
+  colorDiamond: string;
+  shadowColor: string;
+}
+
+const DARK_PALETTE: ThemePalette = {
+  bgOuter: '#0a1628',
+  bgHeader: 'linear-gradient(135deg,#071421 0%,#0f2d3a 60%,#112b25 100%)',
+  bgContent: '#0d1f35',
+  bgCard: 'rgba(255,255,255,0.04)',
+  bgFooter: '#081529',
+  colorAccent: '#2a7f62',
+  colorAccent2: '#3aa783',
+  colorText: '#e2e8f0',
+  colorBodyText: '#c8d8e8',
+  colorMuted: '#4a8fa8',
+  colorFooterText: '#4a6a85',
+  colorDivider: 'rgba(42,127,98,0.25)',
+  colorDiamond: '#2a5068',
+  shadowColor: 'rgba(0,0,0,0.45)',
+};
+
+const LIGHT_PALETTE: ThemePalette = {
+  bgOuter: '#e8eef9',
+  bgHeader: 'linear-gradient(135deg,#f0f7ff 0%,#e8f3ff 60%,#e8f5f0 100%)',
+  bgContent: '#ffffff',
+  bgCard: 'rgba(248,250,255,0.96)',
+  bgFooter: '#f4f8ff',
+  colorAccent: '#0f766e',
+  colorAccent2: '#0d9488',
+  colorText: '#0f172a',
+  colorBodyText: '#1e293b',
+  colorMuted: '#475569',
+  colorFooterText: '#64748b',
+  colorDivider: 'rgba(15,118,110,0.25)',
+  colorDiamond: '#94a3b8',
+  shadowColor: 'rgba(15,23,42,0.15)',
+};
+
+async function buildMessage(
+  from: string,
+  to: string,
+  subject: string,
+  body: string,
+  options: { theme?: string; externalHost?: string } = {},
+): Promise<string> {
+  const palette = options.theme === 'dark' ? DARK_PALETTE : LIGHT_PALETTE;
+  const externalHost = options.externalHost ?? '';
+  const iconUrl = externalHost ? `${externalHost}/assets/icons/cognis-icon.png` : '';
+
+  const template = await loadEmailTemplate();
+  const htmlBody = template
+    .replace(/\{\{subject\}\}/g, escapeHtmlForEmail(subject))
+    .replace(/\{\{body\}\}/g, escapeHtmlForEmail(body).replace(/\n/g, '<br>'))
+    .replace(/\{\{iconUrl\}\}/g, escapeHtmlForEmail(iconUrl))
+    .replace(/\{\{externalHost\}\}/g, escapeHtmlForEmail(externalHost))
+    .replace(/\{\{bgOuter\}\}/g, palette.bgOuter)
+    .replace(/\{\{bgHeader\}\}/g, palette.bgHeader)
+    .replace(/\{\{bgContent\}\}/g, palette.bgContent)
+    .replace(/\{\{bgCard\}\}/g, palette.bgCard)
+    .replace(/\{\{bgFooter\}\}/g, palette.bgFooter)
+    .replace(/\{\{colorAccent\}\}/g, palette.colorAccent)
+    .replace(/\{\{colorAccent2\}\}/g, palette.colorAccent2)
+    .replace(/\{\{colorText\}\}/g, palette.colorText)
+    .replace(/\{\{colorBodyText\}\}/g, palette.colorBodyText)
+    .replace(/\{\{colorMuted\}\}/g, palette.colorMuted)
+    .replace(/\{\{colorFooterText\}\}/g, palette.colorFooterText)
+    .replace(/\{\{colorDivider\}\}/g, palette.colorDivider)
+    .replace(/\{\{colorDiamond\}\}/g, palette.colorDiamond)
+    .replace(/\{\{shadowColor\}\}/g, palette.shadowColor);
+
+  const fromHeader = from;
+
+  const normalised = htmlBody.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const dotStuffed = normalised
+    .split('\n')
+    .map((line) => (line.startsWith('.') ? `.${line}` : line))
+    .join('\r\n');
+
+  return [
+    `From: ${fromHeader}`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/html; charset=utf-8',
+    '',
+    dotStuffed,
+  ].join('\r\n') + '\r\n.\r\n';
 }
 
 interface SmtpResponse {
@@ -145,35 +248,13 @@ async function upgradeToTls(session: SmtpSession, allowSelfSigned?: boolean): Pr
   return new SmtpSession(tlsSock);
 }
 
-async function buildMessage(from: string, senderName: string | undefined, to: string, subject: string, body: string): Promise<string> {
-  const template = await loadEmailTemplate();
-  const htmlBody = template
-    .replace('{{subject}}', escapeHtmlForEmail(subject))
-    .replace('{{body}}', escapeHtmlForEmail(body).replace(/\n/g, '<br>'))
-    .replace('{{senderName}}', escapeHtmlForEmail(senderName ?? 'Cognis'));
-
-  const fromHeader = senderName
-    ? `"${senderName.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}" <${from}>`
-    : from;
-
-  const normalised = htmlBody.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  const dotStuffed = normalised
-    .split('\n')
-    .map((line) => (line.startsWith('.') ? `.${line}` : line))
-    .join('\r\n');
-
-  return [
-    `From: ${fromHeader}`,
-    `To: ${to}`,
-    `Subject: ${subject}`,
-    'MIME-Version: 1.0',
-    'Content-Type: text/html; charset=utf-8',
-    '',
-    dotStuffed,
-  ].join('\r\n') + '\r\n.\r\n';
-}
-
-async function sendMail(config: SmtpConfig, to: string, subject: string, body: string): Promise<void> {
+async function sendMail(
+  config: SmtpConfig,
+  to: string,
+  subject: string,
+  body: string,
+  theme?: string,
+): Promise<void> {
   let session = await openSession(config.host, config.port, config.secure, config.allowSelfSigned);
 
   try {
@@ -229,7 +310,12 @@ async function sendMail(config: SmtpConfig, to: string, subject: string, body: s
       throw isTemporaryCode(dataCmd.code) ? new SmtpTemporaryError(msg) : new Error(msg);
     }
 
-    session.writeRaw(await buildMessage(config.from, config.senderName, to, subject, body));
+    session.writeRaw(
+      await buildMessage(config.from, to, subject, body, {
+        theme,
+        externalHost: config.externalHost,
+      }),
+    );
     const sent = await session.read();
     if (sent.code !== 250) {
       const msg = `smtp_message_rejected:${sent.code}`;
@@ -275,6 +361,7 @@ async function sendMailWithRetry(
   subject: string,
   body: string,
   sleep: (ms: number) => Promise<void>,
+  theme?: string,
 ): Promise<void> {
   const maxRetries = config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES;
   const delayMs = config.greylistRetryDelayMs ?? DEFAULT_GREYLIST_RETRY_DELAY_MS;
@@ -285,7 +372,7 @@ async function sendMailWithRetry(
       await sleep(delayMs);
     }
     try {
-      await sendMail(config, to, subject, body);
+      await sendMail(config, to, subject, body, theme);
       return;
     } catch (err) {
       if (err instanceof SmtpTemporaryError && attempt < maxRetries) {
@@ -360,7 +447,7 @@ export class SmtpNotificationSender implements NotificationSender {
     if (typeof config.greylistRetryDelayMs === 'number') this.config.greylistRetryDelayMs = config.greylistRetryDelayMs;
   }
 
-  async sendVerificationEmail(to: string, code: string): Promise<void> {
+  async sendVerificationEmail(to: string, code: string, theme?: string): Promise<void> {
     if (!to) throw new Error('smtp_requires_recipient');
     if (this.rateLimiter.isThrottled(to)) {
       throw new Error('smtp_rate_limited');
@@ -368,12 +455,12 @@ export class SmtpNotificationSender implements NotificationSender {
     this.rateLimiter.record(to);
     const subject = 'Verify your email address';
     const body = `Your verification code is: ${code}\n\nThis code expires in 15 minutes.`;
-    await sendMailWithRetry(this.config, to, subject, body, this.sleep);
+    await sendMailWithRetry(this.config, to, subject, body, this.sleep, theme);
   }
 
-  async sendTestEmail(to: string): Promise<void> {
+  async sendTestEmail(to: string, theme?: string): Promise<void> {
     if (!to) throw new Error('smtp_test_email_requires_recipient');
-    await sendMailWithRetry(this.config, to, 'Cognis SMTP Test', 'This is a test email from Cognis.', this.sleep);
+    await sendMailWithRetry(this.config, to, 'Cognis SMTP Test', 'This is a test email from Cognis.', this.sleep, theme);
   }
 
   async send(envelope: NotificationEnvelope): Promise<void> {
@@ -384,7 +471,8 @@ export class SmtpNotificationSender implements NotificationSender {
       throw new Error('smtp_rate_limited');
     }
     this.rateLimiter.record(envelope.recipientEmail);
-    await sendMailWithRetry(this.config, envelope.recipientEmail, envelope.subject, envelope.body, this.sleep);
+    const theme = typeof envelope.metadata?.theme === 'string' ? envelope.metadata.theme : undefined;
+    await sendMailWithRetry(this.config, envelope.recipientEmail, envelope.subject, envelope.body, this.sleep, theme);
   }
 }
 
@@ -400,6 +488,7 @@ export function createNotificationSender(env: Record<string, string | undefined>
   const allowSelfSigned = env['COGNIS_SMTP_ALLOW_SELF_SIGNED'] === 'true';
   const authDisabled = env['COGNIS_SMTP_AUTH_DISABLED'] === 'true';
   const ehloHostname = env['HOST'];
+  const externalHost = env['EXTERNAL_HOST'] ?? (env['HOST'] ? `http://${env['HOST']}` : '');
 
   const envSnapshot: Record<string, string | undefined> = {
     host: env['COGNIS_SMTP_HOST'],
@@ -412,5 +501,5 @@ export function createNotificationSender(env: Record<string, string | undefined>
     authDisabled: env['COGNIS_SMTP_AUTH_DISABLED'],
   };
 
-  return new SmtpNotificationSender({ host, port, from, senderName, user, password, secure, allowSelfSigned, authDisabled, ehloHostname }, envSnapshot);
+  return new SmtpNotificationSender({ host, port, from, senderName, user, password, secure, allowSelfSigned, authDisabled, ehloHostname, externalHost }, envSnapshot);
 }

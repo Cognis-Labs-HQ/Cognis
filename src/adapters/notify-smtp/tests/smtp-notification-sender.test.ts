@@ -450,3 +450,138 @@ test('SmtpNotificationSender.setConfig updates greylistRetries and greylistRetry
   assert.equal(config.greylistRetries, 5);
   assert.equal(config.greylistRetryDelayMs, 120_000);
 });
+
+test('createNotificationSender reads EXTERNAL_HOST env var', () => {
+  const sender = createNotificationSender({
+    COGNIS_SMTP_HOST: 'smtp.example.com',
+    EXTERNAL_HOST: 'https://cognis.example.com',
+  });
+  assert.ok(sender instanceof SmtpNotificationSender);
+});
+
+test('createNotificationSender derives EXTERNAL_HOST from HOST when EXTERNAL_HOST is absent', () => {
+  const sender = createNotificationSender({
+    COGNIS_SMTP_HOST: 'smtp.example.com',
+    HOST: 'cognis.example.com',
+  });
+  assert.ok(sender instanceof SmtpNotificationSender);
+});
+
+test('SmtpNotificationSender email includes light theme colors and subject when theme is light', async () => {
+  let capturedData = '';
+
+  const server = await createMockSmtpServer((conn) => {
+    conn.setEncoding('utf8');
+    conn.write('220 mock.example.com SMTP\r\n');
+
+    conn.on('data', (chunk: string) => {
+      capturedData += chunk;
+      const upper = chunk.toUpperCase();
+      if (upper.includes('EHLO') || upper.includes('HELO')) conn.write('250 OK\r\n');
+      if (upper.includes('MAIL FROM')) conn.write('250 OK\r\n');
+      if (upper.includes('RCPT TO')) conn.write('250 OK\r\n');
+      if (upper.includes('\r\nDATA\r\n') || chunk.trim() === 'DATA') conn.write('354 Start mail input\r\n');
+      if (chunk.includes('\r\n.\r\n')) conn.write('250 OK\r\n');
+      if (upper.includes('QUIT')) { conn.write('221 Bye\r\n'); conn.end(); }
+    });
+  });
+
+  try {
+    const sender = new SmtpNotificationSender(
+      { host: server.host, port: server.port, from: 'test@example.com', secure: 'none', greylistRetries: 0, externalHost: 'https://cognis.example.com' },
+      undefined,
+      noopSleep,
+    );
+    await sender.send({
+      category: 'test',
+      recipientUsername: 'alice',
+      recipientEmail: 'alice@example.com',
+      subject: 'Hello World',
+      body: 'Test body',
+      metadata: { theme: 'light' },
+    });
+    assert.ok(capturedData.includes('Hello World'), 'subject should appear in email data');
+    assert.ok(capturedData.includes('#e8eef9'), 'light theme outer background color should be present');
+    assert.ok(capturedData.includes('cognis.example.com/assets/icons/cognis-icon.png'), 'icon URL should be present');
+    assert.ok(capturedData.includes('href='), 'Cognis hyperlink should be present');
+  } finally {
+    await server.close();
+  }
+});
+
+test('SmtpNotificationSender email uses dark theme colors when theme is dark', async () => {
+  let capturedData = '';
+
+  const server = await createMockSmtpServer((conn) => {
+    conn.setEncoding('utf8');
+    conn.write('220 mock.example.com SMTP\r\n');
+
+    conn.on('data', (chunk: string) => {
+      capturedData += chunk;
+      const upper = chunk.toUpperCase();
+      if (upper.includes('EHLO') || upper.includes('HELO')) conn.write('250 OK\r\n');
+      if (upper.includes('MAIL FROM')) conn.write('250 OK\r\n');
+      if (upper.includes('RCPT TO')) conn.write('250 OK\r\n');
+      if (upper.includes('\r\nDATA\r\n') || chunk.trim() === 'DATA') conn.write('354 Start mail input\r\n');
+      if (chunk.includes('\r\n.\r\n')) conn.write('250 OK\r\n');
+      if (upper.includes('QUIT')) { conn.write('221 Bye\r\n'); conn.end(); }
+    });
+  });
+
+  try {
+    const sender = new SmtpNotificationSender(
+      { host: server.host, port: server.port, from: 'test@example.com', secure: 'none', greylistRetries: 0 },
+      undefined,
+      noopSleep,
+    );
+    await sender.send({
+      category: 'test',
+      recipientUsername: 'alice',
+      recipientEmail: 'alice@example.com',
+      subject: 'Dark Email',
+      body: 'Test body',
+      metadata: { theme: 'dark' },
+    });
+    assert.ok(capturedData.includes('#0a1628'), 'dark theme outer background color should be present');
+  } finally {
+    await server.close();
+  }
+});
+
+test('SmtpNotificationSender email defaults to light theme when metadata.theme is absent', async () => {
+  let capturedData = '';
+
+  const server = await createMockSmtpServer((conn) => {
+    conn.setEncoding('utf8');
+    conn.write('220 mock.example.com SMTP\r\n');
+
+    conn.on('data', (chunk: string) => {
+      capturedData += chunk;
+      const upper = chunk.toUpperCase();
+      if (upper.includes('EHLO') || upper.includes('HELO')) conn.write('250 OK\r\n');
+      if (upper.includes('MAIL FROM')) conn.write('250 OK\r\n');
+      if (upper.includes('RCPT TO')) conn.write('250 OK\r\n');
+      if (upper.includes('\r\nDATA\r\n') || chunk.trim() === 'DATA') conn.write('354 Start mail input\r\n');
+      if (chunk.includes('\r\n.\r\n')) conn.write('250 OK\r\n');
+      if (upper.includes('QUIT')) { conn.write('221 Bye\r\n'); conn.end(); }
+    });
+  });
+
+  try {
+    const sender = new SmtpNotificationSender(
+      { host: server.host, port: server.port, from: 'test@example.com', secure: 'none', greylistRetries: 0 },
+      undefined,
+      noopSleep,
+    );
+    await sender.send({
+      category: 'test',
+      recipientUsername: 'alice',
+      recipientEmail: 'alice@example.com',
+      subject: 'Default Theme',
+      body: 'Test body',
+    });
+    assert.ok(capturedData.includes('#e8eef9'), 'should default to light theme outer background color');
+  } finally {
+    await server.close();
+  }
+});
