@@ -107,7 +107,7 @@ export async function openPopup({ title, body, variant = 'info', actions, maxWid
         }
       }
       overlay.addEventListener('transitionend', removeOverlay, { once: true });
-      setTimeout(removeOverlay, 500); // fallback if no transition fires (lines above)
+      setTimeout(removeOverlay, 500); // fallback if no transition fires (line 109 above)
       overlay.classList.remove('popup-overlay--visible');
       resolve(actionId ?? null);
     }
