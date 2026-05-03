@@ -97,7 +97,17 @@
 }
 
 .profile-menu { position: relative; }
-.avatar-button { border-radius: 999px; width: 38px; height: 38px; padding: 2px; cursor: pointer; }
+.avatar-button {
+  border-radius: 999px;
+  width: 38px;
+  height: 38px;
+  padding: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
 .avatar-image { width: 100%; height: 100%; border-radius: 999px; display: block; object-fit: cover; }
 .avatar-initials {
   width: 100%;

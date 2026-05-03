@@ -112,7 +112,6 @@ function bindTopbarActions() {
 async function updateNavbarAvatar() {
   const avatarBtn = document.querySelector('.avatar-button');
   if (!avatarBtn) return;
-  const avatarImg = avatarBtn.querySelector('.avatar-image');
   const handle = localStorage.getItem('cognis_account') ?? '';
   try {
     const res = await apiFetch('/api/v1/profile');
@@ -122,7 +121,11 @@ async function updateNavbarAvatar() {
       if (avatarKey) {
         const fileRes = await apiFetch(`/api/v1/files/${avatarKey}`);
         if (fileRes.ok) {
-          if (avatarImg) avatarImg.src = URL.createObjectURL(await fileRes.blob());
+          const img = document.createElement('img');
+          img.className = 'avatar-image';
+          img.alt = '';
+          img.src = URL.createObjectURL(await fileRes.blob());
+          avatarBtn.replaceChildren(img);
           return;
         }
       }
@@ -130,15 +133,11 @@ async function updateNavbarAvatar() {
   } catch {
     // fall through to initials
   }
-  if (avatarImg) avatarImg.hidden = true;
-  let initialsEl = avatarBtn.querySelector('.avatar-initials');
-  if (!initialsEl) {
-    initialsEl = document.createElement('span');
-    initialsEl.className = 'avatar-initials';
-    avatarBtn.appendChild(initialsEl);
-  }
+  const initialsEl = document.createElement('span');
+  initialsEl.className = 'avatar-initials';
   initialsEl.textContent = getInitialsText(handle);
   initialsEl.style.background = pickInitialsColor(handle);
+  avatarBtn.replaceChildren(initialsEl);
 }
 
 export async function renderDashboardLayout(root, slots = {}) {
