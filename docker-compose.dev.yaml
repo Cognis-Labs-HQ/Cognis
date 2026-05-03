@@ -26,6 +26,7 @@ services:
       DB_TYPE: postgresql
       DATABASE_URL: postgresql://${POSTGRES_USER:-cognis}:${POSTGRES_PASSWORD:-cognis}@db:5432/${POSTGRES_DB:-cognis}
       HOST: ${HOST:-cognis-dev}
+      EXTERNAL_HOST: ${EXTERNAL_HOST:-}
       LOG_LEVEL: debug
       LOG_FILE: /app/logs/dev.log
     ports:
