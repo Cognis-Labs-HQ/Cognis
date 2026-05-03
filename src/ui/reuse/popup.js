@@ -8,9 +8,9 @@
  * The action descriptor array mirrors the page-composer `elements` pattern:
  * each entry is a plain object with `id`, `label`, and an optional `variant`.
  *
- * This module self-injects /static/styles/reuse/popup.css into the document
- * <head> on first import, so callers do not need to include that stylesheet
- * explicitly in their page HTML.
+ * This module lazily injects /static/styles/reuse/popup.css into the document
+ * <head> on the first call to openPopup(), so callers do not need to include
+ * that stylesheet explicitly in their page HTML.
  *
  * Public exports:
  *   openPopup(options) — opens a modal and returns a Promise<string|null>.
@@ -36,7 +36,8 @@
  *   variant  — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
  *              Defaults to 'info'.
  *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral' }>.
- *              When omitted, a single neutral close button is rendered.
+ *              When omitted, a single green 'Done' (confirm) button is rendered.
+ *              The × header close button always uses the cancel (danger) style.
  *   maxWidth — CSS max-width value (e.g. '40%', '600px') applied to the dialog
  *              window. Defaults to the CSS-defined value (480px).
  *
@@ -50,14 +51,17 @@
  * @returns {Promise<string|null>}
  */
 
-if (!document.querySelector('link[href="/static/styles/reuse/popup.css"]')) {
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = '/static/styles/reuse/popup.css';
-  document.head.appendChild(link);
+function ensureStylesheet() {
+  if (!document.querySelector('link[href="/static/styles/reuse/popup.css"]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/static/styles/reuse/popup.css';
+    document.head.appendChild(link);
+  }
 }
 
 export function openPopup({ title, body, variant = 'info', actions, maxWidth } = {}) {
+  ensureStylesheet();
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
@@ -86,7 +90,7 @@ export function openPopup({ title, body, variant = 'info', actions, maxWidth } =
 
     const effectiveActions = Array.isArray(actions) && actions.length > 0
       ? actions
-      : [{ id: 'close', label: 'Close', variant: 'neutral' }];
+      : [{ id: 'close', label: 'Done', variant: 'confirm' }];
 
     const actionButtons = effectiveActions
       .map((action) => {
@@ -104,7 +108,7 @@ export function openPopup({ title, body, variant = 'info', actions, maxWidth } =
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
           <h2 class="popup-title" id="popup-title">${escapeHtml(title ?? '')}</h2>
-          <button class="popup-close-btn" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
+          <button class="popup-close-btn btn-cancel btn-animated" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
         </div>
         <div class="popup-body">${resolvedBody}</div>
         ${actionButtons ? `<div class="popup-footer">${actionButtons}</div>` : ''}

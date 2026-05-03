@@ -266,7 +266,7 @@ changesBar = createUnsavedChangesBar(floatingSlot, {
     await openPopup({
       title: i18n.t('ui.app.settings.saved_alert'),
       variant: 'info',
-      actions: [{ id: 'close', label: i18n.t('ui.reuse.popup.close'), variant: 'neutral' }],
+      actions: [{ id: 'close', label: i18n.t('ui.reuse.generic.done'), variant: 'confirm' }],
     });
     window.location.reload();
   },
