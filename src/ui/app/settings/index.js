@@ -5,6 +5,7 @@ import { toFontFamilyValue, initFontPrefs, DEFAULT_FONT_SIZE } from './font-pref
 import { initLanguagePrefs } from './language-prefs.js';
 import { createUnsavedChangesBar } from '../../reuse/unsaved-changes.js';
 import { createPageComposer } from '../../reuse/page-composer.js';
+import { openPopup } from '../../reuse/popup.js';
 
 const root = document.querySelector('#app');
 let languagePriority = readPreferredLanguages();
@@ -262,7 +263,11 @@ changesBar = createUnsavedChangesBar(floatingSlot, {
     applyTheme(mode);
     setPreferredLanguages(prefs.languagePriority);
     localStorage.setItem('cognis_ui_preferences', JSON.stringify(prefs));
-    alert(i18n.t('ui.app.settings.saved_alert'));
+    await openPopup({
+      title: i18n.t('ui.app.settings.saved_alert'),
+      variant: 'confirm',
+      actions: [{ id: 'close', label: i18n.t('ui.reuse.popup.close'), variant: 'neutral' }],
+    });
     window.location.reload();
   },
   onDiscard: () => {
