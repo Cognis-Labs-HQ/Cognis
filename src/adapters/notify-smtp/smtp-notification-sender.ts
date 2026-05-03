@@ -12,6 +12,19 @@ export interface SmtpConfig {
   allowSelfSigned?: boolean;
   authDisabled?: boolean;
   ehloHostname?: string;
+  greylistRetries?: number;
+  greylistRetryDelayMs?: number;
+}
+
+export class SmtpTemporaryError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SmtpTemporaryError';
+  }
+}
+
+function isTemporaryCode(code: number): boolean {
+  return code >= 400 && code < 500;
 }
 
 interface SmtpResponse {
@@ -137,7 +150,8 @@ async function sendMail(config: SmtpConfig, to: string, subject: string, body: s
 
     const greeting = await session.read();
     if (greeting.code !== 220) {
-      throw new Error(`smtp_unexpected_greeting:${greeting.code}`);
+      const msg = `smtp_unexpected_greeting:${greeting.code}`;
+      throw isTemporaryCode(greeting.code) ? new SmtpTemporaryError(msg) : new Error(msg);
     }
 
     let ehlo = await session.cmd(`EHLO ${config.ehloHostname ?? 'localhost'}`);
@@ -168,23 +182,27 @@ async function sendMail(config: SmtpConfig, to: string, subject: string, body: s
 
     const mailFrom = await session.cmd(`MAIL FROM:<${config.from}>`);
     if (mailFrom.code !== 250) {
-      throw new Error(`smtp_mail_from_failed:${mailFrom.code}`);
+      const msg = `smtp_mail_from_failed:${mailFrom.code}`;
+      throw isTemporaryCode(mailFrom.code) ? new SmtpTemporaryError(msg) : new Error(msg);
     }
 
     const rcptTo = await session.cmd(`RCPT TO:<${to}>`);
     if (rcptTo.code !== 250 && rcptTo.code !== 251) {
-      throw new Error(`smtp_rcpt_to_failed:${rcptTo.code}`);
+      const msg = `smtp_rcpt_to_failed:${rcptTo.code}`;
+      throw isTemporaryCode(rcptTo.code) ? new SmtpTemporaryError(msg) : new Error(msg);
     }
 
     const dataCmd = await session.cmd('DATA');
     if (dataCmd.code !== 354) {
-      throw new Error(`smtp_data_cmd_failed:${dataCmd.code}`);
+      const msg = `smtp_data_cmd_failed:${dataCmd.code}`;
+      throw isTemporaryCode(dataCmd.code) ? new SmtpTemporaryError(msg) : new Error(msg);
     }
 
     session.writeRaw(buildMessage(config.from, to, subject, body));
     const sent = await session.read();
     if (sent.code !== 250) {
-      throw new Error(`smtp_message_rejected:${sent.code}`);
+      const msg = `smtp_message_rejected:${sent.code}`;
+      throw isTemporaryCode(sent.code) ? new SmtpTemporaryError(msg) : new Error(msg);
     }
 
     await session.cmd('QUIT');
@@ -193,14 +211,52 @@ async function sendMail(config: SmtpConfig, to: string, subject: string, body: s
   }
 }
 
+const DEFAULT_GREYLIST_RETRIES = 2;
+const DEFAULT_GREYLIST_RETRY_DELAY_MS = 5 * 60 * 1000;
+
+async function sendMailWithRetry(
+  config: SmtpConfig,
+  to: string,
+  subject: string,
+  body: string,
+  sleep: (ms: number) => Promise<void>,
+): Promise<void> {
+  const maxRetries = config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES;
+  const delayMs = config.greylistRetryDelayMs ?? DEFAULT_GREYLIST_RETRY_DELAY_MS;
+
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    if (attempt > 0) {
+      await sleep(delayMs);
+    }
+    try {
+      await sendMail(config, to, subject, body);
+      return;
+    } catch (err) {
+      if (err instanceof SmtpTemporaryError && attempt < maxRetries) {
+        lastError = err;
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastError;
+}
+
 export class SmtpNotificationSender implements NotificationSender {
   readonly senderId = 'smtp';
   readonly senderName = 'SMTP Email';
 
   private readonly envSnapshot: Record<string, string | undefined>;
+  private readonly sleep: (ms: number) => Promise<void>;
 
-  constructor(private config: SmtpConfig, envSnapshot?: Record<string, string | undefined>) {
+  constructor(
+    private config: SmtpConfig,
+    envSnapshot?: Record<string, string | undefined>,
+    sleep?: (ms: number) => Promise<void>,
+  ) {
     this.envSnapshot = envSnapshot ?? {};
+    this.sleep = sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
   }
 
   getEnvValues(): Record<string, string | undefined> {
@@ -224,6 +280,8 @@ export class SmtpNotificationSender implements NotificationSender {
       secure: this.config.secure,
       allowSelfSigned: this.config.allowSelfSigned ?? false,
       authDisabled: this.config.authDisabled ?? false,
+      greylistRetries: this.config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES,
+      greylistRetryDelayMs: this.config.greylistRetryDelayMs ?? DEFAULT_GREYLIST_RETRY_DELAY_MS,
     };
   }
 
@@ -238,18 +296,20 @@ export class SmtpNotificationSender implements NotificationSender {
     }
     if (typeof config.allowSelfSigned === 'boolean') this.config.allowSelfSigned = config.allowSelfSigned;
     if (typeof config.authDisabled === 'boolean') this.config.authDisabled = config.authDisabled;
+    if (typeof config.greylistRetries === 'number') this.config.greylistRetries = config.greylistRetries;
+    if (typeof config.greylistRetryDelayMs === 'number') this.config.greylistRetryDelayMs = config.greylistRetryDelayMs;
   }
 
   async sendTestEmail(to: string): Promise<void> {
     if (!to) throw new Error('smtp_test_email_requires_recipient');
-    await sendMail(this.config, to, 'Cognis SMTP Test', 'This is a test email from Cognis.');
+    await sendMailWithRetry(this.config, to, 'Cognis SMTP Test', 'This is a test email from Cognis.', this.sleep);
   }
 
   async send(envelope: NotificationEnvelope): Promise<void> {
     if (!envelope.recipientEmail) {
       throw new Error('smtp_sender_requires_recipient_email');
     }
-    await sendMail(this.config, envelope.recipientEmail, envelope.subject, envelope.body);
+    await sendMailWithRetry(this.config, envelope.recipientEmail, envelope.subject, envelope.body, this.sleep);
   }
 }
 
