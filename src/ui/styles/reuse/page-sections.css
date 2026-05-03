@@ -1,12 +1,12 @@
 .content-section {
-  min-width: 0;
+    min-width: 0;
 }
 
 .content-panel > .content-section {
-  padding: 28px;
+    padding: 28px;
 }
 
 .widget-card > h2,
 .widget-card > h3 {
-  margin: 0 0 14px;
+    margin: 0 0 14px;
 }

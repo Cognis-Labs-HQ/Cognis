@@ -1,47 +1,47 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ui.page.title.login}}</title>
-    <link rel="stylesheet" href="/static/styles/page-builder.css" />
-    <link rel="stylesheet" href="/static/styles/login.css" />
-  </head>
-  <body>
-    <section class="auth-page auth-page--login-frame">
-      <div class="login-layout">
-        <aside class="panel login-intro" data-i18n-aria-label="ui.app.login.intro.aria" aria-label="Login introduction">
-          <div class="login-brandline">
-            <img src="/static/assets/icons/cognis-icon.png" alt="" class="login-icon" />
-            <div>
-              <h1 class="login-title" data-i18n="ui.shared.brand.name">Cognis</h1>
-              <p class="login-typing" data-i18n="ui.app.login.hero.tagline">Disce. Loquere. Vive.</p>
-            </div>
-          </div>
-          <p class="login-intro-copy" data-i18n="ui.app.login.hero.subtitle"></p>
-          <div class="login-template-box" aria-live="polite">
-            <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
-          </div>
-        </aside>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{{ui.page.title.login}}</title>
+        <link rel="stylesheet" href="/static/styles/page-builder.css" />
+        <link rel="stylesheet" href="/static/styles/login.css" />
+    </head>
+    <body>
+        <section class="auth-page auth-page--login-frame">
+            <div class="login-layout">
+                <aside class="panel login-intro" data-i18n-aria-label="ui.app.login.intro.aria" aria-label="Login introduction">
+                    <div class="login-brandline">
+                        <img src="/static/assets/icons/cognis-icon.png" alt="" class="login-icon" />
+                        <div>
+                            <h1 class="login-title" data-i18n="ui.shared.brand.name">Cognis</h1>
+                            <p class="login-typing" data-i18n="ui.app.login.hero.tagline">Disce. Loquere. Vive.</p>
+                        </div>
+                    </div>
+                    <p class="login-intro-copy" data-i18n="ui.app.login.hero.subtitle"></p>
+                    <div class="login-template-box" aria-live="polite">
+                        <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
+                    </div>
+                </aside>
 
-        <main class="panel login-panel" data-i18n-aria-label="ui.app.login.title" aria-label="Login form">
-          <h2 class="login-heading" data-i18n="ui.app.login.title"></h2>
-          <form id="login-form" class="stack login-form">
-            <label>
-              <span data-i18n="ui.app.login.form.username"></span>
-              <input name="username" data-i18n-placeholder="ui.app.login.form.username" placeholder="" required />
-            </label>
-            <label>
-              <span data-i18n="ui.app.login.form.password"></span>
-              <input name="password" type="password" data-i18n-placeholder="ui.app.login.form.password" placeholder="" required />
-            </label>
-            <button type="submit" data-i18n="ui.app.login.form.submit"></button>
-          </form>
-          <p id="msg" class="login-message" role="status" aria-live="polite"></p>
-        </main>
-      </div>
-    </section>
-    <button id="theme-toggle" class="theme-toggle" type="button" data-i18n-aria-label="ui.app.login.theme_toggle.aria" aria-label="Toggle theme"></button>
-    <script type="module" src="/static/app/login/index.js"></script>
-  </body>
+                <main class="panel login-panel" data-i18n-aria-label="ui.app.login.title" aria-label="Login form">
+                    <h2 class="login-heading" data-i18n="ui.app.login.title"></h2>
+                    <form id="login-form" class="stack login-form">
+                        <label>
+                            <span data-i18n="ui.app.login.form.username"></span>
+                            <input name="username" data-i18n-placeholder="ui.app.login.form.username" placeholder="" required />
+                        </label>
+                        <label>
+                            <span data-i18n="ui.app.login.form.password"></span>
+                            <input name="password" type="password" data-i18n-placeholder="ui.app.login.form.password" placeholder="" required />
+                        </label>
+                        <button type="submit" data-i18n="ui.app.login.form.submit"></button>
+                    </form>
+                    <p id="msg" class="login-message" role="status" aria-live="polite"></p>
+                </main>
+            </div>
+        </section>
+        <button id="theme-toggle" class="theme-toggle" type="button" data-i18n-aria-label="ui.app.login.theme_toggle.aria" aria-label="Toggle theme"></button>
+        <script type="module" src="/static/app/login/index.js"></script>
+    </body>
 </html>

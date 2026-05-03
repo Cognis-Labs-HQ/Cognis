@@ -1,45 +1,45 @@
 <section class="app-shell app-page">
-  <header class="site-header app-page__header">
-    <div class="global-topbar">
-      <a class="brandline" href="/dashboard" data-i18n-aria-label="ui.layout.brand.aria" aria-label="Cognis home">
-        <img src="/static/assets/icons/cognis-icon.png" alt="" class="topbar-icon" />
-        <strong data-i18n="ui.shared.brand.name">Cognis</strong>
-      </a>
-      <div class="page-context">{{pageContext}}</div>
-    </div>
-
-    <nav class="global-navrow" data-i18n-aria-label="ui.layout.nav.primary" aria-label="Primary navigation">
-      <div class="topnav global-navrow-surface">
-        <a href="/dashboard" data-i18n="ui.reuse.nav.dashboard"></a>
-              </div>
-      <div class="account-cluster">
-        <span class="user-greeting"><span data-i18n="ui.layout.greeting"></span> <span id="profile-name"></span></span>
-        <button id="notification-toggle" class="notification-button" data-i18n-aria-label="ui.layout.notifications.aria" aria-label="Notifications">
-          <span class="notification-badge-wrap"><span class="notification-icon" aria-hidden="true">🔔</span><span id="notification-count" class="notification-count" hidden>0</span></span>
-        </button>
-        <div class="profile-menu">
-          <button id="profile-toggle" class="avatar-button" data-i18n-aria-label="ui.layout.account.aria" aria-label="Account options">
-            <img src="/static/assets/icons/cognis.png" data-i18n-alt="ui.layout.avatar.alt" alt="User avatar" class="avatar-image" />
-          </button>
-          <ul id="profile-dropdown" class="dropdown hidden user-dropdown-content">
-            <li><a class="dropdown-item" href="/profile" data-i18n="ui.reuse.menu.profile"></a></li>
-            <li><a class="dropdown-item" href="/settings" data-i18n="ui.reuse.menu.settings"></a></li>
-            <li><a class="dropdown-item" href="/docs" data-i18n="ui.reuse.menu.docs"></a></li>
-            <li class="admin-only" hidden><a class="dropdown-item" href="/administration" data-i18n="ui.reuse.menu.administration"></a></li>
-            <li><button id="profile-logout" class="dropdown-item" data-i18n="ui.reuse.menu.logout"></button></li>
-          </ul>
+    <header class="site-header app-page__header">
+        <div class="global-topbar">
+            <a class="brandline" href="/dashboard" data-i18n-aria-label="ui.layout.brand.aria" aria-label="Cognis home">
+                <img src="/static/assets/icons/cognis-icon.png" alt="" class="topbar-icon" />
+                <strong data-i18n="ui.shared.brand.name">Cognis</strong>
+            </a>
+            <div class="page-context">{{pageContext}}</div>
         </div>
-      </div>
-    </nav>
-  </header>
 
-  <main class="workspace app-page__main">
-    <section class="main-window {{workspaceClass}}">
-      {{toolbar}}
-      <section class="content-grid">{{content}}</section>
-    </section>
-    </main>
-  <button id="theme-toggle" class="theme-toggle" data-i18n-aria-label="ui.layout.theme.aria" aria-label="Toggle theme">🌙</button>
-  <button id="composer-edit-toggle" class="composer-edit-toggle" hidden><span class="composer-edit-icon" aria-hidden="true"></span></button>
-  {{floatingToolbar}}
+        <nav class="global-navrow" data-i18n-aria-label="ui.layout.nav.primary" aria-label="Primary navigation">
+            <div class="topnav global-navrow-surface">
+                <a href="/dashboard" data-i18n="ui.reuse.nav.dashboard"></a>
+                            </div>
+            <div class="account-cluster">
+                <span class="user-greeting"><span data-i18n="ui.layout.greeting"></span> <span id="profile-name"></span></span>
+                <button id="notification-toggle" class="notification-button" data-i18n-aria-label="ui.layout.notifications.aria" aria-label="Notifications">
+                    <span class="notification-badge-wrap"><span class="notification-icon" aria-hidden="true">🔔</span><span id="notification-count" class="notification-count" hidden>0</span></span>
+                </button>
+                <div class="profile-menu">
+                    <button id="profile-toggle" class="avatar-button" data-i18n-aria-label="ui.layout.account.aria" aria-label="Account options">
+                        <img src="/static/assets/icons/cognis.png" data-i18n-alt="ui.layout.avatar.alt" alt="User avatar" class="avatar-image" />
+                    </button>
+                    <ul id="profile-dropdown" class="dropdown hidden user-dropdown-content">
+                        <li><a class="dropdown-item" href="/profile" data-i18n="ui.reuse.menu.profile"></a></li>
+                        <li><a class="dropdown-item" href="/settings" data-i18n="ui.reuse.menu.settings"></a></li>
+                        <li><a class="dropdown-item" href="/docs" data-i18n="ui.reuse.menu.docs"></a></li>
+                        <li class="admin-only" hidden><a class="dropdown-item" href="/administration" data-i18n="ui.reuse.menu.administration"></a></li>
+                        <li><button id="profile-logout" class="dropdown-item" data-i18n="ui.reuse.menu.logout"></button></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="workspace app-page__main">
+        <section class="main-window {{workspaceClass}}">
+            {{toolbar}}
+            <section class="content-grid">{{content}}</section>
+        </section>
+        </main>
+    <button id="theme-toggle" class="theme-toggle" data-i18n-aria-label="ui.layout.theme.aria" aria-label="Toggle theme">🌙</button>
+    <button id="composer-edit-toggle" class="composer-edit-toggle" hidden><span class="composer-edit-icon" aria-hidden="true"></span></button>
+    {{floatingToolbar}}
 </section>

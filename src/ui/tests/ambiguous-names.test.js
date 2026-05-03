@@ -7,24 +7,24 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
 function walk(dir) {
-  const out = [];
-  for (const entry of readdirSync(dir)) {
-    const fullPath = join(dir, entry);
-    const stat = statSync(fullPath);
-    if (stat.isDirectory()) out.push(...walk(fullPath));
-    else out.push(fullPath);
-  }
-  return out;
+    const out = [];
+    for (const entry of readdirSync(dir)) {
+        const fullPath = join(dir, entry);
+        const stat = statSync(fullPath);
+        if (stat.isDirectory()) out.push(...walk(fullPath));
+        else out.push(fullPath);
+    }
+    return out;
 }
 
 const SCAN_ROOTS = [
-  join(ROOT, 'src/ui/app'),
-  join(ROOT, 'src/ui/reuse'),
-  join(ROOT, 'src/ui/layouts'),
-  join(ROOT, 'src/api'),
-  join(ROOT, 'src/core'),
-  join(ROOT, 'src/adapters'),
-  join(ROOT, 'src/tooling'),
+    join(ROOT, 'src/ui/app'),
+    join(ROOT, 'src/ui/reuse'),
+    join(ROOT, 'src/ui/layouts'),
+    join(ROOT, 'src/api'),
+    join(ROOT, 'src/core'),
+    join(ROOT, 'src/adapters'),
+    join(ROOT, 'src/tooling'),
 ];
 
 // Single-letter names that are always acceptable as standalone variable declarations.
@@ -49,54 +49,54 @@ const FOR_OF_IN_RE = /^\s*for\s*\(\s*(const|let|var)\s+([a-zA-Z])\s+(of|in)\s/;
 const DECL_RE = /^\s*(const|let|var)\s+([a-zA-Z])\s*=/;
 
 test('no ambiguous single-letter variable names in source files', () => {
-  const hits = [];
+    const hits = [];
 
-  for (const root of SCAN_ROOTS) {
-    for (const file of walk(root)) {
-      if (!file.endsWith('.js') && !file.endsWith('.ts')) continue;
+    for (const root of SCAN_ROOTS) {
+        for (const file of walk(root)) {
+            if (!file.endsWith('.js') && !file.endsWith('.ts')) continue;
 
-      const lines = readFileSync(file, 'utf8').split('\n');
-      for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-        const line = lines[lineIndex];
-        const trimmed = line.trimStart();
+            const lines = readFileSync(file, 'utf8').split('\n');
+            for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+                const line = lines[lineIndex];
+                const trimmed = line.trimStart();
 
-        if (trimmed.startsWith('//') || trimmed.startsWith('*')) continue;
+                if (trimmed.startsWith('//') || trimmed.startsWith('*')) continue;
 
-        let name = null;
-        let isCounter = false;
+                let name = null;
+                let isCounter = false;
 
-        const counterMatch = FOR_COUNTER_RE.exec(line);
-        if (counterMatch) {
-          name = counterMatch[2];
-          isCounter = true;
-        } else {
-          const forOfInMatch = FOR_OF_IN_RE.exec(line);
-          if (forOfInMatch) {
-            name = forOfInMatch[2];
-          } else {
-            const declMatch = DECL_RE.exec(line);
-            if (declMatch) {
-              name = declMatch[2];
+                const counterMatch = FOR_COUNTER_RE.exec(line);
+                if (counterMatch) {
+                    name = counterMatch[2];
+                    isCounter = true;
+                } else {
+                    const forOfInMatch = FOR_OF_IN_RE.exec(line);
+                    if (forOfInMatch) {
+                        name = forOfInMatch[2];
+                    } else {
+                        const declMatch = DECL_RE.exec(line);
+                        if (declMatch) {
+                            name = declMatch[2];
+                        }
+                    }
+                }
+
+                if (!name) continue;
+
+                if (isCounter) {
+                    if (ALLOWED_COUNTER.has(name)) continue;
+                    hits.push(`${file}:${lineIndex + 1}: ambiguous for-loop counter '${name}'`);
+                } else {
+                    if (ALLOWED_STANDALONE.has(name)) continue;
+                    hits.push(`${file}:${lineIndex + 1}: ambiguous variable name '${name}'`);
+                }
             }
-          }
         }
-
-        if (!name) continue;
-
-        if (isCounter) {
-          if (ALLOWED_COUNTER.has(name)) continue;
-          hits.push(`${file}:${lineIndex + 1}: ambiguous for-loop counter '${name}'`);
-        } else {
-          if (ALLOWED_STANDALONE.has(name)) continue;
-          hits.push(`${file}:${lineIndex + 1}: ambiguous variable name '${name}'`);
-        }
-      }
     }
-  }
 
-  assert.equal(
-    hits.length,
-    0,
-    `Ambiguous single-letter variable names found:\n${hits.join('\n')}`,
-  );
+    assert.equal(
+        hits.length,
+        0,
+        `Ambiguous single-letter variable names found:\n${hits.join('\n')}`,
+    );
 });
