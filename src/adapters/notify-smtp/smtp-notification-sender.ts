@@ -9,6 +9,8 @@ export interface SmtpConfig {
   user?: string;
   password?: string;
   secure: 'none' | 'tls' | 'starttls';
+  allowSelfSigned?: boolean;
+  authDisabled?: boolean;
 }
 
 interface SmtpResponse {
@@ -79,10 +81,10 @@ class SmtpSession {
 
 const SMTP_TIMEOUT_MS = 30_000;
 
-async function openSession(host: string, port: number, secure: 'tls' | 'none' | 'starttls'): Promise<SmtpSession> {
+async function openSession(host: string, port: number, secure: 'tls' | 'none' | 'starttls', allowSelfSigned?: boolean): Promise<SmtpSession> {
   if (secure === 'tls') {
     const sock = await new Promise<tls.TLSSocket>((resolve, reject) => {
-      const tlsSock = tls.connect({ host, port });
+      const tlsSock = tls.connect({ host, port, rejectUnauthorized: !allowSelfSigned });
       tlsSock.once('secureConnect', () => resolve(tlsSock));
       tlsSock.once('error', reject);
     });
@@ -97,11 +99,11 @@ async function openSession(host: string, port: number, secure: 'tls' | 'none' | 
   return new SmtpSession(sock);
 }
 
-async function upgradeToTls(session: SmtpSession): Promise<SmtpSession> {
+async function upgradeToTls(session: SmtpSession, allowSelfSigned?: boolean): Promise<SmtpSession> {
   session.detach();
   const rawSock = session.socket as net.Socket;
   const tlsSock = await new Promise<tls.TLSSocket>((resolve, reject) => {
-    const newTlsSock = tls.connect({ socket: rawSock });
+    const newTlsSock = tls.connect({ socket: rawSock, rejectUnauthorized: !allowSelfSigned });
     newTlsSock.once('secureConnect', () => resolve(newTlsSock));
     newTlsSock.once('error', reject);
   });
@@ -127,7 +129,7 @@ function buildMessage(from: string, to: string, subject: string, body: string): 
 }
 
 async function sendMail(config: SmtpConfig, to: string, subject: string, body: string): Promise<void> {
-  let session = await openSession(config.host, config.port, config.secure);
+  let session = await openSession(config.host, config.port, config.secure, config.allowSelfSigned);
 
   try {
     session.socket.setTimeout(SMTP_TIMEOUT_MS);
@@ -147,14 +149,14 @@ async function sendMail(config: SmtpConfig, to: string, subject: string, body: s
       if (starttls.code !== 220) {
         throw new Error(`smtp_starttls_failed:${starttls.code}`);
       }
-      session = await upgradeToTls(session);
+      session = await upgradeToTls(session, config.allowSelfSigned);
       ehlo = await session.cmd('EHLO localhost');
       if (ehlo.code !== 250) {
         throw new Error(`smtp_ehlo_after_tls_failed:${ehlo.code}`);
       }
     }
 
-    if (config.user && config.password) {
+    if (!config.authDisabled && config.user && config.password) {
       // SASL PLAIN format: \0authcid\0password (RFC 4616)
       const creds = Buffer.from(`\0${config.user}\0${config.password}`).toString('base64');
       const auth = await session.cmd(`AUTH PLAIN ${creds}`);
@@ -219,6 +221,8 @@ export class SmtpNotificationSender implements NotificationSender {
       from: this.config.from,
       user: this.config.user,
       secure: this.config.secure,
+      allowSelfSigned: this.config.allowSelfSigned ?? false,
+      authDisabled: this.config.authDisabled ?? false,
     };
   }
 
@@ -231,6 +235,8 @@ export class SmtpNotificationSender implements NotificationSender {
     if (config.secure === 'none' || config.secure === 'tls' || config.secure === 'starttls') {
       this.config.secure = config.secure;
     }
+    if (typeof config.allowSelfSigned === 'boolean') this.config.allowSelfSigned = config.allowSelfSigned;
+    if (typeof config.authDisabled === 'boolean') this.config.authDisabled = config.authDisabled;
   }
 
   async sendTestEmail(to: string): Promise<void> {
@@ -254,6 +260,8 @@ export function createNotificationSender(env: Record<string, string | undefined>
   const password = env['COGNIS_SMTP_PASS'];
   const rawSecure = env['COGNIS_SMTP_SECURE'] ?? 'starttls';
   const secure = rawSecure === 'tls' ? 'tls' : rawSecure === 'none' ? 'none' : 'starttls';
+  const allowSelfSigned = env['COGNIS_SMTP_ALLOW_SELF_SIGNED'] === 'true';
+  const authDisabled = env['COGNIS_SMTP_AUTH_DISABLED'] === 'true';
 
   const envSnapshot: Record<string, string | undefined> = {
     host: env['COGNIS_SMTP_HOST'],
@@ -261,7 +269,9 @@ export function createNotificationSender(env: Record<string, string | undefined>
     from: env['COGNIS_SMTP_FROM'],
     user: env['COGNIS_SMTP_USER'],
     secure: env['COGNIS_SMTP_SECURE'],
+    allowSelfSigned: env['COGNIS_SMTP_ALLOW_SELF_SIGNED'],
+    authDisabled: env['COGNIS_SMTP_AUTH_DISABLED'],
   };
 
-  return new SmtpNotificationSender({ host, port, from, user, password, secure }, envSnapshot);
+  return new SmtpNotificationSender({ host, port, from, user, password, secure, allowSelfSigned, authDisabled }, envSnapshot);
 }

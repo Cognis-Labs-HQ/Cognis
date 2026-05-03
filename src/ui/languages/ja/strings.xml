@@ -256,4 +256,6 @@
   <string name="ui.app.admin.notif.smtp_from_placeholder">例: noreply@example.com</string>
   <string name="ui.app.admin.notif.smtp_user_placeholder">任意</string>
   <string name="ui.app.admin.notif.smtp_password_placeholder">任意</string>
+  <string name="ui.app.admin.notif.smtp_allow_self_signed">自己署名証明書を許可する</string>
+  <string name="ui.app.admin.notif.smtp_auth_disabled">認証を無効にする</string>
 </resources>

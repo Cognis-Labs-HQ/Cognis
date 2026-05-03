@@ -158,6 +158,10 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
   const from = val('from');
   const user = val('user');
   const secure = val('secure', 'starttls');
+  const allowSelfSigned = descriptors['allowSelfSigned']?.effectiveValue === 'true'
+    || descriptors['allowSelfSigned']?.effectiveValue === true;
+  const authDisabled = descriptors['authDisabled']?.effectiveValue === 'true'
+    || descriptors['authDisabled']?.effectiveValue === true;
   const requiredSet = new Set(requiredFields);
   const requiredTooltip = i18n.t('ui.app.admin.notif.required_field');
   const conflictTitle = i18n.t('ui.app.admin.notif.field_env_conflict');
@@ -203,7 +207,7 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
   const secureField = fieldLabel(
     'secure',
     i18n.t('ui.app.admin.notif.smtp_secure'),
-    `<select name="secure">
+    `<select name="secure" class="theme-select">
         <option value="starttls"${secure === 'starttls' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_starttls')}</option>
         <option value="tls"${secure === 'tls' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_tls')}</option>
         <option value="none"${secure === 'none' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_none')}</option>
@@ -226,6 +230,22 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
         ${userField}
         ${passwordField}
         ${secureField}
+      </div>
+      <div class="provider-option-toggles">
+        <div class="provider-option-row">
+          <span class="provider-option-label">${i18n.t('ui.app.admin.notif.smtp_allow_self_signed')}</span>
+          <label class="switch">
+            <input type="checkbox" name="allowSelfSigned"${allowSelfSigned ? ' checked' : ''} />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="provider-option-row">
+          <span class="provider-option-label">${i18n.t('ui.app.admin.notif.smtp_auth_disabled')}</span>
+          <label class="switch">
+            <input type="checkbox" name="authDisabled"${authDisabled ? ' checked' : ''} />
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
       <div class="provider-test-row">
         <input class="provider-test-input" type="email" placeholder="${escapeHtml(i18n.t('ui.app.admin.notif.test_email_to'))}" />

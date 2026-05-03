@@ -256,4 +256,6 @@
   <string name="ui.app.admin.notif.smtp_from_placeholder">e.g. noreply@example.com</string>
   <string name="ui.app.admin.notif.smtp_user_placeholder">Optional</string>
   <string name="ui.app.admin.notif.smtp_password_placeholder">Optional</string>
+  <string name="ui.app.admin.notif.smtp_allow_self_signed">Allow Self-Signed Certificate</string>
+  <string name="ui.app.admin.notif.smtp_auth_disabled">Disable Authentication</string>
 </resources>

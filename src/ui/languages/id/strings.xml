@@ -256,4 +256,6 @@
   <string name="ui.app.admin.notif.smtp_from_placeholder">mis. noreply@example.com</string>
   <string name="ui.app.admin.notif.smtp_user_placeholder">Opsional</string>
   <string name="ui.app.admin.notif.smtp_password_placeholder">Opsional</string>
+  <string name="ui.app.admin.notif.smtp_allow_self_signed">Izinkan Sertifikat Self-Signed</string>
+  <string name="ui.app.admin.notif.smtp_auth_disabled">Nonaktifkan Autentikasi</string>
 </resources>
