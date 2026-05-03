@@ -168,14 +168,11 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
     const isEmpty = !descriptor?.effectiveValue;
     const hasConflict = descriptor?.envConflict === true;
     const requiredClass = isRequired && isEmpty ? ' provider-field-required provider-field-missing' : '';
-    const requiredAttr = isRequired && isEmpty ? ` title="${requiredTooltip}"` : '';
+    const labelTitle = isRequired && isEmpty ? ` title="${requiredTooltip}"` : '';
     const conflictWarning = hasConflict
       ? `<span class="provider-field-env-warning" title="${conflictTitle}">⚠</span>`
       : '';
-    const inputWithAttrs = isRequired && isEmpty
-      ? inputHtml.replace('>', `${requiredAttr}>`)
-      : inputHtml;
-    return `<label class="provider-popup-field${requiredClass}">${labelText}${inputWithAttrs}${conflictWarning}</label>`;
+    return `<label class="provider-popup-field${requiredClass}"${labelTitle}>${labelText}${inputHtml}${conflictWarning}</label>`;
   }
 
   const hostField = fieldLabel(
@@ -256,6 +253,7 @@ async function openProviderConfig(senderId, name, isActive) {
       if (!popupFormEl) return;
 
       const toggle = popupFormEl.querySelector('.provider-enable-toggle');
+      if (!toggle) return;
 
       function requiredAllFilled() {
         return requiredFields.every((field) => {
@@ -274,11 +272,11 @@ async function openProviderConfig(senderId, name, isActive) {
           if (label) {
             label.classList.toggle('provider-field-required', isEmpty);
             label.classList.toggle('provider-field-missing', isEmpty);
-          }
-          if (isEmpty) {
-            input.setAttribute('title', requiredTooltip);
-          } else {
-            input.removeAttribute('title');
+            if (isEmpty) {
+              label.setAttribute('title', requiredTooltip);
+            } else {
+              label.removeAttribute('title');
+            }
           }
         }
       }
