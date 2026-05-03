@@ -143,7 +143,7 @@ if (isOwnProfile) {
 } else {
   const result = await loadUserProfile(urlHandle);
   if (result?.notFound) {
-    root.innerHTML = '<p class="profile-not-found-message">Profile not found.</p>';
+    root.innerHTML = `<p class="profile-not-found-message">${escapeHtml(i18n.t('ui.app.profile.not_found'))}</p>`;
     throw new Error('profile_not_found');
   }
   profile = result;
@@ -298,7 +298,7 @@ function renderHero() {
           class="profile-hero-block-btn"
           type="button"
           aria-label="${escapeHtml(i18n.t('ui.app.profile.block_user'))}"
-        >&#x1F6AB;</button>
+        >🚫</button>
       </div>
     `;
 

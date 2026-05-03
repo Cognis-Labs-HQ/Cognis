@@ -147,6 +147,10 @@
   background: var(--surface-soft);
 }
 
+.profile-banner-menu-remove {
+  color: var(--danger, #c0392b);
+}
+
 .profile-banner-height-label {
   display: flex;
   align-items: center;
@@ -195,10 +199,6 @@
 .profile-hero--full-banner .profile-hero-action-row,
 .profile-hero--full-banner .profile-hero-bio-wrap {
   pointer-events: auto;
-}
-
-.profile-hero--full-banner .profile-avatar-wrap {
-  margin-top: 0;
 }
 
 .profile-hero--full-banner .profile-hero-unified {
@@ -853,4 +853,10 @@
 .profile-not-found-message {
   padding: 2rem;
   color: var(--text-muted);
+}
+
+.profile-follow-requests-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }

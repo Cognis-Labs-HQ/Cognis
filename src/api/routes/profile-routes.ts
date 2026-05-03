@@ -88,13 +88,13 @@ export function createProfileRoutes(profileStore: DbProfileStore, fileGateway: F
       if ('location' in body) updates.location = body.location != null ? String(body.location) : null;
       if ('website' in body) updates.website = body.website != null ? String(body.website) : null;
       if ('visibility' in body) {
-        const v = String(body.visibility);
-        if (!VALID_VISIBILITY.has(v as AccountVisibility)) {
+        const visibility = String(body.visibility);
+        if (!VALID_VISIBILITY.has(visibility as AccountVisibility)) {
           res.writeHead(400, { 'content-type': 'application/json' });
-          res.end(JSON.stringify({ error: { code: 'bad_request', message: `Invalid visibility: ${v}` } }));
+          res.end(JSON.stringify({ error: { code: 'bad_request', message: `Invalid visibility: ${visibility}` } }));
           return true;
         }
-        updates.visibility = v as AccountVisibility;
+        updates.visibility = visibility as AccountVisibility;
       }
       const updated = await profileStore.updateProfile(claims!.sub, updates);
       res.writeHead(200, { 'content-type': 'application/json' });

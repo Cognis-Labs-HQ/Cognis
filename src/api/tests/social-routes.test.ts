@@ -26,9 +26,9 @@ async function setupUsers(executor: any, ...usernames: string[]) {
   await accountStore.ensureSchema();
   const profileStore = new DbProfileStore(executor, 'sqlite');
   await profileStore.ensureSchema();
-  for (const u of usernames) {
-    await accountStore.register(u, 'pw');
-    await profileStore.createProfile(u, u);
+  for (const username of usernames) {
+    await accountStore.register(username, 'pw');
+    await profileStore.createProfile(username, username);
   }
   return profileStore;
 }

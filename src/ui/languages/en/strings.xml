@@ -211,4 +211,5 @@
   <string name="ui.app.profile.block_user_action">Block</string>
   <string name="ui.app.profile.section.follow_requests">Follow Requests</string>
   <string name="ui.app.profile.follow_requests.empty">No pending follow requests.</string>
+  <string name="ui.app.profile.not_found">Profile not found.</string>
 </resources>

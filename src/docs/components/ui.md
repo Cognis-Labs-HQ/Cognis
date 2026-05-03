@@ -18,6 +18,9 @@
 | `/settings` | User settings and preferences |
 | `/administration` | Administrative controls |
 | `/docs` | Browse production docs |
+| `/profile` | Redirect to own profile page |
+| `/profile/:handle` | View a user's profile |
+| `/user` | Legacy alias for `/profile` (serves profile HTML directly) |
 
 ## State model
 - Auth token and account id stored client-side.
