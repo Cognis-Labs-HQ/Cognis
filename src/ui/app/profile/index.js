@@ -271,23 +271,26 @@ function renderUserList(list, emptyKey) {
   `;
 }
 
-function renderSocial() {
+function renderFollowers() {
   return `
-    <div class="profile-social-grid">
-      <div class="profile-social-col">
-        <h3 class="profile-social-heading">
-          ${i18n.t('ui.app.profile.followers')}
-          <span class="profile-count-badge">${followers.length}</span>
-        </h3>
-        ${renderUserList(followers, 'ui.app.profile.no_followers')}
-      </div>
-      <div class="profile-social-col">
-        <h3 class="profile-social-heading">
-          ${i18n.t('ui.app.profile.following')}
-          <span class="profile-count-badge">${following.length}</span>
-        </h3>
-        ${renderUserList(following, 'ui.app.profile.no_following')}
-      </div>
+    <div class="profile-social-col">
+      <h3 class="profile-social-heading">
+        ${i18n.t('ui.app.profile.followers')}
+        <span class="profile-count-badge">${followers.length}</span>
+      </h3>
+      ${renderUserList(followers, 'ui.app.profile.no_followers')}
+    </div>
+  `;
+}
+
+function renderFollowing() {
+  return `
+    <div class="profile-social-col">
+      <h3 class="profile-social-heading">
+        ${i18n.t('ui.app.profile.following')}
+        <span class="profile-count-badge">${following.length}</span>
+      </h3>
+      ${renderUserList(following, 'ui.app.profile.no_following')}
     </div>
   `;
 }
@@ -664,10 +667,16 @@ const elements = [
     render: renderHero,
   },
   {
-    id: 'social',
-    label: i18n.t('ui.app.profile.section.social'),
-    gridSize: { default: [4, 3], min: [2, 2], max: 'full' },
-    render: renderSocial,
+    id: 'followers',
+    label: i18n.t('ui.app.profile.section.followers'),
+    gridSize: { default: [2, 3], min: [2, 1], max: 'full' },
+    render: renderFollowers,
+  },
+  {
+    id: 'following',
+    label: i18n.t('ui.app.profile.section.following'),
+    gridSize: { default: [2, 3], min: [2, 1], max: 'full' },
+    render: renderFollowing,
   },
   {
     id: 'posts',

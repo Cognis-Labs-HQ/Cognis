@@ -149,6 +149,8 @@
   <string name="ui.app.profile.page_subtitle">Your profile and social activity.</string>
   <string name="ui.app.profile.section.profile">My Profile</string>
   <string name="ui.app.profile.section.social">Social</string>
+  <string name="ui.app.profile.section.followers">Followers</string>
+  <string name="ui.app.profile.section.following">Following</string>
   <string name="ui.app.profile.section.posts">Posts</string>
   <string name="ui.app.profile.section.social_links">Social Links</string>
   <string name="ui.app.profile.section.suggested">Suggested Contacts</string>

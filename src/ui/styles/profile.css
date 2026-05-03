@@ -183,6 +183,9 @@
   grid-row: 1;
   z-index: 1;
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
 }
 
 .profile-hero--full-banner .profile-hero-content button,
@@ -192,6 +195,10 @@
 
 .profile-hero--full-banner .profile-avatar-wrap {
   margin-top: 12px;
+}
+
+.profile-hero--full-banner .profile-hero-stats {
+  margin-top: auto;
 }
 
 .profile-hero--full-banner .profile-banner-menu-wrap {
@@ -219,10 +226,12 @@
 .profile-hero-body {
   display: flex;
   gap: 14px;
-  padding-top: 0;
+  padding: 0 14px 8px;
   align-items: flex-start;
   flex-wrap: wrap;
   position: relative;
+  background: var(--surface);
+  border-radius: 10px 10px 0 0;
 }
 
 .profile-avatar-wrap {
@@ -397,8 +406,10 @@
 .profile-hero-stats {
   display: flex;
   gap: 32px;
-  padding: 16px 0 8px;
+  padding: 8px 14px;
   flex-wrap: wrap;
+  background: var(--surface);
+  border-radius: 0 0 10px 10px;
 }
 
 .profile-stat-block {
@@ -504,12 +515,6 @@
 .profile-field-input:focus {
   outline: none;
   border-color: var(--accent-2);
-}
-
-.profile-social-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
 }
 
 .profile-social-col {
