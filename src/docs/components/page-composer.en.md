@@ -26,7 +26,7 @@ const elements = [
 | `id` | Yes | Unique string identifier. Also used as DOM `id`. |
 | `label` | Yes | Human-readable label shown in the editing panel. |
 | `render` | Yes | Function returning HTML string for the element's content. |
-| `gridSize` | No | `{ default: [w,h], min: [w,h], max?: [w,h] }` in 90 px grid units. |
+| `gridSize` | No | `{ default: [w,h], min: [w,h], max?: [w,h] \| 'full' \| 'half' \| ['half'\|number, 'half'\|number] }` in 90 px grid units. |
 | `pinned` | No | When `true`, the element cannot be removed by the user. |
 | `subComposerOptions` | No | Enables a nested sub-composer for this element (see below). |
 
@@ -34,7 +34,9 @@ const elements = [
 
 When `allowCustomization: true`, elements are rendered in a resizable, draggable grid. Users can move and resize widgets; their arrangement is saved to the user-preferences API under `preferenceKey`.
 
-Grid units are 90 px wide and tall. `gridSize.max: 'full'` spans the element across all available columns.
+Grid units are 90 px wide and tall. `gridSize.max: 'full'` spans the element across all available columns. `gridSize.max: 'half'` spans the element across half the available columns. To apply half on both axes (a quadrant element), use `gridSize.max: ['half', 'half']`. Mixed forms such as `['half', n]` (half-width, numeric max height) or `[n, 'half']` (numeric max width, half-height) are also supported.
+
+In edit mode, hover effects, overflow scrolling, and animations inside each element are suppressed so the full cell surface is draggable. Dragging an element onto an occupied cell swaps the two elements when the swap is geometrically feasible; a coloured axis line highlights where the leapfrog will occur before the pointer is released.
 
 ### Sub-page navigation
 
