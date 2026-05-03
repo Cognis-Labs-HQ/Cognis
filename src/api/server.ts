@@ -17,6 +17,8 @@ import { createPostRoutes } from './routes/posts/index.js';
 import { createFileRoutes } from './routes/file-routes.js';
 import type { DbProfileStore } from './adapters/db/profile-store.js';
 import type { DbNotificationStore } from './adapters/db/notification-store.js';
+import type { TfaCodeService } from './utils/tfa-code.js';
+import type { SmtpNotificationSender } from '../adapters/notify-smtp/smtp-notification-sender.js';
 
 const LOG_LEVEL = process.env.LOG_LEVEL ?? 'info';
 const isDebug = LOG_LEVEL === 'debug';
@@ -38,6 +40,8 @@ export interface ApiDependencies {
   fileGateway?: FileStorageGateway;
   notificationGateway?: NotificationGateway;
   notifStore?: DbNotificationStore;
+  tfaService?: TfaCodeService;
+  smtpSender?: SmtpNotificationSender;
   moduleIntegrityChecker?: () => Promise<Array<{ moduleId: string; file: string; expected: string; actual: string | null; status: 'ok' | 'mismatch' | 'missing' }>>;
   loadModuleStates?: () => Promise<Array<{ moduleId: string; enabled: boolean }>>;
   persistModuleState?: (moduleId: string, enabled: boolean) => Promise<void>;
@@ -69,7 +73,7 @@ export function buildServer(deps: ApiDependencies) {
   const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway);
   const authRoutes = createAuthRoutes(deps.authGateway, deps.accountStore, deps.profileStore);
   const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
-  const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore, deps.profileStore, deps.notifStore);
+  const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore, deps.profileStore, deps.notifStore, deps.tfaService, deps.smtpSender);
   const notificationRoutes = deps.notificationGateway
     ? createNotificationRoutes(deps.notificationGateway, deps.notifStore)
     : null;

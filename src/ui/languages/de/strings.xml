@@ -224,6 +224,17 @@
   <string name="ui.app.settings.emails_none">Keine E-Mail-Adressen hinzugefügt.</string>
   <string name="ui.app.settings.emails_remove_failed">E-Mail-Adresse konnte nicht entfernt werden.</string>
   <string name="ui.app.settings.emails_add_failed">E-Mail-Adresse konnte nicht hinzugefügt werden.</string>
+  <string name="ui.app.settings.emails_unverified">Unverifiziert</string>
+  <string name="ui.app.settings.emails_verify_prompt">Gib den Bestätigungscode ein, der an {email} gesendet wurde.</string>
+  <string name="ui.app.settings.emails_verify_placeholder">6-stelliger Code</string>
+  <string name="ui.app.settings.emails_verify_submit">Bestätigen</string>
+  <string name="ui.app.settings.emails_verify_invalid">Ungültiger oder abgelaufener Code. Bitte erneut versuchen.</string>
+  <string name="ui.app.settings.emails_verify_failed">Bestätigung fehlgeschlagen. Bitte erneut versuchen.</string>
+  <string name="ui.app.settings.emails_verify_rate_limited">Eine Bestätigungs-E-Mail wurde kürzlich gesendet. Bitte warte, bevor du eine weitere anforderst.</string>
+  <string name="ui.app.settings.emails_remove_primary_title">Primäre E-Mail kann nicht entfernt werden</string>
+  <string name="ui.app.settings.emails_remove_primary_body">Dies ist deine primäre E-Mail-Adresse. Setze eine andere E-Mail als primär, bevor du diese entfernst.</string>
+  <string name="ui.app.settings.notif_smtp_no_email_title">E-Mail-Adresse erforderlich</string>
+  <string name="ui.app.settings.notif_smtp_no_email_body">Du benötigst eine verifizierte primäre E-Mail-Adresse, um E-Mail-Benachrichtigungen zu aktivieren. Füge zuerst eine E-Mail-Adresse hinzu und bestätige sie in deinen allgemeinen Einstellungen.</string>
   <string name="ui.app.settings.notif_matrix_heading">Benachrichtigungseinstellungen</string>
   <string name="ui.app.settings.notif_no_providers">Keine aktiven Benachrichtigungsanbieter.</string>
   <string name="ui.app.settings.notif_no_categories">Keine Benachrichtigungskategorien registriert.</string>

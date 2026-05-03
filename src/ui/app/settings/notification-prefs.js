@@ -1,11 +1,16 @@
 import { escapeHtml } from '../../reuse/escape-html.js';
 import { apiFetch } from '../../reuse/api-client.js';
+import { openPopup } from '../../reuse/popup.js';
 
 /**
  * Notification preferences sub-module for the Settings page.
  *
  * Renders a matrix of notification providers vs categories so users can
  * opt in or out of each combination. Integrates with the unsaved-changes bar.
+ *
+ * When the user enables SMTP, the module verifies they have a primary verified
+ * email address. If not, a popup explains the requirement and the checkbox is
+ * reverted.
  *
  * Public exports:
  *   initNotificationPrefs(root, options) — initialises the notification preferences matrix.
@@ -23,6 +28,7 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
   let categories = [];
   let savedPrefs = {};
   let pendingPrefs = {};
+  let userEmails = [];
 
   function makePrefKey(senderId, category) {
     return JSON.stringify([senderId, category]);
@@ -54,6 +60,17 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
     pendingPrefs = { ...savedPrefs };
   }
 
+  async function loadUserEmails() {
+    const res = await apiFetch(`/api/v1/users/${encodeURIComponent(username)}/emails`);
+    if (!res.ok) return;
+    const payload = await res.json();
+    userEmails = payload.data ?? [];
+  }
+
+  function hasPrimaryVerifiedEmail() {
+    return userEmails.some((email) => email.primary && email.verified);
+  }
+
   function renderMatrix() {
     const container = root.querySelector('#notif-matrix-container');
     if (!container) return;
@@ -67,12 +84,12 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
       return;
     }
 
-    const headerCells = providers.map((p) => `<th>${escapeHtml(p.name)}</th>`).join('');
+    const headerCells = providers.map((provider) => `<th>${escapeHtml(provider.name)}</th>`).join('');
     const rows = categories.map((cat) => {
-      const cells = providers.map((p) => {
-        const prefKey = makePrefKey(p.senderId, cat.id);
+      const cells = providers.map((provider) => {
+        const prefKey = makePrefKey(provider.senderId, cat.id);
         const checked = pendingPrefs[prefKey] === true ? ' checked' : '';
-        return `<td><input type="checkbox" data-pref-key="${escapeHtml(prefKey)}"${checked} /></td>`;
+        return `<td><input type="checkbox" data-pref-key="${escapeHtml(prefKey)}" data-sender-id="${escapeHtml(provider.senderId)}"${checked} /></td>`;
       }).join('');
       return `<tr><td>${escapeHtml(cat.label)}</td>${cells}</tr>`;
     }).join('');
@@ -90,8 +107,21 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
     const container = root.querySelector('#notif-matrix-container');
     if (!container) return;
     container.querySelectorAll('input[data-pref-key]').forEach((checkbox) => {
-      checkbox.addEventListener('change', () => {
+      checkbox.addEventListener('change', async () => {
         const prefKey = checkbox.dataset.prefKey;
+        const senderId = checkbox.dataset.senderId;
+
+        if (checkbox.checked && senderId === 'smtp' && !hasPrimaryVerifiedEmail()) {
+          checkbox.checked = false;
+          await openPopup({
+            title: i18n.t('ui.app.settings.notif_smtp_no_email_title'),
+            body: i18n.t('ui.app.settings.notif_smtp_no_email_body'),
+            variant: 'info',
+            actions: [{ id: 'close', label: i18n.t('ui.reuse.generic.done'), variant: 'confirm' }],
+          });
+          return;
+        }
+
         if (prefKey) {
           pendingPrefs[prefKey] = checkbox.checked;
         }
@@ -136,7 +166,7 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
 
   return {
     async init() {
-      await Promise.all([loadProviders(), loadCategories(), loadPrefs()]);
+      await Promise.all([loadProviders(), loadCategories(), loadPrefs(), loadUserEmails()]);
       renderMatrix();
       bindMatrixToggles();
     },

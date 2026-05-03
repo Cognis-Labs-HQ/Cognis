@@ -5,6 +5,8 @@ import type { UserPreferenceStore } from './preferences-routes.js';
 import type { ProfileCreateStore } from '../adapters/db/profile-store.js';
 import { readJson } from './read-json.js';
 import type { DbNotificationStore } from '../adapters/db/notification-store.js';
+import type { TfaCodeService } from '../utils/tfa-code.js';
+import type { SmtpNotificationSender } from '../../adapters/notify-smtp/smtp-notification-sender.js';
 
 const VALID_ROLES = new Set(['user', 'teacher', 'moderator', 'admin']);
 
@@ -13,6 +15,8 @@ export function createUserRoutes(
   preferenceStore: UserPreferenceStore,
   profileStore?: ProfileCreateStore,
   notifStore?: DbNotificationStore,
+  tfaService?: TfaCodeService,
+  smtpSender?: SmtpNotificationSender,
 ) {
   const adminRoutes = async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
     if (url.pathname === '/api/v1/users' && req.method === 'GET') {
@@ -150,18 +154,43 @@ export function createUserRoutes(
 
       if (req.method === 'POST') {
         const body = await readJson(req);
-        const email = String(body.email ?? '');
-        const isPrimary = body.isPrimary === true;
-        await notifStore.addUserEmail(username, email, isPrimary);
-        res.writeHead(201, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ data: { added: true } }));
+        const email = String(body.email ?? '').trim().toLowerCase();
+        if (!email) {
+          res.writeHead(400, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: { code: 'bad_request', message: 'email is required' } }));
+          return true;
+        }
+        await notifStore.addUserEmail(username, email);
+
+        const smtpReady = smtpSender?.isConfigured?.() ?? false;
+        if (tfaService && smtpReady) {
+          try {
+            const code = tfaService.issue(`${username}:${email}`);
+            await smtpSender!.sendVerificationEmail(email, code);
+            res.writeHead(201, { 'content-type': 'application/json' });
+            res.end(JSON.stringify({ data: { added: true, pendingVerification: true } }));
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            if (msg === 'smtp_rate_limited') {
+              res.writeHead(429, { 'content-type': 'application/json' });
+              res.end(JSON.stringify({ error: { code: 'rate_limited', message: 'Verification email sent too recently. Please wait before requesting another.' } }));
+            } else {
+              res.writeHead(201, { 'content-type': 'application/json' });
+              res.end(JSON.stringify({ data: { added: true, pendingVerification: true, verificationEmailFailed: true } }));
+            }
+          }
+        } else {
+          await notifStore.verifyUserEmail(username, email);
+          res.writeHead(201, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ data: { added: true, pendingVerification: false } }));
+        }
         return true;
       }
 
       return false;
     }
 
-    const emailActionsMatch = url.pathname.match(/^\/api\/v1\/users\/([^/]+)\/emails\/([^/]+)(?:\/(primary))?$/);
+    const emailActionsMatch = url.pathname.match(/^\/api\/v1\/users\/([^/]+)\/emails\/([^/]+)(?:\/(primary|verify))?$/);
     if (emailActionsMatch) {
       const username = decodeURIComponent(emailActionsMatch[1]);
       const email = decodeURIComponent(emailActionsMatch[2]);
@@ -180,9 +209,16 @@ export function createUserRoutes(
       }
 
       if (req.method === 'DELETE' && !emailAction) {
-        await notifStore.removeUserEmail(username, email);
-        res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ data: { removed: true } }));
+        try {
+          await notifStore.removeUserEmail(username, email);
+          res.writeHead(200, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ data: { removed: true } }));
+        } catch (err) {
+          const code = err instanceof Error ? err.message : 'remove_failed';
+          const status = code === 'cannot_remove_primary_email' || code === 'cannot_remove_last_email' ? 409 : 500;
+          res.writeHead(status, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: { code, message: code } }));
+        }
         return true;
       }
 
@@ -190,6 +226,26 @@ export function createUserRoutes(
         await notifStore.setPrimaryEmail(username, email);
         res.writeHead(200, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ data: { updated: true } }));
+        return true;
+      }
+
+      if (req.method === 'POST' && emailAction === 'verify') {
+        if (!tfaService) {
+          res.writeHead(503, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: { code: 'verification_unavailable', message: 'Verification service is not configured' } }));
+          return true;
+        }
+        const body = await readJson(req);
+        const code = String(body.code ?? '').trim();
+        const valid = tfaService.verify(`${username}:${email}`, code);
+        if (!valid) {
+          res.writeHead(422, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: { code: 'invalid_code', message: 'Invalid or expired verification code' } }));
+          return true;
+        }
+        await notifStore.verifyUserEmail(username, email);
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ data: { verified: true } }));
         return true;
       }
 

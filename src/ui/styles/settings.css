@@ -147,6 +147,26 @@ body[data-theme='light'] .prefs-dump {
   font-weight: 600;
 }
 
+.email-badge-unverified {
+  background: var(--control-bg);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.72rem;
+  padding: 2px 7px;
+}
+
+.email-verify-prompt {
+  font-size: 0.85rem;
+  margin: 6px 0 4px;
+}
+
+.email-verify-row {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0;
+}
+
 .email-add-row {
   display: flex;
   gap: 8px;

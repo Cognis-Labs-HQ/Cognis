@@ -13,6 +13,7 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { issueAccessToken } from './auth/access-tokens.js';
 import { createHash } from 'node:crypto';
+import { TfaCodeService, InMemoryTfaStore } from './utils/tfa-code.js';
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
   private readonly manifests: ModuleManifest[];
@@ -168,6 +169,9 @@ await notificationGateway.loadPersistedConfigs();
 notificationGateway.registerCategory('system', 'System Notifications');
 await logger.info('Notification gateway bootstrapped.', { adaptersRoot });
 
+const tfaService = new TfaCodeService(new InMemoryTfaStore());
+const smtpSender = notificationGateway.getSender?.('smtp') as import('../adapters/notify-smtp/smtp-notification-sender.js').SmtpNotificationSender | undefined;
+
 const server = buildServer({
   moduleRuntimeGateway: runtime,
   authGateway,
@@ -177,6 +181,8 @@ const server = buildServer({
   fileGateway,
   notificationGateway,
   notifStore,
+  tfaService,
+  smtpSender,
   loadModuleStates: async () => {
     const result = await dbExecutor.execute('SELECT module_id, enabled FROM modules');
     return (result.rows ?? []).map((row) => ({ moduleId: row.module_id, enabled: Boolean(row.enabled) }));

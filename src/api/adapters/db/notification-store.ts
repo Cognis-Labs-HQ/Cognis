@@ -31,6 +31,7 @@ export class DbNotificationStore implements NotificationConfigStore {
       account_id VARCHAR(191) NOT NULL,
       email VARCHAR(320) NOT NULL,
       is_primary BOOLEAN NOT NULL DEFAULT FALSE,
+      verified BOOLEAN NOT NULL DEFAULT FALSE,
       PRIMARY KEY (account_id, email)
     )`);
   }
@@ -107,19 +108,22 @@ export class DbNotificationStore implements NotificationConfigStore {
     }
   }
 
-  async getUserEmails(accountId: string): Promise<Array<{ email: string; primary: boolean }>> {
+  async getUserEmails(accountId: string): Promise<Array<{ email: string; primary: boolean; verified: boolean }>> {
     const result = await this.db.execute(
-      `SELECT email, is_primary FROM user_emails WHERE account_id = ${this.placeholder(1)} ORDER BY is_primary DESC, email ASC`,
+      `SELECT email, is_primary, verified FROM user_emails WHERE account_id = ${this.placeholder(1)} ORDER BY is_primary DESC, email ASC`,
       [accountId],
     );
     return (result.rows ?? []).map((row) => ({
       email: row.email as string,
       primary: Boolean(row.is_primary),
+      verified: Boolean(row.verified),
     }));
   }
 
   async addUserEmail(accountId: string, email: string, isPrimary = false): Promise<void> {
-    if (isPrimary) {
+    const existing = await this.getUserEmails(accountId);
+    const effectiveIsPrimary = isPrimary || existing.length === 0;
+    if (effectiveIsPrimary) {
       await this.db.execute(
         `UPDATE user_emails SET is_primary = FALSE WHERE account_id = ${this.placeholder(1)}`,
         [accountId],
@@ -127,23 +131,30 @@ export class DbNotificationStore implements NotificationConfigStore {
     }
     if (this.dbType === 'mariadb') {
       await this.db.execute(
-        `INSERT IGNORE INTO user_emails (account_id, email, is_primary)
-         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)})`,
-        [accountId, email, isPrimary],
+        `INSERT IGNORE INTO user_emails (account_id, email, is_primary, verified)
+         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, FALSE)`,
+        [accountId, email, effectiveIsPrimary],
       );
     } else if (this.dbType === 'postgresql') {
       await this.db.execute(
-        `INSERT INTO user_emails (account_id, email, is_primary)
-         VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
-        [accountId, email, isPrimary],
+        `INSERT INTO user_emails (account_id, email, is_primary, verified)
+         VALUES ($1, $2, $3, FALSE) ON CONFLICT DO NOTHING`,
+        [accountId, email, effectiveIsPrimary],
       );
     } else {
       await this.db.execute(
-        `INSERT OR IGNORE INTO user_emails (account_id, email, is_primary)
-         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)})`,
-        [accountId, email, isPrimary],
+        `INSERT OR IGNORE INTO user_emails (account_id, email, is_primary, verified)
+         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, 0)`,
+        [accountId, email, effectiveIsPrimary],
       );
     }
+  }
+
+  async verifyUserEmail(accountId: string, email: string): Promise<void> {
+    await this.db.execute(
+      `UPDATE user_emails SET verified = TRUE WHERE account_id = ${this.placeholder(1)} AND email = ${this.placeholder(2)}`,
+      [accountId, email],
+    );
   }
 
   async removeUserEmail(accountId: string, email: string): Promise<void> {
@@ -151,10 +162,19 @@ export class DbNotificationStore implements NotificationConfigStore {
     if (existing.length <= 1) {
       throw new Error('cannot_remove_last_email');
     }
+    const target = existing.find((e) => e.email === email);
+    if (target?.primary) {
+      throw new Error('cannot_remove_primary_email');
+    }
     await this.db.execute(
       `DELETE FROM user_emails WHERE account_id = ${this.placeholder(1)} AND email = ${this.placeholder(2)}`,
       [accountId, email],
     );
+  }
+
+  async getPrimaryEmail(accountId: string): Promise<string | null> {
+    const emails = await this.getUserEmails(accountId);
+    return emails.find((e) => e.primary && e.verified)?.email ?? null;
   }
 
   async setPrimaryEmail(accountId: string, email: string): Promise<void> {

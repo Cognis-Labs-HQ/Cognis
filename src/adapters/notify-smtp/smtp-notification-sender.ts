@@ -244,6 +244,30 @@ async function sendMail(config: SmtpConfig, to: string, subject: string, body: s
 
 const DEFAULT_GREYLIST_RETRIES = 2;
 const DEFAULT_GREYLIST_RETRY_DELAY_MS = 5 * 60 * 1000;
+const DEFAULT_RATE_LIMIT_MS = 60_000;
+
+export class SmtpRateLimiter {
+  private readonly lastSent = new Map<string, number>();
+
+  constructor(
+    private readonly minIntervalMs: number,
+    private readonly now: () => number = () => Date.now(),
+  ) {}
+
+  /**
+   * Returns true if `recipient` is within the rate-limit window and
+   * a new email must not be sent. Returns false when a send is allowed.
+   */
+  isThrottled(recipient: string): boolean {
+    const last = this.lastSent.get(recipient);
+    if (last === undefined) return false;
+    return this.now() - last < this.minIntervalMs;
+  }
+
+  record(recipient: string): void {
+    this.lastSent.set(recipient, this.now());
+  }
+}
 
 async function sendMailWithRetry(
   config: SmtpConfig,
@@ -280,14 +304,17 @@ export class SmtpNotificationSender implements NotificationSender {
 
   private readonly envSnapshot: Record<string, string | undefined>;
   private readonly sleep: (ms: number) => Promise<void>;
+  private readonly rateLimiter: SmtpRateLimiter;
 
   constructor(
     private config: SmtpConfig,
     envSnapshot?: Record<string, string | undefined>,
     sleep?: (ms: number) => Promise<void>,
+    rateLimiter?: SmtpRateLimiter,
   ) {
     this.envSnapshot = envSnapshot ?? {};
     this.sleep = sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+    this.rateLimiter = rateLimiter ?? new SmtpRateLimiter(DEFAULT_RATE_LIMIT_MS);
   }
 
   getEnvValues(): Record<string, string | undefined> {
@@ -333,6 +360,17 @@ export class SmtpNotificationSender implements NotificationSender {
     if (typeof config.greylistRetryDelayMs === 'number') this.config.greylistRetryDelayMs = config.greylistRetryDelayMs;
   }
 
+  async sendVerificationEmail(to: string, code: string): Promise<void> {
+    if (!to) throw new Error('smtp_requires_recipient');
+    if (this.rateLimiter.isThrottled(to)) {
+      throw new Error('smtp_rate_limited');
+    }
+    this.rateLimiter.record(to);
+    const subject = 'Verify your email address';
+    const body = `Your verification code is: ${code}\n\nThis code expires in 15 minutes.`;
+    await sendMailWithRetry(this.config, to, subject, body, this.sleep);
+  }
+
   async sendTestEmail(to: string): Promise<void> {
     if (!to) throw new Error('smtp_test_email_requires_recipient');
     await sendMailWithRetry(this.config, to, 'Cognis SMTP Test', 'This is a test email from Cognis.', this.sleep);
@@ -342,6 +380,10 @@ export class SmtpNotificationSender implements NotificationSender {
     if (!envelope.recipientEmail) {
       throw new Error('smtp_sender_requires_recipient_email');
     }
+    if (this.rateLimiter.isThrottled(envelope.recipientEmail)) {
+      throw new Error('smtp_rate_limited');
+    }
+    this.rateLimiter.record(envelope.recipientEmail);
     await sendMailWithRetry(this.config, envelope.recipientEmail, envelope.subject, envelope.body, this.sleep);
   }
 }
