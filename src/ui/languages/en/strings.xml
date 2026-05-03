@@ -150,6 +150,8 @@
   <string name="ui.app.profile.section.profile">My Profile</string>
   <string name="ui.app.profile.section.social">Social</string>
   <string name="ui.app.profile.section.posts">Posts</string>
+  <string name="ui.app.profile.section.social_links">Social Links</string>
+  <string name="ui.app.profile.section.suggested">Suggested Contacts</string>
   <string name="ui.app.profile.bio">Bio</string>
   <string name="ui.app.profile.location">Location</string>
   <string name="ui.app.profile.website">Website</string>
@@ -176,10 +178,13 @@
   <string name="ui.app.profile.delete_post">Delete</string>
   <string name="ui.app.profile.delete_post_confirm">Delete this post?</string>
   <string name="ui.app.profile.member_since">Member since</string>
-  <string name="ui.app.profile.post_visibility.only_me">Only me</string>
-  <string name="ui.app.profile.post_visibility.private">Followers only</string>
+  <string name="ui.app.profile.post_visibility.only_me">Just me</string>
+  <string name="ui.app.profile.post_visibility.private">Followers</string>
   <string name="ui.app.profile.post_visibility.friends">Friends</string>
   <string name="ui.app.profile.post_visibility.community">Everyone</string>
+  <string name="ui.app.profile.post_visibility.locked.followers">Update your profile visibility to Private or higher to post to Followers</string>
+  <string name="ui.app.profile.post_visibility.locked.everyone">Update your profile visibility to Community to post to Everyone</string>
+  <string name="ui.app.profile.post_visibility_hint">Some post visibility options are locked based on your profile visibility.</string>
   <string name="ui.app.profile.edit_profile">Edit Profile</string>
   <string name="ui.app.profile.close">Close</string>
   <string name="ui.app.profile.photo_set">Upload photo</string>
@@ -190,4 +195,8 @@
   <string name="ui.app.profile.change_banner">Change banner photo</string>
   <string name="ui.app.profile.change_avatar">Change profile photo</string>
   <string name="ui.app.profile.achievements">Achievements</string>
+  <string name="ui.app.profile.social_links.website">Website</string>
+  <string name="ui.app.profile.social_links.empty">No links set. Edit your profile to add a website.</string>
+  <string name="ui.app.profile.suggested.empty">No suggestions right now.</string>
+  <string name="ui.app.profile.suggested.follow_back">Follow back</string>
 </resources>

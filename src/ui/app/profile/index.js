@@ -224,6 +224,53 @@ function renderSocial() {
   `;
 }
 
+function renderSocialLinks() {
+  const website = profile?.website ?? '';
+  const linksHtml = website
+    ? `<a
+        href="${escapeHtml(website)}"
+        class="profile-social-link-item"
+        target="_blank"
+        rel="noopener noreferrer"
+      >🌐 <span class="profile-social-link-label">${escapeHtml(i18n.t('ui.app.profile.social_links.website'))}</span>
+        <span class="profile-social-link-url">${escapeHtml(website)}</span>
+      </a>`
+    : `<p class="profile-empty">${escapeHtml(i18n.t('ui.app.profile.social_links.empty'))}</p>`;
+
+  return `
+    <div class="profile-social-links-section">
+      ${linksHtml}
+    </div>
+  `;
+}
+
+function renderSuggestedContacts() {
+  const followingHandles = new Set(following.map((u) => u.handle));
+  const suggestions = followers.filter((u) => !followingHandles.has(u.handle)).slice(0, 5);
+
+  if (!suggestions.length) {
+    return `
+      <div class="profile-suggested-section">
+        <p class="profile-empty">${escapeHtml(i18n.t('ui.app.profile.suggested.empty'))}</p>
+      </div>
+    `;
+  }
+
+  const items = suggestions.map((u) => `
+    <div class="profile-suggested-item">
+      <span class="profile-user-handle">@${escapeHtml(u.handle)}</span>
+      ${u.role ? `<span class="profile-role-badge">${escapeHtml(u.role)}</span>` : ''}
+      <button
+        type="button"
+        class="btn-confirm btn-animated profile-follow-btn"
+        data-handle="${escapeHtml(u.handle)}"
+      >${escapeHtml(i18n.t('ui.app.profile.suggested.follow_back'))}</button>
+    </div>
+  `).join('');
+
+  return `<div class="profile-suggested-section">${items}</div>`;
+}
+
 function renderPostsList() {
   if (!posts.length) return `<p class="profile-empty">${i18n.t('ui.app.profile.no_posts')}</p>`;
   return `
@@ -248,6 +295,17 @@ function renderPostsList() {
 }
 
 function renderPosts() {
+  const profileVis = profile?.visibility ?? 'hidden';
+  const canFollowers = profileVis !== 'hidden';
+  const canEveryone = profileVis === 'friends' || profileVis === 'community';
+
+  const lockedFollowersTitle = canFollowers ? '' : ` title="${escapeHtml(i18n.t('ui.app.profile.post_visibility.locked.followers'))}"`;
+  const lockedEveryoneTitle = canEveryone ? '' : ` title="${escapeHtml(i18n.t('ui.app.profile.post_visibility.locked.everyone'))}"`;
+
+  const visibilityHint = (!canFollowers || !canEveryone)
+    ? `<p class="profile-visibility-hint">${escapeHtml(i18n.t('ui.app.profile.post_visibility_hint'))}</p>`
+    : '';
+
   return `
     <div class="profile-posts-section">
       <h3 class="profile-posts-heading">
@@ -267,15 +325,16 @@ function renderPosts() {
           placeholder="${i18n.t('ui.app.profile.post_content')}"
         ></textarea>
         <div class="post-form-footer">
-          <select id="post-visibility" class="profile-field-input">
-            ${['only_me', 'private', 'friends', 'community'].map((v) =>
-              `<option value="${v}">${i18n.t(`ui.app.profile.post_visibility.${v}`)}</option>`
-            ).join('')}
+          <select id="post-visibility" class="profile-field-input theme-select">
+            <option value="only_me">${escapeHtml(i18n.t('ui.app.profile.post_visibility.only_me'))}</option>
+            <option value="private"${canFollowers ? '' : ' disabled'}${lockedFollowersTitle}>${escapeHtml(i18n.t('ui.app.profile.post_visibility.private'))}</option>
+            <option value="community"${canEveryone ? '' : ' disabled'}${lockedEveryoneTitle}>${escapeHtml(i18n.t('ui.app.profile.post_visibility.community'))}</option>
           </select>
           <button type="button" id="post-submit" class="btn-confirm btn-animated">
             ${i18n.t('ui.app.profile.post_submit')}
           </button>
         </div>
+        ${visibilityHint}
       </div>
       <h3 class="profile-posts-heading">
         ${i18n.t('ui.app.profile.section.posts')}
@@ -453,6 +512,14 @@ async function doDeletePost(postId) {
   }
 }
 
+async function doFollowUser(handle) {
+  const res = await apiFetch(`/api/v1/users/${encodeURIComponent(handle)}/follow`, { method: 'POST' });
+  if (res.ok) {
+    following = await loadFollowing(profile?.handle);
+    composer.refresh(elements);
+  }
+}
+
 function bindPageEvents() {
   root.querySelector('.profile-hero-edit-btn')?.addEventListener('click', openEditPopup);
   root.querySelector('.profile-hero-banner-btn')?.addEventListener('click', () => bannerFileInput.click());
@@ -463,34 +530,48 @@ function bindPageEvents() {
   root.querySelectorAll('.post-delete-btn[data-post-id]').forEach((btn) => {
     btn.addEventListener('click', () => doDeletePost(btn.dataset.postId));
   });
+  root.querySelectorAll('.profile-follow-btn[data-handle]').forEach((btn) => {
+    btn.addEventListener('click', () => doFollowUser(btn.dataset.handle));
+  });
 }
 
 const elements = [
   {
     id: 'hero',
     label: i18n.t('ui.app.profile.section.profile'),
-    pinned: true,
     gridSize: { default: [4, 4], min: [2, 3], max: 'full' },
     render: renderHero,
   },
   {
     id: 'social',
     label: i18n.t('ui.app.profile.section.social'),
-    pinned: true,
     gridSize: { default: [4, 3], min: [2, 2], max: 'full' },
     render: renderSocial,
   },
   {
     id: 'posts',
     label: i18n.t('ui.app.profile.section.posts'),
-    pinned: true,
     gridSize: { default: [4, 4], min: [2, 2], max: 'full' },
     render: renderPosts,
+  },
+  {
+    id: 'social-links',
+    label: i18n.t('ui.app.profile.section.social_links'),
+    defaultHidden: true,
+    gridSize: { default: [2, 2], min: [1, 1], max: 'full' },
+    render: renderSocialLinks,
+  },
+  {
+    id: 'suggested',
+    label: i18n.t('ui.app.profile.section.suggested'),
+    defaultHidden: true,
+    gridSize: { default: [2, 3], min: [1, 2], max: 'full' },
+    render: renderSuggestedContacts,
   },
 ];
 
 composer = createPageComposer(root, {
-  allowCustomization: false,
+  allowCustomization: true,
   elements,
   preferenceKey: 'profile-layout',
   i18n,
