@@ -156,7 +156,7 @@ function renderHero() {
       <div class="profile-banner-menu-sep"></div>
       <button
         type="button"
-        class="profile-banner-menu-item profile-banner-menu-remove"
+        class="profile-banner-menu-item profile-banner-menu-remove btn-cancel"
       >${escapeHtml(i18n.t('ui.app.profile.remove_banner'))}</button>
     `
     : '';
@@ -182,18 +182,26 @@ function renderHero() {
             aria-expanded="false"
           >&#9776;</button>
           <div class="profile-banner-menu-dropdown" hidden>
-            <button
-              type="button"
-              class="profile-banner-menu-item profile-banner-height-btn"
-              data-height="half"
-              aria-pressed="${bannerHeight === 'half' ? 'true' : 'false'}"
-            >${escapeHtml(i18n.t('ui.app.profile.banner_height.half'))}</button>
-            <button
-              type="button"
-              class="profile-banner-menu-item profile-banner-height-btn"
-              data-height="full"
-              aria-pressed="${bannerHeight === 'full' ? 'true' : 'false'}"
-            >${escapeHtml(i18n.t('ui.app.profile.banner_height.full'))}</button>
+            <label class="profile-banner-menu-item profile-banner-height-label">
+              <input
+                type="radio"
+                class="profile-banner-height-radio"
+                name="banner-height"
+                value="half"
+                ${bannerHeight === 'half' ? 'checked' : ''}
+              >
+              ${escapeHtml(i18n.t('ui.app.profile.banner_height.half'))}
+            </label>
+            <label class="profile-banner-menu-item profile-banner-height-label">
+              <input
+                type="radio"
+                class="profile-banner-height-radio"
+                name="banner-height"
+                value="full"
+                ${bannerHeight === 'full' ? 'checked' : ''}
+              >
+              ${escapeHtml(i18n.t('ui.app.profile.banner_height.full'))}
+            </label>
             ${bannerMenuRemoveItem}
           </div>
         </div>
@@ -626,9 +634,9 @@ function bindPageEvents() {
       }
     });
 
-    root.querySelectorAll('.profile-banner-height-btn').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        const height = btn.dataset.height;
+    root.querySelectorAll('.profile-banner-height-radio').forEach((radio) => {
+      radio.addEventListener('change', async () => {
+        const height = radio.value;
         if (!height || height === bannerHeight) return;
         bannerHeight = height;
         dropdown.hidden = true;

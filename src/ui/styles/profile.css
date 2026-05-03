@@ -151,21 +151,16 @@
   background: var(--surface-soft);
 }
 
-.profile-banner-menu-item[aria-pressed="true"] {
-  color: var(--accent-2);
-  font-weight: 600;
+.profile-banner-height-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.profile-banner-menu-remove {
-  color: #dc2626;
-}
-
-.profile-banner-height-btn {
-  font-weight: 500;
-}
-
-.profile-banner-menu-remove:hover {
-  background: rgba(220, 38, 38, 0.12);
+.profile-banner-height-radio {
+  accent-color: var(--accent-2);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .profile-banner-menu-sep {
@@ -177,10 +172,6 @@
 .profile-hero-content {
   grid-row: 2;
   grid-column: 1;
-}
-
-.profile-hero--full-banner {
-  grid-template-rows: auto;
 }
 
 .profile-hero--full-banner .profile-hero-banner-wrap {
