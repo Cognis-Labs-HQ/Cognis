@@ -39,7 +39,7 @@ Implements `FileStorageGateway` from `@cognis/core` using Node's `node:fs/promis
 
 **Key isolation**: `store()` places every upload under the calling user's ID prefix (`{userId}/{uuid}.{ext}`), ensuring per-user isolation without application-level namespace logic.
 
-**Supported content types** (for extension inference): `image/jpeg`, `image/png`, `image/webp`, `image/gif`. Unknown MIME types produce a key without a file extension.
+**Supported content types** (for extension inference): `image/jpeg`, `image/jpg` (alias for jpeg), `image/png`, `image/webp`, `image/gif`. Unknown MIME types produce a key without a file extension.
 
 **Docker volume**: `docker-compose.yml` mounts a named volume `appmedia` at `/app/media` so uploads persist across container restarts.
 
