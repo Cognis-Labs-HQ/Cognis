@@ -138,7 +138,7 @@ if (isOwnProfile) {
 } else {
   const result = await loadUserProfile(urlHandle);
   if (result?.notFound) {
-    root.innerHTML = '<p style="padding:2rem;color:var(--text-muted)">Profile not found.</p>';
+    root.innerHTML = '<p class="profile-not-found-message">Profile not found.</p>';
     throw new Error('profile_not_found');
   }
   profile = result;
