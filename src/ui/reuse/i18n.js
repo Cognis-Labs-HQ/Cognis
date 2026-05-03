@@ -114,26 +114,30 @@ export async function createI18n(options = {}) {
   const requested = detectLocale();
   const preferredLanguages = options.preferredLanguages || [requested, DEFAULT_LOCALE];
   const normalizedPriority = [...new Set(preferredLanguages.filter((item) => typeof item === 'string').map((item) => normalizeLocale(item)).filter(Boolean))];
-  let activeLocale = normalizedPriority[0] || DEFAULT_LOCALE;
+  const loadedLocales = [];
+  let activeLocale = DEFAULT_LOCALE;
   let strings = new Map();
 
   for (const locale of normalizedPriority) {
     try {
       const part = await loadLocaleStrings(locale);
+      if (!loadedLocales.includes(locale)) loadedLocales.push(locale);
+      if (loadedLocales.length === 1) activeLocale = locale;
       part.forEach((value, key) => { if (!strings.has(key)) strings.set(key, value); });
-      if (strings.size && activeLocale === normalizedPriority[0]) activeLocale = locale;
     } catch {}
   }
 
   if (!strings.size) {
     activeLocale = DEFAULT_LOCALE;
     strings = await loadLocaleStrings(activeLocale);
+    loadedLocales.length = 0;
+    loadedLocales.push(DEFAULT_LOCALE);
   }
 
   const moduleStrings = await loadModuleStrings(activeLocale, options.moduleIds || []);
   moduleStrings.forEach((value, key) => strings.set(key, value));
 
-  setPreferredLanguages(normalizedPriority);
+  setPreferredLanguages(loadedLocales);
   document.documentElement.lang = activeLocale;
 
   return {
