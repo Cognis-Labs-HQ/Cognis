@@ -16,17 +16,9 @@ COPY --chmod=755 docker/healthcheck.sh /usr/local/bin/healthcheck.sh
 # All remaining steps run as the non-root user; no chown is needed.
 USER cognis
 
-# Copy root manifests and stage all workspace package.json files so npm ci can create
-# inter-package symlinks. A bind mount gives find read access to src without adding a
-# layer, so this step is only invalidated when package.json or package-lock.json changes.
 COPY --chown=cognis:cognis package.json package-lock.json tsconfig.json tsconfig.base.json ./
-RUN --mount=type=bind,source=src,target=/mnt/src \
-    find /mnt/src -name "package.json" ! -path "*/node_modules/*" \
-      -exec sh -c 'dst="src/${1#/mnt/src/}"; mkdir -p "$(dirname "$dst")"; cp "$1" "$dst"' -- {} \; \
-  && npm ci --ignore-scripts
-
-# Copy application source after installing dependencies.
 COPY --chown=cognis:cognis src ./src
+RUN npm ci --ignore-scripts
 
 EXPOSE 3000
 
