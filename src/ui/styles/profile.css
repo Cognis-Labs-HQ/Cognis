@@ -111,8 +111,7 @@
 }
 
 .profile-banner-menu-btn:hover {
-  background: rgba(15, 23, 42, 0.92);
-  border-color: #fff;
+  background: rgba(15, 23, 42, 0.7);
 }
 
 .profile-banner-menu-dropdown {
@@ -396,13 +395,13 @@
   top: 2px;
   right: 2px;
   z-index: 3;
-  width: 35px;
-  height: 35px;
+  width: 26px;
+  height: 26px;
   border-radius: 999px;
   border: 2px solid var(--surface);
   background: #dc2626;
   color: #fff;
-  font-size: 0.975rem;
+  font-size: 0.73rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -446,6 +445,8 @@
   font-size: 0.9rem;
   color: var(--text-muted);
   word-break: break-word;
+  max-height: 13.5rem;
+  overflow-y: auto;
 }
 
 .profile-hero-details {
