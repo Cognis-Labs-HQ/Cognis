@@ -270,10 +270,10 @@ function renderHero() {
       </div>
     `;
 
-  const displayName = profile?.displayName ?? (profile?.handle ?? '').replace(/^@/, '');
+  const renderedDisplayName = profile?.displayName ?? (profile?.handle ?? '').replace(/^@/, '');
   const handleRow = `
     <div class="profile-hero-handle-row">
-      <span class="profile-hero-display-name">${escapeHtml(displayName)}</span>
+      <span class="profile-hero-display-name">${escapeHtml(renderedDisplayName)}</span>
       <em class="profile-hero-handle">@${escapeHtml(profile?.handle ?? '')}</em>
       ${isOwnProfile ? `<span class="profile-its-you-pill">${i18n.t('ui.app.profile.its_you')}</span>` : ''}
       ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ''}

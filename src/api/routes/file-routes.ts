@@ -12,7 +12,7 @@ const MIME_FROM_EXT: Record<string, string> = {
   gif: 'image/gif',
 };
 
-const BUCKET_CATEGORY: Record<string, 'image'> = {
+const BUCKET_CATEGORY: Record<'avatars' | 'banners', 'image'> = {
   avatars: 'image',
   banners: 'image',
 };
