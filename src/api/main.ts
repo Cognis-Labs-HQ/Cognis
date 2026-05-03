@@ -66,7 +66,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
 }
 
 const port = Number.parseInt(process.env.PORT ?? '3000', 10);
-const host = process.env.HOST ?? '0.0.0.0';
+const host = process.env.LISTEN_HOST ?? '0.0.0.0';
 const dbType = (process.env.DB_TYPE as SupportedDbType | undefined) ?? 'sqlite';
 const logLevel = (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error' | undefined) ?? 'info';
 const logFile = process.env.LOG_FILE ?? '/app/logs/app.log';
