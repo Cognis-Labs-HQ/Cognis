@@ -197,6 +197,10 @@
   pointer-events: auto;
 }
 
+.profile-hero--full-banner .profile-avatar-wrap {
+  margin-top: 0;
+}
+
 .profile-hero--full-banner .profile-hero-unified {
   display: flex;
   gap: 14px;
