@@ -808,23 +808,47 @@ body.composer-theme-hidden .composer-edit-toggle {
   background: color-mix(in srgb, #ef4444 12%, transparent);
 }
 
-.composer-leapfrog-line {
+.composer-dropzone-line {
   position: absolute;
-  background: var(--accent-2);
-  opacity: 0.6;
   z-index: 110;
   pointer-events: none;
   border-radius: 2px;
 }
 
-.composer-leapfrog-line--v {
-  top: 0;
-  width: 3px;
+.composer-dropzone-line--v {
+  width: 4px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--accent-2) 0,
+    var(--accent-2) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  background-size: 4px 12px;
+  animation: composer-dropzone-march-v 0.35s linear infinite;
 }
 
-.composer-leapfrog-line--h {
-  left: 0;
-  height: 3px;
+.composer-dropzone-line--h {
+  height: 4px;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--accent-2) 0,
+    var(--accent-2) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  background-size: 12px 4px;
+  animation: composer-dropzone-march-h 0.35s linear infinite;
+}
+
+@keyframes composer-dropzone-march-v {
+  from { background-position: 0 0; }
+  to { background-position: 0 12px; }
+}
+
+@keyframes composer-dropzone-march-h {
+  from { background-position: 0 0; }
+  to { background-position: 12px 0; }
 }
 
 .composer-resize-handle {

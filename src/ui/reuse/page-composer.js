@@ -300,26 +300,33 @@ export function createPageComposer(root, {
         if (occupied.has(`${c},${r}`)) return null;
       }
     }
+    const postSwapColsOverlap = col < source.col + candidate.w && col + w > source.col;
+    const postSwapRowsOverlap = row < source.row + candidate.h && row + h > source.row;
+    if (postSwapColsOverlap && postSwapRowsOverlap) return null;
     return candidate;
   }
 
-  function buildLeapfrogLine(srcCol, srcRow, srcW, srcH, tgtCol, tgtRow, cols, rows) {
+  function buildDropZoneLine(srcCol, srcRow, candidate, tgtCol, tgtRow) {
     const line = document.createElement('div');
-    line.className = 'composer-leapfrog-line';
+    line.className = 'composer-dropzone-line';
     const dCol = Math.abs(tgtCol - srcCol);
     const dRow = Math.abs(tgtRow - srcRow);
     if (dCol >= dRow) {
-      line.classList.add('composer-leapfrog-line--v');
-      const lineX = tgtCol >= srcCol ? tgtCol * UNIT : (tgtCol + srcW) * UNIT;
+      line.classList.add('composer-dropzone-line--v');
+      const lineX = tgtCol >= srcCol
+        ? candidate.col * UNIT
+        : (candidate.col + candidate.w) * UNIT;
       line.style.left = `${lineX}px`;
-      line.style.top = '0';
-      line.style.height = `${rows * UNIT}px`;
+      line.style.top = `${candidate.row * UNIT}px`;
+      line.style.height = `${candidate.h * UNIT}px`;
     } else {
-      line.classList.add('composer-leapfrog-line--h');
-      const lineY = tgtRow >= srcRow ? tgtRow * UNIT : (tgtRow + srcH) * UNIT;
+      line.classList.add('composer-dropzone-line--h');
+      const lineY = tgtRow >= srcRow
+        ? candidate.row * UNIT
+        : (candidate.row + candidate.h) * UNIT;
       line.style.top = `${lineY}px`;
-      line.style.left = '0';
-      line.style.width = `${cols * UNIT}px`;
+      line.style.left = `${candidate.col * UNIT}px`;
+      line.style.width = `${candidate.w * UNIT}px`;
     }
     return line;
   }
@@ -406,7 +413,7 @@ export function createPageComposer(root, {
         let currentCol = placement.col;
         let currentRow = placement.row;
         let swapTarget = null;
-        let leapfrogLine = null;
+        let dropZoneLine = null;
 
         function onMove(e) {
           const panel = document.getElementById('composer-elements-panel');
@@ -415,7 +422,7 @@ export function createPageComposer(root, {
             return e.clientX >= panelRect.left && e.clientX <= panelRect.right && e.clientY >= panelRect.top && e.clientY <= panelRect.bottom;
           })();
 
-          if (leapfrogLine) { leapfrogLine.remove(); leapfrogLine = null; }
+          if (dropZoneLine) { dropZoneLine.remove(); dropZoneLine = null; }
           swapTarget = null;
 
           if (overPanel && !el.pinned) {
@@ -446,11 +453,11 @@ export function createPageComposer(root, {
             const candidate = findSwapCandidate(col, rawRow, placement.w, placement.h, el.id);
             if (candidate) {
               swapTarget = candidate;
-              leapfrogLine = buildLeapfrogLine(
-                placement.col, placement.row, placement.w, placement.h,
-                col, rawRow, gridCols, gridRows
+              dropZoneLine = buildDropZoneLine(
+                placement.col, placement.row, candidate,
+                col, rawRow
               );
-              gridSection.appendChild(leapfrogLine);
+              gridSection.appendChild(dropZoneLine);
             } else {
               shade.classList.add('composer-shade--invalid');
             }
@@ -462,7 +469,7 @@ export function createPageComposer(root, {
           cell.removeEventListener('pointerup', onUp);
           cell.removeEventListener('pointercancel', onUp);
           document.getElementById('composer-elements-panel')?.classList.remove('composer-panel--drop-target');
-          if (leapfrogLine) { leapfrogLine.remove(); leapfrogLine = null; }
+          if (dropZoneLine) { dropZoneLine.remove(); dropZoneLine = null; }
           shade.remove();
           cell.classList.remove('composer-cell--dragging');
 
@@ -972,6 +979,9 @@ export function createPageComposer(root, {
         if (occupied.has(`${c},${r}`)) return null;
       }
     }
+    const postSwapColsOverlap = col < source.col + candidate.w && col + w > source.col;
+    const postSwapRowsOverlap = row < source.row + candidate.h && row + h > source.row;
+    if (postSwapColsOverlap && postSwapRowsOverlap) return null;
     return candidate;
   }
 
@@ -1150,7 +1160,7 @@ export function createPageComposer(root, {
         let currentCol = placement.col;
         let currentRow = placement.row;
         let swapTarget = null;
-        let leapfrogLine = null;
+        let dropZoneLine = null;
 
         function onMove(e) {
           const panel = document.getElementById(getSubPanelId(state.preferenceKey));
@@ -1159,7 +1169,7 @@ export function createPageComposer(root, {
             return e.clientX >= panelRect.left && e.clientX <= panelRect.right && e.clientY >= panelRect.top && e.clientY <= panelRect.bottom;
           })();
 
-          if (leapfrogLine) { leapfrogLine.remove(); leapfrogLine = null; }
+          if (dropZoneLine) { dropZoneLine.remove(); dropZoneLine = null; }
           swapTarget = null;
 
           if (overPanel && !el.pinned) {
@@ -1190,11 +1200,11 @@ export function createPageComposer(root, {
             const candidate = findSubSwapCandidate(state, col, row, placement.w, placement.h, el.id);
             if (candidate) {
               swapTarget = candidate;
-              leapfrogLine = buildLeapfrogLine(
-                placement.col, placement.row, placement.w, placement.h,
-                col, row, state.gridCols, state.gridRows
+              dropZoneLine = buildDropZoneLine(
+                placement.col, placement.row, candidate,
+                col, row
               );
-              state.container.appendChild(leapfrogLine);
+              state.container.appendChild(dropZoneLine);
             } else {
               shade.classList.add('composer-shade--invalid');
             }
@@ -1206,7 +1216,7 @@ export function createPageComposer(root, {
           cell.removeEventListener('pointerup', onUp);
           cell.removeEventListener('pointercancel', onUp);
           document.getElementById(getSubPanelId(state.preferenceKey))?.classList.remove('composer-panel--drop-target');
-          if (leapfrogLine) { leapfrogLine.remove(); leapfrogLine = null; }
+          if (dropZoneLine) { dropZoneLine.remove(); dropZoneLine = null; }
           shade.remove();
           cell.classList.remove('composer-cell--dragging');
 
