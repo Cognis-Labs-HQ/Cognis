@@ -3,6 +3,7 @@ import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 import { createPageComposer } from '../../reuse/page-composer.js';
 import { openPopup } from '../../reuse/popup.js';
 import { escapeHtml } from '../../reuse/escape-html.js';
+import { loadProviderConfig } from '../../reuse/provider-config.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
@@ -150,26 +151,75 @@ async function loadProviders() {
   return payload.data ?? [];
 }
 
-function renderSmtpFields(config) {
-  const host = escapeHtml(String(config.host ?? ''));
-  const port = escapeHtml(String(config.port ?? '587'));
-  const from = escapeHtml(String(config.from ?? ''));
-  const user = escapeHtml(String(config.user ?? ''));
-  const secure = escapeHtml(String(config.secure ?? 'starttls'));
-  return `
-    <div class="provider-fields">
-      <label>${i18n.t('ui.app.admin.notif.smtp_host')}<input name="host" type="text" value="${host}" /></label>
-      <label>${i18n.t('ui.app.admin.notif.smtp_port')}<input name="port" type="number" value="${port}" /></label>
-      <label>${i18n.t('ui.app.admin.notif.smtp_from')}<input name="from" type="email" value="${from}" /></label>
-      <label>${i18n.t('ui.app.admin.notif.smtp_user')}<input name="user" type="text" value="${user}" /></label>
-      <label>${i18n.t('ui.app.admin.notif.smtp_password')}<input name="password" type="password" value="" /></label>
-      <label>${i18n.t('ui.app.admin.notif.smtp_secure')}
-        <select name="secure">
+const SMTP_REQUIRED_FIELDS = new Set(['host', 'from']);
+
+function renderSmtpFieldLabel(name, labelText, inputHtml, descriptor) {
+  const isMissing = SMTP_REQUIRED_FIELDS.has(name) && !descriptor?.effectiveValue;
+  const hasConflict = descriptor?.envConflict === true;
+  const wrapperClass = isMissing ? 'provider-field-required provider-field-missing' : '';
+  const conflictWarning = hasConflict
+    ? `<span class="provider-field-env-warning" title="${i18n.t('ui.app.admin.notif.field_env_conflict')}">⚠</span>`
+    : '';
+  return `<label class="${wrapperClass}">${labelText}${inputHtml}${conflictWarning}</label>`;
+}
+
+function renderSmtpFields(descriptors) {
+  const val = (field, fallback = '') => escapeHtml(descriptors[field]?.effectiveValue ?? fallback);
+  const host = val('host');
+  const port = val('port', '587');
+  const from = val('from');
+  const user = val('user');
+  const secure = val('secure', 'starttls');
+
+  const hostField = renderSmtpFieldLabel(
+    'host',
+    i18n.t('ui.app.admin.notif.smtp_host'),
+    `<input name="host" type="text" value="${host}" />`,
+    descriptors['host'],
+  );
+  const portField = renderSmtpFieldLabel(
+    'port',
+    i18n.t('ui.app.admin.notif.smtp_port'),
+    `<input name="port" type="number" value="${port}" />`,
+    descriptors['port'],
+  );
+  const fromField = renderSmtpFieldLabel(
+    'from',
+    i18n.t('ui.app.admin.notif.smtp_from'),
+    `<input name="from" type="email" value="${from}" />`,
+    descriptors['from'],
+  );
+  const userField = renderSmtpFieldLabel(
+    'user',
+    i18n.t('ui.app.admin.notif.smtp_user'),
+    `<input name="user" type="text" value="${user}" />`,
+    descriptors['user'],
+  );
+  const passwordField = renderSmtpFieldLabel(
+    'password',
+    i18n.t('ui.app.admin.notif.smtp_password'),
+    `<input name="password" type="password" value="" />`,
+    descriptors['password'],
+  );
+  const secureField = renderSmtpFieldLabel(
+    'secure',
+    i18n.t('ui.app.admin.notif.smtp_secure'),
+    `<select name="secure">
           <option value="starttls"${secure === 'starttls' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_starttls')}</option>
           <option value="tls"${secure === 'tls' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_tls')}</option>
           <option value="none"${secure === 'none' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_none')}</option>
-        </select>
-      </label>
+        </select>`,
+    descriptors['secure'],
+  );
+
+  return `
+    <div class="provider-fields">
+      ${hostField}
+      ${portField}
+      ${fromField}
+      ${userField}
+      ${passwordField}
+      ${secureField}
     </div>
   `;
 }
@@ -177,9 +227,12 @@ function renderSmtpFields(config) {
 function renderProviderCard(provider) {
   const escapedId = escapeHtml(provider.senderId);
   const escapedName = escapeHtml(provider.name);
+  const missingAlert = !provider.active
+    ? `<span class="provider-missing-alert" aria-label="${i18n.t('ui.app.admin.notif.provider_missing_config')}">❗</span>`
+    : '';
   return `
     <div class="provider-card" data-sender-id="${escapedId}">
-      <strong>${escapedName}</strong>
+      <strong>${escapedName}${missingAlert}</strong>
       <div class="provider-config-area"></div>
       <div class="provider-save-row">
         <button class="btn-confirm btn-animated provider-save-btn" type="button">${i18n.t('ui.app.admin.notif.save_settings')}</button>
@@ -203,7 +256,11 @@ function renderNotificationsContent(providers) {
     : `<p>${i18n.t('ui.app.admin.notif.no_active')}</p>`;
 
   const availableRows = availableProviders.length
-    ? availableProviders.map((p) => `<div class="provider-card"><strong>${escapeHtml(p.name)}</strong></div>`).join('')
+    ? availableProviders.map((p) => {
+        const escapedName = escapeHtml(p.name);
+        const missingAlert = `<span class="provider-missing-alert" aria-label="${i18n.t('ui.app.admin.notif.provider_missing_config')}">❗</span>`;
+        return `<div class="provider-card"><strong>${escapedName}${missingAlert}</strong></div>`;
+      }).join('')
     : `<p>${i18n.t('ui.app.admin.notif.no_available')}</p>`;
 
   return `
@@ -221,11 +278,8 @@ async function bindProviderForms() {
 
     const configArea = card.querySelector('.provider-config-area');
     if (configArea) {
-      const res = await apiFetch(`/api/v1/notifications/providers/${encodeURIComponent(senderId)}/config`);
-      if (res.ok) {
-        const payload = await res.json();
-        configArea.innerHTML = renderSmtpFields(payload.data ?? {});
-      }
+      const descriptors = await loadProviderConfig(senderId);
+      configArea.innerHTML = renderSmtpFields(descriptors);
     }
 
     const saveBtn = card.querySelector('.provider-save-btn');

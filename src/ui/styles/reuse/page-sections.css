@@ -61,3 +61,20 @@
 .provider-test-status {
   flex: 1;
 }
+
+.provider-field-missing input,
+.provider-field-missing select {
+  border-color: var(--danger);
+}
+
+.provider-field-env-warning {
+  display: block;
+  color: var(--warning);
+  font-size: 0.8em;
+  margin-top: 2px;
+}
+
+.provider-missing-alert {
+  color: var(--danger);
+  margin-left: 6px;
+}

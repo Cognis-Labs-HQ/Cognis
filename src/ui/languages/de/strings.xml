@@ -248,4 +248,6 @@
   <string name="ui.app.admin.notif.test_sent">Test-E-Mail erfolgreich gesendet.</string>
   <string name="ui.app.admin.notif.test_failed">Test-E-Mail konnte nicht gesendet werden.</string>
   <string name="ui.app.admin.notif.settings_saved">Einstellungen gespeichert.</string>
+  <string name="ui.app.admin.notif.field_env_conflict">Dieses Feld wird durch eine Docker-Umgebungsvariable gesetzt, weicht jedoch vom gespeicherten Wert ab.</string>
+  <string name="ui.app.admin.notif.provider_missing_config">Konfiguration unvollständig</string>
 </resources>

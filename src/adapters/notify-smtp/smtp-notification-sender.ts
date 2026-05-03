@@ -194,7 +194,15 @@ export class SmtpNotificationSender implements NotificationSender {
   readonly senderId = 'smtp';
   readonly senderName = 'SMTP Email';
 
-  constructor(private config: SmtpConfig) {}
+  private readonly envSnapshot: Record<string, string | undefined>;
+
+  constructor(private config: SmtpConfig, envSnapshot?: Record<string, string | undefined>) {
+    this.envSnapshot = envSnapshot ?? {};
+  }
+
+  getEnvValues(): Record<string, string | undefined> {
+    return { ...this.envSnapshot };
+  }
 
   isConfigured(): boolean {
     return Boolean(this.config.host);
@@ -243,5 +251,13 @@ export function createNotificationSender(env: Record<string, string | undefined>
   const rawSecure = env['COGNIS_SMTP_SECURE'] ?? 'starttls';
   const secure = rawSecure === 'tls' ? 'tls' : rawSecure === 'none' ? 'none' : 'starttls';
 
-  return new SmtpNotificationSender({ host, port, from, user, password, secure });
+  const envSnapshot: Record<string, string | undefined> = {
+    host: env['COGNIS_SMTP_HOST'],
+    port: env['COGNIS_SMTP_PORT'],
+    from: env['COGNIS_SMTP_FROM'],
+    user: env['COGNIS_SMTP_USER'],
+    secure: env['COGNIS_SMTP_SECURE'],
+  };
+
+  return new SmtpNotificationSender({ host, port, from, user, password, secure }, envSnapshot);
 }

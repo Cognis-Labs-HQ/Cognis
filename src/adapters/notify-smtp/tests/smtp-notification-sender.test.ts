@@ -107,3 +107,30 @@ test('SmtpNotificationSender.sendTestEmail rejects when to address is empty', as
     /smtp_test_email_requires_recipient/
   );
 });
+
+test('createNotificationSender.getEnvValues returns env snapshot fields', () => {
+  const env = {
+    COGNIS_SMTP_HOST: 'smtp.example.com',
+    COGNIS_SMTP_PORT: '465',
+    COGNIS_SMTP_FROM: 'no-reply@example.com',
+    COGNIS_SMTP_USER: 'user@example.com',
+    COGNIS_SMTP_SECURE: 'tls',
+  };
+  const sender = createNotificationSender(env);
+  const envValues = sender.getEnvValues();
+  assert.equal(envValues['host'], 'smtp.example.com');
+  assert.equal(envValues['port'], '465');
+  assert.equal(envValues['from'], 'no-reply@example.com');
+  assert.equal(envValues['user'], 'user@example.com');
+  assert.equal(envValues['secure'], 'tls');
+});
+
+test('createNotificationSender.getEnvValues returns undefined fields when env is empty', () => {
+  const sender = createNotificationSender({});
+  const envValues = sender.getEnvValues();
+  assert.equal(envValues['host'], undefined);
+  assert.equal(envValues['port'], undefined);
+  assert.equal(envValues['from'], undefined);
+  assert.equal(envValues['user'], undefined);
+  assert.equal(envValues['secure'], undefined);
+});

@@ -66,6 +66,12 @@ export class CoreNotificationGateway implements NotificationGateway {
     return sender.getConfig();
   }
 
+  getProviderEnvValues(senderId: string): Record<string, string | undefined> | null {
+    const sender = this.senders.get(senderId);
+    if (!sender || typeof sender.getEnvValues !== 'function') return null;
+    return sender.getEnvValues();
+  }
+
   async saveProviderConfig(senderId: string, config: Record<string, unknown>): Promise<void> {
     const sender = this.senders.get(senderId);
     if (sender && typeof sender.setConfig === 'function') {

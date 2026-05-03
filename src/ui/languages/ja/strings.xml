@@ -248,4 +248,6 @@
   <string name="ui.app.admin.notif.test_sent">テストメールが正常に送信されました。</string>
   <string name="ui.app.admin.notif.test_failed">テストメールの送信に失敗しました。</string>
   <string name="ui.app.admin.notif.settings_saved">設定が保存されました。</string>
+  <string name="ui.app.admin.notif.field_env_conflict">このフィールドはDocker環境変数で設定されていますが、保存された値と異なります。</string>
+  <string name="ui.app.admin.notif.provider_missing_config">設定が不完全です</string>
 </resources>

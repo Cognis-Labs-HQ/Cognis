@@ -26,6 +26,7 @@ export interface NotificationSender {
   setConfig?(config: Record<string, unknown>): void;
   sendTestEmail?(to: string): Promise<void>;
   isConfigured?(): boolean;
+  getEnvValues?(): Record<string, string | undefined>;
 }
 
 export interface NotificationGateway {
