@@ -260,4 +260,17 @@
   <string name="ui.app.admin.notif.smtp_auth_disabled">認証を無効にする</string>
   <string name="ui.app.admin.notif.smtp_sender_name">送信者名</string>
   <string name="ui.app.admin.notif.smtp_sender_name_placeholder">例：Cognis通知</string>
+  <string name="ui.app.admin.notif.debug">デバッグ</string>
+  <string name="ui.app.admin.notif.debug_target_user">対象ユーザー</string>
+  <string name="ui.app.admin.notif.debug_category">通知タイプ</string>
+  <string name="ui.app.admin.notif.debug_subject">件名</string>
+  <string name="ui.app.admin.notif.debug_subject_placeholder">通知の件名</string>
+  <string name="ui.app.admin.notif.debug_body">メッセージ</string>
+  <string name="ui.app.admin.notif.debug_body_placeholder">通知の本文</string>
+  <string name="ui.app.admin.notif.debug_send">通知を送信</string>
+  <string name="ui.app.admin.notif.debug_sent">通知が送信されました。</string>
+  <string name="ui.app.admin.notif.debug_send_failed">通知の送信に失敗しました。</string>
+  <string name="ui.app.admin.notif.debug_missing_fields">送信前にすべての項目を入力してください。</string>
+  <string name="ui.app.admin.notif.debug_no_users">ユーザーが見つかりません。</string>
+  <string name="ui.app.admin.notif.debug_no_categories">通知カテゴリが登録されていません。</string>
 </resources>

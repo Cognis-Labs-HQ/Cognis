@@ -260,4 +260,17 @@
   <string name="ui.app.admin.notif.smtp_auth_disabled">Disable Authentication</string>
   <string name="ui.app.admin.notif.smtp_sender_name">Sender Name</string>
   <string name="ui.app.admin.notif.smtp_sender_name_placeholder">e.g. Cognis Notifications</string>
+  <string name="ui.app.admin.notif.debug">Debug</string>
+  <string name="ui.app.admin.notif.debug_target_user">Target User</string>
+  <string name="ui.app.admin.notif.debug_category">Notification Type</string>
+  <string name="ui.app.admin.notif.debug_subject">Subject</string>
+  <string name="ui.app.admin.notif.debug_subject_placeholder">Notification subject</string>
+  <string name="ui.app.admin.notif.debug_body">Message</string>
+  <string name="ui.app.admin.notif.debug_body_placeholder">Notification body</string>
+  <string name="ui.app.admin.notif.debug_send">Send Notification</string>
+  <string name="ui.app.admin.notif.debug_sent">Notification dispatched.</string>
+  <string name="ui.app.admin.notif.debug_send_failed">Failed to dispatch notification.</string>
+  <string name="ui.app.admin.notif.debug_missing_fields">Please fill in all fields before sending.</string>
+  <string name="ui.app.admin.notif.debug_no_users">No users found.</string>
+  <string name="ui.app.admin.notif.debug_no_categories">No notification categories registered.</string>
 </resources>

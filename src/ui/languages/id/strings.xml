@@ -260,4 +260,17 @@
   <string name="ui.app.admin.notif.smtp_auth_disabled">Nonaktifkan Autentikasi</string>
   <string name="ui.app.admin.notif.smtp_sender_name">Nama Pengirim</string>
   <string name="ui.app.admin.notif.smtp_sender_name_placeholder">mis. Pemberitahuan Cognis</string>
+  <string name="ui.app.admin.notif.debug">Debug</string>
+  <string name="ui.app.admin.notif.debug_target_user">Pengguna Target</string>
+  <string name="ui.app.admin.notif.debug_category">Jenis Notifikasi</string>
+  <string name="ui.app.admin.notif.debug_subject">Subjek</string>
+  <string name="ui.app.admin.notif.debug_subject_placeholder">Subjek notifikasi</string>
+  <string name="ui.app.admin.notif.debug_body">Pesan</string>
+  <string name="ui.app.admin.notif.debug_body_placeholder">Isi notifikasi</string>
+  <string name="ui.app.admin.notif.debug_send">Kirim Notifikasi</string>
+  <string name="ui.app.admin.notif.debug_sent">Notifikasi terkirim.</string>
+  <string name="ui.app.admin.notif.debug_send_failed">Gagal mengirim notifikasi.</string>
+  <string name="ui.app.admin.notif.debug_missing_fields">Harap isi semua kolom sebelum mengirim.</string>
+  <string name="ui.app.admin.notif.debug_no_users">Tidak ada pengguna ditemukan.</string>
+  <string name="ui.app.admin.notif.debug_no_categories">Tidak ada kategori notifikasi terdaftar.</string>
 </resources>
