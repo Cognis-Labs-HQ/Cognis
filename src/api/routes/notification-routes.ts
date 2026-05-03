@@ -94,12 +94,12 @@ export function createNotificationRoutes(
       const body = await readJson(req);
       const to = String(body.to ?? '');
       const sender = gateway.getSender(senderId);
-      if (!sender || typeof (sender as any).sendTestEmail !== 'function') {
+      if (!sender || typeof sender.sendTestEmail !== 'function') {
         res.writeHead(400, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ error: { code: 'not_supported', message: 'Provider does not support test emails' } }));
         return true;
       }
-      await (sender as any).sendTestEmail(to);
+      await sender.sendTestEmail(to);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: { sent: true } }));
       return true;
