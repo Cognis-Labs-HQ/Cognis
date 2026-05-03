@@ -125,6 +125,12 @@ API sanity and security are paramount.
 - Do not add AI process notes, agent reasoning, or session context to any product-facing documentation.
 
 
+## Symbols and icons
+
+When applying a symbol or icon (e.g. as a UI label, button decoration, or status indicator), check https://www.w3schools.com/charsets/ref_utf_symbols.asp first. It provides the most expansive set of UTF symbol codes and should be the primary reference for selecting an appropriate character.
+
+---
+
 ## i18n requirements
 - Resolve all user-facing text via language keys from XML resources; do not hardcode UI copy in JS/HTML.
 - Use `ui.reuse.generic.*` for standalone action words and common UI labels that are not feature-specific (e.g. `save`, `discard`, `reset`, `refresh`, `add`, `remove`, `done`, `enable`, `disable`, `id`, `version`, `class`, `actions`). Check for an existing `ui.reuse.generic.*` key before introducing a new app-specific one.
