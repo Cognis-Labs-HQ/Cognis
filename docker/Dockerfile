@@ -9,14 +9,15 @@ RUN groupadd --system cognis \
   && chown -R cognis:cognis /app
 
 # Install the entrypoint script, the cognisctl wrapper, and the healthcheck into PATH while still root.
-COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY --chmod=755 docker/cognisctl /usr/local/bin/cognisctl
+COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY --chmod=755 docker/healthcheck.sh /usr/local/bin/healthcheck.sh
 
 # All remaining steps run as the non-root user; no chown is needed.
 USER cognis
 
 COPY --chown=cognis:cognis package.json package-lock.json tsconfig.json tsconfig.base.json ./
+COPY --chown=cognis:cognis db ./db
 COPY --chown=cognis:cognis src ./src
 RUN npm ci --ignore-scripts
 
