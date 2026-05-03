@@ -49,6 +49,12 @@
  *   Example: gridSize: { default: [4, 3], min: [2, 2], max: [6, 4] }
  *   When absent, defaults to { default: [4, 3], min: [2, 2] }.
  *   Each value is [width, height] in grid units (90 px each).
+ *   Magic string values for max:
+ *     'full'  — spans all available columns (full width).
+ *     'half'  — spans half the available columns (half width).
+ *   To apply half on both axes (quadrant), use max: ['half', 'half'].
+ *   To mix, use max: ['half', n] (half-width, numeric max height) or
+ *   max: [n, 'half'] (numeric max width, half-height).
  *
  * Multi-column layout:
  *   Pass columns: 2 to render the content grid in two columns (sub-page navigation
@@ -67,7 +73,7 @@
  *     label: string,
  *     render: () => string,
  *     pinned?: boolean,
- *     gridSize?: { default: [number, number], min: [number, number], max?: [number, number] },
+ *     gridSize?: { default: [number, number], min: [number, number], max?: [number, number] | 'full' | 'half' | ['half'|number, 'half'|number] },
  *   }>,
  *   preferenceKey: string,
  *   i18n: object,
@@ -172,19 +178,49 @@ export function createPageComposer(root, {
   }
 
   function getGridSize(el) {
-    if (el.gridSize?.max === 'full') {
+    const maxVal = el.gridSize?.max;
+
+    if (maxVal === 'full') {
       return {
         default: el.gridSize.default ?? [4, 3],
         min: el.gridSize.min ?? [2, 2],
         max: null,
         fullWidth: true,
+        halfWidth: false,
+        halfHeight: false,
       };
     }
+
+    if (maxVal === 'half') {
+      return {
+        default: el.gridSize?.default ?? [4, 3],
+        min: el.gridSize?.min ?? [2, 2],
+        max: null,
+        fullWidth: false,
+        halfWidth: true,
+        halfHeight: false,
+      };
+    }
+
+    let resolvedMax = maxVal ?? null;
+    let halfWidth = false;
+    let halfHeight = false;
+
+    if (Array.isArray(maxVal)) {
+      halfWidth = maxVal[0] === 'half';
+      halfHeight = maxVal[1] === 'half';
+      const rW = halfWidth ? null : (maxVal[0] ?? null);
+      const rH = halfHeight ? null : (maxVal[1] ?? null);
+      resolvedMax = (rW === null && rH === null) ? null : [rW, rH];
+    }
+
     return {
       default: el.gridSize?.default ?? [4, 3],
       min: el.gridSize?.min ?? [2, 2],
-      max: el.gridSize?.max ?? null,
+      max: resolvedMax,
       fullWidth: false,
+      halfWidth,
+      halfHeight,
     };
   }
 
@@ -234,6 +270,67 @@ export function createPageComposer(root, {
     return row;
   }
 
+  function findSwapCandidate(col, row, w, h, excludeId) {
+    const displaced = [];
+    for (const placement of (layout?.placements ?? [])) {
+      if (placement.id === excludeId) continue;
+      if ((layout?.hidden ?? []).includes(placement.id)) continue;
+      const overlapsH = col < placement.col + placement.w && col + w > placement.col;
+      const overlapsV = row < placement.row + placement.h && row + h > placement.row;
+      if (overlapsH && overlapsV) displaced.push(placement);
+    }
+    if (displaced.length !== 1) return null;
+    const candidate = displaced[0];
+    const source = layout.placements.find((p) => p.id === excludeId);
+    if (!source) return null;
+    if (source.col + candidate.w > gridCols) return null;
+    const others = (layout?.placements ?? []).filter(
+      (p) => p.id !== excludeId && p.id !== candidate.id && !(layout?.hidden ?? []).includes(p.id)
+    );
+    const occupied = new Set();
+    for (const p of others) {
+      for (let r = p.row; r < p.row + p.h; r++) {
+        for (let c = p.col; c < p.col + p.w; c++) {
+          occupied.add(`${c},${r}`);
+        }
+      }
+    }
+    for (let r = source.row; r < source.row + candidate.h; r++) {
+      for (let c = source.col; c < source.col + candidate.w; c++) {
+        if (occupied.has(`${c},${r}`)) return null;
+      }
+    }
+    const postSwapColsOverlap = candidate.col < source.col + candidate.w && candidate.col + w > source.col;
+    const postSwapRowsOverlap = candidate.row < source.row + candidate.h && candidate.row + h > source.row;
+    if (postSwapColsOverlap && postSwapRowsOverlap) return null;
+    return candidate;
+  }
+
+  function buildDropZoneLine(srcCol, srcRow, candidate, tgtCol, tgtRow) {
+    const line = document.createElement('div');
+    line.className = 'composer-dropzone-line';
+    const dCol = Math.abs(tgtCol - srcCol);
+    const dRow = Math.abs(tgtRow - srcRow);
+    if (dCol >= dRow) {
+      line.classList.add('composer-dropzone-line--v');
+      const lineX = tgtCol >= srcCol
+        ? (candidate.col + candidate.w) * UNIT
+        : candidate.col * UNIT;
+      line.style.left = `${lineX}px`;
+      line.style.top = `${candidate.row * UNIT}px`;
+      line.style.height = `${candidate.h * UNIT}px`;
+    } else {
+      line.classList.add('composer-dropzone-line--h');
+      const lineY = tgtRow >= srcRow
+        ? (candidate.row + candidate.h) * UNIT
+        : candidate.row * UNIT;
+      line.style.top = `${lineY}px`;
+      line.style.left = `${candidate.col * UNIT}px`;
+      line.style.width = `${candidate.w * UNIT}px`;
+    }
+    return line;
+  }
+
   function initializePlacements() {
     if (!layout.placements) layout.placements = [];
     if (!layout.hidden) layout.hidden = [];
@@ -247,8 +344,10 @@ export function createPageComposer(root, {
         continue;
       }
       const gs = getGridSize(el);
-      const w = gs.fullWidth ? gridCols : Math.min(gs.default[0], gridCols);
-      const h = gs.default[1];
+      const w = gs.fullWidth ? gridCols
+        : gs.halfWidth ? Math.max(gs.min[0], Math.floor(gridCols / 2))
+        : Math.min(gs.default[0], gridCols);
+      const h = gs.halfHeight ? Math.max(gs.min[1], Math.floor(gridRows / 2)) : gs.default[1];
       let placed = false;
       for (let row = 0; !placed; row++) {
         for (let col = 0; col <= Math.max(0, gridCols - w); col++) {
@@ -313,6 +412,8 @@ export function createPageComposer(root, {
 
         let currentCol = placement.col;
         let currentRow = placement.row;
+        let swapTarget = null;
+        let dropZoneLine = null;
 
         function onMove(e) {
           const panel = document.getElementById('composer-elements-panel');
@@ -320,6 +421,9 @@ export function createPageComposer(root, {
             const panelRect = panel.getBoundingClientRect();
             return e.clientX >= panelRect.left && e.clientX <= panelRect.right && e.clientY >= panelRect.top && e.clientY <= panelRect.bottom;
           })();
+
+          if (dropZoneLine) { dropZoneLine.remove(); dropZoneLine = null; }
+          swapTarget = null;
 
           if (overPanel && !el.pinned) {
             shade.classList.add('composer-shade--invalid');
@@ -334,7 +438,6 @@ export function createPageComposer(root, {
           const y = e.clientY - gridRect.top;
           const col = Math.max(0, Math.min(gridCols - placement.w, Math.round(x / UNIT - placement.w / 2)));
           const rawRow = Math.max(0, Math.round(y / UNIT - placement.h / 2));
-          const row = applyGravity(col, rawRow, placement.w, placement.h, el.id);
 
           if (rawRow + placement.h > gridRows) {
             gridRows = rawRow + placement.h + 1;
@@ -342,10 +445,23 @@ export function createPageComposer(root, {
           }
 
           currentCol = col;
-          currentRow = row;
+          currentRow = rawRow;
           shade.style.left = `${col * UNIT}px`;
-          shade.style.top = `${row * UNIT}px`;
-          shade.classList.toggle('composer-shade--invalid', !canPlace(col, row, placement.w, placement.h, el.id));
+          shade.style.top = `${rawRow * UNIT}px`;
+
+          if (!canPlace(col, rawRow, placement.w, placement.h, el.id)) {
+            const candidate = findSwapCandidate(col, rawRow, placement.w, placement.h, el.id);
+            if (candidate) {
+              swapTarget = candidate;
+              dropZoneLine = buildDropZoneLine(
+                placement.col, placement.row, candidate,
+                col, rawRow
+              );
+              gridSection.appendChild(dropZoneLine);
+            } else {
+              shade.classList.add('composer-shade--invalid');
+            }
+          }
         }
 
         async function onUp(e) {
@@ -353,6 +469,7 @@ export function createPageComposer(root, {
           cell.removeEventListener('pointerup', onUp);
           cell.removeEventListener('pointercancel', onUp);
           document.getElementById('composer-elements-panel')?.classList.remove('composer-panel--drop-target');
+          if (dropZoneLine) { dropZoneLine.remove(); dropZoneLine = null; }
           shade.remove();
           cell.classList.remove('composer-cell--dragging');
 
@@ -369,14 +486,31 @@ export function createPageComposer(root, {
             return;
           }
 
-          const moved = currentCol !== placement.col || currentRow !== placement.row;
-          if (moved && canPlace(currentCol, currentRow, placement.w, placement.h, el.id)) {
+          const currentSwapTarget = swapTarget;
+          swapTarget = null;
+
+          if (currentSwapTarget) {
             const targetPlacement = layout.placements.find((lp) => lp.id === el.id);
-            if (targetPlacement) {
-              targetPlacement.col = currentCol;
-              targetPlacement.row = currentRow;
+            const swapPlacement = layout.placements.find((lp) => lp.id === currentSwapTarget.id);
+            if (targetPlacement && swapPlacement) {
+              const oldCol = targetPlacement.col;
+              const oldRow = targetPlacement.row;
+              targetPlacement.col = currentSwapTarget.col;
+              targetPlacement.row = currentSwapTarget.row;
+              swapPlacement.col = oldCol;
+              swapPlacement.row = oldRow;
+              renderGridComposer();
             }
-            renderGridComposer();
+          } else {
+            const moved = currentCol !== placement.col || currentRow !== placement.row;
+            if (moved && canPlace(currentCol, currentRow, placement.w, placement.h, el.id)) {
+              const targetPlacement = layout.placements.find((lp) => lp.id === el.id);
+              if (targetPlacement) {
+                targetPlacement.col = currentCol;
+                targetPlacement.row = currentRow;
+              }
+              renderGridComposer();
+            }
           }
         }
 
@@ -552,8 +686,10 @@ export function createPageComposer(root, {
       item.setPointerCapture(e.pointerId);
 
       const gs = getGridSize(el);
-      const w = gs.fullWidth ? gridCols : Math.min(gs.default[0], gridCols);
-      const h = gs.default[1];
+      const w = gs.fullWidth ? gridCols
+        : gs.halfWidth ? Math.max(gs.min[0], Math.floor(gridCols / 2))
+        : Math.min(gs.default[0], gridCols);
+      const h = gs.halfHeight ? Math.max(gs.min[1], Math.floor(gridRows / 2)) : gs.default[1];
 
       let shade = null;
       let currentCol = -1;
@@ -813,6 +949,42 @@ export function createPageComposer(root, {
     return true;
   }
 
+  function findSubSwapCandidate(state, col, row, w, h, excludeId) {
+    const displaced = [];
+    for (const placement of (state.layout?.placements ?? [])) {
+      if (placement.id === excludeId) continue;
+      if ((state.layout?.hidden ?? []).includes(placement.id)) continue;
+      const overlapsH = col < placement.col + placement.w && col + w > placement.col;
+      const overlapsV = row < placement.row + placement.h && row + h > placement.row;
+      if (overlapsH && overlapsV) displaced.push(placement);
+    }
+    if (displaced.length !== 1) return null;
+    const candidate = displaced[0];
+    const source = state.layout.placements.find((p) => p.id === excludeId);
+    if (!source) return null;
+    if (source.col + candidate.w > state.gridCols) return null;
+    const others = (state.layout?.placements ?? []).filter(
+      (p) => p.id !== excludeId && p.id !== candidate.id && !(state.layout?.hidden ?? []).includes(p.id)
+    );
+    const occupied = new Set();
+    for (const p of others) {
+      for (let r = p.row; r < p.row + p.h; r++) {
+        for (let c = p.col; c < p.col + p.w; c++) {
+          occupied.add(`${c},${r}`);
+        }
+      }
+    }
+    for (let r = source.row; r < source.row + candidate.h; r++) {
+      for (let c = source.col; c < source.col + candidate.w; c++) {
+        if (occupied.has(`${c},${r}`)) return null;
+      }
+    }
+    const postSwapColsOverlap = candidate.col < source.col + candidate.w && candidate.col + w > source.col;
+    const postSwapRowsOverlap = candidate.row < source.row + candidate.h && candidate.row + h > source.row;
+    if (postSwapColsOverlap && postSwapRowsOverlap) return null;
+    return candidate;
+  }
+
   function initializeSubPlacements(state) {
     if (!state.layout.placements) state.layout.placements = [];
     if (!state.layout.hidden) state.layout.hidden = [];
@@ -826,8 +998,10 @@ export function createPageComposer(root, {
         continue;
       }
       const gs = getGridSize(el);
-      const w = gs.fullWidth ? state.gridCols : Math.min(gs.default[0], state.gridCols);
-      const h = gs.default[1];
+      const w = gs.fullWidth ? state.gridCols
+        : gs.halfWidth ? Math.max(gs.min[0], Math.floor(state.gridCols / 2))
+        : Math.min(gs.default[0], state.gridCols);
+      const h = gs.halfHeight ? Math.max(gs.min[1], Math.floor(state.gridRows / 2)) : gs.default[1];
       let placed = false;
       for (let row = 0; !placed; row++) {
         for (let col = 0; col <= Math.max(0, state.gridCols - w); col++) {
@@ -985,6 +1159,8 @@ export function createPageComposer(root, {
 
         let currentCol = placement.col;
         let currentRow = placement.row;
+        let swapTarget = null;
+        let dropZoneLine = null;
 
         function onMove(e) {
           const panel = document.getElementById(getSubPanelId(state.preferenceKey));
@@ -992,6 +1168,9 @@ export function createPageComposer(root, {
             const panelRect = panel.getBoundingClientRect();
             return e.clientX >= panelRect.left && e.clientX <= panelRect.right && e.clientY >= panelRect.top && e.clientY <= panelRect.bottom;
           })();
+
+          if (dropZoneLine) { dropZoneLine.remove(); dropZoneLine = null; }
+          swapTarget = null;
 
           if (overPanel && !el.pinned) {
             shade.classList.add('composer-shade--invalid');
@@ -1016,7 +1195,20 @@ export function createPageComposer(root, {
           currentRow = row;
           shade.style.left = `${col * UNIT}px`;
           shade.style.top = `${row * UNIT}px`;
-          shade.classList.toggle('composer-shade--invalid', !canSubPlace(state, col, row, placement.w, placement.h, el.id));
+
+          if (!canSubPlace(state, col, row, placement.w, placement.h, el.id)) {
+            const candidate = findSubSwapCandidate(state, col, row, placement.w, placement.h, el.id);
+            if (candidate) {
+              swapTarget = candidate;
+              dropZoneLine = buildDropZoneLine(
+                placement.col, placement.row, candidate,
+                col, row
+              );
+              state.container.appendChild(dropZoneLine);
+            } else {
+              shade.classList.add('composer-shade--invalid');
+            }
+          }
         }
 
         async function onUp(e) {
@@ -1024,6 +1216,7 @@ export function createPageComposer(root, {
           cell.removeEventListener('pointerup', onUp);
           cell.removeEventListener('pointercancel', onUp);
           document.getElementById(getSubPanelId(state.preferenceKey))?.classList.remove('composer-panel--drop-target');
+          if (dropZoneLine) { dropZoneLine.remove(); dropZoneLine = null; }
           shade.remove();
           cell.classList.remove('composer-cell--dragging');
 
@@ -1040,14 +1233,31 @@ export function createPageComposer(root, {
             return;
           }
 
-          const moved = currentCol !== placement.col || currentRow !== placement.row;
-          if (moved && canSubPlace(state, currentCol, currentRow, placement.w, placement.h, el.id)) {
+          const currentSwapTarget = swapTarget;
+          swapTarget = null;
+
+          if (currentSwapTarget) {
             const targetPlacement = state.layout.placements.find((lp) => lp.id === el.id);
-            if (targetPlacement) {
-              targetPlacement.col = currentCol;
-              targetPlacement.row = currentRow;
+            const swapPlacement = state.layout.placements.find((lp) => lp.id === currentSwapTarget.id);
+            if (targetPlacement && swapPlacement) {
+              const oldCol = targetPlacement.col;
+              const oldRow = targetPlacement.row;
+              targetPlacement.col = currentSwapTarget.col;
+              targetPlacement.row = currentSwapTarget.row;
+              swapPlacement.col = oldCol;
+              swapPlacement.row = oldRow;
+              renderSubGrid(state);
             }
-            renderSubGrid(state);
+          } else {
+            const moved = currentCol !== placement.col || currentRow !== placement.row;
+            if (moved && canSubPlace(state, currentCol, currentRow, placement.w, placement.h, el.id)) {
+              const targetPlacement = state.layout.placements.find((lp) => lp.id === el.id);
+              if (targetPlacement) {
+                targetPlacement.col = currentCol;
+                targetPlacement.row = currentRow;
+              }
+              renderSubGrid(state);
+            }
           }
         }
 
@@ -1112,8 +1322,10 @@ export function createPageComposer(root, {
       item.setPointerCapture(e.pointerId);
 
       const gs = getGridSize(el);
-      const w = gs.fullWidth ? state.gridCols : Math.min(gs.default[0], state.gridCols);
-      const h = gs.default[1];
+      const w = gs.fullWidth ? state.gridCols
+        : gs.halfWidth ? Math.max(gs.min[0], Math.floor(state.gridCols / 2))
+        : Math.min(gs.default[0], state.gridCols);
+      const h = gs.halfHeight ? Math.max(gs.min[1], Math.floor(state.gridRows / 2)) : gs.default[1];
 
       let shade = null;
       let currentCol = -1;
@@ -1693,7 +1905,9 @@ export function createPageComposer(root, {
         if (sourceIdx === -1 || targetIdx === -1) return;
 
         visibleOrder.splice(sourceIdx, 1);
-        visibleOrder.splice(targetIdx, 0, dragSourceId);
+        // Removing source shifts all subsequent indices by -1; adjust targetIdx when source precedes target.
+        const insertIdx = sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
+        visibleOrder.splice(insertIdx, 0, dragSourceId);
 
         const newOrder = [
           ...visibleOrder,
