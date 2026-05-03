@@ -110,9 +110,6 @@
   opacity: 1;
 }
 
-.profile-banner-menu-btn:hover {
-  background: rgba(15, 23, 42, 0.7);
-}
 
 .profile-banner-menu-dropdown {
   position: absolute;
@@ -189,7 +186,7 @@
   pointer-events: none;
   display: flex;
   flex-direction: column;
-  align-self: stretch;
+  align-self: end;
 }
 
 .profile-hero--full-banner .profile-hero-unified,
@@ -206,7 +203,6 @@
   flex-wrap: wrap;
   background: var(--surface);
   border-radius: 10px 10px 0 0;
-  margin-top: auto;
 }
 
 .profile-hero--full-banner .profile-hero-unified .profile-hero-stats {
@@ -220,10 +216,15 @@
 }
 
 .profile-hero--full-banner .profile-hero-bio-wrap {
+  flex: 0 0 auto;
   padding: 6px 14px 10px;
   background: var(--surface);
   border-radius: 0 0 10px 10px;
   border-left: none;
+}
+
+.profile-hero--full-banner .profile-hero-banner-btn {
+  border-radius: 14px;
 }
 
 .profile-hero--full-banner .profile-banner-menu-wrap {
