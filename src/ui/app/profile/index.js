@@ -146,14 +146,21 @@ function renderHero() {
     ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" alt="" />`
     : `<div class="profile-hero-banner-placeholder"></div>`;
 
-  const bio = profile?.bio ? `<p class="profile-hero-bio">${escapeHtml(profile.bio)}</p>` : '';
-
   const details = [
     profile?.location ? `<span class="profile-hero-detail-item">📍 ${escapeHtml(profile.location)}</span>` : '',
     profile?.website
       ? `<span class="profile-hero-detail-item">🌐 <a class="profile-hero-link" href="${escapeHtml(profile.website)}" target="_blank" rel="noopener noreferrer">${escapeHtml(profile.website)}</a></span>`
       : '',
   ].filter(Boolean).join('');
+
+  const bioWrap = (profile?.bio || details)
+    ? `
+      <div class="profile-hero-bio-wrap">
+        ${profile?.bio ? `<p class="profile-hero-bio">${escapeHtml(profile.bio)}</p>` : ''}
+        ${details ? `<div class="profile-hero-details">${details}</div>` : ''}
+      </div>
+    `
+    : '';
 
   const bannerMenuRemoveItem = bannerBlobUrl
     ? `
@@ -165,98 +172,160 @@ function renderHero() {
     `
     : '';
 
+  const bannerWrap = isOwnProfile
+    ? `
+      <button
+        class="profile-hero-banner-btn"
+        type="button"
+        aria-label="${escapeHtml(i18n.t('ui.app.profile.change_banner'))}"
+      >${bannerContent}</button>
+      <div class="profile-banner-menu-wrap">
+        <button
+          class="profile-banner-menu-btn"
+          type="button"
+          aria-label="${escapeHtml(i18n.t('ui.app.profile.banner_menu_label'))}"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >&#9776;</button>
+        <div class="profile-banner-menu-dropdown" hidden>
+          <label class="profile-banner-menu-item profile-banner-height-label">
+            <input
+              type="radio"
+              class="profile-banner-height-radio"
+              name="banner-height"
+              value="half"
+              ${bannerHeight === 'half' ? 'checked' : ''}
+            >
+            ${escapeHtml(i18n.t('ui.app.profile.banner_height.half'))}
+          </label>
+          <label class="profile-banner-menu-item profile-banner-height-label">
+            <input
+              type="radio"
+              class="profile-banner-height-radio"
+              name="banner-height"
+              value="full"
+              ${bannerHeight === 'full' ? 'checked' : ''}
+            >
+            ${escapeHtml(i18n.t('ui.app.profile.banner_height.full'))}
+          </label>
+          ${bannerMenuRemoveItem}
+        </div>
+      </div>
+    `
+    : `<div class="profile-hero-banner-static">${bannerContent}</div>`;
+
+  const avatarWrap = isOwnProfile
+    ? `
+      <div class="profile-avatar-wrap">
+        <button
+          class="profile-hero-avatar-btn"
+          type="button"
+          aria-label="${escapeHtml(i18n.t('ui.app.profile.change_avatar'))}"
+        >${renderAvatarContent()}</button>
+        ${avatarBlobUrl ? `
+          <button
+            class="profile-avatar-remove-btn"
+            type="button"
+            aria-label="${escapeHtml(i18n.t('ui.app.profile.remove_avatar'))}"
+          >&#x2715;</button>
+        ` : ''}
+      </div>
+    `
+    : `
+      <div class="profile-avatar-wrap">
+        <div class="profile-hero-avatar-display">${renderAvatarContent()}</div>
+      </div>
+    `;
+
+  const handleRow = `
+    <div class="profile-hero-handle-row">
+      <strong class="profile-hero-handle">@${escapeHtml(profile?.handle ?? '')}</strong>
+      ${isOwnProfile ? `<span class="profile-its-you-pill">${i18n.t('ui.app.profile.its_you')}</span>` : ''}
+      ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ''}
+      <span class="visibility-badge ${visibilityClass(profile?.visibility ?? 'hidden')}">${i18n.t(`ui.app.profile.visibility.${profile?.visibility ?? 'hidden'}`)}</span>
+    </div>
+  `;
+
+  const actionRow = isOwnProfile
+    ? `
+      <div class="profile-hero-action-row">
+        <button class="profile-hero-edit-btn" type="button">${escapeHtml(i18n.t('ui.app.profile.edit_profile'))}</button>
+      </div>
+    `
+    : `
+      <div class="profile-hero-action-row">
+        <button class="profile-hero-follow-btn" type="button">${escapeHtml(i18n.t('ui.app.profile.follow'))}</button>
+        <button
+          class="profile-hero-block-btn"
+          type="button"
+          aria-label="${escapeHtml(i18n.t('ui.app.profile.block_user'))}"
+        >&#x1F6AB;</button>
+      </div>
+    `;
+
+  const statsHtml = `
+    <div class="profile-hero-stats">
+      <div class="profile-stat-block">
+        <span class="profile-stat-number">${posts.length}</span>
+        <span class="profile-stat-label">${i18n.t('ui.app.profile.posts_stat')}</span>
+      </div>
+      <div class="profile-stat-block">
+        <span class="profile-stat-number">${following.length}</span>
+        <span class="profile-stat-label">${i18n.t('ui.app.profile.following_stat')}</span>
+      </div>
+      <div class="profile-stat-block">
+        <span class="profile-stat-number">${followers.length}</span>
+        <span class="profile-stat-label">${i18n.t('ui.app.profile.followers_stat')}</span>
+      </div>
+    </div>
+  `;
+
+  const achievementRow = `<div class="profile-achievement-row" aria-label="${i18n.t('ui.app.profile.achievements')}"></div>`;
+
   const heroClass = bannerHeight === 'full'
     ? 'profile-hero profile-hero--full-banner'
     : 'profile-hero';
 
+  if (bannerHeight === 'full') {
+    return `
+      <div class="${heroClass}">
+        <div class="profile-hero-banner-wrap">
+          ${bannerWrap}
+        </div>
+        <div class="profile-hero-content">
+          <div class="profile-hero-unified">
+            ${avatarWrap}
+            <div class="profile-hero-identity">
+              ${handleRow}
+            </div>
+            ${statsHtml}
+          </div>
+          ${actionRow}
+          ${bioWrap}
+          ${achievementRow}
+        </div>
+      </div>
+    `;
+  }
+
   return `
     <div class="${heroClass}">
       <div class="profile-hero-banner-wrap">
-        <button
-          class="profile-hero-banner-btn"
-          type="button"
-          aria-label="${i18n.t('ui.app.profile.change_banner')}"
-        >${bannerContent}</button>
-        <div class="profile-banner-menu-wrap">
-          <button
-            class="profile-banner-menu-btn"
-            type="button"
-            aria-label="${i18n.t('ui.app.profile.banner_menu_label')}"
-            aria-haspopup="true"
-            aria-expanded="false"
-          >&#9776;</button>
-          <div class="profile-banner-menu-dropdown" hidden>
-            <label class="profile-banner-menu-item profile-banner-height-label">
-              <input
-                type="radio"
-                class="profile-banner-height-radio"
-                name="banner-height"
-                value="half"
-                ${bannerHeight === 'half' ? 'checked' : ''}
-              >
-              ${escapeHtml(i18n.t('ui.app.profile.banner_height.half'))}
-            </label>
-            <label class="profile-banner-menu-item profile-banner-height-label">
-              <input
-                type="radio"
-                class="profile-banner-height-radio"
-                name="banner-height"
-                value="full"
-                ${bannerHeight === 'full' ? 'checked' : ''}
-              >
-              ${escapeHtml(i18n.t('ui.app.profile.banner_height.full'))}
-            </label>
-            ${bannerMenuRemoveItem}
-          </div>
-        </div>
+        ${bannerWrap}
       </div>
       <div class="profile-hero-content">
         <div class="profile-hero-body">
-          <div class="profile-avatar-wrap">
-            <button
-              class="profile-hero-avatar-btn"
-              type="button"
-              aria-label="${i18n.t('ui.app.profile.change_avatar')}"
-            >${renderAvatarContent()}</button>
-            ${avatarBlobUrl ? `
-              <button
-                class="profile-avatar-remove-btn"
-                type="button"
-                aria-label="${i18n.t('ui.app.profile.remove_avatar')}"
-              >&#x2715;</button>
-            ` : ''}
-          </div>
+          ${avatarWrap}
           <div class="profile-hero-identity">
-            <div class="profile-hero-handle-row">
-              <strong class="profile-hero-handle">@${escapeHtml(profile?.handle ?? '')}</strong>
-              ${isOwnProfile ? `<span class="profile-its-you-pill">${i18n.t('ui.app.profile.its_you')}</span>` : ''}
-              ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ''}
-              <span class="visibility-badge ${visibilityClass(profile?.visibility ?? 'hidden')}">${i18n.t(`ui.app.profile.visibility.${profile?.visibility ?? 'hidden'}`)}</span>
-            </div>
-            <button
-              class="profile-hero-edit-btn"
-              type="button"
-            >${escapeHtml(i18n.t('ui.app.profile.edit_profile'))}</button>
-            ${bio}
-            ${details ? `<div class="profile-hero-details">${details}</div>` : ''}
+            ${handleRow}
+            ${actionRow}
           </div>
         </div>
-        <div class="profile-hero-stats">
-          <div class="profile-stat-block">
-            <span class="profile-stat-number">${posts.length}</span>
-            <span class="profile-stat-label">${i18n.t('ui.app.profile.posts_stat')}</span>
-          </div>
-          <div class="profile-stat-block">
-            <span class="profile-stat-number">${following.length}</span>
-            <span class="profile-stat-label">${i18n.t('ui.app.profile.following_stat')}</span>
-          </div>
-          <div class="profile-stat-block">
-            <span class="profile-stat-number">${followers.length}</span>
-            <span class="profile-stat-label">${i18n.t('ui.app.profile.followers_stat')}</span>
-          </div>
+        <div class="profile-hero-stats-bio">
+          ${statsHtml}
+          ${bioWrap}
         </div>
-        <div class="profile-achievement-row" aria-label="${i18n.t('ui.app.profile.achievements')}">
-        </div>
+        ${achievementRow}
       </div>
     </div>
   `;
@@ -598,10 +667,33 @@ async function doFollowUser(handle) {
   }
 }
 
+async function doBlockUser() {
+  const result = await openPopup({
+    title: i18n.t('ui.app.profile.block_user'),
+    body: escapeHtml(i18n.t('ui.app.profile.block_user_confirm')),
+    variant: 'danger',
+    actions: [
+      { id: 'cancel', label: i18n.t('ui.reuse.generic.discard'), variant: 'cancel' },
+      { id: 'confirm', label: i18n.t('ui.app.profile.block_user_action'), variant: 'confirm' },
+    ],
+  });
+  if (result !== 'confirm') return;
+}
+
+function renderFollowRequests() {
+  return `
+    <div class="profile-follow-requests-section">
+      <p class="profile-empty">${escapeHtml(i18n.t('ui.app.profile.follow_requests.empty'))}</p>
+    </div>
+  `;
+}
+
 let bannerMenuCloseHandler = null;
 
 function bindPageEvents() {
   root.querySelector('.profile-hero-edit-btn')?.addEventListener('click', openEditPopup);
+  root.querySelector('.profile-hero-follow-btn')?.addEventListener('click', () => doFollowUser(urlHandle));
+  root.querySelector('.profile-hero-block-btn')?.addEventListener('click', doBlockUser);
   root.querySelector('.profile-hero-banner-btn')?.addEventListener('click', () => bannerFileInput.click());
   root.querySelector('.profile-hero-avatar-btn')?.addEventListener('click', () => avatarFileInput.click());
   root.querySelector('.profile-avatar-remove-btn')?.addEventListener('click', doRemoveAvatar);
@@ -702,6 +794,13 @@ const elements = [
     defaultHidden: true,
     gridSize: { default: [2, 3], min: [1, 2], max: 'full' },
     render: renderSuggestedContacts,
+  },
+  {
+    id: 'follow-requests',
+    label: i18n.t('ui.app.profile.section.follow_requests'),
+    defaultHidden: true,
+    gridSize: { default: [2, 3], min: [2, 2], max: 'full' },
+    render: renderFollowRequests,
   },
 ];
 
