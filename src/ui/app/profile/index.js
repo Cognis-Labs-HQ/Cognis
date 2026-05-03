@@ -347,13 +347,13 @@ function renderPosts() {
 
 const avatarFileInput = document.createElement('input');
 avatarFileInput.type = 'file';
-avatarFileInput.accept = 'image/jpeg,image/png,image/webp';
+avatarFileInput.accept = 'image/*';
 avatarFileInput.hidden = true;
 document.body.appendChild(avatarFileInput);
 
 const bannerFileInput = document.createElement('input');
 bannerFileInput.type = 'file';
-bannerFileInput.accept = 'image/jpeg,image/png,image/webp,image/gif';
+bannerFileInput.accept = 'image/*';
 bannerFileInput.hidden = true;
 document.body.appendChild(bannerFileInput);
 
