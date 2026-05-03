@@ -22,21 +22,42 @@
   position: relative;
 }
 
+.profile-hero-banner-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.9);
+  -webkit-mask-image: url('/static/assets/icons/upload.svg');
+  mask-image: url('/static/assets/icons/upload.svg');
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
 .profile-hero-banner-btn::after {
-  content: '⬆';
+  content: '';
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  color: rgba(255, 255, 255, 0.9);
+  z-index: 1;
 }
 
+.profile-hero-banner-btn:hover::before,
+.profile-hero-banner-btn:focus-visible::before,
 .profile-hero-banner-btn:hover::after,
 .profile-hero-banner-btn:focus-visible::after {
   opacity: 1;
@@ -140,8 +161,31 @@
   transition: box-shadow 0.15s ease;
 }
 
+.profile-hero-avatar-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  background-color: rgba(255, 255, 255, 0.9);
+  -webkit-mask-image: url('/static/assets/icons/upload.svg');
+  mask-image: url('/static/assets/icons/upload.svg');
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
 .profile-hero-avatar-btn::after {
-  content: '⬆';
+  content: '';
   position: absolute;
   inset: 0;
   border-radius: 999px;
@@ -149,13 +193,11 @@
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  color: rgba(255, 255, 255, 0.9);
+  z-index: 1;
 }
 
+.profile-hero-avatar-btn:hover::before,
+.profile-hero-avatar-btn:focus-visible::before,
 .profile-hero-avatar-btn:hover::after,
 .profile-hero-avatar-btn:focus-visible::after {
   opacity: 1;

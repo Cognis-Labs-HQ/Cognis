@@ -33,7 +33,8 @@ function extractDefinedCssClasses() {
       const src = readFileSync(file, 'utf8');
       const stripped = src
         .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/@import\s+url\([^)]*\)[^;]*;/g, '');
+        .replace(/@import\s+url\([^)]*\)[^;]*;/g, '')
+        .replace(/url\([^)]*\)/g, '');
       for (const m of stripped.matchAll(/\.([a-zA-Z][a-zA-Z0-9_-]*)/g)) {
         const cls = m[1];
         if (!map.has(cls)) map.set(cls, file);
