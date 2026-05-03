@@ -2,7 +2,7 @@ import { randomBytes, createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
-export type AccessRole = 'user' | 'admin';
+export type AccessRole = 'user' | 'teacher' | 'moderator' | 'admin';
 
 interface AccessTokenRecord {
   subject: string;
@@ -17,7 +17,7 @@ let hasWarnedPersistFailure = false;
 let hasWarnedLoadFailure = false;
 
 function isAccessRole(value: unknown): value is AccessRole {
-  return value === 'user' || value === 'admin';
+  return value === 'user' || value === 'teacher' || value === 'moderator' || value === 'admin';
 }
 
 function persistTokenStore() {

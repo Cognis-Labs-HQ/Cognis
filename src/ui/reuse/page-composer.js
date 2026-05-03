@@ -242,6 +242,10 @@ export function createPageComposer(root, {
     for (const el of elements) {
       if (layout.hidden.includes(el.id)) continue;
       if (layout.placements.some((p) => p.id === el.id)) continue;
+      if (el.defaultHidden && !el.pinned) {
+        layout.hidden.push(el.id);
+        continue;
+      }
       const gs = getGridSize(el);
       const w = gs.fullWidth ? gridCols : Math.min(gs.default[0], gridCols);
       const h = gs.default[1];
@@ -817,6 +821,10 @@ export function createPageComposer(root, {
     for (const el of state.elements) {
       if (state.layout.hidden.includes(el.id)) continue;
       if (state.layout.placements.some((p) => p.id === el.id)) continue;
+      if (el.defaultHidden && !el.pinned) {
+        state.layout.hidden.push(el.id);
+        continue;
+      }
       const gs = getGridSize(el);
       const w = gs.fullWidth ? state.gridCols : Math.min(gs.default[0], state.gridCols);
       const h = gs.default[1];
@@ -1539,9 +1547,15 @@ export function createPageComposer(root, {
     const allIds = elements.map((e) => e.id);
     const pinnedIds = elements.filter((e) => e.pinned).map((e) => e.id);
     const storedOrder = (layout?.order ?? []).filter((id) => allIds.includes(id));
-    const missing = allIds.filter((id) => !storedOrder.includes(id));
+    const storedHidden = layout?.hidden ?? null;
+    const defaultHiddenIds = elements
+      .filter((e) => e.defaultHidden && !e.pinned && !storedOrder.includes(e.id) && !(storedHidden ?? []).includes(e.id))
+      .map((e) => e.id);
+    const missing = allIds.filter((id) => !storedOrder.includes(id) && !defaultHiddenIds.includes(id));
     const order = [...storedOrder, ...missing];
-    const hidden = (layout?.hidden ?? []).filter((id) => allIds.includes(id) && !pinnedIds.includes(id));
+    const baseHidden = storedHidden !== null ? storedHidden : [];
+    const hidden = [...new Set([...baseHidden, ...defaultHiddenIds])]
+      .filter((id) => allIds.includes(id) && !pinnedIds.includes(id));
     return { order, hidden };
   }
 

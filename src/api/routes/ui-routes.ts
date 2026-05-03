@@ -15,7 +15,7 @@ function setSecurityHeaders(res: ServerResponse) {
   res.setHeader('referrer-policy', 'no-referrer');
   res.setHeader(
     'content-security-policy',
-    "default-src 'self'; img-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'"
+    "default-src 'self'; img-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'"
   );
 }
 
@@ -27,6 +27,7 @@ function resolveContentType(filePath: string) {
   if (ext === '.webp') return 'image/webp';
   if (ext === '.html') return 'text/html; charset=utf-8';
   if (ext === '.xml') return 'application/xml; charset=utf-8';
+  if (ext === '.svg') return 'image/svg+xml; charset=utf-8';
 
   return 'image/png';
 }
@@ -128,6 +129,30 @@ export function createUiRoutes(runtime?: ModuleRuntimeGateway) {
 
       res.writeHead(302, { location: '/administration' });
       res.end();
+      return true;
+    }
+
+    if (url.pathname === '/profile') {
+      if (!isLoggedIn(req)) {
+        res.writeHead(302, { location: '/login' });
+        res.end();
+        return true;
+      }
+
+      const claims = getSessionClaims(req);
+      res.writeHead(302, { location: `/profile/${encodeURIComponent(claims!.sub)}` });
+      res.end();
+      return true;
+    }
+
+    if (url.pathname.startsWith('/profile/') && url.pathname.length > '/profile/'.length) {
+      if (!isLoggedIn(req)) {
+        res.writeHead(302, { location: '/login' });
+        res.end();
+        return true;
+      }
+
+      await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'profile.html'), 'text/html; charset=utf-8');
       return true;
     }
 

@@ -238,15 +238,23 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
   async verify(username: string, password: string): Promise<AuthContext | null> {
     const result = await this.db.execute(
-      `SELECT c.username, c.password_hash, a.is_admin
+      `SELECT c.username, c.password_hash, a.is_admin, p.role
        FROM local_auth_credentials c
        JOIN accounts a ON a.id = c.account_id
+       LEFT JOIN account_profiles p ON p.account_id = a.id
        WHERE c.username = ${this.placeholder(1)}`,
       [username]
     );
     const account = result.rows?.[0];
     if (!account || account.password_hash !== hash(password)) return null;
-    return { accountId: username, provider: 'local', externalUserId: username, isAdmin: Boolean(account.is_admin) };
+    const derivedRole = account.role ?? (Boolean(account.is_admin) ? 'admin' : 'user');
+    return {
+      accountId: username,
+      provider: 'local',
+      externalUserId: username,
+      isAdmin: Boolean(account.is_admin),
+      role: derivedRole,
+    };
   }
 
   async has(username: string) {
@@ -261,7 +269,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
     return (result.rows ?? []).map((row) => ({ username: row.username, isAdmin: Boolean(row.is_admin), enabled: true }));
   }
 
-  async setRole(username: string, role: 'user' | 'admin') {
+  async setRole(username: string, role: 'user' | 'teacher' | 'moderator' | 'admin') {
     await this.db.execute(
       `UPDATE accounts SET is_admin = ${this.placeholder(1)}, updated_at = ${this.currentTimestampExpression()}
        WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(2)})`,

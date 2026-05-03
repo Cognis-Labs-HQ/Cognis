@@ -1,4 +1,5 @@
 import { apiFetch } from '../reuse/api-client.js';
+import { getInitialsText, pickInitialsColor } from '../reuse/avatar-utils.js';
 import { loadTemplate } from '../reuse/template-loader.js';
 import { bindThemeToggle as bindSharedThemeToggle, getStoredTheme } from '../reuse/theme-toggle.js';
 import { applyStaticTranslations, createI18n } from '../reuse/i18n.js';
@@ -108,6 +109,43 @@ function bindTopbarActions() {
   });
 }
 
+export async function updateNavbarAvatar() {
+  const avatarBtn = document.querySelector('.avatar-button');
+  if (!avatarBtn) return;
+  const handle = localStorage.getItem('cognis_account') ?? '';
+
+  const prevImg = avatarBtn.querySelector('img.avatar-image');
+  const prevBlobSrc = prevImg?.src?.startsWith('blob:') ? prevImg.src : null;
+
+  try {
+    const res = await apiFetch('/api/v1/profile');
+    if (res.ok) {
+      const payload = await res.json();
+      const avatarKey = payload?.data?.avatarKey;
+      if (avatarKey) {
+        const fileRes = await apiFetch(`/api/v1/files/${avatarKey}`);
+        if (fileRes.ok) {
+          const img = document.createElement('img');
+          img.className = 'avatar-image';
+          img.alt = '';
+          img.src = URL.createObjectURL(await fileRes.blob());
+          avatarBtn.replaceChildren(img);
+          if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
+          return;
+        }
+      }
+    }
+  } catch {
+    // fall through to initials fallback (lines 141-146 below)
+  }
+  if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
+  const initialsEl = document.createElement('span');
+  initialsEl.className = 'avatar-initials';
+  initialsEl.textContent = getInitialsText(handle);
+  initialsEl.style.background = pickInitialsColor(handle);
+  avatarBtn.replaceChildren(initialsEl);
+}
+
 export async function renderDashboardLayout(root, slots = {}) {
   const i18n = slots.i18n || await createI18n();
   const template = await loadTemplate('dashboard-layout');
@@ -122,6 +160,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     .replace('{{floatingToolbar}}', hasFloatingToolbar ? `<div class="floating-toolbar" hidden>${slots.floatingToolbar}</div>` : '');
   applyStaticTranslations(i18n, root);
   bindTopbarActions();
+  updateNavbarAvatar().catch(() => {});
   applyActiveNavigation();
   bindThemeToggle();
 

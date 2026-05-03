@@ -4,6 +4,7 @@ export interface AuthContext {
   externalUserId: string;
   email?: string;
   isAdmin?: boolean;
+  role?: string;
 }
 
 export interface AuthGateway {

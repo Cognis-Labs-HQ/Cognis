@@ -24,6 +24,7 @@ services:
     volumes:
       - applogs:/app/logs
       - appconfig:/app/config
+      - appmedia:/app/media
     ports:
       - '${PORT:-3000}:3000'
     depends_on:
@@ -35,3 +36,4 @@ volumes:
   pgdata:
   applogs:
   appconfig:
+  appmedia:

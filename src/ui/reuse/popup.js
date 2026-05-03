@@ -26,23 +26,26 @@
  *   if (result === 'confirm') { ... }
  *
  * Options:
- *   title   — heading text (rendered as plain text, HTML-escaped).
- *   body    — body content: either an HTML string or a `() => string` render
- *             function. Rendered as innerHTML; callers must escape dynamic values.
- *   variant — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
- *             Defaults to 'info'.
- *   actions — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral' }>.
- *             When omitted, a single neutral close button is rendered.
+ *   title    — heading text (rendered as plain text, HTML-escaped).
+ *   body     — body content: either an HTML string or a `() => string` render
+ *              function. Rendered as innerHTML; callers must escape dynamic values.
+ *   variant  — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
+ *              Defaults to 'info'.
+ *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral' }>.
+ *              When omitted, a single neutral close button is rendered.
+ *   maxWidth — CSS max-width value (e.g. '40%', '600px') applied to the dialog
+ *              window. Defaults to the CSS-defined value (480px).
  *
  * @param {{
  *   title: string,
  *   body: string | (() => string),
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
  *   actions?: Array<{ id: string, label: string, variant?: string }>,
+ *   maxWidth?: string,
  * }} options
  * @returns {Promise<string|null>}
  */
-export function openPopup({ title, body, variant = 'info', actions } = {}) {
+export function openPopup({ title, body, variant = 'info', actions, maxWidth } = {}) {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
@@ -61,6 +64,7 @@ export function openPopup({ title, body, variant = 'info', actions } = {}) {
 
     function dismiss(actionId) {
       document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = '';
       overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
       overlay.classList.remove('popup-overlay--visible');
       resolve(actionId ?? null);
@@ -95,6 +99,10 @@ export function openPopup({ title, body, variant = 'info', actions } = {}) {
       </div>
     `;
 
+    if (maxWidth) {
+      overlay.querySelector('.popup-dialog').style.maxWidth = maxWidth;
+    }
+
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) dismiss(null);
     });
@@ -114,6 +122,7 @@ export function openPopup({ title, body, variant = 'info', actions } = {}) {
     document.addEventListener('keydown', onKeyDown);
 
     document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
 
     requestAnimationFrame(() => {
       overlay.classList.add('popup-overlay--visible');

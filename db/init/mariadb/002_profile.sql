@@ -1,0 +1,55 @@
+CREATE TABLE IF NOT EXISTS account_profiles (
+  account_id VARCHAR(191) PRIMARY KEY,
+  handle VARCHAR(191) NOT NULL UNIQUE,
+  display_name VARCHAR(255) DEFAULT NULL,
+  role VARCHAR(32) NOT NULL DEFAULT 'user',
+  bio TEXT,
+  location VARCHAR(255),
+  website VARCHAR(2048),
+  avatar_key VARCHAR(512),
+  banner_key VARCHAR(512),
+  visibility VARCHAR(32) NOT NULL DEFAULT 'hidden',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS account_follows (
+  follower_id VARCHAR(191) NOT NULL,
+  following_id VARCHAR(191) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (follower_id, following_id),
+  FOREIGN KEY (follower_id) REFERENCES accounts(id) ON DELETE CASCADE,
+  FOREIGN KEY (following_id) REFERENCES accounts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS account_blocks (
+  blocker_id VARCHAR(191) NOT NULL,
+  blocked_id VARCHAR(191) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (blocker_id, blocked_id),
+  FOREIGN KEY (blocker_id) REFERENCES accounts(id) ON DELETE CASCADE,
+  FOREIGN KEY (blocked_id) REFERENCES accounts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+  id VARCHAR(191) PRIMARY KEY,
+  account_id VARCHAR(191) NOT NULL,
+  title VARCHAR(512),
+  content LONGTEXT NOT NULL,
+  visibility VARCHAR(32) NOT NULL DEFAULT 'community',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS file_size_limits (
+  category VARCHAR(64) PRIMARY KEY,
+  max_bytes BIGINT NOT NULL
+);
+
+INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('image', 5242880);
+INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('video', 104857600);
+INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('text', 1048576);
+INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('global', 10485760);
+

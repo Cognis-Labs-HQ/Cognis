@@ -1,4 +1,4 @@
-import type { SupportedDbType } from './db-account-store.js';
+import type { SupportedDbType } from './account-store.js';
 import { createHash } from 'node:crypto';
 
 interface DbExecutor {

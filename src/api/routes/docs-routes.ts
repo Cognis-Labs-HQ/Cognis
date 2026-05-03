@@ -52,8 +52,9 @@ export function createDocsRoutes() {
     try {
       content = await readFile(markdownPath, 'utf-8');
     } catch {
-      markdownPath = join(DOCS_ROOT, `${slug}.md`);
-      content = await readFile(markdownPath, 'utf-8');
+      res.writeHead(404, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ error: { code: 'not_found', message: 'Documentation not found' } }));
+      return true;
     }
     res.writeHead(200, { 'content-type': 'application/json' });
     res.end(JSON.stringify({ data: { slug, markdown: content } }));

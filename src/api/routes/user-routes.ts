@@ -2,9 +2,16 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { LocalAccountStore } from '../adapters/local-auth-gateway.js';
 import { getAuthClaims, requireAuth } from '../auth/guard.js';
 import type { UserPreferenceStore } from './preferences-routes.js';
+import type { ProfileCreateStore } from '../adapters/db/profile-store.js';
 import { readJson } from './read-json.js';
 
-export function createUserRoutes(accountStore: LocalAccountStore, preferenceStore: UserPreferenceStore) {
+const VALID_ROLES = new Set(['user', 'teacher', 'moderator', 'admin']);
+
+export function createUserRoutes(
+  accountStore: LocalAccountStore,
+  preferenceStore: UserPreferenceStore,
+  profileStore?: ProfileCreateStore
+) {
   return async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
     if (url.pathname === '/api/v1/users' && req.method === 'GET') {
       if (!requireAuth(req, res, 'admin')) return true;
@@ -47,7 +54,14 @@ export function createUserRoutes(accountStore: LocalAccountStore, preferenceStor
 
     if (req.method === 'POST' && !action) {
       const body = await readJson(req);
-      const created = await accountStore.register(username, String(body.password ?? 'changeme'), String(body.role ?? 'user') === 'admin');
+      const role = String(body.role ?? 'user');
+      if (!VALID_ROLES.has(role)) {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'bad_request', message: `Invalid role: ${role}` } }));
+        return true;
+      }
+      const created = await accountStore.register(username, String(body.password ?? 'changeme'), role === 'admin');
+      await profileStore?.createProfile(username, username, role as any);
       res.writeHead(201, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: created }));
       return true;
@@ -55,7 +69,14 @@ export function createUserRoutes(accountStore: LocalAccountStore, preferenceStor
 
     if (req.method === 'POST' && action === 'role') {
       const body = await readJson(req);
-      await accountStore.setRole(username, body.role);
+      const role = String(body.role ?? 'user');
+      if (!VALID_ROLES.has(role)) {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'bad_request', message: `Invalid role: ${role}` } }));
+        return true;
+      }
+      await accountStore.setRole(username, role as any);
+      await profileStore?.setRoleByHandle(username, role as any);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: { updated: true } }));
       return true;
