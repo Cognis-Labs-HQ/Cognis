@@ -162,11 +162,11 @@ export function createUserRoutes(
         }
         await notifStore.addUserEmail(username, email);
 
-        const smtpReady = smtpSender?.isConfigured?.() ?? false;
-        if (tfaService && smtpReady) {
+        const configuredSmtp = smtpSender?.isConfigured?.() ? smtpSender : null;
+        if (tfaService && configuredSmtp) {
           try {
             const code = tfaService.issue(`${username}:${email}`);
-            await smtpSender!.sendVerificationEmail(email, code);
+            await configuredSmtp.sendVerificationEmail(email, code);
             res.writeHead(201, { 'content-type': 'application/json' });
             res.end(JSON.stringify({ data: { added: true, pendingVerification: true } }));
           } catch (err) {
