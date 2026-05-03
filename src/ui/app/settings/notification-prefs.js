@@ -45,7 +45,7 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
     const raw = payload.data ?? [];
     savedPrefs = {};
     for (const entry of raw) {
-      savedPrefs[`${entry.senderId}:${entry.category}`] = true;
+      savedPrefs[JSON.stringify([entry.senderId, entry.category])] = true;
     }
     pendingPrefs = { ...savedPrefs };
   }
@@ -66,7 +66,7 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
     const headerCells = providers.map((p) => `<th>${escapeHtml(p.name)}</th>`).join('');
     const rows = categories.map((cat) => {
       const cells = providers.map((p) => {
-        const prefKey = `${p.senderId}:${cat.id}`;
+        const prefKey = JSON.stringify([p.senderId, cat.id]);
         const checked = pendingPrefs[prefKey] === true ? ' checked' : '';
         return `<td><input type="checkbox" data-pref-key="${escapeHtml(prefKey)}"${checked} /></td>`;
       }).join('');
@@ -117,8 +117,9 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
     const result = [];
     const allKeys = new Set([...Object.keys(savedPrefs), ...Object.keys(pendingPrefs)]);
     for (const key of allKeys) {
-      const [senderId, ...catParts] = key.split(':');
-      const category = catParts.join(':');
+      const parsed = JSON.parse(key);
+      const senderId = parsed[0];
+      const category = parsed[1];
       result.push({ senderId, category, enabled: pendingPrefs[key] === true });
     }
     return result;

@@ -215,9 +215,9 @@ function renderNotificationsContent(providers) {
 }
 
 async function bindProviderForms() {
-  root.querySelectorAll('.provider-card[data-sender-id]').forEach(async (card) => {
-    const senderId = card.dataset.senderId;
-    if (!senderId) return;
+  for (const card of root.querySelectorAll('.provider-card[data-sender-id]')) {
+    const senderId = card instanceof HTMLElement ? card.dataset.senderId : undefined;
+    if (!senderId) continue;
 
     const configArea = card.querySelector('.provider-config-area');
     if (configArea) {
@@ -266,7 +266,7 @@ async function bindProviderForms() {
         }
       });
     }
-  });
+  }
 }
 
 let [modules, integrityRows] = await Promise.all([loadModules(), loadIntegrity()]);

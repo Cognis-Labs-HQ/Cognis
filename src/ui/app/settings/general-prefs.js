@@ -85,7 +85,6 @@ export function initGeneralPrefs(root, { i18n, username }) {
           await removeEmail(removeAttr);
           await loadEmails();
           renderEmailList();
-          bindEmailActions();
         } catch {
           showStatus(i18n.t('ui.app.settings.emails_remove_failed'));
         }
@@ -97,7 +96,6 @@ export function initGeneralPrefs(root, { i18n, username }) {
         await setPrimaryEmail(setPrimaryAttr);
         await loadEmails();
         renderEmailList();
-        bindEmailActions();
         return;
       }
 
@@ -111,7 +109,6 @@ export function initGeneralPrefs(root, { i18n, username }) {
           input.value = '';
           await loadEmails();
           renderEmailList();
-          bindEmailActions();
         } catch {
           showStatus(i18n.t('ui.app.settings.emails_add_failed'));
         }

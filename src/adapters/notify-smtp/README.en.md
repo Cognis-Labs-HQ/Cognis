@@ -11,7 +11,7 @@ All configuration is provided via environment variables or at runtime via `setCo
 | `COGNIS_SMTP_HOST` | — | SMTP server hostname. **Required** to activate the adapter. |
 | `COGNIS_SMTP_PORT` | `587` | TCP port for the SMTP connection. |
 | `COGNIS_SMTP_SECURE` | `starttls` | TLS mode: `starttls`, `tls`, or `none`. |
-| `COGNIS_SMTP_FROM` | `no-reply@localhost` | Envelope sender address. |
+| `COGNIS_SMTP_FROM` | `cognis@{host}` | Envelope sender address. |
 | `COGNIS_SMTP_USER` | — | SMTP authentication username (optional). |
 | `COGNIS_SMTP_PASS` | — | SMTP authentication password (optional). |
 
