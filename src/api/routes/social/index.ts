@@ -8,7 +8,7 @@ function publicProfile(profile: AccountProfile) {
     accountId: profile.accountId,
     handle: profile.handle,
     role: profile.role,
-    displayName: profile.handle,
+    displayName: profile.displayName ?? profile.handle,
     avatarKey: profile.avatarKey,
     visibility: profile.visibility,
   };

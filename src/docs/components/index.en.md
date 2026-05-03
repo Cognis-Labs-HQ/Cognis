@@ -3,17 +3,17 @@
 This folder is the single markdown source consumed by `/api/v1/docs`.
 
 ## Start here
-- [Overview](./overview.md)
-- [Platform Features](./features.md)
+- [Overview](./overview.en.md)
+- [Platform Features](./features.en.md)
 
 ## Components
-- [Core](./core.md)
-- [API](./api.md)
-- [Adapters](./adapters.md)
-- [Modules](./modules.md)
-- [UI](./ui.md)
-- [Tooling](./tooling.md)
-- [DevOps](./devops.md)
+- [Core](./core.en.md)
+- [API](./api.en.md)
+- [Adapters](./adapters.en.md)
+- [Modules](./modules.en.md)
+- [UI](./ui.en.md)
+- [Tooling](./tooling.en.md)
+- [DevOps](./devops.en.md)
 
 ## Writing standard
 - Use `#`/`##` sectioning.
