@@ -561,7 +561,7 @@ async function openEditPopup() {
   const currentVisibility = profile?.visibility ?? 'hidden';
   const currentDisplayName = profile?.displayName ?? '';
 
-  const result = await openPopup({
+  const popupPromise = openPopup({
     title: i18n.t('ui.app.profile.edit_profile'),
     body: () => `
       <div class="profile-edit-form">
@@ -571,10 +571,7 @@ async function openEditPopup() {
         </label>
         <label class="profile-field-label">
           ${escapeHtml(i18n.t('ui.app.profile.bio'))}
-          <textarea id="popup-edit-bio" class="profile-field-input" rows="3" maxlength="200"
-            oninput="document.getElementById('bio-char-count').textContent = \`\${this.value.length} / 200\`"
-          >${escapeHtml(currentBio)}</textarea>
-          <span id="bio-char-count" class="char-counter">${currentBio.length} / 200</span>
+          <textarea id="popup-edit-bio" class="profile-field-input" rows="3">${escapeHtml(currentBio)}</textarea>
         </label>
         <label class="profile-field-label">
           ${escapeHtml(i18n.t('ui.app.profile.location'))}
@@ -601,6 +598,11 @@ async function openEditPopup() {
       { id: 'save', label: i18n.t('ui.reuse.generic.save'), variant: 'confirm' },
     ],
   });
+
+  const bioEl = document.getElementById('popup-edit-bio');
+  if (bioEl) attachCharCounter(bioEl, 200);
+
+  const result = await popupPromise;
 
   if (result === 'save') {
     const displayName = document.getElementById('popup-edit-display-name')?.value ?? currentDisplayName;

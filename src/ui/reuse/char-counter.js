@@ -15,6 +15,8 @@
  * @returns {HTMLElement} the counter element that was inserted after inputEl.
  */
 
+const NEAR_LIMIT_THRESHOLD = 0.1;
+
 export function attachCharCounter(inputEl, limit) {
   const counter = document.createElement('span');
   counter.className = 'char-counter';
@@ -25,7 +27,7 @@ export function attachCharCounter(inputEl, limit) {
     }
     const remaining = limit - inputEl.value.length;
     counter.textContent = `${inputEl.value.length} / ${limit}`;
-    counter.classList.toggle('char-counter--near-limit', remaining <= Math.ceil(limit * 0.1));
+    counter.classList.toggle('char-counter--near-limit', remaining <= Math.ceil(limit * NEAR_LIMIT_THRESHOLD));
     counter.classList.toggle('char-counter--at-limit', remaining === 0);
   }
 
