@@ -107,14 +107,13 @@ test('key order in translated strings.xml files matches the English baseline', (
     const baselineKeys = parseKeys(readFileSync(langs.get('en'), 'utf8'));
     for (const [lang, filePath] of langs) {
       if (lang === 'en') continue;
-      const translatedKeys = parseKeys(readFileSync(filePath, 'utf8')).filter(
-        (key) => new Set(baselineKeys).has(key),
-      );
-      const baselineFiltered = baselineKeys.filter(
-        (key) => new Set(translatedKeys).has(key),
-      );
+      const translatedKeys = parseKeys(readFileSync(filePath, 'utf8'));
+      const translatedSet = new Set(translatedKeys);
+      const baselineSet = new Set(baselineKeys);
+      const translatedFiltered = translatedKeys.filter((key) => baselineSet.has(key));
+      const baselineFiltered = baselineKeys.filter((key) => translatedSet.has(key));
       for (let pos = 0; pos < baselineFiltered.length; pos++) {
-        if (baselineFiltered[pos] !== translatedKeys[pos]) {
+        if (baselineFiltered[pos] !== translatedFiltered[pos]) {
           hits.push(
             `  [${clusterDir}] ${lang}: key order mismatch at position ${pos + 1}` +
             ` — expected "${baselineFiltered[pos]}", found "${translatedKeys[pos]}"`,
