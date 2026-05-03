@@ -72,3 +72,36 @@ test('tokens for different keys are independent', () => {
   assert.equal(svc.verify(t1), 'alice:a@example.com');
   assert.equal(svc.verify(t2), 'bob:b@example.com');
 });
+
+test('isLive returns true for a live token', () => {
+  const svc = makeService();
+  const token = svc.issue('alice:alice@example.com');
+  assert.equal(svc.isLive(token), true);
+});
+
+test('isLive does not consume the token', () => {
+  const svc = makeService();
+  const token = svc.issue('alice:alice@example.com');
+  svc.isLive(token);
+  assert.equal(svc.verify(token), 'alice:alice@example.com');
+});
+
+test('isLive returns false for an unknown token', () => {
+  const svc = makeService();
+  assert.equal(svc.isLive('notavalidtoken'), false);
+});
+
+test('isLive returns false for a consumed token', () => {
+  const svc = makeService();
+  const token = svc.issue('alice:alice@example.com');
+  svc.verify(token);
+  assert.equal(svc.isLive(token), false);
+});
+
+test('isLive returns false for an expired token', () => {
+  let now = 1000;
+  const svc = makeService(() => now);
+  const token = svc.issue('alice:alice@example.com', 5000);
+  now = 7000;
+  assert.equal(svc.isLive(token), false);
+});

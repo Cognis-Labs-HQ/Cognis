@@ -143,6 +143,14 @@ export function createUserRoutes(
   async function handleEmailRoutes(req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> {
     if (!notifStore) return false;
 
+    if (url.pathname === '/api/v1/verify-tokens/status' && req.method === 'GET') {
+      const token = url.searchParams.get('token') ?? '';
+      const pending = !!(token && verifyTokenService?.isLive(token));
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ data: { pending } }));
+      return true;
+    }
+
     const emailsMatch = url.pathname.match(/^\/api\/v1\/users\/([^/]+)\/emails$/);
     if (emailsMatch) {
       const username = decodeURIComponent(emailsMatch[1]);
@@ -181,13 +189,16 @@ export function createUserRoutes(
             const key = `${username}:${email}`;
             const code = tfaService.issue(key);
             let verifyUrl: string | undefined;
-            if (verifyTokenService && externalHost) {
-              const token = verifyTokenService.issue(key);
-              verifyUrl = `${externalHost}/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(email)}/verify?token=${token}`;
+            let watchToken: string | undefined;
+            if (verifyTokenService) {
+              watchToken = verifyTokenService.issue(key);
+              if (externalHost) {
+                verifyUrl = `${externalHost}/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(email)}/verify?token=${watchToken}`;
+              }
             }
             await configuredSmtp.sendVerificationEmail(email, code, verifyUrl);
             res.writeHead(201, { 'content-type': 'application/json' });
-            res.end(JSON.stringify({ data: { added: true, pendingVerification: true } }));
+            res.end(JSON.stringify({ data: { added: true, pendingVerification: true, ...(watchToken && { watchToken }) } }));
           } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
             if (msg === 'smtp_rate_limited') {

@@ -1,7 +1,7 @@
 import { escapeHtml } from '../../reuse/escape-html.js';
 import { apiFetch } from '../../reuse/api-client.js';
 import { openPopup } from '../../reuse/popup.js';
-import { watchEmailVerification } from '../../reuse/verify-listener.js';
+import { watchToken } from '../../reuse/verify-listener.js';
 
 /**
  * General preferences sub-module for the Settings page.
@@ -102,7 +102,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
     if (statusEl) statusEl.textContent = message;
   }
 
-  async function openVerifyPopup(address) {
+  async function openVerifyPopup(address, watchTokenValue) {
     const escapedAddress = escapeHtml(address);
     let stopWatching = null;
 
@@ -139,14 +139,15 @@ export function initGeneralPrefs(root, { i18n, username }) {
           }
         });
 
-        stopWatching = watchEmailVerification({
-          username,
-          email: address,
-          apiFetch,
-          onVerified() {
-            overlay.querySelector('[data-popup-action="verified"]').click();
-          },
-        });
+        if (watchTokenValue) {
+          stopWatching = watchToken({
+            token: watchTokenValue,
+            apiFetch,
+            onConsumed() {
+              overlay.querySelector('[data-popup-action="verified"]').click();
+            },
+          });
+        }
       },
     });
 
@@ -200,7 +201,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
           await loadEmails();
           renderEmailList();
           if (result.pendingVerification) {
-            const action = await openVerifyPopup(address);
+            const action = await openVerifyPopup(address, result.watchToken);
             if (action !== 'verified') {
               try { await removeEmail(address); } catch { /* ignore */ }
             }

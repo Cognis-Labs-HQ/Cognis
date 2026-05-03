@@ -89,6 +89,17 @@ export class VerifyTokenService {
     return entry.key;
   }
 
+  /** Returns true if the specific token is still in the store and not expired, without consuming it. */
+  isLive(token: string): boolean {
+    const entry = this.store.get(token);
+    if (!entry) return false;
+    if (this.now() > entry.expiresAt) {
+      this.store.delete(token);
+      return false;
+    }
+    return true;
+  }
+
   /** Returns true if there is a live (unexpired) pending token for `key`. */
   hasPending(key: string): boolean {
     const token = this.store.findTokenByKey(key);

@@ -247,4 +247,74 @@ test('add email issues both TFA code and verify token and includes link in email
   assert.equal(sentEmails.length, 1);
   assert.ok(sentEmails[0].verifyUrl);
   assert.ok(sentEmails[0].verifyUrl!.includes('/verify?token='));
+  const data = JSON.parse(res.payload);
+  assert.ok(data.data.watchToken, 'watchToken should be returned in response');
+});
+
+test('verify-tokens/status returns pending:true for a live token', async () => {
+  const accounts = new VolatileLocalAccountStore();
+  await accounts.register('alice', 'pw', false);
+  const prefs = new VolatileUserPreferenceStore();
+  const notifStore = await makeNotifStore();
+  const verifyTokenService = new VerifyTokenService(new InMemoryVerifyTokenStore());
+  const liveToken = verifyTokenService.issue('alice:alice@example.com');
+
+  const route = createUserRoutes(accounts, prefs, undefined, notifStore, undefined, undefined, verifyTokenService);
+  const res = makeResponse();
+
+  await route(
+    { method: 'GET', headers: {} } as any,
+    res,
+    new URL(`http://localhost/api/v1/verify-tokens/status?token=${liveToken}`),
+  );
+  assert.equal(res.status, 200);
+  const data = JSON.parse(res.payload);
+  assert.equal(data.data.pending, true);
+});
+
+test('verify-tokens/status returns pending:false after token is consumed', async () => {
+  const accounts = new VolatileLocalAccountStore();
+  await accounts.register('alice', 'pw', false);
+  const prefs = new VolatileUserPreferenceStore();
+  const notifStore = await makeNotifStore();
+  await notifStore.addUserEmail('alice', 'alice@example.com');
+  const verifyTokenService = new VerifyTokenService(new InMemoryVerifyTokenStore());
+  const liveToken = verifyTokenService.issue('alice:alice@example.com');
+
+  const route = createUserRoutes(accounts, prefs, undefined, notifStore, undefined, undefined, verifyTokenService, 'http://localhost');
+
+  const linkReq = { method: 'GET', headers: {} } as any;
+  const linkRes = makeResponse();
+  await route(linkReq, linkRes, new URL(`http://localhost/api/v1/users/alice/emails/alice%40example.com/verify?token=${liveToken}`));
+  assert.equal(linkRes.status, 200);
+
+  const statusRes = makeResponse();
+  await route(
+    { method: 'GET', headers: {} } as any,
+    statusRes,
+    new URL(`http://localhost/api/v1/verify-tokens/status?token=${liveToken}`),
+  );
+  assert.equal(statusRes.status, 200);
+  const data = JSON.parse(statusRes.payload);
+  assert.equal(data.data.pending, false);
+});
+
+test('verify-tokens/status returns pending:false for an unknown token', async () => {
+  const accounts = new VolatileLocalAccountStore();
+  await accounts.register('alice', 'pw', false);
+  const prefs = new VolatileUserPreferenceStore();
+  const notifStore = await makeNotifStore();
+  const verifyTokenService = new VerifyTokenService(new InMemoryVerifyTokenStore());
+
+  const route = createUserRoutes(accounts, prefs, undefined, notifStore, undefined, undefined, verifyTokenService);
+  const res = makeResponse();
+
+  await route(
+    { method: 'GET', headers: {} } as any,
+    res,
+    new URL('http://localhost/api/v1/verify-tokens/status?token=bogus'),
+  );
+  assert.equal(res.status, 200);
+  const data = JSON.parse(res.payload);
+  assert.equal(data.data.pending, false);
 });
