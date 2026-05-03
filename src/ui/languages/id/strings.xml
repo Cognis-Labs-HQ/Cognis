@@ -248,6 +248,6 @@
   <string name="ui.app.admin.notif.test_sent">Email uji berhasil dikirim.</string>
   <string name="ui.app.admin.notif.test_failed">Gagal mengirim email uji.</string>
   <string name="ui.app.admin.notif.settings_saved">Pengaturan disimpan.</string>
-  <string name="ui.app.admin.notif.field_env_conflict">Bidang ini diatur oleh variabel lingkungan docker tetapi berbeda dari nilai yang disimpan.</string>
+  <string name="ui.app.admin.notif.field_env_conflict">Bidang ini diatur oleh variabel lingkungan tetapi berbeda dari nilai yang disimpan.</string>
   <string name="ui.app.admin.notif.provider_missing_config">Konfigurasi tidak lengkap</string>
 </resources>
