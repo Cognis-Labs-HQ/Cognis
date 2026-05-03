@@ -112,12 +112,25 @@
   <string name="ui.app.demo.removed">Demo: das zuletzt hinzugefügte Widget entfernt.</string>
   <string name="ui.app.demo.complete">Demo abgeschlossen.</string>
 
+  <string name="ui.app.dashboard.page_title">Dashboard</string>
+  <string name="ui.app.dashboard.page_subtitle">Dein persönlicher Arbeitsbereich.</string>
+  <string name="ui.app.dashboard.element.app_icon.label">App</string>
+  <string name="ui.app.dashboard.element.welcome.label">Willkommen</string>
+  <string name="ui.app.dashboard.element.account.label">Konto</string>
+  <string name="ui.app.dashboard.element.last_login.label">Letzte Anmeldung</string>
+  <string name="ui.app.dashboard.role">Rolle</string>
+  <string name="ui.app.dashboard.member_since">Mitglied seit</string>
+  <string name="ui.app.dashboard.last_seen">Zuletzt gesehen</string>
+  <string name="ui.app.dashboard.never">Nie</string>
+
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
   <string name="ui.page.title.docs">Cognis - Docs</string>
   <string name="ui.page.title.modules">Cognis - Modules</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
+  <string name="ui.app.settings.font_preview">Schriftvorschau</string>
+  <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Verfügbare Sprachen</string>
   <string name="ui.app.settings.preferred_languages">Bevorzugte Sprachen</string>
   <string name="ui.reuse.page_composer.edit_layout">Layout bearbeiten</string>
