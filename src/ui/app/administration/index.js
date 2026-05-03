@@ -256,11 +256,7 @@ function renderNotificationsContent(providers) {
     : `<p>${i18n.t('ui.app.admin.notif.no_active')}</p>`;
 
   const availableRows = availableProviders.length
-    ? availableProviders.map((p) => {
-        const escapedName = escapeHtml(p.name);
-        const missingAlert = `<span class="provider-missing-alert" aria-label="${i18n.t('ui.app.admin.notif.provider_missing_config')}">❗</span>`;
-        return `<div class="provider-card"><strong>${escapedName}${missingAlert}</strong></div>`;
-      }).join('')
+    ? availableProviders.map((p) => renderProviderCard(p)).join('')
     : `<p>${i18n.t('ui.app.admin.notif.no_available')}</p>`;
 
   return `
