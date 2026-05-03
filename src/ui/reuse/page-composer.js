@@ -300,8 +300,8 @@ export function createPageComposer(root, {
         if (occupied.has(`${c},${r}`)) return null;
       }
     }
-    const postSwapColsOverlap = col < source.col + candidate.w && col + w > source.col;
-    const postSwapRowsOverlap = row < source.row + candidate.h && row + h > source.row;
+    const postSwapColsOverlap = candidate.col < source.col + candidate.w && candidate.col + w > source.col;
+    const postSwapRowsOverlap = candidate.row < source.row + candidate.h && candidate.row + h > source.row;
     if (postSwapColsOverlap && postSwapRowsOverlap) return null;
     return candidate;
   }
@@ -314,16 +314,16 @@ export function createPageComposer(root, {
     if (dCol >= dRow) {
       line.classList.add('composer-dropzone-line--v');
       const lineX = tgtCol >= srcCol
-        ? candidate.col * UNIT
-        : (candidate.col + candidate.w) * UNIT;
+        ? (candidate.col + candidate.w) * UNIT
+        : candidate.col * UNIT;
       line.style.left = `${lineX}px`;
       line.style.top = `${candidate.row * UNIT}px`;
       line.style.height = `${candidate.h * UNIT}px`;
     } else {
       line.classList.add('composer-dropzone-line--h');
       const lineY = tgtRow >= srcRow
-        ? candidate.row * UNIT
-        : (candidate.row + candidate.h) * UNIT;
+        ? (candidate.row + candidate.h) * UNIT
+        : candidate.row * UNIT;
       line.style.top = `${lineY}px`;
       line.style.left = `${candidate.col * UNIT}px`;
       line.style.width = `${candidate.w * UNIT}px`;
@@ -495,8 +495,8 @@ export function createPageComposer(root, {
             if (targetPlacement && swapPlacement) {
               const oldCol = targetPlacement.col;
               const oldRow = targetPlacement.row;
-              targetPlacement.col = currentCol;
-              targetPlacement.row = currentRow;
+              targetPlacement.col = currentSwapTarget.col;
+              targetPlacement.row = currentSwapTarget.row;
               swapPlacement.col = oldCol;
               swapPlacement.row = oldRow;
               renderGridComposer();
@@ -979,8 +979,8 @@ export function createPageComposer(root, {
         if (occupied.has(`${c},${r}`)) return null;
       }
     }
-    const postSwapColsOverlap = col < source.col + candidate.w && col + w > source.col;
-    const postSwapRowsOverlap = row < source.row + candidate.h && row + h > source.row;
+    const postSwapColsOverlap = candidate.col < source.col + candidate.w && candidate.col + w > source.col;
+    const postSwapRowsOverlap = candidate.row < source.row + candidate.h && candidate.row + h > source.row;
     if (postSwapColsOverlap && postSwapRowsOverlap) return null;
     return candidate;
   }
@@ -1242,8 +1242,8 @@ export function createPageComposer(root, {
             if (targetPlacement && swapPlacement) {
               const oldCol = targetPlacement.col;
               const oldRow = targetPlacement.row;
-              targetPlacement.col = currentCol;
-              targetPlacement.row = currentRow;
+              targetPlacement.col = currentSwapTarget.col;
+              targetPlacement.row = currentSwapTarget.row;
               swapPlacement.col = oldCol;
               swapPlacement.row = oldRow;
               renderSubGrid(state);
@@ -1905,8 +1905,7 @@ export function createPageComposer(root, {
         if (sourceIdx === -1 || targetIdx === -1) return;
 
         visibleOrder.splice(sourceIdx, 1);
-        // When dragging downward (source before target), removing source shifts all later indices
-        // by -1, so subtract 1 from targetIdx to land immediately before the intended target.
+        // Removing source shifts all subsequent indices by -1; adjust targetIdx when source precedes target.
         const insertIdx = sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
         visibleOrder.splice(insertIdx, 0, dragSourceId);
 
