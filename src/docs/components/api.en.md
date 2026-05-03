@@ -30,8 +30,8 @@
 ### Profile
 Requires a valid bearer token for all endpoints.
 
-- `GET /api/v1/profile` — own profile (handle, bio, location, website, visibility, counts)
-- `PATCH /api/v1/profile` — update own profile fields (bio, location, website, visibility)
+- `GET /api/v1/profile` — own profile (handle, displayName, bio, location, website, visibility, counts)
+- `PATCH /api/v1/profile` — update own profile fields (displayName, bio, location, website, visibility)
 - `PUT /api/v1/profile/avatar` — upload avatar; accepted types: jpeg, png, webp; size capped by image limit
 - `DELETE /api/v1/profile/avatar` — remove own avatar
 - `PUT /api/v1/profile/banner` — upload banner; accepted types: jpeg, png, webp, gif; size capped by image limit
