@@ -193,8 +193,8 @@
   align-self: stretch;
 }
 
-.profile-hero--full-banner .profile-hero-content button,
-.profile-hero--full-banner .profile-hero-content a {
+.profile-hero--full-banner .profile-hero-body,
+.profile-hero--full-banner .profile-hero-stats {
   pointer-events: auto;
 }
 
