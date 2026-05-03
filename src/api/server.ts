@@ -16,6 +16,7 @@ import { createSocialRoutes } from './routes/social/index.js';
 import { createPostRoutes } from './routes/posts/index.js';
 import { createFileRoutes } from './routes/file-routes.js';
 import type { DbProfileStore } from './adapters/db/profile-store.js';
+import type { DbNotificationStore } from './adapters/db/notification-store.js';
 
 const LOG_LEVEL = process.env.LOG_LEVEL ?? 'info';
 const isDebug = LOG_LEVEL === 'debug';
@@ -36,6 +37,7 @@ export interface ApiDependencies {
   profileStore?: DbProfileStore;
   fileGateway?: FileStorageGateway;
   notificationGateway?: NotificationGateway;
+  notifStore?: DbNotificationStore;
   moduleIntegrityChecker?: () => Promise<Array<{ moduleId: string; file: string; expected: string; actual: string | null; status: 'ok' | 'mismatch' | 'missing' }>>;
   loadModuleStates?: () => Promise<Array<{ moduleId: string; enabled: boolean }>>;
   persistModuleState?: (moduleId: string, enabled: boolean) => Promise<void>;
@@ -67,8 +69,10 @@ export function buildServer(deps: ApiDependencies) {
   const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway);
   const authRoutes = createAuthRoutes(deps.authGateway, deps.accountStore, deps.profileStore);
   const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
-<<<<<<< HEAD
-  const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore, deps.profileStore);
+  const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore, deps.profileStore, deps.notifStore);
+  const notificationRoutes = deps.notificationGateway
+    ? createNotificationRoutes(deps.notificationGateway, deps.notifStore)
+    : null;
   const profileRoutes = deps.profileStore && deps.fileGateway
     ? createProfileRoutes(deps.profileStore, deps.fileGateway)
     : null;
@@ -76,11 +80,6 @@ export function buildServer(deps: ApiDependencies) {
   const postRoutes = deps.profileStore ? createPostRoutes(deps.profileStore) : null;
   const fileRoutes = deps.profileStore && deps.fileGateway
     ? createFileRoutes(deps.profileStore, deps.fileGateway)
-=======
-  const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore);
-  const notificationRoutes = deps.notificationGateway
-    ? createNotificationRoutes(deps.notificationGateway)
->>>>>>> 4bb16dc (feat: implement notification gateway and SMTP adapter)
     : null;
 
   Promise.all([
@@ -131,7 +130,14 @@ export function buildServer(deps: ApiDependencies) {
         return;
       }
 
-<<<<<<< HEAD
+      if (notificationRoutes) {
+        const handledByNotifications = await notificationRoutes(req, res, url);
+        if (handledByNotifications) {
+          logEvent('info', 'Request handled by notification routes.', { method: req.method ?? 'GET', path: url.pathname, durationMs: Date.now() - startedAt });
+          return;
+        }
+      }
+
       if (profileRoutes) {
         const handledByProfile = await profileRoutes(req, res, url);
         if (handledByProfile) {
@@ -160,12 +166,6 @@ export function buildServer(deps: ApiDependencies) {
         const handledByFiles = await fileRoutes(req, res, url);
         if (handledByFiles) {
           logEvent('info', 'Request handled by file routes.', { method: req.method ?? 'GET', path: url.pathname, durationMs: Date.now() - startedAt });
-=======
-      if (notificationRoutes) {
-        const handledByNotifications = await notificationRoutes(req, res, url);
-        if (handledByNotifications) {
-          logEvent('info', 'Request handled by notification routes.', { method: req.method ?? 'GET', path: url.pathname, durationMs: Date.now() - startedAt });
->>>>>>> 4bb16dc (feat: implement notification gateway and SMTP adapter)
           return;
         }
       }

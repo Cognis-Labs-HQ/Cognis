@@ -10,3 +10,54 @@
 .widget-card > h3 {
   margin: 0 0 14px;
 }
+
+.provider-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 10px 0;
+}
+
+.provider-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  margin: 10px 0;
+}
+
+.provider-save-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.provider-test-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.provider-config-area {
+  margin: 10px 0;
+}
+
+.provider-save-btn {
+  flex-shrink: 0;
+}
+
+.provider-save-status {
+  flex: 1;
+}
+
+.provider-test-input {
+  flex: 1;
+}
+
+.provider-test-btn {
+  flex-shrink: 0;
+}
+
+.provider-test-status {
+  flex: 1;
+}

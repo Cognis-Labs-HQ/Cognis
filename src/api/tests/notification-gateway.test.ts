@@ -1,0 +1,209 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  CoreNotificationGateway,
+  VolatileNotificationPreferenceStore,
+} from '../gateways/notification-gateway.js';
+import type { NotificationEnvelope, NotificationSender } from '@cognis/core';
+
+class CapturingSender implements NotificationSender {
+  readonly senderId: string;
+  readonly received: NotificationEnvelope[] = [];
+  readonly senderName: string;
+
+  constructor(id: string, name: string) {
+    this.senderId = id;
+    this.senderName = name;
+  }
+
+  async send(envelope: NotificationEnvelope): Promise<void> {
+    this.received.push(envelope);
+  }
+}
+
+class ConfigurableSender extends CapturingSender {
+  private config: Record<string, unknown>;
+
+  constructor(id: string, name: string, initialConfig: Record<string, unknown> = {}) {
+    super(id, name);
+    this.config = { ...initialConfig };
+  }
+
+  getConfig(): Record<string, unknown> {
+    return { ...this.config };
+  }
+
+  setConfig(cfg: Record<string, unknown>): void {
+    this.config = { ...this.config, ...cfg };
+  }
+}
+
+test('CoreNotificationGateway.registerCategory and listCategories', () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  gateway.registerCategory('system', 'System Alerts');
+  gateway.registerCategory('account', 'Account Events');
+
+  const categories = gateway.listCategories();
+  assert.equal(categories.length, 2);
+  assert.ok(categories.some((c) => c.id === 'system' && c.label === 'System Alerts'));
+  assert.ok(categories.some((c) => c.id === 'account' && c.label === 'Account Events'));
+});
+
+test('CoreNotificationGateway.listSenders reflects registered senders', () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  const sender = new CapturingSender('email', 'Email Sender');
+  gateway.registerSender(sender);
+
+  const senders = gateway.listSenders();
+  assert.equal(senders.length, 1);
+  assert.equal(senders[0].senderId, 'email');
+  assert.equal(senders[0].name, 'Email Sender');
+});
+
+test('CoreNotificationGateway.listSenders marks sender active when it has getConfig', () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  const plainSender = new CapturingSender('plain', 'Plain');
+  const configSender = new ConfigurableSender('configured', 'Configured');
+  gateway.registerSender(plainSender);
+  gateway.registerSender(configSender);
+
+  const senders = gateway.listSenders();
+  const plain = senders.find((s) => s.senderId === 'plain');
+  const configured = senders.find((s) => s.senderId === 'configured');
+  assert.equal(plain?.active, false);
+  assert.equal(configured?.active, true);
+});
+
+test('CoreNotificationGateway.getProviderConfig returns null for sender without getConfig', () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  gateway.registerSender(new CapturingSender('plain', 'Plain'));
+
+  assert.equal(gateway.getProviderConfig('plain'), null);
+  assert.equal(gateway.getProviderConfig('nonexistent'), null);
+});
+
+test('CoreNotificationGateway.getProviderConfig returns config for configurable sender', () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  const sender = new ConfigurableSender('smtp', 'SMTP', { host: 'mail.example.com', port: 587 });
+  gateway.registerSender(sender);
+
+  const config = gateway.getProviderConfig('smtp');
+  assert.ok(config !== null);
+  assert.equal(config.host, 'mail.example.com');
+  assert.equal(config.port, 587);
+});
+
+test('CoreNotificationGateway.saveProviderConfig updates sender config', async () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  const sender = new ConfigurableSender('smtp', 'SMTP', { host: 'old.example.com' });
+  gateway.registerSender(sender);
+
+  await gateway.saveProviderConfig('smtp', { host: 'new.example.com', port: 465 });
+
+  const config = gateway.getProviderConfig('smtp');
+  assert.ok(config !== null);
+  assert.equal(config.host, 'new.example.com');
+  assert.equal(config.port, 465);
+});
+
+test('CoreNotificationGateway.saveProviderConfig persists to configStore', async () => {
+  const stored = new Map<string, Record<string, unknown>>();
+  const configStore = {
+    async getConfig(id: string) { return stored.get(id) ?? null; },
+    async saveConfig(id: string, config: Record<string, unknown>) { stored.set(id, config); },
+  };
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore, configStore);
+
+  const sender = new ConfigurableSender('smtp', 'SMTP');
+  gateway.registerSender(sender);
+
+  await gateway.saveProviderConfig('smtp', { host: 'new.example.com' });
+  assert.deepEqual(stored.get('smtp'), { host: 'new.example.com' });
+});
+
+test('CoreNotificationGateway.loadPersistedConfigs applies stored config to senders', async () => {
+  const stored = new Map<string, Record<string, unknown>>();
+  stored.set('smtp', { host: 'persisted.example.com', port: 587 });
+
+  const configStore = {
+    async getConfig(id: string) { return stored.get(id) ?? null; },
+    async saveConfig(id: string, config: Record<string, unknown>) { stored.set(id, config); },
+  };
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore, configStore);
+
+  const sender = new ConfigurableSender('smtp', 'SMTP', { host: 'initial.example.com' });
+  gateway.registerSender(sender);
+
+  await gateway.loadPersistedConfigs();
+
+  const config = gateway.getProviderConfig('smtp');
+  assert.ok(config !== null);
+  assert.equal(config.host, 'persisted.example.com');
+});
+
+test('CoreNotificationGateway.getSender returns registered sender by id', () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  const sender = new CapturingSender('test', 'Test');
+  gateway.registerSender(sender);
+
+  assert.equal(gateway.getSender('test'), sender);
+  assert.equal(gateway.getSender('missing'), undefined);
+});
+
+test('CoreNotificationGateway.dispatch routes envelope to correct senders', async () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  prefStore.set('alice', 'account_alert', ['smtp', 'webhook']);
+
+  const smtpSender = new CapturingSender('smtp', 'SMTP');
+  const webhookSender = new CapturingSender('webhook', 'Webhook');
+  const otherSender = new CapturingSender('other', 'Other');
+
+  const gateway = new CoreNotificationGateway(prefStore);
+  gateway.registerSender(smtpSender);
+  gateway.registerSender(webhookSender);
+  gateway.registerSender(otherSender);
+
+  const result = await gateway.dispatch({
+    category: 'account_alert',
+    recipientUsername: 'alice',
+    recipientEmail: 'alice@example.com',
+    subject: 'Alert',
+    body: 'Content',
+  });
+
+  assert.deepEqual(result.dispatched.sort(), ['smtp', 'webhook']);
+  assert.equal(smtpSender.received.length, 1);
+  assert.equal(webhookSender.received.length, 1);
+  assert.equal(otherSender.received.length, 0);
+});
+
+test('CoreNotificationGateway.dispatch returns empty array when no preferences set', async () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+  gateway.registerSender(new CapturingSender('smtp', 'SMTP'));
+
+  const result = await gateway.dispatch({
+    category: 'system_alert',
+    recipientUsername: 'bob',
+    subject: 'Info',
+    body: 'Details',
+  });
+
+  assert.deepEqual(result.dispatched, []);
+});

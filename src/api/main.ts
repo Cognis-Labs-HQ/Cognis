@@ -7,6 +7,7 @@ import { DbLocalAccountStore, createDbExecutor, type SupportedDbType } from './a
 import { DbUserPreferenceStore } from './adapters/db/preference-store.js';
 import { DbProfileStore } from './adapters/db/profile-store.js';
 import { CoreNotificationGateway, VolatileNotificationPreferenceStore } from './gateways/notification-gateway.js';
+import { DbNotificationStore, DbNotificationPreferenceStore } from './adapters/db/notification-store.js';
 import { LocalFileGateway } from '../adapters/file-local/local-file-gateway.js';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -101,6 +102,10 @@ const profileStore = new DbProfileStore(dbExecutor, dbType);
 await profileStore.ensureSchema();
 await logger.info('Profile schema ensured.');
 
+const notifStore = new DbNotificationStore(dbExecutor, dbType);
+await notifStore.ensureSchema();
+await logger.info('Notification schema ensured.');
+
 const mediaLocation = process.env.MEDIA_LOCATION ?? '/app/media';
 const fileStorePath = `${mediaLocation}/uploads`;
 const fileGateway = new LocalFileGateway(fileStorePath);
@@ -155,10 +160,12 @@ try {
 const runtime = await InMemoryModuleRuntimeGateway.bootstrap();
 await logger.info('Module runtime bootstrapped.');
 
-const notificationPrefStore = new VolatileNotificationPreferenceStore();
-const notificationGateway = new CoreNotificationGateway(notificationPrefStore);
+const notificationPrefStore = new DbNotificationPreferenceStore(notifStore);
+const notificationGateway = new CoreNotificationGateway(notificationPrefStore, notifStore);
 const adaptersRoot = process.env.COGNIS_ADAPTERS_ROOT ?? path.resolve(process.cwd(), 'src', 'adapters');
 await notificationGateway.discoverSenders(adaptersRoot);
+await notificationGateway.loadPersistedConfigs();
+notificationGateway.registerCategory('system', 'System Notifications');
 await logger.info('Notification gateway bootstrapped.', { adaptersRoot });
 
 const server = buildServer({
@@ -169,6 +176,7 @@ const server = buildServer({
   profileStore,
   fileGateway,
   notificationGateway,
+  notifStore,
   loadModuleStates: async () => {
     const result = await dbExecutor.execute('SELECT module_id, enabled FROM modules');
     return (result.rows ?? []).map((row) => ({ moduleId: row.module_id, enabled: Boolean(row.enabled) }));

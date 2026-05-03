@@ -82,17 +82,17 @@ const SMTP_TIMEOUT_MS = 30_000;
 async function openSession(host: string, port: number, secure: 'tls' | 'none' | 'starttls'): Promise<SmtpSession> {
   if (secure === 'tls') {
     const sock = await new Promise<tls.TLSSocket>((resolve, reject) => {
-      const s = tls.connect({ host, port });
-      s.once('secureConnect', () => resolve(s));
-      s.once('error', reject);
+      const tlsSock = tls.connect({ host, port });
+      tlsSock.once('secureConnect', () => resolve(tlsSock));
+      tlsSock.once('error', reject);
     });
     return new SmtpSession(sock);
   }
 
   const sock = await new Promise<net.Socket>((resolve, reject) => {
-    const s = net.createConnection({ host, port });
-    s.once('connect', () => resolve(s));
-    s.once('error', reject);
+    const plainSock = net.createConnection({ host, port });
+    plainSock.once('connect', () => resolve(plainSock));
+    plainSock.once('error', reject);
   });
   return new SmtpSession(sock);
 }
@@ -101,9 +101,9 @@ async function upgradeToTls(session: SmtpSession): Promise<SmtpSession> {
   session.detach();
   const rawSock = session.socket as net.Socket;
   const tlsSock = await new Promise<tls.TLSSocket>((resolve, reject) => {
-    const s = tls.connect({ socket: rawSock });
-    s.once('secureConnect', () => resolve(s));
-    s.once('error', reject);
+    const newTlsSock = tls.connect({ socket: rawSock });
+    newTlsSock.once('secureConnect', () => resolve(newTlsSock));
+    newTlsSock.once('error', reject);
   });
   return new SmtpSession(tlsSock);
 }
@@ -192,8 +192,35 @@ async function sendMail(config: SmtpConfig, to: string, subject: string, body: s
 
 export class SmtpNotificationSender implements NotificationSender {
   readonly senderId = 'smtp';
+  readonly senderName = 'SMTP Email';
 
-  constructor(private readonly config: SmtpConfig) {}
+  constructor(private config: SmtpConfig) {}
+
+  getConfig(): Record<string, unknown> {
+    return {
+      host: this.config.host,
+      port: this.config.port,
+      from: this.config.from,
+      user: this.config.user,
+      secure: this.config.secure,
+    };
+  }
+
+  setConfig(config: Record<string, unknown>): void {
+    if (typeof config.host === 'string') this.config.host = config.host;
+    if (typeof config.port === 'number') this.config.port = config.port;
+    if (typeof config.from === 'string') this.config.from = config.from;
+    if (typeof config.user === 'string') this.config.user = config.user;
+    if (typeof config.password === 'string') this.config.password = config.password;
+    if (config.secure === 'none' || config.secure === 'tls' || config.secure === 'starttls') {
+      this.config.secure = config.secure;
+    }
+  }
+
+  async sendTestEmail(to: string): Promise<void> {
+    if (!to) throw new Error('smtp_test_email_requires_recipient');
+    await sendMail(this.config, to, 'Cognis SMTP Test', 'This is a test email from Cognis.');
+  }
 
   async send(envelope: NotificationEnvelope): Promise<void> {
     if (!envelope.recipientEmail) {

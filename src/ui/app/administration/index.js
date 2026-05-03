@@ -2,6 +2,7 @@ import { apiFetch } from '../../reuse/api-client.js';
 import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 import { createPageComposer } from '../../reuse/page-composer.js';
 import { openPopup } from '../../reuse/popup.js';
+import { escapeHtml } from '../../reuse/escape-html.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
@@ -142,7 +143,134 @@ function bindIntegrityRerun() {
   });
 }
 
+async function loadProviders() {
+  const res = await apiFetch('/api/v1/notifications/providers');
+  if (!res.ok) return [];
+  const payload = await res.json();
+  return payload.data ?? [];
+}
+
+function renderSmtpFields(config) {
+  const host = escapeHtml(String(config.host ?? ''));
+  const port = escapeHtml(String(config.port ?? '587'));
+  const from = escapeHtml(String(config.from ?? ''));
+  const user = escapeHtml(String(config.user ?? ''));
+  const secure = escapeHtml(String(config.secure ?? 'starttls'));
+  return `
+    <div class="provider-fields">
+      <label>${i18n.t('ui.app.admin.notif.smtp_host')}<input name="host" type="text" value="${host}" /></label>
+      <label>${i18n.t('ui.app.admin.notif.smtp_port')}<input name="port" type="number" value="${port}" /></label>
+      <label>${i18n.t('ui.app.admin.notif.smtp_from')}<input name="from" type="email" value="${from}" /></label>
+      <label>${i18n.t('ui.app.admin.notif.smtp_user')}<input name="user" type="text" value="${user}" /></label>
+      <label>${i18n.t('ui.app.admin.notif.smtp_password')}<input name="password" type="password" value="" /></label>
+      <label>${i18n.t('ui.app.admin.notif.smtp_secure')}
+        <select name="secure">
+          <option value="starttls"${secure === 'starttls' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_starttls')}</option>
+          <option value="tls"${secure === 'tls' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_tls')}</option>
+          <option value="none"${secure === 'none' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_none')}</option>
+        </select>
+      </label>
+    </div>
+  `;
+}
+
+function renderProviderCard(provider) {
+  const escapedId = escapeHtml(provider.senderId);
+  const escapedName = escapeHtml(provider.name);
+  return `
+    <div class="provider-card" data-sender-id="${escapedId}">
+      <strong>${escapedName}</strong>
+      <div class="provider-config-area"></div>
+      <div class="provider-save-row">
+        <button class="btn-confirm btn-animated provider-save-btn" type="button">${i18n.t('ui.app.admin.notif.save_settings')}</button>
+        <span class="provider-save-status notif-status-message"></span>
+      </div>
+      <div class="provider-test-row">
+        <input class="provider-test-input" type="email" placeholder="${i18n.t('ui.app.admin.notif.test_email_to')}" />
+        <button class="btn-animated provider-test-btn" type="button">${i18n.t('ui.app.admin.notif.test_email')}</button>
+        <span class="provider-test-status notif-status-message"></span>
+      </div>
+    </div>
+  `;
+}
+
+function renderNotificationsContent(providers) {
+  const activeProviders = providers.filter((p) => p.active);
+  const availableProviders = providers.filter((p) => !p.active);
+
+  const activeRows = activeProviders.length
+    ? activeProviders.map((p) => renderProviderCard(p)).join('')
+    : `<p>${i18n.t('ui.app.admin.notif.no_active')}</p>`;
+
+  const availableRows = availableProviders.length
+    ? availableProviders.map((p) => `<div class="provider-card"><strong>${escapeHtml(p.name)}</strong></div>`).join('')
+    : `<p>${i18n.t('ui.app.admin.notif.no_available')}</p>`;
+
+  return `
+    <h3>${i18n.t('ui.app.admin.notif.active_providers')}</h3>
+    ${activeRows}
+    <h3>${i18n.t('ui.app.admin.notif.available_providers')}</h3>
+    ${availableRows}
+  `;
+}
+
+async function bindProviderForms() {
+  root.querySelectorAll('.provider-card[data-sender-id]').forEach(async (card) => {
+    const senderId = card.dataset.senderId;
+    if (!senderId) return;
+
+    const configArea = card.querySelector('.provider-config-area');
+    if (configArea) {
+      const res = await apiFetch(`/api/v1/notifications/providers/${encodeURIComponent(senderId)}/config`);
+      if (res.ok) {
+        const payload = await res.json();
+        configArea.innerHTML = renderSmtpFields(payload.data ?? {});
+      }
+    }
+
+    const saveBtn = card.querySelector('.provider-save-btn');
+    const saveStatus = card.querySelector('.provider-save-status');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', async () => {
+        const fields = card.querySelectorAll('[name]');
+        const config = {};
+        fields.forEach((field) => {
+          if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement) {
+            config[field.name] = field.name === 'port' ? Number(field.value) : field.value;
+          }
+        });
+        await apiFetch(`/api/v1/notifications/providers/${encodeURIComponent(senderId)}/config`, {
+          method: 'PUT',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(config),
+        });
+        if (saveStatus) saveStatus.textContent = i18n.t('ui.app.admin.notif.settings_saved');
+      });
+    }
+
+    const testBtn = card.querySelector('.provider-test-btn');
+    const testInput = card.querySelector('.provider-test-input');
+    const testStatus = card.querySelector('.provider-test-status');
+    if (testBtn && testInput) {
+      testBtn.addEventListener('click', async () => {
+        const to = testInput instanceof HTMLInputElement ? testInput.value.trim() : '';
+        const res = await apiFetch(`/api/v1/notifications/providers/${encodeURIComponent(senderId)}/test`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ to }),
+        });
+        if (testStatus) {
+          testStatus.textContent = res.ok
+            ? i18n.t('ui.app.admin.notif.test_sent')
+            : i18n.t('ui.app.admin.notif.test_failed');
+        }
+      });
+    }
+  });
+}
+
 let [modules, integrityRows] = await Promise.all([loadModules(), loadIntegrity()]);
+let providers = await loadProviders();
 let composer;
 
 const elements = [
@@ -191,6 +319,26 @@ const elements = [
       },
     },
   },
+  {
+    id: 'notifications',
+    label: i18n.t('ui.app.admin.notifications'),
+    subComposerOptions: {
+      allowCustomization: false,
+      preferenceKey: 'administration-notifications-layout',
+      heading: i18n.t('ui.app.admin.notifications'),
+      elements: [
+        {
+          id: 'notifications-content',
+          label: i18n.t('ui.app.admin.notifications'),
+          pinned: true,
+          render: () => renderNotificationsContent(providers),
+        },
+      ],
+      onRender: () => {
+        bindProviderForms();
+      },
+    },
+  },
 ];
 
 composer = createPageComposer(root, {
@@ -212,6 +360,7 @@ composer = createPageComposer(root, {
         <ul>
           <li><button data-composer-scroll="modules">${i18n.t('ui.reuse.modules')}</button></li>
           <li><button data-composer-scroll="integrity">${i18n.t('ui.reuse.file_integrity')}</button></li>
+          <li><button data-composer-scroll="notifications">${i18n.t('ui.app.admin.notifications')}</button></li>
         </ul>
       `,
     },

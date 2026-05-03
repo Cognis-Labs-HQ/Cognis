@@ -4,15 +4,17 @@ import { getAuthClaims, requireAuth } from '../auth/guard.js';
 import type { UserPreferenceStore } from './preferences-routes.js';
 import type { ProfileCreateStore } from '../adapters/db/profile-store.js';
 import { readJson } from './read-json.js';
+import type { DbNotificationStore } from '../adapters/db/notification-store.js';
 
 const VALID_ROLES = new Set(['user', 'teacher', 'moderator', 'admin']);
 
 export function createUserRoutes(
   accountStore: LocalAccountStore,
   preferenceStore: UserPreferenceStore,
-  profileStore?: ProfileCreateStore
+  profileStore?: ProfileCreateStore,
+  notifStore?: DbNotificationStore,
 ) {
-  return async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
+  const adminRoutes = async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
     if (url.pathname === '/api/v1/users' && req.method === 'GET') {
       if (!requireAuth(req, res, 'admin')) return true;
       res.writeHead(200, { 'content-type': 'application/json' });
@@ -119,5 +121,87 @@ export function createUserRoutes(
     }
 
     return false;
+  };
+
+  async function handleEmailRoutes(req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> {
+    if (!notifStore) return false;
+
+    const emailsMatch = url.pathname.match(/^\/api\/v1\/users\/([^/]+)\/emails$/);
+    if (emailsMatch) {
+      const username = decodeURIComponent(emailsMatch[1]);
+      const claims = getAuthClaims(req);
+      if (!claims) {
+        res.writeHead(401, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'unauthorized', message: 'Login required' } }));
+        return true;
+      }
+      if (claims.sub !== username && claims.role !== 'admin') {
+        res.writeHead(403, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'forbidden', message: 'Access denied' } }));
+        return true;
+      }
+
+      if (req.method === 'GET') {
+        const emails = await notifStore.getUserEmails(username);
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ data: emails }));
+        return true;
+      }
+
+      if (req.method === 'POST') {
+        const body = await readJson(req);
+        const email = String(body.email ?? '');
+        const isPrimary = body.isPrimary === true;
+        await notifStore.addUserEmail(username, email, isPrimary);
+        res.writeHead(201, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ data: { added: true } }));
+        return true;
+      }
+
+      return false;
+    }
+
+    const emailActionsMatch = url.pathname.match(/^\/api\/v1\/users\/([^/]+)\/emails\/([^/]+)(?:\/(primary))?$/);
+    if (emailActionsMatch) {
+      const username = decodeURIComponent(emailActionsMatch[1]);
+      const email = decodeURIComponent(emailActionsMatch[2]);
+      const emailAction = emailActionsMatch[3];
+
+      const claims = getAuthClaims(req);
+      if (!claims) {
+        res.writeHead(401, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'unauthorized', message: 'Login required' } }));
+        return true;
+      }
+      if (claims.sub !== username && claims.role !== 'admin') {
+        res.writeHead(403, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'forbidden', message: 'Access denied' } }));
+        return true;
+      }
+
+      if (req.method === 'DELETE' && !emailAction) {
+        await notifStore.removeUserEmail(username, email);
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ data: { removed: true } }));
+        return true;
+      }
+
+      if (req.method === 'PUT' && emailAction === 'primary') {
+        await notifStore.setPrimaryEmail(username, email);
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ data: { updated: true } }));
+        return true;
+      }
+
+      return false;
+    }
+
+    return false;
+  }
+
+  return async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
+    const emailResult = await handleEmailRoutes(req, res, url);
+    if (emailResult) return true;
+    return adminRoutes(req, res, url);
   };
 }

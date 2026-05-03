@@ -52,3 +52,57 @@ test('SmtpNotificationSender.send rejects when recipientEmail is absent', async 
     /smtp_sender_requires_recipient_email/
   );
 });
+
+test('SmtpNotificationSender.getConfig returns current configuration without password', () => {
+  const sender = new SmtpNotificationSender({
+    host: 'smtp.example.com',
+    port: 587,
+    from: 'no-reply@example.com',
+    secure: 'starttls',
+    user: 'user@example.com',
+  });
+  const config = sender.getConfig();
+  assert.equal(config.host, 'smtp.example.com');
+  assert.equal(config.port, 587);
+  assert.equal(config.from, 'no-reply@example.com');
+  assert.equal(config.secure, 'starttls');
+  assert.equal(config.user, 'user@example.com');
+  assert.ok(!Object.prototype.hasOwnProperty.call(config, 'pass'));
+});
+
+test('SmtpNotificationSender.setConfig updates host and port', () => {
+  const sender = new SmtpNotificationSender({
+    host: 'old.example.com',
+    port: 587,
+    from: 'no-reply@example.com',
+    secure: 'starttls',
+  });
+  sender.setConfig({ host: 'new.example.com', port: 465 });
+  const config = sender.getConfig();
+  assert.equal(config.host, 'new.example.com');
+  assert.equal(config.port, 465);
+});
+
+test('SmtpNotificationSender.senderName returns descriptive name', () => {
+  const sender = new SmtpNotificationSender({
+    host: 'smtp.example.com',
+    port: 587,
+    from: 'no-reply@example.com',
+    secure: 'starttls',
+  });
+  assert.equal(typeof sender.senderName, 'string');
+  assert.ok(sender.senderName.length > 0);
+});
+
+test('SmtpNotificationSender.sendTestEmail rejects when to address is empty', async () => {
+  const sender = new SmtpNotificationSender({
+    host: 'smtp.example.com',
+    port: 587,
+    from: 'no-reply@example.com',
+    secure: 'starttls',
+  });
+  await assert.rejects(
+    () => sender.sendTestEmail(''),
+    /smtp_test_email_requires_recipient/
+  );
+});

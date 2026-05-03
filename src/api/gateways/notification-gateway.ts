@@ -1,9 +1,20 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { NotificationEnvelope, NotificationGateway, NotificationSender } from '@cognis/core';
+import type {
+  NotificationCategory,
+  NotificationEnvelope,
+  NotificationGateway,
+  NotificationSender,
+  NotificationSenderInfo,
+} from '@cognis/core';
 
 export interface NotificationPreferenceStore {
   getSenderIds(recipientUsername: string, category: string): Promise<string[]>;
+}
+
+export interface NotificationConfigStore {
+  getConfig(senderId: string): Promise<Record<string, unknown> | null>;
+  saveConfig(senderId: string, config: Record<string, unknown>): Promise<void>;
 }
 
 export class VolatileNotificationPreferenceStore implements NotificationPreferenceStore {
@@ -20,11 +31,58 @@ export class VolatileNotificationPreferenceStore implements NotificationPreferen
 
 export class CoreNotificationGateway implements NotificationGateway {
   private readonly senders = new Map<string, NotificationSender>();
+  private readonly categories = new Map<string, string>();
 
-  constructor(private readonly prefStore: NotificationPreferenceStore) {}
+  constructor(
+    private readonly prefStore: NotificationPreferenceStore,
+    private readonly configStore?: NotificationConfigStore,
+  ) {}
 
   registerSender(sender: NotificationSender): void {
     this.senders.set(sender.senderId, sender);
+  }
+
+  registerCategory(id: string, label: string): void {
+    this.categories.set(id, label);
+  }
+
+  listSenders(): NotificationSenderInfo[] {
+    return Array.from(this.senders.values()).map((sender) => ({
+      senderId: sender.senderId,
+      name: sender.senderName ?? sender.senderId,
+      active: typeof sender.getConfig === 'function',
+    }));
+  }
+
+  listCategories(): NotificationCategory[] {
+    return Array.from(this.categories.entries()).map(([id, label]) => ({ id, label }));
+  }
+
+  getProviderConfig(senderId: string): Record<string, unknown> | null {
+    const sender = this.senders.get(senderId);
+    if (!sender || typeof sender.getConfig !== 'function') return null;
+    return sender.getConfig();
+  }
+
+  async saveProviderConfig(senderId: string, config: Record<string, unknown>): Promise<void> {
+    const sender = this.senders.get(senderId);
+    if (sender && typeof sender.setConfig === 'function') {
+      sender.setConfig(config);
+    }
+    await this.configStore?.saveConfig(senderId, config);
+  }
+
+  async loadPersistedConfigs(): Promise<void> {
+    if (!this.configStore) return;
+    for (const sender of this.senders.values()) {
+      if (typeof sender.setConfig !== 'function') continue;
+      const config = await this.configStore.getConfig(sender.senderId);
+      if (config) sender.setConfig(config);
+    }
+  }
+
+  getSender(senderId: string): NotificationSender | undefined {
+    return this.senders.get(senderId);
   }
 
   async discoverSenders(adaptersRoot: string): Promise<void> {
