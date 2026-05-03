@@ -167,7 +167,7 @@ function renderHero() {
 
   return `
     <div class="${heroClass}">
-      <div class="profile-hero-banner-wrap${bannerHeight === 'full' ? ' profile-hero-banner-wrap--full' : ''}">
+      <div class="profile-hero-banner-wrap">
         <button
           class="profile-hero-banner-btn"
           type="button"
@@ -198,51 +198,53 @@ function renderHero() {
           </div>
         </div>
       </div>
-      <div class="profile-hero-body">
-        <div class="profile-avatar-wrap">
-          <button
-            class="profile-hero-avatar-btn"
-            type="button"
-            aria-label="${i18n.t('ui.app.profile.change_avatar')}"
-          >${renderAvatarContent()}</button>
-          ${avatarBlobUrl ? `
+      <div class="profile-hero-content">
+        <div class="profile-hero-body">
+          <div class="profile-avatar-wrap">
             <button
-              class="profile-avatar-remove-btn"
+              class="profile-hero-avatar-btn"
               type="button"
-              aria-label="${i18n.t('ui.app.profile.remove_avatar')}"
-            >&#x2715;</button>
-          ` : ''}
-        </div>
-        <div class="profile-hero-identity">
-          <div class="profile-hero-handle-row">
-            <strong class="profile-hero-handle">@${escapeHtml(profile?.handle ?? '')}</strong>
-            ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ''}
-            <span class="visibility-badge ${visibilityClass(profile?.visibility ?? 'hidden')}">${i18n.t(`ui.app.profile.visibility.${profile?.visibility ?? 'hidden'}`)}</span>
+              aria-label="${i18n.t('ui.app.profile.change_avatar')}"
+            >${renderAvatarContent()}</button>
+            ${avatarBlobUrl ? `
+              <button
+                class="profile-avatar-remove-btn"
+                type="button"
+                aria-label="${i18n.t('ui.app.profile.remove_avatar')}"
+              >&#x2715;</button>
+            ` : ''}
           </div>
-          ${bio}
-          ${details ? `<div class="profile-hero-details">${details}</div>` : ''}
+          <div class="profile-hero-identity">
+            <div class="profile-hero-handle-row">
+              <strong class="profile-hero-handle">@${escapeHtml(profile?.handle ?? '')}</strong>
+              ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ''}
+              <span class="visibility-badge ${visibilityClass(profile?.visibility ?? 'hidden')}">${i18n.t(`ui.app.profile.visibility.${profile?.visibility ?? 'hidden'}`)}</span>
+            </div>
+            ${bio}
+            ${details ? `<div class="profile-hero-details">${details}</div>` : ''}
+          </div>
+          <button
+            class="profile-hero-edit-btn"
+            type="button"
+            aria-label="${i18n.t('ui.app.profile.edit_profile')}"
+          >✏</button>
         </div>
-        <button
-          class="profile-hero-edit-btn"
-          type="button"
-          aria-label="${i18n.t('ui.app.profile.edit_profile')}"
-        >✏</button>
-      </div>
-      <div class="profile-hero-stats">
-        <div class="profile-stat-block">
-          <span class="profile-stat-number">${posts.length}</span>
-          <span class="profile-stat-label">${i18n.t('ui.app.profile.posts_stat')}</span>
+        <div class="profile-hero-stats">
+          <div class="profile-stat-block">
+            <span class="profile-stat-number">${posts.length}</span>
+            <span class="profile-stat-label">${i18n.t('ui.app.profile.posts_stat')}</span>
+          </div>
+          <div class="profile-stat-block">
+            <span class="profile-stat-number">${following.length}</span>
+            <span class="profile-stat-label">${i18n.t('ui.app.profile.following_stat')}</span>
+          </div>
+          <div class="profile-stat-block">
+            <span class="profile-stat-number">${followers.length}</span>
+            <span class="profile-stat-label">${i18n.t('ui.app.profile.followers_stat')}</span>
+          </div>
         </div>
-        <div class="profile-stat-block">
-          <span class="profile-stat-number">${following.length}</span>
-          <span class="profile-stat-label">${i18n.t('ui.app.profile.following_stat')}</span>
+        <div class="profile-achievement-row" aria-label="${i18n.t('ui.app.profile.achievements')}">
         </div>
-        <div class="profile-stat-block">
-          <span class="profile-stat-number">${followers.length}</span>
-          <span class="profile-stat-label">${i18n.t('ui.app.profile.followers_stat')}</span>
-        </div>
-      </div>
-      <div class="profile-achievement-row" aria-label="${i18n.t('ui.app.profile.achievements')}">
       </div>
     </div>
   `;

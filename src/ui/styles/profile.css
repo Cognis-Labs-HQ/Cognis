@@ -1,12 +1,17 @@
 .profile-hero {
   position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 180px auto;
 }
 
 .profile-hero-banner-wrap {
   position: relative;
+  grid-row: 1;
+  grid-column: 1;
+  align-self: stretch;
   width: calc(100% + 24px);
   margin: -12px -12px 0;
-  height: 180px;
 }
 
 .profile-hero-banner-btn {
@@ -125,6 +130,10 @@
   flex-direction: column;
 }
 
+.profile-banner-menu-dropdown[hidden] {
+  display: none;
+}
+
 .profile-banner-menu-item {
   background: none;
   border: none;
@@ -165,31 +174,27 @@
   margin: 4px 0;
 }
 
+.profile-hero-content {
+  grid-row: 2;
+  grid-column: 1;
+}
+
 .profile-hero--full-banner {
-  overflow: hidden;
+  grid-template-rows: auto;
 }
 
 .profile-hero--full-banner .profile-hero-banner-wrap {
-  position: absolute;
-  top: -12px;
-  left: -12px;
-  right: -12px;
-  bottom: -12px;
-  width: auto;
-  height: auto;
-  margin: 0;
+  grid-row: 1;
   z-index: 0;
 }
 
-.profile-hero--full-banner .profile-hero-banner-btn {
-  border-radius: 14px;
+.profile-hero--full-banner .profile-hero-content {
+  grid-row: 1;
+  z-index: 1;
 }
 
-.profile-hero--full-banner .profile-hero-body,
-.profile-hero--full-banner .profile-hero-stats,
-.profile-hero--full-banner .profile-achievement-row {
-  position: relative;
-  z-index: 1;
+.profile-hero--full-banner .profile-avatar-wrap {
+  margin-top: 12px;
 }
 
 .profile-hero--full-banner .profile-banner-menu-wrap {
