@@ -113,6 +113,10 @@ export async function updateNavbarAvatar() {
   const avatarBtn = document.querySelector('.avatar-button');
   if (!avatarBtn) return;
   const handle = localStorage.getItem('cognis_account') ?? '';
+
+  const prevImg = avatarBtn.querySelector('img.avatar-image');
+  const prevBlobSrc = prevImg?.src?.startsWith('blob:') ? prevImg.src : null;
+
   try {
     const res = await apiFetch('/api/v1/profile');
     if (res.ok) {
@@ -126,6 +130,7 @@ export async function updateNavbarAvatar() {
           img.alt = '';
           img.src = URL.createObjectURL(await fileRes.blob());
           avatarBtn.replaceChildren(img);
+          if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
           return;
         }
       }
@@ -133,6 +138,7 @@ export async function updateNavbarAvatar() {
   } catch {
     // fall through to initials
   }
+  if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
   const initialsEl = document.createElement('span');
   initialsEl.className = 'avatar-initials';
   initialsEl.textContent = getInitialsText(handle);
