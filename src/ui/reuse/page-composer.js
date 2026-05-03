@@ -1905,6 +1905,8 @@ export function createPageComposer(root, {
         if (sourceIdx === -1 || targetIdx === -1) return;
 
         visibleOrder.splice(sourceIdx, 1);
+        // When dragging downward (source before target), removing source shifts all later indices
+        // by -1, so subtract 1 from targetIdx to land immediately before the intended target.
         const insertIdx = sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
         visibleOrder.splice(insertIdx, 0, dragSourceId);
 
