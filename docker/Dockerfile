@@ -16,12 +16,9 @@ COPY --chmod=755 docker/healthcheck.sh /usr/local/bin/healthcheck.sh
 # All remaining steps run as the non-root user; no chown is needed.
 USER cognis
 
-# Copy dependency manifests first so npm ci is cached independently of source changes.
 COPY --chown=cognis:cognis package.json package-lock.json tsconfig.json tsconfig.base.json ./
-RUN npm ci --ignore-scripts
-
-# Copy application source after installing dependencies.
 COPY --chown=cognis:cognis src ./src
+RUN npm ci --ignore-scripts
 
 EXPOSE 3000
 
