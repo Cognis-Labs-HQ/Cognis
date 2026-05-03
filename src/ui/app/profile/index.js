@@ -68,6 +68,28 @@ async function loadOwnPosts() {
   }
 }
 
+async function loadUserProfile(handle) {
+  try {
+    const res = await apiFetch(`/api/v1/users/${encodeURIComponent(handle)}/profile`);
+    if (res.status === 404) return { notFound: true };
+    if (!res.ok) return null;
+    return (await res.json()).data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function loadUserPosts(handle) {
+  if (!handle) return [];
+  try {
+    const res = await apiFetch(`/api/v1/users/${encodeURIComponent(handle)}/posts`);
+    if (!res.ok) return [];
+    return (await res.json()).data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 async function loadImageAsBlob(fileKey) {
   if (!fileKey) return null;
   try {
@@ -109,11 +131,23 @@ const urlHandle = decodeURIComponent(window.location.pathname.split('/')[2] ?? '
 const ownAccount = localStorage.getItem('cognis_account') ?? '';
 const isOwnProfile = urlHandle === ownAccount;
 
-let profile = await loadOwnProfile();
+let profile;
+
+if (isOwnProfile) {
+  profile = await loadOwnProfile();
+} else {
+  const result = await loadUserProfile(urlHandle);
+  if (result?.notFound) {
+    root.innerHTML = '<p style="padding:2rem;color:var(--text-muted)">Profile not found.</p>';
+    throw new Error('profile_not_found');
+  }
+  profile = result;
+}
+
 let [followers, following, posts] = await Promise.all([
   loadFollowers(profile?.handle),
   loadFollowing(profile?.handle),
-  loadOwnPosts(),
+  isOwnProfile ? loadOwnPosts() : loadUserPosts(profile?.handle),
 ]);
 
 let avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
