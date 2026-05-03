@@ -1426,7 +1426,7 @@ export function createPageComposer(root, {
     state.editToggleAbortController = new AbortController();
     const { signal } = state.editToggleAbortController;
     if (!state.editing) {
-      editBtn.textContent = '✏';
+      editBtn.innerHTML = '<span class="composer-edit-icon" aria-hidden="true"></span>';
       editBtn.title = i18n.t('ui.reuse.page_composer.edit_layout');
       editBtn.addEventListener('click', () => {
         state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
@@ -1459,7 +1459,7 @@ export function createPageComposer(root, {
     editToggleAbortController = new AbortController();
     const { signal } = editToggleAbortController;
     if (!editing) {
-      editBtn.textContent = '✏';
+      editBtn.innerHTML = '<span class="composer-edit-icon" aria-hidden="true"></span>';
       editBtn.title = i18n.t('ui.reuse.page_composer.edit_layout');
       editBtn.addEventListener('click', () => {
         layoutSnapshot = JSON.parse(JSON.stringify(layout));

@@ -516,6 +516,21 @@ body.composer-theme-hidden .composer-edit-toggle {
   bottom: 18px;
 }
 
+.composer-edit-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: var(--theme-toggle-color);
+  -webkit-mask-image: url('/static/assets/icons/edit.svg');
+  mask-image: url('/static/assets/icons/edit.svg');
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
 .composer-view-grid {
   display: grid;
   grid-template-columns: repeat(var(--grid-cols, 1), 1fr);
