@@ -51,17 +51,35 @@
  * @returns {Promise<string|null>}
  */
 
+let stylesheetReady = null;
+
 function ensureStylesheet() {
-  if (!document.querySelector('link[href="/static/styles/reuse/popup.css"]')) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = '/static/styles/reuse/popup.css';
-    document.head.appendChild(link);
+  if (stylesheetReady) return stylesheetReady;
+
+  const existing = document.querySelector('link[href="/static/styles/reuse/popup.css"]');
+  if (existing) {
+    stylesheetReady = existing.sheet
+      ? Promise.resolve()
+      : new Promise((resolve) => {
+          existing.addEventListener('load', resolve, { once: true });
+          existing.addEventListener('error', resolve, { once: true });
+        });
+    return stylesheetReady;
   }
+
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = '/static/styles/reuse/popup.css';
+  stylesheetReady = new Promise((resolve) => {
+    link.addEventListener('load', resolve, { once: true });
+    link.addEventListener('error', resolve, { once: true });
+  });
+  document.head.appendChild(link);
+  return stylesheetReady;
 }
 
-export function openPopup({ title, body, variant = 'info', actions, maxWidth } = {}) {
-  ensureStylesheet();
+export async function openPopup({ title, body, variant = 'info', actions, maxWidth } = {}) {
+  await ensureStylesheet();
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
@@ -81,7 +99,15 @@ export function openPopup({ title, body, variant = 'info', actions, maxWidth } =
     function dismiss(actionId) {
       document.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = '';
-      overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
+      let removed = false;
+      function removeOverlay() {
+        if (!removed) {
+          removed = true;
+          overlay.remove();
+        }
+      }
+      overlay.addEventListener('transitionend', removeOverlay, { once: true });
+      setTimeout(removeOverlay, 500); // fallback if no transition fires (lines above)
       overlay.classList.remove('popup-overlay--visible');
       resolve(actionId ?? null);
     }
