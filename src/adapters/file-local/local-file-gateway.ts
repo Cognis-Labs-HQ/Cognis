@@ -1,6 +1,15 @@
 import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { randomUUID } from 'node:crypto';
 import type { FileStorageGateway, StoredObject } from '@cognis/core';
+
+const MIME_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+};
 
 export class LocalFileGateway implements FileStorageGateway {
   constructor(private readonly rootPath: string) {}
@@ -17,6 +26,13 @@ export class LocalFileGateway implements FileStorageGateway {
       contentType,
       lastModified: info.mtime
     };
+  }
+
+  async store(userId: string, content: Uint8Array, contentType?: string): Promise<StoredObject> {
+    const ext = contentType ? (MIME_EXT[contentType.toLowerCase()] ?? '') : '';
+    const filename = ext ? `${randomUUID()}.${ext}` : randomUUID();
+    const key = `${userId}/${filename}`;
+    return this.put(key, content, contentType);
   }
 
   async get(key: string): Promise<Uint8Array | null> {

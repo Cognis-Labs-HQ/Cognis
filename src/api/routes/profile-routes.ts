@@ -11,14 +11,6 @@ const VALID_VISIBILITY = new Set<AccountVisibility>(['hidden', 'private', 'frien
 const AVATAR_ALLOWED_MIME = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
 const BANNER_ALLOWED_MIME = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']);
 
-const MIME_EXT: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/jpg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-  'image/gif': 'gif',
-};
-
 function profileResponse(
   profile: AccountProfile,
   followerCount: number | null,
@@ -125,14 +117,12 @@ export function createProfileRoutes(profileStore: DbProfileStore, fileGateway: F
         res.end(JSON.stringify({ error: { code: 'payload_too_large', message: `Avatar exceeds ${maxBytes} byte limit` } }));
         return true;
       }
-      const ext = MIME_EXT[mime] ?? 'jpg';
-      const key = `profile/avatars/${claims!.sub}.${ext}`;
       const existing = await profileStore.getProfile(claims!.sub);
-      if (existing?.avatarKey && existing.avatarKey !== key) await fileGateway.delete(existing.avatarKey);
-      await fileGateway.put(key, body, mime);
-      const updated = await profileStore.updateProfile(claims!.sub, { avatarKey: key });
+      if (existing?.avatarKey) await fileGateway.delete(existing.avatarKey);
+      const stored = await fileGateway.store(claims!.sub, body, mime);
+      const updated = await profileStore.updateProfile(claims!.sub, { avatarKey: stored.key });
       res.writeHead(200, { 'content-type': 'application/json' });
-      res.end(JSON.stringify({ data: { avatarKey: key, profile: updated } }));
+      res.end(JSON.stringify({ data: { avatarKey: stored.key, profile: updated } }));
       return true;
     }
 
@@ -161,14 +151,12 @@ export function createProfileRoutes(profileStore: DbProfileStore, fileGateway: F
         res.end(JSON.stringify({ error: { code: 'payload_too_large', message: `Banner exceeds ${maxBytes} byte limit` } }));
         return true;
       }
-      const ext = MIME_EXT[mime] ?? 'jpg';
-      const key = `profile/banners/${claims!.sub}.${ext}`;
       const existing = await profileStore.getProfile(claims!.sub);
-      if (existing?.bannerKey && existing.bannerKey !== key) await fileGateway.delete(existing.bannerKey);
-      await fileGateway.put(key, body, mime);
-      const updated = await profileStore.updateProfile(claims!.sub, { bannerKey: key });
+      if (existing?.bannerKey) await fileGateway.delete(existing.bannerKey);
+      const stored = await fileGateway.store(claims!.sub, body, mime);
+      const updated = await profileStore.updateProfile(claims!.sub, { bannerKey: stored.key });
       res.writeHead(200, { 'content-type': 'application/json' });
-      res.end(JSON.stringify({ data: { bannerKey: key, profile: updated } }));
+      res.end(JSON.stringify({ data: { bannerKey: stored.key, profile: updated } }));
       return true;
     }
 

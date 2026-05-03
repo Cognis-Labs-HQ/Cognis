@@ -18,3 +18,19 @@ test('local file gateway put/get/delete', async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test('local file gateway store generates unique user-scoped keys', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'cognis-files-'));
+  try {
+    const gateway = new LocalFileGateway(root);
+    const result = await gateway.store('user1', Buffer.from('img data'), 'image/png');
+    assert.match(result.key, /^user1\/[0-9a-f-]+\.png$/);
+    const content = await gateway.get(result.key);
+    assert.equal(Buffer.from(content ?? []).toString('utf8'), 'img data');
+
+    const result2 = await gateway.store('user1', Buffer.from('more data'), 'image/png');
+    assert.notEqual(result.key, result2.key);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

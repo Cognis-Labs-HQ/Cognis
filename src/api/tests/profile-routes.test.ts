@@ -20,6 +20,13 @@ function fakeFileGateway() {
       store.set(key, Buffer.from(content));
       return { key, size: content.length, lastModified: new Date() };
     },
+    async store(userId: string, content: Uint8Array, contentType?: string) {
+      const ext = ({ 'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' } as Record<string, string>)[contentType ?? ''] ?? '';
+      const uuid = `test-uuid-${store.size}`;
+      const key = ext ? `${userId}/${uuid}.${ext}` : `${userId}/${uuid}`;
+      store.set(key, Buffer.from(content));
+      return { key, size: content.length, lastModified: new Date() };
+    },
     async get(key: string) { return store.get(key) ?? null; },
     async delete(key: string) { store.delete(key); return true; },
     async list() { return []; },
@@ -359,7 +366,7 @@ test('profile routes - avatar upload succeeds and sets avatarKey', async () => {
     );
     assert.equal(status, 200);
     const parsed = JSON.parse(body);
-    assert.match(parsed.data.avatarKey, /^profile\/avatars\/alice\./);
+    assert.match(parsed.data.avatarKey, /^alice\//);
     assert.ok(gateway._has(parsed.data.avatarKey));
   } finally {
     rmSync(dir, { recursive: true, force: true });

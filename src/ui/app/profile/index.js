@@ -3,6 +3,7 @@ import { applyDocumentTitle, createI18n } from '../../reuse/i18n.js';
 import { createPageComposer } from '../../reuse/page-composer.js';
 import { openPopup } from '../../reuse/popup.js';
 import { getInitialsText, pickInitialsColor } from '../../reuse/avatar-utils.js';
+import { updateNavbarAvatar } from '../../layouts/dashboard-layout.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
@@ -78,6 +79,32 @@ async function loadImageAsBlob(fileKey) {
   }
 }
 
+async function loadBannerHeightPreference() {
+  const account = localStorage.getItem('cognis_account');
+  if (!account) return 'half';
+  try {
+    const res = await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/profile-banner`);
+    if (!res.ok) return 'half';
+    const payload = await res.json();
+    const raw = payload?.data?.layoutJson;
+    if (!raw) return 'half';
+    const parsed = JSON.parse(raw);
+    return parsed?.height === 'full' ? 'full' : 'half';
+  } catch {
+    return 'half';
+  }
+}
+
+async function saveBannerHeightPreference(height) {
+  const account = localStorage.getItem('cognis_account');
+  if (!account) return;
+  await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/preferences/profile-banner`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ layout: { height } }),
+  });
+}
+
 let profile = await loadOwnProfile();
 let [followers, following, posts] = await Promise.all([
   loadFollowers(profile?.handle),
@@ -87,6 +114,7 @@ let [followers, following, posts] = await Promise.all([
 
 let avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
 let bannerBlobUrl = await loadImageAsBlob(profile?.bannerKey);
+let bannerHeight = await loadBannerHeightPreference();
 
 let composer;
 
@@ -123,21 +151,52 @@ function renderHero() {
       : '',
   ].filter(Boolean).join('');
 
+  const bannerMenuRemoveItem = bannerBlobUrl
+    ? `
+      <div class="profile-banner-menu-sep"></div>
+      <button
+        type="button"
+        class="profile-banner-menu-item profile-banner-menu-remove"
+      >${escapeHtml(i18n.t('ui.app.profile.remove_banner'))}</button>
+    `
+    : '';
+
+  const heroClass = bannerHeight === 'full'
+    ? 'profile-hero profile-hero--full-banner'
+    : 'profile-hero';
+
   return `
-    <div class="profile-hero">
-      <div class="profile-hero-banner-wrap">
+    <div class="${heroClass}">
+      <div class="profile-hero-banner-wrap${bannerHeight === 'full' ? ' profile-hero-banner-wrap--full' : ''}">
         <button
           class="profile-hero-banner-btn"
           type="button"
           aria-label="${i18n.t('ui.app.profile.change_banner')}"
         >${bannerContent}</button>
-        ${bannerBlobUrl ? `
+        <div class="profile-banner-menu-wrap">
           <button
-            class="profile-banner-remove-btn"
+            class="profile-banner-menu-btn"
             type="button"
-            aria-label="${i18n.t('ui.app.profile.remove_banner')}"
-          >&#x2715;</button>
-        ` : ''}
+            aria-label="${i18n.t('ui.app.profile.banner_menu_label')}"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >&#9776;</button>
+          <div class="profile-banner-menu-dropdown" hidden>
+            <button
+              type="button"
+              class="profile-banner-menu-item profile-banner-height-btn"
+              data-height="half"
+              aria-pressed="${bannerHeight === 'half' ? 'true' : 'false'}"
+            >${escapeHtml(i18n.t('ui.app.profile.banner_height.half'))}</button>
+            <button
+              type="button"
+              class="profile-banner-menu-item profile-banner-height-btn"
+              data-height="full"
+              aria-pressed="${bannerHeight === 'full' ? 'true' : 'false'}"
+            >${escapeHtml(i18n.t('ui.app.profile.banner_height.full'))}</button>
+            ${bannerMenuRemoveItem}
+          </div>
+        </div>
       </div>
       <div class="profile-hero-body">
         <div class="profile-avatar-wrap">
@@ -363,6 +422,7 @@ async function doRemoveAvatar() {
   avatarBlobUrl = null;
   profile = await loadOwnProfile();
   composer.refresh(elements);
+  updateNavbarAvatar().catch(() => {});
 }
 
 async function doRemoveBanner() {
@@ -441,6 +501,7 @@ avatarFileInput.addEventListener('change', async () => {
   avatarBlobUrl = URL.createObjectURL(file);
   profile = await loadOwnProfile();
   composer.refresh(elements);
+  updateNavbarAvatar().catch(() => {});
   avatarFileInput.value = '';
 });
 
@@ -520,10 +581,11 @@ async function doFollowUser(handle) {
   }
 }
 
+let bannerMenuCloseHandler = null;
+
 function bindPageEvents() {
   root.querySelector('.profile-hero-edit-btn')?.addEventListener('click', openEditPopup);
   root.querySelector('.profile-hero-banner-btn')?.addEventListener('click', () => bannerFileInput.click());
-  root.querySelector('.profile-banner-remove-btn')?.addEventListener('click', doRemoveBanner);
   root.querySelector('.profile-hero-avatar-btn')?.addEventListener('click', () => avatarFileInput.click());
   root.querySelector('.profile-avatar-remove-btn')?.addEventListener('click', doRemoveAvatar);
   root.querySelector('#post-submit')?.addEventListener('click', doCreatePost);
@@ -533,6 +595,56 @@ function bindPageEvents() {
   root.querySelectorAll('.profile-follow-btn[data-handle]').forEach((btn) => {
     btn.addEventListener('click', () => doFollowUser(btn.dataset.handle));
   });
+
+  if (bannerMenuCloseHandler) {
+    document.removeEventListener('click', bannerMenuCloseHandler, true);
+    bannerMenuCloseHandler = null;
+  }
+
+  const menuBtn = root.querySelector('.profile-banner-menu-btn');
+  const dropdown = root.querySelector('.profile-banner-menu-dropdown');
+
+  if (menuBtn && dropdown) {
+    bannerMenuCloseHandler = (e) => {
+      const wrap = root.querySelector('.profile-banner-menu-wrap');
+      if (!wrap?.contains(e.target)) {
+        dropdown.hidden = true;
+        menuBtn.setAttribute('aria-expanded', 'false');
+      }
+    };
+
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const opening = dropdown.hidden;
+      dropdown.hidden = !opening;
+      menuBtn.setAttribute('aria-expanded', String(opening));
+      if (opening) {
+        document.addEventListener('click', bannerMenuCloseHandler, true);
+      } else {
+        document.removeEventListener('click', bannerMenuCloseHandler, true);
+      }
+    });
+
+    root.querySelectorAll('.profile-banner-height-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const height = btn.dataset.height;
+        if (!height || height === bannerHeight) return;
+        bannerHeight = height;
+        dropdown.hidden = true;
+        menuBtn.setAttribute('aria-expanded', 'false');
+        document.removeEventListener('click', bannerMenuCloseHandler, true);
+        await saveBannerHeightPreference(bannerHeight);
+        composer.refresh(elements);
+      });
+    });
+
+    root.querySelector('.profile-banner-menu-remove')?.addEventListener('click', () => {
+      dropdown.hidden = true;
+      menuBtn.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('click', bannerMenuCloseHandler, true);
+      doRemoveBanner();
+    });
+  }
 }
 
 const elements = [

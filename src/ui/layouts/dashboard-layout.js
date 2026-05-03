@@ -109,7 +109,7 @@ function bindTopbarActions() {
   });
 }
 
-async function updateNavbarAvatar() {
+export async function updateNavbarAvatar() {
   const avatarBtn = document.querySelector('.avatar-button');
   if (!avatarBtn) return;
   const handle = localStorage.getItem('cognis_account') ?? '';

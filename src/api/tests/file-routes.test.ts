@@ -20,6 +20,12 @@ function fakeFileGateway() {
       store.set(key, { data: Buffer.from(content), mime: contentType });
       return { key, size: content.length, contentType, lastModified: new Date() };
     },
+    async store(userId: string, content: Uint8Array, contentType?: string) {
+      const uuid = `test-uuid-${store.size}`;
+      const key = `${userId}/${uuid}`;
+      store.set(key, { data: Buffer.from(content), mime: contentType });
+      return { key, size: content.length, contentType, lastModified: new Date() };
+    },
     async get(key: string) {
       return store.get(key)?.data ?? null;
     },
