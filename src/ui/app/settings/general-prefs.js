@@ -1,7 +1,7 @@
 import { escapeHtml } from '../../reuse/escape-html.js';
 import { apiFetch } from '../../reuse/api-client.js';
 import { openPopup } from '../../reuse/popup.js';
-import { watchToken } from '../../reuse/verify-listener.js';
+import { watchToken } from '../../reuse/validation-url.js';
 
 /**
  * General preferences sub-module for the Settings page.
