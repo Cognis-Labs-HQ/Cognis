@@ -39,7 +39,7 @@ async function showDoc(slug) {
   const payload = await response.json();
   root.querySelector('#doc').innerHTML = renderMarkdown(payload.data.markdown);
 
-  history.replaceState(null, '', `#${encodeURIComponent(slug)}`);
+  window.location.hash = encodeURIComponent(slug);
 
   root.querySelectorAll('[data-slug]').forEach((button) => {
     const isActive = button.dataset.slug === slug;
