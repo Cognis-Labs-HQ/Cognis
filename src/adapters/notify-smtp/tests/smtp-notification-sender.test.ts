@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SmtpNotificationSender, createNotificationSender } from '../smtp-notification-sender.js';
 
-test('createNotificationSender returns null when COGNIS_SMTP_HOST is not set', () => {
+test('createNotificationSender always returns a sender instance', () => {
   const sender = createNotificationSender({});
-  assert.equal(sender, null);
+  assert.ok(sender instanceof SmtpNotificationSender);
+  assert.equal(sender.isConfigured(), false);
 });
 
 test('createNotificationSender returns a sender when host is configured', () => {

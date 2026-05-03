@@ -50,7 +50,9 @@ export class CoreNotificationGateway implements NotificationGateway {
     return Array.from(this.senders.values()).map((sender) => ({
       senderId: sender.senderId,
       name: sender.senderName ?? sender.senderId,
-      active: typeof sender.getConfig === 'function',
+      active: typeof sender.isConfigured === 'function'
+        ? sender.isConfigured()
+        : typeof sender.getConfig === 'function',
     }));
   }
 

@@ -196,6 +196,10 @@ export class SmtpNotificationSender implements NotificationSender {
 
   constructor(private config: SmtpConfig) {}
 
+  isConfigured(): boolean {
+    return Boolean(this.config.host);
+  }
+
   getConfig(): Record<string, unknown> {
     return {
       host: this.config.host,
@@ -230,12 +234,10 @@ export class SmtpNotificationSender implements NotificationSender {
   }
 }
 
-export function createNotificationSender(env: Record<string, string | undefined>): SmtpNotificationSender | null {
-  const host = env['COGNIS_SMTP_HOST'];
-  if (!host) return null;
-
+export function createNotificationSender(env: Record<string, string | undefined>): SmtpNotificationSender {
+  const host = env['COGNIS_SMTP_HOST'] ?? '';
   const port = Number.parseInt(env['COGNIS_SMTP_PORT'] ?? '587', 10);
-  const from = env['COGNIS_SMTP_FROM'] ?? `cognis@${host}`;
+  const from = env['COGNIS_SMTP_FROM'] ?? (host ? `cognis@${host}` : '');
   const user = env['COGNIS_SMTP_USER'];
   const password = env['COGNIS_SMTP_PASS'];
   const rawSecure = env['COGNIS_SMTP_SECURE'] ?? 'starttls';
