@@ -453,6 +453,17 @@
   background: transparent;
 }
 
+.profile-its-you-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.18);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
 .visibility-badge {
   font-size: 0.72rem;
   font-weight: 700;

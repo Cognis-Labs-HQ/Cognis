@@ -188,6 +188,7 @@
   <string name="ui.app.profile.post_visibility.locked.everyone">Update your profile visibility to Community to post to Everyone</string>
   <string name="ui.app.profile.post_visibility_hint">Some post visibility options are locked based on your profile visibility.</string>
   <string name="ui.app.profile.edit_profile">Edit Profile</string>
+  <string name="ui.app.profile.its_you">It&#x2019;s You</string>
   <string name="ui.app.profile.close">Close</string>
   <string name="ui.app.profile.photo_set">Upload photo</string>
   <string name="ui.app.profile.photo_remove">Remove photo</string>

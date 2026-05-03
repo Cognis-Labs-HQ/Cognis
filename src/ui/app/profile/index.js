@@ -105,6 +105,10 @@ async function saveBannerHeightPreference(height) {
   });
 }
 
+const urlHandle = decodeURIComponent(window.location.pathname.split('/')[2] ?? '');
+const ownAccount = localStorage.getItem('cognis_account') ?? '';
+const isOwnProfile = urlHandle === ownAccount;
+
 let profile = await loadOwnProfile();
 let [followers, following, posts] = await Promise.all([
   loadFollowers(profile?.handle),
@@ -225,6 +229,7 @@ function renderHero() {
           <div class="profile-hero-identity">
             <div class="profile-hero-handle-row">
               <strong class="profile-hero-handle">@${escapeHtml(profile?.handle ?? '')}</strong>
+              ${isOwnProfile ? `<span class="profile-its-you-pill">${i18n.t('ui.app.profile.its_you')}</span>` : ''}
               ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ''}
               <span class="visibility-badge ${visibilityClass(profile?.visibility ?? 'hidden')}">${i18n.t(`ui.app.profile.visibility.${profile?.visibility ?? 'hidden'}`)}</span>
             </div>

@@ -133,6 +133,25 @@ export function createUiRoutes(runtime?: ModuleRuntimeGateway) {
     }
 
     if (url.pathname === '/user') {
+      res.writeHead(302, { location: '/profile' });
+      res.end();
+      return true;
+    }
+
+    if (url.pathname === '/profile') {
+      if (!isLoggedIn(req)) {
+        res.writeHead(302, { location: '/login' });
+        res.end();
+        return true;
+      }
+
+      const claims = getSessionClaims(req);
+      res.writeHead(302, { location: `/profile/${encodeURIComponent(claims!.sub)}` });
+      res.end();
+      return true;
+    }
+
+    if (url.pathname.startsWith('/profile/') && url.pathname.length > '/profile/'.length) {
       if (!isLoggedIn(req)) {
         res.writeHead(302, { location: '/login' });
         res.end();
