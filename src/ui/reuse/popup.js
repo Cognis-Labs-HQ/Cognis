@@ -61,6 +61,7 @@ export function openPopup({ title, body, variant = 'info', actions } = {}) {
 
     function dismiss(actionId) {
       document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = '';
       overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
       overlay.classList.remove('popup-overlay--visible');
       resolve(actionId ?? null);
@@ -114,6 +115,7 @@ export function openPopup({ title, body, variant = 'info', actions } = {}) {
     document.addEventListener('keydown', onKeyDown);
 
     document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
 
     requestAnimationFrame(() => {
       overlay.classList.add('popup-overlay--visible');
