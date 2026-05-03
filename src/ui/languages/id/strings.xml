@@ -112,12 +112,25 @@
   <string name="ui.app.demo.removed">Demo: menghapus widget terbaru.</string>
   <string name="ui.app.demo.complete">Demo selesai.</string>
 
+  <string name="ui.app.dashboard.page_title">Dasbor</string>
+  <string name="ui.app.dashboard.page_subtitle">Ruang kerja pribadi Anda.</string>
+  <string name="ui.app.dashboard.element.app_icon.label">Aplikasi</string>
+  <string name="ui.app.dashboard.element.welcome.label">Selamat Datang</string>
+  <string name="ui.app.dashboard.element.account.label">Akun</string>
+  <string name="ui.app.dashboard.element.last_login.label">Login Terakhir</string>
+  <string name="ui.app.dashboard.role">Peran</string>
+  <string name="ui.app.dashboard.member_since">Anggota sejak</string>
+  <string name="ui.app.dashboard.last_seen">Terakhir dilihat</string>
+  <string name="ui.app.dashboard.never">Tidak pernah</string>
+
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
   <string name="ui.page.title.docs">Cognis - Docs</string>
   <string name="ui.page.title.modules">Cognis - Modules</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
+  <string name="ui.app.settings.font_preview">Pratinjau Font</string>
+  <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Bahasa tersedia</string>
   <string name="ui.app.settings.preferred_languages">Bahasa prioritas</string>
   <string name="ui.reuse.page_composer.edit_layout">Edit Tata Letak</string>
