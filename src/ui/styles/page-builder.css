@@ -520,7 +520,7 @@ body.composer-theme-hidden .composer-edit-toggle {
   display: inline-block;
   width: 20px;
   height: 20px;
-  background-color: var(--theme-toggle-color);
+  background-color: var(--text);
   -webkit-mask-image: url('/static/assets/icons/edit.svg');
   mask-image: url('/static/assets/icons/edit.svg');
   -webkit-mask-repeat: no-repeat;
