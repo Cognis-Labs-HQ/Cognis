@@ -155,13 +155,6 @@ export class DbProfileStore implements ProfileCreateStore {
       category TEXT PRIMARY KEY,
       max_bytes INTEGER NOT NULL
     )`);
-    try {
-      await this.db.execute(
-        `ALTER TABLE account_profiles ADD COLUMN display_name TEXT`
-      );
-    } catch {
-      // Column already exists on databases created before display_name was added.
-    }
   }
 
   private async ensureSchemaPostgresql(): Promise<void> {
@@ -210,9 +203,6 @@ export class DbProfileStore implements ProfileCreateStore {
       category TEXT PRIMARY KEY,
       max_bytes BIGINT NOT NULL
     )`);
-    await this.db.execute(
-      `ALTER TABLE account_profiles ADD COLUMN IF NOT EXISTS display_name TEXT`
-    );
   }
 
   private async ensureSchemaMariadb(): Promise<void> {
@@ -261,9 +251,6 @@ export class DbProfileStore implements ProfileCreateStore {
       category VARCHAR(64) PRIMARY KEY,
       max_bytes BIGINT NOT NULL
     )`);
-    await this.db.execute(
-      `ALTER TABLE account_profiles ADD COLUMN IF NOT EXISTS display_name VARCHAR(255) DEFAULT NULL`
-    );
   }
 
   private async seedFileSizeLimits(): Promise<void> {
