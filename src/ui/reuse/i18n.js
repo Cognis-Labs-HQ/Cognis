@@ -85,7 +85,11 @@ async function loadLocaleStrings(locale) {
   if (cache.has(normalized)) return cache.get(normalized);
 
   const response = await fetch(`${STRINGS_BASE_PATH}/${normalized}/strings.xml`);
-  if (!response.ok) throw new Error(`Unable to load strings for locale: ${normalized}`);
+  if (!response.ok) {
+    const error = new Error(`Unable to load strings for locale: ${normalized}`);
+    error.status = response.status;
+    throw error;
+  }
   const parsed = parseStringsXml(await response.text());
   cache.set(normalized, parsed);
   return parsed;
@@ -114,26 +118,34 @@ export async function createI18n(options = {}) {
   const requested = detectLocale();
   const preferredLanguages = options.preferredLanguages || [requested, DEFAULT_LOCALE];
   const normalizedPriority = [...new Set(preferredLanguages.filter((item) => typeof item === 'string').map((item) => normalizeLocale(item)).filter(Boolean))];
-  let activeLocale = normalizedPriority[0] || DEFAULT_LOCALE;
+  const loadedLocales = new Set();
+  const unsupportedLocales = new Set();
+  let activeLocale = DEFAULT_LOCALE;
   let strings = new Map();
 
   for (const locale of normalizedPriority) {
     try {
       const part = await loadLocaleStrings(locale);
+      loadedLocales.add(locale);
+      if (loadedLocales.size === 1) activeLocale = locale;
       part.forEach((value, key) => { if (!strings.has(key)) strings.set(key, value); });
-      if (strings.size && activeLocale === normalizedPriority[0]) activeLocale = locale;
-    } catch {}
+    } catch (error) {
+      if (error?.status === 404) unsupportedLocales.add(locale);
+    }
   }
 
   if (!strings.size) {
     activeLocale = DEFAULT_LOCALE;
     strings = await loadLocaleStrings(activeLocale);
+    loadedLocales.clear();
+    loadedLocales.add(DEFAULT_LOCALE);
   }
 
   const moduleStrings = await loadModuleStrings(activeLocale, options.moduleIds || []);
   moduleStrings.forEach((value, key) => strings.set(key, value));
 
-  setPreferredLanguages(normalizedPriority);
+  const persistedLocales = normalizedPriority.filter((locale) => !unsupportedLocales.has(locale));
+  setPreferredLanguages(persistedLocales.length ? persistedLocales : [DEFAULT_LOCALE]);
   document.documentElement.lang = activeLocale;
 
   return {
