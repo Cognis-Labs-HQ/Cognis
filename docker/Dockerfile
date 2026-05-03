@@ -17,7 +17,19 @@ COPY --chmod=755 docker/healthcheck.sh /usr/local/bin/healthcheck.sh
 USER cognis
 
 # Copy dependency manifests first so npm ci is cached independently of source changes.
+# Workspace package.json files must be present so npm can create the inter-package symlinks.
 COPY --chown=cognis:cognis package.json package-lock.json tsconfig.json tsconfig.base.json ./
+COPY --chown=cognis:cognis src/core/package.json ./src/core/
+COPY --chown=cognis:cognis src/api/package.json ./src/api/
+COPY --chown=cognis:cognis src/adapters/auth-ldap/package.json ./src/adapters/auth-ldap/
+COPY --chown=cognis:cognis src/adapters/auth-saml/package.json ./src/adapters/auth-saml/
+COPY --chown=cognis:cognis src/adapters/auth-sso-oidc/package.json ./src/adapters/auth-sso-oidc/
+COPY --chown=cognis:cognis src/adapters/db-mariadb/package.json ./src/adapters/db-mariadb/
+COPY --chown=cognis:cognis src/adapters/db-memory/package.json ./src/adapters/db-memory/
+COPY --chown=cognis:cognis src/adapters/db-postgres/package.json ./src/adapters/db-postgres/
+COPY --chown=cognis:cognis src/adapters/db-sqlite/package.json ./src/adapters/db-sqlite/
+COPY --chown=cognis:cognis src/adapters/file-local/package.json ./src/adapters/file-local/
+COPY --chown=cognis:cognis src/tooling/cli/package.json ./src/tooling/cli/
 RUN npm ci --ignore-scripts
 
 # Copy application source after installing dependencies.
