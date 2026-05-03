@@ -265,7 +265,7 @@ changesBar = createUnsavedChangesBar(floatingSlot, {
     localStorage.setItem('cognis_ui_preferences', JSON.stringify(prefs));
     await openPopup({
       title: i18n.t('ui.app.settings.saved_alert'),
-      variant: 'confirm',
+      variant: 'info',
       actions: [{ id: 'close', label: i18n.t('ui.reuse.popup.close'), variant: 'neutral' }],
     });
     window.location.reload();

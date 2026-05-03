@@ -8,6 +8,10 @@
  * The action descriptor array mirrors the page-composer `elements` pattern:
  * each entry is a plain object with `id`, `label`, and an optional `variant`.
  *
+ * This module self-injects /static/styles/reuse/popup.css into the document
+ * <head> on first import, so callers do not need to include that stylesheet
+ * explicitly in their page HTML.
+ *
  * Public exports:
  *   openPopup(options) — opens a modal and returns a Promise<string|null>.
  *
@@ -45,6 +49,14 @@
  * }} options
  * @returns {Promise<string|null>}
  */
+
+if (!document.querySelector('link[href="/static/styles/reuse/popup.css"]')) {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = '/static/styles/reuse/popup.css';
+  document.head.appendChild(link);
+}
+
 export function openPopup({ title, body, variant = 'info', actions, maxWidth } = {}) {
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
