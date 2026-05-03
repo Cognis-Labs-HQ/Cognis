@@ -100,7 +100,8 @@ const profileStore = new DbProfileStore(dbExecutor, dbType);
 await profileStore.ensureSchema();
 await logger.info('Profile schema ensured.');
 
-const fileStorePath = process.env.COGNIS_FILE_STORE_PATH ?? '/app/files';
+const mediaLocation = process.env.MEDIA_LOCATION ?? '/app/media';
+const fileStorePath = `${mediaLocation}/uploads`;
 const fileGateway = new LocalFileGateway(fileStorePath);
 await logger.info('File gateway initialized.', { provider: 'local', path: fileStorePath });
 
