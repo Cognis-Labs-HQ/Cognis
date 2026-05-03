@@ -154,6 +154,32 @@ test('profile routes - PATCH updates bio and visibility', async () => {
   }
 });
 
+test('profile routes - PATCH updates displayName', async () => {
+  const { dir, executor } = makeTempDb();
+  try {
+    const accountStore = new DbLocalAccountStore(executor, 'sqlite');
+    await accountStore.ensureSchema();
+    await accountStore.register('diana', 'pw');
+    const profileStore = new DbProfileStore(executor, 'sqlite');
+    await profileStore.ensureSchema();
+    await profileStore.createProfile('diana', 'diana');
+    const token = issueAccessToken('diana', 'user', 60);
+    const route = createProfileRoutes(profileStore, fakeFileGateway());
+    let status = 0;
+    let body = '';
+    await route(
+      makeReq('PATCH', token, JSON.stringify({ displayName: 'Diana Prince' })),
+      { writeHead(c: number) { status = c; }, end(p: string) { body = p; } } as any,
+      new URL('http://localhost/api/v1/profile')
+    );
+    assert.equal(status, 200);
+    const parsed = JSON.parse(body);
+    assert.equal(parsed.data.displayName, 'Diana Prince');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('profile routes - PATCH rejects invalid visibility', async () => {
   const { dir, executor } = makeTempDb();
   try {

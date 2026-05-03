@@ -46,6 +46,12 @@ app/
 
 Apply this layout to every new page and sub-module; never place a page entry point directly in `app/` as a flat `.js` file.
 
+### Route file organisation
+Route handler files live in subdirectories named after their domain, mirroring the `src/ui/app/` convention. Each handler is `index.ts` inside that directory (e.g. `src/api/routes/profile/index.ts`, `src/api/routes/social/index.ts`). Never place a route handler as a flat `*-routes.ts` file directly inside `routes/`.
+
+### Comment references for alternate control flow
+When a comment introduces an alternative or fallback code path (e.g. a catch block that intentionally falls through, or a condition that skips the normal path), it must explicitly reference the line numbers or label of the alternate block — for example: `// fall through to initials fallback (lines 141-146 below)` or `// handled by the block starting at line 82`. This helps reviewers trace non-obvious flow.
+
 ---
 
 ## Code quality

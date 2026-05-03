@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS account_profiles (
   account_id VARCHAR(191) PRIMARY KEY,
   handle VARCHAR(191) NOT NULL UNIQUE,
   display_name VARCHAR(255) DEFAULT NULL,
+
   role VARCHAR(32) NOT NULL DEFAULT 'user',
   bio TEXT,
   location VARCHAR(255),
@@ -52,4 +53,6 @@ INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('image', 52428
 INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('video', 104857600);
 INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('text', 1048576);
 INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('global', 10485760);
+
+ALTER TABLE account_profiles ADD COLUMN IF NOT EXISTS display_name VARCHAR(255) DEFAULT NULL;
 

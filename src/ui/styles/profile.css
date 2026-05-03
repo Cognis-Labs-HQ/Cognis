@@ -435,6 +435,12 @@
   gap: 6px;
 }
 
+.profile-hero-name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .profile-hero-handle-row {
   display: flex;
   align-items: center;
@@ -449,7 +455,7 @@
 }
 
 .profile-hero-handle {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-style: italic;
   color: var(--text-muted);
 }

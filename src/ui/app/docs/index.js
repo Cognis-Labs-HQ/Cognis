@@ -39,6 +39,8 @@ async function showDoc(slug) {
   const payload = await response.json();
   root.querySelector('#doc').innerHTML = renderMarkdown(payload.data.markdown);
 
+  history.replaceState(null, '', `#${encodeURIComponent(slug)}`);
+
   root.querySelectorAll('[data-slug]').forEach((button) => {
     const isActive = button.dataset.slug === slug;
     button.classList.toggle('active', isActive);
@@ -95,5 +97,12 @@ root.addEventListener('click', async (event) => {
   await showDoc(slug);
 });
 
-const defaultDoc = docs.find((doc) => doc.slug === 'overview')?.slug ?? docs[0]?.slug;
+const defaultDoc = (() => {
+  const hash = window.location.hash.slice(1);
+  if (hash) {
+    const slug = decodeURIComponent(hash);
+    if (docs.find((doc) => doc.slug === slug)) return slug;
+  }
+  return docs.find((doc) => doc.slug === 'overview')?.slug ?? docs[0]?.slug;
+})();
 if (defaultDoc) await showDoc(defaultDoc);

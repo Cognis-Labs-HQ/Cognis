@@ -203,6 +203,9 @@ export class DbProfileStore implements ProfileCreateStore {
       category TEXT PRIMARY KEY,
       max_bytes BIGINT NOT NULL
     )`);
+    await this.db.execute(
+      `ALTER TABLE account_profiles ADD COLUMN IF NOT EXISTS display_name TEXT`
+    );
   }
 
   private async ensureSchemaMariadb(): Promise<void> {
@@ -251,6 +254,9 @@ export class DbProfileStore implements ProfileCreateStore {
       category VARCHAR(64) PRIMARY KEY,
       max_bytes BIGINT NOT NULL
     )`);
+    await this.db.execute(
+      `ALTER TABLE account_profiles ADD COLUMN IF NOT EXISTS display_name VARCHAR(255) DEFAULT NULL`
+    );
   }
 
   private async seedFileSizeLimits(): Promise<void> {

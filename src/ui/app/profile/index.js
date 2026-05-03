@@ -272,12 +272,14 @@ function renderHero() {
 
   const renderedDisplayName = profile?.displayName ?? (profile?.handle ?? '').replace(/^@/, '');
   const handleRow = `
-    <div class="profile-hero-handle-row">
+    <div class="profile-hero-name-block">
       <span class="profile-hero-display-name">${escapeHtml(renderedDisplayName)}</span>
-      <em class="profile-hero-handle">@${escapeHtml(profile?.handle ?? '')}</em>
-      ${isOwnProfile ? `<span class="profile-its-you-pill">${i18n.t('ui.app.profile.its_you')}</span>` : ''}
-      ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ''}
-      <span class="visibility-badge ${visibilityClass(profile?.visibility ?? 'hidden')}">${i18n.t(`ui.app.profile.visibility.${profile?.visibility ?? 'hidden'}`)}</span>
+      <div class="profile-hero-handle-row">
+        <em class="profile-hero-handle">@${escapeHtml(profile?.handle ?? '')}</em>
+        ${isOwnProfile ? `<span class="profile-its-you-pill">${i18n.t('ui.app.profile.its_you')}</span>` : ''}
+        ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ''}
+        <span class="visibility-badge ${visibilityClass(profile?.visibility ?? 'hidden')}">${i18n.t(`ui.app.profile.visibility.${profile?.visibility ?? 'hidden'}`)}</span>
+      </div>
     </div>
   `;
 

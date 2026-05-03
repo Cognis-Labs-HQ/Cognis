@@ -136,7 +136,7 @@ export async function updateNavbarAvatar() {
       }
     }
   } catch {
-    // fall through to initials (rendered in the block below)
+    // fall through to initials fallback (lines 141-146 below)
   }
   if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
   const initialsEl = document.createElement('span');
