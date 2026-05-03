@@ -15,6 +15,21 @@ All configuration is provided via environment variables or at runtime via `setCo
 | `COGNIS_SMTP_USER` | — | SMTP authentication username (optional). |
 | `COGNIS_SMTP_PASS` | — | SMTP authentication password (optional). |
 
+## Greylisting
+
+Many mail servers employ greylisting: they issue a temporary `4xx` rejection the first time they see a new sender/recipient combination, expecting legitimate servers to retry after a short delay.
+
+The adapter automatically retries on any `4xx` (temporary) SMTP response. By default it retries up to **2 times** with a **5-minute delay** between attempts, which satisfies the minimum retry window required by virtually all greylisting implementations.
+
+These values can be adjusted at runtime via `setConfig` or the Administration UI:
+
+| Field | Default | Description |
+|---|---|---|
+| `greylistRetries` | `2` | Maximum number of retry attempts after a `4xx` response. Set to `0` to disable retries. |
+| `greylistRetryDelayMs` | `300000` (5 min) | Milliseconds to wait between retry attempts. |
+
+Permanent `5xx` errors (e.g. unknown user) are never retried.
+
 ## Activation
 
 The adapter is loaded automatically by `CoreNotificationGateway.discoverSenders()` when `COGNIS_SMTP_HOST` is set. It registers under the sender ID `smtp`.
