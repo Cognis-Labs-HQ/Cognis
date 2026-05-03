@@ -191,6 +191,12 @@
 .profile-hero--full-banner .profile-hero-content {
   grid-row: 1;
   z-index: 1;
+  pointer-events: none;
+}
+
+.profile-hero--full-banner .profile-hero-content button,
+.profile-hero--full-banner .profile-hero-content a {
+  pointer-events: auto;
 }
 
 .profile-hero--full-banner .profile-avatar-wrap {
@@ -202,26 +208,21 @@
 }
 
 .profile-hero-edit-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 2;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
+  align-self: flex-start;
   border: 1px solid var(--border);
-  background: rgba(15, 23, 42, 0.72);
-  color: var(--text);
-  font-size: 0.85rem;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.82rem;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s ease;
+  padding: 3px 10px;
+  border-radius: 6px;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .profile-hero-edit-btn:hover {
-  background: var(--surface-2);
+  background: var(--surface-soft);
+  color: var(--text);
 }
 
 .profile-hero-body {

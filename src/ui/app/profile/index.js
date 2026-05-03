@@ -220,14 +220,13 @@ function renderHero() {
               ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ''}
               <span class="visibility-badge ${visibilityClass(profile?.visibility ?? 'hidden')}">${i18n.t(`ui.app.profile.visibility.${profile?.visibility ?? 'hidden'}`)}</span>
             </div>
+            <button
+              class="profile-hero-edit-btn"
+              type="button"
+            >${escapeHtml(i18n.t('ui.app.profile.edit_profile'))}</button>
             ${bio}
             ${details ? `<div class="profile-hero-details">${details}</div>` : ''}
           </div>
-          <button
-            class="profile-hero-edit-btn"
-            type="button"
-            aria-label="${i18n.t('ui.app.profile.edit_profile')}"
-          >✏</button>
         </div>
         <div class="profile-hero-stats">
           <div class="profile-stat-block">
