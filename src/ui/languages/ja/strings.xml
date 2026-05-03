@@ -225,6 +225,7 @@
   <string name="ui.app.settings.emails_remove_failed">メールアドレスを削除できませんでした。</string>
   <string name="ui.app.settings.emails_add_failed">メールアドレスを追加できませんでした。</string>
   <string name="ui.app.settings.emails_unverified">未確認</string>
+  <string name="ui.app.settings.emails_verify_title">メールアドレスを確認</string>
   <string name="ui.app.settings.emails_verify_prompt">{email} に送信された確認コードを入力してください。</string>
   <string name="ui.app.settings.emails_verify_placeholder">6桁のコード</string>
   <string name="ui.app.settings.emails_verify_submit">確認</string>

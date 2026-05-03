@@ -21,7 +21,6 @@ import { openPopup } from '../../reuse/popup.js';
  */
 export function initGeneralPrefs(root, { i18n, username }) {
   let emails = [];
-  let pendingVerificationEmail = null;
 
   async function loadEmails() {
     const res = await apiFetch(`/api/v1/users/${encodeURIComponent(username)}/emails`);
@@ -97,32 +96,47 @@ export function initGeneralPrefs(root, { i18n, username }) {
     }).join('');
   }
 
-  function renderVerificationPrompt(address) {
-    const statusEl = root.querySelector('#email-status');
-    if (!statusEl) return;
-    const escaped = escapeHtml(address);
-    statusEl.innerHTML = `
-      <p class="email-verify-prompt">${i18n.t('ui.app.settings.emails_verify_prompt').replace('{email}', escaped)}</p>
-      <div class="email-verify-row">
-        <input id="email-verify-input" type="text" inputmode="numeric" maxlength="6"
-          placeholder="${i18n.t('ui.app.settings.emails_verify_placeholder')}" />
-        <button id="email-verify-btn" class="btn-confirm btn-animated" type="button">
-          ${i18n.t('ui.app.settings.emails_verify_submit')}
-        </button>
-      </div>
-      <div id="email-verify-status" aria-live="polite"></div>
-    `;
-  }
-
-  function clearVerificationPrompt() {
-    const statusEl = root.querySelector('#email-status');
-    if (statusEl) statusEl.innerHTML = '';
-    pendingVerificationEmail = null;
-  }
-
   function showStatus(message) {
     const statusEl = root.querySelector('#email-status');
     if (statusEl) statusEl.textContent = message;
+  }
+
+  async function openVerifyPopup(address) {
+    const escapedAddress = escapeHtml(address);
+    return openPopup({
+      title: i18n.t('ui.app.settings.emails_verify_title'),
+      body: `
+        <p class="email-verify-prompt">${i18n.t('ui.app.settings.emails_verify_prompt').replace('{email}', escapedAddress)}</p>
+        <div class="email-verify-row">
+          <input id="popup-verify-input" type="text" inputmode="numeric" maxlength="6"
+            placeholder="${escapeHtml(i18n.t('ui.app.settings.emails_verify_placeholder'))}" />
+          <button id="popup-verify-btn" class="btn-confirm btn-animated" type="button">
+            ${escapeHtml(i18n.t('ui.app.settings.emails_verify_submit'))}
+          </button>
+        </div>
+        <div id="popup-verify-status" class="notif-status-message" aria-live="polite"></div>
+        <button data-popup-action="verified" type="button" style="display:none"></button>
+      `,
+      variant: 'info',
+      actions: [{ id: 'cancel', label: i18n.t('ui.reuse.popup.cancel'), variant: 'cancel' }],
+      onOpen(overlay) {
+        overlay.querySelector('#popup-verify-btn').addEventListener('click', async () => {
+          const input = overlay.querySelector('#popup-verify-input');
+          const status = overlay.querySelector('#popup-verify-status');
+          const code = input.value.trim();
+          if (!code) return;
+          try {
+            await submitVerificationCode(address, code);
+            overlay.querySelector('[data-popup-action="verified"]').click();
+          } catch (err) {
+            const errCode = err instanceof Error ? err.message : 'verify_failed';
+            status.textContent = errCode === 'invalid_code'
+              ? i18n.t('ui.app.settings.emails_verify_invalid')
+              : i18n.t('ui.app.settings.emails_verify_failed');
+          }
+        });
+      },
+    });
   }
 
   function bindEmailActions() {
@@ -171,8 +185,12 @@ export function initGeneralPrefs(root, { i18n, username }) {
           await loadEmails();
           renderEmailList();
           if (result.pendingVerification) {
-            pendingVerificationEmail = address;
-            renderVerificationPrompt(address);
+            const action = await openVerifyPopup(address);
+            if (action !== 'verified') {
+              try { await removeEmail(address); } catch { /* ignore */ }
+            }
+            await loadEmails();
+            renderEmailList();
           }
         } catch (err) {
           const code = err instanceof Error ? err.message : 'add_failed';
@@ -183,27 +201,6 @@ export function initGeneralPrefs(root, { i18n, username }) {
           }
         }
         return;
-      }
-
-      if (target.id === 'email-verify-btn') {
-        const codeInput = root.querySelector('#email-verify-input');
-        if (!(codeInput instanceof HTMLInputElement)) return;
-        const code = codeInput.value.trim();
-        const verifyStatus = root.querySelector('#email-verify-status');
-        if (!code || !pendingVerificationEmail) return;
-        try {
-          await submitVerificationCode(pendingVerificationEmail, code);
-          clearVerificationPrompt();
-          await loadEmails();
-          renderEmailList();
-        } catch (err) {
-          const errCode = err instanceof Error ? err.message : 'verify_failed';
-          if (verifyStatus) {
-            verifyStatus.textContent = errCode === 'invalid_code'
-              ? i18n.t('ui.app.settings.emails_verify_invalid')
-              : i18n.t('ui.app.settings.emails_verify_failed');
-          }
-        }
       }
     });
   }
@@ -216,3 +213,4 @@ export function initGeneralPrefs(root, { i18n, username }) {
     },
   };
 }
+

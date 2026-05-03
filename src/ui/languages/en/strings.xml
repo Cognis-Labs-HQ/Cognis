@@ -225,6 +225,7 @@
   <string name="ui.app.settings.emails_remove_failed">Could not remove email address.</string>
   <string name="ui.app.settings.emails_add_failed">Could not add email address.</string>
   <string name="ui.app.settings.emails_unverified">Unverified</string>
+  <string name="ui.app.settings.emails_verify_title">Verify email address</string>
   <string name="ui.app.settings.emails_verify_prompt">Enter the verification code sent to {email}.</string>
   <string name="ui.app.settings.emails_verify_placeholder">6-digit code</string>
   <string name="ui.app.settings.emails_verify_submit">Verify</string>
