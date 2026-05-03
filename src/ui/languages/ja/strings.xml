@@ -250,4 +250,10 @@
   <string name="ui.app.admin.notif.settings_saved">設定が保存されました。</string>
   <string name="ui.app.admin.notif.field_env_conflict">このフィールドは環境変数で設定されていますが、保存された値と異なります。</string>
   <string name="ui.app.admin.notif.provider_missing_config">設定が不完全です</string>
+  <string name="ui.app.admin.notif.required_field">必須の値</string>
+  <string name="ui.app.admin.notif.enable_provider">プロバイダーを有効にする</string>
+  <string name="ui.app.admin.notif.smtp_host_placeholder">例: smtp.example.com</string>
+  <string name="ui.app.admin.notif.smtp_from_placeholder">例: noreply@example.com</string>
+  <string name="ui.app.admin.notif.smtp_user_placeholder">任意</string>
+  <string name="ui.app.admin.notif.smtp_password_placeholder">任意</string>
 </resources>

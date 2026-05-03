@@ -250,4 +250,10 @@
   <string name="ui.app.admin.notif.settings_saved">Einstellungen gespeichert.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Dieses Feld wird durch eine Umgebungsvariable gesetzt, weicht jedoch vom gespeicherten Wert ab.</string>
   <string name="ui.app.admin.notif.provider_missing_config">Konfiguration unvollständig</string>
+  <string name="ui.app.admin.notif.required_field">Erforderlicher Wert</string>
+  <string name="ui.app.admin.notif.enable_provider">Anbieter aktivieren</string>
+  <string name="ui.app.admin.notif.smtp_host_placeholder">z. B. smtp.example.com</string>
+  <string name="ui.app.admin.notif.smtp_from_placeholder">z. B. noreply@example.com</string>
+  <string name="ui.app.admin.notif.smtp_user_placeholder">Optional</string>
+  <string name="ui.app.admin.notif.smtp_password_placeholder">Optional</string>
 </resources>

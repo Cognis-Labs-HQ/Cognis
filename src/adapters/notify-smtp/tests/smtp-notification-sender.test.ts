@@ -134,3 +134,9 @@ test('createNotificationSender.getEnvValues returns undefined fields when env is
   assert.equal(envValues['user'], undefined);
   assert.equal(envValues['secure'], undefined);
 });
+
+test('SmtpNotificationSender.getRequiredFields returns host and from', () => {
+  const sender = createNotificationSender({});
+  const required = sender.getRequiredFields();
+  assert.deepEqual(required, ['host', 'from']);
+});

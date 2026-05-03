@@ -331,3 +331,58 @@ test('PUT /api/v1/users/:username/notification-prefs returns 200 without notifSt
   assert.equal(res.status, 200);
 });
 
+
+
+test('GET /api/v1/notifications/providers/:id/config includes requiredFields when sender implements getRequiredFields', async () => {
+  class ConfiguredSender implements NotificationSender {
+    readonly senderId = 'smtp';
+    async send() {}
+    getConfig(): Record<string, unknown> { return { host: 'smtp.example.com', port: 587, from: 'noreply@example.com', secure: 'starttls' }; }
+    getEnvValues(): Record<string, string | undefined> { return {}; }
+    getRequiredFields(): string[] { return ['host', 'from']; }
+    isConfigured(): boolean { return true; }
+  }
+
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+  gateway.registerSender(new ConfiguredSender());
+  const route = createNotificationRoutes(gateway);
+  const adminToken = issueAccessToken('admin', 'admin', 60);
+  const res = makeResponse();
+
+  await route(
+    { method: 'GET', headers: { authorization: `Bearer ${adminToken}` }, [Symbol.asyncIterator]: async function* () {} } as any,
+    res,
+    new URL('http://localhost/api/v1/notifications/providers/smtp/config')
+  );
+
+  assert.equal(res.status, 200);
+  const body = JSON.parse(res.payload);
+  assert.deepEqual(body.requiredFields, ['host', 'from']);
+});
+
+test('GET /api/v1/notifications/providers/:id/config returns empty requiredFields when sender has no getRequiredFields', async () => {
+  class MinimalSender implements NotificationSender {
+    readonly senderId = 'smtp';
+    async send() {}
+    getConfig(): Record<string, unknown> { return { host: 'smtp.example.com' }; }
+    getEnvValues(): Record<string, string | undefined> { return {}; }
+  }
+
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+  gateway.registerSender(new MinimalSender());
+  const route = createNotificationRoutes(gateway);
+  const adminToken = issueAccessToken('admin', 'admin', 60);
+  const res = makeResponse();
+
+  await route(
+    { method: 'GET', headers: { authorization: `Bearer ${adminToken}` }, [Symbol.asyncIterator]: async function* () {} } as any,
+    res,
+    new URL('http://localhost/api/v1/notifications/providers/smtp/config')
+  );
+
+  assert.equal(res.status, 200);
+  const body = JSON.parse(res.payload);
+  assert.deepEqual(body.requiredFields, []);
+});

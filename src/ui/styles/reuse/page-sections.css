@@ -18,36 +18,69 @@
   margin: 10px 0;
 }
 
+.provider-card--entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.provider-card--entry:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-soft);
+}
+
+.provider-card--entry:focus {
+  outline: 2px solid var(--accent, #3b82f6);
+  outline-offset: 2px;
+}
+
+.provider-entry-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.provider-popup-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.provider-popup-toggle-label {
+  font-weight: 600;
+  flex: 1;
+}
+
+.provider-popup-switch {
+  margin-top: 0;
+}
+
+.provider-popup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .provider-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px 16px;
+  gap: 12px 16px;
   margin: 10px 0;
-}
-
-.provider-save-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
 }
 
 .provider-test-row {
   display: flex;
   gap: 8px;
   align-items: center;
-  margin-top: 8px;
-}
-
-.provider-config-area {
-  margin: 10px 0;
-}
-
-.provider-save-btn {
-  flex-shrink: 0;
-}
-
-.provider-save-status {
-  flex: 1;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 }
 
 .provider-test-input {
@@ -65,6 +98,22 @@
 .provider-field-missing input,
 .provider-field-missing select {
   border-color: var(--danger);
+}
+
+.provider-field-required input,
+.provider-field-required select {
+  outline: 2px solid var(--danger);
+  outline-offset: 1px;
+}
+
+.provider-popup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.provider-enable-toggle {
+  display: none;
 }
 
 .provider-field-env-warning {

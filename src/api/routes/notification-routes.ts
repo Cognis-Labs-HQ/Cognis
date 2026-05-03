@@ -71,7 +71,11 @@ export function createNotificationRoutes(
           return true;
         }
         res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ data: config, envValues: gateway.getProviderEnvValues(senderId) ?? {} }));
+        res.end(JSON.stringify({
+          data: config,
+          envValues: gateway.getProviderEnvValues(senderId) ?? {},
+          requiredFields: gateway.getProviderRequiredFields(senderId) ?? [],
+        }));
         return true;
       }
 

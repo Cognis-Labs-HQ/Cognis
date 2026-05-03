@@ -207,3 +207,35 @@ test('CoreNotificationGateway.dispatch returns empty array when no preferences s
 
   assert.deepEqual(result.dispatched, []);
 });
+
+test('CoreNotificationGateway.getProviderRequiredFields returns fields from sender', () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  class RequiredFieldsSender extends CapturingSender {
+    getRequiredFields(): string[] {
+      return ['host', 'from'];
+    }
+  }
+
+  gateway.registerSender(new RequiredFieldsSender('smtp', 'SMTP'));
+  const required = gateway.getProviderRequiredFields('smtp');
+  assert.deepEqual(required, ['host', 'from']);
+});
+
+test('CoreNotificationGateway.getProviderRequiredFields returns null for sender without getRequiredFields', () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+  gateway.registerSender(new CapturingSender('smtp', 'SMTP'));
+
+  const required = gateway.getProviderRequiredFields('smtp');
+  assert.equal(required, null);
+});
+
+test('CoreNotificationGateway.getProviderRequiredFields returns null for unknown sender', () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  const required = gateway.getProviderRequiredFields('unknown');
+  assert.equal(required, null);
+});

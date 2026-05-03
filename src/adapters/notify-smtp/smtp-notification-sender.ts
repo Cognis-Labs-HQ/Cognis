@@ -204,6 +204,10 @@ export class SmtpNotificationSender implements NotificationSender {
     return { ...this.envSnapshot };
   }
 
+  getRequiredFields(): string[] {
+    return ['host', 'from'];
+  }
+
   isConfigured(): boolean {
     return Boolean(this.config.host);
   }

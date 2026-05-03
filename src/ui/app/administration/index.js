@@ -151,98 +151,211 @@ async function loadProviders() {
   return payload.data ?? [];
 }
 
-const SMTP_REQUIRED_FIELDS = new Set(['host', 'from']);
-
-function renderSmtpFieldLabel(name, labelText, inputHtml, descriptor) {
-  const isMissing = SMTP_REQUIRED_FIELDS.has(name) && !descriptor?.effectiveValue;
-  const hasConflict = descriptor?.envConflict === true;
-  const wrapperClass = isMissing ? 'provider-field-required provider-field-missing' : '';
-  const conflictWarning = hasConflict
-    ? `<span class="provider-field-env-warning" title="${i18n.t('ui.app.admin.notif.field_env_conflict')}">⚠</span>`
-    : '';
-  return `<label class="${wrapperClass}">${labelText}${inputHtml}${conflictWarning}</label>`;
-}
-
-function renderSmtpFields(descriptors) {
+function renderSmtpPopupBody(descriptors, requiredFields) {
   const val = (field, fallback = '') => escapeHtml(descriptors[field]?.effectiveValue ?? fallback);
   const host = val('host');
   const port = val('port', '587');
   const from = val('from');
   const user = val('user');
   const secure = val('secure', 'starttls');
+  const requiredSet = new Set(requiredFields);
+  const requiredTooltip = i18n.t('ui.app.admin.notif.required_field');
+  const conflictTitle = i18n.t('ui.app.admin.notif.field_env_conflict');
 
-  const hostField = renderSmtpFieldLabel(
+  function fieldLabel(name, labelText, inputHtml) {
+    const descriptor = descriptors[name];
+    const isRequired = requiredSet.has(name);
+    const isEmpty = !descriptor?.effectiveValue;
+    const hasConflict = descriptor?.envConflict === true;
+    const requiredClass = isRequired && isEmpty ? ' provider-field-required provider-field-missing' : '';
+    const requiredAttr = isRequired && isEmpty ? ` title="${requiredTooltip}"` : '';
+    const conflictWarning = hasConflict
+      ? `<span class="provider-field-env-warning" title="${conflictTitle}">⚠</span>`
+      : '';
+    const inputWithAttrs = isRequired && isEmpty
+      ? inputHtml.replace('>', `${requiredAttr}>`)
+      : inputHtml;
+    return `<label class="provider-popup-field${requiredClass}">${labelText}${inputWithAttrs}${conflictWarning}</label>`;
+  }
+
+  const hostField = fieldLabel(
     'host',
     i18n.t('ui.app.admin.notif.smtp_host'),
-    `<input name="host" type="text" value="${host}" />`,
-    descriptors['host'],
+    `<input name="host" type="text" value="${host}" placeholder="${i18n.t('ui.app.admin.notif.smtp_host_placeholder')}" />`,
   );
-  const portField = renderSmtpFieldLabel(
+  const portField = fieldLabel(
     'port',
     i18n.t('ui.app.admin.notif.smtp_port'),
-    `<input name="port" type="number" value="${port}" />`,
-    descriptors['port'],
+    `<input name="port" type="number" value="${port}" placeholder="587" />`,
   );
-  const fromField = renderSmtpFieldLabel(
+  const fromField = fieldLabel(
     'from',
     i18n.t('ui.app.admin.notif.smtp_from'),
-    `<input name="from" type="email" value="${from}" />`,
-    descriptors['from'],
+    `<input name="from" type="email" value="${from}" placeholder="${i18n.t('ui.app.admin.notif.smtp_from_placeholder')}" />`,
   );
-  const userField = renderSmtpFieldLabel(
+  const userField = fieldLabel(
     'user',
     i18n.t('ui.app.admin.notif.smtp_user'),
-    `<input name="user" type="text" value="${user}" />`,
-    descriptors['user'],
+    `<input name="user" type="text" value="${user}" placeholder="${i18n.t('ui.app.admin.notif.smtp_user_placeholder')}" />`,
   );
-  const passwordField = renderSmtpFieldLabel(
+  const passwordField = fieldLabel(
     'password',
     i18n.t('ui.app.admin.notif.smtp_password'),
-    `<input name="password" type="password" value="" />`,
-    descriptors['password'],
+    `<input name="password" type="password" value="" placeholder="${i18n.t('ui.app.admin.notif.smtp_password_placeholder')}" />`,
   );
-  const secureField = renderSmtpFieldLabel(
+  const secureField = fieldLabel(
     'secure',
     i18n.t('ui.app.admin.notif.smtp_secure'),
     `<select name="secure">
-          <option value="starttls"${secure === 'starttls' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_starttls')}</option>
-          <option value="tls"${secure === 'tls' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_tls')}</option>
-          <option value="none"${secure === 'none' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_none')}</option>
-        </select>`,
-    descriptors['secure'],
+        <option value="starttls"${secure === 'starttls' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_starttls')}</option>
+        <option value="tls"${secure === 'tls' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_tls')}</option>
+        <option value="none"${secure === 'none' ? ' selected' : ''}>${i18n.t('ui.app.admin.notif.smtp_secure_none')}</option>
+      </select>`,
   );
 
   return `
-    <div class="provider-fields">
-      ${hostField}
-      ${portField}
-      ${fromField}
-      ${userField}
-      ${passwordField}
-      ${secureField}
+    <div class="provider-popup-form">
+      <div class="provider-popup-toggle-row">
+        <span class="provider-popup-toggle-label">${i18n.t('ui.app.admin.notif.enable_provider')}</span>
+        <label class="switch provider-popup-switch">
+          <input type="checkbox" class="provider-enable-toggle" disabled />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="provider-fields">
+        ${hostField}
+        ${portField}
+        ${fromField}
+        ${userField}
+        ${passwordField}
+        ${secureField}
+      </div>
+      <div class="provider-test-row">
+        <input class="provider-test-input" type="email" placeholder="${escapeHtml(i18n.t('ui.app.admin.notif.test_email_to'))}" />
+        <button class="btn-animated provider-test-btn" type="button">${i18n.t('ui.app.admin.notif.test_email')}</button>
+        <span class="provider-test-status notif-status-message"></span>
+      </div>
     </div>
   `;
 }
 
-function renderProviderCard(provider) {
+async function openProviderConfig(senderId, name, isActive) {
+  const { descriptors, requiredFields } = await loadProviderConfig(senderId);
+  let popupFormEl = null;
+
+  const result = await openPopup({
+    title: name,
+    body: renderSmtpPopupBody(descriptors, requiredFields),
+    maxWidth: '640px',
+    actions: [
+      { id: 'save', label: i18n.t('ui.app.admin.notif.save_settings'), variant: 'confirm' },
+      { id: 'cancel', label: i18n.t('ui.reuse.popup.cancel'), variant: 'cancel' },
+    ],
+    onOpen: (overlay) => {
+      popupFormEl = overlay.querySelector('.provider-popup-form');
+      if (!popupFormEl) return;
+
+      const toggle = popupFormEl.querySelector('.provider-enable-toggle');
+
+      function requiredAllFilled() {
+        return requiredFields.every((field) => {
+          const input = popupFormEl.querySelector(`[name="${CSS.escape(field)}"]`);
+          return input instanceof HTMLInputElement && input.value.trim() !== '';
+        });
+      }
+
+      function updateRequiredHighlights() {
+        const requiredTooltip = i18n.t('ui.app.admin.notif.required_field');
+        for (const field of requiredFields) {
+          const input = popupFormEl.querySelector(`[name="${CSS.escape(field)}"]`);
+          if (!(input instanceof HTMLInputElement)) continue;
+          const label = input.closest('label');
+          const isEmpty = input.value.trim() === '';
+          if (label) {
+            label.classList.toggle('provider-field-required', isEmpty);
+            label.classList.toggle('provider-field-missing', isEmpty);
+          }
+          if (isEmpty) {
+            input.setAttribute('title', requiredTooltip);
+          } else {
+            input.removeAttribute('title');
+          }
+        }
+      }
+
+      function syncToggle() {
+        const allFilled = requiredAllFilled();
+        toggle.disabled = !allFilled;
+        if (allFilled && !toggle.checked) {
+          toggle.checked = true;
+        } else if (!allFilled) {
+          toggle.checked = false;
+        }
+      }
+
+      if (isActive || requiredAllFilled()) {
+        toggle.disabled = false;
+        toggle.checked = true;
+      }
+
+      popupFormEl.addEventListener('input', () => {
+        updateRequiredHighlights();
+        syncToggle();
+      });
+
+      const testBtn = popupFormEl.querySelector('.provider-test-btn');
+      const testInput = popupFormEl.querySelector('.provider-test-input');
+      const testStatus = popupFormEl.querySelector('.provider-test-status');
+
+      if (testBtn && testInput) {
+        testBtn.addEventListener('click', async () => {
+          const to = testInput instanceof HTMLInputElement ? testInput.value.trim() : '';
+          const res = await apiFetch(`/api/v1/notifications/providers/${encodeURIComponent(senderId)}/test`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ to }),
+          });
+          if (testStatus) {
+            testStatus.textContent = res.ok
+              ? i18n.t('ui.app.admin.notif.test_sent')
+              : i18n.t('ui.app.admin.notif.test_failed');
+          }
+        });
+      }
+    },
+  });
+
+  if (result === 'save' && popupFormEl) {
+    const config = {};
+    popupFormEl.querySelectorAll('[name]').forEach((field) => {
+      if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement) {
+        config[field.name] = field.name === 'port' ? Number(field.value) : field.value;
+      }
+    });
+    await apiFetch(`/api/v1/notifications/providers/${encodeURIComponent(senderId)}/config`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(config),
+    });
+    providers = await loadProviders();
+    composer.refresh(elements);
+  }
+}
+
+function renderProviderEntry(provider) {
   const escapedId = escapeHtml(provider.senderId);
   const escapedName = escapeHtml(provider.name);
+  const statePillClass = provider.active ? 'pill-active' : 'pill-available';
+  const stateLabel = provider.active
+    ? i18n.t('ui.app.admin.state.active')
+    : i18n.t('ui.app.admin.state.available');
   const missingAlert = !provider.active
     ? `<span class="provider-missing-alert" aria-label="${i18n.t('ui.app.admin.notif.provider_missing_config')}">❗</span>`
     : '';
   return `
-    <div class="provider-card" data-sender-id="${escapedId}">
-      <strong>${escapedName}${missingAlert}</strong>
-      <div class="provider-config-area"></div>
-      <div class="provider-save-row">
-        <button class="btn-confirm btn-animated provider-save-btn" type="button">${i18n.t('ui.app.admin.notif.save_settings')}</button>
-        <span class="provider-save-status notif-status-message"></span>
-      </div>
-      <div class="provider-test-row">
-        <input class="provider-test-input" type="email" placeholder="${i18n.t('ui.app.admin.notif.test_email_to')}" />
-        <button class="btn-animated provider-test-btn" type="button">${i18n.t('ui.app.admin.notif.test_email')}</button>
-        <span class="provider-test-status notif-status-message"></span>
-      </div>
+    <div class="provider-card provider-card--entry" data-sender-id="${escapedId}" role="button" tabindex="0">
+      <span class="provider-entry-name"><strong>${escapedName}</strong>${missingAlert}</span>
+      <span class="state-pill ${statePillClass}">${stateLabel}</span>
     </div>
   `;
 }
@@ -252,11 +365,11 @@ function renderNotificationsContent(providers) {
   const availableProviders = providers.filter((p) => !p.active);
 
   const activeRows = activeProviders.length
-    ? activeProviders.map((p) => renderProviderCard(p)).join('')
+    ? activeProviders.map((p) => renderProviderEntry(p)).join('')
     : `<p>${i18n.t('ui.app.admin.notif.no_active')}</p>`;
 
   const availableRows = availableProviders.length
-    ? availableProviders.map((p) => renderProviderCard(p)).join('')
+    ? availableProviders.map((p) => renderProviderEntry(p)).join('')
     : `<p>${i18n.t('ui.app.admin.notif.no_available')}</p>`;
 
   return `
@@ -267,56 +380,26 @@ function renderNotificationsContent(providers) {
   `;
 }
 
-async function bindProviderForms() {
-  for (const card of root.querySelectorAll('.provider-card[data-sender-id]')) {
-    const senderId = card instanceof HTMLElement ? card.dataset.senderId : undefined;
-    if (!senderId) continue;
+function bindProviderEntries() {
+  root.querySelectorAll('.provider-card--entry[data-sender-id]').forEach((card) => {
+    if (!(card instanceof HTMLElement)) return;
+    const senderId = card.dataset.senderId;
+    if (!senderId) return;
+    const provider = providers.find((p) => p.senderId === senderId);
+    if (!provider) return;
 
-    const configArea = card.querySelector('.provider-config-area');
-    if (configArea) {
-      const descriptors = await loadProviderConfig(senderId);
-      configArea.innerHTML = renderSmtpFields(descriptors);
+    async function handleOpen() {
+      await openProviderConfig(senderId, provider.name, provider.active);
     }
 
-    const saveBtn = card.querySelector('.provider-save-btn');
-    const saveStatus = card.querySelector('.provider-save-status');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', async () => {
-        const fields = card.querySelectorAll('[name]');
-        const config = {};
-        fields.forEach((field) => {
-          if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement) {
-            config[field.name] = field.name === 'port' ? Number(field.value) : field.value;
-          }
-        });
-        await apiFetch(`/api/v1/notifications/providers/${encodeURIComponent(senderId)}/config`, {
-          method: 'PUT',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(config),
-        });
-        if (saveStatus) saveStatus.textContent = i18n.t('ui.app.admin.notif.settings_saved');
-      });
-    }
-
-    const testBtn = card.querySelector('.provider-test-btn');
-    const testInput = card.querySelector('.provider-test-input');
-    const testStatus = card.querySelector('.provider-test-status');
-    if (testBtn && testInput) {
-      testBtn.addEventListener('click', async () => {
-        const to = testInput instanceof HTMLInputElement ? testInput.value.trim() : '';
-        const res = await apiFetch(`/api/v1/notifications/providers/${encodeURIComponent(senderId)}/test`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ to }),
-        });
-        if (testStatus) {
-          testStatus.textContent = res.ok
-            ? i18n.t('ui.app.admin.notif.test_sent')
-            : i18n.t('ui.app.admin.notif.test_failed');
-        }
-      });
-    }
-  }
+    card.addEventListener('click', handleOpen);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleOpen();
+      }
+    });
+  });
 }
 
 let [modules, integrityRows] = await Promise.all([loadModules(), loadIntegrity()]);
@@ -385,7 +468,7 @@ const elements = [
         },
       ],
       onRender: () => {
-        bindProviderForms();
+        bindProviderEntries();
       },
     },
   },

@@ -41,12 +41,18 @@
  *   maxWidth — CSS max-width value (e.g. '40%', '600px') applied to the dialog
  *              window. Defaults to the CSS-defined value (480px).
  *
+ *   onOpen   — Optional callback invoked with the popup overlay element immediately
+ *              after it is appended to the document body. Use this to bind event
+ *              handlers on elements rendered inside the popup body before the
+ *              fade-in animation begins.
+ *
  * @param {{
  *   title: string,
  *   body: string | (() => string),
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
  *   actions?: Array<{ id: string, label: string, variant?: string }>,
  *   maxWidth?: string,
+ *   onOpen?: (overlay: HTMLElement) => void,
  * }} options
  * @returns {Promise<string|null>}
  */
@@ -78,7 +84,7 @@ function ensureStylesheet() {
   return stylesheetReady;
 }
 
-export async function openPopup({ title, body, variant = 'info', actions, maxWidth } = {}) {
+export async function openPopup({ title, body, variant = 'info', actions, maxWidth, onOpen } = {}) {
   await ensureStylesheet();
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
@@ -165,6 +171,10 @@ export async function openPopup({ title, body, variant = 'info', actions, maxWid
 
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
+
+    if (typeof onOpen === 'function') {
+      onOpen(overlay);
+    }
 
     requestAnimationFrame(() => {
       overlay.classList.add('popup-overlay--visible');

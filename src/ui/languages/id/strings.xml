@@ -250,4 +250,10 @@
   <string name="ui.app.admin.notif.settings_saved">Pengaturan disimpan.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Bidang ini diatur oleh variabel lingkungan tetapi berbeda dari nilai yang disimpan.</string>
   <string name="ui.app.admin.notif.provider_missing_config">Konfigurasi tidak lengkap</string>
+  <string name="ui.app.admin.notif.required_field">Nilai Wajib</string>
+  <string name="ui.app.admin.notif.enable_provider">Aktifkan Penyedia</string>
+  <string name="ui.app.admin.notif.smtp_host_placeholder">mis. smtp.example.com</string>
+  <string name="ui.app.admin.notif.smtp_from_placeholder">mis. noreply@example.com</string>
+  <string name="ui.app.admin.notif.smtp_user_placeholder">Opsional</string>
+  <string name="ui.app.admin.notif.smtp_password_placeholder">Opsional</string>
 </resources>
