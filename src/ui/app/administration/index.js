@@ -346,8 +346,14 @@ async function openProviderConfig(senderId, name, isActive) {
   if (result === 'save' && popupFormEl) {
     const config = {};
     popupFormEl.querySelectorAll('[name]').forEach((field) => {
-      if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement) {
-        config[field.name] = field.name === 'port' ? Number(field.value) : field.value;
+      if (field instanceof HTMLInputElement) {
+        if (field.type === 'checkbox') {
+          config[field.name] = field.checked;
+        } else {
+          config[field.name] = field.name === 'port' ? Number(field.value) : field.value;
+        }
+      } else if (field instanceof HTMLSelectElement) {
+        config[field.name] = field.value;
       }
     });
     await apiFetch(`/api/v1/notifications/providers/${encodeURIComponent(senderId)}/config`, {

@@ -74,6 +74,27 @@
   margin: 10px 0;
 }
 
+.provider-option-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+
+.provider-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.provider-option-label {
+  font-size: 0.9em;
+  flex: 1;
+}
+
 .provider-test-row {
   display: flex;
   gap: 8px;

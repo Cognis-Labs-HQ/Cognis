@@ -140,3 +140,41 @@ test('SmtpNotificationSender.getRequiredFields returns host and from', () => {
   const required = sender.getRequiredFields();
   assert.deepEqual(required, ['host', 'from']);
 });
+
+test('SmtpNotificationSender.setConfig applies allowSelfSigned and authDisabled', () => {
+  const sender = new SmtpNotificationSender({
+    host: 'smtp.example.com',
+    port: 587,
+    from: 'no-reply@example.com',
+    secure: 'starttls',
+  });
+  sender.setConfig({ allowSelfSigned: true, authDisabled: true });
+  const config = sender.getConfig();
+  assert.equal(config.allowSelfSigned, true);
+  assert.equal(config.authDisabled, true);
+});
+
+test('createNotificationSender reads COGNIS_SMTP_ALLOW_SELF_SIGNED and COGNIS_SMTP_AUTH_DISABLED', () => {
+  const sender = createNotificationSender({
+    COGNIS_SMTP_HOST: 'smtp.example.com',
+    COGNIS_SMTP_ALLOW_SELF_SIGNED: 'true',
+    COGNIS_SMTP_AUTH_DISABLED: 'true',
+  });
+  const config = sender.getConfig();
+  assert.equal(config.allowSelfSigned, true);
+  assert.equal(config.authDisabled, true);
+});
+
+test('createNotificationSender uses HOST env var as ehloHostname', () => {
+  const sender = createNotificationSender({
+    COGNIS_SMTP_HOST: 'smtp.example.com',
+    HOST: 'my-server.example.com',
+  });
+  const config = sender.getConfig();
+  assert.equal(config.host, 'smtp.example.com');
+});
+
+test('createNotificationSender falls back gracefully when HOST is unset', () => {
+  const sender = createNotificationSender({ COGNIS_SMTP_HOST: 'smtp.example.com' });
+  assert.ok(sender instanceof SmtpNotificationSender);
+});

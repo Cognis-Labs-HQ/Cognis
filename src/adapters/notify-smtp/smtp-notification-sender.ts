@@ -11,6 +11,7 @@ export interface SmtpConfig {
   secure: 'none' | 'tls' | 'starttls';
   allowSelfSigned?: boolean;
   authDisabled?: boolean;
+  ehloHostname?: string;
 }
 
 interface SmtpResponse {
@@ -139,7 +140,7 @@ async function sendMail(config: SmtpConfig, to: string, subject: string, body: s
       throw new Error(`smtp_unexpected_greeting:${greeting.code}`);
     }
 
-    let ehlo = await session.cmd('EHLO localhost');
+    let ehlo = await session.cmd(`EHLO ${config.ehloHostname ?? 'localhost'}`);
     if (ehlo.code !== 250) {
       throw new Error(`smtp_ehlo_failed:${ehlo.code}`);
     }
@@ -150,7 +151,7 @@ async function sendMail(config: SmtpConfig, to: string, subject: string, body: s
         throw new Error(`smtp_starttls_failed:${starttls.code}`);
       }
       session = await upgradeToTls(session, config.allowSelfSigned);
-      ehlo = await session.cmd('EHLO localhost');
+      ehlo = await session.cmd(`EHLO ${config.ehloHostname ?? 'localhost'}`);
       if (ehlo.code !== 250) {
         throw new Error(`smtp_ehlo_after_tls_failed:${ehlo.code}`);
       }
@@ -262,6 +263,7 @@ export function createNotificationSender(env: Record<string, string | undefined>
   const secure = rawSecure === 'tls' ? 'tls' : rawSecure === 'none' ? 'none' : 'starttls';
   const allowSelfSigned = env['COGNIS_SMTP_ALLOW_SELF_SIGNED'] === 'true';
   const authDisabled = env['COGNIS_SMTP_AUTH_DISABLED'] === 'true';
+  const ehloHostname = env['HOST'];
 
   const envSnapshot: Record<string, string | undefined> = {
     host: env['COGNIS_SMTP_HOST'],
@@ -273,5 +275,5 @@ export function createNotificationSender(env: Record<string, string | undefined>
     authDisabled: env['COGNIS_SMTP_AUTH_DISABLED'],
   };
 
-  return new SmtpNotificationSender({ host, port, from, user, password, secure, allowSelfSigned, authDisabled }, envSnapshot);
+  return new SmtpNotificationSender({ host, port, from, user, password, secure, allowSelfSigned, authDisabled, ehloHostname }, envSnapshot);
 }
