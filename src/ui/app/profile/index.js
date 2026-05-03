@@ -17,6 +17,11 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;');
 }
 
+function toAbsoluteUrl(url) {
+  if (!url) return url;
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
 function formatDate(iso) {
   if (!iso) return '';
   try {
@@ -183,7 +188,7 @@ function renderHero() {
   const details = [
     profile?.location ? `<span class="profile-hero-detail-item">📍 ${escapeHtml(profile.location)}</span>` : '',
     profile?.website
-      ? `<span class="profile-hero-detail-item">🌐 <a class="profile-hero-link" href="${escapeHtml(profile.website)}" target="_blank" rel="noopener noreferrer">${escapeHtml(profile.website)}</a></span>`
+      ? `<span class="profile-hero-detail-item">🌐 <a class="profile-hero-link" href="${escapeHtml(toAbsoluteUrl(profile.website))}" target="_blank" rel="noopener noreferrer">${escapeHtml(profile.website)}</a></span>`
       : '',
   ].filter(Boolean).join('');
 
@@ -407,7 +412,7 @@ function renderSocialLinks() {
   const website = profile?.website ?? '';
   const linksHtml = website
     ? `<a
-        href="${escapeHtml(website)}"
+        href="${escapeHtml(toAbsoluteUrl(website))}"
         class="profile-social-link-item"
         target="_blank"
         rel="noopener noreferrer"
