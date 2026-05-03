@@ -586,6 +586,7 @@ async function openEditPopup() {
       </div>
     `,
     variant: 'info',
+    maxWidth: '40%',
     actions: [
       { id: 'cancel', label: i18n.t('ui.reuse.generic.discard'), variant: 'cancel' },
       { id: 'save', label: i18n.t('ui.reuse.generic.save'), variant: 'confirm' },
