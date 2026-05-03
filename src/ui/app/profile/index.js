@@ -815,13 +815,13 @@ const elements = [
   {
     id: 'followers',
     label: i18n.t('ui.app.profile.section.followers'),
-    gridSize: { default: [2, 3], min: [2, 1], max: 'full' },
+    gridSize: { default: [2, 3], min: [2, 1], max: 'half' },
     render: renderFollowers,
   },
   {
     id: 'following',
     label: i18n.t('ui.app.profile.section.following'),
-    gridSize: { default: [2, 3], min: [2, 1], max: 'full' },
+    gridSize: { default: [2, 3], min: [2, 1], max: 'half' },
     render: renderFollowing,
   },
   {
