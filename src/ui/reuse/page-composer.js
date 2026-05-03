@@ -431,7 +431,6 @@ export function createPageComposer(root, {
           const y = e.clientY - gridRect.top;
           const col = Math.max(0, Math.min(gridCols - placement.w, Math.round(x / UNIT - placement.w / 2)));
           const rawRow = Math.max(0, Math.round(y / UNIT - placement.h / 2));
-          const row = applyGravity(col, rawRow, placement.w, placement.h, el.id);
 
           if (rawRow + placement.h > gridRows) {
             gridRows = rawRow + placement.h + 1;
@@ -439,17 +438,17 @@ export function createPageComposer(root, {
           }
 
           currentCol = col;
-          currentRow = row;
+          currentRow = rawRow;
           shade.style.left = `${col * UNIT}px`;
-          shade.style.top = `${row * UNIT}px`;
+          shade.style.top = `${rawRow * UNIT}px`;
 
-          if (!canPlace(col, row, placement.w, placement.h, el.id)) {
-            const candidate = findSwapCandidate(col, row, placement.w, placement.h, el.id);
+          if (!canPlace(col, rawRow, placement.w, placement.h, el.id)) {
+            const candidate = findSwapCandidate(col, rawRow, placement.w, placement.h, el.id);
             if (candidate) {
               swapTarget = candidate;
               leapfrogLine = buildLeapfrogLine(
                 placement.col, placement.row, placement.w, placement.h,
-                col, row, gridCols, gridRows
+                col, rawRow, gridCols, gridRows
               );
               gridSection.appendChild(leapfrogLine);
             } else {
@@ -1896,7 +1895,8 @@ export function createPageComposer(root, {
         if (sourceIdx === -1 || targetIdx === -1) return;
 
         visibleOrder.splice(sourceIdx, 1);
-        visibleOrder.splice(targetIdx, 0, dragSourceId);
+        const insertIdx = sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
+        visibleOrder.splice(insertIdx, 0, dragSourceId);
 
         const newOrder = [
           ...visibleOrder,
