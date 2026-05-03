@@ -14,6 +14,7 @@ import path from 'node:path';
 import { issueAccessToken } from './auth/access-tokens.js';
 import { createHash } from 'node:crypto';
 import { TfaCodeService, InMemoryTfaStore } from './utils/tfa-code.js';
+import { VerifyTokenService, InMemoryVerifyTokenStore } from './utils/verify-token.js';
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
   private readonly manifests: ModuleManifest[];
@@ -170,6 +171,8 @@ notificationGateway.registerCategory('system', 'System Notifications');
 await logger.info('Notification gateway bootstrapped.', { adaptersRoot });
 
 const tfaService = new TfaCodeService(new InMemoryTfaStore());
+const verifyTokenService = new VerifyTokenService(new InMemoryVerifyTokenStore());
+const externalHost = process.env.EXTERNAL_HOST ?? (process.env.HOST ? `http://${process.env.HOST}` : undefined);
 const smtpSender = notificationGateway.getSender?.('smtp') as import('../adapters/notify-smtp/smtp-notification-sender.js').SmtpNotificationSender | undefined;
 
 const server = buildServer({
@@ -183,6 +186,8 @@ const server = buildServer({
   notifStore,
   tfaService,
   smtpSender,
+  verifyTokenService,
+  externalHost,
   loadModuleStates: async () => {
     const result = await dbExecutor.execute('SELECT module_id, enabled FROM modules');
     return (result.rows ?? []).map((row) => ({ moduleId: row.module_id, enabled: Boolean(row.enabled) }));

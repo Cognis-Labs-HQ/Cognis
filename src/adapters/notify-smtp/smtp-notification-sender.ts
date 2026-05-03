@@ -105,16 +105,28 @@ async function buildMessage(
   to: string,
   subject: string,
   body: string,
-  options: { theme?: string; externalHost?: string } = {},
+  options: { theme?: string; externalHost?: string; verifyUrl?: string } = {},
 ): Promise<string> {
   const palette = options.theme === 'dark' ? DARK_PALETTE : LIGHT_PALETTE;
   const externalHost = options.externalHost ?? '';
   const iconUrl = externalHost ? `${externalHost}/assets/icons/cognis-icon.png` : '';
 
+  const verifyButton = options.verifyUrl
+    ? `<tr>
+            <td style="background:${palette.bgContent};padding:0 36px 24px;text-align:center;">
+              <a href="${escapeHtmlForEmail(options.verifyUrl)}"
+                style="display:inline-block;padding:13px 32px;background:${palette.colorAccent};color:#ffffff;text-decoration:none;border-radius:6px;font-weight:700;font-size:15px;letter-spacing:0.04em;font-family:Arial,Helvetica,sans-serif;">
+                Verify Email Address
+              </a>
+            </td>
+          </tr>`
+    : '';
+
   const template = await loadEmailTemplate();
   const htmlBody = template
     .replace(/\{\{subject\}\}/g, escapeHtmlForEmail(subject))
     .replace(/\{\{body\}\}/g, escapeHtmlForEmail(body).replace(/\n/g, '<br>'))
+    .replace(/\{\{verifyButton\}\}/g, verifyButton)
     .replace(/\{\{iconUrl\}\}/g, escapeHtmlForEmail(iconUrl))
     .replace(/\{\{externalHost\}\}/g, escapeHtmlForEmail(externalHost))
     .replace(/\{\{bgOuter\}\}/g, palette.bgOuter)
@@ -254,6 +266,7 @@ async function sendMail(
   subject: string,
   body: string,
   theme?: string,
+  verifyUrl?: string,
 ): Promise<void> {
   let session = await openSession(config.host, config.port, config.secure, config.allowSelfSigned);
 
@@ -314,6 +327,7 @@ async function sendMail(
       await buildMessage(config.from, to, subject, body, {
         theme,
         externalHost: config.externalHost,
+        verifyUrl,
       }),
     );
     const sent = await session.read();
@@ -362,6 +376,7 @@ async function sendMailWithRetry(
   body: string,
   sleep: (ms: number) => Promise<void>,
   theme?: string,
+  verifyUrl?: string,
 ): Promise<void> {
   const maxRetries = config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES;
   const delayMs = config.greylistRetryDelayMs ?? DEFAULT_GREYLIST_RETRY_DELAY_MS;
@@ -372,7 +387,7 @@ async function sendMailWithRetry(
       await sleep(delayMs);
     }
     try {
-      await sendMail(config, to, subject, body, theme);
+      await sendMail(config, to, subject, body, theme, verifyUrl);
       return;
     } catch (err) {
       if (err instanceof SmtpTemporaryError && attempt < maxRetries) {
@@ -447,20 +462,22 @@ export class SmtpNotificationSender implements NotificationSender {
     if (typeof config.greylistRetryDelayMs === 'number') this.config.greylistRetryDelayMs = config.greylistRetryDelayMs;
   }
 
-  async sendVerificationEmail(to: string, code: string, theme?: string): Promise<void> {
+  async sendVerificationEmail(to: string, code: string, verifyUrl?: string, theme?: string): Promise<void> {
     if (!to) throw new Error('smtp_requires_recipient');
     if (this.rateLimiter.isThrottled(to)) {
       throw new Error('smtp_rate_limited');
     }
     this.rateLimiter.record(to);
     const subject = 'Verify your email address';
-    const body = `Your verification code is: ${code}\n\nThis code expires in 15 minutes.`;
-    await sendMailWithRetry(this.config, to, subject, body, this.sleep, theme);
+    const body = verifyUrl
+      ? `Your verification code is: ${code}\n\nOr click the button below to verify your email address directly.\n\nBoth the code and the link expire in 15 minutes.`
+      : `Your verification code is: ${code}\n\nThis code expires in 15 minutes.`;
+    await sendMailWithRetry(this.config, to, subject, body, this.sleep, theme, verifyUrl);
   }
 
   async sendTestEmail(to: string, theme?: string): Promise<void> {
     if (!to) throw new Error('smtp_test_email_requires_recipient');
-    await sendMailWithRetry(this.config, to, 'Cognis SMTP Test', 'This is a test email from Cognis.', this.sleep, theme);
+    await sendMailWithRetry(this.config, to, 'Cognis SMTP Test', 'This is a test email from Cognis.', this.sleep, theme, undefined);
   }
 
   async send(envelope: NotificationEnvelope): Promise<void> {
@@ -472,7 +489,7 @@ export class SmtpNotificationSender implements NotificationSender {
     }
     this.rateLimiter.record(envelope.recipientEmail);
     const theme = typeof envelope.metadata?.theme === 'string' ? envelope.metadata.theme : undefined;
-    await sendMailWithRetry(this.config, envelope.recipientEmail, envelope.subject, envelope.body, this.sleep, theme);
+    await sendMailWithRetry(this.config, envelope.recipientEmail, envelope.subject, envelope.body, this.sleep, theme, undefined);
   }
 }
 

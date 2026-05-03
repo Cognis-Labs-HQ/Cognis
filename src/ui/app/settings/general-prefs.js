@@ -1,6 +1,7 @@
 import { escapeHtml } from '../../reuse/escape-html.js';
 import { apiFetch } from '../../reuse/api-client.js';
 import { openPopup } from '../../reuse/popup.js';
+import { watchEmailVerification } from '../../reuse/verify-listener.js';
 
 /**
  * General preferences sub-module for the Settings page.
@@ -103,7 +104,9 @@ export function initGeneralPrefs(root, { i18n, username }) {
 
   async function openVerifyPopup(address) {
     const escapedAddress = escapeHtml(address);
-    return openPopup({
+    let stopWatching = null;
+
+    const action = await openPopup({
       title: i18n.t('ui.app.settings.emails_verify_title'),
       body: `
         <p class="email-verify-prompt">${i18n.t('ui.app.settings.emails_verify_prompt').replace('{email}', escapedAddress)}</p>
@@ -135,8 +138,20 @@ export function initGeneralPrefs(root, { i18n, username }) {
               : i18n.t('ui.app.settings.emails_verify_failed');
           }
         });
+
+        stopWatching = watchEmailVerification({
+          username,
+          email: address,
+          apiFetch,
+          onVerified() {
+            overlay.querySelector('[data-popup-action="verified"]').click();
+          },
+        });
       },
     });
+
+    stopWatching?.();
+    return action;
   }
 
   function bindEmailActions() {

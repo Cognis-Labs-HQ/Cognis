@@ -6,6 +6,7 @@ import type { ProfileCreateStore } from '../adapters/db/profile-store.js';
 import { readJson } from './read-json.js';
 import type { DbNotificationStore } from '../adapters/db/notification-store.js';
 import type { TfaCodeService } from '../utils/tfa-code.js';
+import type { VerifyTokenService } from '../utils/verify-token.js';
 import type { SmtpNotificationSender } from '../../adapters/notify-smtp/smtp-notification-sender.js';
 
 const VALID_ROLES = new Set(['user', 'teacher', 'moderator', 'admin']);
@@ -17,6 +18,8 @@ export function createUserRoutes(
   notifStore?: DbNotificationStore,
   tfaService?: TfaCodeService,
   smtpSender?: SmtpNotificationSender,
+  verifyTokenService?: VerifyTokenService,
+  externalHost?: string,
 ) {
   const adminRoutes = async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
     if (url.pathname === '/api/v1/users' && req.method === 'GET') {
@@ -127,6 +130,16 @@ export function createUserRoutes(
     return false;
   };
 
+  function verifyLinkHtml(status: 'success' | 'invalid'): string {
+    const returnLink = externalHost
+      ? `<p style="margin-top:16px;"><a href="${externalHost}" style="color:#0f766e;">Return to Cognis</a></p>`
+      : '';
+    if (status === 'success') {
+      return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Email Verified</title></head><body style="font-family:Arial,sans-serif;text-align:center;padding:60px 20px;background:#f0f7ff;"><h1 style="color:#0f766e;">&#10003; Email verified</h1><p style="color:#1e293b;">Your email address has been successfully verified.</p>${returnLink}</body></html>`;
+    }
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Invalid Link</title></head><body style="font-family:Arial,sans-serif;text-align:center;padding:60px 20px;background:#f0f7ff;"><h1 style="color:#b91c1c;">&#9888; Invalid or expired link</h1><p style="color:#1e293b;">This verification link is invalid or has already been used. Please request a new verification email.</p>${returnLink}</body></html>`;
+  }
+
   async function handleEmailRoutes(req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> {
     if (!notifStore) return false;
 
@@ -165,8 +178,14 @@ export function createUserRoutes(
         const configuredSmtp = smtpSender?.isConfigured?.() ? smtpSender : null;
         if (tfaService && configuredSmtp) {
           try {
-            const code = tfaService.issue(`${username}:${email}`);
-            await configuredSmtp.sendVerificationEmail(email, code);
+            const key = `${username}:${email}`;
+            const code = tfaService.issue(key);
+            let verifyUrl: string | undefined;
+            if (verifyTokenService && externalHost) {
+              const token = verifyTokenService.issue(key);
+              verifyUrl = `${externalHost}/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(email)}/verify?token=${token}`;
+            }
+            await configuredSmtp.sendVerificationEmail(email, code, verifyUrl);
             res.writeHead(201, { 'content-type': 'application/json' });
             res.end(JSON.stringify({ data: { added: true, pendingVerification: true } }));
           } catch (err) {
@@ -195,6 +214,31 @@ export function createUserRoutes(
       const username = decodeURIComponent(emailActionsMatch[1]);
       const email = decodeURIComponent(emailActionsMatch[2]);
       const emailAction = emailActionsMatch[3];
+
+      if (req.method === 'GET' && emailAction === 'verify') {
+        if (!verifyTokenService) {
+          res.writeHead(503, { 'content-type': 'text/html; charset=utf-8' });
+          res.end(verifyLinkHtml('invalid'));
+          return true;
+        }
+        const token = url.searchParams.get('token') ?? '';
+        if (!token) {
+          res.writeHead(400, { 'content-type': 'text/html; charset=utf-8' });
+          res.end(verifyLinkHtml('invalid'));
+          return true;
+        }
+        const key = verifyTokenService.verify(token);
+        const expectedKey = `${username}:${email}`;
+        if (!key || key !== expectedKey) {
+          res.writeHead(400, { 'content-type': 'text/html; charset=utf-8' });
+          res.end(verifyLinkHtml('invalid'));
+          return true;
+        }
+        await notifStore.verifyUserEmail(username, email);
+        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+        res.end(verifyLinkHtml('success'));
+        return true;
+      }
 
       const claims = getAuthClaims(req);
       if (!claims) {

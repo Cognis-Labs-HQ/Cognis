@@ -18,6 +18,7 @@ import { createFileRoutes } from './routes/file-routes.js';
 import type { DbProfileStore } from './adapters/db/profile-store.js';
 import type { DbNotificationStore } from './adapters/db/notification-store.js';
 import type { TfaCodeService } from './utils/tfa-code.js';
+import type { VerifyTokenService } from './utils/verify-token.js';
 import type { SmtpNotificationSender } from '../adapters/notify-smtp/smtp-notification-sender.js';
 
 const LOG_LEVEL = process.env.LOG_LEVEL ?? 'info';
@@ -42,6 +43,8 @@ export interface ApiDependencies {
   notifStore?: DbNotificationStore;
   tfaService?: TfaCodeService;
   smtpSender?: SmtpNotificationSender;
+  verifyTokenService?: VerifyTokenService;
+  externalHost?: string;
   moduleIntegrityChecker?: () => Promise<Array<{ moduleId: string; file: string; expected: string; actual: string | null; status: 'ok' | 'mismatch' | 'missing' }>>;
   loadModuleStates?: () => Promise<Array<{ moduleId: string; enabled: boolean }>>;
   persistModuleState?: (moduleId: string, enabled: boolean) => Promise<void>;
@@ -73,7 +76,7 @@ export function buildServer(deps: ApiDependencies) {
   const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway);
   const authRoutes = createAuthRoutes(deps.authGateway, deps.accountStore, deps.profileStore);
   const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
-  const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore, deps.profileStore, deps.notifStore, deps.tfaService, deps.smtpSender);
+  const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore, deps.profileStore, deps.notifStore, deps.tfaService, deps.smtpSender, deps.verifyTokenService, deps.externalHost);
   const notificationRoutes = deps.notificationGateway
     ? createNotificationRoutes(deps.notificationGateway, deps.notifStore)
     : null;
