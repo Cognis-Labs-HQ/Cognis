@@ -130,6 +130,13 @@
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.page.title.profile">Cognis - プロフィール</string>
+  <string name="ui.page.title.verify_email">Cognis - メール認証</string>
+  <string name="ui.app.verify_email.verifying">認証中…</string>
+  <string name="ui.app.verify_email.success_title">メール認証完了</string>
+  <string name="ui.app.verify_email.success_body">メールアドレスが正常に認証されました。</string>
+  <string name="ui.app.verify_email.invalid_title">無効または期限切れのリンク</string>
+  <string name="ui.app.verify_email.invalid_body">この認証リンクは無効であるか、すでに使用されています。アカウント設定から新しい認証メールをリクエストしてください。</string>
+  <string name="ui.app.verify_email.return_link">Cognisに戻る</string>
   <string name="ui.app.settings.font_preview">フォントプレビュー</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">利用可能な言語</string>

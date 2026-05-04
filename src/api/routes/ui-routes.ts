@@ -87,6 +87,11 @@ export function createUiRoutes(runtime?: ModuleRuntimeGateway) {
       return true;
     }
 
+    if (url.pathname === '/verify-email') {
+      await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'verify-email.html'), 'text/html; charset=utf-8');
+      return true;
+    }
+
     if (url.pathname === '/settings') {
       if (!isLoggedIn(req)) {
         res.writeHead(302, { location: '/login' });

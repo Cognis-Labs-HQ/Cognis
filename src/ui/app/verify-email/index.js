@@ -1,0 +1,40 @@
+import { applyDocumentTitle, applyStaticTranslations, createI18n } from '../../reuse/i18n.js';
+
+const i18n = await createI18n();
+applyDocumentTitle(i18n, 'ui.page.title.verify_email');
+applyStaticTranslations(i18n);
+
+const iconEl = document.querySelector('#verify-icon');
+const titleEl = document.querySelector('#verify-title');
+const bodyEl = document.querySelector('#verify-body');
+const linkEl = document.querySelector('#verify-link');
+
+function showResult(success) {
+  if (success) {
+    iconEl.textContent = '✓';
+    titleEl.textContent = i18n.t('ui.app.verify_email.success_title');
+    bodyEl.textContent = i18n.t('ui.app.verify_email.success_body');
+  } else {
+    iconEl.textContent = '✗';
+    titleEl.textContent = i18n.t('ui.app.verify_email.invalid_title');
+    bodyEl.textContent = i18n.t('ui.app.verify_email.invalid_body');
+  }
+  linkEl.style.display = '';
+}
+
+const token = new URLSearchParams(window.location.search).get('token') ?? '';
+
+if (!token) {
+  showResult(false);
+} else {
+  try {
+    const res = await fetch('/api/v1/verify-email', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    showResult(res.ok);
+  } catch {
+    showResult(false);
+  }
+}

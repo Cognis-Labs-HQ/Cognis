@@ -130,6 +130,13 @@
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.page.title.profile">Cognis - Profile</string>
+  <string name="ui.page.title.verify_email">Cognis - Verify Email</string>
+  <string name="ui.app.verify_email.verifying">Verifying…</string>
+  <string name="ui.app.verify_email.success_title">Email Verified</string>
+  <string name="ui.app.verify_email.success_body">Your email address has been successfully verified.</string>
+  <string name="ui.app.verify_email.invalid_title">Invalid or Expired Link</string>
+  <string name="ui.app.verify_email.invalid_body">This verification link is invalid or has already been used. Please request a new verification email from your account settings.</string>
+  <string name="ui.app.verify_email.return_link">Return to Cognis</string>
   <string name="ui.app.settings.font_preview">Font Preview</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Available languages</string>

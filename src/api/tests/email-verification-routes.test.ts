@@ -148,7 +148,7 @@ test('email verification rejects wrong code with 422', async () => {
   assert.equal(res.status, 422);
 });
 
-test('link verification with valid token verifies email and returns HTML', async () => {
+test('link verification GET redirects to /verify-email', async () => {
   const accounts = new VolatileLocalAccountStore();
   await accounts.register('alice', 'pw', false);
   const prefs = new VolatileUserPreferenceStore();
@@ -159,21 +159,28 @@ test('link verification with valid token verifies email and returns HTML', async
   const linkToken = verifyTokenService.issue('alice:alice@example.com');
 
   const route = createUserRoutes(accounts, prefs, undefined, notifStore, undefined, undefined, verifyTokenService, 'http://localhost');
-  const res = makeResponse();
+  let capturedLocation = '';
+  const res = {
+    writeHead(code: number, headers?: Record<string, string>) {
+      if (headers?.location) capturedLocation = headers.location;
+    },
+    end() {},
+    get status() { return 302; },
+    get payload() { return ''; },
+  } as any;
 
   await route(
     { method: 'GET', headers: {} } as any,
     res,
     new URL(`http://localhost/api/v1/users/alice/emails/alice%40example.com/verify?token=${linkToken}`),
   );
-  assert.equal(res.status, 200);
-  assert.ok(res.payload.includes('verified'));
+  assert.ok(capturedLocation.startsWith('/verify-email?token='), `expected redirect to /verify-email, got: ${capturedLocation}`);
 
   const emails = await notifStore.getUserEmails('alice');
-  assert.equal(emails[0].verified, true);
+  assert.equal(emails[0].verified, false, 'redirect should not consume token or verify email');
 });
 
-test('link verification with invalid token returns 400 HTML', async () => {
+test('link verification GET with no token redirects to /verify-email without token', async () => {
   const accounts = new VolatileLocalAccountStore();
   await accounts.register('alice', 'pw', false);
   const prefs = new VolatileUserPreferenceStore();
@@ -182,18 +189,49 @@ test('link verification with invalid token returns 400 HTML', async () => {
 
   const verifyTokenService = new VerifyTokenService(new InMemoryVerifyTokenStore());
   const route = createUserRoutes(accounts, prefs, undefined, notifStore, undefined, undefined, verifyTokenService);
-  const res = makeResponse();
+  let capturedLocation = '';
+  const res = {
+    writeHead(_code: number, headers?: Record<string, string>) {
+      if (headers?.location) capturedLocation = headers.location;
+    },
+    end() {},
+  } as any;
 
   await route(
     { method: 'GET', headers: {} } as any,
     res,
     new URL('http://localhost/api/v1/users/alice/emails/alice%40example.com/verify?token=badtoken'),
   );
-  assert.equal(res.status, 400);
-  assert.ok(res.payload.includes('Invalid'));
+  assert.ok(capturedLocation.startsWith('/verify-email'), `expected redirect, got: ${capturedLocation}`);
 });
 
-test('link verification token cannot be reused', async () => {
+test('POST /api/v1/verify-email with valid token verifies email', async () => {
+  const accounts = new VolatileLocalAccountStore();
+  await accounts.register('alice', 'pw', false);
+  const prefs = new VolatileUserPreferenceStore();
+  const notifStore = await makeNotifStore();
+  await notifStore.addUserEmail('alice', 'alice@example.com');
+
+  const verifyTokenService = new VerifyTokenService(new InMemoryVerifyTokenStore());
+  const linkToken = verifyTokenService.issue('alice:alice@example.com');
+
+  const route = createUserRoutes(accounts, prefs, undefined, notifStore, undefined, undefined, verifyTokenService);
+  const res = makeResponse();
+
+  await route(
+    makeRequest('POST', { token: linkToken }, ''),
+    res,
+    new URL('http://localhost/api/v1/verify-email'),
+  );
+  assert.equal(res.status, 200);
+  const data = JSON.parse(res.payload);
+  assert.equal(data.data.verified, true);
+
+  const emails = await notifStore.getUserEmails('alice');
+  assert.equal(emails[0].verified, true);
+});
+
+test('POST /api/v1/verify-email token cannot be reused', async () => {
   const accounts = new VolatileLocalAccountStore();
   await accounts.register('alice', 'pw', false);
   const prefs = new VolatileUserPreferenceStore();
@@ -205,16 +243,15 @@ test('link verification token cannot be reused', async () => {
 
   const route = createUserRoutes(accounts, prefs, undefined, notifStore, undefined, undefined, verifyTokenService);
 
-  const req = { method: 'GET', headers: {} } as any;
-  const verifyUrl = new URL(`http://localhost/api/v1/users/alice/emails/alice%40example.com/verify?token=${linkToken}`);
-
   const first = makeResponse();
-  await route(req, first, verifyUrl);
+  await route(makeRequest('POST', { token: linkToken }, ''), first, new URL('http://localhost/api/v1/verify-email'));
   assert.equal(first.status, 200);
 
   const second = makeResponse();
-  await route(req, second, verifyUrl);
+  await route(makeRequest('POST', { token: linkToken }, ''), second, new URL('http://localhost/api/v1/verify-email'));
   assert.equal(second.status, 400);
+  const errData = JSON.parse(second.payload);
+  assert.equal(errData.error.code, 'invalid_token');
 });
 
 test('add email issues both TFA code and verify token and includes link in email', async () => {
@@ -246,7 +283,7 @@ test('add email issues both TFA code and verify token and includes link in email
   assert.equal(res.status, 201);
   assert.equal(sentEmails.length, 1);
   assert.ok(sentEmails[0].verifyUrl);
-  assert.ok(sentEmails[0].verifyUrl!.includes('/verify?token='));
+  assert.ok(sentEmails[0].verifyUrl!.includes('/verify-email?token='));
   const data = JSON.parse(res.payload);
   assert.ok(data.data.watchToken, 'watchToken should be returned in response');
 });
@@ -272,7 +309,7 @@ test('verify-tokens/status returns pending:true for a live token', async () => {
   assert.equal(data.data.pending, true);
 });
 
-test('verify-tokens/status returns pending:false after token is consumed', async () => {
+test('verify-tokens/status returns pending:false after token is consumed via POST verify-email', async () => {
   const accounts = new VolatileLocalAccountStore();
   await accounts.register('alice', 'pw', false);
   const prefs = new VolatileUserPreferenceStore();
@@ -283,10 +320,9 @@ test('verify-tokens/status returns pending:false after token is consumed', async
 
   const route = createUserRoutes(accounts, prefs, undefined, notifStore, undefined, undefined, verifyTokenService, 'http://localhost');
 
-  const linkReq = { method: 'GET', headers: {} } as any;
-  const linkRes = makeResponse();
-  await route(linkReq, linkRes, new URL(`http://localhost/api/v1/users/alice/emails/alice%40example.com/verify?token=${liveToken}`));
-  assert.equal(linkRes.status, 200);
+  const verifyRes = makeResponse();
+  await route(makeRequest('POST', { token: liveToken }, ''), verifyRes, new URL('http://localhost/api/v1/verify-email'));
+  assert.equal(verifyRes.status, 200);
 
   const statusRes = makeResponse();
   await route(

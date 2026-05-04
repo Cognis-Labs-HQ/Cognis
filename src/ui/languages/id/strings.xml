@@ -130,6 +130,13 @@
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.page.title.profile">Cognis - Profil</string>
+  <string name="ui.page.title.verify_email">Cognis - Verifikasi Email</string>
+  <string name="ui.app.verify_email.verifying">Memverifikasi…</string>
+  <string name="ui.app.verify_email.success_title">Email Terverifikasi</string>
+  <string name="ui.app.verify_email.success_body">Alamat email Anda telah berhasil diverifikasi.</string>
+  <string name="ui.app.verify_email.invalid_title">Tautan Tidak Valid atau Kedaluwarsa</string>
+  <string name="ui.app.verify_email.invalid_body">Tautan verifikasi ini tidak valid atau sudah digunakan. Silakan minta email verifikasi baru dari pengaturan akun Anda.</string>
+  <string name="ui.app.verify_email.return_link">Kembali ke Cognis</string>
   <string name="ui.app.settings.font_preview">Pratinjau Font</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Bahasa tersedia</string>

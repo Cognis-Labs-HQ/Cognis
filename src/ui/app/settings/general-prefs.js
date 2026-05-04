@@ -192,7 +192,20 @@ export function initGeneralPrefs(root, { i18n, username }) {
             token: watchTokenValue,
             apiFetch,
             onConsumed() {
-              overlay.querySelector('[data-popup-action="verified"]').click();
+              apiFetch(`/api/v1/users/${encodeURIComponent(username)}/emails`)
+                .then((res) => (res.ok ? res.json() : null))
+                .then((payload) => {
+                  const entry = (payload?.data ?? []).find((e) => e.email === address);
+                  if (entry?.verified) {
+                    overlay.querySelector('[data-popup-action="verified"]').click();
+                  }
+                  // If not verified, the token expired or was lost without the link being
+                  // used; stop polling silently and let the user enter the code manually
+                  // (fall through to manual code entry below).
+                })
+                .catch(() => {
+                  // Network error — polling stopped, popup remains open for manual entry.
+                });
             },
           });
         }

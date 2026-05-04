@@ -130,6 +130,13 @@
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.page.title.profile">Cognis - Profil</string>
+  <string name="ui.page.title.verify_email">Cognis - E-Mail verifizieren</string>
+  <string name="ui.app.verify_email.verifying">Wird verifiziert…</string>
+  <string name="ui.app.verify_email.success_title">E-Mail verifiziert</string>
+  <string name="ui.app.verify_email.success_body">Ihre E-Mail-Adresse wurde erfolgreich verifiziert.</string>
+  <string name="ui.app.verify_email.invalid_title">Ungültiger oder abgelaufener Link</string>
+  <string name="ui.app.verify_email.invalid_body">Dieser Verifizierungslink ist ungültig oder wurde bereits verwendet. Bitte fordern Sie eine neue Verifizierungs-E-Mail in Ihren Kontoeinstellungen an.</string>
+  <string name="ui.app.verify_email.return_link">Zurück zu Cognis</string>
   <string name="ui.app.settings.font_preview">Schriftvorschau</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Verfügbare Sprachen</string>

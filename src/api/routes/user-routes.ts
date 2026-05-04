@@ -130,16 +130,6 @@ export function createUserRoutes(
     return false;
   };
 
-  function verifyLinkHtml(status: 'success' | 'invalid'): string {
-    const returnLink = externalHost
-      ? `<p style="margin-top:16px;"><a href="${externalHost}" style="color:#0f766e;">Return to Cognis</a></p>`
-      : '';
-    if (status === 'success') {
-      return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Email Verified</title></head><body style="font-family:Arial,sans-serif;text-align:center;padding:60px 20px;background:#f0f7ff;"><h1 style="color:#0f766e;">&#10003; Email verified</h1><p style="color:#1e293b;">Your email address has been successfully verified.</p>${returnLink}</body></html>`;
-    }
-    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Invalid Link</title></head><body style="font-family:Arial,sans-serif;text-align:center;padding:60px 20px;background:#f0f7ff;"><h1 style="color:#b91c1c;">&#9888; Invalid or expired link</h1><p style="color:#1e293b;">This verification link is invalid or has already been used. Please request a new verification email.</p>${returnLink}</body></html>`;
-  }
-
   async function handleEmailRoutes(req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> {
     if (!notifStore) return false;
 
@@ -148,6 +138,39 @@ export function createUserRoutes(
       const pending = !!(token && verifyTokenService?.isLive(token));
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: { pending } }));
+      return true;
+    }
+
+    if (url.pathname === '/api/v1/verify-email' && req.method === 'POST') {
+      if (!verifyTokenService || !notifStore) {
+        res.writeHead(503, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'verification_unavailable', message: 'Verification service is not configured' } }));
+        return true;
+      }
+      const body = await readJson(req);
+      const token = String(body.token ?? '').trim();
+      if (!token) {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'invalid_token', message: 'Token is required' } }));
+        return true;
+      }
+      const key = verifyTokenService.verify(token);
+      if (!key) {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'invalid_token', message: 'Invalid or expired verification token' } }));
+        return true;
+      }
+      const colonIndex = key.indexOf(':');
+      if (colonIndex === -1) {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ error: { code: 'invalid_token', message: 'Malformed token key' } }));
+        return true;
+      }
+      const username = key.slice(0, colonIndex);
+      const email = key.slice(colonIndex + 1);
+      await notifStore.verifyUserEmail(username, email);
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ data: { verified: true } }));
       return true;
     }
 
@@ -193,7 +216,7 @@ export function createUserRoutes(
             if (verifyTokenService) {
               watchToken = verifyTokenService.issue(key);
               if (externalHost) {
-                verifyUrl = `${externalHost}/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(email)}/verify?token=${watchToken}`;
+                verifyUrl = `${externalHost}/verify-email?token=${watchToken}`;
               }
             }
             await configuredSmtp.sendVerificationEmail(email, code, verifyUrl);
@@ -227,27 +250,13 @@ export function createUserRoutes(
       const emailAction = emailActionsMatch[3];
 
       if (req.method === 'GET' && emailAction === 'verify') {
-        if (!verifyTokenService) {
-          res.writeHead(503, { 'content-type': 'text/html; charset=utf-8' });
-          res.end(verifyLinkHtml('invalid'));
-          return true;
-        }
         const token = url.searchParams.get('token') ?? '';
-        if (!token) {
-          res.writeHead(400, { 'content-type': 'text/html; charset=utf-8' });
-          res.end(verifyLinkHtml('invalid'));
-          return true;
+        if (token) {
+          res.writeHead(302, { location: `/verify-email?token=${encodeURIComponent(token)}` });
+        } else {
+          res.writeHead(302, { location: '/verify-email' });
         }
-        const key = verifyTokenService.verify(token);
-        const expectedKey = `${username}:${email}`;
-        if (!key || key !== expectedKey) {
-          res.writeHead(400, { 'content-type': 'text/html; charset=utf-8' });
-          res.end(verifyLinkHtml('invalid'));
-          return true;
-        }
-        await notifStore.verifyUserEmail(username, email);
-        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-        res.end(verifyLinkHtml('success'));
+        res.end();
         return true;
       }
 
@@ -341,7 +350,7 @@ export function createUserRoutes(
           if (verifyTokenService) {
             watchToken = verifyTokenService.issue(key);
             if (externalHost) {
-              verifyUrl = `${externalHost}/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(email)}/verify?token=${watchToken}`;
+              verifyUrl = `${externalHost}/verify-email?token=${watchToken}`;
             }
           }
           await configuredSmtp.sendVerificationEmail(email, code, verifyUrl);
