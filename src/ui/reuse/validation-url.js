@@ -34,39 +34,51 @@
  * @param {Function} [options.onExpired] - Called when timeoutMs elapses without consumption.
  * @returns {() => void} A stop function that cancels the polling loop.
  */
-export function watchToken({ token, apiFetch, onConsumed, intervalMs = 3000, timeoutMs, onExpired }) {
-  let stopped = false;
-  const startedAt = Date.now();
+export function watchToken({
+    token,
+    apiFetch,
+    onConsumed,
+    intervalMs = 3000,
+    timeoutMs,
+    onExpired,
+}) {
+    let stopped = false;
+    const startedAt = Date.now();
 
-  async function poll() {
-    while (!stopped) {
-      await new Promise((resolve) => setTimeout(resolve, intervalMs));
-      if (stopped) break;
+    async function poll() {
+        while (!stopped) {
+            await new Promise((resolve) => setTimeout(resolve, intervalMs));
+            if (stopped) break;
 
-      if (timeoutMs !== undefined && Date.now() - startedAt >= timeoutMs) {
-        stopped = true;
-        if (onExpired) onExpired();
-        break;
-      }
+            if (
+                timeoutMs !== undefined &&
+                Date.now() - startedAt >= timeoutMs
+            ) {
+                stopped = true;
+                if (onExpired) onExpired();
+                break;
+            }
 
-      try {
-        const res = await apiFetch(`/api/v1/verify-tokens/status?token=${encodeURIComponent(token)}`);
-        if (!res.ok) continue;
-        const payload = await res.json();
-        if (!payload.data?.pending) {
-          stopped = true;
-          onConsumed();
-          break;
+            try {
+                const res = await apiFetch(
+                    `/api/v1/verify-tokens/status?token=${encodeURIComponent(token)}`,
+                );
+                if (!res.ok) continue;
+                const payload = await res.json();
+                if (!payload.data?.pending) {
+                    stopped = true;
+                    onConsumed();
+                    break;
+                }
+            } catch {
+                // Network error — continue polling until stopped or timed out
+            }
         }
-      } catch {
-        // Network error — continue polling until stopped or timed out
-      }
     }
-  }
 
-  poll();
+    poll();
 
-  return function stop() {
-    stopped = true;
-  };
+    return function stop() {
+        stopped = true;
+    };
 }

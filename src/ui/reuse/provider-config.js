@@ -22,7 +22,7 @@
  * @returns {Promise<{ descriptors: Record<string, ProviderFieldDescriptor>, requiredFields: string[] }>}
  */
 
-import { apiFetch } from './api-client.js';
+import { apiFetch } from "./api-client.js";
 
 /**
  * @typedef {Object} ProviderFieldDescriptor
@@ -42,43 +42,63 @@ import { apiFetch } from './api-client.js';
  * @returns {Promise<{ descriptors: Record<string, ProviderFieldDescriptor>, requiredFields: string[] }>}
  */
 export async function loadProviderConfig(senderId) {
-  const res = await apiFetch(`/api/v1/notifications/providers/${encodeURIComponent(senderId)}/config`);
-  if (!res.ok) return { descriptors: {}, requiredFields: [] };
+    const res = await apiFetch(
+        `/api/v1/notifications/providers/${encodeURIComponent(senderId)}/config`,
+    );
+    if (!res.ok) return { descriptors: {}, requiredFields: [] };
 
-  const payload = await res.json();
-  const dbData = payload.data ?? {};
-  const envData = payload.envValues ?? {};
-  const requiredFields = Array.isArray(payload.requiredFields) ? payload.requiredFields : [];
+    const payload = await res.json();
+    const dbData = payload.data ?? {};
+    const envData = payload.envValues ?? {};
+    const requiredFields = Array.isArray(payload.requiredFields)
+        ? payload.requiredFields
+        : [];
 
-  const fieldNames = new Set([...Object.keys(dbData), ...Object.keys(envData), ...requiredFields]);
-  const descriptors = {};
+    const fieldNames = new Set([
+        ...Object.keys(dbData),
+        ...Object.keys(envData),
+        ...requiredFields,
+    ]);
+    const descriptors = {};
 
-  for (const field of fieldNames) {
-    const rawDb = dbData[field];
-    const rawEnv = envData[field];
+    for (const field of fieldNames) {
+        const rawDb = dbData[field];
+        const rawEnv = envData[field];
 
-    const dbValue = rawDb != null && rawDb !== '' ? String(rawDb) : undefined;
-    const envValue = rawEnv != null && rawEnv !== '' ? String(rawEnv) : undefined;
+        const dbValue =
+            rawDb != null && rawDb !== "" ? String(rawDb) : undefined;
+        const envValue =
+            rawEnv != null && rawEnv !== "" ? String(rawEnv) : undefined;
 
-    let effectiveValue;
-    let source;
+        let effectiveValue;
+        let source;
 
-    if (dbValue !== undefined) {
-      effectiveValue = dbValue;
-      source = 'db';
-    } else if (envValue !== undefined) {
-      effectiveValue = envValue;
-      source = 'env';
-    } else {
-      effectiveValue = undefined;
-      source = 'none';
+        if (dbValue !== undefined) {
+            effectiveValue = dbValue;
+            source = "db";
+        } else if (envValue !== undefined) {
+            effectiveValue = envValue;
+            source = "env";
+        } else {
+            effectiveValue = undefined;
+            source = "none";
+        }
+
+        const envConflict =
+            dbValue !== undefined &&
+            envValue !== undefined &&
+            dbValue !== envValue;
+        const required = requiredFields.includes(field);
+
+        descriptors[field] = {
+            dbValue,
+            envValue,
+            effectiveValue,
+            source,
+            envConflict,
+            required,
+        };
     }
 
-    const envConflict = dbValue !== undefined && envValue !== undefined && dbValue !== envValue;
-    const required = requiredFields.includes(field);
-
-    descriptors[field] = { dbValue, envValue, effectiveValue, source, envConflict, required };
-  }
-
-  return { descriptors, requiredFields };
+    return { descriptors, requiredFields };
 }

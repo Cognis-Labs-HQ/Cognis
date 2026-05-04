@@ -9,128 +9,131 @@
  * revokes any previous token for the same key.
  */
 
-import { randomBytes } from 'node:crypto';
+import { randomBytes } from "node:crypto";
 
 export interface VerifyTokenStore {
-  set(token: string, key: string, expiresAt: number): void;
-  get(token: string): { key: string; expiresAt: number } | undefined;
-  delete(token: string): void;
-  deleteByKey(key: string): void;
-  findTokenByKey(key: string): string | undefined;
+    set(token: string, key: string, expiresAt: number): void;
+    get(token: string): { key: string; expiresAt: number } | undefined;
+    delete(token: string): void;
+    deleteByKey(key: string): void;
+    findTokenByKey(key: string): string | undefined;
 }
 
 export class InMemoryVerifyTokenStore implements VerifyTokenStore {
-  private readonly entries = new Map<string, { key: string; expiresAt: number }>();
+    private readonly entries = new Map<
+        string,
+        { key: string; expiresAt: number }
+    >();
 
-  set(token: string, key: string, expiresAt: number): void {
-    this.entries.set(token, { key, expiresAt });
-  }
+    set(token: string, key: string, expiresAt: number): void {
+        this.entries.set(token, { key, expiresAt });
+    }
 
-  get(token: string): { key: string; expiresAt: number } | undefined {
-    return this.entries.get(token);
-  }
+    get(token: string): { key: string; expiresAt: number } | undefined {
+        return this.entries.get(token);
+    }
 
-  delete(token: string): void {
-    this.entries.delete(token);
-  }
-
-  deleteByKey(key: string): void {
-    for (const [token, entry] of this.entries) {
-      if (entry.key === key) {
+    delete(token: string): void {
         this.entries.delete(token);
-      }
     }
-  }
 
-  findTokenByKey(key: string): string | undefined {
-    for (const [token, entry] of this.entries) {
-      if (entry.key === key) return token;
+    deleteByKey(key: string): void {
+        for (const [token, entry] of this.entries) {
+            if (entry.key === key) {
+                this.entries.delete(token);
+            }
+        }
     }
-    return undefined;
-  }
+
+    findTokenByKey(key: string): string | undefined {
+        for (const [token, entry] of this.entries) {
+            if (entry.key === key) return token;
+        }
+        return undefined;
+    }
 }
 
 export function generateVerifyToken(): string {
-  return randomBytes(32).toString('hex');
+    return randomBytes(32).toString("hex");
 }
 
 export class VerifyTokenService {
-  constructor(
-    private readonly store: VerifyTokenStore,
-    private readonly now: () => number = () => Date.now(),
-  ) {}
+    constructor(
+        private readonly store: VerifyTokenStore,
+        private readonly now: () => number = () => Date.now(),
+    ) {}
 
-  /**
-   * Issues a new token for `key`. Any previous token for the same key is revoked.
-   *
-   * @param key      Opaque identifier (e.g. "username:email")
-   * @param expiryMs Milliseconds until the token expires (default: 15 minutes)
-   * @returns The generated token string
-   */
-  issue(key: string, expiryMs = 15 * 60 * 1000): string {
-    this.store.deleteByKey(key);
-    const token = generateVerifyToken();
-    this.store.set(token, key, this.now() + expiryMs);
-    return token;
-  }
-
-  /**
-   * Returns the existing live token for `key` if one is still pending,
-   * otherwise issues a new token (revoking any expired prior token). Use
-   * this instead of `issue` when a re-send may be rate-limited: the
-   * original link delivered to the user stays valid even if the re-send fails.
-   *
-   * @param key      Opaque identifier (e.g. "username:email")
-   * @param expiryMs Milliseconds until a newly-issued token expires (default: 15 minutes)
-   * @returns The token string (existing or newly generated)
-   */
-  issueOrGet(key: string, expiryMs = 15 * 60 * 1000): string {
-    const existingToken = this.store.findTokenByKey(key);
-    if (existingToken) {
-      const entry = this.store.get(existingToken);
-      if (entry && this.now() <= entry.expiresAt) {
-        return existingToken;
-      }
+    /**
+     * Issues a new token for `key`. Any previous token for the same key is revoked.
+     *
+     * @param key      Opaque identifier (e.g. "username:email")
+     * @param expiryMs Milliseconds until the token expires (default: 15 minutes)
+     * @returns The generated token string
+     */
+    issue(key: string, expiryMs = 15 * 60 * 1000): string {
+        this.store.deleteByKey(key);
+        const token = generateVerifyToken();
+        this.store.set(token, key, this.now() + expiryMs);
+        return token;
     }
-    return this.issue(key, expiryMs);
-  }
 
-  /**
-   * Verifies a token. On success, consumes the token and returns the associated
-   * key. Returns null if the token is unknown, expired, or already used.
-   */
-  verify(token: string): string | null {
-    const entry = this.store.get(token);
-    if (!entry) return null;
-    if (this.now() > entry.expiresAt) {
-      this.store.delete(token);
-      return null;
+    /**
+     * Returns the existing live token for `key` if one is still pending,
+     * otherwise issues a new token (revoking any expired prior token). Use
+     * this instead of `issue` when a re-send may be rate-limited: the
+     * original link delivered to the user stays valid even if the re-send fails.
+     *
+     * @param key      Opaque identifier (e.g. "username:email")
+     * @param expiryMs Milliseconds until a newly-issued token expires (default: 15 minutes)
+     * @returns The token string (existing or newly generated)
+     */
+    issueOrGet(key: string, expiryMs = 15 * 60 * 1000): string {
+        const existingToken = this.store.findTokenByKey(key);
+        if (existingToken) {
+            const entry = this.store.get(existingToken);
+            if (entry && this.now() <= entry.expiresAt) {
+                return existingToken;
+            }
+        }
+        return this.issue(key, expiryMs);
     }
-    this.store.delete(token);
-    return entry.key;
-  }
 
-  /** Returns true if the specific token is still in the store and not expired, without consuming it. */
-  isLive(token: string): boolean {
-    const entry = this.store.get(token);
-    if (!entry) return false;
-    if (this.now() > entry.expiresAt) {
-      this.store.delete(token);
-      return false;
+    /**
+     * Verifies a token. On success, consumes the token and returns the associated
+     * key. Returns null if the token is unknown, expired, or already used.
+     */
+    verify(token: string): string | null {
+        const entry = this.store.get(token);
+        if (!entry) return null;
+        if (this.now() > entry.expiresAt) {
+            this.store.delete(token);
+            return null;
+        }
+        this.store.delete(token);
+        return entry.key;
     }
-    return true;
-  }
 
-  /** Returns true if there is a live (unexpired) pending token for `key`. */
-  hasPending(key: string): boolean {
-    const token = this.store.findTokenByKey(key);
-    if (!token) return false;
-    const entry = this.store.get(token);
-    if (!entry) return false;
-    if (this.now() > entry.expiresAt) {
-      this.store.delete(token);
-      return false;
+    /** Returns true if the specific token is still in the store and not expired, without consuming it. */
+    isLive(token: string): boolean {
+        const entry = this.store.get(token);
+        if (!entry) return false;
+        if (this.now() > entry.expiresAt) {
+            this.store.delete(token);
+            return false;
+        }
+        return true;
     }
-    return true;
-  }
+
+    /** Returns true if there is a live (unexpired) pending token for `key`. */
+    hasPending(key: string): boolean {
+        const token = this.store.findTokenByKey(key);
+        if (!token) return false;
+        const entry = this.store.get(token);
+        if (!entry) return false;
+        if (this.now() > entry.expiresAt) {
+            this.store.delete(token);
+            return false;
+        }
+        return true;
+    }
 }

@@ -1,32 +1,37 @@
 # UI Component
 
 ## Purpose
+
 `ui/` hosts the Cognis frontend for study workflows, social interaction surfaces, administration, and the embedded documentation center.
 
 ## Architecture
+
 - **Layouts**: shared shells in `ui/layouts`.
 - **Templates**: reusable markup in `ui/public/templates`.
 - **Reuse**: shared utilities in `ui/reuse`.
 - **Pages**: route behavior in `ui/app`.
 
 ## UX routes
-| Route | Purpose |
-|---|---|
-| `/login` | User sign-in |
-| `/` | Study app landing surface |
-| `/modules` | Module and feature management |
-| `/settings` | User settings and preferences |
-| `/administration` | Administrative controls |
-| `/docs` | Browse production docs |
-| `/profile` | Redirect to own profile page |
-| `/profile/:handle` | View a user's profile |
-| `/user` | Legacy alias for `/profile` (serves profile HTML directly) |
+
+| Route              | Purpose                                                    |
+| ------------------ | ---------------------------------------------------------- |
+| `/login`           | User sign-in                                               |
+| `/`                | Study app landing surface                                  |
+| `/modules`         | Module and feature management                              |
+| `/settings`        | User settings and preferences                              |
+| `/administration`  | Administrative controls                                    |
+| `/docs`            | Browse production docs                                     |
+| `/profile`         | Redirect to own profile page                               |
+| `/profile/:handle` | View a user's profile                                      |
+| `/user`            | Legacy alias for `/profile` (serves profile HTML directly) |
 
 ## State model
+
 - Auth token and account id stored client-side.
 - Page preferences saved via API (`/api/v1/users/:accountId/preferences/:pageId`).
 
 ## Guardrails
+
 > Non-login pages should render through layout shells so customization stays safe and coherent.
 
 ## Internationalisation (i18n)
@@ -35,13 +40,13 @@ All user-visible text must go through the i18n helper in `ui/reuse/i18n.js` — 
 
 ### Key conventions
 
-| Prefix | Use |
-|---|---|
-| `ui.reuse.*` | Labels shared across multiple pages |
-| `ui.app.<page>.*` | Page-specific copy |
-| `ui.layout.*` | Layout shell text and ARIA labels |
-| `ui.page.title.*` | Document `<title>` values |
-| `module.<id>.*` | Module-owned strings (loaded on demand) |
+| Prefix            | Use                                     |
+| ----------------- | --------------------------------------- |
+| `ui.reuse.*`      | Labels shared across multiple pages     |
+| `ui.app.<page>.*` | Page-specific copy                      |
+| `ui.layout.*`     | Layout shell text and ARIA labels       |
+| `ui.page.title.*` | Document `<title>` values               |
+| `module.<id>.*`   | Module-owned strings (loaded on demand) |
 
 ### Adding a string
 
@@ -59,18 +64,21 @@ Two automated checks in `src/ui/tests/hardcoded-strings.test.js` guard against r
 Run with `node --test src/ui/tests/hardcoded-strings.test.js`.
 
 ## Theme coverage requirement (light/dark)
+
 - Every new HTML element added to `ui/public/templates` or injected from `ui/app` **must** resolve its visual colors from theme tokens (CSS variables), not hard-coded hex/rgb values.
 - Interactive HTML elements (`button`, `select`, `input`, `textarea`, links, badges, status chips) must inherit or explicitly use shared theme variables so both `light` and `dark` modes remain readable.
 - If an element cannot use shared classes, add a scoped selector under `ui/styles/base/layout.css` or `ui/styles/page-builder.css` that maps it to existing theme variables.
 - PRs that touch UI markup must verify theme parity for both modes before merge.
 
 ### Why this is critical for future work
+
 - Theme regressions are treated as functional regressions: unreadable text, low-contrast controls, or mode-inconsistent components are release-blocking issues.
 - New UI features should not ship unless they have explicit light/dark validation, including hover/focus/disabled/active states.
 - Refactors must preserve theme token usage; replacing variables with hard-coded colors is considered a policy violation.
 - During code review, maintainers should request updates whenever new elements bypass theme variables, even if the page appears correct in one mode.
 
 ### Ongoing maintenance checklist
+
 - Validate each changed screen in both themes before marking work complete.
 - Confirm dynamic/injected markup (template strings, API-rendered HTML, docs markdown output) inherits theme-safe colors.
 - Reuse existing tokens first; if a new token is needed, define both dark and light values in `ui/styles/base/theme.css`.

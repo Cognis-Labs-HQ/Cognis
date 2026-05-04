@@ -1,15 +1,15 @@
 .char-counter {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-align: right;
-  margin-top: 2px;
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 2px;
 }
 
 .char-counter--near-limit {
-  color: var(--warning, #f59e0b);
+    color: var(--warning, #f59e0b);
 }
 
 .char-counter--at-limit {
-  color: var(--danger, #ef4444);
+    color: var(--danger, #ef4444);
 }

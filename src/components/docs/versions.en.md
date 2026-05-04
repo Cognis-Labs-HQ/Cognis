@@ -12,32 +12,32 @@ Every gateway, adapter, and module carries a `package.json` with a `version` fie
 
 ## Adapters
 
-| Component | Path | Version |
-|---|---|---|
-| SMTP Notification | `src/adapters/notify/smtp/` | `0.1.0` |
-| Local File Storage | `src/adapters/file-local/` | `0.1.0` |
-| SQLite Database | `src/adapters/db-sqlite/` | `0.1.0` |
-| PostgreSQL Database | `src/adapters/db-postgres/` | `0.1.0` |
-| MariaDB Database | `src/adapters/db-mariadb/` | `0.1.0` |
-| In-Memory Database | `src/adapters/db-memory/` | `0.1.0` |
-| LDAP Auth | `src/adapters/auth-ldap/` | `0.1.0` |
-| SAML Auth | `src/adapters/auth-saml/` | `0.1.0` |
-| OIDC SSO Auth | `src/adapters/auth-sso-oidc/` | `0.1.0` |
+| Component           | Path                          | Version |
+| ------------------- | ----------------------------- | ------- |
+| SMTP Notification   | `src/adapters/notify/smtp/`   | `0.1.0` |
+| Local File Storage  | `src/adapters/file-local/`    | `0.1.0` |
+| SQLite Database     | `src/adapters/db-sqlite/`     | `0.1.0` |
+| PostgreSQL Database | `src/adapters/db-postgres/`   | `0.1.0` |
+| MariaDB Database    | `src/adapters/db-mariadb/`    | `0.1.0` |
+| In-Memory Database  | `src/adapters/db-memory/`     | `0.1.0` |
+| LDAP Auth           | `src/adapters/auth-ldap/`     | `0.1.0` |
+| SAML Auth           | `src/adapters/auth-saml/`     | `0.1.0` |
+| OIDC SSO Auth       | `src/adapters/auth-sso-oidc/` | `0.1.0` |
 
 ## Gateways (Core Contracts)
 
-| Component | Path | Version |
-|---|---|---|
+| Component    | Path        | Version |
+| ------------ | ----------- | ------- |
 | Core Package | `src/core/` | `0.1.0` |
 
 ## API
 
-| Component | Path | Version |
-|---|---|---|
+| Component  | Path       | Version |
+| ---------- | ---------- | ------- |
 | API Server | `src/api/` | `0.1.0` |
 
 ## Modules
 
-| Component | Path | Version |
-|---|---|---|
+| Component        | Path                            | Version |
+| ---------------- | ------------------------------- | ------- |
 | Sample Analytics | `src/modules/sample-analytics/` | `0.1.0` |

@@ -1,7 +1,7 @@
-import type { DatabaseGateway } from '@cognis/core';
+import type { DatabaseGateway } from "@cognis/core";
 
 export const POSTGRES_AUTH_SCHEMA_STATEMENTS = [
-  `CREATE TABLE IF NOT EXISTS accounts (
+    `CREATE TABLE IF NOT EXISTS accounts (
     id TEXT PRIMARY KEY,
     email TEXT,
     display_name TEXT,
@@ -9,7 +9,7 @@ export const POSTGRES_AUTH_SCHEMA_STATEMENTS = [
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`,
-  `CREATE TABLE IF NOT EXISTS auth_identities (
+    `CREATE TABLE IF NOT EXISTS auth_identities (
     id TEXT PRIMARY KEY,
     account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     provider TEXT NOT NULL,
@@ -18,18 +18,20 @@ export const POSTGRES_AUTH_SCHEMA_STATEMENTS = [
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE(provider, external_user_id)
   )`,
-  `CREATE TABLE IF NOT EXISTS local_auth_credentials (
+    `CREATE TABLE IF NOT EXISTS local_auth_credentials (
     account_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     password_algorithm TEXT NOT NULL DEFAULT 'sha256',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-  )`
+  )`,
 ];
 
-export async function ensurePostgresAuthSchema(db: DatabaseGateway): Promise<void> {
-  for (const statement of POSTGRES_AUTH_SCHEMA_STATEMENTS) {
-    await db.execute(statement);
-  }
+export async function ensurePostgresAuthSchema(
+    db: DatabaseGateway,
+): Promise<void> {
+    for (const statement of POSTGRES_AUTH_SCHEMA_STATEMENTS) {
+        await db.execute(statement);
+    }
 }

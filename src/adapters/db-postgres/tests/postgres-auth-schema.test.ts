@@ -1,20 +1,21 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { ensurePostgresAuthSchema } from '../auth-schema.js';
+import test from "node:test";
+import assert from "node:assert/strict";
+import { ensurePostgresAuthSchema } from "../auth-schema.js";
 
-test('postgres auth schema applies all statements', async () => {
-  const statements: string[] = [];
-  const db = {
-    query: async () => ({ rows: [], rowCount: 0 }),
-    execute: async (statement: string) => {
-      statements.push(statement);
-      return { affectedRows: 0 };
-    },
-    transaction: async <T>(callback: (trx: typeof db) => Promise<T>) => callback(db)
-  };
+test("postgres auth schema applies all statements", async () => {
+    const statements: string[] = [];
+    const db = {
+        query: async () => ({ rows: [], rowCount: 0 }),
+        execute: async (statement: string) => {
+            statements.push(statement);
+            return { affectedRows: 0 };
+        },
+        transaction: async <T>(callback: (trx: typeof db) => Promise<T>) =>
+            callback(db),
+    };
 
-  await ensurePostgresAuthSchema(db);
+    await ensurePostgresAuthSchema(db);
 
-  assert.equal(statements.length, 3);
-  assert.match(statements[1] ?? '', /auth_identities/);
+    assert.equal(statements.length, 3);
+    assert.match(statements[1] ?? "", /auth_identities/);
 });

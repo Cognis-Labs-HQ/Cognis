@@ -1,6 +1,13 @@
 export function registerApiRoutes(router) {
-  router.get('/api/v1/modules/sample-analytics/metrics', async (_req, res) => {
-    res.writeHead(200, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ data: { visitors: 42, conversionRate: 0.12 } }));
-  });
+    router.get(
+        "/api/v1/modules/sample-analytics/metrics",
+        async (_req, res) => {
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: { visitors: 42, conversionRate: 0.12 },
+                }),
+            );
+        },
+    );
 }
