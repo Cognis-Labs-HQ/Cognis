@@ -123,12 +123,12 @@
   <string name="ui.app.dashboard.last_seen">Zuletzt gesehen</string>
   <string name="ui.app.dashboard.never">Nie</string>
 
-  <string name="ui.page.title.login">Cognis - Login</string>
+  <string name="ui.page.title.login">Cognis - Anmelden</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
-  <string name="ui.page.title.docs">Cognis - Docs</string>
-  <string name="ui.page.title.modules">Cognis - Modules</string>
+  <string name="ui.page.title.docs">Cognis - Dokumente</string>
+  <string name="ui.page.title.modules">Cognis - Module</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
-  <string name="ui.page.title.settings">Cognis - Settings</string>
+  <string name="ui.page.title.settings">Cognis - Einstellungen</string>
   <string name="ui.page.title.profile">Cognis - Profil</string>
   <string name="ui.page.title.verify_email">Cognis - E-Mail verifizieren</string>
   <string name="ui.app.verify_email.verifying">Wird verifiziert…</string>
@@ -295,13 +295,13 @@
   <string name="ui.app.admin.notif.debug_missing_fields">Bitte alle Felder ausfüllen.</string>
   <string name="ui.app.admin.notif.debug_no_users">Keine Benutzer gefunden.</string>
   <string name="ui.app.admin.notif.debug_no_categories">Keine Benachrichtigungskategorien registriert.</string>
-  <string name="ui.app.admin.security.title">Security</string>
-  <string name="ui.app.admin.security.trusted_domains_label">Trusted Email Domains</string>
-  <string name="ui.app.admin.security.trusted_domains_hint">Comma-separated list of allowed domains. Leave empty to allow all domains.</string>
+  <string name="ui.app.admin.security.title">Sicherheit</string>
+  <string name="ui.app.admin.security.trusted_domains_label">Vertrauenswürdige E-Mail-Domains</string>
+  <string name="ui.app.admin.security.trusted_domains_hint">Kommagetrennte Liste erlaubter Domains. Leer lassen, um alle Domains zuzulassen.</string>
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
-  <string name="ui.app.admin.security.saved">Security settings saved.</string>
-  <string name="ui.app.admin.security.save_failed">Failed to save security settings.</string>
-  <string name="ui.app.settings.emails_domain_blocked_title">Domain not permitted</string>
-  <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
-  <string name="ui.app.settings.emails_verify_unavailable">Email verification is not available. Contact your administrator.</string>
+  <string name="ui.app.admin.security.saved">Sicherheitseinstellungen gespeichert.</string>
+  <string name="ui.app.admin.security.save_failed">Sicherheitseinstellungen konnten nicht gespeichert werden.</string>
+  <string name="ui.app.settings.emails_domain_blocked_title">Domain nicht erlaubt</string>
+  <string name="ui.app.settings.emails_domain_blocked_body">Diese E-Mail-Adresse gehört zu einer Domain, die nicht in der Liste der vertrauenswürdigen Domains steht. Wenden Sie sich an Ihren Administrator, um die Sicherheitseinstellungen zu aktualisieren.</string>
+  <string name="ui.app.settings.emails_verify_unavailable">E-Mail-Verifizierung ist nicht verfügbar. Wenden Sie sich an Ihren Administrator.</string>
 </resources>

@@ -123,12 +123,12 @@
   <string name="ui.app.dashboard.last_seen">最終確認</string>
   <string name="ui.app.dashboard.never">なし</string>
 
-  <string name="ui.page.title.login">Cognis - Login</string>
-  <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
-  <string name="ui.page.title.docs">Cognis - Docs</string>
-  <string name="ui.page.title.modules">Cognis - Modules</string>
-  <string name="ui.page.title.administration">Cognis - Administration</string>
-  <string name="ui.page.title.settings">Cognis - Settings</string>
+  <string name="ui.page.title.login">Cognis - ログイン</string>
+  <string name="ui.page.title.dashboard">Cognis - ダッシュボード</string>
+  <string name="ui.page.title.docs">Cognis - ドキュメント</string>
+  <string name="ui.page.title.modules">Cognis - モジュール</string>
+  <string name="ui.page.title.administration">Cognis - 管理</string>
+  <string name="ui.page.title.settings">Cognis - 設定</string>
   <string name="ui.page.title.profile">Cognis - プロフィール</string>
   <string name="ui.page.title.verify_email">Cognis - メール認証</string>
   <string name="ui.app.verify_email.verifying">認証中…</string>
@@ -295,13 +295,13 @@
   <string name="ui.app.admin.notif.debug_missing_fields">送信前にすべての項目を入力してください。</string>
   <string name="ui.app.admin.notif.debug_no_users">ユーザーが見つかりません。</string>
   <string name="ui.app.admin.notif.debug_no_categories">通知カテゴリが登録されていません。</string>
-  <string name="ui.app.admin.security.title">Security</string>
-  <string name="ui.app.admin.security.trusted_domains_label">Trusted Email Domains</string>
-  <string name="ui.app.admin.security.trusted_domains_hint">Comma-separated list of allowed domains. Leave empty to allow all domains.</string>
+  <string name="ui.app.admin.security.title">セキュリティ</string>
+  <string name="ui.app.admin.security.trusted_domains_label">信頼できるメールドメイン</string>
+  <string name="ui.app.admin.security.trusted_domains_hint">許可されたドメインのカンマ区切りリスト。すべてのドメインを許可する場合は空欄にしてください。</string>
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
-  <string name="ui.app.admin.security.saved">Security settings saved.</string>
-  <string name="ui.app.admin.security.save_failed">Failed to save security settings.</string>
-  <string name="ui.app.settings.emails_domain_blocked_title">Domain not permitted</string>
-  <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
-  <string name="ui.app.settings.emails_verify_unavailable">Email verification is not available. Contact your administrator.</string>
+  <string name="ui.app.admin.security.saved">セキュリティ設定が保存されました。</string>
+  <string name="ui.app.admin.security.save_failed">セキュリティ設定の保存に失敗しました。</string>
+  <string name="ui.app.settings.emails_domain_blocked_title">ドメインが許可されていません</string>
+  <string name="ui.app.settings.emails_domain_blocked_body">このメールアドレスは、信頼できるドメインリストに含まれていないドメインに属しています。管理者に連絡してセキュリティ設定を更新してください。</string>
+  <string name="ui.app.settings.emails_verify_unavailable">メール認証は利用できません。管理者にお問い合わせください。</string>
 </resources>

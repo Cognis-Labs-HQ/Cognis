@@ -16,6 +16,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Component versioning document at `src/components/docs/versions.en.md` ([67c070c](https://github.com/le-firehawk/Cognis/commit/67c070c))
 - SMTP adapter relocated to `src/adapters/notify/smtp/`; tests co-located inside `tests/` subdirectory ([67c070c](https://github.com/le-firehawk/Cognis/commit/67c070c))
 
+### Fixed
+
+- Translated untranslated page titles and security/email strings in `de`, `id`, and `ja` `strings.xml` files ([7889c64](https://github.com/le-firehawk/Cognis/commit/7889c64))
+
 ### Changed
 
 - Prettier 3.8.3 adopted as the canonical code formatter (inferred from IDE auto-format samples): 4-space indent, double quotes, trailing commas in multi-line argument lists ([4f0eab0](https://github.com/le-firehawk/Cognis/commit/4f0eab0))
