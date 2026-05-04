@@ -57,6 +57,24 @@ export class TfaCodeService {
   }
 
   /**
+   * Returns the existing pending code for `key` if one is still live,
+   * otherwise generates and stores a new one. Use this instead of `issue`
+   * when a re-send may be rate-limited: an already-delivered code is
+   * preserved so that verifying it still succeeds even if the re-send fails.
+   *
+   * @param key      Unique key (e.g. "username:email")
+   * @param expiryMs Milliseconds until a newly-issued code expires (default: 15 minutes)
+   * @returns The code string (existing or newly generated)
+   */
+  issueOrGet(key: string, expiryMs = 15 * 60 * 1000): string {
+    const existing = this.store.get(key);
+    if (existing && this.now() <= existing.expiresAt) {
+      return existing.code;
+    }
+    return this.issue(key, expiryMs);
+  }
+
+  /**
    * Verifies a code for `key`. Returns true and consumes the code on success.
    * Returns false if the code is wrong, expired, or has already been used.
    */

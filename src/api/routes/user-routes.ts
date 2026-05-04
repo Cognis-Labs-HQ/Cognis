@@ -210,11 +210,11 @@ export function createUserRoutes(
         if (tfaService && configuredSmtp) {
           try {
             const key = `${username}:${email}`;
-            const code = tfaService.issue(key);
+            const code = tfaService.issueOrGet(key);
             let verifyUrl: string | undefined;
             let watchToken: string | undefined;
             if (verifyTokenService) {
-              watchToken = verifyTokenService.issue(key);
+              watchToken = verifyTokenService.issueOrGet(key);
               if (externalHost) {
                 verifyUrl = `${externalHost}/verify-email?token=${watchToken}`;
               }
@@ -344,11 +344,11 @@ export function createUserRoutes(
         }
         try {
           const key = `${username}:${email}`;
-          const code = tfaService.issue(key);
+          const code = tfaService.issueOrGet(key);
           let verifyUrl: string | undefined;
           let watchToken: string | undefined;
           if (verifyTokenService) {
-            watchToken = verifyTokenService.issue(key);
+            watchToken = verifyTokenService.issueOrGet(key);
             if (externalHost) {
               verifyUrl = `${externalHost}/verify-email?token=${watchToken}`;
             }

@@ -91,3 +91,37 @@ test('TfaCodeService.issue replaces an existing pending code', () => {
   service.issue('alice:test@example.com', 60_000);
   assert.equal(service.verify('alice:test@example.com', firstCode), false);
 });
+
+test('TfaCodeService.issueOrGet returns existing live code without replacing it', () => {
+  let now = 1000;
+  const store = new InMemoryTfaStore();
+  const service = new TfaCodeService(store, () => now);
+
+  const firstCode = service.issue('alice:test@example.com', 60_000);
+  const secondCode = service.issueOrGet('alice:test@example.com', 60_000);
+  assert.equal(firstCode, secondCode);
+  assert.equal(service.verify('alice:test@example.com', firstCode), true);
+});
+
+test('TfaCodeService.issueOrGet issues a new code when none is pending', () => {
+  let now = 1000;
+  const store = new InMemoryTfaStore();
+  const service = new TfaCodeService(store, () => now);
+
+  const code = service.issueOrGet('alice:test@example.com', 60_000);
+  assert.equal(typeof code, 'string');
+  assert.equal(code.length, 6);
+  assert.equal(service.verify('alice:test@example.com', code), true);
+});
+
+test('TfaCodeService.issueOrGet issues a new code when existing code has expired', () => {
+  let now = 1000;
+  const store = new InMemoryTfaStore();
+  const service = new TfaCodeService(store, () => now);
+
+  const firstCode = service.issue('alice:test@example.com', 5_000);
+  now = 7000;
+  const secondCode = service.issueOrGet('alice:test@example.com', 60_000);
+  assert.notEqual(firstCode, secondCode);
+  assert.equal(service.verify('alice:test@example.com', secondCode), true);
+});

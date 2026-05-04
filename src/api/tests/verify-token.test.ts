@@ -44,6 +44,32 @@ test('issuing a new token for the same key revokes the previous token', () => {
   assert.equal(svc.verify(second), 'alice:alice@example.com');
 });
 
+test('issueOrGet returns the existing live token without revoking it', () => {
+  const svc = makeService();
+  const first = svc.issue('alice:alice@example.com');
+  const second = svc.issueOrGet('alice:alice@example.com');
+  assert.equal(first, second);
+  assert.equal(svc.verify(first), 'alice:alice@example.com');
+});
+
+test('issueOrGet issues a new token when none is pending', () => {
+  const svc = makeService();
+  const token = svc.issueOrGet('alice:alice@example.com');
+  assert.equal(typeof token, 'string');
+  assert.ok(token.length >= 32);
+  assert.equal(svc.verify(token), 'alice:alice@example.com');
+});
+
+test('issueOrGet issues a new token when the existing one has expired', () => {
+  let now = 1000;
+  const svc = makeService(() => now);
+  const first = svc.issue('alice:alice@example.com', 5000);
+  now = 7000;
+  const second = svc.issueOrGet('alice:alice@example.com', 60_000);
+  assert.notEqual(first, second);
+  assert.equal(svc.verify(second), 'alice:alice@example.com');
+});
+
 test('hasPending returns true while token is live', () => {
   const svc = makeService();
   svc.issue('alice:alice@example.com');

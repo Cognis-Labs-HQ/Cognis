@@ -75,6 +75,27 @@ export class VerifyTokenService {
   }
 
   /**
+   * Returns the existing live token for `key` if one is still pending,
+   * otherwise issues a new token (revoking any expired prior token). Use
+   * this instead of `issue` when a re-send may be rate-limited: the
+   * original link delivered to the user stays valid even if the re-send fails.
+   *
+   * @param key      Opaque identifier (e.g. "username:email")
+   * @param expiryMs Milliseconds until a newly-issued token expires (default: 15 minutes)
+   * @returns The token string (existing or newly generated)
+   */
+  issueOrGet(key: string, expiryMs = 15 * 60 * 1000): string {
+    const existingToken = this.store.findTokenByKey(key);
+    if (existingToken) {
+      const entry = this.store.get(existingToken);
+      if (entry && this.now() <= entry.expiresAt) {
+        return existingToken;
+      }
+    }
+    return this.issue(key, expiryMs);
+  }
+
+  /**
    * Verifies a token. On success, consumes the token and returns the associated
    * key. Returns null if the token is unknown, expired, or already used.
    */
