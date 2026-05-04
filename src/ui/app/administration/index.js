@@ -361,10 +361,22 @@ async function openProviderConfig(senderId, name, isActive) {
       if (testBtn && testInput) {
         testBtn.addEventListener('click', async () => {
           const to = testInput instanceof HTMLInputElement ? testInput.value.trim() : '';
+          const config = {};
+          popupFormEl.querySelectorAll('[name]').forEach((field) => {
+            if (field instanceof HTMLInputElement) {
+              if (field.type === 'checkbox') {
+                config[field.name] = field.checked;
+              } else {
+                config[field.name] = field.name === 'port' ? Number(field.value) : field.value;
+              }
+            } else if (field instanceof HTMLSelectElement) {
+              config[field.name] = field.value;
+            }
+          });
           const res = await apiFetch(`/api/v1/notifications/providers/${encodeURIComponent(senderId)}/test`, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ to }),
+            body: JSON.stringify({ to, config }),
           });
           if (testStatus) {
             testStatus.textContent = res.ok

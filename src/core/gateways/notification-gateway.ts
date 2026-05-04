@@ -24,7 +24,7 @@ export interface NotificationSender {
   send(envelope: NotificationEnvelope): Promise<void>;
   getConfig?(): Record<string, unknown>;
   setConfig?(config: Record<string, unknown>): void;
-  sendTestEmail?(to: string): Promise<void>;
+  sendTestEmail?(to: string, config?: Record<string, unknown>): Promise<void>;
   isConfigured?(): boolean;
   getEnvValues?(): Record<string, string | undefined>;
   getRequiredFields?(): string[];

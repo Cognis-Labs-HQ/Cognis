@@ -475,9 +475,29 @@ export class SmtpNotificationSender implements NotificationSender {
     await sendMailWithRetry(this.config, to, subject, body, this.sleep, theme, verifyUrl);
   }
 
-  async sendTestEmail(to: string, theme?: string): Promise<void> {
+  async sendTestEmail(to: string, overrideConfig?: Record<string, unknown>): Promise<void> {
     if (!to) throw new Error('smtp_test_email_requires_recipient');
-    await sendMailWithRetry(this.config, to, 'Cognis SMTP Test', 'This is a test email from Cognis.', this.sleep, theme, undefined);
+    let cfg = this.config;
+    if (overrideConfig && typeof overrideConfig === 'object') {
+      const merged: SmtpConfig = { ...this.config };
+      if (typeof overrideConfig.host === 'string') merged.host = overrideConfig.host;
+      if (typeof overrideConfig.port === 'number') merged.port = overrideConfig.port;
+      if (typeof overrideConfig.from === 'string') merged.from = overrideConfig.from;
+      if (typeof overrideConfig.senderName === 'string') merged.senderName = overrideConfig.senderName;
+      if (typeof overrideConfig.user === 'string') merged.user = overrideConfig.user;
+      if (typeof overrideConfig.password === 'string') merged.password = overrideConfig.password;
+      if (
+        overrideConfig.secure === 'none' ||
+        overrideConfig.secure === 'tls' ||
+        overrideConfig.secure === 'starttls'
+      ) {
+        merged.secure = overrideConfig.secure;
+      }
+      if (typeof overrideConfig.allowSelfSigned === 'boolean') merged.allowSelfSigned = overrideConfig.allowSelfSigned;
+      if (typeof overrideConfig.authDisabled === 'boolean') merged.authDisabled = overrideConfig.authDisabled;
+      cfg = merged;
+    }
+    await sendMailWithRetry(cfg, to, 'Cognis SMTP Test', 'This is a test email from Cognis.', this.sleep, undefined, undefined);
   }
 
   async send(envelope: NotificationEnvelope): Promise<void> {
