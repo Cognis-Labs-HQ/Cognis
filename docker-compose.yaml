@@ -21,6 +21,8 @@ services:
     environment:
       DB_TYPE: postgresql
       DATABASE_URL: postgresql://${POSTGRES_USER:-cognis}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@db:5432/${POSTGRES_DB:-cognis}
+      HOST: ${HOST:-cognis}
+      EXTERNAL_HOST: ${EXTERNAL_HOST:-}
     volumes:
       - applogs:/app/logs
       - appconfig:/app/config

@@ -6,11 +6,15 @@ import { LocalAuthGateway } from './adapters/local-auth-gateway.js';
 import { DbLocalAccountStore, createDbExecutor, type SupportedDbType } from './adapters/db/account-store.js';
 import { DbUserPreferenceStore } from './adapters/db/preference-store.js';
 import { DbProfileStore } from './adapters/db/profile-store.js';
+import { CoreNotificationGateway, VolatileNotificationPreferenceStore } from './gateways/notification.js';
+import { DbNotificationStore, DbNotificationPreferenceStore } from './adapters/db/notification-store.js';
 import { LocalFileGateway } from '../adapters/file-local/local-file-gateway.js';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { issueAccessToken } from './auth/access-tokens.js';
 import { createHash } from 'node:crypto';
+import { TfaCodeService, InMemoryTfaStore } from './utils/tfa-code.js';
+import { VerifyTokenService, InMemoryVerifyTokenStore } from './utils/verify-token.js';
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
   private readonly manifests: ModuleManifest[];
@@ -64,7 +68,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
 }
 
 const port = Number.parseInt(process.env.PORT ?? '3000', 10);
-const host = process.env.HOST ?? '0.0.0.0';
+const host = process.env.LISTEN_HOST ?? '0.0.0.0';
 const dbType = (process.env.DB_TYPE as SupportedDbType | undefined) ?? 'sqlite';
 const logLevel = (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error' | undefined) ?? 'info';
 const logFile = process.env.LOG_FILE ?? '/app/logs/app.log';
@@ -73,6 +77,10 @@ const logger = new Logger(logLevel, logFile);
 await logger.info('Starting Cognis API bootstrap.', { host, port, dbType, logLevel, logFile });
 const dbExecutor = await createDbExecutor(dbType);
 await logger.info('Database executor initialized.', { dbType });
+
+await initializeDatabaseSchema(dbType, logger, dbExecutor);
+await logger.info('Database schema initialised.');
+
 const accountStore = new DbLocalAccountStore(dbExecutor, dbType);
 await accountStore.ensureSchema();
 await logger.info('Account schema ensured.');
@@ -80,8 +88,6 @@ const authGateway = new LocalAuthGateway(accountStore);
 const preferenceStore = new DbUserPreferenceStore(dbExecutor, dbType);
 await preferenceStore.ensureSchema();
 await logger.info('Preference schema ensured.');
-await dbExecutor.execute('CREATE TABLE IF NOT EXISTS modules (module_id VARCHAR(255) PRIMARY KEY, enabled BOOLEAN NOT NULL DEFAULT TRUE)');
-await logger.info('Module state schema ensured.');
 if (dbType === 'postgresql') {
   await dbExecutor.execute('INSERT INTO modules (module_id, enabled) VALUES ($1, $2) ON CONFLICT (module_id) DO NOTHING', ['cognis-core', true]);
 } else if (dbType === 'sqlite') {
@@ -90,15 +96,14 @@ if (dbType === 'postgresql') {
   await dbExecutor.execute('INSERT IGNORE INTO modules (module_id, enabled) VALUES (?, ?)', ['cognis-core', true]);
 }
 await logger.info('Core module baseline state ensured.');
-await dbExecutor.execute('CREATE TABLE IF NOT EXISTS bootstrap_state (state_key VARCHAR(255) PRIMARY KEY, state_value VARCHAR(255) NOT NULL)');
-await logger.info('Bootstrap state schema ensured.');
-
-await initializeDatabaseSchema(dbType, logger, dbExecutor);
-await logger.info('Database provider schema initialization complete.');
 
 const profileStore = new DbProfileStore(dbExecutor, dbType);
 await profileStore.ensureSchema();
 await logger.info('Profile schema ensured.');
+
+const notifStore = new DbNotificationStore(dbExecutor, dbType);
+await notifStore.ensureSchema();
+await logger.info('Notification schema ensured.');
 
 const mediaLocation = process.env.MEDIA_LOCATION ?? '/app/media';
 const fileStorePath = `${mediaLocation}/uploads`;
@@ -153,6 +158,20 @@ try {
 
 const runtime = await InMemoryModuleRuntimeGateway.bootstrap();
 await logger.info('Module runtime bootstrapped.');
+
+const notificationPrefStore = new DbNotificationPreferenceStore(notifStore);
+const notificationGateway = new CoreNotificationGateway(notificationPrefStore, notifStore, notifStore);
+const adaptersRoot = process.env.COGNIS_ADAPTERS_ROOT ?? path.resolve(process.cwd(), 'src', 'adapters');
+const notifyAdaptersRoot = path.join(adaptersRoot, 'notify');
+await notificationGateway.discoverSenders(notifyAdaptersRoot);
+await notificationGateway.loadPersistedConfigs();
+notificationGateway.registerCategory('system', 'System Notifications');
+await logger.info('Notification gateway bootstrapped.', { adaptersRoot: notifyAdaptersRoot });
+
+const tfaService = new TfaCodeService(new InMemoryTfaStore());
+const verifyTokenService = new VerifyTokenService(new InMemoryVerifyTokenStore());
+const externalHost = process.env.EXTERNAL_HOST ?? (process.env.HOST ? `http://${process.env.HOST}` : undefined);
+
 const server = buildServer({
   moduleRuntimeGateway: runtime,
   authGateway,
@@ -160,6 +179,12 @@ const server = buildServer({
   preferenceStore,
   profileStore,
   fileGateway,
+  notificationGateway,
+  notifStore,
+  tfaService,
+  verificationEmailSender: notificationGateway,
+  verifyTokenService,
+  externalHost,
   loadModuleStates: async () => {
     const result = await dbExecutor.execute('SELECT module_id, enabled FROM modules');
     return (result.rows ?? []).map((row) => ({ moduleId: row.module_id, enabled: Boolean(row.enabled) }));

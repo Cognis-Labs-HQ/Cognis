@@ -1,6 +1,6 @@
-import { requireAuth } from '../auth/guard.js';
+import { requireAuth } from '../../auth/guard.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { readJson } from './read-json.js';
+import { readJson } from '../read-json.js';
 
 export interface UserPreferenceStore {
   get(accountId: string, pageId: string): Promise<string | null>;

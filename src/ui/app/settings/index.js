@@ -3,6 +3,8 @@ import { applyDocumentTitle, createI18n, readPreferredLanguages, setPreferredLan
 import { applyTheme, persistTheme, getStoredTheme } from '../../reuse/theme-toggle.js';
 import { toFontFamilyValue, initFontPrefs, DEFAULT_FONT_SIZE } from './font-prefs.js';
 import { initLanguagePrefs } from './language-prefs.js';
+import { initGeneralPrefs } from './general-prefs.js';
+import { initNotificationPrefs } from './notification-prefs.js';
 import { createUnsavedChangesBar } from '../../reuse/unsaved-changes.js';
 import { createPageComposer } from '../../reuse/page-composer.js';
 import { openPopup } from '../../reuse/popup.js';
@@ -39,6 +41,8 @@ let fontPrefs;
 let languagePrefs;
 let themePrefs;
 let changesBar;
+let generalPrefs;
+let notifPrefs;
 
 function updateThemeToggleForSettings() {
   const themeToggle = document.querySelector('#theme-toggle');
@@ -80,6 +84,35 @@ function initThemePrefs({ onDirtyChange }) {
 }
 
 const elements = [
+  {
+    id: 'general',
+    label: i18n.t('ui.app.settings.general'),
+    subComposerOptions: {
+      allowCustomization: false,
+      preferenceKey: 'settings-general-layout',
+      heading: i18n.t('ui.app.settings.general'),
+      elements: [
+        {
+          id: 'general-prefs',
+          label: i18n.t('ui.app.settings.general'),
+          render: () => `
+            <h3>${i18n.t('ui.app.settings.emails')}</h3>
+            <ul id="email-list" class="email-list"></ul>
+            <div class="email-add-row">
+              <input id="email-add-input" type="email" placeholder="${i18n.t('ui.app.settings.emails_add_placeholder')}" />
+              <button id="email-add-btn" class="btn-confirm btn-animated" type="button">${i18n.t('ui.app.settings.emails_add')}</button>
+            </div>
+            <div id="email-status" class="notif-status-message" aria-live="polite"></div>
+          `,
+        },
+      ],
+      onRender: () => {
+        const account = localStorage.getItem('cognis_account') ?? '';
+        generalPrefs = initGeneralPrefs(root, { i18n, username: account });
+        generalPrefs.init();
+      },
+    },
+  },
   {
     id: 'appearance',
     label: i18n.t('ui.reuse.appearance'),
@@ -175,6 +208,32 @@ const elements = [
     },
   },
   {
+    id: 'notifications',
+    label: i18n.t('ui.reuse.notifications'),
+    subComposerOptions: {
+      allowCustomization: false,
+      preferenceKey: 'settings-notifications-layout',
+      heading: i18n.t('ui.reuse.notifications'),
+      elements: [
+        {
+          id: 'notif-matrix',
+          label: i18n.t('ui.app.settings.notif_matrix_heading'),
+          render: () => `<div id="notif-matrix-container"></div>`,
+        },
+      ],
+      onRender: () => {
+        showThemeToggle();
+        const account = localStorage.getItem('cognis_account') ?? '';
+        notifPrefs = initNotificationPrefs(root, {
+          i18n,
+          username: account,
+          onDirtyChange: (dirty) => changesBar?.markDirty('notifications', dirty),
+        });
+        notifPrefs.init();
+      },
+    },
+  },
+  {
     id: 'advanced',
     label: i18n.t('ui.app.settings.advanced'),
     subComposerOptions: {
@@ -222,8 +281,10 @@ const composer = createPageComposer(root, {
       render: () => `
       <h2>${i18n.t('ui.app.settings.page_title')}</h2>
       <ul>
+        <li><button data-composer-scroll="general">${i18n.t('ui.app.settings.general')}</button></li>
         <li><button data-composer-scroll="appearance">${i18n.t('ui.reuse.appearance')}</button></li>
         <li><button data-composer-scroll="language">${i18n.t('ui.reuse.language')}</button></li>
+        <li><button data-composer-scroll="notifications">${i18n.t('ui.reuse.notifications')}</button></li>
         <li><button data-composer-scroll="advanced">${i18n.t('ui.app.settings.advanced')}</button></li>
       </ul>
     `,
@@ -252,6 +313,14 @@ changesBar = createUnsavedChangesBar(floatingSlot, {
   onSave: async () => {
     const selectedFont = fontPrefs?.getFont();
     const mode = themePrefs?.getMode() ?? savedMode;
+    const account = localStorage.getItem('cognis_account') ?? '';
+    if (notifPrefs?.isDirty()) {
+      await apiFetch(`/api/v1/users/${encodeURIComponent(account)}/notification-prefs`, {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(notifPrefs.getPendingPrefs()),
+      });
+    }
     const prefs = {
       appFont: selectedFont ? toFontFamilyValue(selectedFont) : undefined,
       appFontSize: fontPrefs?.getFontSize(),
@@ -274,5 +343,6 @@ changesBar = createUnsavedChangesBar(floatingSlot, {
     fontPrefs?.discard();
     languagePrefs?.discard();
     themePrefs?.discard();
+    notifPrefs?.discard();
   },
 });

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title data-i18n="ui.page.title.verify_email">Verify Email</title>
+    <link rel="stylesheet" href="/static/styles/verify-email.css" />
+  </head>
+  <body>
+    <div class="verify-card" id="verify-card">
+      <div class="verify-icon" id="verify-icon">⏳</div>
+      <h1 class="verify-title" id="verify-title" data-i18n="ui.app.verify_email.verifying">Verifying…</h1>
+      <p class="verify-body" id="verify-body"></p>
+      <a href="/dashboard" class="verify-link" id="verify-link" style="display:none" data-i18n="ui.app.verify_email.return_link">Return to Cognis</a>
+    </div>
+    <script type="module" src="/static/app/verify-email/index.js"></script>
+  </body>
+</html>

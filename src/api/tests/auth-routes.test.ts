@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createAuthRoutes } from '../routes/auth-routes.js';
+import { createAuthRoutes } from '../routes/auth/index.js';
 import { VolatileLocalAccountStore, LocalAuthGateway } from '../adapters/local-auth-gateway.js';
 
 function requestWithBody(method: string, body: Record<string, unknown>) {

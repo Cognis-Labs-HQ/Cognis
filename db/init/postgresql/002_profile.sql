@@ -53,22 +53,3 @@ INSERT INTO file_size_limits (category, max_bytes) VALUES ('video', 104857600) O
 INSERT INTO file_size_limits (category, max_bytes) VALUES ('text', 1048576) ON CONFLICT (category) DO NOTHING;
 INSERT INTO file_size_limits (category, max_bytes) VALUES ('global', 10485760) ON CONFLICT (category) DO NOTHING;
 
-CREATE TABLE IF NOT EXISTS direct_message_channels (
-  id TEXT PRIMARY KEY,
-  participant_a TEXT NOT NULL,
-  participant_b TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (participant_a, participant_b),
-  FOREIGN KEY (participant_a) REFERENCES accounts(id) ON DELETE CASCADE,
-  FOREIGN KEY (participant_b) REFERENCES accounts(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS direct_messages (
-  id TEXT PRIMARY KEY,
-  channel_id TEXT NOT NULL,
-  sender_id TEXT NOT NULL,
-  content TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  FOREIGN KEY (channel_id) REFERENCES direct_message_channels(id) ON DELETE CASCADE,
-  FOREIGN KEY (sender_id) REFERENCES accounts(id) ON DELETE CASCADE
-);

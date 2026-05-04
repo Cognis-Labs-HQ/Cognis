@@ -1,3 +1,27 @@
+/**
+ * Database schema initialisation and migration runner.
+ *
+ * This module is the entry point for all DDL applied to the database at boot
+ * time. It must be called **before** any adapter or store method that touches
+ * the database.
+ *
+ * Boot sequence (see db/README.md for the full convention):
+ *
+ *   1. initializeDatabaseSchema() runs db/init/<provider>/*.sql in
+ *      alphabetical order.  Every statement must use IF NOT EXISTS so the
+ *      files are idempotent across restarts.
+ *
+ *   2. It then runs db/migrate/<provider>/*.sql in alphabetical order.
+ *      Migration files must also be guarded (ADD COLUMN IF NOT EXISTS, etc.)
+ *      so they are safe to re-run.
+ *
+ *   3. Adapter ensureSchema() methods may be called afterwards as a no-op
+ *      safety net; by the time they execute every table already exists.
+ *
+ * Authoring constraint: SQL files are split on the `;` character.  Do not
+ * include semicolons inside string literals in these files.
+ */
+
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { DbExecutor } from '../adapters/db/account-store.js';
@@ -10,12 +34,10 @@ export function resolveDbProviderDir(dbType: string) {
 }
 
 function splitSqlStatements(sql: string): string[] {
-  // Splits on semicolons at statement boundaries. Init scripts must not contain
-  // semicolons inside string literals.
   return sql
     .split(';')
     .map((s) => s.trim())
-    .filter((s) => s.length > 0)
+    .filter((s) => s.length > 0 && !s.startsWith('--'))
     .map((s) => `${s};`);
 }
 

@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { verifyAccessToken } from '../auth/access-tokens.js';
+import { verifyAccessToken } from '../../auth/access-tokens.js';
 import type { ModuleRuntimeGateway } from '@cognis/core';
 
 const UI_ROOT = path.resolve(process.cwd(), 'src', 'ui');
@@ -84,6 +84,11 @@ export function createUiRoutes(runtime?: ModuleRuntimeGateway) {
 
     if (url.pathname === '/login') {
       await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'login.html'), 'text/html; charset=utf-8');
+      return true;
+    }
+
+    if (url.pathname === '/verify-email') {
+      await serveFile(res, path.join(PUBLIC_ROOT, 'pages', 'verify-email.html'), 'text/html; charset=utf-8');
       return true;
     }
 

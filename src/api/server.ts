@@ -1,20 +1,25 @@
 import { createServer } from 'node:http';
-import { HealthService, ModuleService, type ModuleRuntimeGateway, type FileStorageGateway } from '@cognis/core';
-import { createModuleRoutes } from './routes/module-routes.js';
-import { createSystemRoutes } from './routes/system-routes.js';
-import { createDocsRoutes } from './routes/docs-routes.js';
-import { createUiRoutes } from './routes/ui-routes.js';
-import { createAuthRoutes } from './routes/auth-routes.js';
-import { createModuleExtensionRoutes } from './routes/module-extension-routes.js';
+import { HealthService, ModuleService, type ModuleRuntimeGateway, type FileStorageGateway, type NotificationGateway } from '@cognis/core';
+import { createModuleRoutes } from './routes/modules/index.js';
+import { createSystemRoutes } from './routes/system/index.js';
+import { createDocsRoutes } from './routes/docs/index.js';
+import { createUiRoutes } from './routes/ui/index.js';
+import { createAuthRoutes } from './routes/auth/index.js';
+import { createModuleExtensionRoutes } from './routes/module-extensions/index.js';
 import type { AuthGateway } from '@cognis/core';
 import type { LocalAccountStore } from './adapters/local-auth-gateway.js';
-import { createPreferencesRoutes, type UserPreferenceStore } from './routes/preferences-routes.js';
-import { createUserRoutes } from './routes/user-routes.js';
+import { createPreferencesRoutes, type UserPreferenceStore } from './routes/preferences/index.js';
+import { createUserRoutes } from './routes/users/index.js';
 import { createProfileRoutes } from './routes/profile/index.js';
+import { createNotificationRoutes } from './routes/notifications/index.js';
 import { createSocialRoutes } from './routes/social/index.js';
 import { createPostRoutes } from './routes/posts/index.js';
-import { createFileRoutes } from './routes/file-routes.js';
+import { createFileRoutes } from './routes/files/index.js';
 import type { DbProfileStore } from './adapters/db/profile-store.js';
+import type { DbNotificationStore } from './adapters/db/notification-store.js';
+import type { TfaCodeService } from './utils/tfa-code.js';
+import type { VerifyTokenService } from './utils/verify-token.js';
+import type { VerificationEmailSender } from './gateways/notification.js';
 
 const LOG_LEVEL = process.env.LOG_LEVEL ?? 'info';
 const isDebug = LOG_LEVEL === 'debug';
@@ -34,6 +39,12 @@ export interface ApiDependencies {
   preferenceStore: UserPreferenceStore;
   profileStore?: DbProfileStore;
   fileGateway?: FileStorageGateway;
+  notificationGateway?: NotificationGateway;
+  notifStore?: DbNotificationStore;
+  tfaService?: TfaCodeService;
+  verificationEmailSender?: VerificationEmailSender;
+  verifyTokenService?: VerifyTokenService;
+  externalHost?: string;
   moduleIntegrityChecker?: () => Promise<Array<{ moduleId: string; file: string; expected: string; actual: string | null; status: 'ok' | 'mismatch' | 'missing' }>>;
   loadModuleStates?: () => Promise<Array<{ moduleId: string; enabled: boolean }>>;
   persistModuleState?: (moduleId: string, enabled: boolean) => Promise<void>;
@@ -60,12 +71,15 @@ export function buildServer(deps: ApiDependencies) {
     getStatus: (moduleId) => (enabledModules.has(moduleId) ? 'enabled' : 'disabled'),
     getIntegrityReport: deps.moduleIntegrityChecker
   });
-  const systemRoutes = createSystemRoutes(healthService);
+  const systemRoutes = createSystemRoutes(healthService, deps.preferenceStore);
   const docsRoutes = createDocsRoutes();
   const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway);
   const authRoutes = createAuthRoutes(deps.authGateway, deps.accountStore, deps.profileStore);
   const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
-  const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore, deps.profileStore);
+  const userRoutes = createUserRoutes(deps.accountStore, deps.preferenceStore, deps.profileStore, deps.notifStore, deps.tfaService, deps.verificationEmailSender, deps.verifyTokenService, deps.externalHost);
+  const notificationRoutes = deps.notificationGateway
+    ? createNotificationRoutes(deps.notificationGateway, deps.notifStore)
+    : null;
   const profileRoutes = deps.profileStore && deps.fileGateway
     ? createProfileRoutes(deps.profileStore, deps.fileGateway)
     : null;
@@ -121,6 +135,14 @@ export function buildServer(deps: ApiDependencies) {
       if (handledByUsers) {
         logEvent('info', 'Request handled by user routes.', { method: req.method ?? 'GET', path: url.pathname, durationMs: Date.now() - startedAt });
         return;
+      }
+
+      if (notificationRoutes) {
+        const handledByNotifications = await notificationRoutes(req, res, url);
+        if (handledByNotifications) {
+          logEvent('info', 'Request handled by notification routes.', { method: req.method ?? 'GET', path: url.pathname, durationMs: Date.now() - startedAt });
+          return;
+        }
       }
 
       if (profileRoutes) {

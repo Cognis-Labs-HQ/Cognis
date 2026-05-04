@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { requireAuth } from '../auth/guard.js';
-import type { DbProfileStore } from '../adapters/db/profile-store.js';
+import { requireAuth } from '../../auth/guard.js';
+import type { DbProfileStore } from '../../adapters/db/profile-store.js';
 import type { FileStorageGateway } from '@cognis/core';
-import { readRawBody, readJson } from './read-json.js';
+import { readRawBody, readJson } from '../read-json.js';
 
 const MIME_FROM_EXT: Record<string, string> = {
   jpg: 'image/jpeg',

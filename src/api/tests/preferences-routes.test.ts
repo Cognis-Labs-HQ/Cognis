@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createPreferencesRoutes, VolatileUserPreferenceStore } from '../routes/preferences-routes.js';
+import { createPreferencesRoutes, VolatileUserPreferenceStore } from '../routes/preferences/index.js';
 import { issueAccessToken } from '../auth/access-tokens.js';
 
 test('preferences routes save and load layout preferences', async () => {

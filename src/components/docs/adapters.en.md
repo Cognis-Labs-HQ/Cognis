@@ -51,3 +51,13 @@ Implements `FileStorageGateway` from `@cognis/core` using Node's `node:fs/promis
 ## Rules
 - Adapters may use provider-specific semantics internally.
 - Public behavior must conform to core gateway contracts.
+
+## Notification adapters
+
+### `notify-smtp` — SMTP email delivery
+
+Implements `NotificationSender` from `@cognis/core` using a direct SMTP connection over TCP.
+
+Activated when `COGNIS_SMTP_HOST` is set. Registers under the sender ID `smtp`. Supports runtime reconfiguration via `getConfig`/`setConfig` and delivers test messages via `sendTestEmail`.
+
+See `src/adapters/notify-smtp/README.en.md` for full configuration reference.

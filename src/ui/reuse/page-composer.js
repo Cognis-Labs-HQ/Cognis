@@ -288,9 +288,9 @@ export function createPageComposer(root, {
       (p) => p.id !== excludeId && p.id !== candidate.id && !(layout?.hidden ?? []).includes(p.id)
     );
     const occupied = new Set();
-    for (const p of others) {
-      for (let r = p.row; r < p.row + p.h; r++) {
-        for (let c = p.col; c < p.col + p.w; c++) {
+    for (const placement of others) {
+      for (let r = placement.row; r < placement.row + placement.h; r++) {
+        for (let c = placement.col; c < placement.col + placement.w; c++) {
           occupied.add(`${c},${r}`);
         }
       }
@@ -967,9 +967,9 @@ export function createPageComposer(root, {
       (p) => p.id !== excludeId && p.id !== candidate.id && !(state.layout?.hidden ?? []).includes(p.id)
     );
     const occupied = new Set();
-    for (const p of others) {
-      for (let r = p.row; r < p.row + p.h; r++) {
-        for (let c = p.col; c < p.col + p.w; c++) {
+    for (const placement of others) {
+      for (let r = placement.row; r < placement.row + placement.h; r++) {
+        for (let c = placement.col; c < placement.col + placement.w; c++) {
           occupied.add(`${c},${r}`);
         }
       }

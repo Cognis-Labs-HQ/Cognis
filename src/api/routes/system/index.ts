@@ -2,6 +2,9 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { HealthService } from '@cognis/core';
+import { requireAuth } from '../../auth/guard.js';
+import { readJson } from '../read-json.js';
+import type { UserPreferenceStore } from '../preferences/index.js';
 
 async function listLanguages() {
   const root = join(process.cwd(), 'src', 'ui', 'languages');
@@ -27,7 +30,9 @@ function parseDemoModeFromEnv() {
   return raw === '1' || raw === 'true';
 }
 
-export function createSystemRoutes(healthService: HealthService) {
+const SECURITY_SETTINGS_KEY = 'security-settings';
+
+export function createSystemRoutes(healthService: HealthService, preferenceStore?: UserPreferenceStore) {
   return async (req: IncomingMessage, res: ServerResponse, url: URL): Promise<boolean> => {
     const isHealthRoute = (url.pathname === '/api/v1/system/health' || url.pathname === '/api/v1/system/healthcheck') && req.method === 'GET';
 
@@ -47,6 +52,29 @@ export function createSystemRoutes(healthService: HealthService) {
     if (url.pathname === '/api/v1/system/ui-config' && req.method === 'GET') {
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ data: { demoMode: parseDemoModeFromEnv() } }));
+      return true;
+    }
+
+    if (url.pathname === '/api/v1/system/security' && req.method === 'GET') {
+      const raw = preferenceStore ? await preferenceStore.get('__system__', SECURITY_SETTINGS_KEY) : null;
+      const data = raw ? JSON.parse(raw) : { trustedDomains: [] };
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ data }));
+      return true;
+    }
+
+    if (url.pathname === '/api/v1/system/security' && req.method === 'PUT') {
+      if (!requireAuth(req, res, 'admin')) return true;
+      const body = await readJson(req);
+      const rawDomains = Array.isArray(body.trustedDomains) ? body.trustedDomains : [];
+      const trustedDomains = rawDomains
+        .filter((d: unknown) => typeof d === 'string' && (d as string).trim())
+        .map((d: string) => d.trim().toLowerCase());
+      if (preferenceStore) {
+        await preferenceStore.set('__system__', SECURITY_SETTINGS_KEY, JSON.stringify({ trustedDomains }));
+      }
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ data: { saved: true } }));
       return true;
     }
 
