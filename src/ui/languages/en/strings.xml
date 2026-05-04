@@ -234,6 +234,7 @@
   <string name="ui.app.settings.emails_unverified">Unverified</string>
   <string name="ui.app.settings.emails_verified">Valid</string>
   <string name="ui.app.settings.emails_already_verified">This email address is already verified.</string>
+  <string name="ui.app.settings.emails_email_taken">This email address is already registered by another user.</string>
   <string name="ui.app.settings.emails_verify_title">Verify email address</string>
   <string name="ui.app.settings.emails_verify_prompt">Enter the verification code sent to {email}.</string>
   <string name="ui.app.settings.emails_verify_placeholder">6-digit code</string>

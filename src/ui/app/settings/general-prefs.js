@@ -65,7 +65,10 @@ export function initGeneralPrefs(root, { i18n, username }) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ email: address }),
     });
-    if (res.status === 409) throw new Error('already_verified');
+    if (res.status === 409) {
+      const payload = await res.json().catch(() => ({}));
+      throw new Error(payload?.error?.code ?? 'already_verified');
+    }
     if (res.status === 429) throw new Error('rate_limited');
     if (!res.ok) throw new Error('add_failed');
     const payload = await res.json();
@@ -315,6 +318,8 @@ export function initGeneralPrefs(root, { i18n, username }) {
           const code = err instanceof Error ? err.message : 'add_failed';
           if (code === 'already_verified') {
             showStatus(i18n.t('ui.app.settings.emails_already_verified'));
+          } else if (code === 'email_taken') {
+            showStatus(i18n.t('ui.app.settings.emails_email_taken'));
           } else if (code === 'rate_limited') {
             showStatus(i18n.t('ui.app.settings.emails_verify_rate_limited'));
           } else {

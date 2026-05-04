@@ -189,6 +189,14 @@ export class DbNotificationStore implements NotificationConfigStore {
     );
   }
 
+  async isEmailRegisteredByOtherUser(email: string, excludeAccountId: string): Promise<boolean> {
+    const result = await this.db.execute(
+      `SELECT account_id FROM user_emails WHERE email = ${this.placeholder(1)} AND account_id != ${this.placeholder(2)} LIMIT 1`,
+      [email, excludeAccountId],
+    );
+    return (result.rows?.length ?? 0) > 0;
+  }
+
   async getPrimaryEmail(accountId: string): Promise<string | null> {
     const emails = await this.getUserEmails(accountId);
     return emails.find((e) => e.primary && e.verified)?.email ?? null;

@@ -211,6 +211,12 @@ export function createUserRoutes(
           res.end(JSON.stringify({ error: { code: 'already_verified', message: 'This email address is already verified.' } }));
           return true;
         }
+        const takenByOther = await notifStore.isEmailRegisteredByOtherUser(email, username);
+        if (takenByOther) {
+          res.writeHead(409, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: { code: 'email_taken', message: 'This email address is already registered by another user.' } }));
+          return true;
+        }
         await notifStore.addUserEmail(username, email);
 
         const configuredSmtp = smtpSender?.isConfigured?.() ? smtpSender : null;
