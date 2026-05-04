@@ -293,7 +293,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
       if (target.id === 'email-add-btn') {
         const input = root.querySelector('#email-add-input');
         if (!(input instanceof HTMLInputElement)) return;
-        const address = input.value.trim();
+        const address = input.value.trim().toLowerCase();
         if (!address) return;
         const allowed = await checkDomainAndNotify(address);
         if (!allowed) return;

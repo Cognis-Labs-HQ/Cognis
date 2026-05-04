@@ -246,7 +246,7 @@ export function createUserRoutes(
     const emailActionsMatch = url.pathname.match(/^\/api\/v1\/users\/([^/]+)\/emails\/([^/]+)(?:\/(primary|verify|resend))?$/);
     if (emailActionsMatch) {
       const username = decodeURIComponent(emailActionsMatch[1]);
-      const email = decodeURIComponent(emailActionsMatch[2]);
+      const email = decodeURIComponent(emailActionsMatch[2]).toLowerCase();
       const emailAction = emailActionsMatch[3];
 
       if (req.method === 'GET' && emailAction === 'verify') {

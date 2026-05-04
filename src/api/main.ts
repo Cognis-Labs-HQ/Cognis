@@ -77,6 +77,10 @@ const logger = new Logger(logLevel, logFile);
 await logger.info('Starting Cognis API bootstrap.', { host, port, dbType, logLevel, logFile });
 const dbExecutor = await createDbExecutor(dbType);
 await logger.info('Database executor initialized.', { dbType });
+
+await initializeDatabaseSchema(dbType, logger, dbExecutor);
+await logger.info('Database schema initialised.');
+
 const accountStore = new DbLocalAccountStore(dbExecutor, dbType);
 await accountStore.ensureSchema();
 await logger.info('Account schema ensured.');
@@ -84,8 +88,6 @@ const authGateway = new LocalAuthGateway(accountStore);
 const preferenceStore = new DbUserPreferenceStore(dbExecutor, dbType);
 await preferenceStore.ensureSchema();
 await logger.info('Preference schema ensured.');
-await dbExecutor.execute('CREATE TABLE IF NOT EXISTS modules (module_id VARCHAR(255) PRIMARY KEY, enabled BOOLEAN NOT NULL DEFAULT TRUE)');
-await logger.info('Module state schema ensured.');
 if (dbType === 'postgresql') {
   await dbExecutor.execute('INSERT INTO modules (module_id, enabled) VALUES ($1, $2) ON CONFLICT (module_id) DO NOTHING', ['cognis-core', true]);
 } else if (dbType === 'sqlite') {
@@ -94,11 +96,6 @@ if (dbType === 'postgresql') {
   await dbExecutor.execute('INSERT IGNORE INTO modules (module_id, enabled) VALUES (?, ?)', ['cognis-core', true]);
 }
 await logger.info('Core module baseline state ensured.');
-await dbExecutor.execute('CREATE TABLE IF NOT EXISTS bootstrap_state (state_key VARCHAR(255) PRIMARY KEY, state_value VARCHAR(255) NOT NULL)');
-await logger.info('Bootstrap state schema ensured.');
-
-await initializeDatabaseSchema(dbType, logger, dbExecutor);
-await logger.info('Database provider schema initialization complete.');
 
 const profileStore = new DbProfileStore(dbExecutor, dbType);
 await profileStore.ensureSchema();
