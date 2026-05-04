@@ -204,3 +204,34 @@
 .notif-debug-status {
   font-size: 0.9em;
 }
+
+.security-settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 640px;
+}
+
+.security-field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.security-field-hint {
+  font-weight: 400;
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.85em;
+}
+
+.security-field-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.security-domains-input {
+  flex: 1;
+}

@@ -220,7 +220,7 @@ export function createUserRoutes(
       return false;
     }
 
-    const emailActionsMatch = url.pathname.match(/^\/api\/v1\/users\/([^/]+)\/emails\/([^/]+)(?:\/(primary|verify))?$/);
+    const emailActionsMatch = url.pathname.match(/^\/api\/v1\/users\/([^/]+)\/emails\/([^/]+)(?:\/(primary|verify|resend))?$/);
     if (emailActionsMatch) {
       const username = decodeURIComponent(emailActionsMatch[1]);
       const email = decodeURIComponent(emailActionsMatch[2]);
@@ -264,8 +264,13 @@ export function createUserRoutes(
       }
 
       if (req.method === 'DELETE' && !emailAction) {
+        const forceUnverified = url.searchParams.get('force') === 'true';
         try {
-          await notifStore.removeUserEmail(username, email);
+          if (forceUnverified) {
+            await notifStore.removeUnverifiedEmail(username, email);
+          } else {
+            await notifStore.removeUserEmail(username, email);
+          }
           res.writeHead(200, { 'content-type': 'application/json' });
           res.end(JSON.stringify({ data: { removed: true } }));
         } catch (err) {
@@ -301,6 +306,57 @@ export function createUserRoutes(
         await notifStore.verifyUserEmail(username, email);
         res.writeHead(200, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ data: { verified: true } }));
+        return true;
+      }
+
+      if (req.method === 'POST' && emailAction === 'resend') {
+        if (!tfaService) {
+          res.writeHead(503, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: { code: 'verification_unavailable', message: 'Verification service is not configured' } }));
+          return true;
+        }
+        const configuredSmtp = smtpSender?.isConfigured?.() ? smtpSender : null;
+        if (!configuredSmtp) {
+          res.writeHead(503, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: { code: 'smtp_unavailable', message: 'Email delivery is not configured' } }));
+          return true;
+        }
+        const emails = await notifStore.getUserEmails(username);
+        const resendTarget = emails.find((e) => e.email === email);
+        if (!resendTarget) {
+          res.writeHead(404, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: { code: 'not_found', message: 'Email address not found' } }));
+          return true;
+        }
+        if (resendTarget.verified) {
+          res.writeHead(409, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: { code: 'already_verified', message: 'Email address is already verified' } }));
+          return true;
+        }
+        try {
+          const key = `${username}:${email}`;
+          const code = tfaService.issue(key);
+          let verifyUrl: string | undefined;
+          let watchToken: string | undefined;
+          if (verifyTokenService) {
+            watchToken = verifyTokenService.issue(key);
+            if (externalHost) {
+              verifyUrl = `${externalHost}/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(email)}/verify?token=${watchToken}`;
+            }
+          }
+          await configuredSmtp.sendVerificationEmail(email, code, verifyUrl);
+          res.writeHead(200, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ data: { pendingVerification: true, ...(watchToken && { watchToken }) } }));
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (msg === 'smtp_rate_limited') {
+            res.writeHead(429, { 'content-type': 'application/json' });
+            res.end(JSON.stringify({ error: { code: 'rate_limited', message: 'Verification email sent too recently. Please wait before requesting another.' } }));
+          } else {
+            res.writeHead(500, { 'content-type': 'application/json' });
+            res.end(JSON.stringify({ error: { code: 'send_failed', message: 'Failed to send verification email' } }));
+          }
+        }
         return true;
       }
 

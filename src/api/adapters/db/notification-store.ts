@@ -172,6 +172,19 @@ export class DbNotificationStore implements NotificationConfigStore {
     );
   }
 
+  async removeUnverifiedEmail(accountId: string, email: string): Promise<void> {
+    const existing = await this.getUserEmails(accountId);
+    const target = existing.find((e) => e.email === email);
+    if (!target) return;
+    if (target.verified) {
+      throw new Error('cannot_remove_verified_email');
+    }
+    await this.db.execute(
+      `DELETE FROM user_emails WHERE account_id = ${this.placeholder(1)} AND email = ${this.placeholder(2)}`,
+      [accountId, email],
+    );
+  }
+
   async getPrimaryEmail(accountId: string): Promise<string | null> {
     const emails = await this.getUserEmails(accountId);
     return emails.find((e) => e.primary && e.verified)?.email ?? null;

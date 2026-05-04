@@ -71,7 +71,7 @@ export function buildServer(deps: ApiDependencies) {
     getStatus: (moduleId) => (enabledModules.has(moduleId) ? 'enabled' : 'disabled'),
     getIntegrityReport: deps.moduleIntegrityChecker
   });
-  const systemRoutes = createSystemRoutes(healthService);
+  const systemRoutes = createSystemRoutes(healthService, deps.preferenceStore);
   const docsRoutes = createDocsRoutes();
   const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway);
   const authRoutes = createAuthRoutes(deps.authGateway, deps.accountStore, deps.profileStore);

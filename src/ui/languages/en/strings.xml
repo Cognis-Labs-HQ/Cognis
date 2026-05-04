@@ -285,4 +285,13 @@
   <string name="ui.app.admin.notif.debug_missing_fields">Please fill in all fields before sending.</string>
   <string name="ui.app.admin.notif.debug_no_users">No users found.</string>
   <string name="ui.app.admin.notif.debug_no_categories">No notification categories registered.</string>
+  <string name="ui.app.admin.security.title">Security</string>
+  <string name="ui.app.admin.security.trusted_domains_label">Trusted Email Domains</string>
+  <string name="ui.app.admin.security.trusted_domains_hint">Comma-separated list of allowed domains. Leave empty to allow all domains.</string>
+  <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
+  <string name="ui.app.admin.security.saved">Security settings saved.</string>
+  <string name="ui.app.admin.security.save_failed">Failed to save security settings.</string>
+  <string name="ui.app.settings.emails_domain_blocked_title">Domain not permitted</string>
+  <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
+  <string name="ui.app.settings.emails_verify_unavailable">Email verification is not available. Contact your administrator.</string>
 </resources>

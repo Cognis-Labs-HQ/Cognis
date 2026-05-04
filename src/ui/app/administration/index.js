@@ -4,6 +4,7 @@ import { createPageComposer } from '../../reuse/page-composer.js';
 import { openPopup } from '../../reuse/popup.js';
 import { escapeHtml } from '../../reuse/escape-html.js';
 import { loadProviderConfig } from '../../reuse/provider-config.js';
+import { initSecuritySection } from './security.js';
 
 const root = document.querySelector('#app');
 const i18n = await createI18n();
@@ -549,6 +550,8 @@ let providers = await loadProviders();
 let [categories, users] = await Promise.all([loadCategories(), loadUsers()]);
 let composer;
 
+const securitySection = initSecuritySection(root, { i18n });
+
 const elements = [
   {
     id: 'modules',
@@ -622,6 +625,26 @@ const elements = [
       },
     },
   },
+  {
+    id: 'security',
+    label: i18n.t('ui.app.admin.security.title'),
+    subComposerOptions: {
+      allowCustomization: false,
+      preferenceKey: 'administration-security-layout',
+      heading: i18n.t('ui.app.admin.security.title'),
+      elements: [
+        {
+          id: 'security-content',
+          label: i18n.t('ui.app.admin.security.title'),
+          pinned: true,
+          render: () => securitySection.renderContent(),
+        },
+      ],
+      onRender: () => {
+        securitySection.init();
+      },
+    },
+  },
 ];
 
 composer = createPageComposer(root, {
@@ -644,6 +667,7 @@ composer = createPageComposer(root, {
           <li><button data-composer-scroll="modules">${i18n.t('ui.reuse.modules')}</button></li>
           <li><button data-composer-scroll="integrity">${i18n.t('ui.reuse.file_integrity')}</button></li>
           <li><button data-composer-scroll="notifications">${i18n.t('ui.app.admin.notifications')}</button></li>
+          <li><button data-composer-scroll="security">${i18n.t('ui.app.admin.security.title')}</button></li>
         </ul>
       `,
     },

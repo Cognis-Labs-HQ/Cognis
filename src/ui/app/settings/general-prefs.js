@@ -8,6 +8,10 @@ import { watchToken } from '../../reuse/validation-url.js';
  *
  * Manages the user's email addresses: listing, adding, removing,
  * setting a primary address, and verifying new addresses via a TFA code.
+ * Clicking the "Unverified" badge on an existing email re-triggers the
+ * verification flow; cancelling that flow removes the email.
+ * Trusted domains (configured in Administration > Security) are checked
+ * before the verification flow begins.
  *
  * Public exports:
  *   initGeneralPrefs(root, options) — initialises email management in the given root element.
@@ -22,12 +26,37 @@ import { watchToken } from '../../reuse/validation-url.js';
  */
 export function initGeneralPrefs(root, { i18n, username }) {
   let emails = [];
+  let trustedDomains = null;
 
   async function loadEmails() {
     const res = await apiFetch(`/api/v1/users/${encodeURIComponent(username)}/emails`);
     if (!res.ok) return;
     const payload = await res.json();
     emails = payload.data ?? [];
+  }
+
+  async function loadTrustedDomains() {
+    if (trustedDomains !== null) return trustedDomains;
+    try {
+      const res = await apiFetch('/api/v1/system/security');
+      if (!res.ok) {
+        trustedDomains = [];
+        return trustedDomains;
+      }
+      const payload = await res.json();
+      trustedDomains = payload.data?.trustedDomains ?? [];
+    } catch {
+      trustedDomains = [];
+    }
+    return trustedDomains;
+  }
+
+  function isDomainAllowed(address) {
+    if (!trustedDomains || trustedDomains.length === 0) return true;
+    const parts = address.split('@');
+    if (parts.length !== 2) return false;
+    const domain = parts[1].toLowerCase();
+    return trustedDomains.includes(domain);
   }
 
   async function addEmail(address) {
@@ -53,6 +82,25 @@ export function initGeneralPrefs(root, { i18n, username }) {
       throw new Error(code);
     }
     if (!res.ok) throw new Error('remove_failed');
+  }
+
+  async function forceRemoveUnverifiedEmail(address) {
+    await apiFetch(
+      `/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}?force=true`,
+      { method: 'DELETE' },
+    );
+  }
+
+  async function resendVerification(address) {
+    const res = await apiFetch(
+      `/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/resend`,
+      { method: 'POST' },
+    );
+    if (res.status === 429) throw new Error('rate_limited');
+    if (res.status === 503) throw new Error('smtp_unavailable');
+    if (!res.ok) throw new Error('resend_failed');
+    const payload = await res.json();
+    return payload.data ?? {};
   }
 
   async function setPrimaryEmail(address) {
@@ -86,7 +134,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
       const escaped = escapeHtml(entry.email);
       const verifiedBadge = entry.verified
         ? ''
-        : `<span class="email-badge-unverified">${i18n.t('ui.app.settings.emails_unverified')}</span>`;
+        : `<button class="email-badge-unverified" type="button" data-resend-verification="${escaped}">${i18n.t('ui.app.settings.emails_unverified')}</button>`;
       const primaryBadge = entry.primary
         ? `<span class="email-badge-primary">${i18n.t('ui.app.settings.emails_primary')}</span>`
         : `<button class="btn-animated" type="button" data-set-primary="${escaped}">${i18n.t('ui.app.settings.emails_set_primary')}</button>`;
@@ -155,6 +203,20 @@ export function initGeneralPrefs(root, { i18n, username }) {
     return action;
   }
 
+  async function checkDomainAndNotify(address) {
+    await loadTrustedDomains();
+    if (!isDomainAllowed(address)) {
+      await openPopup({
+        title: i18n.t('ui.app.settings.emails_domain_blocked_title'),
+        body: i18n.t('ui.app.settings.emails_domain_blocked_body'),
+        variant: 'warning',
+        actions: [{ id: 'close', label: i18n.t('ui.reuse.generic.done'), variant: 'confirm' }],
+      });
+      return false;
+    }
+    return true;
+  }
+
   function bindEmailActions() {
     root.addEventListener('click', async (evt) => {
       const target = evt.target;
@@ -190,11 +252,38 @@ export function initGeneralPrefs(root, { i18n, username }) {
         return;
       }
 
+      const resendAttr = target.dataset.resendVerification;
+      if (resendAttr) {
+        const allowed = await checkDomainAndNotify(resendAttr);
+        if (!allowed) return;
+        try {
+          const result = await resendVerification(resendAttr);
+          const action = await openVerifyPopup(resendAttr, result.watchToken);
+          if (action !== 'verified') {
+            try { await forceRemoveUnverifiedEmail(resendAttr); } catch { /* ignore */ }
+          }
+          await loadEmails();
+          renderEmailList();
+        } catch (err) {
+          const code = err instanceof Error ? err.message : 'resend_failed';
+          if (code === 'rate_limited') {
+            showStatus(i18n.t('ui.app.settings.emails_verify_rate_limited'));
+          } else if (code === 'smtp_unavailable') {
+            showStatus(i18n.t('ui.app.settings.emails_verify_unavailable'));
+          } else {
+            showStatus(i18n.t('ui.app.settings.emails_add_failed'));
+          }
+        }
+        return;
+      }
+
       if (target.id === 'email-add-btn') {
         const input = root.querySelector('#email-add-input');
         if (!(input instanceof HTMLInputElement)) return;
         const address = input.value.trim();
         if (!address) return;
+        const allowed = await checkDomainAndNotify(address);
+        if (!allowed) return;
         try {
           const result = await addEmail(address);
           input.value = '';
@@ -203,7 +292,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
           if (result.pendingVerification) {
             const action = await openVerifyPopup(address, result.watchToken);
             if (action !== 'verified') {
-              try { await removeEmail(address); } catch { /* ignore */ }
+              try { await forceRemoveUnverifiedEmail(address); } catch { /* ignore */ }
             }
             await loadEmails();
             renderEmailList();
