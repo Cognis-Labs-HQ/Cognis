@@ -1,17 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GatewayRegistry } from "../../gateway-registry.js";
-import { RouteRegistry } from "../../route-registry.js";
-import { bootstrapNotificationGateway } from "../notification-bootstrap.js";
-import { issueAccessToken } from "../../auth/access-tokens.js";
+import { GatewayRegistry } from "../../../gateway-registry.js";
+import { RouteRegistry } from "../../../route-registry.js";
+import { CapabilityStore } from "../../../gateway-bootstrap.js";
+import { bootstrap } from "../bootstrap.js";
+import { issueAccessToken } from "../../../auth/access-tokens.js";
 
-function makeInMemoryDb(): {
-    rows: Map<string, Record<string, unknown>[]>;
-    execute: (sql: string, params?: unknown[]) => Promise<{ rows?: any[] }>;
-} {
-    const rows = new Map<string, Record<string, unknown>[]>();
+function makeInMemoryDb() {
     return {
-        rows,
         execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
     };
 }
@@ -37,17 +33,25 @@ function makeResponse() {
 
 const adminToken = issueAccessToken("test-session", "admin", "admin");
 
-test("bootstrapNotificationGateway registers gateway with GatewayRegistry", async () => {
+async function makeCtx() {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
     const db = makeInMemoryDb();
+    return { gatewayRegistry, routeRegistry, capabilities, db };
+}
 
-    await bootstrapNotificationGateway({
-        dbExecutor: db,
+test("bootstrap registers notify gateway with GatewayRegistry", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, db } =
+        await makeCtx();
+
+    await bootstrap({
+        dbExecutor: db as any,
         dbType: "sqlite",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
+        capabilities,
     });
 
     const gateways = gatewayRegistry.list();
@@ -56,39 +60,40 @@ test("bootstrapNotificationGateway registers gateway with GatewayRegistry", asyn
     assert.equal(gateways[0].name, "Notification Gateway");
 });
 
-test("bootstrapNotificationGateway registers routes with RouteRegistry", async () => {
-    const gatewayRegistry = new GatewayRegistry();
-    const routeRegistry = new RouteRegistry();
-    const db = makeInMemoryDb();
+test("bootstrap registers routes with RouteRegistry", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, db } =
+        await makeCtx();
 
-    await bootstrapNotificationGateway({
-        dbExecutor: db,
+    await bootstrap({
+        dbExecutor: db as any,
         dbType: "sqlite",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
+        capabilities,
     });
 
     assert.ok(
-        routeRegistry.getHandlers().length >= 2,
-        "Expected at least two handlers registered (notification + adapter routes)",
+        routeRegistry.getHandlers().length >= 3,
+        "Expected at least three handlers registered (notification routes + email routes + adapter routes)",
     );
 });
 
-test("gateway adapter route GET /api/v1/gateways/notify/adapters returns empty list when no senders", async () => {
-    const gatewayRegistry = new GatewayRegistry();
-    const routeRegistry = new RouteRegistry();
-    const db = makeInMemoryDb();
+test("GET /api/v1/gateways/notify/adapters returns empty list when no senders", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, db } =
+        await makeCtx();
 
-    await bootstrapNotificationGateway({
-        dbExecutor: db,
+    await bootstrap({
+        dbExecutor: db as any,
         dbType: "sqlite",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
+        capabilities,
     });
 
-    const adapterHandler = routeRegistry.getHandlers()[1];
+    const handlers = routeRegistry.getHandlers();
+    const adapterHandler = handlers[handlers.length - 1];
     const req = {
         method: "GET",
         headers: { authorization: `Bearer ${adminToken}` },
@@ -108,19 +113,20 @@ test("gateway adapter route GET /api/v1/gateways/notify/adapters returns empty l
 });
 
 test("gateway adapter route requires admin auth", async () => {
-    const gatewayRegistry = new GatewayRegistry();
-    const routeRegistry = new RouteRegistry();
-    const db = makeInMemoryDb();
+    const { gatewayRegistry, routeRegistry, capabilities, db } =
+        await makeCtx();
 
-    await bootstrapNotificationGateway({
-        dbExecutor: db,
+    await bootstrap({
+        dbExecutor: db as any,
         dbType: "sqlite",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
+        capabilities,
     });
 
-    const adapterHandler = routeRegistry.getHandlers()[1];
+    const handlers = routeRegistry.getHandlers();
+    const adapterHandler = handlers[handlers.length - 1];
     const req = { method: "GET", headers: {} } as any;
     const res = makeResponse();
 

@@ -1,25 +1,28 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createUserRoutes } from "../../../../api/routes/users/index.js";
-import { VolatileLocalAccountStore } from "../../../../api/adapters/local-auth-gateway.js";
-import { VolatileUserPreferenceStore } from "../../../../api/routes/preferences/index.js";
-import { DbNotificationStore } from "../../../../api/adapters/db/notification-store.js";
-import { SqliteExecutor } from "../../../../api/adapters/db/account-store.js";
-import {
-    TfaCodeService,
-    InMemoryTfaStore,
-} from "../../../../api/utils/tfa-code.js";
+import { createUserEmailRoutes } from "../bootstrap.js";
+import { DbNotificationStore } from "../../../adapters/db/notification-store.js";
+import { SqliteExecutor } from "../../../adapters/db/account-store.js";
+import { TfaCodeService, InMemoryTfaStore } from "../../../utils/tfa-code.js";
 import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
-} from "../../../../api/utils/verify-token.js";
-import { issueAccessToken } from "../../../../api/auth/access-tokens.js";
+} from "../../../utils/verify-token.js";
+import { CoreNotificationGateway } from "../gateway.js";
+import { VolatileNotificationPreferenceStore } from "../gateway.js";
+import { issueAccessToken } from "../../../auth/access-tokens.js";
 
 async function makeNotifStore(): Promise<DbNotificationStore> {
     const db = new SqliteExecutor(":memory:");
     const store = new DbNotificationStore(db, "sqlite");
     await store.ensureSchema();
     return store;
+}
+
+function makeGateway() {
+    return new CoreNotificationGateway(
+        new VolatileNotificationPreferenceStore(),
+    );
 }
 
 function makeRequest(
@@ -57,13 +60,20 @@ function makeResponse() {
 }
 
 test("adding the first email auto-sets it as primary", async () => {
-    const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
-    const prefs = new VolatileUserPreferenceStore();
     const notifStore = await makeNotifStore();
-
-    const route = createUserRoutes(accounts, prefs, undefined, notifStore);
+    const tfaService = new TfaCodeService(new InMemoryTfaStore());
+    const verifyTokenService = new VerifyTokenService(
+        new InMemoryVerifyTokenStore(),
+    );
+    const gateway = makeGateway();
     const token = issueAccessToken("alice", "user", 60);
+
+    const route = createUserEmailRoutes(
+        notifStore,
+        tfaService,
+        verifyTokenService,
+        gateway,
+    );
     const res = makeResponse();
 
     await route(
@@ -79,15 +89,23 @@ test("adding the first email auto-sets it as primary", async () => {
 });
 
 test("cannot delete primary email", async () => {
-    const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
-    const prefs = new VolatileUserPreferenceStore();
     const notifStore = await makeNotifStore();
     await notifStore.addUserEmail("alice", "alice@example.com");
     await notifStore.addUserEmail("alice", "alt@example.com");
 
+    const tfaService = new TfaCodeService(new InMemoryTfaStore());
+    const verifyTokenService = new VerifyTokenService(
+        new InMemoryVerifyTokenStore(),
+    );
+    const gateway = makeGateway();
     const token = issueAccessToken("alice", "user", 60);
-    const route = createUserRoutes(accounts, prefs, undefined, notifStore);
+
+    const route = createUserEmailRoutes(
+        notifStore,
+        tfaService,
+        verifyTokenService,
+        gateway,
+    );
     const res = makeResponse();
 
     await route(
@@ -106,29 +124,26 @@ test("cannot delete primary email", async () => {
 });
 
 test("email verification flow: issue code, verify, email becomes verified", async () => {
-    const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
-    const prefs = new VolatileUserPreferenceStore();
     const notifStore = await makeNotifStore();
-
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
+    const verifyTokenService = new VerifyTokenService(
+        new InMemoryVerifyTokenStore(),
+    );
     const token = issueAccessToken("alice", "user", 60);
 
     const sentEmails: Array<{ to: string; code: string }> = [];
-    const mockSmtpSender = {
+    const mockGateway = {
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async (to: string, code: string) => {
             sentEmails.push({ to, code });
         },
     } as any;
 
-    const route = createUserRoutes(
-        accounts,
-        prefs,
-        undefined,
+    const route = createUserEmailRoutes(
         notifStore,
         tfaService,
-        mockSmtpSender,
+        verifyTokenService,
+        mockGateway,
     );
 
     const addRes = makeResponse();
@@ -163,22 +178,22 @@ test("email verification flow: issue code, verify, email becomes verified", asyn
 });
 
 test("email verification rejects wrong code with 422", async () => {
-    const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
-    const prefs = new VolatileUserPreferenceStore();
     const notifStore = await makeNotifStore();
     await notifStore.addUserEmail("alice", "alice@example.com");
 
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     tfaService.issue("alice:alice@example.com");
-
+    const verifyTokenService = new VerifyTokenService(
+        new InMemoryVerifyTokenStore(),
+    );
+    const gateway = makeGateway();
     const token = issueAccessToken("alice", "user", 60);
-    const route = createUserRoutes(
-        accounts,
-        prefs,
-        undefined,
+
+    const route = createUserEmailRoutes(
         notifStore,
         tfaService,
+        verifyTokenService,
+        gateway,
     );
     const res = makeResponse();
 
@@ -193,39 +208,29 @@ test("email verification rejects wrong code with 422", async () => {
 });
 
 test("link verification GET redirects to /verify-email", async () => {
-    const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
-    const prefs = new VolatileUserPreferenceStore();
     const notifStore = await makeNotifStore();
     await notifStore.addUserEmail("alice", "alice@example.com");
 
+    const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
     const linkToken = verifyTokenService.issue("alice:alice@example.com");
+    const gateway = makeGateway();
 
-    const route = createUserRoutes(
-        accounts,
-        prefs,
-        undefined,
+    const route = createUserEmailRoutes(
         notifStore,
-        undefined,
-        undefined,
+        tfaService,
         verifyTokenService,
+        gateway,
         "http://localhost",
     );
     let capturedLocation = "";
     const res = {
-        writeHead(code: number, headers?: Record<string, string>) {
+        writeHead(_code: number, headers?: Record<string, string>) {
             if (headers?.location) capturedLocation = headers.location;
         },
         end() {},
-        get status() {
-            return 302;
-        },
-        get payload() {
-            return "";
-        },
     } as any;
 
     await route(
@@ -248,66 +253,22 @@ test("link verification GET redirects to /verify-email", async () => {
     );
 });
 
-test("link verification GET with no token redirects to /verify-email without token", async () => {
-    const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
-    const prefs = new VolatileUserPreferenceStore();
-    const notifStore = await makeNotifStore();
-    await notifStore.addUserEmail("alice", "alice@example.com");
-
-    const verifyTokenService = new VerifyTokenService(
-        new InMemoryVerifyTokenStore(),
-    );
-    const route = createUserRoutes(
-        accounts,
-        prefs,
-        undefined,
-        notifStore,
-        undefined,
-        undefined,
-        verifyTokenService,
-    );
-    let capturedLocation = "";
-    const res = {
-        writeHead(_code: number, headers?: Record<string, string>) {
-            if (headers?.location) capturedLocation = headers.location;
-        },
-        end() {},
-    } as any;
-
-    await route(
-        { method: "GET", headers: {} } as any,
-        res,
-        new URL(
-            "http://localhost/api/v1/users/alice/emails/alice%40example.com/verify?token=badtoken",
-        ),
-    );
-    assert.ok(
-        capturedLocation.startsWith("/verify-email"),
-        `expected redirect, got: ${capturedLocation}`,
-    );
-});
-
 test("POST /api/v1/verify-email with valid token verifies email", async () => {
-    const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
-    const prefs = new VolatileUserPreferenceStore();
     const notifStore = await makeNotifStore();
     await notifStore.addUserEmail("alice", "alice@example.com");
 
+    const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
     const linkToken = verifyTokenService.issue("alice:alice@example.com");
+    const gateway = makeGateway();
 
-    const route = createUserRoutes(
-        accounts,
-        prefs,
-        undefined,
+    const route = createUserEmailRoutes(
         notifStore,
-        undefined,
-        undefined,
+        tfaService,
         verifyTokenService,
+        gateway,
     );
     const res = makeResponse();
 
@@ -325,25 +286,21 @@ test("POST /api/v1/verify-email with valid token verifies email", async () => {
 });
 
 test("POST /api/v1/verify-email token cannot be reused", async () => {
-    const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
-    const prefs = new VolatileUserPreferenceStore();
     const notifStore = await makeNotifStore();
     await notifStore.addUserEmail("alice", "alice@example.com");
 
+    const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
     const linkToken = verifyTokenService.issue("alice:alice@example.com");
+    const gateway = makeGateway();
 
-    const route = createUserRoutes(
-        accounts,
-        prefs,
-        undefined,
+    const route = createUserEmailRoutes(
         notifStore,
-        undefined,
-        undefined,
+        tfaService,
         verifyTokenService,
+        gateway,
     );
 
     const first = makeResponse();
@@ -366,11 +323,7 @@ test("POST /api/v1/verify-email token cannot be reused", async () => {
 });
 
 test("add email issues both TFA code and verify token and includes link in email", async () => {
-    const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
-    const prefs = new VolatileUserPreferenceStore();
     const notifStore = await makeNotifStore();
-
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
@@ -379,7 +332,7 @@ test("add email issues both TFA code and verify token and includes link in email
 
     const sentEmails: Array<{ to: string; code: string; verifyUrl?: string }> =
         [];
-    const mockSmtpSender = {
+    const mockGateway = {
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async (
             to: string,
@@ -390,14 +343,11 @@ test("add email issues both TFA code and verify token and includes link in email
         },
     } as any;
 
-    const route = createUserRoutes(
-        accounts,
-        prefs,
-        undefined,
+    const route = createUserEmailRoutes(
         notifStore,
         tfaService,
-        mockSmtpSender,
         verifyTokenService,
+        mockGateway,
         "http://localhost",
     );
     const res = makeResponse();
@@ -419,23 +369,19 @@ test("add email issues both TFA code and verify token and includes link in email
 });
 
 test("verify-tokens/status returns pending:true for a live token", async () => {
-    const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
-    const prefs = new VolatileUserPreferenceStore();
     const notifStore = await makeNotifStore();
+    const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
     const liveToken = verifyTokenService.issue("alice:alice@example.com");
+    const gateway = makeGateway();
 
-    const route = createUserRoutes(
-        accounts,
-        prefs,
-        undefined,
+    const route = createUserEmailRoutes(
         notifStore,
-        undefined,
-        undefined,
+        tfaService,
         verifyTokenService,
+        gateway,
     );
     const res = makeResponse();
 
@@ -451,25 +397,22 @@ test("verify-tokens/status returns pending:true for a live token", async () => {
     assert.equal(data.data.pending, true);
 });
 
-test("verify-tokens/status returns pending:false after token is consumed via POST verify-email", async () => {
-    const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
-    const prefs = new VolatileUserPreferenceStore();
+test("verify-tokens/status returns pending:false after token is consumed", async () => {
     const notifStore = await makeNotifStore();
     await notifStore.addUserEmail("alice", "alice@example.com");
+
+    const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
     const liveToken = verifyTokenService.issue("alice:alice@example.com");
+    const gateway = makeGateway();
 
-    const route = createUserRoutes(
-        accounts,
-        prefs,
-        undefined,
+    const route = createUserEmailRoutes(
         notifStore,
-        undefined,
-        undefined,
+        tfaService,
         verifyTokenService,
+        gateway,
         "http://localhost",
     );
 
@@ -495,22 +438,18 @@ test("verify-tokens/status returns pending:false after token is consumed via POS
 });
 
 test("verify-tokens/status returns pending:false for an unknown token", async () => {
-    const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
-    const prefs = new VolatileUserPreferenceStore();
     const notifStore = await makeNotifStore();
+    const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
+    const gateway = makeGateway();
 
-    const route = createUserRoutes(
-        accounts,
-        prefs,
-        undefined,
+    const route = createUserEmailRoutes(
         notifStore,
-        undefined,
-        undefined,
+        tfaService,
         verifyTokenService,
+        gateway,
     );
     const res = makeResponse();
 

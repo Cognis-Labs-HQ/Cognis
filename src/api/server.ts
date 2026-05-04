@@ -23,10 +23,6 @@ import { createSocialRoutes } from "./routes/social/index.js";
 import { createPostRoutes } from "./routes/posts/index.js";
 import { createFileRoutes } from "./routes/files/index.js";
 import type { DbProfileStore } from "./adapters/db/profile-store.js";
-import type { DbNotificationStore } from "./adapters/db/notification-store.js";
-import type { TfaCodeService } from "./utils/tfa-code.js";
-import type { VerifyTokenService } from "./utils/verify-token.js";
-import type { VerificationEmailSender } from "./gateways/notification.js";
 import type { RouteRegistry } from "./route-registry.js";
 import { createGatewayRoutes } from "./routes/gateways/index.js";
 import type { GatewayRegistry } from "./gateway-registry.js";
@@ -66,11 +62,6 @@ export interface ApiDependencies {
     preferenceStore: UserPreferenceStore;
     profileStore?: DbProfileStore;
     fileGateway?: FileStorageGateway;
-    notifStore?: DbNotificationStore;
-    tfaService?: TfaCodeService;
-    verificationEmailSender?: VerificationEmailSender;
-    verifyTokenService?: VerifyTokenService;
-    externalHost?: string;
     routeRegistry?: RouteRegistry;
     gatewayRegistry?: GatewayRegistry;
     moduleIntegrityChecker?: () => Promise<
@@ -129,11 +120,6 @@ export function buildServer(deps: ApiDependencies) {
         deps.accountStore,
         deps.preferenceStore,
         deps.profileStore,
-        deps.notifStore,
-        deps.tfaService,
-        deps.verificationEmailSender,
-        deps.verifyTokenService,
-        deps.externalHost,
     );
     const profileRoutes =
         deps.profileStore && deps.fileGateway

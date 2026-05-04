@@ -4,7 +4,7 @@ import { createNotificationRoutes } from "../index.js";
 import {
     CoreNotificationGateway,
     VolatileNotificationPreferenceStore,
-} from "../../../gateways/notification.js";
+} from "../../../gateways/notify/gateway.js";
 import { issueAccessToken } from "../../../auth/access-tokens.js";
 import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
 

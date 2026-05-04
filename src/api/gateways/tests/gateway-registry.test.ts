@@ -59,3 +59,35 @@ test("GatewayRegistry later registration overwrites earlier for same id", () => 
     assert.equal(manifest?.version, "0.2.0");
     assert.equal(registry.list().length, 1);
 });
+
+test("assertRequiredInitialized passes when all required gateways are registered", () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "notify",
+        name: "Notification Gateway",
+        version: "0.1.0",
+        required: true,
+    });
+    registry.register({ id: "files", name: "File Gateway", version: "0.1.0" });
+
+    assert.doesNotThrow(() => {
+        registry.assertRequiredInitialized(["notify"]);
+    });
+});
+
+test("assertRequiredInitialized throws when a required gateway is absent", () => {
+    const registry = new GatewayRegistry();
+    registry.register({ id: "files", name: "File Gateway", version: "0.1.0" });
+
+    assert.throws(
+        () => registry.assertRequiredInitialized(["notify"]),
+        /Required gateway "notify" did not initialize/,
+    );
+});
+
+test("assertRequiredInitialized is a no-op when requiredIds is empty", () => {
+    const registry = new GatewayRegistry();
+    assert.doesNotThrow(() => {
+        registry.assertRequiredInitialized([]);
+    });
+});

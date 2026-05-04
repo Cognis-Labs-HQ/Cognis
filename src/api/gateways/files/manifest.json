@@ -1,0 +1,8 @@
+{
+    "id": "files",
+    "name": "File Storage Gateway",
+    "version": "0.1.0",
+    "required": false,
+    "description": "Provides local file storage for uploads.",
+    "publisher": "Cognis Labs"
+}

@@ -4,6 +4,7 @@ import type {
     ModuleRuntimeGateway,
     ModuleState,
 } from "@cognis/core";
+import type { FileStorageGateway } from "@cognis/core";
 import { Logger } from "./logger.js";
 import { initializeDatabaseSchema } from "./bootstrap/db-init.js";
 import { LocalAuthGateway } from "./adapters/local-auth-gateway.js";
@@ -14,19 +15,14 @@ import {
 } from "./adapters/db/account-store.js";
 import { DbUserPreferenceStore } from "./adapters/db/preference-store.js";
 import { DbProfileStore } from "./adapters/db/profile-store.js";
-import { LocalFileGateway } from "../adapters/file-local/local-file-gateway.js";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { issueAccessToken } from "./auth/access-tokens.js";
 import { createHash } from "node:crypto";
-import { TfaCodeService, InMemoryTfaStore } from "./utils/tfa-code.js";
-import {
-    VerifyTokenService,
-    InMemoryVerifyTokenStore,
-} from "./utils/verify-token.js";
 import { RouteRegistry } from "./route-registry.js";
 import { GatewayRegistry } from "./gateway-registry.js";
-import { bootstrapNotificationGateway } from "./gateways/notification-bootstrap.js";
+import { CapabilityStore } from "./gateway-bootstrap.js";
+import { bootstrapGateways } from "./gateways/index.js";
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
     private readonly manifests: ModuleManifest[];
@@ -156,14 +152,6 @@ const profileStore = new DbProfileStore(dbExecutor, dbType);
 await profileStore.ensureSchema();
 await logger.info("Profile schema ensured.");
 
-const mediaLocation = process.env.MEDIA_LOCATION ?? "/app/media";
-const fileStorePath = `${mediaLocation}/uploads`;
-const fileGateway = new LocalFileGateway(fileStorePath);
-await logger.info("File gateway initialized.", {
-    provider: "local",
-    path: fileStorePath,
-});
-
 const adminState = await dbExecutor.execute(
     dbType === "postgresql"
         ? "SELECT state_value FROM bootstrap_state WHERE state_key = $1"
@@ -222,28 +210,45 @@ await logger.info("Module runtime bootstrapped.");
 
 const routeRegistry = new RouteRegistry();
 const gatewayRegistry = new GatewayRegistry();
+const capabilities = new CapabilityStore();
 
 const adaptersRoot =
     process.env.COGNIS_ADAPTERS_ROOT ??
     path.resolve(process.cwd(), "src", "adapters");
 
-const notificationGateway = await bootstrapNotificationGateway({
-    dbExecutor,
-    dbType,
-    adaptersRoot,
-    routeRegistry,
-    gatewayRegistry,
-});
-const { gateway: notifGateway, notifStore } = notificationGateway;
-await logger.info("Notification gateway bootstrapped.", { adaptersRoot });
+const gatewaysRoot =
+    process.env.COGNIS_GATEWAYS_ROOT ??
+    path.resolve(process.cwd(), "src", "api", "gateways");
 
-const tfaService = new TfaCodeService(new InMemoryTfaStore());
-const verifyTokenService = new VerifyTokenService(
-    new InMemoryVerifyTokenStore(),
+const requiredGatewayIds = await bootstrapGateways(
+    {
+        dbExecutor,
+        dbType,
+        adaptersRoot,
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    },
+    gatewaysRoot,
 );
-const externalHost =
-    process.env.EXTERNAL_HOST ??
-    (process.env.HOST ? `http://${process.env.HOST}` : undefined);
+await logger.info("Gateway bootstrap complete.", {
+    adaptersRoot,
+    gatewaysRoot,
+    requiredIds: requiredGatewayIds,
+});
+
+// Verify all required gateways initialized before the server starts.
+try {
+    gatewayRegistry.assertRequiredInitialized(requiredGatewayIds);
+} catch (err) {
+    await logger.error(
+        "A required gateway failed to initialize. Refusing to start.",
+        { error: err instanceof Error ? err.message : String(err) },
+    );
+    process.exit(1);
+}
+
+const fileGateway = capabilities.get<FileStorageGateway>("file:gateway");
 
 const server = buildServer({
     moduleRuntimeGateway: runtime,
@@ -252,11 +257,6 @@ const server = buildServer({
     preferenceStore,
     profileStore,
     fileGateway,
-    notifStore,
-    tfaService,
-    verificationEmailSender: notifGateway,
-    verifyTokenService,
-    externalHost,
     routeRegistry,
     gatewayRegistry,
     loadModuleStates: async () => {

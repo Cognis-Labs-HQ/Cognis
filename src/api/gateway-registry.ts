@@ -9,6 +9,12 @@ export interface GatewayManifest {
     version: string;
     description?: string;
     publisher?: string;
+    /**
+     * When true this gateway must successfully initialize before the server
+     * starts accepting connections. Core checks all required gateways after
+     * the bootstrap phase and refuses to start if any are absent.
+     */
+    required?: boolean;
 }
 
 export class GatewayRegistry {
@@ -24,5 +30,19 @@ export class GatewayRegistry {
 
     get(id: string): GatewayManifest | undefined {
         return this.gateways.get(id);
+    }
+
+    /**
+     * Verifies that every gateway ID listed in `requiredIds` has successfully
+     * registered. Throws with the first missing ID if any are absent.
+     */
+    assertRequiredInitialized(requiredIds: readonly string[]): void {
+        for (const id of requiredIds) {
+            if (!this.gateways.has(id)) {
+                throw new Error(
+                    `Required gateway "${id}" did not initialize successfully.`,
+                );
+            }
+        }
     }
 }
