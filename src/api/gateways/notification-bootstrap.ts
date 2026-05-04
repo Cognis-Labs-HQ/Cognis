@@ -1,10 +1,7 @@
 import path from "node:path";
 import { requireAuth } from "../auth/guard.js";
 import { readJson } from "../routes/read-json.js";
-import {
-    CoreNotificationGateway,
-    VolatileNotificationPreferenceStore,
-} from "./notification.js";
+import { CoreNotificationGateway } from "./notification.js";
 import {
     DbNotificationStore,
     DbNotificationPreferenceStore,

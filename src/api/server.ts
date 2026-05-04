@@ -249,6 +249,9 @@ export function buildServer(deps: ApiDependencies) {
                 }
             }
 
+            // Gateway-registered route handlers run after core routes but before
+            // profile/social/post/file routes. Precedence: core → gateway registry
+            // → profile/social/posts/files → module extensions → docs → UI.
             for (const handler of deps.routeRegistry?.getHandlers() ?? []) {
                 const handledByRegistry = await handler(req, res, url);
                 if (handledByRegistry) {
