@@ -6,6 +6,17 @@ import type { RouteRegistry } from "./route-registry.js";
 import type { GatewayRegistry } from "./gateway-registry.js";
 
 /**
+ * Minimal logging interface that gateways may use during their own bootstrap.
+ * The level maps to the standard log levels; gateways should not assume any
+ * specific logger implementation is available.
+ */
+export type BootstrapLog = (
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    meta?: Record<string, unknown>,
+) => void;
+
+/**
  * A simple key-value store that gateway bootstraps use to contribute
  * capabilities (e.g. a FileStorageGateway instance) back to the server
  * without core needing to import any concrete implementation class.
@@ -34,4 +45,6 @@ export interface GatewayBootstrapContext {
     routeRegistry: RouteRegistry;
     gatewayRegistry: GatewayRegistry;
     capabilities: CapabilityStore;
+    /** Optional structured logger provided by the logging gateway once it has bootstrapped. */
+    log?: BootstrapLog;
 }

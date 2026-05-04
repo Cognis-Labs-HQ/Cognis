@@ -25,7 +25,11 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { DbExecutor } from "../adapters/db/account-store.js";
-import type { Logger } from "../logger.js";
+
+/** Minimal logging interface required by the database initializer. */
+export interface DbInitLogger {
+    info(message: string, meta?: Record<string, unknown>): void | Promise<void>;
+}
 
 export function resolveDbProviderDir(dbType: string) {
     if (dbType === "postgresql") return "postgresql";
@@ -44,7 +48,7 @@ function splitSqlStatements(sql: string): string[] {
 async function runSqlDir(
     dir: string,
     label: string,
-    logger: Logger,
+    logger: DbInitLogger,
     executor: DbExecutor,
 ) {
     let files: string[];
@@ -73,7 +77,7 @@ async function runSqlDir(
 
 export async function initializeDatabaseSchema(
     dbType: string,
-    logger: Logger,
+    logger: DbInitLogger,
     executor: DbExecutor,
 ) {
     const dir = resolveDbProviderDir(dbType);

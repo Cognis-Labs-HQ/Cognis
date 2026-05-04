@@ -4,8 +4,6 @@ import type {
     ModuleRuntimeGateway,
     ModuleState,
 } from "@cognis/core";
-import type { FileStorageGateway } from "@cognis/core";
-import { Logger } from "./logger.js";
 import { initializeDatabaseSchema } from "./bootstrap/db-init.js";
 import { LocalAuthGateway } from "./adapters/local-auth-gateway.js";
 import {
@@ -14,7 +12,6 @@ import {
     type SupportedDbType,
 } from "./adapters/db/account-store.js";
 import { DbUserPreferenceStore } from "./adapters/db/preference-store.js";
-import { DbProfileStore } from "./adapters/db/profile-store.js";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { issueAccessToken } from "./auth/access-tokens.js";
@@ -23,6 +20,7 @@ import { RouteRegistry } from "./route-registry.js";
 import { GatewayRegistry } from "./gateway-registry.js";
 import { CapabilityStore } from "./gateway-bootstrap.js";
 import { bootstrapGateways } from "./gateways/index.js";
+import type { BootstrapLog } from "./gateway-bootstrap.js";
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
     private readonly manifests: ModuleManifest[];
@@ -100,36 +98,38 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
 const port = Number.parseInt(process.env.PORT ?? "3000", 10);
 const host = process.env.LISTEN_HOST ?? "0.0.0.0";
 const dbType = (process.env.DB_TYPE as SupportedDbType | undefined) ?? "sqlite";
-const logLevel =
-    (process.env.LOG_LEVEL as
-        | "debug"
-        | "info"
-        | "warn"
-        | "error"
-        | undefined) ?? "info";
-const logFile = process.env.LOG_FILE ?? "/app/logs/app.log";
 
-const logger = new Logger(logLevel, logFile);
-await logger.info("Starting Cognis API bootstrap.", {
+function bootstrapLog(
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    meta?: Record<string, unknown>,
+) {
+    process.stdout.write(
+        `${JSON.stringify({ ts: new Date().toISOString(), level, message, ...meta })}\n`,
+    );
+}
+bootstrapLog("info", "Starting Cognis API bootstrap.", {
     host,
     port,
     dbType,
-    logLevel,
-    logFile,
 });
 const dbExecutor = await createDbExecutor(dbType);
-await logger.info("Database executor initialized.", { dbType });
+bootstrapLog("info", "Database executor initialized.", { dbType });
 
-await initializeDatabaseSchema(dbType, logger, dbExecutor);
-await logger.info("Database schema initialised.");
+await initializeDatabaseSchema(
+    dbType,
+    { info: (msg, meta) => bootstrapLog("info", msg, meta) },
+    dbExecutor,
+);
+bootstrapLog("info", "Database schema initialised.");
 
 const accountStore = new DbLocalAccountStore(dbExecutor, dbType);
 await accountStore.ensureSchema();
-await logger.info("Account schema ensured.");
+bootstrapLog("info", "Account schema ensured.");
 const authGateway = new LocalAuthGateway(accountStore);
 const preferenceStore = new DbUserPreferenceStore(dbExecutor, dbType);
 await preferenceStore.ensureSchema();
-await logger.info("Preference schema ensured.");
+bootstrapLog("info", "Preference schema ensured.");
 if (dbType === "postgresql") {
     await dbExecutor.execute(
         "INSERT INTO modules (module_id, enabled) VALUES ($1, $2) ON CONFLICT (module_id) DO NOTHING",
@@ -146,11 +146,7 @@ if (dbType === "postgresql") {
         ["cognis-core", true],
     );
 }
-await logger.info("Core module baseline state ensured.");
-
-const profileStore = new DbProfileStore(dbExecutor, dbType);
-await profileStore.ensureSchema();
-await logger.info("Profile schema ensured.");
+bootstrapLog("info", "Core module baseline state ensured.");
 
 const adminState = await dbExecutor.execute(
     dbType === "postgresql"
@@ -163,7 +159,6 @@ const adminInitialized = adminState.rows?.[0]?.state_value === "true";
 if (!adminInitialized) {
     const adminPassword = LocalAuthGateway.generatePassword();
     await authGateway.createLocalAdmin("admin", adminPassword);
-    await profileStore.createProfile("admin", "admin", "admin");
     if (dbType === "postgresql") {
         await dbExecutor.execute(
             "INSERT INTO bootstrap_state (state_key, state_value) VALUES ($1, $2) ON CONFLICT (state_key) DO UPDATE SET state_value = EXCLUDED.state_value",
@@ -180,12 +175,15 @@ if (!adminInitialized) {
             ["default_admin_initialized", "true"],
         );
     }
-    await logger.warn("Default admin account created.", {
+    bootstrapLog("warn", "Default admin account created.", {
         username: "admin",
         generatedPassword: adminPassword,
     });
 } else {
-    await logger.info("Default admin bootstrap skipped (already initialized).");
+    bootstrapLog(
+        "info",
+        "Default admin bootstrap skipped (already initialized).",
+    );
 }
 
 const cliTokenPath =
@@ -194,9 +192,12 @@ const cliAccessToken = issueAccessToken("cognis-cli", "admin", null);
 try {
     await mkdir(path.dirname(cliTokenPath), { recursive: true });
     await writeFile(cliTokenPath, `${cliAccessToken}\n`, { mode: 0o600 });
-    await logger.info("CLI access token initialized.", { path: cliTokenPath });
+    bootstrapLog("info", "CLI access token initialized.", {
+        path: cliTokenPath,
+    });
 } catch (error) {
-    await logger.warn(
+    bootstrapLog(
+        "warn",
         "Failed to persist CLI access token; continuing without file bootstrap token.",
         {
             path: cliTokenPath,
@@ -206,7 +207,7 @@ try {
 }
 
 const runtime = await InMemoryModuleRuntimeGateway.bootstrap();
-await logger.info("Module runtime bootstrapped.");
+bootstrapLog("info", "Module runtime bootstrapped.");
 
 const routeRegistry = new RouteRegistry();
 const gatewayRegistry = new GatewayRegistry();
@@ -231,7 +232,11 @@ const requiredGatewayIds = await bootstrapGateways(
     },
     gatewaysRoot,
 );
-await logger.info("Gateway bootstrap complete.", {
+
+const logger = capabilities.get<Logger>("logging:logger");
+const log = capabilities.get<BootstrapLog>("logging:log") ?? bootstrapLog;
+
+await log("info", "Gateway bootstrap complete.", {
     adaptersRoot,
     gatewaysRoot,
     requiredIds: requiredGatewayIds,
@@ -241,24 +246,35 @@ await logger.info("Gateway bootstrap complete.", {
 try {
     gatewayRegistry.assertRequiredInitialized(requiredGatewayIds);
 } catch (err) {
-    await logger.error(
+    await log(
+        "error",
         "A required gateway failed to initialize. Refusing to start.",
         { error: err instanceof Error ? err.message : String(err) },
     );
     process.exit(1);
 }
 
-const fileGateway = capabilities.get<FileStorageGateway>("file:gateway");
+// If the profile gateway is present, contribute the admin profile after the
+// gateway itself has initialized (so schema is ready).
+const createProfile = capabilities.get<
+    (accountId: string, handle: string, role?: string) => Promise<void>
+>("profile:createProfile");
+if (!adminInitialized && createProfile) {
+    await createProfile("admin", "admin", "admin");
+}
 
 const server = buildServer({
     moduleRuntimeGateway: runtime,
     authGateway,
     accountStore,
     preferenceStore,
-    profileStore,
-    fileGateway,
     routeRegistry,
     gatewayRegistry,
+    log,
+    createProfile,
+    setProfileRole: capabilities.get<
+        (handle: string, role: string) => Promise<void>
+    >("profile:setRoleByHandle"),
     loadModuleStates: async () => {
         const result = await dbExecutor.execute(
             "SELECT module_id, enabled FROM modules",
@@ -331,6 +347,6 @@ const server = buildServer({
         return report;
     },
 });
-server.listen(port, host, async () => {
-    await logger.info("Cognis API listening.", { host, port, dbType });
+server.listen(port, host, () => {
+    void log("info", "Cognis API listening.", { host, port, dbType });
 });

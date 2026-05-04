@@ -2,7 +2,6 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { LocalAccountStore } from "../../adapters/local-auth-gateway.js";
 import { getAuthClaims, requireAuth } from "../../auth/guard.js";
 import type { UserPreferenceStore } from "../preferences/index.js";
-import type { ProfileCreateStore } from "../../adapters/db/profile-store.js";
 import { readJson } from "../read-json.js";
 
 const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin"]);
@@ -10,7 +9,7 @@ const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin"]);
 export function createUserRoutes(
     accountStore: LocalAccountStore,
     preferenceStore: UserPreferenceStore,
-    profileStore?: ProfileCreateStore,
+    setProfileRole?: (handle: string, role: string) => Promise<void>,
 ) {
     return async (
         req: IncomingMessage,
@@ -95,7 +94,6 @@ export function createUserRoutes(
                 String(body.password ?? "changeme"),
                 role === "admin",
             );
-            await profileStore?.createProfile(username, username, role as any);
             res.writeHead(201, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: created }));
             return true;
@@ -117,7 +115,7 @@ export function createUserRoutes(
                 return true;
             }
             await accountStore.setRole(username, role as any);
-            await profileStore?.setRoleByHandle(username, role as any);
+            await setProfileRole?.(username, role);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
             return true;

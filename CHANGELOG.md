@@ -9,6 +9,21 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- `src/api/gateways/logging/` — logging gateway (required). Creates the `Logger` instance from `LOG_LEVEL`/`LOG_FILE` env vars and contributes `logging:logger` and `logging:log` to `CapabilityStore`. The bootstrapper always runs this gateway first so all subsequent gateways have access to a structured logger via `ctx.log` ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))
+- `src/api/gateways/profile/` — profile gateway (optional). Owns `DbProfileStore` schema, profile/social/post/file routes and file-size-limits admin routes. Reads `file:gateway` from capabilities (avatar/banner/file routes registered only when the file gateway is present). Contributes `profile:createProfile` and `profile:setRoleByHandle` callbacks so auth and user routes can stay profile-agnostic ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))
+- `BootstrapLog` type in `gateway-bootstrap.ts`: standard `(level, message, meta?) => void` signature; optional `log?` field added to `GatewayBootstrapContext` so gateways can emit structured logs during bootstrap ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))
+- `DbInitLogger` interface in `bootstrap/db-init.ts`: minimal `info(msg, meta?)` contract for the database initializer, replacing the hard import of the concrete `Logger` class ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))
+
+### Changed
+
+- `gateways/index.ts` `bootstrapGateways()`: sorts gateways so the logging gateway always runs first; after the logging gateway initializes, `ctx.log` is populated from `logging:log` for all remaining gateways ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))
+- `server.ts` `ApiDependencies`: removed `profileStore`, `fileGateway`; added `log?`, `createProfile?`, `setProfileRole?` — all plain callback types with no adapter imports. `buildServer` now delegates logging to the injected `log` function (no-ops when absent) ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))
+- `routes/auth/index.ts`: replaced `ProfileCreateStore` import and `profileStore?` parameter with a plain `createProfile?` callback — auth routes carry zero profile dependency ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))
+- `routes/users/index.ts`: replaced `ProfileCreateStore` import and `profileStore?` parameter with `setProfileRole?` callback. User-create route no longer calls `createProfile` (profile gateway creates profiles on first login instead) ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))
+- `main.ts`: removed `Logger` and `DbProfileStore` imports; removed direct `profileStore` bootstrap; removed `fileGateway` retrieval. Pre-gateway logging uses a minimal inline `bootstrapLog()` console writer. After gateway bootstrap, `log` and `createProfile`/`setProfileRole` are read from `CapabilityStore` and injected into `buildServer` ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))
+
+### Added
+
 - `GatewayBootstrapContext` interface and `CapabilityStore` class in `src/api/gateway-bootstrap.ts`: standard contract for all gateway bootstrap functions; gateways contribute capabilities (e.g. `file:gateway`) back to core without core importing any concrete class ([30e69f1](https://github.com/le-firehawk/Cognis/commit/30e69f1))
 - `GatewayManifest.required` field: gateways can declare themselves required; `GatewayRegistry.assertRequiredInitialized()` throws if any required gateway failed to register, causing core to refuse startup ([30e69f1](https://github.com/le-firehawk/Cognis/commit/30e69f1))
 - `src/api/gateways/index.ts` `bootstrapGateways()`: auto-discovers gateway subdirectories, reads each `manifest.json` for required flag, and dynamically imports each gateway's standard `bootstrap(ctx)` entry point ([30e69f1](https://github.com/le-firehawk/Cognis/commit/30e69f1))
