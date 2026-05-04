@@ -53,23 +53,3 @@ INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('video', 10485
 INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('text', 1048576);
 INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES ('global', 10485760);
 
-CREATE TABLE IF NOT EXISTS direct_message_channels (
-  id VARCHAR(191) PRIMARY KEY,
-  participant_a VARCHAR(191) NOT NULL,
-  participant_b VARCHAR(191) NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (participant_a, participant_b),
-  FOREIGN KEY (participant_a) REFERENCES accounts(id) ON DELETE CASCADE,
-  FOREIGN KEY (participant_b) REFERENCES accounts(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS direct_messages (
-  id VARCHAR(191) PRIMARY KEY,
-  channel_id VARCHAR(191) NOT NULL,
-  sender_id VARCHAR(191) NOT NULL,
-  content LONGTEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (channel_id) REFERENCES direct_message_channels(id) ON DELETE CASCADE,
-  FOREIGN KEY (sender_id) REFERENCES accounts(id) ON DELETE CASCADE
-);
-

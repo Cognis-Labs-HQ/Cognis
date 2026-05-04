@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { verifyAccessToken } from '../auth/access-tokens.js';
+import { verifyAccessToken } from '../../auth/access-tokens.js';
 import type { ModuleRuntimeGateway } from '@cognis/core';
 
 const UI_ROOT = path.resolve(process.cwd(), 'src', 'ui');

@@ -2,9 +2,9 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { HealthService } from '@cognis/core';
-import { requireAuth } from '../auth/guard.js';
-import { readJson } from './read-json.js';
-import type { UserPreferenceStore } from './preferences-routes.js';
+import { requireAuth } from '../../auth/guard.js';
+import { readJson } from '../read-json.js';
+import type { UserPreferenceStore } from '../preferences/index.js';
 
 async function listLanguages() {
   const root = join(process.cwd(), 'src', 'ui', 'languages');

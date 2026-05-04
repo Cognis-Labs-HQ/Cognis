@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { VerifyTokenService, InMemoryVerifyTokenStore } from '../utils/verify-token.js';
+import { VerifyTokenService, InMemoryVerifyTokenStore } from '../../utils/verify-token.js';
 
 function makeService(now?: () => number) {
   return new VerifyTokenService(new InMemoryVerifyTokenStore(), now);

@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createUserRoutes } from '../routes/user-routes.js';
-import { VolatileLocalAccountStore } from '../adapters/local-auth-gateway.js';
-import { VolatileUserPreferenceStore } from '../routes/preferences-routes.js';
-import { DbNotificationStore } from '../adapters/db/notification-store.js';
-import { SqliteExecutor } from '../adapters/db/account-store.js';
-import { TfaCodeService, InMemoryTfaStore } from '../utils/tfa-code.js';
-import { VerifyTokenService, InMemoryVerifyTokenStore } from '../utils/verify-token.js';
-import { issueAccessToken } from '../auth/access-tokens.js';
+import { createUserRoutes } from '../../../../api/routes/users/index.js';
+import { VolatileLocalAccountStore } from '../../../../api/adapters/local-auth-gateway.js';
+import { VolatileUserPreferenceStore } from '../../../../api/routes/preferences/index.js';
+import { DbNotificationStore } from '../../../../api/adapters/db/notification-store.js';
+import { SqliteExecutor } from '../../../../api/adapters/db/account-store.js';
+import { TfaCodeService, InMemoryTfaStore } from '../../../../api/utils/tfa-code.js';
+import { VerifyTokenService, InMemoryVerifyTokenStore } from '../../../../api/utils/verify-token.js';
+import { issueAccessToken } from '../../../../api/auth/access-tokens.js';
 
 async function makeNotifStore(): Promise<DbNotificationStore> {
   const db = new SqliteExecutor(':memory:');

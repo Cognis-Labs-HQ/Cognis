@@ -4,6 +4,6 @@ export * from './gateways/database-gateway.js';
 export * from './gateways/file-storage-gateway.js';
 export * from './gateways/auth-gateway.js';
 export * from './gateways/module-runtime-gateway.js';
-export * from './gateways/notification-gateway.js';
+export * from './gateways/notification.js';
 export * from './services/module-service.js';
 export * from './services/health-service.js';

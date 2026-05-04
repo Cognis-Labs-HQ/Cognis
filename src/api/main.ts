@@ -6,7 +6,7 @@ import { LocalAuthGateway } from './adapters/local-auth-gateway.js';
 import { DbLocalAccountStore, createDbExecutor, type SupportedDbType } from './adapters/db/account-store.js';
 import { DbUserPreferenceStore } from './adapters/db/preference-store.js';
 import { DbProfileStore } from './adapters/db/profile-store.js';
-import { CoreNotificationGateway, VolatileNotificationPreferenceStore } from './gateways/notification-gateway.js';
+import { CoreNotificationGateway, VolatileNotificationPreferenceStore } from './gateways/notification.js';
 import { DbNotificationStore, DbNotificationPreferenceStore } from './adapters/db/notification-store.js';
 import { LocalFileGateway } from '../adapters/file-local/local-file-gateway.js';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';

@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createNotificationRoutes } from '../routes/notification-routes.js';
-import { CoreNotificationGateway, VolatileNotificationPreferenceStore } from '../gateways/notification-gateway.js';
-import { issueAccessToken } from '../auth/access-tokens.js';
+import { createNotificationRoutes } from '../index.js';
+import { CoreNotificationGateway, VolatileNotificationPreferenceStore } from '../../../gateways/notification.js';
+import { issueAccessToken } from '../../../auth/access-tokens.js';
 import type { NotificationEnvelope, NotificationSender } from '@cognis/core';
 
 function requestWithBody(method: string, body: Record<string, unknown>, token: string) {
@@ -330,8 +330,6 @@ test('PUT /api/v1/users/:username/notification-prefs returns 200 without notifSt
 
   assert.equal(res.status, 200);
 });
-
-
 
 test('GET /api/v1/notifications/providers/:id/config includes requiredFields when sender implements getRequiredFields', async () => {
   class ConfiguredSender implements NotificationSender {

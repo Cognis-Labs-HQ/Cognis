@@ -1,13 +1,13 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { LocalAccountStore } from '../adapters/local-auth-gateway.js';
-import { getAuthClaims, requireAuth } from '../auth/guard.js';
-import type { UserPreferenceStore } from './preferences-routes.js';
-import type { ProfileCreateStore } from '../adapters/db/profile-store.js';
-import { readJson } from './read-json.js';
-import type { DbNotificationStore } from '../adapters/db/notification-store.js';
-import type { TfaCodeService } from '../utils/tfa-code.js';
-import type { VerifyTokenService } from '../utils/verify-token.js';
-import type { VerificationEmailSender } from '../gateways/notification-gateway.js';
+import type { LocalAccountStore } from '../../adapters/local-auth-gateway.js';
+import { getAuthClaims, requireAuth } from '../../auth/guard.js';
+import type { UserPreferenceStore } from '../preferences/index.js';
+import type { ProfileCreateStore } from '../../adapters/db/profile-store.js';
+import { readJson } from '../read-json.js';
+import type { DbNotificationStore } from '../../adapters/db/notification-store.js';
+import type { TfaCodeService } from '../../utils/tfa-code.js';
+import type { VerifyTokenService } from '../../utils/verify-token.js';
+import type { VerificationEmailSender } from '../../gateways/notification.js';
 
 const VALID_ROLES = new Set(['user', 'teacher', 'moderator', 'admin']);
 

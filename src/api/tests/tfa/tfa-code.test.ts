@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { TfaCodeService, InMemoryTfaStore, generateNumericCode } from '../utils/tfa-code.js';
+import { TfaCodeService, InMemoryTfaStore, generateNumericCode } from '../../utils/tfa-code.js';
 
 test('generateNumericCode returns correct length string', () => {
   const code = generateNumericCode(6);

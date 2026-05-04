@@ -1,9 +1,9 @@
-import { issueAccessToken, type AccessRole } from '../auth/access-tokens.js';
+import { issueAccessToken, type AccessRole } from '../../auth/access-tokens.js';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AuthGateway } from '@cognis/core';
-import type { LocalAccountStore } from '../adapters/local-auth-gateway.js';
-import type { ProfileCreateStore } from '../adapters/db/profile-store.js';
-import { readJson } from './read-json.js';
+import type { LocalAccountStore } from '../../adapters/local-auth-gateway.js';
+import type { ProfileCreateStore } from '../../adapters/db/profile-store.js';
+import { readJson } from '../read-json.js';
 
 function resolveRole(sessionRole: string | undefined, isAdmin: boolean | undefined): AccessRole {
   if (sessionRole === 'admin' || sessionRole === 'teacher' || sessionRole === 'moderator' || sessionRole === 'user') {
