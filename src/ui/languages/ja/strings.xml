@@ -106,6 +106,12 @@
   <string name="ui.app.admin.page_subtitle">管理者専用ツールとコントロール。</string>
   <string name="ui.app.admin.disable_confirm">モジュールを無効化</string>
   <string name="ui.app.admin.checking">確認中...</string>
+  <string name="ui.app.admin.components">コンポーネント</string>
+  <string name="ui.app.admin.gateways">ゲートウェイ</string>
+  <string name="ui.app.admin.adapters">アダプター</string>
+  <string name="ui.app.admin.description">説明</string>
+  <string name="ui.app.admin.no_gateways">登録されたゲートウェイはありません。</string>
+  <string name="ui.app.admin.no_adapters">登録されたアダプターはありません。</string>
   <string name="ui.app.demo.switched">デモ: サンドボックスページに切り替えました。</string>
   <string name="ui.app.demo.added">デモ: 学習進捗ウィジェットを追加しました。</string>
   <string name="ui.app.demo.tweaked">デモ: 最初のウィジェット設定を調整しました。</string>

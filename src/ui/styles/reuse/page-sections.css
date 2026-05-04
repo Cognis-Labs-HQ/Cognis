@@ -237,3 +237,15 @@
 .security-domains-input {
     flex: 1;
 }
+
+.components-tab-bar {
+    margin-bottom: 16px;
+}
+
+.components-tab-select {
+    min-width: 160px;
+}
+
+.components-tab-content {
+    min-width: 0;
+}

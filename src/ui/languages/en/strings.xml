@@ -106,6 +106,12 @@
   <string name="ui.app.admin.page_subtitle">Admin-only tools and controls.</string>
   <string name="ui.app.admin.disable_confirm">Disable module</string>
   <string name="ui.app.admin.checking">Checking...</string>
+  <string name="ui.app.admin.components">Components</string>
+  <string name="ui.app.admin.gateways">Gateways</string>
+  <string name="ui.app.admin.adapters">Adapters</string>
+  <string name="ui.app.admin.description">Description</string>
+  <string name="ui.app.admin.no_gateways">No gateways registered.</string>
+  <string name="ui.app.admin.no_adapters">No adapters registered.</string>
   <string name="ui.app.demo.switched">Demo: switched to sandbox page.</string>
   <string name="ui.app.demo.added">Demo: added a learning progress widget.</string>
   <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>

@@ -4,7 +4,6 @@ import {
     ModuleService,
     type ModuleRuntimeGateway,
     type FileStorageGateway,
-    type NotificationGateway,
 } from "@cognis/core";
 import { createModuleRoutes } from "./routes/modules/index.js";
 import { createSystemRoutes } from "./routes/system/index.js";
@@ -20,7 +19,6 @@ import {
 } from "./routes/preferences/index.js";
 import { createUserRoutes } from "./routes/users/index.js";
 import { createProfileRoutes } from "./routes/profile/index.js";
-import { createNotificationRoutes } from "./routes/notifications/index.js";
 import { createSocialRoutes } from "./routes/social/index.js";
 import { createPostRoutes } from "./routes/posts/index.js";
 import { createFileRoutes } from "./routes/files/index.js";
@@ -29,6 +27,9 @@ import type { DbNotificationStore } from "./adapters/db/notification-store.js";
 import type { TfaCodeService } from "./utils/tfa-code.js";
 import type { VerifyTokenService } from "./utils/verify-token.js";
 import type { VerificationEmailSender } from "./gateways/notification.js";
+import type { RouteRegistry } from "./route-registry.js";
+import { createGatewayRoutes } from "./routes/gateways/index.js";
+import type { GatewayRegistry } from "./gateway-registry.js";
 
 const LOG_LEVEL = process.env.LOG_LEVEL ?? "info";
 const isDebug = LOG_LEVEL === "debug";
@@ -65,12 +66,13 @@ export interface ApiDependencies {
     preferenceStore: UserPreferenceStore;
     profileStore?: DbProfileStore;
     fileGateway?: FileStorageGateway;
-    notificationGateway?: NotificationGateway;
     notifStore?: DbNotificationStore;
     tfaService?: TfaCodeService;
     verificationEmailSender?: VerificationEmailSender;
     verifyTokenService?: VerifyTokenService;
     externalHost?: string;
+    routeRegistry?: RouteRegistry;
+    gatewayRegistry?: GatewayRegistry;
     moduleIntegrityChecker?: () => Promise<
         Array<{
             moduleId: string;
@@ -133,9 +135,6 @@ export function buildServer(deps: ApiDependencies) {
         deps.verifyTokenService,
         deps.externalHost,
     );
-    const notificationRoutes = deps.notificationGateway
-        ? createNotificationRoutes(deps.notificationGateway, deps.notifStore)
-        : null;
     const profileRoutes =
         deps.profileStore && deps.fileGateway
             ? createProfileRoutes(deps.profileStore, deps.fileGateway)
@@ -150,6 +149,9 @@ export function buildServer(deps: ApiDependencies) {
         deps.profileStore && deps.fileGateway
             ? createFileRoutes(deps.profileStore, deps.fileGateway)
             : null;
+    const gatewayRoutes = deps.gatewayRegistry
+        ? createGatewayRoutes(deps.gatewayRegistry)
+        : null;
 
     Promise.all([
         deps.moduleRuntimeGateway.listManifests(),
@@ -235,22 +237,26 @@ export function buildServer(deps: ApiDependencies) {
                 return;
             }
 
-            if (notificationRoutes) {
-                const handledByNotifications = await notificationRoutes(
-                    req,
-                    res,
-                    url,
-                );
-                if (handledByNotifications) {
-                    logEvent(
-                        "info",
-                        "Request handled by notification routes.",
-                        {
-                            method: req.method ?? "GET",
-                            path: url.pathname,
-                            durationMs: Date.now() - startedAt,
-                        },
-                    );
+            if (gatewayRoutes) {
+                const handledByGateways = await gatewayRoutes(req, res, url);
+                if (handledByGateways) {
+                    logEvent("info", "Request handled by gateway routes.", {
+                        method: req.method ?? "GET",
+                        path: url.pathname,
+                        durationMs: Date.now() - startedAt,
+                    });
+                    return;
+                }
+            }
+
+            for (const handler of deps.routeRegistry?.getHandlers() ?? []) {
+                const handledByRegistry = await handler(req, res, url);
+                if (handledByRegistry) {
+                    logEvent("info", "Request handled by registered route.", {
+                        method: req.method ?? "GET",
+                        path: url.pathname,
+                        durationMs: Date.now() - startedAt,
+                    });
                     return;
                 }
             }

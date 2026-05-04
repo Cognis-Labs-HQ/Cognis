@@ -14,14 +14,6 @@ import {
 } from "./adapters/db/account-store.js";
 import { DbUserPreferenceStore } from "./adapters/db/preference-store.js";
 import { DbProfileStore } from "./adapters/db/profile-store.js";
-import {
-    CoreNotificationGateway,
-    VolatileNotificationPreferenceStore,
-} from "./gateways/notification.js";
-import {
-    DbNotificationStore,
-    DbNotificationPreferenceStore,
-} from "./adapters/db/notification-store.js";
 import { LocalFileGateway } from "../adapters/file-local/local-file-gateway.js";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -32,6 +24,9 @@ import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
 } from "./utils/verify-token.js";
+import { RouteRegistry } from "./route-registry.js";
+import { GatewayRegistry } from "./gateway-registry.js";
+import { bootstrapNotificationGateway } from "./gateways/notification-bootstrap.js";
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
     private readonly manifests: ModuleManifest[];
@@ -161,10 +156,6 @@ const profileStore = new DbProfileStore(dbExecutor, dbType);
 await profileStore.ensureSchema();
 await logger.info("Profile schema ensured.");
 
-const notifStore = new DbNotificationStore(dbExecutor, dbType);
-await notifStore.ensureSchema();
-await logger.info("Notification schema ensured.");
-
 const mediaLocation = process.env.MEDIA_LOCATION ?? "/app/media";
 const fileStorePath = `${mediaLocation}/uploads`;
 const fileGateway = new LocalFileGateway(fileStorePath);
@@ -229,22 +220,22 @@ try {
 const runtime = await InMemoryModuleRuntimeGateway.bootstrap();
 await logger.info("Module runtime bootstrapped.");
 
-const notificationPrefStore = new DbNotificationPreferenceStore(notifStore);
-const notificationGateway = new CoreNotificationGateway(
-    notificationPrefStore,
-    notifStore,
-    notifStore,
-);
+const routeRegistry = new RouteRegistry();
+const gatewayRegistry = new GatewayRegistry();
+
 const adaptersRoot =
     process.env.COGNIS_ADAPTERS_ROOT ??
     path.resolve(process.cwd(), "src", "adapters");
-const notifyAdaptersRoot = path.join(adaptersRoot, "notify");
-await notificationGateway.discoverSenders(notifyAdaptersRoot);
-await notificationGateway.loadPersistedConfigs();
-notificationGateway.registerCategory("system", "System Notifications");
-await logger.info("Notification gateway bootstrapped.", {
-    adaptersRoot: notifyAdaptersRoot,
+
+const notificationGateway = await bootstrapNotificationGateway({
+    dbExecutor,
+    dbType,
+    adaptersRoot,
+    routeRegistry,
+    gatewayRegistry,
 });
+const { gateway: notifGateway, notifStore } = notificationGateway;
+await logger.info("Notification gateway bootstrapped.", { adaptersRoot });
 
 const tfaService = new TfaCodeService(new InMemoryTfaStore());
 const verifyTokenService = new VerifyTokenService(
@@ -261,12 +252,13 @@ const server = buildServer({
     preferenceStore,
     profileStore,
     fileGateway,
-    notificationGateway,
     notifStore,
     tfaService,
-    verificationEmailSender: notificationGateway,
+    verificationEmailSender: notifGateway,
     verifyTokenService,
     externalHost,
+    routeRegistry,
+    gatewayRegistry,
     loadModuleStates: async () => {
         const result = await dbExecutor.execute(
             "SELECT module_id, enabled FROM modules",

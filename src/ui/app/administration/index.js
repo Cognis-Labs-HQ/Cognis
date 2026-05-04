@@ -29,6 +29,22 @@ async function toggleModule(moduleId, action) {
     );
 }
 
+async function loadGateways() {
+    const res = await apiFetch("/api/v1/gateways");
+    if (!res.ok) return [];
+    const payload = await res.json();
+    return payload.data ?? [];
+}
+
+async function loadGatewayAdapters(gatewayId) {
+    const res = await apiFetch(
+        `/api/v1/gateways/${encodeURIComponent(gatewayId)}/adapters`,
+    );
+    if (!res.ok) return [];
+    const payload = await res.json();
+    return payload.data ?? [];
+}
+
 function getStatePill(status) {
     if (status === "enabled")
         return {
@@ -93,6 +109,129 @@ function renderModulesContent(modules) {
       `;
         })
         .join("");
+}
+
+function renderGatewayDetailsList(gw) {
+    const details = [
+        [i18n.t("ui.reuse.generic.id"), escapeHtml(gw.id)],
+        [i18n.t("ui.reuse.generic.version"), escapeHtml(gw.version ?? "")],
+        [
+            i18n.t("ui.app.admin.publisher"),
+            escapeHtml(gw.publisher || i18n.t("ui.app.admin.unknown")),
+        ],
+    ];
+    if (gw.description) {
+        details.push([
+            i18n.t("ui.app.admin.description"),
+            escapeHtml(gw.description),
+        ]);
+    }
+    return details
+        .map(
+            ([key, value]) =>
+                `<li class="module-detail-item"><span class="module-detail-key">${key}</span><span class="module-detail-value">${value}</span></li>`,
+        )
+        .join("");
+}
+
+function renderGatewaysContent(gateways) {
+    if (!gateways.length) {
+        return `<p>${i18n.t("ui.app.admin.no_gateways")}</p>`;
+    }
+    return gateways
+        .map(
+            (gw) => `
+        <details class="module-row" data-gateway="${escapeHtml(gw.id)}">
+          <summary>
+            <span><strong>${escapeHtml(gw.name)}</strong></span>
+            <span class="state-pill pill-active">${i18n.t("ui.app.admin.state.active")}</span>
+            <span class="module-chevron">▾</span>
+          </summary>
+          <div class="module-meta">
+            <ul class="module-details">${renderGatewayDetailsList(gw)}</ul>
+          </div>
+        </details>
+      `,
+        )
+        .join("");
+}
+
+function renderAdapterEntry(adapter, gatewayId) {
+    const escapedAdapterId = escapeHtml(adapter.senderId);
+    const escapedName = escapeHtml(adapter.name);
+    const statePillClass = adapter.active ? "pill-active" : "pill-available";
+    const stateLabel = adapter.active
+        ? i18n.t("ui.app.admin.state.active")
+        : i18n.t("ui.app.admin.state.available");
+    const missingAlert = !adapter.active
+        ? `<span class="provider-missing-alert" aria-label="${i18n.t("ui.app.admin.notif.provider_missing_config")}">❗</span>`
+        : "";
+    return `
+    <div
+      class="provider-card provider-card--entry"
+      data-adapter-id="${escapedAdapterId}"
+      data-gateway-id="${escapeHtml(gatewayId)}"
+      role="button"
+      tabindex="0"
+    >
+      <span class="provider-entry-name"><strong>${escapedName}</strong>${missingAlert}</span>
+      <span class="state-pill ${statePillClass}">${stateLabel}</span>
+    </div>
+  `;
+}
+
+function renderAdaptersContent(allAdapters) {
+    if (!allAdapters.length) {
+        return `<p>${i18n.t("ui.app.admin.no_adapters")}</p>`;
+    }
+    const active = allAdapters.filter((a) => a.active);
+    const available = allAdapters.filter((a) => !a.active);
+    const activeRows = active.length
+        ? active.map((a) => renderAdapterEntry(a, a._gatewayId)).join("")
+        : `<p>${i18n.t("ui.app.admin.notif.no_active")}</p>`;
+    const availableRows = available.length
+        ? available.map((a) => renderAdapterEntry(a, a._gatewayId)).join("")
+        : `<p>${i18n.t("ui.app.admin.notif.no_available")}</p>`;
+    return `
+    <h3>${i18n.t("ui.app.admin.notif.active_providers")}</h3>
+    ${activeRows}
+    <h3>${i18n.t("ui.app.admin.notif.available_providers")}</h3>
+    ${availableRows}
+  `;
+}
+
+function renderComponentsDropdown(activeTab) {
+    const tabs = [
+        { id: "modules", label: i18n.t("ui.reuse.modules") },
+        { id: "gateways", label: i18n.t("ui.app.admin.gateways") },
+        { id: "adapters", label: i18n.t("ui.app.admin.adapters") },
+    ];
+    const options = tabs
+        .map(
+            (t) =>
+                `<option value="${t.id}"${activeTab === t.id ? " selected" : ""}>${t.label}</option>`,
+        )
+        .join("");
+    return `
+    <div class="components-tab-bar">
+      <select class="components-tab-select theme-select" aria-label="${i18n.t("ui.app.admin.components")}">
+        ${options}
+      </select>
+    </div>
+  `;
+}
+
+function renderComponentsContent(activeTab, modules, gateways, allAdapters) {
+    const dropdown = renderComponentsDropdown(activeTab);
+    let body = "";
+    if (activeTab === "modules") {
+        body = renderModulesContent(modules);
+    } else if (activeTab === "gateways") {
+        body = renderGatewaysContent(gateways);
+    } else {
+        body = renderAdaptersContent(allAdapters);
+    }
+    return `${dropdown}<div class="components-tab-content">${body}</div>`;
 }
 
 function renderIntegrityContent(integrityRows) {
@@ -177,13 +316,6 @@ function bindIntegrityRerun() {
         integrityRows = await loadIntegrity();
         composer.refresh(elements);
     });
-}
-
-async function loadProviders() {
-    const res = await apiFetch("/api/v1/notifications/providers");
-    if (!res.ok) return [];
-    const payload = await res.json();
-    return payload.data ?? [];
 }
 
 async function loadCategories() {
@@ -321,8 +453,57 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
   `;
 }
 
-async function openProviderConfig(senderId, name, isActive) {
-    const { descriptors, requiredFields } = await loadProviderConfig(senderId);
+async function openAdapterConfig(gatewayId, adapterId, name) {
+    const configUrl = `/api/v1/gateways/${encodeURIComponent(gatewayId)}/adapters/${encodeURIComponent(adapterId)}/config`;
+    const testUrl = `/api/v1/gateways/${encodeURIComponent(gatewayId)}/adapters/${encodeURIComponent(adapterId)}/test`;
+
+    const res = await apiFetch(configUrl);
+    if (!res.ok) return;
+    const payload = await res.json();
+    const dbData = payload.data ?? {};
+    const envData = payload.envValues ?? {};
+    const requiredFields = Array.isArray(payload.requiredFields)
+        ? payload.requiredFields
+        : [];
+
+    const fieldNames = new Set([
+        ...Object.keys(dbData),
+        ...Object.keys(envData),
+        ...requiredFields,
+    ]);
+    const descriptors = {};
+    for (const field of fieldNames) {
+        const rawDb = dbData[field];
+        const rawEnv = envData[field];
+        const dbValue =
+            rawDb != null && rawDb !== "" ? String(rawDb) : undefined;
+        const envValue =
+            rawEnv != null && rawEnv !== "" ? String(rawEnv) : undefined;
+        let effectiveValue;
+        let source;
+        if (dbValue !== undefined) {
+            effectiveValue = dbValue;
+            source = "db";
+        } else if (envValue !== undefined) {
+            effectiveValue = envValue;
+            source = "env";
+        } else {
+            effectiveValue = undefined;
+            source = "none";
+        }
+        descriptors[field] = {
+            dbValue,
+            envValue,
+            effectiveValue,
+            source,
+            envConflict:
+                dbValue !== undefined &&
+                envValue !== undefined &&
+                dbValue !== envValue,
+            required: requiredFields.includes(field),
+        };
+    }
+
     let popupFormEl = null;
 
     const result = await openPopup({
@@ -457,16 +638,13 @@ async function openProviderConfig(senderId, name, isActive) {
                             config[field.name] = field.value;
                         }
                     });
-                    const res = await apiFetch(
-                        `/api/v1/notifications/providers/${encodeURIComponent(senderId)}/test`,
-                        {
-                            method: "POST",
-                            headers: { "content-type": "application/json" },
-                            body: JSON.stringify({ to, config }),
-                        },
-                    );
+                    const testRes = await apiFetch(testUrl, {
+                        method: "POST",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({ to, config }),
+                    });
                     if (testStatus) {
-                        testStatus.textContent = res.ok
+                        testStatus.textContent = testRes.ok
                             ? i18n.t("ui.app.admin.notif.test_sent")
                             : i18n.t("ui.app.admin.notif.test_failed");
                     }
@@ -491,83 +669,51 @@ async function openProviderConfig(senderId, name, isActive) {
                 config[field.name] = field.value;
             }
         });
-        await apiFetch(
-            `/api/v1/notifications/providers/${encodeURIComponent(senderId)}/config`,
-            {
-                method: "PUT",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(config),
-            },
-        );
-        providers = await loadProviders();
+        await apiFetch(configUrl, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(config),
+        });
+        allAdapters = await loadAllAdapters(gateways);
         composer.refresh(elements);
     }
 }
 
-function renderProviderEntry(provider) {
-    const escapedId = escapeHtml(provider.senderId);
-    const escapedName = escapeHtml(provider.name);
-    const statePillClass = provider.active ? "pill-active" : "pill-available";
-    const stateLabel = provider.active
-        ? i18n.t("ui.app.admin.state.active")
-        : i18n.t("ui.app.admin.state.available");
-    const missingAlert = !provider.active
-        ? `<span class="provider-missing-alert" aria-label="${i18n.t("ui.app.admin.notif.provider_missing_config")}">❗</span>`
-        : "";
-    return `
-    <div class="provider-card provider-card--entry" data-sender-id="${escapedId}" role="button" tabindex="0">
-      <span class="provider-entry-name"><strong>${escapedName}</strong>${missingAlert}</span>
-      <span class="state-pill ${statePillClass}">${stateLabel}</span>
-    </div>
-  `;
-}
+function bindAdapterEntries() {
+    root.querySelectorAll(
+        ".provider-card--entry[data-adapter-id][data-gateway-id]",
+    ).forEach((card) => {
+        if (!(card instanceof HTMLElement)) return;
+        const adapterId = card.dataset.adapterId;
+        const gatewayId = card.dataset.gatewayId;
+        if (!adapterId || !gatewayId) return;
 
-function renderNotificationsContent(providers) {
-    const activeProviders = providers.filter((p) => p.active);
-    const availableProviders = providers.filter((p) => !p.active);
+        const adapter = allAdapters.find(
+            (a) => a.senderId === adapterId && a._gatewayId === gatewayId,
+        );
+        if (!adapter) return;
 
-    const activeRows = activeProviders.length
-        ? activeProviders.map((p) => renderProviderEntry(p)).join("")
-        : `<p>${i18n.t("ui.app.admin.notif.no_active")}</p>`;
+        async function handleOpen() {
+            await openAdapterConfig(gatewayId, adapterId, adapter.name);
+        }
 
-    const availableRows = availableProviders.length
-        ? availableProviders.map((p) => renderProviderEntry(p)).join("")
-        : `<p>${i18n.t("ui.app.admin.notif.no_available")}</p>`;
-
-    return `
-    <h3>${i18n.t("ui.app.admin.notif.active_providers")}</h3>
-    ${activeRows}
-    <h3>${i18n.t("ui.app.admin.notif.available_providers")}</h3>
-    ${availableRows}
-  `;
-}
-
-function bindProviderEntries() {
-    root.querySelectorAll(".provider-card--entry[data-sender-id]").forEach(
-        (card) => {
-            if (!(card instanceof HTMLElement)) return;
-            const senderId = card.dataset.senderId;
-            if (!senderId) return;
-            const provider = providers.find((p) => p.senderId === senderId);
-            if (!provider) return;
-
-            async function handleOpen() {
-                await openProviderConfig(
-                    senderId,
-                    provider.name,
-                    provider.active,
-                );
+        card.addEventListener("click", handleOpen);
+        card.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleOpen();
             }
+        });
+    });
+}
 
-            card.addEventListener("click", handleOpen);
-            card.addEventListener("keydown", (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    handleOpen();
-                }
-            });
-        },
-    );
+function bindComponentsDropdown() {
+    const select = root.querySelector(".components-tab-select");
+    if (!(select instanceof HTMLSelectElement)) return;
+    select.addEventListener("change", () => {
+        activeComponentTab = select.value;
+        composer.refresh(elements);
+    });
 }
 
 function renderNotificationsDebugContent(users, categories) {
@@ -680,34 +826,57 @@ function bindNotificationsDebug() {
     });
 }
 
+async function loadAllAdapters(gatewayList) {
+    const results = await Promise.all(
+        gatewayList.map(async (gw) => {
+            const adapters = await loadGatewayAdapters(gw.id);
+            return adapters.map((a) => ({ ...a, _gatewayId: gw.id }));
+        }),
+    );
+    return results.flat();
+}
+
 let [modules, integrityRows] = await Promise.all([
     loadModules(),
     loadIntegrity(),
 ]);
-let providers = await loadProviders();
+let gateways = await loadGateways();
+let allAdapters = await loadAllAdapters(gateways);
 let [categories, users] = await Promise.all([loadCategories(), loadUsers()]);
+let activeComponentTab = "modules";
 let composer;
 
 const securitySection = initSecuritySection(root, { i18n });
 
 const elements = [
     {
-        id: "modules",
-        label: i18n.t("ui.reuse.modules"),
+        id: "components",
+        label: i18n.t("ui.app.admin.components"),
         subComposerOptions: {
             allowCustomization: false,
-            preferenceKey: "administration-modules-layout",
-            heading: i18n.t("ui.reuse.modules"),
+            preferenceKey: "administration-components-layout",
+            heading: i18n.t("ui.app.admin.components"),
             elements: [
                 {
-                    id: "modules-list",
-                    label: i18n.t("ui.reuse.modules"),
+                    id: "components-content",
+                    label: i18n.t("ui.app.admin.components"),
                     pinned: true,
-                    render: () => renderModulesContent(modules),
+                    render: () =>
+                        renderComponentsContent(
+                            activeComponentTab,
+                            modules,
+                            gateways,
+                            allAdapters,
+                        ),
                 },
             ],
             onRender: () => {
-                bindModuleToggles();
+                bindComponentsDropdown();
+                if (activeComponentTab === "modules") {
+                    bindModuleToggles();
+                } else if (activeComponentTab === "adapters") {
+                    bindAdapterEntries();
+                }
             },
         },
     },
@@ -745,12 +914,6 @@ const elements = [
             heading: i18n.t("ui.app.admin.notifications"),
             elements: [
                 {
-                    id: "notifications-content",
-                    label: i18n.t("ui.app.admin.notifications"),
-                    pinned: true,
-                    render: () => renderNotificationsContent(providers),
-                },
-                {
                     id: "notifications-debug",
                     label: i18n.t("ui.app.admin.notif.debug"),
                     pinned: true,
@@ -759,7 +922,6 @@ const elements = [
                 },
             ],
             onRender: () => {
-                bindProviderEntries();
                 bindNotificationsDebug();
             },
         },
@@ -803,7 +965,7 @@ composer = createPageComposer(root, {
             render: () => `
         <h2>${i18n.t("ui.app.admin.page_title")}</h2>
         <ul>
-          <li><button data-composer-scroll="modules">${i18n.t("ui.reuse.modules")}</button></li>
+          <li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>
           <li><button data-composer-scroll="integrity">${i18n.t("ui.reuse.file_integrity")}</button></li>
           <li><button data-composer-scroll="notifications">${i18n.t("ui.app.admin.notifications")}</button></li>
           <li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>

@@ -106,6 +106,12 @@
   <string name="ui.app.admin.page_subtitle">Werkzeuge und Steuerung nur für Admins.</string>
   <string name="ui.app.admin.disable_confirm">Modul deaktivieren</string>
   <string name="ui.app.admin.checking">Prüfe...</string>
+  <string name="ui.app.admin.components">Komponenten</string>
+  <string name="ui.app.admin.gateways">Gateways</string>
+  <string name="ui.app.admin.adapters">Adapter</string>
+  <string name="ui.app.admin.description">Beschreibung</string>
+  <string name="ui.app.admin.no_gateways">Keine Gateways registriert.</string>
+  <string name="ui.app.admin.no_adapters">Keine Adapter registriert.</string>
   <string name="ui.app.demo.switched">Demo: zur Sandbox-Seite gewechselt.</string>
   <string name="ui.app.demo.added">Demo: ein Lernfortschritts-Widget hinzugefügt.</string>
   <string name="ui.app.demo.tweaked">Demo: die erste Widget-Konfiguration angepasst.</string>
