@@ -240,7 +240,7 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
       <div class="provider-popup-toggle-row">
         <span class="provider-popup-toggle-label">${i18n.t('ui.app.admin.notif.enable_provider')}</span>
         <label class="switch provider-popup-switch">
-          <input type="checkbox" class="provider-enable-toggle" disabled />
+          <input type="checkbox" name="enabled" class="provider-enable-toggle" disabled />
           <span class="slider"></span>
         </label>
       </div>
@@ -328,16 +328,16 @@ async function openProviderConfig(senderId, name, isActive) {
       function syncToggle() {
         const allFilled = requiredAllFilled();
         toggle.disabled = !allFilled;
-        if (allFilled && !toggle.checked) {
-          toggle.checked = true;
-        } else if (!allFilled) {
+        if (!allFilled) {
           toggle.checked = false;
         }
       }
 
-      if (isActive || requiredAllFilled()) {
+      const enabledValue = descriptors['enabled']?.effectiveValue;
+      const isEnabledByConfig = enabledValue !== 'false' && enabledValue !== false;
+      if (requiredAllFilled()) {
         toggle.disabled = false;
-        toggle.checked = true;
+        toggle.checked = isEnabledByConfig;
       }
 
       popupFormEl.addEventListener('input', () => {

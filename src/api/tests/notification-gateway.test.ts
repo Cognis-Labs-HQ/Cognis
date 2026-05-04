@@ -239,3 +239,172 @@ test('CoreNotificationGateway.getProviderRequiredFields returns null for unknown
   const required = gateway.getProviderRequiredFields('unknown');
   assert.equal(required, null);
 });
+
+test('CoreNotificationGateway.saveProviderConfig with enabled:false disables sender in listSenders', async () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  const sender = new ConfigurableSender('smtp', 'SMTP', { host: 'mail.example.com' });
+  gateway.registerSender(sender);
+
+  const before = gateway.listSenders().find((s) => s.senderId === 'smtp');
+  assert.equal(before?.active, true);
+
+  await gateway.saveProviderConfig('smtp', { host: 'mail.example.com', enabled: false });
+
+  const after = gateway.listSenders().find((s) => s.senderId === 'smtp');
+  assert.equal(after?.active, false);
+});
+
+test('CoreNotificationGateway.saveProviderConfig with enabled:true re-enables a disabled sender', async () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  const sender = new ConfigurableSender('smtp', 'SMTP', { host: 'mail.example.com' });
+  gateway.registerSender(sender);
+
+  await gateway.saveProviderConfig('smtp', { host: 'mail.example.com', enabled: false });
+  await gateway.saveProviderConfig('smtp', { host: 'mail.example.com', enabled: true });
+
+  const info = gateway.listSenders().find((s) => s.senderId === 'smtp');
+  assert.equal(info?.active, true);
+});
+
+test('CoreNotificationGateway.getProviderConfig includes enabled field', async () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  const sender = new ConfigurableSender('smtp', 'SMTP', { host: 'mail.example.com' });
+  gateway.registerSender(sender);
+
+  const configEnabled = gateway.getProviderConfig('smtp');
+  assert.equal(configEnabled?.enabled, true);
+
+  await gateway.saveProviderConfig('smtp', { host: 'mail.example.com', enabled: false });
+
+  const configDisabled = gateway.getProviderConfig('smtp');
+  assert.equal(configDisabled?.enabled, false);
+});
+
+test('CoreNotificationGateway.dispatch skips disabled senders', async () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  prefStore.set('alice', 'system', ['smtp']);
+
+  const smtpSender = new CapturingSender('smtp', 'SMTP');
+  const gateway = new CoreNotificationGateway(prefStore);
+  gateway.registerSender(smtpSender);
+
+  await gateway.saveProviderConfig('smtp', { enabled: false });
+
+  const result = await gateway.dispatch({
+    category: 'system',
+    recipientUsername: 'alice',
+    recipientEmail: 'alice@example.com',
+    subject: 'Hello',
+    body: 'World',
+  });
+
+  assert.deepEqual(result.dispatched, []);
+  assert.equal(smtpSender.received.length, 0);
+});
+
+test('CoreNotificationGateway.dispatch captures per-sender errors without throwing', async () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  prefStore.set('alice', 'system', ['smtp']);
+
+  class FailingSender extends CapturingSender {
+    async send(): Promise<void> {
+      throw new Error('smtp_sender_requires_recipient_email');
+    }
+  }
+
+  const gateway = new CoreNotificationGateway(prefStore);
+  gateway.registerSender(new FailingSender('smtp', 'SMTP'));
+
+  const result = await gateway.dispatch({
+    category: 'system',
+    recipientUsername: 'alice',
+    subject: 'Hello',
+    body: 'World',
+  });
+
+  assert.deepEqual(result.dispatched, []);
+  assert.ok(Array.isArray(result.errors));
+  assert.equal(result.errors?.[0]?.senderId, 'smtp');
+  assert.equal(result.errors?.[0]?.error, 'smtp_sender_requires_recipient_email');
+});
+
+test('CoreNotificationGateway.loadPersistedConfigs restores disabled state', async () => {
+  const stored = new Map<string, Record<string, unknown>>();
+  stored.set('smtp', { host: 'mail.example.com', enabled: false });
+
+  const configStore = {
+    async getConfig(id: string) { return stored.get(id) ?? null; },
+    async saveConfig(id: string, config: Record<string, unknown>) { stored.set(id, config); },
+  };
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore, configStore);
+
+  const sender = new ConfigurableSender('smtp', 'SMTP', { host: 'initial.example.com' });
+  gateway.registerSender(sender);
+
+  await gateway.loadPersistedConfigs();
+
+  const info = gateway.listSenders().find((s) => s.senderId === 'smtp');
+  assert.equal(info?.active, false);
+});
+
+test('CoreNotificationGateway.canSendVerificationEmail returns false when no verification-capable sender', () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+  gateway.registerSender(new CapturingSender('plain', 'Plain'));
+
+  assert.equal(gateway.canSendVerificationEmail(), false);
+});
+
+test('CoreNotificationGateway.canSendVerificationEmail returns false when sender is disabled', async () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  class VerifyCapableSender extends CapturingSender {
+    getConfig() { return { host: 'mail.example.com' }; }
+    isConfigured() { return true; }
+    async sendVerificationEmail() {}
+  }
+
+  gateway.registerSender(new VerifyCapableSender('smtp', 'SMTP'));
+  await gateway.saveProviderConfig('smtp', { enabled: false });
+
+  assert.equal(gateway.canSendVerificationEmail(), false);
+});
+
+test('CoreNotificationGateway.sendVerificationEmail delegates to capable sender', async () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+
+  const calls: Array<{ to: string; code: string }> = [];
+
+  class VerifyCapableSender extends CapturingSender {
+    isConfigured() { return true; }
+    async sendVerificationEmail(to: string, code: string) { calls.push({ to, code }); }
+  }
+
+  gateway.registerSender(new VerifyCapableSender('smtp', 'SMTP'));
+
+  await gateway.sendVerificationEmail('user@example.com', '123456');
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].to, 'user@example.com');
+  assert.equal(calls[0].code, '123456');
+});
+
+test('CoreNotificationGateway.sendVerificationEmail throws when no capable sender is available', async () => {
+  const prefStore = new VolatileNotificationPreferenceStore();
+  const gateway = new CoreNotificationGateway(prefStore);
+  gateway.registerSender(new CapturingSender('plain', 'Plain'));
+
+  await assert.rejects(
+    () => gateway.sendVerificationEmail('user@example.com', '123456'),
+    { message: 'smtp_unavailable' },
+  );
+});

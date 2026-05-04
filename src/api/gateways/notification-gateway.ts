@@ -21,6 +21,11 @@ export interface NotificationEmailStore {
   getPrimaryEmail(accountId: string): Promise<string | null>;
 }
 
+export interface VerificationEmailSender {
+  canSendVerificationEmail(): boolean;
+  sendVerificationEmail(to: string, code: string, verifyUrl?: string, theme?: string): Promise<void>;
+}
+
 export class VolatileNotificationPreferenceStore implements NotificationPreferenceStore {
   private readonly prefs = new Map<string, string[]>();
 
@@ -33,9 +38,19 @@ export class VolatileNotificationPreferenceStore implements NotificationPreferen
   }
 }
 
-export class CoreNotificationGateway implements NotificationGateway {
+type SenderWithVerification = {
+  sendVerificationEmail(to: string, code: string, verifyUrl?: string, theme?: string): Promise<void>;
+  isConfigured?(): boolean;
+};
+
+function isSenderWithVerification(sender: NotificationSender): sender is NotificationSender & SenderWithVerification {
+  return typeof (sender as Record<string, unknown>).sendVerificationEmail === 'function';
+}
+
+export class CoreNotificationGateway implements NotificationGateway, VerificationEmailSender {
   private readonly senders = new Map<string, NotificationSender>();
   private readonly categories = new Map<string, string>();
+  private readonly disabledSenders = new Set<string>();
 
   constructor(
     private readonly prefStore: NotificationPreferenceStore,
@@ -55,9 +70,11 @@ export class CoreNotificationGateway implements NotificationGateway {
     return Array.from(this.senders.values()).map((sender) => ({
       senderId: sender.senderId,
       name: sender.senderName ?? sender.senderId,
-      active: typeof sender.isConfigured === 'function'
-        ? sender.isConfigured()
-        : typeof sender.getConfig === 'function',
+      active: !this.disabledSenders.has(sender.senderId) && (
+        typeof sender.isConfigured === 'function'
+          ? sender.isConfigured()
+          : typeof sender.getConfig === 'function'
+      ),
     }));
   }
 
@@ -68,7 +85,10 @@ export class CoreNotificationGateway implements NotificationGateway {
   getProviderConfig(senderId: string): Record<string, unknown> | null {
     const sender = this.senders.get(senderId);
     if (!sender || typeof sender.getConfig !== 'function') return null;
-    return sender.getConfig();
+    return {
+      ...sender.getConfig(),
+      enabled: !this.disabledSenders.has(senderId),
+    };
   }
 
   getProviderEnvValues(senderId: string): Record<string, string | undefined> | null {
@@ -84,9 +104,15 @@ export class CoreNotificationGateway implements NotificationGateway {
   }
 
   async saveProviderConfig(senderId: string, config: Record<string, unknown>): Promise<void> {
+    const { enabled, ...senderConfig } = config;
+    if (enabled === false || enabled === 'false') {
+      this.disabledSenders.add(senderId);
+    } else {
+      this.disabledSenders.delete(senderId);
+    }
     const sender = this.senders.get(senderId);
     if (sender && typeof sender.setConfig === 'function') {
-      sender.setConfig(config);
+      sender.setConfig(senderConfig);
     }
     await this.configStore?.saveConfig(senderId, config);
   }
@@ -94,14 +120,40 @@ export class CoreNotificationGateway implements NotificationGateway {
   async loadPersistedConfigs(): Promise<void> {
     if (!this.configStore) return;
     for (const sender of this.senders.values()) {
-      if (typeof sender.setConfig !== 'function') continue;
       const config = await this.configStore.getConfig(sender.senderId);
-      if (config) sender.setConfig(config);
+      if (!config) continue;
+      if (config.enabled === false || config.enabled === 'false') {
+        this.disabledSenders.add(sender.senderId);
+      }
+      if (typeof sender.setConfig === 'function') {
+        const { enabled, ...senderConfig } = config;
+        sender.setConfig(senderConfig);
+      }
     }
   }
 
   getSender(senderId: string): NotificationSender | undefined {
     return this.senders.get(senderId);
+  }
+
+  canSendVerificationEmail(): boolean {
+    for (const [id, sender] of this.senders.entries()) {
+      if (this.disabledSenders.has(id)) continue;
+      if (!isSenderWithVerification(sender)) continue;
+      if (typeof sender.isConfigured === 'function') return sender.isConfigured();
+      return true;
+    }
+    return false;
+  }
+
+  async sendVerificationEmail(to: string, code: string, verifyUrl?: string, theme?: string): Promise<void> {
+    for (const [id, sender] of this.senders.entries()) {
+      if (this.disabledSenders.has(id)) continue;
+      if (!isSenderWithVerification(sender)) continue;
+      await sender.sendVerificationEmail(to, code, verifyUrl, theme);
+      return;
+    }
+    throw new Error('smtp_unavailable');
   }
 
   async discoverSenders(adaptersRoot: string): Promise<void> {
@@ -135,9 +187,10 @@ export class CoreNotificationGateway implements NotificationGateway {
     }
   }
 
-  async dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[] }> {
+  async dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[]; errors?: Array<{ senderId: string; error: string }> }> {
     const senderIds = await this.prefStore.getSenderIds(envelope.recipientUsername, envelope.category);
     const dispatched: string[] = [];
+    const errors: Array<{ senderId: string; error: string }> = [];
 
     const recipientEmail = envelope.recipientEmail
       ?? (this.emailStore ? await this.emailStore.getPrimaryEmail(envelope.recipientUsername) ?? undefined : undefined);
@@ -147,13 +200,17 @@ export class CoreNotificationGateway implements NotificationGateway {
       : envelope;
 
     for (const id of senderIds) {
+      if (this.disabledSenders.has(id)) continue;
       const sender = this.senders.get(id);
-      if (sender) {
+      if (!sender) continue;
+      try {
         await sender.send(resolvedEnvelope);
         dispatched.push(id);
+      } catch (err) {
+        errors.push({ senderId: id, error: err instanceof Error ? err.message : String(err) });
       }
     }
 
-    return { dispatched };
+    return errors.length > 0 ? { dispatched, errors } : { dispatched };
   }
 }

@@ -32,7 +32,8 @@ export class DbNotificationStore implements NotificationConfigStore {
       email VARCHAR(320) NOT NULL,
       is_primary BOOLEAN NOT NULL DEFAULT FALSE,
       verified BOOLEAN NOT NULL DEFAULT FALSE,
-      PRIMARY KEY (account_id, email)
+      PRIMARY KEY (account_id, email),
+      UNIQUE (email)
     )`);
   }
 

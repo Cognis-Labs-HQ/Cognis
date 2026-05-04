@@ -24,11 +24,11 @@ const linkEl = document.querySelector('#verify-link');
 
 function showResult(success) {
   if (success) {
-    iconEl.textContent = '✓';
+    iconEl.textContent = '✓\uFE0E';
     titleEl.textContent = i18n.t('ui.app.verify_email.success_title');
     bodyEl.textContent = i18n.t('ui.app.verify_email.success_body');
   } else {
-    iconEl.textContent = '✗';
+    iconEl.textContent = '✗\uFE0E';
     titleEl.textContent = i18n.t('ui.app.verify_email.invalid_title');
     bodyEl.textContent = i18n.t('ui.app.verify_email.invalid_body');
   }

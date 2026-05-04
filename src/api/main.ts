@@ -170,7 +170,6 @@ await logger.info('Notification gateway bootstrapped.', { adaptersRoot });
 const tfaService = new TfaCodeService(new InMemoryTfaStore());
 const verifyTokenService = new VerifyTokenService(new InMemoryVerifyTokenStore());
 const externalHost = process.env.EXTERNAL_HOST ?? (process.env.HOST ? `http://${process.env.HOST}` : undefined);
-const smtpSender = notificationGateway.getSender?.('smtp') as import('../adapters/notify-smtp/smtp-notification-sender.js').SmtpNotificationSender | undefined;
 
 const server = buildServer({
   moduleRuntimeGateway: runtime,
@@ -182,7 +181,7 @@ const server = buildServer({
   notificationGateway,
   notifStore,
   tfaService,
-  smtpSender,
+  verificationEmailSender: notificationGateway,
   verifyTokenService,
   externalHost,
   loadModuleStates: async () => {

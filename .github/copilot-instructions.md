@@ -16,6 +16,9 @@ Route handlers should be unassuming about the details of any backing service or 
 ### Adapter abstractions across subsystems
 Prefer gateway/adapter abstractions at every seam where a concrete implementation might change. This extends beyond the DB layer to auth providers, file storage, queues, and any other pluggable subsystem.
 
+### Notification gateway is the sole authority for notification provider access
+The notification gateway (`CoreNotificationGateway`) is the only component that may interact with a notification adapter (SMTP or any other provider) directly. No route handler, service, or utility outside the gateway may hold a reference to a concrete notification sender or call its methods. All notification capabilities — sending emails, checking availability, dispatching notifications — must be obtained by calling methods on the gateway. Passing a raw adapter instance around (e.g. `smtpSender`) anywhere outside the gateway violates this principle and must never be introduced.
+
 ### Module CLI controls
 For module-specific operational controls, add pluggable CLI subcommands at `modules/<id>/cli/index.js`. Use `cognisctl` as the primary operational control surface.
 

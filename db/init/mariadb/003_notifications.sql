@@ -15,5 +15,6 @@ CREATE TABLE IF NOT EXISTS user_emails (
   email VARCHAR(320) NOT NULL,
   is_primary TINYINT(1) NOT NULL DEFAULT 0,
   verified TINYINT(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (account_id, email)
+  PRIMARY KEY (account_id, email),
+  UNIQUE (email)
 );

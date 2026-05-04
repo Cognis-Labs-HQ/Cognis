@@ -91,7 +91,7 @@ test('email verification flow: issue code, verify, email becomes verified', asyn
 
   const sentEmails: Array<{ to: string; code: string }> = [];
   const mockSmtpSender = {
-    isConfigured: () => true,
+    canSendVerificationEmail: () => true,
     sendVerificationEmail: async (to: string, code: string) => { sentEmails.push({ to, code }); },
   } as any;
 
@@ -266,7 +266,7 @@ test('add email issues both TFA code and verify token and includes link in email
 
   const sentEmails: Array<{ to: string; code: string; verifyUrl?: string }> = [];
   const mockSmtpSender = {
-    isConfigured: () => true,
+    canSendVerificationEmail: () => true,
     sendVerificationEmail: async (to: string, code: string, verifyUrl?: string) => {
       sentEmails.push({ to, code, verifyUrl });
     },

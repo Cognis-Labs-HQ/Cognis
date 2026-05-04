@@ -7,7 +7,7 @@ import { readJson } from './read-json.js';
 import type { DbNotificationStore } from '../adapters/db/notification-store.js';
 import type { TfaCodeService } from '../utils/tfa-code.js';
 import type { VerifyTokenService } from '../utils/verify-token.js';
-import type { SmtpNotificationSender } from '../../adapters/notify-smtp/smtp-notification-sender.js';
+import type { VerificationEmailSender } from '../gateways/notification-gateway.js';
 
 const VALID_ROLES = new Set(['user', 'teacher', 'moderator', 'admin']);
 
@@ -17,7 +17,7 @@ export function createUserRoutes(
   profileStore?: ProfileCreateStore,
   notifStore?: DbNotificationStore,
   tfaService?: TfaCodeService,
-  smtpSender?: SmtpNotificationSender,
+  verificationEmailSender?: VerificationEmailSender,
   verifyTokenService?: VerifyTokenService,
   externalHost?: string,
 ) {
@@ -219,8 +219,7 @@ export function createUserRoutes(
         }
         await notifStore.addUserEmail(username, email);
 
-        const configuredSmtp = smtpSender?.isConfigured?.() ? smtpSender : null;
-        if (tfaService && configuredSmtp) {
+        if (tfaService && verificationEmailSender?.canSendVerificationEmail()) {
           try {
             const key = `${username}:${email}`;
             const code = tfaService.issueOrGet(key);
@@ -232,7 +231,7 @@ export function createUserRoutes(
                 verifyUrl = `${externalHost}/verify-email?token=${watchToken}`;
               }
             }
-            await configuredSmtp.sendVerificationEmail(email, code, verifyUrl);
+            await verificationEmailSender.sendVerificationEmail(email, code, verifyUrl);
             res.writeHead(201, { 'content-type': 'application/json' });
             res.end(JSON.stringify({ data: { added: true, pendingVerification: true, ...(watchToken && { watchToken }) } }));
           } catch (err) {
@@ -337,8 +336,7 @@ export function createUserRoutes(
           res.end(JSON.stringify({ error: { code: 'verification_unavailable', message: 'Verification service is not configured' } }));
           return true;
         }
-        const configuredSmtp = smtpSender?.isConfigured?.() ? smtpSender : null;
-        if (!configuredSmtp) {
+        if (!verificationEmailSender?.canSendVerificationEmail()) {
           res.writeHead(503, { 'content-type': 'application/json' });
           res.end(JSON.stringify({ error: { code: 'smtp_unavailable', message: 'Email delivery is not configured' } }));
           return true;
@@ -366,7 +364,7 @@ export function createUserRoutes(
               verifyUrl = `${externalHost}/verify-email?token=${watchToken}`;
             }
           }
-          await configuredSmtp.sendVerificationEmail(email, code, verifyUrl);
+          await verificationEmailSender.sendVerificationEmail(email, code, verifyUrl);
           res.writeHead(200, { 'content-type': 'application/json' });
           res.end(JSON.stringify({ data: { pendingVerification: true, ...(watchToken && { watchToken }) } }));
         } catch (err) {
