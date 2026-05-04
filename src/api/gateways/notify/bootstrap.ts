@@ -86,7 +86,7 @@ export function createUserEmailRoutes(
     notifStore: IDbNotificationStore,
     tfaService: TfaCodeService,
     verifyTokenService: VerifyTokenService,
-    verificationEmailSender: CoreNotificationGateway,
+    gateway: CoreNotificationGateway,
     externalHost?: string,
 ) {
     return async (
@@ -249,17 +249,15 @@ export function createUserEmailRoutes(
                 }
                 await notifStore.addUserEmail(username, email);
 
-                if (verificationEmailSender.canSendVerificationEmail()) {
+                if (gateway.canSendVerificationEmail()) {
                     try {
                         const key = `${username}:${email}`;
                         const code = tfaService.issueOrGet(key);
-                        let verifyUrl: string | undefined;
-                        let watchToken: string | undefined;
-                        watchToken = verifyTokenService.issueOrGet(key);
-                        if (externalHost) {
-                            verifyUrl = `${externalHost}/verify-email?token=${watchToken}`;
-                        }
-                        await verificationEmailSender.sendVerificationEmail(
+                        const watchToken = verifyTokenService.issueOrGet(key);
+                        const verifyUrl = externalHost
+                            ? `${externalHost}/verify-email?token=${watchToken}`
+                            : undefined;
+                        await gateway.sendVerificationEmail(
                             email,
                             code,
                             verifyUrl,
@@ -431,7 +429,7 @@ export function createUserEmailRoutes(
             }
 
             if (req.method === "POST" && emailAction === "resend") {
-                if (!verificationEmailSender.canSendVerificationEmail()) {
+                if (!gateway.canSendVerificationEmail()) {
                     res.writeHead(503, {
                         "content-type": "application/json",
                     });
@@ -478,17 +476,11 @@ export function createUserEmailRoutes(
                 try {
                     const key = `${username}:${email}`;
                     const code = tfaService.issueOrGet(key);
-                    let verifyUrl: string | undefined;
-                    let watchToken: string | undefined;
-                    watchToken = verifyTokenService.issueOrGet(key);
-                    if (externalHost) {
-                        verifyUrl = `${externalHost}/verify-email?token=${watchToken}`;
-                    }
-                    await verificationEmailSender.sendVerificationEmail(
-                        email,
-                        code,
-                        verifyUrl,
-                    );
+                    const watchToken = verifyTokenService.issueOrGet(key);
+                    const verifyUrl = externalHost
+                        ? `${externalHost}/verify-email?token=${watchToken}`
+                        : undefined;
+                    await gateway.sendVerificationEmail(email, code, verifyUrl);
                     res.writeHead(200, {
                         "content-type": "application/json",
                     });
