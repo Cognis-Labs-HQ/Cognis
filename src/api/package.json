@@ -1,13 +1,13 @@
 {
-  "name": "@cognis/api",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "main": "server.ts",
-  "dependencies": {
-    "@cognis/core": "0.1.0",
-    "sqlite3": "^6.0.1",
-    "pg": "^8.20.0",
-    "mysql2": "^3.22.3"
-  }
+    "name": "@cognis/api",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "main": "server.ts",
+    "dependencies": {
+        "@cognis/core": "0.1.0",
+        "sqlite3": "^6.0.1",
+        "pg": "^8.20.0",
+        "mysql2": "^3.22.3"
+    }
 }

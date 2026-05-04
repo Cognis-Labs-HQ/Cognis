@@ -1,7 +1,7 @@
-import type { DatabaseGateway } from '@cognis/core';
+import type { DatabaseGateway } from "@cognis/core";
 
 export const SQLITE_AUTH_SCHEMA_STATEMENTS = [
-  `CREATE TABLE IF NOT EXISTS accounts (
+    `CREATE TABLE IF NOT EXISTS accounts (
     id TEXT PRIMARY KEY,
     email TEXT,
     display_name TEXT,
@@ -9,7 +9,7 @@ export const SQLITE_AUTH_SCHEMA_STATEMENTS = [
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
   )`,
-  `CREATE TABLE IF NOT EXISTS auth_identities (
+    `CREATE TABLE IF NOT EXISTS auth_identities (
     id TEXT PRIMARY KEY,
     account_id TEXT NOT NULL,
     provider TEXT NOT NULL,
@@ -19,7 +19,7 @@ export const SQLITE_AUTH_SCHEMA_STATEMENTS = [
     UNIQUE(provider, external_user_id),
     FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
   )`,
-  `CREATE TABLE IF NOT EXISTS local_auth_credentials (
+    `CREATE TABLE IF NOT EXISTS local_auth_credentials (
     account_id TEXT PRIMARY KEY,
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
@@ -27,11 +27,13 @@ export const SQLITE_AUTH_SCHEMA_STATEMENTS = [
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-  )`
+  )`,
 ];
 
-export async function ensureSqliteAuthSchema(db: DatabaseGateway): Promise<void> {
-  for (const statement of SQLITE_AUTH_SCHEMA_STATEMENTS) {
-    await db.execute(statement);
-  }
+export async function ensureSqliteAuthSchema(
+    db: DatabaseGateway,
+): Promise<void> {
+    for (const statement of SQLITE_AUTH_SCHEMA_STATEMENTS) {
+        await db.execute(statement);
+    }
 }

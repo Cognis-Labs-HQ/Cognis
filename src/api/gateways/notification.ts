@@ -1,216 +1,279 @@
-import { readdir, readFile } from 'node:fs/promises';
-import path from 'node:path';
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
 import type {
-  NotificationCategory,
-  NotificationEnvelope,
-  NotificationGateway,
-  NotificationSender,
-  NotificationSenderInfo,
-} from '@cognis/core';
+    NotificationCategory,
+    NotificationEnvelope,
+    NotificationGateway,
+    NotificationSender,
+    NotificationSenderInfo,
+} from "@cognis/core";
 
 export interface NotificationPreferenceStore {
-  getSenderIds(recipientUsername: string, category: string): Promise<string[]>;
+    getSenderIds(
+        recipientUsername: string,
+        category: string,
+    ): Promise<string[]>;
 }
 
 export interface NotificationConfigStore {
-  getConfig(senderId: string): Promise<Record<string, unknown> | null>;
-  saveConfig(senderId: string, config: Record<string, unknown>): Promise<void>;
+    getConfig(senderId: string): Promise<Record<string, unknown> | null>;
+    saveConfig(
+        senderId: string,
+        config: Record<string, unknown>,
+    ): Promise<void>;
 }
 
 export interface NotificationEmailStore {
-  getPrimaryEmail(accountId: string): Promise<string | null>;
+    getPrimaryEmail(accountId: string): Promise<string | null>;
 }
 
 export interface VerificationEmailSender {
-  canSendVerificationEmail(): boolean;
-  sendVerificationEmail(to: string, code: string, verifyUrl?: string, theme?: string): Promise<void>;
+    canSendVerificationEmail(): boolean;
+    sendVerificationEmail(
+        to: string,
+        code: string,
+        verifyUrl?: string,
+        theme?: string,
+    ): Promise<void>;
 }
 
 export class VolatileNotificationPreferenceStore implements NotificationPreferenceStore {
-  private readonly prefs = new Map<string, string[]>();
+    private readonly prefs = new Map<string, string[]>();
 
-  set(recipientUsername: string, category: string, senderIds: string[]): void {
-    this.prefs.set(`${recipientUsername}:${category}`, senderIds);
-  }
+    set(
+        recipientUsername: string,
+        category: string,
+        senderIds: string[],
+    ): void {
+        this.prefs.set(`${recipientUsername}:${category}`, senderIds);
+    }
 
-  async getSenderIds(recipientUsername: string, category: string): Promise<string[]> {
-    return this.prefs.get(`${recipientUsername}:${category}`) ?? [];
-  }
+    async getSenderIds(
+        recipientUsername: string,
+        category: string,
+    ): Promise<string[]> {
+        return this.prefs.get(`${recipientUsername}:${category}`) ?? [];
+    }
 }
 
 type SenderWithVerification = {
-  sendVerificationEmail(to: string, code: string, verifyUrl?: string, theme?: string): Promise<void>;
-  isConfigured?(): boolean;
+    sendVerificationEmail(
+        to: string,
+        code: string,
+        verifyUrl?: string,
+        theme?: string,
+    ): Promise<void>;
+    isConfigured?(): boolean;
 };
 
-function isSenderWithVerification(sender: NotificationSender): sender is NotificationSender & SenderWithVerification {
-  return typeof (sender as Record<string, unknown>).sendVerificationEmail === 'function';
+function isSenderWithVerification(
+    sender: NotificationSender,
+): sender is NotificationSender & SenderWithVerification {
+    return (
+        typeof (sender as Record<string, unknown>).sendVerificationEmail ===
+        "function"
+    );
 }
 
-export class CoreNotificationGateway implements NotificationGateway, VerificationEmailSender {
-  private readonly senders = new Map<string, NotificationSender>();
-  private readonly categories = new Map<string, string>();
-  private readonly disabledSenders = new Set<string>();
+export class CoreNotificationGateway
+    implements NotificationGateway, VerificationEmailSender
+{
+    private readonly senders = new Map<string, NotificationSender>();
+    private readonly categories = new Map<string, string>();
+    private readonly disabledSenders = new Set<string>();
 
-  constructor(
-    private readonly prefStore: NotificationPreferenceStore,
-    private readonly configStore?: NotificationConfigStore,
-    private readonly emailStore?: NotificationEmailStore,
-  ) {}
+    constructor(
+        private readonly prefStore: NotificationPreferenceStore,
+        private readonly configStore?: NotificationConfigStore,
+        private readonly emailStore?: NotificationEmailStore,
+    ) {}
 
-  registerSender(sender: NotificationSender): void {
-    this.senders.set(sender.senderId, sender);
-  }
-
-  registerCategory(id: string, label: string): void {
-    this.categories.set(id, label);
-  }
-
-  listSenders(): NotificationSenderInfo[] {
-    return Array.from(this.senders.values()).map((sender) => ({
-      senderId: sender.senderId,
-      name: sender.senderName ?? sender.senderId,
-      active: !this.disabledSenders.has(sender.senderId) && (
-        typeof sender.isConfigured === 'function'
-          ? sender.isConfigured()
-          : typeof sender.getConfig === 'function'
-      ),
-    }));
-  }
-
-  listCategories(): NotificationCategory[] {
-    return Array.from(this.categories.entries()).map(([id, label]) => ({ id, label }));
-  }
-
-  getProviderConfig(senderId: string): Record<string, unknown> | null {
-    const sender = this.senders.get(senderId);
-    if (!sender || typeof sender.getConfig !== 'function') return null;
-    return {
-      ...sender.getConfig(),
-      enabled: !this.disabledSenders.has(senderId),
-    };
-  }
-
-  getProviderEnvValues(senderId: string): Record<string, string | undefined> | null {
-    const sender = this.senders.get(senderId);
-    if (!sender || typeof sender.getEnvValues !== 'function') return null;
-    return sender.getEnvValues();
-  }
-
-  getProviderRequiredFields(senderId: string): string[] | null {
-    const sender = this.senders.get(senderId);
-    if (!sender || typeof sender.getRequiredFields !== 'function') return null;
-    return sender.getRequiredFields();
-  }
-
-  async saveProviderConfig(senderId: string, config: Record<string, unknown>): Promise<void> {
-    const { enabled, ...senderConfig } = config;
-    if (enabled === false || enabled === 'false') {
-      this.disabledSenders.add(senderId);
-    } else {
-      this.disabledSenders.delete(senderId);
+    registerSender(sender: NotificationSender): void {
+        this.senders.set(sender.senderId, sender);
     }
-    const sender = this.senders.get(senderId);
-    if (sender && typeof sender.setConfig === 'function') {
-      sender.setConfig(senderConfig);
-    }
-    await this.configStore?.saveConfig(senderId, config);
-  }
 
-  async loadPersistedConfigs(): Promise<void> {
-    if (!this.configStore) return;
-    for (const sender of this.senders.values()) {
-      const config = await this.configStore.getConfig(sender.senderId);
-      if (!config) continue;
-      if (config.enabled === false || config.enabled === 'false') {
-        this.disabledSenders.add(sender.senderId);
-      }
-      if (typeof sender.setConfig === 'function') {
+    registerCategory(id: string, label: string): void {
+        this.categories.set(id, label);
+    }
+
+    listSenders(): NotificationSenderInfo[] {
+        return Array.from(this.senders.values()).map((sender) => ({
+            senderId: sender.senderId,
+            name: sender.senderName ?? sender.senderId,
+            active:
+                !this.disabledSenders.has(sender.senderId) &&
+                (typeof sender.isConfigured === "function"
+                    ? sender.isConfigured()
+                    : typeof sender.getConfig === "function"),
+        }));
+    }
+
+    listCategories(): NotificationCategory[] {
+        return Array.from(this.categories.entries()).map(([id, label]) => ({
+            id,
+            label,
+        }));
+    }
+
+    getProviderConfig(senderId: string): Record<string, unknown> | null {
+        const sender = this.senders.get(senderId);
+        if (!sender || typeof sender.getConfig !== "function") return null;
+        return {
+            ...sender.getConfig(),
+            enabled: !this.disabledSenders.has(senderId),
+        };
+    }
+
+    getProviderEnvValues(
+        senderId: string,
+    ): Record<string, string | undefined> | null {
+        const sender = this.senders.get(senderId);
+        if (!sender || typeof sender.getEnvValues !== "function") return null;
+        return sender.getEnvValues();
+    }
+
+    getProviderRequiredFields(senderId: string): string[] | null {
+        const sender = this.senders.get(senderId);
+        if (!sender || typeof sender.getRequiredFields !== "function")
+            return null;
+        return sender.getRequiredFields();
+    }
+
+    async saveProviderConfig(
+        senderId: string,
+        config: Record<string, unknown>,
+    ): Promise<void> {
         const { enabled, ...senderConfig } = config;
-        sender.setConfig(senderConfig);
-      }
-    }
-  }
-
-  getSender(senderId: string): NotificationSender | undefined {
-    return this.senders.get(senderId);
-  }
-
-  canSendVerificationEmail(): boolean {
-    for (const [id, sender] of this.senders.entries()) {
-      if (this.disabledSenders.has(id)) continue;
-      if (!isSenderWithVerification(sender)) continue;
-      if (typeof sender.isConfigured === 'function') return sender.isConfigured();
-      return true;
-    }
-    return false;
-  }
-
-  async sendVerificationEmail(to: string, code: string, verifyUrl?: string, theme?: string): Promise<void> {
-    for (const [id, sender] of this.senders.entries()) {
-      if (this.disabledSenders.has(id)) continue;
-      if (!isSenderWithVerification(sender)) continue;
-      await sender.sendVerificationEmail(to, code, verifyUrl, theme);
-      return;
-    }
-    throw new Error('smtp_unavailable');
-  }
-
-  async discoverSenders(adaptersRoot: string): Promise<void> {
-    let entries: string[];
-    try {
-      entries = await readdir(adaptersRoot);
-    } catch {
-      return;
-    }
-
-    for (const entry of entries) {
-      const pkgPath = path.join(adaptersRoot, entry, 'package.json');
-      try {
-        const raw = await readFile(pkgPath, 'utf8');
-        const pkg = JSON.parse(raw) as { main?: string };
-        if (!pkg.main) continue;
-
-        const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
-        const mod = await import(`${entryPath}?t=${Date.now()}`);
-
-        if (typeof mod.createNotificationSender === 'function') {
-          const factory = mod.createNotificationSender as (env: Record<string, string | undefined>) => NotificationSender | null;
-          const sender = factory(process.env as Record<string, string | undefined>);
-          if (sender) {
-            this.registerSender(sender);
-          }
+        if (enabled === false || enabled === "false") {
+            this.disabledSenders.add(senderId);
+        } else {
+            this.disabledSenders.delete(senderId);
         }
-      } catch {
-        // Adapter could not be loaded — skip silently
-      }
-    }
-  }
-
-  async dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[]; errors?: Array<{ senderId: string; error: string }> }> {
-    const senderIds = await this.prefStore.getSenderIds(envelope.recipientUsername, envelope.category);
-    const dispatched: string[] = [];
-    const errors: Array<{ senderId: string; error: string }> = [];
-
-    const recipientEmail = envelope.recipientEmail
-      ?? (this.emailStore ? await this.emailStore.getPrimaryEmail(envelope.recipientUsername) ?? undefined : undefined);
-
-    const resolvedEnvelope: NotificationEnvelope = recipientEmail
-      ? { ...envelope, recipientEmail }
-      : envelope;
-
-    for (const id of senderIds) {
-      if (this.disabledSenders.has(id)) continue;
-      const sender = this.senders.get(id);
-      if (!sender) continue;
-      try {
-        await sender.send(resolvedEnvelope);
-        dispatched.push(id);
-      } catch (err) {
-        errors.push({ senderId: id, error: err instanceof Error ? err.message : String(err) });
-      }
+        const sender = this.senders.get(senderId);
+        if (sender && typeof sender.setConfig === "function") {
+            sender.setConfig(senderConfig);
+        }
+        await this.configStore?.saveConfig(senderId, config);
     }
 
-    return errors.length > 0 ? { dispatched, errors } : { dispatched };
-  }
+    async loadPersistedConfigs(): Promise<void> {
+        if (!this.configStore) return;
+        for (const sender of this.senders.values()) {
+            const config = await this.configStore.getConfig(sender.senderId);
+            if (!config) continue;
+            if (config.enabled === false || config.enabled === "false") {
+                this.disabledSenders.add(sender.senderId);
+            }
+            if (typeof sender.setConfig === "function") {
+                const { enabled, ...senderConfig } = config;
+                sender.setConfig(senderConfig);
+            }
+        }
+    }
+
+    getSender(senderId: string): NotificationSender | undefined {
+        return this.senders.get(senderId);
+    }
+
+    canSendVerificationEmail(): boolean {
+        for (const [id, sender] of this.senders.entries()) {
+            if (this.disabledSenders.has(id)) continue;
+            if (!isSenderWithVerification(sender)) continue;
+            if (typeof sender.isConfigured === "function")
+                return sender.isConfigured();
+            return true;
+        }
+        return false;
+    }
+
+    async sendVerificationEmail(
+        to: string,
+        code: string,
+        verifyUrl?: string,
+        theme?: string,
+    ): Promise<void> {
+        for (const [id, sender] of this.senders.entries()) {
+            if (this.disabledSenders.has(id)) continue;
+            if (!isSenderWithVerification(sender)) continue;
+            await sender.sendVerificationEmail(to, code, verifyUrl, theme);
+            return;
+        }
+        throw new Error("smtp_unavailable");
+    }
+
+    async discoverSenders(adaptersRoot: string): Promise<void> {
+        let entries: string[];
+        try {
+            entries = await readdir(adaptersRoot);
+        } catch {
+            return;
+        }
+
+        for (const entry of entries) {
+            const pkgPath = path.join(adaptersRoot, entry, "package.json");
+            try {
+                const raw = await readFile(pkgPath, "utf8");
+                const pkg = JSON.parse(raw) as { main?: string };
+                if (!pkg.main) continue;
+
+                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
+                const mod = await import(`${entryPath}?t=${Date.now()}`);
+
+                if (typeof mod.createNotificationSender === "function") {
+                    const factory = mod.createNotificationSender as (
+                        env: Record<string, string | undefined>,
+                    ) => NotificationSender | null;
+                    const sender = factory(
+                        process.env as Record<string, string | undefined>,
+                    );
+                    if (sender) {
+                        this.registerSender(sender);
+                    }
+                }
+            } catch {
+                // Adapter could not be loaded — skip silently
+            }
+        }
+    }
+
+    async dispatch(envelope: NotificationEnvelope): Promise<{
+        dispatched: string[];
+        errors?: Array<{ senderId: string; error: string }>;
+    }> {
+        const senderIds = await this.prefStore.getSenderIds(
+            envelope.recipientUsername,
+            envelope.category,
+        );
+        const dispatched: string[] = [];
+        const errors: Array<{ senderId: string; error: string }> = [];
+
+        const recipientEmail =
+            envelope.recipientEmail ??
+            (this.emailStore
+                ? ((await this.emailStore.getPrimaryEmail(
+                      envelope.recipientUsername,
+                  )) ?? undefined)
+                : undefined);
+
+        const resolvedEnvelope: NotificationEnvelope = recipientEmail
+            ? { ...envelope, recipientEmail }
+            : envelope;
+
+        for (const id of senderIds) {
+            if (this.disabledSenders.has(id)) continue;
+            const sender = this.senders.get(id);
+            if (!sender) continue;
+            try {
+                await sender.send(resolvedEnvelope);
+                dispatched.push(id);
+            } catch (err) {
+                errors.push({
+                    senderId: id,
+                    error: err instanceof Error ? err.message : String(err),
+                });
+            }
+        }
+
+        return errors.length > 0 ? { dispatched, errors } : { dispatched };
+    }
 }

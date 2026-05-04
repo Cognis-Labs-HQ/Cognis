@@ -6,15 +6,15 @@ Implements the `NotificationSender` interface using SMTP to deliver email notifi
 
 All configuration is provided via environment variables or at runtime via `setConfig`.
 
-| Variable | Default | Description |
-|---|---|---|
-| `COGNIS_SMTP_HOST` | — | SMTP server hostname. **Required** to activate the adapter. |
-| `COGNIS_SMTP_PORT` | `587` | TCP port for the SMTP connection. |
-| `COGNIS_SMTP_SECURE` | `starttls` | TLS mode: `starttls`, `tls`, or `none`. |
-| `COGNIS_SMTP_FROM` | `cognis@{host}` | Envelope sender address. |
-| `COGNIS_SMTP_SENDER_NAME` | — | Display name shown in the From header (e.g. `Cognis Notifications`). |
-| `COGNIS_SMTP_USER` | — | SMTP authentication username (optional). |
-| `COGNIS_SMTP_PASS` | — | SMTP authentication password (optional). |
+| Variable                  | Default         | Description                                                          |
+| ------------------------- | --------------- | -------------------------------------------------------------------- |
+| `COGNIS_SMTP_HOST`        | —               | SMTP server hostname. **Required** to activate the adapter.          |
+| `COGNIS_SMTP_PORT`        | `587`           | TCP port for the SMTP connection.                                    |
+| `COGNIS_SMTP_SECURE`      | `starttls`      | TLS mode: `starttls`, `tls`, or `none`.                              |
+| `COGNIS_SMTP_FROM`        | `cognis@{host}` | Envelope sender address.                                             |
+| `COGNIS_SMTP_SENDER_NAME` | —               | Display name shown in the From header (e.g. `Cognis Notifications`). |
+| `COGNIS_SMTP_USER`        | —               | SMTP authentication username (optional).                             |
+| `COGNIS_SMTP_PASS`        | —               | SMTP authentication password (optional).                             |
 
 ## Greylisting
 
@@ -24,10 +24,10 @@ The adapter automatically retries on any `4xx` (temporary) SMTP response. By def
 
 These values can be adjusted at runtime via `setConfig` or the Administration UI:
 
-| Field | Default | Description |
-|---|---|---|
-| `greylistRetries` | `2` | Maximum number of retry attempts after a `4xx` response. Set to `0` to disable retries. |
-| `greylistRetryDelayMs` | `300000` (5 min) | Milliseconds to wait between retry attempts. |
+| Field                  | Default          | Description                                                                             |
+| ---------------------- | ---------------- | --------------------------------------------------------------------------------------- |
+| `greylistRetries`      | `2`              | Maximum number of retry attempts after a `4xx` response. Set to `0` to disable retries. |
+| `greylistRetryDelayMs` | `300000` (5 min) | Milliseconds to wait between retry attempts.                                            |
 
 Permanent `5xx` errors (e.g. unknown user) are never retried.
 

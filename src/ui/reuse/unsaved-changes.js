@@ -19,35 +19,42 @@
  * @param {{ onSave?: () => Promise<void>, onDiscard?: () => void }} options
  * @returns {{ markDirty(id: string, dirty: boolean): void, isAnyDirty(): boolean }}
  */
-export function createUnsavedChangesBar(floatingEl, { onSave, onDiscard } = {}) {
-  const dirtyMap = new Map();
+export function createUnsavedChangesBar(
+    floatingEl,
+    { onSave, onDiscard } = {},
+) {
+    const dirtyMap = new Map();
 
-  function isAnyDirty() {
-    for (const isDirty of dirtyMap.values()) {
-      if (isDirty) return true;
+    function isAnyDirty() {
+        for (const isDirty of dirtyMap.values()) {
+            if (isDirty) return true;
+        }
+        return false;
     }
-    return false;
-  }
 
-  function sync() {
-    if (!floatingEl) return;
-    floatingEl.hidden = !isAnyDirty();
-  }
+    function sync() {
+        if (!floatingEl) return;
+        floatingEl.hidden = !isAnyDirty();
+    }
 
-  function markDirty(id, dirty) {
-    dirtyMap.set(id, dirty);
-    sync();
-  }
+    function markDirty(id, dirty) {
+        dirtyMap.set(id, dirty);
+        sync();
+    }
 
-  floatingEl?.querySelector('[data-action="save"]')?.addEventListener('click', async () => {
-    await onSave?.();
-  });
+    floatingEl
+        ?.querySelector('[data-action="save"]')
+        ?.addEventListener("click", async () => {
+            await onSave?.();
+        });
 
-  floatingEl?.querySelector('[data-action="discard"]')?.addEventListener('click', () => {
-    onDiscard?.();
-    dirtyMap.clear();
-    sync();
-  });
+    floatingEl
+        ?.querySelector('[data-action="discard"]')
+        ?.addEventListener("click", () => {
+            onDiscard?.();
+            dirtyMap.clear();
+            sync();
+        });
 
-  return { markDirty, isAnyDirty, sync };
+    return { markDirty, isAnyDirty, sync };
 }

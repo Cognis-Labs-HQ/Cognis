@@ -11,9 +11,9 @@ const cache = new Map();
  * @returns {Promise<string>}
  */
 export async function loadTemplate(name) {
-  if (cache.has(name)) return cache.get(name);
-  const response = await fetch(`/static/templates/${name}.html`);
-  const html = await response.text();
-  cache.set(name, html);
-  return html;
+    if (cache.has(name)) return cache.get(name);
+    const response = await fetch(`/static/templates/${name}.html`);
+    const html = await response.text();
+    cache.set(name, html);
+    return html;
 }

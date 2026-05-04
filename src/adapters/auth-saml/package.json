@@ -1,10 +1,10 @@
 {
-  "name": "@cognis/adapter-auth-saml",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "main": "saml-auth-gateway.ts",
-  "dependencies": {
-    "@cognis/core": "0.1.0"
-  }
+    "name": "@cognis/adapter-auth-saml",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "main": "saml-auth-gateway.ts",
+    "dependencies": {
+        "@cognis/core": "0.1.0"
+    }
 }

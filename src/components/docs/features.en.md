@@ -20,11 +20,11 @@ This page gives a broad tour of what Cognis provides today.
 
 ## Adapter coverage
 
-| Area | Built-in adapters | Notes |
-| --- | --- | --- |
-| Database | memory, sqlite, postgres, mariadb | swap by environment |
-| Auth | local, ldap, saml, oidc | supports enterprise flows |
-| Files | local | can be extended |
+| Area     | Built-in adapters                 | Notes                     |
+| -------- | --------------------------------- | ------------------------- |
+| Database | memory, sqlite, postgres, mariadb | swap by environment       |
+| Auth     | local, ldap, saml, oidc           | supports enterprise flows |
+| Files    | local                             | can be extended           |
 
 ## Useful links
 
@@ -38,8 +38,8 @@ Single-line config example: `{"demoMode": true, "theme": "dark"}`.
 
 ```json
 {
-  "demoMode": true,
-  "theme": "dark",
-  "showDocs": true
+    "demoMode": true,
+    "theme": "dark",
+    "showDocs": true
 }
 ```
