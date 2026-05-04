@@ -204,6 +204,13 @@ export function createUserRoutes(
           res.end(JSON.stringify({ error: { code: 'bad_request', message: 'email is required' } }));
           return true;
         }
+        const existingEmails = await notifStore.getUserEmails(username);
+        const existingEntry = existingEmails.find((e) => e.email === email);
+        if (existingEntry?.verified) {
+          res.writeHead(409, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ error: { code: 'already_verified', message: 'This email address is already verified.' } }));
+          return true;
+        }
         await notifStore.addUserEmail(username, email);
 
         const configuredSmtp = smtpSender?.isConfigured?.() ? smtpSender : null;

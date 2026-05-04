@@ -232,6 +232,8 @@
   <string name="ui.app.settings.emails_remove_failed">Tidak dapat menghapus alamat email.</string>
   <string name="ui.app.settings.emails_add_failed">Tidak dapat menambahkan alamat email.</string>
   <string name="ui.app.settings.emails_unverified">Belum diverifikasi</string>
+  <string name="ui.app.settings.emails_verified">Valid</string>
+  <string name="ui.app.settings.emails_already_verified">Alamat email ini sudah diverifikasi.</string>
   <string name="ui.app.settings.emails_verify_title">Verifikasi alamat email</string>
   <string name="ui.app.settings.emails_verify_prompt">Masukkan kode verifikasi yang dikirim ke {email}.</string>
   <string name="ui.app.settings.emails_verify_placeholder">Kode 6 digit</string>

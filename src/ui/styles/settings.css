@@ -147,6 +147,15 @@ body[data-theme='light'] .prefs-dump {
   font-weight: 600;
 }
 
+.email-badge-verified {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  font-weight: 600;
+}
+
 .email-badge-unverified {
   background: var(--control-bg);
   color: var(--text-muted);

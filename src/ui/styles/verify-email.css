@@ -58,3 +58,20 @@ body {
 .verify-link:hover {
     background: #0d9488;
 }
+
+body[data-theme="dark"] {
+    background: #0f172a;
+}
+
+body[data-theme="dark"] .verify-card {
+    background: #1e293b;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+body[data-theme="dark"] .verify-title {
+    color: #f1f5f9;
+}
+
+body[data-theme="dark"] .verify-body {
+    color: #94a3b8;
+}

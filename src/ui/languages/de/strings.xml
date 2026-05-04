@@ -232,6 +232,8 @@
   <string name="ui.app.settings.emails_remove_failed">E-Mail-Adresse konnte nicht entfernt werden.</string>
   <string name="ui.app.settings.emails_add_failed">E-Mail-Adresse konnte nicht hinzugefügt werden.</string>
   <string name="ui.app.settings.emails_unverified">Unverifiziert</string>
+  <string name="ui.app.settings.emails_verified">Gültig</string>
+  <string name="ui.app.settings.emails_already_verified">Diese E-Mail-Adresse ist bereits verifiziert.</string>
   <string name="ui.app.settings.emails_verify_title">E-Mail-Adresse bestätigen</string>
   <string name="ui.app.settings.emails_verify_prompt">Gib den Bestätigungscode ein, der an {email} gesendet wurde.</string>
   <string name="ui.app.settings.emails_verify_placeholder">6-stelliger Code</string>

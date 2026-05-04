@@ -155,6 +155,10 @@ export class DbNotificationStore implements NotificationConfigStore {
       `UPDATE user_emails SET verified = TRUE WHERE account_id = ${this.placeholder(1)} AND email = ${this.placeholder(2)}`,
       [accountId, email],
     );
+    const emails = await this.getUserEmails(accountId);
+    if (emails.length === 1 && emails[0].email === email && !emails[0].primary) {
+      await this.setPrimaryEmail(accountId, email);
+    }
   }
 
   async removeUserEmail(accountId: string, email: string): Promise<void> {

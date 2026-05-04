@@ -65,6 +65,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ email: address }),
     });
+    if (res.status === 409) throw new Error('already_verified');
     if (res.status === 429) throw new Error('rate_limited');
     if (!res.ok) throw new Error('add_failed');
     const payload = await res.json();
@@ -133,7 +134,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
     listEl.innerHTML = emails.map((entry) => {
       const escaped = escapeHtml(entry.email);
       const verifiedBadge = entry.verified
-        ? ''
+        ? `<span class="email-badge-verified">${i18n.t('ui.app.settings.emails_verified')}</span>`
         : `<button class="email-badge-unverified" type="button" data-resend-verification="${escaped}">${i18n.t('ui.app.settings.emails_unverified')}</button>`;
       const primaryBadge = entry.primary
         ? `<span class="email-badge-primary">${i18n.t('ui.app.settings.emails_primary')}</span>`
@@ -312,7 +313,9 @@ export function initGeneralPrefs(root, { i18n, username }) {
           }
         } catch (err) {
           const code = err instanceof Error ? err.message : 'add_failed';
-          if (code === 'rate_limited') {
+          if (code === 'already_verified') {
+            showStatus(i18n.t('ui.app.settings.emails_already_verified'));
+          } else if (code === 'rate_limited') {
             showStatus(i18n.t('ui.app.settings.emails_verify_rate_limited'));
           } else {
             showStatus(i18n.t('ui.app.settings.emails_add_failed'));

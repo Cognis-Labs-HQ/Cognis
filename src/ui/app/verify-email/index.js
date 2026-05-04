@@ -4,6 +4,19 @@ const i18n = await createI18n();
 applyDocumentTitle(i18n, 'ui.page.title.verify_email');
 applyStaticTranslations(i18n);
 
+function readThemeCookie() {
+  const match = document.cookie.match(/(?:^|; )cognis_theme=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
+function resolveTheme() {
+  const stored = localStorage.getItem('cognis_theme') || readThemeCookie();
+  if (stored === 'light' || stored === 'dark') return stored;
+  return window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+}
+
+document.body.setAttribute('data-theme', resolveTheme());
+
 const iconEl = document.querySelector('#verify-icon');
 const titleEl = document.querySelector('#verify-title');
 const bodyEl = document.querySelector('#verify-body');
