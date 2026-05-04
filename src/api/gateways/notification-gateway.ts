@@ -17,6 +17,10 @@ export interface NotificationConfigStore {
   saveConfig(senderId: string, config: Record<string, unknown>): Promise<void>;
 }
 
+export interface NotificationEmailStore {
+  getPrimaryEmail(accountId: string): Promise<string | null>;
+}
+
 export class VolatileNotificationPreferenceStore implements NotificationPreferenceStore {
   private readonly prefs = new Map<string, string[]>();
 
@@ -36,6 +40,7 @@ export class CoreNotificationGateway implements NotificationGateway {
   constructor(
     private readonly prefStore: NotificationPreferenceStore,
     private readonly configStore?: NotificationConfigStore,
+    private readonly emailStore?: NotificationEmailStore,
   ) {}
 
   registerSender(sender: NotificationSender): void {
@@ -134,10 +139,17 @@ export class CoreNotificationGateway implements NotificationGateway {
     const senderIds = await this.prefStore.getSenderIds(envelope.recipientUsername, envelope.category);
     const dispatched: string[] = [];
 
+    const recipientEmail = envelope.recipientEmail
+      ?? (this.emailStore ? await this.emailStore.getPrimaryEmail(envelope.recipientUsername) ?? undefined : undefined);
+
+    const resolvedEnvelope: NotificationEnvelope = recipientEmail
+      ? { ...envelope, recipientEmail }
+      : envelope;
+
     for (const id of senderIds) {
       const sender = this.senders.get(id);
       if (sender) {
-        await sender.send(envelope);
+        await sender.send(resolvedEnvelope);
         dispatched.push(id);
       }
     }

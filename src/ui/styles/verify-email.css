@@ -75,3 +75,7 @@ body[data-theme="dark"] .verify-title {
 body[data-theme="dark"] .verify-body {
     color: #94a3b8;
 }
+
+body[data-theme="dark"] .verify-icon {
+    color: #f1f5f9;
+}

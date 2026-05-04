@@ -160,7 +160,7 @@ const runtime = await InMemoryModuleRuntimeGateway.bootstrap();
 await logger.info('Module runtime bootstrapped.');
 
 const notificationPrefStore = new DbNotificationPreferenceStore(notifStore);
-const notificationGateway = new CoreNotificationGateway(notificationPrefStore, notifStore);
+const notificationGateway = new CoreNotificationGateway(notificationPrefStore, notifStore, notifStore);
 const adaptersRoot = process.env.COGNIS_ADAPTERS_ROOT ?? path.resolve(process.cwd(), 'src', 'adapters');
 await notificationGateway.discoverSenders(adaptersRoot);
 await notificationGateway.loadPersistedConfigs();
