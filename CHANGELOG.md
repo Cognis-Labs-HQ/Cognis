@@ -28,5 +28,6 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ### Fixed
 - `dispatch()` in notification gateway now catches per-sender errors rather than propagating ([f51b505](https://github.com/le-firehawk/Cognis/commit/f51b505))
 - Email UNIQUE constraint now enforced in all DB init scripts ([f51b505](https://github.com/le-firehawk/Cognis/commit/f51b505))
+- `discoverSenders` now scans `adaptersRoot/notify/` instead of `adaptersRoot/`, correctly resolving the two-level `src/adapters/<gateway-id>/<adapter-id>/` structure
 
 [Unreleased]: https://github.com/le-firehawk/Cognis/compare/HEAD...HEAD

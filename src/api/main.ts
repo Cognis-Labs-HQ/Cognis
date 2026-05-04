@@ -162,10 +162,11 @@ await logger.info('Module runtime bootstrapped.');
 const notificationPrefStore = new DbNotificationPreferenceStore(notifStore);
 const notificationGateway = new CoreNotificationGateway(notificationPrefStore, notifStore, notifStore);
 const adaptersRoot = process.env.COGNIS_ADAPTERS_ROOT ?? path.resolve(process.cwd(), 'src', 'adapters');
-await notificationGateway.discoverSenders(adaptersRoot);
+const notifyAdaptersRoot = path.join(adaptersRoot, 'notify');
+await notificationGateway.discoverSenders(notifyAdaptersRoot);
 await notificationGateway.loadPersistedConfigs();
 notificationGateway.registerCategory('system', 'System Notifications');
-await logger.info('Notification gateway bootstrapped.', { adaptersRoot });
+await logger.info('Notification gateway bootstrapped.', { adaptersRoot: notifyAdaptersRoot });
 
 const tfaService = new TfaCodeService(new InMemoryTfaStore());
 const verifyTokenService = new VerifyTokenService(new InMemoryVerifyTokenStore());
