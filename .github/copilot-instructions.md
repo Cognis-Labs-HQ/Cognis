@@ -63,7 +63,12 @@ Routes must be granular enough that disabling or removing a gateway, adapter, or
 Adapters live under `src/adapters/<gateway-id>/<adapter-id>/`. For example, the SMTP notification adapter lives at `src/adapters/notify/smtp/`, and the MariaDB database adapter at `src/adapters/db/mariadb/`. This lets a gateway find all of its adapters consistently by scanning `src/adapters/<gateway-id>/`. Never nest an adapter under a flat path like `src/adapters/notify-smtp/`.
 
 ### Versioned manifests for gateways, adapters, and modules
-Every gateway, adapter, and module must carry a `package.json` (or equivalent manifest) with a `version` field. Any change to the code, schema, or API within that component's scope must be accompanied by a version bump. This prevents silent drift between components that depend on each other. A higher-level versioning document at `src/docs/components/versions.en.md` tracks the current version of each component and serves as a changelog index.
+Every gateway, adapter, and module must carry a `package.json` (or equivalent manifest) with a `version` field. Any change to the code, schema, or API within that component's scope must be accompanied by a version bump. This prevents silent drift between components that depend on each other. A higher-level versioning document at `src/components/docs/versions.en.md` tracks the current version of each component and serves as a changelog index.
+
+### CHANGELOG.md
+Maintain a `CHANGELOG.md` at the repository root conforming to [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) standards and [Semantic Versioning](https://semver.org/). Every commit that changes behaviour, fixes a bug, or adds a feature must add an entry under the `[Unreleased]` section with: the commit short-SHA as a parenthetical link, the change type sub-heading (Added / Changed / Deprecated / Removed / Fixed / Security), and a one-line summary. Commit links follow the pattern `https://github.com/le-firehawk/Cognis/commit/<sha>`.
+
+When a pull request is created that targets an imminent release, compress the `[Unreleased]` section into a versioned release block listing each commit with its working URL since the previous release tag, then open a new empty `[Unreleased]` section above it.
 
 ### Component self-containment
 Gateways, adapters, and modules are responsible for their own resources. This includes:
