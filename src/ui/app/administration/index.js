@@ -4,6 +4,7 @@ import { createPageComposer } from "../../reuse/page-composer.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { initSecuritySection } from "./security.js";
+import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
 
 const root = document.querySelector("#app");
 const i18n = await createI18n();
@@ -118,19 +119,21 @@ function renderModulesContent(modules) {
         .join("");
 }
 
-function renderDependencyLinks(ids, scrollPrefix) {
+function renderDependencyLinks(ids, scrollPrefix, gateways = []) {
     if (!ids || ids.length === 0) {
         return i18n.t("ui.app.admin.gateway.no_dependencies");
     }
+    const gwById = new Map(gateways.map((g) => [g.id, g]));
     return ids
-        .map(
-            (id) =>
-                `<a class="dependency-link" href="#" data-scroll-to="${escapeHtml(scrollPrefix)}${escapeHtml(id)}">${escapeHtml(id)}</a>`,
-        )
+        .map((id) => {
+            const dep = gwById.get(id);
+            const label = dep ? escapeHtml(dep.name) : escapeHtml(id);
+            return `<a class="dependency-link" href="#" data-scroll-to="${escapeHtml(scrollPrefix)}${escapeHtml(id)}">${label}</a>`;
+        })
         .join(", ");
 }
 
-function renderGatewayDetailsList(gw) {
+function renderGatewayDetailsList(gw, gateways) {
     const requiredLabel = gw.required
         ? i18n.t("ui.reuse.generic.true")
         : i18n.t("ui.reuse.generic.false");
@@ -156,7 +159,7 @@ function renderGatewayDetailsList(gw) {
                 `<li class="module-detail-item"><span class="module-detail-key">${key}</span><span class="module-detail-value">${value}</span></li>`,
         )
         .join("");
-    const depsHtml = renderDependencyLinks(gw.requires, "gateway-");
+    const depsHtml = renderDependencyLinks(gw.requires, "gateway-", gateways);
     const depsRow = `<li class="module-detail-item"><span class="module-detail-key">${i18n.t("ui.app.admin.gateway.dependencies")}</span><span class="module-detail-value">${depsHtml}</span></li>`;
     return detailsRows + depsRow;
 }
@@ -228,7 +231,7 @@ function renderGatewaysContent(gateways, allAdapters) {
             <span class="module-chevron">▾</span>
           </summary>
           <div class="module-meta">
-            <ul class="module-details">${renderGatewayDetailsList(gw)}</ul>
+            <ul class="module-details">${renderGatewayDetailsList(gw, gateways)}</ul>
             ${renderInlineAdapters(gwAdapters, gw.id, isGatewayDisabled)}
           </div>
         </details>
@@ -360,6 +363,7 @@ function bindGatewayToggles() {
                 await toggleGateway(gatewayId, action);
                 gateways = await loadGateways();
                 composer.refresh(elements);
+                updateNavbarAvatar().catch(() => {});
             });
         },
     );

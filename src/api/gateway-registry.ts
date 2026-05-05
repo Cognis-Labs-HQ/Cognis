@@ -66,6 +66,17 @@ export class GatewayRegistry {
     }
 
     /**
+     * Updates fields on an already-registered gateway entry. Only the keys
+     * present in `updates` are changed; other fields are left untouched.
+     * No-ops silently when the gateway ID is not registered.
+     */
+    patch(id: string, updates: Partial<GatewayManifest>): void {
+        const entry = this.gateways.get(id);
+        if (!entry) return;
+        Object.assign(entry, updates);
+    }
+
+    /**
      * Verifies that every gateway ID listed in `requiredIds` has successfully
      * registered. Throws with the first missing ID if any are absent.
      */

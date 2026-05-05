@@ -101,6 +101,14 @@ export async function bootstrapGateways(
             // Bootstrap failure — required check will surface this as an error.
         }
 
+        // Propagate `requires` from the manifest into the registry entry so
+        // the admin UI can render dependency info for each gateway.
+        if (meta.requires.length > 0 && ctx.gatewayRegistry.get(gatewayId)) {
+            ctx.gatewayRegistry.patch(gatewayId, {
+                requires: meta.requires,
+            });
+        }
+
         // After the logging gateway runs, pull the contributed log function into
         // the context so all subsequent gateways can use it.
         if (gatewayId === "logging" && !ctx.log) {

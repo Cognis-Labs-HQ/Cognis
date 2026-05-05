@@ -44,14 +44,20 @@ function getLoggedInSub(req: IncomingMessage): string | null {
  * Creates page-serving route handlers for the profile SPA pages.
  * These routes are owned by the profile gateway so that removing the gateway
  * also removes the profile pages — core has no knowledge of them.
+ *
+ * When `isGatewayEnabled` is supplied and returns `false`, all profile page
+ * routes return `false` so that the server's 404 handler takes over, preventing
+ * access to the profile UI while the gateway is disabled.
  */
-export function createProfilePageRoutes() {
+export function createProfilePageRoutes(isGatewayEnabled?: () => boolean) {
     return async (
         req: IncomingMessage,
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (req.method && req.method !== "GET") return false;
+
+        if (isGatewayEnabled && !isGatewayEnabled()) return false;
 
         if (url.pathname === "/profile") {
             if (!isLoggedIn(req)) {
@@ -174,7 +180,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         );
     }
 
-    ctx.routeRegistry.register(createProfilePageRoutes());
+    ctx.routeRegistry.register(
+        createProfilePageRoutes(
+            () => ctx.gatewayRegistry.get("profile")?.status !== "disabled",
+        ),
+    );
     ctx.routeRegistry.register(createSocialRoutes(profileStore));
     ctx.routeRegistry.register(createPostRoutes(profileStore));
 

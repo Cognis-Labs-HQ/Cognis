@@ -74,6 +74,13 @@ function bindTopbarActions() {
 
     if (nameEl) nameEl.textContent = getDisplayName();
 
+    window.addEventListener("storage", (event) => {
+        if (event.key === "cognis_display_name") {
+            const el = document.querySelector("#profile-name");
+            if (el) el.textContent = getDisplayName();
+        }
+    });
+
     const profileMenu = document.querySelector(".profile-menu");
     const adminOnlyItems = document.querySelectorAll(".admin-only");
 

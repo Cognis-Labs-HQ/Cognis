@@ -7,7 +7,17 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
+### Fixed
+
+- Profile page routes (`/profile/:handle`) now return 404 when the profile gateway is disabled, preventing the profile SPA from loading while the gateway is off ([9e8abf0](https://github.com/le-firehawk/Cognis/commit/9e8abf0))
+- Gateway registry entries now carry the `requires` field from each gateway's `manifest.json`; previously, `requires` was read for dependency-validation only and never stored, so the admin UI always showed "No dependencies" for gateways with declared requirements ([9e8abf0](https://github.com/le-firehawk/Cognis/commit/9e8abf0))
+- Admin UI — dependency links in the gateway details panel now display the human-readable gateway name (e.g. "Database Gateway") rather than the raw ID (e.g. "db") ([9e8abf0](https://github.com/le-firehawk/Cognis/commit/9e8abf0))
+
+### Changed
+
+- Profile edit: saving a new display name now also writes `cognis_display_name` to `localStorage`, so the navbar name reflects the change without a full page reload ([9e8abf0](https://github.com/le-firehawk/Cognis/commit/9e8abf0))
+- Dashboard layout: `bindTopbarActions` now listens for `storage` events on `cognis_display_name` and updates `#profile-name` in real time, keeping the user menu consistent across in-page profile edits ([9e8abf0](https://github.com/le-firehawk/Cognis/commit/9e8abf0))
+- Admin UI: toggling a gateway now calls `updateNavbarAvatar()` immediately after reloading gateway state, so the Profile nav link appears or disappears without requiring a page navigation ([9e8abf0](https://github.com/le-firehawk/Cognis/commit/9e8abf0))
 
 - Gateway enable/disable state now persisted to the `gateways` DB table; state survives container restarts across all three DB providers (SQLite, MariaDB, PostgreSQL) ([5c70705](https://github.com/le-firehawk/Cognis/commit/5c70705))
 - `POST /api/v1/gateways/:id/enable|disable` now returns `403 required_gateway` when the target gateway has `required: true`, preventing required gateways from being toggled ([5c70705](https://github.com/le-firehawk/Cognis/commit/5c70705))
