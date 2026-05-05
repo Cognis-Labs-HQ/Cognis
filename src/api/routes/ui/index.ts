@@ -243,6 +243,17 @@ export function createUiRoutes(
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/ui/navbar-plugins" &&
+            req.method === "GET"
+        ) {
+            if (!requireAuth(req, res, "user")) return true;
+            const plugins = uiRegistry?.listNavbarPlugins() ?? [];
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: plugins }));
+            return true;
+        }
+
         if (url.pathname.startsWith("/static/gateways/")) {
             const rest = url.pathname.slice("/static/gateways/".length);
             const slashIdx = rest.indexOf("/");

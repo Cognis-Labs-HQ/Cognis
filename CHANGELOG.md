@@ -19,6 +19,16 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Dashboard layout: `bindTopbarActions` now listens for `storage` events on `cognis_display_name` and updates `#profile-name` in real time, keeping the user menu consistent across in-page profile edits ([9e8abf0](https://github.com/le-firehawk/Cognis/commit/9e8abf0))
 - Admin UI: toggling a gateway now calls `updateNavbarAvatar()` immediately after reloading gateway state, so the Profile nav link appears or disappears without requiring a page navigation ([9e8abf0](https://github.com/le-firehawk/Cognis/commit/9e8abf0))
 
+### Removed
+
+- `src/ui/reuse/provider-config.js` deleted — the file was dead code (no consumers) and its route (`/api/v1/notifications/providers/…/config`) is a notify-gateway-specific endpoint that does not belong in core reuse; the equivalent logic is provided inline by `openAdapterConfig` in the administration page using the generic gateway adapter config API ([083995a](https://github.com/le-firehawk/Cognis/commit/083995a))
+
+### Changed (architecture)
+
+- Dashboard layout no longer calls profile-gateway routes directly (`/api/v1/profile/ping`, `/api/v1/profile`). Avatar and profile-link state are now supplied by a `registerAvatarProvider` hook that gateways register via a navbar plugin. The layout fetches registered plugins from `GET /api/v1/ui/navbar-plugins` and dynamically imports each one before the first avatar render ([083995a](https://github.com/le-firehawk/Cognis/commit/083995a))
+- Profile gateway now self-registers its navbar plugin (`ui/navbar.js`) via `ctx.uiRegistry.registerNavbarPlugin`; the plugin provides the profile-ping + avatar-fetch logic that formerly lived in core `dashboard-layout.js` ([083995a](https://github.com/le-firehawk/Cognis/commit/083995a))
+- `UIRegistry` extended with `NavbarPlugin` type, `registerNavbarPlugin(plugin)`, and `listNavbarPlugins()` methods; `GET /api/v1/ui/navbar-plugins` (user auth) added to the UI route handler ([083995a](https://github.com/le-firehawk/Cognis/commit/083995a))
+
 - Gateway enable/disable state now persisted to the `gateways` DB table; state survives container restarts across all three DB providers (SQLite, MariaDB, PostgreSQL) ([5c70705](https://github.com/le-firehawk/Cognis/commit/5c70705))
 - `POST /api/v1/gateways/:id/enable|disable` now returns `403 required_gateway` when the target gateway has `required: true`, preventing required gateways from being toggled ([5c70705](https://github.com/le-firehawk/Cognis/commit/5c70705))
 - Adapter enable endpoint (`POST /api/v1/gateways/:id/adapters/:adapterId/enable`) returns `409 gateway_disabled` when the parent gateway is disabled, preventing adapters from being enabled while their gateway is off ([5c70705](https://github.com/le-firehawk/Cognis/commit/5c70705))

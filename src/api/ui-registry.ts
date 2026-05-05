@@ -1,8 +1,8 @@
 /**
  * Registry that gateways use to contribute admin-page sections, static
- * asset directories, and page-level UI extensions. Core never reads
- * gateway-specific content — it only knows the section IDs, labels, and
- * script URLs returned here.
+ * asset directories, page-level UI extensions, and navbar plugins. Core
+ * never reads gateway-specific content — it only knows the section IDs,
+ * labels, and script URLs returned here.
  */
 export interface AdminSection {
     id: string;
@@ -23,10 +23,22 @@ export interface PageElement {
     scriptUrl: string;
 }
 
+/**
+ * A navbar plugin that a gateway contributes to run on every dashboard
+ * page. The module at `scriptUrl` is dynamically imported by the dashboard
+ * layout after render. It calls `registerAvatarProvider` (exported from
+ * the layout) to supply gateway-specific avatar and profile-link logic.
+ */
+export interface NavbarPlugin {
+    /** Browser-absolute URL of the ES module to dynamically import. */
+    scriptUrl: string;
+}
+
 export class UIRegistry {
     private readonly sections = new Map<string, AdminSection>();
     private readonly staticDirs = new Map<string, string>();
     private readonly pageExtensions = new Map<string, PageElement[]>();
+    private readonly navbarPlugins: NavbarPlugin[] = [];
 
     registerAdminSection(section: AdminSection): void {
         this.sections.set(section.id, section);
@@ -52,6 +64,16 @@ export class UIRegistry {
         this.pageExtensions.set(pageId, existing);
     }
 
+    /**
+     * Registers a navbar plugin that the dashboard layout will dynamically
+     * import on every page. The plugin module should call
+     * `registerAvatarProvider` (exported from dashboard-layout.js) to supply
+     * avatar and profile-link update logic.
+     */
+    registerNavbarPlugin(plugin: NavbarPlugin): void {
+        this.navbarPlugins.push(plugin);
+    }
+
     listAdminSections(): AdminSection[] {
         return Array.from(this.sections.values());
     }
@@ -66,5 +88,9 @@ export class UIRegistry {
      */
     listPageExtensions(pageId: string): PageElement[] {
         return this.pageExtensions.get(pageId) ?? [];
+    }
+
+    listNavbarPlugins(): NavbarPlugin[] {
+        return [...this.navbarPlugins];
     }
 }

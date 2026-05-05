@@ -196,5 +196,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         publisher: "Cognis Labs",
     });
 
+    const uiDir = path.resolve(
+        process.cwd(),
+        "src",
+        "api",
+        "gateways",
+        "profile",
+        "ui",
+    );
+    ctx.uiRegistry?.registerStaticDir("profile", uiDir);
+    ctx.uiRegistry?.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/profile/navbar.js",
+    });
+
     ctx.log?.("info", "Profile gateway: initialized.");
 }
