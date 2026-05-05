@@ -123,6 +123,14 @@
   <string name="ui.app.admin.gateway.no_dependencies">Tidak ada</string>
   <string name="ui.app.admin.gateway.adapter_count">Adapter</string>
   <string name="ui.app.admin.gateway.go_to_adapters">Lihat adapter</string>
+  <string name="ui.app.admin.security">Keamanan</string>
+  <string name="ui.app.admin.security.providers">Penyedia</string>
+  <string name="ui.app.admin.security.no_providers">Tidak ada penyedia autentikasi yang dikonfigurasi.</string>
+  <string name="ui.app.admin.security.configure">Konfigurasikan</string>
+  <string name="ui.app.login.provider.local">Lokal</string>
+  <string name="ui.app.login.provider.ldap">LDAP</string>
+  <string name="ui.app.login.provider.toggle.aria">Pilih penyedia autentikasi</string>
+  <string name="ui.app.login.sso.login_with">Masuk dengan {provider}</string>
   <string name="ui.app.demo.switched">Demo: berpindah ke halaman sandbox.</string>
   <string name="ui.app.demo.added">Demo: menambahkan widget progres belajar.</string>
   <string name="ui.app.demo.tweaked">Demo: menyesuaikan konfigurasi widget pertama.</string>

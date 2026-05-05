@@ -8,9 +8,7 @@ import { createModuleRoutes } from "./routes/modules/index.js";
 import { createSystemRoutes } from "./routes/system/index.js";
 import { createDocsRoutes } from "./routes/docs/index.js";
 import { createUiRoutes } from "./routes/ui/index.js";
-import { createAuthRoutes } from "./routes/auth/index.js";
 import { createModuleExtensionRoutes } from "./routes/module-extensions/index.js";
-import type { AuthGateway } from "@cognis/core";
 import type { LocalAccountStore } from "./adapters/local-auth-gateway.js";
 import {
     createPreferencesRoutes,
@@ -25,8 +23,7 @@ import type { UIRegistry } from "./ui-registry.js";
 
 export interface ApiDependencies {
     moduleRuntimeGateway: ModuleRuntimeGateway;
-    authGateway: AuthGateway;
-    accountStore: LocalAccountStore;
+    accountStore?: LocalAccountStore;
     preferenceStore: UserPreferenceStore;
     routeRegistry?: RouteRegistry;
     gatewayRegistry?: GatewayRegistry;
@@ -92,17 +89,14 @@ export function buildServer(deps: ApiDependencies) {
     );
     const docsRoutes = createDocsRoutes();
     const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway, deps.uiRegistry);
-    const authRoutes = createAuthRoutes(
-        deps.authGateway,
-        deps.accountStore,
-        deps.createProfile,
-    );
     const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
-    const userRoutes = createUserRoutes(
-        deps.accountStore,
-        deps.preferenceStore,
-        deps.setProfileRole,
-    );
+    const userRoutes = deps.accountStore
+        ? createUserRoutes(
+              deps.accountStore,
+              deps.preferenceStore,
+              deps.setProfileRole,
+          )
+        : null;
     const gatewayRoutes = deps.gatewayRegistry
         ? createGatewayRoutes(
               deps.gatewayRegistry,
@@ -178,16 +172,6 @@ export function buildServer(deps: ApiDependencies) {
                 return;
             }
 
-            const handledByAuth = await authRoutes(req, res, url);
-            if (handledByAuth) {
-                log("info", "Request handled by auth routes.", {
-                    method: req.method ?? "GET",
-                    path: url.pathname,
-                    durationMs: Date.now() - startedAt,
-                });
-                return;
-            }
-
             const handledByPreferences = await preferencesRoutes(req, res, url);
             if (handledByPreferences) {
                 log("info", "Request handled by preferences routes.", {
@@ -198,14 +182,16 @@ export function buildServer(deps: ApiDependencies) {
                 return;
             }
 
-            const handledByUsers = await userRoutes(req, res, url);
-            if (handledByUsers) {
-                log("info", "Request handled by user routes.", {
-                    method: req.method ?? "GET",
-                    path: url.pathname,
-                    durationMs: Date.now() - startedAt,
-                });
-                return;
+            if (userRoutes) {
+                const handledByUsers = await userRoutes(req, res, url);
+                if (handledByUsers) {
+                    log("info", "Request handled by user routes.", {
+                        method: req.method ?? "GET",
+                        path: url.pathname,
+                        durationMs: Date.now() - startedAt,
+                    });
+                    return;
+                }
             }
 
             if (gatewayRoutes) {

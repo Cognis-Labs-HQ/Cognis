@@ -5,9 +5,7 @@ import type {
     ModuleState,
 } from "@cognis/core";
 import { initializeDatabaseSchema } from "./bootstrap/db-init.js";
-import { LocalAuthGateway } from "./adapters/local-auth-gateway.js";
 import {
-    DbLocalAccountStore,
     createDbExecutor,
     type SupportedDbType,
 } from "./adapters/db/account-store.js";
@@ -22,6 +20,7 @@ import { CapabilityStore } from "./gateway-bootstrap.js";
 import { UIRegistry } from "./ui-registry.js";
 import { bootstrapGateways } from "./gateways/index.js";
 import type { BootstrapLog } from "./gateway-bootstrap.js";
+import type { LocalAccountStore } from "./adapters/local-auth-gateway.js";
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
     private readonly manifests: ModuleManifest[];
@@ -124,10 +123,6 @@ await initializeDatabaseSchema(
 );
 bootstrapLog("info", "Database schema initialised.");
 
-const accountStore = new DbLocalAccountStore(dbExecutor, dbType);
-await accountStore.ensureSchema();
-bootstrapLog("info", "Account schema ensured.");
-const authGateway = new LocalAuthGateway(accountStore);
 const preferenceStore = new DbUserPreferenceStore(dbExecutor, dbType);
 await preferenceStore.ensureSchema();
 bootstrapLog("info", "Preference schema ensured.");
@@ -156,36 +151,6 @@ const adminState = await dbExecutor.execute(
     ["default_admin_initialized"],
 );
 const adminInitialized = adminState.rows?.[0]?.state_value === "true";
-
-if (!adminInitialized) {
-    const adminPassword = LocalAuthGateway.generatePassword();
-    await authGateway.createLocalAdmin("admin", adminPassword);
-    if (dbType === "postgresql") {
-        await dbExecutor.execute(
-            "INSERT INTO bootstrap_state (state_key, state_value) VALUES ($1, $2) ON CONFLICT (state_key) DO UPDATE SET state_value = EXCLUDED.state_value",
-            ["default_admin_initialized", "true"],
-        );
-    } else if (dbType === "sqlite") {
-        await dbExecutor.execute(
-            "INSERT INTO bootstrap_state (state_key, state_value) VALUES (?, ?) ON CONFLICT(state_key) DO UPDATE SET state_value = excluded.state_value",
-            ["default_admin_initialized", "true"],
-        );
-    } else {
-        await dbExecutor.execute(
-            "INSERT INTO bootstrap_state (state_key, state_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE state_value = VALUES(state_value)",
-            ["default_admin_initialized", "true"],
-        );
-    }
-    bootstrapLog("warn", "Default admin account created.", {
-        username: "admin",
-        generatedPassword: adminPassword,
-    });
-} else {
-    bootstrapLog(
-        "info",
-        "Default admin bootstrap skipped (already initialized).",
-    );
-}
 
 const cliTokenPath =
     process.env.COGNIS_CLI_TOKEN_PATH ?? "/app/config/cli-access.token";
@@ -256,6 +221,43 @@ try {
     process.exit(1);
 }
 
+const createLocalAdmin = capabilities.get<
+    (username: string, password: string) => Promise<void>
+>("auth:createLocalAdmin");
+
+if (!adminInitialized && createLocalAdmin) {
+    const { randomBytes } = await import("node:crypto");
+    const adminPassword = randomBytes(12).toString("base64url");
+    await createLocalAdmin("admin", adminPassword);
+    if (dbType === "postgresql") {
+        await dbExecutor.execute(
+            "INSERT INTO bootstrap_state (state_key, state_value) VALUES ($1, $2) ON CONFLICT (state_key) DO UPDATE SET state_value = EXCLUDED.state_value",
+            ["default_admin_initialized", "true"],
+        );
+    } else if (dbType === "sqlite") {
+        await dbExecutor.execute(
+            "INSERT INTO bootstrap_state (state_key, state_value) VALUES (?, ?) ON CONFLICT(state_key) DO UPDATE SET state_value = excluded.state_value",
+            ["default_admin_initialized", "true"],
+        );
+    } else {
+        await dbExecutor.execute(
+            "INSERT INTO bootstrap_state (state_key, state_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE state_value = VALUES(state_value)",
+            ["default_admin_initialized", "true"],
+        );
+    }
+    await log("warn", "Default admin account created.", {
+        username: "admin",
+        generatedPassword: adminPassword,
+    });
+} else if (!adminInitialized) {
+    await log(
+        "warn",
+        "Default admin bootstrap skipped (auth gateway not available).",
+    );
+} else {
+    await log("info", "Default admin bootstrap skipped (already initialized).");
+}
+
 // If a profile-creation capability was contributed, create the initial admin
 // profile now that all gateway schemas are ready.
 const createProfile = capabilities.get<
@@ -265,9 +267,10 @@ if (!adminInitialized && createProfile) {
     await createProfile("admin", "admin", "admin");
 }
 
+const accountStore = capabilities.get<LocalAccountStore>("auth:accountStore");
+
 const server = buildServer({
     moduleRuntimeGateway: runtime,
-    authGateway,
     accountStore,
     preferenceStore,
     routeRegistry,

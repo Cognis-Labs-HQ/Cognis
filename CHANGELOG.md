@@ -7,6 +7,27 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Auth gateway at `src/api/gateways/auth/` with `bootstrap.ts`, `gateway.ts`, and `manifest.json`; self-registers routes and capabilities via `routeRegistry` and `gatewayRegistry`
+- Pluggable auth adapters: `local`, `ldap`, `saml`, and `oidc` under `src/adapters/auth/`; each adapter exposes `createAdapter()`, `getConfigSchema()`, and `configure()`
+- `CoreAuthGateway` class managing adapter registry, enable/disable persistence, and adapter discovery from filesystem
+- Auth gateway contributes `auth:accountStore`, `auth:createLocalAdmin`, and `auth:getLoginMethods` capabilities
+- Admin section UI at `src/api/gateways/auth/ui/admin-section.js` for managing auth providers in the Administration page
+- `GET /api/v1/auth/login-methods` endpoint returning enabled auth providers
+- `GET/PUT /api/v1/gateways/auth/adapters/:id/config` and `POST /api/v1/gateways/auth/adapters/:id/enable|disable` admin endpoints
+- DB migration `003_auth_adapter_configs.sql` for all three DB backends (sqlite, postgresql, mariadb)
+- Login page now fetches login methods and renders a provider toggle for multi-provider login and SSO buttons for OIDC/SAML
+- i18n keys for auth security admin section and login provider labels
+- Tests for all new auth adapters and the auth gateway bootstrap
+
+### Changed
+
+- `authGateway` removed from `ApiDependencies` in `server.ts`; auth routes are now self-registered by the auth gateway via `routeRegistry`
+- `accountStore` made optional in `ApiDependencies`; sourced from `auth:accountStore` capability after gateway bootstrap
+- `buildServer` user routes are now conditionally created based on `accountStore` availability
+- `main.ts` removes direct `LocalAuthGateway` and `DbLocalAccountStore` usage; admin account creation delegates to `auth:createLocalAdmin` capability after gateway bootstrap
+
 ### Changed
 
 - `getCookieSession` and `setPageSecurityHeaders` extracted from duplicated private helpers in `routes/ui/index.ts` and `gateways/profile/bootstrap.ts` into `auth/guard.ts`; both call sites now import the shared functions ([5c08973](https://github.com/le-firehawk/Cognis/commit/5c08973))

@@ -123,6 +123,14 @@
   <string name="ui.app.admin.gateway.no_dependencies">なし</string>
   <string name="ui.app.admin.gateway.adapter_count">アダプター</string>
   <string name="ui.app.admin.gateway.go_to_adapters">アダプターへ</string>
+  <string name="ui.app.admin.security">セキュリティ</string>
+  <string name="ui.app.admin.security.providers">プロバイダー</string>
+  <string name="ui.app.admin.security.no_providers">認証プロバイダーが設定されていません。</string>
+  <string name="ui.app.admin.security.configure">設定</string>
+  <string name="ui.app.login.provider.local">ローカル</string>
+  <string name="ui.app.login.provider.ldap">LDAP</string>
+  <string name="ui.app.login.provider.toggle.aria">認証プロバイダーを選択</string>
+  <string name="ui.app.login.sso.login_with">{provider} でログイン</string>
   <string name="ui.app.demo.switched">デモ: サンドボックスページに切り替えました。</string>
   <string name="ui.app.demo.added">デモ: 学習進捗ウィジェットを追加しました。</string>
   <string name="ui.app.demo.tweaked">デモ: 最初のウィジェット設定を調整しました。</string>

@@ -56,6 +56,7 @@
                         data-i18n="ui.app.login.title"
                     ></h2>
                     <form id="login-form" class="stack login-form">
+                        <input type="hidden" name="provider" value="local" />
                         <label>
                             <span data-i18n="ui.app.login.form.username"></span>
                             <input
@@ -75,6 +76,11 @@
                                 required
                             />
                         </label>
+                        <div
+                            id="auth-provider-toggle"
+                            class="auth-provider-toggle"
+                            style="display: none"
+                        ></div>
                         <button
                             type="submit"
                             data-i18n="ui.app.login.form.submit"
@@ -86,6 +92,7 @@
                         role="status"
                         aria-live="polite"
                     ></p>
+                    <div id="sso-buttons" class="sso-buttons"></div>
                 </main>
             </div>
         </section>

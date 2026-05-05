@@ -123,6 +123,14 @@
   <string name="ui.app.admin.gateway.no_dependencies">Keine</string>
   <string name="ui.app.admin.gateway.adapter_count">Adapter</string>
   <string name="ui.app.admin.gateway.go_to_adapters">Zu den Adaptern</string>
+  <string name="ui.app.admin.security">Sicherheit</string>
+  <string name="ui.app.admin.security.providers">Anbieter</string>
+  <string name="ui.app.admin.security.no_providers">Keine Authentifizierungsanbieter konfiguriert.</string>
+  <string name="ui.app.admin.security.configure">Konfigurieren</string>
+  <string name="ui.app.login.provider.local">Lokal</string>
+  <string name="ui.app.login.provider.ldap">LDAP</string>
+  <string name="ui.app.login.provider.toggle.aria">Authentifizierungsanbieter auswählen</string>
+  <string name="ui.app.login.sso.login_with">Anmelden mit {provider}</string>
   <string name="ui.app.demo.switched">Demo: zur Sandbox-Seite gewechselt.</string>
   <string name="ui.app.demo.added">Demo: ein Lernfortschritts-Widget hinzugefügt.</string>
   <string name="ui.app.demo.tweaked">Demo: die erste Widget-Konfiguration angepasst.</string>
