@@ -44,6 +44,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Admin UI — adapter inline toggle `isEnabled` condition fixed: previously `adapter.enabled !== false` evaluated `true` when `enabled` was `undefined`, causing the slider to always appear checked even after disabling an adapter; now uses `!!adapter.active` which correctly reflects the backend-reported state ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
 - `.switch--inline` — changed from `display: inline-flex` to `display: flex; height: 28px; line-height: 0` so the toggle is reliably vertically centred in the `<summary>` grid in all browsers ([90c6df4](https://github.com/le-firehawk/Cognis/commit/90c6df4))
 - SMTP adapter `getConfig()` now includes `password: ""` so the password field always appears in the adapter settings form; `setConfig()` ignores empty-string password values to avoid overwriting a stored password when the user saves without re-entering it; `saveProviderConfig` strips empty password before persisting to avoid clearing the stored value ([90c6df4](https://github.com/le-firehawk/Cognis/commit/90c6df4))
+- `bootstrapGateways()` sort comparator renamed parameters from `a`/`b` to `entryA`/`entryB` to eliminate single-letter variable ambiguity flagged by the readability lint check ([ee5ac2f](https://github.com/le-firehawk/Cognis/commit/ee5ac2f))
 - `src/api/tests/docs-routes.test.ts`: updated slug assertions to match current directory structure (`components/docs/ui` instead of the stale `docs/components/ui`); both docs tests now pass
 
 ### Changed

@@ -54,12 +54,12 @@ export async function bootstrapGateways(
     // Sort so the logging gateway always bootstraps first (making its logger
     // available via ctx.log), and the db gateway second (so it registers before
     // any gateway that declares it as a dependency).
-    entries.sort((a, b) => {
-        if (a === "logging") return -1;
-        if (b === "logging") return 1;
-        if (a === "db") return -1;
-        if (b === "db") return 1;
-        return a.localeCompare(b);
+    entries.sort((entryA, entryB) => {
+        if (entryA === "logging") return -1;
+        if (entryB === "logging") return 1;
+        if (entryA === "db") return -1;
+        if (entryB === "db") return 1;
+        return entryA.localeCompare(entryB);
     });
 
     for (const entry of entries) {
