@@ -35,6 +35,12 @@
     gap: 4px;
 }
 
+.provider-popup-field input,
+.provider-popup-field select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .provider-fields {
     display: grid;
     grid-template-columns: 1fr 1fr;

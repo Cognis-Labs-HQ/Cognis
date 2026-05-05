@@ -103,7 +103,7 @@ function renderModulesContent(modules) {
           <summary>
             <span class="module-row-title"><strong>${mod.name}</strong></span>
             <span class="state-pill ${pill.className}">${pill.label}</span>
-            <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}" onclick="event.stopPropagation()">
+            <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
               <input type="checkbox" data-module="${mod.id}" ${mod.status === "enabled" ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
               <span class="slider"></span>
             </label>
@@ -162,8 +162,8 @@ function renderGatewayDetailsList(gw) {
 }
 
 function renderAdapterToggle(adapter, gatewayId) {
-    const isEnabled = adapter.active || adapter.enabled !== false;
-    return `<label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_gateway"))}" onclick="event.stopPropagation()">
+    const isEnabled = !!adapter.active;
+    return `<label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_gateway"))}">
       <input type="checkbox" class="adapter-toggle"
         data-adapter="${escapeHtml(adapter.senderId)}"
         data-gateway="${escapeHtml(gatewayId)}"
@@ -183,21 +183,22 @@ function renderInlineAdapters(adapters, gatewayId) {
                 ? i18n.t("ui.app.admin.state.active")
                 : i18n.t("ui.app.admin.state.available");
             return `
-        <div class="adapter-inline-row">
+        <div class="adapter-inline-row" role="button" tabindex="0"
+          data-adapter-id="${escapeHtml(adapter.senderId)}"
+          data-gateway-id="${escapeHtml(gatewayId)}">
           <span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapter.senderId)}</strong></span>
           <span class="state-pill ${statePillClass}">${stateLabel}</span>
           ${renderAdapterToggle(adapter, gatewayId)}
-          <button
-            class="btn-animated adapter-configure-btn"
-            type="button"
-            data-adapter-id="${escapeHtml(adapter.senderId)}"
-            data-gateway-id="${escapeHtml(gatewayId)}"
-          >${i18n.t("ui.reuse.generic.configure")}</button>
         </div>
       `;
         })
         .join("");
-    return `<div class="gateway-adapters-inline">${rows}</div>`;
+    return `
+      <div class="gateway-adapters-section">
+        <span class="gateway-adapters-label">${i18n.t("ui.app.admin.adapters")}</span>
+        <div class="gateway-adapters-inline">${rows}</div>
+      </div>
+    `;
 }
 
 function renderGatewaysContent(gateways, allAdapters) {
@@ -218,7 +219,7 @@ function renderGatewaysContent(gateways, allAdapters) {
           <summary>
             <span class="module-row-title"><strong>${escapeHtml(gw.name)}</strong></span>
             <span class="state-pill ${pill.className}">${pill.label}</span>
-            <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}" onclick="event.stopPropagation()">
+            <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
               <input type="checkbox" data-gateway="${escapeHtml(gw.id)}" ${isEnabled ? "checked" : ""} />
               <span class="slider"></span>
             </label>
@@ -362,10 +363,20 @@ function bindGatewayToggles() {
     );
 }
 
+function bindSummarySliderClicks() {
+    root.querySelectorAll(".module-row summary .switch--inline").forEach(
+        (label) => {
+            label.addEventListener("click", (e) => {
+                e.stopPropagation();
+            });
+        },
+    );
+}
+
 function bindGatewayAdapterButtons() {
     // This function is intentionally empty — adapters are now rendered inline.
     // Previously it managed a collapsible panel; that pattern is replaced by
-    // renderInlineAdapters + bindAdapterConfigureButtons.
+    // renderInlineAdapters + bindAdapterRows.
 }
 
 async function toggleAdapter(gatewayId, adapterId, action) {
@@ -392,13 +403,13 @@ function bindAdapterToggles() {
     });
 }
 
-function bindAdapterConfigureButtons() {
+function bindAdapterRows() {
     root.querySelectorAll(
-        ".adapter-configure-btn[data-adapter-id][data-gateway-id]",
-    ).forEach((btn) => {
-        if (!(btn instanceof HTMLElement)) return;
-        const adapterId = btn.dataset.adapterId;
-        const gatewayId = btn.dataset.gatewayId;
+        ".adapter-inline-row[data-adapter-id][data-gateway-id]",
+    ).forEach((row) => {
+        if (!(row instanceof HTMLElement)) return;
+        const adapterId = row.dataset.adapterId;
+        const gatewayId = row.dataset.gatewayId;
         if (!adapterId || !gatewayId) return;
 
         const adapter = allAdapters.find(
@@ -407,7 +418,10 @@ function bindAdapterConfigureButtons() {
                 a._gatewayId === gatewayId,
         ) ?? { senderId: adapterId, name: adapterId };
 
-        btn.addEventListener("click", async () => {
+        async function handleOpen(e) {
+            const toggle = row.querySelector(".adapter-toggle");
+            if (toggle && (e.target === toggle || toggle.contains(e.target)))
+                return;
             await openAdapterConfig(
                 gatewayId,
                 adapterId,
@@ -415,6 +429,14 @@ function bindAdapterConfigureButtons() {
             );
             allAdapters = await loadAllAdapters(gateways);
             composer.refresh(elements);
+        }
+
+        row.addEventListener("click", handleOpen);
+        row.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleOpen(e);
+            }
         });
     });
 }
@@ -555,7 +577,6 @@ function renderGenericAdapterForm(descriptors, requiredFields) {
     });
 
     const hasSecure = "secure" in descriptors;
-    const hasAuthDisabled = "authDisabled" in descriptors;
     const authFieldKeys = textFieldKeys.filter((name) =>
         authFieldNames.has(name),
     );
@@ -651,8 +672,8 @@ function renderGenericAdapterForm(descriptors, requiredFields) {
         ${secureFieldHtml}
         ${nonAuthFieldsHtml}
       </div>
-      ${boolFieldsHtml}
       ${authFieldsBlock}
+      ${boolFieldsHtml}
       <div class="provider-test-row">
         <input class="provider-test-input" type="email" placeholder="${escapeHtml(i18n.t("ui.app.admin.notif.test_email_to"))}" />
         <button class="btn-animated provider-test-btn" type="button">${i18n.t("ui.app.admin.notif.test_email")}</button>
@@ -935,7 +956,8 @@ const baseElements = [
                 bindModuleToggles();
                 bindGatewayToggles();
                 bindAdapterToggles();
-                bindAdapterConfigureButtons();
+                bindAdapterRows();
+                bindSummarySliderClicks();
                 bindDependencyLinks();
             },
         },

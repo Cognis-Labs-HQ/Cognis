@@ -22,13 +22,18 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
-- Admin UI — module and gateway enable/disable sliders moved into `<summary>` (next to title) with `onclick="event.stopPropagation()"` so clicking the slider does not expand or collapse the row ([3adec54](https://github.com/le-firehawk/Cognis/commit/3adec54))
-- Admin UI — gateway "Required" field now displays "True" / "False" text (via new i18n keys) instead of repurposing the Active/Disabled pill labels ([3adec54](https://github.com/le-firehawk/Cognis/commit/3adec54))
-- Admin UI — adapter count row removed from gateway details; adapters are now listed inline as rows with a per-adapter enable/disable slider and a "Configure" button that opens the adapter settings popup ([3adec54](https://github.com/le-firehawk/Cognis/commit/3adec54))
-- Notify gateway `ctx.gatewayRegistry.register()` call now includes `hasAdapters: true`; previously the field was absent, causing `loadAllAdapters()` to skip the notify gateway and show zero adapters in the admin UI ([3adec54](https://github.com/le-firehawk/Cognis/commit/3adec54))
+- Admin UI — module and gateway enable/disable sliders moved into `<summary>` (next to title); inline `onclick="event.stopPropagation()"` removed (CSP violation) — replaced by `bindSummarySliderClicks()` which attaches click listeners programmatically ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
+- Admin UI — gateway "Required" field now displays "True" / "False" text (via new i18n keys) instead of repurposing the Active/Disabled pill labels ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
+- Admin UI — adapter inline rows are now clickable (entire row opens the settings popup); "Configure" button removed; row has hover/focus styles; clicking the enable/disable toggle within the row does not open the popup ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
+- Admin UI — "Adapters" label shown above the inline adapter list (only when adapters are present) ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
+- Admin UI — SMTP adapter popup: `user`/`password` fields moved into the main `.provider-fields` grid (above the "Disable Authentication" toggle) rather than below it ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
+- Admin UI — SMTP adapter popup: `<select>` dropdown now fills the full width of its grid cell via `.provider-popup-field input, .provider-popup-field select { width: 100%; }` ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
+- Notify gateway `ctx.gatewayRegistry.register()` call now includes `hasAdapters: true`; previously the field was absent, causing `loadAllAdapters()` to skip the notify gateway and show zero adapters in the admin UI ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
 
 ### Fixed
 
+- Admin UI — adapter inline toggle `isEnabled` condition fixed: previously `adapter.enabled !== false` evaluated `true` when `enabled` was `undefined`, causing the slider to always appear checked even after disabling an adapter; now uses `adapter.active === true` which correctly reflects the backend-reported state ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
+- `.switch--inline` gains `align-self: center` so the toggle is vertically centred in the `<summary>` grid alongside the status pill and chevron ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
 - `src/api/tests/docs-routes.test.ts`: updated slug assertions to match current directory structure (`components/docs/ui` instead of the stale `docs/components/ui`); both docs tests now pass
 
 ### Changed

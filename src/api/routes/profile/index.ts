@@ -80,6 +80,10 @@ async function canViewProfile(
  * @param fileGateway  - Optional file storage gateway. When absent, avatar and
  *   banner mutation routes return `503 file_storage_unavailable` instead of
  *   being unregistered, so callers receive an explicit error rather than a 404.
+ * @param isGatewayEnabled - Optional callback returning whether the profile
+ *   gateway is currently active. When supplied and returns `false`, the
+ *   `/api/v1/profile/ping` endpoint returns `503` so callers can detect that
+ *   profile functionality is temporarily unavailable.
  */
 export function createProfileRoutes(
     profileStore: DbProfileStore,

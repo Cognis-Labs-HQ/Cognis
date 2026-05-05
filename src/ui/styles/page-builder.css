@@ -283,10 +283,24 @@ code {
 
 .switch--inline {
     margin-top: 0;
+    align-self: center;
+}
+
+.gateway-adapters-section {
+    margin-top: 16px;
+}
+
+.gateway-adapters-label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
 }
 
 .gateway-adapters-inline {
-    margin-top: 16px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -300,6 +314,20 @@ code {
     border: 1px solid var(--border);
     border-radius: 8px;
     background: var(--surface-1);
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease;
+}
+
+.adapter-inline-row:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-soft);
+}
+
+.adapter-inline-row:focus {
+    outline: 2px solid var(--accent, #3b82f6);
+    outline-offset: 2px;
 }
 
 .adapter-inline-name {
@@ -312,10 +340,6 @@ code {
 
 .adapter-toggle {
     display: none;
-}
-
-.adapter-configure-btn {
-    flex-shrink: 0;
 }
 
 .module-row[open] .module-chevron {
