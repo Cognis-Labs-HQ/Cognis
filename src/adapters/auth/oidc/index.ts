@@ -2,7 +2,7 @@ import type { AuthContext } from "@cognis/core";
 import type {
     AuthProviderAdapter,
     AuthConfigField,
-} from "../../../api/gateways/auth/gateway.js";
+} from "../../../gateways/auth/gateway.js";
 
 export interface OidcTokenClaims {
     sub: string;

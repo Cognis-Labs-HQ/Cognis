@@ -1,12 +1,15 @@
-import { DbProfileStore } from "../../adapters/db/profile-store.js";
-import { createProfileRoutes } from "../../routes/profile/index.js";
-import { createSocialRoutes } from "../../routes/social/index.js";
-import { createPostRoutes } from "../../routes/posts/index.js";
-import { createFileRoutes } from "../../routes/files/index.js";
+import { DbProfileStore } from "../../api/adapters/db/profile-store.js";
+import { createProfileRoutes } from "../../api/routes/profile/index.js";
+import { createSocialRoutes } from "../../api/routes/social/index.js";
+import { createPostRoutes } from "../../api/routes/posts/index.js";
+import { createFileRoutes } from "../../api/routes/files/index.js";
 import type { FileStorageGateway } from "@cognis/core";
-import type { GatewayBootstrapContext } from "../../gateway-bootstrap.js";
-import { getCookieSession, setPageSecurityHeaders } from "../../auth/guard.js";
-import type { AccountRole } from "../../adapters/db/profile-store.js";
+import type { GatewayBootstrapContext } from "../../api/gateway-bootstrap.js";
+import {
+    getCookieSession,
+    setPageSecurityHeaders,
+} from "../../api/auth/guard.js";
+import type { AccountRole } from "../../api/adapters/db/profile-store.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";

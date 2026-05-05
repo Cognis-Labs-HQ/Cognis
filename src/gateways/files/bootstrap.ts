@@ -1,5 +1,5 @@
-import { LocalFileGateway } from "../../../adapters/file-local/local-file-gateway.js";
-import type { GatewayBootstrapContext } from "../../gateway-bootstrap.js";
+import { LocalFileGateway } from "../../adapters/file-local/local-file-gateway.js";
+import type { GatewayBootstrapContext } from "../../api/gateway-bootstrap.js";
 
 /**
  * Standard gateway bootstrap entry point for local file storage. Reads the

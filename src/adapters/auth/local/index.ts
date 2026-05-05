@@ -4,7 +4,7 @@ import type { LocalAccountStore } from "../../../api/adapters/local-auth-gateway
 import type {
     AuthProviderAdapter,
     AuthConfigField,
-} from "../../../api/gateways/auth/gateway.js";
+} from "../../../gateways/auth/gateway.js";
 
 export interface LocalAuthAdapter extends AuthProviderAdapter {
     register(

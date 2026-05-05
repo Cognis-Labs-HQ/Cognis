@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GatewayRegistry } from "../../../gateway-registry.js";
-import { RouteRegistry } from "../../../route-registry.js";
-import { CapabilityStore } from "../../../gateway-bootstrap.js";
+import { GatewayRegistry } from "../../../api/gateway-registry.js";
+import { RouteRegistry } from "../../../api/route-registry.js";
+import { CapabilityStore } from "../../../api/gateway-bootstrap.js";
 import { bootstrap } from "../bootstrap.js";
-import { issueAccessToken } from "../../../auth/access-tokens.js";
+import { issueAccessToken } from "../../../api/auth/access-tokens.js";
 
 function makeInMemoryDb() {
     return {

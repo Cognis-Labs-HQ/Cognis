@@ -4,8 +4,8 @@ import path from "node:path";
 import type {
     DbExecutor,
     SupportedDbType,
-} from "../../adapters/db/account-store.js";
-import type { LocalAccountStore } from "../../adapters/local-auth-gateway.js";
+} from "../../api/adapters/db/account-store.js";
+import type { LocalAccountStore } from "../../api/adapters/local-auth-gateway.js";
 
 export interface AuthConfigField {
     key: string;

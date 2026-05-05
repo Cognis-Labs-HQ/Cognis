@@ -1,21 +1,21 @@
 import path from "node:path";
-import { requireAuth, getAuthClaims } from "../../auth/guard.js";
-import { readJson } from "../../routes/read-json.js";
+import { requireAuth, getAuthClaims } from "../../api/auth/guard.js";
+import { readJson } from "../../api/routes/read-json.js";
 import { CoreNotificationGateway } from "./gateway.js";
 import {
     DbNotificationStore,
     DbNotificationPreferenceStore,
-} from "../../adapters/db/notification-store.js";
-import { TfaCodeService, InMemoryTfaStore } from "../../utils/tfa-code.js";
+} from "../../api/adapters/db/notification-store.js";
+import { TfaCodeService, InMemoryTfaStore } from "../../api/utils/tfa-code.js";
 import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
-} from "../../utils/verify-token.js";
-import type { GatewayBootstrapContext } from "../../gateway-bootstrap.js";
-import type { GatewayRegistry } from "../../gateway-registry.js";
-import { createNotificationRoutes } from "../../routes/notifications/index.js";
+} from "../../api/utils/verify-token.js";
+import type { GatewayBootstrapContext } from "../../api/gateway-bootstrap.js";
+import type { GatewayRegistry } from "../../api/gateway-registry.js";
+import { createNotificationRoutes } from "../../api/routes/notifications/index.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { DbNotificationStore as IDbNotificationStore } from "../../adapters/db/notification-store.js";
+import type { DbNotificationStore as IDbNotificationStore } from "../../api/adapters/db/notification-store.js";
 
 /**
  * Standard gateway bootstrap entry point. Discovers notification adapters,

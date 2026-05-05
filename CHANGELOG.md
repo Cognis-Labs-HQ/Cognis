@@ -7,6 +7,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Moved all gateways from `src/api/gateways/` to a top-level `src/gateways/` directory, mirroring the `src/adapters/` layout; default `COGNIS_GATEWAYS_ROOT` updated accordingly ([e7f0413](https://github.com/le-firehawk/Cognis/commit/e7f0413))
+
 ### Added
 
 - Auth gateway at `src/api/gateways/auth/` with `bootstrap.ts`, `gateway.ts`, and `manifest.json`; self-registers routes and capabilities via `routeRegistry` and `gatewayRegistry`

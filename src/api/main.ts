@@ -18,7 +18,7 @@ import { RouteRegistry } from "./route-registry.js";
 import { GatewayRegistry } from "./gateway-registry.js";
 import { CapabilityStore } from "./gateway-bootstrap.js";
 import { UIRegistry } from "./ui-registry.js";
-import { bootstrapGateways } from "./gateways/index.js";
+import { bootstrapGateways } from "../gateways/index.js";
 import type { BootstrapLog } from "./gateway-bootstrap.js";
 import type { LocalAccountStore } from "./adapters/local-auth-gateway.js";
 
@@ -186,7 +186,7 @@ const adaptersRoot =
 
 const gatewaysRoot =
     process.env.COGNIS_GATEWAYS_ROOT ??
-    path.resolve(process.cwd(), "src", "api", "gateways");
+    path.resolve(process.cwd(), "src", "gateways");
 
 const requiredGatewayIds = await bootstrapGateways(
     {

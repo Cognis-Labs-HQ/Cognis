@@ -4,7 +4,7 @@ import { pathToFileURL } from "node:url";
 import type {
     GatewayBootstrapContext,
     BootstrapLog,
-} from "../gateway-bootstrap.js";
+} from "../api/gateway-bootstrap.js";
 
 interface GatewayDirectoryManifest {
     id?: string;

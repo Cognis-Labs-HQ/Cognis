@@ -1,16 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserEmailRoutes } from "../bootstrap.js";
-import { DbNotificationStore } from "../../../adapters/db/notification-store.js";
-import { SqliteExecutor } from "../../../adapters/db/account-store.js";
-import { TfaCodeService, InMemoryTfaStore } from "../../../utils/tfa-code.js";
+import { DbNotificationStore } from "../../../api/adapters/db/notification-store.js";
+import { SqliteExecutor } from "../../../api/adapters/db/account-store.js";
+import {
+    TfaCodeService,
+    InMemoryTfaStore,
+} from "../../../api/utils/tfa-code.js";
 import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
-} from "../../../utils/verify-token.js";
+} from "../../../api/utils/verify-token.js";
 import { CoreNotificationGateway } from "../gateway.js";
 import { VolatileNotificationPreferenceStore } from "../gateway.js";
-import { issueAccessToken } from "../../../auth/access-tokens.js";
+import { issueAccessToken } from "../../../api/auth/access-tokens.js";
 
 async function makeNotifStore(): Promise<DbNotificationStore> {
     const db = new SqliteExecutor(":memory:");

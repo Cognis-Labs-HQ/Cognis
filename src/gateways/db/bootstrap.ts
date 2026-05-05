@@ -1,4 +1,4 @@
-import type { GatewayBootstrapContext } from "../../gateway-bootstrap.js";
+import type { GatewayBootstrapContext } from "../../api/gateway-bootstrap.js";
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
