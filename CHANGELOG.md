@@ -7,6 +7,14 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- `getCookieSession` and `setPageSecurityHeaders` extracted from duplicated private helpers in `routes/ui/index.ts` and `gateways/profile/bootstrap.ts` into `auth/guard.ts`; both call sites now import the shared functions ([5c08973](https://github.com/le-firehawk/Cognis/commit/5c08973))
+- `as any` casts for `AccountRole` in `gateways/profile/bootstrap.ts` replaced with the exported `AccountRole` type ([5c08973](https://github.com/le-firehawk/Cognis/commit/5c08973))
+- Dual `readRawBody`/`readJson` imports from the same module in `routes/profile/index.ts` merged into a single import statement ([5c08973](https://github.com/le-firehawk/Cognis/commit/5c08973))
+- Comment in `main.ts` that named the profile gateway replaced with a gateway-agnostic description ([5c08973](https://github.com/le-firehawk/Cognis/commit/5c08973))
+- CSS comments removed from `styles/base/layout.css` and `styles/base/theme.css` per codebase convention ([5c08973](https://github.com/le-firehawk/Cognis/commit/5c08973))
+
 ### Fixed
 
 - Profile page routes (`/profile/:handle`) now return 404 when the profile gateway is disabled, preventing the profile SPA from loading while the gateway is off ([9e8abf0](https://github.com/le-firehawk/Cognis/commit/9e8abf0))

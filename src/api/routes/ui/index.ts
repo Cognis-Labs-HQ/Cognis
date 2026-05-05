@@ -1,8 +1,11 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { verifyAccessToken } from "../../auth/access-tokens.js";
-import { requireAuth } from "../../auth/guard.js";
+import {
+    requireAuth,
+    getCookieSession,
+    setPageSecurityHeaders,
+} from "../../auth/guard.js";
 import type { ModuleRuntimeGateway } from "@cognis/core";
 import type { UIRegistry } from "../../ui-registry.js";
 
@@ -12,16 +15,6 @@ const PUBLIC_ROOT = path.join(UI_ROOT, "public");
 const MODULES_ROOT =
     process.env.COGNIS_MODULES_ROOT ??
     path.resolve(process.cwd(), "src", "modules");
-
-function setSecurityHeaders(res: ServerResponse) {
-    res.setHeader("x-content-type-options", "nosniff");
-    res.setHeader("x-frame-options", "DENY");
-    res.setHeader("referrer-policy", "no-referrer");
-    res.setHeader(
-        "content-security-policy",
-        "default-src 'self'; img-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'",
-    );
-}
 
 function resolveContentType(filePath: string) {
     const ext = path.extname(filePath);
@@ -36,25 +29,6 @@ function resolveContentType(filePath: string) {
     return "image/png";
 }
 
-function getCookie(req: IncomingMessage, name: string) {
-    const cookie = req.headers.cookie ?? "";
-    const match = cookie.match(new RegExp(`(?:^|; )${name}=([^;]+)`));
-    return match ? decodeURIComponent(match[1]) : null;
-}
-
-function getSessionClaims(req: IncomingMessage) {
-    const token = getCookie(req, "cognis_access_token");
-    return token ? verifyAccessToken(token) : null;
-}
-
-function isLoggedIn(req: IncomingMessage) {
-    return Boolean(getSessionClaims(req));
-}
-
-function isAdmin(req: IncomingMessage) {
-    return getSessionClaims(req)?.role === "admin";
-}
-
 async function serveFile(
     res: ServerResponse,
     filePath: string,
@@ -62,7 +36,7 @@ async function serveFile(
 ) {
     try {
         const file = await readFile(filePath);
-        setSecurityHeaders(res);
+        setPageSecurityHeaders(res);
         res.writeHead(200, {
             "content-type": contentType,
             "cache-control": "no-store",
@@ -94,7 +68,7 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/dashboard") {
-            if (!isLoggedIn(req)) {
+            if (!getCookieSession(req)) {
                 res.writeHead(302, { location: "/login" });
                 res.end();
                 return true;
@@ -127,7 +101,7 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/settings") {
-            if (!isLoggedIn(req)) {
+            if (!getCookieSession(req)) {
                 res.writeHead(302, { location: "/login" });
                 res.end();
                 return true;
@@ -142,12 +116,12 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/administration") {
-            if (!isLoggedIn(req)) {
+            if (!getCookieSession(req)) {
                 res.writeHead(302, { location: "/login" });
                 res.end();
                 return true;
             }
-            if (!isAdmin(req)) {
+            if (getCookieSession(req)?.role !== "admin") {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
@@ -162,12 +136,12 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/modules") {
-            if (!isLoggedIn(req)) {
+            if (!getCookieSession(req)) {
                 res.writeHead(302, { location: "/login" });
                 res.end();
                 return true;
             }
-            if (!isAdmin(req)) {
+            if (getCookieSession(req)?.role !== "admin") {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
@@ -179,7 +153,7 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/docs") {
-            if (!isLoggedIn(req)) {
+            if (!getCookieSession(req)) {
                 res.writeHead(302, { location: "/login" });
                 res.end();
                 return true;
@@ -193,7 +167,7 @@ export function createUiRoutes(
             return true;
         }
 
-        if (runtime && isLoggedIn(req)) {
+        if (runtime && getCookieSession(req)) {
             const manifests = await runtime.listManifests();
 
             for (const manifest of manifests) {

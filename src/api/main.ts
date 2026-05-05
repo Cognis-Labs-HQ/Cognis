@@ -256,8 +256,8 @@ try {
     process.exit(1);
 }
 
-// If the profile gateway is present, contribute the admin profile after the
-// gateway itself has initialized (so schema is ready).
+// If a profile-creation capability was contributed, create the initial admin
+// profile now that all gateway schemas are ready.
 const createProfile = capabilities.get<
     (accountId: string, handle: string, role?: string) => Promise<void>
 >("profile:createProfile");

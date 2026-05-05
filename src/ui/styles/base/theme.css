@@ -1,6 +1,5 @@
 :root {
     --app-font: Orbitron;
-    /* Default font size in rem; the JS preference system overrides this with pt units at runtime. */
     --app-font-size: 1.17rem;
     --bg:
         radial-gradient(

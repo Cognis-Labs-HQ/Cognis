@@ -5,40 +5,13 @@ import { createPostRoutes } from "../../routes/posts/index.js";
 import { createFileRoutes } from "../../routes/files/index.js";
 import type { FileStorageGateway } from "@cognis/core";
 import type { GatewayBootstrapContext } from "../../gateway-bootstrap.js";
-import { verifyAccessToken } from "../../auth/access-tokens.js";
+import { getCookieSession, setPageSecurityHeaders } from "../../auth/guard.js";
+import type { AccountRole } from "../../adapters/db/profile-store.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
-
-function setSecurityHeaders(res: ServerResponse) {
-    res.setHeader("x-content-type-options", "nosniff");
-    res.setHeader("x-frame-options", "DENY");
-    res.setHeader("referrer-policy", "no-referrer");
-    res.setHeader(
-        "content-security-policy",
-        "default-src 'self'; img-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'",
-    );
-}
-
-function getCookie(req: IncomingMessage, name: string) {
-    const cookie = req.headers.cookie ?? "";
-    const match = cookie.match(new RegExp(`(?:^|; )${name}=([^;]+)`));
-    return match ? decodeURIComponent(match[1]) : null;
-}
-
-function isLoggedIn(req: IncomingMessage) {
-    const token = getCookie(req, "cognis_access_token");
-    return Boolean(token && verifyAccessToken(token));
-}
-
-function getLoggedInSub(req: IncomingMessage): string | null {
-    const token = getCookie(req, "cognis_access_token");
-    if (!token) return null;
-    const claims = verifyAccessToken(token);
-    return claims ? claims.sub : null;
-}
 
 /**
  * Creates page-serving route handlers for the profile SPA pages.
@@ -60,14 +33,14 @@ export function createProfilePageRoutes(isGatewayEnabled?: () => boolean) {
         if (isGatewayEnabled && !isGatewayEnabled()) return false;
 
         if (url.pathname === "/profile") {
-            if (!isLoggedIn(req)) {
+            const session = getCookieSession(req);
+            if (!session) {
                 res.writeHead(302, { location: "/login" });
                 res.end();
                 return true;
             }
-            const sub = getLoggedInSub(req);
             res.writeHead(302, {
-                location: `/profile/${encodeURIComponent(sub!)}`,
+                location: `/profile/${encodeURIComponent(session.sub)}`,
             });
             res.end();
             return true;
@@ -77,7 +50,7 @@ export function createProfilePageRoutes(isGatewayEnabled?: () => boolean) {
             url.pathname.startsWith("/profile/") &&
             url.pathname.length > "/profile/".length
         ) {
-            if (!isLoggedIn(req)) {
+            if (!getCookieSession(req)) {
                 res.writeHead(302, { location: "/login" });
                 res.end();
                 return true;
@@ -89,7 +62,7 @@ export function createProfilePageRoutes(isGatewayEnabled?: () => boolean) {
                     "profile.html",
                 );
                 const file = await readFile(filePath);
-                setSecurityHeaders(res);
+                setPageSecurityHeaders(res);
                 res.writeHead(200, {
                     "content-type": "text/html; charset=utf-8",
                     "cache-control": "no-store",
@@ -147,7 +120,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             await profileStore.createProfile(
                 accountId,
                 handle,
-                (role as any) ?? "user",
+                (role as AccountRole) ?? "user",
             );
         },
     );
@@ -155,7 +128,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute(
         "profile:setRoleByHandle",
         async (handle: string, role: string): Promise<void> => {
-            await profileStore.setRoleByHandle(handle, role as any);
+            await profileStore.setRoleByHandle(handle, role as AccountRole);
         },
     );
 

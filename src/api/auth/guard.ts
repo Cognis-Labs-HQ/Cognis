@@ -46,3 +46,32 @@ export function requireAuth(
     }
     return claims;
 }
+
+/**
+ * Reads the session cookie and returns the session claims, or null when the
+ * visitor is not logged in or the token is invalid. Used by page-serving
+ * routes to gate HTML delivery behind authentication.
+ */
+export function getCookieSession(req: IncomingMessage): AuthClaims | null {
+    const cookie = req.headers.cookie ?? "";
+    const match = cookie.match(/(?:^|; )cognis_access_token=([^;]+)/);
+    if (!match) return null;
+    const token = decodeURIComponent(match[1]);
+    const access = verifyAccessToken(token);
+    if (!access) return null;
+    return { sub: access.sub, role: access.role };
+}
+
+/**
+ * Applies the standard security response headers for pages served as HTML.
+ * Call this before writing a 200 response body for any HTML page route.
+ */
+export function setPageSecurityHeaders(res: ServerResponse): void {
+    res.setHeader("x-content-type-options", "nosniff");
+    res.setHeader("x-frame-options", "DENY");
+    res.setHeader("referrer-policy", "no-referrer");
+    res.setHeader(
+        "content-security-policy",
+        "default-src 'self'; img-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'",
+    );
+}
