@@ -6,19 +6,19 @@
             "path": "./src/core"
         },
         {
-            "path": "./src/adapters/file-local"
+            "path": "./src/adapters/file/local"
         },
         {
-            "path": "./src/adapters/db-memory"
+            "path": "./src/adapters/db/memory"
         },
         {
-            "path": "./src/adapters/db-sqlite"
+            "path": "./src/adapters/db/sqlite"
         },
         {
-            "path": "./src/adapters/db-postgres"
+            "path": "./src/adapters/db/postgres"
         },
         {
-            "path": "./src/adapters/db-mariadb"
+            "path": "./src/adapters/db/mariadb"
         },
         {
             "path": "./src/api"
