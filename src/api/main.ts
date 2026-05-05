@@ -19,6 +19,7 @@ import { createHash } from "node:crypto";
 import { RouteRegistry } from "./route-registry.js";
 import { GatewayRegistry } from "./gateway-registry.js";
 import { CapabilityStore } from "./gateway-bootstrap.js";
+import { UIRegistry } from "./ui-registry.js";
 import { bootstrapGateways } from "./gateways/index.js";
 import type { BootstrapLog } from "./gateway-bootstrap.js";
 
@@ -212,6 +213,7 @@ bootstrapLog("info", "Module runtime bootstrapped.");
 const routeRegistry = new RouteRegistry();
 const gatewayRegistry = new GatewayRegistry();
 const capabilities = new CapabilityStore();
+const uiRegistry = new UIRegistry();
 
 const adaptersRoot =
     process.env.COGNIS_ADAPTERS_ROOT ??
@@ -229,6 +231,7 @@ const requiredGatewayIds = await bootstrapGateways(
         routeRegistry,
         gatewayRegistry,
         capabilities,
+        uiRegistry,
     },
     gatewaysRoot,
 );
@@ -270,6 +273,7 @@ const server = buildServer({
     preferenceStore,
     routeRegistry,
     gatewayRegistry,
+    uiRegistry,
     log,
     createProfile,
     setProfileRole: capabilities.get<

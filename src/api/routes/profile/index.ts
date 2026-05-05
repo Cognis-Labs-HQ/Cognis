@@ -75,7 +75,7 @@ async function canViewProfile(
 
 export function createProfileRoutes(
     profileStore: DbProfileStore,
-    fileGateway: FileStorageGateway,
+    fileGateway?: FileStorageGateway,
 ) {
     return async (
         req: IncomingMessage,
@@ -83,6 +83,13 @@ export function createProfileRoutes(
         url: URL,
     ): Promise<boolean> => {
         const claims = getAuthClaims(req);
+
+        if (url.pathname === "/api/v1/profile/ping" && req.method === "GET") {
+            if (!requireAuth(req, res, "user")) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { available: true } }));
+            return true;
+        }
 
         if (url.pathname === "/api/v1/profile" && req.method === "GET") {
             if (!requireAuth(req, res, "user")) return true;
@@ -168,6 +175,18 @@ export function createProfileRoutes(
 
         if (url.pathname === "/api/v1/profile/avatar" && req.method === "PUT") {
             if (!requireAuth(req, res, "user")) return true;
+            if (!fileGateway) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "file_storage_unavailable",
+                            message: "File storage is not configured.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const mime = (req.headers["content-type"] ?? "")
                 .split(";")[0]
                 .trim()
@@ -219,6 +238,18 @@ export function createProfileRoutes(
             req.method === "DELETE"
         ) {
             if (!requireAuth(req, res, "user")) return true;
+            if (!fileGateway) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "file_storage_unavailable",
+                            message: "File storage is not configured.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const profile = await profileStore.getProfile(claims!.sub);
             if (profile?.avatarKey) await fileGateway.delete(profile.avatarKey);
             await profileStore.updateProfile(claims!.sub, { avatarKey: null });
@@ -229,6 +260,18 @@ export function createProfileRoutes(
 
         if (url.pathname === "/api/v1/profile/banner" && req.method === "PUT") {
             if (!requireAuth(req, res, "user")) return true;
+            if (!fileGateway) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "file_storage_unavailable",
+                            message: "File storage is not configured.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const mime = (req.headers["content-type"] ?? "")
                 .split(";")[0]
                 .trim()
@@ -280,6 +323,18 @@ export function createProfileRoutes(
             req.method === "DELETE"
         ) {
             if (!requireAuth(req, res, "user")) return true;
+            if (!fileGateway) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "file_storage_unavailable",
+                            message: "File storage is not configured.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const profile = await profileStore.getProfile(claims!.sub);
             if (profile?.bannerKey) await fileGateway.delete(profile.bannerKey);
             await profileStore.updateProfile(claims!.sub, { bannerKey: null });

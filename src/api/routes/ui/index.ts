@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { verifyAccessToken } from "../../auth/access-tokens.js";
 import type { ModuleRuntimeGateway } from "@cognis/core";
+import type { UIRegistry } from "../../ui-registry.js";
 
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
@@ -76,7 +77,10 @@ async function serveFile(
     }
 }
 
-export function createUiRoutes(runtime?: ModuleRuntimeGateway) {
+export function createUiRoutes(
+    runtime?: ModuleRuntimeGateway,
+    uiRegistry?: UIRegistry,
+) {
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -173,39 +177,6 @@ export function createUiRoutes(runtime?: ModuleRuntimeGateway) {
             return true;
         }
 
-        if (url.pathname === "/profile") {
-            if (!isLoggedIn(req)) {
-                res.writeHead(302, { location: "/login" });
-                res.end();
-                return true;
-            }
-
-            const claims = getSessionClaims(req);
-            res.writeHead(302, {
-                location: `/profile/${encodeURIComponent(claims!.sub)}`,
-            });
-            res.end();
-            return true;
-        }
-
-        if (
-            url.pathname.startsWith("/profile/") &&
-            url.pathname.length > "/profile/".length
-        ) {
-            if (!isLoggedIn(req)) {
-                res.writeHead(302, { location: "/login" });
-                res.end();
-                return true;
-            }
-
-            await serveFile(
-                res,
-                path.join(PUBLIC_ROOT, "pages", "profile.html"),
-                "text/html; charset=utf-8",
-            );
-            return true;
-        }
-
         if (url.pathname === "/docs") {
             if (!isLoggedIn(req)) {
                 res.writeHead(302, { location: "/login" });
@@ -257,6 +228,38 @@ export function createUiRoutes(runtime?: ModuleRuntimeGateway) {
                     // ignore missing/invalid module route declarations
                 }
             }
+        }
+
+        if (url.pathname.startsWith("/static/gateways/")) {
+            const rest = url.pathname.slice("/static/gateways/".length);
+            const slashIdx = rest.indexOf("/");
+            if (slashIdx > 0) {
+                const gatewayId = rest.slice(0, slashIdx);
+                const filePart = rest.slice(slashIdx + 1);
+                const dir = uiRegistry?.getStaticDir(gatewayId);
+                if (
+                    dir &&
+                    /^[a-zA-Z0-9_./-]+$/.test(filePart) &&
+                    !filePart.includes("..")
+                ) {
+                    await serveFile(
+                        res,
+                        path.join(dir, filePart),
+                        resolveContentType(filePart),
+                    );
+                    return true;
+                }
+            }
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "not_found",
+                        message: "Gateway asset not found.",
+                    },
+                }),
+            );
+            return true;
         }
 
         if (!url.pathname.startsWith("/static/")) return false;

@@ -3,7 +3,6 @@ import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
-import { loadProviderConfig } from "../../reuse/provider-config.js";
 import { initSecuritySection } from "./security.js";
 
 const root = document.querySelector("#app");
@@ -318,35 +317,31 @@ function bindIntegrityRerun() {
     });
 }
 
-async function loadCategories() {
-    const res = await apiFetch("/api/v1/notifications/categories");
+async function loadAdminSections() {
+    const res = await apiFetch("/api/v1/admin/sections");
     if (!res.ok) return [];
     const payload = await res.json();
     return payload.data ?? [];
 }
 
-async function loadUsers() {
-    const res = await apiFetch("/api/v1/users");
-    if (!res.ok) return [];
-    const payload = await res.json();
-    return payload.data ?? [];
+async function loadGatewaySection(section) {
+    try {
+        const mod = await import(section.scriptUrl);
+        if (typeof mod.createAdminSection !== "function") return null;
+        const def = mod.createAdminSection({
+            i18n,
+            apiFetch,
+            escapeHtml,
+            openPopup,
+        });
+        if (def.dataReady) await def.dataReady;
+        return def;
+    } catch {
+        return null;
+    }
 }
 
-function renderSmtpPopupBody(descriptors, requiredFields) {
-    const val = (field, fallback = "") =>
-        escapeHtml(descriptors[field]?.effectiveValue ?? fallback);
-    const host = val("host");
-    const port = val("port", "587");
-    const from = val("from");
-    const senderName = val("senderName");
-    const user = val("user");
-    const secure = val("secure", "starttls");
-    const allowSelfSigned =
-        descriptors["allowSelfSigned"]?.effectiveValue === "true" ||
-        descriptors["allowSelfSigned"]?.effectiveValue === true;
-    const authDisabled =
-        descriptors["authDisabled"]?.effectiveValue === "true" ||
-        descriptors["authDisabled"]?.effectiveValue === true;
+function renderGenericAdapterForm(descriptors, requiredFields) {
     const requiredSet = new Set(requiredFields);
     const requiredTooltip = i18n.t("ui.app.admin.notif.required_field");
     const conflictTitle = i18n.t("ui.app.admin.notif.field_env_conflict");
@@ -368,45 +363,70 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
         return `<label class="provider-popup-field${requiredClass}"${labelTitle}>${labelText}${inputHtml}${conflictWarning}</label>`;
     }
 
-    const senderNameField = fieldLabel(
-        "senderName",
-        i18n.t("ui.app.admin.notif.smtp_sender_name"),
-        `<input name="senderName" type="text" value="${senderName}" placeholder="${i18n.t("ui.app.admin.notif.smtp_sender_name_placeholder")}" />`,
+    const fieldKeys = Object.keys(descriptors).filter(
+        (name) => name !== "enabled",
     );
-    const hostField = fieldLabel(
-        "host",
-        i18n.t("ui.app.admin.notif.smtp_host"),
-        `<input name="host" type="text" value="${host}" placeholder="${i18n.t("ui.app.admin.notif.smtp_host_placeholder")}" />`,
-    );
-    const portField = fieldLabel(
-        "port",
-        i18n.t("ui.app.admin.notif.smtp_port"),
-        `<input name="port" type="number" value="${port}" placeholder="587" />`,
-    );
-    const fromField = fieldLabel(
-        "from",
-        i18n.t("ui.app.admin.notif.smtp_from"),
-        `<input name="from" type="email" value="${from}" placeholder="${i18n.t("ui.app.admin.notif.smtp_from_placeholder")}" />`,
-    );
-    const userField = fieldLabel(
-        "user",
-        i18n.t("ui.app.admin.notif.smtp_user"),
-        `<input name="user" type="text" value="${user}" placeholder="${i18n.t("ui.app.admin.notif.smtp_user_placeholder")}" />`,
-    );
-    const passwordField = fieldLabel(
-        "password",
-        i18n.t("ui.app.admin.notif.smtp_password"),
-        `<input name="password" type="password" value="" placeholder="${i18n.t("ui.app.admin.notif.smtp_password_placeholder")}" />`,
-    );
-    const secureField = fieldLabel(
-        "secure",
-        i18n.t("ui.app.admin.notif.smtp_secure"),
-        `<select name="secure" class="theme-select">
-        <option value="starttls"${secure === "starttls" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_starttls")}</option>
-        <option value="tls"${secure === "tls" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_tls")}</option>
-        <option value="none"${secure === "none" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_none")}</option>
-      </select>`,
-    );
+
+    const textFieldKeys = fieldKeys.filter((name) => {
+        const rawValue = descriptors[name]?.effectiveValue;
+        return !(
+            rawValue === true ||
+            rawValue === false ||
+            rawValue === "true" ||
+            rawValue === "false"
+        );
+    });
+    const boolFieldKeys = fieldKeys.filter((name) => {
+        const rawValue = descriptors[name]?.effectiveValue;
+        return (
+            rawValue === true ||
+            rawValue === false ||
+            rawValue === "true" ||
+            rawValue === "false"
+        );
+    });
+
+    const textFieldsHtml = textFieldKeys
+        .map((name) => {
+            const descriptor = descriptors[name];
+            const val = escapeHtml(descriptor?.effectiveValue ?? "");
+            const isPassword =
+                name.toLowerCase().includes("password") ||
+                name.toLowerCase().includes("secret");
+            const isPort =
+                name === "port" || name.toLowerCase().endsWith("port");
+
+            let inputHtml;
+            if (isPassword) {
+                inputHtml = `<input name="${escapeHtml(name)}" type="password" value="" />`;
+            } else if (isPort) {
+                inputHtml = `<input name="${escapeHtml(name)}" type="number" value="${val}" />`;
+            } else {
+                inputHtml = `<input name="${escapeHtml(name)}" type="text" value="${val}" />`;
+            }
+
+            return fieldLabel(name, name, inputHtml);
+        })
+        .join("");
+
+    const boolFieldsHtml = boolFieldKeys.length
+        ? `<div class="provider-option-toggles">${boolFieldKeys
+              .map((name) => {
+                  const rawValue = descriptors[name]?.effectiveValue;
+                  const checked =
+                      rawValue === true || rawValue === "true"
+                          ? " checked"
+                          : "";
+                  return `<div class="provider-option-row">
+          <span class="provider-option-label">${escapeHtml(name)}</span>
+          <label class="switch">
+            <input name="${escapeHtml(name)}" type="checkbox"${checked} />
+            <span class="slider"></span>
+          </label>
+        </div>`;
+              })
+              .join("")}</div>`
+        : "";
 
     return `
     <div class="provider-popup-form">
@@ -418,36 +438,13 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
         </label>
       </div>
       <div class="provider-fields">
-        ${senderNameField}
-        ${hostField}
-        ${portField}
-        ${fromField}
-        ${secureField}
+        ${textFieldsHtml}
       </div>
-      <div class="provider-auth-fields">
-        ${userField}
-        ${passwordField}
-      </div>
-      <div class="provider-option-toggles">
-        <div class="provider-option-row">
-          <span class="provider-option-label">${i18n.t("ui.app.admin.notif.smtp_allow_self_signed")}</span>
-          <label class="switch">
-            <input type="checkbox" name="allowSelfSigned"${allowSelfSigned ? " checked" : ""} />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="provider-option-row">
-          <span class="provider-option-label">${i18n.t("ui.app.admin.notif.smtp_auth_disabled")}</span>
-          <label class="switch">
-            <input type="checkbox" name="authDisabled"${authDisabled ? " checked" : ""} />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
+      ${boolFieldsHtml}
       <div class="provider-test-row">
-        <input class="provider-test-input" type="email" placeholder="${escapeHtml(i18n.t("ui.app.admin.notif.test_email_to"))}" />
+        <input class="provider-test-input" type="email" placeholder="${i18n.t("ui.app.admin.notif.test_email_to")}" />
         <button class="btn-animated provider-test-btn" type="button">${i18n.t("ui.app.admin.notif.test_email")}</button>
-        <span class="provider-test-status notif-status-message"></span>
+        <span class="provider-test-status"></span>
       </div>
     </div>
   `;
@@ -508,7 +505,7 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
 
     const result = await openPopup({
         title: name,
-        body: renderSmtpPopupBody(descriptors, requiredFields),
+        body: renderGenericAdapterForm(descriptors, requiredFields),
         maxWidth: "640px",
         actions: [
             {
@@ -716,116 +713,6 @@ function bindComponentsDropdown() {
     });
 }
 
-function renderNotificationsDebugContent(users, categories) {
-    const userOptions = users
-        .map(
-            (u) =>
-                `<option value="${escapeHtml(u.username)}">${escapeHtml(u.username)}</option>`,
-        )
-        .join("");
-
-    const categoryOptions = categories
-        .map(
-            (c) =>
-                `<option value="${escapeHtml(c.id)}">${escapeHtml(c.label)}</option>`,
-        )
-        .join("");
-
-    const noUsers = !users.length
-        ? `<p class="notif-debug-empty">${i18n.t("ui.app.admin.notif.debug_no_users")}</p>`
-        : "";
-    const noCategories = !categories.length
-        ? `<p class="notif-debug-empty">${i18n.t("ui.app.admin.notif.debug_no_categories")}</p>`
-        : "";
-
-    return `
-    <div class="notif-debug-panel">
-      ${noUsers}
-      ${noCategories}
-      <div class="notif-debug-fields">
-        <label class="notif-debug-field">
-          ${i18n.t("ui.app.admin.notif.debug_target_user")}
-          <select name="debugUser" class="theme-select">${userOptions}</select>
-        </label>
-        <label class="notif-debug-field">
-          ${i18n.t("ui.app.admin.notif.debug_category")}
-          <select name="debugCategory" class="theme-select">${categoryOptions}</select>
-        </label>
-        <label class="notif-debug-field notif-debug-field--full">
-          ${i18n.t("ui.app.admin.notif.debug_subject")}
-          <input name="debugSubject" type="text" placeholder="${i18n.t("ui.app.admin.notif.debug_subject_placeholder")}" />
-        </label>
-        <label class="notif-debug-field notif-debug-field--full">
-          ${i18n.t("ui.app.admin.notif.debug_body")}
-          <textarea name="debugBody" rows="4" placeholder="${i18n.t("ui.app.admin.notif.debug_body_placeholder")}"></textarea>
-        </label>
-      </div>
-      <div class="notif-debug-actions">
-        <button class="btn-animated notif-debug-send" type="button">${i18n.t("ui.app.admin.notif.debug_send")}</button>
-        <span class="notif-debug-status notif-status-message"></span>
-      </div>
-    </div>
-  `;
-}
-
-function bindNotificationsDebug() {
-    const panel = root.querySelector(".notif-debug-panel");
-    if (!panel) return;
-
-    const sendBtn = panel.querySelector(".notif-debug-send");
-    const statusEl = panel.querySelector(".notif-debug-status");
-
-    if (!sendBtn) return;
-
-    sendBtn.addEventListener("click", async () => {
-        const userSelect = panel.querySelector('[name="debugUser"]');
-        const categorySelect = panel.querySelector('[name="debugCategory"]');
-        const subjectInput = panel.querySelector('[name="debugSubject"]');
-        const bodyInput = panel.querySelector('[name="debugBody"]');
-
-        const recipientUsername =
-            userSelect instanceof HTMLSelectElement ? userSelect.value : "";
-        const category =
-            categorySelect instanceof HTMLSelectElement
-                ? categorySelect.value
-                : "";
-        const subject =
-            subjectInput instanceof HTMLInputElement
-                ? subjectInput.value.trim()
-                : "";
-        const body =
-            bodyInput instanceof HTMLTextAreaElement
-                ? bodyInput.value.trim()
-                : "";
-
-        if (!recipientUsername || !category || !subject || !body) {
-            if (statusEl)
-                statusEl.textContent = i18n.t(
-                    "ui.app.admin.notif.debug_missing_fields",
-                );
-            return;
-        }
-
-        if (statusEl) statusEl.textContent = "";
-        const res = await apiFetch("/api/v1/notifications/send", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-                recipientUsername,
-                category,
-                subject,
-                body,
-            }),
-        });
-
-        if (statusEl) {
-            statusEl.textContent = res.ok
-                ? i18n.t("ui.app.admin.notif.debug_sent")
-                : i18n.t("ui.app.admin.notif.debug_send_failed");
-        }
-    });
-}
-
 async function loadAllAdapters(gatewayList) {
     const results = await Promise.all(
         gatewayList.map(async (gw) => {
@@ -842,13 +729,17 @@ let [modules, integrityRows] = await Promise.all([
 ]);
 let gateways = await loadGateways();
 let allAdapters = await loadAllAdapters(gateways);
-let [categories, users] = await Promise.all([loadCategories(), loadUsers()]);
 let activeComponentTab = "modules";
 let composer;
 
 const securitySection = initSecuritySection(root, { i18n });
 
-const elements = [
+const sectionMeta = await loadAdminSections();
+const gatewaySections = (
+    await Promise.all(sectionMeta.map(loadGatewaySection))
+).filter(Boolean);
+
+const baseElements = [
     {
         id: "components",
         label: i18n.t("ui.app.admin.components"),
@@ -906,27 +797,6 @@ const elements = [
         },
     },
     {
-        id: "notifications",
-        label: i18n.t("ui.app.admin.notifications"),
-        subComposerOptions: {
-            allowCustomization: false,
-            preferenceKey: "administration-notifications-layout",
-            heading: i18n.t("ui.app.admin.notifications"),
-            elements: [
-                {
-                    id: "notifications-debug",
-                    label: i18n.t("ui.app.admin.notif.debug"),
-                    pinned: true,
-                    render: () =>
-                        renderNotificationsDebugContent(users, categories),
-                },
-            ],
-            onRender: () => {
-                bindNotificationsDebug();
-            },
-        },
-    },
-    {
         id: "security",
         label: i18n.t("ui.app.admin.security.title"),
         subComposerOptions: {
@@ -948,6 +818,28 @@ const elements = [
     },
 ];
 
+const elements = [
+    ...baseElements,
+    ...gatewaySections.map((sec) => ({
+        id: sec.id,
+        label: sec.label,
+        subComposerOptions: {
+            ...sec.subComposerOptions,
+            onRender: () => sec.subComposerOptions?.onRender?.(root),
+        },
+    })),
+];
+
+const navItems = [
+    `<li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>`,
+    `<li><button data-composer-scroll="integrity">${i18n.t("ui.reuse.file_integrity")}</button></li>`,
+    `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
+    ...gatewaySections.map(
+        (sec) =>
+            `<li><button data-composer-scroll="${escapeHtml(sec.id)}">${escapeHtml(sec.label)}</button></li>`,
+    ),
+];
+
 composer = createPageComposer(root, {
     allowCustomization: false,
     subPageNavigation: true,
@@ -965,10 +857,7 @@ composer = createPageComposer(root, {
             render: () => `
         <h2>${i18n.t("ui.app.admin.page_title")}</h2>
         <ul>
-          <li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>
-          <li><button data-composer-scroll="integrity">${i18n.t("ui.reuse.file_integrity")}</button></li>
-          <li><button data-composer-scroll="notifications">${i18n.t("ui.app.admin.notifications")}</button></li>
-          <li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>
+          ${navItems.join("\n")}
         </ul>
       `,
         },

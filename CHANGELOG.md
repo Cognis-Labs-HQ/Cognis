@@ -9,7 +9,29 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- `src/api/gateways/logging/` — logging gateway (required). Creates the `Logger` instance from `LOG_LEVEL`/`LOG_FILE` env vars and contributes `logging:logger` and `logging:log` to `CapabilityStore`. The bootstrapper always runs this gateway first so all subsequent gateways have access to a structured logger via `ctx.log` ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))
+- `src/api/ui-registry.ts` — `UIRegistry` class: gateways register admin-page sections (`{ id, label, scriptUrl }`) and static asset directories; core serves them without knowing gateway content
+- `GatewayBootstrapContext.uiRegistry` optional field: gateways receive `UIRegistry` during bootstrap to self-register UI contributions
+- `GET /api/v1/admin/sections` route (admin): returns list of admin sections registered by gateways via `UIRegistry`
+- `/static/gateways/:gatewayId/...` static file handler: serves gateway-owned UI assets from filesystem paths registered via `UIRegistry.registerStaticDir()`
+- `GET /api/v1/profile/ping` route: lightweight capability-check endpoint; returns `{ data: { available: true } }` when the profile gateway is present
+- `src/api/gateways/notify/ui/admin-section.js` — browser ES module: contributes the Notifications debug panel to the admin page via the `UIRegistry` mechanism
+- Profile gateway now registers `createProfilePageRoutes()` for `GET /profile` and `GET /profile/:handle`, owning its own page-serving routes
+
+### Changed
+
+- `notify/bootstrap.ts`: registers notification gateway admin section and static UI directory with `UIRegistry` at end of bootstrap; renamed ambiguous `key` variable from `verifyTokenService.verify()` to `userEmailPair`
+- `routes/profile/index.ts`: `fileGateway` parameter made optional; avatar/banner/banner-delete routes return `503 file_storage_unavailable` when file gateway is absent
+- `gateways/profile/bootstrap.ts`: profile API routes always registered (with optional fileGateway); file routes only registered when file gateway is present; `/profile` and `/profile/:handle` page routes owned by profile gateway via `createProfilePageRoutes()`
+- `routes/ui/index.ts`: removed hardcoded `/profile` and `/profile/:handle` routes (now owned by profile gateway); added `/static/gateways/:id/...` gateway static file handler; accepts optional `uiRegistry?` parameter
+- `routes/gateways/index.ts`: added `GET /api/v1/admin/sections`; accepts optional `uiRegistry?` parameter
+- `server.ts` `ApiDependencies`: added `uiRegistry?` field; passed to `createUiRoutes` and `createGatewayRoutes`
+- `main.ts`: creates `UIRegistry` instance and passes it to `bootstrapGateways` context and `buildServer`
+- `ui/app/administration/index.js`: removed hardcoded `Notifications` section and SMTP-specific `renderSmtpPopupBody`; added `loadAdminSections()` and `loadGatewaySection()` for dynamic section discovery; added generic `renderGenericAdapterForm` (derives field types from API-returned descriptors); toolbar nav and elements array built dynamically from registered gateway sections
+- `ui/layouts/dashboard-layout.js` `updateNavbarAvatar()`: pings `/api/v1/profile/ping` first; Profile menu link conditionally shown/hidden based on gateway availability
+- `ui/public/templates/dashboard-layout.html`: Profile menu `<li>` hidden by default with `data-profile-link` attribute; revealed dynamically when profile gateway is present
+- `ui/tests/dead-code.test.js`: `USAGE_ROOTS` extended to include `src/api/gateways` so gateway-contributed browser JS is scanned for CSS class references
+- `api/tests/ui-routes.test.ts`: updated profile-page test to assert core `createUiRoutes` no longer handles `/profile` (now owned by profile gateway)
+
 - `src/api/gateways/profile/` — profile gateway (optional). Owns `DbProfileStore` schema, profile/social/post/file routes and file-size-limits admin routes. Reads `file:gateway` from capabilities (avatar/banner/file routes registered only when the file gateway is present). Contributes `profile:createProfile` and `profile:setRoleByHandle` callbacks so auth and user routes can stay profile-agnostic ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))
 - `BootstrapLog` type in `gateway-bootstrap.ts`: standard `(level, message, meta?) => void` signature; optional `log?` field added to `GatewayBootstrapContext` so gateways can emit structured logs during bootstrap ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))
 - `DbInitLogger` interface in `bootstrap/db-init.ts`: minimal `info(msg, meta?)` contract for the database initializer, replacing the hard import of the concrete `Logger` class ([e49cc0e](https://github.com/le-firehawk/Cognis/commit/e49cc0e))

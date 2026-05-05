@@ -1,14 +1,19 @@
 import { requireAuth } from "../../auth/guard.js";
 import type { GatewayRegistry } from "../../gateway-registry.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import type { UIRegistry } from "../../ui-registry.js";
 
 /**
  * Creates route handlers for the gateway management API.
  *
  *   GET /api/v1/gateways         — list all registered gateways (admin)
  *   GET /api/v1/gateways/:id     — get a single gateway manifest (admin)
+ *   GET /api/v1/admin/sections   — list UI registry sections contributed by gateways (admin)
  */
-export function createGatewayRoutes(registry: GatewayRegistry) {
+export function createGatewayRoutes(
+    registry: GatewayRegistry,
+    uiRegistry?: UIRegistry,
+) {
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -18,6 +23,15 @@ export function createGatewayRoutes(registry: GatewayRegistry) {
             if (!requireAuth(req, res, "admin")) return true;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: registry.list() }));
+            return true;
+        }
+
+        if (url.pathname === "/api/v1/admin/sections" && req.method === "GET") {
+            if (!requireAuth(req, res, "admin")) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({ data: uiRegistry?.listAdminSections() ?? [] }),
+            );
             return true;
         }
 

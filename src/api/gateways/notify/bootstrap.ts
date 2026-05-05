@@ -65,6 +65,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
     });
+
+    const uiDir = path.resolve(
+        process.cwd(),
+        "src",
+        "api",
+        "gateways",
+        "notify",
+        "ui",
+    );
+    ctx.uiRegistry?.registerAdminSection({
+        id: "notifications",
+        label: "Notifications",
+        scriptUrl: "/static/gateways/notify/admin-section.js",
+    });
+    ctx.uiRegistry?.registerStaticDir("notify", uiDir);
 }
 
 /**
@@ -120,8 +135,8 @@ export function createUserEmailRoutes(
                 );
                 return true;
             }
-            const key = verifyTokenService.verify(token);
-            if (!key) {
+            const userEmailPair = verifyTokenService.verify(token);
+            if (!userEmailPair) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -133,7 +148,7 @@ export function createUserEmailRoutes(
                 );
                 return true;
             }
-            const colonIndex = key.indexOf(":");
+            const colonIndex = userEmailPair.indexOf(":");
             if (colonIndex === -1) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -146,8 +161,8 @@ export function createUserEmailRoutes(
                 );
                 return true;
             }
-            const username = key.slice(0, colonIndex);
-            const email = key.slice(colonIndex + 1);
+            const username = userEmailPair.slice(0, colonIndex);
+            const email = userEmailPair.slice(colonIndex + 1);
             await notifStore.verifyUserEmail(username, email);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { verified: true } }));

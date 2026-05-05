@@ -123,33 +123,52 @@ function bindTopbarActions() {
 
 export async function updateNavbarAvatar() {
     const avatarBtn = document.querySelector(".avatar-button");
+    const profileLink = document.querySelector("[data-profile-link]");
     if (!avatarBtn) return;
     const handle = localStorage.getItem("cognis_account") ?? "";
+
+    let profileAvailable = false;
 
     const prevImg = avatarBtn.querySelector("img.avatar-image");
     const prevBlobSrc = prevImg?.src?.startsWith("blob:") ? prevImg.src : null;
 
     try {
-        const res = await apiFetch("/api/v1/profile");
-        if (res.ok) {
-            const payload = await res.json();
-            const avatarKey = payload?.data?.avatarKey;
-            if (avatarKey) {
-                const fileRes = await apiFetch(`/api/v1/files/${avatarKey}`);
-                if (fileRes.ok) {
-                    const img = document.createElement("img");
-                    img.className = "avatar-image";
-                    img.alt = "";
-                    img.src = URL.createObjectURL(await fileRes.blob());
-                    avatarBtn.replaceChildren(img);
-                    if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
-                    return;
+        const pingRes = await apiFetch("/api/v1/profile/ping");
+        profileAvailable = pingRes.ok;
+    } catch {
+        profileAvailable = false;
+    }
+
+    if (profileLink) {
+        profileLink.closest("li")?.toggleAttribute("hidden", !profileAvailable);
+    }
+
+    if (profileAvailable) {
+        try {
+            const res = await apiFetch("/api/v1/profile");
+            if (res.ok) {
+                const payload = await res.json();
+                const avatarKey = payload?.data?.avatarKey;
+                if (avatarKey) {
+                    const fileRes = await apiFetch(
+                        `/api/v1/files/${avatarKey}`,
+                    );
+                    if (fileRes.ok) {
+                        const img = document.createElement("img");
+                        img.className = "avatar-image";
+                        img.alt = "";
+                        img.src = URL.createObjectURL(await fileRes.blob());
+                        avatarBtn.replaceChildren(img);
+                        if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
+                        return;
+                    }
                 }
             }
+        } catch {
+            // fall through to initials fallback (lines 171-176 below)
         }
-    } catch {
-        // fall through to initials fallback (lines 141-146 below)
     }
+
     if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
     const initialsEl = document.createElement("span");
     initialsEl.className = "avatar-initials";

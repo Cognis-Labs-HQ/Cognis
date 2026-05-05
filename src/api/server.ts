@@ -21,6 +21,7 @@ import type { RouteRegistry } from "./route-registry.js";
 import { createGatewayRoutes } from "./routes/gateways/index.js";
 import type { GatewayRegistry } from "./gateway-registry.js";
 import type { BootstrapLog } from "./gateway-bootstrap.js";
+import type { UIRegistry } from "./ui-registry.js";
 
 export interface ApiDependencies {
     moduleRuntimeGateway: ModuleRuntimeGateway;
@@ -29,6 +30,7 @@ export interface ApiDependencies {
     preferenceStore: UserPreferenceStore;
     routeRegistry?: RouteRegistry;
     gatewayRegistry?: GatewayRegistry;
+    uiRegistry?: UIRegistry;
     log?: BootstrapLog;
     moduleIntegrityChecker?: () => Promise<
         Array<{
@@ -82,7 +84,7 @@ export function buildServer(deps: ApiDependencies) {
         deps.preferenceStore,
     );
     const docsRoutes = createDocsRoutes();
-    const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway);
+    const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway, deps.uiRegistry);
     const authRoutes = createAuthRoutes(
         deps.authGateway,
         deps.accountStore,
@@ -95,7 +97,7 @@ export function buildServer(deps: ApiDependencies) {
         deps.setProfileRole,
     );
     const gatewayRoutes = deps.gatewayRegistry
-        ? createGatewayRoutes(deps.gatewayRegistry)
+        ? createGatewayRoutes(deps.gatewayRegistry, deps.uiRegistry)
         : null;
 
     Promise.all([

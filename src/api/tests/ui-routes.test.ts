@@ -195,26 +195,18 @@ test("administration page is visible to admins only", async () => {
     assert.match(adminRes.body, /id="app"/);
 });
 
-test("profile page requires login and serves html when authenticated", async () => {
+test("core ui routes do not serve /profile (owned by profile gateway)", async () => {
     const route = createUiRoutes();
 
     const anonymous = createResponseRecorder();
-    await route(
+    const handled = await route(
         { headers: {} } as any,
         anonymous.res as any,
         new URL("http://localhost/profile/u1"),
     );
-    assert.equal(anonymous.status, 302);
-    assert.equal(anonymous.headers.location, "/login");
-
-    const token = issueAccessToken("u1", "user", 60);
-    const authed = createResponseRecorder();
-    await route(
-        { headers: { cookie: `cognis_access_token=${token}` } } as any,
-        authed.res as any,
-        new URL("http://localhost/profile/u1"),
+    assert.equal(
+        handled,
+        false,
+        "/profile route should not be handled by core UI routes",
     );
-    assert.equal(authed.status, 200);
-    assert.match(authed.body, /static\/app\/profile\/index\.js/);
-    assert.match(authed.body, /id="app"/);
 });
