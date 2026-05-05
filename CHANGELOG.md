@@ -7,6 +7,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- ([0b09aba](https://github.com/le-firehawk/Cognis/commit/0b09aba)) Structural file reorganization: rename adapter files, move docs, reorganize routes and interfaces
+
 ### Fixed
 
 - Added `src/gateways/package.json` with `"type": "module"` so that gateway files are treated as ESM — without it, gateways moved from `src/api/gateways/` (which inherited ESM from `src/api/package.json`) to `src/gateways/` defaulted to CJS, breaking all named imports including `bootstrapGateways` at startup ([47eea07](https://github.com/le-firehawk/Cognis/commit/47eea07))
