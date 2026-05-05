@@ -64,6 +64,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         version: "0.1.0",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
+        hasAdapters: true,
     });
 
     const uiDir = path.resolve(
@@ -615,6 +616,40 @@ function createGatewayAdapterRoutes(
             }
 
             return false;
+        }
+
+        const toggleMatch = url.pathname.match(
+            new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
+        );
+        if (toggleMatch && req.method === "POST") {
+            if (!requireAuth(req, res, "admin")) return true;
+            const adapterId = decodeURIComponent(toggleMatch[1]);
+            const action = toggleMatch[2] as "enable" | "disable";
+            const sender = gateway.getSender(adapterId);
+            if (!sender) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Adapter not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (action === "enable") {
+                await gateway.enableSender(adapterId);
+            } else {
+                await gateway.disableSender(adapterId);
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: { enabled: action === "enable" },
+                }),
+            );
+            return true;
         }
 
         const testMatch = url.pathname.match(

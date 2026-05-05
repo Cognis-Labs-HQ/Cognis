@@ -15,6 +15,9 @@
 
   <string name="ui.reuse.generic.enable">Aktivieren</string>
   <string name="ui.reuse.generic.disable">Deaktivieren</string>
+  <string name="ui.reuse.generic.true">Wahr</string>
+  <string name="ui.reuse.generic.false">Falsch</string>
+  <string name="ui.reuse.generic.configure">Konfigurieren</string>
   <string name="ui.reuse.generic.actions">Aktionen</string>
   <string name="ui.reuse.generic.id">ID</string>
   <string name="ui.reuse.generic.version">Version</string>

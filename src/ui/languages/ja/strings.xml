@@ -15,6 +15,9 @@
 
   <string name="ui.reuse.generic.enable">有効化</string>
   <string name="ui.reuse.generic.disable">無効化</string>
+  <string name="ui.reuse.generic.true">真</string>
+  <string name="ui.reuse.generic.false">偽</string>
+  <string name="ui.reuse.generic.configure">設定</string>
   <string name="ui.reuse.generic.actions">操作</string>
   <string name="ui.reuse.generic.id">ID</string>
   <string name="ui.reuse.generic.version">バージョン</string>

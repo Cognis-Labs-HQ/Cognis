@@ -157,7 +157,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get<FileStorageGateway>("file:gateway");
 
     ctx.routeRegistry.register(
-        createProfileRoutes(profileStore, fileGateway ?? undefined),
+        createProfileRoutes(
+            profileStore,
+            fileGateway ?? undefined,
+            () => ctx.gatewayRegistry.get("profile")?.status !== "disabled",
+        ),
     );
 
     if (fileGateway) {

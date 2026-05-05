@@ -171,6 +171,24 @@ export class CoreNotificationGateway
         }
     }
 
+    async enableSender(senderId: string): Promise<void> {
+        this.disabledSenders.delete(senderId);
+        const existing = (await this.configStore?.getConfig(senderId)) ?? null;
+        await this.configStore?.saveConfig(senderId, {
+            ...(existing ?? {}),
+            enabled: true,
+        });
+    }
+
+    async disableSender(senderId: string): Promise<void> {
+        this.disabledSenders.add(senderId);
+        const existing = (await this.configStore?.getConfig(senderId)) ?? null;
+        await this.configStore?.saveConfig(senderId, {
+            ...(existing ?? {}),
+            enabled: false,
+        });
+    }
+
     getSender(senderId: string): NotificationSender | undefined {
         return this.senders.get(senderId);
     }

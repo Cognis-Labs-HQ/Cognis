@@ -101,16 +101,16 @@ function renderModulesContent(modules) {
             return `
         <details class="module-row" data-module="${mod.id}">
           <summary>
-            <span><strong>${mod.name}</strong></span>
+            <span class="module-row-title"><strong>${mod.name}</strong></span>
             <span class="state-pill ${pill.className}">${pill.label}</span>
+            <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}" onclick="event.stopPropagation()">
+              <input type="checkbox" data-module="${mod.id}" ${mod.status === "enabled" ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
+              <span class="slider"></span>
+            </label>
             <span class="module-chevron">▾</span>
           </summary>
           <div class="module-meta">
             <ul class="module-details">${renderDetailsList(mod)}</ul>
-            <label class="switch" title="${escapeHtml(toggleTitle)}">
-              <input type="checkbox" data-module="${mod.id}" ${mod.status === "enabled" ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
-              <span class="slider"></span>
-            </label>
           </div>
         </details>
       `;
@@ -130,10 +130,10 @@ function renderDependencyLinks(ids, scrollPrefix) {
         .join(", ");
 }
 
-function renderGatewayDetailsList(gw, adapterCount) {
+function renderGatewayDetailsList(gw) {
     const requiredLabel = gw.required
-        ? i18n.t("ui.app.admin.state.active")
-        : i18n.t("ui.app.admin.state.disabled");
+        ? i18n.t("ui.reuse.generic.true")
+        : i18n.t("ui.reuse.generic.false");
 
     const details = [
         [i18n.t("ui.reuse.generic.id"), escapeHtml(gw.id)],
@@ -143,10 +143,6 @@ function renderGatewayDetailsList(gw, adapterCount) {
             escapeHtml(gw.publisher || i18n.t("ui.app.admin.unknown")),
         ],
         [i18n.t("ui.app.admin.gateway.required"), requiredLabel],
-        [
-            i18n.t("ui.app.admin.gateway.adapter_count"),
-            String(adapterCount ?? 0),
-        ],
     ];
     if (gw.description) {
         details.push([
@@ -165,6 +161,45 @@ function renderGatewayDetailsList(gw, adapterCount) {
     return detailsRows + depsRow;
 }
 
+function renderAdapterToggle(adapter, gatewayId) {
+    const isEnabled = adapter.active || adapter.enabled !== false;
+    return `<label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_gateway"))}" onclick="event.stopPropagation()">
+      <input type="checkbox" class="adapter-toggle"
+        data-adapter="${escapeHtml(adapter.senderId)}"
+        data-gateway="${escapeHtml(gatewayId)}"
+        ${isEnabled ? "checked" : ""} />
+      <span class="slider"></span>
+    </label>`;
+}
+
+function renderInlineAdapters(adapters, gatewayId) {
+    if (!adapters || adapters.length === 0) return "";
+    const rows = adapters
+        .map((adapter) => {
+            const statePillClass = adapter.active
+                ? "pill-active"
+                : "pill-available";
+            const stateLabel = adapter.active
+                ? i18n.t("ui.app.admin.state.active")
+                : i18n.t("ui.app.admin.state.available");
+            return `
+        <div class="adapter-inline-row">
+          <span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapter.senderId)}</strong></span>
+          <span class="state-pill ${statePillClass}">${stateLabel}</span>
+          ${renderAdapterToggle(adapter, gatewayId)}
+          <button
+            class="btn-animated adapter-configure-btn"
+            type="button"
+            data-adapter-id="${escapeHtml(adapter.senderId)}"
+            data-gateway-id="${escapeHtml(gatewayId)}"
+          >${i18n.t("ui.reuse.generic.configure")}</button>
+        </div>
+      `;
+        })
+        .join("");
+    return `<div class="gateway-adapters-inline">${rows}</div>`;
+}
+
 function renderGatewaysContent(gateways, allAdapters) {
     if (!gateways.length) {
         return `<p>${i18n.t("ui.app.admin.no_gateways")}</p>`;
@@ -174,81 +209,29 @@ function renderGatewaysContent(gateways, allAdapters) {
         .map((gw) => {
             const pill = getStatePill(gw.status ?? "active");
             const isEnabled = (gw.status ?? "active") !== "disabled";
-            const adapterCount = allAdapters.filter(
-                (a) => a._gatewayId === gw.id,
-            ).length;
-            const goToAdaptersBtn = gw.hasAdapters
-                ? `<button class="btn-animated gateway-adapters-btn" data-gateway="${escapeHtml(gw.id)}" type="button">${i18n.t("ui.app.admin.gateway.go_to_adapters")}</button>`
-                : "";
+            const gwAdapters = gw.hasAdapters
+                ? allAdapters.filter((a) => a._gatewayId === gw.id)
+                : [];
 
             return `
         <details class="module-row" data-gateway="${escapeHtml(gw.id)}">
           <summary>
-            <span><strong>${escapeHtml(gw.name)}</strong></span>
+            <span class="module-row-title"><strong>${escapeHtml(gw.name)}</strong></span>
             <span class="state-pill ${pill.className}">${pill.label}</span>
+            <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}" onclick="event.stopPropagation()">
+              <input type="checkbox" data-gateway="${escapeHtml(gw.id)}" ${isEnabled ? "checked" : ""} />
+              <span class="slider"></span>
+            </label>
             <span class="module-chevron">▾</span>
           </summary>
           <div class="module-meta">
-            <ul class="module-details">${renderGatewayDetailsList(gw, adapterCount)}</ul>
-            <div class="gateway-meta-actions">
-              ${goToAdaptersBtn}
-              <label class="switch" title="${escapeHtml(toggleTitle)}">
-                <input type="checkbox" data-gateway="${escapeHtml(gw.id)}" ${isEnabled ? "checked" : ""} />
-                <span class="slider"></span>
-              </label>
-            </div>
+            <ul class="module-details">${renderGatewayDetailsList(gw)}</ul>
+            ${renderInlineAdapters(gwAdapters, gw.id)}
           </div>
-          <div class="gateway-adapters-panel" data-gateway-adapters="${escapeHtml(gw.id)}" style="display:none;"></div>
         </details>
       `;
         })
         .join("");
-}
-
-function renderAdapterEntry(adapter, gatewayId) {
-    const escapedAdapterId = escapeHtml(adapter.senderId);
-    const escapedName = escapeHtml(adapter.name);
-    const statePillClass = adapter.active ? "pill-active" : "pill-available";
-    const stateLabel = adapter.active
-        ? i18n.t("ui.app.admin.state.active")
-        : i18n.t("ui.app.admin.state.available");
-    const missingAlert = !adapter.active
-        ? `<span class="provider-missing-alert" aria-label="${i18n.t("ui.app.admin.notif.provider_missing_config")}">❗</span>`
-        : "";
-    return `
-    <div
-      class="provider-card provider-card--entry"
-      data-adapter-id="${escapedAdapterId}"
-      data-gateway-id="${escapeHtml(gatewayId)}"
-      role="button"
-      tabindex="0"
-    >
-      <span class="provider-entry-name"><strong>${escapedName}</strong>${missingAlert}</span>
-      <span class="state-pill ${statePillClass}">${stateLabel}</span>
-    </div>
-  `;
-}
-
-function renderAdaptersPanel(adapters, gatewayId) {
-    if (!adapters.length) {
-        return `<p class="gateway-adapters-empty">${i18n.t("ui.app.admin.no_adapters")}</p>`;
-    }
-    const active = adapters.filter((a) => a.active);
-    const available = adapters.filter((a) => !a.active);
-    const activeRows = active.length
-        ? active.map((a) => renderAdapterEntry(a, gatewayId)).join("")
-        : `<p>${i18n.t("ui.app.admin.notif.no_active")}</p>`;
-    const availableRows = available.length
-        ? available.map((a) => renderAdapterEntry(a, gatewayId)).join("")
-        : `<p>${i18n.t("ui.app.admin.notif.no_available")}</p>`;
-    return `
-    <div class="gateway-adapters-list">
-      <h4>${i18n.t("ui.app.admin.notif.active_providers")}</h4>
-      ${activeRows}
-      <h4>${i18n.t("ui.app.admin.notif.available_providers")}</h4>
-      ${availableRows}
-    </div>
-  `;
 }
 
 function renderComponentsContent(modules, gateways, allAdapters) {
@@ -380,33 +363,60 @@ function bindGatewayToggles() {
 }
 
 function bindGatewayAdapterButtons() {
-    root.querySelectorAll(".gateway-adapters-btn[data-gateway]").forEach(
-        (btn) => {
-            if (!(btn instanceof HTMLElement)) return;
-            const gatewayId = btn.dataset.gateway;
-            if (!gatewayId) return;
+    // This function is intentionally empty — adapters are now rendered inline.
+    // Previously it managed a collapsible panel; that pattern is replaced by
+    // renderInlineAdapters + bindAdapterConfigureButtons.
+}
 
-            btn.addEventListener("click", async () => {
-                const panel = root.querySelector(
-                    `[data-gateway-adapters="${CSS.escape(gatewayId)}"]`,
-                );
-                if (!(panel instanceof HTMLElement)) return;
-
-                const isVisible = panel.style.display !== "none";
-                if (isVisible) {
-                    panel.style.display = "none";
-                    return;
-                }
-
-                panel.innerHTML = `<p class="gateway-adapters-loading">...</p>`;
-                panel.style.display = "block";
-
-                const adapters = await loadGatewayAdapters(gatewayId);
-                panel.innerHTML = renderAdaptersPanel(adapters, gatewayId);
-                bindAdapterEntries(panel, adapters, gatewayId);
-            });
-        },
+async function toggleAdapter(gatewayId, adapterId, action) {
+    await apiFetch(
+        `/api/v1/gateways/${encodeURIComponent(gatewayId)}/adapters/${encodeURIComponent(adapterId)}/${action}`,
+        { method: "POST" },
     );
+}
+
+function bindAdapterToggles() {
+    root.querySelectorAll(
+        ".adapter-toggle[data-adapter][data-gateway]",
+    ).forEach((toggle) => {
+        if (!(toggle instanceof HTMLInputElement)) return;
+        toggle.addEventListener("change", async () => {
+            const adapterId = toggle.dataset.adapter;
+            const gatewayId = toggle.dataset.gateway;
+            if (!adapterId || !gatewayId) return;
+            const action = toggle.checked ? "enable" : "disable";
+            await toggleAdapter(gatewayId, adapterId, action);
+            allAdapters = await loadAllAdapters(gateways);
+            composer.refresh(elements);
+        });
+    });
+}
+
+function bindAdapterConfigureButtons() {
+    root.querySelectorAll(
+        ".adapter-configure-btn[data-adapter-id][data-gateway-id]",
+    ).forEach((btn) => {
+        if (!(btn instanceof HTMLElement)) return;
+        const adapterId = btn.dataset.adapterId;
+        const gatewayId = btn.dataset.gatewayId;
+        if (!adapterId || !gatewayId) return;
+
+        const adapter = allAdapters.find(
+            (a) =>
+                (a.senderId ?? a.id) === adapterId &&
+                a._gatewayId === gatewayId,
+        ) ?? { senderId: adapterId, name: adapterId };
+
+        btn.addEventListener("click", async () => {
+            await openAdapterConfig(
+                gatewayId,
+                adapterId,
+                adapter.name ?? adapterId,
+            );
+            allAdapters = await loadAllAdapters(gateways);
+            composer.refresh(elements);
+        });
+    });
 }
 
 function bindIntegrityRerun() {
@@ -877,51 +887,6 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
     }
 }
 
-function bindAdapterEntries(scope, scopedAdapters, scopedGatewayId) {
-    const container = scope ?? root;
-    container
-        .querySelectorAll(
-            ".provider-card--entry[data-adapter-id][data-gateway-id]",
-        )
-        .forEach((card) => {
-            if (!(card instanceof HTMLElement)) return;
-            const adapterId = card.dataset.adapterId;
-            const gatewayId = card.dataset.gatewayId;
-            if (!adapterId || !gatewayId) return;
-
-            const adapterPool =
-                scopedAdapters && scopedGatewayId === gatewayId
-                    ? scopedAdapters
-                    : allAdapters.map((a) =>
-                          a._gatewayId === gatewayId ? a : a,
-                      );
-            const adapter = adapterPool.find((a) => {
-                const id = a.senderId ?? a.id;
-                return (
-                    id === adapterId &&
-                    (a._gatewayId === gatewayId ||
-                        scopedGatewayId === gatewayId)
-                );
-            }) ?? { senderId: adapterId, name: adapterId };
-
-            async function handleOpen() {
-                await openAdapterConfig(
-                    gatewayId,
-                    adapterId,
-                    adapter.name ?? adapterId,
-                );
-            }
-
-            card.addEventListener("click", handleOpen);
-            card.addEventListener("keydown", (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    handleOpen();
-                }
-            });
-        });
-}
-
 async function loadAllAdapters(gatewayList) {
     const results = await Promise.all(
         gatewayList
@@ -969,7 +934,8 @@ const baseElements = [
             onRender: () => {
                 bindModuleToggles();
                 bindGatewayToggles();
-                bindGatewayAdapterButtons();
+                bindAdapterToggles();
+                bindAdapterConfigureButtons();
                 bindDependencyLinks();
             },
         },

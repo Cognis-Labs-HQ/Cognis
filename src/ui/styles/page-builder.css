@@ -267,11 +267,55 @@ code {
 .module-row summary {
     list-style: none;
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto auto auto;
     gap: 12px;
     align-items: center;
     cursor: pointer;
     padding: 16px;
+}
+
+.module-row-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.switch--inline {
+    margin-top: 0;
+}
+
+.gateway-adapters-inline {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.adapter-inline-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-1);
+}
+
+.adapter-inline-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.adapter-toggle {
+    display: none;
+}
+
+.adapter-configure-btn {
+    flex-shrink: 0;
 }
 
 .module-row[open] .module-chevron {

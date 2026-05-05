@@ -84,6 +84,7 @@ async function canViewProfile(
 export function createProfileRoutes(
     profileStore: DbProfileStore,
     fileGateway?: FileStorageGateway,
+    isGatewayEnabled?: () => boolean,
 ) {
     return async (
         req: IncomingMessage,
@@ -94,6 +95,18 @@ export function createProfileRoutes(
 
         if (url.pathname === "/api/v1/profile/ping" && req.method === "GET") {
             if (!requireAuth(req, res, "user")) return true;
+            if (isGatewayEnabled && !isGatewayEnabled()) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "gateway_disabled",
+                            message: "Profile gateway is disabled",
+                        },
+                    }),
+                );
+                return true;
+            }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { available: true } }));
             return true;

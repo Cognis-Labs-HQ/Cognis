@@ -11,40 +11,6 @@
     margin: 0 0 14px;
 }
 
-.provider-card {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    margin: 10px 0;
-}
-
-.provider-card--entry {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    cursor: pointer;
-    transition:
-        border-color 0.15s ease,
-        background 0.15s ease;
-}
-
-.provider-card--entry:hover {
-    border-color: var(--border-strong);
-    background: var(--surface-soft);
-}
-
-.provider-card--entry:focus {
-    outline: 2px solid var(--accent, #3b82f6);
-    outline-offset: 2px;
-}
-
-.provider-entry-name {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
 .provider-popup-toggle-row {
     display: flex;
     align-items: center;
@@ -153,11 +119,6 @@
     margin: 0 0 4px;
 }
 
-.provider-missing-alert {
-    color: var(--danger);
-    margin-left: 6px;
-}
-
 .notif-debug-panel {
     display: flex;
     flex-direction: column;
@@ -252,36 +213,4 @@
 
 .components-section-body {
     min-width: 0;
-}
-
-.gateway-meta-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 8px;
-}
-
-.gateway-adapters-btn {
-    flex-shrink: 0;
-}
-
-.gateway-adapters-panel {
-    padding: 8px 16px 4px;
-    border-top: 1px solid var(--color-border, #e2e8f0);
-}
-
-.gateway-adapters-empty {
-    color: var(--color-text-muted, #64748b);
-    font-size: 0.9em;
-}
-
-.gateway-adapters-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.gateway-adapters-loading {
-    color: var(--color-text-muted, #64748b);
-    font-size: 0.9em;
 }

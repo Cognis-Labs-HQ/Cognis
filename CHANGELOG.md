@@ -12,10 +12,20 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Gateway enable/disable: `GatewayRegistry` now tracks `status: "active" | "disabled"` per gateway with `enable(id)` and `disable(id)` methods; `POST /api/v1/gateways/:id/enable` and `POST /api/v1/gateways/:id/disable` (admin) toggle gateway state at runtime
 - `GatewayManifest.hasAdapters?: boolean`: signals whether a gateway exposes a `/api/v1/gateways/:id/adapters` endpoint; notify gateway sets this to `true`; admin UI only fetches adapters for flagged gateways, eliminating 404 noise for non-adapter gateways
 - Admin UI — Modules and Gateways now render as separate headed sections instead of a dropdown tab; gateway details show `required` (boolean) and adapter count; gateway rows include an enable/disable toggle matching the module pattern
-- Admin UI — gateway expanded detail shows a "Go to adapters" button (gateways with `hasAdapters` only) that loads and toggles an inline adapters panel; adapter click handler now uses locally-fetched adapter data so opening the popup never silently fails
 - Admin UI — gateway detail shows a "Required" row (boolean) and a "Dependencies" row listing each gateway ID from `requires` as a clickable link that opens and scrolls to that gateway's row
 - Admin UI — adapter config popup now maps backend field names to human-readable labels using existing SMTP i18n keys with camelCase fallback; `secure` field rendered as a dropdown (None / STARTTLS / TLS); `user`/`password` fields wrapped in `.provider-auth-fields` and hidden when `authDisabled` is checked
 - Slider `<label>` elements for module and gateway toggles now carry a `title` tooltip via `ui.app.admin.toggle_module` / `ui.app.admin.toggle_gateway` i18n keys
+- `CoreNotificationGateway.enableSender(id)` and `disableSender(id)` methods: toggle a sender's enabled state and persist the change without overwriting the rest of the adapter config ([3adec54](https://github.com/le-firehawk/Cognis/commit/3adec54))
+- `POST /api/v1/gateways/:id/adapters/:adapterId/enable` and `.../disable` endpoints added to notify gateway adapter routes ([3adec54](https://github.com/le-firehawk/Cognis/commit/3adec54))
+- `createProfileRoutes` accepts an optional `isGatewayEnabled?: () => boolean` callback; when supplied and returns `false`, `GET /api/v1/profile/ping` returns 503 so the dashboard hides the Profile link immediately after the profile gateway is disabled ([3adec54](https://github.com/le-firehawk/Cognis/commit/3adec54))
+- i18n: `ui.reuse.generic.true`, `ui.reuse.generic.false`, `ui.reuse.generic.configure` keys added across all four language files ([3adec54](https://github.com/le-firehawk/Cognis/commit/3adec54))
+
+### Changed
+
+- Admin UI — module and gateway enable/disable sliders moved into `<summary>` (next to title) with `onclick="event.stopPropagation()"` so clicking the slider does not expand or collapse the row ([3adec54](https://github.com/le-firehawk/Cognis/commit/3adec54))
+- Admin UI — gateway "Required" field now displays "True" / "False" text (via new i18n keys) instead of repurposing the Active/Disabled pill labels ([3adec54](https://github.com/le-firehawk/Cognis/commit/3adec54))
+- Admin UI — adapter count row removed from gateway details; adapters are now listed inline as rows with a per-adapter enable/disable slider and a "Configure" button that opens the adapter settings popup ([3adec54](https://github.com/le-firehawk/Cognis/commit/3adec54))
+- Notify gateway `ctx.gatewayRegistry.register()` call now includes `hasAdapters: true`; previously the field was absent, causing `loadAllAdapters()` to skip the notify gateway and show zero adapters in the admin UI ([3adec54](https://github.com/le-firehawk/Cognis/commit/3adec54))
 
 ### Fixed
 

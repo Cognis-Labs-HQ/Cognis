@@ -15,6 +15,9 @@
 
   <string name="ui.reuse.generic.enable">Aktifkan</string>
   <string name="ui.reuse.generic.disable">Nonaktifkan</string>
+  <string name="ui.reuse.generic.true">Benar</string>
+  <string name="ui.reuse.generic.false">Salah</string>
+  <string name="ui.reuse.generic.configure">Konfigurasi</string>
   <string name="ui.reuse.generic.actions">Aksi</string>
   <string name="ui.reuse.generic.id">ID</string>
   <string name="ui.reuse.generic.version">Versi</string>
