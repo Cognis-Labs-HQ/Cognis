@@ -103,9 +103,12 @@ export async function bootstrapGateways(
 
         // Propagate `requires` from the manifest into the registry entry so
         // the admin UI can render dependency info for each gateway.
-        if (meta.requires.length > 0 && ctx.gatewayRegistry.get(gatewayId)) {
+        const manifestRequires = Array.isArray(manifest.requires)
+            ? manifest.requires
+            : [];
+        if (manifestRequires.length > 0 && ctx.gatewayRegistry.get(gatewayId)) {
             ctx.gatewayRegistry.patch(gatewayId, {
-                requires: meta.requires,
+                requires: manifestRequires,
             });
         }
 
