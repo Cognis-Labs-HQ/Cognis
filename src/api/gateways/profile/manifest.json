@@ -1,8 +1,9 @@
 {
     "id": "profile",
     "name": "Profile Gateway",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "required": false,
+    "requires": ["db", "files"],
     "description": "User profiles, social graph, posts, and file storage.",
     "publisher": "Cognis Labs"
 }

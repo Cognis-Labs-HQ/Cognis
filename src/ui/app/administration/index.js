@@ -373,6 +373,47 @@ function bindSummarySliderClicks() {
     );
 }
 
+const EXPANDED_STATE_KEY = "admin-expanded-rows";
+
+function saveExpandedState() {
+    const openIds = [];
+    root.querySelectorAll("details.module-row[open]").forEach((el) => {
+        const gwId = el.dataset.gateway;
+        const modId = el.dataset.module;
+        if (gwId) openIds.push("gateway:" + gwId);
+        else if (modId) openIds.push("module:" + modId);
+    });
+    try {
+        sessionStorage.setItem(EXPANDED_STATE_KEY, JSON.stringify(openIds));
+    } catch {}
+}
+
+function restoreExpandedState() {
+    let openIds;
+    try {
+        openIds = JSON.parse(
+            sessionStorage.getItem(EXPANDED_STATE_KEY) ?? "[]",
+        );
+    } catch {
+        openIds = [];
+    }
+    const openSet = new Set(openIds);
+    root.querySelectorAll("details.module-row").forEach((el) => {
+        const gwId = el.dataset.gateway;
+        const modId = el.dataset.module;
+        const key = gwId ? "gateway:" + gwId : modId ? "module:" + modId : null;
+        if (key && openSet.has(key)) {
+            el.setAttribute("open", "");
+        }
+    });
+}
+
+function bindExpandedStateListeners() {
+    root.querySelectorAll("details.module-row").forEach((el) => {
+        el.addEventListener("toggle", saveExpandedState);
+    });
+}
+
 function bindGatewayAdapterButtons() {
     // This function is intentionally empty — adapters are now rendered inline.
     // Previously it managed a collapsible panel; that pattern is replaced by
@@ -419,8 +460,11 @@ function bindAdapterRows() {
         ) ?? { senderId: adapterId, name: adapterId };
 
         async function handleOpen(e) {
-            const toggle = row.querySelector(".adapter-toggle");
-            if (toggle && (e.target === toggle || toggle.contains(e.target)))
+            const switchLabel = row.querySelector(".switch--inline");
+            if (
+                switchLabel &&
+                (e.target === switchLabel || switchLabel.contains(e.target))
+            )
                 return;
             await openAdapterConfig(
                 gatewayId,
@@ -959,6 +1003,8 @@ const baseElements = [
                 bindAdapterRows();
                 bindSummarySliderClicks();
                 bindDependencyLinks();
+                restoreExpandedState();
+                bindExpandedStateListeners();
             },
         },
     },

@@ -18,7 +18,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "files",
         name: "File Storage Gateway",
-        version: "0.1.0",
+        version: "1.0.0",
         description: "Provides local file storage for uploads.",
         publisher: "Cognis Labs",
     });

@@ -487,6 +487,7 @@ export class SmtpNotificationSender implements NotificationSender {
             from: this.config.from,
             senderName: this.config.senderName ?? "",
             user: this.config.user,
+            password: "",
             secure: this.config.secure,
             allowSelfSigned: this.config.allowSelfSigned ?? false,
             authDisabled: this.config.authDisabled ?? false,
@@ -505,7 +506,7 @@ export class SmtpNotificationSender implements NotificationSender {
         if (typeof config.senderName === "string")
             this.config.senderName = config.senderName;
         if (typeof config.user === "string") this.config.user = config.user;
-        if (typeof config.password === "string")
+        if (typeof config.password === "string" && config.password !== "")
             this.config.password = config.password;
         if (
             config.secure === "none" ||

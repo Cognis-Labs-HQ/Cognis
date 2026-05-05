@@ -61,7 +61,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "0.1.0",
+        version: "1.0.0",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
         hasAdapters: true,

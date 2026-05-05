@@ -181,7 +181,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "profile",
         name: "Profile Gateway",
-        version: "0.1.0",
+        version: "1.0.0",
         description: "User profiles, social graph, posts, and file storage.",
         publisher: "Cognis Labs",
     });

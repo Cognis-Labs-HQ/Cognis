@@ -29,11 +29,21 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Admin UI — SMTP adapter popup: `user`/`password` fields moved into the main `.provider-fields` grid (above the "Disable Authentication" toggle) rather than below it ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
 - Admin UI — SMTP adapter popup: `<select>` dropdown now fills the full width of its grid cell via `.provider-popup-field input, .provider-popup-field select { width: 100%; }` ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
 - Notify gateway `ctx.gatewayRegistry.register()` call now includes `hasAdapters: true`; previously the field was absent, causing `loadAllAdapters()` to skip the notify gateway and show zero adapters in the admin UI ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
+- Admin UI — adapter row click handler now checks the whole `.switch--inline` label (not just the hidden `input` element), so clicking anywhere on the toggle track/knob correctly blocks the popup ([90c6df4](https://github.com/le-firehawk/Cognis/commit/90c6df4))
+- Admin UI — expanded gateway/module view state now persisted to `sessionStorage` and restored on page refresh via `saveExpandedState()`, `restoreExpandedState()`, and `bindExpandedStateListeners()` ([90c6df4](https://github.com/le-firehawk/Cognis/commit/90c6df4))
+- Gateway manifests bumped from `0.1.0` to `1.0.0`; corresponding version strings in bootstrap files updated to match ([90c6df4](https://github.com/le-firehawk/Cognis/commit/90c6df4))
+- `db` gateway bootstrapped second (after `logging`) in `bootstrapGateways()` sort order so it is registered before any gateway that declares it as a required dependency ([90c6df4](https://github.com/le-firehawk/Cognis/commit/90c6df4))
+
+### Added
+
+- DB gateway (`src/api/gateways/db/`) — minimal gateway that registers itself in `GatewayRegistry` with `required: true`; allows notify and profile gateways to declare it as a dependency and ensures it appears in the admin UI with the correct required flag ([90c6df4](https://github.com/le-firehawk/Cognis/commit/90c6df4))
+- Profile gateway manifest: added `"requires": ["db", "files"]`; notiy gateway manifest: added `"requires": ["db"]` ([90c6df4](https://github.com/le-firehawk/Cognis/commit/90c6df4))
 
 ### Fixed
 
-- Admin UI — adapter inline toggle `isEnabled` condition fixed: previously `adapter.enabled !== false` evaluated `true` when `enabled` was `undefined`, causing the slider to always appear checked even after disabling an adapter; now uses `adapter.active === true` which correctly reflects the backend-reported state ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
-- `.switch--inline` gains `align-self: center` so the toggle is vertically centred in the `<summary>` grid alongside the status pill and chevron ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
+- Admin UI — adapter inline toggle `isEnabled` condition fixed: previously `adapter.enabled !== false` evaluated `true` when `enabled` was `undefined`, causing the slider to always appear checked even after disabling an adapter; now uses `!!adapter.active` which correctly reflects the backend-reported state ([9efa200](https://github.com/le-firehawk/Cognis/commit/9efa200))
+- `.switch--inline` — changed from `display: inline-flex` to `display: flex; height: 28px; line-height: 0` so the toggle is reliably vertically centred in the `<summary>` grid in all browsers ([90c6df4](https://github.com/le-firehawk/Cognis/commit/90c6df4))
+- SMTP adapter `getConfig()` now includes `password: ""` so the password field always appears in the adapter settings form; `setConfig()` ignores empty-string password values to avoid overwriting a stored password when the user saves without re-entering it; `saveProviderConfig` strips empty password before persisting to avoid clearing the stored value ([90c6df4](https://github.com/le-firehawk/Cognis/commit/90c6df4))
 - `src/api/tests/docs-routes.test.ts`: updated slug assertions to match current directory structure (`components/docs/ui` instead of the stale `docs/components/ui`); both docs tests now pass
 
 ### Changed

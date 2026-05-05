@@ -153,7 +153,11 @@ export class CoreNotificationGateway
         if (sender && typeof sender.setConfig === "function") {
             sender.setConfig(senderConfig);
         }
-        await this.configStore?.saveConfig(senderId, config);
+        const persistConfig: Record<string, unknown> = { ...config };
+        if (persistConfig.password === "") {
+            delete persistConfig.password;
+        }
+        await this.configStore?.saveConfig(senderId, persistConfig);
     }
 
     async loadPersistedConfigs(): Promise<void> {

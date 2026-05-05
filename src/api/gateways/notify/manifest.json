@@ -1,8 +1,9 @@
 {
     "id": "notify",
     "name": "Notification Gateway",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "required": false,
+    "requires": ["db"],
     "hasAdapters": true,
     "description": "Dispatches notifications via pluggable adapter senders.",
     "publisher": "Cognis Labs"
