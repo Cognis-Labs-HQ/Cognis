@@ -1,10 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth } from "../../auth/guard.js";
+import { requireAuth } from "../../../api/auth/guard.js";
 import type {
     DbProfileStore,
     AccountProfile,
-} from "../../adapters/db/profile-store.js";
-import { visibilityRank } from "../../adapters/db/profile-store.js";
+} from "../../../adapters/db/shared/profile-store.js";
+import { visibilityRank } from "../../../adapters/db/shared/profile-store.js";
 
 function publicProfile(profile: AccountProfile) {
     return {

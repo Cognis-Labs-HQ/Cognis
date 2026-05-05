@@ -1,11 +1,24 @@
-import type { AuthContext } from "@cognis/core";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type {
     DbExecutor,
     SupportedDbType,
-} from "../../api/adapters/db/account-store.js";
-import type { LocalAccountStore } from "../../api/adapters/local-auth-gateway.js";
+} from "../../adapters/db/shared/account-store.js";
+import type { LocalAccountStore } from "../../adapters/auth/local/auth-adapter.js";
+
+export interface AuthContext {
+    accountId: string;
+    provider: string;
+    externalUserId: string;
+    email?: string;
+    isAdmin?: boolean;
+    role?: string;
+}
+
+export interface AuthGateway {
+    authenticate(token: string): Promise<AuthContext | null>;
+    createLocalAdmin(username: string, password: string): Promise<AuthContext>;
+}
 
 export interface AuthConfigField {
     key: string;

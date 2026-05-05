@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserEmailRoutes } from "../bootstrap.js";
-import { DbNotificationStore } from "../../../api/adapters/db/notification-store.js";
-import { SqliteExecutor } from "../../../api/adapters/db/account-store.js";
+import { DbNotificationStore } from "../../../adapters/db/shared/notification-store.js";
+import { SqliteExecutor } from "../../../adapters/db/shared/account-store.js";
 import {
     TfaCodeService,
     InMemoryTfaStore,

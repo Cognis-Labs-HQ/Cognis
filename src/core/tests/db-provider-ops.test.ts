@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SqliteDbGateway } from "../../adapters/db/sqlite/sqlite-db-gateway.js";
-import { PostgresDbGateway } from "../../adapters/db/postgres/postgres-db-gateway.js";
-import { MariaDbGateway } from "../../adapters/db/mariadb/mariadb-db-gateway.js";
-import { MemoryDatabaseGateway } from "../../adapters/db/memory/memory-db-gateway.js";
+import { SqliteDbGateway } from "../../adapters/db/sqlite/adapter.js";
+import { PostgresDbGateway } from "../../adapters/db/postgres/adapter.js";
+import { MariaDbGateway } from "../../adapters/db/mariadb/adapter.js";
+import { MemoryDatabaseGateway } from "../../adapters/db/memory/adapter.js";
 
 test("all supported db gateways simulate query/execute/transaction operations", async () => {
     const sqlite = new SqliteDbGateway({

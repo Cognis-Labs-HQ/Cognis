@@ -4,7 +4,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { HealthService } from "@cognis/core";
 import { requireAuth } from "../../auth/guard.js";
 import { readJson } from "../read-json.js";
-import type { UserPreferenceStore } from "../preferences/index.js";
+import type { UserPreferenceStore } from "../../../gateways/profile/routes/preferences.js";
 
 async function listLanguages() {
     const root = join(process.cwd(), "src", "ui", "languages");

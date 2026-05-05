@@ -5,8 +5,8 @@ import type {
     AccountProfile,
     AccountVisibility,
     AccountRole,
-} from "../../adapters/db/profile-store.js";
-import { visibilityRank } from "../../adapters/db/profile-store.js";
+} from "../../../adapters/db/shared/profile-store.js";
+import { visibilityRank } from "../../../adapters/db/shared/profile-store.js";
 import type { FileStorageGateway } from "@cognis/core";
 import { readRawBody, readJson } from "../read-json.js";
 

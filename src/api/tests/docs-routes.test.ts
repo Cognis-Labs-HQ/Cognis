@@ -20,7 +20,7 @@ test("docs route handles docs index with markdown slugs", async () => {
     );
     assert.equal(handled, true);
     assert.equal(status, 200);
-    assert.match(body, /"slug":"components\/docs\/ui"/);
+    assert.match(body, /"slug":"docs\/ui"/);
 });
 
 test("docs route supports slug lookup", async () => {
@@ -37,7 +37,7 @@ test("docs route supports slug lookup", async () => {
                 body = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/docs/components/docs/ui"),
+        new URL("http://localhost/api/v1/docs/docs/ui"),
     );
     assert.equal(handled, true);
     assert.equal(status, 200);

@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createNotificationRoutes } from "../index.js";
+import { createNotificationRoutes } from "../notifications.js";
 import {
     CoreNotificationGateway,
     VolatileNotificationPreferenceStore,
-} from "../../../../gateways/notify/gateway.js";
-import { issueAccessToken } from "../../../auth/access-tokens.js";
+} from "../../gateway.js";
+import { issueAccessToken } from "../../../../api/auth/access-tokens.js";
 import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
 
 function requestWithBody(

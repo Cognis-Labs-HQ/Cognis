@@ -1,15 +1,19 @@
-import { DbProfileStore } from "../../api/adapters/db/profile-store.js";
+import { DbProfileStore } from "../../adapters/db/shared/profile-store.js";
 import { createProfileRoutes } from "../../api/routes/profile/index.js";
-import { createSocialRoutes } from "../../api/routes/social/index.js";
-import { createPostRoutes } from "../../api/routes/posts/index.js";
-import { createFileRoutes } from "../../api/routes/files/index.js";
+import { createSocialRoutes } from "./routes/social.js";
+import { createPostRoutes } from "./routes/posts.js";
+import { createFileRoutes } from "./routes/files.js";
+import {
+    createPreferencesRoutes,
+    type UserPreferenceStore,
+} from "./routes/preferences.js";
 import type { FileStorageGateway } from "@cognis/core";
 import type { GatewayBootstrapContext } from "../../api/gateway-bootstrap.js";
 import {
     getCookieSession,
     setPageSecurityHeaders,
 } from "../../api/auth/guard.js";
-import type { AccountRole } from "../../api/adapters/db/profile-store.js";
+import type { AccountRole } from "../../adapters/db/shared/profile-store.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -163,6 +167,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     ctx.routeRegistry.register(createSocialRoutes(profileStore));
     ctx.routeRegistry.register(createPostRoutes(profileStore));
+
+    const prefStore =
+        ctx.capabilities.get<UserPreferenceStore>("preferences:store");
+    if (prefStore) {
+        ctx.routeRegistry.register(createPreferencesRoutes(prefStore));
+    }
 
     ctx.gatewayRegistry.register({
         id: "profile",

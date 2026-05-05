@@ -8,12 +8,9 @@ import { createModuleRoutes } from "./routes/modules/index.js";
 import { createSystemRoutes } from "./routes/system/index.js";
 import { createDocsRoutes } from "./routes/docs/index.js";
 import { createUiRoutes } from "./routes/ui/index.js";
-import { createModuleExtensionRoutes } from "./routes/module-extensions/index.js";
-import type { LocalAccountStore } from "./adapters/local-auth-gateway.js";
-import {
-    createPreferencesRoutes,
-    type UserPreferenceStore,
-} from "./routes/preferences/index.js";
+import { createModuleExtensionRoutes } from "../modules/routes/module-extensions.js";
+import type { LocalAccountStore } from "../adapters/auth/local/auth-adapter.js";
+import type { UserPreferenceStore } from "../gateways/profile/routes/preferences.js";
 import { createUserRoutes } from "./routes/users/index.js";
 import type { RouteRegistry } from "./route-registry.js";
 import { createGatewayRoutes } from "./routes/gateways/index.js";
@@ -89,7 +86,6 @@ export function buildServer(deps: ApiDependencies) {
     );
     const docsRoutes = createDocsRoutes();
     const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway, deps.uiRegistry);
-    const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
     const userRoutes = deps.accountStore
         ? createUserRoutes(
               deps.accountStore,
@@ -169,16 +165,6 @@ export function buildServer(deps: ApiDependencies) {
                         durationMs: Date.now() - startedAt,
                     },
                 );
-                return;
-            }
-
-            const handledByPreferences = await preferencesRoutes(req, res, url);
-            if (handledByPreferences) {
-                log("info", "Request handled by preferences routes.", {
-                    method: req.method ?? "GET",
-                    path: url.pathname,
-                    durationMs: Date.now() - startedAt,
-                });
                 return;
             }
 

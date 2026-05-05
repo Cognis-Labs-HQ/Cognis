@@ -1,13 +1,4 @@
-import type { ModuleManifest } from "../contracts/module-manifest.js";
-
-export interface ModuleState {
-    moduleId: string;
-    enabled: boolean;
-}
-
-export interface ModuleRuntimeGateway {
-    listManifests(): Promise<ModuleManifest[]>;
-    installFromZip(binary: Uint8Array): Promise<ModuleManifest>;
-    enable(moduleId: string): Promise<ModuleState>;
-    disable(moduleId: string): Promise<ModuleState>;
-}
+export type {
+    ModuleState,
+    ModuleRuntimeGateway,
+} from "../../modules/gateway.js";

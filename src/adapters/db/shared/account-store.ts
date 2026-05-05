@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import type { AuthContext } from "@cognis/core";
-import type { LocalAccountStore } from "./local-auth-gateway.js";
+import type { LocalAccountStore } from "../../auth/local/auth-adapter.js";
 
 export type SupportedDbType = "sqlite" | "postgresql" | "mariadb";
 

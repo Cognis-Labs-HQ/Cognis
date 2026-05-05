@@ -4,7 +4,7 @@ import { createAuthRoutes } from "../routes/auth/index.js";
 import {
     VolatileLocalAccountStore,
     LocalAuthGateway,
-} from "../adapters/local-auth-gateway.js";
+} from "../../adapters/auth/local/auth-adapter.js";
 
 function requestWithBody(method: string, body: Record<string, unknown>) {
     const chunks = [Buffer.from(JSON.stringify(body))];

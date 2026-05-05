@@ -8,8 +8,8 @@ import { initializeDatabaseSchema } from "./bootstrap/db-init.js";
 import {
     createDbExecutor,
     type SupportedDbType,
-} from "./adapters/db/account-store.js";
-import { DbUserPreferenceStore } from "./adapters/db/preference-store.js";
+} from "../adapters/db/shared/account-store.js";
+import { DbUserPreferenceStore } from "../adapters/db/shared/preference-store.js";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { issueAccessToken } from "./auth/access-tokens.js";
@@ -20,7 +20,7 @@ import { CapabilityStore } from "./gateway-bootstrap.js";
 import { UIRegistry } from "./ui-registry.js";
 import { bootstrapGateways } from "../gateways/index.js";
 import type { BootstrapLog } from "./gateway-bootstrap.js";
-import type { LocalAccountStore } from "./adapters/local-auth-gateway.js";
+import type { LocalAccountStore } from "../adapters/auth/local/auth-adapter.js";
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
     private readonly manifests: ModuleManifest[];
@@ -187,6 +187,8 @@ const uiRegistry = new UIRegistry();
 const gatewaysRoot =
     process.env.COGNIS_GATEWAYS_ROOT ??
     path.resolve(process.cwd(), "src", "gateways");
+
+capabilities.contribute("preferences:store", preferenceStore);
 
 const requiredGatewayIds = await bootstrapGateways(
     {

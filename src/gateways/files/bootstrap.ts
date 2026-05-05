@@ -1,4 +1,4 @@
-import { LocalFileGateway } from "../../adapters/file/local/local-file-gateway.js";
+import { LocalFileGateway } from "../../adapters/file/local/adapter.js";
 import type { GatewayBootstrapContext } from "../../api/gateway-bootstrap.js";
 
 /**

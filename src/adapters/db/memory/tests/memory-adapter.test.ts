@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { MemoryDatabaseGateway } from "../memory-db-gateway.js";
+import { MemoryDatabaseGateway } from "../adapter.js";
 
 test("memory db gateway logs statements", async () => {
     const gateway = new MemoryDatabaseGateway();

@@ -1,8 +1,8 @@
-import { requireAuth, getAuthClaims } from "../../auth/guard.js";
+import { requireAuth, getAuthClaims } from "../../../api/auth/guard.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readJson } from "../read-json.js";
-import type { CoreNotificationGateway } from "../../../gateways/notify/gateway.js";
-import type { DbNotificationStore } from "../../adapters/db/notification-store.js";
+import { readJson } from "../../../api/routes/read-json.js";
+import type { CoreNotificationGateway } from "../gateway.js";
+import type { DbNotificationStore } from "../../../adapters/db/shared/notification-store.js";
 
 export function createNotificationRoutes(
     gateway: CoreNotificationGateway,

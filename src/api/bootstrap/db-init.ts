@@ -24,7 +24,7 @@
 
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import type { DbExecutor } from "../adapters/db/account-store.js";
+import type { DbExecutor } from "../../adapters/db/shared/account-store.js";
 
 /** Minimal logging interface required by the database initializer. */
 export interface DbInitLogger {

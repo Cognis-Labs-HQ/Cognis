@@ -1,7 +1,7 @@
 import type {
     DbExecutor,
     SupportedDbType,
-} from "./adapters/db/account-store.js";
+} from "../adapters/db/shared/account-store.js";
 import type { RouteRegistry } from "./route-registry.js";
 import type { GatewayRegistry } from "./gateway-registry.js";
 import type { UIRegistry } from "./ui-registry.js";

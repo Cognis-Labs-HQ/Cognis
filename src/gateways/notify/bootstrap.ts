@@ -5,7 +5,7 @@ import { CoreNotificationGateway } from "./gateway.js";
 import {
     DbNotificationStore,
     DbNotificationPreferenceStore,
-} from "../../api/adapters/db/notification-store.js";
+} from "../../adapters/db/shared/notification-store.js";
 import { TfaCodeService, InMemoryTfaStore } from "../../api/utils/tfa-code.js";
 import {
     VerifyTokenService,
@@ -13,9 +13,9 @@ import {
 } from "../../api/utils/verify-token.js";
 import type { GatewayBootstrapContext } from "../../api/gateway-bootstrap.js";
 import type { GatewayRegistry } from "../../api/gateway-registry.js";
-import { createNotificationRoutes } from "../../api/routes/notifications/index.js";
+import { createNotificationRoutes } from "./routes/notifications.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { DbNotificationStore as IDbNotificationStore } from "../../api/adapters/db/notification-store.js";
+import type { DbNotificationStore as IDbNotificationStore } from "../../adapters/db/shared/notification-store.js";
 
 /**
  * Standard gateway bootstrap entry point. Discovers notification adapters,

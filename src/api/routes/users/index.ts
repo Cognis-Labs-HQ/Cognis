@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { LocalAccountStore } from "../../adapters/local-auth-gateway.js";
+import type { LocalAccountStore } from "../../../adapters/auth/local/auth-adapter.js";
 import { getAuthClaims, requireAuth } from "../../auth/guard.js";
-import type { UserPreferenceStore } from "../preferences/index.js";
+import type { UserPreferenceStore } from "../../../gateways/profile/routes/preferences.js";
 import { readJson } from "../read-json.js";
 
 const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin"]);

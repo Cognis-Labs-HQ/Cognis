@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
     createPreferencesRoutes,
     VolatileUserPreferenceStore,
-} from "../routes/preferences/index.js";
+} from "../../gateways/profile/routes/preferences.js";
 import { issueAccessToken } from "../auth/access-tokens.js";
 
 test("preferences routes save and load layout preferences", async () => {
