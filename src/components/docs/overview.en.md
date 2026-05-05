@@ -15,7 +15,10 @@ Cognis is a modular language-study platform for independent learners, teachers, 
 ## Key concepts
 
 - **Modular content system** allows curriculum or activity units to be composed and scaled for different language goals.
-- **Gateway-first architecture** keeps domain behavior portable across infrastructure backends.
+- **Gateway-first architecture** keeps domain behavior portable across infrastructure backends. Gateways are the sole owners of their API routes, adapters, UI contributions, tests, and docs. The core never imports gateway code directly.
+- **UIRegistry** lets gateways inject admin panels, static assets, and per-page UI elements at runtime without core knowing which gateways are present.
+- **Auto-discovered adapters** — each gateway scans `src/adapters/<gateway-id>/` at startup and loads all adapters found there without core involvement.
+- **Cross-gateway dependency declarations** — gateways declare `requires` in their `manifest.json`; startup validates that all declared dependencies are registered.
 - **Role-aware workflows** support solo learning, teacher-led instruction, and community participation.
 - **Lightweight social layer** increases retention through identity, progress signals, and learner-to-learner communication.
 

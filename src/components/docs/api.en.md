@@ -28,6 +28,16 @@
 - `POST /api/v1/modules/:id/enable`
 - `POST /api/v1/modules/:id/disable`
 
+### Gateways (admin)
+
+- `GET /api/v1/gateways` — list all registered gateways (id, name, version, description, requires)
+- `GET /api/v1/gateways/:id` — single gateway manifest
+- `GET /api/v1/admin/sections` — admin UI sections contributed by gateways via `UIRegistry`
+
+### UI extensions
+
+- `GET /api/v1/ui/page-extensions/:pageId` — page elements contributed by gateways for the named page (user auth); used by core pages to load gateway-contributed UI modules dynamically
+
 ### Docs
 
 - `GET /api/v1/docs`
@@ -37,11 +47,12 @@
 
 Requires a valid bearer token for all endpoints.
 
+- `GET /api/v1/profile/ping` — capability check; returns `{ available: true }` if the profile gateway is active
 - `GET /api/v1/profile` — own profile (handle, displayName, bio, location, website, visibility, counts)
 - `PATCH /api/v1/profile` — update own profile fields (displayName, bio, location, website, visibility)
-- `PUT /api/v1/profile/avatar` — upload avatar; accepted types: jpeg, png, webp; size capped by image limit
+- `PUT /api/v1/profile/avatar` — upload avatar; accepted types: jpeg, png, webp; size capped by image limit; returns `503` if file storage is unavailable
 - `DELETE /api/v1/profile/avatar` — remove own avatar
-- `PUT /api/v1/profile/banner` — upload banner; accepted types: jpeg, png, webp, gif; size capped by image limit
+- `PUT /api/v1/profile/banner` — upload banner; accepted types: jpeg, png, webp, gif; size capped by image limit; returns `503` if file storage is unavailable
 - `DELETE /api/v1/profile/banner` — remove own banner
 - `GET /api/v1/users/:handle/profile` — public profile; gated by account visibility and block state
 

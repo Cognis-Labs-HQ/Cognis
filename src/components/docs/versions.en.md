@@ -24,7 +24,16 @@ Every gateway, adapter, and module carries a `package.json` with a `version` fie
 | SAML Auth           | `src/adapters/auth-saml/`     | `0.1.0` |
 | OIDC SSO Auth       | `src/adapters/auth-sso-oidc/` | `0.1.0` |
 
-## Gateways (Core Contracts)
+## Gateways
+
+| Component             | Path                        | Version |
+| --------------------- | --------------------------- | ------- |
+| Notification (notify) | `src/api/gateways/notify/`  | `0.1.0` |
+| Profile               | `src/api/gateways/profile/` | `0.1.0` |
+| File Storage          | `src/api/gateways/files/`   | `0.1.0` |
+| Logging               | `src/api/gateways/logging/` | `0.1.0` |
+
+## Core contracts
 
 | Component    | Path        | Version |
 | ------------ | ----------- | ------- |

@@ -7,6 +7,16 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- `src/api/tests/docs-routes.test.ts`: updated slug assertions to match current directory structure (`components/docs/ui` instead of the stale `docs/components/ui`); both docs tests now pass
+
+### Changed
+
+- `src/components/docs/api.en.md`: documented new gateway API endpoints (`GET /api/v1/gateways`, `GET /api/v1/gateways/:id`, `GET /api/v1/admin/sections`), page-extensions route (`GET /api/v1/ui/page-extensions/:pageId`), and profile ping (`GET /api/v1/profile/ping`); noted `503` behaviour for avatar/banner when file gateway is absent
+- `src/components/docs/overview.en.md`: added UIRegistry, auto-discovered adapters, and cross-gateway dependency declarations to Key Concepts
+- `src/components/docs/versions.en.md`: added Gateways section with all four gateways (notify, profile, files, logging); renamed "Gateways (Core Contracts)" to "Core contracts"
+
 ### Added
 
 - `src/api/ui-registry.ts` — `UIRegistry` class: gateways register admin-page sections (`{ id, label, scriptUrl }`) and static asset directories; core serves them without knowing gateway content
