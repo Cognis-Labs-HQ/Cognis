@@ -310,6 +310,12 @@ code {
     color: var(--text);
 }
 
+.dependency-link {
+    color: var(--color-accent, #3b82f6);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .switch {
     display: inline-flex;
     align-items: center;

@@ -11,8 +11,9 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 - Gateway enable/disable: `GatewayRegistry` now tracks `status: "active" | "disabled"` per gateway with `enable(id)` and `disable(id)` methods; `POST /api/v1/gateways/:id/enable` and `POST /api/v1/gateways/:id/disable` (admin) toggle gateway state at runtime
 - `GatewayManifest.hasAdapters?: boolean`: signals whether a gateway exposes a `/api/v1/gateways/:id/adapters` endpoint; notify gateway sets this to `true`; admin UI only fetches adapters for flagged gateways, eliminating 404 noise for non-adapter gateways
-- Admin UI — Modules and Gateways now render as separate headed sections instead of a dropdown tab; gateway details show `requires` and adapter count; gateway rows include an enable/disable toggle matching the module pattern
-- Admin UI — gateway expanded detail shows a "Go to adapters" button (gateways with `hasAdapters` only) that loads and toggles an inline adapters panel
+- Admin UI — Modules and Gateways now render as separate headed sections instead of a dropdown tab; gateway details show `required` (boolean) and adapter count; gateway rows include an enable/disable toggle matching the module pattern
+- Admin UI — gateway expanded detail shows a "Go to adapters" button (gateways with `hasAdapters` only) that loads and toggles an inline adapters panel; adapter click handler now uses locally-fetched adapter data so opening the popup never silently fails
+- Admin UI — gateway detail shows a "Required" row (boolean) and a "Dependencies" row listing each gateway ID from `requires` as a clickable link that opens and scrolls to that gateway's row
 - Admin UI — adapter config popup now maps backend field names to human-readable labels using existing SMTP i18n keys with camelCase fallback; `secure` field rendered as a dropdown (None / STARTTLS / TLS); `user`/`password` fields wrapped in `.provider-auth-fields` and hidden when `authDisabled` is checked
 - Slider `<label>` elements for module and gateway toggles now carry a `title` tooltip via `ui.app.admin.toggle_module` / `ui.app.admin.toggle_gateway` i18n keys
 

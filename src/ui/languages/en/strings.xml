@@ -115,10 +115,11 @@
   <string name="ui.app.admin.description">Description</string>
   <string name="ui.app.admin.no_gateways">No gateways registered.</string>
   <string name="ui.app.admin.no_adapters">No adapters registered.</string>
-  <string name="ui.app.admin.gateway.requires">Requires</string>
+  <string name="ui.app.admin.gateway.required">Required</string>
+  <string name="ui.app.admin.gateway.dependencies">Dependencies</string>
+  <string name="ui.app.admin.gateway.no_dependencies">None</string>
   <string name="ui.app.admin.gateway.adapter_count">Adapters</string>
   <string name="ui.app.admin.gateway.go_to_adapters">Go to adapters</string>
-  <string name="ui.app.admin.gateway.no_requires">None</string>
   <string name="ui.app.demo.switched">Demo: switched to sandbox page.</string>
   <string name="ui.app.demo.added">Demo: added a learning progress widget.</string>
   <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>

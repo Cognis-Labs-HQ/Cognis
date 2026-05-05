@@ -115,10 +115,11 @@
   <string name="ui.app.admin.description">説明</string>
   <string name="ui.app.admin.no_gateways">登録されたゲートウェイはありません。</string>
   <string name="ui.app.admin.no_adapters">登録されたアダプターはありません。</string>
-  <string name="ui.app.admin.gateway.requires">依存</string>
+  <string name="ui.app.admin.gateway.required">必須</string>
+  <string name="ui.app.admin.gateway.dependencies">依存関係</string>
+  <string name="ui.app.admin.gateway.no_dependencies">なし</string>
   <string name="ui.app.admin.gateway.adapter_count">アダプター</string>
   <string name="ui.app.admin.gateway.go_to_adapters">アダプターへ</string>
-  <string name="ui.app.admin.gateway.no_requires">なし</string>
   <string name="ui.app.demo.switched">デモ: サンドボックスページに切り替えました。</string>
   <string name="ui.app.demo.added">デモ: 学習進捗ウィジェットを追加しました。</string>
   <string name="ui.app.demo.tweaked">デモ: 最初のウィジェット設定を調整しました。</string>

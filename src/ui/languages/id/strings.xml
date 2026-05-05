@@ -115,10 +115,11 @@
   <string name="ui.app.admin.description">Deskripsi</string>
   <string name="ui.app.admin.no_gateways">Tidak ada gateway yang terdaftar.</string>
   <string name="ui.app.admin.no_adapters">Tidak ada adapter yang terdaftar.</string>
-  <string name="ui.app.admin.gateway.requires">Membutuhkan</string>
+  <string name="ui.app.admin.gateway.required">Wajib</string>
+  <string name="ui.app.admin.gateway.dependencies">Ketergantungan</string>
+  <string name="ui.app.admin.gateway.no_dependencies">Tidak ada</string>
   <string name="ui.app.admin.gateway.adapter_count">Adapter</string>
   <string name="ui.app.admin.gateway.go_to_adapters">Lihat adapter</string>
-  <string name="ui.app.admin.gateway.no_requires">Tidak ada</string>
   <string name="ui.app.demo.switched">Demo: berpindah ke halaman sandbox.</string>
   <string name="ui.app.demo.added">Demo: menambahkan widget progres belajar.</string>
   <string name="ui.app.demo.tweaked">Demo: menyesuaikan konfigurasi widget pertama.</string>

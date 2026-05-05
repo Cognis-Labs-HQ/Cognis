@@ -118,11 +118,22 @@ function renderModulesContent(modules) {
         .join("");
 }
 
+function renderDependencyLinks(ids, scrollPrefix) {
+    if (!ids || ids.length === 0) {
+        return i18n.t("ui.app.admin.gateway.no_dependencies");
+    }
+    return ids
+        .map(
+            (id) =>
+                `<a class="dependency-link" href="#" data-scroll-to="${escapeHtml(scrollPrefix)}${escapeHtml(id)}">${escapeHtml(id)}</a>`,
+        )
+        .join(", ");
+}
+
 function renderGatewayDetailsList(gw, adapterCount) {
-    const requiresValue =
-        gw.requires && gw.requires.length > 0
-            ? gw.requires.join(", ")
-            : i18n.t("ui.app.admin.gateway.no_requires");
+    const requiredLabel = gw.required
+        ? i18n.t("ui.app.admin.state.active")
+        : i18n.t("ui.app.admin.state.disabled");
 
     const details = [
         [i18n.t("ui.reuse.generic.id"), escapeHtml(gw.id)],
@@ -131,7 +142,7 @@ function renderGatewayDetailsList(gw, adapterCount) {
             i18n.t("ui.app.admin.publisher"),
             escapeHtml(gw.publisher || i18n.t("ui.app.admin.unknown")),
         ],
-        [i18n.t("ui.app.admin.gateway.requires"), escapeHtml(requiresValue)],
+        [i18n.t("ui.app.admin.gateway.required"), requiredLabel],
         [
             i18n.t("ui.app.admin.gateway.adapter_count"),
             String(adapterCount ?? 0),
@@ -143,12 +154,15 @@ function renderGatewayDetailsList(gw, adapterCount) {
             escapeHtml(gw.description),
         ]);
     }
-    return details
+    const detailsRows = details
         .map(
             ([key, value]) =>
                 `<li class="module-detail-item"><span class="module-detail-key">${key}</span><span class="module-detail-value">${value}</span></li>`,
         )
         .join("");
+    const depsHtml = renderDependencyLinks(gw.requires, "gateway-");
+    const depsRow = `<li class="module-detail-item"><span class="module-detail-key">${i18n.t("ui.app.admin.gateway.dependencies")}</span><span class="module-detail-value">${depsHtml}</span></li>`;
+    return detailsRows + depsRow;
 }
 
 function renderGatewaysContent(gateways, allAdapters) {
@@ -389,7 +403,7 @@ function bindGatewayAdapterButtons() {
 
                 const adapters = await loadGatewayAdapters(gatewayId);
                 panel.innerHTML = renderAdaptersPanel(adapters, gatewayId);
-                bindAdapterEntries(panel);
+                bindAdapterEntries(panel, adapters, gatewayId);
             });
         },
     );
@@ -406,6 +420,25 @@ function bindIntegrityRerun() {
         integrityRows = await loadIntegrity();
         composer.refresh(elements);
     });
+}
+
+function bindDependencyLinks() {
+    root.querySelectorAll(".dependency-link[data-scroll-to]").forEach(
+        (link) => {
+            if (!(link instanceof HTMLAnchorElement)) return;
+            const targetId = link.dataset.scrollTo;
+            if (!targetId) return;
+            link.addEventListener("click", (e) => {
+                e.preventDefault();
+                const el = root.querySelector(
+                    `[data-gateway="${CSS.escape(targetId.replace(/^gateway-/, ""))}"], [data-module="${CSS.escape(targetId.replace(/^module-/, ""))}"]`,
+                );
+                if (!(el instanceof HTMLElement)) return;
+                el.setAttribute("open", "");
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+            });
+        },
+    );
 }
 
 async function loadAdminSections() {
@@ -844,7 +877,7 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
     }
 }
 
-function bindAdapterEntries(scope) {
+function bindAdapterEntries(scope, scopedAdapters, scopedGatewayId) {
     const container = scope ?? root;
     container
         .querySelectorAll(
@@ -856,13 +889,27 @@ function bindAdapterEntries(scope) {
             const gatewayId = card.dataset.gatewayId;
             if (!adapterId || !gatewayId) return;
 
-            const adapter = allAdapters.find(
-                (a) => a.senderId === adapterId && a._gatewayId === gatewayId,
-            );
-            if (!adapter) return;
+            const adapterPool =
+                scopedAdapters && scopedGatewayId === gatewayId
+                    ? scopedAdapters
+                    : allAdapters.map((a) =>
+                          a._gatewayId === gatewayId ? a : a,
+                      );
+            const adapter = adapterPool.find((a) => {
+                const id = a.senderId ?? a.id;
+                return (
+                    id === adapterId &&
+                    (a._gatewayId === gatewayId ||
+                        scopedGatewayId === gatewayId)
+                );
+            }) ?? { senderId: adapterId, name: adapterId };
 
             async function handleOpen() {
-                await openAdapterConfig(gatewayId, adapterId, adapter.name);
+                await openAdapterConfig(
+                    gatewayId,
+                    adapterId,
+                    adapter.name ?? adapterId,
+                );
             }
 
             card.addEventListener("click", handleOpen);
@@ -923,6 +970,7 @@ const baseElements = [
                 bindModuleToggles();
                 bindGatewayToggles();
                 bindGatewayAdapterButtons();
+                bindDependencyLinks();
             },
         },
     },
