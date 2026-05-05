@@ -7,11 +7,11 @@
  *
  * Boot sequence (see db/README.md for the full convention):
  *
- *   1. initializeDatabaseSchema() runs db/init/<provider>/*.sql in
+ *   1. initializeDatabaseSchema() runs src/adapters/db/<provider>/sql/init/*.sql in
  *      alphabetical order.  Every statement must use IF NOT EXISTS so the
  *      files are idempotent across restarts.
  *
- *   2. It then runs db/migrate/<provider>/*.sql in alphabetical order.
+ *   2. It then runs src/adapters/db/<provider>/sql/migrate/*.sql in alphabetical order.
  *      Migration files must also be guarded (ADD COLUMN IF NOT EXISTS, etc.)
  *      so they are safe to re-run.
  *
@@ -79,10 +79,11 @@ export async function initializeDatabaseSchema(
     dbType: string,
     logger: DbInitLogger,
     executor: DbExecutor,
+    adaptersRoot: string = path.resolve(process.cwd(), "src", "adapters"),
 ) {
     const dir = resolveDbProviderDir(dbType);
-    const initRoot = path.resolve(process.cwd(), "db", "init", dir);
-    const migrateRoot = path.resolve(process.cwd(), "db", "migrate", dir);
+    const initRoot = path.join(adaptersRoot, "db", dir, "sql", "init");
+    const migrateRoot = path.join(adaptersRoot, "db", dir, "sql", "migrate");
     const { files: initFiles, sqlCount: initCount } = await runSqlDir(
         initRoot,
         "initialization",

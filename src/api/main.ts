@@ -98,6 +98,9 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
 const port = Number.parseInt(process.env.PORT ?? "3000", 10);
 const host = process.env.LISTEN_HOST ?? "0.0.0.0";
 const dbType = (process.env.DB_TYPE as SupportedDbType | undefined) ?? "sqlite";
+const adaptersRoot =
+    process.env.COGNIS_ADAPTERS_ROOT ??
+    path.resolve(process.cwd(), "src", "adapters");
 
 function bootstrapLog(
     level: "debug" | "info" | "warn" | "error",
@@ -120,6 +123,7 @@ await initializeDatabaseSchema(
     dbType,
     { info: (msg, meta) => bootstrapLog("info", msg, meta) },
     dbExecutor,
+    adaptersRoot,
 );
 bootstrapLog("info", "Database schema initialised.");
 
@@ -179,10 +183,6 @@ const routeRegistry = new RouteRegistry();
 const gatewayRegistry = new GatewayRegistry();
 const capabilities = new CapabilityStore();
 const uiRegistry = new UIRegistry();
-
-const adaptersRoot =
-    process.env.COGNIS_ADAPTERS_ROOT ??
-    path.resolve(process.cwd(), "src", "adapters");
 
 const gatewaysRoot =
     process.env.COGNIS_GATEWAYS_ROOT ??

@@ -10,6 +10,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - Moved all gateways from `src/api/gateways/` to a top-level `src/gateways/` directory, mirroring the `src/adapters/` layout; default `COGNIS_GATEWAYS_ROOT` updated accordingly ([e7f0413](https://github.com/le-firehawk/Cognis/commit/e7f0413))
+- Moved db adapters from flat `src/adapters/db-*` directories into `src/adapters/db/<provider>/` (sqlite, postgres, mariadb, memory); `db-` prefix dropped ([d1d8bb4](https://github.com/le-firehawk/Cognis/commit/d1d8bb4))
+- Moved db init/migrate SQL from top-level `db/init/<provider>/` and `db/migrate/<provider>/` into `src/adapters/db/<provider>/sql/init/` and `.../sql/migrate/`; `initializeDatabaseSchema()` now accepts an optional `adaptersRoot` parameter; top-level `db/` directory removed ([d1d8bb4](https://github.com/le-firehawk/Cognis/commit/d1d8bb4))
+- Removed stale `src/adapters/auth-ldap/`, `auth-saml/`, and `auth-sso-oidc/` directories — code now lives under `src/adapters/auth/` ([d1d8bb4](https://github.com/le-firehawk/Cognis/commit/d1d8bb4))
+- Moved `src/adapters/file-local/` to `src/adapters/file/local/` for namespace consistency ([d1d8bb4](https://github.com/le-firehawk/Cognis/commit/d1d8bb4))
 
 ### Added
 

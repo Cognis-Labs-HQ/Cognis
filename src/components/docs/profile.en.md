@@ -23,7 +23,7 @@ The profile feature gives each account a public-facing page showing identity, so
 | `posts`            | User-authored posts with per-post visibility                                                |
 | `file_size_limits` | Per-category upload size caps (`image`, `video`, `text`, `global`)                          |
 
-Schema initialisation SQL is in `db/init/{mariadb,postgresql,sqlite}/002_profile.sql`.
+Schema initialisation SQL is in `src/adapters/db/{mariadb,postgres,sqlite}/sql/init/002_profile.sql`.
 
 ### Visibility model
 
