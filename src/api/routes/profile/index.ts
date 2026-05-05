@@ -73,6 +73,14 @@ async function canViewProfile(
     return requesterId !== null;
 }
 
+/**
+ * Creates route handlers for the profile API.
+ *
+ * @param profileStore - The profile storage adapter.
+ * @param fileGateway  - Optional file storage gateway. When absent, avatar and
+ *   banner mutation routes return `503 file_storage_unavailable` instead of
+ *   being unregistered, so callers receive an explicit error rather than a 404.
+ */
 export function createProfileRoutes(
     profileStore: DbProfileStore,
     fileGateway?: FileStorageGateway,

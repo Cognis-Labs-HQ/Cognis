@@ -442,7 +442,7 @@ function renderGenericAdapterForm(descriptors, requiredFields) {
       </div>
       ${boolFieldsHtml}
       <div class="provider-test-row">
-        <input class="provider-test-input" type="email" placeholder="${i18n.t("ui.app.admin.notif.test_email_to")}" />
+        <input class="provider-test-input" type="email" placeholder="${escapeHtml(i18n.t("ui.app.admin.notif.test_email_to"))}" />
         <button class="btn-animated provider-test-btn" type="button">${i18n.t("ui.app.admin.notif.test_email")}</button>
         <span class="provider-test-status"></span>
       </div>
