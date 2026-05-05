@@ -307,6 +307,35 @@ const server = buildServer({
             [moduleId, enabled],
         );
     },
+    loadGatewayStates: async () => {
+        const result = await dbExecutor.execute(
+            "SELECT gateway_id, enabled FROM gateways",
+        );
+        return (result.rows ?? []).map((row) => ({
+            gatewayId: row.gateway_id,
+            enabled: Boolean(row.enabled),
+        }));
+    },
+    persistGatewayState: async (gatewayId, enabled) => {
+        if (dbType === "postgresql") {
+            await dbExecutor.execute(
+                "INSERT INTO gateways (gateway_id, enabled) VALUES ($1, $2) ON CONFLICT (gateway_id) DO UPDATE SET enabled = EXCLUDED.enabled",
+                [gatewayId, enabled],
+            );
+            return;
+        }
+        if (dbType === "sqlite") {
+            await dbExecutor.execute(
+                "INSERT INTO gateways (gateway_id, enabled) VALUES (?, ?) ON CONFLICT(gateway_id) DO UPDATE SET enabled = excluded.enabled",
+                [gatewayId, enabled],
+            );
+            return;
+        }
+        await dbExecutor.execute(
+            "INSERT INTO gateways (gateway_id, enabled) VALUES (?, ?) ON DUPLICATE KEY UPDATE enabled = VALUES(enabled)",
+            [gatewayId, enabled],
+        );
+    },
     moduleIntegrityChecker: async () => {
         const manifests = await runtime.listManifests();
         const report = [] as Array<{

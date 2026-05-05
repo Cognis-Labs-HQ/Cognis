@@ -24,6 +24,7 @@ function inferSection(name: string): string {
     if (name.startsWith("user:")) return "User";
     if (name.startsWith("system:")) return "System";
     if (name.startsWith("modules:")) return "Modules";
+    if (name.startsWith("gateway:")) return "Gateways";
     if (name.startsWith("api:")) return "API";
     if (name === "help") return "General";
     return "Extensions";
@@ -154,6 +155,7 @@ function printGlobalHelp() {
     const sectionOrder = [
         "General",
         "System",
+        "Gateways",
         "Modules",
         "User",
         "API",
@@ -306,6 +308,68 @@ register(
     {
         usage: "cognisctl modules:disable <moduleId>",
         description: "Disable a module by ID.",
+    },
+);
+
+register(
+    "gateway:list",
+    async ({ apiBaseUrl, getApiToken }) => {
+        const payload = await apiGet(
+            apiBaseUrl,
+            "/api/v1/gateways",
+            await getApiToken(),
+        );
+        printStructured(payload);
+    },
+    {
+        usage: "cognisctl gateway:list",
+        description: "List all registered gateways with their status.",
+    },
+);
+
+register(
+    "gateway:enable",
+    async ({ args, apiBaseUrl, getApiToken }) => {
+        const [gatewayId] = args;
+        requireArgs(
+            args,
+            ["gatewayId"],
+            "cognisctl gateway:enable <gatewayId>",
+        );
+        const payload = await apiPost(
+            apiBaseUrl,
+            `/api/v1/gateways/${encodeURIComponent(gatewayId)}/enable`,
+            undefined,
+            await getApiToken(),
+        );
+        printStructured(payload);
+    },
+    {
+        usage: "cognisctl gateway:enable <gatewayId>",
+        description: "Enable a gateway by ID.",
+    },
+);
+
+register(
+    "gateway:disable",
+    async ({ args, apiBaseUrl, getApiToken }) => {
+        const [gatewayId] = args;
+        requireArgs(
+            args,
+            ["gatewayId"],
+            "cognisctl gateway:disable <gatewayId>",
+        );
+        const payload = await apiPost(
+            apiBaseUrl,
+            `/api/v1/gateways/${encodeURIComponent(gatewayId)}/disable`,
+            undefined,
+            await getApiToken(),
+        );
+        printStructured(payload);
+    },
+    {
+        usage: "cognisctl gateway:disable <gatewayId>",
+        description: "Disable a gateway by ID.",
     },
 );
 

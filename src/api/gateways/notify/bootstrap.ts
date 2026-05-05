@@ -12,6 +12,7 @@ import {
     InMemoryVerifyTokenStore,
 } from "../../utils/verify-token.js";
 import type { GatewayBootstrapContext } from "../../gateway-bootstrap.js";
+import type { GatewayRegistry } from "../../gateway-registry.js";
 import { createNotificationRoutes } from "../../routes/notifications/index.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { DbNotificationStore as IDbNotificationStore } from "../../adapters/db/notification-store.js";
@@ -56,7 +57,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             externalHost,
         ),
     );
-    ctx.routeRegistry.register(createGatewayAdapterRoutes("notify", gateway));
+    ctx.routeRegistry.register(
+        createGatewayAdapterRoutes("notify", gateway, ctx.gatewayRegistry),
+    );
 
     ctx.gatewayRegistry.register({
         id: "notify",
@@ -552,6 +555,7 @@ export function createUserEmailRoutes(
 function createGatewayAdapterRoutes(
     gatewayId: string,
     gateway: CoreNotificationGateway,
+    gatewayRegistry: GatewayRegistry,
 ) {
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
 
@@ -639,6 +643,22 @@ function createGatewayAdapterRoutes(
                 return true;
             }
             if (action === "enable") {
+                const gwEntry = gatewayRegistry.get(gatewayId);
+                if (gwEntry?.status === "disabled") {
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "gateway_disabled",
+                                message:
+                                    "Cannot enable an adapter while its gateway is disabled",
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 await gateway.enableSender(adapterId);
             } else {
                 await gateway.disableSender(adapterId);

@@ -9,6 +9,14 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Gateway enable/disable state now persisted to the `gateways` DB table; state survives container restarts across all three DB providers (SQLite, MariaDB, PostgreSQL) ([5c70705](https://github.com/le-firehawk/Cognis/commit/5c70705))
+- `POST /api/v1/gateways/:id/enable|disable` now returns `403 required_gateway` when the target gateway has `required: true`, preventing required gateways from being toggled ([5c70705](https://github.com/le-firehawk/Cognis/commit/5c70705))
+- Adapter enable endpoint (`POST /api/v1/gateways/:id/adapters/:adapterId/enable`) returns `409 gateway_disabled` when the parent gateway is disabled, preventing adapters from being enabled while their gateway is off ([5c70705](https://github.com/le-firehawk/Cognis/commit/5c70705))
+- Admin UI — required gateway sliders are rendered `disabled` (same as core/required modules), preventing accidental toggle ([5c70705](https://github.com/le-firehawk/Cognis/commit/5c70705))
+- Admin UI — adapter toggles are rendered `disabled` when the parent gateway is disabled ([5c70705](https://github.com/le-firehawk/Cognis/commit/5c70705))
+- Admin UI — `<summary>` elements in module and gateway rows now carry a `module-row-summary` class for targeted CSS vertical-alignment ([5c70705](https://github.com/le-firehawk/Cognis/commit/5c70705))
+- CLI commands: `gateway:list`, `gateway:enable <gatewayId>`, `gateway:disable <gatewayId>` added to `cognisctl` under a new "Gateways" section ([5c70705](https://github.com/le-firehawk/Cognis/commit/5c70705))
+
 - Gateway enable/disable: `GatewayRegistry` now tracks `status: "active" | "disabled"` per gateway with `enable(id)` and `disable(id)` methods; `POST /api/v1/gateways/:id/enable` and `POST /api/v1/gateways/:id/disable` (admin) toggle gateway state at runtime
 - `GatewayManifest.hasAdapters?: boolean`: signals whether a gateway exposes a `/api/v1/gateways/:id/adapters` endpoint; notify gateway sets this to `true`; admin UI only fetches adapters for flagged gateways, eliminating 404 noise for non-adapter gateways
 - Admin UI — Modules and Gateways now render as separate headed sections instead of a dropdown tab; gateway details show `required` (boolean) and adapter count; gateway rows include an enable/disable toggle matching the module pattern

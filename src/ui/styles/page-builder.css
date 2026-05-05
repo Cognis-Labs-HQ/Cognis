@@ -264,7 +264,8 @@ code {
     background: var(--surface-2);
 }
 
-.module-row summary {
+.module-row summary,
+.module-row-summary {
     list-style: none;
     display: grid;
     grid-template-columns: 1fr auto auto auto;

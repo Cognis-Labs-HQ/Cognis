@@ -15,6 +15,10 @@ import type { UIRegistry } from "../../ui-registry.js";
 export function createGatewayRoutes(
     registry: GatewayRegistry,
     uiRegistry?: UIRegistry,
+    persistGatewayState?: (
+        gatewayId: string,
+        enabled: boolean,
+    ) => Promise<void>,
 ) {
     return async (
         req: IncomingMessage,
@@ -68,11 +72,8 @@ export function createGatewayRoutes(
             if (!requireAuth(req, res, "admin")) return true;
             const id = decodeURIComponent(actionMatch[1]);
             const action = actionMatch[2] as "enable" | "disable";
-            const found =
-                action === "enable"
-                    ? registry.enable(id)
-                    : registry.disable(id);
-            if (!found) {
+            const entry = registry.get(id);
+            if (!entry) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -84,6 +85,24 @@ export function createGatewayRoutes(
                 );
                 return true;
             }
+            if (entry.required) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "required_gateway",
+                            message: "Required gateways cannot be toggled",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (action === "enable") {
+                registry.enable(id);
+            } else {
+                registry.disable(id);
+            }
+            await persistGatewayState?.(id, action === "enable");
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({

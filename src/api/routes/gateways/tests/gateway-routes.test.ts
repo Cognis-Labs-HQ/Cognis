@@ -308,3 +308,109 @@ test("GET /api/v1/gateways list includes status field", async () => {
     const body = JSON.parse(res.payload);
     assert.equal(body.data[0].status, "active");
 });
+
+test("POST /api/v1/gateways/:id/enable calls persistGatewayState with true", async () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "notify",
+        name: "Notification Gateway",
+        version: "0.1.0",
+    });
+    registry.disable("notify");
+
+    let persisted: { id: string; enabled: boolean } | null = null;
+    const handler = createGatewayRoutes(
+        registry,
+        undefined,
+        async (id, enabled) => {
+            persisted = { id, enabled };
+        },
+    );
+
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
+    await handler(
+        req,
+        res,
+        new URL("/api/v1/gateways/notify/enable", "http://localhost"),
+    );
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(persisted, { id: "notify", enabled: true });
+});
+
+test("POST /api/v1/gateways/:id/disable calls persistGatewayState with false", async () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "notify",
+        name: "Notification Gateway",
+        version: "0.1.0",
+    });
+
+    let persisted: { id: string; enabled: boolean } | null = null;
+    const handler = createGatewayRoutes(
+        registry,
+        undefined,
+        async (id, enabled) => {
+            persisted = { id, enabled };
+        },
+    );
+
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
+    await handler(
+        req,
+        res,
+        new URL("/api/v1/gateways/notify/disable", "http://localhost"),
+    );
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(persisted, { id: "notify", enabled: false });
+});
+
+test("POST /api/v1/gateways/:id/enable returns 403 for required gateways", async () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "db",
+        name: "Database Gateway",
+        version: "0.1.0",
+        required: true,
+    });
+    registry.disable("db");
+    const handler = createGatewayRoutes(registry);
+
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
+    const handled = await handler(
+        req,
+        res,
+        new URL("/api/v1/gateways/db/enable", "http://localhost"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 403);
+    assert.equal(JSON.parse(res.payload).error.code, "required_gateway");
+});
+
+test("POST /api/v1/gateways/:id/disable returns 403 for required gateways", async () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "db",
+        name: "Database Gateway",
+        version: "0.1.0",
+        required: true,
+    });
+    const handler = createGatewayRoutes(registry);
+
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
+    const handled = await handler(
+        req,
+        res,
+        new URL("/api/v1/gateways/db/disable", "http://localhost"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 403);
+    assert.equal(JSON.parse(res.payload).error.code, "required_gateway");
+});

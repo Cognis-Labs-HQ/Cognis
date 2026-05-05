@@ -100,7 +100,7 @@ function renderModulesContent(modules) {
 
             return `
         <details class="module-row" data-module="${mod.id}">
-          <summary>
+          <summary class="module-row-summary">
             <span class="module-row-title"><strong>${mod.name}</strong></span>
             <span class="state-pill ${pill.className}">${pill.label}</span>
             <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
@@ -161,18 +161,19 @@ function renderGatewayDetailsList(gw) {
     return detailsRows + depsRow;
 }
 
-function renderAdapterToggle(adapter, gatewayId) {
+function renderAdapterToggle(adapter, gatewayId, isGatewayDisabled) {
     const isEnabled = !!adapter.active;
     return `<label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_gateway"))}">
       <input type="checkbox" class="adapter-toggle"
         data-adapter="${escapeHtml(adapter.senderId)}"
         data-gateway="${escapeHtml(gatewayId)}"
-        ${isEnabled ? "checked" : ""} />
+        ${isEnabled ? "checked" : ""}
+        ${isGatewayDisabled ? "disabled" : ""} />
       <span class="slider"></span>
     </label>`;
 }
 
-function renderInlineAdapters(adapters, gatewayId) {
+function renderInlineAdapters(adapters, gatewayId, isGatewayDisabled) {
     if (!adapters || adapters.length === 0) return "";
     const rows = adapters
         .map((adapter) => {
@@ -188,7 +189,7 @@ function renderInlineAdapters(adapters, gatewayId) {
           data-gateway-id="${escapeHtml(gatewayId)}">
           <span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapter.senderId)}</strong></span>
           <span class="state-pill ${statePillClass}">${stateLabel}</span>
-          ${renderAdapterToggle(adapter, gatewayId)}
+          ${renderAdapterToggle(adapter, gatewayId, isGatewayDisabled)}
         </div>
       `;
         })
@@ -210,24 +211,25 @@ function renderGatewaysContent(gateways, allAdapters) {
         .map((gw) => {
             const pill = getStatePill(gw.status ?? "active");
             const isEnabled = (gw.status ?? "active") !== "disabled";
+            const isGatewayDisabled = !isEnabled;
             const gwAdapters = gw.hasAdapters
                 ? allAdapters.filter((a) => a._gatewayId === gw.id)
                 : [];
 
             return `
         <details class="module-row" data-gateway="${escapeHtml(gw.id)}">
-          <summary>
+          <summary class="module-row-summary">
             <span class="module-row-title"><strong>${escapeHtml(gw.name)}</strong></span>
             <span class="state-pill ${pill.className}">${pill.label}</span>
             <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
-              <input type="checkbox" data-gateway="${escapeHtml(gw.id)}" ${isEnabled ? "checked" : ""} />
+              <input type="checkbox" data-gateway="${escapeHtml(gw.id)}" ${isEnabled ? "checked" : ""} ${gw.required ? "disabled" : ""} />
               <span class="slider"></span>
             </label>
             <span class="module-chevron">▾</span>
           </summary>
           <div class="module-meta">
             <ul class="module-details">${renderGatewayDetailsList(gw)}</ul>
-            ${renderInlineAdapters(gwAdapters, gw.id)}
+            ${renderInlineAdapters(gwAdapters, gw.id, isGatewayDisabled)}
           </div>
         </details>
       `;

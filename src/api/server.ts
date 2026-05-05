@@ -45,6 +45,13 @@ export interface ApiDependencies {
         Array<{ moduleId: string; enabled: boolean }>
     >;
     persistModuleState?: (moduleId: string, enabled: boolean) => Promise<void>;
+    loadGatewayStates?: () => Promise<
+        Array<{ gatewayId: string; enabled: boolean }>
+    >;
+    persistGatewayState?: (
+        gatewayId: string,
+        enabled: boolean,
+    ) => Promise<void>;
     createProfile?: (
         accountId: string,
         handle: string,
@@ -97,14 +104,19 @@ export function buildServer(deps: ApiDependencies) {
         deps.setProfileRole,
     );
     const gatewayRoutes = deps.gatewayRegistry
-        ? createGatewayRoutes(deps.gatewayRegistry, deps.uiRegistry)
+        ? createGatewayRoutes(
+              deps.gatewayRegistry,
+              deps.uiRegistry,
+              deps.persistGatewayState,
+          )
         : null;
 
     Promise.all([
         deps.moduleRuntimeGateway.listManifests(),
         deps.loadModuleStates?.() ?? Promise.resolve([]),
+        deps.loadGatewayStates?.() ?? Promise.resolve([]),
     ])
-        .then(([manifests, savedStates]) => {
+        .then(([manifests, savedStates, savedGatewayStates]) => {
             const saved = new Map(
                 savedStates.map((row) => [row.moduleId, row.enabled]),
             );
@@ -112,6 +124,18 @@ export function buildServer(deps: ApiDependencies) {
                 const persisted = saved.get(manifest.id);
                 if (manifest.class === "core" || persisted === true)
                     enabledModules.add(manifest.id);
+            }
+            const savedGateways = new Map(
+                savedGatewayStates.map((row) => [row.gatewayId, row.enabled]),
+            );
+            if (deps.gatewayRegistry) {
+                for (const entry of deps.gatewayRegistry.list()) {
+                    if (entry.required) continue;
+                    const persisted = savedGateways.get(entry.id);
+                    if (persisted === false) {
+                        deps.gatewayRegistry.disable(entry.id);
+                    }
+                }
             }
             return moduleExtensionRoutes.refresh();
         })
