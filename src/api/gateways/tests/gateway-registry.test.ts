@@ -91,3 +91,52 @@ test("assertRequiredInitialized is a no-op when requiredIds is empty", () => {
         registry.assertRequiredInitialized([]);
     });
 });
+
+test("GatewayManifest accepts requires field", () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "profile",
+        name: "Profile Gateway",
+        version: "0.1.0",
+        requires: ["db", "files"],
+    });
+
+    const manifest = registry.get("profile");
+    assert.ok(manifest);
+    assert.deepEqual(manifest.requires, ["db", "files"]);
+});
+
+test("GatewayRegistry.assertRequiredInitialized throws for missing required gateway", () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "db",
+        name: "DB Gateway",
+        version: "0.1.0",
+        required: true,
+    });
+
+    assert.throws(
+        () => registry.assertRequiredInitialized(["db", "logging"]),
+        (err: Error) => err.message.includes("logging"),
+    );
+});
+
+test("GatewayRegistry.assertRequiredInitialized succeeds when all present", () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "db",
+        name: "DB Gateway",
+        version: "0.1.0",
+        required: true,
+    });
+    registry.register({
+        id: "logging",
+        name: "Logging Gateway",
+        version: "0.1.0",
+        required: true,
+    });
+
+    assert.doesNotThrow(() =>
+        registry.assertRequiredInitialized(["db", "logging"]),
+    );
+});

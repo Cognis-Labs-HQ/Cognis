@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { verifyAccessToken } from "../../auth/access-tokens.js";
+import { requireAuth } from "../../auth/guard.js";
 import type { ModuleRuntimeGateway } from "@cognis/core";
 import type { UIRegistry } from "../../ui-registry.js";
 
@@ -228,6 +229,18 @@ export function createUiRoutes(
                     // ignore missing/invalid module route declarations
                 }
             }
+        }
+
+        const pageExtMatch = url.pathname.match(
+            /^\/api\/v1\/ui\/page-extensions\/([^/]+)$/,
+        );
+        if (pageExtMatch && req.method === "GET") {
+            if (!requireAuth(req, res, "user")) return true;
+            const pageId = decodeURIComponent(pageExtMatch[1]);
+            const extensions = uiRegistry?.listPageExtensions(pageId) ?? [];
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: extensions }));
+            return true;
         }
 
         if (url.pathname.startsWith("/static/gateways/")) {

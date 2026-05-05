@@ -9,6 +9,8 @@ import type {
 interface GatewayDirectoryManifest {
     id?: string;
     required?: boolean;
+    /** Gateway IDs that must be present in the registry after all bootstraps complete. */
+    requires?: string[];
 }
 
 /**
@@ -24,6 +26,10 @@ interface GatewayDirectoryManifest {
  * manifests. The caller is responsible for verifying that all returned IDs
  * appear in the gateway registry after this function resolves — if any do not,
  * the server should refuse to start.
+ *
+ * Cross-gateway dependency checking (the `requires` field) is also performed:
+ * if a required gateway lists a missing dependency, an error is thrown. If an
+ * optional gateway lists a missing dependency, a warning is logged.
  */
 export async function bootstrapGateways(
     ctx: GatewayBootstrapContext,
@@ -40,6 +46,10 @@ export async function bootstrapGateways(
     }
 
     const requiredIds: string[] = [];
+    const gatewayManifests = new Map<
+        string,
+        { required: boolean; requires: string[] }
+    >();
 
     // Sort so the logging gateway always bootstraps first, making its logger
     // available to every subsequent gateway via ctx.log.
@@ -60,13 +70,18 @@ export async function bootstrapGateways(
             );
             manifest = JSON.parse(raw) as GatewayDirectoryManifest;
         } catch {
-            // No manifest — gateway is treated as optional
+            // No manifest — gateway is treated as optional with no dependencies
         }
 
         const gatewayId = manifest.id ?? entry;
         if (manifest.required === true) {
             requiredIds.push(gatewayId);
         }
+
+        gatewayManifests.set(gatewayId, {
+            required: manifest.required === true,
+            requires: Array.isArray(manifest.requires) ? manifest.requires : [],
+        });
 
         const bootstrapUrl = pathToFileURL(
             path.join(gatewayDir, "bootstrap.ts"),
@@ -90,6 +105,20 @@ export async function bootstrapGateways(
                 ctx.capabilities.get<BootstrapLog>("logging:log");
             if (contributed) {
                 ctx.log = contributed;
+            }
+        }
+    }
+
+    // Validate cross-gateway dependencies now that all gateways have
+    // bootstrapped and registered themselves.
+    for (const [gatewayId, meta] of gatewayManifests) {
+        for (const depId of meta.requires) {
+            if (!ctx.gatewayRegistry.get(depId)) {
+                const message = `Gateway "${gatewayId}" requires gateway "${depId}" but it is not registered.`;
+                if (meta.required) {
+                    throw new Error(message);
+                }
+                void ctx.log?.("warn", message, { gatewayId, depId });
             }
         }
     }

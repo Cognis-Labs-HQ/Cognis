@@ -236,7 +236,6 @@ const requiredGatewayIds = await bootstrapGateways(
     gatewaysRoot,
 );
 
-const logger = capabilities.get<Logger>("logging:logger");
 const log = capabilities.get<BootstrapLog>("logging:log") ?? bootstrapLog;
 
 await log("info", "Gateway bootstrap complete.", {

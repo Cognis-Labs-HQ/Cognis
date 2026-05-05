@@ -695,3 +695,83 @@ test("profile routes - banner DELETE clears bannerKey", async () => {
         rmSync(dir, { recursive: true, force: true });
     }
 });
+
+test("GET /api/v1/profile/ping returns 200 when authenticated", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUser(executor, "alice");
+        const route = createProfileRoutes(profileStore);
+        const token = issueAccessToken("alice", "user", 60);
+        let status = 0;
+        let body = "";
+        await route(
+            makeReq("GET", token),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end(p: string) {
+                    body = p;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/profile/ping"),
+        );
+        assert.equal(status, 200);
+        assert.deepEqual(JSON.parse(body).data, { available: true });
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
+test("GET /api/v1/profile/ping returns 401 when unauthenticated", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUser(executor, "alice");
+        const route = createProfileRoutes(profileStore);
+        let status = 0;
+        await route(
+            makeReq("GET"),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end() {},
+            } as any,
+            new URL("http://localhost/api/v1/profile/ping"),
+        );
+        assert.equal(status, 401);
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
+test("avatar routes return 503 when fileGateway is absent", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUser(executor, "alice");
+        const route = createProfileRoutes(profileStore);
+        const token = issueAccessToken("alice", "user", 60);
+        let status = 0;
+        await route(
+            {
+                method: "PUT",
+                headers: {
+                    authorization: `Bearer ${token}`,
+                    "content-type": "image/png",
+                    "content-length": "0",
+                },
+                [Symbol.asyncIterator]: async function* () {},
+            } as any,
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end() {},
+            } as any,
+            new URL("http://localhost/api/v1/profile/avatar"),
+        );
+        assert.equal(status, 503);
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});

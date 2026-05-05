@@ -15,6 +15,14 @@ export interface GatewayManifest {
      * the bootstrap phase and refuses to start if any are absent.
      */
     required?: boolean;
+    /**
+     * Gateway IDs that this gateway depends on. All listed IDs must be present
+     * in the GatewayRegistry after the bootstrap phase; if any are missing and
+     * this gateway is itself marked `required`, the server will refuse to start.
+     * Optional gateways can still declare requirements — bootstrap will log a
+     * warning if the dep is absent but will not abort startup.
+     */
+    requires?: string[];
 }
 
 export class GatewayRegistry {

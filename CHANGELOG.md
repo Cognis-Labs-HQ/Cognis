@@ -12,6 +12,22 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - `src/api/ui-registry.ts` — `UIRegistry` class: gateways register admin-page sections (`{ id, label, scriptUrl }`) and static asset directories; core serves them without knowing gateway content
 - `GatewayBootstrapContext.uiRegistry` optional field: gateways receive `UIRegistry` during bootstrap to self-register UI contributions
 - `GET /api/v1/admin/sections` route (admin): returns list of admin sections registered by gateways via `UIRegistry`
+- `UIRegistry.registerPageExtension(pageId, element)` / `listPageExtensions(pageId)`: gateways inject `PageElement` contributions into any named core page
+- `GET /api/v1/ui/page-extensions/:pageId` route (authenticated): returns page extensions contributed by gateways for the given page; used by core pages to dynamically load gateway-contributed UI modules
+- `GatewayManifest.requires?: string[]`: declares mandatory inter-gateway dependencies; cross-dependency violations for required gateways now throw before server start; optional gateways log a warning when a dependency is absent
+
+### Changed
+
+- `src/api/gateways/index.ts` `bootstrapGateways()`: reads `requires` from each gateway's `manifest.json`; validates cross-gateway dependencies after all gateways have bootstrapped; throws for missing required-gateway deps, logs warning for optional-gateway deps
+- `src/api/main.ts`: removed unused `logger` variable (type `Logger` was undeclared; `log` via `BootstrapLog` is the correct interface)
+
+### Tests
+
+- `src/api/tests/ui-registry.test.ts`: new — UIRegistry unit tests (admin sections, static dirs, page extensions, route handler for `GET /api/v1/ui/page-extensions/:pageId`)
+- `src/api/tests/profile-routes.test.ts`: added — `GET /api/v1/profile/ping` returns 200/401; avatar PUT returns 503 without fileGateway
+- `src/api/routes/gateways/tests/gateway-routes.test.ts`: added — `GET /api/v1/admin/sections` auth and content tests
+- `src/api/gateways/tests/gateway-registry.test.ts`: added — `GatewayManifest.requires` field, `assertRequiredInitialized` success and failure cases
+
 - `/static/gateways/:gatewayId/...` static file handler: serves gateway-owned UI assets from filesystem paths registered via `UIRegistry.registerStaticDir()`
 - `GET /api/v1/profile/ping` route: lightweight capability-check endpoint; returns `{ data: { available: true } }` when the profile gateway is present
 - `src/api/gateways/notify/ui/admin-section.js` — browser ES module: contributes the Notifications debug panel to the admin page via the `UIRegistry` mechanism

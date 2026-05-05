@@ -145,3 +145,66 @@ test("non-gateway paths return false", async () => {
 
     assert.equal(handled, false);
 });
+
+import { UIRegistry } from "../../../ui-registry.js";
+
+test("GET /api/v1/admin/sections returns empty array with no uiRegistry", async () => {
+    const registry = new GatewayRegistry();
+    const handler = createGatewayRoutes(registry);
+
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
+    const handled = await handler(
+        req,
+        res,
+        new URL("/api/v1/admin/sections", "http://localhost"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    assert.deepEqual(JSON.parse(res.payload).data, []);
+});
+
+test("GET /api/v1/admin/sections requires admin auth", async () => {
+    const registry = new GatewayRegistry();
+    const handler = createGatewayRoutes(registry, new UIRegistry());
+
+    const req = makeRequest("GET");
+    const res = makeResponse();
+    await handler(
+        req,
+        res,
+        new URL("/api/v1/admin/sections", "http://localhost"),
+    );
+
+    assert.equal(res.status, 401);
+});
+
+test("GET /api/v1/admin/sections returns registered sections", async () => {
+    const registry = new GatewayRegistry();
+    const uiReg = new UIRegistry();
+    uiReg.registerAdminSection({
+        id: "notifications",
+        label: "Notifications",
+        scriptUrl: "/static/gateways/notify/admin-section.js",
+    });
+    const handler = createGatewayRoutes(registry, uiReg);
+
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
+    const handled = await handler(
+        req,
+        res,
+        new URL("/api/v1/admin/sections", "http://localhost"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload);
+    assert.equal(body.data.length, 1);
+    assert.equal(body.data[0].id, "notifications");
+    assert.equal(
+        body.data[0].scriptUrl,
+        "/static/gateways/notify/admin-section.js",
+    );
+});
