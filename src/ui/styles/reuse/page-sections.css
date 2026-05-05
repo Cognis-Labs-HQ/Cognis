@@ -238,14 +238,50 @@
     flex: 1;
 }
 
-.components-tab-bar {
-    margin-bottom: 16px;
+.components-section {
+    margin-bottom: 24px;
 }
 
-.components-tab-select {
-    min-width: 160px;
+.components-section-heading {
+    font-size: 1em;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--color-border, #e2e8f0);
 }
 
-.components-tab-content {
+.components-section-body {
     min-width: 0;
+}
+
+.gateway-meta-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.gateway-adapters-btn {
+    flex-shrink: 0;
+}
+
+.gateway-adapters-panel {
+    padding: 8px 16px 4px;
+    border-top: 1px solid var(--color-border, #e2e8f0);
+}
+
+.gateway-adapters-empty {
+    color: var(--color-text-muted, #64748b);
+    font-size: 0.9em;
+}
+
+.gateway-adapters-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gateway-adapters-loading {
+    color: var(--color-text-muted, #64748b);
+    font-size: 0.9em;
 }

@@ -23,21 +23,46 @@ export interface GatewayManifest {
      * warning if the dep is absent but will not abort startup.
      */
     requires?: string[];
+    /**
+     * When true, the gateway exposes a GET /api/v1/gateways/:id/adapters
+     * endpoint and the admin UI will offer an adapters view for it.
+     */
+    hasAdapters?: boolean;
+}
+
+/** Runtime entry stored in the registry, extends the manifest with live state. */
+export interface GatewayEntry extends GatewayManifest {
+    /** "active" when the gateway is enabled, "disabled" when toggled off. */
+    status: "active" | "disabled";
 }
 
 export class GatewayRegistry {
-    private readonly gateways = new Map<string, GatewayManifest>();
+    private readonly gateways = new Map<string, GatewayEntry>();
 
     register(manifest: GatewayManifest): void {
-        this.gateways.set(manifest.id, manifest);
+        this.gateways.set(manifest.id, { ...manifest, status: "active" });
     }
 
-    list(): GatewayManifest[] {
+    list(): GatewayEntry[] {
         return Array.from(this.gateways.values());
     }
 
-    get(id: string): GatewayManifest | undefined {
+    get(id: string): GatewayEntry | undefined {
         return this.gateways.get(id);
+    }
+
+    enable(id: string): boolean {
+        const entry = this.gateways.get(id);
+        if (!entry) return false;
+        entry.status = "active";
+        return true;
+    }
+
+    disable(id: string): boolean {
+        const entry = this.gateways.get(id);
+        if (!entry) return false;
+        entry.status = "disabled";
+        return true;
     }
 
     /**

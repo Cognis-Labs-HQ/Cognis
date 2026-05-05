@@ -105,6 +105,9 @@
   <string name="ui.app.admin.page_title">Administrasi</string>
   <string name="ui.app.admin.page_subtitle">Alat dan kontrol khusus admin.</string>
   <string name="ui.app.admin.disable_confirm">Nonaktifkan modul</string>
+  <string name="ui.app.admin.disable_confirm_gateway">Nonaktifkan gateway</string>
+  <string name="ui.app.admin.toggle_module">Alihkan status modul</string>
+  <string name="ui.app.admin.toggle_gateway">Alihkan status gateway</string>
   <string name="ui.app.admin.checking">Memeriksa...</string>
   <string name="ui.app.admin.components">Komponen</string>
   <string name="ui.app.admin.gateways">Gateway</string>
@@ -112,6 +115,10 @@
   <string name="ui.app.admin.description">Deskripsi</string>
   <string name="ui.app.admin.no_gateways">Tidak ada gateway yang terdaftar.</string>
   <string name="ui.app.admin.no_adapters">Tidak ada adapter yang terdaftar.</string>
+  <string name="ui.app.admin.gateway.requires">Membutuhkan</string>
+  <string name="ui.app.admin.gateway.adapter_count">Adapter</string>
+  <string name="ui.app.admin.gateway.go_to_adapters">Lihat adapter</string>
+  <string name="ui.app.admin.gateway.no_requires">Tidak ada</string>
   <string name="ui.app.demo.switched">Demo: berpindah ke halaman sandbox.</string>
   <string name="ui.app.demo.added">Demo: menambahkan widget progres belajar.</string>
   <string name="ui.app.demo.tweaked">Demo: menyesuaikan konfigurasi widget pertama.</string>

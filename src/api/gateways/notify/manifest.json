@@ -3,6 +3,7 @@
     "name": "Notification Gateway",
     "version": "0.1.0",
     "required": false,
+    "hasAdapters": true,
     "description": "Dispatches notifications via pluggable adapter senders.",
     "publisher": "Cognis Labs"
 }

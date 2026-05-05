@@ -30,8 +30,10 @@
 
 ### Gateways (admin)
 
-- `GET /api/v1/gateways` — list all registered gateways (id, name, version, description, requires)
-- `GET /api/v1/gateways/:id` — single gateway manifest
+- `GET /api/v1/gateways` — list all registered gateways (id, name, version, description, requires, status, hasAdapters)
+- `GET /api/v1/gateways/:id` — single gateway manifest including `status`
+- `POST /api/v1/gateways/:id/enable` — mark gateway as active
+- `POST /api/v1/gateways/:id/disable` — mark gateway as disabled
 - `GET /api/v1/admin/sections` — admin UI sections contributed by gateways via `UIRegistry`
 
 ### UI extensions

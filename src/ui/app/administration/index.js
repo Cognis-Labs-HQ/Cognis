@@ -28,6 +28,13 @@ async function toggleModule(moduleId, action) {
     );
 }
 
+async function toggleGateway(gatewayId, action) {
+    await apiFetch(
+        `/api/v1/gateways/${encodeURIComponent(gatewayId)}/${action}`,
+        { method: "POST" },
+    );
+}
+
 async function loadGateways() {
     const res = await apiFetch("/api/v1/gateways");
     if (!res.ok) return [];
@@ -45,7 +52,7 @@ async function loadGatewayAdapters(gatewayId) {
 }
 
 function getStatePill(status) {
-    if (status === "enabled")
+    if (status === "active" || status === "enabled")
         return {
             label: i18n.t("ui.app.admin.state.active"),
             className: "pill-active",
@@ -89,6 +96,7 @@ function renderModulesContent(modules) {
         .map((mod) => {
             const pill = getStatePill(mod.status);
             const disableBlocked = mod.class === "core";
+            const toggleTitle = i18n.t("ui.app.admin.toggle_module");
 
             return `
         <details class="module-row" data-module="${mod.id}">
@@ -99,7 +107,7 @@ function renderModulesContent(modules) {
           </summary>
           <div class="module-meta">
             <ul class="module-details">${renderDetailsList(mod)}</ul>
-            <label class="switch">
+            <label class="switch" title="${escapeHtml(toggleTitle)}">
               <input type="checkbox" data-module="${mod.id}" ${mod.status === "enabled" ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
               <span class="slider"></span>
             </label>
@@ -110,13 +118,23 @@ function renderModulesContent(modules) {
         .join("");
 }
 
-function renderGatewayDetailsList(gw) {
+function renderGatewayDetailsList(gw, adapterCount) {
+    const requiresValue =
+        gw.requires && gw.requires.length > 0
+            ? gw.requires.join(", ")
+            : i18n.t("ui.app.admin.gateway.no_requires");
+
     const details = [
         [i18n.t("ui.reuse.generic.id"), escapeHtml(gw.id)],
         [i18n.t("ui.reuse.generic.version"), escapeHtml(gw.version ?? "")],
         [
             i18n.t("ui.app.admin.publisher"),
             escapeHtml(gw.publisher || i18n.t("ui.app.admin.unknown")),
+        ],
+        [i18n.t("ui.app.admin.gateway.requires"), escapeHtml(requiresValue)],
+        [
+            i18n.t("ui.app.admin.gateway.adapter_count"),
+            String(adapterCount ?? 0),
         ],
     ];
     if (gw.description) {
@@ -133,25 +151,43 @@ function renderGatewayDetailsList(gw) {
         .join("");
 }
 
-function renderGatewaysContent(gateways) {
+function renderGatewaysContent(gateways, allAdapters) {
     if (!gateways.length) {
         return `<p>${i18n.t("ui.app.admin.no_gateways")}</p>`;
     }
+    const toggleTitle = i18n.t("ui.app.admin.toggle_gateway");
     return gateways
-        .map(
-            (gw) => `
+        .map((gw) => {
+            const pill = getStatePill(gw.status ?? "active");
+            const isEnabled = (gw.status ?? "active") !== "disabled";
+            const adapterCount = allAdapters.filter(
+                (a) => a._gatewayId === gw.id,
+            ).length;
+            const goToAdaptersBtn = gw.hasAdapters
+                ? `<button class="btn-animated gateway-adapters-btn" data-gateway="${escapeHtml(gw.id)}" type="button">${i18n.t("ui.app.admin.gateway.go_to_adapters")}</button>`
+                : "";
+
+            return `
         <details class="module-row" data-gateway="${escapeHtml(gw.id)}">
           <summary>
             <span><strong>${escapeHtml(gw.name)}</strong></span>
-            <span class="state-pill pill-active">${i18n.t("ui.app.admin.state.active")}</span>
+            <span class="state-pill ${pill.className}">${pill.label}</span>
             <span class="module-chevron">▾</span>
           </summary>
           <div class="module-meta">
-            <ul class="module-details">${renderGatewayDetailsList(gw)}</ul>
+            <ul class="module-details">${renderGatewayDetailsList(gw, adapterCount)}</ul>
+            <div class="gateway-meta-actions">
+              ${goToAdaptersBtn}
+              <label class="switch" title="${escapeHtml(toggleTitle)}">
+                <input type="checkbox" data-gateway="${escapeHtml(gw.id)}" ${isEnabled ? "checked" : ""} />
+                <span class="slider"></span>
+              </label>
+            </div>
           </div>
+          <div class="gateway-adapters-panel" data-gateway-adapters="${escapeHtml(gw.id)}" style="display:none;"></div>
         </details>
-      `,
-        )
+      `;
+        })
         .join("");
 }
 
@@ -179,58 +215,43 @@ function renderAdapterEntry(adapter, gatewayId) {
   `;
 }
 
-function renderAdaptersContent(allAdapters) {
-    if (!allAdapters.length) {
-        return `<p>${i18n.t("ui.app.admin.no_adapters")}</p>`;
+function renderAdaptersPanel(adapters, gatewayId) {
+    if (!adapters.length) {
+        return `<p class="gateway-adapters-empty">${i18n.t("ui.app.admin.no_adapters")}</p>`;
     }
-    const active = allAdapters.filter((a) => a.active);
-    const available = allAdapters.filter((a) => !a.active);
+    const active = adapters.filter((a) => a.active);
+    const available = adapters.filter((a) => !a.active);
     const activeRows = active.length
-        ? active.map((a) => renderAdapterEntry(a, a._gatewayId)).join("")
+        ? active.map((a) => renderAdapterEntry(a, gatewayId)).join("")
         : `<p>${i18n.t("ui.app.admin.notif.no_active")}</p>`;
     const availableRows = available.length
-        ? available.map((a) => renderAdapterEntry(a, a._gatewayId)).join("")
+        ? available.map((a) => renderAdapterEntry(a, gatewayId)).join("")
         : `<p>${i18n.t("ui.app.admin.notif.no_available")}</p>`;
     return `
-    <h3>${i18n.t("ui.app.admin.notif.active_providers")}</h3>
-    ${activeRows}
-    <h3>${i18n.t("ui.app.admin.notif.available_providers")}</h3>
-    ${availableRows}
-  `;
-}
-
-function renderComponentsDropdown(activeTab) {
-    const tabs = [
-        { id: "modules", label: i18n.t("ui.reuse.modules") },
-        { id: "gateways", label: i18n.t("ui.app.admin.gateways") },
-        { id: "adapters", label: i18n.t("ui.app.admin.adapters") },
-    ];
-    const options = tabs
-        .map(
-            (t) =>
-                `<option value="${t.id}"${activeTab === t.id ? " selected" : ""}>${t.label}</option>`,
-        )
-        .join("");
-    return `
-    <div class="components-tab-bar">
-      <select class="components-tab-select theme-select" aria-label="${i18n.t("ui.app.admin.components")}">
-        ${options}
-      </select>
+    <div class="gateway-adapters-list">
+      <h4>${i18n.t("ui.app.admin.notif.active_providers")}</h4>
+      ${activeRows}
+      <h4>${i18n.t("ui.app.admin.notif.available_providers")}</h4>
+      ${availableRows}
     </div>
   `;
 }
 
-function renderComponentsContent(activeTab, modules, gateways, allAdapters) {
-    const dropdown = renderComponentsDropdown(activeTab);
-    let body = "";
-    if (activeTab === "modules") {
-        body = renderModulesContent(modules);
-    } else if (activeTab === "gateways") {
-        body = renderGatewaysContent(gateways);
-    } else {
-        body = renderAdaptersContent(allAdapters);
-    }
-    return `${dropdown}<div class="components-tab-content">${body}</div>`;
+function renderComponentsContent(modules, gateways, allAdapters) {
+    return `
+    <div class="components-section">
+      <h3 class="components-section-heading">${i18n.t("ui.reuse.modules")}</h3>
+      <div class="components-section-body">
+        ${renderModulesContent(modules)}
+      </div>
+    </div>
+    <div class="components-section">
+      <h3 class="components-section-heading">${i18n.t("ui.app.admin.gateways")}</h3>
+      <div class="components-section-body">
+        ${renderGatewaysContent(gateways, allAdapters)}
+      </div>
+    </div>
+  `;
 }
 
 function renderIntegrityContent(integrityRows) {
@@ -304,6 +325,76 @@ function bindModuleToggles() {
     );
 }
 
+function bindGatewayToggles() {
+    root.querySelectorAll('input[type="checkbox"][data-gateway]').forEach(
+        (toggle) => {
+            toggle.addEventListener("change", async () => {
+                const gatewayId = toggle.dataset.gateway;
+                const previousState = !toggle.checked;
+                const action = toggle.checked ? "enable" : "disable";
+
+                if (action === "disable") {
+                    const result = await openPopup({
+                        title: i18n.t("ui.app.admin.disable_confirm_gateway"),
+                        body: `<strong>${gatewayId}</strong>`,
+                        variant: "danger",
+                        actions: [
+                            {
+                                id: "confirm",
+                                label: i18n.t("ui.reuse.generic.disable"),
+                                variant: "confirm",
+                            },
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.popup.cancel"),
+                                variant: "cancel",
+                            },
+                        ],
+                    });
+                    if (result !== "confirm") {
+                        toggle.checked = previousState;
+                        return;
+                    }
+                }
+
+                await toggleGateway(gatewayId, action);
+                gateways = await loadGateways();
+                composer.refresh(elements);
+            });
+        },
+    );
+}
+
+function bindGatewayAdapterButtons() {
+    root.querySelectorAll(".gateway-adapters-btn[data-gateway]").forEach(
+        (btn) => {
+            if (!(btn instanceof HTMLElement)) return;
+            const gatewayId = btn.dataset.gateway;
+            if (!gatewayId) return;
+
+            btn.addEventListener("click", async () => {
+                const panel = root.querySelector(
+                    `[data-gateway-adapters="${CSS.escape(gatewayId)}"]`,
+                );
+                if (!(panel instanceof HTMLElement)) return;
+
+                const isVisible = panel.style.display !== "none";
+                if (isVisible) {
+                    panel.style.display = "none";
+                    return;
+                }
+
+                panel.innerHTML = `<p class="gateway-adapters-loading">...</p>`;
+                panel.style.display = "block";
+
+                const adapters = await loadGatewayAdapters(gatewayId);
+                panel.innerHTML = renderAdaptersPanel(adapters, gatewayId);
+                bindAdapterEntries(panel);
+            });
+        },
+    );
+}
+
 function bindIntegrityRerun() {
     const rerunButton = root.querySelector("#rerun-integrity");
     if (!rerunButton) return;
@@ -341,6 +432,33 @@ async function loadGatewaySection(section) {
     }
 }
 
+/**
+ * Maps a raw backend field name to a human-readable label using existing
+ * i18n keys. Falls back to converting camelCase to Title Case for unknown
+ * fields.
+ *
+ * @param {string} name
+ * @returns {string}
+ */
+function fieldNameToLabel(name) {
+    const knownLabels = {
+        host: i18n.t("ui.app.admin.notif.smtp_host"),
+        port: i18n.t("ui.app.admin.notif.smtp_port"),
+        from: i18n.t("ui.app.admin.notif.smtp_from"),
+        senderName: i18n.t("ui.app.admin.notif.smtp_sender_name"),
+        user: i18n.t("ui.app.admin.notif.smtp_user"),
+        password: i18n.t("ui.app.admin.notif.smtp_password"),
+        secure: i18n.t("ui.app.admin.notif.smtp_secure"),
+        allowSelfSigned: i18n.t("ui.app.admin.notif.smtp_allow_self_signed"),
+        authDisabled: i18n.t("ui.app.admin.notif.smtp_auth_disabled"),
+    };
+    if (knownLabels[name]) return knownLabels[name];
+    return name
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (c) => c.toUpperCase())
+        .trim();
+}
+
 function renderGenericAdapterForm(descriptors, requiredFields) {
     const requiredSet = new Set(requiredFields);
     const requiredTooltip = i18n.t("ui.app.admin.notif.required_field");
@@ -360,14 +478,18 @@ function renderGenericAdapterForm(descriptors, requiredFields) {
         const conflictWarning = hasConflict
             ? `<span class="provider-field-env-warning" title="${conflictTitle}">⚠</span>`
             : "";
-        return `<label class="provider-popup-field${requiredClass}"${labelTitle}>${labelText}${inputHtml}${conflictWarning}</label>`;
+        return `<label class="provider-popup-field${requiredClass}"${labelTitle}>${escapeHtml(labelText)}${inputHtml}${conflictWarning}</label>`;
     }
 
     const fieldKeys = Object.keys(descriptors).filter(
         (name) => name !== "enabled",
     );
 
+    const authFieldNames = new Set(["user", "password"]);
+
     const textFieldKeys = fieldKeys.filter((name) => {
+        if (name === "secure") return false;
+        if (name === "authDisabled") return false;
         const rawValue = descriptors[name]?.effectiveValue;
         return !(
             rawValue === true ||
@@ -376,7 +498,10 @@ function renderGenericAdapterForm(descriptors, requiredFields) {
             rawValue === "false"
         );
     });
+
     const boolFieldKeys = fieldKeys.filter((name) => {
+        if (name === "secure") return false;
+        if (authFieldNames.has(name)) return false;
         const rawValue = descriptors[name]?.effectiveValue;
         return (
             rawValue === true ||
@@ -386,7 +511,31 @@ function renderGenericAdapterForm(descriptors, requiredFields) {
         );
     });
 
-    const textFieldsHtml = textFieldKeys
+    const hasSecure = "secure" in descriptors;
+    const hasAuthDisabled = "authDisabled" in descriptors;
+    const authFieldKeys = textFieldKeys.filter((name) =>
+        authFieldNames.has(name),
+    );
+    const nonAuthTextFieldKeys = textFieldKeys.filter(
+        (name) => !authFieldNames.has(name),
+    );
+
+    const secureFieldHtml = hasSecure
+        ? (() => {
+              const val = descriptors["secure"]?.effectiveValue ?? "none";
+              return fieldLabel(
+                  "secure",
+                  fieldNameToLabel("secure"),
+                  `<select name="secure" class="theme-select">
+                <option value="none"${val === "none" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_none")}</option>
+                <option value="starttls"${val === "starttls" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_starttls")}</option>
+                <option value="tls"${val === "tls" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_tls")}</option>
+              </select>`,
+              );
+          })()
+        : "";
+
+    const nonAuthFieldsHtml = nonAuthTextFieldKeys
         .map((name) => {
             const descriptor = descriptors[name];
             const val = escapeHtml(descriptor?.effectiveValue ?? "");
@@ -405,9 +554,26 @@ function renderGenericAdapterForm(descriptors, requiredFields) {
                 inputHtml = `<input name="${escapeHtml(name)}" type="text" value="${val}" />`;
             }
 
-            return fieldLabel(name, name, inputHtml);
+            return fieldLabel(name, fieldNameToLabel(name), inputHtml);
         })
         .join("");
+
+    const authFieldsHtml = authFieldKeys
+        .map((name) => {
+            const descriptor = descriptors[name];
+            const val = escapeHtml(descriptor?.effectiveValue ?? "");
+            const inputHtml =
+                name === "password"
+                    ? `<input name="${escapeHtml(name)}" type="password" value="" />`
+                    : `<input name="${escapeHtml(name)}" type="text" value="${val}" />`;
+            return fieldLabel(name, fieldNameToLabel(name), inputHtml);
+        })
+        .join("");
+
+    const authFieldsBlock =
+        authFieldKeys.length > 0
+            ? `<div class="provider-auth-fields">${authFieldsHtml}</div>`
+            : "";
 
     const boolFieldsHtml = boolFieldKeys.length
         ? `<div class="provider-option-toggles">${boolFieldKeys
@@ -417,8 +583,9 @@ function renderGenericAdapterForm(descriptors, requiredFields) {
                       rawValue === true || rawValue === "true"
                           ? " checked"
                           : "";
-                  return `<div class="provider-option-row">
-          <span class="provider-option-label">${escapeHtml(name)}</span>
+                  const isAuthDisabled = name === "authDisabled";
+                  return `<div class="provider-option-row${isAuthDisabled ? " provider-auth-toggle-row" : ""}">
+          <span class="provider-option-label">${escapeHtml(fieldNameToLabel(name))}</span>
           <label class="switch">
             <input name="${escapeHtml(name)}" type="checkbox"${checked} />
             <span class="slider"></span>
@@ -438,9 +605,11 @@ function renderGenericAdapterForm(descriptors, requiredFields) {
         </label>
       </div>
       <div class="provider-fields">
-        ${textFieldsHtml}
+        ${secureFieldHtml}
+        ${nonAuthFieldsHtml}
       </div>
       ${boolFieldsHtml}
+      ${authFieldsBlock}
       <div class="provider-test-row">
         <input class="provider-test-input" type="email" placeholder="${escapeHtml(i18n.t("ui.app.admin.notif.test_email_to"))}" />
         <button class="btn-animated provider-test-btn" type="button">${i18n.t("ui.app.admin.notif.test_email")}</button>
@@ -598,13 +767,12 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
                 authDisabledCheckbox instanceof HTMLInputElement &&
                 authFieldsEl instanceof HTMLElement
             ) {
-                authFieldsEl.style.display = authDisabledCheckbox.checked
-                    ? "none"
-                    : "grid";
+                const isAuthOff = authDisabledCheckbox.checked;
+                authFieldsEl.style.display = isAuthOff ? "none" : "";
                 authDisabledCheckbox.addEventListener("change", () => {
                     authFieldsEl.style.display = authDisabledCheckbox.checked
                         ? "none"
-                        : "grid";
+                        : "";
                 });
             }
 
@@ -676,49 +844,45 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
     }
 }
 
-function bindAdapterEntries() {
-    root.querySelectorAll(
-        ".provider-card--entry[data-adapter-id][data-gateway-id]",
-    ).forEach((card) => {
-        if (!(card instanceof HTMLElement)) return;
-        const adapterId = card.dataset.adapterId;
-        const gatewayId = card.dataset.gatewayId;
-        if (!adapterId || !gatewayId) return;
+function bindAdapterEntries(scope) {
+    const container = scope ?? root;
+    container
+        .querySelectorAll(
+            ".provider-card--entry[data-adapter-id][data-gateway-id]",
+        )
+        .forEach((card) => {
+            if (!(card instanceof HTMLElement)) return;
+            const adapterId = card.dataset.adapterId;
+            const gatewayId = card.dataset.gatewayId;
+            if (!adapterId || !gatewayId) return;
 
-        const adapter = allAdapters.find(
-            (a) => a.senderId === adapterId && a._gatewayId === gatewayId,
-        );
-        if (!adapter) return;
+            const adapter = allAdapters.find(
+                (a) => a.senderId === adapterId && a._gatewayId === gatewayId,
+            );
+            if (!adapter) return;
 
-        async function handleOpen() {
-            await openAdapterConfig(gatewayId, adapterId, adapter.name);
-        }
-
-        card.addEventListener("click", handleOpen);
-        card.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleOpen();
+            async function handleOpen() {
+                await openAdapterConfig(gatewayId, adapterId, adapter.name);
             }
-        });
-    });
-}
 
-function bindComponentsDropdown() {
-    const select = root.querySelector(".components-tab-select");
-    if (!(select instanceof HTMLSelectElement)) return;
-    select.addEventListener("change", () => {
-        activeComponentTab = select.value;
-        composer.refresh(elements);
-    });
+            card.addEventListener("click", handleOpen);
+            card.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleOpen();
+                }
+            });
+        });
 }
 
 async function loadAllAdapters(gatewayList) {
     const results = await Promise.all(
-        gatewayList.map(async (gw) => {
-            const adapters = await loadGatewayAdapters(gw.id);
-            return adapters.map((a) => ({ ...a, _gatewayId: gw.id }));
-        }),
+        gatewayList
+            .filter((gw) => gw.hasAdapters === true)
+            .map(async (gw) => {
+                const adapters = await loadGatewayAdapters(gw.id);
+                return adapters.map((a) => ({ ...a, _gatewayId: gw.id }));
+            }),
     );
     return results.flat();
 }
@@ -729,7 +893,6 @@ let [modules, integrityRows] = await Promise.all([
 ]);
 let gateways = await loadGateways();
 let allAdapters = await loadAllAdapters(gateways);
-let activeComponentTab = "modules";
 let composer;
 
 const securitySection = initSecuritySection(root, { i18n });
@@ -753,21 +916,13 @@ const baseElements = [
                     label: i18n.t("ui.app.admin.components"),
                     pinned: true,
                     render: () =>
-                        renderComponentsContent(
-                            activeComponentTab,
-                            modules,
-                            gateways,
-                            allAdapters,
-                        ),
+                        renderComponentsContent(modules, gateways, allAdapters),
                 },
             ],
             onRender: () => {
-                bindComponentsDropdown();
-                if (activeComponentTab === "modules") {
-                    bindModuleToggles();
-                } else if (activeComponentTab === "adapters") {
-                    bindAdapterEntries();
-                }
+                bindModuleToggles();
+                bindGatewayToggles();
+                bindGatewayAdapterButtons();
             },
         },
     },

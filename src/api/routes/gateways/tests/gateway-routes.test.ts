@@ -208,3 +208,103 @@ test("GET /api/v1/admin/sections returns registered sections", async () => {
         "/static/gateways/notify/admin-section.js",
     );
 });
+
+test("POST /api/v1/gateways/:id/enable sets gateway status to active", async () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "notify",
+        name: "Notification Gateway",
+        version: "0.1.0",
+    });
+    registry.disable("notify");
+    const handler = createGatewayRoutes(registry);
+
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
+    const handled = await handler(
+        req,
+        res,
+        new URL("/api/v1/gateways/notify/enable", "http://localhost"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    assert.equal(JSON.parse(res.payload).data.status, "active");
+    assert.equal(registry.get("notify")?.status, "active");
+});
+
+test("POST /api/v1/gateways/:id/disable sets gateway status to disabled", async () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "notify",
+        name: "Notification Gateway",
+        version: "0.1.0",
+    });
+    const handler = createGatewayRoutes(registry);
+
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
+    const handled = await handler(
+        req,
+        res,
+        new URL("/api/v1/gateways/notify/disable", "http://localhost"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    assert.equal(JSON.parse(res.payload).data.status, "disabled");
+    assert.equal(registry.get("notify")?.status, "disabled");
+});
+
+test("POST /api/v1/gateways/:id/enable returns 404 for unknown gateway", async () => {
+    const registry = new GatewayRegistry();
+    const handler = createGatewayRoutes(registry);
+
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
+    const handled = await handler(
+        req,
+        res,
+        new URL("/api/v1/gateways/unknown/enable", "http://localhost"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 404);
+});
+
+test("POST /api/v1/gateways/:id/enable requires admin auth", async () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "notify",
+        name: "Notification Gateway",
+        version: "0.1.0",
+    });
+    const handler = createGatewayRoutes(registry);
+
+    const req = makeRequest("POST");
+    const res = makeResponse();
+    await handler(
+        req,
+        res,
+        new URL("/api/v1/gateways/notify/enable", "http://localhost"),
+    );
+
+    assert.equal(res.status, 401);
+});
+
+test("GET /api/v1/gateways list includes status field", async () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "notify",
+        name: "Notification Gateway",
+        version: "0.1.0",
+    });
+    const handler = createGatewayRoutes(registry);
+
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
+    await handler(req, res, new URL("/api/v1/gateways", "http://localhost"));
+
+    const body = JSON.parse(res.payload);
+    assert.equal(body.data[0].status, "active");
+});

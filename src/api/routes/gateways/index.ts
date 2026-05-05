@@ -6,9 +6,11 @@ import type { UIRegistry } from "../../ui-registry.js";
 /**
  * Creates route handlers for the gateway management API.
  *
- *   GET /api/v1/gateways         — list all registered gateways (admin)
- *   GET /api/v1/gateways/:id     — get a single gateway manifest (admin)
- *   GET /api/v1/admin/sections   — list UI registry sections contributed by gateways (admin)
+ *   GET  /api/v1/gateways                — list all registered gateways (admin)
+ *   GET  /api/v1/gateways/:id            — get a single gateway manifest (admin)
+ *   POST /api/v1/gateways/:id/enable     — mark gateway as active (admin)
+ *   POST /api/v1/gateways/:id/disable    — mark gateway as disabled (admin)
+ *   GET  /api/v1/admin/sections          — list UI registry sections contributed by gateways (admin)
  */
 export function createGatewayRoutes(
     registry: GatewayRegistry,
@@ -56,6 +58,40 @@ export function createGatewayRoutes(
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: manifest }));
+            return true;
+        }
+
+        const actionMatch = url.pathname.match(
+            /^\/api\/v1\/gateways\/([^/]+)\/(enable|disable)$/,
+        );
+        if (actionMatch && req.method === "POST") {
+            if (!requireAuth(req, res, "admin")) return true;
+            const id = decodeURIComponent(actionMatch[1]);
+            const action = actionMatch[2] as "enable" | "disable";
+            const found =
+                action === "enable"
+                    ? registry.enable(id)
+                    : registry.disable(id);
+            if (!found) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Gateway not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        status: action === "enable" ? "active" : "disabled",
+                    },
+                }),
+            );
             return true;
         }
 
