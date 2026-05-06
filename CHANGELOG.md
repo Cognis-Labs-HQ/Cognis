@@ -7,6 +7,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- DB migration tracking via a `db_migrations` table: `initializeDatabaseSchema` now creates this table on every boot (idempotent), records a sentinel when the init phase completes so init SQL files run only once, and records each migration file by its SHA-256 so that individual migrations are skipped on subsequent restarts rather than re-executed. This applies across all DB providers (SQLite, PostgreSQL, MariaDB) and to SQL contributed by core, gateways, and modules.
+
 ### Fixed
 
 - ([3213808](https://github.com/le-firehawk/Cognis/commit/3213808)) `resolveDbProviderDir` in `db-init.ts` returned `"postgresql"` but the actual adapter directory is `postgres/`; all PostgreSQL init and migration SQL was silently skipped, causing `relation "modules" does not exist` on startup
