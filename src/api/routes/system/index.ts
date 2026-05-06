@@ -3,8 +3,8 @@ import { join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { HealthService } from "@cognis/core";
 import { requireAuth } from "../../auth/guard.js";
-import { readJson } from "../read-json.js";
-import type { UserPreferenceStore } from "../preferences/index.js";
+import { readJson } from "../../reuse/read-json.js";
+import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 
 async function listLanguages() {
     const root = join(process.cwd(), "src", "ui", "languages");

@@ -2,75 +2,30 @@ import { createServer } from "node:http";
 import {
     HealthService,
     ModuleService,
+    type GatewayRegistry,
+    type BootstrapLog,
     type ModuleRuntimeGateway,
-    type FileStorageGateway,
-    type NotificationGateway,
 } from "@cognis/core";
 import { createModuleRoutes } from "./routes/modules/index.js";
 import { createSystemRoutes } from "./routes/system/index.js";
 import { createDocsRoutes } from "./routes/docs/index.js";
 import { createUiRoutes } from "./routes/ui/index.js";
-import { createAuthRoutes } from "./routes/auth/index.js";
-import { createModuleExtensionRoutes } from "./routes/module-extensions/index.js";
-import type { AuthGateway } from "@cognis/core";
-import type { LocalAccountStore } from "./adapters/local-auth-gateway.js";
-import {
-    createPreferencesRoutes,
-    type UserPreferenceStore,
-} from "./routes/preferences/index.js";
+import { createModuleExtensionRoutes } from "../modules/routes/module-extensions.js";
+import type { LocalAccountStore } from "./reuse/account-store.js";
+import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import { createUserRoutes } from "./routes/users/index.js";
-import { createProfileRoutes } from "./routes/profile/index.js";
-import { createNotificationRoutes } from "./routes/notifications/index.js";
-import { createSocialRoutes } from "./routes/social/index.js";
-import { createPostRoutes } from "./routes/posts/index.js";
-import { createFileRoutes } from "./routes/files/index.js";
-import type { DbProfileStore } from "./adapters/db/profile-store.js";
-import type { DbNotificationStore } from "./adapters/db/notification-store.js";
-import type { TfaCodeService } from "./utils/tfa-code.js";
-import type { VerifyTokenService } from "./utils/verify-token.js";
-import type { VerificationEmailSender } from "./gateways/notification.js";
-
-const LOG_LEVEL = process.env.LOG_LEVEL ?? "info";
-const isDebug = LOG_LEVEL === "debug";
-function logEvent(
-    level: "debug" | "info" | "warn",
-    message: string,
-    meta: Record<string, unknown>,
-) {
-    if (level === "debug" && !isDebug) return;
-    if (level === "info" && LOG_LEVEL === "warn") return;
-    if (level === "info" && LOG_LEVEL === "error") return;
-    if (level === "warn" && LOG_LEVEL === "error") return;
-    const sink =
-        level === "warn"
-            ? console.warn
-            : level === "info"
-              ? console.info
-              : console.debug;
-    sink(
-        JSON.stringify({
-            ts: new Date().toISOString(),
-            level,
-            component: "api",
-            message,
-            ...meta,
-        }),
-    );
-}
+import type { RouteRegistry } from "./route-registry.js";
+import { createGatewayRoutes } from "./routes/gateways/index.js";
+import type { UIRegistry } from "./ui-registry.js";
 
 export interface ApiDependencies {
     moduleRuntimeGateway: ModuleRuntimeGateway;
-    authGateway: AuthGateway;
-    accountStore: LocalAccountStore;
-    preferenceStore: UserPreferenceStore;
-    profileStore?: DbProfileStore;
-    fileGateway?: FileStorageGateway;
-    notificationGateway?: NotificationGateway;
-    notifStore?: DbNotificationStore;
-    tfaService?: TfaCodeService;
-    verificationEmailSender?: VerificationEmailSender;
-    verifyTokenService?: VerifyTokenService;
-    externalHost?: string;
+    accountStore?: LocalAccountStore;
+    preferenceStore?: UserPreferenceStore;
+    routeRegistry?: RouteRegistry;
+    gatewayRegistry?: GatewayRegistry;
+    uiRegistry?: UIRegistry;
+    log?: BootstrapLog;
     moduleIntegrityChecker?: () => Promise<
         Array<{
             moduleId: string;
@@ -84,9 +39,23 @@ export interface ApiDependencies {
         Array<{ moduleId: string; enabled: boolean }>
     >;
     persistModuleState?: (moduleId: string, enabled: boolean) => Promise<void>;
+    loadGatewayStates?: () => Promise<
+        Array<{ gatewayId: string; enabled: boolean }>
+    >;
+    persistGatewayState?: (
+        gatewayId: string,
+        enabled: boolean,
+    ) => Promise<void>;
+    createProfile?: (
+        accountId: string,
+        handle: string,
+        role?: string,
+    ) => Promise<void>;
+    setProfileRole?: (handle: string, role: string) => Promise<void>;
 }
 
 export function buildServer(deps: ApiDependencies) {
+    const log = deps.log ?? (() => undefined);
     const moduleService = new ModuleService(deps.moduleRuntimeGateway);
     const healthService = new HealthService();
     const enabledModules = new Set<string>();
@@ -116,46 +85,28 @@ export function buildServer(deps: ApiDependencies) {
         deps.preferenceStore,
     );
     const docsRoutes = createDocsRoutes();
-    const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway);
-    const authRoutes = createAuthRoutes(
-        deps.authGateway,
-        deps.accountStore,
-        deps.profileStore,
-    );
-    const preferencesRoutes = createPreferencesRoutes(deps.preferenceStore);
-    const userRoutes = createUserRoutes(
-        deps.accountStore,
-        deps.preferenceStore,
-        deps.profileStore,
-        deps.notifStore,
-        deps.tfaService,
-        deps.verificationEmailSender,
-        deps.verifyTokenService,
-        deps.externalHost,
-    );
-    const notificationRoutes = deps.notificationGateway
-        ? createNotificationRoutes(deps.notificationGateway, deps.notifStore)
+    const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway, deps.uiRegistry);
+    const userRoutes = deps.accountStore
+        ? createUserRoutes(
+              deps.accountStore,
+              deps.preferenceStore,
+              deps.setProfileRole,
+          )
         : null;
-    const profileRoutes =
-        deps.profileStore && deps.fileGateway
-            ? createProfileRoutes(deps.profileStore, deps.fileGateway)
-            : null;
-    const socialRoutes = deps.profileStore
-        ? createSocialRoutes(deps.profileStore)
+    const gatewayRoutes = deps.gatewayRegistry
+        ? createGatewayRoutes(
+              deps.gatewayRegistry,
+              deps.uiRegistry,
+              deps.persistGatewayState,
+          )
         : null;
-    const postRoutes = deps.profileStore
-        ? createPostRoutes(deps.profileStore)
-        : null;
-    const fileRoutes =
-        deps.profileStore && deps.fileGateway
-            ? createFileRoutes(deps.profileStore, deps.fileGateway)
-            : null;
 
     Promise.all([
         deps.moduleRuntimeGateway.listManifests(),
         deps.loadModuleStates?.() ?? Promise.resolve([]),
+        deps.loadGatewayStates?.() ?? Promise.resolve([]),
     ])
-        .then(([manifests, savedStates]) => {
+        .then(([manifests, savedStates, savedGatewayStates]) => {
             const saved = new Map(
                 savedStates.map((row) => [row.moduleId, row.enabled]),
             );
@@ -164,6 +115,18 @@ export function buildServer(deps: ApiDependencies) {
                 if (manifest.class === "core" || persisted === true)
                     enabledModules.add(manifest.id);
             }
+            const savedGateways = new Map(
+                savedGatewayStates.map((row) => [row.gatewayId, row.enabled]),
+            );
+            if (deps.gatewayRegistry) {
+                for (const entry of deps.gatewayRegistry.list()) {
+                    if (entry.required) continue;
+                    const persisted = savedGateways.get(entry.id);
+                    if (persisted === false) {
+                        deps.gatewayRegistry.disable(entry.id);
+                    }
+                }
+            }
             return moduleExtensionRoutes.refresh();
         })
         .catch(() => undefined);
@@ -171,7 +134,7 @@ export function buildServer(deps: ApiDependencies) {
     return createServer(async (req, res) => {
         const url = new URL(req.url ?? "/", "http://localhost");
         const startedAt = Date.now();
-        logEvent("debug", "Incoming API request.", {
+        log("debug", "Incoming API request.", {
             method: req.method ?? "GET",
             path: url.pathname,
         });
@@ -179,7 +142,7 @@ export function buildServer(deps: ApiDependencies) {
         try {
             const handledByModule = await moduleRoutes(req, res, url);
             if (handledByModule) {
-                logEvent(
+                log(
                     (req.method ?? "GET") === "GET" ? "debug" : "info",
                     "Request handled by module routes.",
                     {
@@ -193,7 +156,7 @@ export function buildServer(deps: ApiDependencies) {
 
             const handledBySystem = await systemRoutes(req, res, url);
             if (handledBySystem) {
-                logEvent(
+                log(
                     (req.method ?? "GET") === "GET" ? "debug" : "info",
                     "Request handled by system routes.",
                     {
@@ -205,60 +168,10 @@ export function buildServer(deps: ApiDependencies) {
                 return;
             }
 
-            const handledByAuth = await authRoutes(req, res, url);
-            if (handledByAuth) {
-                logEvent("info", "Request handled by auth routes.", {
-                    method: req.method ?? "GET",
-                    path: url.pathname,
-                    durationMs: Date.now() - startedAt,
-                });
-                return;
-            }
-
-            const handledByPreferences = await preferencesRoutes(req, res, url);
-            if (handledByPreferences) {
-                logEvent("info", "Request handled by preferences routes.", {
-                    method: req.method ?? "GET",
-                    path: url.pathname,
-                    durationMs: Date.now() - startedAt,
-                });
-                return;
-            }
-
-            const handledByUsers = await userRoutes(req, res, url);
-            if (handledByUsers) {
-                logEvent("info", "Request handled by user routes.", {
-                    method: req.method ?? "GET",
-                    path: url.pathname,
-                    durationMs: Date.now() - startedAt,
-                });
-                return;
-            }
-
-            if (notificationRoutes) {
-                const handledByNotifications = await notificationRoutes(
-                    req,
-                    res,
-                    url,
-                );
-                if (handledByNotifications) {
-                    logEvent(
-                        "info",
-                        "Request handled by notification routes.",
-                        {
-                            method: req.method ?? "GET",
-                            path: url.pathname,
-                            durationMs: Date.now() - startedAt,
-                        },
-                    );
-                    return;
-                }
-            }
-
-            if (profileRoutes) {
-                const handledByProfile = await profileRoutes(req, res, url);
-                if (handledByProfile) {
-                    logEvent("info", "Request handled by profile routes.", {
+            if (userRoutes) {
+                const handledByUsers = await userRoutes(req, res, url);
+                if (handledByUsers) {
+                    log("info", "Request handled by user routes.", {
                         method: req.method ?? "GET",
                         path: url.pathname,
                         durationMs: Date.now() - startedAt,
@@ -267,10 +180,10 @@ export function buildServer(deps: ApiDependencies) {
                 }
             }
 
-            if (socialRoutes) {
-                const handledBySocial = await socialRoutes(req, res, url);
-                if (handledBySocial) {
-                    logEvent("info", "Request handled by social routes.", {
+            if (gatewayRoutes) {
+                const handledByGateways = await gatewayRoutes(req, res, url);
+                if (handledByGateways) {
+                    log("info", "Request handled by gateway routes.", {
                         method: req.method ?? "GET",
                         path: url.pathname,
                         durationMs: Date.now() - startedAt,
@@ -279,22 +192,21 @@ export function buildServer(deps: ApiDependencies) {
                 }
             }
 
-            if (postRoutes) {
-                const handledByPosts = await postRoutes(req, res, url);
-                if (handledByPosts) {
-                    logEvent("info", "Request handled by post routes.", {
-                        method: req.method ?? "GET",
-                        path: url.pathname,
-                        durationMs: Date.now() - startedAt,
-                    });
-                    return;
+            // Gateway-registered route handlers run after core routes but before
+            // module extensions, docs, and UI. Handlers tied to a disabled
+            // gateway are skipped so that disabling a gateway also silences its
+            // routes without needing explicit unregistration.
+            for (const entry of deps.routeRegistry?.getEntries() ?? []) {
+                if (
+                    entry.gatewayId &&
+                    deps.gatewayRegistry?.get(entry.gatewayId)?.status ===
+                        "disabled"
+                ) {
+                    continue;
                 }
-            }
-
-            if (fileRoutes) {
-                const handledByFiles = await fileRoutes(req, res, url);
-                if (handledByFiles) {
-                    logEvent("info", "Request handled by file routes.", {
+                const handledByRegistry = await entry.handler(req, res, url);
+                if (handledByRegistry) {
+                    log("info", "Request handled by registered route.", {
                         method: req.method ?? "GET",
                         path: url.pathname,
                         durationMs: Date.now() - startedAt,
@@ -309,21 +221,17 @@ export function buildServer(deps: ApiDependencies) {
                 url,
             );
             if (handledByExtensions) {
-                logEvent(
-                    "info",
-                    "Request handled by module extension routes.",
-                    {
-                        method: req.method ?? "GET",
-                        path: url.pathname,
-                        durationMs: Date.now() - startedAt,
-                    },
-                );
+                log("info", "Request handled by module extension routes.", {
+                    method: req.method ?? "GET",
+                    path: url.pathname,
+                    durationMs: Date.now() - startedAt,
+                });
                 return;
             }
 
             const handledByDocs = await docsRoutes(req, res, url);
             if (handledByDocs) {
-                logEvent("debug", "Request handled by docs routes.", {
+                log("debug", "Request handled by docs routes.", {
                     method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
@@ -333,7 +241,7 @@ export function buildServer(deps: ApiDependencies) {
 
             const handledByUi = await uiRoutes(req, res, url);
             if (handledByUi) {
-                logEvent("debug", "Request handled by UI routes.", {
+                log("debug", "Request handled by UI routes.", {
                     method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
@@ -347,7 +255,7 @@ export function buildServer(deps: ApiDependencies) {
                     error: { code: "not_found", message: "Route not found" },
                 }),
             );
-            logEvent("warn", "Request resulted in 404.", {
+            log("warn", "Request resulted in 404.", {
                 method: req.method ?? "GET",
                 path: url.pathname,
                 durationMs: Date.now() - startedAt,
@@ -365,7 +273,7 @@ export function buildServer(deps: ApiDependencies) {
                     },
                 }),
             );
-            logEvent("warn", "Request failed with handled error response.", {
+            log("warn", "Request failed with handled error response.", {
                 method: req.method ?? "GET",
                 path: url.pathname,
                 durationMs: Date.now() - startedAt,

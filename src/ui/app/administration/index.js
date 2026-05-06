@@ -3,8 +3,9 @@ import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
-import { loadProviderConfig } from "../../reuse/provider-config.js";
 import { initSecuritySection } from "./security.js";
+import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
+import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
 
 const root = document.querySelector("#app");
 const i18n = await createI18n();
@@ -29,8 +30,31 @@ async function toggleModule(moduleId, action) {
     );
 }
 
+async function toggleGateway(gatewayId, action) {
+    await apiFetch(
+        `/api/v1/gateways/${encodeURIComponent(gatewayId)}/${action}`,
+        { method: "POST" },
+    );
+}
+
+async function loadGateways() {
+    const res = await apiFetch("/api/v1/gateways");
+    if (!res.ok) return [];
+    const payload = await res.json();
+    return payload.data ?? [];
+}
+
+async function loadGatewayAdapters(gatewayId) {
+    const res = await apiFetch(
+        `/api/v1/gateways/${encodeURIComponent(gatewayId)}/adapters`,
+    );
+    if (!res.ok) return [];
+    const payload = await res.json();
+    return payload.data ?? [];
+}
+
 function getStatePill(status) {
-    if (status === "enabled")
+    if (status === "active" || status === "enabled")
         return {
             label: i18n.t("ui.app.admin.state.active"),
             className: "pill-active",
@@ -61,12 +85,26 @@ function renderDetailsList(mod) {
         ],
     ];
 
-    return details
+    const rows = details
         .map(
             ([key, value]) =>
                 `<li class="module-detail-item"><span class="module-detail-key">${key}</span><span class="module-detail-value">${value}</span></li>`,
         )
         .join("");
+
+    if (mod.requires && mod.requires.length > 0) {
+        const depsHtml = renderDependencyLinks(
+            mod.requires,
+            "gateway-",
+            gateways,
+        );
+        return (
+            rows +
+            `<li class="module-detail-item"><span class="module-detail-key">${i18n.t("ui.app.admin.gateway.dependencies")}</span><span class="module-detail-value">${depsHtml}</span></li>`
+        );
+    }
+
+    return rows;
 }
 
 function renderModulesContent(modules) {
@@ -74,25 +112,166 @@ function renderModulesContent(modules) {
         .map((mod) => {
             const pill = getStatePill(mod.status);
             const disableBlocked = mod.class === "core";
+            const toggleTitle = i18n.t("ui.app.admin.toggle_module");
 
             return `
         <details class="module-row" data-module="${mod.id}">
-          <summary>
-            <span><strong>${mod.name}</strong></span>
+          <summary class="module-row-summary">
+            <span class="module-row-title"><strong>${mod.name}</strong></span>
             <span class="state-pill ${pill.className}">${pill.label}</span>
+            <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
+              <input type="checkbox" data-module="${mod.id}" ${mod.status === "enabled" ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
+              <span class="slider"></span>
+            </label>
             <span class="module-chevron">▾</span>
           </summary>
           <div class="module-meta">
             <ul class="module-details">${renderDetailsList(mod)}</ul>
-            <label class="switch">
-              <input type="checkbox" data-module="${mod.id}" ${mod.status === "enabled" ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
-              <span class="slider"></span>
-            </label>
           </div>
         </details>
       `;
         })
         .join("");
+}
+
+function renderDependencyLinks(ids, scrollPrefix, gateways = []) {
+    if (!ids || ids.length === 0) {
+        return i18n.t("ui.app.admin.gateway.no_dependencies");
+    }
+    const gwById = new Map(gateways.map((g) => [g.id, g]));
+    return ids
+        .map((id) => {
+            const dep = gwById.get(id);
+            const label = dep ? escapeHtml(dep.name) : escapeHtml(id);
+            return `<a class="dependency-link" href="#" data-scroll-to="${escapeHtml(scrollPrefix)}${escapeHtml(id)}">${label}</a>`;
+        })
+        .join(", ");
+}
+
+function renderGatewayDetailsList(gw, gateways) {
+    const requiredLabel = gw.required
+        ? i18n.t("ui.reuse.generic.true")
+        : i18n.t("ui.reuse.generic.false");
+
+    const details = [
+        [i18n.t("ui.reuse.generic.id"), escapeHtml(gw.id)],
+        [i18n.t("ui.reuse.generic.version"), escapeHtml(gw.version ?? "")],
+        [
+            i18n.t("ui.app.admin.publisher"),
+            escapeHtml(gw.publisher || i18n.t("ui.app.admin.unknown")),
+        ],
+        [i18n.t("ui.app.admin.gateway.required"), requiredLabel],
+    ];
+    if (gw.description) {
+        details.push([
+            i18n.t("ui.app.admin.description"),
+            escapeHtml(gw.description),
+        ]);
+    }
+    const detailsRows = details
+        .map(
+            ([key, value]) =>
+                `<li class="module-detail-item"><span class="module-detail-key">${key}</span><span class="module-detail-value">${value}</span></li>`,
+        )
+        .join("");
+    const depsHtml = renderDependencyLinks(gw.requires, "gateway-", gateways);
+    const depsRow = `<li class="module-detail-item"><span class="module-detail-key">${i18n.t("ui.app.admin.gateway.dependencies")}</span><span class="module-detail-value">${depsHtml}</span></li>`;
+    return detailsRows + depsRow;
+}
+
+function renderAdapterToggle(adapter, gatewayId, isGatewayDisabled) {
+    const adapterId = adapter.senderId ?? adapter.id;
+    const isEnabled = !!(adapter.active ?? adapter.enabled);
+    const isLocked = !!adapter.locked;
+    return `<label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_gateway"))}">
+      <input type="checkbox" class="adapter-toggle"
+        data-adapter="${escapeHtml(adapterId)}"
+        data-gateway="${escapeHtml(gatewayId)}"
+        ${isEnabled ? "checked" : ""}
+        ${isGatewayDisabled || isLocked ? "disabled" : ""} />
+      <span class="slider"></span>
+    </label>`;
+}
+
+function renderInlineAdapters(adapters, gatewayId, isGatewayDisabled) {
+    if (!adapters || adapters.length === 0) return "";
+    const rows = adapters
+        .map((adapter) => {
+            const adapterId = adapter.senderId ?? adapter.id;
+            const isActive = !!(adapter.active ?? adapter.enabled);
+            const statePillClass = isActive ? "pill-active" : "pill-available";
+            const stateLabel = isActive
+                ? i18n.t("ui.app.admin.state.active")
+                : i18n.t("ui.app.admin.state.available");
+            return `
+        <div class="adapter-inline-row" role="button" tabindex="0"
+          data-adapter-id="${escapeHtml(adapterId)}"
+          data-gateway-id="${escapeHtml(gatewayId)}">
+          <span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapterId)}</strong></span>
+          <span class="state-pill ${statePillClass}">${stateLabel}</span>
+          ${renderAdapterToggle(adapter, gatewayId, isGatewayDisabled)}
+        </div>
+      `;
+        })
+        .join("");
+    return `
+      <div class="gateway-adapters-section">
+        <span class="gateway-adapters-label">${i18n.t("ui.app.admin.adapters")}</span>
+        <div class="gateway-adapters-inline">${rows}</div>
+      </div>
+    `;
+}
+
+function renderGatewaysContent(gateways, allAdapters) {
+    if (!gateways.length) {
+        return `<p>${i18n.t("ui.app.admin.no_gateways")}</p>`;
+    }
+    const toggleTitle = i18n.t("ui.app.admin.toggle_gateway");
+    return gateways
+        .map((gw) => {
+            const pill = getStatePill(gw.status ?? "active");
+            const isEnabled = (gw.status ?? "active") !== "disabled";
+            const isGatewayDisabled = !isEnabled;
+            const gwAdapters = gw.hasAdapters
+                ? allAdapters.filter((a) => a._gatewayId === gw.id)
+                : [];
+
+            return `
+        <details class="module-row" data-gateway="${escapeHtml(gw.id)}">
+          <summary class="module-row-summary">
+            <span class="module-row-title"><strong>${escapeHtml(gw.name)}</strong></span>
+            <span class="state-pill ${pill.className}">${pill.label}</span>
+            <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
+              <input type="checkbox" data-gateway="${escapeHtml(gw.id)}" ${isEnabled ? "checked" : ""} ${gw.required ? "disabled" : ""} />
+              <span class="slider"></span>
+            </label>
+            <span class="module-chevron">▾</span>
+          </summary>
+          <div class="module-meta">
+            <ul class="module-details">${renderGatewayDetailsList(gw, gateways)}</ul>
+            ${renderInlineAdapters(gwAdapters, gw.id, isGatewayDisabled)}
+          </div>
+        </details>
+      `;
+        })
+        .join("");
+}
+
+function renderComponentsContent(modules, gateways, allAdapters) {
+    return `
+    <div class="components-section">
+      <h3 class="components-section-heading">${i18n.t("ui.reuse.modules")}</h3>
+      <div class="components-section-body">
+        ${renderModulesContent(modules)}
+      </div>
+    </div>
+    <div class="components-section">
+      <h3 class="components-section-heading">${i18n.t("ui.app.admin.gateways")}</h3>
+      <div class="components-section-body">
+        ${renderGatewaysContent(gateways, allAdapters)}
+      </div>
+    </div>
+  `;
 }
 
 function renderIntegrityContent(integrityRows) {
@@ -134,6 +313,46 @@ function bindModuleToggles() {
                 const previousState = !toggle.checked;
                 const action = toggle.checked ? "enable" : "disable";
 
+                if (action === "enable") {
+                    const mod = modules.find((m) => m.id === moduleId);
+                    const disabledDeps = (mod?.requires ?? []).filter(
+                        (depId) => {
+                            const dep = gateways.find((g) => g.id === depId);
+                            return dep && dep.status === "disabled";
+                        },
+                    );
+                    if (disabledDeps.length > 0) {
+                        const depNames = disabledDeps.map((depId) => {
+                            const dep = gateways.find((g) => g.id === depId);
+                            return dep ? dep.name : depId;
+                        });
+                        const result = await openPopup({
+                            title: i18n.t("ui.app.admin.enable_confirm_module"),
+                            body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${depNames.map((n) => `<li><strong>${escapeHtml(n)}</strong></li>`).join("")}</ul>`,
+                            actions: [
+                                {
+                                    id: "confirm",
+                                    label: i18n.t("ui.reuse.generic.enable"),
+                                    variant: "confirm",
+                                },
+                                {
+                                    id: "cancel",
+                                    label: i18n.t("ui.reuse.popup.cancel"),
+                                    variant: "cancel",
+                                },
+                            ],
+                        });
+                        if (result !== "confirm") {
+                            toggle.checked = previousState;
+                            return;
+                        }
+                        for (const depId of disabledDeps) {
+                            await toggleGateway(depId, "enable");
+                        }
+                        gateways = await loadGateways();
+                    }
+                }
+
                 if (action === "disable") {
                     const result = await openPopup({
                         title: i18n.t("ui.app.admin.disable_confirm"),
@@ -166,6 +385,352 @@ function bindModuleToggles() {
     );
 }
 
+function bindGatewayToggles() {
+    root.querySelectorAll('input[type="checkbox"][data-gateway]').forEach(
+        (toggle) => {
+            toggle.addEventListener("change", async () => {
+                const gatewayId = toggle.dataset.gateway;
+                const previousState = !toggle.checked;
+                const action = toggle.checked ? "enable" : "disable";
+                const gw = gateways.find((g) => g.id === gatewayId);
+
+                if (action === "enable") {
+                    const disabledDeps = (gw?.requires ?? []).filter(
+                        (depId) => {
+                            const dep = gateways.find((g) => g.id === depId);
+                            return dep && dep.status === "disabled";
+                        },
+                    );
+                    if (disabledDeps.length > 0) {
+                        const depNames = disabledDeps.map((depId) => {
+                            const dep = gateways.find((g) => g.id === depId);
+                            return dep ? dep.name : depId;
+                        });
+                        const result = await openPopup({
+                            title: i18n.t(
+                                "ui.app.admin.enable_confirm_gateway",
+                            ),
+                            body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${depNames.map((n) => `<li><strong>${escapeHtml(n)}</strong></li>`).join("")}</ul>`,
+                            actions: [
+                                {
+                                    id: "confirm",
+                                    label: i18n.t("ui.reuse.generic.enable"),
+                                    variant: "confirm",
+                                },
+                                {
+                                    id: "cancel",
+                                    label: i18n.t("ui.reuse.popup.cancel"),
+                                    variant: "cancel",
+                                },
+                            ],
+                        });
+                        if (result !== "confirm") {
+                            toggle.checked = previousState;
+                            return;
+                        }
+                        for (const depId of disabledDeps) {
+                            await toggleGateway(depId, "enable");
+                        }
+                    }
+                }
+
+                if (action === "disable") {
+                    const result = await openPopup({
+                        title: i18n.t("ui.app.admin.disable_confirm_gateway"),
+                        body: `<strong>${escapeHtml(gw?.name ?? gatewayId)}</strong>`,
+                        variant: "danger",
+                        actions: [
+                            {
+                                id: "confirm",
+                                label: i18n.t("ui.reuse.generic.disable"),
+                                variant: "confirm",
+                            },
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.popup.cancel"),
+                                variant: "cancel",
+                            },
+                        ],
+                    });
+                    if (result !== "confirm") {
+                        toggle.checked = previousState;
+                        return;
+                    }
+                }
+
+                await toggleGateway(gatewayId, action);
+
+                if (action === "disable") {
+                    const gatewayAdapters = allAdapters.filter(
+                        (a) => a._gatewayId === gatewayId,
+                    );
+                    for (const adapter of gatewayAdapters) {
+                        const adapterId = adapter.senderId ?? adapter.id;
+                        if (adapterId) {
+                            await toggleAdapter(
+                                gatewayId,
+                                adapterId,
+                                "disable",
+                            );
+                        }
+                    }
+                }
+
+                gateways = await loadGateways();
+                allAdapters = await loadAllAdapters(gateways);
+                composer.refresh(elements);
+                updateNavbarAvatar().catch(() => {});
+            });
+        },
+    );
+}
+
+function bindSummarySliderClicks() {
+    root.querySelectorAll(".module-row summary .switch--inline").forEach(
+        (label) => {
+            label.addEventListener("click", (e) => {
+                e.stopPropagation();
+            });
+        },
+    );
+}
+
+const EXPANDED_STATE_KEY = "admin-expanded-rows";
+
+function saveExpandedState() {
+    const openIds = [];
+    root.querySelectorAll("details.module-row[open]").forEach((el) => {
+        const gwId = el.dataset.gateway;
+        const modId = el.dataset.module;
+        if (gwId) openIds.push("gateway:" + gwId);
+        else if (modId) openIds.push("module:" + modId);
+    });
+    try {
+        sessionStorage.setItem(EXPANDED_STATE_KEY, JSON.stringify(openIds));
+    } catch {}
+}
+
+function restoreExpandedState() {
+    let openIds;
+    try {
+        openIds = JSON.parse(
+            sessionStorage.getItem(EXPANDED_STATE_KEY) ?? "[]",
+        );
+    } catch {
+        openIds = [];
+    }
+    const openSet = new Set(openIds);
+    root.querySelectorAll("details.module-row").forEach((el) => {
+        const gwId = el.dataset.gateway;
+        const modId = el.dataset.module;
+        const key = gwId ? "gateway:" + gwId : modId ? "module:" + modId : null;
+        if (key && openSet.has(key)) {
+            el.setAttribute("open", "");
+        }
+    });
+}
+
+function bindExpandedStateListeners() {
+    root.querySelectorAll("details.module-row").forEach((el) => {
+        el.addEventListener("toggle", saveExpandedState);
+    });
+}
+
+function bindGatewayAdapterButtons() {
+    // This function is intentionally empty — adapters are now rendered inline.
+    // Previously it managed a collapsible panel; that pattern is replaced by
+    // renderInlineAdapters + bindAdapterRows.
+}
+
+async function toggleAdapter(gatewayId, adapterId, action) {
+    await apiFetch(
+        `/api/v1/gateways/${encodeURIComponent(gatewayId)}/adapters/${encodeURIComponent(adapterId)}/${action}`,
+        { method: "POST" },
+    );
+}
+
+function bindAdapterToggles() {
+    root.querySelectorAll(
+        ".adapter-toggle[data-adapter][data-gateway]",
+    ).forEach((toggle) => {
+        if (!(toggle instanceof HTMLInputElement)) return;
+        toggle.addEventListener("change", async () => {
+            const adapterId = toggle.dataset.adapter;
+            const gatewayId = toggle.dataset.gateway;
+            if (!adapterId || !gatewayId) return;
+            const previouslyChecked = !toggle.checked;
+            const action = toggle.checked ? "enable" : "disable";
+
+            if (action === "enable") {
+                const adapter = allAdapters.find(
+                    (a) =>
+                        (a.senderId ?? a.id) === adapterId &&
+                        a._gatewayId === gatewayId,
+                );
+                const requires = adapter?.requires ?? [];
+                const disabledDepNames = [];
+                const disabledGatewayDeps = [];
+                const disabledAdapterDeps = [];
+
+                for (const req of requires) {
+                    const parts = req.split(":");
+                    if (parts.length === 2) {
+                        const [depGwId, depAdapterId] = parts;
+                        const depAdapter = allAdapters.find(
+                            (a) =>
+                                (a.senderId ?? a.id) === depAdapterId &&
+                                a._gatewayId === depGwId,
+                        );
+                        if (
+                            depAdapter &&
+                            !(depAdapter.active ?? depAdapter.enabled)
+                        ) {
+                            disabledAdapterDeps.push({
+                                gatewayId: depGwId,
+                                adapterId: depAdapterId,
+                            });
+                            disabledDepNames.push(
+                                depAdapter.name ?? depAdapterId,
+                            );
+                        }
+                    } else {
+                        const depGw = gateways.find((g) => g.id === req);
+                        if (depGw && depGw.status === "disabled") {
+                            disabledGatewayDeps.push(req);
+                            disabledDepNames.push(depGw.name ?? req);
+                        }
+                    }
+                }
+
+                if (disabledDepNames.length > 0) {
+                    const result = await openPopup({
+                        title: i18n.t("ui.app.admin.enable_confirm_adapter"),
+                        body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${disabledDepNames.map((n) => `<li><strong>${escapeHtml(n)}</strong></li>`).join("")}</ul>`,
+                        actions: [
+                            {
+                                id: "confirm",
+                                label: i18n.t("ui.reuse.generic.enable"),
+                                variant: "confirm",
+                            },
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.popup.cancel"),
+                                variant: "cancel",
+                            },
+                        ],
+                    });
+                    if (result !== "confirm") {
+                        toggle.checked = previouslyChecked;
+                        return;
+                    }
+                    for (const depGwId of disabledGatewayDeps) {
+                        await toggleGateway(depGwId, "enable");
+                    }
+                    for (const dep of disabledAdapterDeps) {
+                        await toggleAdapter(
+                            dep.gatewayId,
+                            dep.adapterId,
+                            "enable",
+                        );
+                    }
+                    gateways = await loadGateways();
+                    allAdapters = await loadAllAdapters(gateways);
+                }
+
+                await toggleAdapter(gatewayId, adapterId, "enable");
+            }
+
+            if (action === "disable") {
+                const gwAdapters = allAdapters.filter(
+                    (a) => a._gatewayId === gatewayId,
+                );
+                const otherEnabledAdapters = gwAdapters.filter((a) => {
+                    const aId = a.senderId ?? a.id;
+                    return (a.active ?? a.enabled) && aId !== adapterId;
+                });
+                const isLastEnabled = otherEnabledAdapters.length === 0;
+
+                if (isLastEnabled) {
+                    const result = await openPopup({
+                        title: i18n.t("ui.app.admin.disable_confirm_gateway"),
+                        body: `<p>${i18n.t("ui.app.admin.disable_last_adapter_warning")}</p>`,
+                        variant: "danger",
+                        actions: [
+                            {
+                                id: "confirm",
+                                label: i18n.t("ui.reuse.generic.disable"),
+                                variant: "confirm",
+                            },
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.popup.cancel"),
+                                variant: "cancel",
+                            },
+                        ],
+                    });
+                    if (result !== "confirm") {
+                        toggle.checked = previouslyChecked;
+                        return;
+                    }
+                }
+
+                await toggleAdapter(gatewayId, adapterId, "disable");
+
+                if (isLastEnabled) {
+                    await toggleGateway(gatewayId, "disable");
+                    gateways = await loadGateways();
+                }
+            }
+
+            allAdapters = await loadAllAdapters(gateways);
+            composer.refresh(elements);
+        });
+    });
+}
+
+function bindAdapterRows() {
+    root.querySelectorAll(
+        ".adapter-inline-row[data-adapter-id][data-gateway-id]",
+    ).forEach((row) => {
+        if (!(row instanceof HTMLElement)) return;
+        const adapterId = row.dataset.adapterId;
+        const gatewayId = row.dataset.gatewayId;
+        if (!adapterId || !gatewayId) return;
+
+        const adapter = allAdapters.find(
+            (a) =>
+                (a.senderId ?? a.id) === adapterId &&
+                a._gatewayId === gatewayId,
+        ) ?? { senderId: adapterId, name: adapterId };
+
+        if (adapter.locked) return;
+
+        async function handleOpen(e) {
+            const switchLabel = row.querySelector(".switch--inline");
+            if (
+                switchLabel &&
+                (e.target === switchLabel || switchLabel.contains(e.target))
+            )
+                return;
+            await openAdapterConfig(
+                gatewayId,
+                adapterId,
+                adapter.name ?? adapterId,
+            );
+            allAdapters = await loadAllAdapters(gateways);
+            composer.refresh(elements);
+        }
+
+        row.addEventListener("click", handleOpen);
+        row.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleOpen(e);
+            }
+        });
+    });
+}
+
 function bindIntegrityRerun() {
     const rerunButton = root.querySelector("#rerun-integrity");
     if (!rerunButton) return;
@@ -179,42 +744,77 @@ function bindIntegrityRerun() {
     });
 }
 
-async function loadProviders() {
-    const res = await apiFetch("/api/v1/notifications/providers");
+function bindDependencyLinks() {
+    root.querySelectorAll(".dependency-link[data-scroll-to]").forEach(
+        (link) => {
+            if (!(link instanceof HTMLAnchorElement)) return;
+            const targetId = link.dataset.scrollTo;
+            if (!targetId) return;
+            link.addEventListener("click", (e) => {
+                e.preventDefault();
+                const el = root.querySelector(
+                    `[data-gateway="${CSS.escape(targetId.replace(/^gateway-/, ""))}"], [data-module="${CSS.escape(targetId.replace(/^module-/, ""))}"]`,
+                );
+                if (!(el instanceof HTMLElement)) return;
+                el.setAttribute("open", "");
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+            });
+        },
+    );
+}
+
+async function loadAdminSections() {
+    const res = await apiFetch("/api/v1/admin/sections");
     if (!res.ok) return [];
     const payload = await res.json();
     return payload.data ?? [];
 }
 
-async function loadCategories() {
-    const res = await apiFetch("/api/v1/notifications/categories");
-    if (!res.ok) return [];
-    const payload = await res.json();
-    return payload.data ?? [];
+async function loadGatewaySection(section) {
+    try {
+        const mod = await import(section.scriptUrl);
+        if (typeof mod.createAdminSection !== "function") return null;
+        const def = mod.createAdminSection({
+            i18n,
+            apiFetch,
+            escapeHtml,
+            openPopup,
+        });
+        if (def.dataReady) await def.dataReady;
+        return def;
+    } catch {
+        return null;
+    }
 }
 
-async function loadUsers() {
-    const res = await apiFetch("/api/v1/users");
-    if (!res.ok) return [];
-    const payload = await res.json();
-    return payload.data ?? [];
+/**
+ * Maps a raw backend field name to a human-readable label using existing
+ * i18n keys. Falls back to converting camelCase to Title Case for unknown
+ * fields.
+ *
+ * @param {string} name
+ * @returns {string}
+ */
+function fieldNameToLabel(name) {
+    const knownLabels = {
+        host: i18n.t("ui.app.admin.notif.smtp_host"),
+        port: i18n.t("ui.app.admin.notif.smtp_port"),
+        from: i18n.t("ui.app.admin.notif.smtp_from"),
+        senderName: i18n.t("ui.app.admin.notif.smtp_sender_name"),
+        user: i18n.t("ui.app.admin.notif.smtp_user"),
+        password: i18n.t("ui.app.admin.notif.smtp_password"),
+        secure: i18n.t("ui.app.admin.notif.smtp_secure"),
+        allowSelfSigned: i18n.t("ui.app.admin.notif.smtp_allow_self_signed"),
+        authDisabled: i18n.t("ui.app.admin.notif.smtp_auth_disabled"),
+    };
+    if (knownLabels[name]) return knownLabels[name];
+    return name
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (c) => c.toUpperCase())
+        .trim();
 }
 
-function renderSmtpPopupBody(descriptors, requiredFields) {
-    const val = (field, fallback = "") =>
-        escapeHtml(descriptors[field]?.effectiveValue ?? fallback);
-    const host = val("host");
-    const port = val("port", "587");
-    const from = val("from");
-    const senderName = val("senderName");
-    const user = val("user");
-    const secure = val("secure", "starttls");
-    const allowSelfSigned =
-        descriptors["allowSelfSigned"]?.effectiveValue === "true" ||
-        descriptors["allowSelfSigned"]?.effectiveValue === true;
-    const authDisabled =
-        descriptors["authDisabled"]?.effectiveValue === "true" ||
-        descriptors["authDisabled"]?.effectiveValue === true;
+function renderGenericAdapterForm(descriptors, requiredFields) {
     const requiredSet = new Set(requiredFields);
     const requiredTooltip = i18n.t("ui.app.admin.notif.required_field");
     const conflictTitle = i18n.t("ui.app.admin.notif.field_env_conflict");
@@ -233,48 +833,121 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
         const conflictWarning = hasConflict
             ? `<span class="provider-field-env-warning" title="${conflictTitle}">⚠</span>`
             : "";
-        return `<label class="provider-popup-field${requiredClass}"${labelTitle}>${labelText}${inputHtml}${conflictWarning}</label>`;
+        return `<label class="provider-popup-field${requiredClass}"${labelTitle}>${escapeHtml(labelText)}${inputHtml}${conflictWarning}</label>`;
     }
 
-    const senderNameField = fieldLabel(
-        "senderName",
-        i18n.t("ui.app.admin.notif.smtp_sender_name"),
-        `<input name="senderName" type="text" value="${senderName}" placeholder="${i18n.t("ui.app.admin.notif.smtp_sender_name_placeholder")}" />`,
+    const fieldKeys = Object.keys(descriptors).filter(
+        (name) => name !== "enabled",
     );
-    const hostField = fieldLabel(
-        "host",
-        i18n.t("ui.app.admin.notif.smtp_host"),
-        `<input name="host" type="text" value="${host}" placeholder="${i18n.t("ui.app.admin.notif.smtp_host_placeholder")}" />`,
+
+    const authFieldNames = new Set(["user", "password"]);
+
+    const textFieldKeys = fieldKeys.filter((name) => {
+        if (name === "secure") return false;
+        if (name === "authDisabled") return false;
+        const rawValue = descriptors[name]?.effectiveValue;
+        return !(
+            rawValue === true ||
+            rawValue === false ||
+            rawValue === "true" ||
+            rawValue === "false"
+        );
+    });
+
+    const boolFieldKeys = fieldKeys.filter((name) => {
+        if (name === "secure") return false;
+        if (authFieldNames.has(name)) return false;
+        const rawValue = descriptors[name]?.effectiveValue;
+        return (
+            rawValue === true ||
+            rawValue === false ||
+            rawValue === "true" ||
+            rawValue === "false"
+        );
+    });
+
+    const hasSecure = "secure" in descriptors;
+    const authFieldKeys = textFieldKeys.filter((name) =>
+        authFieldNames.has(name),
     );
-    const portField = fieldLabel(
-        "port",
-        i18n.t("ui.app.admin.notif.smtp_port"),
-        `<input name="port" type="number" value="${port}" placeholder="587" />`,
+    const nonAuthTextFieldKeys = textFieldKeys.filter(
+        (name) => !authFieldNames.has(name),
     );
-    const fromField = fieldLabel(
-        "from",
-        i18n.t("ui.app.admin.notif.smtp_from"),
-        `<input name="from" type="email" value="${from}" placeholder="${i18n.t("ui.app.admin.notif.smtp_from_placeholder")}" />`,
-    );
-    const userField = fieldLabel(
-        "user",
-        i18n.t("ui.app.admin.notif.smtp_user"),
-        `<input name="user" type="text" value="${user}" placeholder="${i18n.t("ui.app.admin.notif.smtp_user_placeholder")}" />`,
-    );
-    const passwordField = fieldLabel(
-        "password",
-        i18n.t("ui.app.admin.notif.smtp_password"),
-        `<input name="password" type="password" value="" placeholder="${i18n.t("ui.app.admin.notif.smtp_password_placeholder")}" />`,
-    );
-    const secureField = fieldLabel(
-        "secure",
-        i18n.t("ui.app.admin.notif.smtp_secure"),
-        `<select name="secure" class="theme-select">
-        <option value="starttls"${secure === "starttls" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_starttls")}</option>
-        <option value="tls"${secure === "tls" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_tls")}</option>
-        <option value="none"${secure === "none" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_none")}</option>
-      </select>`,
-    );
+
+    const secureFieldHtml = hasSecure
+        ? (() => {
+              const val = descriptors["secure"]?.effectiveValue ?? "none";
+              return fieldLabel(
+                  "secure",
+                  fieldNameToLabel("secure"),
+                  `<select name="secure" class="theme-select">
+                <option value="none"${val === "none" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_none")}</option>
+                <option value="starttls"${val === "starttls" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_starttls")}</option>
+                <option value="tls"${val === "tls" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_tls")}</option>
+              </select>`,
+              );
+          })()
+        : "";
+
+    const nonAuthFieldsHtml = nonAuthTextFieldKeys
+        .map((name) => {
+            const descriptor = descriptors[name];
+            const val = escapeHtml(descriptor?.effectiveValue ?? "");
+            const isPassword =
+                name.toLowerCase().includes("password") ||
+                name.toLowerCase().includes("secret");
+            const isPort =
+                name === "port" || name.toLowerCase().endsWith("port");
+
+            let inputHtml;
+            if (isPassword) {
+                inputHtml = `<input name="${escapeHtml(name)}" type="password" value="" />`;
+            } else if (isPort) {
+                inputHtml = `<input name="${escapeHtml(name)}" type="number" value="${val}" />`;
+            } else {
+                inputHtml = `<input name="${escapeHtml(name)}" type="text" value="${val}" />`;
+            }
+
+            return fieldLabel(name, fieldNameToLabel(name), inputHtml);
+        })
+        .join("");
+
+    const authFieldsHtml = authFieldKeys
+        .map((name) => {
+            const descriptor = descriptors[name];
+            const val = escapeHtml(descriptor?.effectiveValue ?? "");
+            const inputHtml =
+                name === "password"
+                    ? `<input name="${escapeHtml(name)}" type="password" value="" />`
+                    : `<input name="${escapeHtml(name)}" type="text" value="${val}" />`;
+            return fieldLabel(name, fieldNameToLabel(name), inputHtml);
+        })
+        .join("");
+
+    const authFieldsBlock =
+        authFieldKeys.length > 0
+            ? `<div class="provider-auth-fields">${authFieldsHtml}</div>`
+            : "";
+
+    const boolFieldsHtml = boolFieldKeys.length
+        ? `<div class="provider-option-toggles">${boolFieldKeys
+              .map((name) => {
+                  const rawValue = descriptors[name]?.effectiveValue;
+                  const checked =
+                      rawValue === true || rawValue === "true"
+                          ? " checked"
+                          : "";
+                  const isAuthDisabled = name === "authDisabled";
+                  return `<div class="provider-option-row${isAuthDisabled ? " provider-auth-toggle-row" : ""}">
+          <span class="provider-option-label">${escapeHtml(fieldNameToLabel(name))}</span>
+          <label class="switch">
+            <input name="${escapeHtml(name)}" type="checkbox"${checked} />
+            <span class="slider"></span>
+          </label>
+        </div>`;
+              })
+              .join("")}</div>`
+        : "";
 
     return `
     <div class="provider-popup-form">
@@ -286,48 +959,76 @@ function renderSmtpPopupBody(descriptors, requiredFields) {
         </label>
       </div>
       <div class="provider-fields">
-        ${senderNameField}
-        ${hostField}
-        ${portField}
-        ${fromField}
-        ${secureField}
+        ${secureFieldHtml}
+        ${nonAuthFieldsHtml}
       </div>
-      <div class="provider-auth-fields">
-        ${userField}
-        ${passwordField}
-      </div>
-      <div class="provider-option-toggles">
-        <div class="provider-option-row">
-          <span class="provider-option-label">${i18n.t("ui.app.admin.notif.smtp_allow_self_signed")}</span>
-          <label class="switch">
-            <input type="checkbox" name="allowSelfSigned"${allowSelfSigned ? " checked" : ""} />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="provider-option-row">
-          <span class="provider-option-label">${i18n.t("ui.app.admin.notif.smtp_auth_disabled")}</span>
-          <label class="switch">
-            <input type="checkbox" name="authDisabled"${authDisabled ? " checked" : ""} />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
+      ${authFieldsBlock}
+      ${boolFieldsHtml}
       <div class="provider-test-row">
         <input class="provider-test-input" type="email" placeholder="${escapeHtml(i18n.t("ui.app.admin.notif.test_email_to"))}" />
         <button class="btn-animated provider-test-btn" type="button">${i18n.t("ui.app.admin.notif.test_email")}</button>
-        <span class="provider-test-status notif-status-message"></span>
+        <span class="provider-test-status"></span>
       </div>
     </div>
   `;
 }
 
-async function openProviderConfig(senderId, name, isActive) {
-    const { descriptors, requiredFields } = await loadProviderConfig(senderId);
+async function openAdapterConfig(gatewayId, adapterId, name) {
+    const configUrl = `/api/v1/gateways/${encodeURIComponent(gatewayId)}/adapters/${encodeURIComponent(adapterId)}/config`;
+    const testUrl = `/api/v1/gateways/${encodeURIComponent(gatewayId)}/adapters/${encodeURIComponent(adapterId)}/test`;
+
+    const res = await apiFetch(configUrl);
+    if (!res.ok) return;
+    const payload = await res.json();
+    const dbData = payload.data ?? {};
+    const envData = payload.envValues ?? {};
+    const requiredFields = Array.isArray(payload.requiredFields)
+        ? payload.requiredFields
+        : [];
+
+    const fieldNames = new Set([
+        ...Object.keys(dbData),
+        ...Object.keys(envData),
+        ...requiredFields,
+    ]);
+    const descriptors = {};
+    for (const field of fieldNames) {
+        const rawDb = dbData[field];
+        const rawEnv = envData[field];
+        const dbValue =
+            rawDb != null && rawDb !== "" ? String(rawDb) : undefined;
+        const envValue =
+            rawEnv != null && rawEnv !== "" ? String(rawEnv) : undefined;
+        let effectiveValue;
+        let source;
+        if (dbValue !== undefined) {
+            effectiveValue = dbValue;
+            source = "db";
+        } else if (envValue !== undefined) {
+            effectiveValue = envValue;
+            source = "env";
+        } else {
+            effectiveValue = undefined;
+            source = "none";
+        }
+        descriptors[field] = {
+            dbValue,
+            envValue,
+            effectiveValue,
+            source,
+            envConflict:
+                dbValue !== undefined &&
+                envValue !== undefined &&
+                dbValue !== envValue,
+            required: requiredFields.includes(field),
+        };
+    }
+
     let popupFormEl = null;
 
     const result = await openPopup({
         title: name,
-        body: renderSmtpPopupBody(descriptors, requiredFields),
+        body: renderGenericAdapterForm(descriptors, requiredFields),
         maxWidth: "640px",
         actions: [
             {
@@ -420,13 +1121,12 @@ async function openProviderConfig(senderId, name, isActive) {
                 authDisabledCheckbox instanceof HTMLInputElement &&
                 authFieldsEl instanceof HTMLElement
             ) {
-                authFieldsEl.style.display = authDisabledCheckbox.checked
-                    ? "none"
-                    : "grid";
+                const isAuthOff = authDisabledCheckbox.checked;
+                authFieldsEl.style.display = isAuthOff ? "none" : "";
                 authDisabledCheckbox.addEventListener("change", () => {
                     authFieldsEl.style.display = authDisabledCheckbox.checked
                         ? "none"
-                        : "grid";
+                        : "";
                 });
             }
 
@@ -457,16 +1157,13 @@ async function openProviderConfig(senderId, name, isActive) {
                             config[field.name] = field.value;
                         }
                     });
-                    const res = await apiFetch(
-                        `/api/v1/notifications/providers/${encodeURIComponent(senderId)}/test`,
-                        {
-                            method: "POST",
-                            headers: { "content-type": "application/json" },
-                            body: JSON.stringify({ to, config }),
-                        },
-                    );
+                    const testRes = await apiFetch(testUrl, {
+                        method: "POST",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({ to, config }),
+                    });
                     if (testStatus) {
-                        testStatus.textContent = res.ok
+                        testStatus.textContent = testRes.ok
                             ? i18n.t("ui.app.admin.notif.test_sent")
                             : i18n.t("ui.app.admin.notif.test_failed");
                     }
@@ -491,223 +1188,73 @@ async function openProviderConfig(senderId, name, isActive) {
                 config[field.name] = field.value;
             }
         });
-        await apiFetch(
-            `/api/v1/notifications/providers/${encodeURIComponent(senderId)}/config`,
-            {
-                method: "PUT",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(config),
-            },
-        );
-        providers = await loadProviders();
+        await apiFetch(configUrl, {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(config),
+        });
+        allAdapters = await loadAllAdapters(gateways);
         composer.refresh(elements);
     }
 }
 
-function renderProviderEntry(provider) {
-    const escapedId = escapeHtml(provider.senderId);
-    const escapedName = escapeHtml(provider.name);
-    const statePillClass = provider.active ? "pill-active" : "pill-available";
-    const stateLabel = provider.active
-        ? i18n.t("ui.app.admin.state.active")
-        : i18n.t("ui.app.admin.state.available");
-    const missingAlert = !provider.active
-        ? `<span class="provider-missing-alert" aria-label="${i18n.t("ui.app.admin.notif.provider_missing_config")}">❗</span>`
-        : "";
-    return `
-    <div class="provider-card provider-card--entry" data-sender-id="${escapedId}" role="button" tabindex="0">
-      <span class="provider-entry-name"><strong>${escapedName}</strong>${missingAlert}</span>
-      <span class="state-pill ${statePillClass}">${stateLabel}</span>
-    </div>
-  `;
-}
-
-function renderNotificationsContent(providers) {
-    const activeProviders = providers.filter((p) => p.active);
-    const availableProviders = providers.filter((p) => !p.active);
-
-    const activeRows = activeProviders.length
-        ? activeProviders.map((p) => renderProviderEntry(p)).join("")
-        : `<p>${i18n.t("ui.app.admin.notif.no_active")}</p>`;
-
-    const availableRows = availableProviders.length
-        ? availableProviders.map((p) => renderProviderEntry(p)).join("")
-        : `<p>${i18n.t("ui.app.admin.notif.no_available")}</p>`;
-
-    return `
-    <h3>${i18n.t("ui.app.admin.notif.active_providers")}</h3>
-    ${activeRows}
-    <h3>${i18n.t("ui.app.admin.notif.available_providers")}</h3>
-    ${availableRows}
-  `;
-}
-
-function bindProviderEntries() {
-    root.querySelectorAll(".provider-card--entry[data-sender-id]").forEach(
-        (card) => {
-            if (!(card instanceof HTMLElement)) return;
-            const senderId = card.dataset.senderId;
-            if (!senderId) return;
-            const provider = providers.find((p) => p.senderId === senderId);
-            if (!provider) return;
-
-            async function handleOpen() {
-                await openProviderConfig(
-                    senderId,
-                    provider.name,
-                    provider.active,
-                );
-            }
-
-            card.addEventListener("click", handleOpen);
-            card.addEventListener("keydown", (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    handleOpen();
-                }
-            });
-        },
-    );
-}
-
-function renderNotificationsDebugContent(users, categories) {
-    const userOptions = users
-        .map(
-            (u) =>
-                `<option value="${escapeHtml(u.username)}">${escapeHtml(u.username)}</option>`,
-        )
-        .join("");
-
-    const categoryOptions = categories
-        .map(
-            (c) =>
-                `<option value="${escapeHtml(c.id)}">${escapeHtml(c.label)}</option>`,
-        )
-        .join("");
-
-    const noUsers = !users.length
-        ? `<p class="notif-debug-empty">${i18n.t("ui.app.admin.notif.debug_no_users")}</p>`
-        : "";
-    const noCategories = !categories.length
-        ? `<p class="notif-debug-empty">${i18n.t("ui.app.admin.notif.debug_no_categories")}</p>`
-        : "";
-
-    return `
-    <div class="notif-debug-panel">
-      ${noUsers}
-      ${noCategories}
-      <div class="notif-debug-fields">
-        <label class="notif-debug-field">
-          ${i18n.t("ui.app.admin.notif.debug_target_user")}
-          <select name="debugUser" class="theme-select">${userOptions}</select>
-        </label>
-        <label class="notif-debug-field">
-          ${i18n.t("ui.app.admin.notif.debug_category")}
-          <select name="debugCategory" class="theme-select">${categoryOptions}</select>
-        </label>
-        <label class="notif-debug-field notif-debug-field--full">
-          ${i18n.t("ui.app.admin.notif.debug_subject")}
-          <input name="debugSubject" type="text" placeholder="${i18n.t("ui.app.admin.notif.debug_subject_placeholder")}" />
-        </label>
-        <label class="notif-debug-field notif-debug-field--full">
-          ${i18n.t("ui.app.admin.notif.debug_body")}
-          <textarea name="debugBody" rows="4" placeholder="${i18n.t("ui.app.admin.notif.debug_body_placeholder")}"></textarea>
-        </label>
-      </div>
-      <div class="notif-debug-actions">
-        <button class="btn-animated notif-debug-send" type="button">${i18n.t("ui.app.admin.notif.debug_send")}</button>
-        <span class="notif-debug-status notif-status-message"></span>
-      </div>
-    </div>
-  `;
-}
-
-function bindNotificationsDebug() {
-    const panel = root.querySelector(".notif-debug-panel");
-    if (!panel) return;
-
-    const sendBtn = panel.querySelector(".notif-debug-send");
-    const statusEl = panel.querySelector(".notif-debug-status");
-
-    if (!sendBtn) return;
-
-    sendBtn.addEventListener("click", async () => {
-        const userSelect = panel.querySelector('[name="debugUser"]');
-        const categorySelect = panel.querySelector('[name="debugCategory"]');
-        const subjectInput = panel.querySelector('[name="debugSubject"]');
-        const bodyInput = panel.querySelector('[name="debugBody"]');
-
-        const recipientUsername =
-            userSelect instanceof HTMLSelectElement ? userSelect.value : "";
-        const category =
-            categorySelect instanceof HTMLSelectElement
-                ? categorySelect.value
-                : "";
-        const subject =
-            subjectInput instanceof HTMLInputElement
-                ? subjectInput.value.trim()
-                : "";
-        const body =
-            bodyInput instanceof HTMLTextAreaElement
-                ? bodyInput.value.trim()
-                : "";
-
-        if (!recipientUsername || !category || !subject || !body) {
-            if (statusEl)
-                statusEl.textContent = i18n.t(
-                    "ui.app.admin.notif.debug_missing_fields",
-                );
-            return;
-        }
-
-        if (statusEl) statusEl.textContent = "";
-        const res = await apiFetch("/api/v1/notifications/send", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-                recipientUsername,
-                category,
-                subject,
-                body,
+async function loadAllAdapters(gatewayList) {
+    const results = await Promise.all(
+        gatewayList
+            .filter((gw) => gw.hasAdapters === true)
+            .map(async (gw) => {
+                const adapters = await loadGatewayAdapters(gw.id);
+                return adapters.map((a) => ({ ...a, _gatewayId: gw.id }));
             }),
-        });
-
-        if (statusEl) {
-            statusEl.textContent = res.ok
-                ? i18n.t("ui.app.admin.notif.debug_sent")
-                : i18n.t("ui.app.admin.notif.debug_send_failed");
-        }
-    });
+    );
+    return results.flat();
 }
 
 let [modules, integrityRows] = await Promise.all([
     loadModules(),
     loadIntegrity(),
 ]);
-let providers = await loadProviders();
-let [categories, users] = await Promise.all([loadCategories(), loadUsers()]);
+let gateways = await loadGateways();
+let allAdapters = await loadAllAdapters(gateways);
 let composer;
+let changesBar;
 
-const securitySection = initSecuritySection(root, { i18n });
+const securitySection = initSecuritySection(root, {
+    i18n,
+    onDirtyChange: (dirty) => changesBar?.markDirty("security", dirty),
+});
 
-const elements = [
+const sectionMeta = await loadAdminSections();
+const gatewaySections = (
+    await Promise.all(sectionMeta.map(loadGatewaySection))
+).filter(Boolean);
+
+const baseElements = [
     {
-        id: "modules",
-        label: i18n.t("ui.reuse.modules"),
+        id: "components",
+        label: i18n.t("ui.app.admin.components"),
         subComposerOptions: {
             allowCustomization: false,
-            preferenceKey: "administration-modules-layout",
-            heading: i18n.t("ui.reuse.modules"),
+            preferenceKey: "administration-components-layout",
+            heading: i18n.t("ui.app.admin.components"),
             elements: [
                 {
-                    id: "modules-list",
-                    label: i18n.t("ui.reuse.modules"),
+                    id: "components-content",
+                    label: i18n.t("ui.app.admin.components"),
                     pinned: true,
-                    render: () => renderModulesContent(modules),
+                    render: () =>
+                        renderComponentsContent(modules, gateways, allAdapters),
                 },
             ],
             onRender: () => {
                 bindModuleToggles();
+                bindGatewayToggles();
+                bindAdapterToggles();
+                bindAdapterRows();
+                bindSummarySliderClicks();
+                bindDependencyLinks();
+                restoreExpandedState();
+                bindExpandedStateListeners();
             },
         },
     },
@@ -737,34 +1284,6 @@ const elements = [
         },
     },
     {
-        id: "notifications",
-        label: i18n.t("ui.app.admin.notifications"),
-        subComposerOptions: {
-            allowCustomization: false,
-            preferenceKey: "administration-notifications-layout",
-            heading: i18n.t("ui.app.admin.notifications"),
-            elements: [
-                {
-                    id: "notifications-content",
-                    label: i18n.t("ui.app.admin.notifications"),
-                    pinned: true,
-                    render: () => renderNotificationsContent(providers),
-                },
-                {
-                    id: "notifications-debug",
-                    label: i18n.t("ui.app.admin.notif.debug"),
-                    pinned: true,
-                    render: () =>
-                        renderNotificationsDebugContent(users, categories),
-                },
-            ],
-            onRender: () => {
-                bindProviderEntries();
-                bindNotificationsDebug();
-            },
-        },
-    },
-    {
         id: "security",
         label: i18n.t("ui.app.admin.security.title"),
         subComposerOptions: {
@@ -786,6 +1305,28 @@ const elements = [
     },
 ];
 
+const elements = [
+    ...baseElements,
+    ...gatewaySections.map((sec) => ({
+        id: sec.id,
+        label: sec.label,
+        subComposerOptions: {
+            ...sec.subComposerOptions,
+            onRender: () => sec.subComposerOptions?.onRender?.(root),
+        },
+    })),
+];
+
+const navItems = [
+    `<li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>`,
+    `<li><button data-composer-scroll="integrity">${i18n.t("ui.reuse.file_integrity")}</button></li>`,
+    `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
+    ...gatewaySections.map(
+        (sec) =>
+            `<li><button data-composer-scroll="${escapeHtml(sec.id)}">${escapeHtml(sec.label)}</button></li>`,
+    ),
+];
+
 composer = createPageComposer(root, {
     allowCustomization: false,
     subPageNavigation: true,
@@ -803,13 +1344,33 @@ composer = createPageComposer(root, {
             render: () => `
         <h2>${i18n.t("ui.app.admin.page_title")}</h2>
         <ul>
-          <li><button data-composer-scroll="modules">${i18n.t("ui.reuse.modules")}</button></li>
-          <li><button data-composer-scroll="integrity">${i18n.t("ui.reuse.file_integrity")}</button></li>
-          <li><button data-composer-scroll="notifications">${i18n.t("ui.app.admin.notifications")}</button></li>
-          <li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>
+          ${navItems.join("\n")}
         </ul>
+      `,
+        },
+    ],
+    floatingMenu: [
+        {
+            id: "admin-changes-bar",
+            label: i18n.t("ui.reuse.unsaved_changes"),
+            render: () => `
+        <span>${i18n.t("ui.reuse.unsaved_changes")}</span>
+        <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t("ui.reuse.generic.discard")}</button>
+        <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t("ui.reuse.generic.save")}</button>
       `,
         },
     ],
 });
 await composer.init();
+
+const floatingSlot = composer.getFloatingSlot("admin-changes-bar");
+
+changesBar = createUnsavedChangesBar(floatingSlot, {
+    onSave: async () => {
+        await securitySection.save();
+        changesBar.markDirty("security", false);
+    },
+    onDiscard: () => {
+        securitySection.discard();
+    },
+});

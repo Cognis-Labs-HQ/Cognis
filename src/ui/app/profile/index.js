@@ -696,8 +696,10 @@ async function openEditPopup() {
                 visibility,
             }),
         });
+        localStorage.setItem("cognis_display_name", displayName);
         profile = await loadOwnProfile();
         composer.refresh(elements);
+        updateNavbarAvatar().catch(() => {});
     }
 }
 

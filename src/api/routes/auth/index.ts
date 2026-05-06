@@ -1,9 +1,8 @@
 import { issueAccessToken, type AccessRole } from "../../auth/access-tokens.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthGateway } from "@cognis/core";
-import type { LocalAccountStore } from "../../adapters/local-auth-gateway.js";
-import type { ProfileCreateStore } from "../../adapters/db/profile-store.js";
-import { readJson } from "../read-json.js";
+import type { LocalAccountStore } from "../../reuse/account-store.js";
+import { readJson } from "../../reuse/read-json.js";
 
 function resolveRole(
     sessionRole: string | undefined,
@@ -23,7 +22,11 @@ function resolveRole(
 export function createAuthRoutes(
     authGateway: AuthGateway,
     accountStore: LocalAccountStore,
-    profileStore?: ProfileCreateStore,
+    createProfile?: (
+        accountId: string,
+        handle: string,
+        role?: string,
+    ) => Promise<void>,
 ) {
     return async (
         req: IncomingMessage,
@@ -51,7 +54,7 @@ export function createAuthRoutes(
                 password,
                 false,
             );
-            await profileStore?.createProfile(username, username, "user");
+            await createProfile?.(username, username, "user");
             res.writeHead(201, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: result }));
             return true;
@@ -92,11 +95,7 @@ export function createAuthRoutes(
                 accessTokenTtlSeconds,
             );
             await accountStore.updateLastLogin(session.accountId);
-            await profileStore?.createProfile(
-                session.accountId,
-                session.accountId,
-                role,
-            );
+            await createProfile?.(session.accountId, session.accountId, role);
             res.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": `cognis_access_token=${apiToken}; Path=/; HttpOnly; SameSite=Lax`,

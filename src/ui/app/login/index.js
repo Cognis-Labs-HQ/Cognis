@@ -63,6 +63,76 @@ async function runTypingShowcase() {
 
 runTypingShowcase();
 
+async function loadLoginMethods() {
+    try {
+        const res = await fetch("/api/v1/auth/login-methods");
+        if (!res.ok) return;
+        const body = await res.json();
+        const methods = body.data ?? [];
+
+        const providerInput = document.querySelector("input[name=provider]");
+        const toggleContainer = document.querySelector("#auth-provider-toggle");
+        const ssoContainer = document.querySelector("#sso-buttons");
+
+        const credentialProviders = methods.filter(
+            (m) => m.id === "local" || m.id === "ldap",
+        );
+        const ssoProviders = methods.filter(
+            (m) => m.id !== "local" && m.id !== "ldap",
+        );
+
+        if (credentialProviders.length > 1 && toggleContainer) {
+            toggleContainer.style.display = "";
+            toggleContainer.setAttribute(
+                "aria-label",
+                i18n.t("ui.app.login.provider.toggle.aria"),
+            );
+            credentialProviders.forEach((method) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.textContent =
+                    i18n.t(`ui.app.login.provider.${method.id}`) || method.name;
+                btn.className = "auth-provider-btn";
+                btn.addEventListener("click", () => {
+                    if (providerInput) providerInput.value = method.id;
+                    toggleContainer
+                        .querySelectorAll(".auth-provider-btn")
+                        .forEach((b) => {
+                            b.classList.toggle(
+                                "auth-provider-btn--active",
+                                b === btn,
+                            );
+                        });
+                });
+                if (method.id === "local") {
+                    btn.classList.add("auth-provider-btn--active");
+                }
+                toggleContainer.appendChild(btn);
+            });
+        }
+
+        if (ssoProviders.length > 0 && ssoContainer) {
+            ssoProviders.forEach((method) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "btn-animated sso-login-btn";
+                btn.textContent = i18n
+                    .t("ui.app.login.sso.login_with")
+                    .replace("{provider}", method.name);
+                btn.addEventListener("click", async () => {
+                    if (providerInput) providerInput.value = method.id;
+                    document.querySelector("#login-form")?.requestSubmit();
+                });
+                ssoContainer.appendChild(btn);
+            });
+        }
+    } catch {
+        // Login methods unavailable — form works with local auth by default
+    }
+}
+
+loadLoginMethods();
+
 document
     .querySelector("#login-form")
     ?.addEventListener("submit", async (event) => {
@@ -71,6 +141,7 @@ document
         const payload = {
             username: form.username.value,
             password: form.password.value,
+            provider: form.provider?.value ?? "local",
         };
         const response = await fetch("/api/v1/auth/login", {
             method: "POST",

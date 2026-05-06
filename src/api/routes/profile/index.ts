@@ -1,15 +1,14 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { getAuthClaims, requireAuth } from "../../auth/guard.js";
 import type {
-    DbProfileStore,
+    ProfileStore,
     AccountProfile,
     AccountVisibility,
     AccountRole,
-} from "../../adapters/db/profile-store.js";
-import { visibilityRank } from "../../adapters/db/profile-store.js";
+} from "../../reuse/profile-store.js";
+import { visibilityRank } from "../../reuse/profile-store.js";
 import type { FileStorageGateway } from "@cognis/core";
-import { readRawBody } from "../read-json.js";
-import { readJson } from "../read-json.js";
+import { readRawBody, readJson } from "../../reuse/read-json.js";
 
 const VALID_VISIBILITY = new Set<AccountVisibility>([
     "hidden",
@@ -61,7 +60,7 @@ async function canViewProfile(
     requesterId: string | null,
     requesterRole: string | null,
     target: AccountProfile,
-    profileStore: DbProfileStore,
+    profileStore: ProfileStore,
 ): Promise<boolean> {
     if (requesterRole === "admin") return true;
     if (requesterId === target.accountId) return true;
@@ -73,9 +72,22 @@ async function canViewProfile(
     return requesterId !== null;
 }
 
+/**
+ * Creates route handlers for the profile API.
+ *
+ * @param profileStore - The profile storage adapter.
+ * @param fileGateway  - Optional file storage gateway. When absent, avatar and
+ *   banner mutation routes return `503 file_storage_unavailable` instead of
+ *   being unregistered, so callers receive an explicit error rather than a 404.
+ * @param isGatewayEnabled - Optional callback returning whether the profile
+ *   gateway is currently active. When supplied and returns `false`, the
+ *   `/api/v1/profile/ping` endpoint returns `503` so callers can detect that
+ *   profile functionality is temporarily unavailable.
+ */
 export function createProfileRoutes(
-    profileStore: DbProfileStore,
-    fileGateway: FileStorageGateway,
+    profileStore: ProfileStore,
+    fileGateway?: FileStorageGateway,
+    isGatewayEnabled?: () => boolean,
 ) {
     return async (
         req: IncomingMessage,
@@ -83,6 +95,25 @@ export function createProfileRoutes(
         url: URL,
     ): Promise<boolean> => {
         const claims = getAuthClaims(req);
+
+        if (url.pathname === "/api/v1/profile/ping" && req.method === "GET") {
+            if (!requireAuth(req, res, "user")) return true;
+            if (isGatewayEnabled && !isGatewayEnabled()) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "gateway_disabled",
+                            message: "Profile gateway is disabled",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { available: true } }));
+            return true;
+        }
 
         if (url.pathname === "/api/v1/profile" && req.method === "GET") {
             if (!requireAuth(req, res, "user")) return true;
@@ -168,6 +199,18 @@ export function createProfileRoutes(
 
         if (url.pathname === "/api/v1/profile/avatar" && req.method === "PUT") {
             if (!requireAuth(req, res, "user")) return true;
+            if (!fileGateway) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "file_storage_unavailable",
+                            message: "File storage is not configured.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const mime = (req.headers["content-type"] ?? "")
                 .split(";")[0]
                 .trim()
@@ -219,6 +262,18 @@ export function createProfileRoutes(
             req.method === "DELETE"
         ) {
             if (!requireAuth(req, res, "user")) return true;
+            if (!fileGateway) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "file_storage_unavailable",
+                            message: "File storage is not configured.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const profile = await profileStore.getProfile(claims!.sub);
             if (profile?.avatarKey) await fileGateway.delete(profile.avatarKey);
             await profileStore.updateProfile(claims!.sub, { avatarKey: null });
@@ -229,6 +284,18 @@ export function createProfileRoutes(
 
         if (url.pathname === "/api/v1/profile/banner" && req.method === "PUT") {
             if (!requireAuth(req, res, "user")) return true;
+            if (!fileGateway) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "file_storage_unavailable",
+                            message: "File storage is not configured.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const mime = (req.headers["content-type"] ?? "")
                 .split(";")[0]
                 .trim()
@@ -280,6 +347,18 @@ export function createProfileRoutes(
             req.method === "DELETE"
         ) {
             if (!requireAuth(req, res, "user")) return true;
+            if (!fileGateway) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "file_storage_unavailable",
+                            message: "File storage is not configured.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const profile = await profileStore.getProfile(claims!.sub);
             if (profile?.bannerKey) await fileGateway.delete(profile.bannerKey);
             await profileStore.updateProfile(claims!.sub, { bannerKey: null });

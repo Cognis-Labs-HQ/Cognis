@@ -10,7 +10,7 @@
         "src/tooling/*"
     ],
     "scripts": {
-        "typecheck": "tsc -p tsconfig.json --noEmit",
+        "typecheck": "node src/tooling/scripts/gen-tsconfig.mjs && tsc -p tsconfig.json --noEmit",
         "lint": "node ./src/tooling/scripts/lint-placeholder.mjs && node ./src/tooling/scripts/lint-readable.mjs",
         "test": "node --import tsx --test $(find . \\( -name \"*.test.ts\" -o -name \"*.test.js\" \\) -not -path \"*/node_modules/*\" -print)",
         "start": "node --import tsx src/api/main.ts",

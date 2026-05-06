@@ -1,0 +1,180 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { UIRegistry } from "../../ui-registry.js";
+import { createGatewayRoutes } from "../../routes/gateways/index.js";
+import { createUiRoutes } from "../../routes/ui/index.js";
+import { GatewayRegistry } from "@cognis/core";
+import { issueAccessToken } from "../../auth/access-tokens.js";
+
+function makeRequest(method: string, token?: string) {
+    return {
+        method,
+        headers: token
+            ? {
+                  cookie: `cognis_access_token=${token}`,
+                  authorization: `Bearer ${token}`,
+              }
+            : {},
+    } as any;
+}
+
+function makeResponse() {
+    let status = 0;
+    let payload = "";
+    return {
+        writeHead(code: number) {
+            status = code;
+        },
+        end(p: string) {
+            payload = p;
+        },
+        get status() {
+            return status;
+        },
+        get payload() {
+            return payload;
+        },
+    } as any;
+}
+
+const adminToken = issueAccessToken("test-session", "admin", 60);
+const userToken = issueAccessToken("test-session", "user", 60);
+
+test("UIRegistry registers and lists admin sections", () => {
+    const reg = new UIRegistry();
+    reg.registerAdminSection({
+        id: "s1",
+        label: "Section One",
+        scriptUrl: "/static/gateways/gw/s1.js",
+    });
+    reg.registerAdminSection({
+        id: "s2",
+        label: "Section Two",
+        scriptUrl: "/static/gateways/gw/s2.js",
+    });
+
+    const sections = reg.listAdminSections();
+    assert.equal(sections.length, 2);
+    assert.equal(sections[0].id, "s1");
+    assert.equal(sections[1].id, "s2");
+});
+
+test("UIRegistry registers and looks up static dirs", () => {
+    const reg = new UIRegistry();
+    reg.registerStaticDir("notify", "/srv/notify/ui");
+
+    assert.equal(reg.getStaticDir("notify"), "/srv/notify/ui");
+    assert.equal(reg.getStaticDir("missing"), undefined);
+});
+
+test("UIRegistry overwrites section when registered twice with same id", () => {
+    const reg = new UIRegistry();
+    reg.registerAdminSection({ id: "x", label: "Old", scriptUrl: "/old.js" });
+    reg.registerAdminSection({ id: "x", label: "New", scriptUrl: "/new.js" });
+
+    const sections = reg.listAdminSections();
+    assert.equal(sections.length, 1);
+    assert.equal(sections[0].label, "New");
+});
+
+test("UIRegistry registers and lists page extensions", () => {
+    const reg = new UIRegistry();
+    reg.registerPageExtension("dashboard", {
+        id: "profile-widget",
+        label: "Profile",
+        scriptUrl: "/static/gateways/profile/dashboard-widget.js",
+    });
+    reg.registerPageExtension("dashboard", {
+        id: "notif-widget",
+        label: "Notifications",
+        scriptUrl: "/static/gateways/notify/dashboard-widget.js",
+    });
+    reg.registerPageExtension("settings", {
+        id: "profile-settings",
+        label: "Profile Settings",
+        scriptUrl: "/static/gateways/profile/settings-section.js",
+    });
+
+    const dashExts = reg.listPageExtensions("dashboard");
+    assert.equal(dashExts.length, 2);
+    assert.equal(dashExts[0].id, "profile-widget");
+    assert.equal(dashExts[1].id, "notif-widget");
+
+    const settingsExts = reg.listPageExtensions("settings");
+    assert.equal(settingsExts.length, 1);
+    assert.equal(settingsExts[0].id, "profile-settings");
+
+    assert.deepEqual(reg.listPageExtensions("unknown"), []);
+});
+
+test("GET /api/v1/ui/page-extensions/:pageId returns extensions for authenticated user", async () => {
+    const uiReg = new UIRegistry();
+    uiReg.registerPageExtension("dashboard", {
+        id: "profile-widget",
+        label: "Profile",
+        scriptUrl: "/static/gateways/profile/dashboard-widget.js",
+    });
+    const handler = createUiRoutes(undefined, uiReg);
+
+    const req = makeRequest("GET", userToken);
+    const res = makeResponse();
+    const handled = await handler(
+        req,
+        res,
+        new URL("http://localhost/api/v1/ui/page-extensions/dashboard"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload);
+    assert.equal(body.data.length, 1);
+    assert.equal(body.data[0].id, "profile-widget");
+});
+
+test("GET /api/v1/ui/page-extensions/:pageId returns 401 for unauthenticated request", async () => {
+    const uiReg = new UIRegistry();
+    const handler = createUiRoutes(undefined, uiReg);
+
+    const req = makeRequest("GET");
+    const res = makeResponse();
+    await handler(
+        req,
+        res,
+        new URL("http://localhost/api/v1/ui/page-extensions/dashboard"),
+    );
+
+    assert.equal(res.status, 401);
+});
+
+test("GET /api/v1/ui/page-extensions/:pageId returns empty array when no extensions registered", async () => {
+    const uiReg = new UIRegistry();
+    const handler = createUiRoutes(undefined, uiReg);
+
+    const req = makeRequest("GET", userToken);
+    const res = makeResponse();
+    const handled = await handler(
+        req,
+        res,
+        new URL("http://localhost/api/v1/ui/page-extensions/dashboard"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    assert.deepEqual(JSON.parse(res.payload).data, []);
+});
+
+test("GET /api/v1/ui/page-extensions/:pageId returns empty array without uiRegistry", async () => {
+    const handler = createUiRoutes();
+
+    const req = makeRequest("GET", userToken);
+    const res = makeResponse();
+    const handled = await handler(
+        req,
+        res,
+        new URL("http://localhost/api/v1/ui/page-extensions/dashboard"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    assert.deepEqual(JSON.parse(res.payload).data, []);
+});

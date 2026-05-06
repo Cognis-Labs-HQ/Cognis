@@ -1,0 +1,5 @@
+{
+    "id": "ldap",
+    "name": "LDAP Authentication",
+    "version": "0.1.0"
+}

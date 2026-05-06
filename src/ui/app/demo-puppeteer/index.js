@@ -1,4 +1,4 @@
-import { mergeWidgetConfig } from "../../components/widget-registry.js";
+import { mergeElementConfig } from "../../reuse/element-registry.js";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -13,9 +13,9 @@ export async function runDemoPuppeteer({ state, render, isRunningRef, i18n }) {
             await sleep(900);
         },
         async () => {
-            sandboxPage.widgets.push({
+            sandboxPage.elements.push({
                 id: "learning-progress",
-                config: mergeWidgetConfig("learning-progress", {
+                config: mergeElementConfig("learning-progress", {
                     timeframe: "90d",
                     showStreak: false,
                 }),
@@ -24,13 +24,13 @@ export async function runDemoPuppeteer({ state, render, isRunningRef, i18n }) {
             await sleep(900);
         },
         async () => {
-            const first = sandboxPage.widgets[0];
+            const first = sandboxPage.elements[0];
             first.config = { ...first.config, timeframe: "14d" };
             render(i18n.t("ui.app.demo.tweaked"));
             await sleep(900);
         },
         async () => {
-            sandboxPage.widgets.pop();
+            sandboxPage.elements.pop();
             render(i18n.t("ui.app.demo.removed"));
             await sleep(900);
         },

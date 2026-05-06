@@ -74,6 +74,13 @@ function bindTopbarActions() {
 
     if (nameEl) nameEl.textContent = getDisplayName();
 
+    window.addEventListener("storage", (event) => {
+        if (event.key === "cognis_display_name") {
+            const el = document.querySelector("#profile-name");
+            if (el) el.textContent = getDisplayName();
+        }
+    });
+
     const profileMenu = document.querySelector(".profile-menu");
     const adminOnlyItems = document.querySelectorAll(".admin-only");
 
@@ -121,41 +128,81 @@ function bindTopbarActions() {
     });
 }
 
+/**
+ * Registered by gateway navbar plugins to supply avatar and profile-link
+ * state. The function receives no arguments and returns a plain object with:
+ *   - profileAvailable: boolean — whether to show the Profile nav link
+ *   - avatarBlobUrl?: string   — a blob: URL for the avatar image, if one is
+ *     available; the layout revokes the previous blob URL and renders this one
+ *
+ * Only one provider is active at a time; the most recently registered one
+ * wins. Gateways register by calling `registerAvatarProvider` from their
+ * navbar plugin module, which is loaded automatically by the dashboard layout.
+ */
+let _avatarProvider = null;
+
+export function registerAvatarProvider(fn) {
+    _avatarProvider = fn;
+}
+
 export async function updateNavbarAvatar() {
     const avatarBtn = document.querySelector(".avatar-button");
+    const profileLink = document.querySelector("[data-profile-link]");
     if (!avatarBtn) return;
     const handle = localStorage.getItem("cognis_account") ?? "";
 
     const prevImg = avatarBtn.querySelector("img.avatar-image");
     const prevBlobSrc = prevImg?.src?.startsWith("blob:") ? prevImg.src : null;
 
-    try {
-        const res = await apiFetch("/api/v1/profile");
-        if (res.ok) {
-            const payload = await res.json();
-            const avatarKey = payload?.data?.avatarKey;
-            if (avatarKey) {
-                const fileRes = await apiFetch(`/api/v1/files/${avatarKey}`);
-                if (fileRes.ok) {
-                    const img = document.createElement("img");
-                    img.className = "avatar-image";
-                    img.alt = "";
-                    img.src = URL.createObjectURL(await fileRes.blob());
-                    avatarBtn.replaceChildren(img);
-                    if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
-                    return;
-                }
-            }
+    let profileAvailable = false;
+    let avatarBlobUrl = null;
+
+    if (_avatarProvider) {
+        try {
+            const result = await _avatarProvider();
+            profileAvailable = result?.profileAvailable ?? false;
+            avatarBlobUrl = result?.avatarBlobUrl ?? null;
+        } catch {
+            profileAvailable = false;
         }
-    } catch {
-        // fall through to initials fallback (lines 141-146 below)
     }
+
+    if (profileLink) {
+        profileLink.closest("li")?.toggleAttribute("hidden", !profileAvailable);
+    }
+
+    if (avatarBlobUrl) {
+        const img = document.createElement("img");
+        img.className = "avatar-image";
+        img.alt = "";
+        img.src = avatarBlobUrl;
+        avatarBtn.replaceChildren(img);
+        if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
+        return;
+    }
+
     if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
     const initialsEl = document.createElement("span");
     initialsEl.className = "avatar-initials";
     initialsEl.textContent = getInitialsText(handle);
     initialsEl.style.background = pickInitialsColor(handle);
     avatarBtn.replaceChildren(initialsEl);
+}
+
+async function loadNavbarPlugins() {
+    try {
+        const res = await apiFetch("/api/v1/ui/navbar-plugins");
+        if (!res.ok) return;
+        const payload = await res.json();
+        const plugins = Array.isArray(payload.data) ? payload.data : [];
+        await Promise.all(
+            plugins.map((p) =>
+                p?.scriptUrl ? import(p.scriptUrl).catch(() => {}) : null,
+            ),
+        );
+    } catch {
+        // navbar plugin loading is best-effort; layout continues without them
+    }
 }
 
 export async function renderDashboardLayout(root, slots = {}) {
@@ -185,6 +232,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         );
     applyStaticTranslations(i18n, root);
     bindTopbarActions();
+    await loadNavbarPlugins();
     updateNavbarAvatar().catch(() => {});
     applyActiveNavigation();
     bindThemeToggle();
