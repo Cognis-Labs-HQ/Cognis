@@ -9,6 +9,19 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- `src/adapters/file/local/manifest.json`: local file adapter manifest with `"locked": true`, mirroring the locked local auth adapter pattern. The local file adapter is permanently enabled and cannot be disabled.
+- Files gateway (`src/gateways/files/bootstrap.ts`) now contributes `file:append(filePath, content)` capability in addition to `file:write` and `file:read`, so consumers can append to files without calling Node.js `fs` directly.
+- Logging gateway (`src/gateways/logging/logger.ts`): `Logger` constructor now accepts an optional `fileAppend` parameter. When provided, all log-file writes go through the supplied function (the `file:append` capability from the files gateway) instead of calling `appendFile` directly. Falls back to native `appendFile` when the parameter is absent (test compatibility).
+
+### Changed
+
+- Logging gateway (`src/gateways/logging/bootstrap.ts`) reads the `file:append` capability from the capability store and passes it to the `Logger` constructor, routing all log persistence through the files gateway abstraction.
+- Logging gateway manifest adds `"requires": ["files"]`, formalising the dependency on the files gateway. Version bumped to `1.2.0`.
+- Files gateway manifest version bumped to `1.1.0` to reflect the new `file:append` capability.
+- Gateway bootstrap sort order (`src/core/services/gateway-service.ts`) updated: files gateway bootstraps first (before logging) so its capabilities are available when the logging gateway initializes. Order is now files → logging → db → everything else alphabetically.
+
+### Added
+
 - DB gateway (`src/gateways/db/bootstrap.ts`) now owns executor creation, schema initialisation, and the modules-baseline insert. Contributes `db:executor`, `db:type`, and `db:dialect` to the capability store so all downstream gateways and `main.ts` obtain the executor and dialect helpers without direct adapter imports.
 - `src/gateways/db/executor.ts`: canonical home for `SqliteExecutor`, `PostgresExecutor`, `MariadbExecutor`, `SupportedDbType`, and `createDbExecutor` (moved from `src/adapters/db/reuse/account-store.ts`).
 - `src/gateways/db/init.ts`: canonical home for `initializeDatabaseSchema` and `resolveDbProviderDir` (moved from `src/api/bootstrap/db-init.ts`, which is now a re-export stub for backward compatibility).

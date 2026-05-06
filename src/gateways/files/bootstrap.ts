@@ -1,5 +1,5 @@
 import { LocalFileGateway } from "../../adapters/file/local/adapter.js";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { GatewayBootstrapContext } from "../shared.js";
 
@@ -15,8 +15,9 @@ import type { GatewayBootstrapContext } from "../shared.js";
  *
  * Capabilities contributed:
  *   file:gateway  — the full FileStorageGateway instance
- *   file:write    — (filePath, content) => Promise<void> helper
+ *   file:write    — (filePath, content) => Promise<void> helper (overwrites)
  *   file:read     — (filePath) => Promise<Buffer | null> helper
+ *   file:append   — (filePath, content) => Promise<void> helper (appends)
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const mediaLocation = process.env.MEDIA_LOCATION ?? "/app/media";
@@ -47,10 +48,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
     );
 
+    ctx.capabilities.contribute(
+        "file:append",
+        async (filePath: string, content: string): Promise<void> => {
+            await mkdir(path.dirname(filePath), { recursive: true });
+            await appendFile(filePath, content, "utf8");
+        },
+    );
+
     ctx.gatewayRegistry.register({
         id: "files",
         name: "File Storage Gateway",
-        version: "1.0.0",
+        version: "1.1.0",
         required: true,
         description:
             "Provides local file storage for uploads and application logging.",

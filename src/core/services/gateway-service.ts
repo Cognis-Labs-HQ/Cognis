@@ -144,9 +144,11 @@ export class GatewayService {
      * directory's `manifest.json` to determine which gateways are required, then
      * dynamically imports and calls each gateway's `bootstrap(ctx)` function.
      *
-     * The logging gateway is bootstrapped first (if present) so that its
-     * contributed `logging:log` capability becomes available to all subsequent
-     * gateways via `ctx.log`.
+     * The files gateway is bootstrapped first so its `file:append` capability
+     * is available when the logging gateway initializes. The logging gateway is
+     * bootstrapped second so that its contributed `logging:log` capability
+     * becomes available to all subsequent gateways via `ctx.log`. The db
+     * gateway is bootstrapped third as many other gateways depend on it.
      *
      * Returns the list of gateway IDs declared as `required: true` in their
      * manifests. The caller should verify all returned IDs appear in the gateway
@@ -175,6 +177,8 @@ export class GatewayService {
         >();
 
         entries.sort((a, b) => {
+            if (a === "files") return -1;
+            if (b === "files") return 1;
             if (a === "logging") return -1;
             if (b === "logging") return 1;
             if (a === "db") return -1;

@@ -3,6 +3,11 @@ import type { GatewayBootstrapContext } from "../shared.js";
 
 /**
  * Standard gateway bootstrap entry point for structured application logging.
+ * Reads the file:append capability contributed by the files gateway and passes
+ * it to the Logger so all log persistence routes through the file gateway
+ * abstraction. Falls back to native appendFile if the capability is absent
+ * (e.g. in isolated tests).
+ *
  * Creates a Logger instance from environment variables, contributes:
  *
  *   logging:logger  — the full Logger instance
@@ -11,7 +16,9 @@ import type { GatewayBootstrapContext } from "../shared.js";
  *                     gateway initializes
  *
  * This gateway is marked required: true in its manifest so core refuses to
- * start if it fails to initialize.
+ * start if it fails to initialize. It declares a dependency on the files
+ * gateway (requires: ["files"] in manifest.json) so the files gateway always
+ * bootstraps first.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const level =
@@ -23,7 +30,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             | undefined) ?? "info";
     const filePath = process.env.LOG_FILE ?? "/app/logs/app.log";
 
-    const logger = new Logger(level, filePath);
+    const fileAppend =
+        ctx.capabilities.get<(fp: string, content: string) => Promise<void>>(
+            "file:append",
+        );
+
+    const logger = new Logger(level, filePath, fileAppend);
 
     ctx.capabilities.contribute("logging:logger", logger);
     ctx.capabilities.contribute(
@@ -40,7 +52,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.0.0",
+        version: "1.1.0",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",

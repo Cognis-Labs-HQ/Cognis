@@ -10,11 +10,23 @@ const priorities: Record<LogLevel, number> = {
     error: 40,
 };
 
+type FileAppend = (filePath: string, content: string) => Promise<void>;
+
+const defaultFileAppend: FileAppend = async (filePath, content) => {
+    await mkdir(path.dirname(filePath), { recursive: true });
+    await appendFile(filePath, content, "utf8");
+};
+
 export class Logger {
+    private readonly fileAppend: FileAppend;
+
     constructor(
         private readonly level: LogLevel = "info",
         private readonly filePath = "/tmp/cognis.log",
-    ) {}
+        fileAppend?: FileAppend,
+    ) {
+        this.fileAppend = fileAppend ?? defaultFileAppend;
+    }
 
     async log(
         level: LogLevel,
@@ -35,8 +47,7 @@ export class Logger {
             process.stdout.write(`${line}\n`);
         }
 
-        await mkdir(path.dirname(this.filePath), { recursive: true });
-        await appendFile(this.filePath, `${line}\n`, "utf8");
+        await this.fileAppend(this.filePath, `${line}\n`);
     }
 
     info(message: string, meta?: Record<string, unknown>) {
