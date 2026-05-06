@@ -83,6 +83,10 @@
  *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
  *   subPageNavigation?: boolean,
  *   columns?: number,
+ *   showTopbar?: boolean,
+ *   showNavbar?: boolean,
+ *   showThemeToggle?: boolean,
+ *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void }}
  */
@@ -104,6 +108,10 @@ export function createPageComposer(
         floatingMenu = [],
         subPageNavigation = false,
         columns = 1,
+        showTopbar = true,
+        showNavbar = true,
+        showThemeToggle = true,
+        pageOverrides = {},
     },
 ) {
     function escapeHtml(value) {
@@ -2380,6 +2388,16 @@ export function createPageComposer(
         }
     }
 
+    function applyPageOverrides(id) {
+        const overrides = pageOverrides[id] ?? {};
+        const effectiveShowThemeToggle =
+            'showThemeToggle' in overrides
+                ? overrides.showThemeToggle
+                : showThemeToggle;
+        const toggleEl = root.querySelector('#theme-toggle');
+        if (toggleEl) toggleEl.hidden = !effectiveShowThemeToggle;
+    }
+
     function switchSubPage(id) {
         const prevId = activeSubPageId;
         activeSubPageId = id;
@@ -2408,6 +2426,7 @@ export function createPageComposer(
             mountSubComposer(newEl, sectionDiv).catch(() => {});
         }
         history.replaceState(null, "", `#${activeSubPageId}`);
+        applyPageOverrides(id);
         onRender?.();
     }
 
@@ -2432,6 +2451,9 @@ export function createPageComposer(
             toolbar: toolbarHtml,
             floatingToolbar: floatingHtml,
             content: "",
+            showTopbar,
+            showNavbar,
+            showThemeToggle,
         });
 
         if (Array.isArray(floatingMenu) && floatingMenu.length > 0) {
@@ -2475,6 +2497,7 @@ export function createPageComposer(
                 hashId && validIds.includes(hashId)
                     ? hashId
                     : (validIds[0] ?? null);
+            if (activeSubPageId) applyPageOverrides(activeSubPageId);
         }
 
         root.querySelectorAll("[data-composer-scroll]").forEach((btn) => {

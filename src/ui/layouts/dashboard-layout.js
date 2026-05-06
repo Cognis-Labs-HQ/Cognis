@@ -206,6 +206,11 @@ async function loadNavbarPlugins() {
 }
 
 export async function renderDashboardLayout(root, slots = {}) {
+    const {
+        showTopbar = true,
+        showNavbar = true,
+        showThemeToggle = true,
+    } = slots;
     const i18n = slots.i18n || (await createI18n());
     const template = await loadTemplate("dashboard-layout");
     const hasToolbar = Boolean(slots.toolbar);
@@ -230,28 +235,15 @@ export async function renderDashboardLayout(root, slots = {}) {
                 ? `<div class="floating-toolbar" hidden>${slots.floatingToolbar}</div>`
                 : "",
         );
+
+    if (!showTopbar) root.querySelector(".global-topbar")?.remove();
+    if (!showNavbar) root.querySelector(".global-navrow")?.remove();
+    if (!showThemeToggle) root.querySelector("#theme-toggle")?.remove();
+
     applyStaticTranslations(i18n, root);
     bindTopbarActions();
     await loadNavbarPlugins();
     updateNavbarAvatar().catch(() => {});
     applyActiveNavigation();
     bindThemeToggle();
-
-    const themeToggle = document.getElementById("theme-toggle");
-    if (themeToggle) {
-        const observer = new MutationObserver(() => {
-            document.body.classList.toggle(
-                "composer-theme-hidden",
-                themeToggle.hidden,
-            );
-        });
-        observer.observe(themeToggle, {
-            attributes: true,
-            attributeFilter: ["hidden"],
-        });
-        document.body.classList.toggle(
-            "composer-theme-hidden",
-            themeToggle.hidden,
-        );
-    }
 }
