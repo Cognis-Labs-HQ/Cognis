@@ -32,7 +32,7 @@ export interface DbInitLogger {
 }
 
 export function resolveDbProviderDir(dbType: string) {
-    if (dbType === "postgresql") return "postgresql";
+    if (dbType === "postgresql") return "postgres";
     if (dbType === "mariadb" || dbType === "mysql") return "mariadb";
     return "sqlite";
 }

@@ -7,6 +7,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- ([c268e30](https://github.com/le-firehawk/Cognis/commit/c268e30)) `resolveDbProviderDir` in `db-init.ts` returned `"postgresql"` but the actual adapter directory is `postgres/`; all PostgreSQL init and migration SQL was silently skipped, causing `relation "modules" does not exist` on startup
+
 ### Added
 
 - ([bb70712](https://github.com/le-firehawk/Cognis/commit/bb70712)) `src/api/reuse/` — new shared utility directory; `tfa-code.ts` and `verify-token.ts` moved here from `src/api/utils/`, `read-json.ts` moved here from `src/api/routes/` (was a utility, not a route handler)
