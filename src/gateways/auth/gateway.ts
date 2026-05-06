@@ -42,6 +42,7 @@ export interface AdapterInfo {
     id: string;
     name: string;
     enabled: boolean;
+    locked?: boolean;
     config: Record<string, unknown>;
     schema: AuthConfigField[];
 }
@@ -173,7 +174,7 @@ export class CoreAuthGateway {
         await this.persistAdapterState(adapterId, false, existing);
     }
 
-    private async getPersistedConfig(
+    async getPersistedConfig(
         adapterId: string,
     ): Promise<Record<string, unknown>> {
         const result = await this.db.execute(
@@ -226,6 +227,7 @@ export class CoreAuthGateway {
             id: adapter.id,
             name: adapter.name,
             enabled: this.enabledAdapters.has(adapter.id),
+            locked: adapter.id === "local" || undefined,
             config: {},
             schema: adapter.getConfigSchema(),
         }));

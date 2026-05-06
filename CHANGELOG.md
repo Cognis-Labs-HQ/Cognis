@@ -7,6 +7,11 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Local auth adapter is now locked to active: `AdapterInfo` gains an optional `locked` field (set for the `"local"` adapter), the enable/disable API returns `403 locked_adapter` instead of silently accepting a disable request, and the admin-section UI hides the toggle button for locked adapters, showing a "Required" badge instead.
+- Auth adapter configure buttons in the Security admin panel are now wired up: clicking Configure opens an `openPopup` modal that renders a form from the adapter's config schema, pre-fills values from the stored config (GET config endpoint now returns both `schema` and `config`), and PUTs the updated values on save.
+
 ### Added
 
 - DB migration tracking via a `db_migrations` table: `initializeDatabaseSchema` now creates this table on every boot (idempotent), records a sentinel when the init phase completes so init SQL files run only once, and records each migration file by its SHA-256 so that individual migrations are skipped on subsequent restarts rather than re-executed. This applies across all DB providers (SQLite, PostgreSQL, MariaDB) and to SQL contributed by core, gateways, and modules.

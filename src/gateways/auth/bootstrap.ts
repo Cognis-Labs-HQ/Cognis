@@ -76,13 +76,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         hasAdapters: true,
     });
 
-    const uiDir = path.resolve(
-        process.cwd(),
-        "src",
-        "gateways",
-        "auth",
-        "ui",
-    );
+    const uiDir = path.resolve(process.cwd(), "src", "gateways", "auth", "ui");
     ctx.uiRegistry?.registerAdminSection({
         id: "security",
         label: "Security",
@@ -291,10 +285,15 @@ function createAdapterAdminRoutes(
                     );
                     return true;
                 }
+                const storedConfig =
+                    await authGateway.getPersistedConfig(adapterId);
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
-                        data: { schema: adapter.getConfigSchema() },
+                        data: {
+                            schema: adapter.getConfigSchema(),
+                            config: storedConfig,
+                        },
                     }),
                 );
                 return true;
@@ -332,6 +331,31 @@ function createAdapterAdminRoutes(
             if (!requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(enableMatch[1]);
             const action = enableMatch[2];
+            if (adapterId === "local" && action === "disable") {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "locked_adapter",
+                            message:
+                                "The local authentication adapter cannot be disabled",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (!authGateway.getAdapter(adapterId)) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Adapter not found",
+                        },
+                    }),
+                );
+                return true;
+            }
             if (action === "enable") {
                 await authGateway.enableAdapter(adapterId);
             } else {
