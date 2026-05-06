@@ -7,10 +7,25 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- ([1355598](https://github.com/le-firehawk/Cognis/commit/1355598)) `src/core/services/gateway-service.ts` — new `GatewayService` class that discovers, bootstraps, and manages the gateway lifecycle, analogous to `ModuleService` for modules; subsumes `bootstrapGateways()` from `src/gateways/index.ts` and absorbs `GatewayRegistry`, `GatewayManifest`, `GatewayEntry`, `GatewayBootstrapBase`, `CapabilityStore`, and `BootstrapLog` into `@cognis/core`
+- ([1355598](https://github.com/le-firehawk/Cognis/commit/1355598)) `src/gateways/shared.ts` — common import barrel for gateway authors; re-exports `GatewayBootstrapContext`, `GatewayRegistry`, `CapabilityStore`, `BootstrapLog`, `requireAuth`, `getAuthClaims`, `getCookieSession`, `setPageSecurityHeaders`, and `readJson` so gateway subdirectories need only a single `../shared.js` import for the most common utilities
+
 ### Changed
 
-- ([0b09aba](https://github.com/le-firehawk/Cognis/commit/0b09aba)) Structural file reorganization: rename adapter files, move docs, reorganize routes and interfaces
+- ([1355598](https://github.com/le-firehawk/Cognis/commit/1355598)) Structural file reorganization: rename adapter files, move docs, reorganize routes and interfaces
 - Removed stale `COPY db ./db` from `docker/Dockerfile` — SQL migrations now live inside `src/adapters/db/<provider>/sql/` and are copied as part of `COPY src ./src`
+- ([1355598](https://github.com/le-firehawk/Cognis/commit/1355598)) `src/core/index.ts` now exports gateway types directly from `src/gateways/*/gateway.ts` and `src/modules/gateway.ts`; `GatewayService` and its supporting types are also exported from `@cognis/core`
+- ([1355598](https://github.com/le-firehawk/Cognis/commit/1355598)) `src/api/gateway-bootstrap.ts` slimmed to only `GatewayBootstrapContext` (the API-specific extension of `GatewayBootstrapBase`); re-exports `GatewayRegistry`, `CapabilityStore`, `BootstrapLog`, and `GatewayBootstrapBase` from `@cognis/core` for backward compatibility within the API layer
+- ([1355598](https://github.com/le-firehawk/Cognis/commit/1355598)) `src/api/main.ts` now instantiates `GatewayService` and calls `gatewayService.bootstrap()` instead of the standalone `bootstrapGateways()` function
+- ([1355598](https://github.com/le-firehawk/Cognis/commit/1355598)) All gateway bootstrap files updated to import common utilities from `../shared.js`
+
+### Removed
+
+- ([1355598](https://github.com/le-firehawk/Cognis/commit/1355598)) `src/core/gateways/` — five backwards-compatibility re-export shims deleted; all consumers now import directly from `@cognis/core` or the real source paths
+- ([1355598](https://github.com/le-firehawk/Cognis/commit/1355598)) `src/gateways/index.ts` — standalone `bootstrapGateways()` function removed; equivalent logic lives in `GatewayService.bootstrap()`
+- ([1355598](https://github.com/le-firehawk/Cognis/commit/1355598)) `src/api/gateway-registry.ts` — `GatewayRegistry` class moved to `src/core/services/gateway-service.ts` and exported from `@cognis/core`
 
 ### Fixed
 

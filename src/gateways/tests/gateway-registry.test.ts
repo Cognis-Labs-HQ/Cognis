@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GatewayRegistry } from "../../api/gateway-registry.js";
+import { GatewayRegistry } from "@cognis/core";
 
 test("GatewayRegistry.register and list", () => {
     const registry = new GatewayRegistry();

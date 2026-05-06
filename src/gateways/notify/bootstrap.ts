@@ -1,6 +1,11 @@
 import path from "node:path";
-import { requireAuth, getAuthClaims } from "../../api/auth/guard.js";
-import { readJson } from "../../api/routes/read-json.js";
+import {
+    requireAuth,
+    getAuthClaims,
+    readJson,
+    type GatewayBootstrapContext,
+    type GatewayRegistry,
+} from "../shared.js";
 import { CoreNotificationGateway } from "./gateway.js";
 import {
     DbNotificationStore,
@@ -11,11 +16,9 @@ import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
 } from "../../api/utils/verify-token.js";
-import type { GatewayBootstrapContext } from "../../api/gateway-bootstrap.js";
-import type { GatewayRegistry } from "../../api/gateway-registry.js";
-import { createNotificationRoutes } from "./routes/notifications.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { DbNotificationStore as IDbNotificationStore } from "../../adapters/db/shared/notification-store.js";
+import { createNotificationRoutes } from "./routes/notifications.js";
 
 /**
  * Standard gateway bootstrap entry point. Discovers notification adapters,

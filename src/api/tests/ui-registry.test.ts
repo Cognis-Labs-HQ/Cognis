@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { UIRegistry } from "../ui-registry.js";
 import { createGatewayRoutes } from "../routes/gateways/index.js";
 import { createUiRoutes } from "../routes/ui/index.js";
-import { GatewayRegistry } from "../gateway-registry.js";
+import { GatewayRegistry } from "@cognis/core";
 import { issueAccessToken } from "../auth/access-tokens.js";
 
 function makeRequest(method: string, token?: string) {

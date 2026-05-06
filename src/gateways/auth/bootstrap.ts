@@ -1,13 +1,15 @@
 import path from "node:path";
-import { requireAuth } from "../../api/auth/guard.js";
-import { readJson } from "../../api/routes/read-json.js";
+import {
+    requireAuth,
+    readJson,
+    type GatewayBootstrapContext,
+} from "../shared.js";
 import {
     issueAccessToken,
     type AccessRole,
 } from "../../api/auth/access-tokens.js";
 import { DbLocalAccountStore } from "../../adapters/db/shared/account-store.js";
 import { CoreAuthGateway } from "./gateway.js";
-import type { GatewayBootstrapContext } from "../../api/gateway-bootstrap.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthProviderAdapter } from "./gateway.js";
 

@@ -1,5 +1,5 @@
 import { requireAuth } from "../../auth/guard.js";
-import type { GatewayRegistry } from "../../gateway-registry.js";
+import type { GatewayRegistry } from "@cognis/core";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { UIRegistry } from "../../ui-registry.js";
 

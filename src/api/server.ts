@@ -2,6 +2,8 @@ import { createServer } from "node:http";
 import {
     HealthService,
     ModuleService,
+    type GatewayRegistry,
+    type BootstrapLog,
     type ModuleRuntimeGateway,
 } from "@cognis/core";
 import { createModuleRoutes } from "./routes/modules/index.js";
@@ -14,8 +16,6 @@ import type { UserPreferenceStore } from "../gateways/profile/routes/preferences
 import { createUserRoutes } from "./routes/users/index.js";
 import type { RouteRegistry } from "./route-registry.js";
 import { createGatewayRoutes } from "./routes/gateways/index.js";
-import type { GatewayRegistry } from "./gateway-registry.js";
-import type { BootstrapLog } from "./gateway-bootstrap.js";
 import type { UIRegistry } from "./ui-registry.js";
 
 export interface ApiDependencies {

@@ -4,6 +4,12 @@ import type {
     ModuleRuntimeGateway,
     ModuleState,
 } from "@cognis/core";
+import {
+    GatewayService,
+    GatewayRegistry,
+    CapabilityStore,
+    type BootstrapLog,
+} from "@cognis/core";
 import { initializeDatabaseSchema } from "./bootstrap/db-init.js";
 import {
     createDbExecutor,
@@ -15,11 +21,7 @@ import path from "node:path";
 import { issueAccessToken } from "./auth/access-tokens.js";
 import { createHash } from "node:crypto";
 import { RouteRegistry } from "./route-registry.js";
-import { GatewayRegistry } from "./gateway-registry.js";
-import { CapabilityStore } from "./gateway-bootstrap.js";
 import { UIRegistry } from "./ui-registry.js";
-import { bootstrapGateways } from "../gateways/index.js";
-import type { BootstrapLog } from "./gateway-bootstrap.js";
 import type { LocalAccountStore } from "../adapters/auth/local/auth-adapter.js";
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
@@ -183,6 +185,7 @@ const routeRegistry = new RouteRegistry();
 const gatewayRegistry = new GatewayRegistry();
 const capabilities = new CapabilityStore();
 const uiRegistry = new UIRegistry();
+const gatewayService = new GatewayService(gatewayRegistry);
 
 const gatewaysRoot =
     process.env.COGNIS_GATEWAYS_ROOT ??
@@ -190,18 +193,15 @@ const gatewaysRoot =
 
 capabilities.contribute("preferences:store", preferenceStore);
 
-const requiredGatewayIds = await bootstrapGateways(
-    {
-        dbExecutor,
-        dbType,
-        adaptersRoot,
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-        uiRegistry,
-    },
-    gatewaysRoot,
-);
+const requiredGatewayIds = await gatewayService.bootstrap(gatewaysRoot, {
+    dbExecutor,
+    dbType,
+    adaptersRoot,
+    routeRegistry,
+    gatewayRegistry,
+    capabilities,
+    uiRegistry,
+});
 
 const log = capabilities.get<BootstrapLog>("logging:log") ?? bootstrapLog;
 
@@ -213,7 +213,7 @@ await log("info", "Gateway bootstrap complete.", {
 
 // Verify all required gateways initialized before the server starts.
 try {
-    gatewayRegistry.assertRequiredInitialized(requiredGatewayIds);
+    gatewayService.assertRequiredInitialized(requiredGatewayIds);
 } catch (err) {
     await log(
         "error",

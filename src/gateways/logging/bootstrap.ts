@@ -1,5 +1,5 @@
 import { Logger } from "../../api/logger.js";
-import type { GatewayBootstrapContext } from "../../api/gateway-bootstrap.js";
+import type { GatewayBootstrapContext } from "../shared.js";
 
 /**
  * Standard gateway bootstrap entry point for structured application logging.

@@ -11,7 +11,7 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import type { ModuleRuntimeGateway } from "../gateways/module-runtime-gateway.js";
+import type { ModuleRuntimeGateway } from "../../modules/gateway.js";
 import type { ModuleManifest } from "../contracts/module-manifest.js";
 
 export interface ModulePathResolver {

@@ -8,11 +8,11 @@ import {
     type UserPreferenceStore,
 } from "./routes/preferences.js";
 import type { FileStorageGateway } from "@cognis/core";
-import type { GatewayBootstrapContext } from "../../api/gateway-bootstrap.js";
 import {
     getCookieSession,
     setPageSecurityHeaders,
-} from "../../api/auth/guard.js";
+    type GatewayBootstrapContext,
+} from "../shared.js";
 import type { AccountRole } from "../../adapters/db/shared/profile-store.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";

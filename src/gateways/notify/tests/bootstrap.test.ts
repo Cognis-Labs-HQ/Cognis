@@ -1,8 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GatewayRegistry } from "../../../api/gateway-registry.js";
+import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../api/route-registry.js";
-import { CapabilityStore } from "../../../api/gateway-bootstrap.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../../../api/auth/access-tokens.js";
 
