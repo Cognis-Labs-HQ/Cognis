@@ -68,6 +68,38 @@ test("adding the first email auto-sets it as primary", async () => {
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
+    const mockGateway = {
+        canSendVerificationEmail: () => true,
+        sendVerificationEmail: async () => {},
+    } as any;
+    const token = issueAccessToken("alice", "user", 60);
+
+    const route = createUserEmailRoutes(
+        notifStore,
+        tfaService,
+        verifyTokenService,
+        mockGateway,
+    );
+    const res = makeResponse();
+
+    await route(
+        makeRequest("POST", { email: "alice@example.com" }, token),
+        res,
+        new URL("http://localhost/api/v1/users/alice/emails"),
+    );
+    assert.equal(res.status, 201);
+
+    const emails = await notifStore.getUserEmails("alice");
+    assert.equal(emails.length, 1);
+    assert.equal(emails[0].primary, true);
+});
+
+test("returns 503 when SMTP is not available and does not add the email", async () => {
+    const notifStore = await makeNotifStore();
+    const tfaService = new TfaCodeService(new InMemoryTfaStore());
+    const verifyTokenService = new VerifyTokenService(
+        new InMemoryVerifyTokenStore(),
+    );
     const gateway = makeGateway();
     const token = issueAccessToken("alice", "user", 60);
 
@@ -84,11 +116,16 @@ test("adding the first email auto-sets it as primary", async () => {
         res,
         new URL("http://localhost/api/v1/users/alice/emails"),
     );
-    assert.equal(res.status, 201);
+    assert.equal(res.status, 503);
+    const data = JSON.parse(res.payload);
+    assert.equal(data.error.code, "smtp_unavailable");
 
     const emails = await notifStore.getUserEmails("alice");
-    assert.equal(emails.length, 1);
-    assert.equal(emails[0].primary, true);
+    assert.equal(
+        emails.length,
+        0,
+        "email must not be stored when SMTP is unavailable",
+    );
 });
 
 test("cannot delete primary email", async () => {

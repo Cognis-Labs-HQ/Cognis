@@ -132,11 +132,15 @@ const elements = [
             ],
             onRender: () => {
                 const account = localStorage.getItem("cognis_account") ?? "";
-                generalPrefs = initGeneralPrefs(root, {
-                    i18n,
-                    username: account,
-                });
-                generalPrefs.init();
+                if (!generalPrefs) {
+                    generalPrefs = initGeneralPrefs(root, {
+                        i18n,
+                        username: account,
+                    });
+                    generalPrefs.init();
+                } else {
+                    generalPrefs.refresh();
+                }
             },
         },
     },
