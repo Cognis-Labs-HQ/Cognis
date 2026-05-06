@@ -9,6 +9,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- `theme.css`: `input`, `select`, `textarea`, and `button` now inherit `font-family` and `font-size` from `body`, so the user-selected application font is applied to all form controls. ([44dc8fd](https://github.com/le-firehawk/Cognis/commit/44dc8fd))
 - SMTP adapter `getConfig()` now returns `user: this.config.user ?? ""` instead of `user: this.config.user` so the username field always appears in the admin config popup and is shown side-by-side with the password field, with both controlled by the Disable Authentication slider. ([38b815f](https://github.com/le-firehawk/Cognis/commit/38b815f))
 
 ### Added
