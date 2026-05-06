@@ -9,6 +9,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Translated all 31 English docs to German (de), Japanese (ja), and Indonesian (id): covers `src/docs/`, all gateway `docs/` subdirectories, all adapter `docs/` subdirectories, `src/modules/docs/`, and `src/tooling/docs/`. Every English doc now has a de, ja, and id counterpart. ([e35638b](https://github.com/le-firehawk/Cognis/commit/e35638b))
 - Developer documentation: wrote or rewrote all 31 docs across `src/docs/`, gateway `docs/` subdirectories, adapter `docs/` subdirectories, `src/modules/docs/`, and `src/tooling/docs/`. Includes new `src/docs/standard.en.md` documenting the documentation writing standard. ([31e1ec4](https://github.com/le-firehawk/Cognis/commit/31e1ec4))
 
 ### Fixed
