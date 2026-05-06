@@ -7,6 +7,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Developer documentation: wrote or rewrote all 31 docs across `src/docs/`, gateway `docs/` subdirectories, adapter `docs/` subdirectories, `src/modules/docs/`, and `src/tooling/docs/`. Includes new `src/docs/standard.en.md` documenting the documentation writing standard. ([31e1ec4](https://github.com/le-firehawk/Cognis/commit/31e1ec4))
+
 ### Fixed
 
 - SMTP adapter `getConfig()` now returns `user: this.config.user ?? ""` instead of `user: this.config.user` so the username field always appears in the admin config popup and is shown side-by-side with the password field, with both controlled by the Disable Authentication slider. ([38b815f](https://github.com/le-firehawk/Cognis/commit/38b815f))
