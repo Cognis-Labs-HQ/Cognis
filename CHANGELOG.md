@@ -9,6 +9,22 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- ([pending](https://github.com/le-firehawk/Cognis/commit/pending)) `src/api/reuse/` — new shared utility directory; `tfa-code.ts` and `verify-token.ts` moved here from `src/api/utils/`, `read-json.ts` moved here from `src/api/routes/` (was a utility, not a route handler)
+- ([pending](https://github.com/le-firehawk/Cognis/commit/pending)) `src/gateways/profile/routes/tests/helpers.ts` — shared `makeTempDb` fixture for profile gateway route tests, eliminating the duplicated function across `file-routes`, `post-routes`, and `social-routes` test files
+
+### Changed
+
+- ([pending](https://github.com/le-firehawk/Cognis/commit/pending)) `src/api/tests/` — reorganised flat test files into domain subdirectories: `auth/`, `bootstrap/`, `docs/`, `gateways/`, `modules/`, `profile/`, `system/`, `ui/`, `users/`; `tfa/` subdirectory was already in place
+- ([pending](https://github.com/le-firehawk/Cognis/commit/pending)) `src/api/routes/gateways/tests/gateway-routes.test.ts` moved to `src/api/tests/gateways/` — gateway route tests belong in the common API test tree, not inside the route handler directory
+- ([pending](https://github.com/le-firehawk/Cognis/commit/pending)) `src/api/tests/{file,post,social,preferences}-routes.test.ts` moved to `src/gateways/profile/routes/tests/` — these tests cover profile gateway route handlers, not core API routes
+- ([pending](https://github.com/le-firehawk/Cognis/commit/pending)) `src/api/tests/module-extension-routes.test.ts` moved to `src/modules/routes/tests/` — tests module-owned route code
+
+### Fixed
+
+- ([pending](https://github.com/le-firehawk/Cognis/commit/pending)) `issueAccessToken` called with a role string as the third argument (TTL) in `gateway-routes.test.ts`, `ui-registry.test.ts`, and `notify/bootstrap.test.ts`; corrected to `60` (seconds)
+
+### Added
+
 - ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `src/tooling/scripts/gen-tsconfig.mjs` — auto-discovers all `composite: true` tsconfig.json files under `src/` and regenerates the root `tsconfig.json`; `npm run typecheck` now invokes this generator first, eliminating manually maintained project reference lists
 - ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `src/ui/reuse/element-registry.js` — page-element look-up registry (replaces `components/widget-registry.js`); exports `getElementDefinition`, `mergeElementConfig`, `getElementLibrary`
 - ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `src/ui/reuse/font-prefs.js` — font catalog loading, picker construction, and settings-page font preference integration; promoted from `src/ui/app/settings/font-prefs.js`

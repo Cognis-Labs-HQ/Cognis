@@ -7,7 +7,7 @@ import type {
     PostVisibility,
 } from "../../../adapters/db/shared/profile-store.js";
 import { visibilityRank } from "../../../adapters/db/shared/profile-store.js";
-import { readJson } from "../../../api/routes/read-json.js";
+import { readJson } from "../../../api/reuse/read-json.js";
 
 const VALID_POST_VISIBILITY = new Set<PostVisibility>([
     "only_me",

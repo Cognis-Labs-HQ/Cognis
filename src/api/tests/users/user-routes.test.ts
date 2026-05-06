@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createUserRoutes } from "../routes/users/index.js";
-import { VolatileLocalAccountStore } from "../../adapters/auth/local/auth-adapter.js";
-import { VolatileUserPreferenceStore } from "../../gateways/profile/routes/preferences.js";
-import { issueAccessToken } from "../auth/access-tokens.js";
+import { createUserRoutes } from "../../routes/users/index.js";
+import { VolatileLocalAccountStore } from "../../../adapters/auth/local/auth-adapter.js";
+import { VolatileUserPreferenceStore } from "../../../gateways/profile/routes/preferences.js";
+import { issueAccessToken } from "../../auth/access-tokens.js";
 
 const adminToken = issueAccessToken("admin", "admin", 60);
 const headers = { authorization: `Bearer ${adminToken}` };

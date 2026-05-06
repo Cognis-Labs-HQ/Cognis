@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createGatewayRoutes } from "../index.js";
+import { createGatewayRoutes } from "../../routes/gateways/index.js";
 import { GatewayRegistry } from "@cognis/core";
-import { issueAccessToken } from "../../../auth/access-tokens.js";
+import { issueAccessToken } from "../../auth/access-tokens.js";
 
 function makeResponse() {
     let status = 0;
@@ -30,7 +30,7 @@ function makeRequest(method: string, token?: string) {
     } as any;
 }
 
-const adminToken = issueAccessToken("test-session", "admin", "admin");
+const adminToken = issueAccessToken("test-session", "admin", 60);
 
 test("GET /api/v1/gateways returns empty list when no gateways registered", async () => {
     const registry = new GatewayRegistry();
@@ -146,7 +146,7 @@ test("non-gateway paths return false", async () => {
     assert.equal(handled, false);
 });
 
-import { UIRegistry } from "../../../ui-registry.js";
+import { UIRegistry } from "../../ui-registry.js";
 
 test("GET /api/v1/admin/sections returns empty array with no uiRegistry", async () => {
     const registry = new GatewayRegistry();

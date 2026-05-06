@@ -30,7 +30,7 @@ function makeResponse() {
     } as any;
 }
 
-const adminToken = issueAccessToken("test-session", "admin", "admin");
+const adminToken = issueAccessToken("test-session", "admin", 60);
 
 async function makeCtx() {
     const gatewayRegistry = new GatewayRegistry();

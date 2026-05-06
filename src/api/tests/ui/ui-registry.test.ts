@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { UIRegistry } from "../ui-registry.js";
-import { createGatewayRoutes } from "../routes/gateways/index.js";
-import { createUiRoutes } from "../routes/ui/index.js";
+import { UIRegistry } from "../../ui-registry.js";
+import { createGatewayRoutes } from "../../routes/gateways/index.js";
+import { createUiRoutes } from "../../routes/ui/index.js";
 import { GatewayRegistry } from "@cognis/core";
-import { issueAccessToken } from "../auth/access-tokens.js";
+import { issueAccessToken } from "../../auth/access-tokens.js";
 
 function makeRequest(method: string, token?: string) {
     return {
@@ -37,8 +37,8 @@ function makeResponse() {
     } as any;
 }
 
-const adminToken = issueAccessToken("test-session", "admin", "admin");
-const userToken = issueAccessToken("test-session", "user", "user");
+const adminToken = issueAccessToken("test-session", "admin", 60);
+const userToken = issueAccessToken("test-session", "user", 60);
 
 test("UIRegistry registers and lists admin sections", () => {
     const reg = new UIRegistry();

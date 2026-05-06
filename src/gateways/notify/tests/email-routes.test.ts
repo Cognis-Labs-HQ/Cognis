@@ -6,11 +6,11 @@ import { SqliteExecutor } from "../../../adapters/db/shared/account-store.js";
 import {
     TfaCodeService,
     InMemoryTfaStore,
-} from "../../../api/utils/tfa-code.js";
+} from "../../../api/reuse/tfa-code.js";
 import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
-} from "../../../api/utils/verify-token.js";
+} from "../../../api/reuse/verify-token.js";
 import { CoreNotificationGateway } from "../gateway.js";
 import { VolatileNotificationPreferenceStore } from "../gateway.js";
 import { issueAccessToken } from "../../../api/auth/access-tokens.js";

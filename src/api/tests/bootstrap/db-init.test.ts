@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolveDbProviderDir } from "../bootstrap/db-init.js";
+import { resolveDbProviderDir } from "../../bootstrap/db-init.js";
 
 test("db init resolves supported providers", () => {
     assert.equal(resolveDbProviderDir("sqlite"), "sqlite");

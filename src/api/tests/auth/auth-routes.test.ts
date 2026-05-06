@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createAuthRoutes } from "../routes/auth/index.js";
+import { createAuthRoutes } from "../../routes/auth/index.js";
 import {
     VolatileLocalAccountStore,
     LocalAuthGateway,
-} from "../../adapters/auth/local/auth-adapter.js";
+} from "../../../adapters/auth/local/auth-adapter.js";
 
 function requestWithBody(method: string, body: Record<string, unknown>) {
     const chunks = [Buffer.from(JSON.stringify(body))];

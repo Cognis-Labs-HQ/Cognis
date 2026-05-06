@@ -1,20 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import path from "node:path";
-import { DbProfileStore } from "../../adapters/db/shared/profile-store.js";
+import { rmSync } from "node:fs";
+import { DbProfileStore } from "../../../../adapters/db/shared/profile-store.js";
 import {
     DbLocalAccountStore,
     SqliteExecutor,
-} from "../../adapters/db/shared/account-store.js";
-import { createPostRoutes } from "../../gateways/profile/routes/posts.js";
-import { issueAccessToken } from "../auth/access-tokens.js";
-
-function makeTempDb() {
-    const dir = mkdtempSync(path.join(tmpdir(), "cognis-post-test-"));
-    return { dir, executor: new SqliteExecutor(path.join(dir, "test.sqlite")) };
-}
+} from "../../../../adapters/db/shared/account-store.js";
+import { createPostRoutes } from "../posts.js";
+import { issueAccessToken } from "../../../../api/auth/access-tokens.js";
+import { makeTempDb } from "./helpers.js";
 
 function makeReq(method: string, token: string | null, body?: string) {
     const chunks = body ? [Buffer.from(body)] : [];

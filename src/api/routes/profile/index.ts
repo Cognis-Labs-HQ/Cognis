@@ -8,7 +8,7 @@ import type {
 } from "../../../adapters/db/shared/profile-store.js";
 import { visibilityRank } from "../../../adapters/db/shared/profile-store.js";
 import type { FileStorageGateway } from "@cognis/core";
-import { readRawBody, readJson } from "../read-json.js";
+import { readRawBody, readJson } from "../../reuse/read-json.js";
 
 const VALID_VISIBILITY = new Set<AccountVisibility>([
     "hidden",

@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createUiRoutes } from "../routes/ui/index.js";
+import { createUiRoutes } from "../../routes/ui/index.js";
 import path from "node:path";
-import { issueAccessToken } from "../auth/access-tokens.js";
+import { issueAccessToken } from "../../auth/access-tokens.js";
 
 function createResponseRecorder() {
     let status = 0;
