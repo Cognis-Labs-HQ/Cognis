@@ -4,6 +4,7 @@ import { createPageComposer } from "../../reuse/page-composer.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { initSecuritySection } from "./security.js";
+import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
 
 const root = document.querySelector("#app");
@@ -1216,8 +1217,12 @@ let [modules, integrityRows] = await Promise.all([
 let gateways = await loadGateways();
 let allAdapters = await loadAllAdapters(gateways);
 let composer;
+let changesBar;
 
-const securitySection = initSecuritySection(root, { i18n });
+const securitySection = initSecuritySection(root, {
+    i18n,
+    onDirtyChange: (dirty) => changesBar?.markDirty("security", dirty),
+});
 
 const sectionMeta = await loadAdminSections();
 const gatewaySections = (
@@ -1344,5 +1349,28 @@ composer = createPageComposer(root, {
       `,
         },
     ],
+    floatingMenu: [
+        {
+            id: "admin-changes-bar",
+            label: i18n.t("ui.reuse.unsaved_changes"),
+            render: () => `
+        <span>${i18n.t("ui.reuse.unsaved_changes")}</span>
+        <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t("ui.reuse.generic.discard")}</button>
+        <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t("ui.reuse.generic.save")}</button>
+      `,
+        },
+    ],
 });
 await composer.init();
+
+const floatingSlot = composer.getFloatingSlot("admin-changes-bar");
+
+changesBar = createUnsavedChangesBar(floatingSlot, {
+    onSave: async () => {
+        await securitySection.save();
+        changesBar.markDirty("security", false);
+    },
+    onDiscard: () => {
+        securitySection.discard();
+    },
+});

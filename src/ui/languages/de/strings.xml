@@ -128,6 +128,7 @@
   <string name="ui.app.admin.gateway.no_dependencies">Keine</string>
   <string name="ui.app.admin.gateway.adapter_count">Adapter</string>
   <string name="ui.app.admin.gateway.go_to_adapters">Zu den Adaptern</string>
+  <string name="ui.app.admin.authentication">Authentifizierung</string>
   <string name="ui.app.admin.security">Sicherheit</string>
   <string name="ui.app.admin.security.providers">Adapter</string>
   <string name="ui.app.admin.security.no_providers">Keine Authentifizierungsadapter konfiguriert.</string>

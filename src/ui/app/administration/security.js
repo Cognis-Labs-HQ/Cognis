@@ -13,14 +13,19 @@ import { escapeHtml } from "../../reuse/escape-html.js";
  *   initSecuritySection(root, options) — initialises the security section.
  *
  * Usage:
- *   const security = initSecuritySection(root, { i18n });
+ *   const security = initSecuritySection(root, { i18n, onDirtyChange });
  *   await security.init();
+ *   // Save and discard are invoked by the floating unsaved-changes bar.
+ *   await security.save();
+ *   security.discard();
  *
  * @param {Element} root
- * @param {{ i18n: object }} options
- * @returns {{ init: () => Promise<void> }}
+ * @param {{ i18n: object, onDirtyChange?: (dirty: boolean) => void }} options
+ * @returns {{ init: () => Promise<void>, save: () => Promise<void>, discard: () => void, renderContent: () => string }}
  */
-export function initSecuritySection(root, { i18n }) {
+export function initSecuritySection(root, { i18n, onDirtyChange }) {
+    let originalDomains = [];
+
     async function loadSettings() {
         const res = await apiFetch("/api/v1/system/security");
         if (!res.ok) return { trustedDomains: [] };
@@ -28,7 +33,7 @@ export function initSecuritySection(root, { i18n }) {
         return payload.data ?? { trustedDomains: [] };
     }
 
-    async function saveSettings(trustedDomains) {
+    async function persistSettings(trustedDomains) {
         const res = await apiFetch("/api/v1/system/security", {
             method: "PUT",
             headers: { "content-type": "application/json" },
@@ -44,43 +49,43 @@ export function initSecuritySection(root, { i18n }) {
             .filter(Boolean);
     }
 
-    function bindActions(settings) {
+    function getInputValue() {
         const input = root.querySelector("#security-trusted-domains");
-        const saveBtn = root.querySelector("#security-save-btn");
-        const statusEl = root.querySelector("#security-status");
+        return input instanceof HTMLInputElement ? input.value : "";
+    }
 
-        if (!input || !saveBtn) return;
+    function bindInput(settings) {
+        const input = root.querySelector("#security-trusted-domains");
+        if (!(input instanceof HTMLInputElement)) return;
 
-        if (input instanceof HTMLInputElement) {
-            input.value = (settings.trustedDomains ?? []).join(", ");
-        }
+        originalDomains = settings.trustedDomains ?? [];
+        input.value = originalDomains.join(", ");
 
-        saveBtn.addEventListener("click", async () => {
-            const raw = input instanceof HTMLInputElement ? input.value : "";
-            const domains = parseDomains(raw);
-            try {
-                await saveSettings(domains);
-                if (statusEl) {
-                    statusEl.textContent = i18n.t(
-                        "ui.app.admin.security.saved",
-                    );
-                    setTimeout(() => {
-                        statusEl.textContent = "";
-                    }, 3000);
-                }
-            } catch {
-                if (statusEl)
-                    statusEl.textContent = i18n.t(
-                        "ui.app.admin.security.save_failed",
-                    );
-            }
+        input.addEventListener("input", () => {
+            const current = parseDomains(getInputValue()).join(",");
+            const original = originalDomains.join(",");
+            onDirtyChange?.(current !== original);
         });
     }
 
     return {
         async init() {
             const settings = await loadSettings();
-            bindActions(settings);
+            bindInput(settings);
+        },
+
+        async save() {
+            const domains = parseDomains(getInputValue());
+            await persistSettings(domains);
+            originalDomains = domains;
+        },
+
+        discard() {
+            const input = root.querySelector("#security-trusted-domains");
+            if (input instanceof HTMLInputElement) {
+                input.value = originalDomains.join(", ");
+            }
+            onDirtyChange?.(false);
         },
 
         renderContent() {
@@ -97,11 +102,7 @@ export function initSecuritySection(root, { i18n }) {
               class="security-domains-input"
               placeholder="${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_placeholder"))}"
             />
-            <button id="security-save-btn" class="btn-confirm btn-animated" type="button">
-              ${escapeHtml(i18n.t("ui.reuse.generic.save"))}
-            </button>
           </div>
-          <div id="security-status" class="notif-status-message" aria-live="polite"></div>
         </div>
       `;
         },

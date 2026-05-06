@@ -247,13 +247,13 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, openPopup }) {
     }
 
     return {
-        id: "security",
-        label: i18n.t("ui.app.admin.security"),
+        id: "authentication",
+        label: i18n.t("ui.app.admin.authentication"),
         dataReady,
         subComposerOptions: {
             allowCustomization: false,
-            preferenceKey: "administration-security-layout",
-            heading: i18n.t("ui.app.admin.security"),
+            preferenceKey: "administration-auth-layout",
+            heading: i18n.t("ui.app.admin.authentication"),
             elements: [
                 {
                     id: "auth-providers",

@@ -128,6 +128,7 @@
   <string name="ui.app.admin.gateway.no_dependencies">Tidak ada</string>
   <string name="ui.app.admin.gateway.adapter_count">Adapter</string>
   <string name="ui.app.admin.gateway.go_to_adapters">Lihat adapter</string>
+  <string name="ui.app.admin.authentication">Autentikasi</string>
   <string name="ui.app.admin.security">Keamanan</string>
   <string name="ui.app.admin.security.providers">Adaptor</string>
   <string name="ui.app.admin.security.no_providers">Tidak ada adaptor autentikasi yang dikonfigurasi.</string>

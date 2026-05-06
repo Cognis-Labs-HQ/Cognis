@@ -128,6 +128,7 @@
   <string name="ui.app.admin.gateway.no_dependencies">なし</string>
   <string name="ui.app.admin.gateway.adapter_count">アダプター</string>
   <string name="ui.app.admin.gateway.go_to_adapters">アダプターへ</string>
+  <string name="ui.app.admin.authentication">認証</string>
   <string name="ui.app.admin.security">セキュリティ</string>
   <string name="ui.app.admin.security.providers">アダプター</string>
   <string name="ui.app.admin.security.no_providers">認証アダプターが設定されていません。</string>

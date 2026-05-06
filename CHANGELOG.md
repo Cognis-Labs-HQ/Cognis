@@ -41,6 +41,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Auth gateway: `/api/v1/auth/login` with `provider: "oidc"/"ldap"/"saml"` could authenticate through a registered-but-disabled adapter. The login handler now uses `getEnabledAdapter()` so only adapters in the enabled set are eligible. ([eb5d3f1](https://github.com/le-firehawk/Cognis/commit/eb5d3f1))
 - Auth gateway: `profile:createProfile` was captured at bootstrap time (before the profile gateway has contributed it), causing new registrations and logins to silently skip profile-row creation. The capability is now looked up lazily inside the route handler. ([eb5d3f1](https://github.com/le-firehawk/Cognis/commit/eb5d3f1))
 - Route registry: registered handlers for optional gateways (e.g. notify, profile) remained live after the gateway was disabled. `RouteRegistry` now stores an optional `gatewayId` alongside each handler and the server skips any entry whose gateway is marked disabled. ([eb5d3f1](https://github.com/le-firehawk/Cognis/commit/eb5d3f1))
+- Administration page showed "Security" twice in the left nav and rendered an empty second section. The root cause was the auth gateway's admin section using `id: "security"` and `preferenceKey: "administration-security-layout"`, colliding with the base Security section. The auth section now uses `id: "authentication"` and `preferenceKey: "administration-auth-layout"` and is labelled "Authentication". ([aa008ec](https://github.com/le-firehawk/Cognis/commit/aa008ec))
 
 ### Added
 
@@ -55,6 +56,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - `renderInlineAdapters` now renders locked adapters with their toggle disabled, matching the Security section behaviour for the local auth adapter.
 - `bindAdapterRows` now skips click-to-config for locked adapters.
 - `bindAdapters` (renamed from `bindProviders`) in `admin-section.js` reflects internal naming conventions.
+- Administration page Security section: the inline Save button is removed from the Trusted Email Domains form. Changes are now tracked by a floating Discard/Save bar (matching the Settings page pattern). The `initSecuritySection` interface gains `save()`, `discard()`, and an `onDirtyChange` callback parameter. `ui.app.admin.authentication` i18n key added in all four language files.
 
 ### Fixed
 
