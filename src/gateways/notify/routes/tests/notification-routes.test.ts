@@ -234,6 +234,31 @@ test("GET /api/v1/notifications/providers returns sender list to admin", async (
     assert.equal(data.data[0].senderId, "smtp");
 });
 
+test("GET /api/v1/notifications/providers returns sender list to non-admin user", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    gateway.registerSender(new CapturingSender("smtp"));
+    const route = createNotificationRoutes(gateway);
+    const userToken = issueAccessToken("alice", "user", 60);
+    const res = makeResponse();
+
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${userToken}` },
+            [Symbol.asyncIterator]: async function* () {},
+        } as any,
+        res,
+        new URL("http://localhost/api/v1/notifications/providers"),
+    );
+
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
+    assert.ok(Array.isArray(data.data));
+    assert.equal(data.data.length, 1);
+    assert.equal(data.data[0].senderId, "smtp");
+});
+
 test("GET /api/v1/notifications/providers returns 401 without auth", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
