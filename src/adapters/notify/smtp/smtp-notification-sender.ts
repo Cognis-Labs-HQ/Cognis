@@ -486,7 +486,7 @@ export class SmtpNotificationSender implements NotificationSender {
             port: this.config.port,
             from: this.config.from,
             senderName: this.config.senderName ?? "",
-            user: this.config.user,
+            user: this.config.user ?? "",
             password: "",
             secure: this.config.secure,
             allowSelfSigned: this.config.allowSelfSigned ?? false,

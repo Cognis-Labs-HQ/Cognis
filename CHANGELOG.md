@@ -7,6 +7,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- SMTP adapter `getConfig()` now returns `user: this.config.user ?? ""` instead of `user: this.config.user` so the username field always appears in the admin config popup and is shown side-by-side with the password field, with both controlled by the Disable Authentication slider. ([38b815f](https://github.com/le-firehawk/Cognis/commit/38b815f))
+
 ### Added
 
 - `src/adapters/file/local/manifest.json`: local file adapter manifest with `"locked": true`, mirroring the locked local auth adapter pattern. The local file adapter is permanently enabled and cannot be disabled.
