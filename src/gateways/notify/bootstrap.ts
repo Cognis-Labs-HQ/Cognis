@@ -10,14 +10,14 @@ import { CoreNotificationGateway } from "./gateway.js";
 import {
     DbNotificationStore,
     DbNotificationPreferenceStore,
-} from "../../adapters/db/shared/notification-store.js";
+} from "../../adapters/db/reuse/notification-store.js";
 import { TfaCodeService, InMemoryTfaStore } from "../../api/reuse/tfa-code.js";
 import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
 } from "../../api/reuse/verify-token.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { DbNotificationStore as IDbNotificationStore } from "../../adapters/db/shared/notification-store.js";
+import type { DbNotificationStore as IDbNotificationStore } from "../../adapters/db/reuse/notification-store.js";
 import { createNotificationRoutes } from "./routes/notifications.js";
 
 /**

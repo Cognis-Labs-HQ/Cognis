@@ -32,11 +32,18 @@ For module-specific operational controls, add pluggable CLI subcommands at `modu
 
 Use the `user:*` command namespace for account operations (`create`, `role`, `set-password`, `disable`, `enable`, `delete`). Expose user preference resets only via `user:preferences:clear`; avoid granular per-key mutations.
 
-### Shared UI logic
+### Reusable code directories
 
-Reusable UI logic belongs in `ui/src/reuse`. Promote code reactively: when writing a new feature in area B, if you notice similar logic already exists in area A, move it to `reuse`, update area A to import it, and use it in area B. The threshold for promotion is any parameterisable snippet of 5 or more lines that provides distinct enough functionality to be worth a named function.
+Use `reuse/` as the name for any directory that holds cross-cutting utilities within a given layer or component family. Never name such a directory `shared/`, `utils/`, `helpers/`, or `common/` — these names are generic and do not express purpose. Each layer of the codebase that needs intra-layer sharing uses `reuse/` at its own root:
 
-Every module in `ui/src/reuse` must open with a JSDoc block that documents: what the module does, its public exports with a one-line description each, a concrete usage example, and `@param` / `@returns` annotations on non-trivial exported functions. See `unsaved-changes.js` for the canonical form.
+- `src/api/reuse/` — shared utilities for the API layer (e.g. token helpers, JSON parsing)
+- `src/adapters/db/reuse/` — shared store abstractions used across all DB adapters
+- `src/ui/reuse/` — reusable UI logic and components
+- `src/ui/styles/reuse/` — shared CSS primitives
+
+Promote code reactively: when writing a new feature in area B, if you notice similar logic already exists in area A, move it to `reuse/`, update area A to import it, and use it in area B. The threshold for promotion is any parameterisable snippet of 5 or more lines that provides distinct enough functionality to be worth a named function.
+
+Every module in `src/ui/reuse/` must open with a JSDoc block that documents: what the module does, its public exports with a one-line description each, a concrete usage example, and `@param` / `@returns` annotations on non-trivial exported functions. See `unsaved-changes.js` for the canonical form.
 
 ### UI app page structure
 
@@ -142,7 +149,7 @@ Write unit tests that verify the API responds correctly under defined conditions
 - A disabled extension does not expose its routes via the API.
 - A missing required field returns an appropriate error response.
 
-Tests live alongside the code they cover. Place tests for a gateway, adapter, or module inside a `tests/` subdirectory within that component (e.g., `src/adapters/notify/smtp/tests/`, `src/api/gateways/tests/`). Core API utilities that are not component-specific may keep their tests under `src/api/tests/<subdomain>/` (e.g., `src/api/tests/tfa/`). All new features require tests, logging, and documentation.
+Tests live alongside the code they cover. Place tests for a gateway, adapter, or module inside a `tests/` subdirectory within that component (e.g., `src/adapters/notify/smtp/tests/`, `src/gateways/notify/tests/`). Core API utilities that are not component-specific may keep their tests under `src/api/tests/<subdomain>/` (e.g., `src/api/tests/tfa/`). All new features require tests, logging, and documentation.
 
 ---
 

@@ -8,7 +8,7 @@ import {
     issueAccessToken,
     type AccessRole,
 } from "../../api/auth/access-tokens.js";
-import { DbLocalAccountStore } from "../../adapters/db/shared/account-store.js";
+import { DbLocalAccountStore } from "../../adapters/db/reuse/account-store.js";
 import { CoreAuthGateway } from "./gateway.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthProviderAdapter } from "./gateway.js";

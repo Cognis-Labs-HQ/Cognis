@@ -5,8 +5,8 @@ import type {
     AccountProfile,
     Post,
     PostVisibility,
-} from "../../../adapters/db/shared/profile-store.js";
-import { visibilityRank } from "../../../adapters/db/shared/profile-store.js";
+} from "../../../adapters/db/reuse/profile-store.js";
+import { visibilityRank } from "../../../adapters/db/reuse/profile-store.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 
 const VALID_POST_VISIBILITY = new Set<PostVisibility>([

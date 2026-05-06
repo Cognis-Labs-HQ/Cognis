@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
-import { DbProfileStore } from "../../../../adapters/db/shared/profile-store.js";
+import { DbProfileStore } from "../../../../adapters/db/reuse/profile-store.js";
 import {
     DbLocalAccountStore,
     SqliteExecutor,
-} from "../../../../adapters/db/shared/account-store.js";
+} from "../../../../adapters/db/reuse/account-store.js";
 import { createPostRoutes } from "../posts.js";
 import { issueAccessToken } from "../../../../api/auth/access-tokens.js";
 import { makeTempDb } from "./helpers.js";

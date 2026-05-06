@@ -3,7 +3,7 @@ import path from "node:path";
 import type {
     DbExecutor,
     SupportedDbType,
-} from "../../adapters/db/shared/account-store.js";
+} from "../../adapters/db/reuse/account-store.js";
 import type { LocalAccountStore } from "../../adapters/auth/local/auth-adapter.js";
 
 export interface AuthContext {

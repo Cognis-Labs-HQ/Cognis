@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
     CoreNotificationGateway,
     VolatileNotificationPreferenceStore,
-} from "../notify/gateway.js";
+} from "../gateway.js";
 import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
 
 class CapturingSender implements NotificationSender {

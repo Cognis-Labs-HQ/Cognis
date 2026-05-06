@@ -18,6 +18,9 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - ([bb70712](https://github.com/le-firehawk/Cognis/commit/bb70712)) `src/api/routes/gateways/tests/gateway-routes.test.ts` moved to `src/api/tests/gateways/` — gateway route tests belong in the common API test tree, not inside the route handler directory
 - ([bb70712](https://github.com/le-firehawk/Cognis/commit/bb70712)) `src/api/tests/{file,post,social,preferences}-routes.test.ts` moved to `src/gateways/profile/routes/tests/` — these tests cover profile gateway route handlers, not core API routes
 - ([bb70712](https://github.com/le-firehawk/Cognis/commit/bb70712)) `src/api/tests/module-extension-routes.test.ts` moved to `src/modules/routes/tests/` — tests module-owned route code
+- (pending) `src/adapters/db/shared/` renamed to `src/adapters/db/reuse/` — aligns with the codebase convention that cross-cutting utility directories are named `reuse/`, not `shared/`, `utils/`, or `helpers/`
+- (pending) `src/gateways/tests/notification-gateway.test.ts` moved to `src/gateways/notify/tests/` — component-specific test belongs inside the notify gateway
+- (pending) `.github/copilot-instructions.md` updated: "Shared UI logic" renamed to "Reusable code directories" and generalised; naming convention (`reuse/` over `shared/`/`utils/`) documented; stale test path example corrected
 
 ### Fixed
 

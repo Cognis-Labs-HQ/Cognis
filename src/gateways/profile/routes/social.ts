@@ -3,8 +3,8 @@ import { requireAuth } from "../../../api/auth/guard.js";
 import type {
     DbProfileStore,
     AccountProfile,
-} from "../../../adapters/db/shared/profile-store.js";
-import { visibilityRank } from "../../../adapters/db/shared/profile-store.js";
+} from "../../../adapters/db/reuse/profile-store.js";
+import { visibilityRank } from "../../../adapters/db/reuse/profile-store.js";
 
 function publicProfile(profile: AccountProfile) {
     return {

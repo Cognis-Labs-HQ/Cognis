@@ -14,8 +14,8 @@ import { initializeDatabaseSchema } from "./bootstrap/db-init.js";
 import {
     createDbExecutor,
     type SupportedDbType,
-} from "../adapters/db/shared/account-store.js";
-import { DbUserPreferenceStore } from "../adapters/db/shared/preference-store.js";
+} from "../adapters/db/reuse/account-store.js";
+import { DbUserPreferenceStore } from "../adapters/db/reuse/preference-store.js";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { issueAccessToken } from "./auth/access-tokens.js";

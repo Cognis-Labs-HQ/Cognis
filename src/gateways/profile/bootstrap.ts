@@ -1,4 +1,4 @@
-import { DbProfileStore } from "../../adapters/db/shared/profile-store.js";
+import { DbProfileStore } from "../../adapters/db/reuse/profile-store.js";
 import { createProfileRoutes } from "../../api/routes/profile/index.js";
 import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
@@ -13,7 +13,7 @@ import {
     setPageSecurityHeaders,
     type GatewayBootstrapContext,
 } from "../shared.js";
-import type { AccountRole } from "../../adapters/db/shared/profile-store.js";
+import type { AccountRole } from "../../adapters/db/reuse/profile-store.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
