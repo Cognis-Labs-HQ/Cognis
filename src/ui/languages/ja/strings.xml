@@ -91,6 +91,14 @@
 
   <string name="ui.app.docs.page_title">ドキュメント</string>
   <string name="ui.app.docs.page_subtitle">開発者ドキュメント。</string>
+  <string name="ui.app.docs.group.platform">プラットフォーム</string>
+  <string name="ui.app.docs.group.gateways">ゲートウェイ</string>
+  <string name="ui.app.docs.group.adapters_auth">認証アダプター</string>
+  <string name="ui.app.docs.group.adapters_db">データベースアダプター</string>
+  <string name="ui.app.docs.group.adapters_file">ファイルアダプター</string>
+  <string name="ui.app.docs.group.adapters_notify">通知アダプター</string>
+  <string name="ui.app.docs.group.modules">モジュール</string>
+  <string name="ui.app.docs.group.tooling">ツール</string>
   <string name="ui.app.modules.page_title">モジュール概要</string>
   <string name="ui.app.modules.page_subtitle">インストール済みモジュールを有効化/無効化します。</string>
   <string name="ui.app.modules.toolbar_subtitle">管理者専用コントロール</string>

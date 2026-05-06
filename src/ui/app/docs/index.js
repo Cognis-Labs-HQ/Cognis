@@ -7,19 +7,42 @@ const root = document.querySelector("#app");
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.docs");
 
+const GROUP_KEYS = {
+    "": "ui.app.docs.group.platform",
+    gateways: "ui.app.docs.group.gateways",
+    "adapters/auth": "ui.app.docs.group.adapters_auth",
+    "adapters/db": "ui.app.docs.group.adapters_db",
+    "adapters/file": "ui.app.docs.group.adapters_file",
+    "adapters/notify": "ui.app.docs.group.adapters_notify",
+    modules: "ui.app.docs.group.modules",
+    tooling: "ui.app.docs.group.tooling",
+};
+
+function groupLabel(group) {
+    const key = GROUP_KEYS[group];
+    if (key) return i18n.t(key);
+    return group
+        .split("/")
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" › ");
+}
+
 async function loadDocsIndex() {
     const response = await apiFetch("/api/v1/docs");
     const payload = await response.json();
     return payload.data;
 }
 
-function toTitleCase(slug) {
-    return slug
-        .split("/")
-        .pop()
-        .split("-")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
+function docTitle(item) {
+    return (
+        item.title ||
+        item.slug
+            .split("/")
+            .pop()
+            .split("-")
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(" ")
+    );
 }
 
 function normalizeDocSlug(href) {
@@ -30,13 +53,36 @@ function normalizeDocSlug(href) {
         .replace(/\.md$/i, "");
 }
 
-function renderSidebarLinks(items) {
-    return items
-        .map(
-            (item) =>
-                `<li><button data-slug="${item.slug}">${toTitleCase(item.slug)}</button></li>`,
-        )
-        .join("");
+function buildGroupedNav(items) {
+    const groups = new Map();
+    for (const item of items) {
+        const g = item.group ?? "";
+        if (!groups.has(g)) groups.set(g, []);
+        groups.get(g).push(item);
+    }
+
+    let html = "";
+    for (const [group, groupItems] of groups) {
+        const label = groupLabel(group);
+        const links = groupItems
+            .map(
+                (item) =>
+                    `<li><button data-slug="${item.slug}">${docTitle(item)}</button></li>`,
+            )
+            .join("");
+
+        if (group === "") {
+            html += `<ul class="docs-nav-group docs-nav-top">${links}</ul>`;
+        } else {
+            const storageKey = `docs-group-open:${group}`;
+            const isOpen = localStorage.getItem(storageKey) !== "false";
+            html += `<details class="docs-nav-group" ${isOpen ? "open" : ""} data-nav-group="${group}">`;
+            html += `<summary>${label}</summary>`;
+            html += `<ul>${links}</ul>`;
+            html += `</details>`;
+        }
+    }
+    return html;
 }
 
 let activeHtml = null;
@@ -47,7 +93,10 @@ function renderActiveDoc() {
 }
 
 async function showDoc(slug, pushHistory = true) {
-    const response = await apiFetch(`/api/v1/docs/${slug}`);
+    const lang = i18n.locale || "en";
+    const response = await apiFetch(
+        `/api/v1/docs/${slug}?lang=${encodeURIComponent(lang)}`,
+    );
     const payload = await response.json();
     activeHtml = renderMarkdown(payload.data.markdown);
     renderActiveDoc();
@@ -92,23 +141,21 @@ const composer = createPageComposer(root, {
             id: "docs-nav",
             label: i18n.t("ui.reuse.navigation"),
             render: () =>
-                `<h3>${i18n.t("ui.reuse.navigation")}</h3><ul>${renderSidebarLinks(docs)}</ul>`,
+                `<h3>${i18n.t("ui.reuse.navigation")}</h3><nav class="docs-nav">${buildGroupedNav(docs)}</nav>`,
         },
     ],
 });
 await composer.init();
 
-function resolveDefaultSlug(subpath) {
-    if (subpath && docs.find((doc) => doc.slug === subpath)) return subpath;
-    return (
-        docs.find((doc) => doc.slug === "docs/overview")?.slug ??
-        docs.find((doc) => doc.slug.endsWith("/overview"))?.slug ??
-        docs[0]?.slug
-    );
-}
-
 root.querySelectorAll("[data-slug]").forEach((button) => {
     button.addEventListener("click", () => showDoc(button.dataset.slug));
+});
+
+root.querySelectorAll("details[data-nav-group]").forEach((details) => {
+    details.addEventListener("toggle", () => {
+        const key = `docs-group-open:${details.dataset.navGroup}`;
+        localStorage.setItem(key, details.open ? "true" : "false");
+    });
 });
 
 root.addEventListener("click", async (event) => {
@@ -135,6 +182,15 @@ window.addEventListener("popstate", (event) => {
         if (fallback) showDoc(fallback, false);
     }
 });
+
+function resolveDefaultSlug(subpath) {
+    if (subpath && docs.find((doc) => doc.slug === subpath)) return subpath;
+    return (
+        docs.find((doc) => doc.slug === "overview")?.slug ??
+        docs.find((doc) => doc.slug === "index")?.slug ??
+        docs[0]?.slug
+    );
+}
 
 const defaultDoc = (() => {
     const subpath = window.location.pathname.replace(/^\/docs\/?/, "");
