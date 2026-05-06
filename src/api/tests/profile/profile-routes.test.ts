@@ -45,7 +45,7 @@ function fakeFileGateway() {
 
 function makeReq(
     method: string,
-    token?: string | null,
+    token: string | null,
     body?: string | Buffer,
     contentType?: string,
 ) {
@@ -576,7 +576,7 @@ test("GET /api/v1/profile/ping returns 401 when unauthenticated", async () => {
     const route = createProfileRoutes(profileStore);
     let status = 0;
     await route(
-        makeReq("GET"),
+        makeReq("GET", null),
         {
             writeHead(c: number) {
                 status = c;

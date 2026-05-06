@@ -11,7 +11,7 @@
  * @param verify   - Verify credentials and return an auth context on success.
  */
 
-import { createHash } from "node:crypto";
+import { pbkdf2Sync } from "node:crypto";
 import type { AuthContext } from "@cognis/core";
 
 export interface LocalAccountStore {
@@ -48,7 +48,9 @@ interface StoredAccount {
 }
 
 function hashPassword(input: string): string {
-    return createHash("sha256").update(input).digest("hex");
+    return pbkdf2Sync(input, "volatile-store", 1000, 32, "sha256").toString(
+        "hex",
+    );
 }
 
 /**
