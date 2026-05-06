@@ -12,26 +12,25 @@ Every gateway, adapter, and module carries a `package.json` with a `version` fie
 
 ## Adapters
 
-| Component           | Path                          | Version |
-| ------------------- | ----------------------------- | ------- |
-| SMTP Notification   | `src/adapters/notify/smtp/`   | `0.1.0` |
-| Local File Storage  | `src/adapters/file-local/`    | `0.1.0` |
-| SQLite Database     | `src/adapters/db-sqlite/`     | `0.1.0` |
-| PostgreSQL Database | `src/adapters/db-postgres/`   | `0.1.0` |
-| MariaDB Database    | `src/adapters/db-mariadb/`    | `0.1.0` |
-| In-Memory Database  | `src/adapters/db-memory/`     | `0.1.0` |
-| LDAP Auth           | `src/adapters/auth-ldap/`     | `0.1.0` |
-| SAML Auth           | `src/adapters/auth-saml/`     | `0.1.0` |
-| OIDC SSO Auth       | `src/adapters/auth-sso-oidc/` | `0.1.0` |
+| Component          | Path                          | Version |
+| ------------------ | ----------------------------- | ------- |
+| SMTP Notification  | `src/adapters/notify/smtp/`   | `0.1.0` |
+| Local File Storage | `src/adapters/file/local/`    | `0.1.0` |
+| Local Auth         | `src/adapters/auth/local/`    | `0.2.0` |
+| SQLite Database    | `src/adapters/db/sqlite/`     | `0.1.0` |
+| PostgreSQL Database| `src/adapters/db/postgres/`   | `0.1.0` |
+| MariaDB Database   | `src/adapters/db/mariadb/`    | `0.1.0` |
 
 ## Gateways
 
 | Component             | Path                        | Version |
 | --------------------- | --------------------------- | ------- |
-| Notification (notify) | `src/api/gateways/notify/`  | `0.1.0` |
-| Profile               | `src/api/gateways/profile/` | `0.1.0` |
-| File Storage          | `src/api/gateways/files/`   | `0.1.0` |
-| Logging               | `src/api/gateways/logging/` | `0.1.0` |
+| Database (db)         | `src/gateways/db/`          | `1.1.0` |
+| Authentication (auth) | `src/gateways/auth/`        | `1.1.0` |
+| Notification (notify) | `src/gateways/notify/`      | `0.1.0` |
+| Profile               | `src/gateways/profile/`     | `1.1.0` |
+| File Storage          | `src/gateways/files/`       | `1.1.0` |
+| Logging               | `src/gateways/logging/`     | `1.1.0` |
 
 ## Core contracts
 

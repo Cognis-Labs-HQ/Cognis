@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserEmailRoutes } from "../bootstrap.js";
 import { DbNotificationStore } from "../../../adapters/db/reuse/notification-store.js";
-import { SqliteExecutor } from "../../../adapters/db/reuse/account-store.js";
+import { SqliteExecutor } from "../../../gateways/db/executor.js";
 import {
     TfaCodeService,
     InMemoryTfaStore,

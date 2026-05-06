@@ -3,8 +3,8 @@ import path from "node:path";
 import type {
     DbExecutor,
     SupportedDbType,
-} from "../../adapters/db/reuse/account-store.js";
-import type { LocalAccountStore } from "../../adapters/auth/local/auth-adapter.js";
+} from "../../gateways/db/executor.js";
+import type { LocalAccountStore } from "./reuse/local-account-store.js";
 
 export interface AuthContext {
     accountId: string;

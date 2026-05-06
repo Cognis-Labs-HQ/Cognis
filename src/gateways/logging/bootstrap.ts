@@ -1,4 +1,4 @@
-import { Logger } from "../../api/logger.js";
+import { Logger } from "./logger.js";
 import type { GatewayBootstrapContext } from "../shared.js";
 
 /**

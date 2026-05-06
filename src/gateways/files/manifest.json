@@ -2,7 +2,7 @@
     "id": "files",
     "name": "File Storage Gateway",
     "version": "1.0.0",
-    "required": false,
-    "description": "Provides local file storage for uploads.",
+    "required": true,
+    "description": "Provides local file storage for uploads and application logging.",
     "publisher": "Cognis Labs"
 }

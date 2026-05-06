@@ -10,19 +10,16 @@ import {
     CapabilityStore,
     type BootstrapLog,
 } from "@cognis/core";
-import { initializeDatabaseSchema } from "./bootstrap/db-init.js";
-import {
-    createDbExecutor,
-    type SupportedDbType,
-} from "../adapters/db/reuse/account-store.js";
-import { DbUserPreferenceStore } from "../adapters/db/reuse/preference-store.js";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { issueAccessToken } from "./auth/access-tokens.js";
 import { createHash } from "node:crypto";
 import { RouteRegistry } from "./route-registry.js";
 import { UIRegistry } from "./ui-registry.js";
-import type { LocalAccountStore } from "../api/reuse/account-store.js";
+import type { LocalAccountStore } from "./reuse/account-store.js";
+import type { UserPreferenceStore } from "./reuse/preference-store.js";
+import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
+import type { DbDialectHelper } from "../gateways/db/bootstrap.js";
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
     private readonly manifests: ModuleManifest[];
@@ -99,7 +96,6 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
 
 const port = Number.parseInt(process.env.PORT ?? "3000", 10);
 const host = process.env.LISTEN_HOST ?? "0.0.0.0";
-const dbType = (process.env.DB_TYPE as SupportedDbType | undefined) ?? "sqlite";
 const adaptersRoot =
     process.env.COGNIS_ADAPTERS_ROOT ??
     path.resolve(process.cwd(), "src", "adapters");
@@ -113,50 +109,7 @@ function bootstrapLog(
         `${JSON.stringify({ ts: new Date().toISOString(), level, message, ...meta })}\n`,
     );
 }
-bootstrapLog("info", "Starting Cognis API bootstrap.", {
-    host,
-    port,
-    dbType,
-});
-const dbExecutor = await createDbExecutor(dbType);
-bootstrapLog("info", "Database executor initialized.", { dbType });
-
-await initializeDatabaseSchema(
-    dbType,
-    { info: (msg, meta) => bootstrapLog("info", msg, meta) },
-    dbExecutor,
-    adaptersRoot,
-);
-bootstrapLog("info", "Database schema initialised.");
-
-const preferenceStore = new DbUserPreferenceStore(dbExecutor, dbType);
-await preferenceStore.ensureSchema();
-bootstrapLog("info", "Preference schema ensured.");
-if (dbType === "postgresql") {
-    await dbExecutor.execute(
-        "INSERT INTO modules (module_id, enabled) VALUES ($1, $2) ON CONFLICT (module_id) DO NOTHING",
-        ["cognis-core", true],
-    );
-} else if (dbType === "sqlite") {
-    await dbExecutor.execute(
-        "INSERT OR IGNORE INTO modules (module_id, enabled) VALUES (?, ?)",
-        ["cognis-core", true],
-    );
-} else {
-    await dbExecutor.execute(
-        "INSERT IGNORE INTO modules (module_id, enabled) VALUES (?, ?)",
-        ["cognis-core", true],
-    );
-}
-bootstrapLog("info", "Core module baseline state ensured.");
-
-const adminState = await dbExecutor.execute(
-    dbType === "postgresql"
-        ? "SELECT state_value FROM bootstrap_state WHERE state_key = $1"
-        : "SELECT state_value FROM bootstrap_state WHERE state_key = ?",
-    ["default_admin_initialized"],
-);
-const adminInitialized = adminState.rows?.[0]?.state_value === "true";
+bootstrapLog("info", "Starting Cognis API bootstrap.", { host, port });
 
 const cliTokenPath =
     process.env.COGNIS_CLI_TOKEN_PATH ?? "/app/config/cli-access.token";
@@ -191,11 +144,7 @@ const gatewaysRoot =
     process.env.COGNIS_GATEWAYS_ROOT ??
     path.resolve(process.cwd(), "src", "gateways");
 
-capabilities.contribute("preferences:store", preferenceStore);
-
 const requiredGatewayIds = await gatewayService.bootstrap(gatewaysRoot, {
-    dbExecutor,
-    dbType,
     adaptersRoot,
     routeRegistry,
     gatewayRegistry,
@@ -211,7 +160,6 @@ await log("info", "Gateway bootstrap complete.", {
     requiredIds: requiredGatewayIds,
 });
 
-// Verify all required gateways initialized before the server starts.
 try {
     gatewayService.assertRequiredInitialized(requiredGatewayIds);
 } catch (err) {
@@ -223,6 +171,15 @@ try {
     process.exit(1);
 }
 
+const dbExecutor = capabilities.get<DbExecutor>("db:executor")!;
+const dbDialect = capabilities.get<DbDialectHelper>("db:dialect")!;
+
+const adminStateResult = await dbExecutor.execute(
+    "SELECT state_value FROM bootstrap_state WHERE state_key = ?",
+    ["default_admin_initialized"],
+);
+const adminInitialized = adminStateResult.rows?.[0]?.state_value === "true";
+
 const createLocalAdmin = capabilities.get<
     (username: string, password: string) => Promise<void>
 >("auth:createLocalAdmin");
@@ -231,22 +188,12 @@ if (!adminInitialized && createLocalAdmin) {
     const { randomBytes } = await import("node:crypto");
     const adminPassword = randomBytes(12).toString("base64url");
     await createLocalAdmin("admin", adminPassword);
-    if (dbType === "postgresql") {
-        await dbExecutor.execute(
-            "INSERT INTO bootstrap_state (state_key, state_value) VALUES ($1, $2) ON CONFLICT (state_key) DO UPDATE SET state_value = EXCLUDED.state_value",
-            ["default_admin_initialized", "true"],
-        );
-    } else if (dbType === "sqlite") {
-        await dbExecutor.execute(
-            "INSERT INTO bootstrap_state (state_key, state_value) VALUES (?, ?) ON CONFLICT(state_key) DO UPDATE SET state_value = excluded.state_value",
-            ["default_admin_initialized", "true"],
-        );
-    } else {
-        await dbExecutor.execute(
-            "INSERT INTO bootstrap_state (state_key, state_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE state_value = VALUES(state_value)",
-            ["default_admin_initialized", "true"],
-        );
-    }
+    await dbDialect.upsert(
+        "bootstrap_state",
+        "state_key",
+        "default_admin_initialized",
+        { state_value: "true" },
+    );
     await log("warn", "Default admin account created.", {
         username: "admin",
         generatedPassword: adminPassword,
@@ -260,8 +207,6 @@ if (!adminInitialized && createLocalAdmin) {
     await log("info", "Default admin bootstrap skipped (already initialized).");
 }
 
-// If a profile-creation capability was contributed, create the initial admin
-// profile now that all gateway schemas are ready.
 const createProfile = capabilities.get<
     (accountId: string, handle: string, role?: string) => Promise<void>
 >("profile:createProfile");
@@ -270,6 +215,8 @@ if (!adminInitialized && createProfile) {
 }
 
 const accountStore = capabilities.get<LocalAccountStore>("auth:accountStore");
+const preferenceStore =
+    capabilities.get<UserPreferenceStore>("preferences:store");
 
 const server = buildServer({
     moduleRuntimeGateway: runtime,
@@ -293,24 +240,7 @@ const server = buildServer({
         }));
     },
     persistModuleState: async (moduleId, enabled) => {
-        if (dbType === "postgresql") {
-            await dbExecutor.execute(
-                "INSERT INTO modules (module_id, enabled) VALUES ($1, $2) ON CONFLICT (module_id) DO UPDATE SET enabled = EXCLUDED.enabled",
-                [moduleId, enabled],
-            );
-            return;
-        }
-        if (dbType === "sqlite") {
-            await dbExecutor.execute(
-                "INSERT INTO modules (module_id, enabled) VALUES (?, ?) ON CONFLICT(module_id) DO UPDATE SET enabled = excluded.enabled",
-                [moduleId, enabled],
-            );
-            return;
-        }
-        await dbExecutor.execute(
-            "INSERT INTO modules (module_id, enabled) VALUES (?, ?) ON DUPLICATE KEY UPDATE enabled = VALUES(enabled)",
-            [moduleId, enabled],
-        );
+        await dbDialect.upsert("modules", "module_id", moduleId, { enabled });
     },
     loadGatewayStates: async () => {
         const result = await dbExecutor.execute(
@@ -322,24 +252,9 @@ const server = buildServer({
         }));
     },
     persistGatewayState: async (gatewayId, enabled) => {
-        if (dbType === "postgresql") {
-            await dbExecutor.execute(
-                "INSERT INTO gateways (gateway_id, enabled) VALUES ($1, $2) ON CONFLICT (gateway_id) DO UPDATE SET enabled = EXCLUDED.enabled",
-                [gatewayId, enabled],
-            );
-            return;
-        }
-        if (dbType === "sqlite") {
-            await dbExecutor.execute(
-                "INSERT INTO gateways (gateway_id, enabled) VALUES (?, ?) ON CONFLICT(gateway_id) DO UPDATE SET enabled = excluded.enabled",
-                [gatewayId, enabled],
-            );
-            return;
-        }
-        await dbExecutor.execute(
-            "INSERT INTO gateways (gateway_id, enabled) VALUES (?, ?) ON DUPLICATE KEY UPDATE enabled = VALUES(enabled)",
-            [gatewayId, enabled],
-        );
+        await dbDialect.upsert("gateways", "gateway_id", gatewayId, {
+            enabled,
+        });
     },
     moduleIntegrityChecker: async () => {
         const manifests = await runtime.listManifests();
@@ -385,5 +300,5 @@ const server = buildServer({
     },
 });
 server.listen(port, host, () => {
-    void log("info", "Cognis API listening.", { host, port, dbType });
+    void log("info", "Cognis API listening.", { host, port });
 });

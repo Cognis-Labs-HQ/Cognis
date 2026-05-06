@@ -7,7 +7,26 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Fixed
+### Added
+
+- DB gateway (`src/gateways/db/bootstrap.ts`) now owns executor creation, schema initialisation, and the modules-baseline insert. Contributes `db:executor`, `db:type`, and `db:dialect` to the capability store so all downstream gateways and `main.ts` obtain the executor and dialect helpers without direct adapter imports.
+- `src/gateways/db/executor.ts`: canonical home for `SqliteExecutor`, `PostgresExecutor`, `MariadbExecutor`, `SupportedDbType`, and `createDbExecutor` (moved from `src/adapters/db/reuse/account-store.ts`).
+- `src/gateways/db/init.ts`: canonical home for `initializeDatabaseSchema` and `resolveDbProviderDir` (moved from `src/api/bootstrap/db-init.ts`, which is now a re-export stub for backward compatibility).
+- `DbLocalAccountStore` moved from `src/adapters/db/reuse/account-store.ts` to `src/adapters/auth/local/store.ts` — auth-specific persistence lives with the auth adapter.
+- `src/gateways/auth/reuse/local-account-store.ts`: auth gateway's canonical re-export of the `LocalAccountStore` interface so `gateway.ts` no longer imports across the adapter boundary.
+- Files gateway: contributes `file:write(path, content)` and `file:read(path)` capabilities in addition to `file:gateway`. Manifest updated to `required: true`.
+- Logging gateway: `Logger` class moved from `src/api/logger.ts` to `src/gateways/logging/logger.ts` (owned by the logging gateway). `src/api/logger.ts` is now a re-export stub.
+- Profile gateway bootstrap now creates and contributes `preferences:store`, removing the preference-store creation from `main.ts`.
+- `db:dialect` helper (`DbDialectHelper` interface) contributed by the DB gateway provides dialect-aware `upsert` and `insertIgnore` operations, eliminating all per-dialect SQL branches from `main.ts`.
+
+### Changed
+
+- `GatewayBootstrapContext.dbExecutor` and `.dbType` are now `optional` (`?`) and marked as deprecated. New gateway code should use `ctx.capabilities.get('db:executor')` and `ctx.capabilities.get('db:type')` instead.
+- `main.ts` no longer creates the DB executor, runs schema init, or creates the preference store directly. All of these are now owned by the DB and profile gateways. Admin-state check and bootstrap-state write moved to after `gatewayService.bootstrap()`.
+- `src/api/server.ts` `ApiDependencies.preferenceStore` is now optional.
+- `createUserRoutes` accepts an optional `preferenceStore`; clearing preferences is a no-op when the store is absent.
+- Auth gateway (`gateway.ts`) imports `LocalAccountStore` from `./reuse/local-account-store.ts` instead of from `../../adapters/auth/local/auth-adapter.ts`.
+- Auth gateway bootstrap reads the DB executor from `ctx.capabilities.get('db:executor')` with fallback to `ctx.dbExecutor` for test backward compatibility.
 
 - CI: corrected tsconfig project reference paths in `src/adapters/db/*/tsconfig.json` and `src/adapters/file/local/tsconfig.json` from `../../core` to `../../../core` so they resolve to `src/core` rather than the non-existent `src/adapters/core`. ([9080e62](https://github.com/le-firehawk/Cognis/commit/9080e62))
 - Auth gateway: `/api/v1/auth/login` with `provider: "oidc"/"ldap"/"saml"` could authenticate through a registered-but-disabled adapter. The login handler now uses `getEnabledAdapter()` so only adapters in the enabled set are eligible. ([eb5d3f1](https://github.com/le-firehawk/Cognis/commit/eb5d3f1))
@@ -33,7 +52,6 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - `POST /api/v1/gateways/:id/enable` no longer returns 403 for required gateways. Only `disable` is blocked for required gateways; `enable` is permitted so that a required gateway that ended up persisted as disabled (e.g. due to an earlier state bug) can be recovered through the admin UI without a server restart.
 - Auth adapter config popups in the Components panel no longer fail silently. The root cause was that auth adapter info uses `id`/`enabled` fields while the main panel expected `senderId`/`active`, causing the popup config URL to use `"undefined"` as the adapter ID.
 - Local adapter now correctly shows as locked (toggle disabled) in the main Components panel.
-
 
 - ([5a975f8](https://github.com/le-firehawk/Cognis/commit/5a975f8)) `uiDir` in auth, notify, and profile gateway bootstraps still referenced the removed `src/api/gateways/` path; `/static/gateways/{auth,notify}/admin-section.js` and `/static/gateways/profile/navbar.js` returned 404
 

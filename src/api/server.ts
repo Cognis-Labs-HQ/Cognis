@@ -21,7 +21,7 @@ import type { UIRegistry } from "./ui-registry.js";
 export interface ApiDependencies {
     moduleRuntimeGateway: ModuleRuntimeGateway;
     accountStore?: LocalAccountStore;
-    preferenceStore: UserPreferenceStore;
+    preferenceStore?: UserPreferenceStore;
     routeRegistry?: RouteRegistry;
     gatewayRegistry?: GatewayRegistry;
     uiRegistry?: UIRegistry;

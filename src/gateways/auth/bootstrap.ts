@@ -9,10 +9,12 @@ import {
     issueAccessToken,
     type AccessRole,
 } from "../../api/auth/access-tokens.js";
-import { DbLocalAccountStore } from "../../adapters/db/reuse/account-store.js";
+import { DbLocalAccountStore } from "../../adapters/auth/local/store.js";
 import { CoreAuthGateway } from "./gateway.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthProviderAdapter } from "./gateway.js";
+import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { SupportedDbType } from "../db/executor.js";
 
 function resolveRole(
     sessionRole: string | undefined,
@@ -30,10 +32,17 @@ function resolveRole(
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const accountStore = new DbLocalAccountStore(ctx.dbExecutor, ctx.dbType);
+    const dbExecutor = (ctx.capabilities.get<DbExecutor>("db:executor") ??
+        ctx.dbExecutor)!;
+    const dbType =
+        ctx.capabilities.get<SupportedDbType>("db:type") ??
+        ctx.dbType ??
+        "sqlite";
+
+    const accountStore = new DbLocalAccountStore(dbExecutor, dbType);
     await accountStore.ensureSchema();
 
-    const authGateway = new CoreAuthGateway(ctx.dbExecutor, ctx.dbType);
+    const authGateway = new CoreAuthGateway(dbExecutor, dbType);
     await authGateway.ensureSchema();
 
     const localAdapterPath = path.resolve(
@@ -62,7 +71,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createAuthGatewayRoutes(authGateway, accountStore, ctx.capabilities),
         "auth",
     );
-    ctx.routeRegistry.register(createAdapterAdminRoutes("auth", authGateway), "auth");
+    ctx.routeRegistry.register(
+        createAdapterAdminRoutes("auth", authGateway),
+        "auth",
+    );
 
     ctx.gatewayRegistry.register({
         id: "auth",
@@ -159,7 +171,11 @@ function createAuthGatewayRoutes(
                 false,
             );
             const createProfile = capabilities.get<
-                (accountId: string, handle: string, role?: string) => Promise<void>
+                (
+                    accountId: string,
+                    handle: string,
+                    role?: string,
+                ) => Promise<void>
             >("profile:createProfile");
             await createProfile?.(username, username, "user");
             res.writeHead(201, { "content-type": "application/json" });
@@ -221,7 +237,11 @@ function createAuthGatewayRoutes(
                     .catch(() => undefined);
             }
             const createProfile = capabilities.get<
-                (accountId: string, handle: string, role?: string) => Promise<void>
+                (
+                    accountId: string,
+                    handle: string,
+                    role?: string,
+                ) => Promise<void>
             >("profile:createProfile");
             await createProfile?.(session.accountId, session.accountId, role);
             res.writeHead(200, {

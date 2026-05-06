@@ -2,10 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { DbProfileStore } from "../../../../adapters/db/reuse/profile-store.js";
-import {
-    DbLocalAccountStore,
-    SqliteExecutor,
-} from "../../../../adapters/db/reuse/account-store.js";
+import { SqliteExecutor } from "../../../../gateways/db/executor.js";
+import { DbLocalAccountStore } from "../../../../adapters/auth/local/store.js";
 import { createFileRoutes } from "../files.js";
 import { issueAccessToken } from "../../../../api/auth/access-tokens.js";
 import { makeTempDb } from "./helpers.js";

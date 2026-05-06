@@ -8,7 +8,7 @@ const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin"]);
 
 export function createUserRoutes(
     accountStore: LocalAccountStore,
-    preferenceStore: UserPreferenceStore,
+    preferenceStore: UserPreferenceStore | undefined,
     setProfileRole?: (handle: string, role: string) => Promise<void>,
 ) {
     return async (
@@ -147,7 +147,9 @@ export function createUserRoutes(
         }
 
         if (req.method === "POST" && action === "preferences/clear") {
-            await preferenceStore.clearUser(username);
+            if (preferenceStore) {
+                await preferenceStore.clearUser(username);
+            }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { cleared: true } }));
             return true;

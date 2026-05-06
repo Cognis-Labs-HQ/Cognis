@@ -1,4 +1,5 @@
 import { DbProfileStore } from "../../adapters/db/reuse/profile-store.js";
+import { DbUserPreferenceStore } from "../../adapters/db/reuse/preference-store.js";
 import { createProfileRoutes } from "../../api/routes/profile/index.js";
 import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
@@ -17,6 +18,8 @@ import type { AccountRole } from "../../adapters/db/reuse/profile-store.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { SupportedDbType } from "../db/executor.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
 
@@ -112,8 +115,19 @@ export function createProfilePageRoutes(isGatewayEnabled?: () => boolean) {
  * File routes are only registered when file:gateway is present.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const profileStore = new DbProfileStore(ctx.dbExecutor, ctx.dbType);
+    const dbExecutor = (ctx.capabilities.get<DbExecutor>("db:executor") ??
+        ctx.dbExecutor)!;
+    const dbType =
+        ctx.capabilities.get<SupportedDbType>("db:type") ??
+        ctx.dbType ??
+        "sqlite";
+
+    const profileStore = new DbProfileStore(dbExecutor, dbType);
     await profileStore.ensureSchema();
+
+    const prefStore = new DbUserPreferenceStore(dbExecutor, dbType);
+    await prefStore.ensureSchema();
+    ctx.capabilities.contribute("preferences:store", prefStore);
 
     ctx.log?.("info", "Profile gateway: schema ready.");
 
@@ -152,7 +166,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
 
     if (fileGateway) {
-        ctx.routeRegistry.register(createFileRoutes(profileStore, fileGateway), "profile");
+        ctx.routeRegistry.register(
+            createFileRoutes(profileStore, fileGateway),
+            "profile",
+        );
         ctx.log?.("info", "Profile gateway: file routes registered.");
     } else {
         ctx.log?.(
@@ -170,11 +187,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.routeRegistry.register(createSocialRoutes(profileStore), "profile");
     ctx.routeRegistry.register(createPostRoutes(profileStore), "profile");
 
-    const prefStore =
-        ctx.capabilities.get<UserPreferenceStore>("preferences:store");
-    if (prefStore) {
-        ctx.routeRegistry.register(createPreferencesRoutes(prefStore), "profile");
-    }
+    ctx.routeRegistry.register(createPreferencesRoutes(prefStore), "profile");
 
     ctx.gatewayRegistry.register({
         id: "profile",
