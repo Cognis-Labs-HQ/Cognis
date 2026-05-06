@@ -39,14 +39,18 @@ function renderSidebarLinks(items) {
         .join("");
 }
 
-async function showDoc(slug) {
+async function showDoc(slug, pushHistory = true) {
     const response = await apiFetch(`/api/v1/docs/${slug}`);
     const payload = await response.json();
     root.querySelector("#doc").innerHTML = renderMarkdown(
         payload.data.markdown,
     );
 
-    window.location.hash = encodeURIComponent(slug);
+    if (pushHistory) {
+        window.history.pushState({ slug }, "", `/docs/${slug}`);
+    } else {
+        window.history.replaceState({ slug }, "", `/docs/${slug}`);
+    }
 
     root.querySelectorAll("[data-slug]").forEach((button) => {
         const isActive = button.dataset.slug === slug;
@@ -87,6 +91,15 @@ const composer = createPageComposer(root, {
 });
 await composer.init();
 
+function resolveDefaultSlug(subpath) {
+    if (subpath && docs.find((doc) => doc.slug === subpath)) return subpath;
+    return (
+        docs.find((doc) => doc.slug === "docs/overview")?.slug ??
+        docs.find((doc) => doc.slug.endsWith("/overview"))?.slug ??
+        docs[0]?.slug
+    );
+}
+
 root.querySelectorAll("[data-slug]").forEach((button) => {
     button.addEventListener("click", () => showDoc(button.dataset.slug));
 });
@@ -105,12 +118,19 @@ root.addEventListener("click", async (event) => {
     await showDoc(slug);
 });
 
-const defaultDoc = (() => {
-    const hash = window.location.hash.slice(1);
-    if (hash) {
-        const slug = decodeURIComponent(hash);
-        if (docs.find((doc) => doc.slug === slug)) return slug;
+window.addEventListener("popstate", (event) => {
+    const slug = event.state?.slug;
+    if (slug) {
+        showDoc(slug, false);
+    } else {
+        const subpath = window.location.pathname.replace(/^\/docs\/?/, "");
+        const fallback = resolveDefaultSlug(subpath);
+        if (fallback) showDoc(fallback, false);
     }
-    return docs.find((doc) => doc.slug === "overview")?.slug ?? docs[0]?.slug;
+});
+
+const defaultDoc = (() => {
+    const subpath = window.location.pathname.replace(/^\/docs\/?/, "");
+    return resolveDefaultSlug(subpath);
 })();
-if (defaultDoc) await showDoc(defaultDoc);
+if (defaultDoc) await showDoc(defaultDoc, false);

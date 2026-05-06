@@ -152,7 +152,7 @@ export function createUiRoutes(
             return true;
         }
 
-        if (url.pathname === "/docs") {
+        if (url.pathname === "/docs" || url.pathname.startsWith("/docs/")) {
             if (!getCookieSession(req)) {
                 res.writeHead(302, { location: "/login" });
                 res.end();
