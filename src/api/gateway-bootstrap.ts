@@ -1,4 +1,4 @@
-import type { DbExecutor } from "./reuse/db-executor.js";
+import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
 import type { SupportedDbType } from "../adapters/db/reuse/account-store.js";
 import type { RouteRegistry } from "./route-registry.js";
 import type { UIRegistry } from "./ui-registry.js";

@@ -1,10 +1,39 @@
+/**
+ * Shared DB-adapter utilities used across all three database adapters
+ * (SQLite, PostgreSQL, MariaDB).
+ *
+ * Exports:
+ *   DbExecutor        — re-exported from the DB gateway's reuse for
+ *                       convenience; it is the abstract executor contract.
+ *   SupportedDbType   — union of the three supported provider strings.
+ *   SqliteExecutor    — concrete SQLite driver (lazy-loaded).
+ *   PostgresExecutor  — concrete PostgreSQL driver.
+ *   MariadbExecutor   — concrete MariaDB/MySQL driver.
+ *   createDbExecutor  — factory that reads DB_TYPE / SQLITE_PATH /
+ *                       DATABASE_URL from the environment.
+ *   DbLocalAccountStore — DB-backed implementation of LocalAccountStore;
+ *                         used by the Auth gateway bootstrap.
+ *
+ * Cross-boundary note:
+ *   This file imports LocalAccountStore from the local auth adapter
+ *   (src/adapters/auth/local/auth-adapter.ts) so that DbLocalAccountStore
+ *   can satisfy that interface. If you add a new auth adapter that requires
+ *   its own store interface, create a sibling store file in this directory
+ *   and do not modify this one.
+ *
+ * Adding a new DB provider?
+ *   1. Add the type string to SupportedDbType.
+ *   2. Implement DbExecutor in a new class below.
+ *   3. Handle the new type in createDbExecutor().
+ *   4. Add SQL init/migrate scripts under src/adapters/db/<provider>/sql/.
+ */
 import { createHash } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import type { AuthContext } from "@cognis/core";
 import type { LocalAccountStore } from "../../auth/local/auth-adapter.js";
-export type { DbExecutor } from "../../../api/reuse/db-executor.js";
-import type { DbExecutor } from "../../../api/reuse/db-executor.js";
+export type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 
 export type SupportedDbType = "sqlite" | "postgresql" | "mariadb";
 

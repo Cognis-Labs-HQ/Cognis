@@ -27,7 +27,7 @@
 
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import type { DbExecutor } from "../reuse/db-executor.js";
+import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
 import { sha256Of } from "../reuse/crypto.js";
 
 /** Minimal logging interface required by the database initializer. */
