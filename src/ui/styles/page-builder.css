@@ -677,7 +677,7 @@ code {
     background: var(--theme-toggle-bg-hover);
 }
 
-body.composer-theme-hidden .composer-edit-toggle {
+body:not(:has(#theme-toggle)) .composer-edit-toggle {
     bottom: 18px;
 }
 

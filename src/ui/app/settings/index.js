@@ -65,16 +65,6 @@ let changesBar;
 let generalPrefs;
 let notifPrefs;
 
-function updateThemeToggleForSettings() {
-    const themeToggle = document.querySelector("#theme-toggle");
-    if (themeToggle) themeToggle.hidden = true;
-}
-
-function showThemeToggle() {
-    const themeToggle = document.querySelector("#theme-toggle");
-    if (themeToggle) themeToggle.hidden = false;
-}
-
 function initThemePrefs({ onDirtyChange }) {
     let currentMode = savedMode;
 
@@ -197,7 +187,6 @@ const elements = [
                     onDirtyChange: (dirty) =>
                         changesBar?.markDirty("theme", dirty),
                 });
-                updateThemeToggleForSettings();
             },
         },
     },
@@ -228,7 +217,6 @@ const elements = [
                 },
             ],
             onRender: () => {
-                showThemeToggle();
                 if (!languagePrefs) {
                     languagePrefs = initLanguagePrefs(root, languagePriority, {
                         onDirtyChange: (dirty) =>
@@ -256,7 +244,6 @@ const elements = [
                 },
             ],
             onRender: () => {
-                showThemeToggle();
                 const account = localStorage.getItem("cognis_account") ?? "";
                 notifPrefs = initNotificationPrefs(root, {
                     i18n,
@@ -287,7 +274,6 @@ const elements = [
                 },
             ],
             onRender: () => {
-                showThemeToggle();
                 const prefsDumpEl = root.querySelector("#prefs-dump");
                 if (prefsDumpEl) {
                     prefsDumpEl.textContent =
@@ -306,6 +292,7 @@ const composer = createPageComposer(root, {
     elements,
     preferenceKey: "settings-layout",
     i18n,
+    showThemeToggle: false,
     pageContext: {
         title: i18n.t("ui.app.settings.page_title"),
         subtitle: i18n.t("ui.app.settings.page_subtitle"),
@@ -337,9 +324,6 @@ const composer = createPageComposer(root, {
     `,
         },
     ],
-    onRender: () => {
-        updateThemeToggleForSettings();
-    },
 });
 await composer.init();
 

@@ -83,6 +83,9 @@
  *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
  *   subPageNavigation?: boolean,
  *   columns?: number,
+ *   showTopbar?: boolean,
+ *   showNavbar?: boolean,
+ *   showThemeToggle?: boolean,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void }}
  */
@@ -104,6 +107,9 @@ export function createPageComposer(
         floatingMenu = [],
         subPageNavigation = false,
         columns = 1,
+        showTopbar = true,
+        showNavbar = true,
+        showThemeToggle = true,
     },
 ) {
     function escapeHtml(value) {
@@ -2432,6 +2438,9 @@ export function createPageComposer(
             toolbar: toolbarHtml,
             floatingToolbar: floatingHtml,
             content: "",
+            showTopbar,
+            showNavbar,
+            showThemeToggle,
         });
 
         if (Array.isArray(floatingMenu) && floatingMenu.length > 0) {
