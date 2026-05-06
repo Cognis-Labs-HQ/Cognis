@@ -1,0 +1,15 @@
+.docs-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.docs-nav-group {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.docs-nav-top {
+    margin-bottom: 8px;
+}
