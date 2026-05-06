@@ -1,6 +1,6 @@
 :root {
     --app-font: Orbitron;
-    --app-font-size: 1.17rem;
+    --app-font-size: 1rem;
     --bg:
         radial-gradient(
             circle at top right,
@@ -96,6 +96,14 @@ body[data-theme="light"] {
 
 * {
     box-sizing: border-box;
+}
+
+input,
+select,
+textarea,
+button {
+    font-family: inherit;
+    font-size: inherit;
 }
 
 body {

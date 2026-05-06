@@ -75,6 +75,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
             throw new Error(payload?.error?.code ?? "already_verified");
         }
         if (res.status === 429) throw new Error("rate_limited");
+        if (res.status === 503) throw new Error("smtp_unavailable");
         if (!res.ok) throw new Error("add_failed");
         const payload = await res.json();
         return payload.data ?? {};
@@ -408,6 +409,10 @@ export function initGeneralPrefs(root, { i18n, username }) {
                                 "ui.app.settings.emails_verify_rate_limited",
                             ),
                         );
+                    } else if (code === "smtp_unavailable") {
+                        showStatus(
+                            i18n.t("ui.app.settings.emails_verify_unavailable"),
+                        );
                     } else {
                         showStatus(i18n.t("ui.app.settings.emails_add_failed"));
                     }
@@ -422,6 +427,10 @@ export function initGeneralPrefs(root, { i18n, username }) {
             await loadEmails();
             renderEmailList();
             bindEmailActions();
+        },
+        async refresh() {
+            await loadEmails();
+            renderEmailList();
         },
     };
 }
