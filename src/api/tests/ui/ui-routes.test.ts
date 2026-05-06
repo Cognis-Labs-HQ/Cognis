@@ -210,3 +210,113 @@ test("core ui routes do not serve /profile (owned by profile gateway)", async ()
         "/profile route should not be handled by core UI routes",
     );
 });
+
+import { UIRegistry as StaticUIRegistry } from "../../ui-registry.js";
+import path from "node:path";
+
+test("GET /static/gateways/:id/:file serves file from registered static dir", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    const authUiDir = path.resolve(process.cwd(), "src", "gateways", "auth", "ui");
+    uiRegistry.registerStaticDir("auth", authUiDir);
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/gateways/auth/admin-section.js"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    assert.equal(recorder.headers["content-type"], "text/javascript; charset=utf-8");
+    assert.match(recorder.body, /createAdminSection/);
+});
+
+test("GET /static/gateways/:id/:file returns 404 when static dir not registered", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/gateways/auth/admin-section.js"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 404);
+});
+
+test("GET /static/gateways/notify/admin-section.js serves notify gateway admin UI", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    const notifyUiDir = path.resolve(process.cwd(), "src", "gateways", "notify", "ui");
+    uiRegistry.registerStaticDir("notify", notifyUiDir);
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/gateways/notify/admin-section.js"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    assert.equal(recorder.headers["content-type"], "text/javascript; charset=utf-8");
+    assert.match(recorder.body, /createAdminSection/);
+});
+
+test("GET /static/gateways/profile/navbar.js serves profile gateway navbar plugin", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    const profileUiDir = path.resolve(process.cwd(), "src", "gateways", "profile", "ui");
+    uiRegistry.registerStaticDir("profile", profileUiDir);
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/gateways/profile/navbar.js"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    assert.equal(recorder.headers["content-type"], "text/javascript; charset=utf-8");
+    assert.match(recorder.body, /registerAvatarProvider/);
+});
+
+test("GET /api/v1/ui/navbar-plugins returns registered navbar plugins for authenticated user", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    uiRegistry.registerNavbarPlugin({ scriptUrl: "/static/gateways/profile/navbar.js" });
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const userToken = issueAccessToken("u1", "user", 60);
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { method: "GET", headers: { cookie: `cognis_access_token=${userToken}`, authorization: `Bearer ${userToken}` } } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/navbar-plugins"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    const payload = JSON.parse(recorder.body);
+    assert.equal(payload.data.length, 1);
+    assert.equal(payload.data[0].scriptUrl, "/static/gateways/profile/navbar.js");
+});
+
+test("GET /api/v1/ui/navbar-plugins returns 401 for unauthenticated request", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    uiRegistry.registerNavbarPlugin({ scriptUrl: "/static/gateways/profile/navbar.js" });
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    await route(
+        { method: "GET", headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/navbar-plugins"),
+    );
+
+    assert.equal(recorder.status, 401);
+});

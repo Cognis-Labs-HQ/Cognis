@@ -137,3 +137,73 @@ test("gateway adapter route requires admin auth", async () => {
 
     assert.equal(res.status, 401);
 });
+
+import { access } from "node:fs/promises";
+import path from "node:path";
+import { UIRegistry } from "../../../api/ui-registry.js";
+
+test("notify gateway bootstrap registers correct static dir and admin-section.js exists on disk", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, db } =
+        await makeCtx();
+    const uiRegistry = new UIRegistry();
+
+    await bootstrap({
+        dbExecutor: db as any,
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+    });
+
+    const staticDir = uiRegistry.getStaticDir("notify");
+    assert.ok(staticDir, "notify gateway must register a static dir with UIRegistry");
+
+    await assert.doesNotReject(
+        access(staticDir),
+        `static dir must exist on disk: ${staticDir}`,
+    );
+
+    const adminSectionPath = path.join(staticDir, "admin-section.js");
+    await assert.doesNotReject(
+        access(adminSectionPath),
+        `admin-section.js must exist in the registered static dir: ${adminSectionPath}`,
+    );
+});
+
+test("notify gateway bootstrap registers admin section scriptUrl that resolves within static dir", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, db } =
+        await makeCtx();
+    const uiRegistry = new UIRegistry();
+
+    await bootstrap({
+        dbExecutor: db as any,
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+    });
+
+    const sections = uiRegistry.listAdminSections();
+    const notifSection = sections.find((s) => s.id === "notifications");
+    assert.ok(notifSection, "notify gateway must register a 'notifications' admin section");
+
+    const staticDir = uiRegistry.getStaticDir("notify");
+    assert.ok(staticDir, "notify gateway must register a static dir");
+
+    const urlPrefix = "/static/gateways/notify/";
+    assert.ok(
+        notifSection.scriptUrl.startsWith(urlPrefix),
+        `scriptUrl must start with ${urlPrefix}, got: ${notifSection.scriptUrl}`,
+    );
+
+    const filePart = notifSection.scriptUrl.slice(urlPrefix.length);
+    const resolvedPath = path.join(staticDir, filePart);
+    await assert.doesNotReject(
+        access(resolvedPath),
+        `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,
+    );
+});

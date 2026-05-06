@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { access } from "node:fs/promises";
+import path from "node:path";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../api/route-registry.js";
+import { UIRegistry } from "../../../api/ui-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../../../api/auth/access-tokens.js";
 
@@ -209,4 +212,82 @@ test("GET /api/v1/gateways/auth/adapters returns adapter list to admin", async (
     assert.equal(res.status, 200);
     const body = JSON.parse(res.payload) as { data: unknown[] };
     assert.ok(Array.isArray(body.data));
+});
+
+test("auth gateway bootstrap registers correct static dir and admin-section.js exists on disk", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+    });
+
+    const staticDir = uiRegistry.getStaticDir("auth");
+    assert.ok(staticDir, "auth gateway must register a static dir with UIRegistry");
+
+    await assert.doesNotReject(
+        access(staticDir),
+        `static dir must exist on disk: ${staticDir}`,
+    );
+
+    const adminSectionPath = path.join(staticDir, "admin-section.js");
+    await assert.doesNotReject(
+        access(adminSectionPath),
+        `admin-section.js must exist in the registered static dir: ${adminSectionPath}`,
+    );
+});
+
+test("auth gateway bootstrap registers admin section scriptUrl that resolves within static dir", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+    });
+
+    const sections = uiRegistry.listAdminSections();
+    const securitySection = sections.find((s) => s.id === "security");
+    assert.ok(securitySection, "auth gateway must register a 'security' admin section");
+
+    const staticDir = uiRegistry.getStaticDir("auth");
+    assert.ok(staticDir, "auth gateway must register a static dir");
+
+    const urlPrefix = "/static/gateways/auth/";
+    assert.ok(
+        securitySection.scriptUrl.startsWith(urlPrefix),
+        `scriptUrl must start with ${urlPrefix}, got: ${securitySection.scriptUrl}`,
+    );
+
+    const filePart = securitySection.scriptUrl.slice(urlPrefix.length);
+    const resolvedPath = path.join(staticDir, filePart);
+    await assert.doesNotReject(
+        access(resolvedPath),
+        `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,
+    );
 });
