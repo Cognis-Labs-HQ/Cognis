@@ -270,21 +270,65 @@ export function createUserEmailRoutes(
                     );
                     return true;
                 }
+                if (!gateway.canSendVerificationEmail()) {
+                    res.writeHead(503, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "smtp_unavailable",
+                                message:
+                                    "Email verification is not available. Contact your administrator.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+
                 await notifStore.addUserEmail(username, email);
 
-                if (gateway.canSendVerificationEmail()) {
-                    try {
-                        const key = `${username}:${email}`;
-                        const code = tfaService.issueOrGet(key);
-                        const watchToken = verifyTokenService.issueOrGet(key);
-                        const verifyUrl = externalHost
-                            ? `${externalHost}/verify-email?token=${watchToken}`
-                            : undefined;
-                        await gateway.sendVerificationEmail(
-                            email,
-                            code,
-                            verifyUrl,
+                try {
+                    const key = `${username}:${email}`;
+                    const code = tfaService.issueOrGet(key);
+                    const watchToken = verifyTokenService.issueOrGet(key);
+                    const verifyUrl = externalHost
+                        ? `${externalHost}/verify-email?token=${watchToken}`
+                        : undefined;
+                    await gateway.sendVerificationEmail(
+                        email,
+                        code,
+                        verifyUrl,
+                    );
+                    res.writeHead(201, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            data: {
+                                added: true,
+                                pendingVerification: true,
+                                ...(watchToken && { watchToken }),
+                            },
+                        }),
+                    );
+                } catch (err) {
+                    const msg =
+                        err instanceof Error ? err.message : String(err);
+                    if (msg === "smtp_rate_limited") {
+                        res.writeHead(429, {
+                            "content-type": "application/json",
+                        });
+                        res.end(
+                            JSON.stringify({
+                                error: {
+                                    code: "rate_limited",
+                                    message:
+                                        "Verification email sent too recently. Please wait before requesting another.",
+                                },
+                            }),
                         );
+                    } else {
                         res.writeHead(201, {
                             "content-type": "application/json",
                         });
@@ -293,51 +337,11 @@ export function createUserEmailRoutes(
                                 data: {
                                     added: true,
                                     pendingVerification: true,
-                                    ...(watchToken && { watchToken }),
+                                    verificationEmailFailed: true,
                                 },
                             }),
                         );
-                    } catch (err) {
-                        const msg =
-                            err instanceof Error ? err.message : String(err);
-                        if (msg === "smtp_rate_limited") {
-                            res.writeHead(429, {
-                                "content-type": "application/json",
-                            });
-                            res.end(
-                                JSON.stringify({
-                                    error: {
-                                        code: "rate_limited",
-                                        message:
-                                            "Verification email sent too recently. Please wait before requesting another.",
-                                    },
-                                }),
-                            );
-                        } else {
-                            res.writeHead(201, {
-                                "content-type": "application/json",
-                            });
-                            res.end(
-                                JSON.stringify({
-                                    data: {
-                                        added: true,
-                                        pendingVerification: true,
-                                        verificationEmailFailed: true,
-                                    },
-                                }),
-                            );
-                        }
                     }
-                } else {
-                    await notifStore.verifyUserEmail(username, email);
-                    res.writeHead(201, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            data: { added: true, pendingVerification: false },
-                        }),
-                    );
                 }
                 return true;
             }
