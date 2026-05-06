@@ -1,144 +1,180 @@
-# API Component
+# API
 
-## Purpose
+## Overview
 
-`api/` exposes HTTP endpoints that map explicit business intent to core services.
+`src/api/` is the HTTP layer of Cognis. It hosts the Express-compatible Node.js server, the route registry, authentication middleware, and all the thin route handler modules that map incoming HTTP requests to gateway operations. The API layer is intentionally kept thin: route handlers parse and validate input, delegate to gateways, and return a stable response envelope. No route handler holds a direct reference to a database driver or external service SDK.
 
-## Design principles
+The server is assembled from what is present at startup rather than from a hardcoded component list. Gateways register their own routes during bootstrap via `ctx.routeRegistry.register(...)`. The server iterates the registry to build its route table. Removing a gateway removes its routes automatically.
 
-1. **Thin route handlers**: parse -> validate -> delegate -> respond.
-2. **Stable response envelopes**: `{ data }` for success, `{ error }` for failure.
-3. **Gateway-first integration**: route layer never speaks provider SDK directly.
+Authentication uses opaque bearer tokens issued at login. The same token is also set as an HttpOnly cookie (`cognis_access_token`) for server-rendered page guards. A non-expiring CLI bootstrap token is written to disk at startup for trusted local tooling.
 
-## Route groups
+## Responsibilities
+
+- Host the HTTP server and wire the route registry into request handling.
+- Provide `requireAuth` and `getAuthClaims` middleware used by all protected route handlers.
+- Enforce the `{ data }` / `{ error }` response envelope convention.
+- Bootstrap all gateways in dependency order via `src/api/gateway-bootstrap.ts`.
+- Initialize the database schema at startup via `src/api/bootstrap/db-init.ts`.
+- Provide reuse utilities for route handlers: `src/api/reuse/`.
+
+Not responsible for: implementing any domain logic, storing data directly, or knowing which gateways are installed.
+
+## Architecture
+
+### Response envelope
+
+All API responses use one of two shapes:
+
+```json
+{ "data": { ... } }
+```
+
+```json
+{ "error": { "code": "forbidden", "message": "Requires admin scope" } }
+```
+
+Internal error details are never sent to the client. Server-side logging captures the full error context.
+
+### Auth model
+
+Obtain a token via `POST /api/v1/auth/login`. The response includes `data.token`. Send the token as `Authorization: Bearer <token>` on subsequent requests. The login endpoint also sets `cognis_access_token` as an HttpOnly cookie for server-rendered route guards.
+
+Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200`, twelve hours). At startup the server writes a non-expiring CLI bootstrap token to `COGNIS_CLI_TOKEN_PATH` (default `/app/config/cli-access.token`, mode `0600`) for trusted local CLI usage.
+
+### Persistence defaults
+
+| `DB_TYPE` | Backend | Connection |
+| --------- | ------- | ---------- |
+| `sqlite` (default) | SQLite | File at `SQLITE_PATH` (default `./data/cognis.sqlite`) |
+| `postgresql` | PostgreSQL | `DATABASE_URL` required |
+| `mariadb` | MariaDB | `DATABASE_URL` required |
+
+### Key source locations
+
+| Path | Purpose |
+| ---- | ------- |
+| `src/api/main.ts` | Server entry point |
+| `src/api/server.ts` | HTTP server setup and route dispatch |
+| `src/api/route-registry.ts` | Route registry used by gateways to self-register |
+| `src/api/gateway-bootstrap.ts` | Loads and bootstraps all gateways |
+| `src/api/auth/guard.ts` | `requireAuth`, `getAuthClaims` middleware |
+| `src/api/auth/access-tokens.ts` | Token issuance and validation |
+| `src/api/bootstrap/db-init.ts` | Schema initialization at startup |
+| `src/api/reuse/` | Shared utilities (crypto, JSON reading, store helpers) |
+
+## Configuration
+
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `DB_TYPE` | `sqlite` | Database backend: `sqlite`, `postgresql`, or `mariadb` |
+| `DATABASE_URL` | — | Connection string for PostgreSQL or MariaDB |
+| `SQLITE_PATH` | `./data/cognis.sqlite` | SQLite file path (only when `DB_TYPE=sqlite`) |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200` | Bearer token lifetime in seconds |
+| `COGNIS_CLI_TOKEN_PATH` | `/app/config/cli-access.token` | Path for the CLI bootstrap token |
+| `COGNIS_GATEWAYS_ROOT` | `src/gateways` | Root directory for gateway discovery |
+| `COGNIS_ADAPTERS_ROOT` | `src/adapters` | Root directory for adapter discovery |
+| `COGNIS_MODULES_ROOT` | `src/modules` | Root directory for module discovery |
+| `PORT` | `3000` | HTTP port |
+| `LISTEN_HOST` | `0.0.0.0` | Bind address |
+
+## API Routes
 
 ### System
 
-- `GET /api/v1/system/health`
-- `GET /api/v1/system/healthcheck`
-- `GET /api/v1/system/ui-config`
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `GET` | `/api/v1/system/health` | Full health status with uptime | None |
+| `GET` | `/api/v1/system/healthcheck` | Minimal liveness probe | None |
+| `GET` | `/api/v1/system/ui-config` | UI configuration object | None |
 
 ### Auth
 
-- `POST /api/v1/auth/register` — self-register; issues `user` role by default
-- `POST /api/v1/auth/login` — returns a bearer token
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `GET` | `/api/v1/auth/login-methods` | List enabled auth providers | None |
+| `POST` | `/api/v1/auth/register` | Self-register; issues `user` role | None |
+| `POST` | `/api/v1/auth/login` | Authenticate; returns bearer token | None |
 
 ### Modules
 
-- `POST /api/v1/modules/:id/enable`
-- `POST /api/v1/modules/:id/disable`
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `GET` | `/api/v1/modules` | List all modules | Bearer |
+| `POST` | `/api/v1/modules/:id/enable` | Enable a module | Admin |
+| `POST` | `/api/v1/modules/:id/disable` | Disable a module | Admin |
 
-### Gateways (admin)
+### Gateways
 
-- `GET /api/v1/gateways` — list all registered gateways (id, name, version, description, requires, status, hasAdapters)
-- `GET /api/v1/gateways/:id` — single gateway manifest including `status`
-- `POST /api/v1/gateways/:id/enable` — mark gateway as active
-- `POST /api/v1/gateways/:id/disable` — mark gateway as disabled
-- `GET /api/v1/admin/sections` — admin UI sections contributed by gateways via `UIRegistry`
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `GET` | `/api/v1/gateways` | List all registered gateways | Admin |
+| `GET` | `/api/v1/gateways/:id` | Single gateway manifest | Admin |
+| `POST` | `/api/v1/gateways/:id/enable` | Mark gateway active | Admin |
+| `POST` | `/api/v1/gateways/:id/disable` | Mark gateway disabled | Admin |
+| `GET` | `/api/v1/admin/sections` | Admin UI sections from gateways | Admin |
 
 ### UI extensions
 
-- `GET /api/v1/ui/page-extensions/:pageId` — page elements contributed by gateways for the named page (user auth); used by core pages to load gateway-contributed UI modules dynamically
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `GET` | `/api/v1/ui/page-extensions/:pageId` | Page elements contributed by gateways | Bearer |
 
 ### Docs
 
-- `GET /api/v1/docs`
-- `GET /api/v1/docs/:slugOrTreePath`
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `GET` | `/api/v1/docs` | List all available doc slugs | None |
+| `GET` | `/api/v1/docs/:slugOrTreePath` | Retrieve a single doc by slug | None |
 
 ### Profile
 
-Requires a valid bearer token for all endpoints.
-
-- `GET /api/v1/profile/ping` — capability check; returns `{ available: true }` if the profile gateway is active
-- `GET /api/v1/profile` — own profile (handle, displayName, bio, location, website, visibility, counts)
-- `PATCH /api/v1/profile` — update own profile fields (displayName, bio, location, website, visibility)
-- `PUT /api/v1/profile/avatar` — upload avatar; accepted types: jpeg, png, webp; size capped by image limit; returns `503` if file storage is unavailable
-- `DELETE /api/v1/profile/avatar` — remove own avatar
-- `PUT /api/v1/profile/banner` — upload banner; accepted types: jpeg, png, webp, gif; size capped by image limit; returns `503` if file storage is unavailable
-- `DELETE /api/v1/profile/banner` — remove own banner
-- `GET /api/v1/users/:handle/profile` — public profile; gated by account visibility and block state
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `GET` | `/api/v1/profile/ping` | Capability check | Bearer |
+| `GET` | `/api/v1/profile` | Own profile | Bearer |
+| `PATCH` | `/api/v1/profile` | Update own profile fields | Bearer |
+| `PUT` | `/api/v1/profile/avatar` | Upload avatar | Bearer |
+| `DELETE` | `/api/v1/profile/avatar` | Remove own avatar | Bearer |
+| `PUT` | `/api/v1/profile/banner` | Upload banner | Bearer |
+| `DELETE` | `/api/v1/profile/banner` | Remove own banner | Bearer |
+| `GET` | `/api/v1/users/:handle/profile` | Public profile (gated by visibility) | Bearer |
 
 ### Social graph
 
-Requires a valid bearer token for all endpoints.
-
-- `POST /api/v1/users/:handle/follow` — follow a user (blocked callers and hidden targets get 404)
-- `DELETE /api/v1/users/:handle/follow` — unfollow
-- `POST /api/v1/users/:handle/block` — block a user (removes mutual follows, caller is hidden to blockee)
-- `DELETE /api/v1/users/:handle/block` — unblock
-- `GET /api/v1/users/:handle/followers` — follower list (gated by visibility; `friends` tier hides list to non-followers)
-- `GET /api/v1/users/:handle/following` — following list (same gating as followers)
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `POST` | `/api/v1/users/:handle/follow` | Follow a user | Bearer |
+| `DELETE` | `/api/v1/users/:handle/follow` | Unfollow | Bearer |
+| `POST` | `/api/v1/users/:handle/block` | Block a user | Bearer |
+| `DELETE` | `/api/v1/users/:handle/block` | Unblock | Bearer |
+| `GET` | `/api/v1/users/:handle/followers` | Follower list (gated by visibility) | Bearer |
+| `GET` | `/api/v1/users/:handle/following` | Following list (gated by visibility) | Bearer |
 
 ### Posts
 
-Requires a valid bearer token for all endpoints.
-
-- `POST /api/v1/posts` — create a post; `hidden` users are rejected (403); visibility values: `only_me | private | friends | community`
-- `GET /api/v1/posts` — list own posts
-- `DELETE /api/v1/posts/:id` — delete a post; owner, moderator, or admin only
-- `GET /api/v1/users/:handle/posts` — list a user's posts; filtered by account visibility and per-post visibility; blocks return 404
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `POST` | `/api/v1/posts` | Create post | Bearer |
+| `GET` | `/api/v1/posts` | List own posts | Bearer |
+| `DELETE` | `/api/v1/posts/:id` | Delete post (owner, moderator, or admin) | Bearer |
+| `GET` | `/api/v1/users/:handle/posts` | List a user's posts | Bearer |
 
 ### Files
 
-Requires a valid bearer token for all endpoints.
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `PUT` | `/api/v1/files/:bucket/:key` | Upload a file | Bearer |
+| `GET` | `/api/v1/files/:bucket/:key` | Download a file | Bearer |
+| `DELETE` | `/api/v1/files/:bucket/:key` | Delete a file | Admin |
+| `GET` | `/api/v1/admin/file-limits` | List per-category size limits | Admin |
+| `PUT` | `/api/v1/admin/file-limits/:category` | Set a size limit | Admin |
 
-- `PUT /api/v1/files/:bucket/:key` — upload a file; size enforced against per-category limit (image / video / text / global)
-- `GET /api/v1/files/:bucket/:key` — download a file
-- `DELETE /api/v1/files/:bucket/:key` — delete a file; admin only
+### Users (admin)
 
-### Admin – file limits
-
-Requires admin role.
-
-- `GET /api/v1/admin/file-limits` — list all per-category size limits
-- `PUT /api/v1/admin/file-limits/:category` — set a size limit; body: `{ "maxBytes": <positive integer> }`
-
-## Visibility model
-
-Account-level visibility controls API exposure of a profile and its content:
-
-| Tier               | Profile visible to         | Counts/posts visible to                 |
-| ------------------ | -------------------------- | --------------------------------------- |
-| `hidden` (default) | nobody (except self/admin) | — (cannot post; attempting returns 403) |
-| `private`          | existing followers only    | followers only                          |
-| `friends`          | anyone with an account     | followers only                          |
-| `community`        | anyone with an account     | anyone with an account                  |
-
-Posts carry their own visibility (`only_me | private | friends | community`) which is further capped by the account tier. Blocked callers receive 404 on any endpoint targeting the blocker.
-
-## Error response shape
-
-```json
-{
-    "error": {
-        "code": "forbidden",
-        "message": "Requires admin scope"
-    }
-}
-```
-
-## API auth model
-
-- API authorization uses **opaque bearer access tokens** only for API routes.
-- Obtain a token with `POST /api/v1/auth/login`; response includes `data.token`.
-- Send tokens as `Authorization: Bearer <token>`.
-- Login also sets `cognis_access_token` as an HttpOnly cookie for server-rendered UI route guards.
-- Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200`, 12 hours).
-- API startup mints a non-expiring CLI bootstrap token at `/var/run/cognis/cli-access.token` (permission mode `0600`) for trusted local CLI usage.
-
-## Persistence defaults
-
-- Supported account persistence backends: `sqlite`, `postgresql`, `mariadb`.
-- Default `DB_TYPE` is `sqlite`.
-- If no DB connection env vars are provided, startup creates a local SQLite database at `./data/cognis.sqlite`.
-- For `postgresql` and `mariadb`, `DATABASE_URL` must be provided.
-
-## Core schema + module presence
-
-- During startup, API initializes core persistence tables for:
-    - `accounts`
-    - `user_preferences`
-    - `modules`
-    - `account_profiles`, `account_follows`, `account_blocks`, `posts`, `file_size_limits`
-- Core module presence is recorded in `modules` (seeded with `cognis-core`).
-- External modules should provide their own schema migration entrypoints and register module IDs in `modules` so operational tools can detect install/enable state from the DB.
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `GET` | `/api/v1/users` | List accounts | Admin |
+| `POST` | `/api/v1/users/:username/role` | Set account role | Admin |
+| `POST` | `/api/v1/users/:username/disable` | Disable an account | Admin |
+| `POST` | `/api/v1/users/:username/enable` | Enable an account | Admin |
+| `DELETE` | `/api/v1/users/:username` | Delete an account | Admin |

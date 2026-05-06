@@ -1,48 +1,67 @@
 # SMTP Notification Adapter
 
-Implements the `NotificationSender` interface using SMTP to deliver email notifications.
+## Overview
+
+The SMTP adapter delivers notifications as email via any SMTP server. It is the only built-in notification adapter and activates automatically when the `COGNIS_SMTP_HOST` environment variable is set. Typical use cases include delivery of two-factor authentication codes, email verification links, and any other category of notification the notification gateway dispatches.
+
+The adapter implements greylisting-tolerant delivery: if the first send attempt is rejected with a transient error, it retries up to twice with a five-minute delay between each attempt, matching common SMTP greylisting intervals.
+
+## Responsibilities
+
+- Send email via the configured SMTP server using Nodemailer.
+- Handle greylisting by retrying transient delivery failures (up to 2 retries, 5-minute delay).
+- Expose `getConfig()` and `setConfig()` for runtime reconfiguration via the admin API.
+- Expose `sendTestEmail(to)` for delivery verification without going through the notification pipeline.
+- Register the notification category `email` with the notification gateway.
+
+Not responsible for: rendering email content (the notification gateway builds the message body), managing user notification preferences (the profile gateway owns those), or delivering non-email notification types.
+
+## Architecture
+
+`SmtpNotificationSender` in `src/adapters/notify/smtp/smtp-notification-sender.ts` implements `NotificationSender`. It holds a Nodemailer transporter and recreates it whenever the config is updated via `setConfig()`.
+
+### Greylisting retry logic
+
+```ts
+async function sendWithRetry(options: MailOptions, attempts = 3): Promise<void> {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      await this.transporter.sendMail(options);
+      return;
+    } catch (err) {
+      if (i < attempts - 1 && isTransientError(err)) {
+        await sleep(5 * 60 * 1000);
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+```
+
+`isTransientError` returns true for SMTP 4xx responses and connection timeouts — the class of errors a greylisting filter generates.
+
+### Runtime reconfiguration
+
+The adapter exposes `setConfig(config)` and `getConfig()`. When the admin updates the SMTP config via the API, the notification gateway calls `setConfig()` on the adapter instance, which rebuilds the Nodemailer transporter with the new settings. No restart is required.
 
 ## Configuration
 
-All configuration is provided via environment variables or at runtime via `setConfig`.
+| Variable | Default | Description |
+| -------- | ------- | ----------- |
+| `COGNIS_SMTP_HOST` | — | SMTP server hostname; the adapter is inactive if not set |
+| `COGNIS_SMTP_PORT` | `587` | SMTP server port |
+| `COGNIS_SMTP_SECURE` | `false` | `true` for TLS on connect (port 465); `false` for STARTTLS |
+| `COGNIS_SMTP_USER` | — | SMTP authentication username |
+| `COGNIS_SMTP_PASS` | — | SMTP authentication password |
+| `COGNIS_SMTP_FROM` | — | Sender address shown in the `From` header |
 
-| Variable                  | Default         | Description                                                          |
-| ------------------------- | --------------- | -------------------------------------------------------------------- |
-| `COGNIS_SMTP_HOST`        | —               | SMTP server hostname. **Required** to activate the adapter.          |
-| `COGNIS_SMTP_PORT`        | `587`           | TCP port for the SMTP connection.                                    |
-| `COGNIS_SMTP_SECURE`      | `starttls`      | TLS mode: `starttls`, `tls`, or `none`.                              |
-| `COGNIS_SMTP_FROM`        | `cognis@{host}` | Envelope sender address.                                             |
-| `COGNIS_SMTP_SENDER_NAME` | —               | Display name shown in the From header (e.g. `Cognis Notifications`). |
-| `COGNIS_SMTP_USER`        | —               | SMTP authentication username (optional).                             |
-| `COGNIS_SMTP_PASS`        | —               | SMTP authentication password (optional).                             |
+Runtime changes applied through the API override these environment values for the life of the process.
 
-## Greylisting
+## API Routes
 
-Many mail servers employ greylisting: they issue a temporary `4xx` rejection the first time they see a new sender/recipient combination, expecting legitimate servers to retry after a short delay.
-
-The adapter automatically retries on any `4xx` (temporary) SMTP response. By default it retries up to **2 times** with a **5-minute delay** between attempts, which satisfies the minimum retry window required by virtually all greylisting implementations.
-
-These values can be adjusted at runtime via `setConfig` or the Administration UI:
-
-| Field                  | Default          | Description                                                                             |
-| ---------------------- | ---------------- | --------------------------------------------------------------------------------------- |
-| `greylistRetries`      | `2`              | Maximum number of retry attempts after a `4xx` response. Set to `0` to disable retries. |
-| `greylistRetryDelayMs` | `300000` (5 min) | Milliseconds to wait between retry attempts.                                            |
-
-Permanent `5xx` errors (e.g. unknown user) are never retried.
-
-## Activation
-
-The adapter is loaded automatically by `CoreNotificationGateway.discoverSenders()` when `COGNIS_SMTP_HOST` is set. It registers under the sender ID `smtp`.
-
-## Runtime reconfiguration
-
-Administrators can update SMTP settings at runtime through the Administration UI or via the API (`PUT /api/v1/notifications/providers/smtp/config`). Changes take effect immediately without a server restart, and are persisted to the database through `DbNotificationStore`.
-
-## Test email
-
-Use the Administration UI or `POST /api/v1/notifications/providers/smtp/test` with a `{ "to": "..." }` body to verify connectivity.
-
-## Sender name
-
-The sender name displayed in the Administration UI is `SMTP Email`.
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `GET` | `/api/v1/gateways/notify/adapters/smtp/config` | Retrieve current SMTP config (password redacted) | Admin |
+| `PUT` | `/api/v1/gateways/notify/adapters/smtp/config` | Update SMTP config at runtime | Admin |
+| `POST` | `/api/v1/gateways/notify/adapters/smtp/test` | Send a test email | Admin |
