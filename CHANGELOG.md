@@ -9,7 +9,8 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
-- ([c268e30](https://github.com/le-firehawk/Cognis/commit/c268e30)) `resolveDbProviderDir` in `db-init.ts` returned `"postgresql"` but the actual adapter directory is `postgres/`; all PostgreSQL init and migration SQL was silently skipped, causing `relation "modules" does not exist` on startup
+- ([3213808](https://github.com/le-firehawk/Cognis/commit/3213808)) `resolveDbProviderDir` in `db-init.ts` returned `"postgresql"` but the actual adapter directory is `postgres/`; all PostgreSQL init and migration SQL was silently skipped, causing `relation "modules" does not exist` on startup
+- Favicon missing from all app pages; added `<link rel="icon">` pointing to `/static/assets/icons/cognis-icon.png` in every HTML page `<head>`
 
 ### Added
 
