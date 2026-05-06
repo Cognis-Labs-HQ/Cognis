@@ -7,10 +7,18 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- "Providers" terminology replaced with "Adapters" throughout the admin UI wherever the term referred to auth or notification adapters: updated i18n strings in all four language files (en, de, ja, id) and updated displayed labels in the Security and Notifications admin panels.
+- `ModuleManifest` gains an optional `requires?: string[]` field listing gateway IDs the module depends on; these are displayed in the module detail view and enforced on enable.
+
 ### Fixed
 
-- Local auth adapter is now locked to active: `AdapterInfo` gains an optional `locked` field (set for the `"local"` adapter), the enable/disable API returns `403 locked_adapter` instead of silently accepting a disable request, and the admin-section UI hides the toggle button for locked adapters, showing a "Required" badge instead.
-- Auth adapter configure buttons in the Security admin panel are now wired up: clicking Configure opens an `openPopup` modal that renders a form from the adapter's config schema, pre-fills values from the stored config (GET config endpoint now returns both `schema` and `config`), and PUTs the updated values on save.
+- Enabling an auth adapter that has a configuration schema now opens the config popup first; the adapter is only enabled if the admin saves the config form. Clicking the toggle without completing config no longer silently enables an unconfigured adapter.
+- Disabling a gateway now also calls the disable endpoint for each of its child adapters via the API, so adapter state stays consistent with gateway state.
+- Disabling the last active adapter for a gateway now shows a warning popup informing the admin that the gateway itself will also be disabled; on confirmation both the adapter and the gateway are disabled.
+- Enabling a gateway whose `requires` dependencies are currently disabled now opens a confirmation popup listing the dependencies that will also be enabled; all disabled dependencies are enabled before the requested gateway is enabled.
+- Enabling a module whose `requires` lists disabled gateways now opens a confirmation popup; all disabled dependency gateways are enabled before the module is enabled.
 
 ### Added
 

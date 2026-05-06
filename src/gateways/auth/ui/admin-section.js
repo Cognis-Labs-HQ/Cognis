@@ -184,6 +184,21 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, openPopup }) {
             btn.addEventListener("click", async () => {
                 const adapterId = btn.dataset.adapterId;
                 const isEnabled = btn.dataset.enabled === "true";
+                const adapter = adapters.find((a) => a.id === adapterId);
+
+                if (!isEnabled && adapter) {
+                    const hasConfig =
+                        adapter.schema && adapter.schema.length > 0;
+                    if (hasConfig) {
+                        const result = await openAdapterConfig(
+                            adapterId,
+                            adapter.name,
+                            adapter.schema,
+                        );
+                        if (result !== "save") return;
+                    }
+                }
+
                 const action = isEnabled ? "disable" : "enable";
                 await apiFetch(
                     `/api/v1/gateways/auth/adapters/${adapterId}/${action}`,
