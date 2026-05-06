@@ -7,6 +7,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- CI: corrected tsconfig project reference paths in `src/adapters/db/*/tsconfig.json` and `src/adapters/file/local/tsconfig.json` from `../../core` to `../../../core` so they resolve to `src/core` rather than the non-existent `src/adapters/core`. ([9080e62](https://github.com/le-firehawk/Cognis/commit/9080e62))
+
 ### Added
 
 - Adapter-to-adapter cross-gateway dependencies: adapter `manifest.json` files may now declare a `requires` field listing dependencies as `"gatewayId:adapterId"` or `"gatewayId"` strings. The auth and notify gateways read this field during adapter discovery and include it in the adapter list response. The admin Components panel enforces these dependencies when enabling an adapter: disabled gateway or adapter dependencies are listed in a confirmation popup and automatically enabled.
