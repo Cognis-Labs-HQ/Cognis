@@ -52,7 +52,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.1.0",
+        version: "1.2.0",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",
