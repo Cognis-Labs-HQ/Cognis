@@ -287,13 +287,16 @@ function createAdapterAdminRoutes(
                 }
                 const storedConfig =
                     await authGateway.getPersistedConfig(adapterId);
+                const schema = adapter.getConfigSchema();
+                const requiredFields = schema
+                    .filter((f) => f.required)
+                    .map((f) => f.key);
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
-                        data: {
-                            schema: adapter.getConfigSchema(),
-                            config: storedConfig,
-                        },
+                        data: storedConfig,
+                        schema,
+                        requiredFields,
                     }),
                 );
                 return true;

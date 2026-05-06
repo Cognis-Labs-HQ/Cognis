@@ -26,7 +26,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, openPopup }) {
             adapters = payload.data ?? [];
         });
 
-    function renderProviders() {
+    function renderAdapters() {
         if (!adapters.length) {
             return `<p class="auth-providers-empty">${i18n.t("ui.app.admin.security.no_providers")}</p>`;
         }
@@ -76,7 +76,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, openPopup }) {
             `/api/v1/gateways/auth/adapters/${encodeURIComponent(adapterId)}/config`,
         );
         const configPayload = configRes.ok ? await configRes.json() : {};
-        const storedConfig = configPayload.data?.config ?? {};
+        const storedConfig = configPayload.data ?? {};
 
         function renderConfigForm() {
             const fields = schema
@@ -178,7 +178,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, openPopup }) {
         return result;
     }
 
-    function bindProviders(root) {
+    function bindAdapters(root) {
         const toggleBtns = root.querySelectorAll(".auth-provider-toggle-btn");
         toggleBtns.forEach((btn) => {
             btn.addEventListener("click", async () => {
@@ -211,8 +211,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, openPopup }) {
                     const payload = await res.json();
                     adapters = payload.data ?? [];
                     const panel = root.querySelector(".auth-providers-panel");
-                    if (panel) panel.innerHTML = renderProviders();
-                    bindProviders(root);
+                    if (panel) panel.innerHTML = renderAdapters();
+                    bindAdapters(root);
                 }
             });
         });
@@ -238,8 +238,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, openPopup }) {
                         const panel = root.querySelector(
                             ".auth-providers-panel",
                         );
-                        if (panel) panel.innerHTML = renderProviders();
-                        bindProviders(root);
+                        if (panel) panel.innerHTML = renderAdapters();
+                        bindAdapters(root);
                     }
                 }
             });
@@ -260,11 +260,11 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, openPopup }) {
                     label: i18n.t("ui.app.admin.security.providers"),
                     pinned: true,
                     render: () =>
-                        `<div class="auth-providers-panel">${renderProviders()}</div>`,
+                        `<div class="auth-providers-panel">${renderAdapters()}</div>`,
                 },
             ],
             onRender: (root) => {
-                bindProviders(root);
+                bindAdapters(root);
             },
         },
     };

@@ -111,6 +111,7 @@
   <string name="ui.app.admin.disable_confirm_gateway">Disable gateway</string>
   <string name="ui.app.admin.enable_confirm_gateway">Enable gateway</string>
   <string name="ui.app.admin.enable_confirm_module">Enable module</string>
+  <string name="ui.app.admin.enable_confirm_adapter">Enable adapter</string>
   <string name="ui.app.admin.enable_deps_will_enable">The following dependencies will also be enabled:</string>
   <string name="ui.app.admin.disable_last_adapter_warning">This is the only active adapter for this gateway. The gateway will also be disabled.</string>
   <string name="ui.app.admin.toggle_module">Toggle module enabled state</string>

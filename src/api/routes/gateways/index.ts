@@ -85,13 +85,13 @@ export function createGatewayRoutes(
                 );
                 return true;
             }
-            if (entry.required) {
+            if (entry.required && action === "disable") {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
                             code: "required_gateway",
-                            message: "Required gateways cannot be toggled",
+                            message: "Required gateways cannot be disabled",
                         },
                     }),
                 );

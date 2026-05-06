@@ -111,6 +111,7 @@
   <string name="ui.app.admin.disable_confirm_gateway">Nonaktifkan gateway</string>
   <string name="ui.app.admin.enable_confirm_gateway">Aktifkan gateway</string>
   <string name="ui.app.admin.enable_confirm_module">Aktifkan modul</string>
+  <string name="ui.app.admin.enable_confirm_adapter">Aktifkan adaptor</string>
   <string name="ui.app.admin.enable_deps_will_enable">Dependensi berikut juga akan diaktifkan:</string>
   <string name="ui.app.admin.disable_last_adapter_warning">Ini adalah satu-satunya adapter aktif untuk gateway ini. Gateway juga akan dinonaktifkan.</string>
   <string name="ui.app.admin.toggle_module">Alihkan status modul</string>

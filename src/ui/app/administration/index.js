@@ -179,13 +179,15 @@ function renderGatewayDetailsList(gw, gateways) {
 }
 
 function renderAdapterToggle(adapter, gatewayId, isGatewayDisabled) {
-    const isEnabled = !!adapter.active;
+    const adapterId = adapter.senderId ?? adapter.id;
+    const isEnabled = !!(adapter.active ?? adapter.enabled);
+    const isLocked = !!adapter.locked;
     return `<label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_gateway"))}">
       <input type="checkbox" class="adapter-toggle"
-        data-adapter="${escapeHtml(adapter.senderId)}"
+        data-adapter="${escapeHtml(adapterId)}"
         data-gateway="${escapeHtml(gatewayId)}"
         ${isEnabled ? "checked" : ""}
-        ${isGatewayDisabled ? "disabled" : ""} />
+        ${isGatewayDisabled || isLocked ? "disabled" : ""} />
       <span class="slider"></span>
     </label>`;
 }
@@ -194,17 +196,17 @@ function renderInlineAdapters(adapters, gatewayId, isGatewayDisabled) {
     if (!adapters || adapters.length === 0) return "";
     const rows = adapters
         .map((adapter) => {
-            const statePillClass = adapter.active
-                ? "pill-active"
-                : "pill-available";
-            const stateLabel = adapter.active
+            const adapterId = adapter.senderId ?? adapter.id;
+            const isActive = !!(adapter.active ?? adapter.enabled);
+            const statePillClass = isActive ? "pill-active" : "pill-available";
+            const stateLabel = isActive
                 ? i18n.t("ui.app.admin.state.active")
                 : i18n.t("ui.app.admin.state.available");
             return `
         <div class="adapter-inline-row" role="button" tabindex="0"
-          data-adapter-id="${escapeHtml(adapter.senderId)}"
+          data-adapter-id="${escapeHtml(adapterId)}"
           data-gateway-id="${escapeHtml(gatewayId)}">
-          <span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapter.senderId)}</strong></span>
+          <span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapterId)}</strong></span>
           <span class="state-pill ${statePillClass}">${stateLabel}</span>
           ${renderAdapterToggle(adapter, gatewayId, isGatewayDisabled)}
         </div>
@@ -558,13 +560,92 @@ function bindAdapterToggles() {
             const previouslyChecked = !toggle.checked;
             const action = toggle.checked ? "enable" : "disable";
 
+            if (action === "enable") {
+                const adapter = allAdapters.find(
+                    (a) =>
+                        (a.senderId ?? a.id) === adapterId &&
+                        a._gatewayId === gatewayId,
+                );
+                const requires = adapter?.requires ?? [];
+                const disabledDepNames = [];
+                const disabledGatewayDeps = [];
+                const disabledAdapterDeps = [];
+
+                for (const req of requires) {
+                    const parts = req.split(":");
+                    if (parts.length === 2) {
+                        const [depGwId, depAdapterId] = parts;
+                        const depAdapter = allAdapters.find(
+                            (a) =>
+                                (a.senderId ?? a.id) === depAdapterId &&
+                                a._gatewayId === depGwId,
+                        );
+                        if (
+                            depAdapter &&
+                            !(depAdapter.active ?? depAdapter.enabled)
+                        ) {
+                            disabledAdapterDeps.push({
+                                gatewayId: depGwId,
+                                adapterId: depAdapterId,
+                            });
+                            disabledDepNames.push(
+                                depAdapter.name ?? depAdapterId,
+                            );
+                        }
+                    } else {
+                        const depGw = gateways.find((g) => g.id === req);
+                        if (depGw && depGw.status === "disabled") {
+                            disabledGatewayDeps.push(req);
+                            disabledDepNames.push(depGw.name ?? req);
+                        }
+                    }
+                }
+
+                if (disabledDepNames.length > 0) {
+                    const result = await openPopup({
+                        title: i18n.t("ui.app.admin.enable_confirm_adapter"),
+                        body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${disabledDepNames.map((n) => `<li><strong>${escapeHtml(n)}</strong></li>`).join("")}</ul>`,
+                        actions: [
+                            {
+                                id: "confirm",
+                                label: i18n.t("ui.reuse.generic.enable"),
+                                variant: "confirm",
+                            },
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.popup.cancel"),
+                                variant: "cancel",
+                            },
+                        ],
+                    });
+                    if (result !== "confirm") {
+                        toggle.checked = previouslyChecked;
+                        return;
+                    }
+                    for (const depGwId of disabledGatewayDeps) {
+                        await toggleGateway(depGwId, "enable");
+                    }
+                    for (const dep of disabledAdapterDeps) {
+                        await toggleAdapter(
+                            dep.gatewayId,
+                            dep.adapterId,
+                            "enable",
+                        );
+                    }
+                    gateways = await loadGateways();
+                    allAdapters = await loadAllAdapters(gateways);
+                }
+
+                await toggleAdapter(gatewayId, adapterId, "enable");
+            }
+
             if (action === "disable") {
                 const gwAdapters = allAdapters.filter(
                     (a) => a._gatewayId === gatewayId,
                 );
                 const otherEnabledAdapters = gwAdapters.filter((a) => {
                     const aId = a.senderId ?? a.id;
-                    return (a.active || a.enabled) && aId !== adapterId;
+                    return (a.active ?? a.enabled) && aId !== adapterId;
                 });
                 const isLastEnabled = otherEnabledAdapters.length === 0;
 
@@ -598,8 +679,6 @@ function bindAdapterToggles() {
                     await toggleGateway(gatewayId, "disable");
                     gateways = await loadGateways();
                 }
-            } else {
-                await toggleAdapter(gatewayId, adapterId, "enable");
             }
 
             allAdapters = await loadAllAdapters(gateways);
@@ -622,6 +701,8 @@ function bindAdapterRows() {
                 (a.senderId ?? a.id) === adapterId &&
                 a._gatewayId === gatewayId,
         ) ?? { senderId: adapterId, name: adapterId };
+
+        if (adapter.locked) return;
 
         async function handleOpen(e) {
             const switchLabel = row.querySelector(".switch--inline");

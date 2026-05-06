@@ -7,27 +7,27 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Changed
-
-- "Providers" terminology replaced with "Adapters" throughout the admin UI wherever the term referred to auth or notification adapters: updated i18n strings in all four language files (en, de, ja, id) and updated displayed labels in the Security and Notifications admin panels.
-- `ModuleManifest` gains an optional `requires?: string[]` field listing gateway IDs the module depends on; these are displayed in the module detail view and enforced on enable.
-
-### Fixed
-
-- Enabling an auth adapter that has a configuration schema now opens the config popup first; the adapter is only enabled if the admin saves the config form. Clicking the toggle without completing config no longer silently enables an unconfigured adapter.
-- Disabling a gateway now also calls the disable endpoint for each of its child adapters via the API, so adapter state stays consistent with gateway state.
-- Disabling the last active adapter for a gateway now shows a warning popup informing the admin that the gateway itself will also be disabled; on confirmation both the adapter and the gateway are disabled.
-- Enabling a gateway whose `requires` dependencies are currently disabled now opens a confirmation popup listing the dependencies that will also be enabled; all disabled dependencies are enabled before the requested gateway is enabled.
-- Enabling a module whose `requires` lists disabled gateways now opens a confirmation popup; all disabled dependency gateways are enabled before the module is enabled.
-
 ### Added
 
-- DB migration tracking via a `db_migrations` table: `initializeDatabaseSchema` now creates this table on every boot (idempotent), records a sentinel when the init phase completes so init SQL files run only once, and records each migration file by its SHA-256 so that individual migrations are skipped on subsequent restarts rather than re-executed. This applies across all DB providers (SQLite, PostgreSQL, MariaDB) and to SQL contributed by core, gateways, and modules.
+- Adapter-to-adapter cross-gateway dependencies: adapter `manifest.json` files may now declare a `requires` field listing dependencies as `"gatewayId:adapterId"` or `"gatewayId"` strings. The auth and notify gateways read this field during adapter discovery and include it in the adapter list response. The admin Components panel enforces these dependencies when enabling an adapter: disabled gateway or adapter dependencies are listed in a confirmation popup and automatically enabled.
+- `ui.app.admin.enable_confirm_adapter` i18n key added in all four language files (en, de, ja, id) for the adapter dependency enable confirmation popup.
+
+### Changed
+
+- Auth adapter config endpoint (`GET /api/v1/gateways/auth/adapters/:id/config`) now returns the standard flat config format `{ data, requiredFields }` (matching the notify adapter format) instead of `{ data: { schema, config } }`. This allows the generic adapter config popup in the Components panel to render auth adapter configuration forms correctly.
+- `CoreAuthGateway.saveAdapterConfig` now extracts the `enabled` field from the config payload and calls `enableAdapter`/`disableAdapter` accordingly, consistent with how the notify gateway handles `enabled` in `saveProviderConfig`.
+- `renderAdapterToggle` in the administration page now uses `adapter.senderId ?? adapter.id` for the adapter identifier and `adapter.active ?? adapter.enabled` for the enabled state, so auth adapters (which use `id`/`enabled`) display correctly alongside notify adapters (which use `senderId`/`active`).
+- `renderInlineAdapters` now renders locked adapters with their toggle disabled, matching the Security section behaviour for the local auth adapter.
+- `bindAdapterRows` now skips click-to-config for locked adapters.
+- `bindAdapters` (renamed from `bindProviders`) in `admin-section.js` reflects internal naming conventions.
 
 ### Fixed
 
-- ([3213808](https://github.com/le-firehawk/Cognis/commit/3213808)) `resolveDbProviderDir` in `db-init.ts` returned `"postgresql"` but the actual adapter directory is `postgres/`; all PostgreSQL init and migration SQL was silently skipped, causing `relation "modules" does not exist` on startup
-- Favicon missing from all app pages; added `<link rel="icon">` pointing to `/static/assets/icons/cognis-icon.png` in every HTML page `<head>`
+- `POST /api/v1/gateways/:id/enable` no longer returns 403 for required gateways. Only `disable` is blocked for required gateways; `enable` is permitted so that a required gateway that ended up persisted as disabled (e.g. due to an earlier state bug) can be recovered through the admin UI without a server restart.
+- Auth adapter config popups in the Components panel no longer fail silently. The root cause was that auth adapter info uses `id`/`enabled` fields while the main panel expected `senderId`/`active`, causing the popup config URL to use `"undefined"` as the adapter ID.
+- Local adapter now correctly shows as locked (toggle disabled) in the main Components panel.
+
+
 - ([5a975f8](https://github.com/le-firehawk/Cognis/commit/5a975f8)) `uiDir` in auth, notify, and profile gateway bootstraps still referenced the removed `src/api/gateways/` path; `/static/gateways/{auth,notify}/admin-section.js` and `/static/gateways/profile/navbar.js` returned 404
 
 ### Added

@@ -45,11 +45,13 @@ export interface AdapterInfo {
     locked?: boolean;
     config: Record<string, unknown>;
     schema: AuthConfigField[];
+    requires?: string[];
 }
 
 export class CoreAuthGateway {
     private readonly adapters = new Map<string, AuthProviderAdapter>();
     private readonly enabledAdapters = new Set<string>();
+    private readonly adapterRequires = new Map<string, string[]>();
     private localAdapter:
         | (AuthProviderAdapter & {
               register(
@@ -83,8 +85,11 @@ export class CoreAuthGateway {
     )`);
     }
 
-    registerAdapter(adapter: AuthProviderAdapter): void {
+    registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): void {
         this.adapters.set(adapter.id, adapter);
+        if (requires && requires.length > 0) {
+            this.adapterRequires.set(adapter.id, requires);
+        }
     }
 
     setLocalAdapter(
@@ -138,8 +143,24 @@ export class CoreAuthGateway {
     ): Promise<void> {
         const adapter = this.adapters.get(adapterId);
         if (!adapter) return;
-        adapter.configure(config);
-        const json = JSON.stringify(config);
+        const { enabled: enabledValue, ...adapterConfig } = config;
+        if (
+            enabledValue === false ||
+            enabledValue === "false" ||
+            enabledValue === 0
+        ) {
+            if (adapterId !== "local") {
+                this.enabledAdapters.delete(adapterId);
+            }
+        } else if (
+            enabledValue === true ||
+            enabledValue === "true" ||
+            enabledValue === 1
+        ) {
+            this.enabledAdapters.add(adapterId);
+        }
+        adapter.configure(adapterConfig);
+        const json = JSON.stringify(adapterConfig);
         const enabled = this.enabledAdapters.has(adapterId) ? 1 : 0;
         if (this.dbType === "postgresql") {
             await this.db.execute(
@@ -223,14 +244,18 @@ export class CoreAuthGateway {
     }
 
     listAdapters(): AdapterInfo[] {
-        return Array.from(this.adapters.values()).map((adapter) => ({
-            id: adapter.id,
-            name: adapter.name,
-            enabled: this.enabledAdapters.has(adapter.id),
-            locked: adapter.id === "local" || undefined,
-            config: {},
-            schema: adapter.getConfigSchema(),
-        }));
+        return Array.from(this.adapters.values()).map((adapter) => {
+            const requires = this.adapterRequires.get(adapter.id);
+            return {
+                id: adapter.id,
+                name: adapter.name,
+                enabled: this.enabledAdapters.has(adapter.id),
+                locked: adapter.id === "local" || undefined,
+                config: {},
+                schema: adapter.getConfigSchema(),
+                ...(requires && requires.length > 0 ? { requires } : {}),
+            };
+        });
     }
 
     getEnabledAdapters(): AuthProviderAdapter[] {
@@ -257,6 +282,23 @@ export class CoreAuthGateway {
                 const raw = await readFile(pkgPath, "utf8");
                 const pkg = JSON.parse(raw) as { main?: string };
                 if (!pkg.main) continue;
+
+                let requires: string[] | undefined;
+                try {
+                    const manifestRaw = await readFile(
+                        path.join(authAdaptersRoot, entry, "manifest.json"),
+                        "utf8",
+                    );
+                    const manifest = JSON.parse(manifestRaw) as {
+                        requires?: string[];
+                    };
+                    if (Array.isArray(manifest.requires)) {
+                        requires = manifest.requires;
+                    }
+                } catch {
+                    // No manifest — adapter has no declared dependencies
+                }
+
                 const entryPath = path.resolve(
                     authAdaptersRoot,
                     entry,
@@ -266,7 +308,7 @@ export class CoreAuthGateway {
                 if (typeof mod.createAdapter === "function") {
                     const adapter = mod.createAdapter() as AuthProviderAdapter;
                     if (adapter.id !== "local") {
-                        this.registerAdapter(adapter);
+                        this.registerAdapter(adapter, requires);
                     }
                 }
             } catch {

@@ -368,7 +368,7 @@ test("POST /api/v1/gateways/:id/disable calls persistGatewayState with false", a
     assert.deepEqual(persisted, { id: "notify", enabled: false });
 });
 
-test("POST /api/v1/gateways/:id/enable returns 403 for required gateways", async () => {
+test("POST /api/v1/gateways/:id/enable allows re-enabling required gateways", async () => {
     const registry = new GatewayRegistry();
     registry.register({
         id: "db",
@@ -388,8 +388,8 @@ test("POST /api/v1/gateways/:id/enable returns 403 for required gateways", async
     );
 
     assert.ok(handled);
-    assert.equal(res.status, 403);
-    assert.equal(JSON.parse(res.payload).error.code, "required_gateway");
+    assert.equal(res.status, 200);
+    assert.equal(JSON.parse(res.payload).data.status, "active");
 });
 
 test("POST /api/v1/gateways/:id/disable returns 403 for required gateways", async () => {

@@ -18,6 +18,7 @@ export interface NotificationSenderInfo {
     senderId: string;
     name: string;
     active: boolean;
+    requires?: string[];
 }
 
 export interface NotificationSender {
@@ -113,6 +114,7 @@ export class CoreNotificationGateway
     private readonly senders = new Map<string, NotificationSender>();
     private readonly categories = new Map<string, string>();
     private readonly disabledSenders = new Set<string>();
+    private readonly senderRequires = new Map<string, string[]>();
 
     constructor(
         private readonly prefStore: NotificationPreferenceStore,
@@ -120,8 +122,11 @@ export class CoreNotificationGateway
         private readonly emailStore?: NotificationEmailStore,
     ) {}
 
-    registerSender(sender: NotificationSender): void {
+    registerSender(sender: NotificationSender, requires?: string[]): void {
         this.senders.set(sender.senderId, sender);
+        if (requires && requires.length > 0) {
+            this.senderRequires.set(sender.senderId, requires);
+        }
     }
 
     registerCategory(id: string, label: string): void {
@@ -129,15 +134,19 @@ export class CoreNotificationGateway
     }
 
     listSenders(): NotificationSenderInfo[] {
-        return Array.from(this.senders.values()).map((sender) => ({
-            senderId: sender.senderId,
-            name: sender.senderName ?? sender.senderId,
-            active:
-                !this.disabledSenders.has(sender.senderId) &&
-                (typeof sender.isConfigured === "function"
-                    ? sender.isConfigured()
-                    : typeof sender.getConfig === "function"),
-        }));
+        return Array.from(this.senders.values()).map((sender) => {
+            const requires = this.senderRequires.get(sender.senderId);
+            return {
+                senderId: sender.senderId,
+                name: sender.senderName ?? sender.senderId,
+                active:
+                    !this.disabledSenders.has(sender.senderId) &&
+                    (typeof sender.isConfigured === "function"
+                        ? sender.isConfigured()
+                        : typeof sender.getConfig === "function"),
+                ...(requires && requires.length > 0 ? { requires } : {}),
+            };
+        });
     }
 
     listCategories(): NotificationCategory[] {
@@ -270,6 +279,22 @@ export class CoreNotificationGateway
                 const pkg = JSON.parse(raw) as { main?: string };
                 if (!pkg.main) continue;
 
+                let requires: string[] | undefined;
+                try {
+                    const manifestRaw = await readFile(
+                        path.join(adaptersRoot, entry, "manifest.json"),
+                        "utf8",
+                    );
+                    const manifest = JSON.parse(manifestRaw) as {
+                        requires?: string[];
+                    };
+                    if (Array.isArray(manifest.requires)) {
+                        requires = manifest.requires;
+                    }
+                } catch {
+                    // No manifest — adapter has no declared dependencies
+                }
+
                 const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
                 const mod = await import(`${entryPath}?t=${Date.now()}`);
 
@@ -281,7 +306,7 @@ export class CoreNotificationGateway
                         process.env as Record<string, string | undefined>,
                     );
                     if (sender) {
-                        this.registerSender(sender);
+                        this.registerSender(sender, requires);
                     }
                 }
             } catch {

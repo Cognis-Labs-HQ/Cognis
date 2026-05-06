@@ -111,6 +111,7 @@
   <string name="ui.app.admin.disable_confirm_gateway">Gateway deaktivieren</string>
   <string name="ui.app.admin.enable_confirm_gateway">Gateway aktivieren</string>
   <string name="ui.app.admin.enable_confirm_module">Modul aktivieren</string>
+  <string name="ui.app.admin.enable_confirm_adapter">Adapter aktivieren</string>
   <string name="ui.app.admin.enable_deps_will_enable">Folgende Abhängigkeiten werden ebenfalls aktiviert:</string>
   <string name="ui.app.admin.disable_last_adapter_warning">Dies ist der einzige aktive Adapter dieses Gateways. Das Gateway wird ebenfalls deaktiviert.</string>
   <string name="ui.app.admin.toggle_module">Modulzustand umschalten</string>
