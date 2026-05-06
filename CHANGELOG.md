@@ -18,6 +18,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - ([bb70712](https://github.com/le-firehawk/Cognis/commit/bb70712)) `src/api/reuse/` — new shared utility directory; `tfa-code.ts` and `verify-token.ts` moved here from `src/api/utils/`, `read-json.ts` moved here from `src/api/routes/` (was a utility, not a route handler)
 - ([bb70712](https://github.com/le-firehawk/Cognis/commit/bb70712)) `src/gateways/profile/routes/tests/helpers.ts` — shared `makeTempDb` fixture for profile gateway route tests, eliminating the duplicated function across `file-routes`, `post-routes`, and `social-routes` test files
 - ([f27a824](https://github.com/le-firehawk/Cognis/commit/f27a824)) Regression tests for gateway UI file availability: auth and notify bootstrap tests verify `uiDir` resolves to a real directory and `admin-section.js` exists; profile bootstrap tests verify `uiDir` and `navbar.js`; UI route tests verify `/static/gateways/*/` static serving returns 200 for each gateway asset
+- ([789f641](https://github.com/le-firehawk/Cognis/commit/789f641)) Regression tests for file-storage availability: `avatar PUT`, `avatar DELETE`, `banner PUT`, and `banner DELETE` each return `503 file_storage_unavailable` when the file gateway is absent, catching future regressions in the file-availability guard across all four mutating endpoints
 
 ### Changed
 

@@ -745,7 +745,7 @@ test("GET /api/v1/profile/ping returns 401 when unauthenticated", async () => {
     }
 });
 
-test("avatar routes return 503 when fileGateway is absent", async () => {
+test("avatar PUT returns 503 when fileGateway is absent", async () => {
     const { dir, executor } = makeTempDb();
     try {
         const profileStore = await setupUser(executor, "alice");
@@ -771,6 +771,95 @@ test("avatar routes return 503 when fileGateway is absent", async () => {
             new URL("http://localhost/api/v1/profile/avatar"),
         );
         assert.equal(status, 503);
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
+test("avatar DELETE returns 503 when fileGateway is absent", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUser(executor, "alice");
+        const route = createProfileRoutes(profileStore);
+        const token = issueAccessToken("alice", "user", 60);
+        let status = 0;
+        let body = "";
+        await route(
+            makeReq("DELETE", token),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end(p: string) {
+                    body = p;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/profile/avatar"),
+        );
+        assert.equal(status, 503);
+        assert.equal(JSON.parse(body).error.code, "file_storage_unavailable");
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
+test("banner PUT returns 503 when fileGateway is absent", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUser(executor, "alice");
+        const route = createProfileRoutes(profileStore);
+        const token = issueAccessToken("alice", "user", 60);
+        let status = 0;
+        let body = "";
+        await route(
+            {
+                method: "PUT",
+                headers: {
+                    authorization: `Bearer ${token}`,
+                    "content-type": "image/jpeg",
+                    "content-length": "0",
+                },
+                [Symbol.asyncIterator]: async function* () {},
+            } as any,
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end(p: string) {
+                    body = p;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/profile/banner"),
+        );
+        assert.equal(status, 503);
+        assert.equal(JSON.parse(body).error.code, "file_storage_unavailable");
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
+test("banner DELETE returns 503 when fileGateway is absent", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUser(executor, "alice");
+        const route = createProfileRoutes(profileStore);
+        const token = issueAccessToken("alice", "user", 60);
+        let status = 0;
+        let body = "";
+        await route(
+            makeReq("DELETE", token),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end(p: string) {
+                    body = p;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/profile/banner"),
+        );
+        assert.equal(status, 503);
+        assert.equal(JSON.parse(body).error.code, "file_storage_unavailable");
     } finally {
         rmSync(dir, { recursive: true, force: true });
     }
