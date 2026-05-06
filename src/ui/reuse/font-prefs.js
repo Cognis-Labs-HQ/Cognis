@@ -4,7 +4,7 @@
  *
  * Public exports:
  *   DEFAULT_FONT          — default font family name ("Orbitron").
- *   DEFAULT_FONT_SIZE     — default font size in points (14).
+ *   DEFAULT_FONT_SIZE     — default font size in points (12).
  *   toFontFamilyValue(font)                  — formats a font name as a valid CSS font-family value.
  *   parseSavedFont(fontValue)                — extracts the primary family name from a saved CSS string.
  *   loadFontsCatalog()                       — resolves all available font families from document.fonts.
@@ -21,7 +21,7 @@
  */
 
 export const DEFAULT_FONT = "Orbitron";
-export const DEFAULT_FONT_SIZE = 14;
+export const DEFAULT_FONT_SIZE = 12;
 const FALLBACK_FONTS = [DEFAULT_FONT, "Inter", "Arial", "sans-serif"];
 
 export function toFontFamilyValue(font) {
