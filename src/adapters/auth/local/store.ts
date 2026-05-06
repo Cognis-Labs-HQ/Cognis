@@ -12,7 +12,7 @@
  * src/adapters/db/<provider>/sql/init/; the ensureSchema() method is a
  * no-op safety net only.
  */
-import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
+import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import type { AuthContext } from "@cognis/core";
 import type { LocalAccountStore } from "../../../api/reuse/account-store.js";
@@ -31,21 +31,16 @@ async function verifyPassword(
     stored: string,
     candidate: string,
 ): Promise<boolean> {
-    if (stored.startsWith("scrypt:")) {
-        const [, salt, keyHex] = stored.split(":");
-        const candidateKey = (await scryptAsync(candidate, salt, 64)) as Buffer;
-        const storedKey = Buffer.from(keyHex, "hex");
-        return (
-            candidateKey.length === storedKey.length &&
-            timingSafeEqual(candidateKey, storedKey)
-        );
+    if (!stored.startsWith("scrypt:")) {
+        return false;
     }
-    // fall through to legacy SHA-256 (lines 30-33 below)
-    return stored === sha256Hash(candidate);
-}
-
-function sha256Hash(input: string): string {
-    return createHash("sha256").update(input).digest("hex");
+    const [, salt, keyHex] = stored.split(":");
+    const candidateKey = (await scryptAsync(candidate, salt, 64)) as Buffer;
+    const storedKey = Buffer.from(keyHex, "hex");
+    return (
+        candidateKey.length === storedKey.length &&
+        timingSafeEqual(candidateKey, storedKey)
+    );
 }
 
 export class DbLocalAccountStore implements LocalAccountStore {
