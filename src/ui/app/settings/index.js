@@ -65,6 +65,11 @@ let changesBar;
 let generalPrefs;
 let notifPrefs;
 
+function setThemeToggleVisible(visible) {
+    const el = document.querySelector("#theme-toggle");
+    if (el) el.hidden = !visible;
+}
+
 function initThemePrefs({ onDirtyChange }) {
     let currentMode = savedMode;
 
@@ -121,6 +126,7 @@ const elements = [
                 },
             ],
             onRender: () => {
+                setThemeToggleVisible(true);
                 const account = localStorage.getItem("cognis_account") ?? "";
                 if (!generalPrefs) {
                     generalPrefs = initGeneralPrefs(root, {
@@ -176,6 +182,7 @@ const elements = [
                 },
             ],
             onRender: () => {
+                setThemeToggleVisible(false);
                 fontPrefs = initFontPrefs(root, {
                     existingPrefs,
                     i18n,
@@ -217,6 +224,7 @@ const elements = [
                 },
             ],
             onRender: () => {
+                setThemeToggleVisible(true);
                 if (!languagePrefs) {
                     languagePrefs = initLanguagePrefs(root, languagePriority, {
                         onDirtyChange: (dirty) =>
@@ -244,6 +252,7 @@ const elements = [
                 },
             ],
             onRender: () => {
+                setThemeToggleVisible(true);
                 const account = localStorage.getItem("cognis_account") ?? "";
                 notifPrefs = initNotificationPrefs(root, {
                     i18n,
@@ -274,6 +283,7 @@ const elements = [
                 },
             ],
             onRender: () => {
+                setThemeToggleVisible(true);
                 const prefsDumpEl = root.querySelector("#prefs-dump");
                 if (prefsDumpEl) {
                     prefsDumpEl.textContent =
@@ -292,7 +302,6 @@ const composer = createPageComposer(root, {
     elements,
     preferenceKey: "settings-layout",
     i18n,
-    showThemeToggle: false,
     pageContext: {
         title: i18n.t("ui.app.settings.page_title"),
         subtitle: i18n.t("ui.app.settings.page_subtitle"),
