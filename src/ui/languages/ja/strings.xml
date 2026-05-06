@@ -326,13 +326,13 @@
   <string name="ui.app.admin.notif.debug_missing_fields">送信前にすべての項目を入力してください。</string>
   <string name="ui.app.admin.notif.debug_no_users">ユーザーが見つかりません。</string>
   <string name="ui.app.admin.notif.debug_no_categories">通知カテゴリが登録されていません。</string>
-  <string name="ui.app.admin.security.title">Security</string>
-  <string name="ui.app.admin.security.trusted_domains_label">Trusted Email Domains</string>
-  <string name="ui.app.admin.security.trusted_domains_hint">Comma-separated list of allowed domains. Leave empty to allow all domains.</string>
+  <string name="ui.app.admin.security.title">セキュリティ</string>
+  <string name="ui.app.admin.security.trusted_domains_label">信頼済みメールドメイン</string>
+  <string name="ui.app.admin.security.trusted_domains_hint">許可するドメインのカンマ区切りリスト。すべてのドメインを許可するには空のままにしてください。</string>
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
-  <string name="ui.app.admin.security.saved">Security settings saved.</string>
-  <string name="ui.app.admin.security.save_failed">Failed to save security settings.</string>
-  <string name="ui.app.settings.emails_domain_blocked_title">Domain not permitted</string>
-  <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
-  <string name="ui.app.settings.emails_verify_unavailable">Email verification is not available. Contact your administrator.</string>
+  <string name="ui.app.admin.security.saved">セキュリティ設定を保存しました。</string>
+  <string name="ui.app.admin.security.save_failed">セキュリティ設定の保存に失敗しました。</string>
+  <string name="ui.app.settings.emails_domain_blocked_title">ドメインが許可されていません</string>
+  <string name="ui.app.settings.emails_domain_blocked_body">このメールアドレスは、信頼済みドメインリストに登録されていないドメインのものです。管理者にセキュリティ設定の更新を依頼してください。</string>
+  <string name="ui.app.settings.emails_verify_unavailable">メール認証は利用できません。管理者にお問い合わせください。</string>
 </resources>

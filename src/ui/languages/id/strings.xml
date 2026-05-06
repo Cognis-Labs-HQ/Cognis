@@ -263,7 +263,7 @@
   <string name="ui.app.settings.emails_remove_failed">Tidak dapat menghapus alamat email.</string>
   <string name="ui.app.settings.emails_add_failed">Tidak dapat menambahkan alamat email.</string>
   <string name="ui.app.settings.emails_unverified">Belum diverifikasi</string>
-  <string name="ui.app.settings.emails_verified">Valid</string>
+  <string name="ui.app.settings.emails_verified">Sah</string>
   <string name="ui.app.settings.emails_already_verified">Alamat email ini sudah diverifikasi.</string>
   <string name="ui.app.settings.emails_email_taken">Alamat email ini sudah terdaftar oleh pengguna lain.</string>
   <string name="ui.app.settings.emails_verify_title">Verifikasi alamat email</string>
@@ -326,13 +326,13 @@
   <string name="ui.app.admin.notif.debug_missing_fields">Harap isi semua kolom sebelum mengirim.</string>
   <string name="ui.app.admin.notif.debug_no_users">Tidak ada pengguna ditemukan.</string>
   <string name="ui.app.admin.notif.debug_no_categories">Tidak ada kategori notifikasi terdaftar.</string>
-  <string name="ui.app.admin.security.title">Security</string>
-  <string name="ui.app.admin.security.trusted_domains_label">Trusted Email Domains</string>
-  <string name="ui.app.admin.security.trusted_domains_hint">Comma-separated list of allowed domains. Leave empty to allow all domains.</string>
+  <string name="ui.app.admin.security.title">Keamanan</string>
+  <string name="ui.app.admin.security.trusted_domains_label">Domain Email Tepercaya</string>
+  <string name="ui.app.admin.security.trusted_domains_hint">Daftar domain yang diizinkan, dipisahkan koma. Biarkan kosong untuk mengizinkan semua domain.</string>
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
-  <string name="ui.app.admin.security.saved">Security settings saved.</string>
-  <string name="ui.app.admin.security.save_failed">Failed to save security settings.</string>
-  <string name="ui.app.settings.emails_domain_blocked_title">Domain not permitted</string>
-  <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
-  <string name="ui.app.settings.emails_verify_unavailable">Email verification is not available. Contact your administrator.</string>
+  <string name="ui.app.admin.security.saved">Pengaturan keamanan disimpan.</string>
+  <string name="ui.app.admin.security.save_failed">Gagal menyimpan pengaturan keamanan.</string>
+  <string name="ui.app.settings.emails_domain_blocked_title">Domain tidak diizinkan</string>
+  <string name="ui.app.settings.emails_domain_blocked_body">Alamat email ini berasal dari domain yang tidak ada dalam daftar domain tepercaya. Hubungi administrator Anda untuk memperbarui pengaturan keamanan.</string>
+  <string name="ui.app.settings.emails_verify_unavailable">Verifikasi email tidak tersedia. Hubungi administrator Anda.</string>
 </resources>
