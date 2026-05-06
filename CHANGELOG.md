@@ -7,6 +7,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Default application font size reduced from 14 pt to 12 pt (`DEFAULT_FONT_SIZE` in `font-prefs.js`; `--app-font-size` CSS variable updated from `1.17rem` to `1rem`). ([0c06716](https://github.com/le-firehawk/Cognis/commit/0c06716))
+
 ### Fixed
 
 - `theme.css`: `input`, `select`, `textarea`, and `button` now inherit `font-family` and `font-size` from `body`, so the user-selected application font is applied to all form controls. ([44dc8fd](https://github.com/le-firehawk/Cognis/commit/44dc8fd))
