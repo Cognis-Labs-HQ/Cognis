@@ -1,10 +1,23 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createAuthRoutes } from "../../routes/auth/index.js";
-import {
-    VolatileLocalAccountStore,
-    LocalAuthGateway,
-} from "../../../adapters/auth/local/auth-adapter.js";
+import { VolatileLocalAccountStore } from "../../reuse/account-store.js";
+import type { AuthContext, AuthGateway } from "@cognis/core";
+
+function makeGateway(store: VolatileLocalAccountStore): AuthGateway {
+    return {
+        async authenticate(token: string): Promise<AuthContext | null> {
+            const payload = JSON.parse(token) as {
+                username?: string;
+                password?: string;
+            };
+            return store.verify(
+                String(payload.username ?? ""),
+                String(payload.password ?? ""),
+            );
+        },
+    };
+}
 
 function requestWithBody(method: string, body: Record<string, unknown>) {
     const chunks = [Buffer.from(JSON.stringify(body))];
@@ -18,7 +31,7 @@ function requestWithBody(method: string, body: Record<string, unknown>) {
 
 test("auth routes register and login via gateway", async () => {
     const accountStore = new VolatileLocalAccountStore();
-    const gateway = new LocalAuthGateway(accountStore);
+    const gateway = makeGateway(accountStore);
     const route = createAuthRoutes(gateway, accountStore);
     let status = 0;
     let payload = "";
@@ -56,7 +69,7 @@ test("auth routes register and login via gateway", async () => {
 
 test("login records lastLogin on the account", async () => {
     const accountStore = new VolatileLocalAccountStore();
-    const gateway = new LocalAuthGateway(accountStore);
+    const gateway = makeGateway(accountStore);
     const route = createAuthRoutes(gateway, accountStore);
 
     await route(

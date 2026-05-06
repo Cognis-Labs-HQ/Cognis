@@ -1,12 +1,6 @@
 import type { SupportedDbType } from "./account-store.js";
 import { createHash } from "node:crypto";
-
-interface DbExecutor {
-    execute(
-        sql: string,
-        params?: unknown[],
-    ): Promise<{ rows?: any[]; rowCount?: number }>;
-}
+import type { DbExecutor } from "./account-store.js";
 
 function cacheKey(accountId: string, pageId: string) {
     return createHash("sha256").update(`${accountId}:${pageId}`).digest("hex");

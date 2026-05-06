@@ -22,7 +22,7 @@ import { issueAccessToken } from "./auth/access-tokens.js";
 import { createHash } from "node:crypto";
 import { RouteRegistry } from "./route-registry.js";
 import { UIRegistry } from "./ui-registry.js";
-import type { LocalAccountStore } from "../adapters/auth/local/auth-adapter.js";
+import type { LocalAccountStore } from "../api/reuse/account-store.js";
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
     private readonly manifests: ModuleManifest[];

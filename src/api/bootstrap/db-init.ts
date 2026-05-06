@@ -25,10 +25,10 @@
  * include semicolons inside string literals in these files.
  */
 
-import { createHash } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import type { DbExecutor } from "../../adapters/db/reuse/account-store.js";
+import type { DbExecutor } from "../reuse/db-executor.js";
+import { sha256Of } from "../reuse/crypto.js";
 
 /** Minimal logging interface required by the database initializer. */
 export interface DbInitLogger {
@@ -47,10 +47,6 @@ function splitSqlStatements(sql: string): string[] {
         .map((s) => s.trim())
         .filter((s) => s.length > 0 && !s.startsWith("--"))
         .map((s) => `${s};`);
-}
-
-function sha256Of(content: string): string {
-    return createHash("sha256").update(content, "utf8").digest("hex");
 }
 
 async function ensureMigrationsTable(

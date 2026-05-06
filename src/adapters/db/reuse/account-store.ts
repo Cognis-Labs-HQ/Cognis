@@ -3,15 +3,10 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import type { AuthContext } from "@cognis/core";
 import type { LocalAccountStore } from "../../auth/local/auth-adapter.js";
+export type { DbExecutor } from "../../../api/reuse/db-executor.js";
+import type { DbExecutor } from "../../../api/reuse/db-executor.js";
 
 export type SupportedDbType = "sqlite" | "postgresql" | "mariadb";
-
-export interface DbExecutor {
-    execute(
-        sql: string,
-        params?: unknown[],
-    ): Promise<{ rows?: any[]; rowCount?: number }>;
-}
 
 const LOG_LEVEL = process.env.LOG_LEVEL ?? "info";
 function shouldLogDebug() {

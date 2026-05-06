@@ -1,7 +1,7 @@
 import { issueAccessToken, type AccessRole } from "../../auth/access-tokens.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthGateway } from "@cognis/core";
-import type { LocalAccountStore } from "../../../adapters/auth/local/auth-adapter.js";
+import type { LocalAccountStore } from "../../reuse/account-store.js";
 import { readJson } from "../../reuse/read-json.js";
 
 function resolveRole(

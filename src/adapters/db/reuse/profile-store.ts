@@ -1,66 +1,26 @@
 import { randomUUID } from "node:crypto";
 import type { SupportedDbType } from "./account-store.js";
-
-interface DbExecutor {
-    execute(
-        sql: string,
-        params?: unknown[],
-    ): Promise<{ rows?: any[]; rowCount?: number }>;
-}
-
-export type AccountRole = "user" | "teacher" | "moderator" | "admin";
-export type AccountVisibility = "hidden" | "private" | "friends" | "community";
-export type PostVisibility = "only_me" | "private" | "friends" | "community";
-
-export interface AccountProfile {
-    accountId: string;
-    handle: string;
-    displayName: string | null;
-    role: AccountRole;
-    bio: string | null;
-    location: string | null;
-    website: string | null;
-    avatarKey: string | null;
-    bannerKey: string | null;
-    visibility: AccountVisibility;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export interface Post {
-    id: string;
-    accountId: string;
-    title: string | null;
-    content: string;
-    visibility: PostVisibility;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export interface FileSizeLimit {
-    category: string;
-    maxBytes: number;
-}
-
-export interface ProfileCreateStore {
-    createProfile(
-        accountId: string,
-        handle: string,
-        role?: AccountRole,
-    ): Promise<AccountProfile | null>;
-    setRoleByHandle(handle: string, role: AccountRole): Promise<void>;
-}
-
-const VISIBILITY_RANK: Record<AccountVisibility, number> = {
-    hidden: 0,
-    private: 1,
-    friends: 2,
-    community: 3,
-};
-
-export function visibilityRank(v: AccountVisibility): number {
-    return VISIBILITY_RANK[v] ?? 0;
-}
+import type { DbExecutor } from "./account-store.js";
+export type {
+    AccountRole,
+    AccountVisibility,
+    PostVisibility,
+    AccountProfile,
+    Post,
+    FileSizeLimit,
+    ProfileCreateStore,
+    ProfileStore,
+} from "../../../api/reuse/profile-store.js";
+export { visibilityRank } from "../../../api/reuse/profile-store.js";
+import type {
+    AccountRole,
+    AccountVisibility,
+    PostVisibility,
+    AccountProfile,
+    Post,
+    FileSizeLimit,
+    ProfileCreateStore,
+} from "../../../api/reuse/profile-store.js";
 
 function rowToProfile(row: any): AccountProfile {
     return {

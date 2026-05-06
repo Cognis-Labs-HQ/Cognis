@@ -1,30 +1,9 @@
 import { requireAuth } from "../../../api/auth/guard.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../api/reuse/read-json.js";
-
-export interface UserPreferenceStore {
-    get(accountId: string, pageId: string): Promise<string | null>;
-    set(accountId: string, pageId: string, layoutJson: string): Promise<void>;
-    clearUser(accountId: string): Promise<void>;
-}
-
-export class VolatileUserPreferenceStore implements UserPreferenceStore {
-    private readonly data = new Map<string, string>();
-
-    async get(accountId: string, pageId: string) {
-        return this.data.get(`${accountId}:${pageId}`) ?? null;
-    }
-
-    async set(accountId: string, pageId: string, layoutJson: string) {
-        this.data.set(`${accountId}:${pageId}`, layoutJson);
-    }
-
-    async clearUser(accountId: string) {
-        for (const key of this.data.keys()) {
-            if (key.startsWith(`${accountId}:`)) this.data.delete(key);
-        }
-    }
-}
+export type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
+export { VolatileUserPreferenceStore } from "../../../api/reuse/preference-store.js";
+import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 
 export function createPreferencesRoutes(store: UserPreferenceStore) {
     return async (

@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserRoutes } from "../../routes/users/index.js";
-import { VolatileLocalAccountStore } from "../../../adapters/auth/local/auth-adapter.js";
-import { VolatileUserPreferenceStore } from "../../../gateways/profile/routes/preferences.js";
+import { VolatileLocalAccountStore } from "../../reuse/account-store.js";
+import { VolatileUserPreferenceStore } from "../../reuse/preference-store.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 
 const adminToken = issueAccessToken("admin", "admin", 60);

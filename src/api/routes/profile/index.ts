@@ -1,12 +1,12 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { getAuthClaims, requireAuth } from "../../auth/guard.js";
 import type {
-    DbProfileStore,
+    ProfileStore,
     AccountProfile,
     AccountVisibility,
     AccountRole,
-} from "../../../adapters/db/reuse/profile-store.js";
-import { visibilityRank } from "../../../adapters/db/reuse/profile-store.js";
+} from "../../reuse/profile-store.js";
+import { visibilityRank } from "../../reuse/profile-store.js";
 import type { FileStorageGateway } from "@cognis/core";
 import { readRawBody, readJson } from "../../reuse/read-json.js";
 
@@ -60,7 +60,7 @@ async function canViewProfile(
     requesterId: string | null,
     requesterRole: string | null,
     target: AccountProfile,
-    profileStore: DbProfileStore,
+    profileStore: ProfileStore,
 ): Promise<boolean> {
     if (requesterRole === "admin") return true;
     if (requesterId === target.accountId) return true;
@@ -85,7 +85,7 @@ async function canViewProfile(
  *   profile functionality is temporarily unavailable.
  */
 export function createProfileRoutes(
-    profileStore: DbProfileStore,
+    profileStore: ProfileStore,
     fileGateway?: FileStorageGateway,
     isGatewayEnabled?: () => boolean,
 ) {
