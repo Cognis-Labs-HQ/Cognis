@@ -2,6 +2,7 @@ import path from "node:path";
 import {
     requireAuth,
     readJson,
+    CapabilityStore,
     type GatewayBootstrapContext,
 } from "../shared.js";
 import {
@@ -57,14 +58,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     await authGateway.discoverAdapters(authAdaptersRoot);
     await authGateway.loadPersistedConfigs();
 
-    const createProfile = ctx.capabilities.get<
-        (accountId: string, handle: string, role?: string) => Promise<void>
-    >("profile:createProfile");
-
     ctx.routeRegistry.register(
-        createAuthGatewayRoutes(authGateway, accountStore, createProfile),
+        createAuthGatewayRoutes(authGateway, accountStore, ctx.capabilities),
+        "auth",
     );
-    ctx.routeRegistry.register(createAdapterAdminRoutes("auth", authGateway));
+    ctx.routeRegistry.register(createAdapterAdminRoutes("auth", authGateway), "auth");
 
     ctx.gatewayRegistry.register({
         id: "auth",
@@ -106,11 +104,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 function createAuthGatewayRoutes(
     authGateway: CoreAuthGateway,
     accountStore: InstanceType<typeof DbLocalAccountStore>,
-    createProfile?: (
-        accountId: string,
-        handle: string,
-        role?: string,
-    ) => Promise<void>,
+    capabilities: CapabilityStore,
 ) {
     return async (
         req: IncomingMessage,
@@ -164,6 +158,9 @@ function createAuthGatewayRoutes(
                 password,
                 false,
             );
+            const createProfile = capabilities.get<
+                (accountId: string, handle: string, role?: string) => Promise<void>
+            >("profile:createProfile");
             await createProfile?.(username, username, "user");
             res.writeHead(201, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: result }));
@@ -174,8 +171,8 @@ function createAuthGatewayRoutes(
             const body = await readJson(req);
             const provider = String(body.provider ?? "local");
             const adapter =
-                authGateway.getAdapter(provider) ??
-                authGateway.getAdapter("local");
+                authGateway.getEnabledAdapter(provider) ??
+                authGateway.getEnabledAdapter("local");
             if (!adapter) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
@@ -223,6 +220,9 @@ function createAuthGatewayRoutes(
                     .updateLastLogin(session.accountId)
                     .catch(() => undefined);
             }
+            const createProfile = capabilities.get<
+                (accountId: string, handle: string, role?: string) => Promise<void>
+            >("profile:createProfile");
             await createProfile?.(session.accountId, session.accountId, role);
             res.writeHead(200, {
                 "content-type": "application/json",

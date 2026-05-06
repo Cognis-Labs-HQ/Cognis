@@ -193,9 +193,18 @@ export function buildServer(deps: ApiDependencies) {
             }
 
             // Gateway-registered route handlers run after core routes but before
-            // module extensions, docs, and UI.
-            for (const handler of deps.routeRegistry?.getHandlers() ?? []) {
-                const handledByRegistry = await handler(req, res, url);
+            // module extensions, docs, and UI. Handlers tied to a disabled
+            // gateway are skipped so that disabling a gateway also silences its
+            // routes without needing explicit unregistration.
+            for (const entry of deps.routeRegistry?.getEntries() ?? []) {
+                if (
+                    entry.gatewayId &&
+                    deps.gatewayRegistry?.get(entry.gatewayId)?.status ===
+                        "disabled"
+                ) {
+                    continue;
+                }
+                const handledByRegistry = await entry.handler(req, res, url);
                 if (handledByRegistry) {
                     log("info", "Request handled by registered route.", {
                         method: req.method ?? "GET",

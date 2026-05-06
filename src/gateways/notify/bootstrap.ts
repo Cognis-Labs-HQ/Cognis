@@ -50,7 +50,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : undefined);
 
-    ctx.routeRegistry.register(createNotificationRoutes(gateway, notifStore));
+    ctx.routeRegistry.register(createNotificationRoutes(gateway, notifStore), "notify");
     ctx.routeRegistry.register(
         createUserEmailRoutes(
             notifStore,
@@ -59,9 +59,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             gateway,
             externalHost,
         ),
+        "notify",
     );
     ctx.routeRegistry.register(
         createGatewayAdapterRoutes("notify", gateway, ctx.gatewayRegistry),
+        "notify",
     );
 
     ctx.gatewayRegistry.register({

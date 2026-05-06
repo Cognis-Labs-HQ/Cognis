@@ -148,10 +148,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             fileGateway ?? undefined,
             () => ctx.gatewayRegistry.get("profile")?.status !== "disabled",
         ),
+        "profile",
     );
 
     if (fileGateway) {
-        ctx.routeRegistry.register(createFileRoutes(profileStore, fileGateway));
+        ctx.routeRegistry.register(createFileRoutes(profileStore, fileGateway), "profile");
         ctx.log?.("info", "Profile gateway: file routes registered.");
     } else {
         ctx.log?.(
@@ -164,14 +165,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createProfilePageRoutes(
             () => ctx.gatewayRegistry.get("profile")?.status !== "disabled",
         ),
+        "profile",
     );
-    ctx.routeRegistry.register(createSocialRoutes(profileStore));
-    ctx.routeRegistry.register(createPostRoutes(profileStore));
+    ctx.routeRegistry.register(createSocialRoutes(profileStore), "profile");
+    ctx.routeRegistry.register(createPostRoutes(profileStore), "profile");
 
     const prefStore =
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     if (prefStore) {
-        ctx.routeRegistry.register(createPreferencesRoutes(prefStore));
+        ctx.routeRegistry.register(createPreferencesRoutes(prefStore), "profile");
     }
 
     ctx.gatewayRegistry.register({

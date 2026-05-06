@@ -291,3 +291,164 @@ test("auth gateway bootstrap registers admin section scriptUrl that resolves wit
         `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,
     );
 });
+
+test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", async () => {
+    const { CoreAuthGateway } = await import("../gateway.js");
+
+    const db = {
+        execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
+    } as ReturnType<typeof makeInMemoryDb> & {
+        execute: (sql: string, params?: unknown[]) => Promise<{ rows?: unknown[] }>;
+    };
+
+    const gw = new CoreAuthGateway(db, "sqlite");
+
+    const mockAdapter = {
+        id: "oidc",
+        name: "OIDC",
+        authenticate: async () => null,
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    };
+
+    gw.registerAdapter(mockAdapter);
+
+    assert.equal(
+        gw.getEnabledAdapter("oidc"),
+        null,
+        "adapter that was never enabled should not be returned",
+    );
+
+    await gw.enableAdapter("oidc");
+    assert.ok(
+        gw.getEnabledAdapter("oidc"),
+        "enabled adapter should be returned",
+    );
+
+    await gw.disableAdapter("oidc");
+    assert.equal(
+        gw.getEnabledAdapter("oidc"),
+        null,
+        "disabled adapter should not be returned",
+    );
+});
+
+test("login endpoint returns 503 when no auth providers are available", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const entries = routeRegistry.getEntries();
+    const chunks = [Buffer.from(JSON.stringify({ provider: "local", username: "nobody", password: "bad" }))];
+    const req = {
+        method: "POST",
+        headers: {},
+        [Symbol.asyncIterator]: async function* () {
+            for (const chunk of chunks) yield chunk;
+        },
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    let handled = false;
+    for (const entry of entries) {
+        handled = await entry.handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/login", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.ok(handled, "login endpoint should handle the request");
+    assert.equal(res.status, 401, "bad credentials should yield 401");
+});
+
+test("profile:createProfile capability is looked up lazily in login and register handlers", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    let profileCreated: string | null = null;
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    capabilities.contribute(
+        "profile:createProfile",
+        async (accountId: string) => {
+            profileCreated = accountId;
+        },
+    );
+
+    const entries = routeRegistry.getEntries();
+    const chunks = [Buffer.from(JSON.stringify({ username: "testuser", password: "testpass" }))];
+    const req = {
+        method: "POST",
+        headers: {},
+        [Symbol.asyncIterator]: async function* () {
+            for (const chunk of chunks) yield chunk;
+        },
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    for (const entry of entries) {
+        const handled = await entry.handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/register", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.equal(
+        profileCreated,
+        "testuser",
+        "profile:createProfile contributed after bootstrap should be invoked on register",
+    );
+});
+
+test("RouteRegistry.getEntries returns handlers with their associated gatewayId", async () => {
+    const registry = new RouteRegistry();
+
+    const handlerA = async () => false;
+    const handlerB = async () => false;
+    const handlerC = async () => false;
+
+    registry.register(handlerA, "notify");
+    registry.register(handlerB, "profile");
+    registry.register(handlerC);
+
+    const entries = registry.getEntries();
+    assert.equal(entries.length, 3);
+    assert.equal(entries[0].gatewayId, "notify");
+    assert.equal(entries[1].gatewayId, "profile");
+    assert.equal(entries[2].gatewayId, undefined);
+    assert.equal(entries[0].handler, handlerA);
+    assert.equal(entries[1].handler, handlerB);
+    assert.equal(entries[2].handler, handlerC);
+});

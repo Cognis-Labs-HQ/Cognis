@@ -243,6 +243,11 @@ export class CoreAuthGateway {
         return this.adapters.get(adapterId) ?? null;
     }
 
+    getEnabledAdapter(adapterId: string): AuthProviderAdapter | null {
+        if (!this.enabledAdapters.has(adapterId)) return null;
+        return this.adapters.get(adapterId) ?? null;
+    }
+
     listAdapters(): AdapterInfo[] {
         return Array.from(this.adapters.values()).map((adapter) => {
             const requires = this.adapterRequires.get(adapter.id);

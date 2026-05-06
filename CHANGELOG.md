@@ -10,6 +10,9 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - CI: corrected tsconfig project reference paths in `src/adapters/db/*/tsconfig.json` and `src/adapters/file/local/tsconfig.json` from `../../core` to `../../../core` so they resolve to `src/core` rather than the non-existent `src/adapters/core`. ([9080e62](https://github.com/le-firehawk/Cognis/commit/9080e62))
+- Auth gateway: `/api/v1/auth/login` with `provider: "oidc"/"ldap"/"saml"` could authenticate through a registered-but-disabled adapter. The login handler now uses `getEnabledAdapter()` so only adapters in the enabled set are eligible. ([eb5d3f1](https://github.com/le-firehawk/Cognis/commit/eb5d3f1))
+- Auth gateway: `profile:createProfile` was captured at bootstrap time (before the profile gateway has contributed it), causing new registrations and logins to silently skip profile-row creation. The capability is now looked up lazily inside the route handler. ([eb5d3f1](https://github.com/le-firehawk/Cognis/commit/eb5d3f1))
+- Route registry: registered handlers for optional gateways (e.g. notify, profile) remained live after the gateway was disabled. `RouteRegistry` now stores an optional `gatewayId` alongside each handler and the server skips any entry whose gateway is marked disabled. ([eb5d3f1](https://github.com/le-firehawk/Cognis/commit/eb5d3f1))
 
 ### Added
 
