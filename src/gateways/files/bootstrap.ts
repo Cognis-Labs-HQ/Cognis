@@ -32,10 +32,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             content: string | Uint8Array,
         ): Promise<void> => {
             await mkdir(path.dirname(filePath), { recursive: true });
-            await writeFile(
-                filePath,
-                typeof content === "string" ? content : content,
-            );
+            await writeFile(filePath, content);
         },
     );
 

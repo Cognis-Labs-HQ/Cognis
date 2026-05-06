@@ -173,9 +173,11 @@ try {
 
 const dbExecutor = capabilities.get<DbExecutor>("db:executor")!;
 const dbDialect = capabilities.get<DbDialectHelper>("db:dialect")!;
+const dbType = capabilities.get<string>("db:type") ?? "sqlite";
 
+const adminStatePlaceholder = dbType === "postgresql" ? "$1" : "?";
 const adminStateResult = await dbExecutor.execute(
-    "SELECT state_value FROM bootstrap_state WHERE state_key = ?",
+    `SELECT state_value FROM bootstrap_state WHERE state_key = ${adminStatePlaceholder}`,
     ["default_admin_initialized"],
 );
 const adminInitialized = adminStateResult.rows?.[0]?.state_value === "true";

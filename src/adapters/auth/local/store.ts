@@ -12,13 +12,39 @@
  * src/adapters/db/<provider>/sql/init/; the ensureSchema() method is a
  * no-op safety net only.
  */
-import { createHash } from "node:crypto";
+import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
+import { promisify } from "node:util";
 import type { AuthContext } from "@cognis/core";
 import type { LocalAccountStore } from "../../../api/reuse/account-store.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { SupportedDbType } from "../../../gateways/db/executor.js";
 
-function hash(input: string) {
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string): Promise<string> {
+    const salt = randomBytes(16).toString("hex");
+    const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
+    return `scrypt:${salt}:${derivedKey.toString("hex")}`;
+}
+
+async function verifyPassword(
+    stored: string,
+    candidate: string,
+): Promise<boolean> {
+    if (stored.startsWith("scrypt:")) {
+        const [, salt, keyHex] = stored.split(":");
+        const candidateKey = (await scryptAsync(candidate, salt, 64)) as Buffer;
+        const storedKey = Buffer.from(keyHex, "hex");
+        return (
+            candidateKey.length === storedKey.length &&
+            timingSafeEqual(candidateKey, storedKey)
+        );
+    }
+    // fall through to legacy SHA-256 (lines 30-33 below)
+    return stored === sha256Hash(candidate);
+}
+
+function sha256Hash(input: string): string {
     return createHash("sha256").update(input).digest("hex");
 }
 
@@ -109,6 +135,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
     async register(username: string, password: string, isAdmin = false) {
         if (await this.has(username)) throw new Error("username_taken");
         const role = isAdmin ? "admin" : "user";
+        const passwordHash = await hashPassword(password);
         await this.db.execute("BEGIN");
         try {
             await this.db.execute(
@@ -119,7 +146,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
             await this.db.execute(
                 `INSERT INTO local_auth_credentials (account_id, username, password_hash, password_algorithm, created_at, updated_at)
          VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)}, ${this.currentTimestampExpression()}, ${this.currentTimestampExpression()})`,
-                [username, username, hash(password), "sha256"],
+                [username, username, passwordHash, "scrypt"],
             );
             await this.db.execute("COMMIT");
         } catch (error) {
@@ -142,7 +169,12 @@ export class DbLocalAccountStore implements LocalAccountStore {
             [username],
         );
         const account = result.rows?.[0];
-        if (!account || account.password_hash !== hash(password)) return null;
+        if (!account) return null;
+        const passwordOk = await verifyPassword(
+            String(account.password_hash),
+            password,
+        );
+        if (!passwordOk) return null;
         const derivedRole =
             account.role ?? (Boolean(account.is_admin) ? "admin" : "user");
         return {
@@ -184,11 +216,12 @@ export class DbLocalAccountStore implements LocalAccountStore {
         );
     }
     async setPassword(username: string, password: string) {
+        const passwordHash = await hashPassword(password);
         await this.db.execute(
             `UPDATE local_auth_credentials
-       SET password_hash = ${this.placeholder(1)}, updated_at = ${this.currentTimestampExpression()}
-       WHERE username = ${this.placeholder(2)}`,
-            [hash(password), username],
+       SET password_hash = ${this.placeholder(1)}, password_algorithm = ${this.placeholder(2)}, updated_at = ${this.currentTimestampExpression()}
+       WHERE username = ${this.placeholder(3)}`,
+            [passwordHash, "scrypt", username],
         );
     }
     async setEnabled(username: string, enabled: boolean) {
