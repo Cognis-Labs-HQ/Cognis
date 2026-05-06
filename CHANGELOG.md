@@ -56,7 +56,11 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - `renderInlineAdapters` now renders locked adapters with their toggle disabled, matching the Security section behaviour for the local auth adapter.
 - `bindAdapterRows` now skips click-to-config for locked adapters.
 - `bindAdapters` (renamed from `bindProviders`) in `admin-section.js` reflects internal naming conventions.
-- Administration page Security section: the inline Save button is removed from the Trusted Email Domains form. Changes are now tracked by a floating Discard/Save bar (matching the Settings page pattern). The `initSecuritySection` interface gains `save()`, `discard()`, and an `onDirtyChange` callback parameter. `ui.app.admin.authentication` i18n key added in all four language files.
+- Administration page Security section: the inline Save button is removed from the Trusted Email Domains form. Changes are now tracked by a floating Discard/Save bar (matching the Settings page pattern). The `initSecuritySection` interface gains `save()`, `discard()`, and an `onDirtyChange` callback parameter.
+
+### Added
+
+- `ui.app.admin.authentication` i18n key added in all four language files (en, de, ja, id) for the renamed Authentication admin section contributed by the auth gateway.
 
 ### Fixed
 

@@ -22,6 +22,12 @@ import { escapeHtml } from "../../reuse/escape-html.js";
  * @param {Element} root
  * @param {{ i18n: object, onDirtyChange?: (dirty: boolean) => void }} options
  * @returns {{ init: () => Promise<void>, save: () => Promise<void>, discard: () => void, renderContent: () => string }}
+ *
+ * Note: `save()` and `discard()` are only meaningful after `init()` resolves,
+ * since `init()` sets `originalDomains` and binds the input element. They are
+ * always called from the floating unsaved-changes bar, which only becomes
+ * visible after the user edits the input (which itself requires `init()` to
+ * have completed), so this ordering constraint is satisfied naturally.
  */
 export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalDomains = [];
