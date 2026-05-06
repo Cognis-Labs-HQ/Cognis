@@ -7,10 +7,23 @@ const ROOT_DOCS_DIR = join(SRC_ROOT, "docs");
 const DEFAULT_LANG = "en";
 const SAFE_LANG_PATTERN = /^[a-z]{2}(?:-[a-z]{2})?$/;
 
-function resolveLang(url: URL): string {
-    const queryLang = (url.searchParams.get("lang") || "").toLowerCase();
-    if (SAFE_LANG_PATTERN.test(queryLang)) return queryLang;
-    return DEFAULT_LANG;
+function resolveLangs(url: URL): string[] {
+    const raw = (
+        url.searchParams.get("langs") ||
+        url.searchParams.get("lang") ||
+        ""
+    ).toLowerCase();
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const candidate of raw.split(",")) {
+        const lang = candidate.trim();
+        if (SAFE_LANG_PATTERN.test(lang) && !seen.has(lang)) {
+            seen.add(lang);
+            result.push(lang);
+        }
+    }
+    if (!seen.has(DEFAULT_LANG)) result.push(DEFAULT_LANG);
+    return result;
 }
 
 interface DocEntry {
@@ -167,7 +180,7 @@ export function createDocsRoutes() {
         if (!match) return false;
 
         const rawSlug = match[1].replace(/\.\./g, "").replace(/\/+/g, "/");
-        const lang = resolveLang(url);
+        const langs = resolveLangs(url);
 
         const index = await collectDocIndex();
         const entry = index.get(rawSlug);
@@ -179,13 +192,21 @@ export function createDocsRoutes() {
         }
 
         let content: string | undefined;
-        for (const suffix of [`.${lang}.md`, `.${DEFAULT_LANG}.md`, ".md"]) {
+        for (const lang of langs) {
             try {
-                content = await readFile(`${entry.fileStem}${suffix}`, "utf-8");
+                content = await readFile(
+                    `${entry.fileStem}.${lang}.md`,
+                    "utf-8",
+                );
                 break;
             } catch {
                 continue;
             }
+        }
+        if (content === undefined) {
+            try {
+                content = await readFile(`${entry.fileStem}.md`, "utf-8");
+            } catch {}
         }
 
         if (content === undefined) {

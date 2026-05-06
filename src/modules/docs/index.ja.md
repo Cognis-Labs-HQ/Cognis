@@ -1,56 +1,100 @@
-# Module Frontend Framework
+# モジュールフレームワーク
 
-## Goals
+## 概要
 
-External modules must be able to contribute CSS, HTML templates, and JS behavior without patching core pages.
+Cognis モジュールフレームワークにより、サードパーティおよびコミュニティの開発者はコアを変更することなく、新しい学習モード、インテグレーション、および UI ページでプラットフォームを拡張できます。モジュールは `manifest.json` を宣言し、API ルートを登録し、UI ページを提供し、オプションで CLI サブコマンドを追加する自己完結型のディレクトリまたはアーカイブです。コアモジュール (`class: "core"`) はプラットフォームに同梱され、切り替えることができません。拡張モジュールは、管理 API または `cognisctl` を通じてランタイムで有効化、無効化、インストール、および削除できます。
 
-## Nginx-style module enablement
+## 責務
 
-Cognis now follows an nginx-like convention:
+- `COGNIS_MODULES_ROOT` (デフォルト `src/modules`) からモジュールマニフェストを検出してロードする。
+- `ModuleRuntimeGateway` インターフェースを通じて `enable` および `disable` 操作を公開する。
+- 有効な各モジュールの `entrypoints.api` ファイルから API ルートプラグインを動的にインポートする。
+- モジュールルートが保護されたシステムプレフィックスを上書きしないようにブロックする。
+- モジュールが有効化または無効化されたときに登録済みモジュールルートを更新する。
 
-1. Module artifacts are discovered from a search path (`internal` then `external`).
-2. Enabling writes a pointer file: `<enabled-pointers>/<moduleId>.load`.
-3. The pointer targets either:
-    - trusted internal unpacked directory, or
-    - temporary runtime extraction directory for external archives.
+責務外: モジュール API 呼び出しの認証 (プラットフォーム認証層が処理します)、モジュールレベルのデータ永続化の提供 (モジュールは `db:executor` 機能を使用します)、モジュール UI ページのレンダリング (モジュールは `entrypoints.ui` を通じて独自の HTML エントリポイントを提供します)。
 
-## Module source conventions
+## アーキテクチャ
 
-- **Internal modules**: unpacked directories; trusted by default.
-- **External modules**: must be `.zip` or `.tar.gz` files under `MODULES_PATH` (default `/app/modules/external`).
-- External modules require explicit disclaimer acknowledgement before `enable` succeeds.
+### モジュールの検出
 
-## Contract
+起動時に `ModuleService` は `COGNIS_MODULES_ROOT` をスキャンして `manifest.json` を含むディレクトリを探します。有効な各マニフェストは `ModuleManifest` オブジェクトに解析されます。
 
-Each module ships a manifest with frontend assets:
+**nginx スタイルの有効化:** 有効なモジュールは `{modulesRoot}/{moduleId}.load` のポインターファイルで示されます。ファイルを作成するとモジュールが有効になり、削除すると無効になります。これは nginx の `sites-enabled` シンボリックリンクパターンを踏襲しており、モジュールの有効化/無効化がプロセスの再起動後も保持されるファイルシステム操作であることを意味します。
 
-```json
-{
-    "id": "attendance",
-    "publisher": "Example Corp",
-    "frontend": {
-        "styles": ["/modules/attendance/styles.css"],
-        "templates": ["/modules/attendance/panel.html"],
-        "scripts": ["/modules/attendance/index.js"]
-    }
+### 内部モジュールと外部モジュール
+
+| 種別 | ソース | インストール | 免責事項 |
+| ---- | ------ | ------------ | -------- |
+| `internal` | `src/modules/` 下のリポジトリにバンドル | プリインストール | なし |
+| `external` | アップロードされた `.zip` または `.tar.gz` アーカイブ | 管理 API または `modules:install` CLI 経由 | 有効化前に表示 |
+
+外部モジュールは圧縮アーカイブをアップロードしてインストールします。フレームワークはアーカイブを展開し、`manifest.json` を検証して、`COGNIS_MODULES_ROOT` 下にモジュールディレクトリを配置します。
+
+### ModuleManifest コントラクト
+
+```ts
+export interface ModuleManifest {
+  id: string;
+  name: string;
+  version: string;
+  publisher?: string;
+  class: 'core' | 'extension';
+  coreApiVersion: string;
+  capabilities: string[];
+  requires?: string[];
+  entrypoints: {
+    api?: string;
+    ui?: string;
+    cli?: string;
+    db?: string;
+  };
 }
 ```
 
-## Loader sequence
+`class: 'core'` のモジュールは API を通じて無効化できません。`requires` は、モジュールが機能するために有効でなければならないゲートウェイ ID を列挙します。管理 UI は、モジュールを有効化する前に無効化された依存関係を有効化するよう促します。
 
-1. Resolve module manifest list from API.
-2. Append `<link rel="stylesheet">` for module styles.
-3. Fetch templates and register in template cache.
-4. Import scripts as ESM and call `mount(context)`.
+### フロントエンドコントラクト
 
-## Guardrails
+`entrypoints.ui` を提供するモジュールは、モジュールディレクトリからの宣言されたパスにページをエクスポートする必要があります。プラットフォームは標準の `<script src="/ui/main.js">` と `<link rel="stylesheet" href="/ui/styles.css">` を注入し、モジュールページは共有シェルでレンダリングされます。
 
-- Module CSS should use prefixed classes (`.mod-<id>-*`).
-- Module HTML should render inside layout slots, not replace page shell.
-- Module JS should only call public API helpers in `ui/reuse`.
-- Module route definitions (e.g. `routes.json`) are sanity checked to block collisions with protected prefixes (`/api/v1/system`, `/api/v1/auth`, `/api/v1/users`, `/public`, `/ui`).
-- Module files are loaded from module-owned directories, not copied into trusted core paths such as `ui/public`.
+### API ルートの登録
 
-## Metadata
+```ts
+export function registerApiRoutes(router) {
+  router.get('/api/v1/modules/my-module/data', async (req, res) => {
+    // handler
+  });
+}
+```
 
-- Modules should include `publisher` in manifest metadata so admin tooling can surface ownership details.
+`src/modules/routes/module-extensions.ts` の `createModuleExtensionRoutes` は、`entrypoints.api` を宣言するすべての有効なモジュールの `registerApiRoutes` を呼び出します。ルートは `refresh()` を通じてすべての有効化/無効化サイクルで再ロードされます。
+
+### 保護されたルートプレフィックス
+
+モジュールルートは以下のプレフィックスで始まってはいけません:
+
+| プレフィックス | 理由 |
+| -------------- | ---- |
+| `/api/v1/system` | コアシステムエンドポイント |
+| `/api/v1/auth` | 認証ゲートウェイ |
+| `/api/v1/users` | ユーザー管理 |
+| `/public` | プラットフォーム静的アセット |
+| `/ui` | プラットフォーム UI アセット |
+
+保護されたプレフィックスの下にルートを登録しようとすると、警告がログに記録されて無視されます。
+
+## 設定
+
+| 変数 | デフォルト | 説明 |
+| ---- | ---------- | ---- |
+| `COGNIS_MODULES_ROOT` | `src/modules` (cwd から解決) | モジュールサブディレクトリをスキャンするディレクトリ |
+
+## API ルート
+
+| メソッド | パス | 説明 | 認証 |
+| -------- | ---- | ---- | ---- |
+| `GET` | `/api/v1/modules` | 有効/無効の状態とともにインストール済みモジュールをすべて一覧表示 | Bearer |
+| `POST` | `/api/v1/modules/:id/enable` | モジュールを有効化 | Admin |
+| `POST` | `/api/v1/modules/:id/disable` | モジュールを無効化 | Admin |
+| `POST` | `/api/v1/modules/install` | アップロードされたアーカイブからモジュールをインストール | Admin |

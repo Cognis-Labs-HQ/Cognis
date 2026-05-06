@@ -89,6 +89,32 @@ test("docs route falls back to English when requested lang is missing", async ()
     assert.match(body, /UI/);
 });
 
+test("docs route uses secondary language before falling back to English", async () => {
+    const route = createDocsRoutes();
+    let status = 0;
+    let body = "";
+    const handled = await route(
+        { method: "GET" } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/docs/ui?langs=xx%2Cde"),
+    );
+    assert.equal(handled, true);
+    assert.equal(status, 200);
+    const parsed = JSON.parse(body);
+    assert.ok(
+        parsed.data.markdown.includes("Benutzeroberfläche") ||
+            parsed.data.markdown.includes("UI"),
+        "served secondary language (de) before English",
+    );
+});
+
 test("docs route returns 404 for unknown slug", async () => {
     const route = createDocsRoutes();
     let status = 0;
