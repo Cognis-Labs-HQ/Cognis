@@ -11,6 +11,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 - ([3213808](https://github.com/le-firehawk/Cognis/commit/3213808)) `resolveDbProviderDir` in `db-init.ts` returned `"postgresql"` but the actual adapter directory is `postgres/`; all PostgreSQL init and migration SQL was silently skipped, causing `relation "modules" does not exist` on startup
 - Favicon missing from all app pages; added `<link rel="icon">` pointing to `/static/assets/icons/cognis-icon.png` in every HTML page `<head>`
+- ([5a975f8](https://github.com/le-firehawk/Cognis/commit/5a975f8)) `uiDir` in auth, notify, and profile gateway bootstraps still referenced the removed `src/api/gateways/` path; `/static/gateways/{auth,notify}/admin-section.js` and `/static/gateways/profile/navbar.js` returned 404
 
 ### Added
 

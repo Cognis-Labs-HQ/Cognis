@@ -76,7 +76,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const uiDir = path.resolve(
         process.cwd(),
         "src",
-        "api",
         "gateways",
         "notify",
         "ui",
