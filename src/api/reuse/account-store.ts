@@ -56,6 +56,8 @@ function hashPassword(input: string): string {
 /**
  * In-memory implementation of LocalAccountStore for use in tests.
  * No persistence — state resets on every instantiation.
+ * Not suitable for production: passwords use a fixed salt and low PBKDF2
+ * iteration count for test-execution speed.
  */
 export class VolatileLocalAccountStore implements LocalAccountStore {
     private readonly accounts = new Map<string, StoredAccount>();

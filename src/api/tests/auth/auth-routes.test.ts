@@ -7,10 +7,15 @@ import type { AuthContext, AuthGateway } from "@cognis/core";
 function makeGateway(store: VolatileLocalAccountStore): AuthGateway {
     return {
         async authenticate(token: string): Promise<AuthContext | null> {
-            const payload = JSON.parse(token) as {
-                username?: string;
-                password?: string;
-            };
+            let payload: { username?: string; password?: string };
+            try {
+                payload = JSON.parse(token) as {
+                    username?: string;
+                    password?: string;
+                };
+            } catch {
+                return null;
+            }
             return store.verify(
                 String(payload.username ?? ""),
                 String(payload.password ?? ""),
