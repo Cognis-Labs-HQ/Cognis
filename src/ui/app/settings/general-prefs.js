@@ -27,7 +27,6 @@ import { watchToken } from "../../reuse/validation-url.js";
 export function initGeneralPrefs(root, { i18n, username }) {
     let emails = [];
     let trustedDomains = null;
-    let clickController = null;
 
     async function loadEmails() {
         const res = await apiFetch(
@@ -280,167 +279,147 @@ export function initGeneralPrefs(root, { i18n, username }) {
     }
 
     function bindEmailActions() {
-        clickController?.abort();
-        clickController = new AbortController();
-        root.addEventListener(
-            "click",
-            async (evt) => {
-                const target = evt.target;
-                if (!(target instanceof HTMLElement)) return;
+        root.addEventListener("click", async (evt) => {
+            const target = evt.target;
+            if (!(target instanceof HTMLElement)) return;
 
-                const removeAttr = target.dataset.removeEmail;
-                if (removeAttr) {
-                    try {
-                        await removeEmail(removeAttr);
-                        await loadEmails();
-                        renderEmailList();
-                    } catch (err) {
-                        const code =
-                            err instanceof Error
-                                ? err.message
-                                : "remove_failed";
-                        if (code === "cannot_remove_primary_email") {
-                            await openPopup({
-                                title: i18n.t(
-                                    "ui.app.settings.emails_remove_primary_title",
-                                ),
-                                body: i18n.t(
-                                    "ui.app.settings.emails_remove_primary_body",
-                                ),
-                                variant: "info",
-                                actions: [
-                                    {
-                                        id: "close",
-                                        label: i18n.t("ui.reuse.generic.done"),
-                                        variant: "confirm",
-                                    },
-                                ],
-                            });
-                        } else {
-                            showStatus(
-                                i18n.t("ui.app.settings.emails_remove_failed"),
-                            );
-                        }
-                    }
-                    return;
-                }
-
-                const setPrimaryAttr = target.dataset.setPrimary;
-                if (setPrimaryAttr) {
-                    await setPrimaryEmail(setPrimaryAttr);
+            const removeAttr = target.dataset.removeEmail;
+            if (removeAttr) {
+                try {
+                    await removeEmail(removeAttr);
                     await loadEmails();
                     renderEmailList();
-                    return;
+                } catch (err) {
+                    const code =
+                        err instanceof Error ? err.message : "remove_failed";
+                    if (code === "cannot_remove_primary_email") {
+                        await openPopup({
+                            title: i18n.t(
+                                "ui.app.settings.emails_remove_primary_title",
+                            ),
+                            body: i18n.t(
+                                "ui.app.settings.emails_remove_primary_body",
+                            ),
+                            variant: "info",
+                            actions: [
+                                {
+                                    id: "close",
+                                    label: i18n.t("ui.reuse.generic.done"),
+                                    variant: "confirm",
+                                },
+                            ],
+                        });
+                    } else {
+                        showStatus(
+                            i18n.t("ui.app.settings.emails_remove_failed"),
+                        );
+                    }
                 }
+                return;
+            }
 
-                const resendAttr = target.dataset.resendVerification;
-                if (resendAttr) {
-                    const allowed = await checkDomainAndNotify(resendAttr);
-                    if (!allowed) return;
-                    try {
-                        const result = await resendVerification(resendAttr);
+            const setPrimaryAttr = target.dataset.setPrimary;
+            if (setPrimaryAttr) {
+                await setPrimaryEmail(setPrimaryAttr);
+                await loadEmails();
+                renderEmailList();
+                return;
+            }
+
+            const resendAttr = target.dataset.resendVerification;
+            if (resendAttr) {
+                const allowed = await checkDomainAndNotify(resendAttr);
+                if (!allowed) return;
+                try {
+                    const result = await resendVerification(resendAttr);
+                    const action = await openVerifyPopup(
+                        resendAttr,
+                        result.watchToken,
+                    );
+                    if (action !== "verified") {
+                        try {
+                            await forceRemoveUnverifiedEmail(resendAttr);
+                        } catch {
+                            /* ignore */
+                        }
+                    }
+                    await loadEmails();
+                    renderEmailList();
+                } catch (err) {
+                    const code =
+                        err instanceof Error ? err.message : "resend_failed";
+                    if (code === "rate_limited") {
+                        showStatus(
+                            i18n.t(
+                                "ui.app.settings.emails_verify_rate_limited",
+                            ),
+                        );
+                    } else if (code === "smtp_unavailable") {
+                        showStatus(
+                            i18n.t("ui.app.settings.emails_verify_unavailable"),
+                        );
+                    } else {
+                        showStatus(i18n.t("ui.app.settings.emails_add_failed"));
+                    }
+                }
+                return;
+            }
+
+            if (target.id === "email-add-btn") {
+                const input = root.querySelector("#email-add-input");
+                if (!(input instanceof HTMLInputElement)) return;
+                const address = input.value.trim().toLowerCase();
+                if (!address) return;
+                const allowed = await checkDomainAndNotify(address);
+                if (!allowed) return;
+                try {
+                    const result = await addEmail(address);
+                    input.value = "";
+                    await loadEmails();
+                    renderEmailList();
+                    if (result.pendingVerification) {
                         const action = await openVerifyPopup(
-                            resendAttr,
+                            address,
                             result.watchToken,
                         );
                         if (action !== "verified") {
                             try {
-                                await forceRemoveUnverifiedEmail(resendAttr);
+                                await forceRemoveUnverifiedEmail(address);
                             } catch {
                                 /* ignore */
                             }
                         }
                         await loadEmails();
                         renderEmailList();
-                    } catch (err) {
-                        const code =
-                            err instanceof Error
-                                ? err.message
-                                : "resend_failed";
-                        if (code === "rate_limited") {
-                            showStatus(
-                                i18n.t(
-                                    "ui.app.settings.emails_verify_rate_limited",
-                                ),
-                            );
-                        } else if (code === "smtp_unavailable") {
-                            showStatus(
-                                i18n.t(
-                                    "ui.app.settings.emails_verify_unavailable",
-                                ),
-                            );
-                        } else {
-                            showStatus(
-                                i18n.t("ui.app.settings.emails_add_failed"),
-                            );
-                        }
                     }
-                    return;
-                }
-
-                if (target.id === "email-add-btn") {
-                    const input = root.querySelector("#email-add-input");
-                    if (!(input instanceof HTMLInputElement)) return;
-                    const address = input.value.trim().toLowerCase();
-                    if (!address) return;
-                    const allowed = await checkDomainAndNotify(address);
-                    if (!allowed) return;
-                    try {
-                        const result = await addEmail(address);
-                        input.value = "";
-                        await loadEmails();
-                        renderEmailList();
-                        if (result.pendingVerification) {
-                            const action = await openVerifyPopup(
-                                address,
-                                result.watchToken,
-                            );
-                            if (action !== "verified") {
-                                try {
-                                    await forceRemoveUnverifiedEmail(address);
-                                } catch {
-                                    /* ignore */
-                                }
-                            }
-                            await loadEmails();
-                            renderEmailList();
-                        }
-                    } catch (err) {
-                        const code =
-                            err instanceof Error ? err.message : "add_failed";
-                        if (code === "already_verified") {
-                            showStatus(
-                                i18n.t(
-                                    "ui.app.settings.emails_already_verified",
-                                ),
-                            );
-                        } else if (code === "email_taken") {
-                            showStatus(
-                                i18n.t("ui.app.settings.emails_email_taken"),
-                            );
-                        } else if (code === "rate_limited") {
-                            showStatus(
-                                i18n.t(
-                                    "ui.app.settings.emails_verify_rate_limited",
-                                ),
-                            );
-                        } else if (code === "smtp_unavailable") {
-                            showStatus(
-                                i18n.t(
-                                    "ui.app.settings.emails_verify_unavailable",
-                                ),
-                            );
-                        } else {
-                            showStatus(
-                                i18n.t("ui.app.settings.emails_add_failed"),
-                            );
-                        }
+                } catch (err) {
+                    const code =
+                        err instanceof Error ? err.message : "add_failed";
+                    if (code === "already_verified") {
+                        showStatus(
+                            i18n.t("ui.app.settings.emails_already_verified"),
+                        );
+                    } else if (code === "email_taken") {
+                        showStatus(
+                            i18n.t("ui.app.settings.emails_email_taken"),
+                        );
+                    } else if (code === "rate_limited") {
+                        showStatus(
+                            i18n.t(
+                                "ui.app.settings.emails_verify_rate_limited",
+                            ),
+                        );
+                    } else if (code === "smtp_unavailable") {
+                        showStatus(
+                            i18n.t("ui.app.settings.emails_verify_unavailable"),
+                        );
+                    } else {
+                        showStatus(i18n.t("ui.app.settings.emails_add_failed"));
                     }
-                    return;
                 }
-            },
-            { signal: clickController.signal },
-        );
+                return;
+            }
+        });
     }
 
     return {
@@ -448,6 +427,10 @@ export function initGeneralPrefs(root, { i18n, username }) {
             await loadEmails();
             renderEmailList();
             bindEmailActions();
+        },
+        async refresh() {
+            await loadEmails();
+            renderEmailList();
         },
     };
 }
