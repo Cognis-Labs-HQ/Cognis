@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap");
-@import url("/static/styles/base/theme.css");
-@import url("/static/styles/base/layout.css");
+@import url("/static/styles/reuse/theme.css");
+@import url("/static/styles/reuse/layout.css");
 
 .tabs {
     display: flex;
@@ -686,8 +686,8 @@ body.composer-theme-hidden .composer-edit-toggle {
     width: 20px;
     height: 20px;
     background-color: var(--text);
-    -webkit-mask-image: url("/static/assets/icons/edit.svg");
-    mask-image: url("/static/assets/icons/edit.svg");
+    -webkit-mask-image: url("/static/assets/reuse/edit.svg");
+    mask-image: url("/static/assets/reuse/edit.svg");
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
     -webkit-mask-size: contain;

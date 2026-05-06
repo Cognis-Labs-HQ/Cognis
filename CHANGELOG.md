@@ -9,6 +9,27 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `src/tooling/scripts/gen-tsconfig.mjs` — auto-discovers all `composite: true` tsconfig.json files under `src/` and regenerates the root `tsconfig.json`; `npm run typecheck` now invokes this generator first, eliminating manually maintained project reference lists
+- ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `src/ui/reuse/element-registry.js` — page-element look-up registry (replaces `components/widget-registry.js`); exports `getElementDefinition`, `mergeElementConfig`, `getElementLibrary`
+- ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `src/ui/reuse/font-prefs.js` — font catalog loading, picker construction, and settings-page font preference integration; promoted from `src/ui/app/settings/font-prefs.js`
+- ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `env.example` — full coverage of all environment variables; replaces `.env.example`
+- ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `src/ui/public/assets/reuse/` — new asset directory for reusable SVG icons; `edit.svg` and `upload.svg` moved here from `assets/icons/`
+- ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `src/ui/styles/reuse/layout.css` and `src/ui/styles/reuse/theme.css` — moved from `styles/base/` into `styles/reuse/` to consolidate all shared CSS under one directory
+
+### Changed
+
+- ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `docker/Dockerfile` now declares defaults for `HOST`, `EXTERNAL_HOST`, `MEDIA_LOCATION`, `COGNIS_GATEWAYS_ROOT`, and `COGNIS_ADAPTERS_ROOT`; docker-compose files no longer provide fallback values for these variables
+- ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `src/ui/config/pages.js` — renamed `PAGE_WIDGET_LIBRARY` → `PAGE_ELEMENT_LIBRARY` and `widgets` → `elements` in `DEFAULT_PAGES`
+
+### Removed
+
+- ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) Root `style.css` — unused 28,000-line monolith with no references in the codebase
+- ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `.env.example` — superseded by `env.example`
+- ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `src/ui/components/` directory — sole occupant `widget-registry.js` superseded by `src/ui/reuse/element-registry.js`
+- ([53c036f](https://github.com/le-firehawk/Cognis/commit/53c036f)) `src/ui/styles/base/` directory — contents merged into `src/ui/styles/reuse/`
+
+### Added
+
 - ([1355598](https://github.com/le-firehawk/Cognis/commit/1355598)) `src/core/services/gateway-service.ts` — new `GatewayService` class that discovers, bootstraps, and manages the gateway lifecycle, analogous to `ModuleService` for modules; subsumes `bootstrapGateways()` from `src/gateways/index.ts` and absorbs `GatewayRegistry`, `GatewayManifest`, `GatewayEntry`, `GatewayBootstrapBase`, `CapabilityStore`, and `BootstrapLog` into `@cognis/core`
 - ([1355598](https://github.com/le-firehawk/Cognis/commit/1355598)) `src/gateways/shared.ts` — common import barrel for gateway authors; re-exports `GatewayBootstrapContext`, `GatewayRegistry`, `CapabilityStore`, `BootstrapLog`, `requireAuth`, `getAuthClaims`, `getCookieSession`, `setPageSecurityHeaders`, and `readJson` so gateway subdirectories need only a single `../shared.js` import for the most common utilities
 

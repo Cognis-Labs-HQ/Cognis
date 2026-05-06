@@ -1,5 +1,26 @@
+/**
+ * Font preference utilities — catalog loading, font-family selection UI, and
+ * settings-page integration for the application font picker.
+ *
+ * Public exports:
+ *   DEFAULT_FONT          — default font family name ("Orbitron").
+ *   DEFAULT_FONT_SIZE     — default font size in points (14).
+ *   toFontFamilyValue(font)                  — formats a font name as a valid CSS font-family value.
+ *   parseSavedFont(fontValue)                — extracts the primary family name from a saved CSS string.
+ *   loadFontsCatalog()                       — resolves all available font families from document.fonts.
+ *   buildFontSelect(container, fontList, initialValue, onChange) — renders a font-selector dropdown.
+ *   initFontPrefs(root, options)             — wires up the full font-preference UI inside root.
+ *
+ * Usage:
+ *   import { initFontPrefs, DEFAULT_FONT_SIZE } from '../reuse/font-prefs.js';
+ *   const prefs = initFontPrefs(root, { existingPrefs, i18n, onDirtyChange });
+ *   await prefs.init();
+ *
+ * @param {string} font — a font family name, e.g. "Inter" or "My Custom Font".
+ * @returns {string} A CSS-safe font-family value, quoted if the name contains spaces.
+ */
+
 export const DEFAULT_FONT = "Orbitron";
-// Font size in points (pt). Applied via CSS custom property --app-font-size.
 export const DEFAULT_FONT_SIZE = 14;
 const FALLBACK_FONTS = [DEFAULT_FONT, "Inter", "Arial", "sans-serif"];
 

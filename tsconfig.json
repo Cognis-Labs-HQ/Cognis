@@ -3,25 +3,40 @@
     "files": [],
     "references": [
         {
-            "path": "./src/core"
+            "path": "./src/adapters/auth/ldap"
         },
         {
-            "path": "./src/adapters/file/local"
+            "path": "./src/adapters/auth/local"
         },
         {
-            "path": "./src/adapters/db/memory"
+            "path": "./src/adapters/auth/oidc"
         },
         {
-            "path": "./src/adapters/db/sqlite"
-        },
-        {
-            "path": "./src/adapters/db/postgres"
+            "path": "./src/adapters/auth/saml"
         },
         {
             "path": "./src/adapters/db/mariadb"
         },
         {
+            "path": "./src/adapters/db/memory"
+        },
+        {
+            "path": "./src/adapters/db/postgres"
+        },
+        {
+            "path": "./src/adapters/db/sqlite"
+        },
+        {
+            "path": "./src/adapters/file/local"
+        },
+        {
+            "path": "./src/adapters/notify/smtp"
+        },
+        {
             "path": "./src/api"
+        },
+        {
+            "path": "./src/core"
         },
         {
             "path": "./src/tooling/cli"

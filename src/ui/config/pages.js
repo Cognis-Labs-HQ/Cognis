@@ -1,4 +1,4 @@
-export const PAGE_WIDGET_LIBRARY = [
+export const PAGE_ELEMENT_LIBRARY = [
     {
         id: "learning-progress",
         title: "Learning Progress",
@@ -41,15 +41,15 @@ export const DEFAULT_PAGES = [
     {
         id: "sandbox",
         name: "Sandbox",
-        widgets: PAGE_WIDGET_LIBRARY.map((widget) => ({
-            id: widget.id,
-            config: { ...widget.defaultConfig },
+        elements: PAGE_ELEMENT_LIBRARY.map((element) => ({
+            id: element.id,
+            config: { ...element.defaultConfig },
         })),
     },
     {
         id: "home",
         name: "Home",
-        widgets: [
+        elements: [
             {
                 id: "learning-progress",
                 config: { timeframe: "30d", showStreak: true },

@@ -30,7 +30,12 @@ ENV LOG_LEVEL=info
 ENV LOG_FILE=/app/logs/app.log
 ENV COGNIS_ACCESS_TOKEN_TTL_SECONDS=43200
 ENV COGNIS_MODULES_ROOT=/app/src/modules
+ENV COGNIS_GATEWAYS_ROOT=/app/src/gateways
+ENV COGNIS_ADAPTERS_ROOT=/app/src/adapters
 ENV COGNIS_CLI_TOKEN_PATH=/app/config/cli-access.token
+ENV MEDIA_LOCATION=/app/media
+ENV HOST=cognis
+ENV EXTERNAL_HOST=
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD ["/usr/local/bin/healthcheck.sh"]

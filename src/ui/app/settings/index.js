@@ -14,7 +14,7 @@ import {
     toFontFamilyValue,
     initFontPrefs,
     DEFAULT_FONT_SIZE,
-} from "./font-prefs.js";
+} from "../../reuse/font-prefs.js";
 import { initLanguagePrefs } from "./language-prefs.js";
 import { initGeneralPrefs } from "./general-prefs.js";
 import { initNotificationPrefs } from "./notification-prefs.js";
