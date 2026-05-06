@@ -39,12 +39,18 @@ function renderSidebarLinks(items) {
         .join("");
 }
 
+let activeHtml = null;
+
+function renderActiveDoc() {
+    const docEl = root.querySelector("#doc");
+    if (docEl && activeHtml !== null) docEl.innerHTML = activeHtml;
+}
+
 async function showDoc(slug, pushHistory = true) {
     const response = await apiFetch(`/api/v1/docs/${slug}`);
     const payload = await response.json();
-    root.querySelector("#doc").innerHTML = renderMarkdown(
-        payload.data.markdown,
-    );
+    activeHtml = renderMarkdown(payload.data.markdown);
+    renderActiveDoc();
 
     if (pushHistory) {
         window.history.pushState({ slug }, "", `/docs/${slug}`);
@@ -76,6 +82,7 @@ const composer = createPageComposer(root, {
     elements,
     preferenceKey: "docs-layout",
     i18n,
+    onRender: renderActiveDoc,
     pageContext: {
         title: i18n.t("ui.app.docs.page_title"),
         subtitle: i18n.t("ui.app.docs.page_subtitle"),
