@@ -17,7 +17,6 @@ COPY --chmod=755 docker/healthcheck.sh /usr/local/bin/healthcheck.sh
 USER cognis
 
 COPY --chown=cognis:cognis package.json package-lock.json tsconfig.json tsconfig.base.json ./
-COPY --chown=cognis:cognis db ./db
 COPY --chown=cognis:cognis src ./src
 RUN npm ci --ignore-scripts
 

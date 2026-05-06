@@ -10,6 +10,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - ([0b09aba](https://github.com/le-firehawk/Cognis/commit/0b09aba)) Structural file reorganization: rename adapter files, move docs, reorganize routes and interfaces
+- Removed stale `COPY db ./db` from `docker/Dockerfile` — SQL migrations now live inside `src/adapters/db/<provider>/sql/` and are copied as part of `COPY src ./src`
 
 ### Fixed
 
