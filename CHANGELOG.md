@@ -15,6 +15,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - Added `src/gateways/package.json` with `"type": "module"` so that gateway files are treated as ESM — without it, gateways moved from `src/api/gateways/` (which inherited ESM from `src/api/package.json`) to `src/gateways/` defaulted to CJS, breaking all named imports including `bootstrapGateways` at startup ([47eea07](https://github.com/le-firehawk/Cognis/commit/47eea07))
+- Added `src/modules/package.json` with `"type": "module"` — without it, `src/modules/routes/module-extensions.ts` was treated as CJS, causing `SyntaxError: The requested module does not provide an export named 'createModuleExtensionRoutes'` at startup
 - Updated root `tsconfig.json` project references to reflect the renamed adapter paths (`src/adapters/db/{sqlite,postgres,mariadb,memory}`, `src/adapters/file/local`) ([47eea07](https://github.com/le-firehawk/Cognis/commit/47eea07))
 
 ### Changed
