@@ -17,7 +17,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
-- Fixed `LICENSE.md` markdown section parsing so numbered list content from AGPL terms is not accidentally converted into section headings, and hardened docs markdown loading to fail gracefully when a doc fetch request fails. ([a8b0f2c](https://github.com/le-firehawk/Cognis/commit/a8b0f2c))
+- Fixed `license.md` markdown section parsing so numbered list content from AGPL terms is not accidentally converted into section headings, and hardened docs markdown loading to fail gracefully when a doc fetch request fails. ([a8b0f2c](https://github.com/le-firehawk/Cognis/commit/a8b0f2c))
 - `src/docs/api.ja.md` contained German text; replaced with a complete Japanese translation.
 - `src/modules/docs/index.ja.md` contained outdated English text; replaced with a complete Japanese translation matching `index.en.md`.
 - `src/modules/docs/index.de.md` contained outdated English text; replaced with a complete German translation.
