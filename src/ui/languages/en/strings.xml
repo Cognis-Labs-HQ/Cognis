@@ -29,6 +29,7 @@
   <string name="ui.reuse.generic.done">Done</string>
   <string name="ui.reuse.generic.add">Add</string>
   <string name="ui.reuse.generic.remove">Remove</string>
+  <string name="ui.reuse.generic.dismiss">Dismiss</string>
 
   <string name="ui.layout.brand.aria">Cognis home</string>
   <string name="ui.layout.nav.primary">Primary navigation</string>

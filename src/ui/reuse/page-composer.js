@@ -95,7 +95,7 @@
 import { apiFetch } from "./api-client.js";
 import { renderDashboardLayout } from "../layouts/dashboard-layout.js";
 import { prefersReducedMotion } from "./motion.js";
-import { showToast } from "./toast.js";
+import { showToast, configureToastDismissLabel } from "./toast.js";
 
 export function createPageComposer(
     root,
@@ -2434,6 +2434,8 @@ export function createPageComposer(
     }
 
     async function init() {
+        configureToastDismissLabel(i18n.t("ui.reuse.generic.dismiss"));
+
         const pageContextHtml = pageContext
             ? `<h1>${pageContext.title}</h1><p>${pageContext.subtitle}</p>`
             : "";

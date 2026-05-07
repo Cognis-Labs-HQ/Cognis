@@ -29,6 +29,7 @@
   <string name="ui.reuse.generic.done">Fertig</string>
   <string name="ui.reuse.generic.add">Hinzufügen</string>
   <string name="ui.reuse.generic.remove">Entfernen</string>
+  <string name="ui.reuse.generic.dismiss">Schließen</string>
 
   <string name="ui.layout.brand.aria">Cognis-Startseite</string>
   <string name="ui.layout.nav.primary">Hauptnavigation</string>

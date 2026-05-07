@@ -29,6 +29,7 @@
   <string name="ui.reuse.generic.done">完了</string>
   <string name="ui.reuse.generic.add">追加</string>
   <string name="ui.reuse.generic.remove">削除</string>
+  <string name="ui.reuse.generic.dismiss">閉じる</string>
 
   <string name="ui.layout.brand.aria">Cognis ホーム</string>
   <string name="ui.layout.nav.primary">メインナビゲーション</string>

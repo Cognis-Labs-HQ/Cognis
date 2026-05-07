@@ -7,6 +7,9 @@
  *
  * Public exports:
  *   showToast(message, options) — display a toast and return a dismiss function.
+ *   configureToastDismissLabel(label) — set the localised aria-label for the
+ *     dismiss button; call once during page initialisation (e.g. from the page
+ *     composer) so the button is accessible in the user's language.
  *
  * Usage:
  *   import { showToast } from '../../reuse/toast.js';
@@ -46,6 +49,18 @@ const VARIANT_ICONS = {
 };
 
 let stylesheetReady = null;
+let dismissLabel = "Dismiss";
+
+/**
+ * Set the localised aria-label for the toast dismiss button.
+ * Call once during page initialisation (e.g. from the page composer) so the
+ * button is accessible in the user's language.
+ *
+ * @param {string} label - Translated dismiss label.
+ */
+export function configureToastDismissLabel(label) {
+    dismissLabel = label;
+}
 
 function ensureStylesheet() {
     if (stylesheetReady) return stylesheetReady;
@@ -104,7 +119,7 @@ export function showToast(message, { variant = "info", duration } = {}) {
         variant === "warning" || variant === "error" ? "alert" : "status",
     );
 
-    toast.innerHTML = `<span class="toast-icon" aria-hidden="true">${icon}</span><span class="toast-message">${escapeHtml(message)}</span><button class="toast-dismiss" type="button" aria-label="Dismiss">&#x2715;</button>`;
+    toast.innerHTML = `<span class="toast-icon" aria-hidden="true">${icon}</span><span class="toast-message">${escapeHtml(message)}</span><button class="toast-dismiss" type="button" aria-label="${escapeHtml(dismissLabel)}">&#x2715;</button>`;
 
     tray.appendChild(toast);
 
