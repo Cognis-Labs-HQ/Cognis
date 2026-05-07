@@ -29,7 +29,6 @@
   <string name="ui.reuse.generic.done">Done</string>
   <string name="ui.reuse.generic.add">Add</string>
   <string name="ui.reuse.generic.remove">Remove</string>
-  <string name="ui.reuse.generic.license">License</string>
 
   <string name="ui.layout.brand.aria">Cognis home</string>
   <string name="ui.layout.nav.primary">Primary navigation</string>
@@ -38,6 +37,7 @@
   <string name="ui.layout.account.aria">Account options</string>
   <string name="ui.layout.avatar.alt">User avatar</string>
   <string name="ui.layout.theme.aria">Toggle theme</string>
+  <string name="ui.layout.footer.license">License</string>
   <string name="ui.app.login.title">Sign in</string>
   <string name="ui.app.login.intro.aria">Cognis intro</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>

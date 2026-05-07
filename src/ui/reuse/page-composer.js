@@ -2447,14 +2447,11 @@ export function createPageComposer(
                 ? "\u200b"
                 : undefined;
 
-        const footerHtml = `<div class="global-footer-inner"><a class="global-footer-license-link" href="/license">${escapeHtml(i18n.t("ui.reuse.generic.license"))}</a></div>`;
-
         await renderDashboardLayout(root, {
             i18n,
             pageContext: pageContextHtml,
             toolbar: toolbarHtml,
             floatingToolbar: floatingHtml,
-            footer: footerHtml,
             content: "",
             showTopbar,
             showNavbar,

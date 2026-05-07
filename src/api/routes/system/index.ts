@@ -37,13 +37,13 @@ function parseDemoModeFromEnv() {
 }
 
 const SECURITY_SETTINGS_KEY = "security-settings";
-const LICENSE_MARKDOWN_FILE = resolve(process.cwd(), "LICENSE.md");
-const LICENSE_TEXT_FILE = resolve(process.cwd(), "LICENSE");
 
 export function createSystemRoutes(
     healthService: HealthService,
     preferenceStore?: UserPreferenceStore,
 ) {
+    const licenseMarkdownFile = resolve(process.cwd(), "LICENSE.md");
+    const licenseTextFile = resolve(process.cwd(), "LICENSE");
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -124,9 +124,22 @@ export function createSystemRoutes(
         if (url.pathname === "/api/v1/system/license" && req.method === "GET") {
             let markdown = "";
             try {
-                markdown = await readFile(LICENSE_MARKDOWN_FILE, "utf8");
+                markdown = await readFile(licenseMarkdownFile, "utf8");
             } catch {
-                markdown = await readFile(LICENSE_TEXT_FILE, "utf8");
+                try {
+                    markdown = await readFile(licenseTextFile, "utf8");
+                } catch {
+                    res.writeHead(404, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "not_found",
+                                message: "License file not found.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { markdown } }));

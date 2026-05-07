@@ -95,9 +95,13 @@ function renderActiveDoc() {
 
 async function showDoc(slug, pushHistory = true) {
     const langs = readPreferredLanguages().join(",");
-    activeHtml = await loadMarkdownDocumentHtml(
-        `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,
-    );
+    try {
+        activeHtml = await loadMarkdownDocumentHtml(
+            `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,
+        );
+    } catch {
+        return;
+    }
     renderActiveDoc();
 
     if (pushHistory) {

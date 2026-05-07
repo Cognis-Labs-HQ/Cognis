@@ -16,6 +16,9 @@ import { renderMarkdown } from './markdown-renderer.js';
 
 export async function loadMarkdownDocumentHtml(path) {
     const response = await apiFetch(path);
+    if (!response.ok) {
+        throw new Error(`markdown_load_failed:${response.status}`);
+    }
     const payload = await response.json();
     return renderMarkdown(payload?.data?.markdown ?? '');
 }

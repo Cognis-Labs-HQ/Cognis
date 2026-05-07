@@ -216,7 +216,6 @@ export async function renderDashboardLayout(root, slots = {}) {
     const template = await loadTemplate("dashboard-layout");
     const hasToolbar = Boolean(slots.toolbar);
     const hasFloatingToolbar = Boolean(slots.floatingToolbar);
-    const hasFooter = Boolean(slots.footer) && showFooter;
     root.innerHTML = template
         .replace("{{pageContext}}", slots.pageContext || "")
         .replace("{{topbar}}", slots.topbar)
@@ -236,15 +235,12 @@ export async function renderDashboardLayout(root, slots = {}) {
             hasFloatingToolbar
                 ? `<div class="floating-toolbar" hidden>${slots.floatingToolbar}</div>`
                 : "",
-        )
-        .replace(
-            "{{footer}}",
-            hasFooter ? `<footer class="global-footer">${slots.footer}</footer>` : "",
         );
 
     if (!showTopbar) root.querySelector(".global-topbar")?.remove();
     if (!showNavbar) root.querySelector(".global-navrow")?.remove();
     if (!showThemeToggle) root.querySelector("#theme-toggle")?.remove();
+    if (!showFooter) root.querySelector(".global-footer")?.remove();
 
     applyStaticTranslations(i18n, root);
     bindTopbarActions();

@@ -2,6 +2,7 @@
     min-height: 100vh;
     background: var(--bg);
     color: var(--text);
+    --shell-content-width: 96%;
 }
 
 .site-header {
@@ -233,7 +234,7 @@
 
 .workspace {
     padding: 24px;
-    width: 96%;
+    width: var(--shell-content-width);
     margin: 12px auto 0;
     background: rgba(6, 12, 28, 0.1);
     border-radius: 16px;
@@ -242,7 +243,7 @@
 }
 
 .global-footer {
-    width: 96%;
+    width: var(--shell-content-width);
     margin: 8px auto 0;
     padding: 6px 14px;
     border: 1px solid rgba(148, 163, 184, 0.12);

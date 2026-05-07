@@ -29,7 +29,6 @@
   <string name="ui.reuse.generic.done">完了</string>
   <string name="ui.reuse.generic.add">追加</string>
   <string name="ui.reuse.generic.remove">削除</string>
-  <string name="ui.reuse.generic.license">ライセンス</string>
 
   <string name="ui.layout.brand.aria">Cognis ホーム</string>
   <string name="ui.layout.nav.primary">メインナビゲーション</string>
@@ -38,6 +37,7 @@
   <string name="ui.layout.account.aria">アカウントオプション</string>
   <string name="ui.layout.avatar.alt">ユーザーアバター</string>
   <string name="ui.layout.theme.aria">テーマ切替</string>
+  <string name="ui.layout.footer.license">ライセンス</string>
   <string name="ui.app.login.title">サインイン</string>
   <string name="ui.app.login.intro.aria">Cognis 紹介</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>
