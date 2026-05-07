@@ -17,20 +17,91 @@ function sectionId(title) {
     );
 }
 
+function createSection(sections, title, lines) {
+    const base = sectionId(title);
+    let id = base;
+    let suffix = 2;
+    while (sections.some((section) => section.id === id)) {
+        id = `${base}-${suffix}`;
+        suffix += 1;
+    }
+    return { id, title, lines };
+}
+
 function parseSections(markdown) {
     const lines = markdown.split("\n");
     const sections = [];
     let current = null;
+    let currentTermsClause = null;
+
+    function flushCurrent() {
+        if (!current) return;
+        if (current.splitClauses) {
+            if (
+                Array.isArray(current.introLines) &&
+                current.introLines.some((line) => line.trim().length > 0)
+            ) {
+                sections.push(
+                    createSection(sections, current.title, current.introLines),
+                );
+            }
+            if (currentTermsClause) {
+                sections.push(
+                    createSection(
+                        sections,
+                        currentTermsClause.title,
+                        currentTermsClause.lines,
+                    ),
+                );
+                currentTermsClause = null;
+            }
+        } else {
+            sections.push(
+                createSection(sections, current.title, current.lines),
+            );
+        }
+        current = null;
+    }
+
     for (const line of lines) {
         if (line.startsWith("## ")) {
-            if (current) sections.push(current);
+            flushCurrent();
             const title = line.slice(3).trim();
-            current = { id: sectionId(title), title, lines: [] };
+            current = { title, splitClauses: false, lines: [] };
+            continue;
+        }
+
+        if (current && line.startsWith("### ")) {
+            if (!current.splitClauses) {
+                current.splitClauses = true;
+                current.introLines = current.lines;
+                current.lines = undefined;
+            }
+            if (currentTermsClause) {
+                sections.push(
+                    createSection(
+                        sections,
+                        currentTermsClause.title,
+                        currentTermsClause.lines,
+                    ),
+                );
+            }
+            const title = line.slice(4).trim();
+            currentTermsClause = { title, lines: [] };
+            continue;
+        }
+
+        if (current?.splitClauses) {
+            if (currentTermsClause) {
+                currentTermsClause.lines.push(line);
+            } else {
+                current.introLines.push(line);
+            }
         } else if (current) {
             current.lines.push(line);
         }
     }
-    if (current) sections.push(current);
+    flushCurrent();
     return sections;
 }
 
