@@ -102,6 +102,7 @@
   <string name="ui.app.docs.group.tooling">ツール</string>
   <string name="ui.app.license.page_title">ライセンス</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3 のライセンス条項。</string>
+  <string name="ui.app.license.load_error">ライセンステキストを読み込めませんでした。</string>
   <string name="ui.app.modules.page_title">モジュール概要</string>
   <string name="ui.app.modules.page_subtitle">インストール済みモジュールを有効化/無効化します。</string>
   <string name="ui.app.modules.toolbar_subtitle">管理者専用コントロール</string>

@@ -102,6 +102,7 @@
   <string name="ui.app.docs.group.tooling">Perkakas</string>
   <string name="ui.app.license.page_title">Lisensi</string>
   <string name="ui.app.license.page_subtitle">Ketentuan lisensi GNU AGPLv3.</string>
+  <string name="ui.app.license.load_error">Teks lisensi tidak dapat dimuat.</string>
   <string name="ui.app.modules.page_title">Ringkasan Modul</string>
   <string name="ui.app.modules.page_subtitle">Aktifkan dan nonaktifkan modul terpasang.</string>
   <string name="ui.app.modules.toolbar_subtitle">Kontrol khusus admin</string>

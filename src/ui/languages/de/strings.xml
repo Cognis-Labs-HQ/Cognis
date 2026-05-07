@@ -102,6 +102,7 @@
   <string name="ui.app.docs.group.tooling">Werkzeuge</string>
   <string name="ui.app.license.page_title">Lizenz</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3-Lizenzbedingungen.</string>
+  <string name="ui.app.license.load_error">Der Lizenztext konnte nicht geladen werden.</string>
   <string name="ui.app.modules.page_title">Modulübersicht</string>
   <string name="ui.app.modules.page_subtitle">Installierte Module aktivieren oder deaktivieren.</string>
   <string name="ui.app.modules.toolbar_subtitle">Nur für Admins</string>

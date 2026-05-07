@@ -35,10 +35,15 @@ function parseSections(markdown) {
 }
 
 let sections = [];
+let loadError = false;
 
 function renderSections() {
     const container = root.querySelector("#license-sections");
     if (!container) return;
+    if (loadError) {
+        container.innerHTML = `<p class="license-load-error">${i18n.t("ui.app.license.load_error")}</p>`;
+        return;
+    }
     container.innerHTML = sections
         .map((s, idx) => {
             const body = renderMarkdown(s.lines.join("\n"));
@@ -88,6 +93,8 @@ const response = await apiFetch("/api/v1/system/license");
 if (response.ok) {
     const payload = await response.json();
     sections = parseSections(payload?.data?.markdown ?? "");
+} else {
+    loadError = true;
 }
 
 const nav = root.querySelector(".license-nav");
@@ -107,7 +114,7 @@ root.addEventListener("click", (event) => {
     const btn = event.target.closest("[data-section-id]");
     if (!btn) return;
     const id = btn.dataset.sectionId;
-    const details = root.querySelector(`details#${id}`);
+    const details = document.getElementById(id);
     if (!details) return;
     details.open = true;
     root.querySelectorAll("[data-section-id]").forEach((b) => {

@@ -48,3 +48,8 @@
     overflow-y: auto;
     max-height: 60vh;
 }
+
+.license-load-error {
+    padding: 16px 12px;
+    color: var(--danger);
+}
