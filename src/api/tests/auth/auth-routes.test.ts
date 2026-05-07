@@ -24,10 +24,15 @@ function makeGateway(store: VolatileLocalAccountStore): AuthGateway {
     };
 }
 
-function requestWithBody(method: string, body: Record<string, unknown>) {
+function requestWithBody(
+    method: string,
+    body: Record<string, unknown>,
+    headers: Record<string, string> = {},
+) {
     const chunks = [Buffer.from(JSON.stringify(body))];
     return {
         method,
+        headers,
         [Symbol.asyncIterator]: async function* () {
             for (const chunk of chunks) yield chunk;
         },
@@ -113,4 +118,88 @@ test("login records lastLogin on the account", async () => {
         /^\d{4}-\d{2}-\d{2}T/,
         "lastLogin should be an ISO 8601 timestamp",
     );
+});
+
+test("login sets cookie max-age to token ttl", async () => {
+    const previousTtl = process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS;
+    const previousSecureCookies = process.env.COGNIS_SECURE_COOKIES;
+    process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS = "90";
+    process.env.COGNIS_SECURE_COOKIES = "false";
+    try {
+        const accountStore = new VolatileLocalAccountStore();
+        const gateway = makeGateway(accountStore);
+        const route = createAuthRoutes(gateway, accountStore);
+        let setCookie = "";
+
+        await route(
+            requestWithBody("POST", { username: "u3", password: "p3" }),
+            { writeHead() {}, end() {} } as any,
+            new URL("http://localhost/api/v1/auth/register"),
+        );
+
+        await route(
+            requestWithBody("POST", { username: "u3", password: "p3" }),
+            {
+                writeHead(_code: number, headers: Record<string, string>) {
+                    setCookie = headers["set-cookie"];
+                },
+                end() {},
+            } as any,
+            new URL("http://localhost/api/v1/auth/login"),
+        );
+
+        assert.match(setCookie, /;\sMax-Age=90(?:;|$)/);
+        assert.doesNotMatch(setCookie, /;\sSecure(?:;|$)/);
+    } finally {
+        if (previousTtl === undefined) {
+            delete process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS;
+        } else {
+            process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS = previousTtl;
+        }
+        if (previousSecureCookies === undefined) {
+            delete process.env.COGNIS_SECURE_COOKIES;
+        } else {
+            process.env.COGNIS_SECURE_COOKIES = previousSecureCookies;
+        }
+    }
+});
+
+test("login sets secure cookie when request is forwarded over https", async () => {
+    const previousSecureCookies = process.env.COGNIS_SECURE_COOKIES;
+    delete process.env.COGNIS_SECURE_COOKIES;
+    try {
+        const accountStore = new VolatileLocalAccountStore();
+        const gateway = makeGateway(accountStore);
+        const route = createAuthRoutes(gateway, accountStore);
+        let setCookie = "";
+
+        await route(
+            requestWithBody("POST", { username: "u4", password: "p4" }),
+            { writeHead() {}, end() {} } as any,
+            new URL("http://localhost/api/v1/auth/register"),
+        );
+
+        await route(
+            requestWithBody(
+                "POST",
+                { username: "u4", password: "p4" },
+                { "x-forwarded-proto": "https" },
+            ),
+            {
+                writeHead(_code: number, headers: Record<string, string>) {
+                    setCookie = headers["set-cookie"];
+                },
+                end() {},
+            } as any,
+            new URL("http://localhost/api/v1/auth/login"),
+        );
+
+        assert.match(setCookie, /;\sSecure(?:;|$)/);
+    } finally {
+        if (previousSecureCookies === undefined) {
+            delete process.env.COGNIS_SECURE_COOKIES;
+        } else {
+            process.env.COGNIS_SECURE_COOKIES = previousSecureCookies;
+        }
+    }
 });

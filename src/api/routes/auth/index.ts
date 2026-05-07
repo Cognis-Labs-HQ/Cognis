@@ -4,6 +4,26 @@ import type { AuthGateway } from "@cognis/core";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
 import { readJson } from "../../reuse/read-json.js";
 
+function shouldSetSecureCookie(req: IncomingMessage): boolean {
+    const forced = process.env.COGNIS_SECURE_COOKIES;
+    if (forced === "1" || forced === "true") return true;
+    if (forced === "0" || forced === "false") return false;
+    const forwardedProto = req.headers["x-forwarded-proto"];
+    if (typeof forwardedProto !== "string") return false;
+    return forwardedProto
+        .split(",")
+        .some((value: string) => value.trim().toLowerCase() === "https");
+}
+
+function buildAccessTokenCookie(
+    token: string,
+    ttlSeconds: number,
+    useSecure: boolean,
+): string {
+    const securePart = useSecure ? "; Secure" : "";
+    return `cognis_access_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ttlSeconds}${securePart}`;
+}
+
 function resolveRole(
     sessionRole: string | undefined,
     isAdmin: boolean | undefined,
@@ -94,11 +114,16 @@ export function createAuthRoutes(
                 role,
                 accessTokenTtlSeconds,
             );
+            const cookie = buildAccessTokenCookie(
+                apiToken,
+                accessTokenTtlSeconds,
+                shouldSetSecureCookie(req),
+            );
             await accountStore.updateLastLogin(session.accountId);
             await createProfile?.(session.accountId, session.accountId, role);
             res.writeHead(200, {
                 "content-type": "application/json",
-                "set-cookie": `cognis_access_token=${apiToken}; Path=/; HttpOnly; SameSite=Lax`,
+                "set-cookie": cookie,
             });
             res.end(
                 JSON.stringify({

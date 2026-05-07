@@ -6,7 +6,7 @@
 
 The server is assembled from what is present at startup rather than from a hardcoded component list. Gateways register their own routes during bootstrap via `ctx.routeRegistry.register(...)`. The server iterates the registry to build its route table. Removing a gateway removes its routes automatically.
 
-Authentication uses opaque bearer tokens issued at login. The same token is also set as an HttpOnly cookie (`cognis_access_token`) for server-rendered page guards. A non-expiring CLI bootstrap token is written to disk at startup for trusted local tooling.
+Authentication uses opaque bearer tokens issued at login. The same token is also set as an HttpOnly cookie (`cognis_access_token`) for server-rendered page guards. The cookie uses `SameSite=Lax`, sets `Max-Age` to match token TTL, and applies `Secure` when TLS is detected (`x-forwarded-proto=https`) or `COGNIS_SECURE_COOKIES=true`. A non-expiring CLI bootstrap token is written to disk at startup for trusted local tooling.
 
 ## Responsibilities
 
