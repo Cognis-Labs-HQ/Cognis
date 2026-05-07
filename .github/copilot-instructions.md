@@ -182,6 +182,7 @@ Additional formal standards:
 
 API sanity and security are paramount.
 
+- For every new feature, treat security as a primary acceptance criterion from the start, not a follow-up task. Design and implement with least privilege, secure defaults, and explicit abuse-case handling.
 - Validate and sanitise all user-supplied input at the boundary (route/gateway entry point).
 - Enforce authentication and authorisation checks before any business logic executes.
 - Never expose internal error details to API consumers; log them server-side.
@@ -211,4 +212,5 @@ When applying a symbol or icon (e.g. as a UI label, button decoration, or status
 - Use shared `ui.reuse.*` keys for labels with meaningful context (section headings, menu items, named features). Reserve `ui.reuse.generic.*` strictly for context-free words usable in any feature area.
 - Module-owned locale keys must be namespaced as `module.<moduleId>.*` and loaded without leaking into global namespaces.
 - For docs, prefer language-suffixed markdown files (`*.en.md`, `*.es.md`) and resolve by language key first, then fallback.
+- Documentation language parity is mandatory: when changing any `*.md` doc that has translated variants, update the corresponding language files in the same change so content stays in sync across supported languages.
 - Every string value in a `strings.xml` file must be written in the language that file represents. When adding or updating keys in non-English files (e.g. `de/strings.xml`, `ja/strings.xml`, `id/strings.xml`), translate the value into that file's language. Never copy an English string value verbatim into a non-English file. The only exceptions are values that are legitimately language-neutral: brand names (`Cognis`), universal technical acronyms (`LDAP`, `TLS`, `STARTTLS`), format placeholders (`example.com, company.org`), and the Latin tagline (`Disce. Loquere. Vive.`). When in doubt, translate.
