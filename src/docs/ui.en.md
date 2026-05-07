@@ -1,85 +1,93 @@
-# UI Component
+# UI
 
-## Purpose
+## Overview
 
-`ui/` hosts the Cognis frontend for study workflows, social interaction surfaces, administration, and the embedded documentation center.
+`src/ui/` hosts the Cognis browser frontend. It provides the study workflows, social interaction surfaces, administration panels, and the embedded documentation browser. The UI is a server-rendered multi-page application: each page is an HTML file with its own JavaScript entry point; shared layout shells and reuse utilities keep common behaviour consistent across pages.
+
+The UI layer has no knowledge of which gateways or adapters are installed. Instead, gateways contribute UI elements at runtime through the `UIRegistry` and the page-extensions API. The core pages load only what the server reports as available for the current user, so the frontend remains coherent whether or not optional gateways like profile or notify are enabled.
+
+All user-visible text goes through the i18n system defined in `src/ui/reuse/i18n.js`. No copy is hardcoded in JavaScript or HTML templates. Automated tests in `src/ui/tests/hardcoded-strings.test.js` enforce this at CI time.
+
+## Responsibilities
+
+- Host all page entry points and their associated HTML templates.
+- Provide the layout shells (`ui/layouts/`) that all non-login pages render through.
+- Maintain the reuse utilities (`ui/reuse/`) for i18n, page composer, unsaved-change guards, and other cross-page behaviour.
+- Enforce theme parity: every element resolves its colors from CSS variables, never hard-coded hex values.
+- Provide the i18n string packs for all four required languages (en, de, ja, id) at `src/ui/languages/`.
+
+Not responsible for: generating API responses, owning authentication logic, or injecting gateway-specific UI — gateways contribute their own sections via `UIRegistry`.
 
 ## Architecture
 
-- **Layouts**: shared shells in `ui/layouts`.
-- **Templates**: reusable markup in `ui/public/templates`.
-- **Reuse**: shared utilities in `ui/reuse`.
-- **Pages**: route behavior in `ui/app`.
+### Directory structure
 
-## UX routes
+| Path | Purpose |
+| ---- | ------- |
+| `src/ui/layouts/` | Shared HTML shells that page entries render inside |
+| `src/ui/public/templates/` | Reusable markup fragments |
+| `src/ui/public/pages/` | Per-page HTML files served to the browser |
+| `src/ui/app/` | Page entry point JavaScript modules |
+| `src/ui/reuse/` | Cross-page utility modules (i18n, page composer, etc.) |
+| `src/ui/styles/` | CSS: base tokens, layout, page-specific rules |
+| `src/ui/languages/` | i18n string packs (en, de, ja, id) |
 
-| Route              | Purpose                                                    |
-| ------------------ | ---------------------------------------------------------- |
-| `/login`           | User sign-in                                               |
-| `/`                | Study app landing surface                                  |
-| `/modules`         | Module and feature management                              |
-| `/settings`        | User settings and preferences                              |
-| `/administration`  | Administrative controls                                    |
-| `/docs`            | Browse production docs                                     |
-| `/profile`         | Redirect to own profile page                               |
-| `/profile/:handle` | View a user's profile                                      |
-| `/user`            | Legacy alias for `/profile` (serves profile HTML directly) |
+Each page entry point lives in its own subdirectory under `src/ui/app/` as `index.js`. Sub-modules for that page sit alongside `index.js`, dropping any shared prefix (e.g. `settings/font-prefs.js` rather than `settings-font-prefs.js`).
 
-## State model
+### Page composer
 
-- Auth token and account id stored client-side.
-- Page preferences saved via API (`/api/v1/users/:accountId/preferences/:pageId`).
+The `createPageComposer` utility in `src/ui/reuse/page-composer.js` handles widget grid layout, persistence, sub-page navigation, toolbar slots, and floating menus. Pages declare an array of `elements` with `id`, `label`, `render`, and optional `gridSize`; the composer handles everything else. See `src/docs/page-composer.en.md` for full API reference.
 
-## Guardrails
+### UIRegistry
 
-> Non-login pages should render through layout shells so customization stays safe and coherent.
+Gateways inject admin panels, static assets, and per-page UI contributions at runtime through the `UIRegistry` (`src/api/ui-registry.ts`). The `GET /api/v1/ui/page-extensions/:pageId` endpoint returns elements contributed by all enabled gateways for the named page. The `GET /api/v1/admin/sections` endpoint returns gateway-contributed admin UI sections.
 
-## Internationalisation (i18n)
+### State model
 
-All user-visible text must go through the i18n helper in `ui/reuse/i18n.js` — no hardcoded copy in JS or HTML templates.
+- The bearer token and account ID are stored client-side after login.
+- Page layout preferences are saved via `PUT /api/v1/users/:accountId/preferences/:pageId`.
+- The auth token is also available in the `cognis_access_token` HttpOnly cookie for server-rendered route guards.
 
-### Key conventions
+### Theme coverage requirement
 
-| Prefix            | Use                                     |
-| ----------------- | --------------------------------------- |
-| `ui.reuse.*`      | Labels shared across multiple pages     |
-| `ui.app.<page>.*` | Page-specific copy                      |
-| `ui.layout.*`     | Layout shell text and ARIA labels       |
-| `ui.page.title.*` | Document `<title>` values               |
-| `module.<id>.*`   | Module-owned strings (loaded on demand) |
+Every HTML element added to templates or injected from page scripts must resolve its visual colors from CSS theme variables defined in `src/ui/styles/base/theme.css`. Hard-coded hex or rgb values are a policy violation. Both `light` and `dark` modes must remain readable, including hover, focus, disabled, and active states.
 
-### Adding a string
+## Configuration
 
-1. Add the key to `src/ui/languages/en/strings.xml` (and mirror it in all other language packs under `src/ui/languages/`).
-2. Reference it in JS with `i18n.t('ui.app.mypage.my_key')`.
-3. For static HTML, use `data-i18n="..."` and call `applyStaticTranslations(i18n, root)` once after the template is rendered into the DOM.
+The UI layer has no operator-facing configuration beyond environment variables inherited from the API server (e.g. `COGNIS_UI_DEMO_MODE=1` enables pre-populated example data).
 
-### Enforcement
+## Extension Points
 
-Two automated checks in `src/ui/tests/hardcoded-strings.test.js` guard against regressions:
+Gateways extend the UI through the `UIRegistry`:
 
-- **Quoted literal check** — flags multi-word strings in regular quoted literals.
-- **Template text-node check** — scans JS template literals for literal text between HTML tags (e.g. `<th>ID</th>`) and fails if any alphabetic content is found outside an interpolated `i18n.t()` call.
+- `ctx.uiRegistry.registerStaticDir(id, dir)` — serves static assets from a gateway-owned directory.
+- `ctx.uiRegistry.registerNavbarPlugin({ scriptUrl })` — injects a navbar script into the shell.
+- `ctx.uiRegistry.registerAdminSection(section)` — adds a section to the administration page.
+- `ctx.uiRegistry.registerPageExtension(pageId, element)` — contributes an element to a named page.
 
-Run with `node --test src/ui/tests/hardcoded-strings.test.js`.
+Modules contribute CSS, HTML templates, and JavaScript via the `frontend` field in their manifest. The module loader appends styles, registers templates, and calls `mount(context)` on each script.
 
-## Theme coverage requirement (light/dark)
+## API Routes
 
-- Every new HTML element added to `ui/public/templates` or injected from `ui/app` **must** resolve its visual colors from theme tokens (CSS variables), not hard-coded hex/rgb values.
-- Interactive HTML elements (`button`, `select`, `input`, `textarea`, links, badges, status chips) must inherit or explicitly use shared theme variables so both `light` and `dark` modes remain readable.
-- If an element cannot use shared classes, add a scoped selector under `ui/styles/base/layout.css` or `ui/styles/page-builder.css` that maps it to existing theme variables.
-- PRs that touch UI markup must verify theme parity for both modes before merge.
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `GET` | `/login` | User sign-in page | None |
+| `GET` | `/` | Study app landing surface | Cookie |
+| `GET` | `/modules` | Module and feature management | Cookie |
+| `GET` | `/settings` | User settings and preferences | Cookie |
+| `GET` | `/administration` | Administrative controls | Cookie |
+| `GET` | `/docs` | Documentation browser | Cookie |
+| `GET` | `/profile` | Redirect to own profile | Cookie |
+| `GET` | `/profile/:handle` | View a user's profile | Cookie |
+| `GET` | `/user` | Legacy alias for profile | Cookie |
 
-### Why this is critical for future work
+### i18n key conventions
 
-- Theme regressions are treated as functional regressions: unreadable text, low-contrast controls, or mode-inconsistent components are release-blocking issues.
-- New UI features should not ship unless they have explicit light/dark validation, including hover/focus/disabled/active states.
-- Refactors must preserve theme token usage; replacing variables with hard-coded colors is considered a policy violation.
-- During code review, maintainers should request updates whenever new elements bypass theme variables, even if the page appears correct in one mode.
-
-### Ongoing maintenance checklist
-
-- Validate each changed screen in both themes before marking work complete.
-- Confirm dynamic/injected markup (template strings, API-rendered HTML, docs markdown output) inherits theme-safe colors.
-- Reuse existing tokens first; if a new token is needed, define both dark and light values in `ui/styles/base/theme.css`.
-- Keep this requirement visible in future UI PR descriptions to avoid regressions over time.
+| Prefix | Use |
+| ------ | --- |
+| `ui.reuse.*` | Labels shared across multiple pages |
+| `ui.reuse.generic.*` | Context-free standalone action words (save, discard, reset, add) |
+| `ui.app.<page>.*` | Page-specific copy |
+| `ui.layout.*` | Layout shell text and ARIA labels |
+| `ui.page.title.*` | Document `<title>` values |
+| `module.<id>.*` | Module-owned strings loaded on demand |

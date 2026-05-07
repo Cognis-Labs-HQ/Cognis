@@ -7,6 +7,23 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Docs API now accepts a `langs` query parameter (comma-separated language priority list) so the server iterates the user's full preferred-language chain before falling back to English. The docs UI passes `readPreferredLanguages()` as the `langs` value on every doc request. ([7ab5fe4](https://github.com/le-firehawk/Cognis/commit/7ab5fe4))
+- `resolveLangs` extracted to `src/api/reuse/preferred-languages.ts` so the language-resolution logic is reusable across the API layer.
+- AI instructions (`copilot-instructions.md`) now reference `src/docs/standard.en.md` as the authoritative guide for documentation section structure, depth tiers, and language requirements.
+
+### Fixed
+
+- `src/docs/api.ja.md` contained German text; replaced with a complete Japanese translation.
+- `src/modules/docs/index.ja.md` contained outdated English text; replaced with a complete Japanese translation matching `index.en.md`.
+- `src/modules/docs/index.de.md` contained outdated English text; replaced with a complete German translation.
+- `src/modules/docs/index.id.md` contained outdated English text; replaced with a complete Indonesian translation.
+
+
+- Translated all 31 English docs to German (de), Japanese (ja), and Indonesian (id): covers `src/docs/`, all gateway `docs/` subdirectories, all adapter `docs/` subdirectories, `src/modules/docs/`, and `src/tooling/docs/`. Every English doc now has a de, ja, and id counterpart. ([e35638b](https://github.com/le-firehawk/Cognis/commit/e35638b))
+- Developer documentation: wrote or rewrote all 31 docs across `src/docs/`, gateway `docs/` subdirectories, adapter `docs/` subdirectories, `src/modules/docs/`, and `src/tooling/docs/`. Includes new `src/docs/standard.en.md` documenting the documentation writing standard. ([31e1ec4](https://github.com/le-firehawk/Cognis/commit/31e1ec4))
+
 ### Changed
 
 - Default application font size reduced from 14 pt to 12 pt (`DEFAULT_FONT_SIZE` in `font-prefs.js`; `--app-font-size` CSS variable updated from `1.17rem` to `1rem`). ([0c06716](https://github.com/le-firehawk/Cognis/commit/0c06716))

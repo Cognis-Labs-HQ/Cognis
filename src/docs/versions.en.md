@@ -1,10 +1,22 @@
 # Component Versions
 
-This document tracks the current version of each gateway, adapter, and module in the Cognis codebase. Any change to the code, schema, or API within a component's scope must be accompanied by a version bump in that component's `package.json`.
+## Overview
 
-## Rule
+This document tracks the current version of every gateway, adapter, and module in the Cognis codebase. It serves as a changelog index and a quick reference for determining whether a component has been updated since a previous release.
 
-Every gateway, adapter, and module carries a `package.json` with a `version` field. When you modify a component — including its internal logic, database schema, public API, or configuration format — increment the version following [Semantic Versioning](https://semver.org/):
+Every gateway, adapter, and module carries a `package.json` with a `version` field. When you modify a component — including its internal logic, database schema, public API, or configuration format — you must increment the version in that `package.json` following Semantic Versioning. This document is updated at the same time.
+
+## Responsibilities
+
+- Record the current version of every versioned component in the codebase.
+- Serve as the changelog index: link to per-component docs and CHANGELOG.md for history.
+- Make it straightforward to detect version drift between deployed components and the current codebase.
+
+Not responsible for: enforcing version bumps (that is a code review concern) or tracking dependency versions of external packages.
+
+## Versioning rule
+
+Increment using [Semantic Versioning](https://semver.org/):
 
 - **Patch** (`0.1.x`): bug fixes, non-breaking internal changes.
 - **Minor** (`0.x.0`): new backwards-compatible features or API additions.
@@ -12,40 +24,40 @@ Every gateway, adapter, and module carries a `package.json` with a `version` fie
 
 ## Adapters
 
-| Component           | Path                        | Version |
-| ------------------- | --------------------------- | ------- |
-| SMTP Notification   | `src/adapters/notify/smtp/` | `0.1.0` |
-| Local File Storage  | `src/adapters/file/local/`  | `0.1.0` |
-| Local Auth          | `src/adapters/auth/local/`  | `0.2.0` |
-| SQLite Database     | `src/adapters/db/sqlite/`   | `0.1.0` |
+| Component | Path | Version |
+| --------- | ---- | ------- |
+| SMTP Notification | `src/adapters/notify/smtp/` | `0.1.0` |
+| Local File Storage | `src/adapters/file/local/` | `0.1.0` |
+| Local Auth | `src/adapters/auth/local/` | `0.2.0` |
+| SQLite Database | `src/adapters/db/sqlite/` | `0.1.0` |
 | PostgreSQL Database | `src/adapters/db/postgres/` | `0.1.0` |
-| MariaDB Database    | `src/adapters/db/mariadb/`  | `0.1.0` |
+| MariaDB Database | `src/adapters/db/mariadb/` | `0.1.0` |
 
 ## Gateways
 
-| Component             | Path                    | Version |
-| --------------------- | ----------------------- | ------- |
-| Database (db)         | `src/gateways/db/`      | `1.1.0` |
-| Authentication (auth) | `src/gateways/auth/`    | `1.1.0` |
-| Notification (notify) | `src/gateways/notify/`  | `0.1.0` |
-| Profile               | `src/gateways/profile/` | `1.1.0` |
-| File Storage          | `src/gateways/files/`   | `1.1.0` |
-| Logging               | `src/gateways/logging/` | `1.1.0` |
+| Component | Path | Version |
+| --------- | ---- | ------- |
+| Database (db) | `src/gateways/db/` | `1.1.0` |
+| Authentication (auth) | `src/gateways/auth/` | `1.1.0` |
+| Notification (notify) | `src/gateways/notify/` | `0.1.0` |
+| Profile | `src/gateways/profile/` | `1.1.0` |
+| File Storage (files) | `src/gateways/files/` | `1.1.0` |
+| Logging | `src/gateways/logging/` | `1.1.0` |
 
 ## Core contracts
 
-| Component    | Path        | Version |
-| ------------ | ----------- | ------- |
+| Component | Path | Version |
+| --------- | ---- | ------- |
 | Core Package | `src/core/` | `0.1.0` |
 
 ## API
 
-| Component  | Path       | Version |
-| ---------- | ---------- | ------- |
+| Component | Path | Version |
+| --------- | ---- | ------- |
 | API Server | `src/api/` | `0.1.0` |
 
 ## Modules
 
-| Component        | Path                            | Version |
-| ---------------- | ------------------------------- | ------- |
+| Component | Path | Version |
+| --------- | ---- | ------- |
 | Sample Analytics | `src/modules/sample-analytics/` | `0.1.0` |

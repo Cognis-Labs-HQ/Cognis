@@ -91,6 +91,14 @@
 
   <string name="ui.app.docs.page_title">Docs</string>
   <string name="ui.app.docs.page_subtitle">Developer documentation.</string>
+  <string name="ui.app.docs.group.platform">Platform</string>
+  <string name="ui.app.docs.group.gateways">Gateways</string>
+  <string name="ui.app.docs.group.adapters_auth">Auth Adapters</string>
+  <string name="ui.app.docs.group.adapters_db">Database Adapters</string>
+  <string name="ui.app.docs.group.adapters_file">File Adapters</string>
+  <string name="ui.app.docs.group.adapters_notify">Notification Adapters</string>
+  <string name="ui.app.docs.group.modules">Modules</string>
+  <string name="ui.app.docs.group.tooling">Tooling</string>
   <string name="ui.app.modules.page_title">Modules Overview</string>
   <string name="ui.app.modules.page_subtitle">Enable and disable installed modules.</string>
   <string name="ui.app.modules.toolbar_subtitle">Admin-only controls</string>

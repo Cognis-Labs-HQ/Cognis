@@ -1,0 +1,41 @@
+# LDAP-Authentifizierungsadapter
+
+## Überblick
+
+Der LDAP-Adapter authentifiziert Benutzer gegen einen LDAP-Verzeichnisserver und ist die richtige Wahl für Organisationen, die Identitäten bereits in Active Directory, OpenLDAP oder einem ähnlichen Verzeichnisdienst verwalten. Benutzer melden sich mit einem LDAP-Access-Token an; der Adapter bindet sich an das Verzeichnis mit einem Service-Account, sucht den Benutzer und ordnet die Gruppenmitgliedschaft der Cognis-Admin-Rolle zu.
+
+## Verantwortlichkeiten
+
+- Ein `accessToken`-Credential akzeptieren und es gegen den LDAP-Server authentifizieren.
+- Die LDAP-Gruppen des authentifizierten Benutzers dem Cognis `isAdmin`-Flag zuordnen.
+- Die `AuthProviderAdapter`-Schnittstelle für das Auth-Gateway bereitstellen.
+- `getConfigSchema()` mit der Beschreibung aller konfigurierbaren Felder bereitstellen.
+
+## Architektur
+
+`LdapAuthAdapter` in `src/adapters/auth/ldap/index.ts` implementiert `AuthProviderAdapter`.
+
+```ts
+export interface LdapClient {
+  authenticate(accessToken: string): Promise<LdapIdentity | null>;
+}
+
+export interface LdapIdentity {
+  id: string;
+  email?: string;
+  groups?: string[];
+}
+```
+
+## Konfiguration
+
+Konfiguration über `PUT /api/v1/gateways/auth/adapters/ldap/config` (nur Admin).
+
+| Schlüssel | Beschreibung | Erforderlich |
+| --------- | ------------ | ------------ |
+| `host` | LDAP-Server-Hostname | Ja |
+| `port` | LDAP-Server-Port | Ja |
+| `bindDn` | Bind-DN für den Service-Account | Ja |
+| `bindPassword` | Passwort für den Bind-DN | Ja |
+| `baseDn` | Basis-DN für Benutzersuchen | Ja |
+| `adminGroups` | Kommagetrennte LDAP-Gruppen, deren Mitglieder Admin-Rolle erhalten | Nein |

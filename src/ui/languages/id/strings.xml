@@ -91,6 +91,14 @@
 
   <string name="ui.app.docs.page_title">Dokumentasi</string>
   <string name="ui.app.docs.page_subtitle">Dokumentasi pengembang.</string>
+  <string name="ui.app.docs.group.platform">Platform</string>
+  <string name="ui.app.docs.group.gateways">Gateway</string>
+  <string name="ui.app.docs.group.adapters_auth">Adapter Autentikasi</string>
+  <string name="ui.app.docs.group.adapters_db">Adapter Basis Data</string>
+  <string name="ui.app.docs.group.adapters_file">Adapter Berkas</string>
+  <string name="ui.app.docs.group.adapters_notify">Adapter Notifikasi</string>
+  <string name="ui.app.docs.group.modules">Modul</string>
+  <string name="ui.app.docs.group.tooling">Perkakas</string>
   <string name="ui.app.modules.page_title">Ringkasan Modul</string>
   <string name="ui.app.modules.page_subtitle">Aktifkan dan nonaktifkan modul terpasang.</string>
   <string name="ui.app.modules.toolbar_subtitle">Kontrol khusus admin</string>

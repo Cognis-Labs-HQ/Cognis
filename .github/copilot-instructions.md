@@ -98,7 +98,7 @@ Gateways, adapters, and modules are responsible for their own resources. This in
 - **Styles**: adapter-specific CSS lives inside the adapter, not under `src/ui/styles/`.
 - **Strings (i18n)**: each component can carry its own `languages/<lang>/strings.xml`; the i18n loader merges these at startup. Core-level `src/ui/languages/` files must contain only keys that are genuinely cross-component.
 - **User preferences**: adapters and gateways can contribute preference fields to the settings UI; the settings page is assembled from contributions rather than hardcoded sections.
-- **Docs**: each component places its documentation under a `docs/` subdirectory. The docs route auto-discovers all `docs/` directories across the codebase and serves them dynamically. Do not hardcode doc paths in the docs route.
+- **Docs**: each component places its documentation under a `docs/` subdirectory. The docs route auto-discovers all `docs/` directories across the codebase and serves them dynamically. Do not hardcode doc paths in the docs route. Follow the section structure, depth tiers, and language requirements defined in `src/docs/standard.en.md`.
 
 ### Auto-discovery over static wiring
 
