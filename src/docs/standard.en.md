@@ -92,3 +92,5 @@ All four languages (en, de, ja, id) are required for any string visible in the U
 ### Language requirements
 
 Every string value in a translated doc must be written in the language that file represents. The only exceptions are brand names (`Cognis`), universal technical acronyms (`LDAP`, `TLS`, `STARTTLS`), format placeholders, and the Latin tagline (`Disce. Loquere. Vive.`).
+
+When changing a Markdown doc that has translated variants, update the corresponding language files in the same change so all supported languages stay in sync.

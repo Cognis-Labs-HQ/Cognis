@@ -92,3 +92,5 @@ Semua empat bahasa (en, de, ja, id) diperlukan untuk string apapun yang terlihat
 ### Persyaratan bahasa
 
 Setiap nilai string dalam dokumen yang diterjemahkan harus ditulis dalam bahasa yang diwakili file tersebut. Satu-satunya pengecualian adalah nama merek (`Cognis`), akronim teknis universal (`LDAP`, `TLS`, `STARTTLS`), placeholder format, dan tagline Latin (`Disce. Loquere. Vive.`).
+
+Jika Anda mengubah dokumen Markdown yang memiliki varian terjemahan, perbarui file bahasa terkait dalam perubahan yang sama agar semua bahasa yang didukung tetap selaras.

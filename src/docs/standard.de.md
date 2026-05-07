@@ -92,3 +92,5 @@ Alle vier Sprachen (en, de, ja, id) sind für alle in der Benutzeroberfläche si
 ### Sprachanforderungen
 
 Jeder Zeichenkettenwert in einem übersetzten Dokument muss in der Sprache verfasst sein, die diese Datei repräsentiert. Die einzigen Ausnahmen sind Markennamen (`Cognis`), universelle technische Abkürzungen (`LDAP`, `TLS`, `STARTTLS`), Formatplatzhalter und der lateinische Slogan (`Disce. Loquere. Vive.`).
+
+Wenn Sie ein Markdown-Dokument ändern, für das übersetzte Varianten existieren, aktualisieren Sie die entsprechenden Sprachdateien in derselben Änderung, damit alle unterstützten Sprachen synchron bleiben.
