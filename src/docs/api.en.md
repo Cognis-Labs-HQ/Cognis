@@ -85,7 +85,11 @@ Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200
 | ------ | ---- | ----------- | ---- |
 | `GET` | `/api/v1/system/health` | Full health status with uptime | None |
 | `GET` | `/api/v1/system/healthcheck` | Minimal liveness probe | None |
+| `GET` | `/api/v1/system/languages` | List installed UI languages | None |
 | `GET` | `/api/v1/system/ui-config` | UI configuration object | None |
+| `GET` | `/api/v1/system/security` | Read trusted email domain settings | Bearer |
+| `PUT` | `/api/v1/system/security` | Update trusted email domain settings | Admin |
+| `GET` | `/api/v1/system/license` | Retrieve license markdown payload | None |
 
 ### Auth
 
