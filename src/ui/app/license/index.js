@@ -176,8 +176,9 @@ if (nav && sections.length > 0) {
         )
         .join("");
     nav.innerHTML = `<ul>${items}</ul>`;
-    nav.querySelector(`[data-section-id="${activeSectionId}"]`)
-        ?.classList.add("active");
+    nav.querySelector(`[data-section-id="${activeSectionId}"]`)?.classList.add(
+        "active",
+    );
 }
 
 renderSections();

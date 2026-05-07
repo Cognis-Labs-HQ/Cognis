@@ -24,7 +24,7 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 
 ## Konfigurasi
 
-| Variabel | Default | Keterangan |
-| -------- | ------- | ---------- |
-| `DB_TYPE` | — | Harus `postgresql` untuk mengaktifkan adapter ini |
-| `DATABASE_URL` | — | URL koneksi PostgreSQL, mis. `postgresql://user:pass@host:5432/cognis` |
+| Variabel       | Default | Keterangan                                                             |
+| -------------- | ------- | ---------------------------------------------------------------------- |
+| `DB_TYPE`      | —       | Harus `postgresql` untuk mengaktifkan adapter ini                      |
+| `DATABASE_URL` | —       | URL koneksi PostgreSQL, mis. `postgresql://user:pass@host:5432/cognis` |

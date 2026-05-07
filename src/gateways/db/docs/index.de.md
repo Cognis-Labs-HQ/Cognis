@@ -19,9 +19,15 @@ Kein Komponente außerhalb des Datenbank-Gateway-Baums — kein Route-Handler, k
 
 ```ts
 export interface DatabaseGateway {
-  query<Row = Record<string, unknown>>(statement: string, params?: unknown[]): Promise<QueryResult<Row>>;
-  execute(statement: string, params?: unknown[]): Promise<{ affectedRows: number }>;
-  transaction<T>(callback: (db: DatabaseGateway) => Promise<T>): Promise<T>;
+    query<Row = Record<string, unknown>>(
+        statement: string,
+        params?: unknown[],
+    ): Promise<QueryResult<Row>>;
+    execute(
+        statement: string,
+        params?: unknown[],
+    ): Promise<{ affectedRows: number }>;
+    transaction<T>(callback: (db: DatabaseGateway) => Promise<T>): Promise<T>;
 }
 ```
 
@@ -31,22 +37,27 @@ Der `DbDialectHelper`, beigetragen als `db:dialect`, stellt zwei Methoden bereit
 
 ```ts
 export interface DbDialectHelper {
-  upsert(table: string, keyCol: string, keyVal: unknown, extraData: Record<string, unknown>): Promise<void>;
-  insertIgnore(table: string, data: Record<string, unknown>): Promise<void>;
+    upsert(
+        table: string,
+        keyCol: string,
+        keyVal: unknown,
+        extraData: Record<string, unknown>,
+    ): Promise<void>;
+    insertIgnore(table: string, data: Record<string, unknown>): Promise<void>;
 }
 ```
 
-| Pfad | Zweck |
-| ---- | ----- |
-| `src/gateways/db/gateway.ts` | `DatabaseGateway`-Schnittstelle |
-| `src/gateways/db/executor.ts` | `createDbExecutor` |
-| `src/gateways/db/init.ts` | `initializeDatabaseSchema` |
+| Pfad                           | Zweck                                       |
+| ------------------------------ | ------------------------------------------- |
+| `src/gateways/db/gateway.ts`   | `DatabaseGateway`-Schnittstelle             |
+| `src/gateways/db/executor.ts`  | `createDbExecutor`                          |
+| `src/gateways/db/init.ts`      | `initializeDatabaseSchema`                  |
 | `src/gateways/db/bootstrap.ts` | Bootstrap-Einstiegspunkt; `DbDialectHelper` |
 
 ## Konfiguration
 
-| Variable | Standard | Beschreibung |
-| -------- | -------- | ------------ |
-| `DB_TYPE` | `sqlite` | Datenbank-Backend: `sqlite`, `postgresql` oder `mariadb` |
-| `DATABASE_URL` | — | Verbindungszeichenkette; erforderlich für `postgresql` oder `mariadb` |
-| `SQLITE_PATH` | `./data/cognis.sqlite` | SQLite-Dateipfad; nur bei `DB_TYPE=sqlite` verwendet |
+| Variable       | Standard               | Beschreibung                                                          |
+| -------------- | ---------------------- | --------------------------------------------------------------------- |
+| `DB_TYPE`      | `sqlite`               | Datenbank-Backend: `sqlite`, `postgresql` oder `mariadb`              |
+| `DATABASE_URL` | —                      | Verbindungszeichenkette; erforderlich für `postgresql` oder `mariadb` |
+| `SQLITE_PATH`  | `./data/cognis.sqlite` | SQLite-Dateipfad; nur bei `DB_TYPE=sqlite` verwendet                  |

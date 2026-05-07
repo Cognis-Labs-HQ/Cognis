@@ -27,14 +27,14 @@ scrypt:<hex-salt>:<hex-derived-key>
 
 Lokale Konten werden über die `cognisctl`-CLI mit dem `user:*`-Befehlsnamespace verwaltet:
 
-| Befehl | Beschreibung |
-| ------ | ------------ |
-| `user:create` | Neues lokales Konto erstellen |
-| `user:role` | Einer Rolle einem Konto zuweisen |
-| `user:set-password` | Passwort eines Kontos ändern |
-| `user:disable` | Konto deaktivieren |
-| `user:enable` | Deaktiviertes Konto reaktivieren |
-| `user:delete` | Konto löschen |
+| Befehl              | Beschreibung                     |
+| ------------------- | -------------------------------- |
+| `user:create`       | Neues lokales Konto erstellen    |
+| `user:role`         | Einer Rolle einem Konto zuweisen |
+| `user:set-password` | Passwort eines Kontos ändern     |
+| `user:disable`      | Konto deaktivieren               |
+| `user:enable`       | Deaktiviertes Konto reaktivieren |
+| `user:delete`       | Konto löschen                    |
 
 ## Konfiguration
 

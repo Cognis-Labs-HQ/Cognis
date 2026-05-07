@@ -51,17 +51,17 @@ Module werden aus `src/modules/` (intern, vertrauenswürdig) und `COGNIS_MODULES
 
 ### Wichtige Quellpfade
 
-| Bereich | Pfad |
-| ------- | ---- |
-| Core-Verträge | `src/core/contracts/` |
-| Core-Dienste | `src/core/services/` |
-| HTTP-Server-Einstieg | `src/api/main.ts` |
-| Routenregistry | `src/api/route-registry.ts` |
-| Gemeinsame Gateway-Utilities | `src/gateways/shared.ts` |
-| Gateway-Bootstrapper | `src/api/gateway-bootstrap.ts` |
-| UI-Einstiegspunkte | `src/ui/app/` |
-| UI-Reuse-Utilities | `src/ui/reuse/` |
-| Plattformdokumentationen | `src/docs/` |
+| Bereich                      | Pfad                           |
+| ---------------------------- | ------------------------------ |
+| Core-Verträge                | `src/core/contracts/`          |
+| Core-Dienste                 | `src/core/services/`           |
+| HTTP-Server-Einstieg         | `src/api/main.ts`              |
+| Routenregistry               | `src/api/route-registry.ts`    |
+| Gemeinsame Gateway-Utilities | `src/gateways/shared.ts`       |
+| Gateway-Bootstrapper         | `src/api/gateway-bootstrap.ts` |
+| UI-Einstiegspunkte           | `src/ui/app/`                  |
+| UI-Reuse-Utilities           | `src/ui/reuse/`                |
+| Plattformdokumentationen     | `src/docs/`                    |
 
 ## Erweiterungspunkte
 

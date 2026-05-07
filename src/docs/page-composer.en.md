@@ -2,7 +2,7 @@
 
 ## Overview
 
-`createPageComposer` is the layout orchestration utility used by all Cognis pages. Individual page modules declare *what* to render — a list of named content blocks called elements — and the composer handles how those blocks are arranged, persisted, navigated, and re-rendered. This separation means that adding a new widget to a page does not require writing any grid, drag-and-drop, or persistence code.
+`createPageComposer` is the layout orchestration utility used by all Cognis pages. Individual page modules declare _what_ to render — a list of named content blocks called elements — and the composer handles how those blocks are arranged, persisted, navigated, and re-rendered. This separation means that adding a new widget to a page does not require writing any grid, drag-and-drop, or persistence code.
 
 Pages that enable customisation present their elements in a free-form resizable and draggable grid. Users can move and resize widgets; their arrangement is saved to the preferences API and restored on next visit. Pages that disable customisation render elements in a fixed order using the same element declaration format, so the calling code is identical either way.
 
@@ -37,14 +37,14 @@ An element is a named content block declared as a plain object:
 }
 ```
 
-| Field | Required | Description |
-| ----- | -------- | ----------- |
-| `id` | Yes | Unique string identifier; also used as the DOM `id` |
-| `label` | Yes | Human-readable label shown in the editing panel |
-| `render` | Yes | Function returning an HTML string for the element's content |
-| `gridSize` | No | `{ default: [w,h], min: [w,h], max?: [w,h] \| 'full' \| 'half' \| ['half'\|number, 'half'\|number] }` in 90 px grid units |
-| `pinned` | No | When `true`, the element cannot be removed by the user |
-| `subComposerOptions` | No | Mounts a nested composer inside this element |
+| Field                | Required | Description                                                                                                               |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `id`                 | Yes      | Unique string identifier; also used as the DOM `id`                                                                       |
+| `label`              | Yes      | Human-readable label shown in the editing panel                                                                           |
+| `render`             | Yes      | Function returning an HTML string for the element's content                                                               |
+| `gridSize`           | No       | `{ default: [w,h], min: [w,h], max?: [w,h] \| 'full' \| 'half' \| ['half'\|number, 'half'\|number] }` in 90 px grid units |
+| `pinned`             | No       | When `true`, the element cannot be removed by the user                                                                    |
+| `subComposerOptions` | No       | Mounts a nested composer inside this element                                                                              |
 
 ### Grid layout
 
@@ -83,7 +83,7 @@ The `toolbar` array declares panels in the page header. Each item provides a `re
 The `floatingMenu` array renders entries inside a `.floating-toolbar` overlay. Each entry is wrapped in a named DOM slot (`data-floating-slot`). Access a slot via `composer.getFloatingSlot(id)` — never query `.floating-toolbar` directly.
 
 ```js
-const slot = composer.getFloatingSlot('save-bar');
+const slot = composer.getFloatingSlot("save-bar");
 slot.hidden = false;
 ```
 
@@ -98,28 +98,32 @@ Layouts are stored via `PUT /api/v1/users/:username/preferences` under the key s
 ### Usage example
 
 ```js
-import { createPageComposer } from '../../reuse/page-composer.js';
+import { createPageComposer } from "../../reuse/page-composer.js";
 
-const composer = createPageComposer(document.querySelector('#app'), {
-  allowCustomization: true,
-  elements,
-  preferenceKey: 'my-page-layout',
-  i18n,
-  pageContext: { title: 'My Page', subtitle: 'Subtitle text' },
-  onRender: () => bindPageEvents(),
-  toolbar: [
-    { id: 'nav', label: 'Navigation', render: () => renderNavHtml() },
-  ],
-  floatingMenu: [
-    { id: 'save-bar', label: 'Save bar', render: () => renderSaveBarHtml() },
-  ],
+const composer = createPageComposer(document.querySelector("#app"), {
+    allowCustomization: true,
+    elements,
+    preferenceKey: "my-page-layout",
+    i18n,
+    pageContext: { title: "My Page", subtitle: "Subtitle text" },
+    onRender: () => bindPageEvents(),
+    toolbar: [
+        { id: "nav", label: "Navigation", render: () => renderNavHtml() },
+    ],
+    floatingMenu: [
+        {
+            id: "save-bar",
+            label: "Save bar",
+            render: () => renderSaveBarHtml(),
+        },
+    ],
 });
 
 await composer.init();
 
 document
-  .querySelector('#app [data-some-toolbar-btn]')
-  ?.addEventListener('click', handleToolbarClick);
+    .querySelector("#app [data-some-toolbar-btn]")
+    ?.addEventListener("click", handleToolbarClick);
 ```
 
 Source: `src/ui/reuse/page-composer.js`

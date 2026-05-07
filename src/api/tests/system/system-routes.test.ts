@@ -110,7 +110,10 @@ test("system security settings sanitize and survive malformed persisted data", a
     const preferenceStore = {
         get: async () => '{ "trustedDomains": ["Example.COM", " ", 7] }',
     };
-    const route = createSystemRoutes(healthService as any, preferenceStore as any);
+    const route = createSystemRoutes(
+        healthService as any,
+        preferenceStore as any,
+    );
 
     await route(
         { method: "GET", headers } as any,

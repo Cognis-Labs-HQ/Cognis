@@ -2394,10 +2394,10 @@ export function createPageComposer(
     function applyPageOverrides(id) {
         const overrides = pageOverrides[id] ?? {};
         const effectiveShowThemeToggle =
-            'showThemeToggle' in overrides
+            "showThemeToggle" in overrides
                 ? overrides.showThemeToggle
                 : showThemeToggle;
-        const toggleEl = root.querySelector('#theme-toggle');
+        const toggleEl = root.querySelector("#theme-toggle");
         if (toggleEl) toggleEl.hidden = !effectiveShowThemeToggle;
     }
 

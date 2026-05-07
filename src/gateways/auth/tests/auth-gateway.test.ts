@@ -236,7 +236,10 @@ test("auth gateway bootstrap registers correct static dir and admin-section.js e
     });
 
     const staticDir = uiRegistry.getStaticDir("auth");
-    assert.ok(staticDir, "auth gateway must register a static dir with UIRegistry");
+    assert.ok(
+        staticDir,
+        "auth gateway must register a static dir with UIRegistry",
+    );
 
     await assert.doesNotReject(
         access(staticDir),
@@ -273,7 +276,10 @@ test("auth gateway bootstrap registers admin section scriptUrl that resolves wit
 
     const sections = uiRegistry.listAdminSections();
     const securitySection = sections.find((s) => s.id === "security");
-    assert.ok(securitySection, "auth gateway must register a 'security' admin section");
+    assert.ok(
+        securitySection,
+        "auth gateway must register a 'security' admin section",
+    );
 
     const staticDir = uiRegistry.getStaticDir("auth");
     assert.ok(staticDir, "auth gateway must register a static dir");
@@ -298,7 +304,10 @@ test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", as
     const db = {
         execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
     } as ReturnType<typeof makeInMemoryDb> & {
-        execute: (sql: string, params?: unknown[]) => Promise<{ rows?: unknown[] }>;
+        execute: (
+            sql: string,
+            params?: unknown[],
+        ) => Promise<{ rows?: unknown[] }>;
     };
 
     const gw = new CoreAuthGateway(db, "sqlite");
@@ -353,7 +362,15 @@ test("login endpoint returns 503 when no auth providers are available", async ()
     });
 
     const entries = routeRegistry.getEntries();
-    const chunks = [Buffer.from(JSON.stringify({ provider: "local", username: "nobody", password: "bad" }))];
+    const chunks = [
+        Buffer.from(
+            JSON.stringify({
+                provider: "local",
+                username: "nobody",
+                password: "bad",
+            }),
+        ),
+    ];
     const req = {
         method: "POST",
         headers: {},
@@ -406,7 +423,11 @@ test("profile:createProfile capability is looked up lazily in login and register
     );
 
     const entries = routeRegistry.getEntries();
-    const chunks = [Buffer.from(JSON.stringify({ username: "testuser", password: "testpass" }))];
+    const chunks = [
+        Buffer.from(
+            JSON.stringify({ username: "testuser", password: "testpass" }),
+        ),
+    ];
     const req = {
         method: "POST",
         headers: {},

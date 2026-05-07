@@ -16,28 +16,37 @@
 
 ```ts
 export class Logger {
-  constructor(level: LogLevel, filePath: string, fileAppend?: FileAppend);
-  async log(level: LogLevel, message: string, meta?: Record<string, unknown>): Promise<void>;
-  info(message: string, meta?: Record<string, unknown>): Promise<void>;
-  warn(message: string, meta?: Record<string, unknown>): Promise<void>;
-  error(message: string, meta?: Record<string, unknown>): Promise<void>;
+    constructor(level: LogLevel, filePath: string, fileAppend?: FileAppend);
+    async log(
+        level: LogLevel,
+        message: string,
+        meta?: Record<string, unknown>,
+    ): Promise<void>;
+    info(message: string, meta?: Record<string, unknown>): Promise<void>;
+    warn(message: string, meta?: Record<string, unknown>): Promise<void>;
+    error(message: string, meta?: Record<string, unknown>): Promise<void>;
 }
 ```
 
 各ログ行はJSONオブジェクトです:
 
 ```json
-{ "ts": "2024-01-15T10:00:00.000Z", "level": "info", "message": "ゲートウェイがブートストラップされました。", "gateway": "auth" }
+{
+    "ts": "2024-01-15T10:00:00.000Z",
+    "level": "info",
+    "message": "ゲートウェイがブートストラップされました。",
+    "gateway": "auth"
+}
 ```
 
-| ケイパビリティ | 型 | 説明 |
-| ------------ | -- | ---- |
-| `logging:logger` | `Logger` | 完全なLoggerインスタンス |
-| `logging:log` | `(level, message, meta?) => void` | 単純なログ関数; ゲートウェイブートストラッパーが `ctx.log` として使用 |
+| ケイパビリティ   | 型                                | 説明                                                                  |
+| ---------------- | --------------------------------- | --------------------------------------------------------------------- |
+| `logging:logger` | `Logger`                          | 完全なLoggerインスタンス                                              |
+| `logging:log`    | `(level, message, meta?) => void` | 単純なログ関数; ゲートウェイブートストラッパーが `ctx.log` として使用 |
 
 ## 設定
 
-| 変数 | デフォルト | 説明 |
-| ---- | ---------- | ---- |
-| `LOG_LEVEL` | `info` | 最小ログレベル: `debug`、`info`、`warn`、または `error` |
-| `LOG_FILE` | `/app/logs/app.log` | 永続ログファイルへの絶対パス |
+| 変数        | デフォルト          | 説明                                                    |
+| ----------- | ------------------- | ------------------------------------------------------- |
+| `LOG_LEVEL` | `info`              | 最小ログレベル: `debug`、`info`、`warn`、または `error` |
+| `LOG_FILE`  | `/app/logs/app.log` | 永続ログファイルへの絶対パス                            |

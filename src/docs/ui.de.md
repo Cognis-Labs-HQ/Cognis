@@ -20,13 +20,13 @@ Alle benutzersichtbaren Texte gehen durch das i18n-System in `src/ui/reuse/i18n.
 
 ### Verzeichnisstruktur
 
-| Pfad | Zweck |
-| ---- | ----- |
-| `src/ui/layouts/` | Gemeinsame HTML-Shells |
-| `src/ui/app/` | Seiten-Einstiegspunkt-JavaScript-Module |
-| `src/ui/reuse/` | Seitenübergreifende Utility-Module |
-| `src/ui/styles/` | CSS: Basis-Tokens, Layout, seitenspezifische Regeln |
-| `src/ui/languages/` | i18n-String-Packs (en, de, ja, id) |
+| Pfad                | Zweck                                               |
+| ------------------- | --------------------------------------------------- |
+| `src/ui/layouts/`   | Gemeinsame HTML-Shells                              |
+| `src/ui/app/`       | Seiten-Einstiegspunkt-JavaScript-Module             |
+| `src/ui/reuse/`     | Seitenübergreifende Utility-Module                  |
+| `src/ui/styles/`    | CSS: Basis-Tokens, Layout, seitenspezifische Regeln |
+| `src/ui/languages/` | i18n-String-Packs (en, de, ja, id)                  |
 
 ### UIRegistry
 
@@ -34,9 +34,9 @@ Gateways injizieren Admin-Panels und seitenspezifische UI-Beiträge zur Laufzeit
 
 ## i18n-Schlüssel-Konventionen
 
-| Präfix | Verwendung |
-| ------ | ---------- |
-| `ui.reuse.*` | Labels, die über mehrere Seiten geteilt werden |
+| Präfix               | Verwendung                                                                    |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `ui.reuse.*`         | Labels, die über mehrere Seiten geteilt werden                                |
 | `ui.reuse.generic.*` | Kontextfreie eigenständige Aktionswörter (speichern, verwerfen, zurücksetzen) |
-| `ui.app.<page>.*` | Seitenspezifischer Text |
-| `ui.layout.*` | Layout-Shell-Text und ARIA-Labels |
+| `ui.app.<page>.*`    | Seitenspezifischer Text                                                       |
+| `ui.layout.*`        | Layout-Shell-Text und ARIA-Labels                                             |

@@ -24,61 +24,61 @@ Not responsible for: file storage implementation (that is the files gateway), au
 
 ### Database tables
 
-| Table | Purpose |
-| ----- | ------- |
+| Table              | Purpose                                                                                     |
+| ------------------ | ------------------------------------------------------------------------------------------- |
 | `account_profiles` | Core profile data: handle, role, bio, location, website, avatar_key, banner_key, visibility |
-| `account_follows` | Follower → following pairs |
-| `account_blocks` | Blocker → blocked pairs |
-| `posts` | User-authored posts with per-post visibility |
-| `file_size_limits` | Per-category upload size caps (`image`, `video`, `text`, `global`) |
+| `account_follows`  | Follower → following pairs                                                                  |
+| `account_blocks`   | Blocker → blocked pairs                                                                     |
+| `posts`            | User-authored posts with per-post visibility                                                |
+| `file_size_limits` | Per-category upload size caps (`image`, `video`, `text`, `global`)                          |
 
 Schema SQL is in `src/adapters/db/{sqlite,mariadb,postgres}/sql/init/002_profile.sql`.
 
 ### Key source locations
 
-| Path | Purpose |
-| ---- | ------- |
-| `src/gateways/profile/bootstrap.ts` | Gateway bootstrap; wires stores, routes, and capabilities |
-| `src/gateways/profile/routes/social.ts` | Follow, unfollow, block, unblock, follower/following list routes |
-| `src/gateways/profile/routes/posts.ts` | Post creation, listing, and deletion routes |
-| `src/gateways/profile/routes/files.ts` | File upload, download, and admin size-limit routes |
-| `src/gateways/profile/routes/preferences.ts` | User preference get/set routes |
-| `src/adapters/db/reuse/profile-store.ts` | `DbProfileStore` — all profile SQL operations |
-| `src/adapters/db/reuse/preference-store.ts` | `DbUserPreferenceStore` |
-| `src/api/routes/profile/index.ts` | Own profile and public profile route handlers |
-| `src/ui/app/profile/index.js` | Profile page entry point |
+| Path                                         | Purpose                                                          |
+| -------------------------------------------- | ---------------------------------------------------------------- |
+| `src/gateways/profile/bootstrap.ts`          | Gateway bootstrap; wires stores, routes, and capabilities        |
+| `src/gateways/profile/routes/social.ts`      | Follow, unfollow, block, unblock, follower/following list routes |
+| `src/gateways/profile/routes/posts.ts`       | Post creation, listing, and deletion routes                      |
+| `src/gateways/profile/routes/files.ts`       | File upload, download, and admin size-limit routes               |
+| `src/gateways/profile/routes/preferences.ts` | User preference get/set routes                                   |
+| `src/adapters/db/reuse/profile-store.ts`     | `DbProfileStore` — all profile SQL operations                    |
+| `src/adapters/db/reuse/preference-store.ts`  | `DbUserPreferenceStore`                                          |
+| `src/api/routes/profile/index.ts`            | Own profile and public profile route handlers                    |
+| `src/ui/app/profile/index.js`                | Profile page entry point                                         |
 
 ### Visibility model
 
-| Tier | Profile visible to | Posts and counts visible to |
-| ---- | ------------------ | ---------------------------- |
-| `hidden` (default) | Self and admin only | — (posting blocked; returns 403) |
-| `private` | Existing followers only | Followers only |
-| `friends` | Any authenticated user | Followers only |
-| `community` | Any authenticated user | Any authenticated user |
+| Tier               | Profile visible to      | Posts and counts visible to      |
+| ------------------ | ----------------------- | -------------------------------- |
+| `hidden` (default) | Self and admin only     | — (posting blocked; returns 403) |
+| `private`          | Existing followers only | Followers only                   |
+| `friends`          | Any authenticated user  | Followers only                   |
+| `community`        | Any authenticated user  | Any authenticated user           |
 
 Post visibility (`only_me | private | friends | community`) is always capped by the account tier. Blocked callers receive 404 on any endpoint targeting the blocker.
 
 ### Capabilities contributed
 
-| Capability | Type | Description |
-| ---------- | ---- | ----------- |
-| `profile:createProfile` | `(accountId, handle, role?) => Promise<void>` | Creates a profile row; called by auth on register |
-| `profile:setRoleByHandle` | `(handle, role) => Promise<void>` | Syncs role on profile row; called by user:role route |
-| `preferences:store` | `DbUserPreferenceStore` | User preference persistence |
+| Capability                | Type                                          | Description                                          |
+| ------------------------- | --------------------------------------------- | ---------------------------------------------------- |
+| `profile:createProfile`   | `(accountId, handle, role?) => Promise<void>` | Creates a profile row; called by auth on register    |
+| `profile:setRoleByHandle` | `(handle, role) => Promise<void>`             | Syncs role on profile row; called by user:role route |
+| `preferences:store`       | `DbUserPreferenceStore`                       | User preference persistence                          |
 
 ### Frontend page structure
 
 The profile page (`src/ui/app/profile/index.js`) uses `createPageComposer` with grid customisation enabled. Ownership is detected by comparing the URL handle with the `cognis_account` value in `localStorage`.
 
-| Element | Default visible | Grid size |
-| ------- | --------------- | --------- |
-| `hero` | Yes | full |
-| `followers` | Yes | `[2, 3]` (min `[2, 1]`, max full) |
-| `following` | Yes | `[2, 3]` (min `[2, 1]`, max full) |
-| `posts` | Yes | full |
-| `social-links` | No | `[2, 3]` (min `[2, 1]`, max full) |
-| `suggested` | No | `[2, 3]` (min `[2, 1]`, max full) |
+| Element        | Default visible | Grid size                         |
+| -------------- | --------------- | --------------------------------- |
+| `hero`         | Yes             | full                              |
+| `followers`    | Yes             | `[2, 3]` (min `[2, 1]`, max full) |
+| `following`    | Yes             | `[2, 3]` (min `[2, 1]`, max full) |
+| `posts`        | Yes             | full                              |
+| `social-links` | No              | `[2, 3]` (min `[2, 1]`, max full) |
+| `suggested`    | No              | `[2, 3]` (min `[2, 1]`, max full) |
 
 ## Configuration
 
@@ -86,28 +86,28 @@ The profile gateway has no direct environment variable configuration. It reads `
 
 ## API Routes
 
-| Method | Path | Description | Auth |
-| ------ | ---- | ----------- | ---- |
-| `GET` | `/api/v1/profile/ping` | Capability check | Bearer |
-| `GET` | `/api/v1/profile` | Own profile | Bearer |
-| `PATCH` | `/api/v1/profile` | Update own profile | Bearer |
-| `PUT` | `/api/v1/profile/avatar` | Upload avatar (JPEG/PNG/WebP) | Bearer |
-| `DELETE` | `/api/v1/profile/avatar` | Remove own avatar | Bearer |
-| `PUT` | `/api/v1/profile/banner` | Upload banner (JPEG/PNG/WebP/GIF) | Bearer |
-| `DELETE` | `/api/v1/profile/banner` | Remove own banner | Bearer |
-| `GET` | `/api/v1/users/:handle/profile` | Public profile (gated by visibility) | Bearer |
-| `POST` | `/api/v1/users/:handle/follow` | Follow a user | Bearer |
-| `DELETE` | `/api/v1/users/:handle/follow` | Unfollow | Bearer |
-| `POST` | `/api/v1/users/:handle/block` | Block a user | Bearer |
-| `DELETE` | `/api/v1/users/:handle/block` | Unblock | Bearer |
-| `GET` | `/api/v1/users/:handle/followers` | Follower list | Bearer |
-| `GET` | `/api/v1/users/:handle/following` | Following list | Bearer |
-| `POST` | `/api/v1/posts` | Create post | Bearer |
-| `GET` | `/api/v1/posts` | List own posts | Bearer |
-| `DELETE` | `/api/v1/posts/:id` | Delete post (owner, moderator, admin) | Bearer |
-| `GET` | `/api/v1/users/:handle/posts` | List user's posts | Bearer |
-| `PUT` | `/api/v1/files/:bucket/:key` | Upload file | Bearer |
-| `GET` | `/api/v1/files/:bucket/:key` | Download file | Bearer |
-| `DELETE` | `/api/v1/files/:bucket/:key` | Delete file | Admin |
-| `GET` | `/api/v1/admin/file-limits` | List size limits | Admin |
-| `PUT` | `/api/v1/admin/file-limits/:category` | Set size limit | Admin |
+| Method   | Path                                  | Description                           | Auth   |
+| -------- | ------------------------------------- | ------------------------------------- | ------ |
+| `GET`    | `/api/v1/profile/ping`                | Capability check                      | Bearer |
+| `GET`    | `/api/v1/profile`                     | Own profile                           | Bearer |
+| `PATCH`  | `/api/v1/profile`                     | Update own profile                    | Bearer |
+| `PUT`    | `/api/v1/profile/avatar`              | Upload avatar (JPEG/PNG/WebP)         | Bearer |
+| `DELETE` | `/api/v1/profile/avatar`              | Remove own avatar                     | Bearer |
+| `PUT`    | `/api/v1/profile/banner`              | Upload banner (JPEG/PNG/WebP/GIF)     | Bearer |
+| `DELETE` | `/api/v1/profile/banner`              | Remove own banner                     | Bearer |
+| `GET`    | `/api/v1/users/:handle/profile`       | Public profile (gated by visibility)  | Bearer |
+| `POST`   | `/api/v1/users/:handle/follow`        | Follow a user                         | Bearer |
+| `DELETE` | `/api/v1/users/:handle/follow`        | Unfollow                              | Bearer |
+| `POST`   | `/api/v1/users/:handle/block`         | Block a user                          | Bearer |
+| `DELETE` | `/api/v1/users/:handle/block`         | Unblock                               | Bearer |
+| `GET`    | `/api/v1/users/:handle/followers`     | Follower list                         | Bearer |
+| `GET`    | `/api/v1/users/:handle/following`     | Following list                        | Bearer |
+| `POST`   | `/api/v1/posts`                       | Create post                           | Bearer |
+| `GET`    | `/api/v1/posts`                       | List own posts                        | Bearer |
+| `DELETE` | `/api/v1/posts/:id`                   | Delete post (owner, moderator, admin) | Bearer |
+| `GET`    | `/api/v1/users/:handle/posts`         | List user's posts                     | Bearer |
+| `PUT`    | `/api/v1/files/:bucket/:key`          | Upload file                           | Bearer |
+| `GET`    | `/api/v1/files/:bucket/:key`          | Download file                         | Bearer |
+| `DELETE` | `/api/v1/files/:bucket/:key`          | Delete file                           | Admin  |
+| `GET`    | `/api/v1/admin/file-limits`           | List size limits                      | Admin  |
+| `PUT`    | `/api/v1/admin/file-limits/:category` | Set size limit                        | Admin  |

@@ -50,7 +50,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : undefined);
 
-    ctx.routeRegistry.register(createNotificationRoutes(gateway, notifStore), "notify");
+    ctx.routeRegistry.register(
+        createNotificationRoutes(gateway, notifStore),
+        "notify",
+    );
     ctx.routeRegistry.register(
         createUserEmailRoutes(
             notifStore,
@@ -295,11 +298,7 @@ export function createUserEmailRoutes(
                     const verifyUrl = externalHost
                         ? `${externalHost}/verify-email?token=${watchToken}`
                         : undefined;
-                    await gateway.sendVerificationEmail(
-                        email,
-                        code,
-                        verifyUrl,
-                    );
+                    await gateway.sendVerificationEmail(email, code, verifyUrl);
                     res.writeHead(201, {
                         "content-type": "application/json",
                     });

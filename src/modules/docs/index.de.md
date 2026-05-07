@@ -24,10 +24,10 @@ Beim Start durchsucht `ModuleService` das Verzeichnis `COGNIS_MODULES_ROOT` nach
 
 ### Interne und externe Module
 
-| Typ | Quelle | Installation | Haftungsausschluss |
-| --- | ------ | ------------ | ------------------ |
-| `internal` | Im Repository unter `src/modules/` gebündelt | Vorinstalliert | Keiner |
-| `external` | Hochgeladenes `.zip`- oder `.tar.gz`-Archiv | Über Admin-API oder `modules:install` CLI | Wird vor Aktivierung angezeigt |
+| Typ        | Quelle                                       | Installation                              | Haftungsausschluss             |
+| ---------- | -------------------------------------------- | ----------------------------------------- | ------------------------------ |
+| `internal` | Im Repository unter `src/modules/` gebündelt | Vorinstalliert                            | Keiner                         |
+| `external` | Hochgeladenes `.zip`- oder `.tar.gz`-Archiv  | Über Admin-API oder `modules:install` CLI | Wird vor Aktivierung angezeigt |
 
 Externe Module werden durch Hochladen eines komprimierten Archivs installiert. Das Framework entpackt das Archiv, prüft die `manifest.json` und legt das Modulverzeichnis unter `COGNIS_MODULES_ROOT` ab.
 
@@ -35,20 +35,20 @@ Externe Module werden durch Hochladen eines komprimierten Archivs installiert. D
 
 ```ts
 export interface ModuleManifest {
-  id: string;
-  name: string;
-  version: string;
-  publisher?: string;
-  class: 'core' | 'extension';
-  coreApiVersion: string;
-  capabilities: string[];
-  requires?: string[];
-  entrypoints: {
-    api?: string;
-    ui?: string;
-    cli?: string;
-    db?: string;
-  };
+    id: string;
+    name: string;
+    version: string;
+    publisher?: string;
+    class: "core" | "extension";
+    coreApiVersion: string;
+    capabilities: string[];
+    requires?: string[];
+    entrypoints: {
+        api?: string;
+        ui?: string;
+        cli?: string;
+        db?: string;
+    };
 }
 ```
 
@@ -62,9 +62,9 @@ Module mit `entrypoints.ui` müssen ihre Seite unter dem deklarierten Pfad relat
 
 ```ts
 export function registerApiRoutes(router) {
-  router.get('/api/v1/modules/my-module/data', async (req, res) => {
-    // handler
-  });
+    router.get("/api/v1/modules/my-module/data", async (req, res) => {
+        // handler
+    });
 }
 ```
 
@@ -74,27 +74,27 @@ export function registerApiRoutes(router) {
 
 Modulrouten dürfen nicht mit einem der folgenden Präfixe beginnen:
 
-| Präfix | Grund |
-| ------ | ----- |
-| `/api/v1/system` | Kernsystem-Endpunkte |
-| `/api/v1/auth` | Auth-Gateway |
-| `/api/v1/users` | Benutzerverwaltung |
-| `/public` | Plattform-Static-Assets |
-| `/ui` | Plattform-UI-Assets |
+| Präfix           | Grund                   |
+| ---------------- | ----------------------- |
+| `/api/v1/system` | Kernsystem-Endpunkte    |
+| `/api/v1/auth`   | Auth-Gateway            |
+| `/api/v1/users`  | Benutzerverwaltung      |
+| `/public`        | Plattform-Static-Assets |
+| `/ui`            | Plattform-UI-Assets     |
 
 Der Versuch, eine Route unter einem geschützten Präfix zu registrieren, wird still ignoriert und eine Warnung protokolliert.
 
 ## Konfiguration
 
-| Variable | Standard | Beschreibung |
-| -------- | -------- | ------------ |
+| Variable              | Standard                          | Beschreibung                                                    |
+| --------------------- | --------------------------------- | --------------------------------------------------------------- |
 | `COGNIS_MODULES_ROOT` | `src/modules` (aus cwd aufgelöst) | Verzeichnis, das nach Modul-Unterverzeichnissen durchsucht wird |
 
 ## API-Routen
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `GET` | `/api/v1/modules` | Alle installierten Module mit Aktivierungsstatus auflisten | Bearer |
-| `POST` | `/api/v1/modules/:id/enable` | Modul aktivieren | Admin |
-| `POST` | `/api/v1/modules/:id/disable` | Modul deaktivieren | Admin |
-| `POST` | `/api/v1/modules/install` | Modul aus hochgeladenem Archiv installieren | Admin |
+| Methode | Pfad                          | Beschreibung                                               | Auth   |
+| ------- | ----------------------------- | ---------------------------------------------------------- | ------ |
+| `GET`   | `/api/v1/modules`             | Alle installierten Module mit Aktivierungsstatus auflisten | Bearer |
+| `POST`  | `/api/v1/modules/:id/enable`  | Modul aktivieren                                           | Admin  |
+| `POST`  | `/api/v1/modules/:id/disable` | Modul deaktivieren                                         | Admin  |
+| `POST`  | `/api/v1/modules/install`     | Modul aus hochgeladenem Archiv installieren                | Admin  |

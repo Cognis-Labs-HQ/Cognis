@@ -24,10 +24,10 @@ Saat startup, `ModuleService` memindai `COGNIS_MODULES_ROOT` untuk direktori yan
 
 ### Modul internal vs eksternal
 
-| Tipe | Sumber | Instalasi | Penafian |
-| ---- | ------ | --------- | -------- |
-| `internal` | Dibundel dalam repositori di bawah `src/modules/` | Pra-instal | Tidak ada |
-| `external` | Arsip `.zip` atau `.tar.gz` yang diunggah | Melalui API admin atau CLI `modules:install` | Ditampilkan sebelum diaktifkan |
+| Tipe       | Sumber                                            | Instalasi                                    | Penafian                       |
+| ---------- | ------------------------------------------------- | -------------------------------------------- | ------------------------------ |
+| `internal` | Dibundel dalam repositori di bawah `src/modules/` | Pra-instal                                   | Tidak ada                      |
+| `external` | Arsip `.zip` atau `.tar.gz` yang diunggah         | Melalui API admin atau CLI `modules:install` | Ditampilkan sebelum diaktifkan |
 
 Modul eksternal diinstal dengan mengunggah arsip terkompresi. Kerangka kerja mengekstrak arsip, memverifikasi `manifest.json`-nya, dan menempatkan direktori modul di bawah `COGNIS_MODULES_ROOT`.
 
@@ -35,20 +35,20 @@ Modul eksternal diinstal dengan mengunggah arsip terkompresi. Kerangka kerja men
 
 ```ts
 export interface ModuleManifest {
-  id: string;
-  name: string;
-  version: string;
-  publisher?: string;
-  class: 'core' | 'extension';
-  coreApiVersion: string;
-  capabilities: string[];
-  requires?: string[];
-  entrypoints: {
-    api?: string;
-    ui?: string;
-    cli?: string;
-    db?: string;
-  };
+    id: string;
+    name: string;
+    version: string;
+    publisher?: string;
+    class: "core" | "extension";
+    coreApiVersion: string;
+    capabilities: string[];
+    requires?: string[];
+    entrypoints: {
+        api?: string;
+        ui?: string;
+        cli?: string;
+        db?: string;
+    };
 }
 ```
 
@@ -62,9 +62,9 @@ Modul yang menyediakan `entrypoints.ui` harus mengekspor halaman mereka di jalur
 
 ```ts
 export function registerApiRoutes(router) {
-  router.get('/api/v1/modules/my-module/data', async (req, res) => {
-    // handler
-  });
+    router.get("/api/v1/modules/my-module/data", async (req, res) => {
+        // handler
+    });
 }
 ```
 
@@ -74,27 +74,27 @@ export function registerApiRoutes(router) {
 
 Rute modul tidak boleh dimulai dengan prefiks berikut:
 
-| Prefiks | Alasan |
-| ------- | ------ |
+| Prefiks          | Alasan                  |
+| ---------------- | ----------------------- |
 | `/api/v1/system` | Titik akhir sistem inti |
-| `/api/v1/auth` | Gateway autentikasi |
-| `/api/v1/users` | Manajemen pengguna |
-| `/public` | Aset statis platform |
-| `/ui` | Aset UI platform |
+| `/api/v1/auth`   | Gateway autentikasi     |
+| `/api/v1/users`  | Manajemen pengguna      |
+| `/public`        | Aset statis platform    |
+| `/ui`            | Aset UI platform        |
 
 Upaya untuk mendaftarkan rute di bawah prefiks yang dilindungi akan diabaikan secara diam-diam dan sebuah peringatan akan dicatat.
 
 ## Konfigurasi
 
-| Variabel | Default | Deskripsi |
-| -------- | ------- | --------- |
+| Variabel              | Default                               | Deskripsi                                        |
+| --------------------- | ------------------------------------- | ------------------------------------------------ |
 | `COGNIS_MODULES_ROOT` | `src/modules` (diselesaikan dari cwd) | Direktori yang dipindai untuk subdirektori modul |
 
 ## Rute API
 
-| Metode | Jalur | Deskripsi | Auth |
-| ------ | ----- | --------- | ---- |
-| `GET` | `/api/v1/modules` | Daftar semua modul yang terinstal beserta status aktif/nonaktif | Bearer |
-| `POST` | `/api/v1/modules/:id/enable` | Aktifkan modul | Admin |
-| `POST` | `/api/v1/modules/:id/disable` | Nonaktifkan modul | Admin |
-| `POST` | `/api/v1/modules/install` | Instal modul dari arsip yang diunggah | Admin |
+| Metode | Jalur                         | Deskripsi                                                       | Auth   |
+| ------ | ----------------------------- | --------------------------------------------------------------- | ------ |
+| `GET`  | `/api/v1/modules`             | Daftar semua modul yang terinstal beserta status aktif/nonaktif | Bearer |
+| `POST` | `/api/v1/modules/:id/enable`  | Aktifkan modul                                                  | Admin  |
+| `POST` | `/api/v1/modules/:id/disable` | Nonaktifkan modul                                               | Admin  |
+| `POST` | `/api/v1/modules/install`     | Instal modul dari arsip yang diunggah                           | Admin  |

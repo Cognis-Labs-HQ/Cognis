@@ -11,8 +11,8 @@
  * @param {string} path API route that returns `{ data: { markdown: string } }`.
  * @returns {Promise<string>} Rendered HTML generated from the markdown payload.
  */
-import { apiFetch } from './api-client.js';
-import { renderMarkdown } from './markdown-renderer.js';
+import { apiFetch } from "./api-client.js";
+import { renderMarkdown } from "./markdown-renderer.js";
 
 export async function loadMarkdownDocumentHtml(path) {
     const response = await apiFetch(path);
@@ -20,5 +20,5 @@ export async function loadMarkdownDocumentHtml(path) {
         throw new Error(`markdown_load_failed:${response.status}`);
     }
     const payload = await response.json();
-    return renderMarkdown(payload?.data?.markdown ?? '');
+    return renderMarkdown(payload?.data?.markdown ?? "");
 }

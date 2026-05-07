@@ -38,6 +38,7 @@ export class CoreAuthGateway {
 `getEnabledAdapter(id)` mengembalikan adapter tertentu berdasarkan ID hanya jika saat ini diaktifkan. `getAdapter()` (tanpa argumen) mengembalikan adapter pertama yang diaktifkan. Keduanya mengembalikan `null` jika tidak ada adapter yang sesuai.
 
 Bootstrap di `src/gateways/auth/bootstrap.ts`:
+
 1. Menginstansiasi `DbLocalAccountStore` dari `src/adapters/auth/local/store.ts`.
 2. Menginstansiasi `CoreAuthGateway` dengan DB executor dan tipe.
 3. Memuat adapter lokal melalui `setLocalAdapter()`.
@@ -47,21 +48,21 @@ Bootstrap di `src/gateways/auth/bootstrap.ts`:
 
 Capability yang disediakan:
 
-| Capability | Tipe | Keterangan |
-| ---------- | ---- | ---------- |
-| `auth:accountStore` | `LocalAccountStore` | Store akun lokal yang digunakan oleh adapter lokal |
-| `auth:createLocalAdmin` | `(username, password) => Promise<AuthContext>` | Membuat akun admin jika belum ada |
-| `auth:getLoginMethods` | `() => Promise<AdapterInfo[]>` | Mengembalikan metadata untuk semua penyedia yang diaktifkan |
+| Capability              | Tipe                                           | Keterangan                                                  |
+| ----------------------- | ---------------------------------------------- | ----------------------------------------------------------- |
+| `auth:accountStore`     | `LocalAccountStore`                            | Store akun lokal yang digunakan oleh adapter lokal          |
+| `auth:createLocalAdmin` | `(username, password) => Promise<AuthContext>` | Membuat akun admin jika belum ada                           |
+| `auth:getLoginMethods`  | `() => Promise<AdapterInfo[]>`                 | Mengembalikan metadata untuk semua penyedia yang diaktifkan |
 
 ## Route API
 
-| Metode | Path | Keterangan | Autentikasi |
-| ------ | ---- | ---------- | ----------- |
-| `GET` | `/api/v1/auth/login-methods` | Daftar penyedia autentikasi yang diaktifkan | Tidak diperlukan |
-| `POST` | `/api/v1/auth/register` | Mendaftar akun lokal baru secara mandiri | Tidak diperlukan |
-| `POST` | `/api/v1/auth/login` | Autentikasi; mengembalikan token Bearer | Tidak diperlukan |
-| `GET` | `/api/v1/gateways/auth/adapters` | Daftar semua adapter autentikasi terdaftar | Admin |
-| `GET` | `/api/v1/gateways/auth/adapters/:id/config` | Mendapatkan skema konfigurasi untuk adapter | Admin |
-| `PUT` | `/api/v1/gateways/auth/adapters/:id/config` | Memperbarui konfigurasi untuk adapter | Admin |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/enable` | Mengaktifkan adapter | Admin |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Menonaktifkan adapter | Admin |
+| Metode | Path                                         | Keterangan                                  | Autentikasi      |
+| ------ | -------------------------------------------- | ------------------------------------------- | ---------------- |
+| `GET`  | `/api/v1/auth/login-methods`                 | Daftar penyedia autentikasi yang diaktifkan | Tidak diperlukan |
+| `POST` | `/api/v1/auth/register`                      | Mendaftar akun lokal baru secara mandiri    | Tidak diperlukan |
+| `POST` | `/api/v1/auth/login`                         | Autentikasi; mengembalikan token Bearer     | Tidak diperlukan |
+| `GET`  | `/api/v1/gateways/auth/adapters`             | Daftar semua adapter autentikasi terdaftar  | Admin            |
+| `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Mendapatkan skema konfigurasi untuk adapter | Admin            |
+| `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Memperbarui konfigurasi untuk adapter       | Admin            |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Mengaktifkan adapter                        | Admin            |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Menonaktifkan adapter                       | Admin            |

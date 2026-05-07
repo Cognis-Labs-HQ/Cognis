@@ -21,36 +21,36 @@
 
 ```ts
 export interface NotificationGateway {
-  registerSender(sender: NotificationSender): void;
-  dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[] }>;
-  registerCategory(id: string, label: string): void;
-  listSenders(): NotificationSenderInfo[];
-  listCategories(): NotificationCategory[];
+    registerSender(sender: NotificationSender): void;
+    dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[] }>;
+    registerCategory(id: string, label: string): void;
+    listSenders(): NotificationSenderInfo[];
+    listCategories(): NotificationCategory[];
 }
 ```
 
-| パス | 目的 |
-| ---- | ---- |
-| `src/gateways/notify/gateway.ts` | `CoreNotificationGateway`、インターフェース |
-| `src/gateways/notify/bootstrap.ts` | ブートストラップエントリポイント |
-| `src/gateways/notify/routes/notifications.ts` | 配信・管理ルート |
-| `src/api/reuse/tfa-code.ts` | `TfaCodeService` |
-| `src/api/reuse/verify-token.ts` | `VerifyTokenService` |
+| パス                                          | 目的                                        |
+| --------------------------------------------- | ------------------------------------------- |
+| `src/gateways/notify/gateway.ts`              | `CoreNotificationGateway`、インターフェース |
+| `src/gateways/notify/bootstrap.ts`            | ブートストラップエントリポイント            |
+| `src/gateways/notify/routes/notifications.ts` | 配信・管理ルート                            |
+| `src/api/reuse/tfa-code.ts`                   | `TfaCodeService`                            |
+| `src/api/reuse/verify-token.ts`               | `VerifyTokenService`                        |
 
 ## APIルート
 
-| メソッド | パス | 説明 | 認証 |
-| ------- | ---- | ---- | ---- |
-| `POST` | `/api/v1/notifications/send` | 通知を配信 | 管理者 |
-| `GET` | `/api/v1/notifications/providers` | 登録済み送信者を一覧表示 | 管理者 |
-| `GET` | `/api/v1/notifications/categories` | 通知カテゴリを一覧表示 | Bearer |
-| `GET` | `/api/v1/notifications/preferences` | 自分の通知設定を取得 | Bearer |
-| `PUT` | `/api/v1/notifications/preferences` | 自分の通知設定を更新 | Bearer |
-| `POST` | `/api/v1/notifications/providers/:senderId/config` | 送信者設定を更新 | 管理者 |
-| `POST` | `/api/v1/notifications/providers/:senderId/test` | テスト通知を送信 | 管理者 |
-| `POST` | `/api/v1/users/tfa/request` | TFAコードを要求 | Bearer |
-| `POST` | `/api/v1/users/tfa/verify` | TFAコードを検証 | Bearer |
-| `POST` | `/api/v1/users/email/verify/request` | メール検証を要求 | Bearer |
-| `POST` | `/api/v1/users/email/verify` | メール検証を完了 | Bearer |
-| `GET` | `/api/v1/users/:username/email` | ユーザーのメールアドレスを取得 | Bearer |
-| `PUT` | `/api/v1/users/:username/email` | ユーザーのメールアドレスを設定 | Bearer |
+| メソッド | パス                                               | 説明                           | 認証   |
+| -------- | -------------------------------------------------- | ------------------------------ | ------ |
+| `POST`   | `/api/v1/notifications/send`                       | 通知を配信                     | 管理者 |
+| `GET`    | `/api/v1/notifications/providers`                  | 登録済み送信者を一覧表示       | 管理者 |
+| `GET`    | `/api/v1/notifications/categories`                 | 通知カテゴリを一覧表示         | Bearer |
+| `GET`    | `/api/v1/notifications/preferences`                | 自分の通知設定を取得           | Bearer |
+| `PUT`    | `/api/v1/notifications/preferences`                | 自分の通知設定を更新           | Bearer |
+| `POST`   | `/api/v1/notifications/providers/:senderId/config` | 送信者設定を更新               | 管理者 |
+| `POST`   | `/api/v1/notifications/providers/:senderId/test`   | テスト通知を送信               | 管理者 |
+| `POST`   | `/api/v1/users/tfa/request`                        | TFAコードを要求                | Bearer |
+| `POST`   | `/api/v1/users/tfa/verify`                         | TFAコードを検証                | Bearer |
+| `POST`   | `/api/v1/users/email/verify/request`               | メール検証を要求               | Bearer |
+| `POST`   | `/api/v1/users/email/verify`                       | メール検証を完了               | Bearer |
+| `GET`    | `/api/v1/users/:username/email`                    | ユーザーのメールアドレスを取得 | Bearer |
+| `PUT`    | `/api/v1/users/:username/email`                    | ユーザーのメールアドレスを設定 | Bearer |

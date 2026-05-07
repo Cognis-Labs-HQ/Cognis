@@ -20,11 +20,19 @@ Not responsible for: deciding where files are physically stored (that is the ada
 
 ```ts
 export interface FileStorageGateway {
-  put(key: string, content: Uint8Array, contentType?: string): Promise<StoredObject>;
-  store(userId: string, content: Uint8Array, contentType?: string): Promise<StoredObject>;
-  get(key: string): Promise<Uint8Array | null>;
-  delete(key: string): Promise<boolean>;
-  list(prefix?: string): Promise<StoredObject[]>;
+    put(
+        key: string,
+        content: Uint8Array,
+        contentType?: string,
+    ): Promise<StoredObject>;
+    store(
+        userId: string,
+        content: Uint8Array,
+        contentType?: string,
+    ): Promise<StoredObject>;
+    get(key: string): Promise<Uint8Array | null>;
+    delete(key: string): Promise<boolean>;
+    list(prefix?: string): Promise<StoredObject[]>;
 }
 ```
 
@@ -32,18 +40,19 @@ export interface FileStorageGateway {
 
 ### Capabilities contributed
 
-| Capability | Type | Description |
-| ---------- | ---- | ----------- |
-| `file:gateway` | `FileStorageGateway` | The full file gateway instance |
-| `file:write` | `(filePath, content) => Promise<void>` | Overwrites a file at an absolute path |
-| `file:read` | `(filePath) => Promise<Buffer \| null>` | Reads a file; returns `null` if not found |
-| `file:append` | `(filePath, content) => Promise<void>` | Appends a string to a file (used by the logging gateway) |
+| Capability     | Type                                    | Description                                              |
+| -------------- | --------------------------------------- | -------------------------------------------------------- |
+| `file:gateway` | `FileStorageGateway`                    | The full file gateway instance                           |
+| `file:write`   | `(filePath, content) => Promise<void>`  | Overwrites a file at an absolute path                    |
+| `file:read`    | `(filePath) => Promise<Buffer \| null>` | Reads a file; returns `null` if not found                |
+| `file:append`  | `(filePath, content) => Promise<void>`  | Appends a string to a file (used by the logging gateway) |
 
 The `file:append` capability is separate from `file:gateway` because it is used by the logging gateway for log writes. The logging gateway reads `file:append` from the capability store; this means log writes route through the file gateway abstraction even though the logging gateway never holds a reference to the full `FileStorageGateway` instance.
 
 ### Bootstrap sequence
 
 Bootstrap in `src/gateways/files/bootstrap.ts`:
+
 1. Reads `MEDIA_LOCATION` (default `/app/media`).
 2. Constructs the storage root as `${mediaLocation}/uploads`.
 3. Instantiates `LocalFileGateway(fileStorePath)`.
@@ -54,6 +63,6 @@ Source: `src/gateways/files/bootstrap.ts`, `src/gateways/files/gateway.ts`, `src
 
 ## Configuration
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
+| Variable         | Default      | Description                                                               |
+| ---------------- | ------------ | ------------------------------------------------------------------------- |
 | `MEDIA_LOCATION` | `/app/media` | Root directory for media storage; uploads go to `$MEDIA_LOCATION/uploads` |

@@ -38,6 +38,7 @@ export class CoreAuthGateway {
 `getEnabledAdapter(id)` gibt einen bestimmten Adapter per ID nur zurück, wenn er aktuell aktiviert ist. `getAdapter()` (ohne Argument) gibt den ersten aktivierten Adapter zurück. Beide geben `null` zurück, wenn kein geeigneter Adapter gefunden wird.
 
 Bootstrap in `src/gateways/auth/bootstrap.ts`:
+
 1. Instanziiert `DbLocalAccountStore` aus `src/adapters/auth/local/store.ts`.
 2. Instanziiert `CoreAuthGateway` mit dem DB-Executor und -Typ.
 3. Lädt den lokalen Adapter über `setLocalAdapter()`.
@@ -47,21 +48,21 @@ Bootstrap in `src/gateways/auth/bootstrap.ts`:
 
 Beigetragene Capabilities:
 
-| Capability | Typ | Beschreibung |
-| ---------- | --- | ------------ |
-| `auth:accountStore` | `LocalAccountStore` | Lokaler Account-Store, der vom lokalen Adapter verwendet wird |
-| `auth:createLocalAdmin` | `(username, password) => Promise<AuthContext>` | Erstellt einen Admin-Account, wenn er nicht existiert |
-| `auth:getLoginMethods` | `() => Promise<AdapterInfo[]>` | Gibt Metadaten für alle aktivierten Anbieter zurück |
+| Capability              | Typ                                            | Beschreibung                                                  |
+| ----------------------- | ---------------------------------------------- | ------------------------------------------------------------- |
+| `auth:accountStore`     | `LocalAccountStore`                            | Lokaler Account-Store, der vom lokalen Adapter verwendet wird |
+| `auth:createLocalAdmin` | `(username, password) => Promise<AuthContext>` | Erstellt einen Admin-Account, wenn er nicht existiert         |
+| `auth:getLoginMethods`  | `() => Promise<AdapterInfo[]>`                 | Gibt Metadaten für alle aktivierten Anbieter zurück           |
 
 ## API-Routen
 
-| Methode | Pfad | Beschreibung | Authentifizierung |
-| ------- | ---- | ------------ | ----------------- |
-| `GET` | `/api/v1/auth/login-methods` | Aktivierte Authentifizierungsanbieter auflisten | Keine |
-| `POST` | `/api/v1/auth/register` | Neuen lokalen Account selbst registrieren | Keine |
-| `POST` | `/api/v1/auth/login` | Authentifizieren; gibt Bearer-Token zurück | Keine |
-| `GET` | `/api/v1/gateways/auth/adapters` | Alle registrierten Auth-Adapter auflisten | Admin |
-| `GET` | `/api/v1/gateways/auth/adapters/:id/config` | Konfig-Schema für einen Adapter abrufen | Admin |
-| `PUT` | `/api/v1/gateways/auth/adapters/:id/config` | Konfig für einen Adapter aktualisieren | Admin |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/enable` | Adapter aktivieren | Admin |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Adapter deaktivieren | Admin |
+| Methode | Pfad                                         | Beschreibung                                    | Authentifizierung |
+| ------- | -------------------------------------------- | ----------------------------------------------- | ----------------- |
+| `GET`   | `/api/v1/auth/login-methods`                 | Aktivierte Authentifizierungsanbieter auflisten | Keine             |
+| `POST`  | `/api/v1/auth/register`                      | Neuen lokalen Account selbst registrieren       | Keine             |
+| `POST`  | `/api/v1/auth/login`                         | Authentifizieren; gibt Bearer-Token zurück      | Keine             |
+| `GET`   | `/api/v1/gateways/auth/adapters`             | Alle registrierten Auth-Adapter auflisten       | Admin             |
+| `GET`   | `/api/v1/gateways/auth/adapters/:id/config`  | Konfig-Schema für einen Adapter abrufen         | Admin             |
+| `PUT`   | `/api/v1/gateways/auth/adapters/:id/config`  | Konfig für einen Adapter aktualisieren          | Admin             |
+| `POST`  | `/api/v1/gateways/auth/adapters/:id/enable`  | Adapter aktivieren                              | Admin             |
+| `POST`  | `/api/v1/gateways/auth/adapters/:id/disable` | Adapter deaktivieren                            | Admin             |

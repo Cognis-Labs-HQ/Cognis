@@ -16,20 +16,21 @@ Direktori `src/tooling/` berisi semua tooling pengembang untuk kodebase Cognis: 
 ### CLI `cognisctl`
 
 `cognisctl` adalah permukaan kontrol operasional utama. Modul perintah ditemukan secara otomatis dari:
+
 - `src/tooling/cli/commands/` — perintah inti bawaan
 - Setiap `cli/index.js` yang diekspor oleh modul yang terinstal
 
-| Namespace | Contoh perintah |
-| --------- | --------------- |
-| `user:*` | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete` |
-| `system:*` | `system:health`, `system:info` |
-| `modules:*` | `modules:list`, `modules:enable`, `modules:disable` |
-| `gateway:*` | `gateway:list` |
-| `api:*` | `api:token` |
+| Namespace   | Contoh perintah                                                                               |
+| ----------- | --------------------------------------------------------------------------------------------- |
+| `user:*`    | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete` |
+| `system:*`  | `system:health`, `system:info`                                                                |
+| `modules:*` | `modules:list`, `modules:enable`, `modules:disable`                                           |
+| `gateway:*` | `gateway:list`                                                                                |
+| `api:*`     | `api:token`                                                                                   |
 
 ## Konfigurasi
 
-| Variabel | Default | Keterangan |
-| -------- | ------- | ---------- |
-| `COGNIS_CLI_TOKEN_PATH` | — | Path ke file yang berisi token API untuk perintah `cognisctl` terautentikasi |
-| `COGNIS_MODULES_ROOT` | `src/modules` | Digunakan untuk menemukan subperintah yang dikontribusi modul |
+| Variabel                | Default       | Keterangan                                                                   |
+| ----------------------- | ------------- | ---------------------------------------------------------------------------- |
+| `COGNIS_CLI_TOKEN_PATH` | —             | Path ke file yang berisi token API untuk perintah `cognisctl` terautentikasi |
+| `COGNIS_MODULES_ROOT`   | `src/modules` | Digunakan untuk menemukan subperintah yang dikontribusi modul                |

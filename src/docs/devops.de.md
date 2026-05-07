@@ -40,10 +40,10 @@ CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 
 ## Konfiguration
 
-| Variable | Standard | Beschreibung |
-| -------- | -------- | ------------ |
-| `DB_TYPE` | `sqlite` | Datenbank-Backend |
-| `DATABASE_URL` | — | Verbindungszeichenkette für PostgreSQL oder MariaDB |
-| `LOG_LEVEL` | `info` | Log-Ausführlichkeit |
-| `PORT` | `3000` | HTTP-Port |
-| `COGNIS_SMTP_HOST` | — | SMTP-Server-Hostname |
+| Variable           | Standard | Beschreibung                                        |
+| ------------------ | -------- | --------------------------------------------------- |
+| `DB_TYPE`          | `sqlite` | Datenbank-Backend                                   |
+| `DATABASE_URL`     | —        | Verbindungszeichenkette für PostgreSQL oder MariaDB |
+| `LOG_LEVEL`        | `info`   | Log-Ausführlichkeit                                 |
+| `PORT`             | `3000`   | HTTP-Port                                           |
+| `COGNIS_SMTP_HOST` | —        | SMTP-Server-Hostname                                |

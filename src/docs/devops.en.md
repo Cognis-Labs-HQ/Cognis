@@ -43,11 +43,13 @@ CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 Two workflows live in `.github/workflows/`:
 
 **`ci.yml`** — Runs on every push and pull request:
+
 1. `npm ci` — install dependencies.
 2. TypeScript typecheck.
 3. `npm test` — full test suite.
 
 **`docker.yml`** — Runs on release publish or manual dispatch:
+
 1. Build the Docker image.
 2. Push to GitHub Container Registry (`ghcr.io/<owner>/cognis`).
 
@@ -56,6 +58,7 @@ Two workflows live in `.github/workflows/`:
 `.gitlab-ci.yml` defines two stages:
 
 **`test`** — Runs on every branch commit and tag using `node:22-alpine`:
+
 ```
 npm ci && npm run ci:test
 ```
@@ -66,23 +69,23 @@ npm ci && npm run ci:test
 
 Environment variables needed to run the application:
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `DB_TYPE` | `sqlite` | Database backend: `sqlite`, `postgresql`, or `mariadb` |
-| `DATABASE_URL` | — | Connection string for PostgreSQL or MariaDB |
-| `SQLITE_PATH` | `/app/data/cognis.sqlite` | SQLite file path (only when `DB_TYPE=sqlite`) |
-| `MEDIA_LOCATION` | `/app/media` | Root directory for file uploads |
-| `LOG_LEVEL` | `info` | Log verbosity: `debug`, `info`, `warn`, `error` |
-| `LOG_FILE` | `/app/logs/app.log` | Log file path inside the container |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200` | Bearer token lifetime in seconds |
-| `COGNIS_CLI_TOKEN_PATH` | `/app/config/cli-access.token` | Path for the CLI bootstrap token |
-| `COGNIS_MODULES_ROOT` | `/app/src/modules` | Root directory for module discovery |
-| `COGNIS_GATEWAYS_ROOT` | `/app/src/gateways` | Root directory for gateway discovery |
-| `COGNIS_ADAPTERS_ROOT` | `/app/src/adapters` | Root directory for adapter discovery |
-| `PORT` | `3000` | HTTP port |
-| `HOST` | `cognis` | Internal service hostname |
-| `EXTERNAL_HOST` | — | Publicly reachable URL for email links |
-| `COGNIS_SMTP_HOST` | — | SMTP server hostname; enables the SMTP notification adapter |
-| `COGNIS_UI_DEMO_MODE` | `0` | Set to `1` to enable pre-populated example data |
+| Variable                          | Default                        | Description                                                 |
+| --------------------------------- | ------------------------------ | ----------------------------------------------------------- |
+| `DB_TYPE`                         | `sqlite`                       | Database backend: `sqlite`, `postgresql`, or `mariadb`      |
+| `DATABASE_URL`                    | —                              | Connection string for PostgreSQL or MariaDB                 |
+| `SQLITE_PATH`                     | `/app/data/cognis.sqlite`      | SQLite file path (only when `DB_TYPE=sqlite`)               |
+| `MEDIA_LOCATION`                  | `/app/media`                   | Root directory for file uploads                             |
+| `LOG_LEVEL`                       | `info`                         | Log verbosity: `debug`, `info`, `warn`, `error`             |
+| `LOG_FILE`                        | `/app/logs/app.log`            | Log file path inside the container                          |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer token lifetime in seconds                            |
+| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Path for the CLI bootstrap token                            |
+| `COGNIS_MODULES_ROOT`             | `/app/src/modules`             | Root directory for module discovery                         |
+| `COGNIS_GATEWAYS_ROOT`            | `/app/src/gateways`            | Root directory for gateway discovery                        |
+| `COGNIS_ADAPTERS_ROOT`            | `/app/src/adapters`            | Root directory for adapter discovery                        |
+| `PORT`                            | `3000`                         | HTTP port                                                   |
+| `HOST`                            | `cognis`                       | Internal service hostname                                   |
+| `EXTERNAL_HOST`                   | —                              | Publicly reachable URL for email links                      |
+| `COGNIS_SMTP_HOST`                | —                              | SMTP server hostname; enables the SMTP notification adapter |
+| `COGNIS_UI_DEMO_MODE`             | `0`                            | Set to `1` to enable pre-populated example data             |
 
 A full reference with comments is in `env.example` at the repository root.

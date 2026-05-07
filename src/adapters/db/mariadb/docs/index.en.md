@@ -29,7 +29,7 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 
 ## Configuration
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `DB_TYPE` | — | Must be `mariadb` to activate this adapter |
-| `DATABASE_URL` | — | MariaDB connection URL, e.g. `mariadb://user:pass@host:3306/cognis` |
+| Variable       | Default | Description                                                         |
+| -------------- | ------- | ------------------------------------------------------------------- |
+| `DB_TYPE`      | —       | Must be `mariadb` to activate this adapter                          |
+| `DATABASE_URL` | —       | MariaDB connection URL, e.g. `mariadb://user:pass@host:3306/cognis` |

@@ -38,6 +38,7 @@ export class CoreAuthGateway {
 `getEnabledAdapter(id)` returns a specific adapter by ID only if it is currently enabled. `getAdapter()` (no argument) returns the first enabled adapter, used when the login request does not specify a provider. Both return `null` if no suitable adapter is found.
 
 Bootstrap in `src/gateways/auth/bootstrap.ts`:
+
 1. Instantiates `DbLocalAccountStore` from `src/adapters/auth/local/store.ts`.
 2. Instantiates `CoreAuthGateway` with the DB executor and type.
 3. Loads the local adapter via `setLocalAdapter()`.
@@ -47,21 +48,21 @@ Bootstrap in `src/gateways/auth/bootstrap.ts`:
 
 Capabilities contributed:
 
-| Capability | Type | Description |
-| ---------- | ---- | ----------- |
-| `auth:accountStore` | `LocalAccountStore` | Local account store used by the local adapter |
+| Capability              | Type                                           | Description                                   |
+| ----------------------- | ---------------------------------------------- | --------------------------------------------- |
+| `auth:accountStore`     | `LocalAccountStore`                            | Local account store used by the local adapter |
 | `auth:createLocalAdmin` | `(username, password) => Promise<AuthContext>` | Creates an admin account if it does not exist |
-| `auth:getLoginMethods` | `() => Promise<AdapterInfo[]>` | Returns metadata for all enabled providers |
+| `auth:getLoginMethods`  | `() => Promise<AdapterInfo[]>`                 | Returns metadata for all enabled providers    |
 
 ## API Routes
 
-| Method | Path | Description | Auth |
-| ------ | ---- | ----------- | ---- |
-| `GET` | `/api/v1/auth/login-methods` | List enabled authentication providers | None |
-| `POST` | `/api/v1/auth/register` | Self-register a new local account | None |
-| `POST` | `/api/v1/auth/login` | Authenticate; returns bearer token | None |
-| `GET` | `/api/v1/gateways/auth/adapters` | List all registered auth adapters | Admin |
-| `GET` | `/api/v1/gateways/auth/adapters/:id/config` | Get config schema for an adapter | Admin |
-| `PUT` | `/api/v1/gateways/auth/adapters/:id/config` | Update config for an adapter | Admin |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/enable` | Enable an adapter | Admin |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Disable an adapter | Admin |
+| Method | Path                                         | Description                           | Auth  |
+| ------ | -------------------------------------------- | ------------------------------------- | ----- |
+| `GET`  | `/api/v1/auth/login-methods`                 | List enabled authentication providers | None  |
+| `POST` | `/api/v1/auth/register`                      | Self-register a new local account     | None  |
+| `POST` | `/api/v1/auth/login`                         | Authenticate; returns bearer token    | None  |
+| `GET`  | `/api/v1/gateways/auth/adapters`             | List all registered auth adapters     | Admin |
+| `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Get config schema for an adapter      | Admin |
+| `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Update config for an adapter          | Admin |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Enable an adapter                     | Admin |
+| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Disable an adapter                    | Admin |

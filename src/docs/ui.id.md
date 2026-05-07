@@ -20,19 +20,19 @@ Semua teks yang terlihat pengguna melewati sistem i18n di `src/ui/reuse/i18n.js`
 
 ### Struktur Direktori
 
-| Path | Tujuan |
-| ---- | ------ |
-| `src/ui/layouts/` | Shell HTML bersama |
-| `src/ui/app/` | Modul JavaScript titik masuk halaman |
-| `src/ui/reuse/` | Modul utilitas lintas halaman |
-| `src/ui/styles/` | CSS: token dasar, layout, aturan spesifik halaman |
-| `src/ui/languages/` | Paket string i18n (en, de, ja, id) |
+| Path                | Tujuan                                            |
+| ------------------- | ------------------------------------------------- |
+| `src/ui/layouts/`   | Shell HTML bersama                                |
+| `src/ui/app/`       | Modul JavaScript titik masuk halaman              |
+| `src/ui/reuse/`     | Modul utilitas lintas halaman                     |
+| `src/ui/styles/`    | CSS: token dasar, layout, aturan spesifik halaman |
+| `src/ui/languages/` | Paket string i18n (en, de, ja, id)                |
 
 ### Konvensi Kunci i18n
 
-| Awalan | Penggunaan |
-| ------ | ---------- |
-| `ui.reuse.*` | Label yang dibagikan di beberapa halaman |
+| Awalan               | Penggunaan                                                  |
+| -------------------- | ----------------------------------------------------------- |
+| `ui.reuse.*`         | Label yang dibagikan di beberapa halaman                    |
 | `ui.reuse.generic.*` | Kata aksi mandiri bebas konteks (simpan, buang, atur ulang) |
-| `ui.app.<page>.*` | Teks spesifik halaman |
-| `ui.layout.*` | Teks shell layout dan label ARIA |
+| `ui.app.<page>.*`    | Teks spesifik halaman                                       |
+| `ui.layout.*`        | Teks shell layout dan label ARIA                            |

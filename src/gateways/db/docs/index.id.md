@@ -17,9 +17,15 @@ Gateway Database adalah satu-satunya titik akses untuk semua operasi database di
 
 ```ts
 export interface DatabaseGateway {
-  query<Row = Record<string, unknown>>(statement: string, params?: unknown[]): Promise<QueryResult<Row>>;
-  execute(statement: string, params?: unknown[]): Promise<{ affectedRows: number }>;
-  transaction<T>(callback: (db: DatabaseGateway) => Promise<T>): Promise<T>;
+    query<Row = Record<string, unknown>>(
+        statement: string,
+        params?: unknown[],
+    ): Promise<QueryResult<Row>>;
+    execute(
+        statement: string,
+        params?: unknown[],
+    ): Promise<{ affectedRows: number }>;
+    transaction<T>(callback: (db: DatabaseGateway) => Promise<T>): Promise<T>;
 }
 ```
 
@@ -29,22 +35,27 @@ export interface DatabaseGateway {
 
 ```ts
 export interface DbDialectHelper {
-  upsert(table: string, keyCol: string, keyVal: unknown, extraData: Record<string, unknown>): Promise<void>;
-  insertIgnore(table: string, data: Record<string, unknown>): Promise<void>;
+    upsert(
+        table: string,
+        keyCol: string,
+        keyVal: unknown,
+        extraData: Record<string, unknown>,
+    ): Promise<void>;
+    insertIgnore(table: string, data: Record<string, unknown>): Promise<void>;
 }
 ```
 
-| Path | Tujuan |
-| ---- | ------ |
-| `src/gateways/db/gateway.ts` | Antarmuka `DatabaseGateway` |
-| `src/gateways/db/executor.ts` | `createDbExecutor` |
-| `src/gateways/db/init.ts` | `initializeDatabaseSchema` |
+| Path                           | Tujuan                                   |
+| ------------------------------ | ---------------------------------------- |
+| `src/gateways/db/gateway.ts`   | Antarmuka `DatabaseGateway`              |
+| `src/gateways/db/executor.ts`  | `createDbExecutor`                       |
+| `src/gateways/db/init.ts`      | `initializeDatabaseSchema`               |
 | `src/gateways/db/bootstrap.ts` | Titik masuk bootstrap; `DbDialectHelper` |
 
 ## Konfigurasi
 
-| Variabel | Default | Keterangan |
-| -------- | ------- | ---------- |
-| `DB_TYPE` | `sqlite` | Backend database: `sqlite`, `postgresql`, atau `mariadb` |
-| `DATABASE_URL` | — | String koneksi; diperlukan untuk `postgresql` atau `mariadb` |
-| `SQLITE_PATH` | `./data/cognis.sqlite` | Path file SQLite; hanya digunakan saat `DB_TYPE=sqlite` |
+| Variabel       | Default                | Keterangan                                                   |
+| -------------- | ---------------------- | ------------------------------------------------------------ |
+| `DB_TYPE`      | `sqlite`               | Backend database: `sqlite`, `postgresql`, atau `mariadb`     |
+| `DATABASE_URL` | —                      | String koneksi; diperlukan untuk `postgresql` atau `mariadb` |
+| `SQLITE_PATH`  | `./data/cognis.sqlite` | Path file SQLite; hanya digunakan saat `DB_TYPE=sqlite`      |

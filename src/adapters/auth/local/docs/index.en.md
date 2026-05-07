@@ -31,9 +31,9 @@ Verification uses `crypto.timingSafeEqual` to prevent timing attacks.
 
 ```ts
 async function hashPassword(password: string): Promise<string> {
-  const salt = randomBytes(16).toString('hex');
-  const derivedKey = await scryptAsync(password, salt, 64) as Buffer;
-  return `scrypt:${salt}:${derivedKey.toString('hex')}`;
+    const salt = randomBytes(16).toString("hex");
+    const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
+    return `scrypt:${salt}:${derivedKey.toString("hex")}`;
 }
 ```
 
@@ -41,14 +41,14 @@ async function hashPassword(password: string): Promise<string> {
 
 Local accounts are managed via the `cognisctl` CLI using the `user:*` command namespace:
 
-| Command | Description |
-| ------- | ----------- |
-| `user:create` | Create a new local account |
-| `user:role` | Assign a role to an account |
+| Command             | Description                  |
+| ------------------- | ---------------------------- |
+| `user:create`       | Create a new local account   |
+| `user:role`         | Assign a role to an account  |
 | `user:set-password` | Change an account's password |
-| `user:disable` | Disable an account |
-| `user:enable` | Re-enable a disabled account |
-| `user:delete` | Delete an account |
+| `user:disable`      | Disable an account           |
+| `user:enable`       | Re-enable a disabled account |
+| `user:delete`       | Delete an account            |
 
 The local adapter is also the target of `POST /api/v1/auth/register` for self-registration (always issues the `user` role) and `POST /api/v1/auth/login` when no provider is specified.
 

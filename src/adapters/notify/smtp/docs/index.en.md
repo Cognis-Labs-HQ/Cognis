@@ -23,19 +23,22 @@ Not responsible for: rendering email content (the notification gateway builds th
 ### Greylisting retry logic
 
 ```ts
-async function sendWithRetry(options: MailOptions, attempts = 3): Promise<void> {
-  for (let i = 0; i < attempts; i++) {
-    try {
-      await this.transporter.sendMail(options);
-      return;
-    } catch (err) {
-      if (i < attempts - 1 && isTransientError(err)) {
-        await sleep(5 * 60 * 1000);
-      } else {
-        throw err;
-      }
+async function sendWithRetry(
+    options: MailOptions,
+    attempts = 3,
+): Promise<void> {
+    for (let i = 0; i < attempts; i++) {
+        try {
+            await this.transporter.sendMail(options);
+            return;
+        } catch (err) {
+            if (i < attempts - 1 && isTransientError(err)) {
+                await sleep(5 * 60 * 1000);
+            } else {
+                throw err;
+            }
+        }
     }
-  }
 }
 ```
 
@@ -47,21 +50,21 @@ The adapter exposes `setConfig(config)` and `getConfig()`. When the admin update
 
 ## Configuration
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `COGNIS_SMTP_HOST` | — | SMTP server hostname; the adapter is inactive if not set |
-| `COGNIS_SMTP_PORT` | `587` | SMTP server port |
+| Variable             | Default | Description                                                |
+| -------------------- | ------- | ---------------------------------------------------------- |
+| `COGNIS_SMTP_HOST`   | —       | SMTP server hostname; the adapter is inactive if not set   |
+| `COGNIS_SMTP_PORT`   | `587`   | SMTP server port                                           |
 | `COGNIS_SMTP_SECURE` | `false` | `true` for TLS on connect (port 465); `false` for STARTTLS |
-| `COGNIS_SMTP_USER` | — | SMTP authentication username |
-| `COGNIS_SMTP_PASS` | — | SMTP authentication password |
-| `COGNIS_SMTP_FROM` | — | Sender address shown in the `From` header |
+| `COGNIS_SMTP_USER`   | —       | SMTP authentication username                               |
+| `COGNIS_SMTP_PASS`   | —       | SMTP authentication password                               |
+| `COGNIS_SMTP_FROM`   | —       | Sender address shown in the `From` header                  |
 
 Runtime changes applied through the API override these environment values for the life of the process.
 
 ## API Routes
 
-| Method | Path | Description | Auth |
-| ------ | ---- | ----------- | ---- |
-| `GET` | `/api/v1/gateways/notify/adapters/smtp/config` | Retrieve current SMTP config (password redacted) | Admin |
-| `PUT` | `/api/v1/gateways/notify/adapters/smtp/config` | Update SMTP config at runtime | Admin |
-| `POST` | `/api/v1/gateways/notify/adapters/smtp/test` | Send a test email | Admin |
+| Method | Path                                           | Description                                      | Auth  |
+| ------ | ---------------------------------------------- | ------------------------------------------------ | ----- |
+| `GET`  | `/api/v1/gateways/notify/adapters/smtp/config` | Retrieve current SMTP config (password redacted) | Admin |
+| `PUT`  | `/api/v1/gateways/notify/adapters/smtp/config` | Update SMTP config at runtime                    | Admin |
+| `POST` | `/api/v1/gateways/notify/adapters/smtp/test`   | Send a test email                                | Admin |

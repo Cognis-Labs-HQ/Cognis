@@ -42,11 +42,11 @@ Jede Dokumentdatei ist eine Markdown-Datei. Abschnitte erscheinen in dieser Reih
 
 Verschiedene Komponententypen erfordern unterschiedliche Tiefe:
 
-| Ebene | Komponenten | Erforderliche Abschnitte |
-| ----- | ----------- | ------------------------ |
-| Plattform / Core | `src/docs/`-Plattformdocs | Alle Abschnitte vollständig |
-| Gateway | `src/gateways/<id>/docs/` | Leichtere Architektur; Konfiguration + API-Routen einschließen |
-| Adapter | `src/adapters/<gw>/<id>/docs/` | Vollständiger Standard (alle anwendbaren Abschnitte) |
+| Ebene            | Komponenten                    | Erforderliche Abschnitte                                       |
+| ---------------- | ------------------------------ | -------------------------------------------------------------- |
+| Plattform / Core | `src/docs/`-Plattformdocs      | Alle Abschnitte vollständig                                    |
+| Gateway          | `src/gateways/<id>/docs/`      | Leichtere Architektur; Konfiguration + API-Routen einschließen |
+| Adapter          | `src/adapters/<gw>/<id>/docs/` | Vollständiger Standard (alle anwendbaren Abschnitte)           |
 
 ### Code-Snippets
 
@@ -82,10 +82,10 @@ Für plattformübergreifende Dokumente, die mehrere Komponenten betreffen, füge
 
 ### Dateinamensgebung
 
-| Speicherort | Primäre Datei | Übersetzungsdateien |
-| ----------- | ------------- | -------------------- |
-| Plattform (`src/docs/`) | `<name>.en.md` | `<name>.de.md`, `<name>.ja.md`, `<name>.id.md` |
-| Komponente (`docs/`-Unterverzeichnis) | `index.en.md` | `index.de.md`, `index.ja.md`, `index.id.md` |
+| Speicherort                           | Primäre Datei  | Übersetzungsdateien                            |
+| ------------------------------------- | -------------- | ---------------------------------------------- |
+| Plattform (`src/docs/`)               | `<name>.en.md` | `<name>.de.md`, `<name>.ja.md`, `<name>.id.md` |
+| Komponente (`docs/`-Unterverzeichnis) | `index.en.md`  | `index.de.md`, `index.ja.md`, `index.id.md`    |
 
 Alle vier Sprachen (en, de, ja, id) sind für alle in der Benutzeroberfläche sichtbaren Zeichenketten erforderlich. Der Docs-Browser greift auf `.en.md` zurück, wenn eine Übersetzung fehlt.
 

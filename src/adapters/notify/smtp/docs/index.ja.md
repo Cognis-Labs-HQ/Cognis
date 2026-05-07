@@ -15,11 +15,11 @@ SMTPアダプターは、任意のSMTPサーバーを通じてメールとして
 
 ## 設定
 
-| 変数 | デフォルト | 説明 |
-| ---- | ---------- | ---- |
-| `COGNIS_SMTP_HOST` | — | SMTPサーバーのホスト名; 設定されていない場合アダプターは非アクティブ |
-| `COGNIS_SMTP_PORT` | `587` | SMTPサーバーのポート |
-| `COGNIS_SMTP_SECURE` | `false` | 接続時のTLS（ポート465）の場合は `true` |
-| `COGNIS_SMTP_USER` | — | SMTP認証ユーザー名 |
-| `COGNIS_SMTP_PASS` | — | SMTP認証パスワード |
-| `COGNIS_SMTP_FROM` | — | `From` ヘッダーに表示される送信者アドレス |
+| 変数                 | デフォルト | 説明                                                                 |
+| -------------------- | ---------- | -------------------------------------------------------------------- |
+| `COGNIS_SMTP_HOST`   | —          | SMTPサーバーのホスト名; 設定されていない場合アダプターは非アクティブ |
+| `COGNIS_SMTP_PORT`   | `587`      | SMTPサーバーのポート                                                 |
+| `COGNIS_SMTP_SECURE` | `false`    | 接続時のTLS（ポート465）の場合は `true`                              |
+| `COGNIS_SMTP_USER`   | —          | SMTP認証ユーザー名                                                   |
+| `COGNIS_SMTP_PASS`   | —          | SMTP認証パスワード                                                   |
+| `COGNIS_SMTP_FROM`   | —          | `From` ヘッダーに表示される送信者アドレス                            |

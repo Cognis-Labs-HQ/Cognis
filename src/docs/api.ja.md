@@ -43,138 +43,138 @@
 
 ### デフォルトの永続化設定
 
-| `DB_TYPE` | バックエンド | 接続 |
-| --------- | ----------- | ---- |
-| `sqlite` (デフォルト) | SQLite | `SQLITE_PATH` のファイル (デフォルト `./data/cognis.sqlite`) |
-| `postgresql` | PostgreSQL | `DATABASE_URL` が必要 |
-| `mariadb` | MariaDB | `DATABASE_URL` が必要 |
+| `DB_TYPE`             | バックエンド | 接続                                                         |
+| --------------------- | ------------ | ------------------------------------------------------------ |
+| `sqlite` (デフォルト) | SQLite       | `SQLITE_PATH` のファイル (デフォルト `./data/cognis.sqlite`) |
+| `postgresql`          | PostgreSQL   | `DATABASE_URL` が必要                                        |
+| `mariadb`             | MariaDB      | `DATABASE_URL` が必要                                        |
 
 ### 主要なソースの場所
 
-| パス | 目的 |
-| ---- | ---- |
-| `src/api/main.ts` | サーバーエントリポイント |
-| `src/api/server.ts` | HTTP サーバーのセットアップとルートディスパッチ |
-| `src/api/route-registry.ts` | ゲートウェイが自己登録に使用するルートレジストリ |
-| `src/api/gateway-bootstrap.ts` | すべてのゲートウェイのロードとブートストラップ |
-| `src/api/auth/guard.ts` | `requireAuth`、`getAuthClaims` ミドルウェア |
-| `src/api/auth/access-tokens.ts` | トークンの発行と検証 |
-| `src/api/bootstrap/db-init.ts` | 起動時のスキーマ初期化 |
-| `src/api/reuse/` | 共有ユーティリティ (暗号、JSON 読み取り、ストアヘルパー) |
+| パス                            | 目的                                                     |
+| ------------------------------- | -------------------------------------------------------- |
+| `src/api/main.ts`               | サーバーエントリポイント                                 |
+| `src/api/server.ts`             | HTTP サーバーのセットアップとルートディスパッチ          |
+| `src/api/route-registry.ts`     | ゲートウェイが自己登録に使用するルートレジストリ         |
+| `src/api/gateway-bootstrap.ts`  | すべてのゲートウェイのロードとブートストラップ           |
+| `src/api/auth/guard.ts`         | `requireAuth`、`getAuthClaims` ミドルウェア              |
+| `src/api/auth/access-tokens.ts` | トークンの発行と検証                                     |
+| `src/api/bootstrap/db-init.ts`  | 起動時のスキーマ初期化                                   |
+| `src/api/reuse/`                | 共有ユーティリティ (暗号、JSON 読み取り、ストアヘルパー) |
 
 ## 設定
 
-| 変数 | デフォルト | 説明 |
-| ---- | ---------- | ---- |
-| `DB_TYPE` | `sqlite` | データベースバックエンド: `sqlite`、`postgresql`、または `mariadb` |
-| `DATABASE_URL` | — | PostgreSQL または MariaDB の接続文字列 |
-| `SQLITE_PATH` | `./data/cognis.sqlite` | SQLite ファイルパス (`DB_TYPE=sqlite` の場合のみ) |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200` | ベアラートークンの有効期限 (秒) |
-| `COGNIS_CLI_TOKEN_PATH` | `/app/config/cli-access.token` | CLI ブートストラップトークンのパス |
-| `COGNIS_GATEWAYS_ROOT` | `src/gateways` | ゲートウェイ検出のルートディレクトリ |
-| `COGNIS_ADAPTERS_ROOT` | `src/adapters` | アダプター検出のルートディレクトリ |
-| `COGNIS_MODULES_ROOT` | `src/modules` | モジュール検出のルートディレクトリ |
-| `PORT` | `3000` | HTTP ポート |
-| `LISTEN_HOST` | `0.0.0.0` | バインドアドレス |
+| 変数                              | デフォルト                     | 説明                                                               |
+| --------------------------------- | ------------------------------ | ------------------------------------------------------------------ |
+| `DB_TYPE`                         | `sqlite`                       | データベースバックエンド: `sqlite`、`postgresql`、または `mariadb` |
+| `DATABASE_URL`                    | —                              | PostgreSQL または MariaDB の接続文字列                             |
+| `SQLITE_PATH`                     | `./data/cognis.sqlite`         | SQLite ファイルパス (`DB_TYPE=sqlite` の場合のみ)                  |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | ベアラートークンの有効期限 (秒)                                    |
+| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | CLI ブートストラップトークンのパス                                 |
+| `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | ゲートウェイ検出のルートディレクトリ                               |
+| `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | アダプター検出のルートディレクトリ                                 |
+| `COGNIS_MODULES_ROOT`             | `src/modules`                  | モジュール検出のルートディレクトリ                                 |
+| `PORT`                            | `3000`                         | HTTP ポート                                                        |
+| `LISTEN_HOST`                     | `0.0.0.0`                      | バインドアドレス                                                   |
 
 ## API ルート
 
 ### システム
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `GET` | `/api/v1/system/health` | 稼働時間付きの完全なヘルスステータス | なし |
-| `GET` | `/api/v1/system/healthcheck` | 最小限の生存確認プローブ | なし |
-| `GET` | `/api/v1/system/ui-config` | UI 設定オブジェクト | なし |
+| メソッド | パス                         | 説明                                 | 認証 |
+| -------- | ---------------------------- | ------------------------------------ | ---- |
+| `GET`    | `/api/v1/system/health`      | 稼働時間付きの完全なヘルスステータス | なし |
+| `GET`    | `/api/v1/system/healthcheck` | 最小限の生存確認プローブ             | なし |
+| `GET`    | `/api/v1/system/ui-config`   | UI 設定オブジェクト                  | なし |
 
 ### 認証
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `GET` | `/api/v1/auth/login-methods` | 有効な認証プロバイダーの一覧 | なし |
-| `POST` | `/api/v1/auth/register` | セルフ登録; `user` ロールを発行 | なし |
-| `POST` | `/api/v1/auth/login` | 認証; ベアラートークンを返す | なし |
+| メソッド | パス                         | 説明                            | 認証 |
+| -------- | ---------------------------- | ------------------------------- | ---- |
+| `GET`    | `/api/v1/auth/login-methods` | 有効な認証プロバイダーの一覧    | なし |
+| `POST`   | `/api/v1/auth/register`      | セルフ登録; `user` ロールを発行 | なし |
+| `POST`   | `/api/v1/auth/login`         | 認証; ベアラートークンを返す    | なし |
 
 ### モジュール
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `GET` | `/api/v1/modules` | すべてのモジュールを一覧表示 | Bearer |
-| `POST` | `/api/v1/modules/:id/enable` | モジュールを有効化 | Admin |
-| `POST` | `/api/v1/modules/:id/disable` | モジュールを無効化 | Admin |
+| メソッド | パス                          | 説明                         | 認証   |
+| -------- | ----------------------------- | ---------------------------- | ------ |
+| `GET`    | `/api/v1/modules`             | すべてのモジュールを一覧表示 | Bearer |
+| `POST`   | `/api/v1/modules/:id/enable`  | モジュールを有効化           | Admin  |
+| `POST`   | `/api/v1/modules/:id/disable` | モジュールを無効化           | Admin  |
 
 ### ゲートウェイ
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `GET` | `/api/v1/gateways` | 登録済みゲートウェイをすべて一覧表示 | Admin |
-| `GET` | `/api/v1/gateways/:id` | 単一ゲートウェイのマニフェスト | Admin |
-| `POST` | `/api/v1/gateways/:id/enable` | ゲートウェイをアクティブとしてマーク | Admin |
-| `POST` | `/api/v1/gateways/:id/disable` | ゲートウェイを無効としてマーク | Admin |
-| `GET` | `/api/v1/admin/sections` | ゲートウェイからの管理 UI セクション | Admin |
+| メソッド | パス                           | 説明                                 | 認証  |
+| -------- | ------------------------------ | ------------------------------------ | ----- |
+| `GET`    | `/api/v1/gateways`             | 登録済みゲートウェイをすべて一覧表示 | Admin |
+| `GET`    | `/api/v1/gateways/:id`         | 単一ゲートウェイのマニフェスト       | Admin |
+| `POST`   | `/api/v1/gateways/:id/enable`  | ゲートウェイをアクティブとしてマーク | Admin |
+| `POST`   | `/api/v1/gateways/:id/disable` | ゲートウェイを無効としてマーク       | Admin |
+| `GET`    | `/api/v1/admin/sections`       | ゲートウェイからの管理 UI セクション | Admin |
 
 ### UI 拡張
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `GET` | `/api/v1/ui/page-extensions/:pageId` | ゲートウェイが提供するページ要素 | Bearer |
+| メソッド | パス                                 | 説明                             | 認証   |
+| -------- | ------------------------------------ | -------------------------------- | ------ |
+| `GET`    | `/api/v1/ui/page-extensions/:pageId` | ゲートウェイが提供するページ要素 | Bearer |
 
 ### ドキュメント
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `GET` | `/api/v1/docs` | 利用可能なすべてのドキュメントスラッグを一覧表示 | なし |
-| `GET` | `/api/v1/docs/:slugOrTreePath` | スラッグで単一のドキュメントを取得 | なし |
+| メソッド | パス                           | 説明                                             | 認証 |
+| -------- | ------------------------------ | ------------------------------------------------ | ---- |
+| `GET`    | `/api/v1/docs`                 | 利用可能なすべてのドキュメントスラッグを一覧表示 | なし |
+| `GET`    | `/api/v1/docs/:slugOrTreePath` | スラッグで単一のドキュメントを取得               | なし |
 
 ### プロファイル
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `GET` | `/api/v1/profile/ping` | 機能確認 | Bearer |
-| `GET` | `/api/v1/profile` | 自分のプロファイル | Bearer |
-| `PATCH` | `/api/v1/profile` | 自分のプロファイルフィールドを更新 | Bearer |
-| `PUT` | `/api/v1/profile/avatar` | アバターをアップロード | Bearer |
-| `DELETE` | `/api/v1/profile/avatar` | 自分のアバターを削除 | Bearer |
-| `PUT` | `/api/v1/profile/banner` | バナーをアップロード | Bearer |
-| `DELETE` | `/api/v1/profile/banner` | 自分のバナーを削除 | Bearer |
-| `GET` | `/api/v1/users/:handle/profile` | 公開プロファイル (可視性でゲート) | Bearer |
+| メソッド | パス                            | 説明                               | 認証   |
+| -------- | ------------------------------- | ---------------------------------- | ------ |
+| `GET`    | `/api/v1/profile/ping`          | 機能確認                           | Bearer |
+| `GET`    | `/api/v1/profile`               | 自分のプロファイル                 | Bearer |
+| `PATCH`  | `/api/v1/profile`               | 自分のプロファイルフィールドを更新 | Bearer |
+| `PUT`    | `/api/v1/profile/avatar`        | アバターをアップロード             | Bearer |
+| `DELETE` | `/api/v1/profile/avatar`        | 自分のアバターを削除               | Bearer |
+| `PUT`    | `/api/v1/profile/banner`        | バナーをアップロード               | Bearer |
+| `DELETE` | `/api/v1/profile/banner`        | 自分のバナーを削除                 | Bearer |
+| `GET`    | `/api/v1/users/:handle/profile` | 公開プロファイル (可視性でゲート)  | Bearer |
 
 ### ソーシャルグラフ
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `POST` | `/api/v1/users/:handle/follow` | ユーザーをフォロー | Bearer |
-| `DELETE` | `/api/v1/users/:handle/follow` | フォロー解除 | Bearer |
-| `POST` | `/api/v1/users/:handle/block` | ユーザーをブロック | Bearer |
-| `DELETE` | `/api/v1/users/:handle/block` | ブロック解除 | Bearer |
-| `GET` | `/api/v1/users/:handle/followers` | フォロワーリスト (可視性でゲート) | Bearer |
-| `GET` | `/api/v1/users/:handle/following` | フォローリスト (可視性でゲート) | Bearer |
+| メソッド | パス                              | 説明                              | 認証   |
+| -------- | --------------------------------- | --------------------------------- | ------ |
+| `POST`   | `/api/v1/users/:handle/follow`    | ユーザーをフォロー                | Bearer |
+| `DELETE` | `/api/v1/users/:handle/follow`    | フォロー解除                      | Bearer |
+| `POST`   | `/api/v1/users/:handle/block`     | ユーザーをブロック                | Bearer |
+| `DELETE` | `/api/v1/users/:handle/block`     | ブロック解除                      | Bearer |
+| `GET`    | `/api/v1/users/:handle/followers` | フォロワーリスト (可視性でゲート) | Bearer |
+| `GET`    | `/api/v1/users/:handle/following` | フォローリスト (可視性でゲート)   | Bearer |
 
 ### 投稿
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `POST` | `/api/v1/posts` | 投稿を作成 | Bearer |
-| `GET` | `/api/v1/posts` | 自分の投稿を一覧表示 | Bearer |
-| `DELETE` | `/api/v1/posts/:id` | 投稿を削除 (所有者、モデレーター、または管理者) | Bearer |
-| `GET` | `/api/v1/users/:handle/posts` | ユーザーの投稿を一覧表示 | Bearer |
+| メソッド | パス                          | 説明                                            | 認証   |
+| -------- | ----------------------------- | ----------------------------------------------- | ------ |
+| `POST`   | `/api/v1/posts`               | 投稿を作成                                      | Bearer |
+| `GET`    | `/api/v1/posts`               | 自分の投稿を一覧表示                            | Bearer |
+| `DELETE` | `/api/v1/posts/:id`           | 投稿を削除 (所有者、モデレーター、または管理者) | Bearer |
+| `GET`    | `/api/v1/users/:handle/posts` | ユーザーの投稿を一覧表示                        | Bearer |
 
 ### ファイル
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `PUT` | `/api/v1/files/:bucket/:key` | ファイルをアップロード | Bearer |
-| `GET` | `/api/v1/files/:bucket/:key` | ファイルをダウンロード | Bearer |
-| `DELETE` | `/api/v1/files/:bucket/:key` | ファイルを削除 | Admin |
-| `GET` | `/api/v1/admin/file-limits` | カテゴリ別サイズ制限を一覧表示 | Admin |
-| `PUT` | `/api/v1/admin/file-limits/:category` | サイズ制限を設定 | Admin |
+| メソッド | パス                                  | 説明                           | 認証   |
+| -------- | ------------------------------------- | ------------------------------ | ------ |
+| `PUT`    | `/api/v1/files/:bucket/:key`          | ファイルをアップロード         | Bearer |
+| `GET`    | `/api/v1/files/:bucket/:key`          | ファイルをダウンロード         | Bearer |
+| `DELETE` | `/api/v1/files/:bucket/:key`          | ファイルを削除                 | Admin  |
+| `GET`    | `/api/v1/admin/file-limits`           | カテゴリ別サイズ制限を一覧表示 | Admin  |
+| `PUT`    | `/api/v1/admin/file-limits/:category` | サイズ制限を設定               | Admin  |
 
 ### ユーザー (管理者)
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `GET` | `/api/v1/users` | アカウントを一覧表示 | Admin |
-| `POST` | `/api/v1/users/:username/role` | アカウントロールを設定 | Admin |
-| `POST` | `/api/v1/users/:username/disable` | アカウントを無効化 | Admin |
-| `POST` | `/api/v1/users/:username/enable` | アカウントを有効化 | Admin |
-| `DELETE` | `/api/v1/users/:username` | アカウントを削除 | Admin |
+| メソッド | パス                              | 説明                   | 認証  |
+| -------- | --------------------------------- | ---------------------- | ----- |
+| `GET`    | `/api/v1/users`                   | アカウントを一覧表示   | Admin |
+| `POST`   | `/api/v1/users/:username/role`    | アカウントロールを設定 | Admin |
+| `POST`   | `/api/v1/users/:username/disable` | アカウントを無効化     | Admin |
+| `POST`   | `/api/v1/users/:username/enable`  | アカウントを有効化     | Admin |
+| `DELETE` | `/api/v1/users/:username`         | アカウントを削除       | Admin |

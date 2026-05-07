@@ -16,25 +16,33 @@ Das Dateispeicher-Gateway stellt der Plattform eine einheitliche Schnittstelle f
 
 ```ts
 export interface FileStorageGateway {
-  put(key: string, content: Uint8Array, contentType?: string): Promise<StoredObject>;
-  store(userId: string, content: Uint8Array, contentType?: string): Promise<StoredObject>;
-  get(key: string): Promise<Uint8Array | null>;
-  delete(key: string): Promise<boolean>;
-  list(prefix?: string): Promise<StoredObject[]>;
+    put(
+        key: string,
+        content: Uint8Array,
+        contentType?: string,
+    ): Promise<StoredObject>;
+    store(
+        userId: string,
+        content: Uint8Array,
+        contentType?: string,
+    ): Promise<StoredObject>;
+    get(key: string): Promise<Uint8Array | null>;
+    delete(key: string): Promise<boolean>;
+    list(prefix?: string): Promise<StoredObject[]>;
 }
 ```
 
 ### Beigetragene Capabilities
 
-| Capability | Typ | Beschreibung |
-| ---------- | --- | ------------ |
-| `file:gateway` | `FileStorageGateway` | Die vollständige Gateway-Instanz |
-| `file:write` | `(filePath, content) => Promise<void>` | Überschreibt eine Datei |
-| `file:read` | `(filePath) => Promise<Buffer \| null>` | Liest eine Datei |
-| `file:append` | `(filePath, content) => Promise<void>` | Hängt Text an eine Datei an (vom Logging-Gateway verwendet) |
+| Capability     | Typ                                     | Beschreibung                                                |
+| -------------- | --------------------------------------- | ----------------------------------------------------------- |
+| `file:gateway` | `FileStorageGateway`                    | Die vollständige Gateway-Instanz                            |
+| `file:write`   | `(filePath, content) => Promise<void>`  | Überschreibt eine Datei                                     |
+| `file:read`    | `(filePath) => Promise<Buffer \| null>` | Liest eine Datei                                            |
+| `file:append`  | `(filePath, content) => Promise<void>`  | Hängt Text an eine Datei an (vom Logging-Gateway verwendet) |
 
 ## Konfiguration
 
-| Variable | Standard | Beschreibung |
-| -------- | -------- | ------------ |
+| Variable         | Standard     | Beschreibung                                                                 |
+| ---------------- | ------------ | ---------------------------------------------------------------------------- |
 | `MEDIA_LOCATION` | `/app/media` | Stammverzeichnis für Medienspeicher; Uploads unter `$MEDIA_LOCATION/uploads` |

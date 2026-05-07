@@ -2,7 +2,7 @@
 
 ## Überblick
 
-`createPageComposer` ist das Layout-Orchestrierungsutility, das von allen Cognis-Seiten verwendet wird. Einzelne Seitenmodule deklarieren *was* gerendert werden soll — eine Liste benannter Inhaltsblöcke, sogenannte Elemente — und der Composer übernimmt, *wie* diese Blöcke angeordnet, persistiert, navigiert und neu gerendert werden.
+`createPageComposer` ist das Layout-Orchestrierungsutility, das von allen Cognis-Seiten verwendet wird. Einzelne Seitenmodule deklarieren _was_ gerendert werden soll — eine Liste benannter Inhaltsblöcke, sogenannte Elemente — und der Composer übernimmt, _wie_ diese Blöcke angeordnet, persistiert, navigiert und neu gerendert werden.
 
 ## Verantwortlichkeiten
 
@@ -27,13 +27,13 @@ Ein Element ist ein benannter Inhaltsblock:
 }
 ```
 
-| Feld | Erforderlich | Beschreibung |
-| ---- | ------------ | ------------ |
-| `id` | Ja | Eindeutiger String-Identifier |
-| `label` | Ja | Menschenlesbares Label |
-| `render` | Ja | Funktion, die einen HTML-String zurückgibt |
-| `gridSize` | Nein | `{ default: [w,h], min: [w,h] }` in 90-px-Raster-Einheiten |
-| `pinned` | Nein | Wenn `true`, kann das Element nicht vom Benutzer entfernt werden |
+| Feld       | Erforderlich | Beschreibung                                                     |
+| ---------- | ------------ | ---------------------------------------------------------------- |
+| `id`       | Ja           | Eindeutiger String-Identifier                                    |
+| `label`    | Ja           | Menschenlesbares Label                                           |
+| `render`   | Ja           | Funktion, die einen HTML-String zurückgibt                       |
+| `gridSize` | Nein         | `{ default: [w,h], min: [w,h] }` in 90-px-Raster-Einheiten       |
+| `pinned`   | Nein         | Wenn `true`, kann das Element nicht vom Benutzer entfernt werden |
 
 ### Raster-Layout
 

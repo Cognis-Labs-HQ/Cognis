@@ -22,7 +22,7 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 
 ## Konfigurasi
 
-| Variabel | Default | Keterangan |
-| -------- | ------- | ---------- |
-| `DB_TYPE` | — | Harus `mariadb` untuk mengaktifkan adapter ini |
-| `DATABASE_URL` | — | URL koneksi MariaDB, mis. `mariadb://user:pass@host:3306/cognis` |
+| Variabel       | Default | Keterangan                                                       |
+| -------------- | ------- | ---------------------------------------------------------------- |
+| `DB_TYPE`      | —       | Harus `mariadb` untuk mengaktifkan adapter ini                   |
+| `DATABASE_URL` | —       | URL koneksi MariaDB, mis. `mariadb://user:pass@host:3306/cognis` |

@@ -14,7 +14,7 @@ Adapter OIDC mengautentikasi pengguna melalui introspeksi token OpenID Connect, 
 
 ```ts
 export interface OidcClient {
-  introspect(accessToken: string): Promise<OidcTokenClaims | null>;
+    introspect(accessToken: string): Promise<OidcTokenClaims | null>;
 }
 ```
 
@@ -22,10 +22,10 @@ export interface OidcClient {
 
 Konfigurasi melalui `PUT /api/v1/gateways/auth/adapters/oidc/config` (hanya admin).
 
-| Kunci | Keterangan | Diperlukan |
-| ----- | ---------- | ---------- |
-| `providerName` | Pengidentifikasi penyedia | Ya |
-| `clientId` | ID klien OAuth2 | Ya |
-| `clientSecret` | Rahasia klien OAuth2 | Ya |
-| `discoveryUrl` | URL dokumen discovery OpenID Connect | Ya |
-| `adminRoles` | Peran token yang memberikan akses admin (dipisah koma) | Tidak |
+| Kunci          | Keterangan                                             | Diperlukan |
+| -------------- | ------------------------------------------------------ | ---------- |
+| `providerName` | Pengidentifikasi penyedia                              | Ya         |
+| `clientId`     | ID klien OAuth2                                        | Ya         |
+| `clientSecret` | Rahasia klien OAuth2                                   | Ya         |
+| `discoveryUrl` | URL dokumen discovery OpenID Connect                   | Ya         |
+| `adminRoles`   | Peran token yang memberikan akses admin (dipisah koma) | Tidak      |

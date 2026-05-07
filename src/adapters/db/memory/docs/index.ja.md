@@ -17,13 +17,13 @@
 
 ```ts
 const db = new MemoryDatabaseGateway();
-await db.execute('INSERT INTO users (id) VALUES (?)', ['u1']);
+await db.execute("INSERT INTO users (id) VALUES (?)", ["u1"]);
 console.log(db.queryLog);
 // [{ sql: 'INSERT INTO users (id) VALUES (?)', params: ['u1'] }]
 ```
 
 ## 設定
 
-| 変数 | デフォルト | 説明 |
-| ---- | ---------- | ---- |
-| `DB_TYPE` | — | このアダプターを起動するには `memory` である必要がある |
+| 変数      | デフォルト | 説明                                                   |
+| --------- | ---------- | ------------------------------------------------------ |
+| `DB_TYPE` | —          | このアダプターを起動するには `memory` である必要がある |

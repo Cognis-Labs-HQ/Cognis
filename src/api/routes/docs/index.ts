@@ -104,10 +104,7 @@ async function collectDocIndex(): Promise<Map<string, DocEntry>> {
             const fileStem = absPath
                 .replace(/\.[a-z]{2}(?:-[a-z]{2})?\.md$/i, "")
                 .replace(/\.md$/, "");
-            const relFromSrc = relative(SRC_ROOT, fileStem).replace(
-                /\\/g,
-                "/",
-            );
+            const relFromSrc = relative(SRC_ROOT, fileStem).replace(/\\/g, "/");
             const slug = buildLogicalSlug(relFromSrc);
 
             if (bySlug.has(slug)) continue;

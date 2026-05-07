@@ -22,14 +22,14 @@ Nicht verantwortlich für: Authentifizierung implementieren, Daten speichern, Be
 
 ### Wichtige Quellpfade
 
-| Pfad | Zweck |
-| ---- | ----- |
-| `src/core/contracts/auth-account.ts` | `AuthAccount`-, `ExternalIdentity`-, `AuthAccountStore`-Schnittstellen |
-| `src/core/contracts/module-manifest.ts` | `ModuleManifest`-Schnittstelle |
-| `src/core/services/module-service.ts` | `ModuleService`-Klasse |
-| `src/core/services/health-service.ts` | `HealthService`-Klasse |
-| `src/core/services/gateway-service.ts` | Gateway-Registry-Dienst |
-| `src/core/index.ts` | Öffentliche Exporte für das `@cognis/core`-Paket |
+| Pfad                                    | Zweck                                                                  |
+| --------------------------------------- | ---------------------------------------------------------------------- |
+| `src/core/contracts/auth-account.ts`    | `AuthAccount`-, `ExternalIdentity`-, `AuthAccountStore`-Schnittstellen |
+| `src/core/contracts/module-manifest.ts` | `ModuleManifest`-Schnittstelle                                         |
+| `src/core/services/module-service.ts`   | `ModuleService`-Klasse                                                 |
+| `src/core/services/health-service.ts`   | `HealthService`-Klasse                                                 |
+| `src/core/services/gateway-service.ts`  | Gateway-Registry-Dienst                                                |
+| `src/core/index.ts`                     | Öffentliche Exporte für das `@cognis/core`-Paket                       |
 
 ### ModuleService
 
@@ -45,9 +45,14 @@ Routensicherheit wird vor der Aktivierung eines Moduls überprüft: Wenn die `ro
 ```ts
 // src/core/services/module-service.ts
 export class ModuleService {
-  async enable(moduleId: string, options?: { acknowledgeExternalDisclaimer?: boolean }): Promise<{ moduleId: string; enabled: boolean }>;
-  async disable(moduleId: string): Promise<{ moduleId: string; enabled: boolean }>;
-  async list(): Promise<ModuleManifest[]>;
+    async enable(
+        moduleId: string,
+        options?: { acknowledgeExternalDisclaimer?: boolean },
+    ): Promise<{ moduleId: string; enabled: boolean }>;
+    async disable(
+        moduleId: string,
+    ): Promise<{ moduleId: string; enabled: boolean }>;
+    async list(): Promise<ModuleManifest[]>;
 }
 ```
 
@@ -57,10 +62,10 @@ export class ModuleService {
 
 ```ts
 export interface HealthStatus {
-  status: 'ok';
-  timestamp: string;
-  startedAt: string;
-  uptimeMs: number;
+    status: "ok";
+    timestamp: string;
+    startedAt: string;
+    uptimeMs: number;
 }
 ```
 
@@ -70,18 +75,29 @@ export interface HealthStatus {
 
 ```ts
 export interface AuthAccountStore {
-  findByExternalIdentity(provider: string, externalUserId: string): Promise<AuthAccount | null>;
-  createExternalAccount(identity: ExternalIdentity): Promise<AuthAccount>;
-  updateExternalAccount(accountId: string, identity: ExternalIdentity): Promise<AuthAccount>;
-  createLocalAccount(input: { username: string; passwordHash: string; email?: string; isAdmin?: boolean }): Promise<AuthAccount>;
+    findByExternalIdentity(
+        provider: string,
+        externalUserId: string,
+    ): Promise<AuthAccount | null>;
+    createExternalAccount(identity: ExternalIdentity): Promise<AuthAccount>;
+    updateExternalAccount(
+        accountId: string,
+        identity: ExternalIdentity,
+    ): Promise<AuthAccount>;
+    createLocalAccount(input: {
+        username: string;
+        passwordHash: string;
+        email?: string;
+        isAdmin?: boolean;
+    }): Promise<AuthAccount>;
 }
 ```
 
 ### Capability-Namespaces
 
-| Capability | Besitzer | Beschreibung |
-| ---------- | -------- | ------------ |
-| `system:health` | Core / Systemrouten | Stellt Plattformgesundheit und Betriebszeit über `GET /api/v1/system/health` bereit |
-| `auth:accounts` | Auth-Gateway | Eingebauter Account-Lebenszyklus und Authentifizierungsrichtlinienverkabelung |
-| `modules:lifecycle` | Modulrouten | Modullisting, Aktivierungs-/Deaktivierungssteuerungen und Richtlinienprüfungen |
-| `ui:shell` | UI-Routen | Gemeinsames Anwendungsshell-Routing und Admin-Betriebsoberfläche |
+| Capability          | Besitzer            | Beschreibung                                                                        |
+| ------------------- | ------------------- | ----------------------------------------------------------------------------------- |
+| `system:health`     | Core / Systemrouten | Stellt Plattformgesundheit und Betriebszeit über `GET /api/v1/system/health` bereit |
+| `auth:accounts`     | Auth-Gateway        | Eingebauter Account-Lebenszyklus und Authentifizierungsrichtlinienverkabelung       |
+| `modules:lifecycle` | Modulrouten         | Modullisting, Aktivierungs-/Deaktivierungssteuerungen und Richtlinienprüfungen      |
+| `ui:shell`          | UI-Routen           | Gemeinsames Anwendungsshell-Routing und Admin-Betriebsoberfläche                    |

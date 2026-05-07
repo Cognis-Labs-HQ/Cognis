@@ -16,7 +16,7 @@ Adapter LDAP mengautentikasi pengguna terhadap server direktori LDAP, menjadikan
 
 ```ts
 export interface LdapClient {
-  authenticate(accessToken: string): Promise<LdapIdentity | null>;
+    authenticate(accessToken: string): Promise<LdapIdentity | null>;
 }
 ```
 
@@ -24,11 +24,11 @@ export interface LdapClient {
 
 Konfigurasi melalui `PUT /api/v1/gateways/auth/adapters/ldap/config` (hanya admin).
 
-| Kunci | Keterangan | Diperlukan |
-| ----- | ---------- | ---------- |
-| `host` | Hostname server LDAP | Ya |
-| `port` | Port server LDAP | Ya |
-| `bindDn` | Bind DN untuk akun layanan | Ya |
-| `bindPassword` | Password untuk bind DN | Ya |
-| `baseDn` | Base DN untuk pencarian pengguna | Ya |
-| `adminGroups` | Grup LDAP yang anggotanya mendapat peran admin (dipisah koma) | Tidak |
+| Kunci          | Keterangan                                                    | Diperlukan |
+| -------------- | ------------------------------------------------------------- | ---------- |
+| `host`         | Hostname server LDAP                                          | Ya         |
+| `port`         | Port server LDAP                                              | Ya         |
+| `bindDn`       | Bind DN untuk akun layanan                                    | Ya         |
+| `bindPassword` | Password untuk bind DN                                        | Ya         |
+| `baseDn`       | Base DN untuk pencarian pengguna                              | Ya         |
+| `adminGroups`  | Grup LDAP yang anggotanya mendapat peran admin (dipisah koma) | Tidak      |

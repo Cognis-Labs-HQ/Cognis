@@ -14,7 +14,7 @@ SAMLアダプターは、外部アイデンティティプロバイダーから�
 
 ```ts
 export interface SamlClient {
-  validateAssertion(samlResponse: string): Promise<SamlAssertion | null>;
+    validateAssertion(samlResponse: string): Promise<SamlAssertion | null>;
 }
 ```
 
@@ -22,10 +22,10 @@ export interface SamlClient {
 
 `PUT /api/v1/gateways/auth/adapters/saml/config`（管理者のみ）で設定します。
 
-| キー | 説明 | 必須 |
-| ---- | ---- | ---- |
-| `entryPoint` | SAML IdP SSO URL | はい |
-| `issuer` | サービスプロバイダーエンティティID | はい |
-| `certificate` | IdP X.509署名証明書（PEM形式） | はい |
-| `adminAttribute` | 管理者チェック用のSAML属性名 | いいえ |
-| `adminValue` | 管理者アクセスを付与する属性値 | いいえ |
+| キー             | 説明                               | 必須   |
+| ---------------- | ---------------------------------- | ------ |
+| `entryPoint`     | SAML IdP SSO URL                   | はい   |
+| `issuer`         | サービスプロバイダーエンティティID | はい   |
+| `certificate`    | IdP X.509署名証明書（PEM形式）     | はい   |
+| `adminAttribute` | 管理者チェック用のSAML属性名       | いいえ |
+| `adminValue`     | 管理者アクセスを付与する属性値     | いいえ |

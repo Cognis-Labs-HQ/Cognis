@@ -17,21 +17,21 @@ Sichtbarkeit ist ein zentrales Anliegen. Jeder Account wählt eine Sichtbarkeits
 
 ### Sichtbarkeitsmodell
 
-| Stufe | Profil sichtbar für | Beiträge und Zahlen sichtbar für |
-| ----- | ------------------- | -------------------------------- |
-| `hidden` (Standard) | Nur Selbst und Admin | — (Posten blockiert; gibt 403 zurück) |
-| `private` | Nur bestehende Follower | Nur Follower |
-| `friends` | Jeder authentifizierte Benutzer | Nur Follower |
-| `community` | Jeder authentifizierte Benutzer | Jeder authentifizierte Benutzer |
+| Stufe               | Profil sichtbar für             | Beiträge und Zahlen sichtbar für      |
+| ------------------- | ------------------------------- | ------------------------------------- |
+| `hidden` (Standard) | Nur Selbst und Admin            | — (Posten blockiert; gibt 403 zurück) |
+| `private`           | Nur bestehende Follower         | Nur Follower                          |
+| `friends`           | Jeder authentifizierte Benutzer | Nur Follower                          |
+| `community`         | Jeder authentifizierte Benutzer | Jeder authentifizierte Benutzer       |
 
 Beitrags-Sichtbarkeit (`only_me | private | friends | community`) ist immer durch die Account-Stufe begrenzt. Blockierte Aufrufer erhalten 404 auf jedem Endpunkt, der den Blocker anspricht.
 
 ### Frontend-Seitenstruktur
 
-| Element | Standard sichtbar | Rastergröße |
-| ------- | ----------------- | ----------- |
-| `hero` | Ja | full |
-| `followers` | Ja | `[2, 3]` |
-| `following` | Ja | `[2, 3]` |
-| `posts` | Ja | full |
-| `social-links` | Nein | `[2, 3]` |
+| Element        | Standard sichtbar | Rastergröße |
+| -------------- | ----------------- | ----------- |
+| `hero`         | Ja                | full        |
+| `followers`    | Ja                | `[2, 3]`    |
+| `following`    | Ja                | `[2, 3]`    |
+| `posts`        | Ja                | full        |
+| `social-links` | Nein              | `[2, 3]`    |

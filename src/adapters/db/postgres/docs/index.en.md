@@ -29,7 +29,7 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 
 ## Configuration
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `DB_TYPE` | — | Must be `postgresql` to activate this adapter |
-| `DATABASE_URL` | — | PostgreSQL connection URL, e.g. `postgresql://user:pass@host:5432/cognis` |
+| Variable       | Default | Description                                                               |
+| -------------- | ------- | ------------------------------------------------------------------------- |
+| `DB_TYPE`      | —       | Must be `postgresql` to activate this adapter                             |
+| `DATABASE_URL` | —       | PostgreSQL connection URL, e.g. `postgresql://user:pass@host:5432/cognis` |

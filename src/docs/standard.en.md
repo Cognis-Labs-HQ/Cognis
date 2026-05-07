@@ -42,11 +42,11 @@ Every doc file is a Markdown file. Sections appear in this order; omit a section
 
 Different component types warrant different depth:
 
-| Tier | Components | Required sections |
-| ---- | ---------- | ----------------- |
-| Platform / core | `src/docs/` platform docs | All sections fully |
-| Gateway | `src/gateways/<id>/docs/` | Lighter Architecture; include Configuration + API Routes |
-| Adapter | `src/adapters/<gw>/<id>/docs/` | Full standard (all applicable sections) |
+| Tier            | Components                     | Required sections                                        |
+| --------------- | ------------------------------ | -------------------------------------------------------- |
+| Platform / core | `src/docs/` platform docs      | All sections fully                                       |
+| Gateway         | `src/gateways/<id>/docs/`      | Lighter Architecture; include Configuration + API Routes |
+| Adapter         | `src/adapters/<gw>/<id>/docs/` | Full standard (all applicable sections)                  |
 
 ### Code snippets
 
@@ -82,10 +82,10 @@ For platform-level docs that span multiple components, add `<name>.en.md` direct
 
 ### File naming
 
-| Location | Primary file | Translation files |
-| -------- | ------------ | ----------------- |
-| Platform (`src/docs/`) | `<name>.en.md` | `<name>.de.md`, `<name>.ja.md`, `<name>.id.md` |
-| Component (`docs/` subdir) | `index.en.md` | `index.de.md`, `index.ja.md`, `index.id.md` |
+| Location                   | Primary file   | Translation files                              |
+| -------------------------- | -------------- | ---------------------------------------------- |
+| Platform (`src/docs/`)     | `<name>.en.md` | `<name>.de.md`, `<name>.ja.md`, `<name>.id.md` |
+| Component (`docs/` subdir) | `index.en.md`  | `index.de.md`, `index.ja.md`, `index.id.md`    |
 
 All four languages (en, de, ja, id) are required for any string visible in the UI. The docs browser falls back to `.en.md` when a translation is absent.
 

@@ -33,7 +33,7 @@ Mismatch between the adapter's placeholder style and the SQL supplied to the exe
 
 ## Configuration
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `DB_TYPE` | — | Must be `sqlite` to activate this adapter |
+| Variable      | Default                | Description                                                       |
+| ------------- | ---------------------- | ----------------------------------------------------------------- |
+| `DB_TYPE`     | —                      | Must be `sqlite` to activate this adapter                         |
 | `SQLITE_PATH` | `./data/cognis.sqlite` | Path to the SQLite database file; created automatically if absent |

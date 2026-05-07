@@ -15,11 +15,11 @@ Der Adapter implementiert Greylist-tolerante Zustellung: Bei einer vorübergehen
 
 ## Konfiguration
 
-| Variable | Standard | Beschreibung |
-| -------- | -------- | ------------ |
-| `COGNIS_SMTP_HOST` | — | SMTP-Server-Hostname; der Adapter ist inaktiv, wenn nicht gesetzt |
-| `COGNIS_SMTP_PORT` | `587` | SMTP-Server-Port |
-| `COGNIS_SMTP_SECURE` | `false` | `true` für TLS beim Verbinden (Port 465) |
-| `COGNIS_SMTP_USER` | — | SMTP-Authentifizierungsbenutzername |
-| `COGNIS_SMTP_PASS` | — | SMTP-Authentifizierungspasswort |
-| `COGNIS_SMTP_FROM` | — | Absenderadresse im `From`-Header |
+| Variable             | Standard | Beschreibung                                                      |
+| -------------------- | -------- | ----------------------------------------------------------------- |
+| `COGNIS_SMTP_HOST`   | —        | SMTP-Server-Hostname; der Adapter ist inaktiv, wenn nicht gesetzt |
+| `COGNIS_SMTP_PORT`   | `587`    | SMTP-Server-Port                                                  |
+| `COGNIS_SMTP_SECURE` | `false`  | `true` für TLS beim Verbinden (Port 465)                          |
+| `COGNIS_SMTP_USER`   | —        | SMTP-Authentifizierungsbenutzername                               |
+| `COGNIS_SMTP_PASS`   | —        | SMTP-Authentifizierungspasswort                                   |
+| `COGNIS_SMTP_FROM`   | —        | Absenderadresse im `From`-Header                                  |

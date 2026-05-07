@@ -42,11 +42,11 @@ Setiap file dokumen adalah file Markdown. Bagian-bagian muncul dalam urutan ini;
 
 Berbagai jenis komponen membutuhkan kedalaman yang berbeda:
 
-| Tingkat | Komponen | Bagian yang diperlukan |
-| ------- | --------- | ---------------------- |
-| Platform / inti | Dokumen platform `src/docs/` | Semua bagian sepenuhnya |
-| Gateway | `src/gateways/<id>/docs/` | Arsitektur lebih ringan; sertakan Konfigurasi + Rute API |
-| Adapter | `src/adapters/<gw>/<id>/docs/` | Standar penuh (semua bagian yang berlaku) |
+| Tingkat         | Komponen                       | Bagian yang diperlukan                                   |
+| --------------- | ------------------------------ | -------------------------------------------------------- |
+| Platform / inti | Dokumen platform `src/docs/`   | Semua bagian sepenuhnya                                  |
+| Gateway         | `src/gateways/<id>/docs/`      | Arsitektur lebih ringan; sertakan Konfigurasi + Rute API |
+| Adapter         | `src/adapters/<gw>/<id>/docs/` | Standar penuh (semua bagian yang berlaku)                |
 
 ### Cuplikan kode
 
@@ -82,10 +82,10 @@ Untuk dokumen tingkat platform yang mencakup beberapa komponen, tambahkan `<name
 
 ### Penamaan file
 
-| Lokasi | File utama | File terjemahan |
-| ------ | ---------- | --------------- |
-| Platform (`src/docs/`) | `<name>.en.md` | `<name>.de.md`, `<name>.ja.md`, `<name>.id.md` |
-| Komponen (subdirektori `docs/`) | `index.en.md` | `index.de.md`, `index.ja.md`, `index.id.md` |
+| Lokasi                          | File utama     | File terjemahan                                |
+| ------------------------------- | -------------- | ---------------------------------------------- |
+| Platform (`src/docs/`)          | `<name>.en.md` | `<name>.de.md`, `<name>.ja.md`, `<name>.id.md` |
+| Komponen (subdirektori `docs/`) | `index.en.md`  | `index.de.md`, `index.ja.md`, `index.id.md`    |
 
 Semua empat bahasa (en, de, ja, id) diperlukan untuk string apapun yang terlihat di UI. Browser docs kembali ke `.en.md` ketika terjemahan tidak ada.
 

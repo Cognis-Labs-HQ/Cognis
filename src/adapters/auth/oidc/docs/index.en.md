@@ -21,18 +21,19 @@ Not responsible for: managing the OAuth2 authorization code flow (the client app
 
 ```ts
 export interface OidcClient {
-  introspect(accessToken: string): Promise<OidcTokenClaims | null>;
+    introspect(accessToken: string): Promise<OidcTokenClaims | null>;
 }
 
 export interface OidcTokenClaims {
-  sub: string;
-  email?: string;
-  name?: string;
-  roles?: string[];
+    sub: string;
+    email?: string;
+    name?: string;
+    roles?: string[];
 }
 ```
 
 On `authenticate(credentials)`, the adapter:
+
 1. Extracts `credentials.accessToken`.
 2. Calls `this.client.introspect(accessToken)` against the provider's discovery document.
 3. Checks whether any of the token's `roles` intersect `adminRoles`.
@@ -44,10 +45,10 @@ On first login with an unknown `sub`, the auth gateway creates a new account via
 
 Configure via `PUT /api/v1/gateways/auth/adapters/oidc/config` (admin only).
 
-| Key | Description | Required |
-| --- | ----------- | -------- |
-| `providerName` | Identifier shown in login responses and stored as the auth provider name | Yes |
-| `clientId` | OAuth2 client ID registered with the identity provider | Yes |
-| `clientSecret` | OAuth2 client secret | Yes |
-| `discoveryUrl` | OpenID Connect discovery document URL (e.g. `https://accounts.google.com/.well-known/openid-configuration`) | Yes |
-| `adminRoles` | Comma-separated token roles that grant admin access in Cognis | No |
+| Key            | Description                                                                                                 | Required |
+| -------------- | ----------------------------------------------------------------------------------------------------------- | -------- |
+| `providerName` | Identifier shown in login responses and stored as the auth provider name                                    | Yes      |
+| `clientId`     | OAuth2 client ID registered with the identity provider                                                      | Yes      |
+| `clientSecret` | OAuth2 client secret                                                                                        | Yes      |
+| `discoveryUrl` | OpenID Connect discovery document URL (e.g. `https://accounts.google.com/.well-known/openid-configuration`) | Yes      |
+| `adminRoles`   | Comma-separated token roles that grant admin access in Cognis                                               | No       |

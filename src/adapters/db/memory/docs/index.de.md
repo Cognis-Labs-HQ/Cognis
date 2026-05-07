@@ -17,13 +17,13 @@ Der Memory-Adapter sollte niemals in einem Produktions-Deployment verwendet werd
 
 ```ts
 const db = new MemoryDatabaseGateway();
-await db.execute('INSERT INTO users (id) VALUES (?)', ['u1']);
+await db.execute("INSERT INTO users (id) VALUES (?)", ["u1"]);
 console.log(db.queryLog);
 // [{ sql: 'INSERT INTO users (id) VALUES (?)', params: ['u1'] }]
 ```
 
 ## Konfiguration
 
-| Variable | Standard | Beschreibung |
-| -------- | -------- | ------------ |
-| `DB_TYPE` | — | Muss `memory` sein, um diesen Adapter zu aktivieren |
+| Variable  | Standard | Beschreibung                                        |
+| --------- | -------- | --------------------------------------------------- |
+| `DB_TYPE` | —        | Muss `memory` sein, um diesen Adapter zu aktivieren |

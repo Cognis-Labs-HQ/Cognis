@@ -24,7 +24,7 @@ SELECT * FROM users WHERE id = ?
 
 ## Konfigurasi
 
-| Variabel | Default | Keterangan |
-| -------- | ------- | ---------- |
-| `DB_TYPE` | — | Harus `sqlite` untuk mengaktifkan adapter ini |
+| Variabel      | Default                | Keterangan                                                   |
+| ------------- | ---------------------- | ------------------------------------------------------------ |
+| `DB_TYPE`     | —                      | Harus `sqlite` untuk mengaktifkan adapter ini                |
 | `SQLITE_PATH` | `./data/cognis.sqlite` | Path ke file database SQLite; dibuat otomatis jika tidak ada |

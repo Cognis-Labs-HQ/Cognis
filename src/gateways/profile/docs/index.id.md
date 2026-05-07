@@ -16,18 +16,18 @@ Gateway Profil memiliki profil pengguna, grafik sosial, postingan, dan manajemen
 
 ### Model Visibilitas
 
-| Tingkat | Profil terlihat oleh | Postingan dan jumlah terlihat oleh |
-| ------- | -------------------- | ---------------------------------- |
-| `hidden` (default) | Diri sendiri dan admin saja | — (postingan mengembalikan 403) |
-| `private` | Hanya follower yang sudah ada | Hanya follower |
-| `friends` | Semua pengguna terautentikasi | Hanya follower |
-| `community` | Semua pengguna terautentikasi | Semua pengguna terautentikasi |
+| Tingkat            | Profil terlihat oleh          | Postingan dan jumlah terlihat oleh |
+| ------------------ | ----------------------------- | ---------------------------------- |
+| `hidden` (default) | Diri sendiri dan admin saja   | — (postingan mengembalikan 403)    |
+| `private`          | Hanya follower yang sudah ada | Hanya follower                     |
+| `friends`          | Semua pengguna terautentikasi | Hanya follower                     |
+| `community`        | Semua pengguna terautentikasi | Semua pengguna terautentikasi      |
 
 ### Lokasi Sumber Utama
 
-| Path | Tujuan |
-| ---- | ------ |
-| `src/gateways/profile/bootstrap.ts` | Titik masuk bootstrap |
-| `src/gateways/profile/routes/social.ts` | Route follow, block, follower |
-| `src/gateways/profile/routes/posts.ts` | Pembuatan, daftar, dan penghapusan postingan |
-| `src/adapters/db/reuse/profile-store.ts` | `DbProfileStore` — semua operasi SQL profil |
+| Path                                     | Tujuan                                       |
+| ---------------------------------------- | -------------------------------------------- |
+| `src/gateways/profile/bootstrap.ts`      | Titik masuk bootstrap                        |
+| `src/gateways/profile/routes/social.ts`  | Route follow, block, follower                |
+| `src/gateways/profile/routes/posts.ts`   | Pembuatan, daftar, dan penghapusan postingan |
+| `src/adapters/db/reuse/profile-store.ts` | `DbProfileStore` — semua operasi SQL profil  |

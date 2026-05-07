@@ -24,7 +24,7 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 
 ## 設定
 
-| 変数 | デフォルト | 説明 |
-| ---- | ---------- | ---- |
-| `DB_TYPE` | — | このアダプターを起動するには `postgresql` である必要がある |
-| `DATABASE_URL` | — | PostgreSQL接続URL（例: `postgresql://user:pass@host:5432/cognis`） |
+| 変数           | デフォルト | 説明                                                               |
+| -------------- | ---------- | ------------------------------------------------------------------ |
+| `DB_TYPE`      | —          | このアダプターを起動するには `postgresql` である必要がある         |
+| `DATABASE_URL` | —          | PostgreSQL接続URL（例: `postgresql://user:pass@host:5432/cognis`） |

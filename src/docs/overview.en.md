@@ -51,17 +51,17 @@ Modules are discovered from `src/modules/` (internal, trusted) and `COGNIS_MODUL
 
 ### Key source locations
 
-| Area | Path |
-| ---- | ---- |
-| Core contracts | `src/core/contracts/` |
-| Core services | `src/core/services/` |
-| HTTP server entry | `src/api/main.ts` |
-| Route registry | `src/api/route-registry.ts` |
-| Gateway shared utilities | `src/gateways/shared.ts` |
-| Gateway bootstrapper | `src/api/gateway-bootstrap.ts` |
-| UI entry points | `src/ui/app/` |
-| UI reuse utilities | `src/ui/reuse/` |
-| Platform docs | `src/docs/` |
+| Area                     | Path                           |
+| ------------------------ | ------------------------------ |
+| Core contracts           | `src/core/contracts/`          |
+| Core services            | `src/core/services/`           |
+| HTTP server entry        | `src/api/main.ts`              |
+| Route registry           | `src/api/route-registry.ts`    |
+| Gateway shared utilities | `src/gateways/shared.ts`       |
+| Gateway bootstrapper     | `src/api/gateway-bootstrap.ts` |
+| UI entry points          | `src/ui/app/`                  |
+| UI reuse utilities       | `src/ui/reuse/`                |
+| Platform docs            | `src/docs/`                    |
 
 ## Extension Points
 

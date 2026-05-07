@@ -21,17 +21,18 @@ Not responsible for: managing the SAML SP metadata, handling redirects (the clie
 
 ```ts
 export interface SamlClient {
-  validateAssertion(samlResponse: string): Promise<SamlAssertion | null>;
+    validateAssertion(samlResponse: string): Promise<SamlAssertion | null>;
 }
 
 export interface SamlAssertion {
-  nameId: string;
-  email?: string;
-  attributes?: Record<string, string | string[]>;
+    nameId: string;
+    email?: string;
+    attributes?: Record<string, string | string[]>;
 }
 ```
 
 On `authenticate(credentials)`, the adapter:
+
 1. Extracts `credentials.samlResponse` (base64-encoded XML assertion).
 2. Calls `this.client.validateAssertion(samlResponse)`.
 3. Reads the attribute named by `adminAttribute` from the assertion.
@@ -44,10 +45,10 @@ On first login, the auth gateway creates a new account via `createExternalAccoun
 
 Configure via `PUT /api/v1/gateways/auth/adapters/saml/config` (admin only).
 
-| Key | Description | Required |
-| --- | ----------- | -------- |
-| `entryPoint` | SAML IdP SSO URL (e.g. `https://idp.example.com/sso/saml`) | Yes |
-| `issuer` | Service Provider entity ID (must match the SP registration in the IdP) | Yes |
-| `certificate` | IdP X.509 signing certificate (PEM format, without header/footer) | Yes |
-| `adminAttribute` | SAML attribute name whose value is checked for admin access | No |
-| `adminValue` | Attribute value that grants admin access (e.g. `admin`, `true`) | No |
+| Key              | Description                                                            | Required |
+| ---------------- | ---------------------------------------------------------------------- | -------- |
+| `entryPoint`     | SAML IdP SSO URL (e.g. `https://idp.example.com/sso/saml`)             | Yes      |
+| `issuer`         | Service Provider entity ID (must match the SP registration in the IdP) | Yes      |
+| `certificate`    | IdP X.509 signing certificate (PEM format, without header/footer)      | Yes      |
+| `adminAttribute` | SAML attribute name whose value is checked for admin access            | No       |
+| `adminValue`     | Attribute value that grants admin access (e.g. `admin`, `true`)        | No       |

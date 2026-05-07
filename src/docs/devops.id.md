@@ -33,10 +33,10 @@ CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 
 ## Konfigurasi
 
-| Variabel | Default | Keterangan |
-| -------- | ------- | ---------- |
-| `DB_TYPE` | `sqlite` | Backend database |
-| `DATABASE_URL` | — | String koneksi untuk PostgreSQL atau MariaDB |
-| `LOG_LEVEL` | `info` | Verbositas log |
-| `PORT` | `3000` | Port HTTP |
-| `COGNIS_SMTP_HOST` | — | Hostname server SMTP |
+| Variabel           | Default  | Keterangan                                   |
+| ------------------ | -------- | -------------------------------------------- |
+| `DB_TYPE`          | `sqlite` | Backend database                             |
+| `DATABASE_URL`     | —        | String koneksi untuk PostgreSQL atau MariaDB |
+| `LOG_LEVEL`        | `info`   | Verbositas log                               |
+| `PORT`             | `3000`   | Port HTTP                                    |
+| `COGNIS_SMTP_HOST` | —        | Hostname server SMTP                         |
