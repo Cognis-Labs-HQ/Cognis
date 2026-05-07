@@ -66,6 +66,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         email TEXT,
         display_name TEXT,
         is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+        enabled BOOLEAN NOT NULL DEFAULT TRUE,
         is_founder BOOLEAN NOT NULL DEFAULT FALSE,
         invited_by_account_id TEXT NULL,
         last_login TIMESTAMPTZ,
@@ -92,6 +93,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         email VARCHAR(320) NULL,
         display_name VARCHAR(255) NULL,
         is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+        enabled BOOLEAN NOT NULL DEFAULT TRUE,
         is_founder BOOLEAN NOT NULL DEFAULT FALSE,
         invited_by_account_id VARCHAR(191) NULL,
         last_login TIMESTAMP NULL,
@@ -117,6 +119,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
       email TEXT,
       display_name TEXT,
       is_admin INTEGER NOT NULL DEFAULT 0,
+      enabled INTEGER NOT NULL DEFAULT 1,
       is_founder INTEGER NOT NULL DEFAULT 0,
       invited_by_account_id TEXT NULL,
       last_login TEXT,
@@ -165,7 +168,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         password: string,
     ): Promise<AuthContext | null> {
         const result = await this.db.execute(
-            `SELECT c.username, c.password_hash, a.is_admin, p.role
+            `SELECT c.username, c.password_hash, a.is_admin, a.enabled, p.role
        FROM local_auth_credentials c
        JOIN accounts a ON a.id = c.account_id
        LEFT JOIN account_profiles p ON p.account_id = a.id
@@ -174,6 +177,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         );
         const account = result.rows?.[0];
         if (!account) return null;
+        if (!Boolean(account.enabled)) return null;
         const passwordOk = await verifyPassword(
             String(account.password_hash),
             password,
@@ -200,12 +204,12 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async list() {
         const result = await this.db.execute(
-            "SELECT c.username, a.is_admin FROM local_auth_credentials c JOIN accounts a ON a.id = c.account_id ORDER BY c.username",
+            "SELECT c.username, a.is_admin, a.enabled FROM local_auth_credentials c JOIN accounts a ON a.id = c.account_id ORDER BY c.username",
         );
         return (result.rows ?? []).map((row) => ({
             username: row.username,
             isAdmin: Boolean(row.is_admin),
-            enabled: true,
+            enabled: Boolean(row.enabled),
         }));
     }
 
@@ -266,9 +270,11 @@ export class DbLocalAccountStore implements LocalAccountStore {
         return String(value);
     }
     async setEnabled(username: string, enabled: boolean) {
-        if (!enabled) {
-            throw new Error("disable_not_supported");
-        }
+        await this.db.execute(
+            `UPDATE accounts SET enabled = ${this.placeholder(1)}, updated_at = ${this.currentTimestampExpression()}
+       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(2)})`,
+            [enabled, username],
+        );
     }
     async delete(username: string) {
         await this.db.execute(
@@ -280,9 +286,12 @@ export class DbLocalAccountStore implements LocalAccountStore {
         username: string;
         createdAt: string | null;
         lastLogin: string | null;
+        enabled: boolean;
+        isAdmin: boolean;
+        isFounder: boolean;
     } | null> {
         const result = await this.db.execute(
-            `SELECT c.username, a.created_at, a.last_login FROM local_auth_credentials c
+            `SELECT c.username, a.created_at, a.last_login, a.enabled, a.is_admin, a.is_founder FROM local_auth_credentials c
        JOIN accounts a ON a.id = c.account_id
        WHERE c.username = ${this.placeholder(1)}`,
             [username],
@@ -293,6 +302,9 @@ export class DbLocalAccountStore implements LocalAccountStore {
             username: String(row.username),
             createdAt: row.created_at ? String(row.created_at) : null,
             lastLogin: row.last_login ? String(row.last_login) : null,
+            enabled: Boolean(row.enabled),
+            isAdmin: Boolean(row.is_admin),
+            isFounder: Boolean(row.is_founder),
         };
     }
 

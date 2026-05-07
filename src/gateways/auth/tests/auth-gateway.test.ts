@@ -415,6 +415,15 @@ test("profile:createProfile capability is looked up lazily in login and register
         capabilities,
     });
 
+    capabilities.contribute("preferences:store", {
+        async get(_accountId: string, _key: string) {
+            return JSON.stringify({
+                trustedDomains: [],
+                registrationsEnabled: true,
+            });
+        },
+    });
+
     capabilities.contribute(
         "profile:createProfile",
         async (accountId: string) => {

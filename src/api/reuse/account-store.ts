@@ -54,6 +54,9 @@ export interface LocalAccountStore {
         username: string;
         createdAt: string | null;
         lastLogin: string | null;
+        enabled: boolean;
+        isAdmin: boolean;
+        isFounder: boolean;
     } | null>;
     updateLastLogin(username: string): Promise<void>;
     setFounder(username: string, isFounder: boolean): Promise<void>;
@@ -182,10 +185,20 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         username: string;
         createdAt: string | null;
         lastLogin: string | null;
+        enabled: boolean;
+        isAdmin: boolean;
+        isFounder: boolean;
     } | null> {
         const account = this.accounts.get(username);
         if (!account) return null;
-        return { username, createdAt: null, lastLogin: account.lastLogin };
+        return {
+            username,
+            createdAt: null,
+            lastLogin: account.lastLogin,
+            enabled: account.enabled,
+            isAdmin: account.isAdmin,
+            isFounder: account.isFounder,
+        };
     }
 
     async updateLastLogin(username: string): Promise<void> {

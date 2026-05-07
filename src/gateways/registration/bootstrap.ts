@@ -221,9 +221,14 @@ export function createRegistrationRoutes(
                 return true;
             }
             const invites = isAdmin
-                ? await gateway.listPendingInvites()
-                : await gateway.listPendingInvites({
+                ? await gateway.listInvites({
+                      includeClosed:
+                          url.searchParams.get("includeClosed") === "true",
+                  })
+                : await gateway.listInvites({
                       inviterAccountId: claims.sub,
+                      includeClosed:
+                          url.searchParams.get("includeClosed") === "true",
                   });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: invites }));
@@ -304,7 +309,7 @@ export function createRegistrationRoutes(
                 return true;
             }
             if (!isAdmin) {
-                const myInvites = await gateway.listPendingInvites({
+                const myInvites = await gateway.listInvites({
                     inviterAccountId: claims.sub,
                 });
                 if (!myInvites.some((invite) => invite.id === tokenId)) {

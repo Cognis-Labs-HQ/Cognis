@@ -35,9 +35,11 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
     async function loadSettings() {
         const res = await apiFetch("/api/v1/system/security");
-        if (!res.ok) return { trustedDomains: [] };
+        if (!res.ok) return { trustedDomains: [], registrationsEnabled: false };
         const payload = await res.json();
-        return payload.data ?? { trustedDomains: [] };
+        return (
+            payload.data ?? { trustedDomains: [], registrationsEnabled: false }
+        );
     }
 
     async function persistSettings(trustedDomains, registrationsEnabled) {
@@ -71,7 +73,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         if (!(input instanceof HTMLInputElement)) return;
 
         originalDomains = settings.trustedDomains ?? [];
-        originalRegistrationsEnabled = settings.registrationsEnabled !== false;
+        originalRegistrationsEnabled = settings.registrationsEnabled === true;
         input.value = originalDomains.join(", ");
         const registrationsToggle = root.querySelector(
             "#security-registrations-enabled",

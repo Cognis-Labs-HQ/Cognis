@@ -8,6 +8,7 @@ import {
 } from "../../auth/guard.js";
 import type { ModuleRuntimeGateway } from "@cognis/core";
 import type { UIRegistry } from "../../ui-registry.js";
+import type { LocalAccountStore } from "../../reuse/account-store.js";
 
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
@@ -55,6 +56,7 @@ async function serveFile(
 export function createUiRoutes(
     runtime?: ModuleRuntimeGateway,
     uiRegistry?: UIRegistry,
+    accountStore?: LocalAccountStore,
 ) {
     return async (
         req: IncomingMessage,
@@ -149,6 +151,54 @@ export function createUiRoutes(
 
             res.writeHead(302, { location: "/administration" });
             res.end();
+            return true;
+        }
+
+        if (url.pathname === "/users") {
+            const session = getCookieSession(req);
+            if (!session) {
+                res.writeHead(302, { location: "/login" });
+                res.end();
+                return true;
+            }
+            if (session.role !== "admin") {
+                res.writeHead(302, { location: "/dashboard" });
+                res.end();
+                return true;
+            }
+            await serveFile(
+                res,
+                path.join(PUBLIC_ROOT, "pages", "users.html"),
+                "text/html; charset=utf-8",
+            );
+            return true;
+        }
+
+        if (url.pathname === "/invite") {
+            const session = getCookieSession(req);
+            if (!session) {
+                res.writeHead(302, { location: "/login" });
+                res.end();
+                return true;
+            }
+            if (session.role !== "admin") {
+                res.writeHead(302, { location: "/dashboard" });
+                res.end();
+                return true;
+            }
+            const isFounder = accountStore
+                ? await accountStore.isFounder(session.sub).catch(() => false)
+                : false;
+            if (!isFounder) {
+                res.writeHead(302, { location: "/users" });
+                res.end();
+                return true;
+            }
+            await serveFile(
+                res,
+                path.join(PUBLIC_ROOT, "pages", "invite.html"),
+                "text/html; charset=utf-8",
+            );
             return true;
         }
 

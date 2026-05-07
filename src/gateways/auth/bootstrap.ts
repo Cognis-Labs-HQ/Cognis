@@ -122,17 +122,17 @@ function createAuthGatewayRoutes(
     async function registrationsEnabled(): Promise<boolean> {
         const prefStore =
             capabilities.get<UserPreferenceStore>("preferences:store");
-        if (!prefStore) return true;
+        if (!prefStore) return false;
         const raw = await prefStore.get("__system__", "security-settings");
-        if (!raw) return true;
+        if (!raw) return false;
         try {
             const parsed = JSON.parse(raw) as Record<string, unknown>;
             if (typeof parsed.registrationsEnabled === "boolean") {
                 return parsed.registrationsEnabled;
             }
-            return true;
+            return false;
         } catch {
-            return true;
+            return false;
         }
     }
 
@@ -274,6 +274,9 @@ function createAuthGatewayRoutes(
                 ) => Promise<void>
             >("profile:createProfile");
             await createProfile?.(session.accountId, session.accountId, role);
+            const isFounder = await accountStore
+                .isFounder(session.accountId)
+                .catch(() => false);
             res.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": `cognis_access_token=${apiToken}; Path=/; HttpOnly; SameSite=Lax`,
@@ -285,6 +288,7 @@ function createAuthGatewayRoutes(
                         displayName: session.accountId,
                         provider: session.provider,
                         role,
+                        isFounder,
                         token: apiToken,
                     },
                 }),

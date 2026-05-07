@@ -130,6 +130,7 @@ test("system security settings sanitize and survive malformed persisted data", a
 
     assert.equal(status, 200);
     assert.deepEqual(JSON.parse(body).data.trustedDomains, ["example.com"]);
+    assert.equal(JSON.parse(body).data.registrationsEnabled, false);
 
     const malformedStore = { get: async () => "not-json" };
     const malformedRoute = createSystemRoutes(
@@ -152,4 +153,5 @@ test("system security settings sanitize and survive malformed persisted data", a
 
     assert.equal(status, 200);
     assert.deepEqual(JSON.parse(body).data.trustedDomains, []);
+    assert.equal(JSON.parse(body).data.registrationsEnabled, false);
 });

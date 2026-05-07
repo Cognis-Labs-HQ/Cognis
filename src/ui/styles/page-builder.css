@@ -242,6 +242,17 @@ code {
 .content-panel th {
     background: var(--surface-soft);
 }
+.users-row {
+    cursor: pointer;
+}
+.users-row:hover {
+    background: var(--surface-soft);
+}
+.users-toggle-btn,
+.users-menu-btn,
+.invite-revoke-btn {
+    margin-right: 6px;
+}
 .content-panel a {
     color: var(--link-docs);
 }

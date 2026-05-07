@@ -13,8 +13,11 @@ export class CoreRegistrationGateway {
         return this.adapter.issueInvite(input);
     }
 
-    async listPendingInvites(filter?: { inviterAccountId?: string }) {
-        return this.adapter.listPendingInvites(filter);
+    async listInvites(filter?: {
+        inviterAccountId?: string;
+        includeClosed?: boolean;
+    }) {
+        return this.adapter.listInvites(filter);
     }
 
     async revokeInvite(input: { tokenId: string; revokedByAccountId: string }) {

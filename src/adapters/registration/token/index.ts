@@ -9,6 +9,8 @@ interface RegistrationInviteRecord {
     inviterDisplayName: string;
     inviteeEmail: string;
     expiresAt: string;
+    createdAt?: string;
+    status?: "pending" | "expired" | "revoked" | "redeemed";
 }
 
 const FOUNDER_PENDING_INVITE_LIMIT = 20;
@@ -22,8 +24,9 @@ export interface RegistrationTokenAdapter {
         inviterIsFounder: boolean;
         inviteBaseUrl: string;
     }): Promise<{ tokenId: string; inviteUrl: string; expiresAt: string }>;
-    listPendingInvites(filter?: {
+    listInvites(filter?: {
         inviterAccountId?: string;
+        includeClosed?: boolean;
     }): Promise<RegistrationInviteRecord[]>;
     revokeInvite(input: {
         tokenId: string;
@@ -173,32 +176,53 @@ export function createAdapter(deps: {
         return { tokenId, inviteUrl, expiresAt };
     }
 
-    async function listPendingInvites(filter?: {
+    async function listInvites(filter?: {
         inviterAccountId?: string;
+        includeClosed?: boolean;
     }): Promise<RegistrationInviteRecord[]> {
-        const nowIso = new Date().toISOString();
-        let sql = `SELECT t.id, t.inviter_account_id, t.invitee_email, t.expires_at, a.display_name
+        const now = Date.now();
+        let sql = `SELECT t.id, t.inviter_account_id, t.invitee_email, t.expires_at, t.created_at, t.revoked_at, t.redeemed_at, a.display_name
        FROM registration_tokens t
        JOIN accounts a ON a.id = t.inviter_account_id
-       WHERE t.revoked_at IS NULL
-         AND t.redeemed_at IS NULL
-         AND t.expires_at > ${placeholder(1)}`;
-        const params: unknown[] = [nowIso];
+       WHERE 1 = 1`;
+        const params: unknown[] = [];
         if (filter?.inviterAccountId) {
-            sql += ` AND t.inviter_account_id = ${placeholder(2)}`;
+            sql += ` AND t.inviter_account_id = ${placeholder(params.length + 1)}`;
             params.push(filter.inviterAccountId);
         }
         sql += " ORDER BY t.created_at DESC";
         const result = await dbExecutor.execute(sql, params);
-        return (result.rows ?? []).map((row) => ({
-            id: String(row.id),
-            inviterAccountId: String(row.inviter_account_id),
-            inviterDisplayName: row.display_name
-                ? String(row.display_name)
-                : String(row.inviter_account_id),
-            inviteeEmail: String(row.invitee_email),
-            expiresAt: String(row.expires_at),
-        }));
+        return (result.rows ?? [])
+            .map((row) => {
+                const expiresAt = String(row.expires_at);
+                const createdAt = String(row.created_at);
+                const revokedAt = row.revoked_at
+                    ? String(row.revoked_at)
+                    : null;
+                const redeemedAt = row.redeemed_at
+                    ? String(row.redeemed_at)
+                    : null;
+                let status: "pending" | "expired" | "revoked" | "redeemed" =
+                    "pending";
+                if (redeemedAt) status = "redeemed";
+                else if (revokedAt) status = "revoked";
+                else if (new Date(expiresAt).getTime() <= now)
+                    status = "expired";
+                return {
+                    id: String(row.id),
+                    inviterAccountId: String(row.inviter_account_id),
+                    inviterDisplayName: row.display_name
+                        ? String(row.display_name)
+                        : String(row.inviter_account_id),
+                    inviteeEmail: String(row.invitee_email),
+                    expiresAt,
+                    createdAt,
+                    status,
+                };
+            })
+            .filter((row) =>
+                filter?.includeClosed ? true : row.status === "pending",
+            );
     }
 
     async function revokeInvite(input: {
@@ -290,7 +314,7 @@ export function createAdapter(deps: {
 
     return {
         issueInvite,
-        listPendingInvites,
+        listInvites,
         revokeInvite,
         resolveInvite,
         redeemInvite,

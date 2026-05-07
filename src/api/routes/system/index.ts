@@ -42,7 +42,7 @@ function parseSecuritySettings(raw: string | null): {
     trustedDomains: string[];
     registrationsEnabled: boolean;
 } {
-    if (!raw) return { trustedDomains: [], registrationsEnabled: true };
+    if (!raw) return { trustedDomains: [], registrationsEnabled: false };
     try {
         const parsed = JSON.parse(raw) as { trustedDomains?: unknown };
         const trustedDomains = Array.isArray(parsed.trustedDomains)
@@ -57,13 +57,13 @@ function parseSecuritySettings(raw: string | null): {
                 ? Boolean(
                       (parsed as Record<string, unknown>).registrationsEnabled,
                   )
-                : true;
+                : false;
         return {
             trustedDomains,
             registrationsEnabled,
         };
     } catch {
-        return { trustedDomains: [], registrationsEnabled: true };
+        return { trustedDomains: [], registrationsEnabled: false };
     }
 }
 
@@ -161,7 +161,7 @@ export function createSystemRoutes(
             const registrationsEnabled =
                 typeof body.registrationsEnabled === "boolean"
                     ? body.registrationsEnabled
-                    : true;
+                    : false;
             if (preferenceStore) {
                 await preferenceStore.set(
                     "__system__",

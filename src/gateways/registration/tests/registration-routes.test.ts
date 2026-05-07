@@ -62,7 +62,7 @@ test("founder can list only their pending registration tokens", async () => {
     let inviterFilter = "";
     const route = createRegistrationRoutes(
         {
-            async listPendingInvites(filter?: { inviterAccountId?: string }) {
+            async listInvites(filter?: { inviterAccountId?: string }) {
                 inviterFilter = filter?.inviterAccountId ?? "";
                 return [];
             },
@@ -100,7 +100,7 @@ test("admin can list all pending registration tokens", async () => {
     let didUseUnfilteredList = false;
     const route = createRegistrationRoutes(
         {
-            async listPendingInvites(filter?: { inviterAccountId?: string }) {
+            async listInvites(filter?: { inviterAccountId?: string }) {
                 didUseUnfilteredList = !filter?.inviterAccountId;
                 return [];
             },
@@ -137,7 +137,7 @@ test("admin can list all pending registration tokens", async () => {
 test("invite endpoint returns inviter details for valid token", async () => {
     const route = createRegistrationRoutes(
         {
-            async listPendingInvites() {
+            async listInvites() {
                 return [];
             },
             async issueInvite() {

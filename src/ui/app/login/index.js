@@ -158,6 +158,10 @@ document
                 body.data.displayName || body.data.accountId,
             );
             localStorage.setItem("cognis_role", body.data.role || "user");
+            localStorage.setItem(
+                "cognis_is_founder",
+                body.data.isFounder ? "true" : "false",
+            );
             localStorage.setItem("cognis_login_time", new Date().toISOString());
             window.location.href = "/dashboard";
             return;

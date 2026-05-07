@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   email TEXT,
   display_name TEXT,
   is_admin INTEGER NOT NULL DEFAULT 0,
+  enabled INTEGER NOT NULL DEFAULT 1,
   is_founder INTEGER NOT NULL DEFAULT 0,
   invited_by_account_id TEXT NULL,
   last_login TEXT,
