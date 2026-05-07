@@ -1,30 +1,11 @@
 import { readFile, readdir } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { resolveLangs } from "../../reuse/doc-langs.js";
 
 const SRC_ROOT = join(process.cwd(), "src");
 const ROOT_DOCS_DIR = join(SRC_ROOT, "docs");
 const DEFAULT_LANG = "en";
-const SAFE_LANG_PATTERN = /^[a-z]{2}(?:-[a-z]{2})?$/;
-
-function resolveLangs(url: URL): string[] {
-    const raw = (
-        url.searchParams.get("langs") ||
-        url.searchParams.get("lang") ||
-        ""
-    ).toLowerCase();
-    const seen = new Set<string>();
-    const result: string[] = [];
-    for (const candidate of raw.split(",")) {
-        const lang = candidate.trim();
-        if (SAFE_LANG_PATTERN.test(lang) && !seen.has(lang)) {
-            seen.add(lang);
-            result.push(lang);
-        }
-    }
-    if (!seen.has(DEFAULT_LANG)) result.push(DEFAULT_LANG);
-    return result;
-}
 
 interface DocEntry {
     slug: string;
