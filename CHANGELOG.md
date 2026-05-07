@@ -10,6 +10,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ### Added
 
 - Added a markdown-optimized AGPLv3 `src/ui/public/assets/reuse/license.md`, a dedicated authenticated `/license` UI page, and `GET /api/v1/system/license` for rendering license terms in-app. The global page composer now includes a thin footer (enabled by default, toggleable via `showFooter`) with a left-aligned License button linking to `/license`. Docs markdown loading was extracted to `src/ui/reuse/markdown-document.js` and reused by both docs and license pages. ([22f4640](https://github.com/le-firehawk/Cognis/commit/22f4640))
+- License page now parses the AGPLv3 markdown into `##` sections rendered as individually collapsible `<details>` blocks with internal `overflow-y` scroll, and exposes a section navigation aside (via the toolbar) matching the docs page pattern. `license.md` is served from `src/ui/public/assets/reuse/` so Docker's `COPY src ./src` picks it up correctly. ([0b2d692](https://github.com/le-firehawk/Cognis/commit/0b2d692))
 - Docs API now accepts a `langs` query parameter (comma-separated language priority list) so the server iterates the user's full preferred-language chain before falling back to English. The docs UI passes `readPreferredLanguages()` as the `langs` value on every doc request. ([7ab5fe4](https://github.com/le-firehawk/Cognis/commit/7ab5fe4))
 - `resolveLangs` extracted to `src/api/reuse/preferred-languages.ts` so the language-resolution logic is reusable across the API layer.
 - AI instructions (`copilot-instructions.md`) now reference `src/docs/standard.en.md` as the authoritative guide for documentation section structure, depth tiers, and language requirements.
@@ -21,7 +22,6 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - `src/modules/docs/index.ja.md` contained outdated English text; replaced with a complete Japanese translation matching `index.en.md`.
 - `src/modules/docs/index.de.md` contained outdated English text; replaced with a complete German translation.
 - `src/modules/docs/index.id.md` contained outdated English text; replaced with a complete Indonesian translation.
-
 
 - Translated all 31 English docs to German (de), Japanese (ja), and Indonesian (id): covers `src/docs/`, all gateway `docs/` subdirectories, all adapter `docs/` subdirectories, `src/modules/docs/`, and `src/tooling/docs/`. Every English doc now has a de, ja, and id counterpart. ([e35638b](https://github.com/le-firehawk/Cognis/commit/e35638b))
 - Developer documentation: wrote or rewrote all 31 docs across `src/docs/`, gateway `docs/` subdirectories, adapter `docs/` subdirectories, `src/modules/docs/`, and `src/tooling/docs/`. Includes new `src/docs/standard.en.md` documenting the documentation writing standard. ([31e1ec4](https://github.com/le-firehawk/Cognis/commit/31e1ec4))

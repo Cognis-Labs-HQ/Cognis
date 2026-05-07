@@ -1,0 +1,50 @@
+.license-sections {
+    display: flex;
+    flex-direction: column;
+}
+
+.license-nav {
+    display: flex;
+    flex-direction: column;
+}
+
+.license-section {
+    border-bottom: 1px solid var(--border);
+}
+
+.license-section:last-child {
+    border-bottom: none;
+}
+
+.license-section > summary {
+    padding: 10px 12px;
+    cursor: pointer;
+    font-weight: 600;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+}
+
+.license-section > summary::-webkit-details-marker {
+    display: none;
+}
+
+.license-section > summary::before {
+    content: "\25B6";
+    font-size: 0.65em;
+    opacity: 0.6;
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+}
+
+.license-section[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+.license-section-body {
+    padding: 0 12px 12px;
+    overflow-y: auto;
+    max-height: 60vh;
+}
