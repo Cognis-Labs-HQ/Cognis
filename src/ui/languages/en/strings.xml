@@ -188,7 +188,7 @@
   <string name="ui.app.register.page_subtitle">Finish your Cognis account setup.</string>
   <string name="ui.app.register.form_title">Create your account</string>
   <string name="ui.app.register.invalid_token">This invitation token is invalid or has expired.</string>
-  <string name="ui.app.register.invited_you">wants you to join Cognis.</string>
+  <string name="ui.app.register.invited_you">🎁 {inviter} wants you to join Cognis.</string>
   <string name="ui.app.register.invitee_email">Invited email</string>
   <string name="ui.app.register.username">Username</string>
   <string name="ui.app.register.display_name">Display name</string>
@@ -196,7 +196,6 @@
   <string name="ui.app.register.submit">Create account</string>
   <string name="ui.app.register.success">Account created. Redirecting to login…</string>
   <string name="ui.app.register.error.generic">Could not complete registration.</string>
-  <string name="ui.app.register.error.invalid_or_expired_token">This invitation token is invalid or has expired.</string>
   <string name="ui.app.register.error.invalid_token">This invitation token is invalid or has expired.</string>
   <string name="ui.app.register.error.username_taken">This username is already taken.</string>
   <string name="ui.app.register.error.username_and_password_required">Username and password are required.</string>

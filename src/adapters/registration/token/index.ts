@@ -11,6 +11,9 @@ interface RegistrationInviteRecord {
     expiresAt: string;
 }
 
+const FOUNDER_PENDING_INVITE_LIMIT = 20;
+const INVITE_EXPIRY_MS = 24 * 60 * 60 * 1000;
+
 export interface RegistrationTokenAdapter {
     issueInvite(input: {
         inviterAccountId: string;
@@ -130,7 +133,7 @@ export function createAdapter(deps: {
             const pendingCount = await pendingFounderInviteCount(
                 input.inviterAccountId,
             );
-            if (pendingCount >= 20) {
+            if (pendingCount >= FOUNDER_PENDING_INVITE_LIMIT) {
                 throw new Error("founder_token_limit_reached");
             }
         }
@@ -138,9 +141,7 @@ export function createAdapter(deps: {
         const secret = randomBytes(32).toString("base64url");
         const rawToken = `${tokenId}.${secret}`;
         const tokenHash = sha256(rawToken);
-        const expiresAt = new Date(
-            Date.now() + 24 * 60 * 60 * 1000,
-        ).toISOString();
+        const expiresAt = new Date(Date.now() + INVITE_EXPIRY_MS).toISOString();
         const inviteUrl = `${input.inviteBaseUrl.replace(/\/$/, "")}/register?token=${encodeURIComponent(rawToken)}`;
 
         await dbExecutor.execute(
@@ -243,12 +244,14 @@ export function createAdapter(deps: {
         displayName?: string;
     }): Promise<{ createdAccountId: string; inviterAccountId: string }> {
         const username = input.username.trim();
+        // Preserve password exactly as entered (including spaces), matching
+        // local-auth login semantics.
         const password = input.password;
         if (!username || !password) {
             throw new Error("username_and_password_required");
         }
         const invite = await resolveInvite(input.token);
-        if (!invite) throw new Error("invalid_or_expired_token");
+        if (!invite) throw new Error("invalid_token");
 
         const inviterStillExists = await accountStore.exists(
             invite.inviterAccountId,

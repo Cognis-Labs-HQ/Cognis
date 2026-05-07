@@ -22,6 +22,25 @@ function inviteBaseUrl(): string {
     return "http://localhost:3000";
 }
 
+function issueInviteErrorStatus(code: string): number {
+    if (code === "smtp_unavailable") return 503;
+    if (code === "founder_token_limit_reached") return 429;
+    if (code === "invitee_email_required") return 400;
+    return 500;
+}
+
+function redeemInviteErrorStatus(code: string): number {
+    if (code === "invalid_token") return 400;
+    if (code === "inviter_not_found") return 409;
+    if (
+        code === "username_taken" ||
+        code === "username_and_password_required"
+    ) {
+        return 400;
+    }
+    return 500;
+}
+
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor = (ctx.capabilities.get<DbExecutor>("db:executor") ??
         ctx.dbExecutor)!;
@@ -177,16 +196,7 @@ export function createRegistrationRoutes(
             } catch (error) {
                 const code =
                     error instanceof Error ? error.message : "redeem_failed";
-                const status =
-                    code === "invalid_or_expired_token" ||
-                    code === "invalid_token"
-                        ? 400
-                        : code === "inviter_not_found"
-                          ? 409
-                          : code === "username_taken" ||
-                              code === "username_and_password_required"
-                            ? 400
-                            : 500;
+                const status = redeemInviteErrorStatus(code);
                 res.writeHead(status, { "content-type": "application/json" });
                 res.end(JSON.stringify({ error: { code, message: code } }));
             }
@@ -268,14 +278,7 @@ export function createRegistrationRoutes(
             } catch (error) {
                 const code =
                     error instanceof Error ? error.message : "invite_failed";
-                const status =
-                    code === "smtp_unavailable"
-                        ? 503
-                        : code === "founder_token_limit_reached"
-                          ? 429
-                          : code === "invitee_email_required"
-                            ? 400
-                            : 500;
+                const status = issueInviteErrorStatus(code);
                 res.writeHead(status, { "content-type": "application/json" });
                 res.end(JSON.stringify({ error: { code, message: code } }));
             }

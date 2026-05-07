@@ -61,6 +61,11 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return input instanceof HTMLInputElement ? input.value : "";
     }
 
+    function getRegistrationsEnabled() {
+        const toggle = root.querySelector("#security-registrations-enabled");
+        return toggle instanceof HTMLInputElement ? toggle.checked : true;
+    }
+
     function bindInput(settings) {
         const input = root.querySelector("#security-trusted-domains");
         if (!(input instanceof HTMLInputElement)) return;
@@ -78,17 +83,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         input.addEventListener("input", () => {
             const current = parseDomains(getInputValue()).join(",");
             const original = originalDomains.join(",");
-            const currentRegistrationsToggle = root.querySelector(
-                "#security-registrations-enabled",
-            );
-            const currentRegistrationsEnabled =
-                currentRegistrationsToggle instanceof HTMLInputElement
-                    ? currentRegistrationsToggle.checked
-                    : true;
             onDirtyChange?.(
                 current !== original ||
-                    currentRegistrationsEnabled !==
-                        originalRegistrationsEnabled,
+                    getRegistrationsEnabled() !== originalRegistrationsEnabled,
             );
         });
         if (registrationsToggle instanceof HTMLInputElement) {
@@ -97,7 +94,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 const original = originalDomains.join(",");
                 onDirtyChange?.(
                     current !== original ||
-                        registrationsToggle.checked !==
+                        getRegistrationsEnabled() !==
                             originalRegistrationsEnabled,
                 );
             });
@@ -112,13 +109,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
         async save() {
             const domains = parseDomains(getInputValue());
-            const registrationsToggle = root.querySelector(
-                "#security-registrations-enabled",
-            );
-            const registrationsEnabled =
-                registrationsToggle instanceof HTMLInputElement
-                    ? registrationsToggle.checked
-                    : true;
+            const registrationsEnabled = getRegistrationsEnabled();
             await persistSettings(domains, registrationsEnabled);
             originalDomains = domains;
             originalRegistrationsEnabled = registrationsEnabled;

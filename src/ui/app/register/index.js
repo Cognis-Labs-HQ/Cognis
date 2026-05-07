@@ -8,6 +8,13 @@ applyDocumentTitle(i18n, "ui.page.title.register");
 
 const root = document.querySelector("#app");
 const token = new URLSearchParams(window.location.search).get("token") ?? "";
+const knownErrorCodes = new Set([
+    "invalid_token",
+    "username_taken",
+    "username_and_password_required",
+    "inviter_not_found",
+    "generic",
+]);
 
 let inviteData = null;
 
@@ -43,8 +50,11 @@ const composer = createPageComposer(root, {
                 if (!inviteData) {
                     return `<p>${escapeHtml(i18n.t("ui.app.register.invalid_token"))}</p>`;
                 }
+                const invitedText = i18n
+                    .t("ui.app.register.invited_you")
+                    .replace("{inviter}", inviteData.inviterDisplayName);
                 return `
-          <p>🎁 ${escapeHtml(inviteData.inviterDisplayName)} ${escapeHtml(i18n.t("ui.app.register.invited_you"))}</p>
+          <p>${escapeHtml(invitedText)}</p>
           <p>${escapeHtml(i18n.t("ui.app.register.invitee_email"))}: ${escapeHtml(inviteData.inviteeEmail)}</p>
           <form id="register-form" class="stack">
             <label>
@@ -85,10 +95,14 @@ const composer = createPageComposer(root, {
                         );
                         const body = await response.json();
                         if (!response.ok) {
+                            const errorCode = String(
+                                body?.error?.code ?? "generic",
+                            );
+                            const i18nCode = knownErrorCodes.has(errorCode)
+                                ? errorCode
+                                : "generic";
                             showToast(
-                                i18n.t(
-                                    `ui.app.register.error.${body?.error?.code ?? "generic"}`,
-                                ),
+                                i18n.t(`ui.app.register.error.${i18nCode}`),
                                 { variant: "error" },
                             );
                             return;

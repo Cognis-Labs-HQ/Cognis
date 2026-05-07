@@ -188,7 +188,7 @@
   <string name="ui.app.register.page_subtitle">Cognis アカウント設定を完了してください。</string>
   <string name="ui.app.register.form_title">アカウント作成</string>
   <string name="ui.app.register.invalid_token">この招待トークンは無効か期限切れです。</string>
-  <string name="ui.app.register.invited_you">さんが Cognis への参加を招待しています。</string>
+  <string name="ui.app.register.invited_you">🎁 {inviter} が Cognis への参加を招待しています。</string>
   <string name="ui.app.register.invitee_email">招待先メールアドレス</string>
   <string name="ui.app.register.username">ユーザー名</string>
   <string name="ui.app.register.display_name">表示名</string>
@@ -196,7 +196,6 @@
   <string name="ui.app.register.submit">アカウントを作成</string>
   <string name="ui.app.register.success">アカウントを作成しました。ログイン画面へ移動します…</string>
   <string name="ui.app.register.error.generic">登録を完了できませんでした。</string>
-  <string name="ui.app.register.error.invalid_or_expired_token">この招待トークンは無効か期限切れです。</string>
   <string name="ui.app.register.error.invalid_token">この招待トークンは無効か期限切れです。</string>
   <string name="ui.app.register.error.username_taken">このユーザー名はすでに使用されています。</string>
   <string name="ui.app.register.error.username_and_password_required">ユーザー名とパスワードは必須です。</string>
@@ -368,7 +367,7 @@
   <string name="ui.app.admin.security.trusted_domains_hint">許可するドメインのカンマ区切りリスト。すべてのドメインを許可するには空のままにしてください。</string>
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">登録を有効化</string>
-  <string name="ui.app.admin.security.enable_registrations_hint">招待トークンなしでも誰でも登録できるようにします。</string>
+  <string name="ui.app.admin.security.enable_registrations_hint">招待トークンなしでも誰でも登録を有効にします。</string>
   <string name="ui.app.admin.security.saved">セキュリティ設定を保存しました。</string>
   <string name="ui.app.admin.security.save_failed">セキュリティ設定の保存に失敗しました。</string>
   <string name="ui.app.settings.emails_domain_blocked_title">ドメインが許可されていません</string>

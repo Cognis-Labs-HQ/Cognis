@@ -188,7 +188,7 @@
   <string name="ui.app.register.page_subtitle">Selesaikan pembuatan akun Cognis Anda.</string>
   <string name="ui.app.register.form_title">Buat akun Anda</string>
   <string name="ui.app.register.invalid_token">Token undangan ini tidak valid atau sudah kedaluwarsa.</string>
-  <string name="ui.app.register.invited_you">ingin Anda bergabung ke Cognis.</string>
+  <string name="ui.app.register.invited_you">🎁 {inviter} ingin Anda bergabung ke Cognis.</string>
   <string name="ui.app.register.invitee_email">Email yang diundang</string>
   <string name="ui.app.register.username">Nama pengguna</string>
   <string name="ui.app.register.display_name">Nama tampilan</string>
@@ -196,7 +196,6 @@
   <string name="ui.app.register.submit">Buat akun</string>
   <string name="ui.app.register.success">Akun berhasil dibuat. Mengalihkan ke login…</string>
   <string name="ui.app.register.error.generic">Tidak dapat menyelesaikan registrasi.</string>
-  <string name="ui.app.register.error.invalid_or_expired_token">Token undangan ini tidak valid atau sudah kedaluwarsa.</string>
   <string name="ui.app.register.error.invalid_token">Token undangan ini tidak valid atau sudah kedaluwarsa.</string>
   <string name="ui.app.register.error.username_taken">Nama pengguna ini sudah dipakai.</string>
   <string name="ui.app.register.error.username_and_password_required">Nama pengguna dan kata sandi wajib diisi.</string>
@@ -367,7 +366,7 @@
   <string name="ui.app.admin.security.trusted_domains_label">Domain Email Tepercaya</string>
   <string name="ui.app.admin.security.trusted_domains_hint">Daftar domain yang diizinkan, dipisahkan koma. Biarkan kosong untuk mengizinkan semua domain.</string>
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
-  <string name="ui.app.admin.security.enable_registrations_label">Aktifkan pendaftaran</string>
+  <string name="ui.app.admin.security.enable_registrations_label">Aktifkan Pendaftaran</string>
   <string name="ui.app.admin.security.enable_registrations_hint">Izinkan siapa pun mendaftar tanpa token undangan.</string>
   <string name="ui.app.admin.security.saved">Pengaturan keamanan disimpan.</string>
   <string name="ui.app.admin.security.save_failed">Gagal menyimpan pengaturan keamanan.</string>
