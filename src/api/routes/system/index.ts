@@ -1,5 +1,5 @@
 import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { HealthService } from "@cognis/core";
 import { requireAuth } from "../../auth/guard.js";
@@ -37,6 +37,8 @@ function parseDemoModeFromEnv() {
 }
 
 const SECURITY_SETTINGS_KEY = "security-settings";
+const LICENSE_MARKDOWN_FILE = resolve(process.cwd(), "LICENSE.md");
+const LICENSE_TEXT_FILE = resolve(process.cwd(), "LICENSE");
 
 export function createSystemRoutes(
     healthService: HealthService,
@@ -116,6 +118,18 @@ export function createSystemRoutes(
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { saved: true } }));
+            return true;
+        }
+
+        if (url.pathname === "/api/v1/system/license" && req.method === "GET") {
+            let markdown = "";
+            try {
+                markdown = await readFile(LICENSE_MARKDOWN_FILE, "utf8");
+            } catch {
+                markdown = await readFile(LICENSE_TEXT_FILE, "utf8");
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { markdown } }));
             return true;
         }
 

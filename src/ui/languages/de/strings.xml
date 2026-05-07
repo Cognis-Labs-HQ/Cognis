@@ -29,6 +29,7 @@
   <string name="ui.reuse.generic.done">Fertig</string>
   <string name="ui.reuse.generic.add">Hinzufügen</string>
   <string name="ui.reuse.generic.remove">Entfernen</string>
+  <string name="ui.reuse.generic.license">Lizenz</string>
 
   <string name="ui.layout.brand.aria">Cognis-Startseite</string>
   <string name="ui.layout.nav.primary">Hauptnavigation</string>
@@ -99,6 +100,8 @@
   <string name="ui.app.docs.group.adapters_notify">Benachrichtigungs-Adapter</string>
   <string name="ui.app.docs.group.modules">Module</string>
   <string name="ui.app.docs.group.tooling">Werkzeuge</string>
+  <string name="ui.app.license.page_title">Lizenz</string>
+  <string name="ui.app.license.page_subtitle">GNU AGPLv3-Lizenzbedingungen.</string>
   <string name="ui.app.modules.page_title">Modulübersicht</string>
   <string name="ui.app.modules.page_subtitle">Installierte Module aktivieren oder deaktivieren.</string>
   <string name="ui.app.modules.toolbar_subtitle">Nur für Admins</string>
@@ -168,6 +171,7 @@
   <string name="ui.page.title.modules">Cognis - Modules</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
+  <string name="ui.page.title.license">Cognis - Lizenz</string>
   <string name="ui.page.title.profile">Cognis - Profil</string>
   <string name="ui.page.title.verify_email">Cognis - E-Mail verifizieren</string>
   <string name="ui.app.verify_email.verifying">Wird verifiziert…</string>

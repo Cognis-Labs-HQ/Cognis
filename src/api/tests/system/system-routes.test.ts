@@ -54,3 +54,26 @@ test("system route exposes env-backed ui config", async () => {
 
     assert.match(body, /"demoMode":true/);
 });
+
+test("system route serves license markdown payload", async () => {
+    const route = createSystemRoutes(healthService as any);
+    let status = 0;
+    let body = "";
+
+    const handled = await route(
+        { method: "GET" } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/system/license"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(status, 200);
+    assert.match(body, /GNU Affero General Public License/);
+});

@@ -240,6 +240,37 @@
     border: 1px solid rgba(148, 163, 184, 0.08);
     backdrop-filter: blur(2px);
 }
+
+.global-footer {
+    width: 96%;
+    margin: 8px auto 0;
+    padding: 6px 14px;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 12px;
+    background: rgba(6, 12, 28, 0.08);
+}
+
+.global-footer-inner {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.global-footer-license-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+
+.global-footer-license-link:hover,
+.global-footer-license-link:focus-visible {
+    color: var(--text);
+    background: var(--surface-soft);
+}
+
 .content-grid {
     display: grid;
     gap: 14px;

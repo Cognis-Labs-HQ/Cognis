@@ -210,11 +210,13 @@ export async function renderDashboardLayout(root, slots = {}) {
         showTopbar = true,
         showNavbar = true,
         showThemeToggle = true,
+        showFooter = true,
     } = slots;
     const i18n = slots.i18n || (await createI18n());
     const template = await loadTemplate("dashboard-layout");
     const hasToolbar = Boolean(slots.toolbar);
     const hasFloatingToolbar = Boolean(slots.floatingToolbar);
+    const hasFooter = Boolean(slots.footer) && showFooter;
     root.innerHTML = template
         .replace("{{pageContext}}", slots.pageContext || "")
         .replace("{{topbar}}", slots.topbar)
@@ -234,6 +236,10 @@ export async function renderDashboardLayout(root, slots = {}) {
             hasFloatingToolbar
                 ? `<div class="floating-toolbar" hidden>${slots.floatingToolbar}</div>`
                 : "",
+        )
+        .replace(
+            "{{footer}}",
+            hasFooter ? `<footer class="global-footer">${slots.footer}</footer>` : "",
         );
 
     if (!showTopbar) root.querySelector(".global-topbar")?.remove();

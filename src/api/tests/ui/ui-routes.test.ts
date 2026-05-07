@@ -211,6 +211,29 @@ test("core ui routes do not serve /profile (owned by profile gateway)", async ()
     );
 });
 
+test("license route requires login cookie and serves dedicated page", async () => {
+    const route = createUiRoutes();
+    const anonymous = createResponseRecorder();
+    await route(
+        { headers: {} } as any,
+        anonymous.res as any,
+        new URL("http://localhost/license"),
+    );
+    assert.equal(anonymous.status, 302);
+    assert.equal(anonymous.headers.location, "/login");
+
+    const token = issueAccessToken("u1", "user", 60);
+    const authed = createResponseRecorder();
+    await route(
+        { headers: { cookie: `cognis_access_token=${token}` } } as any,
+        authed.res as any,
+        new URL("http://localhost/license"),
+    );
+    assert.equal(authed.status, 200);
+    assert.match(authed.body, /static\/app\/license\/index\.js/);
+    assert.match(authed.body, /id="app"/);
+});
+
 import { UIRegistry as StaticUIRegistry } from "../../ui-registry.js";
 import path from "node:path";
 

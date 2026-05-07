@@ -1,6 +1,6 @@
 import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n, readPreferredLanguages } from "../../reuse/i18n.js";
-import { renderMarkdown } from "../../reuse/markdown-renderer.js";
+import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 
 const root = document.querySelector("#app");
@@ -95,11 +95,9 @@ function renderActiveDoc() {
 
 async function showDoc(slug, pushHistory = true) {
     const langs = readPreferredLanguages().join(",");
-    const response = await apiFetch(
+    activeHtml = await loadMarkdownDocumentHtml(
         `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,
     );
-    const payload = await response.json();
-    activeHtml = renderMarkdown(payload.data.markdown);
     renderActiveDoc();
 
     if (pushHistory) {

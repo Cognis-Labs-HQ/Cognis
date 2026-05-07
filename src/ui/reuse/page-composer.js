@@ -86,6 +86,7 @@
  *   showTopbar?: boolean,
  *   showNavbar?: boolean,
  *   showThemeToggle?: boolean,
+ *   showFooter?: boolean,
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void }}
@@ -111,6 +112,7 @@ export function createPageComposer(
         showTopbar = true,
         showNavbar = true,
         showThemeToggle = true,
+        showFooter = true,
         pageOverrides = {},
     },
 ) {
@@ -2445,15 +2447,19 @@ export function createPageComposer(
                 ? "\u200b"
                 : undefined;
 
+        const footerHtml = `<div class="global-footer-inner"><a class="global-footer-license-link" href="/license">${escapeHtml(i18n.t("ui.reuse.generic.license"))}</a></div>`;
+
         await renderDashboardLayout(root, {
             i18n,
             pageContext: pageContextHtml,
             toolbar: toolbarHtml,
             floatingToolbar: floatingHtml,
+            footer: footerHtml,
             content: "",
             showTopbar,
             showNavbar,
             showThemeToggle,
+            showFooter,
         });
 
         if (Array.isArray(floatingMenu) && floatingMenu.length > 0) {
