@@ -20,7 +20,7 @@ import { initGeneralPrefs } from "./general-prefs.js";
 import { initNotificationPrefs } from "./notification-prefs.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
-import { openPopup } from "../../reuse/popup.js";
+import { showToast } from "../../reuse/toast.js";
 
 const root = document.querySelector("#app");
 let languagePriority = readPreferredLanguages();
@@ -116,7 +116,6 @@ const elements = [
               <input id="email-add-input" type="email" placeholder="${i18n.t("ui.app.settings.emails_add_placeholder")}" />
               <button id="email-add-btn" class="btn-confirm btn-animated" type="button">${i18n.t("ui.app.settings.emails_add")}</button>
             </div>
-            <div id="email-status" class="notif-status-message" aria-live="polite"></div>
           `,
                 },
             ],
@@ -357,17 +356,10 @@ changesBar = createUnsavedChangesBar(floatingSlot, {
         applyTheme(mode);
         setPreferredLanguages(prefs.languagePriority);
         localStorage.setItem("cognis_ui_preferences", JSON.stringify(prefs));
-        await openPopup({
-            title: i18n.t("ui.app.settings.saved_alert"),
-            variant: "info",
-            actions: [
-                {
-                    id: "close",
-                    label: i18n.t("ui.reuse.generic.done"),
-                    variant: "confirm",
-                },
-            ],
+        showToast(i18n.t("ui.app.settings.saved_alert"), {
+            variant: "success",
         });
+        await new Promise((resolve) => setTimeout(resolve, 1200));
         window.location.reload();
     },
     onDiscard: () => {

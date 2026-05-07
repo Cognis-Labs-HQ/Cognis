@@ -86,10 +86,6 @@
     flex-shrink: 0;
 }
 
-.provider-test-status {
-    flex: 1;
-}
-
 .provider-field-missing input,
 .provider-field-missing select {
     border-color: var(--danger);
@@ -168,10 +164,6 @@
 
 .notif-debug-send {
     flex-shrink: 0;
-}
-
-.notif-debug-status {
-    font-size: 0.9em;
 }
 
 .security-settings-form {

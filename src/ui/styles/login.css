@@ -107,11 +107,6 @@
     color: #f1f7ff;
 }
 
-.login-message {
-    margin: 14px 0 0;
-    font-weight: 700;
-}
-
 .auth-provider-toggle {
     display: flex;
     gap: 8px;

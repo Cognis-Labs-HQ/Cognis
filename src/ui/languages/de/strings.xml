@@ -29,6 +29,7 @@
   <string name="ui.reuse.generic.done">Fertig</string>
   <string name="ui.reuse.generic.add">Hinzufügen</string>
   <string name="ui.reuse.generic.remove">Entfernen</string>
+  <string name="ui.reuse.generic.dismiss">Schließen</string>
 
   <string name="ui.layout.brand.aria">Cognis-Startseite</string>
   <string name="ui.layout.nav.primary">Hauptnavigation</string>
@@ -145,6 +146,7 @@
   <string name="ui.app.admin.security.providers">Adapter</string>
   <string name="ui.app.admin.security.no_providers">Keine Authentifizierungsadapter konfiguriert.</string>
   <string name="ui.app.admin.security.configure">Konfigurieren</string>
+  <string name="ui.app.admin.settings_saved">Einstellungen gespeichert.</string>
   <string name="ui.app.login.provider.local">Lokal</string>
   <string name="ui.app.login.provider.ldap">LDAP</string>
   <string name="ui.app.login.provider.toggle.aria">Authentifizierungsanbieter auswählen</string>
@@ -264,6 +266,10 @@
   <string name="ui.app.profile.section.follow_requests">Folgeanfragen</string>
   <string name="ui.app.profile.follow_requests.empty">Keine ausstehenden Folgeanfragen.</string>
   <string name="ui.app.profile.not_found">Profil nicht gefunden.</string>
+  <string name="ui.app.profile.saved">Profil gespeichert.</string>
+  <string name="ui.app.profile.save_failed">Profil konnte nicht gespeichert werden.</string>
+  <string name="ui.app.profile.upload_failed">Upload fehlgeschlagen. Bitte versuche es erneut.</string>
+  <string name="ui.app.profile.post_failed">Beitrag konnte nicht veröffentlicht werden.</string>
   <string name="ui.reuse.notifications">Benachrichtigungen</string>
   <string name="ui.app.settings.general">Allgemein</string>
   <string name="ui.app.settings.emails">E-Mail-Adressen</string>

@@ -29,6 +29,7 @@
   <string name="ui.reuse.generic.done">Done</string>
   <string name="ui.reuse.generic.add">Add</string>
   <string name="ui.reuse.generic.remove">Remove</string>
+  <string name="ui.reuse.generic.dismiss">Dismiss</string>
 
   <string name="ui.layout.brand.aria">Cognis home</string>
   <string name="ui.layout.nav.primary">Primary navigation</string>
@@ -145,6 +146,7 @@
   <string name="ui.app.admin.security.providers">Adapters</string>
   <string name="ui.app.admin.security.no_providers">No authentication adapters configured.</string>
   <string name="ui.app.admin.security.configure">Configure</string>
+  <string name="ui.app.admin.settings_saved">Settings saved.</string>
   <string name="ui.app.login.provider.local">Local</string>
   <string name="ui.app.login.provider.ldap">LDAP</string>
   <string name="ui.app.login.provider.toggle.aria">Select authentication provider</string>
@@ -264,6 +266,10 @@
   <string name="ui.app.profile.section.follow_requests">Follow Requests</string>
   <string name="ui.app.profile.follow_requests.empty">No pending follow requests.</string>
   <string name="ui.app.profile.not_found">Profile not found.</string>
+  <string name="ui.app.profile.saved">Profile saved.</string>
+  <string name="ui.app.profile.save_failed">Failed to save profile.</string>
+  <string name="ui.app.profile.upload_failed">Upload failed. Please try again.</string>
+  <string name="ui.app.profile.post_failed">Failed to publish post.</string>
   <string name="ui.reuse.notifications">Notifications</string>
   <string name="ui.app.settings.general">General</string>
   <string name="ui.app.settings.emails">Email Addresses</string>

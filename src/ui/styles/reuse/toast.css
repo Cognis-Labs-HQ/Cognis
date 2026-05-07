@@ -1,0 +1,106 @@
+.toast-tray {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 2500;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 360px;
+    width: calc(100vw - 48px);
+    pointer-events: none;
+}
+
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 13px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border, rgba(148, 163, 184, 0.28));
+    background: var(--surface-2, rgba(19, 29, 51, 0.96));
+    box-shadow: var(--shadow, 0 14px 34px rgba(2, 6, 23, 0.35));
+    backdrop-filter: blur(8px);
+    color: var(--text, #e2e8f0);
+    font-size: 0.93rem;
+    line-height: 1.5;
+    pointer-events: auto;
+    transform: translateX(calc(100% + 28px));
+    opacity: 0;
+    transition:
+        transform 0.22s cubic-bezier(0.34, 1.26, 0.64, 1),
+        opacity 0.18s ease;
+}
+
+.toast--visible {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast--hiding {
+    transform: translateX(calc(100% + 28px));
+    opacity: 0;
+    transition:
+        transform 0.2s ease-in,
+        opacity 0.2s ease-in;
+}
+
+.toast--info {
+    border-color: var(--border-strong, rgba(148, 163, 184, 0.42));
+}
+
+.toast--success {
+    border-color: var(--color-success-border, rgba(52, 211, 153, 0.4));
+}
+
+.toast--warning {
+    border-color: rgba(245, 158, 11, 0.45);
+}
+
+.toast--error {
+    border-color: var(--color-danger-border, rgba(239, 68, 68, 0.4));
+}
+
+.toast-icon {
+    flex-shrink: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.toast--success .toast-icon {
+    color: var(--color-success-text, #34d399);
+}
+
+.toast--warning .toast-icon {
+    color: #f59e0b;
+}
+
+.toast--error .toast-icon {
+    color: var(--color-danger-text, #f87171);
+}
+
+.toast--info .toast-icon {
+    color: var(--accent-2, #3aa783);
+}
+
+.toast-message {
+    flex: 1;
+    min-width: 0;
+}
+
+.toast-dismiss {
+    flex-shrink: 0;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    opacity: 0.55;
+    padding: 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: inherit;
+    font-family: inherit;
+}
+
+.toast-dismiss:hover {
+    opacity: 1;
+}

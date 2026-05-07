@@ -196,6 +196,7 @@ API sanity and security are paramount.
 - Do not introduce new third-party dependencies without discussion.
 - Do not perform speculative or cosmetic changes outside the files directly relevant to the task.
 - Do not add AI process notes, agent reasoning, or session context to any product-facing documentation.
+- Do not use inline result messages or browser alerts for user feedback. All transient user-facing feedback (success confirmations, warnings, errors, info notices) must be delivered via `showToast` from `src/ui/reuse/toast.js`. Never write feedback text directly into a DOM element's `textContent` or `innerHTML`, and never call `alert()`, `confirm()`, or `prompt()`. Reserve `openPopup` exclusively for interactions that require a deliberate user decision (e.g. confirming a destructive action, filling in a form) — not for displaying a result.
 
 ## Symbols and icons
 

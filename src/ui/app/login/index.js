@@ -4,6 +4,7 @@ import {
     applyStaticTranslations,
     createI18n,
 } from "../../reuse/i18n.js";
+import { showToast } from "../../reuse/toast.js";
 
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.login");
@@ -161,5 +162,5 @@ document
             window.location.href = "/dashboard";
             return;
         }
-        document.querySelector("#msg").textContent = body.error.message;
+        showToast(body.error.message, { variant: "error" });
     });

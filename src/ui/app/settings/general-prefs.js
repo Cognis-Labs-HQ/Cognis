@@ -2,6 +2,7 @@ import { escapeHtml } from "../../reuse/escape-html.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { openPopup } from "../../reuse/popup.js";
 import { watchToken } from "../../reuse/validation-url.js";
+import { showToast } from "../../reuse/toast.js";
 
 /**
  * General preferences sub-module for the Settings page.
@@ -157,9 +158,8 @@ export function initGeneralPrefs(root, { i18n, username }) {
             .join("");
     }
 
-    function showStatus(message) {
-        const statusEl = root.querySelector("#email-status");
-        if (statusEl) statusEl.textContent = message;
+    function showStatus(message, variant = "error") {
+        showToast(message, { variant });
     }
 
     async function openVerifyPopup(address, watchTokenValue) {
@@ -177,7 +177,6 @@ export function initGeneralPrefs(root, { i18n, username }) {
             ${escapeHtml(i18n.t("ui.app.settings.emails_verify_submit"))}
           </button>
         </div>
-        <div id="popup-verify-status" class="notif-status-message" aria-live="polite"></div>
         <button data-popup-action="verified" type="button" style="display:none"></button>
       `,
             variant: "info",
@@ -195,9 +194,6 @@ export function initGeneralPrefs(root, { i18n, username }) {
                         const input = overlay.querySelector(
                             "#popup-verify-input",
                         );
-                        const status = overlay.querySelector(
-                            "#popup-verify-status",
-                        );
                         const code = input.value.trim();
                         if (!code) return;
                         try {
@@ -210,14 +206,16 @@ export function initGeneralPrefs(root, { i18n, username }) {
                                 err instanceof Error
                                     ? err.message
                                     : "verify_failed";
-                            status.textContent =
+                            showToast(
                                 errCode === "invalid_code"
                                     ? i18n.t(
                                           "ui.app.settings.emails_verify_invalid",
                                       )
                                     : i18n.t(
                                           "ui.app.settings.emails_verify_failed",
-                                      );
+                                      ),
+                                { variant: "error" },
+                            );
                         }
                     });
 
@@ -261,17 +259,8 @@ export function initGeneralPrefs(root, { i18n, username }) {
     async function checkDomainAndNotify(address) {
         await loadTrustedDomains();
         if (!isDomainAllowed(address)) {
-            await openPopup({
-                title: i18n.t("ui.app.settings.emails_domain_blocked_title"),
-                body: i18n.t("ui.app.settings.emails_domain_blocked_body"),
+            showToast(i18n.t("ui.app.settings.emails_domain_blocked_body"), {
                 variant: "warning",
-                actions: [
-                    {
-                        id: "close",
-                        label: i18n.t("ui.reuse.generic.done"),
-                        variant: "confirm",
-                    },
-                ],
             });
             return false;
         }
@@ -293,22 +282,12 @@ export function initGeneralPrefs(root, { i18n, username }) {
                     const code =
                         err instanceof Error ? err.message : "remove_failed";
                     if (code === "cannot_remove_primary_email") {
-                        await openPopup({
-                            title: i18n.t(
-                                "ui.app.settings.emails_remove_primary_title",
-                            ),
-                            body: i18n.t(
+                        showToast(
+                            i18n.t(
                                 "ui.app.settings.emails_remove_primary_body",
                             ),
-                            variant: "info",
-                            actions: [
-                                {
-                                    id: "close",
-                                    label: i18n.t("ui.reuse.generic.done"),
-                                    variant: "confirm",
-                                },
-                            ],
-                        });
+                            { variant: "warning" },
+                        );
                     } else {
                         showStatus(
                             i18n.t("ui.app.settings.emails_remove_failed"),

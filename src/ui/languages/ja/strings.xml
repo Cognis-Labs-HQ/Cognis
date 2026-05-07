@@ -29,6 +29,7 @@
   <string name="ui.reuse.generic.done">完了</string>
   <string name="ui.reuse.generic.add">追加</string>
   <string name="ui.reuse.generic.remove">削除</string>
+  <string name="ui.reuse.generic.dismiss">閉じる</string>
 
   <string name="ui.layout.brand.aria">Cognis ホーム</string>
   <string name="ui.layout.nav.primary">メインナビゲーション</string>
@@ -145,6 +146,7 @@
   <string name="ui.app.admin.security.providers">アダプター</string>
   <string name="ui.app.admin.security.no_providers">認証アダプターが設定されていません。</string>
   <string name="ui.app.admin.security.configure">設定</string>
+  <string name="ui.app.admin.settings_saved">設定を保存しました。</string>
   <string name="ui.app.login.provider.local">ローカル</string>
   <string name="ui.app.login.provider.ldap">LDAP</string>
   <string name="ui.app.login.provider.toggle.aria">認証プロバイダーを選択</string>
@@ -264,6 +266,10 @@
   <string name="ui.app.profile.section.follow_requests">フォローリクエスト</string>
   <string name="ui.app.profile.follow_requests.empty">保留中のフォローリクエストはありません。</string>
   <string name="ui.app.profile.not_found">プロフィールが見つかりません。</string>
+  <string name="ui.app.profile.saved">プロフィールを保存しました。</string>
+  <string name="ui.app.profile.save_failed">プロフィールの保存に失敗しました。</string>
+  <string name="ui.app.profile.upload_failed">アップロードに失敗しました。もう一度お試しください。</string>
+  <string name="ui.app.profile.post_failed">投稿の公開に失敗しました。</string>
   <string name="ui.reuse.notifications">通知</string>
   <string name="ui.app.settings.general">一般</string>
   <string name="ui.app.settings.emails">メールアドレス</string>
