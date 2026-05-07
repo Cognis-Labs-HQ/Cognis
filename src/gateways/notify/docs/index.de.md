@@ -22,36 +22,36 @@ Die zentrale Klasse ist `CoreNotificationGateway` in `src/gateways/notify/gatewa
 
 ```ts
 export interface NotificationGateway {
-  registerSender(sender: NotificationSender): void;
-  dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[] }>;
-  registerCategory(id: string, label: string): void;
-  listSenders(): NotificationSenderInfo[];
-  listCategories(): NotificationCategory[];
+    registerSender(sender: NotificationSender): void;
+    dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[] }>;
+    registerCategory(id: string, label: string): void;
+    listSenders(): NotificationSenderInfo[];
+    listCategories(): NotificationCategory[];
 }
 ```
 
-| Pfad | Zweck |
-| ---- | ----- |
-| `src/gateways/notify/gateway.ts` | `CoreNotificationGateway`, Schnittstellen |
-| `src/gateways/notify/bootstrap.ts` | Bootstrap-Einstiegspunkt |
-| `src/gateways/notify/routes/notifications.ts` | Versand- und Verwaltungsrouten |
-| `src/api/reuse/tfa-code.ts` | `TfaCodeService` |
-| `src/api/reuse/verify-token.ts` | `VerifyTokenService` |
+| Pfad                                          | Zweck                                     |
+| --------------------------------------------- | ----------------------------------------- |
+| `src/gateways/notify/gateway.ts`              | `CoreNotificationGateway`, Schnittstellen |
+| `src/gateways/notify/bootstrap.ts`            | Bootstrap-Einstiegspunkt                  |
+| `src/gateways/notify/routes/notifications.ts` | Versand- und Verwaltungsrouten            |
+| `src/api/reuse/tfa-code.ts`                   | `TfaCodeService`                          |
+| `src/api/reuse/verify-token.ts`               | `VerifyTokenService`                      |
 
 ## API-Routen
 
-| Methode | Pfad | Beschreibung | Authentifizierung |
-| ------- | ---- | ------------ | ----------------- |
-| `POST` | `/api/v1/notifications/send` | Benachrichtigung versenden | Admin |
-| `GET` | `/api/v1/notifications/providers` | Registrierte Sender auflisten | Admin |
-| `GET` | `/api/v1/notifications/categories` | Benachrichtigungskategorien auflisten | Bearer |
-| `GET` | `/api/v1/notifications/preferences` | Eigene Benachrichtigungseinstellungen abrufen | Bearer |
-| `PUT` | `/api/v1/notifications/preferences` | Eigene Benachrichtigungseinstellungen aktualisieren | Bearer |
-| `POST` | `/api/v1/notifications/providers/:senderId/config` | Sender-Konfiguration aktualisieren | Admin |
-| `POST` | `/api/v1/notifications/providers/:senderId/test` | Test-Benachrichtigung senden | Admin |
-| `POST` | `/api/v1/users/tfa/request` | TFA-Code anfordern | Bearer |
-| `POST` | `/api/v1/users/tfa/verify` | TFA-Code verifizieren | Bearer |
-| `POST` | `/api/v1/users/email/verify/request` | E-Mail-Verifizierung anfordern | Bearer |
-| `POST` | `/api/v1/users/email/verify` | E-Mail-Verifizierung abschließen | Bearer |
-| `GET` | `/api/v1/users/:username/email` | Primäre E-Mail-Adresse eines Benutzers abrufen | Bearer |
-| `PUT` | `/api/v1/users/:username/email` | Primäre E-Mail-Adresse eines Benutzers setzen | Bearer |
+| Methode | Pfad                                               | Beschreibung                                        | Authentifizierung |
+| ------- | -------------------------------------------------- | --------------------------------------------------- | ----------------- |
+| `POST`  | `/api/v1/notifications/send`                       | Benachrichtigung versenden                          | Admin             |
+| `GET`   | `/api/v1/notifications/providers`                  | Registrierte Sender auflisten                       | Admin             |
+| `GET`   | `/api/v1/notifications/categories`                 | Benachrichtigungskategorien auflisten               | Bearer            |
+| `GET`   | `/api/v1/notifications/preferences`                | Eigene Benachrichtigungseinstellungen abrufen       | Bearer            |
+| `PUT`   | `/api/v1/notifications/preferences`                | Eigene Benachrichtigungseinstellungen aktualisieren | Bearer            |
+| `POST`  | `/api/v1/notifications/providers/:senderId/config` | Sender-Konfiguration aktualisieren                  | Admin             |
+| `POST`  | `/api/v1/notifications/providers/:senderId/test`   | Test-Benachrichtigung senden                        | Admin             |
+| `POST`  | `/api/v1/users/tfa/request`                        | TFA-Code anfordern                                  | Bearer            |
+| `POST`  | `/api/v1/users/tfa/verify`                         | TFA-Code verifizieren                               | Bearer            |
+| `POST`  | `/api/v1/users/email/verify/request`               | E-Mail-Verifizierung anfordern                      | Bearer            |
+| `POST`  | `/api/v1/users/email/verify`                       | E-Mail-Verifizierung abschließen                    | Bearer            |
+| `GET`   | `/api/v1/users/:username/email`                    | Primäre E-Mail-Adresse eines Benutzers abrufen      | Bearer            |
+| `PUT`   | `/api/v1/users/:username/email`                    | Primäre E-Mail-Adresse eines Benutzers setzen       | Bearer            |

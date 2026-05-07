@@ -16,7 +16,7 @@ LDAPアダプターは、LDAPディレクトリサーバーに対してユーザ
 
 ```ts
 export interface LdapClient {
-  authenticate(accessToken: string): Promise<LdapIdentity | null>;
+    authenticate(accessToken: string): Promise<LdapIdentity | null>;
 }
 ```
 
@@ -24,11 +24,11 @@ export interface LdapClient {
 
 `PUT /api/v1/gateways/auth/adapters/ldap/config`（管理者のみ）で設定します。
 
-| キー | 説明 | 必須 |
-| ---- | ---- | ---- |
-| `host` | LDAPサーバーのホスト名 | はい |
-| `port` | LDAPサーバーのポート | はい |
-| `bindDn` | サービスアカウントのバインドDN | はい |
-| `bindPassword` | バインドDNのパスワード | はい |
-| `baseDn` | ユーザー検索のベースDN | はい |
-| `adminGroups` | 管理者ロールを受けるLDAPグループ（カンマ区切り） | いいえ |
+| キー           | 説明                                             | 必須   |
+| -------------- | ------------------------------------------------ | ------ |
+| `host`         | LDAPサーバーのホスト名                           | はい   |
+| `port`         | LDAPサーバーのポート                             | はい   |
+| `bindDn`       | サービスアカウントのバインドDN                   | はい   |
+| `bindPassword` | バインドDNのパスワード                           | はい   |
+| `baseDn`       | ユーザー検索のベースDN                           | はい   |
+| `adminGroups`  | 管理者ロールを受けるLDAPグループ（カンマ区切り） | いいえ |

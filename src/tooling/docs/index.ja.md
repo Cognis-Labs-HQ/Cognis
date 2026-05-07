@@ -16,20 +16,21 @@
 ### `cognisctl` CLI
 
 `cognisctl` はプライマリ運用コントロールサーフェスです。コマンドモジュールは以下から自動検出されます:
+
 - `src/tooling/cli/commands/` — コア組み込みコマンド
 - インストール済みモジュールからエクスポートされた `cli/index.js`
 
-| namespace | サンプルコマンド |
-| --------- | -------------- |
-| `user:*` | `user:create`、`user:role`、`user:set-password`、`user:disable`、`user:enable`、`user:delete` |
-| `system:*` | `system:health`、`system:info` |
-| `modules:*` | `modules:list`、`modules:enable`、`modules:disable` |
-| `gateway:*` | `gateway:list` |
-| `api:*` | `api:token` |
+| namespace   | サンプルコマンド                                                                              |
+| ----------- | --------------------------------------------------------------------------------------------- |
+| `user:*`    | `user:create`、`user:role`、`user:set-password`、`user:disable`、`user:enable`、`user:delete` |
+| `system:*`  | `system:health`、`system:info`                                                                |
+| `modules:*` | `modules:list`、`modules:enable`、`modules:disable`                                           |
+| `gateway:*` | `gateway:list`                                                                                |
+| `api:*`     | `api:token`                                                                                   |
 
 ## 設定
 
-| 変数 | デフォルト | 説明 |
-| ---- | ---------- | ---- |
-| `COGNIS_CLI_TOKEN_PATH` | — | 認証済み `cognisctl` コマンド用APIトークンを含むファイルへのパス |
-| `COGNIS_MODULES_ROOT` | `src/modules` | モジュール提供のサブコマンドを検出するために使用 |
+| 変数                    | デフォルト    | 説明                                                             |
+| ----------------------- | ------------- | ---------------------------------------------------------------- |
+| `COGNIS_CLI_TOKEN_PATH` | —             | 認証済み `cognisctl` コマンド用APIトークンを含むファイルへのパス |
+| `COGNIS_MODULES_ROOT`   | `src/modules` | モジュール提供のサブコマンドを検出するために使用                 |

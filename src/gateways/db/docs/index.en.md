@@ -26,9 +26,15 @@ The `DatabaseGateway` interface in `src/gateways/db/gateway.ts` is the contract 
 
 ```ts
 export interface DatabaseGateway {
-  query<Row = Record<string, unknown>>(statement: string, params?: unknown[]): Promise<QueryResult<Row>>;
-  execute(statement: string, params?: unknown[]): Promise<{ affectedRows: number }>;
-  transaction<T>(callback: (db: DatabaseGateway) => Promise<T>): Promise<T>;
+    query<Row = Record<string, unknown>>(
+        statement: string,
+        params?: unknown[],
+    ): Promise<QueryResult<Row>>;
+    execute(
+        statement: string,
+        params?: unknown[],
+    ): Promise<{ affectedRows: number }>;
+    transaction<T>(callback: (db: DatabaseGateway) => Promise<T>): Promise<T>;
 }
 ```
 
@@ -46,8 +52,13 @@ The internal `DbExecutor` abstraction in `src/gateways/db/reuse/db-executor.ts` 
 
 ```ts
 export interface DbDialectHelper {
-  upsert(table: string, keyCol: string, keyVal: unknown, extraData: Record<string, unknown>): Promise<void>;
-  insertIgnore(table: string, data: Record<string, unknown>): Promise<void>;
+    upsert(
+        table: string,
+        keyCol: string,
+        keyVal: unknown,
+        extraData: Record<string, unknown>,
+    ): Promise<void>;
+    insertIgnore(table: string, data: Record<string, unknown>): Promise<void>;
 }
 ```
 
@@ -59,18 +70,18 @@ export interface DbDialectHelper {
 
 Key source locations:
 
-| Path | Purpose |
-| ---- | ------- |
-| `src/gateways/db/gateway.ts` | `DatabaseGateway` interface |
-| `src/gateways/db/executor.ts` | `createDbExecutor`, `SqliteExecutor`, `PostgresExecutor`, `MariadbExecutor` |
-| `src/gateways/db/init.ts` | `initializeDatabaseSchema` |
-| `src/gateways/db/bootstrap.ts` | Bootstrap entry point; `DbDialectHelper` |
-| `src/gateways/db/reuse/db-executor.ts` | Abstract `DbExecutor` interface |
+| Path                                   | Purpose                                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------- |
+| `src/gateways/db/gateway.ts`           | `DatabaseGateway` interface                                                 |
+| `src/gateways/db/executor.ts`          | `createDbExecutor`, `SqliteExecutor`, `PostgresExecutor`, `MariadbExecutor` |
+| `src/gateways/db/init.ts`              | `initializeDatabaseSchema`                                                  |
+| `src/gateways/db/bootstrap.ts`         | Bootstrap entry point; `DbDialectHelper`                                    |
+| `src/gateways/db/reuse/db-executor.ts` | Abstract `DbExecutor` interface                                             |
 
 ## Configuration
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `DB_TYPE` | `sqlite` | Database backend: `sqlite`, `postgresql`, or `mariadb` |
-| `DATABASE_URL` | — | Connection string; required when `DB_TYPE` is `postgresql` or `mariadb` |
-| `SQLITE_PATH` | `./data/cognis.sqlite` | SQLite file path; only used when `DB_TYPE=sqlite` |
+| Variable       | Default                | Description                                                             |
+| -------------- | ---------------------- | ----------------------------------------------------------------------- |
+| `DB_TYPE`      | `sqlite`               | Database backend: `sqlite`, `postgresql`, or `mariadb`                  |
+| `DATABASE_URL` | —                      | Connection string; required when `DB_TYPE` is `postgresql` or `mariadb` |
+| `SQLITE_PATH`  | `./data/cognis.sqlite` | SQLite file path; only used when `DB_TYPE=sqlite`                       |

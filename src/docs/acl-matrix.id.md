@@ -8,20 +8,20 @@ Cognis memiliki empat peran. `user` adalah default untuk semua aktivitas pelajar
 
 ## Matriks Peran
 
-| Kemampuan | user | teacher | moderator | admin |
-| --------- | ---: | ------: | --------: | ----: |
-| Pendaftaran mandiri | ✅ | ✅ | ✅ | ✅ |
-| Lihat/edit profil sendiri | ✅ | ✅ | ✅ | ✅ |
-| Buat postingan | ✅ | ✅ | ✅ | ✅ |
-| Follow/unfollow pengguna | ✅ | ✅ | ✅ | ✅ |
-| Upload/download file | ✅ | ✅ | ✅ | ✅ |
-| Akses API khusus guru | ❌ | ✅ | ❌ | ✅ |
-| Hapus postingan pengguna mana pun | ❌ | ❌ | ✅ | ✅ |
-| Hapus file apa pun | ❌ | ❌ | ❌ | ✅ |
-| Konfigurasi batas ukuran file | ❌ | ❌ | ❌ | ✅ |
-| Instal/kelola modul | ❌ | ❌ | ❌ | ✅ |
-| Kelola konfigurasi penyedia autentikasi | ❌ | ❌ | ❌ | ✅ |
-| Endpoint diagnostik sistem | ❌ | ❌ | ❌ | ✅ |
+| Kemampuan                               | user | teacher | moderator | admin |
+| --------------------------------------- | ---: | ------: | --------: | ----: |
+| Pendaftaran mandiri                     |   ✅ |      ✅ |        ✅ |    ✅ |
+| Lihat/edit profil sendiri               |   ✅ |      ✅ |        ✅ |    ✅ |
+| Buat postingan                          |   ✅ |      ✅ |        ✅ |    ✅ |
+| Follow/unfollow pengguna                |   ✅ |      ✅ |        ✅ |    ✅ |
+| Upload/download file                    |   ✅ |      ✅ |        ✅ |    ✅ |
+| Akses API khusus guru                   |   ❌ |      ✅ |        ❌ |    ✅ |
+| Hapus postingan pengguna mana pun       |   ❌ |      ❌ |        ✅ |    ✅ |
+| Hapus file apa pun                      |   ❌ |      ❌ |        ❌ |    ✅ |
+| Konfigurasi batas ukuran file           |   ❌ |      ❌ |        ❌ |    ✅ |
+| Instal/kelola modul                     |   ❌ |      ❌ |        ❌ |    ✅ |
+| Kelola konfigurasi penyedia autentikasi |   ❌ |      ❌ |        ❌ |    ✅ |
+| Endpoint diagnostik sistem              |   ❌ |      ❌ |        ❌ |    ✅ |
 
 ## Catatan Peran
 

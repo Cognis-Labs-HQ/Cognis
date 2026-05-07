@@ -14,15 +14,15 @@ Gateway Penyimpanan File menyediakan antarmuka seragam bagi platform untuk memba
 
 ### Capability yang Disediakan
 
-| Capability | Tipe | Keterangan |
-| ---------- | ---- | ---------- |
-| `file:gateway` | `FileStorageGateway` | Instance gateway lengkap |
-| `file:write` | `(filePath, content) => Promise<void>` | Menimpa file |
-| `file:read` | `(filePath) => Promise<Buffer \| null>` | Membaca file |
-| `file:append` | `(filePath, content) => Promise<void>` | Menambahkan teks ke file (digunakan oleh gateway logging) |
+| Capability     | Tipe                                    | Keterangan                                                |
+| -------------- | --------------------------------------- | --------------------------------------------------------- |
+| `file:gateway` | `FileStorageGateway`                    | Instance gateway lengkap                                  |
+| `file:write`   | `(filePath, content) => Promise<void>`  | Menimpa file                                              |
+| `file:read`    | `(filePath) => Promise<Buffer \| null>` | Membaca file                                              |
+| `file:append`  | `(filePath, content) => Promise<void>`  | Menambahkan teks ke file (digunakan oleh gateway logging) |
 
 ## Konfigurasi
 
-| Variabel | Default | Keterangan |
-| -------- | ------- | ---------- |
+| Variabel         | Default      | Keterangan                                                                           |
+| ---------------- | ------------ | ------------------------------------------------------------------------------------ |
 | `MEDIA_LOCATION` | `/app/media` | Direktori root untuk penyimpanan media; upload disimpan di `$MEDIA_LOCATION/uploads` |

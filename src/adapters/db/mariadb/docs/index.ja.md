@@ -22,7 +22,7 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 
 ## 設定
 
-| 変数 | デフォルト | 説明 |
-| ---- | ---------- | ---- |
-| `DB_TYPE` | — | このアダプターを起動するには `mariadb` である必要がある |
-| `DATABASE_URL` | — | MariaDB接続URL（例: `mariadb://user:pass@host:3306/cognis`） |
+| 変数           | デフォルト | 説明                                                         |
+| -------------- | ---------- | ------------------------------------------------------------ |
+| `DB_TYPE`      | —          | このアダプターを起動するには `mariadb` である必要がある      |
+| `DATABASE_URL` | —          | MariaDB接続URL（例: `mariadb://user:pass@host:3306/cognis`） |

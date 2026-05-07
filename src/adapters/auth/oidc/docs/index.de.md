@@ -14,14 +14,14 @@ Der OIDC-Adapter authentifiziert Benutzer über OpenID Connect Token-Introspekti
 
 ```ts
 export interface OidcClient {
-  introspect(accessToken: string): Promise<OidcTokenClaims | null>;
+    introspect(accessToken: string): Promise<OidcTokenClaims | null>;
 }
 
 export interface OidcTokenClaims {
-  sub: string;
-  email?: string;
-  name?: string;
-  roles?: string[];
+    sub: string;
+    email?: string;
+    name?: string;
+    roles?: string[];
 }
 ```
 
@@ -29,10 +29,10 @@ export interface OidcTokenClaims {
 
 Konfiguration über `PUT /api/v1/gateways/auth/adapters/oidc/config` (nur Admin).
 
-| Schlüssel | Beschreibung | Erforderlich |
-| --------- | ------------ | ------------ |
-| `providerName` | Anzeigename des Anbieters | Ja |
-| `clientId` | OAuth2-Client-ID | Ja |
-| `clientSecret` | OAuth2-Client-Secret | Ja |
-| `discoveryUrl` | OpenID Connect Discovery-Dokument-URL | Ja |
-| `adminRoles` | Kommagetrennte Token-Rollen, die Admin-Zugriff gewähren | Nein |
+| Schlüssel      | Beschreibung                                            | Erforderlich |
+| -------------- | ------------------------------------------------------- | ------------ |
+| `providerName` | Anzeigename des Anbieters                               | Ja           |
+| `clientId`     | OAuth2-Client-ID                                        | Ja           |
+| `clientSecret` | OAuth2-Client-Secret                                    | Ja           |
+| `discoveryUrl` | OpenID Connect Discovery-Dokument-URL                   | Ja           |
+| `adminRoles`   | Kommagetrennte Token-Rollen, die Admin-Zugriff gewähren | Nein         |

@@ -15,12 +15,12 @@ Der lokale Datei-Adapter speichert hochgeladene Dateien auf dem lokalen Dateisys
 
 ### MIME-zu-Extension-Zuordnung
 
-| MIME-Typ | Extension |
-| --------- | --------- |
-| `image/jpeg` | `jpg` |
-| `image/png` | `png` |
-| `image/webp` | `webp` |
-| `image/gif` | `gif` |
+| MIME-Typ     | Extension |
+| ------------ | --------- |
+| `image/jpeg` | `jpg`     |
+| `image/png`  | `png`     |
+| `image/webp` | `webp`    |
+| `image/gif`  | `gif`     |
 
 Dateien mit nicht in dieser Zuordnung enthaltenen MIME-Typen werden mit der Extension `.bin` gespeichert.
 
@@ -30,13 +30,13 @@ Dateien mit nicht in dieser Zuordnung enthaltenen MIME-Typen werden mit der Exte
 
 ```json
 {
-  "id": "local",
-  "locked": true
+    "id": "local",
+    "locked": true
 }
 ```
 
 ## Konfiguration
 
-| Variable | Standard | Beschreibung |
-| -------- | -------- | ------------ |
+| Variable         | Standard     | Beschreibung                                                                     |
+| ---------------- | ------------ | -------------------------------------------------------------------------------- |
 | `MEDIA_LOCATION` | `/app/media` | Stammverzeichnis für Medien; Uploads unter `$MEDIA_LOCATION/uploads` gespeichert |

@@ -17,9 +17,15 @@
 
 ```ts
 export interface DatabaseGateway {
-  query<Row = Record<string, unknown>>(statement: string, params?: unknown[]): Promise<QueryResult<Row>>;
-  execute(statement: string, params?: unknown[]): Promise<{ affectedRows: number }>;
-  transaction<T>(callback: (db: DatabaseGateway) => Promise<T>): Promise<T>;
+    query<Row = Record<string, unknown>>(
+        statement: string,
+        params?: unknown[],
+    ): Promise<QueryResult<Row>>;
+    execute(
+        statement: string,
+        params?: unknown[],
+    ): Promise<{ affectedRows: number }>;
+    transaction<T>(callback: (db: DatabaseGateway) => Promise<T>): Promise<T>;
 }
 ```
 
@@ -29,22 +35,27 @@ export interface DatabaseGateway {
 
 ```ts
 export interface DbDialectHelper {
-  upsert(table: string, keyCol: string, keyVal: unknown, extraData: Record<string, unknown>): Promise<void>;
-  insertIgnore(table: string, data: Record<string, unknown>): Promise<void>;
+    upsert(
+        table: string,
+        keyCol: string,
+        keyVal: unknown,
+        extraData: Record<string, unknown>,
+    ): Promise<void>;
+    insertIgnore(table: string, data: Record<string, unknown>): Promise<void>;
 }
 ```
 
-| パス | 目的 |
-| ---- | ---- |
-| `src/gateways/db/gateway.ts` | `DatabaseGateway` インターフェース |
-| `src/gateways/db/executor.ts` | `createDbExecutor` |
-| `src/gateways/db/init.ts` | `initializeDatabaseSchema` |
+| パス                           | 目的                                                |
+| ------------------------------ | --------------------------------------------------- |
+| `src/gateways/db/gateway.ts`   | `DatabaseGateway` インターフェース                  |
+| `src/gateways/db/executor.ts`  | `createDbExecutor`                                  |
+| `src/gateways/db/init.ts`      | `initializeDatabaseSchema`                          |
 | `src/gateways/db/bootstrap.ts` | ブートストラップエントリポイント; `DbDialectHelper` |
 
 ## 設定
 
-| 変数 | デフォルト | 説明 |
-| ---- | ---------- | ---- |
-| `DB_TYPE` | `sqlite` | データベースバックエンド: `sqlite`、`postgresql`、または `mariadb` |
-| `DATABASE_URL` | — | 接続文字列; `postgresql` または `mariadb` の場合に必須 |
-| `SQLITE_PATH` | `./data/cognis.sqlite` | SQLiteファイルパス; `DB_TYPE=sqlite` 時のみ使用 |
+| 変数           | デフォルト             | 説明                                                               |
+| -------------- | ---------------------- | ------------------------------------------------------------------ |
+| `DB_TYPE`      | `sqlite`               | データベースバックエンド: `sqlite`、`postgresql`、または `mariadb` |
+| `DATABASE_URL` | —                      | 接続文字列; `postgresql` または `mariadb` の場合に必須             |
+| `SQLITE_PATH`  | `./data/cognis.sqlite` | SQLiteファイルパス; `DB_TYPE=sqlite` 時のみ使用                    |

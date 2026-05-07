@@ -2,7 +2,7 @@
 
 ## Ikhtisar
 
-`createPageComposer` adalah utilitas orkestrasi layout yang digunakan oleh semua halaman Cognis. Modul halaman individual mendeklarasikan *apa* yang akan dirender — daftar blok konten bernama yang disebut elemen — dan composer menangani *bagaimana* blok-blok tersebut disusun, dipersistensikan, dinavigasi, dan di-render ulang.
+`createPageComposer` adalah utilitas orkestrasi layout yang digunakan oleh semua halaman Cognis. Modul halaman individual mendeklarasikan _apa_ yang akan dirender — daftar blok konten bernama yang disebut elemen — dan composer menangani _bagaimana_ blok-blok tersebut disusun, dipersistensikan, dinavigasi, dan di-render ulang.
 
 ## Tanggung Jawab
 
@@ -27,13 +27,13 @@ Sebuah elemen adalah blok konten bernama:
 }
 ```
 
-| Field | Diperlukan | Keterangan |
-| ----- | ---------- | ---------- |
-| `id` | Ya | Pengidentifikasi string unik |
-| `label` | Ya | Label yang dapat dibaca manusia |
-| `render` | Ya | Fungsi yang mengembalikan string HTML |
-| `gridSize` | Tidak | `{ default: [w,h], min: [w,h] }` dalam unit grid 90 px |
-| `pinned` | Tidak | Jika `true`, elemen tidak dapat dihapus oleh pengguna |
+| Field      | Diperlukan | Keterangan                                             |
+| ---------- | ---------- | ------------------------------------------------------ |
+| `id`       | Ya         | Pengidentifikasi string unik                           |
+| `label`    | Ya         | Label yang dapat dibaca manusia                        |
+| `render`   | Ya         | Fungsi yang mengembalikan string HTML                  |
+| `gridSize` | Tidak      | `{ default: [w,h], min: [w,h] }` dalam unit grid 90 px |
+| `pinned`   | Tidak      | Jika `true`, elemen tidak dapat dihapus oleh pengguna  |
 
 ### Layout Grid
 

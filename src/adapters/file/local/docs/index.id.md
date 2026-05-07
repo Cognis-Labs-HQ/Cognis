@@ -15,17 +15,17 @@ Adapter file lokal menyimpan file yang diunggah di filesystem lokal server. Ini 
 
 ### Pemetaan MIME ke Ekstensi
 
-| Tipe MIME | Ekstensi |
-| --------- | -------- |
-| `image/jpeg` | `jpg` |
-| `image/png` | `png` |
-| `image/webp` | `webp` |
-| `image/gif` | `gif` |
+| Tipe MIME    | Ekstensi |
+| ------------ | -------- |
+| `image/jpeg` | `jpg`    |
+| `image/png`  | `png`    |
+| `image/webp` | `webp`   |
+| `image/gif`  | `gif`    |
 
 File dengan tipe MIME yang tidak ada dalam pemetaan ini disimpan dengan ekstensi `.bin`.
 
 ## Konfigurasi
 
-| Variabel | Default | Keterangan |
-| -------- | ------- | ---------- |
+| Variabel         | Default      | Keterangan                                                               |
+| ---------------- | ------------ | ------------------------------------------------------------------------ |
 | `MEDIA_LOCATION` | `/app/media` | Direktori root untuk media; upload disimpan di `$MEDIA_LOCATION/uploads` |

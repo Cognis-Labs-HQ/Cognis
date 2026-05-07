@@ -22,15 +22,15 @@ Not responsible for: generating API responses, owning authentication logic, or i
 
 ### Directory structure
 
-| Path | Purpose |
-| ---- | ------- |
-| `src/ui/layouts/` | Shared HTML shells that page entries render inside |
-| `src/ui/public/templates/` | Reusable markup fragments |
-| `src/ui/public/pages/` | Per-page HTML files served to the browser |
-| `src/ui/app/` | Page entry point JavaScript modules |
-| `src/ui/reuse/` | Cross-page utility modules (i18n, page composer, etc.) |
-| `src/ui/styles/` | CSS: base tokens, layout, page-specific rules |
-| `src/ui/languages/` | i18n string packs (en, de, ja, id) |
+| Path                       | Purpose                                                |
+| -------------------------- | ------------------------------------------------------ |
+| `src/ui/layouts/`          | Shared HTML shells that page entries render inside     |
+| `src/ui/public/templates/` | Reusable markup fragments                              |
+| `src/ui/public/pages/`     | Per-page HTML files served to the browser              |
+| `src/ui/app/`              | Page entry point JavaScript modules                    |
+| `src/ui/reuse/`            | Cross-page utility modules (i18n, page composer, etc.) |
+| `src/ui/styles/`           | CSS: base tokens, layout, page-specific rules          |
+| `src/ui/languages/`        | i18n string packs (en, de, ja, id)                     |
 
 Each page entry point lives in its own subdirectory under `src/ui/app/` as `index.js`. Sub-modules for that page sit alongside `index.js`, dropping any shared prefix (e.g. `settings/font-prefs.js` rather than `settings-font-prefs.js`).
 
@@ -69,25 +69,25 @@ Modules contribute CSS, HTML templates, and JavaScript via the `frontend` field 
 
 ## API Routes
 
-| Method | Path | Description | Auth |
-| ------ | ---- | ----------- | ---- |
-| `GET` | `/login` | User sign-in page | None |
-| `GET` | `/` | Study app landing surface | Cookie |
-| `GET` | `/modules` | Module and feature management | Cookie |
-| `GET` | `/settings` | User settings and preferences | Cookie |
-| `GET` | `/administration` | Administrative controls | Cookie |
-| `GET` | `/docs` | Documentation browser | Cookie |
-| `GET` | `/profile` | Redirect to own profile | Cookie |
-| `GET` | `/profile/:handle` | View a user's profile | Cookie |
-| `GET` | `/user` | Legacy alias for profile | Cookie |
+| Method | Path               | Description                   | Auth   |
+| ------ | ------------------ | ----------------------------- | ------ |
+| `GET`  | `/login`           | User sign-in page             | None   |
+| `GET`  | `/`                | Study app landing surface     | Cookie |
+| `GET`  | `/modules`         | Module and feature management | Cookie |
+| `GET`  | `/settings`        | User settings and preferences | Cookie |
+| `GET`  | `/administration`  | Administrative controls       | Cookie |
+| `GET`  | `/docs`            | Documentation browser         | Cookie |
+| `GET`  | `/profile`         | Redirect to own profile       | Cookie |
+| `GET`  | `/profile/:handle` | View a user's profile         | Cookie |
+| `GET`  | `/user`            | Legacy alias for profile      | Cookie |
 
 ### i18n key conventions
 
-| Prefix | Use |
-| ------ | --- |
-| `ui.reuse.*` | Labels shared across multiple pages |
+| Prefix               | Use                                                              |
+| -------------------- | ---------------------------------------------------------------- |
+| `ui.reuse.*`         | Labels shared across multiple pages                              |
 | `ui.reuse.generic.*` | Context-free standalone action words (save, discard, reset, add) |
-| `ui.app.<page>.*` | Page-specific copy |
-| `ui.layout.*` | Layout shell text and ARIA labels |
-| `ui.page.title.*` | Document `<title>` values |
-| `module.<id>.*` | Module-owned strings loaded on demand |
+| `ui.app.<page>.*`    | Page-specific copy                                               |
+| `ui.layout.*`        | Layout shell text and ARIA labels                                |
+| `ui.page.title.*`    | Document `<title>` values                                        |
+| `module.<id>.*`      | Module-owned strings loaded on demand                            |

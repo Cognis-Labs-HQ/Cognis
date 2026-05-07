@@ -48,29 +48,29 @@ Every adapter carries a `package.json` with a `version` field following Semantic
 
 `src/adapters/db/reuse/` contains store abstractions shared across all DB adapters:
 
-| Module | Purpose |
-| ------ | ------- |
-| `account-store.ts` | Account persistence (create, find, update) |
-| `profile-store.ts` | Profile CRUD, social graph, posts |
-| `preference-store.ts` | User preference key/value persistence |
+| Module                  | Purpose                                        |
+| ----------------------- | ---------------------------------------------- |
+| `account-store.ts`      | Account persistence (create, find, update)     |
+| `profile-store.ts`      | Profile CRUD, social graph, posts              |
+| `preference-store.ts`   | User preference key/value persistence          |
 | `notification-store.ts` | Notification config and preference persistence |
 
 These reuse modules are instantiated by gateways at bootstrap time. They receive a `DbExecutor` and `SupportedDbType` and generate the correct SQL dialect internally.
 
 ## Coverage table
 
-| Area | Adapter | Path | Notes |
-| ---- | ------- | ---- | ----- |
-| Database | SQLite | `src/adapters/db/sqlite/` | Default; no external service needed |
-| Database | MariaDB | `src/adapters/db/mariadb/` | Production relational DB |
-| Database | PostgreSQL | `src/adapters/db/postgres/` | Production relational DB |
-| Database | Memory | `src/adapters/db/memory/` | Tests and isolated CI only |
-| Auth | Local | `src/adapters/auth/local/` | Always enabled; scrypt hashing |
-| Auth | LDAP | `src/adapters/auth/ldap/` | Directory-based enterprise auth |
-| Auth | SAML | `src/adapters/auth/saml/` | SAML 2.0 assertion-based SSO |
-| Auth | OIDC | `src/adapters/auth/oidc/` | OAuth2/OIDC token introspection |
-| File storage | Local | `src/adapters/file/local/` | Filesystem-backed uploads |
-| Notifications | SMTP | `src/adapters/notify/smtp/` | Email delivery via SMTP |
+| Area          | Adapter    | Path                        | Notes                               |
+| ------------- | ---------- | --------------------------- | ----------------------------------- |
+| Database      | SQLite     | `src/adapters/db/sqlite/`   | Default; no external service needed |
+| Database      | MariaDB    | `src/adapters/db/mariadb/`  | Production relational DB            |
+| Database      | PostgreSQL | `src/adapters/db/postgres/` | Production relational DB            |
+| Database      | Memory     | `src/adapters/db/memory/`   | Tests and isolated CI only          |
+| Auth          | Local      | `src/adapters/auth/local/`  | Always enabled; scrypt hashing      |
+| Auth          | LDAP       | `src/adapters/auth/ldap/`   | Directory-based enterprise auth     |
+| Auth          | SAML       | `src/adapters/auth/saml/`   | SAML 2.0 assertion-based SSO        |
+| Auth          | OIDC       | `src/adapters/auth/oidc/`   | OAuth2/OIDC token introspection     |
+| File storage  | Local      | `src/adapters/file/local/`  | Filesystem-backed uploads           |
+| Notifications | SMTP       | `src/adapters/notify/smtp/` | Email delivery via SMTP             |
 
 ## Extension Points
 

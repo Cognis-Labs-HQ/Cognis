@@ -21,17 +21,18 @@ Not responsible for: binding or searching LDAP directly (that is the injected `L
 
 ```ts
 export interface LdapClient {
-  authenticate(accessToken: string): Promise<LdapIdentity | null>;
+    authenticate(accessToken: string): Promise<LdapIdentity | null>;
 }
 
 export interface LdapIdentity {
-  id: string;
-  email?: string;
-  groups?: string[];
+    id: string;
+    email?: string;
+    groups?: string[];
 }
 ```
 
 On `authenticate(credentials)`, the adapter:
+
 1. Extracts `credentials.accessToken`.
 2. Calls `this.client.authenticate(accessToken)`.
 3. Checks whether any of the identity's `groups` intersect `adminGroups`.
@@ -43,11 +44,11 @@ The adapter is enabled and configured through the auth gateway admin API, not th
 
 Configure via `PUT /api/v1/gateways/auth/adapters/ldap/config` (admin only).
 
-| Key | Description | Required |
-| --- | ----------- | -------- |
-| `host` | LDAP server hostname | Yes |
-| `port` | LDAP server port | Yes |
-| `bindDn` | Bind DN for the service account | Yes |
-| `bindPassword` | Password for the bind DN | Yes |
-| `baseDn` | Base DN for user searches | Yes |
-| `adminGroups` | Comma-separated LDAP groups whose members receive admin role | No |
+| Key            | Description                                                  | Required |
+| -------------- | ------------------------------------------------------------ | -------- |
+| `host`         | LDAP server hostname                                         | Yes      |
+| `port`         | LDAP server port                                             | Yes      |
+| `bindDn`       | Bind DN for the service account                              | Yes      |
+| `bindPassword` | Password for the bind DN                                     | Yes      |
+| `baseDn`       | Base DN for user searches                                    | Yes      |
+| `adminGroups`  | Comma-separated LDAP groups whose members receive admin role | No       |

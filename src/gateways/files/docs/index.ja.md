@@ -14,15 +14,15 @@
 
 ### 提供されるケイパビリティ
 
-| ケイパビリティ | 型 | 説明 |
-| ------------ | -- | ---- |
-| `file:gateway` | `FileStorageGateway` | 完全なゲートウェイインスタンス |
-| `file:write` | `(filePath, content) => Promise<void>` | ファイルを上書き |
-| `file:read` | `(filePath) => Promise<Buffer \| null>` | ファイルを読み取り |
-| `file:append` | `(filePath, content) => Promise<void>` | ファイルにテキストを追記（ロギングゲートウェイが使用） |
+| ケイパビリティ | 型                                      | 説明                                                   |
+| -------------- | --------------------------------------- | ------------------------------------------------------ |
+| `file:gateway` | `FileStorageGateway`                    | 完全なゲートウェイインスタンス                         |
+| `file:write`   | `(filePath, content) => Promise<void>`  | ファイルを上書き                                       |
+| `file:read`    | `(filePath) => Promise<Buffer \| null>` | ファイルを読み取り                                     |
+| `file:append`  | `(filePath, content) => Promise<void>`  | ファイルにテキストを追記（ロギングゲートウェイが使用） |
 
 ## 設定
 
-| 変数 | デフォルト | 説明 |
-| ---- | ---------- | ---- |
+| 変数             | デフォルト   | 説明                                                                                    |
+| ---------------- | ------------ | --------------------------------------------------------------------------------------- |
 | `MEDIA_LOCATION` | `/app/media` | メディアストレージのルートディレクトリ; アップロードは `$MEDIA_LOCATION/uploads` に保存 |

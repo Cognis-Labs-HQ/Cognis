@@ -28,9 +28,9 @@ All linting runs via `npm run lint`, which executes both lint scripts in sequenc
 
 ```json
 {
-  "tabWidth": 4,
-  "trailingComma": "all",
-  "singleQuote": false
+    "tabWidth": 4,
+    "trailingComma": "all",
+    "singleQuote": false
 }
 ```
 
@@ -51,19 +51,20 @@ npm run cli      # node --import tsx src/tooling/cli/index.ts
 ### `cognisctl` CLI
 
 `cognisctl` is the primary operational control surface. It auto-discovers command modules from:
+
 - `src/tooling/cli/commands/` — core built-in commands
 - Any `cli/index.js` exported by an installed module under `COGNIS_MODULES_ROOT`
 
 Commands are grouped by namespace:
 
-| Namespace | Example commands |
-| --------- | ---------------- |
-| `user:*` | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete` |
-| `user:preferences:*` | `user:preferences:clear` |
-| `system:*` | `system:health`, `system:info` |
-| `modules:*` | `modules:list`, `modules:enable`, `modules:disable`, `modules:install` |
-| `gateway:*` | `gateway:list` |
-| `api:*` | `api:token` |
+| Namespace            | Example commands                                                                              |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| `user:*`             | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete` |
+| `user:preferences:*` | `user:preferences:clear`                                                                      |
+| `system:*`           | `system:health`, `system:info`                                                                |
+| `modules:*`          | `modules:list`, `modules:enable`, `modules:disable`, `modules:install`                        |
+| `gateway:*`          | `gateway:list`                                                                                |
+| `api:*`              | `api:token`                                                                                   |
 
 All CLI commands that require authentication read the API token from the path specified in `COGNIS_CLI_TOKEN_PATH`.
 
@@ -73,7 +74,7 @@ All CLI commands that require authentication read the API token from the path sp
 
 ## Configuration
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `COGNIS_CLI_TOKEN_PATH` | — | Path to a file containing the API token used by `cognisctl` for authenticated commands |
-| `COGNIS_MODULES_ROOT` | `src/modules` | Used by the CLI to discover module-contributed subcommands |
+| Variable                | Default       | Description                                                                            |
+| ----------------------- | ------------- | -------------------------------------------------------------------------------------- |
+| `COGNIS_CLI_TOKEN_PATH` | —             | Path to a file containing the API token used by `cognisctl` for authenticated commands |
+| `COGNIS_MODULES_ROOT`   | `src/modules` | Used by the CLI to discover module-contributed subcommands                             |

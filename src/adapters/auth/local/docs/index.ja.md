@@ -27,14 +27,14 @@ scrypt:<hex-salt>:<hex-derived-key>
 
 ローカルアカウントは `user:*` コマンドnamespaceを使用して `cognisctl` CLIで管理します:
 
-| コマンド | 説明 |
-| ------- | ---- |
-| `user:create` | 新しいローカルアカウントを作成 |
-| `user:role` | アカウントにロールを割り当て |
-| `user:set-password` | アカウントのパスワードを変更 |
-| `user:disable` | アカウントを無効化 |
-| `user:enable` | 無効化されたアカウントを再有効化 |
-| `user:delete` | アカウントを削除 |
+| コマンド            | 説明                             |
+| ------------------- | -------------------------------- |
+| `user:create`       | 新しいローカルアカウントを作成   |
+| `user:role`         | アカウントにロールを割り当て     |
+| `user:set-password` | アカウントのパスワードを変更     |
+| `user:disable`      | アカウントを無効化               |
+| `user:enable`       | 無効化されたアカウントを再有効化 |
+| `user:delete`       | アカウントを削除                 |
 
 ## 設定
 

@@ -15,11 +15,11 @@ Adapter mengimplementasikan pengiriman yang toleran terhadap greylisting: jika p
 
 ## Konfigurasi
 
-| Variabel | Default | Keterangan |
-| -------- | ------- | ---------- |
-| `COGNIS_SMTP_HOST` | — | Hostname server SMTP; adapter tidak aktif jika tidak diatur |
-| `COGNIS_SMTP_PORT` | `587` | Port server SMTP |
-| `COGNIS_SMTP_SECURE` | `false` | `true` untuk TLS saat koneksi (port 465) |
-| `COGNIS_SMTP_USER` | — | Nama pengguna autentikasi SMTP |
-| `COGNIS_SMTP_PASS` | — | Kata sandi autentikasi SMTP |
-| `COGNIS_SMTP_FROM` | — | Alamat pengirim yang ditampilkan di header `From` |
+| Variabel             | Default | Keterangan                                                  |
+| -------------------- | ------- | ----------------------------------------------------------- |
+| `COGNIS_SMTP_HOST`   | —       | Hostname server SMTP; adapter tidak aktif jika tidak diatur |
+| `COGNIS_SMTP_PORT`   | `587`   | Port server SMTP                                            |
+| `COGNIS_SMTP_SECURE` | `false` | `true` untuk TLS saat koneksi (port 465)                    |
+| `COGNIS_SMTP_USER`   | —       | Nama pengguna autentikasi SMTP                              |
+| `COGNIS_SMTP_PASS`   | —       | Kata sandi autentikasi SMTP                                 |
+| `COGNIS_SMTP_FROM`   | —       | Alamat pengirim yang ditampilkan di header `From`           |

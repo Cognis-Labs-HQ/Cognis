@@ -25,11 +25,19 @@ Not responsible for: log aggregation, log rotation, or log shipping to external 
 
 ```ts
 export class Logger {
-  constructor(level: LogLevel = 'info', filePath: string, fileAppend?: FileAppend);
-  async log(level: LogLevel, message: string, meta?: Record<string, unknown>): Promise<void>;
-  info(message: string, meta?: Record<string, unknown>): Promise<void>;
-  warn(message: string, meta?: Record<string, unknown>): Promise<void>;
-  error(message: string, meta?: Record<string, unknown>): Promise<void>;
+    constructor(
+        level: LogLevel = "info",
+        filePath: string,
+        fileAppend?: FileAppend,
+    );
+    async log(
+        level: LogLevel,
+        message: string,
+        meta?: Record<string, unknown>,
+    ): Promise<void>;
+    info(message: string, meta?: Record<string, unknown>): Promise<void>;
+    warn(message: string, meta?: Record<string, unknown>): Promise<void>;
+    error(message: string, meta?: Record<string, unknown>): Promise<void>;
 }
 ```
 
@@ -38,22 +46,30 @@ Log levels in priority order: `debug` (10), `info` (20), `warn` (30), `error` (4
 Each log line is a JSON object:
 
 ```json
-{ "ts": "2024-01-15T10:00:00.000Z", "level": "info", "message": "Gateway bootstrapped.", "gateway": "auth" }
+{
+    "ts": "2024-01-15T10:00:00.000Z",
+    "level": "info",
+    "message": "Gateway bootstrapped.",
+    "gateway": "auth"
+}
 ```
 
 ### Capabilities contributed
 
-| Capability | Type | Description |
-| ---------- | ---- | ----------- |
-| `logging:logger` | `Logger` | Full Logger instance |
-| `logging:log` | `(level, message, meta?) => void` | Plain log function; used as `ctx.log` by the gateway bootstrapper |
+| Capability       | Type                              | Description                                                       |
+| ---------------- | --------------------------------- | ----------------------------------------------------------------- |
+| `logging:logger` | `Logger`                          | Full Logger instance                                              |
+| `logging:log`    | `(level, message, meta?) => void` | Plain log function; used as `ctx.log` by the gateway bootstrapper |
 
 ### Dependency on files gateway
 
 Bootstrap in `src/gateways/logging/bootstrap.ts` reads `file:append` from the capability store:
 
 ```ts
-const fileAppend = ctx.capabilities.get<(fp: string, content: string) => Promise<void>>('file:append');
+const fileAppend =
+    ctx.capabilities.get<(fp: string, content: string) => Promise<void>>(
+        "file:append",
+    );
 const logger = new Logger(level, filePath, fileAppend);
 ```
 
@@ -61,7 +77,7 @@ If `file:append` is absent (the capability store returns `undefined`), the `Logg
 
 ## Configuration
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `LOG_LEVEL` | `info` | Minimum log level: `debug`, `info`, `warn`, or `error` |
-| `LOG_FILE` | `/app/logs/app.log` | Absolute path for the persistent log file |
+| Variable    | Default             | Description                                            |
+| ----------- | ------------------- | ------------------------------------------------------ |
+| `LOG_LEVEL` | `info`              | Minimum log level: `debug`, `info`, `warn`, or `error` |
+| `LOG_FILE`  | `/app/logs/app.log` | Absolute path for the persistent log file              |

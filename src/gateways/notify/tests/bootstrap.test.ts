@@ -158,7 +158,10 @@ test("notify gateway bootstrap registers correct static dir and admin-section.js
     });
 
     const staticDir = uiRegistry.getStaticDir("notify");
-    assert.ok(staticDir, "notify gateway must register a static dir with UIRegistry");
+    assert.ok(
+        staticDir,
+        "notify gateway must register a static dir with UIRegistry",
+    );
 
     await assert.doesNotReject(
         access(staticDir),
@@ -189,7 +192,10 @@ test("notify gateway bootstrap registers admin section scriptUrl that resolves w
 
     const sections = uiRegistry.listAdminSections();
     const notifSection = sections.find((s) => s.id === "notifications");
-    assert.ok(notifSection, "notify gateway must register a 'notifications' admin section");
+    assert.ok(
+        notifSection,
+        "notify gateway must register a 'notifications' admin section",
+    );
 
     const staticDir = uiRegistry.getStaticDir("notify");
     assert.ok(staticDir, "notify gateway must register a static dir");

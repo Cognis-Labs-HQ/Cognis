@@ -22,14 +22,14 @@ Tidak bertanggung jawab atas: mengimplementasikan autentikasi, menyimpan data, m
 
 ### Lokasi sumber utama
 
-| Jalur | Tujuan |
-| ----- | ------ |
-| `src/core/contracts/auth-account.ts` | Antarmuka `AuthAccount`, `ExternalIdentity`, `AuthAccountStore` |
-| `src/core/contracts/module-manifest.ts` | Antarmuka `ModuleManifest` |
-| `src/core/services/module-service.ts` | Kelas `ModuleService` |
-| `src/core/services/health-service.ts` | Kelas `HealthService` |
-| `src/core/services/gateway-service.ts` | Layanan registri gateway |
-| `src/core/index.ts` | Ekspor publik untuk paket `@cognis/core` |
+| Jalur                                   | Tujuan                                                          |
+| --------------------------------------- | --------------------------------------------------------------- |
+| `src/core/contracts/auth-account.ts`    | Antarmuka `AuthAccount`, `ExternalIdentity`, `AuthAccountStore` |
+| `src/core/contracts/module-manifest.ts` | Antarmuka `ModuleManifest`                                      |
+| `src/core/services/module-service.ts`   | Kelas `ModuleService`                                           |
+| `src/core/services/health-service.ts`   | Kelas `HealthService`                                           |
+| `src/core/services/gateway-service.ts`  | Layanan registri gateway                                        |
+| `src/core/index.ts`                     | Ekspor publik untuk paket `@cognis/core`                        |
 
 ### ModuleService
 
@@ -45,9 +45,14 @@ Keamanan rute diberlakukan sebelum modul diaktifkan: jika `routes.json` modul me
 ```ts
 // src/core/services/module-service.ts
 export class ModuleService {
-  async enable(moduleId: string, options?: { acknowledgeExternalDisclaimer?: boolean }): Promise<{ moduleId: string; enabled: boolean }>;
-  async disable(moduleId: string): Promise<{ moduleId: string; enabled: boolean }>;
-  async list(): Promise<ModuleManifest[]>;
+    async enable(
+        moduleId: string,
+        options?: { acknowledgeExternalDisclaimer?: boolean },
+    ): Promise<{ moduleId: string; enabled: boolean }>;
+    async disable(
+        moduleId: string,
+    ): Promise<{ moduleId: string; enabled: boolean }>;
+    async list(): Promise<ModuleManifest[]>;
 }
 ```
 
@@ -57,10 +62,10 @@ export class ModuleService {
 
 ```ts
 export interface HealthStatus {
-  status: 'ok';
-  timestamp: string;
-  startedAt: string;
-  uptimeMs: number;
+    status: "ok";
+    timestamp: string;
+    startedAt: string;
+    uptimeMs: number;
 }
 ```
 
@@ -70,18 +75,29 @@ export interface HealthStatus {
 
 ```ts
 export interface AuthAccountStore {
-  findByExternalIdentity(provider: string, externalUserId: string): Promise<AuthAccount | null>;
-  createExternalAccount(identity: ExternalIdentity): Promise<AuthAccount>;
-  updateExternalAccount(accountId: string, identity: ExternalIdentity): Promise<AuthAccount>;
-  createLocalAccount(input: { username: string; passwordHash: string; email?: string; isAdmin?: boolean }): Promise<AuthAccount>;
+    findByExternalIdentity(
+        provider: string,
+        externalUserId: string,
+    ): Promise<AuthAccount | null>;
+    createExternalAccount(identity: ExternalIdentity): Promise<AuthAccount>;
+    updateExternalAccount(
+        accountId: string,
+        identity: ExternalIdentity,
+    ): Promise<AuthAccount>;
+    createLocalAccount(input: {
+        username: string;
+        passwordHash: string;
+        email?: string;
+        isAdmin?: boolean;
+    }): Promise<AuthAccount>;
 }
 ```
 
 ### Namespace kemampuan
 
-| Kemampuan | Pemilik | Deskripsi |
-| --------- | ------- | --------- |
-| `system:health` | Core / rute sistem | Mengekspos kesehatan platform dan uptime via `GET /api/v1/system/health` |
-| `auth:accounts` | Gateway auth | Siklus hidup akun bawaan dan pengkabelan kebijakan autentikasi |
-| `modules:lifecycle` | Rute modul | Daftar modul, kontrol aktifkan/nonaktifkan, dan pemeriksaan kebijakan |
-| `ui:shell` | Rute UI | Perutean shell aplikasi bersama dan permukaan operasi admin |
+| Kemampuan           | Pemilik            | Deskripsi                                                                |
+| ------------------- | ------------------ | ------------------------------------------------------------------------ |
+| `system:health`     | Core / rute sistem | Mengekspos kesehatan platform dan uptime via `GET /api/v1/system/health` |
+| `auth:accounts`     | Gateway auth       | Siklus hidup akun bawaan dan pengkabelan kebijakan autentikasi           |
+| `modules:lifecycle` | Rute modul         | Daftar modul, kontrol aktifkan/nonaktifkan, dan pemeriksaan kebijakan    |
+| `ui:shell`          | Rute UI            | Perutean shell aplikasi bersama dan permukaan operasi admin              |

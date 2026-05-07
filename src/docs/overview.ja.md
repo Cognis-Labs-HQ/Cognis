@@ -51,17 +51,17 @@ ui/              — ブラウザフロントエンド（ページ、レイア�
 
 ### 主要なソースの場所
 
-| エリア | パス |
-| ------ | ---- |
-| コアコントラクト | `src/core/contracts/` |
-| コアサービス | `src/core/services/` |
-| HTTPサーバーエントリー | `src/api/main.ts` |
-| ルートレジストリ | `src/api/route-registry.ts` |
-| ゲートウェイ共有ユーティリティ | `src/gateways/shared.ts` |
+| エリア                         | パス                           |
+| ------------------------------ | ------------------------------ |
+| コアコントラクト               | `src/core/contracts/`          |
+| コアサービス                   | `src/core/services/`           |
+| HTTPサーバーエントリー         | `src/api/main.ts`              |
+| ルートレジストリ               | `src/api/route-registry.ts`    |
+| ゲートウェイ共有ユーティリティ | `src/gateways/shared.ts`       |
 | ゲートウェイブートストラッパー | `src/api/gateway-bootstrap.ts` |
-| UIエントリーポイント | `src/ui/app/` |
-| UI再利用ユーティリティ | `src/ui/reuse/` |
-| プラットフォームドキュメント | `src/docs/` |
+| UIエントリーポイント           | `src/ui/app/`                  |
+| UI再利用ユーティリティ         | `src/ui/reuse/`                |
+| プラットフォームドキュメント   | `src/docs/`                    |
 
 ## 拡張ポイント
 

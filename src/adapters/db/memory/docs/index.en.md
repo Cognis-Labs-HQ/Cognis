@@ -20,7 +20,7 @@ The memory adapter should never be used in a production deployment.
 
 ```ts
 const db = new MemoryDatabaseGateway();
-await db.execute('INSERT INTO users (id) VALUES (?)', ['u1']);
+await db.execute("INSERT INTO users (id) VALUES (?)", ["u1"]);
 console.log(db.queryLog);
 // [{ sql: 'INSERT INTO users (id) VALUES (?)', params: ['u1'] }]
 ```
@@ -29,6 +29,6 @@ Because schema initialisation (`ensureSchema()`) runs on every startup, the memo
 
 ## Configuration
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `DB_TYPE` | — | Must be `memory` to activate this adapter |
+| Variable  | Default | Description                               |
+| --------- | ------- | ----------------------------------------- |
+| `DB_TYPE` | —       | Must be `memory` to activate this adapter |

@@ -14,7 +14,7 @@ Adapter SAML mengautentikasi pengguna melalui assertion SAML 2.0 dari penyedia i
 
 ```ts
 export interface SamlClient {
-  validateAssertion(samlResponse: string): Promise<SamlAssertion | null>;
+    validateAssertion(samlResponse: string): Promise<SamlAssertion | null>;
 }
 ```
 
@@ -22,10 +22,10 @@ export interface SamlClient {
 
 Konfigurasi melalui `PUT /api/v1/gateways/auth/adapters/saml/config` (hanya admin).
 
-| Kunci | Keterangan | Diperlukan |
-| ----- | ---------- | ---------- |
-| `entryPoint` | URL SSO IdP SAML | Ya |
-| `issuer` | ID entitas Service Provider | Ya |
-| `certificate` | Sertifikat penandatanganan X.509 IdP (format PEM) | Ya |
-| `adminAttribute` | Nama atribut SAML untuk pemeriksaan admin | Tidak |
-| `adminValue` | Nilai atribut yang memberikan akses admin | Tidak |
+| Kunci            | Keterangan                                        | Diperlukan |
+| ---------------- | ------------------------------------------------- | ---------- |
+| `entryPoint`     | URL SSO IdP SAML                                  | Ya         |
+| `issuer`         | ID entitas Service Provider                       | Ya         |
+| `certificate`    | Sertifikat penandatanganan X.509 IdP (format PEM) | Ya         |
+| `adminAttribute` | Nama atribut SAML untuk pemeriksaan admin         | Tidak      |
+| `adminValue`     | Nilai atribut yang memberikan akses admin         | Tidak      |

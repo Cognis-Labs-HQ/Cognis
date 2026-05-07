@@ -26,11 +26,11 @@ The central class is `CoreNotificationGateway` in `src/gateways/notify/gateway.t
 
 ```ts
 export interface NotificationGateway {
-  registerSender(sender: NotificationSender): void;
-  dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[] }>;
-  registerCategory(id: string, label: string): void;
-  listSenders(): NotificationSenderInfo[];
-  listCategories(): NotificationCategory[];
+    registerSender(sender: NotificationSender): void;
+    dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[] }>;
+    registerCategory(id: string, label: string): void;
+    listSenders(): NotificationSenderInfo[];
+    listCategories(): NotificationCategory[];
 }
 ```
 
@@ -39,6 +39,7 @@ A `NotificationEnvelope` carries `category`, `recipientUsername`, optional `reci
 `discoverSenders(path)` scans the `src/adapters/notify/` directory and dynamically imports each adapter's `createSender()` export. The gateway calls `registerSender(sender)` for each one found.
 
 Bootstrap in `src/gateways/notify/bootstrap.ts`:
+
 1. Instantiates `DbNotificationStore` and `DbNotificationPreferenceStore`.
 2. Instantiates `CoreNotificationGateway`.
 3. Calls `discoverSenders()` and `loadPersistedConfigs()`.
@@ -48,29 +49,29 @@ Bootstrap in `src/gateways/notify/bootstrap.ts`:
 
 Key source locations:
 
-| Path | Purpose |
-| ---- | ------- |
-| `src/gateways/notify/gateway.ts` | `CoreNotificationGateway`, `NotificationSender`, `NotificationGateway` interfaces |
-| `src/gateways/notify/bootstrap.ts` | Bootstrap entry point |
-| `src/gateways/notify/routes/notifications.ts` | Notification dispatch and provider management routes |
-| `src/api/reuse/tfa-code.ts` | `TfaCodeService` and `InMemoryTfaStore` |
-| `src/api/reuse/verify-token.ts` | `VerifyTokenService` and `InMemoryVerifyTokenStore` |
-| `src/adapters/db/reuse/notification-store.ts` | `DbNotificationStore` and `DbNotificationPreferenceStore` |
+| Path                                          | Purpose                                                                           |
+| --------------------------------------------- | --------------------------------------------------------------------------------- |
+| `src/gateways/notify/gateway.ts`              | `CoreNotificationGateway`, `NotificationSender`, `NotificationGateway` interfaces |
+| `src/gateways/notify/bootstrap.ts`            | Bootstrap entry point                                                             |
+| `src/gateways/notify/routes/notifications.ts` | Notification dispatch and provider management routes                              |
+| `src/api/reuse/tfa-code.ts`                   | `TfaCodeService` and `InMemoryTfaStore`                                           |
+| `src/api/reuse/verify-token.ts`               | `VerifyTokenService` and `InMemoryVerifyTokenStore`                               |
+| `src/adapters/db/reuse/notification-store.ts` | `DbNotificationStore` and `DbNotificationPreferenceStore`                         |
 
 ## API Routes
 
-| Method | Path | Description | Auth |
-| ------ | ---- | ----------- | ---- |
-| `POST` | `/api/v1/notifications/send` | Dispatch a notification | Admin |
-| `GET` | `/api/v1/notifications/providers` | List registered senders | Admin |
-| `GET` | `/api/v1/notifications/categories` | List notification categories | Bearer |
-| `GET` | `/api/v1/notifications/preferences` | Get own notification preferences | Bearer |
-| `PUT` | `/api/v1/notifications/preferences` | Update own notification preferences | Bearer |
-| `POST` | `/api/v1/notifications/providers/:senderId/config` | Update sender config | Admin |
-| `POST` | `/api/v1/notifications/providers/:senderId/test` | Send a test notification | Admin |
-| `POST` | `/api/v1/users/tfa/request` | Request a TFA code | Bearer |
-| `POST` | `/api/v1/users/tfa/verify` | Verify a TFA code | Bearer |
-| `POST` | `/api/v1/users/email/verify/request` | Request email verification | Bearer |
-| `POST` | `/api/v1/users/email/verify` | Complete email verification | Bearer |
-| `GET` | `/api/v1/users/:username/email` | Get primary email for a user | Bearer |
-| `PUT` | `/api/v1/users/:username/email` | Set primary email for a user | Bearer |
+| Method | Path                                               | Description                         | Auth   |
+| ------ | -------------------------------------------------- | ----------------------------------- | ------ |
+| `POST` | `/api/v1/notifications/send`                       | Dispatch a notification             | Admin  |
+| `GET`  | `/api/v1/notifications/providers`                  | List registered senders             | Admin  |
+| `GET`  | `/api/v1/notifications/categories`                 | List notification categories        | Bearer |
+| `GET`  | `/api/v1/notifications/preferences`                | Get own notification preferences    | Bearer |
+| `PUT`  | `/api/v1/notifications/preferences`                | Update own notification preferences | Bearer |
+| `POST` | `/api/v1/notifications/providers/:senderId/config` | Update sender config                | Admin  |
+| `POST` | `/api/v1/notifications/providers/:senderId/test`   | Send a test notification            | Admin  |
+| `POST` | `/api/v1/users/tfa/request`                        | Request a TFA code                  | Bearer |
+| `POST` | `/api/v1/users/tfa/verify`                         | Verify a TFA code                   | Bearer |
+| `POST` | `/api/v1/users/email/verify/request`               | Request email verification          | Bearer |
+| `POST` | `/api/v1/users/email/verify`                       | Complete email verification         | Bearer |
+| `GET`  | `/api/v1/users/:username/email`                    | Get primary email for a user        | Bearer |
+| `PUT`  | `/api/v1/users/:username/email`                    | Set primary email for a user        | Bearer |

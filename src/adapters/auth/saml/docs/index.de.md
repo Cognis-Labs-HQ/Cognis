@@ -14,13 +14,13 @@ Der SAML-Adapter authentifiziert Benutzer über SAML 2.0 Assertions von einem ex
 
 ```ts
 export interface SamlClient {
-  validateAssertion(samlResponse: string): Promise<SamlAssertion | null>;
+    validateAssertion(samlResponse: string): Promise<SamlAssertion | null>;
 }
 
 export interface SamlAssertion {
-  nameId: string;
-  email?: string;
-  attributes?: Record<string, string | string[]>;
+    nameId: string;
+    email?: string;
+    attributes?: Record<string, string | string[]>;
 }
 ```
 
@@ -28,10 +28,10 @@ export interface SamlAssertion {
 
 Konfiguration über `PUT /api/v1/gateways/auth/adapters/saml/config` (nur Admin).
 
-| Schlüssel | Beschreibung | Erforderlich |
-| --------- | ------------ | ------------ |
-| `entryPoint` | SAML-IdP-SSO-URL | Ja |
-| `issuer` | Service-Provider-Entity-ID | Ja |
-| `certificate` | IdP X.509-Signaturzertifikat (PEM-Format) | Ja |
-| `adminAttribute` | SAML-Attributname für Admin-Prüfung | Nein |
-| `adminValue` | Attributwert, der Admin-Zugriff gewährt | Nein |
+| Schlüssel        | Beschreibung                              | Erforderlich |
+| ---------------- | ----------------------------------------- | ------------ |
+| `entryPoint`     | SAML-IdP-SSO-URL                          | Ja           |
+| `issuer`         | Service-Provider-Entity-ID                | Ja           |
+| `certificate`    | IdP X.509-Signaturzertifikat (PEM-Format) | Ja           |
+| `adminAttribute` | SAML-Attributname für Admin-Prüfung       | Nein         |
+| `adminValue`     | Attributwert, der Admin-Zugriff gewährt   | Nein         |

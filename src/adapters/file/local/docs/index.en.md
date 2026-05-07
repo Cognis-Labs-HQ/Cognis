@@ -22,13 +22,13 @@ Not responsible for: serving files over HTTP (the profile gateway's file routes 
 
 ### MIME-to-extension map
 
-| MIME type | Extension |
-| --------- | --------- |
-| `image/jpeg` | `jpg` |
-| `image/jpg` | `jpg` |
-| `image/png` | `png` |
-| `image/webp` | `webp` |
-| `image/gif` | `gif` |
+| MIME type    | Extension |
+| ------------ | --------- |
+| `image/jpeg` | `jpg`     |
+| `image/jpg`  | `jpg`     |
+| `image/png`  | `png`     |
+| `image/webp` | `webp`    |
+| `image/gif`  | `gif`     |
 
 Files with MIME types not in this map are stored with a `.bin` extension.
 
@@ -52,8 +52,8 @@ async store(userId: string, content: Uint8Array, contentType?: string): Promise<
 
 ```json
 {
-  "id": "local",
-  "locked": true
+    "id": "local",
+    "locked": true
 }
 ```
 
@@ -61,6 +61,6 @@ async store(userId: string, content: Uint8Array, contentType?: string): Promise<
 
 ## Configuration
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
+| Variable         | Default      | Description                                                           |
+| ---------------- | ------------ | --------------------------------------------------------------------- |
 | `MEDIA_LOCATION` | `/app/media` | Root directory for media; uploads stored at `$MEDIA_LOCATION/uploads` |

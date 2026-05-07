@@ -8,21 +8,21 @@ Cognis hat vier Rollen: `user` ist der Standard für normale Lernaktivitäten. `
 
 ## Rollenmatrix
 
-| Fähigkeit | user | teacher | moderator | admin |
-| --------- | ---: | ------: | --------: | ----: |
-| Selbstregistrierung | ✅ | ✅ | ✅ | ✅ |
-| Eigenes Profil anzeigen/bearbeiten | ✅ | ✅ | ✅ | ✅ |
-| Beiträge erstellen | ✅ | ✅ | ✅ | ✅ |
-| Benutzer folgen/entfolgen | ✅ | ✅ | ✅ | ✅ |
-| Benutzer blockieren/entblocken | ✅ | ✅ | ✅ | ✅ |
-| Dateien hochladen/herunterladen | ✅ | ✅ | ✅ | ✅ |
-| Lehrspezifische APIs zugreifen | ❌ | ✅ | ❌ | ✅ |
-| Beliebige Beiträge löschen | ❌ | ❌ | ✅ | ✅ |
-| Beliebige Dateien löschen | ❌ | ❌ | ❌ | ✅ |
-| Dateispeichergrenzwerte konfigurieren | ❌ | ❌ | ❌ | ✅ |
-| Module installieren/verwalten | ❌ | ❌ | ❌ | ✅ |
-| Auth-Anbieter-Konfiguration verwalten | ❌ | ❌ | ❌ | ✅ |
-| System-Diagnose-Endpunkte | ❌ | ❌ | ❌ | ✅ |
+| Fähigkeit                             | user | teacher | moderator | admin |
+| ------------------------------------- | ---: | ------: | --------: | ----: |
+| Selbstregistrierung                   |   ✅ |      ✅ |        ✅ |    ✅ |
+| Eigenes Profil anzeigen/bearbeiten    |   ✅ |      ✅ |        ✅ |    ✅ |
+| Beiträge erstellen                    |   ✅ |      ✅ |        ✅ |    ✅ |
+| Benutzer folgen/entfolgen             |   ✅ |      ✅ |        ✅ |    ✅ |
+| Benutzer blockieren/entblocken        |   ✅ |      ✅ |        ✅ |    ✅ |
+| Dateien hochladen/herunterladen       |   ✅ |      ✅ |        ✅ |    ✅ |
+| Lehrspezifische APIs zugreifen        |   ❌ |      ✅ |        ❌ |    ✅ |
+| Beliebige Beiträge löschen            |   ❌ |      ❌ |        ✅ |    ✅ |
+| Beliebige Dateien löschen             |   ❌ |      ❌ |        ❌ |    ✅ |
+| Dateispeichergrenzwerte konfigurieren |   ❌ |      ❌ |        ❌ |    ✅ |
+| Module installieren/verwalten         |   ❌ |      ❌ |        ❌ |    ✅ |
+| Auth-Anbieter-Konfiguration verwalten |   ❌ |      ❌ |        ❌ |    ✅ |
+| System-Diagnose-Endpunkte             |   ❌ |      ❌ |        ❌ |    ✅ |
 
 ## Rollennotizen
 

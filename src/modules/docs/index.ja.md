@@ -24,9 +24,9 @@ Cognis モジュールフレームワークにより、サードパーティお�
 
 ### 内部モジュールと外部モジュール
 
-| 種別 | ソース | インストール | 免責事項 |
-| ---- | ------ | ------------ | -------- |
-| `internal` | `src/modules/` 下のリポジトリにバンドル | プリインストール | なし |
+| 種別       | ソース                                                | インストール                               | 免責事項       |
+| ---------- | ----------------------------------------------------- | ------------------------------------------ | -------------- |
+| `internal` | `src/modules/` 下のリポジトリにバンドル               | プリインストール                           | なし           |
 | `external` | アップロードされた `.zip` または `.tar.gz` アーカイブ | 管理 API または `modules:install` CLI 経由 | 有効化前に表示 |
 
 外部モジュールは圧縮アーカイブをアップロードしてインストールします。フレームワークはアーカイブを展開し、`manifest.json` を検証して、`COGNIS_MODULES_ROOT` 下にモジュールディレクトリを配置します。
@@ -35,20 +35,20 @@ Cognis モジュールフレームワークにより、サードパーティお�
 
 ```ts
 export interface ModuleManifest {
-  id: string;
-  name: string;
-  version: string;
-  publisher?: string;
-  class: 'core' | 'extension';
-  coreApiVersion: string;
-  capabilities: string[];
-  requires?: string[];
-  entrypoints: {
-    api?: string;
-    ui?: string;
-    cli?: string;
-    db?: string;
-  };
+    id: string;
+    name: string;
+    version: string;
+    publisher?: string;
+    class: "core" | "extension";
+    coreApiVersion: string;
+    capabilities: string[];
+    requires?: string[];
+    entrypoints: {
+        api?: string;
+        ui?: string;
+        cli?: string;
+        db?: string;
+    };
 }
 ```
 
@@ -62,9 +62,9 @@ export interface ModuleManifest {
 
 ```ts
 export function registerApiRoutes(router) {
-  router.get('/api/v1/modules/my-module/data', async (req, res) => {
-    // handler
-  });
+    router.get("/api/v1/modules/my-module/data", async (req, res) => {
+        // handler
+    });
 }
 ```
 
@@ -74,27 +74,27 @@ export function registerApiRoutes(router) {
 
 モジュールルートは以下のプレフィックスで始まってはいけません:
 
-| プレフィックス | 理由 |
-| -------------- | ---- |
-| `/api/v1/system` | コアシステムエンドポイント |
-| `/api/v1/auth` | 認証ゲートウェイ |
-| `/api/v1/users` | ユーザー管理 |
-| `/public` | プラットフォーム静的アセット |
-| `/ui` | プラットフォーム UI アセット |
+| プレフィックス   | 理由                         |
+| ---------------- | ---------------------------- |
+| `/api/v1/system` | コアシステムエンドポイント   |
+| `/api/v1/auth`   | 認証ゲートウェイ             |
+| `/api/v1/users`  | ユーザー管理                 |
+| `/public`        | プラットフォーム静的アセット |
+| `/ui`            | プラットフォーム UI アセット |
 
 保護されたプレフィックスの下にルートを登録しようとすると、警告がログに記録されて無視されます。
 
 ## 設定
 
-| 変数 | デフォルト | 説明 |
-| ---- | ---------- | ---- |
+| 変数                  | デフォルト                   | 説明                                                 |
+| --------------------- | ---------------------------- | ---------------------------------------------------- |
 | `COGNIS_MODULES_ROOT` | `src/modules` (cwd から解決) | モジュールサブディレクトリをスキャンするディレクトリ |
 
 ## API ルート
 
-| メソッド | パス | 説明 | 認証 |
-| -------- | ---- | ---- | ---- |
-| `GET` | `/api/v1/modules` | 有効/無効の状態とともにインストール済みモジュールをすべて一覧表示 | Bearer |
-| `POST` | `/api/v1/modules/:id/enable` | モジュールを有効化 | Admin |
-| `POST` | `/api/v1/modules/:id/disable` | モジュールを無効化 | Admin |
-| `POST` | `/api/v1/modules/install` | アップロードされたアーカイブからモジュールをインストール | Admin |
+| メソッド | パス                          | 説明                                                              | 認証   |
+| -------- | ----------------------------- | ----------------------------------------------------------------- | ------ |
+| `GET`    | `/api/v1/modules`             | 有効/無効の状態とともにインストール済みモジュールをすべて一覧表示 | Bearer |
+| `POST`   | `/api/v1/modules/:id/enable`  | モジュールを有効化                                                | Admin  |
+| `POST`   | `/api/v1/modules/:id/disable` | モジュールを無効化                                                | Admin  |
+| `POST`   | `/api/v1/modules/install`     | アップロードされたアーカイブからモジュールをインストール          | Admin  |

@@ -38,6 +38,20 @@ function parseDemoModeFromEnv() {
 
 const SECURITY_SETTINGS_KEY = "security-settings";
 
+function parseTrustedDomains(raw: string | null): string[] {
+    if (!raw) return [];
+    try {
+        const parsed = JSON.parse(raw) as { trustedDomains?: unknown };
+        if (!Array.isArray(parsed.trustedDomains)) return [];
+        return parsed.trustedDomains
+            .filter((entry: unknown) => typeof entry === "string")
+            .map((entry: string) => entry.trim().toLowerCase())
+            .filter(Boolean);
+    } catch {
+        return [];
+    }
+}
+
 export function createSystemRoutes(
     healthService: HealthService,
     preferenceStore?: UserPreferenceStore,
@@ -92,10 +106,11 @@ export function createSystemRoutes(
             url.pathname === "/api/v1/system/security" &&
             req.method === "GET"
         ) {
+            if (!requireAuth(req, res, "user")) return true;
             const raw = preferenceStore
                 ? await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY)
                 : null;
-            const data = raw ? JSON.parse(raw) : { trustedDomains: [] };
+            const data = { trustedDomains: parseTrustedDomains(raw) };
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data }));
             return true;

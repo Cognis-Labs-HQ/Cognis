@@ -14,7 +14,7 @@ OIDCアダプターは、OpenID Connectトークンイントロスペクショ�
 
 ```ts
 export interface OidcClient {
-  introspect(accessToken: string): Promise<OidcTokenClaims | null>;
+    introspect(accessToken: string): Promise<OidcTokenClaims | null>;
 }
 ```
 
@@ -22,10 +22,10 @@ export interface OidcClient {
 
 `PUT /api/v1/gateways/auth/adapters/oidc/config`（管理者のみ）で設定します。
 
-| キー | 説明 | 必須 |
-| ---- | ---- | ---- |
-| `providerName` | プロバイダーの識別子 | はい |
-| `clientId` | OAuth2クライアントID | はい |
-| `clientSecret` | OAuth2クライアントシークレット | はい |
-| `discoveryUrl` | OpenID ConnectディスカバリドキュメントのURL | はい |
-| `adminRoles` | 管理者アクセスを付与するトークンロール（カンマ区切り） | いいえ |
+| キー           | 説明                                                   | 必須   |
+| -------------- | ------------------------------------------------------ | ------ |
+| `providerName` | プロバイダーの識別子                                   | はい   |
+| `clientId`     | OAuth2クライアントID                                   | はい   |
+| `clientSecret` | OAuth2クライアントシークレット                         | はい   |
+| `discoveryUrl` | OpenID ConnectディスカバリドキュメントのURL            | はい   |
+| `adminRoles`   | 管理者アクセスを付与するトークンロール（カンマ区切り） | いいえ |

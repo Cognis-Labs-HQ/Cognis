@@ -24,10 +24,10 @@ At startup, `ModuleService` scans `COGNIS_MODULES_ROOT` for directories containi
 
 ### Internal vs external modules
 
-| Type | Source | Installation | Disclaimer |
-| ---- | ------ | ------------ | --------- |
-| `internal` | Bundled in the repository under `src/modules/` | Pre-installed | None |
-| `external` | Uploaded `.zip` or `.tar.gz` archive | Via admin API or `modules:install` CLI | Displayed before enabling |
+| Type       | Source                                         | Installation                           | Disclaimer                |
+| ---------- | ---------------------------------------------- | -------------------------------------- | ------------------------- |
+| `internal` | Bundled in the repository under `src/modules/` | Pre-installed                          | None                      |
+| `external` | Uploaded `.zip` or `.tar.gz` archive           | Via admin API or `modules:install` CLI | Displayed before enabling |
 
 External modules are installed by uploading a compressed archive. The framework extracts the archive, verifies its `manifest.json`, and places the module directory under `COGNIS_MODULES_ROOT`.
 
@@ -35,20 +35,20 @@ External modules are installed by uploading a compressed archive. The framework 
 
 ```ts
 export interface ModuleManifest {
-  id: string;
-  name: string;
-  version: string;
-  publisher?: string;
-  class: 'core' | 'extension';
-  coreApiVersion: string;
-  capabilities: string[];
-  requires?: string[];
-  entrypoints: {
-    api?: string;
-    ui?: string;
-    cli?: string;
-    db?: string;
-  };
+    id: string;
+    name: string;
+    version: string;
+    publisher?: string;
+    class: "core" | "extension";
+    coreApiVersion: string;
+    capabilities: string[];
+    requires?: string[];
+    entrypoints: {
+        api?: string;
+        ui?: string;
+        cli?: string;
+        db?: string;
+    };
 }
 ```
 
@@ -62,9 +62,9 @@ Modules that supply `entrypoints.ui` must export their page at the declared path
 
 ```ts
 export function registerApiRoutes(router) {
-  router.get('/api/v1/modules/my-module/data', async (req, res) => {
-    // handler
-  });
+    router.get("/api/v1/modules/my-module/data", async (req, res) => {
+        // handler
+    });
 }
 ```
 
@@ -74,27 +74,27 @@ export function registerApiRoutes(router) {
 
 Module routes must not start with any of the following prefixes:
 
-| Prefix | Reason |
-| ------ | ------ |
-| `/api/v1/system` | Core system endpoints |
-| `/api/v1/auth` | Auth gateway |
-| `/api/v1/users` | User management |
-| `/public` | Platform static assets |
-| `/ui` | Platform UI assets |
+| Prefix           | Reason                 |
+| ---------------- | ---------------------- |
+| `/api/v1/system` | Core system endpoints  |
+| `/api/v1/auth`   | Auth gateway           |
+| `/api/v1/users`  | User management        |
+| `/public`        | Platform static assets |
+| `/ui`            | Platform UI assets     |
 
 Attempting to register a route under a protected prefix is silently ignored and a warning is logged.
 
 ## Configuration
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
+| Variable              | Default                           | Description                                 |
+| --------------------- | --------------------------------- | ------------------------------------------- |
 | `COGNIS_MODULES_ROOT` | `src/modules` (resolved from cwd) | Directory scanned for module subdirectories |
 
 ## API Routes
 
-| Method | Path | Description | Auth |
-| ------ | ---- | ----------- | ---- |
-| `GET` | `/api/v1/modules` | List all installed modules with enabled/disabled state | Bearer |
-| `POST` | `/api/v1/modules/:id/enable` | Enable a module | Admin |
-| `POST` | `/api/v1/modules/:id/disable` | Disable a module | Admin |
-| `POST` | `/api/v1/modules/install` | Install a module from an uploaded archive | Admin |
+| Method | Path                          | Description                                            | Auth   |
+| ------ | ----------------------------- | ------------------------------------------------------ | ------ |
+| `GET`  | `/api/v1/modules`             | List all installed modules with enabled/disabled state | Bearer |
+| `POST` | `/api/v1/modules/:id/enable`  | Enable a module                                        | Admin  |
+| `POST` | `/api/v1/modules/:id/disable` | Disable a module                                       | Admin  |
+| `POST` | `/api/v1/modules/install`     | Install a module from an uploaded archive              | Admin  |

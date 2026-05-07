@@ -49,7 +49,10 @@ test("profile gateway bootstrap registers correct static dir and navbar.js exist
     });
 
     const staticDir = uiRegistry.getStaticDir("profile");
-    assert.ok(staticDir, "profile gateway must register a static dir with UIRegistry");
+    assert.ok(
+        staticDir,
+        "profile gateway must register a static dir with UIRegistry",
+    );
 
     await assert.doesNotReject(
         access(staticDir),
@@ -80,7 +83,10 @@ test("profile gateway bootstrap registers navbar plugin scriptUrl that resolves 
     });
 
     const plugins = uiRegistry.listNavbarPlugins();
-    assert.ok(plugins.length > 0, "profile gateway must register at least one navbar plugin");
+    assert.ok(
+        plugins.length > 0,
+        "profile gateway must register at least one navbar plugin",
+    );
 
     const staticDir = uiRegistry.getStaticDir("profile");
     assert.ok(staticDir, "profile gateway must register a static dir");

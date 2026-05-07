@@ -1,5 +1,9 @@
 import { apiFetch } from "../../reuse/api-client.js";
-import { applyDocumentTitle, createI18n, readPreferredLanguages } from "../../reuse/i18n.js";
+import {
+    applyDocumentTitle,
+    createI18n,
+    readPreferredLanguages,
+} from "../../reuse/i18n.js";
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 

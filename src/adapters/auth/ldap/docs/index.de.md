@@ -17,13 +17,13 @@ Der LDAP-Adapter authentifiziert Benutzer gegen einen LDAP-Verzeichnisserver und
 
 ```ts
 export interface LdapClient {
-  authenticate(accessToken: string): Promise<LdapIdentity | null>;
+    authenticate(accessToken: string): Promise<LdapIdentity | null>;
 }
 
 export interface LdapIdentity {
-  id: string;
-  email?: string;
-  groups?: string[];
+    id: string;
+    email?: string;
+    groups?: string[];
 }
 ```
 
@@ -31,11 +31,11 @@ export interface LdapIdentity {
 
 Konfiguration über `PUT /api/v1/gateways/auth/adapters/ldap/config` (nur Admin).
 
-| Schlüssel | Beschreibung | Erforderlich |
-| --------- | ------------ | ------------ |
-| `host` | LDAP-Server-Hostname | Ja |
-| `port` | LDAP-Server-Port | Ja |
-| `bindDn` | Bind-DN für den Service-Account | Ja |
-| `bindPassword` | Passwort für den Bind-DN | Ja |
-| `baseDn` | Basis-DN für Benutzersuchen | Ja |
-| `adminGroups` | Kommagetrennte LDAP-Gruppen, deren Mitglieder Admin-Rolle erhalten | Nein |
+| Schlüssel      | Beschreibung                                                       | Erforderlich |
+| -------------- | ------------------------------------------------------------------ | ------------ |
+| `host`         | LDAP-Server-Hostname                                               | Ja           |
+| `port`         | LDAP-Server-Port                                                   | Ja           |
+| `bindDn`       | Bind-DN für den Service-Account                                    | Ja           |
+| `bindPassword` | Passwort für den Bind-DN                                           | Ja           |
+| `baseDn`       | Basis-DN für Benutzersuchen                                        | Ja           |
+| `adminGroups`  | Kommagetrennte LDAP-Gruppen, deren Mitglieder Admin-Rolle erhalten | Nein         |

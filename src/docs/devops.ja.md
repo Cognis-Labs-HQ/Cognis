@@ -33,10 +33,10 @@ CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 
 ## 設定
 
-| 変数 | デフォルト | 説明 |
-| ---- | ---------- | ---- |
-| `DB_TYPE` | `sqlite` | データベースバックエンド |
-| `DATABASE_URL` | — | PostgreSQLまたはMariaDBの接続文字列 |
-| `LOG_LEVEL` | `info` | ログの詳細度 |
-| `PORT` | `3000` | HTTPポート |
-| `COGNIS_SMTP_HOST` | — | SMTPサーバーのホスト名 |
+| 変数               | デフォルト | 説明                                |
+| ------------------ | ---------- | ----------------------------------- |
+| `DB_TYPE`          | `sqlite`   | データベースバックエンド            |
+| `DATABASE_URL`     | —          | PostgreSQLまたはMariaDBの接続文字列 |
+| `LOG_LEVEL`        | `info`     | ログの詳細度                        |
+| `PORT`             | `3000`     | HTTPポート                          |
+| `COGNIS_SMTP_HOST` | —          | SMTPサーバーのホスト名              |

@@ -27,14 +27,14 @@ scrypt:<hex-salt>:<hex-derived-key>
 
 Akun lokal dikelola melalui CLI `cognisctl` menggunakan namespace perintah `user:*`:
 
-| Perintah | Keterangan |
-| -------- | ---------- |
-| `user:create` | Membuat akun lokal baru |
-| `user:role` | Menetapkan peran ke akun |
-| `user:set-password` | Mengubah kata sandi akun |
-| `user:disable` | Menonaktifkan akun |
-| `user:enable` | Mengaktifkan kembali akun yang dinonaktifkan |
-| `user:delete` | Menghapus akun |
+| Perintah            | Keterangan                                   |
+| ------------------- | -------------------------------------------- |
+| `user:create`       | Membuat akun lokal baru                      |
+| `user:role`         | Menetapkan peran ke akun                     |
+| `user:set-password` | Mengubah kata sandi akun                     |
+| `user:disable`      | Menonaktifkan akun                           |
+| `user:enable`       | Mengaktifkan kembali akun yang dinonaktifkan |
+| `user:delete`       | Menghapus akun                               |
 
 ## Konfigurasi
 

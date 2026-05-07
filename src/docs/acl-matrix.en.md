@@ -24,28 +24,28 @@ Role values are embedded in the access token at issuance in `src/api/auth/access
 
 ## Role matrix
 
-| Capability | user | teacher | moderator | admin |
+| Capability                                | user | teacher | moderator | admin |
 | ----------------------------------------- | ---: | ------: | --------: | ----: |
-| Self-register | ✅ | ✅ | ✅ | ✅ |
-| View/edit own profile | ✅ | ✅ | ✅ | ✅ |
-| Upload own avatar / banner | ✅ | ✅ | ✅ | ✅ |
-| Create posts (when not hidden) | ✅ | ✅ | ✅ | ✅ |
-| Follow / unfollow users | ✅ | ✅ | ✅ | ✅ |
-| Block / unblock users | ✅ | ✅ | ✅ | ✅ |
-| Upload / download files | ✅ | ✅ | ✅ | ✅ |
-| View learning content | ✅ | ✅ | ✅ | ✅ |
-| Submit content for review | ✅ | ✅ | ✅ | ✅ |
-| Access teacher-specific APIs | ❌ | ✅ | ❌ | ✅ |
-| Delete any user's post | ❌ | ❌ | ✅ | ✅ |
-| Delete arbitrary files | ❌ | ❌ | ❌ | ✅ |
-| View any profile regardless of visibility | ❌ | ❌ | ❌ | ✅ |
-| Configure file size limits | ❌ | ❌ | ❌ | ✅ |
-| Review / approve global content | ❌ | ❌ | ❌ | ✅ |
-| Install module (zip) | ❌ | ❌ | ❌ | ✅ |
-| Enable / disable non-core module | ❌ | ❌ | ❌ | ✅ |
-| Toggle core module | ❌ | ❌ | ❌ | ❌ |
-| Manage auth provider config | ❌ | ❌ | ❌ | ✅ |
-| System diagnostics endpoints | ❌ | ❌ | ❌ | ✅ |
+| Self-register                             |   ✅ |      ✅ |        ✅ |    ✅ |
+| View/edit own profile                     |   ✅ |      ✅ |        ✅ |    ✅ |
+| Upload own avatar / banner                |   ✅ |      ✅ |        ✅ |    ✅ |
+| Create posts (when not hidden)            |   ✅ |      ✅ |        ✅ |    ✅ |
+| Follow / unfollow users                   |   ✅ |      ✅ |        ✅ |    ✅ |
+| Block / unblock users                     |   ✅ |      ✅ |        ✅ |    ✅ |
+| Upload / download files                   |   ✅ |      ✅ |        ✅ |    ✅ |
+| View learning content                     |   ✅ |      ✅ |        ✅ |    ✅ |
+| Submit content for review                 |   ✅ |      ✅ |        ✅ |    ✅ |
+| Access teacher-specific APIs              |   ❌ |      ✅ |        ❌ |    ✅ |
+| Delete any user's post                    |   ❌ |      ❌ |        ✅ |    ✅ |
+| Delete arbitrary files                    |   ❌ |      ❌ |        ❌ |    ✅ |
+| View any profile regardless of visibility |   ❌ |      ❌ |        ❌ |    ✅ |
+| Configure file size limits                |   ❌ |      ❌ |        ❌ |    ✅ |
+| Review / approve global content           |   ❌ |      ❌ |        ❌ |    ✅ |
+| Install module (zip)                      |   ❌ |      ❌ |        ❌ |    ✅ |
+| Enable / disable non-core module          |   ❌ |      ❌ |        ❌ |    ✅ |
+| Toggle core module                        |   ❌ |      ❌ |        ❌ |    ❌ |
+| Manage auth provider config               |   ❌ |      ❌ |        ❌ |    ✅ |
+| System diagnostics endpoints              |   ❌ |      ❌ |        ❌ |    ✅ |
 
 ## Role notes
 

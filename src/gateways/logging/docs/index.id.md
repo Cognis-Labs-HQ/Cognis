@@ -16,28 +16,37 @@ Gateway logging harus di-bootstrap setelah gateway penyimpanan file. Ketergantun
 
 ```ts
 export class Logger {
-  constructor(level: LogLevel, filePath: string, fileAppend?: FileAppend);
-  async log(level: LogLevel, message: string, meta?: Record<string, unknown>): Promise<void>;
-  info(message: string, meta?: Record<string, unknown>): Promise<void>;
-  warn(message: string, meta?: Record<string, unknown>): Promise<void>;
-  error(message: string, meta?: Record<string, unknown>): Promise<void>;
+    constructor(level: LogLevel, filePath: string, fileAppend?: FileAppend);
+    async log(
+        level: LogLevel,
+        message: string,
+        meta?: Record<string, unknown>,
+    ): Promise<void>;
+    info(message: string, meta?: Record<string, unknown>): Promise<void>;
+    warn(message: string, meta?: Record<string, unknown>): Promise<void>;
+    error(message: string, meta?: Record<string, unknown>): Promise<void>;
 }
 ```
 
 Setiap baris log adalah objek JSON:
 
 ```json
-{ "ts": "2024-01-15T10:00:00.000Z", "level": "info", "message": "Gateway di-bootstrap.", "gateway": "auth" }
+{
+    "ts": "2024-01-15T10:00:00.000Z",
+    "level": "info",
+    "message": "Gateway di-bootstrap.",
+    "gateway": "auth"
+}
 ```
 
-| Capability | Tipe | Keterangan |
-| ---------- | ---- | ---------- |
-| `logging:logger` | `Logger` | Instance Logger lengkap |
-| `logging:log` | `(level, message, meta?) => void` | Fungsi log sederhana; digunakan sebagai `ctx.log` oleh bootstrapper gateway |
+| Capability       | Tipe                              | Keterangan                                                                  |
+| ---------------- | --------------------------------- | --------------------------------------------------------------------------- |
+| `logging:logger` | `Logger`                          | Instance Logger lengkap                                                     |
+| `logging:log`    | `(level, message, meta?) => void` | Fungsi log sederhana; digunakan sebagai `ctx.log` oleh bootstrapper gateway |
 
 ## Konfigurasi
 
-| Variabel | Default | Keterangan |
-| -------- | ------- | ---------- |
-| `LOG_LEVEL` | `info` | Level log minimum: `debug`, `info`, `warn`, atau `error` |
-| `LOG_FILE` | `/app/logs/app.log` | Path absolut untuk file log persisten |
+| Variabel    | Default             | Keterangan                                               |
+| ----------- | ------------------- | -------------------------------------------------------- |
+| `LOG_LEVEL` | `info`              | Level log minimum: `debug`, `info`, `warn`, atau `error` |
+| `LOG_FILE`  | `/app/logs/app.log` | Path absolut untuk file log persisten                    |

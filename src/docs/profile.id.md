@@ -17,19 +17,19 @@ Visibilitas adalah perhatian utama. Setiap akun memilih tingkat visibilitas yang
 
 ### Model Visibilitas
 
-| Tingkat | Profil terlihat oleh | Postingan dan jumlah terlihat oleh |
-| ------- | -------------------- | ---------------------------------- |
-| `hidden` (default) | Diri sendiri dan admin saja | — (posting diblokir; mengembalikan 403) |
-| `private` | Hanya follower yang sudah ada | Hanya follower |
-| `friends` | Semua pengguna terautentikasi | Hanya follower |
-| `community` | Semua pengguna terautentikasi | Semua pengguna terautentikasi |
+| Tingkat            | Profil terlihat oleh          | Postingan dan jumlah terlihat oleh      |
+| ------------------ | ----------------------------- | --------------------------------------- |
+| `hidden` (default) | Diri sendiri dan admin saja   | — (posting diblokir; mengembalikan 403) |
+| `private`          | Hanya follower yang sudah ada | Hanya follower                          |
+| `friends`          | Semua pengguna terautentikasi | Hanya follower                          |
+| `community`        | Semua pengguna terautentikasi | Semua pengguna terautentikasi           |
 
 ### Struktur Halaman Frontend
 
-| Elemen | Default terlihat | Ukuran grid |
-| ------ | ---------------- | ----------- |
-| `hero` | Ya | full |
-| `followers` | Ya | `[2, 3]` |
-| `following` | Ya | `[2, 3]` |
-| `posts` | Ya | full |
-| `social-links` | Tidak | `[2, 3]` |
+| Elemen         | Default terlihat | Ukuran grid |
+| -------------- | ---------------- | ----------- |
+| `hero`         | Ya               | full        |
+| `followers`    | Ya               | `[2, 3]`    |
+| `following`    | Ya               | `[2, 3]`    |
+| `posts`        | Ya               | full        |
+| `social-links` | Tidak            | `[2, 3]`    |

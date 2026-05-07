@@ -17,13 +17,13 @@ Adapter memory tidak boleh pernah digunakan dalam deployment produksi.
 
 ```ts
 const db = new MemoryDatabaseGateway();
-await db.execute('INSERT INTO users (id) VALUES (?)', ['u1']);
+await db.execute("INSERT INTO users (id) VALUES (?)", ["u1"]);
 console.log(db.queryLog);
 // [{ sql: 'INSERT INTO users (id) VALUES (?)', params: ['u1'] }]
 ```
 
 ## Konfigurasi
 
-| Variabel | Default | Keterangan |
-| -------- | ------- | ---------- |
-| `DB_TYPE` | — | Harus `memory` untuk mengaktifkan adapter ini |
+| Variabel  | Default | Keterangan                                    |
+| --------- | ------- | --------------------------------------------- |
+| `DB_TYPE` | —       | Harus `memory` untuk mengaktifkan adapter ini |

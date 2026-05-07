@@ -34,20 +34,20 @@ Dapatkan token melalui `POST /api/v1/auth/login`. Kirim token sebagai `Authoriza
 
 ### Lokasi Sumber Utama
 
-| Path | Tujuan |
-| ---- | ------ |
-| `src/api/main.ts` | Titik masuk server |
-| `src/api/server.ts` | Setup server HTTP dan dispatch route |
-| `src/api/route-registry.ts` | Registry route untuk pendaftaran mandiri gateway |
-| `src/api/gateway-bootstrap.ts` | Memuat dan mem-bootstrap semua gateway |
-| `src/api/auth/guard.ts` | Middleware `requireAuth`, `getAuthClaims` |
+| Path                           | Tujuan                                           |
+| ------------------------------ | ------------------------------------------------ |
+| `src/api/main.ts`              | Titik masuk server                               |
+| `src/api/server.ts`            | Setup server HTTP dan dispatch route             |
+| `src/api/route-registry.ts`    | Registry route untuk pendaftaran mandiri gateway |
+| `src/api/gateway-bootstrap.ts` | Memuat dan mem-bootstrap semua gateway           |
+| `src/api/auth/guard.ts`        | Middleware `requireAuth`, `getAuthClaims`        |
 
 ## Konfigurasi
 
-| Variabel | Default | Keterangan |
-| -------- | ------- | ---------- |
-| `DB_TYPE` | `sqlite` | Backend database |
-| `DATABASE_URL` | — | String koneksi untuk PostgreSQL atau MariaDB |
-| `SQLITE_PATH` | `./data/cognis.sqlite` | Path file SQLite |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200` | Masa berlaku token Bearer dalam detik |
-| `PORT` | `3000` | Port HTTP |
+| Variabel                          | Default                | Keterangan                                   |
+| --------------------------------- | ---------------------- | -------------------------------------------- |
+| `DB_TYPE`                         | `sqlite`               | Backend database                             |
+| `DATABASE_URL`                    | —                      | String koneksi untuk PostgreSQL atau MariaDB |
+| `SQLITE_PATH`                     | `./data/cognis.sqlite` | Path file SQLite                             |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                | Masa berlaku token Bearer dalam detik        |
+| `PORT`                            | `3000`                 | Port HTTP                                    |

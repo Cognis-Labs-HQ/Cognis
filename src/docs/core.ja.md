@@ -22,14 +22,14 @@
 
 ### 主要なソースの場所
 
-| パス | 目的 |
-| ---- | ---- |
-| `src/core/contracts/auth-account.ts` | `AuthAccount`、`ExternalIdentity`、`AuthAccountStore` インターフェース |
-| `src/core/contracts/module-manifest.ts` | `ModuleManifest` インターフェース |
-| `src/core/services/module-service.ts` | `ModuleService` クラス |
-| `src/core/services/health-service.ts` | `HealthService` クラス |
-| `src/core/services/gateway-service.ts` | ゲートウェイレジストリサービス |
-| `src/core/index.ts` | `@cognis/core` パッケージのパブリックエクスポート |
+| パス                                    | 目的                                                                   |
+| --------------------------------------- | ---------------------------------------------------------------------- |
+| `src/core/contracts/auth-account.ts`    | `AuthAccount`、`ExternalIdentity`、`AuthAccountStore` インターフェース |
+| `src/core/contracts/module-manifest.ts` | `ModuleManifest` インターフェース                                      |
+| `src/core/services/module-service.ts`   | `ModuleService` クラス                                                 |
+| `src/core/services/health-service.ts`   | `HealthService` クラス                                                 |
+| `src/core/services/gateway-service.ts`  | ゲートウェイレジストリサービス                                         |
+| `src/core/index.ts`                     | `@cognis/core` パッケージのパブリックエクスポート                      |
 
 ### ModuleService
 
@@ -45,9 +45,14 @@
 ```ts
 // src/core/services/module-service.ts
 export class ModuleService {
-  async enable(moduleId: string, options?: { acknowledgeExternalDisclaimer?: boolean }): Promise<{ moduleId: string; enabled: boolean }>;
-  async disable(moduleId: string): Promise<{ moduleId: string; enabled: boolean }>;
-  async list(): Promise<ModuleManifest[]>;
+    async enable(
+        moduleId: string,
+        options?: { acknowledgeExternalDisclaimer?: boolean },
+    ): Promise<{ moduleId: string; enabled: boolean }>;
+    async disable(
+        moduleId: string,
+    ): Promise<{ moduleId: string; enabled: boolean }>;
+    async list(): Promise<ModuleManifest[]>;
 }
 ```
 
@@ -57,10 +62,10 @@ export class ModuleService {
 
 ```ts
 export interface HealthStatus {
-  status: 'ok';
-  timestamp: string;
-  startedAt: string;
-  uptimeMs: number;
+    status: "ok";
+    timestamp: string;
+    startedAt: string;
+    uptimeMs: number;
 }
 ```
 
@@ -70,18 +75,29 @@ export interface HealthStatus {
 
 ```ts
 export interface AuthAccountStore {
-  findByExternalIdentity(provider: string, externalUserId: string): Promise<AuthAccount | null>;
-  createExternalAccount(identity: ExternalIdentity): Promise<AuthAccount>;
-  updateExternalAccount(accountId: string, identity: ExternalIdentity): Promise<AuthAccount>;
-  createLocalAccount(input: { username: string; passwordHash: string; email?: string; isAdmin?: boolean }): Promise<AuthAccount>;
+    findByExternalIdentity(
+        provider: string,
+        externalUserId: string,
+    ): Promise<AuthAccount | null>;
+    createExternalAccount(identity: ExternalIdentity): Promise<AuthAccount>;
+    updateExternalAccount(
+        accountId: string,
+        identity: ExternalIdentity,
+    ): Promise<AuthAccount>;
+    createLocalAccount(input: {
+        username: string;
+        passwordHash: string;
+        email?: string;
+        isAdmin?: boolean;
+    }): Promise<AuthAccount>;
 }
 ```
 
 ### ケイパビリティネームスペース
 
-| ケイパビリティ | 所有者 | 説明 |
-| -------------- | ------ | ---- |
-| `system:health` | コア / システムルート | `GET /api/v1/system/health` を通じてプラットフォームのヘルスとアップタイムを公開する |
-| `auth:accounts` | 認証ゲートウェイ | 組み込みアカウントライフサイクルと認証ポリシーの配線 |
-| `modules:lifecycle` | モジュールルート | モジュール一覧表示、有効化/無効化コントロール、ポリシーチェック |
-| `ui:shell` | UIルート | 共有アプリケーションシェルルーティングと管理操作サーフェス |
+| ケイパビリティ      | 所有者                | 説明                                                                                 |
+| ------------------- | --------------------- | ------------------------------------------------------------------------------------ |
+| `system:health`     | コア / システムルート | `GET /api/v1/system/health` を通じてプラットフォームのヘルスとアップタイムを公開する |
+| `auth:accounts`     | 認証ゲートウェイ      | 組み込みアカウントライフサイクルと認証ポリシーの配線                                 |
+| `modules:lifecycle` | モジュールルート      | モジュール一覧表示、有効化/無効化コントロール、ポリシーチェック                      |
+| `ui:shell`          | UIルート              | 共有アプリケーションシェルルーティングと管理操作サーフェス                           |

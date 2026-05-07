@@ -22,14 +22,14 @@ Not responsible for: implementing authentication, storing data, sending notifica
 
 ### Key source locations
 
-| Path | Purpose |
-| ---- | ------- |
-| `src/core/contracts/auth-account.ts` | `AuthAccount`, `ExternalIdentity`, `AuthAccountStore` interfaces |
-| `src/core/contracts/module-manifest.ts` | `ModuleManifest` interface |
-| `src/core/services/module-service.ts` | `ModuleService` class |
-| `src/core/services/health-service.ts` | `HealthService` class |
-| `src/core/services/gateway-service.ts` | Gateway registry service |
-| `src/core/index.ts` | Public exports for the `@cognis/core` package |
+| Path                                    | Purpose                                                          |
+| --------------------------------------- | ---------------------------------------------------------------- |
+| `src/core/contracts/auth-account.ts`    | `AuthAccount`, `ExternalIdentity`, `AuthAccountStore` interfaces |
+| `src/core/contracts/module-manifest.ts` | `ModuleManifest` interface                                       |
+| `src/core/services/module-service.ts`   | `ModuleService` class                                            |
+| `src/core/services/health-service.ts`   | `HealthService` class                                            |
+| `src/core/services/gateway-service.ts`  | Gateway registry service                                         |
+| `src/core/index.ts`                     | Public exports for the `@cognis/core` package                    |
 
 ### ModuleService
 
@@ -45,9 +45,14 @@ Route safety is enforced before any module is activated: if the module's `routes
 ```ts
 // src/core/services/module-service.ts
 export class ModuleService {
-  async enable(moduleId: string, options?: { acknowledgeExternalDisclaimer?: boolean }): Promise<{ moduleId: string; enabled: boolean }>;
-  async disable(moduleId: string): Promise<{ moduleId: string; enabled: boolean }>;
-  async list(): Promise<ModuleManifest[]>;
+    async enable(
+        moduleId: string,
+        options?: { acknowledgeExternalDisclaimer?: boolean },
+    ): Promise<{ moduleId: string; enabled: boolean }>;
+    async disable(
+        moduleId: string,
+    ): Promise<{ moduleId: string; enabled: boolean }>;
+    async list(): Promise<ModuleManifest[]>;
 }
 ```
 
@@ -57,10 +62,10 @@ export class ModuleService {
 
 ```ts
 export interface HealthStatus {
-  status: 'ok';
-  timestamp: string;
-  startedAt: string;
-  uptimeMs: number;
+    status: "ok";
+    timestamp: string;
+    startedAt: string;
+    uptimeMs: number;
 }
 ```
 
@@ -70,18 +75,29 @@ export interface HealthStatus {
 
 ```ts
 export interface AuthAccountStore {
-  findByExternalIdentity(provider: string, externalUserId: string): Promise<AuthAccount | null>;
-  createExternalAccount(identity: ExternalIdentity): Promise<AuthAccount>;
-  updateExternalAccount(accountId: string, identity: ExternalIdentity): Promise<AuthAccount>;
-  createLocalAccount(input: { username: string; passwordHash: string; email?: string; isAdmin?: boolean }): Promise<AuthAccount>;
+    findByExternalIdentity(
+        provider: string,
+        externalUserId: string,
+    ): Promise<AuthAccount | null>;
+    createExternalAccount(identity: ExternalIdentity): Promise<AuthAccount>;
+    updateExternalAccount(
+        accountId: string,
+        identity: ExternalIdentity,
+    ): Promise<AuthAccount>;
+    createLocalAccount(input: {
+        username: string;
+        passwordHash: string;
+        email?: string;
+        isAdmin?: boolean;
+    }): Promise<AuthAccount>;
 }
 ```
 
 ### Capability namespaces
 
-| Capability | Owner | Description |
-| ---------- | ----- | ----------- |
-| `system:health` | Core / system routes | Exposes platform health and uptime via `GET /api/v1/system/health` |
-| `auth:accounts` | Auth gateway | Built-in account lifecycle and authentication policy wiring |
-| `modules:lifecycle` | Module routes | Module listing, enable/disable controls, and policy checks |
-| `ui:shell` | UI routes | Shared application shell routing and admin operations surface |
+| Capability          | Owner                | Description                                                        |
+| ------------------- | -------------------- | ------------------------------------------------------------------ |
+| `system:health`     | Core / system routes | Exposes platform health and uptime via `GET /api/v1/system/health` |
+| `auth:accounts`     | Auth gateway         | Built-in account lifecycle and authentication policy wiring        |
+| `modules:lifecycle` | Module routes        | Module listing, enable/disable controls, and policy checks         |
+| `ui:shell`          | UI routes            | Shared application shell routing and admin operations surface      |

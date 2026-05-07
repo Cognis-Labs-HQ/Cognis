@@ -21,36 +21,36 @@ Kelas utama adalah `CoreNotificationGateway` di `src/gateways/notify/gateway.ts`
 
 ```ts
 export interface NotificationGateway {
-  registerSender(sender: NotificationSender): void;
-  dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[] }>;
-  registerCategory(id: string, label: string): void;
-  listSenders(): NotificationSenderInfo[];
-  listCategories(): NotificationCategory[];
+    registerSender(sender: NotificationSender): void;
+    dispatch(envelope: NotificationEnvelope): Promise<{ dispatched: string[] }>;
+    registerCategory(id: string, label: string): void;
+    listSenders(): NotificationSenderInfo[];
+    listCategories(): NotificationCategory[];
 }
 ```
 
-| Path | Tujuan |
-| ---- | ------ |
-| `src/gateways/notify/gateway.ts` | `CoreNotificationGateway`, antarmuka |
-| `src/gateways/notify/bootstrap.ts` | Titik masuk bootstrap |
-| `src/gateways/notify/routes/notifications.ts` | Route pengiriman dan pengelolaan |
-| `src/api/reuse/tfa-code.ts` | `TfaCodeService` |
-| `src/api/reuse/verify-token.ts` | `VerifyTokenService` |
+| Path                                          | Tujuan                               |
+| --------------------------------------------- | ------------------------------------ |
+| `src/gateways/notify/gateway.ts`              | `CoreNotificationGateway`, antarmuka |
+| `src/gateways/notify/bootstrap.ts`            | Titik masuk bootstrap                |
+| `src/gateways/notify/routes/notifications.ts` | Route pengiriman dan pengelolaan     |
+| `src/api/reuse/tfa-code.ts`                   | `TfaCodeService`                     |
+| `src/api/reuse/verify-token.ts`               | `VerifyTokenService`                 |
 
 ## Route API
 
-| Metode | Path | Keterangan | Autentikasi |
-| ------ | ---- | ---------- | ----------- |
-| `POST` | `/api/v1/notifications/send` | Kirim notifikasi | Admin |
-| `GET` | `/api/v1/notifications/providers` | Daftar pengirim terdaftar | Admin |
-| `GET` | `/api/v1/notifications/categories` | Daftar kategori notifikasi | Bearer |
-| `GET` | `/api/v1/notifications/preferences` | Dapatkan preferensi notifikasi sendiri | Bearer |
-| `PUT` | `/api/v1/notifications/preferences` | Perbarui preferensi notifikasi sendiri | Bearer |
-| `POST` | `/api/v1/notifications/providers/:senderId/config` | Perbarui konfigurasi pengirim | Admin |
-| `POST` | `/api/v1/notifications/providers/:senderId/test` | Kirim notifikasi uji coba | Admin |
-| `POST` | `/api/v1/users/tfa/request` | Minta kode TFA | Bearer |
-| `POST` | `/api/v1/users/tfa/verify` | Verifikasi kode TFA | Bearer |
-| `POST` | `/api/v1/users/email/verify/request` | Minta verifikasi email | Bearer |
-| `POST` | `/api/v1/users/email/verify` | Selesaikan verifikasi email | Bearer |
-| `GET` | `/api/v1/users/:username/email` | Dapatkan email utama pengguna | Bearer |
-| `PUT` | `/api/v1/users/:username/email` | Atur email utama pengguna | Bearer |
+| Metode | Path                                               | Keterangan                             | Autentikasi |
+| ------ | -------------------------------------------------- | -------------------------------------- | ----------- |
+| `POST` | `/api/v1/notifications/send`                       | Kirim notifikasi                       | Admin       |
+| `GET`  | `/api/v1/notifications/providers`                  | Daftar pengirim terdaftar              | Admin       |
+| `GET`  | `/api/v1/notifications/categories`                 | Daftar kategori notifikasi             | Bearer      |
+| `GET`  | `/api/v1/notifications/preferences`                | Dapatkan preferensi notifikasi sendiri | Bearer      |
+| `PUT`  | `/api/v1/notifications/preferences`                | Perbarui preferensi notifikasi sendiri | Bearer      |
+| `POST` | `/api/v1/notifications/providers/:senderId/config` | Perbarui konfigurasi pengirim          | Admin       |
+| `POST` | `/api/v1/notifications/providers/:senderId/test`   | Kirim notifikasi uji coba              | Admin       |
+| `POST` | `/api/v1/users/tfa/request`                        | Minta kode TFA                         | Bearer      |
+| `POST` | `/api/v1/users/tfa/verify`                         | Verifikasi kode TFA                    | Bearer      |
+| `POST` | `/api/v1/users/email/verify/request`               | Minta verifikasi email                 | Bearer      |
+| `POST` | `/api/v1/users/email/verify`                       | Selesaikan verifikasi email            | Bearer      |
+| `GET`  | `/api/v1/users/:username/email`                    | Dapatkan email utama pengguna          | Bearer      |
+| `PUT`  | `/api/v1/users/:username/email`                    | Atur email utama pengguna              | Bearer      |

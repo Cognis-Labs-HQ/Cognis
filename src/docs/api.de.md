@@ -43,138 +43,138 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 
 ### Standard-Persistenzeinstellungen
 
-| `DB_TYPE` | Backend | Verbindung |
-| --------- | ------- | ---------- |
-| `sqlite` (Standard) | SQLite | Datei unter `SQLITE_PATH` (Standard `./data/cognis.sqlite`) |
-| `postgresql` | PostgreSQL | `DATABASE_URL` erforderlich |
-| `mariadb` | MariaDB | `DATABASE_URL` erforderlich |
+| `DB_TYPE`           | Backend    | Verbindung                                                  |
+| ------------------- | ---------- | ----------------------------------------------------------- |
+| `sqlite` (Standard) | SQLite     | Datei unter `SQLITE_PATH` (Standard `./data/cognis.sqlite`) |
+| `postgresql`        | PostgreSQL | `DATABASE_URL` erforderlich                                 |
+| `mariadb`           | MariaDB    | `DATABASE_URL` erforderlich                                 |
 
 ### Wichtige Quelldateien
 
-| Pfad | Zweck |
-| ---- | ----- |
-| `src/api/main.ts` | Server-Einstiegspunkt |
-| `src/api/server.ts` | HTTP-Server-Einrichtung und Routen-Verteilung |
-| `src/api/route-registry.ts` | Routen-Registry, die von Gateways zur Selbstregistrierung verwendet wird |
-| `src/api/gateway-bootstrap.ts` | Lädt und bootet alle Gateways |
-| `src/api/auth/guard.ts` | Middleware `requireAuth`, `getAuthClaims` |
-| `src/api/auth/access-tokens.ts` | Token-Ausstellung und -Validierung |
-| `src/api/bootstrap/db-init.ts` | Schema-Initialisierung beim Start |
-| `src/api/reuse/` | Gemeinsame Hilfsprogramme (Krypto, JSON-Lesen, Store-Helfer) |
+| Pfad                            | Zweck                                                                    |
+| ------------------------------- | ------------------------------------------------------------------------ |
+| `src/api/main.ts`               | Server-Einstiegspunkt                                                    |
+| `src/api/server.ts`             | HTTP-Server-Einrichtung und Routen-Verteilung                            |
+| `src/api/route-registry.ts`     | Routen-Registry, die von Gateways zur Selbstregistrierung verwendet wird |
+| `src/api/gateway-bootstrap.ts`  | Lädt und bootet alle Gateways                                            |
+| `src/api/auth/guard.ts`         | Middleware `requireAuth`, `getAuthClaims`                                |
+| `src/api/auth/access-tokens.ts` | Token-Ausstellung und -Validierung                                       |
+| `src/api/bootstrap/db-init.ts`  | Schema-Initialisierung beim Start                                        |
+| `src/api/reuse/`                | Gemeinsame Hilfsprogramme (Krypto, JSON-Lesen, Store-Helfer)             |
 
 ## Konfiguration
 
-| Variable | Standard | Beschreibung |
-| -------- | -------- | ------------ |
-| `DB_TYPE` | `sqlite` | Datenbank-Backend: `sqlite`, `postgresql` oder `mariadb` |
-| `DATABASE_URL` | — | Verbindungszeichenfolge für PostgreSQL oder MariaDB |
-| `SQLITE_PATH` | `./data/cognis.sqlite` | SQLite-Dateipfad (nur wenn `DB_TYPE=sqlite`) |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200` | Bearer-Token-Lebensdauer in Sekunden |
-| `COGNIS_CLI_TOKEN_PATH` | `/app/config/cli-access.token` | Pfad für das CLI-Bootstrap-Token |
-| `COGNIS_GATEWAYS_ROOT` | `src/gateways` | Stammverzeichnis für Gateway-Erkennung |
-| `COGNIS_ADAPTERS_ROOT` | `src/adapters` | Stammverzeichnis für Adapter-Erkennung |
-| `COGNIS_MODULES_ROOT` | `src/modules` | Stammverzeichnis für Modul-Erkennung |
-| `PORT` | `3000` | HTTP-Port |
-| `LISTEN_HOST` | `0.0.0.0` | Bind-Adresse |
+| Variable                          | Standard                       | Beschreibung                                             |
+| --------------------------------- | ------------------------------ | -------------------------------------------------------- |
+| `DB_TYPE`                         | `sqlite`                       | Datenbank-Backend: `sqlite`, `postgresql` oder `mariadb` |
+| `DATABASE_URL`                    | —                              | Verbindungszeichenfolge für PostgreSQL oder MariaDB      |
+| `SQLITE_PATH`                     | `./data/cognis.sqlite`         | SQLite-Dateipfad (nur wenn `DB_TYPE=sqlite`)             |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer-Token-Lebensdauer in Sekunden                     |
+| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Pfad für das CLI-Bootstrap-Token                         |
+| `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | Stammverzeichnis für Gateway-Erkennung                   |
+| `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | Stammverzeichnis für Adapter-Erkennung                   |
+| `COGNIS_MODULES_ROOT`             | `src/modules`                  | Stammverzeichnis für Modul-Erkennung                     |
+| `PORT`                            | `3000`                         | HTTP-Port                                                |
+| `LISTEN_HOST`                     | `0.0.0.0`                      | Bind-Adresse                                             |
 
 ## API-Routen
 
 ### System
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `GET` | `/api/v1/system/health` | Vollständiger Gesundheitsstatus mit Betriebszeit | Keine |
-| `GET` | `/api/v1/system/healthcheck` | Minimale Lebendigkeitsprüfung | Keine |
-| `GET` | `/api/v1/system/ui-config` | UI-Konfigurationsobjekt | Keine |
+| Methode | Pfad                         | Beschreibung                                     | Auth  |
+| ------- | ---------------------------- | ------------------------------------------------ | ----- |
+| `GET`   | `/api/v1/system/health`      | Vollständiger Gesundheitsstatus mit Betriebszeit | Keine |
+| `GET`   | `/api/v1/system/healthcheck` | Minimale Lebendigkeitsprüfung                    | Keine |
+| `GET`   | `/api/v1/system/ui-config`   | UI-Konfigurationsobjekt                          | Keine |
 
 ### Auth
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `GET` | `/api/v1/auth/login-methods` | Aktivierte Authentifizierungsanbieter auflisten | Keine |
-| `POST` | `/api/v1/auth/register` | Selbstregistrierung; vergibt Rolle `user` | Keine |
-| `POST` | `/api/v1/auth/login` | Authentifizierung; gibt Bearer-Token zurück | Keine |
+| Methode | Pfad                         | Beschreibung                                    | Auth  |
+| ------- | ---------------------------- | ----------------------------------------------- | ----- |
+| `GET`   | `/api/v1/auth/login-methods` | Aktivierte Authentifizierungsanbieter auflisten | Keine |
+| `POST`  | `/api/v1/auth/register`      | Selbstregistrierung; vergibt Rolle `user`       | Keine |
+| `POST`  | `/api/v1/auth/login`         | Authentifizierung; gibt Bearer-Token zurück     | Keine |
 
 ### Module
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `GET` | `/api/v1/modules` | Alle Module auflisten | Bearer |
-| `POST` | `/api/v1/modules/:id/enable` | Modul aktivieren | Admin |
-| `POST` | `/api/v1/modules/:id/disable` | Modul deaktivieren | Admin |
+| Methode | Pfad                          | Beschreibung          | Auth   |
+| ------- | ----------------------------- | --------------------- | ------ |
+| `GET`   | `/api/v1/modules`             | Alle Module auflisten | Bearer |
+| `POST`  | `/api/v1/modules/:id/enable`  | Modul aktivieren      | Admin  |
+| `POST`  | `/api/v1/modules/:id/disable` | Modul deaktivieren    | Admin  |
 
 ### Gateways
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `GET` | `/api/v1/gateways` | Alle registrierten Gateways auflisten | Admin |
-| `GET` | `/api/v1/gateways/:id` | Einzelnes Gateway-Manifest | Admin |
-| `POST` | `/api/v1/gateways/:id/enable` | Gateway als aktiv markieren | Admin |
-| `POST` | `/api/v1/gateways/:id/disable` | Gateway als deaktiviert markieren | Admin |
-| `GET` | `/api/v1/admin/sections` | Admin-UI-Abschnitte aus Gateways | Admin |
+| Methode | Pfad                           | Beschreibung                          | Auth  |
+| ------- | ------------------------------ | ------------------------------------- | ----- |
+| `GET`   | `/api/v1/gateways`             | Alle registrierten Gateways auflisten | Admin |
+| `GET`   | `/api/v1/gateways/:id`         | Einzelnes Gateway-Manifest            | Admin |
+| `POST`  | `/api/v1/gateways/:id/enable`  | Gateway als aktiv markieren           | Admin |
+| `POST`  | `/api/v1/gateways/:id/disable` | Gateway als deaktiviert markieren     | Admin |
+| `GET`   | `/api/v1/admin/sections`       | Admin-UI-Abschnitte aus Gateways      | Admin |
 
 ### UI-Erweiterungen
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `GET` | `/api/v1/ui/page-extensions/:pageId` | Von Gateways beigetragene Seitenelemente | Bearer |
+| Methode | Pfad                                 | Beschreibung                             | Auth   |
+| ------- | ------------------------------------ | ---------------------------------------- | ------ |
+| `GET`   | `/api/v1/ui/page-extensions/:pageId` | Von Gateways beigetragene Seitenelemente | Bearer |
 
 ### Dokumentation
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `GET` | `/api/v1/docs` | Alle verfügbaren Dokumentations-Slugs auflisten | Keine |
-| `GET` | `/api/v1/docs/:slugOrTreePath` | Einzelnes Dokument nach Slug abrufen | Keine |
+| Methode | Pfad                           | Beschreibung                                    | Auth  |
+| ------- | ------------------------------ | ----------------------------------------------- | ----- |
+| `GET`   | `/api/v1/docs`                 | Alle verfügbaren Dokumentations-Slugs auflisten | Keine |
+| `GET`   | `/api/v1/docs/:slugOrTreePath` | Einzelnes Dokument nach Slug abrufen            | Keine |
 
 ### Profil
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `GET` | `/api/v1/profile/ping` | Fähigkeitsprüfung | Bearer |
-| `GET` | `/api/v1/profile` | Eigenes Profil | Bearer |
-| `PATCH` | `/api/v1/profile` | Eigene Profilfelder aktualisieren | Bearer |
-| `PUT` | `/api/v1/profile/avatar` | Avatar hochladen | Bearer |
-| `DELETE` | `/api/v1/profile/avatar` | Eigenen Avatar entfernen | Bearer |
-| `PUT` | `/api/v1/profile/banner` | Banner hochladen | Bearer |
-| `DELETE` | `/api/v1/profile/banner` | Eigenes Banner entfernen | Bearer |
-| `GET` | `/api/v1/users/:handle/profile` | Öffentliches Profil (durch Sichtbarkeit eingeschränkt) | Bearer |
+| Methode  | Pfad                            | Beschreibung                                           | Auth   |
+| -------- | ------------------------------- | ------------------------------------------------------ | ------ |
+| `GET`    | `/api/v1/profile/ping`          | Fähigkeitsprüfung                                      | Bearer |
+| `GET`    | `/api/v1/profile`               | Eigenes Profil                                         | Bearer |
+| `PATCH`  | `/api/v1/profile`               | Eigene Profilfelder aktualisieren                      | Bearer |
+| `PUT`    | `/api/v1/profile/avatar`        | Avatar hochladen                                       | Bearer |
+| `DELETE` | `/api/v1/profile/avatar`        | Eigenen Avatar entfernen                               | Bearer |
+| `PUT`    | `/api/v1/profile/banner`        | Banner hochladen                                       | Bearer |
+| `DELETE` | `/api/v1/profile/banner`        | Eigenes Banner entfernen                               | Bearer |
+| `GET`    | `/api/v1/users/:handle/profile` | Öffentliches Profil (durch Sichtbarkeit eingeschränkt) | Bearer |
 
 ### Soziales Netzwerk
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `POST` | `/api/v1/users/:handle/follow` | Benutzer folgen | Bearer |
-| `DELETE` | `/api/v1/users/:handle/follow` | Entfolgen | Bearer |
-| `POST` | `/api/v1/users/:handle/block` | Benutzer blockieren | Bearer |
-| `DELETE` | `/api/v1/users/:handle/block` | Blockierung aufheben | Bearer |
-| `GET` | `/api/v1/users/:handle/followers` | Follower-Liste (durch Sichtbarkeit eingeschränkt) | Bearer |
-| `GET` | `/api/v1/users/:handle/following` | Folge-Liste (durch Sichtbarkeit eingeschränkt) | Bearer |
+| Methode  | Pfad                              | Beschreibung                                      | Auth   |
+| -------- | --------------------------------- | ------------------------------------------------- | ------ |
+| `POST`   | `/api/v1/users/:handle/follow`    | Benutzer folgen                                   | Bearer |
+| `DELETE` | `/api/v1/users/:handle/follow`    | Entfolgen                                         | Bearer |
+| `POST`   | `/api/v1/users/:handle/block`     | Benutzer blockieren                               | Bearer |
+| `DELETE` | `/api/v1/users/:handle/block`     | Blockierung aufheben                              | Bearer |
+| `GET`    | `/api/v1/users/:handle/followers` | Follower-Liste (durch Sichtbarkeit eingeschränkt) | Bearer |
+| `GET`    | `/api/v1/users/:handle/following` | Folge-Liste (durch Sichtbarkeit eingeschränkt)    | Bearer |
 
 ### Beiträge
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `POST` | `/api/v1/posts` | Beitrag erstellen | Bearer |
-| `GET` | `/api/v1/posts` | Eigene Beiträge auflisten | Bearer |
-| `DELETE` | `/api/v1/posts/:id` | Beitrag löschen (Eigentümer, Moderator oder Admin) | Bearer |
-| `GET` | `/api/v1/users/:handle/posts` | Beiträge eines Benutzers auflisten | Bearer |
+| Methode  | Pfad                          | Beschreibung                                       | Auth   |
+| -------- | ----------------------------- | -------------------------------------------------- | ------ |
+| `POST`   | `/api/v1/posts`               | Beitrag erstellen                                  | Bearer |
+| `GET`    | `/api/v1/posts`               | Eigene Beiträge auflisten                          | Bearer |
+| `DELETE` | `/api/v1/posts/:id`           | Beitrag löschen (Eigentümer, Moderator oder Admin) | Bearer |
+| `GET`    | `/api/v1/users/:handle/posts` | Beiträge eines Benutzers auflisten                 | Bearer |
 
 ### Dateien
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `PUT` | `/api/v1/files/:bucket/:key` | Datei hochladen | Bearer |
-| `GET` | `/api/v1/files/:bucket/:key` | Datei herunterladen | Bearer |
-| `DELETE` | `/api/v1/files/:bucket/:key` | Datei löschen | Admin |
-| `GET` | `/api/v1/admin/file-limits` | Größenbeschränkungen pro Kategorie auflisten | Admin |
-| `PUT` | `/api/v1/admin/file-limits/:category` | Größenbeschränkung festlegen | Admin |
+| Methode  | Pfad                                  | Beschreibung                                 | Auth   |
+| -------- | ------------------------------------- | -------------------------------------------- | ------ |
+| `PUT`    | `/api/v1/files/:bucket/:key`          | Datei hochladen                              | Bearer |
+| `GET`    | `/api/v1/files/:bucket/:key`          | Datei herunterladen                          | Bearer |
+| `DELETE` | `/api/v1/files/:bucket/:key`          | Datei löschen                                | Admin  |
+| `GET`    | `/api/v1/admin/file-limits`           | Größenbeschränkungen pro Kategorie auflisten | Admin  |
+| `PUT`    | `/api/v1/admin/file-limits/:category` | Größenbeschränkung festlegen                 | Admin  |
 
 ### Benutzer (Admin)
 
-| Methode | Pfad | Beschreibung | Auth |
-| ------- | ---- | ------------ | ---- |
-| `GET` | `/api/v1/users` | Konten auflisten | Admin |
-| `POST` | `/api/v1/users/:username/role` | Kontorolle festlegen | Admin |
-| `POST` | `/api/v1/users/:username/disable` | Konto deaktivieren | Admin |
-| `POST` | `/api/v1/users/:username/enable` | Konto aktivieren | Admin |
-| `DELETE` | `/api/v1/users/:username` | Konto löschen | Admin |
+| Methode  | Pfad                              | Beschreibung         | Auth  |
+| -------- | --------------------------------- | -------------------- | ----- |
+| `GET`    | `/api/v1/users`                   | Konten auflisten     | Admin |
+| `POST`   | `/api/v1/users/:username/role`    | Kontorolle festlegen | Admin |
+| `POST`   | `/api/v1/users/:username/disable` | Konto deaktivieren   | Admin |
+| `POST`   | `/api/v1/users/:username/enable`  | Konto aktivieren     | Admin |
+| `DELETE` | `/api/v1/users/:username`         | Konto löschen        | Admin |

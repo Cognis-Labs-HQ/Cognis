@@ -38,6 +38,7 @@ export class CoreAuthGateway {
 `getEnabledAdapter(id)` は特定のアダプターが現在有効な場合のみIDで返します。`getAdapter()` （引数なし）は最初の有効なアダプターを返します。適切なアダプターが見つからない場合は両方とも `null` を返します。
 
 `src/gateways/auth/bootstrap.ts` でのブートストラップ:
+
 1. `src/adapters/auth/local/store.ts` から `DbLocalAccountStore` をインスタンス化。
 2. DBエグゼキューターとタイプで `CoreAuthGateway` をインスタンス化。
 3. `setLocalAdapter()` でローカルアダプターを読み込む。
@@ -47,21 +48,21 @@ export class CoreAuthGateway {
 
 提供されるケイパビリティ:
 
-| ケイパビリティ | 型 | 説明 |
-| ------------ | -- | ---- |
-| `auth:accountStore` | `LocalAccountStore` | ローカルアダプターが使用するローカルアカウントストア |
-| `auth:createLocalAdmin` | `(username, password) => Promise<AuthContext>` | 存在しない場合に管理者アカウントを作成 |
-| `auth:getLoginMethods` | `() => Promise<AdapterInfo[]>` | すべての有効なプロバイダーのメタデータを返す |
+| ケイパビリティ          | 型                                             | 説明                                                 |
+| ----------------------- | ---------------------------------------------- | ---------------------------------------------------- |
+| `auth:accountStore`     | `LocalAccountStore`                            | ローカルアダプターが使用するローカルアカウントストア |
+| `auth:createLocalAdmin` | `(username, password) => Promise<AuthContext>` | 存在しない場合に管理者アカウントを作成               |
+| `auth:getLoginMethods`  | `() => Promise<AdapterInfo[]>`                 | すべての有効なプロバイダーのメタデータを返す         |
 
 ## APIルート
 
-| メソッド | パス | 説明 | 認証 |
-| ------- | ---- | ---- | ---- |
-| `GET` | `/api/v1/auth/login-methods` | 有効な認証プロバイダーを一覧表示 | 不要 |
-| `POST` | `/api/v1/auth/register` | 新しいローカルアカウントを自己登録 | 不要 |
-| `POST` | `/api/v1/auth/login` | 認証してBearerトークンを返す | 不要 |
-| `GET` | `/api/v1/gateways/auth/adapters` | 登録済み認証アダプターを一覧表示 | 管理者 |
-| `GET` | `/api/v1/gateways/auth/adapters/:id/config` | アダプターの設定スキーマを取得 | 管理者 |
-| `PUT` | `/api/v1/gateways/auth/adapters/:id/config` | アダプターの設定を更新 | 管理者 |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/enable` | アダプターを有効化 | 管理者 |
-| `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | アダプターを無効化 | 管理者 |
+| メソッド | パス                                         | 説明                               | 認証   |
+| -------- | -------------------------------------------- | ---------------------------------- | ------ |
+| `GET`    | `/api/v1/auth/login-methods`                 | 有効な認証プロバイダーを一覧表示   | 不要   |
+| `POST`   | `/api/v1/auth/register`                      | 新しいローカルアカウントを自己登録 | 不要   |
+| `POST`   | `/api/v1/auth/login`                         | 認証してBearerトークンを返す       | 不要   |
+| `GET`    | `/api/v1/gateways/auth/adapters`             | 登録済み認証アダプターを一覧表示   | 管理者 |
+| `GET`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定スキーマを取得     | 管理者 |
+| `PUT`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定を更新             | 管理者 |
+| `POST`   | `/api/v1/gateways/auth/adapters/:id/enable`  | アダプターを有効化                 | 管理者 |
+| `POST`   | `/api/v1/gateways/auth/adapters/:id/disable` | アダプターを無効化                 | 管理者 |
