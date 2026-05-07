@@ -89,12 +89,13 @@
  *   showFooter?: boolean,
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
  * }} options
- * @returns {{ init(): Promise<void>, refresh(elements: Array): void }}
+ * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
 
 import { apiFetch } from "./api-client.js";
 import { renderDashboardLayout } from "../layouts/dashboard-layout.js";
 import { prefersReducedMotion } from "./motion.js";
+import { showToast } from "./toast.js";
 
 export function createPageComposer(
     root,
@@ -2558,5 +2559,5 @@ export function createPageComposer(
         render();
     }
 
-    return { init, refresh, getFloatingSlot };
+    return { init, refresh, getFloatingSlot, showToast };
 }

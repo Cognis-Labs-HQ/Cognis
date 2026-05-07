@@ -6,18 +6,18 @@
  * via the UIRegistry mechanism.
  *
  * Public exports:
- *   createAdminSection({ i18n, apiFetch, escapeHtml, openPopup }) — returns a
+ *   createAdminSection({ i18n, apiFetch, escapeHtml, openPopup, showToast }) — returns a
  *     page-composer-compatible element definition with a dataReady promise.
  *
  * Usage:
  *   const mod = await import("/static/gateways/notify/admin-section.js");
- *   const def = mod.createAdminSection({ i18n, apiFetch, escapeHtml, openPopup });
+ *   const def = mod.createAdminSection({ i18n, apiFetch, escapeHtml, openPopup, showToast });
  *   await def.dataReady;
  *
- * @param {{ i18n: object, apiFetch: Function, escapeHtml: Function, openPopup: Function }} deps
+ * @param {{ i18n: object, apiFetch: Function, escapeHtml: Function, openPopup: Function, showToast: Function }} deps
  * @returns {{ id: string, label: string, dataReady: Promise<void>, subComposerOptions: object }}
  */
-export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
+export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     async function loadCategories() {
         const res = await apiFetch("/api/v1/notifications/categories");
         if (!res.ok) return [];
@@ -88,7 +88,6 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
       </div>
       <div class="notif-debug-actions">
         <button class="btn-animated notif-debug-send" type="button">${i18n.t("ui.app.admin.notif.debug_send")}</button>
-        <span class="notif-debug-status notif-status-message"></span>
       </div>
     </div>
   `;
@@ -99,7 +98,6 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
         if (!panel) return;
 
         const sendBtn = panel.querySelector(".notif-debug-send");
-        const statusEl = panel.querySelector(".notif-debug-status");
 
         if (!sendBtn) return;
 
@@ -127,14 +125,12 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
                     : "";
 
             if (!recipientUsername || !category || !subject || !body) {
-                if (statusEl)
-                    statusEl.textContent = i18n.t(
-                        "ui.app.admin.notif.debug_missing_fields",
-                    );
+                showToast(i18n.t("ui.app.admin.notif.debug_missing_fields"), {
+                    variant: "warning",
+                });
                 return;
             }
 
-            if (statusEl) statusEl.textContent = "";
             const res = await apiFetch("/api/v1/notifications/send", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
@@ -146,11 +142,12 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
                 }),
             });
 
-            if (statusEl) {
-                statusEl.textContent = res.ok
+            showToast(
+                res.ok
                     ? i18n.t("ui.app.admin.notif.debug_sent")
-                    : i18n.t("ui.app.admin.notif.debug_send_failed");
-            }
+                    : i18n.t("ui.app.admin.notif.debug_send_failed"),
+                { variant: res.ok ? "success" : "error" },
+            );
         });
     }
 

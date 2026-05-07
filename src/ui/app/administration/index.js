@@ -6,6 +6,7 @@ import { escapeHtml } from "../../reuse/escape-html.js";
 import { initSecuritySection } from "./security.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
+import { showToast } from "../../reuse/toast.js";
 
 const root = document.querySelector("#app");
 const i18n = await createI18n();
@@ -779,6 +780,7 @@ async function loadGatewaySection(section) {
             apiFetch,
             escapeHtml,
             openPopup,
+            showToast,
         });
         if (def.dataReady) await def.dataReady;
         return def;
@@ -967,7 +969,6 @@ function renderGenericAdapterForm(descriptors, requiredFields) {
       <div class="provider-test-row">
         <input class="provider-test-input" type="email" placeholder="${escapeHtml(i18n.t("ui.app.admin.notif.test_email_to"))}" />
         <button class="btn-animated provider-test-btn" type="button">${i18n.t("ui.app.admin.notif.test_email")}</button>
-        <span class="provider-test-status"></span>
       </div>
     </div>
   `;
@@ -1132,9 +1133,6 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
 
             const testBtn = popupFormEl.querySelector(".provider-test-btn");
             const testInput = popupFormEl.querySelector(".provider-test-input");
-            const testStatus = popupFormEl.querySelector(
-                ".provider-test-status",
-            );
 
             if (testBtn && testInput) {
                 testBtn.addEventListener("click", async () => {
@@ -1162,11 +1160,12 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
                         headers: { "content-type": "application/json" },
                         body: JSON.stringify({ to, config }),
                     });
-                    if (testStatus) {
-                        testStatus.textContent = testRes.ok
+                    showToast(
+                        testRes.ok
                             ? i18n.t("ui.app.admin.notif.test_sent")
-                            : i18n.t("ui.app.admin.notif.test_failed");
-                    }
+                            : i18n.t("ui.app.admin.notif.test_failed"),
+                        { variant: testRes.ok ? "success" : "error" },
+                    );
                 });
             }
         },
@@ -1367,8 +1366,17 @@ const floatingSlot = composer.getFloatingSlot("admin-changes-bar");
 
 changesBar = createUnsavedChangesBar(floatingSlot, {
     onSave: async () => {
-        await securitySection.save();
-        changesBar.markDirty("security", false);
+        try {
+            await securitySection.save();
+            changesBar.markDirty("security", false);
+            showToast(i18n.t("ui.app.admin.security.saved"), {
+                variant: "success",
+            });
+        } catch {
+            showToast(i18n.t("ui.app.admin.security.save_failed"), {
+                variant: "error",
+            });
+        }
     },
     onDiscard: () => {
         securitySection.discard();

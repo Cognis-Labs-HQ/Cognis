@@ -2,6 +2,7 @@ import { escapeHtml } from "../../reuse/escape-html.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { openPopup } from "../../reuse/popup.js";
 import { watchToken } from "../../reuse/validation-url.js";
+import { showToast } from "../../reuse/toast.js";
 
 /**
  * General preferences sub-module for the Settings page.
@@ -157,9 +158,8 @@ export function initGeneralPrefs(root, { i18n, username }) {
             .join("");
     }
 
-    function showStatus(message) {
-        const statusEl = root.querySelector("#email-status");
-        if (statusEl) statusEl.textContent = message;
+    function showStatus(message, variant = "error") {
+        showToast(message, { variant });
     }
 
     async function openVerifyPopup(address, watchTokenValue) {
