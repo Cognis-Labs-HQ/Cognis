@@ -9,6 +9,7 @@ import {
 import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { attachCharCounter } from "../../reuse/char-counter.js";
+import { showToast } from "../../reuse/toast.js";
 
 const root = document.querySelector("#app");
 const i18n = await createI18n();
@@ -685,21 +686,29 @@ async function openEditPopup() {
         const visibility =
             document.getElementById("popup-edit-visibility")?.value ??
             currentVisibility;
-        await apiFetch("/api/v1/profile", {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-                displayName,
-                bio,
-                location,
-                website,
-                visibility,
-            }),
-        });
-        localStorage.setItem("cognis_display_name", displayName);
-        profile = await loadOwnProfile();
-        composer.refresh(elements);
-        updateNavbarAvatar().catch(() => {});
+        try {
+            const res = await apiFetch("/api/v1/profile", {
+                method: "PATCH",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    displayName,
+                    bio,
+                    location,
+                    website,
+                    visibility,
+                }),
+            });
+            if (!res.ok) throw new Error("save_failed");
+            localStorage.setItem("cognis_display_name", displayName);
+            profile = await loadOwnProfile();
+            composer.refresh(elements);
+            updateNavbarAvatar().catch(() => {});
+            showToast(i18n.t("ui.app.profile.saved"), { variant: "success" });
+        } catch {
+            showToast(i18n.t("ui.app.profile.save_failed"), {
+                variant: "error",
+            });
+        }
     }
 }
 
@@ -712,7 +721,10 @@ avatarFileInput.addEventListener("change", async () => {
         headers: { "content-type": file.type },
         body: buffer,
     });
-    if (!res.ok) return;
+    if (!res.ok) {
+        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
+        return;
+    }
     if (avatarBlobUrl) URL.revokeObjectURL(avatarBlobUrl);
     avatarBlobUrl = URL.createObjectURL(file);
     profile = await loadOwnProfile();
@@ -730,7 +742,10 @@ bannerFileInput.addEventListener("change", async () => {
         headers: { "content-type": file.type },
         body: buffer,
     });
-    if (!res.ok) return;
+    if (!res.ok) {
+        showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
+        return;
+    }
     if (bannerBlobUrl) URL.revokeObjectURL(bannerBlobUrl);
     bannerBlobUrl = URL.createObjectURL(file);
     profile = await loadOwnProfile();
@@ -765,6 +780,10 @@ async function doCreatePost() {
             if (titleEl) titleEl.value = "";
             if (contentEl) contentEl.value = "";
             composer.refresh(elements);
+        } else {
+            showToast(i18n.t("ui.app.profile.post_failed"), {
+                variant: "error",
+            });
         }
     } finally {
         if (submitBtn) submitBtn.disabled = false;

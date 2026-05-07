@@ -1194,6 +1194,9 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
         });
         allAdapters = await loadAllAdapters(gateways);
         composer.refresh(elements);
+        showToast(i18n.t("ui.app.admin.settings_saved"), {
+            variant: "success",
+        });
     }
 }
 

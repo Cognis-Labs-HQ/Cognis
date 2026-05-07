@@ -6,18 +6,24 @@
  * via the UIRegistry mechanism.
  *
  * Public exports:
- *   createAdminSection({ i18n, apiFetch, escapeHtml, openPopup }) — returns a
+ *   createAdminSection({ i18n, apiFetch, escapeHtml, openPopup, showToast }) — returns a
  *     page-composer-compatible element definition with a dataReady promise.
  *
  * Usage:
  *   const mod = await import("/static/gateways/auth/admin-section.js");
- *   const def = mod.createAdminSection({ i18n, apiFetch, escapeHtml, openPopup });
+ *   const def = mod.createAdminSection({ i18n, apiFetch, escapeHtml, openPopup, showToast });
  *   await def.dataReady;
  *
- * @param {{ i18n: object, apiFetch: Function, escapeHtml: Function, openPopup: Function }} deps
+ * @param {{ i18n: object, apiFetch: Function, escapeHtml: Function, openPopup: Function, showToast: Function }} deps
  * @returns {{ id: string, label: string, dataReady: Promise<void>, subComposerOptions: object }}
  */
-export function createAdminSection({ i18n, apiFetch, escapeHtml, openPopup }) {
+export function createAdminSection({
+    i18n,
+    apiFetch,
+    escapeHtml,
+    openPopup,
+    showToast,
+}) {
     let adapters = [];
 
     const dataReady = apiFetch("/api/v1/gateways/auth/adapters")
@@ -173,6 +179,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, openPopup }) {
                     body: JSON.stringify(config),
                 },
             );
+            showToast(i18n.t("ui.app.admin.settings_saved"), {
+                variant: "success",
+            });
         }
 
         return result;

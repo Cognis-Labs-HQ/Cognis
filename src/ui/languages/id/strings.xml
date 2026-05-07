@@ -145,6 +145,7 @@
   <string name="ui.app.admin.security.providers">Adaptor</string>
   <string name="ui.app.admin.security.no_providers">Tidak ada adaptor autentikasi yang dikonfigurasi.</string>
   <string name="ui.app.admin.security.configure">Konfigurasikan</string>
+  <string name="ui.app.admin.settings_saved">Pengaturan disimpan.</string>
   <string name="ui.app.login.provider.local">Lokal</string>
   <string name="ui.app.login.provider.ldap">LDAP</string>
   <string name="ui.app.login.provider.toggle.aria">Pilih penyedia autentikasi</string>
@@ -264,6 +265,10 @@
   <string name="ui.app.profile.section.follow_requests">Permintaan Ikut</string>
   <string name="ui.app.profile.follow_requests.empty">Tidak ada permintaan ikut yang tertunda.</string>
   <string name="ui.app.profile.not_found">Profil tidak ditemukan.</string>
+  <string name="ui.app.profile.saved">Profil disimpan.</string>
+  <string name="ui.app.profile.save_failed">Gagal menyimpan profil.</string>
+  <string name="ui.app.profile.upload_failed">Unggahan gagal. Silakan coba lagi.</string>
+  <string name="ui.app.profile.post_failed">Gagal menerbitkan postingan.</string>
   <string name="ui.reuse.notifications">Notifikasi</string>
   <string name="ui.app.settings.general">Umum</string>
   <string name="ui.app.settings.emails">Alamat Email</string>

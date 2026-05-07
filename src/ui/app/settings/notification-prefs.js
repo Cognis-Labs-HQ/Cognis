@@ -1,6 +1,6 @@
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { apiFetch } from "../../reuse/api-client.js";
-import { openPopup } from "../../reuse/popup.js";
+import { showToast } from "../../reuse/toast.js";
 
 /**
  * Notification preferences sub-module for the Settings page.
@@ -9,7 +9,7 @@ import { openPopup } from "../../reuse/popup.js";
  * opt in or out of each combination. Integrates with the unsaved-changes bar.
  *
  * When the user enables SMTP, the module verifies they have a primary verified
- * email address. If not, a popup explains the requirement and the checkbox is
+ * email address. If not, a toast explains the requirement and the checkbox is
  * reverted.
  *
  * Public exports:
@@ -120,7 +120,7 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
         container
             .querySelectorAll("input[data-pref-key]")
             .forEach((checkbox) => {
-                checkbox.addEventListener("change", async () => {
+                checkbox.addEventListener("change", () => {
                     const prefKey = checkbox.dataset.prefKey;
                     const senderId = checkbox.dataset.senderId;
 
@@ -130,22 +130,10 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
                         !hasPrimaryVerifiedEmail()
                     ) {
                         checkbox.checked = false;
-                        await openPopup({
-                            title: i18n.t(
-                                "ui.app.settings.notif_smtp_no_email_title",
-                            ),
-                            body: i18n.t(
-                                "ui.app.settings.notif_smtp_no_email_body",
-                            ),
-                            variant: "info",
-                            actions: [
-                                {
-                                    id: "close",
-                                    label: i18n.t("ui.reuse.generic.done"),
-                                    variant: "confirm",
-                                },
-                            ],
-                        });
+                        showToast(
+                            i18n.t("ui.app.settings.notif_smtp_no_email_body"),
+                            { variant: "warning" },
+                        );
                         return;
                     }
 
