@@ -37,6 +37,7 @@
   <string name="ui.layout.account.aria">Account options</string>
   <string name="ui.layout.avatar.alt">User avatar</string>
   <string name="ui.layout.theme.aria">Toggle theme</string>
+  <string name="ui.layout.footer.license">License</string>
   <string name="ui.app.login.title">Sign in</string>
   <string name="ui.app.login.intro.aria">Cognis intro</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>
@@ -99,6 +100,9 @@
   <string name="ui.app.docs.group.adapters_notify">Notification Adapters</string>
   <string name="ui.app.docs.group.modules">Modules</string>
   <string name="ui.app.docs.group.tooling">Tooling</string>
+  <string name="ui.app.license.page_title">License</string>
+  <string name="ui.app.license.page_subtitle">GNU AGPLv3 license terms.</string>
+  <string name="ui.app.license.load_error">License text could not be loaded.</string>
   <string name="ui.app.modules.page_title">Modules Overview</string>
   <string name="ui.app.modules.page_subtitle">Enable and disable installed modules.</string>
   <string name="ui.app.modules.toolbar_subtitle">Admin-only controls</string>
@@ -168,6 +172,7 @@
   <string name="ui.page.title.modules">Cognis - Modules</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
+  <string name="ui.page.title.license">Cognis - License</string>
   <string name="ui.page.title.profile">Cognis - Profile</string>
   <string name="ui.page.title.verify_email">Cognis - Verify Email</string>
   <string name="ui.app.verify_email.verifying">Verifying…</string>

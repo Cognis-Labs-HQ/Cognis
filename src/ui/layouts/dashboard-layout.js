@@ -210,6 +210,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         showTopbar = true,
         showNavbar = true,
         showThemeToggle = true,
+        showFooter = true,
     } = slots;
     const i18n = slots.i18n || (await createI18n());
     const template = await loadTemplate("dashboard-layout");
@@ -239,6 +240,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (!showTopbar) root.querySelector(".global-topbar")?.remove();
     if (!showNavbar) root.querySelector(".global-navrow")?.remove();
     if (!showThemeToggle) root.querySelector("#theme-toggle")?.remove();
+    if (!showFooter) root.querySelector(".global-footer")?.remove();
 
     applyStaticTranslations(i18n, root);
     bindTopbarActions();

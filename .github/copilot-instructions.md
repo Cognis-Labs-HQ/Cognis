@@ -65,6 +65,12 @@ app/
 
 Apply this layout to every new page and sub-module; never place a page entry point directly in `app/` as a flat `.js` file.
 
+### UI pages must use createPageComposer
+
+Every UI page must be assembled exclusively through `createPageComposer` from `src/ui/reuse/page-composer.js`. The composer owns layout, the toolbar, page context, the content grid, and element rendering. No page entry point may bypass it by writing directly to `#app`, constructing its own toolbar, floating menu, or content wrapper by hand, or rendering content to the page outside of the composer's `elements` and `toolbar` arrays.
+
+Bypassing the composer is always wrong, even when the page appears to work. Doing so silently breaks theming, accessibility, user layout preferences, and any future infrastructure built into the composer. All of these are non-negotiable requirements for every page in the application.
+
 ### Route file organisation
 
 Route handler files live in subdirectories named after their domain, mirroring the `src/ui/app/` convention. Each handler is `index.ts` inside that directory (e.g. `src/api/routes/profile/index.ts`, `src/api/routes/social/index.ts`). Never place a route handler as a flat `*-routes.ts` file directly inside `routes/`.

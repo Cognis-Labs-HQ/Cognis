@@ -37,6 +37,7 @@
   <string name="ui.layout.account.aria">Opsi akun</string>
   <string name="ui.layout.avatar.alt">Avatar pengguna</string>
   <string name="ui.layout.theme.aria">Ubah tema</string>
+  <string name="ui.layout.footer.license">Lisensi</string>
   <string name="ui.app.login.title">Masuk</string>
   <string name="ui.app.login.intro.aria">Pengantar Cognis</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>
@@ -99,6 +100,9 @@
   <string name="ui.app.docs.group.adapters_notify">Adapter Notifikasi</string>
   <string name="ui.app.docs.group.modules">Modul</string>
   <string name="ui.app.docs.group.tooling">Perkakas</string>
+  <string name="ui.app.license.page_title">Lisensi</string>
+  <string name="ui.app.license.page_subtitle">Ketentuan lisensi GNU AGPLv3.</string>
+  <string name="ui.app.license.load_error">Teks lisensi tidak dapat dimuat.</string>
   <string name="ui.app.modules.page_title">Ringkasan Modul</string>
   <string name="ui.app.modules.page_subtitle">Aktifkan dan nonaktifkan modul terpasang.</string>
   <string name="ui.app.modules.toolbar_subtitle">Kontrol khusus admin</string>
@@ -168,6 +172,7 @@
   <string name="ui.page.title.modules">Cognis - Modules</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
+  <string name="ui.page.title.license">Cognis - Lisensi</string>
   <string name="ui.page.title.profile">Cognis - Profil</string>
   <string name="ui.page.title.verify_email">Cognis - Verifikasi Email</string>
   <string name="ui.app.verify_email.verifying">Memverifikasi…</string>

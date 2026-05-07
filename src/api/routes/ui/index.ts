@@ -167,6 +167,21 @@ export function createUiRoutes(
             return true;
         }
 
+        if (url.pathname === "/license") {
+            if (!getCookieSession(req)) {
+                res.writeHead(302, { location: "/login" });
+                res.end();
+                return true;
+            }
+
+            await serveFile(
+                res,
+                path.join(PUBLIC_ROOT, "pages", "license.html"),
+                "text/html; charset=utf-8",
+            );
+            return true;
+        }
+
         if (runtime && getCookieSession(req)) {
             const manifests = await runtime.listManifests();
 

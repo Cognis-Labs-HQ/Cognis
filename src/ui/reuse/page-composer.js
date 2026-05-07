@@ -86,6 +86,7 @@
  *   showTopbar?: boolean,
  *   showNavbar?: boolean,
  *   showThemeToggle?: boolean,
+ *   showFooter?: boolean,
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void }}
@@ -111,6 +112,7 @@ export function createPageComposer(
         showTopbar = true,
         showNavbar = true,
         showThemeToggle = true,
+        showFooter = true,
         pageOverrides = {},
     },
 ) {
@@ -2454,6 +2456,7 @@ export function createPageComposer(
             showTopbar,
             showNavbar,
             showThemeToggle,
+            showFooter,
         });
 
         if (Array.isArray(floatingMenu) && floatingMenu.length > 0) {

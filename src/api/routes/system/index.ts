@@ -1,5 +1,5 @@
 import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { HealthService } from "@cognis/core";
 import { requireAuth } from "../../auth/guard.js";
@@ -42,6 +42,15 @@ export function createSystemRoutes(
     healthService: HealthService,
     preferenceStore?: UserPreferenceStore,
 ) {
+    const licenseMarkdownFile = resolve(
+        process.cwd(),
+        "src",
+        "ui",
+        "public",
+        "assets",
+        "reuse",
+        "license.md",
+    );
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -116,6 +125,27 @@ export function createSystemRoutes(
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { saved: true } }));
+            return true;
+        }
+
+        if (url.pathname === "/api/v1/system/license" && req.method === "GET") {
+            let markdown = "";
+            try {
+                markdown = await readFile(licenseMarkdownFile, "utf8");
+            } catch {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "License file not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { markdown } }));
             return true;
         }
 

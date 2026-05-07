@@ -37,6 +37,7 @@
   <string name="ui.layout.account.aria">アカウントオプション</string>
   <string name="ui.layout.avatar.alt">ユーザーアバター</string>
   <string name="ui.layout.theme.aria">テーマ切替</string>
+  <string name="ui.layout.footer.license">ライセンス</string>
   <string name="ui.app.login.title">サインイン</string>
   <string name="ui.app.login.intro.aria">Cognis 紹介</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>
@@ -99,6 +100,9 @@
   <string name="ui.app.docs.group.adapters_notify">通知アダプター</string>
   <string name="ui.app.docs.group.modules">モジュール</string>
   <string name="ui.app.docs.group.tooling">ツール</string>
+  <string name="ui.app.license.page_title">ライセンス</string>
+  <string name="ui.app.license.page_subtitle">GNU AGPLv3 のライセンス条項。</string>
+  <string name="ui.app.license.load_error">ライセンステキストを読み込めませんでした。</string>
   <string name="ui.app.modules.page_title">モジュール概要</string>
   <string name="ui.app.modules.page_subtitle">インストール済みモジュールを有効化/無効化します。</string>
   <string name="ui.app.modules.toolbar_subtitle">管理者専用コントロール</string>
@@ -168,6 +172,7 @@
   <string name="ui.page.title.modules">Cognis - Modules</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
+  <string name="ui.page.title.license">Cognis - ライセンス</string>
   <string name="ui.page.title.profile">Cognis - プロフィール</string>
   <string name="ui.page.title.verify_email">Cognis - メール認証</string>
   <string name="ui.app.verify_email.verifying">認証中…</string>
