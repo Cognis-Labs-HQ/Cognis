@@ -10,7 +10,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ### Added
 
 - Docs API now accepts a `langs` query parameter (comma-separated language priority list) so the server iterates the user's full preferred-language chain before falling back to English. The docs UI passes `readPreferredLanguages()` as the `langs` value on every doc request. ([7ab5fe4](https://github.com/le-firehawk/Cognis/commit/7ab5fe4))
-- `resolveLangs` extracted to `src/api/reuse/doc-langs.ts` so the language-resolution logic is reusable across the API layer.
+- `resolveLangs` extracted to `src/api/reuse/preferred-languages.ts` so the language-resolution logic is reusable across the API layer.
 - AI instructions (`copilot-instructions.md`) now reference `src/docs/standard.en.md` as the authoritative guide for documentation section structure, depth tiers, and language requirements.
 
 ### Fixed

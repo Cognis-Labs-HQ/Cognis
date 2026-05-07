@@ -1,7 +1,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { resolveLangs } from "../../reuse/doc-langs.js";
+import { resolveLangs } from "../../reuse/preferred-languages.js";
 
 const SRC_ROOT = join(process.cwd(), "src");
 const ROOT_DOCS_DIR = join(SRC_ROOT, "docs");
