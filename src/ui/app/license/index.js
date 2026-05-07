@@ -106,6 +106,7 @@ function parseSections(markdown) {
 }
 
 let sections = [];
+let activeSectionId = null;
 let loadError = false;
 
 function renderSections() {
@@ -115,18 +116,15 @@ function renderSections() {
         container.innerHTML = `<p class="license-load-error">${i18n.t("ui.app.license.load_error")}</p>`;
         return;
     }
-    container.innerHTML = sections
-        .map((s, idx) => {
-            const body = renderMarkdown(s.lines.join("\n"));
-            const open = idx === 0 ? " open" : "";
-            return (
-                `<details class="license-section" id="${s.id}"${open}>` +
-                `<summary>${s.title}</summary>` +
-                `<div class="license-section-body">${body}</div>` +
-                `</details>`
-            );
-        })
-        .join("");
+    if (sections.length === 0) {
+        container.innerHTML = "";
+        return;
+    }
+    const section =
+        sections.find((s) => s.id === activeSectionId) ?? sections[0];
+    container.innerHTML =
+        `<h2 class="license-section-title">${section.title}</h2>` +
+        `<div class="license-section-body">${renderMarkdown(section.lines.join("\n"))}</div>`;
 }
 
 const elements = [
@@ -170,6 +168,7 @@ if (response.ok) {
 
 const nav = root.querySelector(".license-nav");
 if (nav && sections.length > 0) {
+    activeSectionId = sections[0].id;
     const items = sections
         .map(
             (s) =>
@@ -177,6 +176,8 @@ if (nav && sections.length > 0) {
         )
         .join("");
     nav.innerHTML = `<ul>${items}</ul>`;
+    nav.querySelector(`[data-section-id="${activeSectionId}"]`)
+        ?.classList.add("active");
 }
 
 renderSections();
@@ -184,14 +185,9 @@ renderSections();
 root.addEventListener("click", (event) => {
     const btn = event.target.closest("[data-section-id]");
     if (!btn) return;
-    const id = btn.dataset.sectionId;
-    const details = document.getElementById(id);
-    if (!details) return;
-    details.open = true;
+    activeSectionId = btn.dataset.sectionId;
     root.querySelectorAll("[data-section-id]").forEach((b) => {
-        b.classList.toggle("active", b.dataset.sectionId === id);
+        b.classList.toggle("active", b.dataset.sectionId === activeSectionId);
     });
-    requestAnimationFrame(() => {
-        details.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
+    renderSections();
 });

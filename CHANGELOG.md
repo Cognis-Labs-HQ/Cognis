@@ -28,8 +28,9 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - Default application font size reduced from 14 pt to 12 pt (`DEFAULT_FONT_SIZE` in `font-prefs.js`; `--app-font-size` CSS variable updated from `1.17rem` to `1rem`). ([0c06716](https://github.com/le-firehawk/Cognis/commit/0c06716))
-- License page section parsing now splits `## Terms and Conditions` into individual collapsible sections based on AGPL `###` clause headings (0–17), so navigation and content are broken into meaningful legal units instead of one large block.
-- License page viewpane (`.license-sections`) is now capped at `70vh` with `overflow-y: auto` so long content scrolls rather than extending the page. The sidebar navigation is unconstrained so all section links remain visible without a secondary scroll.
+- License page section parsing now splits `## Terms and Conditions` into individual sections based on AGPL `###` clause headings (0–17), so navigation and content are broken into meaningful legal units.
+- License page now shows only the section selected from the navigation sidebar; collapsible `<details>` headers are removed. The viewpane has no height cap and no overflow scroll.
+- AI instructions now include a firm rule requiring every UI page to be assembled through `createPageComposer`; bypassing the composer is explicitly prohibited.
 
 ### Fixed
 
