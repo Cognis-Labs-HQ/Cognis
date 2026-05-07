@@ -1,11 +1,15 @@
 .license-sections {
     display: flex;
     flex-direction: column;
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
 .license-nav {
     display: flex;
     flex-direction: column;
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
 .license-section {
@@ -45,8 +49,6 @@
 
 .license-section-body {
     padding: 0 12px 12px;
-    overflow-y: auto;
-    max-height: 60vh;
 }
 
 .license-load-error {
