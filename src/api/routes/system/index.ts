@@ -80,9 +80,9 @@ function serializeSecuritySettings(input: {
 function parseTrustedDomainsInput(rawDomains: unknown): string[] {
     const list = Array.isArray(rawDomains) ? rawDomains : [];
     return list
-            .filter((entry: unknown) => typeof entry === "string")
-            .map((entry: string) => entry.trim().toLowerCase())
-            .filter(Boolean);
+        .filter((entry: unknown) => typeof entry === "string")
+        .map((entry: string) => entry.trim().toLowerCase())
+        .filter(Boolean);
 }
 
 export function createSystemRoutes(
@@ -155,7 +155,9 @@ export function createSystemRoutes(
         ) {
             if (!requireAuth(req, res, "admin")) return true;
             const body = await readJson(req);
-            const trustedDomains = parseTrustedDomainsInput(body.trustedDomains);
+            const trustedDomains = parseTrustedDomainsInput(
+                body.trustedDomains,
+            );
             const registrationsEnabled =
                 typeof body.registrationsEnabled === "boolean"
                     ? body.registrationsEnabled

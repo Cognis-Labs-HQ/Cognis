@@ -66,8 +66,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         if (!(input instanceof HTMLInputElement)) return;
 
         originalDomains = settings.trustedDomains ?? [];
-        originalRegistrationsEnabled =
-            settings.registrationsEnabled !== false;
+        originalRegistrationsEnabled = settings.registrationsEnabled !== false;
         input.value = originalDomains.join(", ");
         const registrationsToggle = root.querySelector(
             "#security-registrations-enabled",
@@ -88,7 +87,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                     : true;
             onDirtyChange?.(
                 current !== original ||
-                    currentRegistrationsEnabled !== originalRegistrationsEnabled,
+                    currentRegistrationsEnabled !==
+                        originalRegistrationsEnabled,
             );
         });
         if (registrationsToggle instanceof HTMLInputElement) {

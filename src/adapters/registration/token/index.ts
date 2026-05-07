@@ -82,7 +82,8 @@ export function createAdapter(deps: {
         sendInviteEmail,
         createProfile,
     } = deps;
-    const placeholder = (index: number) => (dbType === "postgresql" ? `$${index}` : "?");
+    const placeholder = (index: number) =>
+        dbType === "postgresql" ? `$${index}` : "?";
 
     async function readInviteByTokenHash(tokenHash: string) {
         const result = await dbExecutor.execute(
@@ -97,7 +98,9 @@ export function createAdapter(deps: {
         return result.rows?.[0];
     }
 
-    async function pendingFounderInviteCount(inviterAccountId: string): Promise<number> {
+    async function pendingFounderInviteCount(
+        inviterAccountId: string,
+    ): Promise<number> {
         const nowIso = new Date().toISOString();
         const result = await dbExecutor.execute(
             `SELECT COUNT(*) AS count
@@ -135,14 +138,22 @@ export function createAdapter(deps: {
         const secret = randomBytes(32).toString("base64url");
         const rawToken = `${tokenId}.${secret}`;
         const tokenHash = sha256(rawToken);
-        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        const expiresAt = new Date(
+            Date.now() + 24 * 60 * 60 * 1000,
+        ).toISOString();
         const inviteUrl = `${input.inviteBaseUrl.replace(/\/$/, "")}/register?token=${encodeURIComponent(rawToken)}`;
 
         await dbExecutor.execute(
             `INSERT INTO registration_tokens
          (id, token_hash, inviter_account_id, invitee_email, expires_at)
          VALUES (${placeholder(1)}, ${placeholder(2)}, ${placeholder(3)}, ${placeholder(4)}, ${placeholder(5)})`,
-            [tokenId, tokenHash, input.inviterAccountId, inviteeEmail, expiresAt],
+            [
+                tokenId,
+                tokenHash,
+                input.inviterAccountId,
+                inviteeEmail,
+                expiresAt,
+            ],
         );
 
         try {
@@ -239,7 +250,9 @@ export function createAdapter(deps: {
         const invite = await resolveInvite(input.token);
         if (!invite) throw new Error("invalid_or_expired_token");
 
-        const inviterStillExists = await accountStore.exists(invite.inviterAccountId);
+        const inviterStillExists = await accountStore.exists(
+            invite.inviterAccountId,
+        );
         if (!inviterStillExists) throw new Error("inviter_not_found");
 
         const created = await accountStore.register(username, password, false);

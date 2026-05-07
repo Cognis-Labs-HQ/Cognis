@@ -75,11 +75,14 @@ const composer = createPageComposer(root, {
                         password: form.password.value,
                     };
                     try {
-                        const response = await fetch("/api/v1/registration/redeem", {
-                            method: "POST",
-                            headers: { "content-type": "application/json" },
-                            body: JSON.stringify(payload),
-                        });
+                        const response = await fetch(
+                            "/api/v1/registration/redeem",
+                            {
+                                method: "POST",
+                                headers: { "content-type": "application/json" },
+                                body: JSON.stringify(payload),
+                            },
+                        );
                         const body = await response.json();
                         if (!response.ok) {
                             showToast(

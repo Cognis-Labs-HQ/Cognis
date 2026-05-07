@@ -29,9 +29,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get<SupportedDbType>("db:type") ??
         ctx.dbType ??
         "sqlite";
-    const accountStore = ctx.capabilities.get<LocalAccountStore>(
-        "auth:accountStore",
-    );
+    const accountStore =
+        ctx.capabilities.get<LocalAccountStore>("auth:accountStore");
     if (!accountStore) return;
 
     const canSendInviteEmail = ctx.capabilities.get<() => boolean>(
@@ -83,7 +82,9 @@ export function createRegistrationPageRoutes() {
     ): Promise<boolean> => {
         if (url.pathname !== "/register" || req.method !== "GET") return false;
         try {
-            const file = await readFile(path.join(PUBLIC_ROOT, "pages", "register.html"));
+            const file = await readFile(
+                path.join(PUBLIC_ROOT, "pages", "register.html"),
+            );
             setPageSecurityHeaders(res);
             res.writeHead(200, {
                 "content-type": "text/html; charset=utf-8",
@@ -112,13 +113,19 @@ export function createRegistrationRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (url.pathname === "/api/v1/registration/invite" && req.method === "GET") {
+        if (
+            url.pathname === "/api/v1/registration/invite" &&
+            req.method === "GET"
+        ) {
             const token = String(url.searchParams.get("token") ?? "");
             if (!token) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
-                        error: { code: "bad_request", message: "token is required" },
+                        error: {
+                            code: "bad_request",
+                            message: "token is required",
+                        },
                     }),
                 );
                 return true;
@@ -149,7 +156,10 @@ export function createRegistrationRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/registration/redeem" && req.method === "POST") {
+        if (
+            url.pathname === "/api/v1/registration/redeem" &&
+            req.method === "POST"
+        ) {
             const body = await readJson(req);
             const token = String(body.token ?? "").trim();
             const username = String(body.username ?? "").trim();
@@ -165,9 +175,11 @@ export function createRegistrationRoutes(
                 res.writeHead(201, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: result }));
             } catch (error) {
-                const code = error instanceof Error ? error.message : "redeem_failed";
+                const code =
+                    error instanceof Error ? error.message : "redeem_failed";
                 const status =
-                    code === "invalid_or_expired_token" || code === "invalid_token"
+                    code === "invalid_or_expired_token" ||
+                    code === "invalid_token"
                         ? 400
                         : code === "inviter_not_found"
                           ? 409
@@ -181,7 +193,10 @@ export function createRegistrationRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/registration/tokens" && req.method === "GET") {
+        if (
+            url.pathname === "/api/v1/registration/tokens" &&
+            req.method === "GET"
+        ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const isAdmin = claims.role === "admin";
@@ -205,7 +220,10 @@ export function createRegistrationRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/registration/tokens" && req.method === "POST") {
+        if (
+            url.pathname === "/api/v1/registration/tokens" &&
+            req.method === "POST"
+        ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const isAdmin = claims.role === "admin";
@@ -220,7 +238,9 @@ export function createRegistrationRoutes(
                 return true;
             }
             const body = await readJson(req);
-            const inviteeEmail = String(body.email ?? "").trim().toLowerCase();
+            const inviteeEmail = String(body.email ?? "")
+                .trim()
+                .toLowerCase();
             if (!inviteeEmail) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -246,7 +266,8 @@ export function createRegistrationRoutes(
                 res.writeHead(201, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: created }));
             } catch (error) {
-                const code = error instanceof Error ? error.message : "invite_failed";
+                const code =
+                    error instanceof Error ? error.message : "invite_failed";
                 const status =
                     code === "smtp_unavailable"
                         ? 503
@@ -287,7 +308,10 @@ export function createRegistrationRoutes(
                     res.writeHead(403, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
-                            error: { code: "forbidden", message: "Access denied" },
+                            error: {
+                                code: "forbidden",
+                                message: "Access denied",
+                            },
                         }),
                     );
                     return true;
@@ -301,7 +325,10 @@ export function createRegistrationRoutes(
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
-                        error: { code: "not_found", message: "Token not found" },
+                        error: {
+                            code: "not_found",
+                            message: "Token not found",
+                        },
                     }),
                 );
                 return true;

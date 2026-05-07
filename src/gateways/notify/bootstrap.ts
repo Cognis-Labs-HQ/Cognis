@@ -92,9 +92,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
     ctx.uiRegistry?.registerStaticDir("notify", uiDir);
 
-    ctx.capabilities.contribute(
-        "notify:canSendRegistrationInviteEmail",
-        () => gateway.canSendRegistrationInviteEmail(),
+    ctx.capabilities.contribute("notify:canSendRegistrationInviteEmail", () =>
+        gateway.canSendRegistrationInviteEmail(),
     );
     ctx.capabilities.contribute(
         "notify:sendRegistrationInviteEmail",

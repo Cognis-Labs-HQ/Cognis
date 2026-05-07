@@ -120,9 +120,8 @@ function createAuthGatewayRoutes(
     capabilities: CapabilityStore,
 ) {
     async function registrationsEnabled(): Promise<boolean> {
-        const prefStore = capabilities.get<UserPreferenceStore>(
-            "preferences:store",
-        );
+        const prefStore =
+            capabilities.get<UserPreferenceStore>("preferences:store");
         if (!prefStore) return true;
         const raw = await prefStore.get("__system__", "security-settings");
         if (!raw) return true;
