@@ -31,6 +31,7 @@ import { escapeHtml } from "../../reuse/escape-html.js";
  */
 export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalDomains = [];
+    let originalRegistrationsEnabled = true;
 
     async function loadSettings() {
         const res = await apiFetch("/api/v1/system/security");
@@ -39,11 +40,11 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return payload.data ?? { trustedDomains: [] };
     }
 
-    async function persistSettings(trustedDomains) {
+    async function persistSettings(trustedDomains, registrationsEnabled) {
         const res = await apiFetch("/api/v1/system/security", {
             method: "PUT",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ trustedDomains }),
+            body: JSON.stringify({ trustedDomains, registrationsEnabled }),
         });
         if (!res.ok) throw new Error("save_failed");
     }
@@ -65,13 +66,42 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         if (!(input instanceof HTMLInputElement)) return;
 
         originalDomains = settings.trustedDomains ?? [];
+        originalRegistrationsEnabled =
+            settings.registrationsEnabled !== false;
         input.value = originalDomains.join(", ");
+        const registrationsToggle = root.querySelector(
+            "#security-registrations-enabled",
+        );
+        if (registrationsToggle instanceof HTMLInputElement) {
+            registrationsToggle.checked = originalRegistrationsEnabled;
+        }
 
         input.addEventListener("input", () => {
             const current = parseDomains(getInputValue()).join(",");
             const original = originalDomains.join(",");
-            onDirtyChange?.(current !== original);
+            const currentRegistrationsToggle = root.querySelector(
+                "#security-registrations-enabled",
+            );
+            const currentRegistrationsEnabled =
+                currentRegistrationsToggle instanceof HTMLInputElement
+                    ? currentRegistrationsToggle.checked
+                    : true;
+            onDirtyChange?.(
+                current !== original ||
+                    currentRegistrationsEnabled !== originalRegistrationsEnabled,
+            );
         });
+        if (registrationsToggle instanceof HTMLInputElement) {
+            registrationsToggle.addEventListener("change", () => {
+                const current = parseDomains(getInputValue()).join(",");
+                const original = originalDomains.join(",");
+                onDirtyChange?.(
+                    current !== original ||
+                        registrationsToggle.checked !==
+                            originalRegistrationsEnabled,
+                );
+            });
+        }
     }
 
     return {
@@ -82,14 +112,28 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
         async save() {
             const domains = parseDomains(getInputValue());
-            await persistSettings(domains);
+            const registrationsToggle = root.querySelector(
+                "#security-registrations-enabled",
+            );
+            const registrationsEnabled =
+                registrationsToggle instanceof HTMLInputElement
+                    ? registrationsToggle.checked
+                    : true;
+            await persistSettings(domains, registrationsEnabled);
             originalDomains = domains;
+            originalRegistrationsEnabled = registrationsEnabled;
         },
 
         discard() {
             const input = root.querySelector("#security-trusted-domains");
             if (input instanceof HTMLInputElement) {
                 input.value = originalDomains.join(", ");
+            }
+            const registrationsToggle = root.querySelector(
+                "#security-registrations-enabled",
+            );
+            if (registrationsToggle instanceof HTMLInputElement) {
+                registrationsToggle.checked = originalRegistrationsEnabled;
             }
             onDirtyChange?.(false);
         },
@@ -108,6 +152,13 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
               class="security-domains-input"
               placeholder="${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_placeholder"))}"
             />
+          </div>
+          <label class="security-field-label" for="security-registrations-enabled">
+            ${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_label"))}
+            <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_hint"))}</span>
+          </label>
+          <div class="security-field-row">
+            <input id="security-registrations-enabled" type="checkbox" />
           </div>
         </div>
       `;

@@ -494,6 +494,32 @@ register(
 );
 
 register(
+    "user:isfounder",
+    async ({ args, apiBaseUrl, getApiToken }) => {
+        const [username, value] = args;
+        requireArgs(
+            args,
+            ["username", "isFounder"],
+            "cognisctl user:isfounder <username> <true|false>",
+        );
+        if (value !== "true" && value !== "false") {
+            throw new Error("isFounder must be true or false");
+        }
+        const payload = await apiPost(
+            apiBaseUrl,
+            `/api/v1/users/${encodeURIComponent(username)}/isfounder`,
+            { isFounder: value === "true" },
+            await getApiToken(),
+        );
+        printStructured(payload);
+    },
+    {
+        usage: "cognisctl user:isfounder <username> <true|false>",
+        description: "Set whether a user is marked as founder.",
+    },
+);
+
+register(
     "user:delete",
     async ({ args, apiBaseUrl, getApiToken }) => {
         const [username] = args;

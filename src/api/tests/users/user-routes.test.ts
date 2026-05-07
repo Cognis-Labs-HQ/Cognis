@@ -213,3 +213,35 @@ test("getInfo endpoint returns lastLogin field", async () => {
         "lastLogin should be set after updateLastLogin",
     );
 });
+
+test("admin can set founder flag through isfounder endpoint", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("dana", "pw", false);
+    const prefs = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, prefs);
+    let status = 0;
+    let body = "";
+
+    await route(
+        {
+            method: "POST",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"isFounder":true}');
+            },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end(p: string) {
+                body = p;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/users/dana/isfounder"),
+    );
+
+    assert.equal(status, 200);
+    assert.match(body, /"isFounder":true/);
+    assert.equal(await accounts.isFounder("dana"), true);
+});

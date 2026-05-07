@@ -56,13 +56,19 @@ export interface LocalAccountStore {
         lastLogin: string | null;
     } | null>;
     updateLastLogin(username: string): Promise<void>;
+    setFounder(username: string, isFounder: boolean): Promise<void>;
+    isFounder(username: string): Promise<boolean>;
+    exists(username: string): Promise<boolean>;
+    getDisplayName(username: string): Promise<string | null>;
 }
 
 interface StoredAccount {
     passwordHash: string;
     isAdmin: boolean;
+    isFounder: boolean;
     enabled: boolean;
     lastLogin: string | null;
+    displayName: string | null;
 }
 
 function hashPassword(input: string): string {
@@ -85,8 +91,10 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         this.accounts.set(username, {
             passwordHash: hashPassword(password),
             isAdmin,
+            isFounder: false,
             enabled: true,
             lastLogin: null,
+            displayName: username,
         });
         return { username, isAdmin, enabled: true };
     }
@@ -136,6 +144,28 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         const account = this.accounts.get(username);
         if (!account) throw new Error("not_found");
         account.passwordHash = hashPassword(password);
+    }
+
+    async setFounder(username: string, isFounder: boolean) {
+        const account = this.accounts.get(username);
+        if (!account) throw new Error("not_found");
+        account.isFounder = isFounder;
+    }
+
+    async isFounder(username: string): Promise<boolean> {
+        const account = this.accounts.get(username);
+        if (!account) return false;
+        return account.isFounder;
+    }
+
+    async exists(username: string): Promise<boolean> {
+        return this.accounts.has(username);
+    }
+
+    async getDisplayName(username: string): Promise<string | null> {
+        const account = this.accounts.get(username);
+        if (!account) return null;
+        return account.displayName ?? username;
     }
 
     async setEnabled(username: string, enabled: boolean) {

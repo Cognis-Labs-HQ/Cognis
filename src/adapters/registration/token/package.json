@@ -1,9 +1,9 @@
 {
-    "name": "@cognis/adapter-db-sqlite",
-    "version": "0.2.0",
+    "name": "@cognis/adapter-registration-token",
+    "version": "0.1.0",
     "private": true,
     "type": "module",
-    "main": "sqlite-db-gateway.ts",
+    "main": "index.ts",
     "dependencies": {
         "@cognis/core": "0.1.0"
     }

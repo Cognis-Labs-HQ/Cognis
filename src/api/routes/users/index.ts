@@ -66,7 +66,7 @@ export function createUserRoutes(
         }
 
         const match = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)(?:\/(role|password|enable|disable|preferences\/clear))?$/,
+            /^\/api\/v1\/users\/([^/]+)(?:\/(role|password|enable|disable|isfounder|preferences\/clear))?$/,
         );
         if (!match) return false;
         if (!requireAuth(req, res, "admin")) return true;
@@ -143,6 +143,18 @@ export function createUserRoutes(
             await accountStore.setEnabled(username, false);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
+            return true;
+        }
+
+        if (req.method === "POST" && action === "isfounder") {
+            const body = await readJson(req);
+            await accountStore.setFounder(username, Boolean(body.isFounder));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: { updated: true, isFounder: Boolean(body.isFounder) },
+                }),
+            );
             return true;
         }
 

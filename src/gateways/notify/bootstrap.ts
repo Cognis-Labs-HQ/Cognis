@@ -91,6 +91,26 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/notify/admin-section.js",
     });
     ctx.uiRegistry?.registerStaticDir("notify", uiDir);
+
+    ctx.capabilities.contribute(
+        "notify:canSendRegistrationInviteEmail",
+        () => gateway.canSendRegistrationInviteEmail(),
+    );
+    ctx.capabilities.contribute(
+        "notify:sendRegistrationInviteEmail",
+        async (
+            to: string,
+            inviterDisplayName: string,
+            inviteUrl: string,
+            theme?: string,
+        ) =>
+            gateway.sendRegistrationInviteEmail(
+                to,
+                inviterDisplayName,
+                inviteUrl,
+                theme,
+            ),
+    );
 }
 
 /**

@@ -70,6 +70,16 @@ export interface VerificationEmailSender {
     ): Promise<void>;
 }
 
+export interface RegistrationInviteEmailSender {
+    canSendRegistrationInviteEmail(): boolean;
+    sendRegistrationInviteEmail(
+        to: string,
+        inviterDisplayName: string,
+        inviteUrl: string,
+        theme?: string,
+    ): Promise<void>;
+}
+
 export class VolatileNotificationPreferenceStore implements NotificationPreferenceStore {
     private readonly prefs = new Map<string, string[]>();
 
@@ -99,6 +109,16 @@ type SenderWithVerification = {
     isConfigured?(): boolean;
 };
 
+type SenderWithRegistrationInvite = {
+    sendRegistrationInviteEmail(
+        to: string,
+        inviterDisplayName: string,
+        inviteUrl: string,
+        theme?: string,
+    ): Promise<void>;
+    isConfigured?(): boolean;
+};
+
 function isSenderWithVerification(
     sender: NotificationSender,
 ): sender is NotificationSender & SenderWithVerification {
@@ -108,8 +128,20 @@ function isSenderWithVerification(
     );
 }
 
+function isSenderWithRegistrationInvite(
+    sender: NotificationSender,
+): sender is NotificationSender & SenderWithRegistrationInvite {
+    return (
+        typeof (sender as Record<string, unknown>)
+            .sendRegistrationInviteEmail === "function"
+    );
+}
+
 export class CoreNotificationGateway
-    implements NotificationGateway, VerificationEmailSender
+    implements
+        NotificationGateway,
+        VerificationEmailSender,
+        RegistrationInviteEmailSender
 {
     private readonly senders = new Map<string, NotificationSender>();
     private readonly categories = new Map<string, string>();
@@ -259,6 +291,37 @@ export class CoreNotificationGateway
             if (this.disabledSenders.has(id)) continue;
             if (!isSenderWithVerification(sender)) continue;
             await sender.sendVerificationEmail(to, code, verifyUrl, theme);
+            return;
+        }
+        throw new Error("smtp_unavailable");
+    }
+
+    canSendRegistrationInviteEmail(): boolean {
+        for (const [id, sender] of this.senders.entries()) {
+            if (this.disabledSenders.has(id)) continue;
+            if (!isSenderWithRegistrationInvite(sender)) continue;
+            if (typeof sender.isConfigured === "function")
+                return sender.isConfigured();
+            return true;
+        }
+        return false;
+    }
+
+    async sendRegistrationInviteEmail(
+        to: string,
+        inviterDisplayName: string,
+        inviteUrl: string,
+        theme?: string,
+    ): Promise<void> {
+        for (const [id, sender] of this.senders.entries()) {
+            if (this.disabledSenders.has(id)) continue;
+            if (!isSenderWithRegistrationInvite(sender)) continue;
+            await sender.sendRegistrationInviteEmail(
+                to,
+                inviterDisplayName,
+                inviteUrl,
+                theme,
+            );
             return;
         }
         throw new Error("smtp_unavailable");

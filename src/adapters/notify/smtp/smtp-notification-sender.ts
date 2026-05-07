@@ -551,6 +551,26 @@ export class SmtpNotificationSender implements NotificationSender {
         );
     }
 
+    async sendRegistrationInviteEmail(
+        to: string,
+        inviterDisplayName: string,
+        inviteUrl: string,
+        theme?: string,
+    ): Promise<void> {
+        if (!to) throw new Error("smtp_requires_recipient");
+        const subject = `${inviterDisplayName} invited you to join Cognis`;
+        const body = `🎁 ${inviterDisplayName} wants you to join Cognis.\n\nUse this secure invitation link to finish account creation:\n${inviteUrl}\n\nThis invitation expires in 24 hours and can only be used once.`;
+        await sendMailWithRetry(
+            this.config,
+            to,
+            subject,
+            body,
+            this.sleep,
+            theme,
+            inviteUrl,
+        );
+    }
+
     async sendTestEmail(
         to: string,
         overrideConfig?: Record<string, unknown>,

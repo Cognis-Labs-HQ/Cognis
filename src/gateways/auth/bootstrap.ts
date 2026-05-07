@@ -15,6 +15,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthProviderAdapter } from "./gateway.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
+import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 
 function resolveRole(
     sessionRole: string | undefined,
@@ -118,6 +119,24 @@ function createAuthGatewayRoutes(
     accountStore: InstanceType<typeof DbLocalAccountStore>,
     capabilities: CapabilityStore,
 ) {
+    async function registrationsEnabled(): Promise<boolean> {
+        const prefStore = capabilities.get<UserPreferenceStore>(
+            "preferences:store",
+        );
+        if (!prefStore) return true;
+        const raw = await prefStore.get("__system__", "security-settings");
+        if (!raw) return true;
+        try {
+            const parsed = JSON.parse(raw) as Record<string, unknown>;
+            if (typeof parsed.registrationsEnabled === "boolean") {
+                return parsed.registrationsEnabled;
+            }
+            return true;
+        } catch {
+            return true;
+        }
+    }
+
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -137,6 +156,18 @@ function createAuthGatewayRoutes(
         }
 
         if (url.pathname === "/api/v1/auth/register" && req.method === "POST") {
+            if (!(await registrationsEnabled())) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "registrations_disabled",
+                            message: "Open registration is disabled",
+                        },
+                    }),
+                );
+                return true;
+            }
             const body = await readJson(req);
             const username = String(body.username ?? "");
             const password = String(body.password ?? "");

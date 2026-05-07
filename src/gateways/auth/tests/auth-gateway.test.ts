@@ -473,3 +473,55 @@ test("RouteRegistry.getEntries returns handlers with their associated gatewayId"
     assert.equal(entries[1].handler, handlerB);
     assert.equal(entries[2].handler, handlerC);
 });
+
+test("auth register endpoint returns 403 when open registration is disabled", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("preferences:store", {
+        async get(_accountId: string, _key: string) {
+            return JSON.stringify({
+                trustedDomains: [],
+                registrationsEnabled: false,
+            });
+        },
+    });
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const entries = routeRegistry.getEntries();
+    const req = {
+        method: "POST",
+        headers: {},
+        [Symbol.asyncIterator]: async function* () {
+            yield Buffer.from(
+                JSON.stringify({ username: "new-user", password: "pw" }),
+            );
+        },
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    for (const entry of entries) {
+        const handled = await entry.handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/register", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.equal(res.status, 403);
+    assert.match(res.payload, /registrations_disabled/);
+});
