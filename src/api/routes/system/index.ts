@@ -42,8 +42,15 @@ export function createSystemRoutes(
     healthService: HealthService,
     preferenceStore?: UserPreferenceStore,
 ) {
-    const licenseMarkdownFile = resolve(process.cwd(), "LICENSE.md");
-    const licenseTextFile = resolve(process.cwd(), "LICENSE");
+    const licenseMarkdownFile = resolve(
+        process.cwd(),
+        "src",
+        "ui",
+        "public",
+        "assets",
+        "reuse",
+        "license.md",
+    );
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -126,20 +133,16 @@ export function createSystemRoutes(
             try {
                 markdown = await readFile(licenseMarkdownFile, "utf8");
             } catch {
-                try {
-                    markdown = await readFile(licenseTextFile, "utf8");
-                } catch {
-                    res.writeHead(404, { "content-type": "application/json" });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "not_found",
-                                message: "License file not found.",
-                            },
-                        }),
-                    );
-                    return true;
-                }
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "License file not found.",
+                        },
+                    }),
+                );
+                return true;
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { markdown } }));
