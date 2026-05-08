@@ -133,6 +133,11 @@ export class DbNotificationStore implements NotificationConfigStore {
         }));
     }
 
+    async hasVerifiedEmail(accountId: string): Promise<boolean> {
+        const emails = await this.getUserEmails(accountId);
+        return emails.some((e) => e.verified);
+    }
+
     async addUserEmail(
         accountId: string,
         email: string,
@@ -224,6 +229,14 @@ export class DbNotificationStore implements NotificationConfigStore {
         return (result.rows?.length ?? 0) > 0;
     }
 
+    async isEmailRegistered(email: string): Promise<boolean> {
+        const result = await this.db.execute(
+            `SELECT account_id FROM user_emails WHERE email = ${this.placeholder(1)} LIMIT 1`,
+            [email],
+        );
+        return (result.rows?.length ?? 0) > 0;
+    }
+
     async getPrimaryEmail(accountId: string): Promise<string | null> {
         const emails = await this.getUserEmails(accountId);
         return emails.find((e) => e.primary && e.verified)?.email ?? null;
@@ -236,6 +249,53 @@ export class DbNotificationStore implements NotificationConfigStore {
         );
         await this.db.execute(
             `UPDATE user_emails SET is_primary = TRUE WHERE account_id = ${this.placeholder(1)} AND email = ${this.placeholder(2)}`,
+            [accountId, email],
+        );
+    }
+
+    async upsertVerifiedPrimaryEmail(
+        accountId: string,
+        email: string,
+    ): Promise<void> {
+        const takenByOther = await this.isEmailRegisteredByOtherUser(
+            email,
+            accountId,
+        );
+        if (takenByOther) {
+            throw new Error("email_taken");
+        }
+
+        await this.db.execute(
+            `UPDATE user_emails SET is_primary = FALSE WHERE account_id = ${this.placeholder(1)}`,
+            [accountId],
+        );
+
+        if (this.dbType === "mariadb") {
+            await this.db.execute(
+                `INSERT INTO user_emails (account_id, email, is_primary, verified)
+         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, TRUE, TRUE)
+         ON DUPLICATE KEY UPDATE is_primary = VALUES(is_primary), verified = VALUES(verified)`,
+                [accountId, email],
+            );
+            return;
+        }
+
+        if (this.dbType === "postgresql") {
+            await this.db.execute(
+                `INSERT INTO user_emails (account_id, email, is_primary, verified)
+         VALUES ($1, $2, TRUE, TRUE)
+         ON CONFLICT (account_id, email)
+         DO UPDATE SET is_primary = EXCLUDED.is_primary, verified = EXCLUDED.verified`,
+                [accountId, email],
+            );
+            return;
+        }
+
+        await this.db.execute(
+            `INSERT INTO user_emails (account_id, email, is_primary, verified)
+       VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, 1, 1)
+       ON CONFLICT(account_id, email)
+       DO UPDATE SET is_primary = excluded.is_primary, verified = excluded.verified`,
             [accountId, email],
         );
     }

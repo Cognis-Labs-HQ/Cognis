@@ -1,8 +1,14 @@
-import { issueAccessToken, type AccessRole } from "../../auth/access-tokens.js";
+import {
+    issueAccessToken,
+    isTokenVerificationFresh,
+    recordTokenVerification,
+    type AccessRole,
+} from "../../auth/access-tokens.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthGateway } from "@cognis/core";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
 import { readJson } from "../../reuse/read-json.js";
+import { getAuthClaims } from "../../auth/guard.js";
 
 function shouldSetSecureCookie(req: IncomingMessage): boolean {
     const forced = process.env.COGNIS_SECURE_COOKIES;
@@ -75,8 +81,13 @@ export function createAuthRoutes(
                 false,
             );
             await createProfile?.(username, username, "user");
+            const verifyToken = issueAccessToken(
+                result.username,
+                result.isAdmin ? "admin" : "user",
+                1800,
+            );
             res.writeHead(201, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: result }));
+            res.end(JSON.stringify({ data: { ...result, verifyToken } }));
             return true;
         }
 
@@ -136,6 +147,55 @@ export function createAuthRoutes(
                     },
                 }),
             );
+            return true;
+        }
+
+        if (url.pathname === "/api/v1/auth/verify" && req.method === "POST") {
+            const claims = getAuthClaims(req);
+            if (!claims) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "unauthorized",
+                            message: "Login required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const rawAuthHeader = req.headers.authorization ?? "";
+            const rawToken = rawAuthHeader.startsWith("Bearer ")
+                ? rawAuthHeader.slice("Bearer ".length)
+                : "";
+
+            const ONE_HOUR_MS = 60 * 60 * 1000;
+            if (rawToken && isTokenVerificationFresh(rawToken, ONE_HOUR_MS)) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { verified: true } }));
+                return true;
+            }
+
+            const body = await readJson(req);
+            const password = String(body.password ?? "");
+            const verified = await accountStore.verify(claims.sub, password);
+            if (!verified) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_credentials",
+                            message: "Incorrect password",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (rawToken) {
+                recordTokenVerification(rawToken);
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { verified: true } }));
             return true;
         }
 

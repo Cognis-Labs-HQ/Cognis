@@ -66,9 +66,13 @@ export class DbLocalAccountStore implements LocalAccountStore {
         email TEXT,
         display_name TEXT,
         is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+        enabled BOOLEAN NOT NULL DEFAULT TRUE,
+        is_founder BOOLEAN NOT NULL DEFAULT FALSE,
+        invited_by_account_id TEXT NULL,
         last_login TIMESTAMPTZ,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        FOREIGN KEY (invited_by_account_id) REFERENCES accounts(id) ON DELETE SET NULL
       )`);
             await this.db
                 .execute(`CREATE TABLE IF NOT EXISTS local_auth_credentials (
@@ -89,9 +93,13 @@ export class DbLocalAccountStore implements LocalAccountStore {
         email VARCHAR(320) NULL,
         display_name VARCHAR(255) NULL,
         is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+        enabled BOOLEAN NOT NULL DEFAULT TRUE,
+        is_founder BOOLEAN NOT NULL DEFAULT FALSE,
+        invited_by_account_id VARCHAR(191) NULL,
         last_login TIMESTAMP NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (invited_by_account_id) REFERENCES accounts(id) ON DELETE SET NULL
       )`);
             await this.db
                 .execute(`CREATE TABLE IF NOT EXISTS local_auth_credentials (
@@ -111,9 +119,13 @@ export class DbLocalAccountStore implements LocalAccountStore {
       email TEXT,
       display_name TEXT,
       is_admin INTEGER NOT NULL DEFAULT 0,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      is_founder INTEGER NOT NULL DEFAULT 0,
+      invited_by_account_id TEXT NULL,
       last_login TEXT,
       created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (invited_by_account_id) REFERENCES accounts(id) ON DELETE SET NULL
     )`);
         await this.db
             .execute(`CREATE TABLE IF NOT EXISTS local_auth_credentials (
@@ -156,7 +168,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         password: string,
     ): Promise<AuthContext | null> {
         const result = await this.db.execute(
-            `SELECT c.username, c.password_hash, a.is_admin, p.role
+            `SELECT c.username, c.password_hash, a.is_admin, a.enabled, p.role
        FROM local_auth_credentials c
        JOIN accounts a ON a.id = c.account_id
        LEFT JOIN account_profiles p ON p.account_id = a.id
@@ -165,6 +177,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         );
         const account = result.rows?.[0];
         if (!account) return null;
+        if (!Boolean(account.enabled)) return null;
         const passwordOk = await verifyPassword(
             String(account.password_hash),
             password,
@@ -191,12 +204,13 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async list() {
         const result = await this.db.execute(
-            "SELECT c.username, a.is_admin FROM local_auth_credentials c JOIN accounts a ON a.id = c.account_id ORDER BY c.username",
+            "SELECT c.username, a.is_admin, a.enabled, a.is_founder FROM local_auth_credentials c JOIN accounts a ON a.id = c.account_id ORDER BY c.username",
         );
         return (result.rows ?? []).map((row) => ({
             username: row.username,
             isAdmin: Boolean(row.is_admin),
-            enabled: true,
+            enabled: Boolean(row.enabled),
+            isFounder: Boolean(row.is_founder),
         }));
     }
 
@@ -219,24 +233,83 @@ export class DbLocalAccountStore implements LocalAccountStore {
             [passwordHash, "scrypt", username],
         );
     }
-    async setEnabled(username: string, enabled: boolean) {
-        if (!enabled) {
-            throw new Error("disable_not_supported");
-        }
-    }
-    async delete(username: string) {
+    async setFounder(username: string, isFounder: boolean) {
         await this.db.execute(
-            `DELETE FROM accounts WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(1)})`,
+            `UPDATE accounts SET is_founder = ${this.placeholder(1)}, updated_at = ${this.currentTimestampExpression()}
+       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(2)})`,
+            [isFounder, username],
+        );
+    }
+
+    async isFounder(username: string): Promise<boolean> {
+        const result = await this.db.execute(
+            `SELECT a.is_founder FROM accounts a
+       JOIN local_auth_credentials c ON c.account_id = a.id
+       WHERE c.username = ${this.placeholder(1)}`,
             [username],
         );
+        return Boolean(result.rows?.[0]?.is_founder);
+    }
+
+    async exists(username: string): Promise<boolean> {
+        const result = await this.db.execute(
+            `SELECT id FROM accounts WHERE id = ${this.placeholder(1)}`,
+            [username],
+        );
+        return (result.rows?.length ?? 0) > 0;
+    }
+
+    async getDisplayName(username: string): Promise<string | null> {
+        const result = await this.db.execute(
+            `SELECT a.display_name FROM accounts a
+       JOIN local_auth_credentials c ON c.account_id = a.id
+       WHERE c.username = ${this.placeholder(1)}`,
+            [username],
+        );
+        const value = result.rows?.[0]?.display_name;
+        if (!value) return username;
+        return String(value);
+    }
+    async setEnabled(username: string, enabled: boolean) {
+        await this.db.execute(
+            `UPDATE accounts SET enabled = ${this.placeholder(1)}, updated_at = ${this.currentTimestampExpression()}
+       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(2)})`,
+            [enabled, username],
+        );
+    }
+    async delete(username: string) {
+        const lookupResult = await this.db.execute(
+            `SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(1)}`,
+            [username],
+        );
+        const accountId = lookupResult.rows?.[0]?.account_id;
+        if (!accountId) return;
+        await this.db.execute("BEGIN");
+        try {
+            await this.db.execute(
+                `DELETE FROM local_auth_credentials WHERE username = ${this.placeholder(1)}`,
+                [username],
+            );
+            await this.db.execute(
+                `DELETE FROM accounts WHERE id = ${this.placeholder(1)}`,
+                [accountId],
+            );
+            await this.db.execute("COMMIT");
+        } catch (error) {
+            await this.db.execute("ROLLBACK");
+            throw error;
+        }
     }
     async getInfo(username: string): Promise<{
         username: string;
         createdAt: string | null;
         lastLogin: string | null;
+        enabled: boolean;
+        isAdmin: boolean;
+        isFounder: boolean;
     } | null> {
         const result = await this.db.execute(
-            `SELECT c.username, a.created_at, a.last_login FROM local_auth_credentials c
+            `SELECT c.username, a.created_at, a.last_login, a.enabled, a.is_admin, a.is_founder FROM local_auth_credentials c
        JOIN accounts a ON a.id = c.account_id
        WHERE c.username = ${this.placeholder(1)}`,
             [username],
@@ -247,6 +320,9 @@ export class DbLocalAccountStore implements LocalAccountStore {
             username: String(row.username),
             createdAt: row.created_at ? String(row.created_at) : null,
             lastLogin: row.last_login ? String(row.last_login) : null,
+            enabled: Boolean(row.enabled),
+            isAdmin: Boolean(row.is_admin),
+            isFounder: Boolean(row.is_founder),
         };
     }
 

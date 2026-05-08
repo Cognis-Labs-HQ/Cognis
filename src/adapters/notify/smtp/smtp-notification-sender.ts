@@ -107,7 +107,12 @@ async function buildMessage(
     to: string,
     subject: string,
     body: string,
-    options: { theme?: string; externalHost?: string; verifyUrl?: string } = {},
+    options: {
+        theme?: string;
+        externalHost?: string;
+        verifyUrl?: string;
+        verifyButtonLabel?: string;
+    } = {},
 ): Promise<string> {
     const palette = options.theme === "dark" ? DARK_PALETTE : LIGHT_PALETTE;
     const externalHost = options.externalHost ?? "";
@@ -120,19 +125,32 @@ async function buildMessage(
             <td style="background:${palette.bgContent};padding:0 36px 24px;text-align:center;">
               <a href="${escapeHtmlForEmail(options.verifyUrl)}"
                 style="display:inline-block;padding:13px 32px;background:${palette.colorAccent};color:#ffffff;text-decoration:none;border-radius:6px;font-weight:700;font-size:15px;letter-spacing:0.04em;font-family:Arial,Helvetica,sans-serif;">
-                Verify Email Address
+                ${escapeHtmlForEmail(options.verifyButtonLabel ?? "Verify Email Address")}
               </a>
             </td>
           </tr>`
         : "";
 
+    function renderBodyWithLinks(rawBody: string): string {
+        const urlPattern = /https?:\/\/[^\s<]+/g;
+        let html = "";
+        let cursor = 0;
+        for (const match of rawBody.matchAll(urlPattern)) {
+            const index = match.index ?? 0;
+            const rawUrl = match[0];
+            html += escapeHtmlForEmail(rawBody.slice(cursor, index));
+            const safeUrl = escapeHtmlForEmail(rawUrl);
+            html += `<a href="${safeUrl}" style="color:${palette.colorAccent2};text-decoration:underline;">${safeUrl}</a>`;
+            cursor = index + rawUrl.length;
+        }
+        html += escapeHtmlForEmail(rawBody.slice(cursor));
+        return html.replace(/\n/g, "<br>");
+    }
+
     const template = await loadEmailTemplate();
     const htmlBody = template
         .replace(/\{\{subject\}\}/g, escapeHtmlForEmail(subject))
-        .replace(
-            /\{\{body\}\}/g,
-            escapeHtmlForEmail(body).replace(/\n/g, "<br>"),
-        )
+        .replace(/\{\{body\}\}/g, renderBodyWithLinks(body))
         .replace(/\{\{verifyButton\}\}/g, verifyButton)
         .replace(/\{\{iconUrl\}\}/g, escapeHtmlForEmail(iconUrl))
         .replace(/\{\{externalHost\}\}/g, escapeHtmlForEmail(externalHost))
@@ -159,11 +177,15 @@ async function buildMessage(
         .map((line) => (line.startsWith(".") ? `.${line}` : line))
         .join("\r\n");
 
+    function sanitizeHeader(value: string): string {
+        return value.replace(/[\r\n]/g, "");
+    }
+
     return (
         [
-            `From: ${fromHeader}`,
-            `To: ${to}`,
-            `Subject: ${subject}`,
+            `From: ${sanitizeHeader(fromHeader)}`,
+            `To: ${sanitizeHeader(to)}`,
+            `Subject: ${sanitizeHeader(subject)}`,
             "MIME-Version: 1.0",
             "Content-Type: text/html; charset=utf-8",
             "",
@@ -291,6 +313,7 @@ async function sendMail(
     body: string,
     theme?: string,
     verifyUrl?: string,
+    verifyButtonLabel?: string,
 ): Promise<void> {
     let session = await openSession(
         config.host,
@@ -371,6 +394,7 @@ async function sendMail(
                 theme,
                 externalHost: config.externalHost,
                 verifyUrl,
+                verifyButtonLabel,
             }),
         );
         const sent = await session.read();
@@ -422,6 +446,7 @@ async function sendMailWithRetry(
     sleep: (ms: number) => Promise<void>,
     theme?: string,
     verifyUrl?: string,
+    verifyButtonLabel?: string,
 ): Promise<void> {
     const maxRetries = config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES;
     const delayMs =
@@ -433,7 +458,15 @@ async function sendMailWithRetry(
             await sleep(delayMs);
         }
         try {
-            await sendMail(config, to, subject, body, theme, verifyUrl);
+            await sendMail(
+                config,
+                to,
+                subject,
+                body,
+                theme,
+                verifyUrl,
+                verifyButtonLabel,
+            );
             return;
         } catch (err) {
             if (err instanceof SmtpTemporaryError && attempt < maxRetries) {
@@ -548,6 +581,27 @@ export class SmtpNotificationSender implements NotificationSender {
             this.sleep,
             theme,
             verifyUrl,
+        );
+    }
+
+    async sendRegistrationInviteEmail(
+        to: string,
+        inviterDisplayName: string,
+        inviteUrl: string,
+        theme?: string,
+    ): Promise<void> {
+        if (!to) throw new Error("smtp_requires_recipient");
+        const subject = `${inviterDisplayName} invited you to join Cognis`;
+        const body = `🎁 ${inviterDisplayName} wants you to join Cognis.\n\nUse this secure invitation link to finish account creation:\n${inviteUrl}\n\nThis invitation expires in 24 hours and can only be used once.`;
+        await sendMailWithRetry(
+            this.config,
+            to,
+            subject,
+            body,
+            this.sleep,
+            theme,
+            inviteUrl,
+            "Sign Up",
         );
     }
 

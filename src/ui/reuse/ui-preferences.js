@@ -12,13 +12,21 @@
  */
 import { apiFetch } from "./api-client.js";
 
+function hasPreferenceApiContext() {
+    return Boolean(
+        localStorage.getItem("cognis_account") &&
+        localStorage.getItem("cognis_token"),
+    );
+}
+
 export async function loadUiPreferences() {
     const account = localStorage.getItem("cognis_account");
-    if (!account) return null;
+    if (!account || !hasPreferenceApiContext()) return null;
     try {
         const response = await apiFetch(
             `/api/v1/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         );
+        if (!response.ok) return null;
         const payload = await response.json();
         const raw = payload?.data?.layoutJson;
         if (!raw) return null;
@@ -26,6 +34,21 @@ export async function loadUiPreferences() {
     } catch {
         return null;
     }
+}
+
+export async function saveUiPreferences(patch) {
+    const account = localStorage.getItem("cognis_account");
+    if (!account || !hasPreferenceApiContext()) return;
+    const current = await loadUiPreferences();
+    const merged = { ...(current || {}), ...patch };
+    await apiFetch(
+        `/api/v1/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
+        {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ layout: merged }),
+        },
+    );
 }
 
 export function applyUiPreferences(prefs) {

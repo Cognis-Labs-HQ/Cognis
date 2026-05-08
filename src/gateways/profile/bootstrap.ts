@@ -137,11 +137,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             accountId: string,
             handle: string,
             role?: string,
+            displayName?: string,
         ): Promise<void> => {
             await profileStore.createProfile(
                 accountId,
                 handle,
                 (role as AccountRole) ?? "user",
+                displayName,
             );
         },
     );
@@ -207,6 +209,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerStaticDir("profile", uiDir);
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/profile/navbar.js",
+    });
+    ctx.uiRegistry?.registerAuthTypingMessage({
+        id: "profile-social-space",
+        textKey: "ui.app.login.typing.sample.5",
+        ownerType: "gateway",
+        ownerId: "profile",
     });
 
     ctx.log?.("info", "Profile gateway: initialized.");

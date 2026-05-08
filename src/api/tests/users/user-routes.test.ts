@@ -3,7 +3,10 @@ import assert from "node:assert/strict";
 import { createUserRoutes } from "../../routes/users/index.js";
 import { VolatileLocalAccountStore } from "../../reuse/account-store.js";
 import { VolatileUserPreferenceStore } from "../../reuse/preference-store.js";
-import { issueAccessToken } from "../../auth/access-tokens.js";
+import {
+    issueAccessToken,
+    verifyAccessToken,
+} from "../../auth/access-tokens.js";
 
 const adminToken = issueAccessToken("admin", "admin", 60);
 const headers = { authorization: `Bearer ${adminToken}` };
@@ -212,4 +215,126 @@ test("getInfo endpoint returns lastLogin field", async () => {
         null,
         "lastLogin should be set after updateLastLogin",
     );
+});
+
+test("admin can set founder flag through isfounder endpoint", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("dana", "pw", false);
+    const prefs = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, prefs);
+    let status = 0;
+    let body = "";
+
+    await route(
+        {
+            method: "POST",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"isFounder":true}');
+            },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end(p: string) {
+                body = p;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/users/dana/isfounder"),
+    );
+
+    assert.equal(status, 200);
+    assert.match(body, /"isFounder":true/);
+    assert.equal(await accounts.isFounder("dana"), true);
+});
+
+test("disabling a user invalidates existing access tokens for that user", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "pw", true);
+    await accounts.register("erin", "pw", false);
+    const prefs = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, prefs);
+    let status = 0;
+
+    const erinToken = issueAccessToken("erin", "user", 60);
+    assert.equal(verifyAccessToken(erinToken)?.sub, "erin");
+
+    await route(
+        { method: "POST", headers } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/erin/disable"),
+    );
+
+    assert.equal(status, 200);
+    assert.equal(verifyAccessToken(erinToken), null);
+});
+
+test("deleting a user invalidates existing access tokens for that user", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("frank", "pw", false);
+    const prefs = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, prefs);
+    let status = 0;
+
+    const frankToken = issueAccessToken("frank", "user", 60);
+    assert.equal(verifyAccessToken(frankToken)?.sub, "frank");
+
+    await route(
+        { method: "DELETE", headers } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/frank"),
+    );
+
+    assert.equal(status, 200);
+    assert.equal(verifyAccessToken(frankToken), null);
+});
+
+test("deleting a user frees the username for re-registration", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("grace", "pw", false);
+    const prefs = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, prefs);
+    let status = 0;
+
+    await route(
+        { method: "DELETE", headers } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/grace"),
+    );
+    assert.equal(status, 200);
+    assert.equal(await accounts.has("grace"), false);
+
+    await route(
+        {
+            method: "POST",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"password":"newpw","role":"user"}');
+            },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/grace"),
+    );
+    assert.equal(status, 201);
 });

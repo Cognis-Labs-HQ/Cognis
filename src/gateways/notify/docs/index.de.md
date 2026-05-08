@@ -43,7 +43,7 @@ export interface NotificationGateway {
 | Methode | Pfad                                               | Beschreibung                                        | Authentifizierung |
 | ------- | -------------------------------------------------- | --------------------------------------------------- | ----------------- |
 | `POST`  | `/api/v1/notifications/send`                       | Benachrichtigung versenden                          | Admin             |
-| `GET`   | `/api/v1/notifications/providers`                  | Registrierte Sender auflisten                       | Admin             |
+| `GET`   | `/api/v1/notifications/providers`                  | Registrierte Sender auflisten                       | Benutzer          |
 | `GET`   | `/api/v1/notifications/categories`                 | Benachrichtigungskategorien auflisten               | Bearer            |
 | `GET`   | `/api/v1/notifications/preferences`                | Eigene Benachrichtigungseinstellungen abrufen       | Bearer            |
 | `PUT`   | `/api/v1/notifications/preferences`                | Eigene Benachrichtigungseinstellungen aktualisieren | Bearer            |

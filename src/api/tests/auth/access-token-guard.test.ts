@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import {
     issueAccessToken,
+    revokeAccessTokensForSubject,
     verifyAccessToken,
 } from "../../auth/access-tokens.js";
 import { requireAuth } from "../../auth/guard.js";
@@ -58,4 +59,19 @@ test("token store persists tokens to disk across module reload", async () => {
         delete process.env.COGNIS_ACCESS_TOKEN_STORE_PATH;
         rmSync(tempDir, { recursive: true, force: true });
     }
+});
+
+test("revoking tokens by subject invalidates all issued tokens for that user", () => {
+    const firstToken = issueAccessToken("subject-a", "user", 60);
+    const secondToken = issueAccessToken("subject-a", "admin", 60);
+    const otherToken = issueAccessToken("subject-b", "user", 60);
+
+    const revoked = revokeAccessTokensForSubject("subject-a");
+    assert.equal(revoked >= 2, true);
+    assert.equal(verifyAccessToken(firstToken), null);
+    assert.equal(verifyAccessToken(secondToken), null);
+    assert.deepEqual(verifyAccessToken(otherToken), {
+        sub: "subject-b",
+        role: "user",
+    });
 });

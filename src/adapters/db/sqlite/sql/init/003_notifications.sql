@@ -16,5 +16,6 @@ CREATE TABLE IF NOT EXISTS user_emails (
   is_primary INTEGER NOT NULL DEFAULT 0,
   verified INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (account_id, email),
-  UNIQUE (email)
+  UNIQUE (email),
+  FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
 );

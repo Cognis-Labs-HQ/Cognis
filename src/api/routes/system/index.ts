@@ -38,18 +38,69 @@ function parseDemoModeFromEnv() {
 
 const SECURITY_SETTINGS_KEY = "security-settings";
 
-function parseTrustedDomains(raw: string | null): string[] {
-    if (!raw) return [];
+function parseSecuritySettings(raw: string | null): {
+    trustedDomains: string[];
+    registrationsEnabled: boolean;
+    userValidationMode: "none" | "smtp";
+} {
+    if (!raw) {
+        return {
+            trustedDomains: [],
+            registrationsEnabled: false,
+            userValidationMode: "none",
+        };
+    }
     try {
         const parsed = JSON.parse(raw) as { trustedDomains?: unknown };
-        if (!Array.isArray(parsed.trustedDomains)) return [];
-        return parsed.trustedDomains
-            .filter((entry: unknown) => typeof entry === "string")
-            .map((entry: string) => entry.trim().toLowerCase())
-            .filter(Boolean);
+        const trustedDomains = Array.isArray(parsed.trustedDomains)
+            ? parsed.trustedDomains
+                  .filter((entry: unknown) => typeof entry === "string")
+                  .map((entry: string) => entry.trim().toLowerCase())
+                  .filter(Boolean)
+            : [];
+        const registrationsEnabled =
+            typeof (parsed as Record<string, unknown>).registrationsEnabled ===
+            "boolean"
+                ? Boolean(
+                      (parsed as Record<string, unknown>).registrationsEnabled,
+                  )
+                : false;
+        const userValidationMode =
+            (parsed as Record<string, unknown>).userValidationMode === "smtp"
+                ? "smtp"
+                : "none";
+        return {
+            trustedDomains,
+            registrationsEnabled,
+            userValidationMode,
+        };
     } catch {
-        return [];
+        return {
+            trustedDomains: [],
+            registrationsEnabled: false,
+            userValidationMode: "none",
+        };
     }
+}
+
+function serializeSecuritySettings(input: {
+    trustedDomains: string[];
+    registrationsEnabled: boolean;
+    userValidationMode: "none" | "smtp";
+}): string {
+    return JSON.stringify({
+        trustedDomains: input.trustedDomains,
+        registrationsEnabled: input.registrationsEnabled,
+        userValidationMode: input.userValidationMode,
+    });
+}
+
+function parseTrustedDomainsInput(rawDomains: unknown): string[] {
+    const list = Array.isArray(rawDomains) ? rawDomains : [];
+    return list
+        .filter((entry: unknown) => typeof entry === "string")
+        .map((entry: string) => entry.trim().toLowerCase())
+        .filter(Boolean);
 }
 
 export function createSystemRoutes(
@@ -110,7 +161,7 @@ export function createSystemRoutes(
             const raw = preferenceStore
                 ? await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY)
                 : null;
-            const data = { trustedDomains: parseTrustedDomains(raw) };
+            const data = parseSecuritySettings(raw);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data }));
             return true;
@@ -122,20 +173,24 @@ export function createSystemRoutes(
         ) {
             if (!requireAuth(req, res, "admin")) return true;
             const body = await readJson(req);
-            const rawDomains = Array.isArray(body.trustedDomains)
-                ? body.trustedDomains
-                : [];
-            const trustedDomains = rawDomains
-                .filter(
-                    (d: unknown) =>
-                        typeof d === "string" && (d as string).trim(),
-                )
-                .map((d: string) => d.trim().toLowerCase());
+            const trustedDomains = parseTrustedDomainsInput(
+                body.trustedDomains,
+            );
+            const registrationsEnabled =
+                typeof body.registrationsEnabled === "boolean"
+                    ? body.registrationsEnabled
+                    : false;
+            const userValidationMode =
+                body.userValidationMode === "smtp" ? "smtp" : "none";
             if (preferenceStore) {
                 await preferenceStore.set(
                     "__system__",
                     SECURITY_SETTINGS_KEY,
-                    JSON.stringify({ trustedDomains }),
+                    serializeSecuritySettings({
+                        trustedDomains,
+                        registrationsEnabled,
+                        userValidationMode,
+                    }),
                 );
             }
             res.writeHead(200, { "content-type": "application/json" });

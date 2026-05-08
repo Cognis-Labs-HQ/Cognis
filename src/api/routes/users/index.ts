@@ -3,6 +3,7 @@ import type { LocalAccountStore } from "../../reuse/account-store.js";
 import { getAuthClaims, requireAuth } from "../../auth/guard.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 import { readJson } from "../../reuse/read-json.js";
+import { revokeAccessTokensForSubject } from "../../auth/access-tokens.js";
 
 const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin"]);
 
@@ -66,13 +67,46 @@ export function createUserRoutes(
         }
 
         const match = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)(?:\/(role|password|enable|disable|preferences\/clear))?$/,
+            /^\/api\/v1\/users\/([^/]+)(?:\/(role|password|enable|disable|isfounder|preferences\/clear))?$/,
         );
         if (!match) return false;
         if (!requireAuth(req, res, "admin")) return true;
 
         const username = decodeURIComponent(match[1]);
         const action = match[2];
+
+        const FOUNDER_PROTECTED_ACTIONS = new Set([
+            "role",
+            "password",
+            "disable",
+            "isfounder",
+        ]);
+        const isFounderProtectedRequest =
+            (req.method === "POST" &&
+                action !== undefined &&
+                FOUNDER_PROTECTED_ACTIONS.has(action)) ||
+            (req.method === "DELETE" && !action);
+        if (isFounderProtectedRequest) {
+            const callerClaims = getAuthClaims(req);
+            if (callerClaims && callerClaims.sub !== username) {
+                const targetInfo = await accountStore.getInfo(username);
+                if (targetInfo?.isAdmin && targetInfo?.isFounder) {
+                    res.writeHead(403, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "protected_account",
+                                message:
+                                    "This account cannot be modified by other admins",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+            }
+        }
 
         if (req.method === "POST" && !action) {
             const body = await readJson(req);
@@ -140,9 +174,35 @@ export function createUserRoutes(
         }
 
         if (req.method === "POST" && action === "disable") {
+            const callerClaims = getAuthClaims(req);
+            if (callerClaims?.sub === username) {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "cannot_disable_self",
+                            message: "You cannot disable your own account",
+                        },
+                    }),
+                );
+                return true;
+            }
             await accountStore.setEnabled(username, false);
+            revokeAccessTokensForSubject(username);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
+            return true;
+        }
+
+        if (req.method === "POST" && action === "isfounder") {
+            const body = await readJson(req);
+            await accountStore.setFounder(username, Boolean(body.isFounder));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: { updated: true, isFounder: Boolean(body.isFounder) },
+                }),
+            );
             return true;
         }
 
@@ -156,6 +216,7 @@ export function createUserRoutes(
         }
 
         if (req.method === "DELETE" && !action) {
+            revokeAccessTokensForSubject(username);
             await accountStore.delete(username);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { deleted: true } }));

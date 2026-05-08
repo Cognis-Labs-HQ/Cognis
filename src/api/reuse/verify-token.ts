@@ -124,6 +124,21 @@ export class VerifyTokenService {
         return true;
     }
 
+    /**
+     * Returns the remaining TTL in milliseconds for the given token, or null if
+     * the token is unknown or expired. Does not consume the token.
+     */
+    ttl(token: string): number | null {
+        const entry = this.store.get(token);
+        if (!entry) return null;
+        const remaining = entry.expiresAt - this.now();
+        if (remaining <= 0) {
+            this.store.delete(token);
+            return null;
+        }
+        return remaining;
+    }
+
     /** Returns true if there is a live (unexpired) pending token for `key`. */
     hasPending(key: string): boolean {
         const token = this.store.findTokenByKey(key);

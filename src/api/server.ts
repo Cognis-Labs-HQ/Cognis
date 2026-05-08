@@ -85,7 +85,13 @@ export function buildServer(deps: ApiDependencies) {
         deps.preferenceStore,
     );
     const docsRoutes = createDocsRoutes();
-    const uiRoutes = createUiRoutes(deps.moduleRuntimeGateway, deps.uiRegistry);
+    const uiRoutes = createUiRoutes(
+        deps.moduleRuntimeGateway,
+        deps.uiRegistry,
+        deps.accountStore,
+        deps.gatewayRegistry,
+        (moduleId) => enabledModules.has(moduleId),
+    );
     const userRoutes = deps.accountStore
         ? createUserRoutes(
               deps.accountStore,

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createAuthRoutes } from "../../routes/auth/index.js";
 import { VolatileLocalAccountStore } from "../../reuse/account-store.js";
 import type { AuthContext, AuthGateway } from "@cognis/core";
+import { issueAccessToken } from "../../auth/access-tokens.js";
 
 function makeGateway(store: VolatileLocalAccountStore): AuthGateway {
     return {
@@ -162,6 +163,107 @@ test("login sets cookie max-age to token ttl", async () => {
             process.env.COGNIS_SECURE_COOKIES = previousSecureCookies;
         }
     }
+});
+
+test("POST /api/v1/auth/verify returns 200 with correct password", async () => {
+    const accountStore = new VolatileLocalAccountStore();
+    await accountStore.register("verifyuser", "secret", false);
+    const gateway = makeGateway(accountStore);
+    const route = createAuthRoutes(gateway, accountStore);
+    const token = issueAccessToken("verifyuser", "user", 60);
+    let status = 0;
+    let payload = "";
+
+    await route(
+        requestWithBody(
+            "POST",
+            { password: "secret" },
+            { authorization: `Bearer ${token}` },
+        ),
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(text: string) {
+                payload = text;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/auth/verify"),
+    );
+    assert.equal(status, 200);
+    assert.match(payload, /"verified":true/);
+});
+
+test("POST /api/v1/auth/verify returns 401 with wrong password for stale session", async () => {
+    const accountStore = new VolatileLocalAccountStore();
+    await accountStore.register("verifyuser2", "secret", false);
+    const gateway = makeGateway(accountStore);
+    const route = createAuthRoutes(gateway, accountStore);
+    const staleIssuedAt = Date.now() - 2 * 60 * 60 * 1000;
+    const token = issueAccessToken("verifyuser2", "user", 7200, {
+        issuedAt: staleIssuedAt,
+    });
+    let status = 0;
+
+    await route(
+        requestWithBody(
+            "POST",
+            { password: "wrong" },
+            { authorization: `Bearer ${token}` },
+        ),
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/auth/verify"),
+    );
+    assert.equal(status, 401);
+});
+
+test("POST /api/v1/auth/verify returns 200 for fresh session without password check", async () => {
+    const accountStore = new VolatileLocalAccountStore();
+    await accountStore.register("verifyuser3", "secret", false);
+    const gateway = makeGateway(accountStore);
+    const route = createAuthRoutes(gateway, accountStore);
+    const token = issueAccessToken("verifyuser3", "user", 3600);
+    let status = 0;
+
+    await route(
+        requestWithBody(
+            "POST",
+            { password: "wrong" },
+            { authorization: `Bearer ${token}` },
+        ),
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/auth/verify"),
+    );
+    assert.equal(status, 200);
+});
+
+test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
+    const accountStore = new VolatileLocalAccountStore();
+    const gateway = makeGateway(accountStore);
+    const route = createAuthRoutes(gateway, accountStore);
+    let status = 0;
+
+    await route(
+        requestWithBody("POST", { password: "anything" }),
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/auth/verify"),
+    );
+    assert.equal(status, 401);
 });
 
 test("login sets secure cookie when request is forwarded over https", async () => {

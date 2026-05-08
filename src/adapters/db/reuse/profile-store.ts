@@ -251,6 +251,7 @@ export class DbProfileStore implements ProfileCreateStore {
         accountId: string,
         handle: string,
         role: AccountRole = "user",
+        displayName?: string,
     ): Promise<AccountProfile | null> {
         try {
             if (this.dbType === "sqlite") {
@@ -267,6 +268,12 @@ export class DbProfileStore implements ProfileCreateStore {
                 await this.db.execute(
                     `INSERT IGNORE INTO account_profiles (account_id, handle, role) VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)})`,
                     [accountId, handle, role],
+                );
+            }
+            if (displayName) {
+                await this.db.execute(
+                    `UPDATE account_profiles SET display_name = ${this.p(1)} WHERE account_id = ${this.p(2)}`,
+                    [displayName, accountId],
                 );
             }
             return this.getProfile(accountId);

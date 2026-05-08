@@ -2,7 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createUiRoutes } from "../../routes/ui/index.js";
 import path from "node:path";
-import { issueAccessToken } from "../../auth/access-tokens.js";
+import {
+    issueAccessToken,
+    revokeAccessTokensForSubject,
+} from "../../auth/access-tokens.js";
 
 function createResponseRecorder() {
     let status = 0;
@@ -71,6 +74,29 @@ test("dashboard route requires login cookie", async () => {
     assert.match(authed.body, /static\/app\/dashboard\/index\.js/);
 });
 
+test("dashboard route redirects revoked disabled-account sessions with account_disabled reason", async () => {
+    const disabledToken = issueAccessToken("disabled-user", "user", 60);
+    revokeAccessTokensForSubject("disabled-user");
+    const route = createUiRoutes(undefined, undefined, {
+        async getInfo(username: string) {
+            if (username !== "disabled-user") return null;
+            return { enabled: false };
+        },
+    } as any);
+    const recorder = createResponseRecorder();
+
+    await route(
+        {
+            headers: { cookie: `cognis_access_token=${disabledToken}` },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/dashboard"),
+    );
+
+    assert.equal(recorder.status, 302);
+    assert.equal(recorder.headers.location, "/login?reason=account_disabled");
+});
+
 test("login page is served as standalone page html", async () => {
     const route = createUiRoutes();
     const recorder = createResponseRecorder();
@@ -82,8 +108,7 @@ test("login page is served as standalone page html", async () => {
     );
 
     assert.equal(recorder.status, 200);
-    assert.match(recorder.body, /id="login-form"/);
-    assert.match(recorder.body, /id="theme-toggle"/);
+    assert.match(recorder.body, /id="app"/);
     assert.match(recorder.body, /app\/login\/index\.js/);
 });
 
@@ -193,6 +218,116 @@ test("administration page is visible to admins only", async () => {
     assert.equal(adminRes.status, 200);
     assert.match(adminRes.body, /static\/app\/administration\/index\.js/);
     assert.match(adminRes.body, /id="app"/);
+});
+
+test("users page is visible to admins only", async () => {
+    const route = createUiRoutes();
+    const anonymous = createResponseRecorder();
+    await route(
+        { headers: {} } as any,
+        anonymous.res as any,
+        new URL("http://localhost/users"),
+    );
+    assert.equal(anonymous.status, 302);
+    assert.equal(anonymous.headers.location, "/login");
+
+    const userToken = issueAccessToken("u1", "user", 60);
+    const userRes = createResponseRecorder();
+    await route(
+        { headers: { cookie: `cognis_access_token=${userToken}` } } as any,
+        userRes.res as any,
+        new URL("http://localhost/users"),
+    );
+    assert.equal(userRes.status, 302);
+    assert.equal(userRes.headers.location, "/dashboard");
+
+    const adminToken = issueAccessToken("u1", "admin", 60);
+    const adminRes = createResponseRecorder();
+    await route(
+        { headers: { cookie: `cognis_access_token=${adminToken}` } } as any,
+        adminRes.res as any,
+        new URL("http://localhost/users"),
+    );
+    assert.equal(adminRes.status, 200);
+    assert.match(adminRes.body, /static\/app\/users\/index\.js/);
+});
+
+test("invite page redirects admins to /users", async () => {
+    const route = createUiRoutes(
+        undefined,
+        undefined,
+        {
+            async isFounder() {
+                return true;
+            },
+        } as any,
+        {
+            get() {
+                return { status: "active" };
+            },
+        } as any,
+    );
+    const adminToken = issueAccessToken("u1", "admin", 60);
+    const res = createResponseRecorder();
+    await route(
+        { headers: { cookie: `cognis_access_token=${adminToken}` } } as any,
+        res.res as any,
+        new URL("http://localhost/invite"),
+    );
+    assert.equal(res.status, 302);
+    assert.equal(res.headers.location, "/users");
+});
+
+test("invite page is visible to non-admin founders", async () => {
+    const route = createUiRoutes(
+        undefined,
+        undefined,
+        {
+            async isFounder() {
+                return true;
+            },
+        } as any,
+        {
+            get() {
+                return { status: "active" };
+            },
+        } as any,
+    );
+    const founderToken = issueAccessToken("u1", "user", 60);
+    const res = createResponseRecorder();
+    await route(
+        { headers: { cookie: `cognis_access_token=${founderToken}` } } as any,
+        res.res as any,
+        new URL("http://localhost/invite"),
+    );
+    assert.equal(res.status, 200);
+    assert.match(res.body, /static\/app\/invite\/index\.js/);
+});
+
+test("invite page redirects founders to /dashboard when registration gateway is disabled", async () => {
+    const route = createUiRoutes(
+        undefined,
+        undefined,
+        {
+            async isFounder() {
+                return true;
+            },
+        } as any,
+        {
+            get() {
+                return { status: "disabled" };
+            },
+        } as any,
+    );
+    const founderToken = issueAccessToken("u1", "user", 60);
+    const res = createResponseRecorder();
+    await route(
+        { headers: { cookie: `cognis_access_token=${founderToken}` } } as any,
+        res.res as any,
+        new URL("http://localhost/invite"),
+    );
+    assert.equal(res.status, 302);
+    assert.equal(res.headers.location, "/dashboard");
 });
 
 test("core ui routes do not serve /profile (owned by profile gateway)", async () => {

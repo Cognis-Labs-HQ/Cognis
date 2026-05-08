@@ -107,6 +107,25 @@ test("UIRegistry registers and lists page extensions", () => {
     assert.deepEqual(reg.listPageExtensions("unknown"), []);
 });
 
+test("UIRegistry registers and lists auth typing messages", () => {
+    const reg = new UIRegistry();
+    reg.registerAuthTypingMessage({
+        id: "profile-social-space",
+        textKey: "ui.app.login.typing.sample.5",
+        ownerType: "gateway",
+        ownerId: "profile",
+    });
+
+    assert.deepEqual(reg.listAuthTypingMessages(), [
+        {
+            id: "profile-social-space",
+            textKey: "ui.app.login.typing.sample.5",
+            ownerType: "gateway",
+            ownerId: "profile",
+        },
+    ]);
+});
+
 test("GET /api/v1/ui/page-extensions/:pageId returns extensions for authenticated user", async () => {
     const uiReg = new UIRegistry();
     uiReg.registerPageExtension("dashboard", {
@@ -177,4 +196,103 @@ test("GET /api/v1/ui/page-extensions/:pageId returns empty array without uiRegis
     assert.ok(handled);
     assert.equal(res.status, 200);
     assert.deepEqual(JSON.parse(res.payload).data, []);
+});
+
+test("GET /api/v1/ui/auth-typing-messages returns public messages and filters disabled gateways", async () => {
+    const uiReg = new UIRegistry();
+    uiReg.registerAuthTypingMessage({
+        id: "profile-social-space",
+        textKey: "ui.app.login.typing.sample.5",
+        ownerType: "gateway",
+        ownerId: "profile",
+    });
+    uiReg.registerAuthTypingMessage({
+        id: "registration-register-today",
+        textKey: "ui.app.login.typing.sample.7",
+        ownerType: "gateway",
+        ownerId: "registration",
+    });
+    const gatewayRegistry = new GatewayRegistry();
+    gatewayRegistry.register({
+        id: "profile",
+        name: "Profile Gateway",
+        version: "1.0.0",
+    });
+    gatewayRegistry.register({
+        id: "registration",
+        name: "Registration Gateway",
+        version: "1.0.0",
+    });
+    gatewayRegistry.disable("registration");
+    const handler = createUiRoutes(
+        undefined,
+        uiReg,
+        undefined,
+        gatewayRegistry,
+    );
+
+    const req = makeRequest("GET");
+    const res = makeResponse();
+    const handled = await handler(
+        req,
+        res,
+        new URL("http://localhost/api/v1/ui/auth-typing-messages"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    assert.deepEqual(JSON.parse(res.payload).data, [
+        {
+            id: "profile-social-space",
+            textKey: "ui.app.login.typing.sample.5",
+            ownerType: "gateway",
+            ownerId: "profile",
+        },
+    ]);
+});
+
+test("GET /api/v1/ui/auth-typing-messages includes enabled module manifest messages", async () => {
+    const route = createUiRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "calendar",
+                    name: "Calendar",
+                    version: "1.0.0",
+                    class: "extension",
+                    coreApiVersion: "1.0.0",
+                    capabilities: [],
+                    entrypoints: {},
+                    ui: {
+                        authTypingMessages: [
+                            "module.calendar.auth_typing.welcome",
+                        ],
+                    },
+                },
+            ],
+        } as any,
+        new UIRegistry(),
+        undefined,
+        undefined,
+        (moduleId) => moduleId === "calendar",
+    );
+
+    const req = makeRequest("GET");
+    const res = makeResponse();
+    const handled = await route(
+        req,
+        res,
+        new URL("http://localhost/api/v1/ui/auth-typing-messages"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    assert.deepEqual(JSON.parse(res.payload).data, [
+        {
+            id: "calendar:0",
+            textKey: "module.calendar.auth_typing.welcome",
+            ownerType: "module",
+            ownerId: "calendar",
+        },
+    ]);
 });

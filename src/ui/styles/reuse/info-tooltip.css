@@ -1,0 +1,66 @@
+.info-tooltip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    margin-left: 6px;
+}
+
+.info-tooltip__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    border: 1.5px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    transition:
+        background 0.15s,
+        color 0.15s;
+}
+
+.info-tooltip__btn:hover,
+.info-tooltip__btn:focus-visible {
+    background: var(--accent);
+    color: #fff;
+    outline: none;
+}
+
+.info-tooltip__panel {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 220px;
+    max-width: 320px;
+    background: var(--surface-raised, var(--surface));
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--text-muted, var(--text));
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+    white-space: normal;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.15s,
+        visibility 0.15s;
+    z-index: 200;
+}
+
+.info-tooltip__btn:hover + .info-tooltip__panel,
+.info-tooltip__btn:focus-visible + .info-tooltip__panel {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}

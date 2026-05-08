@@ -7,11 +7,45 @@ import { RouteRegistry } from "../../../api/route-registry.js";
 import { UIRegistry } from "../../../api/ui-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../../../api/auth/access-tokens.js";
+import { SqliteExecutor } from "../../../gateways/db/executor.js";
 
 function makeInMemoryDb() {
     return {
         execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
     };
+}
+
+function makeJsonRequest(
+    method: string,
+    body: Record<string, unknown>,
+    headers: Record<string, string> = {},
+) {
+    const chunks = [Buffer.from(JSON.stringify(body))];
+    return {
+        method,
+        headers,
+        [Symbol.asyncIterator]: async function* () {
+            for (const chunk of chunks) yield chunk;
+        },
+    } as unknown as import("node:http").IncomingMessage;
+}
+
+async function dispatchRoute(
+    routeRegistry: RouteRegistry,
+    req: import("node:http").IncomingMessage,
+    pathname: string,
+) {
+    const res = makeResponse();
+    let handled = false;
+    for (const entry of routeRegistry.getEntries()) {
+        handled = await entry.handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL(pathname, "http://localhost"),
+        );
+        if (handled) break;
+    }
+    return { handled, res };
 }
 
 function makeResponse() {
@@ -130,6 +164,51 @@ test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
     assert.equal(res.status, 200);
     const body = JSON.parse(res.payload) as { data: unknown[] };
     assert.ok(Array.isArray(body.data));
+});
+
+test("GET /api/v1/auth/registration-config returns open-registration state", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("registration:public:isEnabled", () => true);
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const handlers = routeRegistry.getHandlers();
+    const req = {
+        method: "GET",
+        headers: {},
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    let handled = false;
+    for (const handler of handlers) {
+        handled = await handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/registration-config", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload) as {
+        data: { registrationsEnabled: boolean };
+    };
+    assert.equal(body.data.registrationsEnabled, true);
 });
 
 test("GET /api/v1/gateways/auth/adapters requires admin auth", async () => {
@@ -394,12 +473,10 @@ test("login endpoint returns 503 when no auth providers are available", async ()
     assert.equal(res.status, 401, "bad credentials should yield 401");
 });
 
-test("profile:createProfile capability is looked up lazily in login and register handlers", async () => {
+test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-
-    let profileCreated: string | null = null;
 
     await bootstrap({
         dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
@@ -415,10 +492,147 @@ test("profile:createProfile capability is looked up lazily in login and register
         capabilities,
     });
 
+    const staleIssuedAt = Date.now() - 2 * 60 * 60 * 1000;
+    const token = issueAccessToken("verify-user", "admin", 7200, {
+        issuedAt: staleIssuedAt,
+    });
+    const chunks = [
+        Buffer.from(JSON.stringify({ password: "test-password-123" })),
+    ];
+    const req = {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}` },
+        [Symbol.asyncIterator]: async function* () {
+            for (const chunk of chunks) yield chunk;
+        },
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    let handled = false;
+    for (const entry of routeRegistry.getEntries()) {
+        handled = await entry.handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/verify", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.ok(handled, "verify endpoint should handle the request");
+    assert.equal(res.status, 401);
+    assert.match(res.payload, /invalid_credentials/);
+});
+
+test("POST /api/v1/auth/verify returns 200 for fresh authenticated session", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const token = issueAccessToken("verify-user-fresh", "admin", 60);
+    const req = {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}` },
+        [Symbol.asyncIterator]: async function* () {
+            yield Buffer.from(JSON.stringify({ password: "wrong-password" }));
+        },
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    let handled = false;
+    for (const entry of routeRegistry.getEntries()) {
+        handled = await entry.handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/verify", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.ok(handled, "verify endpoint should handle the request");
+    assert.equal(res.status, 200);
+});
+
+test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const req = {
+        method: "POST",
+        headers: {},
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    let handled = false;
+    for (const entry of routeRegistry.getEntries()) {
+        handled = await entry.handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/verify", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.ok(handled, "verify endpoint should handle the request");
+    assert.equal(res.status, 401);
+    assert.match(res.payload, /unauthorized/);
+});
+
+test("registration:public:register capability is looked up lazily in register handler", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    let createdUsername: string | null = null;
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    capabilities.contribute("registration:public:isEnabled", () => true);
     capabilities.contribute(
-        "profile:createProfile",
-        async (accountId: string) => {
-            profileCreated = accountId;
+        "registration:public:register",
+        async ({ username }: { username: string }) => {
+            createdUsername = username;
+            return { username, isAdmin: false, enabled: true };
         },
     );
 
@@ -446,11 +660,12 @@ test("profile:createProfile capability is looked up lazily in login and register
         if (handled) break;
     }
 
-    assert.equal(
-        profileCreated,
-        "testuser",
-        "profile:createProfile contributed after bootstrap should be invoked on register",
-    );
+    assert.equal(createdUsername, "testuser");
+    const body = JSON.parse(res.payload) as {
+        data: { verifyToken?: string };
+    };
+    assert.equal(typeof body.data.verifyToken, "string");
+    assert.ok(body.data.verifyToken);
 });
 
 test("RouteRegistry.getEntries returns handlers with their associated gatewayId", async () => {
@@ -472,4 +687,188 @@ test("RouteRegistry.getEntries returns handlers with their associated gatewayId"
     assert.equal(entries[0].handler, handlerA);
     assert.equal(entries[1].handler, handlerB);
     assert.equal(entries[2].handler, handlerC);
+});
+
+test("auth register endpoint returns 403 when open registration is disabled", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("registration:public:isEnabled", () => false);
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const entries = routeRegistry.getEntries();
+    const req = {
+        method: "POST",
+        headers: {},
+        [Symbol.asyncIterator]: async function* () {
+            yield Buffer.from(
+                JSON.stringify({ username: "new-user", password: "pw" }),
+            );
+        },
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    for (const entry of entries) {
+        const handled = await entry.handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/register", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.equal(res.status, 403);
+    assert.match(res.payload, /registrations_disabled/);
+});
+
+test("login userValidation fails open when SMTP validation is enabled but unavailable", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("registration:public:isEnabled", () => true);
+    capabilities.contribute(
+        "registration:public:register",
+        async ({
+            username,
+            password,
+        }: {
+            username: string;
+            password: string;
+        }) => {
+            const accountStore = capabilities.get<{
+                register: (
+                    username: string,
+                    password: string,
+                    isAdmin?: boolean,
+                ) => Promise<{
+                    username: string;
+                    isAdmin: boolean;
+                    enabled: boolean;
+                }>;
+            }>("auth:accountStore");
+            return accountStore!.register(username, password, false);
+        },
+    );
+    capabilities.contribute("preferences:store", {
+        async get(_accountId: string, _key: string) {
+            return JSON.stringify({
+                trustedDomains: [],
+                registrationsEnabled: true,
+                userValidationMode: "smtp",
+            });
+        },
+    });
+    const db = new SqliteExecutor(":memory:");
+    await db.execute(
+        "CREATE TABLE IF NOT EXISTS account_profiles (account_id TEXT PRIMARY KEY, role TEXT)",
+    );
+    await bootstrap({
+        dbExecutor: db,
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const registerResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", { username: "alice", password: "pass123" }),
+        "/api/v1/auth/register",
+    );
+    assert.ok(registerResult.handled);
+    assert.equal(registerResult.res.status, 201);
+
+    const loginResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "alice",
+            password: "pass123",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.ok(loginResult.handled);
+    assert.equal(loginResult.res.status, 200);
+    const payload = JSON.parse(loginResult.res.payload) as {
+        data: { requiredUserValidation: boolean; userValidationMode: string };
+    };
+    assert.equal(payload.data.userValidationMode, "smtp");
+    assert.equal(payload.data.requiredUserValidation, false);
+});
+
+test("login userValidation exempts founder admin even when SMTP is available", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("preferences:store", {
+        async get(_accountId: string, _key: string) {
+            return JSON.stringify({
+                trustedDomains: [],
+                registrationsEnabled: true,
+                userValidationMode: "smtp",
+            });
+        },
+    });
+    capabilities.contribute("notify:canSendVerificationEmail", () => true);
+    const db = new SqliteExecutor(":memory:");
+    await db.execute(
+        "CREATE TABLE IF NOT EXISTS account_profiles (account_id TEXT PRIMARY KEY, role TEXT)",
+    );
+    await bootstrap({
+        dbExecutor: db,
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const createLocalAdmin = capabilities.get<
+        (username: string, password: string) => Promise<void>
+    >("auth:createLocalAdmin");
+    const accountStore = capabilities.get<{
+        setFounder: (username: string, isFounder: boolean) => Promise<void>;
+    }>("auth:accountStore");
+    assert.ok(createLocalAdmin);
+    assert.ok(accountStore);
+    await createLocalAdmin?.("root-admin", "adminpass");
+    await accountStore?.setFounder("root-admin", true);
+
+    const loginResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "root-admin",
+            password: "adminpass",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.ok(loginResult.handled);
+    assert.equal(loginResult.res.status, 200);
+    const payload = JSON.parse(loginResult.res.payload) as {
+        data: {
+            role: string;
+            isFounder: boolean;
+            requiredUserValidation: boolean;
+            userValidationMode: string;
+        };
+    };
+    assert.equal(payload.data.role, "admin");
+    assert.equal(payload.data.isFounder, true);
+    assert.equal(payload.data.userValidationMode, "smtp");
+    assert.equal(payload.data.requiredUserValidation, false);
 });

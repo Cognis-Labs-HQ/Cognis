@@ -1,5 +1,6 @@
 import { apiFetch } from "../../reuse/api-client.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 
 /**
  * Security sub-module for the Administration page.
@@ -31,6 +32,9 @@ import { escapeHtml } from "../../reuse/escape-html.js";
  */
 export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalDomains = [];
+    let currentPublicRegistrationEnabled = false;
+    let originalUserValidationMode = "none";
+    let currentUserValidationMode = "none";
 
     async function loadSettings() {
         const res = await apiFetch("/api/v1/system/security");
@@ -39,11 +43,28 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return payload.data ?? { trustedDomains: [] };
     }
 
-    async function persistSettings(trustedDomains) {
+    async function loadPublicRegistrationAdapterState() {
+        const res = await apiFetch("/api/v1/gateways/registration/adapters");
+        if (!res.ok) return false;
+        const payload = await res.json();
+        const adapters = Array.isArray(payload?.data) ? payload.data : [];
+        const publicAdapter = adapters.find((entry) => entry.id === "public");
+        return publicAdapter?.enabled === true;
+    }
+
+    async function persistSettings(
+        trustedDomains,
+        registrationsEnabled,
+        userValidationMode,
+    ) {
         const res = await apiFetch("/api/v1/system/security", {
             method: "PUT",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ trustedDomains }),
+            body: JSON.stringify({
+                trustedDomains,
+                registrationsEnabled,
+                userValidationMode,
+            }),
         });
         if (!res.ok) throw new Error("save_failed");
     }
@@ -60,30 +81,97 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return input instanceof HTMLInputElement ? input.value : "";
     }
 
+    function getValidationModeValue() {
+        const select = root.querySelector("#security-user-validation-mode");
+        if (!(select instanceof HTMLSelectElement)) return "none";
+        return select.value === "smtp" ? "smtp" : "none";
+    }
+
+    function getRegistrationsEnabledValue() {
+        const input = root.querySelector("#security-enable-registrations");
+        if (!(input instanceof HTMLInputElement)) return false;
+        return input.checked;
+    }
+
+    function markDirtyState() {
+        const currentDomains = parseDomains(getInputValue()).join(",");
+        const originalDomainsValue = originalDomains.join(",");
+        const modeChanged =
+            getValidationModeValue() !== originalUserValidationMode;
+        const registrationsChanged =
+            getRegistrationsEnabledValue() !== currentPublicRegistrationEnabled;
+        onDirtyChange?.(
+            currentDomains !== originalDomainsValue ||
+                modeChanged ||
+                registrationsChanged,
+        );
+    }
+
     function bindInput(settings) {
         const input = root.querySelector("#security-trusted-domains");
         if (!(input instanceof HTMLInputElement)) return;
 
         originalDomains = settings.trustedDomains ?? [];
+        currentPublicRegistrationEnabled =
+            settings.registrationsEnabled === true;
+        currentUserValidationMode =
+            settings.userValidationMode === "smtp" ? "smtp" : "none";
+        originalUserValidationMode = currentUserValidationMode;
         input.value = originalDomains.join(", ");
+        const validationSelect = root.querySelector(
+            "#security-user-validation-mode",
+        );
+        const registrationsToggle = root.querySelector(
+            "#security-enable-registrations",
+        );
+        if (validationSelect instanceof HTMLSelectElement) {
+            validationSelect.value = currentUserValidationMode;
+        }
+        if (registrationsToggle instanceof HTMLInputElement) {
+            registrationsToggle.checked = currentPublicRegistrationEnabled;
+        }
 
         input.addEventListener("input", () => {
-            const current = parseDomains(getInputValue()).join(",");
-            const original = originalDomains.join(",");
-            onDirtyChange?.(current !== original);
+            markDirtyState();
+        });
+
+        validationSelect?.addEventListener("change", () => {
+            markDirtyState();
+        });
+        registrationsToggle?.addEventListener("change", () => {
+            markDirtyState();
         });
     }
 
     return {
         async init() {
-            const settings = await loadSettings();
+            const [settings, publicRegistrationEnabled] = await Promise.all([
+                loadSettings(),
+                loadPublicRegistrationAdapterState(),
+            ]);
+            settings.registrationsEnabled = publicRegistrationEnabled;
             bindInput(settings);
         },
 
         async save() {
             const domains = parseDomains(getInputValue());
-            await persistSettings(domains);
+            const validationMode = getValidationModeValue();
+            const registrationsEnabled = getRegistrationsEnabledValue();
+            await persistSettings(
+                domains,
+                registrationsEnabled,
+                validationMode,
+            );
+            if (registrationsEnabled !== currentPublicRegistrationEnabled) {
+                await apiFetch(
+                    `/api/v1/gateways/registration/adapters/public/${registrationsEnabled ? "enable" : "disable"}`,
+                    { method: "POST" },
+                );
+            }
             originalDomains = domains;
+            currentPublicRegistrationEnabled = registrationsEnabled;
+            currentUserValidationMode = validationMode;
+            originalUserValidationMode = validationMode;
         },
 
         discard() {
@@ -91,23 +179,62 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             if (input instanceof HTMLInputElement) {
                 input.value = originalDomains.join(", ");
             }
+            const validationSelect = root.querySelector(
+                "#security-user-validation-mode",
+            );
+            if (validationSelect instanceof HTMLSelectElement) {
+                validationSelect.value = originalUserValidationMode;
+            }
+            const registrationsToggle = root.querySelector(
+                "#security-enable-registrations",
+            );
+            if (registrationsToggle instanceof HTMLInputElement) {
+                registrationsToggle.checked = currentPublicRegistrationEnabled;
+            }
             onDirtyChange?.(false);
         },
 
         renderContent() {
+            const tooltipAria = i18n.t("ui.reuse.info_tooltip.aria");
             return `
         <div class="security-settings-form">
-          <label class="security-field-label" for="security-trusted-domains">
-            ${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_label"))}
-            <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_hint"))}</span>
-          </label>
-          <div class="security-field-row">
-            <input
-              id="security-trusted-domains"
-              type="text"
-              class="security-domains-input"
-              placeholder="${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_placeholder"))}"
-            />
+          <div class="components-section">
+            <h3 class="components-section-heading">
+              ${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.trusted_domains_hint"), tooltipAria)}
+            </h3>
+            <div class="security-field-row">
+              <input
+                id="security-trusted-domains"
+                type="text"
+                class="security-domains-input"
+                placeholder="${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_placeholder"))}"
+              />
+            </div>
+          </div>
+          <div class="components-section">
+            <h3 class="components-section-heading">
+              ${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.enable_registrations_hint"), tooltipAria)}
+            </h3>
+            <div class="security-field-row">
+              <label class="switch">
+                <input id="security-enable-registrations" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="components-section">
+            <h3 class="components-section-heading">
+              ${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.user_validation_mode_hint"), tooltipAria)}
+            </h3>
+            <div class="security-field-row">
+              <select id="security-user-validation-mode" class="security-domains-input theme-select">
+                <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.none"))}</option>
+                <option value="smtp">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.smtp"))}</option>
+              </select>
+            </div>
           </div>
         </div>
       `;

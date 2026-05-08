@@ -91,6 +91,41 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/notify/admin-section.js",
     });
     ctx.uiRegistry?.registerStaticDir("notify", uiDir);
+
+    ctx.capabilities.contribute("notify:canSendRegistrationInviteEmail", () =>
+        gateway.canSendRegistrationInviteEmail(),
+    );
+    ctx.capabilities.contribute("notify:canSendVerificationEmail", () =>
+        gateway.canSendVerificationEmail(),
+    );
+    ctx.capabilities.contribute(
+        "notify:sendRegistrationInviteEmail",
+        async (
+            to: string,
+            inviterDisplayName: string,
+            inviteUrl: string,
+            theme?: string,
+        ) =>
+            gateway.sendRegistrationInviteEmail(
+                to,
+                inviterDisplayName,
+                inviteUrl,
+                theme,
+            ),
+    );
+    ctx.capabilities.contribute(
+        "notify:isEmailRegistered",
+        async (email: string) => notifStore.isEmailRegistered(email),
+    );
+    ctx.capabilities.contribute(
+        "notify:upsertVerifiedPrimaryEmail",
+        async (accountId: string, email: string) =>
+            notifStore.upsertVerifiedPrimaryEmail(accountId, email),
+    );
+    ctx.capabilities.contribute(
+        "notify:hasVerifiedEmail",
+        async (accountId: string) => notifStore.hasVerifiedEmail(accountId),
+    );
 }
 
 /**
@@ -602,6 +637,7 @@ function createGatewayAdapterRoutes(
                     return true;
                 }
                 res.writeHead(200, { "content-type": "application/json" });
+                const sender = gateway.getSender(adapterId);
                 res.end(
                     JSON.stringify({
                         data: config,
@@ -609,6 +645,8 @@ function createGatewayAdapterRoutes(
                             gateway.getProviderEnvValues(adapterId) ?? {},
                         requiredFields:
                             gateway.getProviderRequiredFields(adapterId) ?? [],
+                        supportsTest:
+                            typeof sender?.sendTestEmail === "function",
                     }),
                 );
                 return true;

@@ -1,15 +1,18 @@
 @import url("/static/styles/reuse/theme.css");
 
-.auth-page--login-frame {
+.auth-page--frame {
     min-height: 100vh;
     padding: 34px;
     background: var(--bg);
     display: flex;
     flex-direction: column;
     justify-content: center;
+    width: 100%;
+    margin-left: 0;
+    box-sizing: border-box;
 }
 
-.login-layout {
+.auth-layout {
     width: min(1060px, 100%);
     margin: 0 auto;
     display: grid;
@@ -18,8 +21,8 @@
     align-items: stretch;
 }
 
-.login-intro,
-.login-panel {
+.panel.auth-intro,
+.auth-panel {
     padding: 34px;
     background: linear-gradient(
         180deg,
@@ -29,7 +32,7 @@
     border: 0;
 }
 
-.login-brandline {
+.auth-brandline {
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: center;
@@ -39,16 +42,16 @@
     padding: 10px 14px;
 }
 
-.login-icon {
+.auth-icon {
     width: 70px;
     height: 70px;
 }
-.login-title {
+.auth-title {
     margin: 0;
     font-size: 3.1rem;
     line-height: 0.95;
 }
-.login-typing {
+.auth-typing {
     margin: 7px 0 0;
     min-height: 1.5rem;
     font-size: 1.1rem;
@@ -59,13 +62,13 @@
     animation: blink-cursor 0.95s steps(1, end) infinite;
 }
 
-.login-intro-copy {
+p.auth-intro {
     margin: 24px 0 18px;
     font-size: 1.75rem;
     color: #d6e7ff;
 }
 
-.login-template-box {
+.cognis-ad-frame {
     margin-top: 8px;
     border-radius: 12px;
     border: 1px solid rgba(80, 128, 208, 0.3);
@@ -80,31 +83,40 @@
         sans-serif;
 }
 
-.login-heading {
+.auth-heading {
     margin: 0 0 20px;
     font-size: 2.5rem;
 }
-.login-form {
+.auth-form {
     gap: 14px;
 }
-.login-form label {
+.auth-form label {
     display: grid;
     gap: 8px;
     font-weight: 700;
     font-size: 1.2rem;
 }
-.login-form input,
-.login-form button {
+.auth-form input,
+.auth-form button {
     padding: 12px 14px;
     font-size: 1.15rem;
     font-weight: 400;
 }
 
-.login-form button {
+.auth-form button {
     margin-top: 8px;
     border: 1px solid rgba(89, 133, 255, 0.62);
     background: linear-gradient(145deg, #2550be, #2343a6);
     color: #f1f7ff;
+}
+
+.auth-form-shell {
+    width: 100%;
+}
+
+.auth-input--locked {
+    opacity: 0.55;
+    cursor: not-allowed;
 }
 
 .auth-provider-toggle {
@@ -161,20 +173,20 @@
 }
 
 @media (max-width: 940px) {
-    .auth-page--login-frame {
+    .auth-page--frame {
         padding: 18px;
     }
-    .login-layout {
+    .auth-layout {
         grid-template-columns: 1fr;
     }
-    .login-intro,
-    .login-panel {
+    .panel.auth-intro,
+    .auth-panel {
         padding: 24px;
     }
 }
 
-body[data-theme="light"] .login-intro,
-body[data-theme="light"] .login-panel {
+body[data-theme="light"] .panel.auth-intro,
+body[data-theme="light"] .auth-panel {
     background: linear-gradient(
         180deg,
         rgba(255, 255, 255, 0.89),
@@ -182,27 +194,27 @@ body[data-theme="light"] .login-panel {
     );
 }
 
-body[data-theme="light"] .login-title,
-body[data-theme="light"] .login-heading,
-body[data-theme="light"] .login-form label span {
+body[data-theme="light"] .auth-title,
+body[data-theme="light"] .auth-heading,
+body[data-theme="light"] .auth-form label span {
     color: #0f172a;
 }
 
-body[data-theme="light"] .login-intro-copy {
+body[data-theme="light"] p.auth-intro {
     color: #1e293b;
 }
 
-body[data-theme="light"] .login-typing {
+body[data-theme="light"] .auth-typing {
     color: #0d7a3e;
 }
 
-body[data-theme="light"] .login-template-box {
+body[data-theme="light"] .cognis-ad-frame {
     background: rgba(191, 219, 254, 0.45);
     border-color: rgba(96, 165, 250, 0.35);
     color: #0f172a;
 }
 
-body[data-theme="light"] .login-form button {
+body[data-theme="light"] .auth-form button {
     border: 1px solid rgba(37, 99, 235, 0.45);
     background: linear-gradient(145deg, #3b82f6, #2563eb);
     color: #eff6ff;

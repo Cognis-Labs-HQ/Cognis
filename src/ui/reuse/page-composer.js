@@ -72,6 +72,7 @@
  *     id: string,
  *     label: string,
  *     render: () => string,
+ *     onRender?: () => void,
  *     pinned?: boolean,
  *     gridSize?: { default: [number, number], min: [number, number], max?: [number, number] | 'full' | 'half' | ['half'|number, 'half'|number] },
  *   }>,
@@ -87,7 +88,9 @@
  *   showNavbar?: boolean,
  *   showThemeToggle?: boolean,
  *   showFooter?: boolean,
+ *   persistLayoutPreferences?: boolean,
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
+ *   onBeforeSubPageSwitch?: (fromId: string|null, toId: string) => Promise<boolean>,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
@@ -114,7 +117,10 @@ export function createPageComposer(
         showNavbar = true,
         showThemeToggle = true,
         showFooter = true,
+        frameless = false,
+        persistLayoutPreferences = true,
         pageOverrides = {},
+        onBeforeSubPageSwitch,
     },
 ) {
     function escapeHtml(value) {
@@ -164,7 +170,8 @@ export function createPageComposer(
 
     async function loadLayout() {
         const account = localStorage.getItem("cognis_account");
-        if (!account) return null;
+        const token = localStorage.getItem("cognis_token");
+        if (!account || !token) return null;
         try {
             const response = await apiFetch(
                 `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(preferenceKey)}`,
@@ -180,7 +187,8 @@ export function createPageComposer(
 
     async function saveLayout() {
         const account = localStorage.getItem("cognis_account");
-        if (!account) return;
+        const token = localStorage.getItem("cognis_token");
+        if (!account || !token) return;
         await apiFetch(
             `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(preferenceKey)}`,
             {
@@ -2179,6 +2187,12 @@ export function createPageComposer(
             createElementsPanel();
         }
 
+        const renderedElementIds = visiblePlacements.map((p) => p.id);
+        for (const id of renderedElementIds) {
+            const el = elements.find((entry) => entry.id === id);
+            el?.onRender?.();
+        }
+
         onRender?.();
     }
 
@@ -2279,6 +2293,11 @@ export function createPageComposer(
         contentGrid.innerHTML = html;
         bindSubPageComposerEvents();
         syncEditToggle();
+        for (const id of effectiveLayout.order) {
+            if (effectiveLayout.hidden.includes(id)) continue;
+            const el = elements.find((entry) => entry.id === id);
+            el?.onRender?.();
+        }
         onRender?.();
         const activeEl = elements.find((e) => e.id === activeSubPageId);
         if (activeEl?.subComposerOptions) {
@@ -2401,7 +2420,11 @@ export function createPageComposer(
         if (toggleEl) toggleEl.hidden = !effectiveShowThemeToggle;
     }
 
-    function switchSubPage(id) {
+    async function switchSubPage(id) {
+        if (onBeforeSubPageSwitch) {
+            const allowed = await onBeforeSubPageSwitch(activeSubPageId, id);
+            if (!allowed) return;
+        }
         const prevId = activeSubPageId;
         activeSubPageId = id;
         const panel =
@@ -2496,6 +2519,12 @@ export function createPageComposer(
         if (columns === 2)
             contentGrid?.classList.add("content-grid--two-column");
 
+        if (frameless) {
+            root.querySelector(".workspace")?.classList.add(
+                "app-page--frameless",
+            );
+        }
+
         if (subPageNavigation) {
             const hashId = window.location.hash.slice(1);
             const validIds = elements.map((e) => e.id);
@@ -2530,7 +2559,7 @@ export function createPageComposer(
             }
         });
 
-        layout = await loadLayout();
+        layout = persistLayoutPreferences ? await loadLayout() : null;
 
         if (!subPageNavigation && contentGrid) {
             resizeObserver = new ResizeObserver(() => {
@@ -2557,7 +2586,9 @@ export function createPageComposer(
     function refresh(newElements) {
         if (editing) endEditMode();
         editing = false;
-        elements = newElements;
+        if (Array.isArray(newElements)) {
+            elements = newElements;
+        }
         render();
     }
 

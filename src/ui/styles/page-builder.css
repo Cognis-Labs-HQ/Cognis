@@ -1,6 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap");
 @import url("/static/styles/reuse/theme.css");
 @import url("/static/styles/reuse/layout.css");
+@import url("/static/styles/reuse/in-page-callout.css");
+@import url("/static/styles/reuse/info-tooltip.css");
 
 .tabs {
     display: flex;
@@ -91,6 +93,55 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     padding: 12px;
     background: var(--surface);
     box-shadow: var(--shadow);
+}
+
+.workspace.app-page--frameless {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    backdrop-filter: none;
+}
+
+.app-page--frameless .composer-view-grid {
+    gap: 0;
+}
+
+.app-page--frameless .widget-card {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.app-page--frameless .content-section {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.app-page--frameless .content-panel,
+.app-page--frameless .main-window,
+.app-page--frameless .content-grid {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.app-page--frameless .content-panel {
+    padding: 0;
+}
+
+.app-page--frameless .content-panel > *,
+.app-page--frameless .content-panel > :first-child,
+.app-page--frameless .content-panel > :last-child,
+.app-page--frameless .content-panel > .content-section,
+.app-page--frameless .content-section {
+    padding: 0;
 }
 
 .toolbar,
@@ -241,6 +292,29 @@ code {
 }
 .content-panel th {
     background: var(--surface-soft);
+}
+.users-row {
+    cursor: pointer;
+}
+.users-row:hover {
+    background: var(--surface-soft);
+}
+.users-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+.users-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+}
+.users-actions-cell {
+    white-space: nowrap;
+}
+.users-toggle-btn,
+.users-menu-btn,
+.invite-revoke-btn {
+    margin-right: 6px;
 }
 .content-panel a {
     color: var(--link-docs);

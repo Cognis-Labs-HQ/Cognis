@@ -9,6 +9,7 @@ import { applyStaticTranslations, createI18n } from "../reuse/i18n.js";
 import {
     loadUiPreferences,
     applyUiPreferences,
+    saveUiPreferences,
 } from "../reuse/ui-preferences.js";
 
 function isAdminRole() {
@@ -33,22 +34,12 @@ function applyActiveNavigation() {
     });
 }
 
-async function saveUiPreferences(patch) {
-    const account = localStorage.getItem("cognis_account");
-    if (!account) return;
-    const current = await loadUiPreferences();
-    const merged = { ...(current || {}), ...patch };
-    await apiFetch(
-        `/api/v1/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
-        {
-            method: "PUT",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ layout: merged }),
-        },
-    );
-}
+async function bindThemeToggle({ usePreferenceApi = true } = {}) {
+    if (!usePreferenceApi) {
+        bindSharedThemeToggle();
+        return;
+    }
 
-async function bindThemeToggle() {
     const prefs = await loadUiPreferences();
     applyUiPreferences(prefs);
     const storedMode = getStoredTheme();
@@ -123,6 +114,8 @@ function bindTopbarActions() {
         localStorage.removeItem("cognis_account");
         localStorage.removeItem("cognis_display_name");
         localStorage.removeItem("cognis_role");
+        localStorage.removeItem("cognis_is_founder");
+        localStorage.removeItem("cognis_user_validation_mode");
         document.cookie = "cognis_token=; Path=/; Max-Age=0";
         window.location.href = "/login";
     });
@@ -190,6 +183,7 @@ export async function updateNavbarAvatar() {
 }
 
 async function loadNavbarPlugins() {
+    if (!localStorage.getItem("cognis_token")) return;
     try {
         const res = await apiFetch("/api/v1/ui/navbar-plugins");
         if (!res.ok) return;
@@ -211,6 +205,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         showNavbar = true,
         showThemeToggle = true,
         showFooter = true,
+        usePreferenceApi = showTopbar || showNavbar,
     } = slots;
     const i18n = slots.i18n || (await createI18n());
     const template = await loadTemplate("dashboard-layout");
@@ -243,9 +238,11 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (!showFooter) root.querySelector(".global-footer")?.remove();
 
     applyStaticTranslations(i18n, root);
-    bindTopbarActions();
-    await loadNavbarPlugins();
-    updateNavbarAvatar().catch(() => {});
-    applyActiveNavigation();
-    bindThemeToggle();
+    if (showTopbar || showNavbar) {
+        bindTopbarActions();
+        await loadNavbarPlugins();
+        updateNavbarAvatar().catch(() => {});
+        applyActiveNavigation();
+    }
+    bindThemeToggle({ usePreferenceApi });
 }

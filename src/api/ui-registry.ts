@@ -34,11 +34,20 @@ export interface NavbarPlugin {
     scriptUrl: string;
 }
 
+export interface AuthTypingMessage {
+    id: string;
+    textKey: string;
+    ownerType?: "gateway" | "adapter" | "module" | "core";
+    ownerId?: string;
+    isEnabled?: () => boolean;
+}
+
 export class UIRegistry {
     private readonly sections = new Map<string, AdminSection>();
     private readonly staticDirs = new Map<string, string>();
     private readonly pageExtensions = new Map<string, PageElement[]>();
     private readonly navbarPlugins: NavbarPlugin[] = [];
+    private readonly authTypingMessages: AuthTypingMessage[] = [];
 
     registerAdminSection(section: AdminSection): void {
         this.sections.set(section.id, section);
@@ -74,6 +83,10 @@ export class UIRegistry {
         this.navbarPlugins.push(plugin);
     }
 
+    registerAuthTypingMessage(message: AuthTypingMessage): void {
+        this.authTypingMessages.push(message);
+    }
+
     listAdminSections(): AdminSection[] {
         return Array.from(this.sections.values());
     }
@@ -92,5 +105,9 @@ export class UIRegistry {
 
     listNavbarPlugins(): NavbarPlugin[] {
         return [...this.navbarPlugins];
+    }
+
+    listAuthTypingMessages(): AuthTypingMessage[] {
+        return [...this.authTypingMessages];
     }
 }

@@ -7,6 +7,8 @@ import {
 } from "../shared.js";
 import {
     issueAccessToken,
+    isTokenVerificationFresh,
+    recordTokenVerification,
     type AccessRole,
 } from "../../api/auth/access-tokens.js";
 import { DbLocalAccountStore } from "../../adapters/auth/local/store.js";
@@ -15,6 +17,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthProviderAdapter } from "./gateway.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
+import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 
 function resolveRole(
     sessionRole: string | undefined,
@@ -79,7 +82,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.0.0",
+        version: "1.2.1",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -118,6 +121,50 @@ function createAuthGatewayRoutes(
     accountStore: InstanceType<typeof DbLocalAccountStore>,
     capabilities: CapabilityStore,
 ) {
+    async function readSecuritySettings(): Promise<{
+        registrationsEnabled: boolean;
+        userValidationMode: "none" | "smtp";
+    }> {
+        const prefStore =
+            capabilities.get<UserPreferenceStore>("preferences:store");
+        if (!prefStore) {
+            return {
+                registrationsEnabled: false,
+                userValidationMode: "none",
+            };
+        }
+        const raw = await prefStore.get("__system__", "security-settings");
+        if (!raw) {
+            return {
+                registrationsEnabled: false,
+                userValidationMode: "none",
+            };
+        }
+        try {
+            const parsed = JSON.parse(raw) as Record<string, unknown>;
+            return {
+                registrationsEnabled:
+                    typeof parsed.registrationsEnabled === "boolean"
+                        ? parsed.registrationsEnabled
+                        : false,
+                userValidationMode:
+                    parsed.userValidationMode === "smtp" ? "smtp" : "none",
+            };
+        } catch {
+            return {
+                registrationsEnabled: false,
+                userValidationMode: "none",
+            };
+        }
+    }
+
+    async function registrationsEnabled(): Promise<boolean> {
+        const isPublicRegistrationEnabled = capabilities.get<() => boolean>(
+            "registration:public:isEnabled",
+        );
+        return Boolean(isPublicRegistrationEnabled?.());
+    }
+
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -136,10 +183,39 @@ function createAuthGatewayRoutes(
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/auth/registration-config" &&
+            req.method === "GET"
+        ) {
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        registrationsEnabled: await registrationsEnabled(),
+                    },
+                }),
+            );
+            return true;
+        }
+
         if (url.pathname === "/api/v1/auth/register" && req.method === "POST") {
+            if (!(await registrationsEnabled())) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "registrations_disabled",
+                            message: "Open registration is disabled",
+                        },
+                    }),
+                );
+                return true;
+            }
             const body = await readJson(req);
             const username = String(body.username ?? "");
             const password = String(body.password ?? "");
+            const email = String(body.email ?? "");
+            const displayName = String(body.displayName ?? "").trim();
             if (!username || !password) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -152,34 +228,73 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            const localAdapter = authGateway.getLocalAdapter();
-            if (!localAdapter) {
-                res.writeHead(503, { "content-type": "application/json" });
+            const registerPublic = capabilities.get<
+                (input: {
+                    username: string;
+                    password: string;
+                    email?: string;
+                    displayName?: string;
+                }) => Promise<{
+                    username: string;
+                    isAdmin: boolean;
+                    enabled: boolean;
+                }>
+            >("registration:public:register");
+            if (!registerPublic) {
+                res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "local_auth_unavailable",
-                            message: "Local registration is not available",
+                            code: "registration_unavailable",
+                            message: "Public registration is not available",
                         },
                     }),
                 );
                 return true;
             }
-            const result = await localAdapter.register(
+            const result = await registerPublic({
                 username,
                 password,
-                false,
+                email,
+                displayName: displayName || undefined,
+            });
+            const verifyToken = issueAccessToken(
+                result.username,
+                result.isAdmin ? "admin" : "user",
+                1800,
             );
-            const createProfile = capabilities.get<
-                (
-                    accountId: string,
-                    handle: string,
-                    role?: string,
-                ) => Promise<void>
-            >("profile:createProfile");
-            await createProfile?.(username, username, "user");
+
+            const hasVerifiedEmail = capabilities.get<
+                (accountId: string) => Promise<boolean>
+            >("notify:hasVerifiedEmail");
+            if (hasVerifiedEmail) {
+                const FIVE_MINUTES_MS = 5 * 60 * 1000;
+                const timer = setTimeout(async () => {
+                    try {
+                        const verified = await hasVerifiedEmail(
+                            result.username,
+                        );
+                        if (!verified) {
+                            await accountStore.delete(result.username);
+                            console.info(
+                                JSON.stringify({
+                                    level: "info",
+                                    component: "auth-gateway",
+                                    message:
+                                        "Deleted unverified account after 5-minute window.",
+                                    accountId: result.username,
+                                }),
+                            );
+                        }
+                    } catch {
+                        // Cleanup errors are non-fatal.
+                    }
+                }, FIVE_MINUTES_MS);
+                timer.unref();
+            }
+
             res.writeHead(201, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: result }));
+            res.end(JSON.stringify({ data: { ...result, verifyToken } }));
             return true;
         }
 
@@ -244,6 +359,36 @@ function createAuthGatewayRoutes(
                 ) => Promise<void>
             >("profile:createProfile");
             await createProfile?.(session.accountId, session.accountId, role);
+            const isFounder = await accountStore
+                .isFounder(session.accountId)
+                .catch((error) => {
+                    console.warn(
+                        JSON.stringify({
+                            level: "warn",
+                            component: "auth-gateway",
+                            message:
+                                "Failed to resolve founder status during login.",
+                            accountId: session.accountId,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        }),
+                    );
+                    // Founder status only affects optional UI routing; keep login available on lookup failure.
+                    return false;
+                });
+            const securitySettings = await readSecuritySettings();
+            const canSendVerificationEmail = capabilities.get<() => boolean>(
+                "notify:canSendVerificationEmail",
+            );
+            const isInitialAdmin = role === "admin" && isFounder;
+            const shouldRequireSmtpValidation =
+                securitySettings.userValidationMode === "smtp" &&
+                !isInitialAdmin;
+            const requiresUserValidation = shouldRequireSmtpValidation
+                ? Boolean(canSendVerificationEmail?.())
+                : false;
             res.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": `cognis_access_token=${apiToken}; Path=/; HttpOnly; SameSite=Lax`,
@@ -255,10 +400,51 @@ function createAuthGatewayRoutes(
                         displayName: session.accountId,
                         provider: session.provider,
                         role,
+                        isFounder,
                         token: apiToken,
+                        userValidationMode: securitySettings.userValidationMode,
+                        requiredUserValidation: requiresUserValidation,
                     },
                 }),
             );
+            return true;
+        }
+
+        if (url.pathname === "/api/v1/auth/verify" && req.method === "POST") {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const authHeader = req.headers.authorization;
+            const rawToken =
+                typeof authHeader === "string" &&
+                authHeader.startsWith("Bearer ")
+                    ? authHeader.slice("Bearer ".length)
+                    : "";
+            const oneHourMs = 60 * 60 * 1000;
+            if (rawToken && isTokenVerificationFresh(rawToken, oneHourMs)) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { verified: true } }));
+                return true;
+            }
+            const body = await readJson(req);
+            const password = String(body.password ?? "");
+            const verified = await accountStore.verify(claims.sub, password);
+            if (!verified) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_credentials",
+                            message: "Incorrect password",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (rawToken) {
+                recordTokenVerification(rawToken);
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { verified: true } }));
             return true;
         }
 

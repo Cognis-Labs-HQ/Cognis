@@ -56,13 +56,14 @@ export class CoreAuthGateway {
 
 ## APIルート
 
-| メソッド | パス                                         | 説明                               | 認証   |
-| -------- | -------------------------------------------- | ---------------------------------- | ------ |
-| `GET`    | `/api/v1/auth/login-methods`                 | 有効な認証プロバイダーを一覧表示   | 不要   |
-| `POST`   | `/api/v1/auth/register`                      | 新しいローカルアカウントを自己登録 | 不要   |
-| `POST`   | `/api/v1/auth/login`                         | 認証してBearerトークンを返す       | 不要   |
-| `GET`    | `/api/v1/gateways/auth/adapters`             | 登録済み認証アダプターを一覧表示   | 管理者 |
-| `GET`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定スキーマを取得     | 管理者 |
-| `PUT`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定を更新             | 管理者 |
-| `POST`   | `/api/v1/gateways/auth/adapters/:id/enable`  | アダプターを有効化                 | 管理者 |
-| `POST`   | `/api/v1/gateways/auth/adapters/:id/disable` | アダプターを無効化                 | 管理者 |
+| メソッド | パス                                         | 説明                               | 認証     |
+| -------- | -------------------------------------------- | ---------------------------------- | -------- |
+| `GET`    | `/api/v1/auth/login-methods`                 | 有効な認証プロバイダーを一覧表示   | 不要     |
+| `POST`   | `/api/v1/auth/register`                      | 新しいローカルアカウントを自己登録 | 不要     |
+| `POST`   | `/api/v1/auth/login`                         | 認証してBearerトークンを返す       | 不要     |
+| `POST`   | `/api/v1/auth/verify`                        | 現在のユーザーのパスワードを検証   | ユーザー |
+| `GET`    | `/api/v1/gateways/auth/adapters`             | 登録済み認証アダプターを一覧表示   | 管理者   |
+| `GET`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定スキーマを取得     | 管理者   |
+| `PUT`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定を更新             | 管理者   |
+| `POST`   | `/api/v1/gateways/auth/adapters/:id/enable`  | アダプターを有効化                 | 管理者   |
+| `POST`   | `/api/v1/gateways/auth/adapters/:id/disable` | アダプターを無効化                 | 管理者   |
