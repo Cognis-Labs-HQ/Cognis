@@ -197,7 +197,6 @@
   <string name="ui.app.register.invited_you">🎁 {inviter} ingin Anda bergabung ke Cognis.</string>
   <string name="ui.app.register.invitee_email">Email yang diundang</string>
   <string name="ui.app.register.email">Email</string>
-  <string name="ui.app.register.email_locked_hint">Email ini dikunci ke tautan undangan.</string>
   <string name="ui.app.register.username">Nama pengguna</string>
   <string name="ui.app.register.display_name">Nama tampilan</string>
   <string name="ui.app.register.password">Kata sandi</string>

@@ -197,7 +197,6 @@
   <string name="ui.app.register.invited_you">🎁 {inviter} wants you to join Cognis.</string>
   <string name="ui.app.register.invitee_email">Invited email</string>
   <string name="ui.app.register.email">Email</string>
-  <string name="ui.app.register.email_locked_hint">This email is locked to the invitation link.</string>
   <string name="ui.app.register.username">Username</string>
   <string name="ui.app.register.display_name">Display name</string>
   <string name="ui.app.register.password">Password</string>

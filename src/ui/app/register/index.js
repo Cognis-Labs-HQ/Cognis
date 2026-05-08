@@ -3,6 +3,10 @@ import { createI18n, applyDocumentTitle } from "../../reuse/i18n.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
 import { bindThemeToggle } from "../../reuse/theme-toggle.js";
+import {
+    renderAuthBrandline,
+    renderAuthLayout,
+} from "../../reuse/auth-layout.js";
 
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.register");
@@ -62,7 +66,7 @@ function renderRegisterShell() {
         const messageKey = isInviteFlow
             ? "ui.app.register.invalid_token"
             : "ui.app.register.closed";
-        messageHtml = `<p class="login-intro-copy">${escapeHtml(i18n.t(messageKey))}</p>`;
+        messageHtml = `<p class="auth-intro-copy">${escapeHtml(i18n.t(messageKey))}</p>`;
     } else {
         const invitedText =
             inviteData && isInviteFlow
@@ -76,17 +80,14 @@ function renderRegisterShell() {
         const emailValue = lockedEmail || "";
         const emailLocked = Boolean(lockedEmail);
         const emailReadonly = emailLocked ? "readonly disabled" : "";
-        const emailHint = emailLocked
-            ? `<p class="security-field-hint">${escapeHtml(i18n.t("ui.app.register.email_locked_hint"))}</p>`
-            : "";
+        const emailLockedClass = emailLocked ? " auth-input--locked" : "";
         formHtml = `
-      ${invitedText ? `<p class="login-intro-copy">${escapeHtml(invitedText)}</p>` : ""}
-      <form id="register-form" class="stack login-form">
+      ${invitedText ? `<p class="auth-intro-copy">${escapeHtml(invitedText)}</p>` : ""}
+      <form id="register-form" class="stack auth-form">
         <label>
           <span>${escapeHtml(i18n.t("ui.app.register.email"))}</span>
-          <input name="email" type="email" value="${escapeHtml(emailValue)}" ${emailReadonly} aria-readonly="${emailLocked ? "true" : "false"}" required />
+          <input name="email" type="email" value="${escapeHtml(emailValue)}" ${emailReadonly} aria-readonly="${emailLocked ? "true" : "false"}" class="${emailLockedClass.trim()}" required />
         </label>
-        ${emailHint}
         <label>
           <span>${escapeHtml(i18n.t("ui.app.register.username"))}</span>
           <input name="username" required />
@@ -104,27 +105,22 @@ function renderRegisterShell() {
     `;
     }
 
-    return `
-    <section class="auth-page auth-page--login-frame">
-      <div class="login-layout">
-        <aside class="panel login-intro" aria-label="${escapeHtml(i18n.t("ui.app.login.intro.aria"))}">
-          <div class="login-brandline">
-            <img src="/static/assets/icons/cognis-icon.png" alt="" class="login-icon" />
-            <div>
-              <h1 class="login-title">${escapeHtml(i18n.t("ui.shared.brand.name"))}</h1>
-              <p class="login-typing">${escapeHtml(i18n.t("ui.app.login.hero.tagline"))}</p>
-            </div>
-          </div>
-          <p class="login-intro-copy">${escapeHtml(i18n.t("ui.app.register.page_subtitle"))}</p>
-        </aside>
-        <main class="panel login-panel" aria-label="${escapeHtml(i18n.t("ui.app.register.form_title"))}">
-          <h2 class="login-heading">${escapeHtml(i18n.t("ui.app.register.form_title"))}</h2>
-          ${messageHtml}
-          ${formHtml}
-        </main>
-      </div>
-    </section>
-  `;
+    const brandlineHtml = renderAuthBrandline(i18n);
+    const introPanelHtml = `
+      ${brandlineHtml}
+      <p class="auth-intro-copy">${escapeHtml(i18n.t("ui.app.register.page_subtitle"))}</p>
+    `;
+    const formPanelHtml = `
+      <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.register.form_title"))}</h2>
+      ${messageHtml}
+      ${formHtml}
+    `;
+    return renderAuthLayout({
+        introPanelAriaLabel: i18n.t("ui.app.login.intro.aria"),
+        introPanelHtml,
+        formPanelAriaLabel: i18n.t("ui.app.register.form_title"),
+        formPanelHtml,
+    });
 }
 
 const composer = createPageComposer(root, {

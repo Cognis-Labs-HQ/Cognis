@@ -5,6 +5,10 @@ import { apiFetch } from "../../reuse/api-client.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
+import {
+    renderAuthBrandline,
+    renderAuthLayout,
+} from "../../reuse/auth-layout.js";
 
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.login");
@@ -272,42 +276,37 @@ async function enforceRequiredEmailSetup(accountId) {
 }
 
 function renderLoginShell() {
-    return `
-    <section class="auth-page auth-page--login-frame">
-      <div class="login-layout">
-        <aside class="panel login-intro" aria-label="${escapeHtml(i18n.t("ui.app.login.intro.aria"))}">
-          <div class="login-brandline">
-            <img src="/static/assets/icons/cognis-icon.png" alt="" class="login-icon" />
-            <div>
-              <h1 class="login-title">${escapeHtml(i18n.t("ui.shared.brand.name"))}</h1>
-              <p class="login-typing">${escapeHtml(i18n.t("ui.app.login.hero.tagline"))}</p>
-            </div>
-          </div>
-          <p class="login-intro-copy">${escapeHtml(i18n.t("ui.app.login.hero.subtitle"))}</p>
-          <div class="login-template-box" aria-live="polite">
-            <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
-          </div>
-        </aside>
-        <main class="panel login-panel" aria-label="${escapeHtml(i18n.t("ui.app.login.title"))}">
-          <h2 class="login-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
-          <form id="login-form" class="stack login-form">
-            <input type="hidden" name="provider" value="local" />
-            <label>
-              <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
-              <input name="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
-            </label>
-            <label>
-              <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
-              <input name="password" type="password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
-            </label>
-            <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
-            <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
-          </form>
-          <div id="sso-buttons" class="sso-buttons"></div>
-        </main>
+    const brandlineHtml = renderAuthBrandline(i18n);
+    const introPanelHtml = `
+      ${brandlineHtml}
+      <p class="auth-intro-copy">${escapeHtml(i18n.t("ui.app.login.hero.subtitle"))}</p>
+      <div class="login-template-box" aria-live="polite">
+        <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
       </div>
-    </section>
-  `;
+    `;
+    const formPanelHtml = `
+      <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
+      <form id="login-form" class="stack auth-form">
+        <input type="hidden" name="provider" value="local" />
+        <label>
+          <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
+          <input name="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
+        </label>
+        <label>
+          <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
+          <input name="password" type="password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
+        </label>
+        <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
+        <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
+      </form>
+      <div id="sso-buttons" class="sso-buttons"></div>
+    `;
+    return renderAuthLayout({
+        introPanelAriaLabel: i18n.t("ui.app.login.intro.aria"),
+        introPanelHtml,
+        formPanelAriaLabel: i18n.t("ui.app.login.title"),
+        formPanelHtml,
+    });
 }
 
 const composer = createPageComposer(root, {

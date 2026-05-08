@@ -197,7 +197,6 @@
   <string name="ui.app.register.invited_you">🎁 {inviter} が Cognis への参加を招待しています。</string>
   <string name="ui.app.register.invitee_email">招待先メールアドレス</string>
   <string name="ui.app.register.email">メールアドレス</string>
-  <string name="ui.app.register.email_locked_hint">このメールアドレスは招待リンクに固定されています。</string>
   <string name="ui.app.register.username">ユーザー名</string>
   <string name="ui.app.register.display_name">表示名</string>
   <string name="ui.app.register.password">パスワード</string>
