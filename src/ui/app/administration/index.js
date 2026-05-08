@@ -437,66 +437,65 @@ function bindGatewayToggles() {
                     gateways = await loadGateways();
                     allAdapters = await loadAllAdapters(gateways);
                 }
+                await toggleGateway(gatewayId, action);
+
+                gateways = await loadGateways();
+                allAdapters = await loadAllAdapters(gateways);
+
                 const enableableAdapters = getGatewayEnableableAdapters(
                     allAdapters,
                     gatewayId,
                 );
-                let popupOverlay = null;
-                const result = await openPopup({
-                    title: i18n.t("ui.app.admin.enable_confirm_gateway"),
-                    body: () => `
+
+                if (enableableAdapters.length > 0) {
+                    let popupOverlay = null;
+                    const enableAdaptersResult = await openPopup({
+                        title: i18n.t("ui.app.admin.enable_confirm_gateway"),
+                        body: () => `
                             <p>${escapeHtml(i18n.t("ui.app.admin.enable_gateway_select_adapters"))}</p>
-                            ${
-                                enableableAdapters.length > 0
-                                    ? `<div class="stack">${enableableAdapters
-                                          .map((adapter) => {
-                                              const currentAdapterId =
-                                                  adapter.senderId ??
-                                                  adapter.id;
-                                              return `<label class="provider-option-row">
-                                                    <span class="provider-option-label">${escapeHtml(adapter.name ?? currentAdapterId)}</span>
-                                                    <input type="checkbox" name="gateway-enable-adapter" value="${escapeHtml(currentAdapterId)}" />
-                                                </label>`;
-                                          })
-                                          .join("")}</div>`
-                                    : `<p>${escapeHtml(i18n.t("ui.app.admin.enable_gateway_no_adapters"))}</p>`
-                            }
+                            <div class="stack">${enableableAdapters
+                                .map((adapter) => {
+                                    const currentAdapterId =
+                                        adapter.senderId ?? adapter.id;
+                                    return `<label class="provider-option-row">
+                                        <span class="provider-option-label">${escapeHtml(adapter.name ?? currentAdapterId)}</span>
+                                        <input type="checkbox" name="gateway-enable-adapter" value="${escapeHtml(currentAdapterId)}" />
+                                    </label>`;
+                                })
+                                .join("")}</div>
                         `,
-                    actions: [
-                        {
-                            id: "confirm",
-                            label: i18n.t("ui.reuse.generic.enable"),
-                            variant: "confirm",
+                        actions: [
+                            {
+                                id: "confirm",
+                                label: i18n.t("ui.reuse.generic.enable"),
+                                variant: "confirm",
+                            },
+                            {
+                                id: "skip",
+                                label: i18n.t("ui.reuse.popup.cancel"),
+                                variant: "cancel",
+                            },
+                        ],
+                        onOpen: (overlay) => {
+                            popupOverlay = overlay;
                         },
-                        {
-                            id: "cancel",
-                            label: i18n.t("ui.reuse.popup.cancel"),
-                            variant: "cancel",
-                        },
-                    ],
-                    onOpen: (overlay) => {
-                        popupOverlay = overlay;
-                    },
-                });
-                if (result !== "confirm") {
-                    toggle.checked = previousState;
-                    return;
-                }
-
-                await toggleGateway(gatewayId, action);
-
-                if (popupOverlay instanceof HTMLElement) {
-                    const selectedAdapterIds = [
-                        ...popupOverlay.querySelectorAll(
-                            'input[name="gateway-enable-adapter"]:checked',
-                        ),
-                    ].map((input) => input.value);
-                    for (const selectedAdapterId of selectedAdapterIds) {
-                        await toggleAdapter(
-                            gatewayId,
-                            selectedAdapterId,
-                            "enable",
-                        );
+                    });
+                    if (
+                        enableAdaptersResult === "confirm" &&
+                        popupOverlay instanceof HTMLElement
+                    ) {
+                        const selectedAdapterIds = [
+                            ...popupOverlay.querySelectorAll(
+                                'input[name="gateway-enable-adapter"]:checked',
+                            ),
+                        ].map((input) => input.value);
+                        for (const selectedAdapterId of selectedAdapterIds) {
+                            await toggleAdapter(
+                                gatewayId,
+                                selectedAdapterId,
+                                "enable",
+                            );
+                        }
                     }
                 }
             } else {
