@@ -2557,7 +2557,9 @@ export function createPageComposer(
     function refresh(newElements) {
         if (editing) endEditMode();
         editing = false;
-        elements = newElements;
+        if (Array.isArray(newElements)) {
+            elements = newElements;
+        }
         render();
     }
 
