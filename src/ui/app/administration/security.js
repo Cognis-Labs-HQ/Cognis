@@ -32,7 +32,7 @@ import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
  */
 export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalDomains = [];
-    let currentRegistrationsEnabled = false;
+    let currentPublicRegistrationEnabled = false;
     let originalUserValidationMode = "none";
     let currentUserValidationMode = "none";
 
@@ -41,6 +41,15 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         if (!res.ok) return { trustedDomains: [] };
         const payload = await res.json();
         return payload.data ?? { trustedDomains: [] };
+    }
+
+    async function loadPublicRegistrationAdapterState() {
+        const res = await apiFetch("/api/v1/gateways/registration/adapters");
+        if (!res.ok) return false;
+        const payload = await res.json();
+        const adapters = Array.isArray(payload?.data) ? payload.data : [];
+        const publicAdapter = adapters.find((entry) => entry.id === "public");
+        return publicAdapter?.enabled === true;
     }
 
     async function persistSettings(
@@ -90,7 +99,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         const modeChanged =
             getValidationModeValue() !== originalUserValidationMode;
         const registrationsChanged =
-            getRegistrationsEnabledValue() !== currentRegistrationsEnabled;
+            getRegistrationsEnabledValue() !== currentPublicRegistrationEnabled;
         onDirtyChange?.(
             currentDomains !== originalDomainsValue ||
                 modeChanged ||
@@ -103,7 +112,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         if (!(input instanceof HTMLInputElement)) return;
 
         originalDomains = settings.trustedDomains ?? [];
-        currentRegistrationsEnabled = settings.registrationsEnabled === true;
+        currentPublicRegistrationEnabled =
+            settings.registrationsEnabled === true;
         currentUserValidationMode =
             settings.userValidationMode === "smtp" ? "smtp" : "none";
         originalUserValidationMode = currentUserValidationMode;
@@ -118,7 +128,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             validationSelect.value = currentUserValidationMode;
         }
         if (registrationsToggle instanceof HTMLInputElement) {
-            registrationsToggle.checked = currentRegistrationsEnabled;
+            registrationsToggle.checked = currentPublicRegistrationEnabled;
         }
 
         input.addEventListener("input", () => {
@@ -135,7 +145,11 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
     return {
         async init() {
-            const settings = await loadSettings();
+            const [settings, publicRegistrationEnabled] = await Promise.all([
+                loadSettings(),
+                loadPublicRegistrationAdapterState(),
+            ]);
+            settings.registrationsEnabled = publicRegistrationEnabled;
             bindInput(settings);
         },
 
@@ -148,8 +162,14 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 registrationsEnabled,
                 validationMode,
             );
+            if (registrationsEnabled !== currentPublicRegistrationEnabled) {
+                await apiFetch(
+                    `/api/v1/gateways/registration/adapters/public/${registrationsEnabled ? "enable" : "disable"}`,
+                    { method: "POST" },
+                );
+            }
             originalDomains = domains;
-            currentRegistrationsEnabled = registrationsEnabled;
+            currentPublicRegistrationEnabled = registrationsEnabled;
             currentUserValidationMode = validationMode;
             originalUserValidationMode = validationMode;
         },
@@ -169,7 +189,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 "#security-enable-registrations",
             );
             if (registrationsToggle instanceof HTMLInputElement) {
-                registrationsToggle.checked = currentRegistrationsEnabled;
+                registrationsToggle.checked = currentPublicRegistrationEnabled;
             }
             onDirtyChange?.(false);
         },

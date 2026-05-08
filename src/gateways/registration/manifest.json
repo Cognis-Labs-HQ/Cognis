@@ -1,9 +1,9 @@
 {
     "id": "registration",
     "name": "Registration Gateway",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "required": false,
     "requires": ["db", "auth", "notify"],
-    "description": "Invitation-token account registration workflow.",
+    "description": "Registration workflows via pluggable invite/public adapters.",
     "publisher": "Cognis Labs"
 }

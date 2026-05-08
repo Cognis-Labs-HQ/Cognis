@@ -54,6 +54,29 @@ async function serveFile(
     }
 }
 
+function getCookieAccessToken(req: IncomingMessage): string | null {
+    const cookie = req.headers.cookie ?? "";
+    const match = cookie.match(/(?:^|; )cognis_access_token=([^;]+)/);
+    if (!match) return null;
+    return decodeURIComponent(match[1]);
+}
+
+async function resolveLoginRedirectLocation(
+    req: IncomingMessage,
+    accountStore?: LocalAccountStore,
+): Promise<string> {
+    const cookieToken = getCookieAccessToken(req);
+    const session = getCookieSession(req);
+    if (!cookieToken || !session) {
+        return cookieToken ? "/login?reason=session_expired" : "/login";
+    }
+    if (!accountStore || typeof accountStore.getInfo !== "function") return "";
+    const info = await accountStore.getInfo(session.sub).catch(() => null);
+    if (!info) return "/login?reason=account_deleted";
+    if (info.enabled === false) return "/login?reason=account_disabled";
+    return "";
+}
+
 export function createUiRoutes(
     runtime?: ModuleRuntimeGateway,
     uiRegistry?: UIRegistry,
@@ -73,8 +96,12 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/dashboard") {
-            if (!getCookieSession(req)) {
-                res.writeHead(302, { location: "/login" });
+            const loginRedirect = await resolveLoginRedirectLocation(
+                req,
+                accountStore,
+            );
+            if (loginRedirect) {
+                res.writeHead(302, { location: loginRedirect });
                 res.end();
                 return true;
             }
@@ -106,8 +133,12 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/settings") {
-            if (!getCookieSession(req)) {
-                res.writeHead(302, { location: "/login" });
+            const loginRedirect = await resolveLoginRedirectLocation(
+                req,
+                accountStore,
+            );
+            if (loginRedirect) {
+                res.writeHead(302, { location: loginRedirect });
                 res.end();
                 return true;
             }
@@ -121,8 +152,12 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/administration") {
-            if (!getCookieSession(req)) {
-                res.writeHead(302, { location: "/login" });
+            const loginRedirect = await resolveLoginRedirectLocation(
+                req,
+                accountStore,
+            );
+            if (loginRedirect) {
+                res.writeHead(302, { location: loginRedirect });
                 res.end();
                 return true;
             }
@@ -141,8 +176,12 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/modules") {
-            if (!getCookieSession(req)) {
-                res.writeHead(302, { location: "/login" });
+            const loginRedirect = await resolveLoginRedirectLocation(
+                req,
+                accountStore,
+            );
+            if (loginRedirect) {
+                res.writeHead(302, { location: loginRedirect });
                 res.end();
                 return true;
             }
@@ -158,9 +197,20 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/users") {
+            const loginRedirect = await resolveLoginRedirectLocation(
+                req,
+                accountStore,
+            );
+            if (loginRedirect) {
+                res.writeHead(302, { location: loginRedirect });
+                res.end();
+                return true;
+            }
             const session = getCookieSession(req);
             if (!session) {
-                res.writeHead(302, { location: "/login" });
+                res.writeHead(302, {
+                    location: "/login?reason=session_expired",
+                });
                 res.end();
                 return true;
             }
@@ -178,9 +228,20 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/invite") {
+            const loginRedirect = await resolveLoginRedirectLocation(
+                req,
+                accountStore,
+            );
+            if (loginRedirect) {
+                res.writeHead(302, { location: loginRedirect });
+                res.end();
+                return true;
+            }
             const session = getCookieSession(req);
             if (!session) {
-                res.writeHead(302, { location: "/login" });
+                res.writeHead(302, {
+                    location: "/login?reason=session_expired",
+                });
                 res.end();
                 return true;
             }
@@ -215,8 +276,12 @@ export function createUiRoutes(
         }
 
         if (url.pathname.startsWith("/docs")) {
-            if (!getCookieSession(req)) {
-                res.writeHead(302, { location: "/login" });
+            const loginRedirect = await resolveLoginRedirectLocation(
+                req,
+                accountStore,
+            );
+            if (loginRedirect) {
+                res.writeHead(302, { location: loginRedirect });
                 res.end();
                 return true;
             }
@@ -230,8 +295,12 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/license") {
-            if (!getCookieSession(req)) {
-                res.writeHead(302, { location: "/login" });
+            const loginRedirect = await resolveLoginRedirectLocation(
+                req,
+                accountStore,
+            );
+            if (loginRedirect) {
+                res.writeHead(302, { location: loginRedirect });
                 res.end();
                 return true;
             }

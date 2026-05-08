@@ -20,6 +20,13 @@ async function loadTokens() {
     return payload.data ?? [];
 }
 
+async function loadInviteState() {
+    const response = await apiFetch("/api/v1/registration/state");
+    if (!response.ok) return { inviteEnabled: false };
+    const payload = await response.json();
+    return payload?.data ?? { inviteEnabled: false };
+}
+
 async function promptEmail() {
     let inputEl = null;
     const action = await openPopup({
@@ -52,7 +59,8 @@ async function promptEmail() {
     return inputEl.value.trim();
 }
 
-let tokens = await loadTokens();
+const inviteState = await loadInviteState();
+let tokens = inviteState.inviteEnabled ? await loadTokens() : [];
 let composer = null;
 const elements = [
     {
@@ -62,7 +70,11 @@ const elements = [
         gridSize: { default: [12, 7], min: [6, 4], max: "full" },
         render: () => `
         <div class="controls">
-          <button id="invite-create-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.app.invite.invite"))}</button>
+          ${
+              inviteState.inviteEnabled
+                  ? `<button id="invite-create-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.app.invite.invite"))}</button>`
+                  : `<em>${escapeHtml(i18n.t("ui.app.register.closed"))}</em>`
+          }
         </div>
         <div class="users-table-wrap">
         <table class="users-table">

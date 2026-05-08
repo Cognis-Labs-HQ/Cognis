@@ -59,7 +59,17 @@ async function loadRegistrationGatewayState() {
     const response = await apiFetch("/api/v1/gateways/registration");
     if (!response.ok) return false;
     const payload = await response.json();
-    return payload?.data?.status !== "disabled";
+    if (payload?.data?.status === "disabled") return false;
+    const adaptersRes = await apiFetch(
+        "/api/v1/gateways/registration/adapters",
+    );
+    if (!adaptersRes.ok) return false;
+    const adaptersPayload = await adaptersRes.json();
+    const adapters = Array.isArray(adaptersPayload?.data)
+        ? adaptersPayload.data
+        : [];
+    const inviteAdapter = adapters.find((entry) => entry.id === "invite");
+    return inviteAdapter?.enabled === true;
 }
 
 async function fetchUserInfo(username) {

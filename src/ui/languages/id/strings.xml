@@ -163,6 +163,9 @@
   <string name="ui.app.login.provider.toggle.aria">Pilih penyedia autentikasi</string>
   <string name="ui.app.login.sso.login_with">Masuk dengan {provider}</string>
   <string name="ui.app.login.error.generic">Login gagal. Silakan coba lagi.</string>
+  <string name="ui.app.login.reason.session_expired">Sesi berakhir, silakan login kembali.</string>
+  <string name="ui.app.login.reason.account_disabled">Akun Anda telah dinonaktifkan.</string>
+  <string name="ui.app.login.reason.account_deleted">Akun Anda telah dihapus.</string>
   <string name="ui.app.demo.switched">Demo: berpindah ke halaman sandbox.</string>
   <string name="ui.app.demo.added">Demo: menambahkan widget progres belajar.</string>
   <string name="ui.app.demo.tweaked">Demo: menyesuaikan konfigurasi widget pertama.</string>
@@ -261,6 +264,8 @@
   <string name="ui.app.invite.email">Alamat email</string>
   <string name="ui.app.invite.status">Status</string>
   <string name="ui.app.invite.expires_at">Berakhir pada</string>
+  <string name="ui.app.invite.issuer">Penerbit</string>
+  <string name="ui.app.invite.username">Nama pengguna</string>
   <string name="ui.app.invite.revoke">Cabut</string>
   <string name="ui.app.invite.status_pending">Menunggu</string>
   <string name="ui.app.invite.status_redeemed">Ditukar</string>

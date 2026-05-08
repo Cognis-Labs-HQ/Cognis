@@ -163,6 +163,9 @@
   <string name="ui.app.login.provider.toggle.aria">Authentifizierungsanbieter auswählen</string>
   <string name="ui.app.login.sso.login_with">Anmelden mit {provider}</string>
   <string name="ui.app.login.error.generic">Anmeldung fehlgeschlagen. Bitte erneut versuchen.</string>
+  <string name="ui.app.login.reason.session_expired">Sitzung abgelaufen, bitte melde dich erneut an.</string>
+  <string name="ui.app.login.reason.account_disabled">Dein Konto wurde deaktiviert.</string>
+  <string name="ui.app.login.reason.account_deleted">Dein Konto wurde gelöscht.</string>
   <string name="ui.app.demo.switched">Demo: zur Sandbox-Seite gewechselt.</string>
   <string name="ui.app.demo.added">Demo: ein Lernfortschritts-Widget hinzugefügt.</string>
   <string name="ui.app.demo.tweaked">Demo: die erste Widget-Konfiguration angepasst.</string>
@@ -261,6 +264,8 @@
   <string name="ui.app.invite.email">E-Mail-Adresse</string>
   <string name="ui.app.invite.status">Status</string>
   <string name="ui.app.invite.expires_at">Läuft ab am</string>
+  <string name="ui.app.invite.issuer">Aussteller</string>
+  <string name="ui.app.invite.username">Benutzername</string>
   <string name="ui.app.invite.revoke">Widerrufen</string>
   <string name="ui.app.invite.status_pending">Ausstehend</string>
   <string name="ui.app.invite.status_redeemed">Eingelöst</string>

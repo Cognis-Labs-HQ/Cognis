@@ -7,11 +7,11 @@ import {
     requireAuth,
     setPageSecurityHeaders,
     type GatewayBootstrapContext,
+    type GatewayRegistry,
 } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
 import type { LocalAccountStore } from "../../api/reuse/account-store.js";
-import { createAdapter } from "../../adapters/registration/token/index.js";
 import { CoreRegistrationGateway } from "./gateway.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
@@ -23,6 +23,7 @@ function inviteBaseUrl(): string {
 }
 
 function issueInviteErrorStatus(code: string): number {
+    if (code === "invite_disabled") return 404;
     if (code === "smtp_unavailable") return 503;
     if (code === "founder_token_limit_reached") return 429;
     if (code === "invitee_email_required") return 400;
@@ -31,6 +32,7 @@ function issueInviteErrorStatus(code: string): number {
 }
 
 function redeemInviteErrorStatus(code: string): number {
+    if (code === "invite_disabled") return 404;
     if (code === "invalid_token") return 400;
     if (code === "inviter_not_found") return 409;
     if (
@@ -64,7 +66,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             theme?: string,
         ) => Promise<void>
     >("notify:sendRegistrationInviteEmail");
-    if (!canSendInviteEmail || !sendInviteEmail) return;
 
     const createProfile = ctx.capabilities.get<
         (
@@ -80,18 +81,31 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const upsertVerifiedPrimaryEmail = ctx.capabilities.get<
         (accountId: string, email: string) => Promise<void>
     >("notify:upsertVerifiedPrimaryEmail");
-    if (!isEmailRegistered || !upsertVerifiedPrimaryEmail) return;
-    const adapter = createAdapter({
+    const gateway = new CoreRegistrationGateway(dbExecutor, dbType);
+    await gateway.ensureSchema();
+    const registrationAdaptersRoot = path.join(
+        ctx.adaptersRoot,
+        "registration",
+    );
+    await gateway.discoverAdapters(registrationAdaptersRoot, {
         dbExecutor,
         dbType,
         accountStore,
-        canSendInviteEmail,
-        sendInviteEmail,
+        canSendInviteEmail: canSendInviteEmail ?? (() => false),
+        sendInviteEmail:
+            sendInviteEmail ??
+            (async () => {
+                throw new Error("smtp_unavailable");
+            }),
         createProfile,
-        isEmailRegistered,
-        upsertVerifiedPrimaryEmail,
+        isEmailRegistered: isEmailRegistered ?? (async () => false),
+        upsertVerifiedPrimaryEmail:
+            upsertVerifiedPrimaryEmail ??
+            (async () => {
+                throw new Error("smtp_unavailable");
+            }),
     });
-    const gateway = new CoreRegistrationGateway(adapter);
+    await gateway.loadPersistedConfigs();
 
     ctx.routeRegistry.register(
         createRegistrationRoutes(gateway, accountStore),
@@ -121,12 +135,36 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ownerId: "registration",
     });
 
+    ctx.capabilities.contribute("registration:public:isEnabled", () =>
+        gateway.isPublicEnabled(),
+    );
+    ctx.capabilities.contribute(
+        "registration:public:register",
+        async (input: {
+            username: string;
+            password: string;
+            email?: string;
+            displayName?: string;
+        }) => gateway.registerPublic(input),
+    );
+
+    ctx.routeRegistry.register(
+        createGatewayAdapterRoutes(
+            "registration",
+            gateway,
+            ctx.gatewayRegistry,
+        ),
+        "registration",
+    );
+
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.0.2",
-        description: "Invitation-token account registration workflow.",
+        version: "1.1.0",
+        description:
+            "Registration workflows via pluggable invite/public adapters.",
         publisher: "Cognis Labs",
+        hasAdapters: true,
     });
 }
 
@@ -170,9 +208,39 @@ export function createRegistrationRoutes(
         url: URL,
     ): Promise<boolean> => {
         if (
+            url.pathname === "/api/v1/registration/state" &&
+            req.method === "GET"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        inviteEnabled: gateway.isInviteEnabled(),
+                        publicEnabled: gateway.isPublicEnabled(),
+                    },
+                }),
+            );
+            return true;
+        }
+
+        if (
             url.pathname === "/api/v1/registration/invite" &&
             req.method === "GET"
         ) {
+            if (!gateway.isInviteEnabled()) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Route not found",
+                        },
+                    }),
+                );
+                return true;
+            }
             const token = String(url.searchParams.get("token") ?? "");
             if (!token) {
                 res.writeHead(400, { "content-type": "application/json" });
@@ -216,6 +284,18 @@ export function createRegistrationRoutes(
             url.pathname === "/api/v1/registration/redeem" &&
             req.method === "POST"
         ) {
+            if (!gateway.isInviteEnabled()) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Route not found",
+                        },
+                    }),
+                );
+                return true;
+            }
             const body = await readJson(req);
             const token = String(body.token ?? "").trim();
             const username = String(body.username ?? "").trim();
@@ -244,6 +324,18 @@ export function createRegistrationRoutes(
             url.pathname === "/api/v1/registration/tokens" &&
             req.method === "GET"
         ) {
+            if (!gateway.isInviteEnabled()) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Route not found",
+                        },
+                    }),
+                );
+                return true;
+            }
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const isAdmin = claims.role === "admin";
@@ -276,6 +368,18 @@ export function createRegistrationRoutes(
             url.pathname === "/api/v1/registration/tokens" &&
             req.method === "POST"
         ) {
+            if (!gateway.isInviteEnabled()) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Route not found",
+                        },
+                    }),
+                );
+                return true;
+            }
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const isAdmin = claims.role === "admin";
@@ -331,6 +435,18 @@ export function createRegistrationRoutes(
             /^\/api\/v1\/registration\/tokens\/([^/]+)\/revoke$/,
         );
         if (revokeMatch && req.method === "POST") {
+            if (!gateway.isInviteEnabled()) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Route not found",
+                        },
+                    }),
+                );
+                return true;
+            }
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const tokenId = decodeURIComponent(revokeMatch[1]);
@@ -387,6 +503,11 @@ export function createRegistrationRoutes(
             url.pathname === "/api/v1/registration/token-manager" &&
             req.method === "GET"
         ) {
+            if (!gateway.isInviteEnabled()) {
+                res.writeHead(302, { location: "/dashboard" });
+                res.end();
+                return true;
+            }
             const session = getCookieSession(req);
             if (!session) {
                 res.writeHead(302, { location: "/login" });
@@ -395,6 +516,111 @@ export function createRegistrationRoutes(
             }
             res.writeHead(302, { location: "/administration" });
             res.end();
+            return true;
+        }
+
+        return false;
+    };
+}
+
+function createGatewayAdapterRoutes(
+    gatewayId: string,
+    gateway: CoreRegistrationGateway,
+    gatewayRegistry: GatewayRegistry,
+) {
+    const base = `/api/v1/gateways/${gatewayId}/adapters`;
+
+    return async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        if (url.pathname === base && req.method === "GET") {
+            if (!requireAuth(req, res, "admin")) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: gateway.listAdapters() }));
+            return true;
+        }
+
+        const toggleMatch = url.pathname.match(
+            new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
+        );
+        if (toggleMatch && req.method === "POST") {
+            if (!requireAuth(req, res, "admin")) return true;
+            const adapterId = decodeURIComponent(toggleMatch[1]);
+            const action = toggleMatch[2] as "enable" | "disable";
+            const known = gateway
+                .listAdapters()
+                .some((a) => a.id === adapterId);
+            if (!known) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Adapter not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (action === "enable") {
+                const gwEntry = gatewayRegistry.get(gatewayId);
+                if (gwEntry?.status === "disabled") {
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "gateway_disabled",
+                                message:
+                                    "Cannot enable an adapter while its gateway is disabled",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                await gateway.enableAdapter(adapterId);
+            } else {
+                await gateway.disableAdapter(adapterId);
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: { enabled: action === "enable" },
+                }),
+            );
+            return true;
+        }
+
+        const configMatch = url.pathname.match(
+            new RegExp(`^${base}/([^/]+)/config$`),
+        );
+        if (configMatch && req.method === "GET") {
+            if (!requireAuth(req, res, "admin")) return true;
+            const adapterId = decodeURIComponent(configMatch[1]);
+            const adapter = gateway
+                .listAdapters()
+                .find((a) => a.id === adapterId);
+            if (!adapter) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Adapter not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: { enabled: adapter.enabled },
+                    requiredFields: [],
+                    schema: [],
+                }),
+            );
             return true;
         }
 

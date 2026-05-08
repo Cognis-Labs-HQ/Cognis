@@ -163,6 +163,9 @@
   <string name="ui.app.login.provider.toggle.aria">Select authentication provider</string>
   <string name="ui.app.login.sso.login_with">Login with {provider}</string>
   <string name="ui.app.login.error.generic">Login failed. Please try again.</string>
+  <string name="ui.app.login.reason.session_expired">Session expired, please login again.</string>
+  <string name="ui.app.login.reason.account_disabled">Your account was disabled.</string>
+  <string name="ui.app.login.reason.account_deleted">Your account was deleted.</string>
   <string name="ui.app.demo.switched">Demo: switched to sandbox page.</string>
   <string name="ui.app.demo.added">Demo: added a learning progress widget.</string>
   <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>
@@ -261,6 +264,8 @@
   <string name="ui.app.invite.email">Email address</string>
   <string name="ui.app.invite.status">Status</string>
   <string name="ui.app.invite.expires_at">Expires at</string>
+  <string name="ui.app.invite.issuer">Issuer</string>
+  <string name="ui.app.invite.username">Username</string>
   <string name="ui.app.invite.revoke">Revoke</string>
   <string name="ui.app.invite.status_pending">Pending</string>
   <string name="ui.app.invite.status_redeemed">Redeemed</string>

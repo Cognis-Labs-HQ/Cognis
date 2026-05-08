@@ -11,11 +11,28 @@ async function isRegistrationGatewayEnabled() {
     }
 }
 
+async function isInviteAdapterEnabled() {
+    try {
+        const token = localStorage.getItem("cognis_token");
+        const response = await fetch("/api/v1/registration/state", {
+            headers: {
+                authorization: token ? `Bearer ${token}` : "",
+            },
+        });
+        if (!response.ok) return false;
+        const payload = await response.json();
+        return payload?.data?.inviteEnabled === true;
+    } catch {
+        return false;
+    }
+}
+
 async function registerInviteMenuEntry() {
     const role = localStorage.getItem("cognis_role");
     const isFounder = localStorage.getItem("cognis_is_founder") === "true";
     if (role === "admin" || !isFounder) return;
     if (!(await isRegistrationGatewayEnabled())) return;
+    if (!(await isInviteAdapterEnabled())) return;
 
     const dropdown = document.querySelector("#profile-dropdown");
     if (!(dropdown instanceof HTMLUListElement)) return;

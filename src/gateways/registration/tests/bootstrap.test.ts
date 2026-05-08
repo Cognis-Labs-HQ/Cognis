@@ -9,6 +9,9 @@ function createCapabilities(entries) {
         get(key) {
             return entries.get(key);
         },
+        contribute(key, value) {
+            entries.set(key, value);
+        },
     };
 }
 

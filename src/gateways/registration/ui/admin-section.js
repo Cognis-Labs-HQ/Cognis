@@ -1,12 +1,19 @@
 export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     let tokens = [];
+    let profileGatewayEnabled = false;
 
-    const dataReady = apiFetch(
-        "/api/v1/registration/tokens?includeClosed=true",
-    ).then(async (res) => {
-        if (!res.ok) return;
-        const payload = await res.json();
-        tokens = payload.data ?? [];
+    const dataReady = Promise.all([
+        apiFetch("/api/v1/registration/tokens?includeClosed=true"),
+        apiFetch("/api/v1/gateways/profile"),
+    ]).then(async ([tokensRes, profileRes]) => {
+        if (tokensRes.ok) {
+            const payload = await tokensRes.json();
+            tokens = payload.data ?? [];
+        }
+        if (profileRes.ok) {
+            const payload = await profileRes.json();
+            profileGatewayEnabled = payload?.data?.status !== "disabled";
+        }
     });
 
     function statusLabel(status) {
@@ -22,9 +29,21 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         const expiresAt = token.expiresAt
             ? escapeHtml(new Date(token.expiresAt).toLocaleString())
             : "";
+        const issuerUsername = String(token.inviterAccountId ?? "");
+        const redeemedUsername = String(token.redeemedAccountId ?? "");
+        const issuerCell = profileGatewayEnabled
+            ? `<a href="/profile/${encodeURIComponent(issuerUsername)}">${escapeHtml(issuerUsername)}</a>`
+            : escapeHtml(issuerUsername);
+        const redeemedCell = redeemedUsername
+            ? profileGatewayEnabled
+                ? `<a href="/profile/${encodeURIComponent(redeemedUsername)}">${escapeHtml(redeemedUsername)}</a>`
+                : escapeHtml(redeemedUsername)
+            : "—";
         return `
         <tr>
           <td>${escapeHtml(token.inviteeEmail)}</td>
+          <td>${issuerCell}</td>
+          <td>${redeemedCell}</td>
           <td>${statusLabel(token.status)}</td>
           <td>${expiresAt}</td>
           <td class="users-actions-cell">${revokeHtml}</td>
@@ -41,6 +60,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             <thead>
               <tr>
                 <th>${escapeHtml(i18n.t("ui.app.invite.email"))}</th>
+                <th>${escapeHtml(i18n.t("ui.app.invite.issuer"))}</th>
+                <th>${escapeHtml(i18n.t("ui.app.invite.username"))}</th>
                 <th>${escapeHtml(i18n.t("ui.app.invite.status"))}</th>
                 <th>${escapeHtml(i18n.t("ui.app.invite.expires_at"))}</th>
                 <th>${escapeHtml(i18n.t("ui.reuse.generic.actions"))}</th>

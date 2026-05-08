@@ -340,6 +340,7 @@ const composer = createPageComposer(root, {
                                         username,
                                         password,
                                         email,
+                                        displayName,
                                     }),
                                 },
                             );

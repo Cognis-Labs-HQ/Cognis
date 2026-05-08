@@ -23,6 +23,24 @@ applyDocumentTitle(i18n, "ui.page.title.login");
 
 const root = document.querySelector("#app");
 const typingSamples = await loadAuthTypingSamples(i18n);
+const loginReason = new URL(window.location.href).searchParams.get("reason");
+let loginReasonToastShown = false;
+
+function renderLoginReasonToast() {
+    if (loginReasonToastShown) return;
+    const keyByReason = {
+        session_expired: "ui.app.login.reason.session_expired",
+        account_disabled: "ui.app.login.reason.account_disabled",
+        account_deleted: "ui.app.login.reason.account_deleted",
+    };
+    const reasonKey = keyByReason[loginReason];
+    if (!reasonKey) return;
+    loginReasonToastShown = true;
+    showToast(i18n.t(reasonKey), {
+        variant: "error",
+        permanent: true,
+    });
+}
 
 async function loadLoginMethods() {
     try {
@@ -293,6 +311,7 @@ const composer = createPageComposer(root, {
             onRender: () => {
                 loadLoginMethods();
                 runTypingShowcase(typingSamples);
+                renderLoginReasonToast();
                 document
                     .querySelector("#login-form")
                     ?.addEventListener("submit", async (event) => {

@@ -170,15 +170,7 @@ test("GET /api/v1/auth/registration-config returns open-registration state", asy
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    capabilities.contribute("preferences:store", {
-        async get() {
-            return JSON.stringify({
-                trustedDomains: [],
-                registrationsEnabled: true,
-                userValidationMode: "none",
-            });
-        },
-    });
+    capabilities.contribute("registration:public:isEnabled", () => true);
 
     await bootstrap({
         dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
@@ -568,12 +560,12 @@ test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
     assert.match(res.payload, /unauthorized/);
 });
 
-test("profile:createProfile capability is looked up lazily in login and register handlers", async () => {
+test("registration:public:register capability is looked up lazily in register handler", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
 
-    let profileCreated: string | null = null;
+    let createdUsername: string | null = null;
 
     await bootstrap({
         dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
@@ -589,19 +581,12 @@ test("profile:createProfile capability is looked up lazily in login and register
         capabilities,
     });
 
-    capabilities.contribute("preferences:store", {
-        async get(_accountId: string, _key: string) {
-            return JSON.stringify({
-                trustedDomains: [],
-                registrationsEnabled: true,
-            });
-        },
-    });
-
+    capabilities.contribute("registration:public:isEnabled", () => true);
     capabilities.contribute(
-        "profile:createProfile",
-        async (accountId: string) => {
-            profileCreated = accountId;
+        "registration:public:register",
+        async ({ username }: { username: string }) => {
+            createdUsername = username;
+            return { username, isAdmin: false, enabled: true };
         },
     );
 
@@ -629,11 +614,7 @@ test("profile:createProfile capability is looked up lazily in login and register
         if (handled) break;
     }
 
-    assert.equal(
-        profileCreated,
-        "testuser",
-        "profile:createProfile contributed after bootstrap should be invoked on register",
-    );
+    assert.equal(createdUsername, "testuser");
 });
 
 test("RouteRegistry.getEntries returns handlers with their associated gatewayId", async () => {
@@ -661,14 +642,7 @@ test("auth register endpoint returns 403 when open registration is disabled", as
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    capabilities.contribute("preferences:store", {
-        async get(_accountId: string, _key: string) {
-            return JSON.stringify({
-                trustedDomains: [],
-                registrationsEnabled: false,
-            });
-        },
-    });
+    capabilities.contribute("registration:public:isEnabled", () => false);
 
     await bootstrap({
         dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
@@ -713,6 +687,30 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
+    capabilities.contribute("registration:public:isEnabled", () => true);
+    capabilities.contribute(
+        "registration:public:register",
+        async ({
+            username,
+            password,
+        }: {
+            username: string;
+            password: string;
+        }) => {
+            const accountStore = capabilities.get<{
+                register: (
+                    username: string,
+                    password: string,
+                    isAdmin?: boolean,
+                ) => Promise<{
+                    username: string;
+                    isAdmin: boolean;
+                    enabled: boolean;
+                }>;
+            }>("auth:accountStore");
+            return accountStore!.register(username, password, false);
+        },
+    );
     capabilities.contribute("preferences:store", {
         async get(_accountId: string, _key: string) {
             return JSON.stringify({

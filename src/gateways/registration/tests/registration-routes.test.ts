@@ -62,6 +62,9 @@ test("founder can list only their pending registration tokens", async () => {
     let inviterFilter = "";
     const route = createRegistrationRoutes(
         {
+            isInviteEnabled() {
+                return true;
+            },
             async listInvites(filter?: { inviterAccountId?: string }) {
                 inviterFilter = filter?.inviterAccountId ?? "";
                 return [];
@@ -100,6 +103,9 @@ test("admin can list all pending registration tokens", async () => {
     let didUseUnfilteredList = false;
     const route = createRegistrationRoutes(
         {
+            isInviteEnabled() {
+                return true;
+            },
             async listInvites(filter?: { inviterAccountId?: string }) {
                 didUseUnfilteredList = !filter?.inviterAccountId;
                 return [];
@@ -137,6 +143,9 @@ test("admin can list all pending registration tokens", async () => {
 test("invite endpoint returns inviter details for valid token", async () => {
     const route = createRegistrationRoutes(
         {
+            isInviteEnabled() {
+                return true;
+            },
             async listInvites() {
                 return [];
             },
@@ -176,6 +185,9 @@ test("invite endpoint returns inviter details for valid token", async () => {
 test("issue invite returns 409 when email is already registered", async () => {
     const route = createRegistrationRoutes(
         {
+            isInviteEnabled() {
+                return true;
+            },
             async listInvites() {
                 return [];
             },

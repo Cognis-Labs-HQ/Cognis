@@ -163,6 +163,9 @@
   <string name="ui.app.login.provider.toggle.aria">認証プロバイダーを選択</string>
   <string name="ui.app.login.sso.login_with">{provider} でログイン</string>
   <string name="ui.app.login.error.generic">ログインに失敗しました。もう一度お試しください。</string>
+  <string name="ui.app.login.reason.session_expired">セッションの有効期限が切れました。再度ログインしてください。</string>
+  <string name="ui.app.login.reason.account_disabled">あなたのアカウントは無効化されました。</string>
+  <string name="ui.app.login.reason.account_deleted">あなたのアカウントは削除されました。</string>
   <string name="ui.app.demo.switched">デモ: サンドボックスページに切り替えました。</string>
   <string name="ui.app.demo.added">デモ: 学習進捗ウィジェットを追加しました。</string>
   <string name="ui.app.demo.tweaked">デモ: 最初のウィジェット設定を調整しました。</string>
@@ -261,6 +264,8 @@
   <string name="ui.app.invite.email">メールアドレス</string>
   <string name="ui.app.invite.status">状態</string>
   <string name="ui.app.invite.expires_at">有効期限</string>
+  <string name="ui.app.invite.issuer">発行者</string>
+  <string name="ui.app.invite.username">ユーザー名</string>
   <string name="ui.app.invite.revoke">取り消し</string>
   <string name="ui.app.invite.status_pending">保留中</string>
   <string name="ui.app.invite.status_redeemed">引き換え済み</string>

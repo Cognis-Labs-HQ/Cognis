@@ -80,7 +80,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.0.0",
+        version: "1.2.1",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -157,8 +157,10 @@ function createAuthGatewayRoutes(
     }
 
     async function registrationsEnabled(): Promise<boolean> {
-        const settings = await readSecuritySettings();
-        return settings.registrationsEnabled;
+        const isPublicRegistrationEnabled = capabilities.get<() => boolean>(
+            "registration:public:isEnabled",
+        );
+        return Boolean(isPublicRegistrationEnabled?.());
     }
 
     return async (
@@ -183,12 +185,11 @@ function createAuthGatewayRoutes(
             url.pathname === "/api/v1/auth/registration-config" &&
             req.method === "GET"
         ) {
-            const security = await readSecuritySettings();
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
-                        registrationsEnabled: security.registrationsEnabled,
+                        registrationsEnabled: await registrationsEnabled(),
                     },
                 }),
             );
@@ -211,6 +212,8 @@ function createAuthGatewayRoutes(
             const body = await readJson(req);
             const username = String(body.username ?? "");
             const password = String(body.password ?? "");
+            const email = String(body.email ?? "");
+            const displayName = String(body.displayName ?? "").trim();
             if (!username || !password) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -223,32 +226,36 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            const localAdapter = authGateway.getLocalAdapter();
-            if (!localAdapter) {
+            const registerPublic = capabilities.get<
+                (input: {
+                    username: string;
+                    password: string;
+                    email?: string;
+                    displayName?: string;
+                }) => Promise<{
+                    username: string;
+                    isAdmin: boolean;
+                    enabled: boolean;
+                }>
+            >("registration:public:register");
+            if (!registerPublic) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "local_auth_unavailable",
-                            message: "Local registration is not available",
+                            code: "registration_unavailable",
+                            message: "Public registration is not available",
                         },
                     }),
                 );
                 return true;
             }
-            const result = await localAdapter.register(
+            const result = await registerPublic({
                 username,
                 password,
-                false,
-            );
-            const createProfile = capabilities.get<
-                (
-                    accountId: string,
-                    handle: string,
-                    role?: string,
-                ) => Promise<void>
-            >("profile:createProfile");
-            await createProfile?.(username, username, "user");
+                email,
+                displayName: displayName || undefined,
+            });
             res.writeHead(201, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: result }));
             return true;
