@@ -390,10 +390,7 @@ function createAuthGatewayRoutes(
                     ? authHeader.slice("Bearer ".length)
                     : "";
             const oneHourMs = 60 * 60 * 1000;
-            if (
-                rawToken &&
-                isTokenVerificationFresh(rawToken, oneHourMs)
-            ) {
+            if (rawToken && isTokenVerificationFresh(rawToken, oneHourMs)) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { verified: true } }));
                 return true;

@@ -22,6 +22,9 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Administration adapter-config popup now hides the "Send Test Email" controls for adapters that do not support test sending (for example, Registration/Invite), instead of rendering the test-email section unconditionally. ([c4ae99a](https://github.com/le-firehawk/Cognis/commit/c4ae99a))
+- Invite registration links now return `invite_disabled` when the invite adapter is disabled, and the `/register?token=...` UI shows the closed-registration message instead of an invalid-token error, keeping invite behavior adapter-contained. ([c4ae99a](https://github.com/le-firehawk/Cognis/commit/c4ae99a))
+- Active auth-gateway routes now align with public-registration verification expectations: `/api/v1/auth/register` returns `verifyToken`, and `/api/v1/auth/verify` applies the one-hour freshness short-circuit (since login or last confirmation), preventing unnecessary password prompts and enabling the post-register email verification popup flow. ([c4ae99a](https://github.com/le-firehawk/Cognis/commit/c4ae99a))
 - `createUnsavedChangesBar`: Save button now auto-clears the dirty state and hides the bar immediately after `onSave` resolves, rather than leaving it visible until the page reloads or a toast auto-dismisses. ([8aa9cf8](https://github.com/le-firehawk/Cognis/commit/8aa9cf8))
 - `openPopup`: keyboard Enter handler now only fires for the topmost popup overlay, preventing a nested popup (e.g. the email-input prompt inside the invite reprompt flow) from accidentally re-triggering the parent popup's confirm action. ([8aa9cf8](https://github.com/le-firehawk/Cognis/commit/8aa9cf8))
 - `GET /api/v1/notifications/providers` no longer requires admin role — any authenticated user can now retrieve the list of notification senders, fixing a 403 error that blocked non-admin users from managing their notification preferences. ([8aa9cf8](https://github.com/le-firehawk/Cognis/commit/8aa9cf8))

@@ -816,7 +816,11 @@ function fieldNameToLabel(name) {
         .trim();
 }
 
-function renderGenericAdapterForm(descriptors, requiredFields, showTestControls) {
+function renderGenericAdapterForm(
+    descriptors,
+    requiredFields,
+    showTestControls,
+) {
     const requiredSet = new Set(requiredFields);
     const requiredTooltip = i18n.t("ui.app.admin.notif.required_field");
     const conflictTitle = i18n.t("ui.app.admin.notif.field_env_conflict");
