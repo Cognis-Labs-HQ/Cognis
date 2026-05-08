@@ -36,6 +36,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Login/register public pages no longer attempt authenticated `ui-preferences` or `{page}-layout` fetches when there is no access token, eliminating the 401 spam that interfered with login-page behaviour. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
 - `loadAuthTypingSamples` no longer throws `ReferenceError: key is not defined` when resolving translated typing keys, restoring login/register startup and invite-token invalid toast rendering. ([6f0f3db](https://github.com/le-firehawk/Cognis/commit/6f0f3db))
 - Registration invite pages now treat empty `?token=` as invalid and shade/disable the full registration form shell when invite tokens are invalid/expired. ([6f0f3db](https://github.com/le-firehawk/Cognis/commit/6f0f3db))
+- Registration invalid-token permanent toast is now guarded against composer re-renders so duplicate persistent error toasts are not created. ([5a88245](https://github.com/le-firehawk/Cognis/commit/5a88245))
 - Invalid registration tokens now show a permanent error toast (`This invitation token is invalid or has expired.`) and render the registration form in a fully disabled state rather than hiding it entirely. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 - Deleted users' email addresses were not released from `user_emails` (no cascade delete), causing "email already registered" errors on re-invite. Resolved by `006_user_emails_cascade` migration. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 
