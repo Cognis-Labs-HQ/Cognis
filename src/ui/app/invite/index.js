@@ -54,66 +54,13 @@ async function promptEmail() {
 
 let tokens = await loadTokens();
 let composer = null;
-
-function bindInviteInteractions() {
-    root.querySelector("#invite-create-btn")?.addEventListener(
-        "click",
-        async () => {
-            await reprompt.runWithReprompt(async () => {
-                const email = await promptEmail();
-                if (!email) return;
-                const response = await apiFetch("/api/v1/registration/tokens", {
-                    method: "POST",
-                    headers: {
-                        "content-type": "application/json",
-                    },
-                    body: JSON.stringify({ email }),
-                });
-                if (!response.ok) {
-                    showToast(i18n.t("ui.app.invite.invite_failed"), {
-                        variant: "error",
-                    });
-                    return;
-                }
-                showToast(i18n.t("ui.app.invite.invite_sent"), {
-                    variant: "success",
-                });
-                tokens = await loadTokens();
-                composer.refresh();
-            });
-        },
-    );
-
-    root.querySelectorAll(".invite-revoke-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-            const tokenId = btn.dataset.tokenId;
-            if (!tokenId) return;
-            await apiFetch(
-                `/api/v1/registration/tokens/${encodeURIComponent(tokenId)}/revoke`,
-                { method: "POST" },
-            );
-            tokens = await loadTokens();
-            composer.refresh();
-        });
-    });
-}
-
-composer = createPageComposer(root, {
-    allowCustomization: false,
-    i18n,
-    preferenceKey: "invite-layout",
-    pageContext: {
-        title: i18n.t("ui.app.invite.page_title"),
-        subtitle: i18n.t("ui.app.invite.page_subtitle"),
-    },
-    toolbar: [],
-    elements: [
-        {
-            id: "invite-tokens",
-            label: i18n.t("ui.reuse.menu.invite"),
-            pinned: true,
-            gridSize: { default: [12, 7], min: [6, 4], max: "full" },
-            render: () => `
+const elements = [
+    {
+        id: "invite-tokens",
+        label: i18n.t("ui.reuse.menu.invite"),
+        pinned: true,
+        gridSize: { default: [12, 7], min: [6, 4], max: "full" },
+        render: () => `
         <div class="controls">
           <button id="invite-create-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.app.invite.invite"))}</button>
         </div>
@@ -146,8 +93,62 @@ composer = createPageComposer(root, {
         </table>
         </div>
       `,
+    },
+];
+
+function bindInviteInteractions() {
+    root.querySelector("#invite-create-btn")?.addEventListener(
+        "click",
+        async () => {
+            await reprompt.runWithReprompt(async () => {
+                const email = await promptEmail();
+                if (!email) return;
+                const response = await apiFetch("/api/v1/registration/tokens", {
+                    method: "POST",
+                    headers: {
+                        "content-type": "application/json",
+                    },
+                    body: JSON.stringify({ email }),
+                });
+                if (!response.ok) {
+                    showToast(i18n.t("ui.app.invite.invite_failed"), {
+                        variant: "error",
+                    });
+                    return;
+                }
+                showToast(i18n.t("ui.app.invite.invite_sent"), {
+                    variant: "success",
+                });
+                tokens = await loadTokens();
+                composer.refresh(elements);
+            });
         },
-    ],
+    );
+
+    root.querySelectorAll(".invite-revoke-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            const tokenId = btn.dataset.tokenId;
+            if (!tokenId) return;
+            await apiFetch(
+                `/api/v1/registration/tokens/${encodeURIComponent(tokenId)}/revoke`,
+                { method: "POST" },
+            );
+            tokens = await loadTokens();
+            composer.refresh(elements);
+        });
+    });
+}
+
+composer = createPageComposer(root, {
+    allowCustomization: false,
+    i18n,
+    preferenceKey: "invite-layout",
+    pageContext: {
+        title: i18n.t("ui.app.invite.page_title"),
+        subtitle: i18n.t("ui.app.invite.page_subtitle"),
+    },
+    toolbar: [],
+    elements,
     onRender: () => {
         bindInviteInteractions();
     },

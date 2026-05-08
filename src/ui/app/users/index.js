@@ -15,6 +15,15 @@ const reprompt = createRepromptGuard({ i18n });
 let users = [];
 let registrationGatewayActive = false;
 let composer = null;
+const elements = [
+    {
+        id: "users-table",
+        label: i18n.t("ui.reuse.menu.users"),
+        pinned: true,
+        gridSize: { default: [12, 7], min: [6, 4], max: "full" },
+        render: () => renderUsersTable(),
+    },
+];
 
 async function loadUsers() {
     const response = await apiFetch("/api/v1/users");
@@ -186,7 +195,7 @@ async function runUserMenuAction(action, username) {
             method: "DELETE",
         });
         await refreshData();
-        composer.refresh();
+        composer.refresh(elements);
     }
 }
 
@@ -223,7 +232,7 @@ function bindUsersInteractions() {
                 },
             );
             await refreshData();
-            composer.refresh();
+            composer.refresh(elements);
         });
     });
 
@@ -300,15 +309,7 @@ composer = createPageComposer(root, {
         subtitle: i18n.t("ui.app.users.page_subtitle"),
     },
     toolbar: [],
-    elements: [
-        {
-            id: "users-table",
-            label: i18n.t("ui.reuse.menu.users"),
-            pinned: true,
-            gridSize: { default: [12, 7], min: [6, 4], max: "full" },
-            render: () => renderUsersTable(),
-        },
-    ],
+    elements,
     onRender: () => {
         bindUsersInteractions();
     },
