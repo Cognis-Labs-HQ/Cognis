@@ -994,17 +994,32 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 4px 0;
+    justify-content: center;
+    gap: 8px;
+    min-height: 100%;
+    padding: 0;
+    text-align: center;
 }
 
-.dashboard-clock-toggle {
+.dashboard-clock-display {
+    width: 100%;
     display: flex;
-    gap: 6px;
-    align-self: flex-end;
+    justify-content: center;
 }
 
-.dashboard-clock-digital {
+.dashboard-clock--digital .dashboard-clock-display {
+    align-items: center;
+}
+
+.dashboard-clock-digital-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.dashboard-clock-digital-time {
+    display: block;
     font-size: 2rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
@@ -1013,7 +1028,8 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     line-height: 1;
 }
 
-.dashboard-clock-date {
+.dashboard-clock-digital-date {
+    display: block;
     font-size: 0.85rem;
     color: var(--text-muted);
 }
@@ -1022,6 +1038,10 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     font-size: 0.75rem;
     color: var(--text-muted);
     font-style: italic;
+}
+
+.dashboard-clock--analogue {
+    gap: 6px;
 }
 
 .dashboard-clock-analogue {

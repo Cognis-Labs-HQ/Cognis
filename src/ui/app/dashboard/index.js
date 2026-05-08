@@ -37,6 +37,122 @@ function localFormatDateTime(iso) {
     return formatDateTime(iso, i18n.t("ui.app.dashboard.never"));
 }
 
+function getClockTimeParts(now, tz) {
+    const parts = new Intl.DateTimeFormat(undefined, {
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: false,
+        timeZone: tz,
+    }).formatToParts(now);
+
+    return {
+        hour:
+            parseInt(
+                parts.find((part) => part.type === "hour")?.value ?? "0",
+                10,
+            ) % 12,
+        minute: parseInt(
+            parts.find((part) => part.type === "minute")?.value ?? "0",
+            10,
+        ),
+        second: parseInt(
+            parts.find((part) => part.type === "second")?.value ?? "0",
+            10,
+        ),
+    };
+}
+
+function buildAnalogueClockMarkup(now, tz) {
+    const { hour, minute, second } = getClockTimeParts(now, tz);
+    const cx = 54;
+    const cy = 54;
+    const faceRadius = 48;
+
+    function handCoords(angleDeg, len) {
+        const rad = ((angleDeg - 90) * Math.PI) / 180;
+        return {
+            x: cx + len * Math.cos(rad),
+            y: cy + len * Math.sin(rad),
+        };
+    }
+
+    const hourAngle = (hour + minute / 60 + second / 3600) * 30;
+    const minuteAngle = (minute + second / 60) * 6;
+    const secondAngle = second * 6;
+    const hourEnd = handCoords(hourAngle, 28);
+    const minuteEnd = handCoords(minuteAngle, 38);
+    const secondEnd = handCoords(secondAngle, 44);
+
+    const ticks = Array.from({ length: 60 }, (_, tickIndex) => {
+        const major = tickIndex % 5 === 0;
+        const tickAngle = (tickIndex * 6 * Math.PI) / 180;
+        const inner = major ? faceRadius - 8 : faceRadius - 4;
+        const x1 = cx + faceRadius * Math.cos(tickAngle - Math.PI / 2);
+        const y1 = cy + faceRadius * Math.sin(tickAngle - Math.PI / 2);
+        const x2 = cx + inner * Math.cos(tickAngle - Math.PI / 2);
+        const y2 = cy + inner * Math.sin(tickAngle - Math.PI / 2);
+        const tickClass = major
+            ? "dashboard-clock-analogue-tick-major"
+            : "dashboard-clock-analogue-tick";
+        return `<line class="${tickClass}" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/>`;
+    }).join("");
+
+    return `<svg class="dashboard-clock-analogue" width="108" height="108" viewBox="0 0 108 108" aria-hidden="true">
+      <circle class="dashboard-clock-analogue-face" cx="${cx}" cy="${cy}" r="${faceRadius}"/>
+      ${ticks}
+      <line class="dashboard-clock-hand-hour"
+        x1="${cx}" y1="${cy}" x2="${hourEnd.x.toFixed(2)}" y2="${hourEnd.y.toFixed(2)}"/>
+      <line class="dashboard-clock-hand-minute"
+        x1="${cx}" y1="${cy}" x2="${minuteEnd.x.toFixed(2)}" y2="${minuteEnd.y.toFixed(2)}"/>
+      <line class="dashboard-clock-hand-second"
+        x1="${cx}" y1="${cy}" x2="${secondEnd.x.toFixed(2)}" y2="${secondEnd.y.toFixed(2)}"/>
+      <circle class="dashboard-clock-analogue-centre" cx="${cx}" cy="${cy}" r="4"/>
+    </svg>`;
+}
+
+function buildDigitalClockMarkup(now, tz) {
+    const timeStr = now.toLocaleTimeString(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: tz,
+    });
+    const dateStr = now.toLocaleDateString(undefined, {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        timeZone: tz,
+    });
+
+    return `
+      <div class="dashboard-clock-digital-stack">
+        <span class="dashboard-clock-digital-time">${timeStr}</span>
+        <span class="dashboard-clock-digital-date">${dateStr}</span>
+      </div>
+    `;
+}
+
+function mountClock({ displayId, tzId, renderClock }) {
+    const displayEl = document.querySelector(`#${displayId}`);
+    const tzEl = document.querySelector(`#${tzId}`);
+    if (!displayEl) return;
+
+    function tick() {
+        const tz = getEffectiveTimezone();
+        const now = new Date();
+        if (tzEl) tzEl.textContent = tz;
+        displayEl.innerHTML = renderClock(now, tz);
+    }
+
+    tick();
+    const intervalId = setInterval(tick, 1000);
+    window.addEventListener("pagehide", () => clearInterval(intervalId), {
+        once: true,
+    });
+}
+
 const info = await loadAccountInfo();
 
 const elements = [
@@ -87,143 +203,39 @@ const elements = [
     `,
     },
     {
-        id: "clock",
-        label: i18n.t("ui.app.dashboard.element.clock.label"),
-        gridSize: { default: [3, 3], min: [2, 2], max: [4, 4] },
+        id: "digital-clock",
+        label: i18n.t("ui.app.dashboard.element.digital_clock.label"),
+        gridSize: { default: [5, 2], min: [4, 2], max: [6, 2] },
         render: () => `
-      <div class="dashboard-clock" id="dashboard-clock-root">
-        <div class="dashboard-clock-toggle">
-          <button class="btn-cancel btn-animated" id="dashboard-clock-mode-btn" type="button"
-            data-mode="digital">${i18n.t("ui.app.dashboard.element.clock.analogue")}</button>
-        </div>
-        <div id="dashboard-clock-display"></div>
-        <span class="dashboard-clock-tz" id="dashboard-clock-tz"></span>
+      <div class="dashboard-clock dashboard-clock--digital">
+        <div class="dashboard-clock-display" id="dashboard-digital-clock-display"></div>
+        <span class="dashboard-clock-tz" id="dashboard-digital-clock-tz"></span>
       </div>
     `,
         onRender: () => {
-            const displayEl = document.querySelector(
-                "#dashboard-clock-display",
-            );
-            const tzEl = document.querySelector("#dashboard-clock-tz");
-            const modeBtn = document.querySelector("#dashboard-clock-mode-btn");
-            if (!displayEl) return;
-
-            let mode = "digital";
-
-            function buildAnalogue(now, tz) {
-                const parts = new Intl.DateTimeFormat(undefined, {
-                    hour: "numeric",
-                    minute: "numeric",
-                    second: "numeric",
-                    hour12: false,
-                    timeZone: tz,
-                }).formatToParts(now);
-                const h =
-                    parseInt(
-                        parts.find((p) => p.type === "hour")?.value ?? "0",
-                        10,
-                    ) % 12;
-                const min = parseInt(
-                    parts.find((p) => p.type === "minute")?.value ?? "0",
-                    10,
-                );
-                const sec = parseInt(
-                    parts.find((p) => p.type === "second")?.value ?? "0",
-                    10,
-                );
-
-                const cx = 60;
-                const cy = 60;
-                const faceRadius = 54;
-
-                function handCoords(angleDeg, len) {
-                    const rad = ((angleDeg - 90) * Math.PI) / 180;
-                    return {
-                        x: cx + len * Math.cos(rad),
-                        y: cy + len * Math.sin(rad),
-                    };
-                }
-
-                const hourAngle = (h + min / 60 + sec / 3600) * 30;
-                const minAngle = (min + sec / 60) * 6;
-                const secAngle = sec * 6;
-                const hourEnd = handCoords(hourAngle, 32);
-                const minEnd = handCoords(minAngle, 44);
-                const secEnd = handCoords(secAngle, 50);
-
-                const ticks = Array.from({ length: 60 }, (_, i) => {
-                    const major = i % 5 === 0;
-                    const ta = (i * 6 * Math.PI) / 180;
-                    const inner = major ? faceRadius - 8 : faceRadius - 4;
-                    const x1 = cx + faceRadius * Math.cos(ta - Math.PI / 2);
-                    const y1 = cy + faceRadius * Math.sin(ta - Math.PI / 2);
-                    const x2 = cx + inner * Math.cos(ta - Math.PI / 2);
-                    const y2 = cy + inner * Math.sin(ta - Math.PI / 2);
-                    const cls = major
-                        ? "dashboard-clock-analogue-tick-major"
-                        : "dashboard-clock-analogue-tick";
-                    return `<line class="${cls}" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/>`;
-                }).join("");
-
-                return `<svg class="dashboard-clock-analogue" width="120" height="120" viewBox="0 0 120 120" aria-hidden="true">
-                  <circle class="dashboard-clock-analogue-face" cx="${cx}" cy="${cy}" r="${faceRadius}"/>
-                  ${ticks}
-                  <line class="dashboard-clock-hand-hour"
-                    x1="${cx}" y1="${cy}" x2="${hourEnd.x.toFixed(2)}" y2="${hourEnd.y.toFixed(2)}"/>
-                  <line class="dashboard-clock-hand-minute"
-                    x1="${cx}" y1="${cy}" x2="${minEnd.x.toFixed(2)}" y2="${minEnd.y.toFixed(2)}"/>
-                  <line class="dashboard-clock-hand-second"
-                    x1="${cx}" y1="${cy}" x2="${secEnd.x.toFixed(2)}" y2="${secEnd.y.toFixed(2)}"/>
-                  <circle class="dashboard-clock-analogue-centre" cx="${cx}" cy="${cy}" r="4"/>
-                </svg>`;
-            }
-
-            function buildDigital(now, tz) {
-                const timeStr = now.toLocaleTimeString(undefined, {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                    timeZone: tz,
-                });
-                const dateStr = now.toLocaleDateString(undefined, {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    timeZone: tz,
-                });
-                return `<span class="dashboard-clock-digital">${timeStr}</span>
-                  <span class="dashboard-clock-date">${dateStr}</span>`;
-            }
-
-            function tick() {
-                const tz = getEffectiveTimezone();
-                const now = new Date();
-                if (tzEl) tzEl.textContent = tz;
-                if (mode === "analogue") {
-                    displayEl.innerHTML = buildAnalogue(now, tz);
-                } else {
-                    displayEl.innerHTML = buildDigital(now, tz);
-                }
-            }
-
-            tick();
-            const intervalId = setInterval(tick, 1000);
-
-            modeBtn?.addEventListener("click", () => {
-                mode = mode === "digital" ? "analogue" : "digital";
-                modeBtn.textContent =
-                    mode === "digital"
-                        ? i18n.t("ui.app.dashboard.element.clock.analogue")
-                        : i18n.t("ui.app.dashboard.element.clock.digital");
-                tick();
+            mountClock({
+                displayId: "dashboard-digital-clock-display",
+                tzId: "dashboard-digital-clock-tz",
+                renderClock: buildDigitalClockMarkup,
             });
-
-            window.addEventListener(
-                "pagehide",
-                () => clearInterval(intervalId),
-                { once: true },
-            );
+        },
+    },
+    {
+        id: "analogue-clock",
+        label: i18n.t("ui.app.dashboard.element.analogue_clock.label"),
+        gridSize: { default: [4, 2], min: [3, 2], max: [5, 2] },
+        render: () => `
+      <div class="dashboard-clock dashboard-clock--analogue">
+        <div class="dashboard-clock-display" id="dashboard-analogue-clock-display"></div>
+        <span class="dashboard-clock-tz" id="dashboard-analogue-clock-tz"></span>
+      </div>
+    `,
+        onRender: () => {
+            mountClock({
+                displayId: "dashboard-analogue-clock-display",
+                tzId: "dashboard-analogue-clock-tz",
+                renderClock: buildAnalogueClockMarkup,
+            });
         },
     },
 ];
