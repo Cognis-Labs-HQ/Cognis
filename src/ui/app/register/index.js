@@ -197,7 +197,20 @@ const composer = createPageComposer(root, {
                             if (!response.ok) {
                                 const body = await response
                                     .json()
-                                    .catch(() => null);
+                                    .catch((error) => {
+                                        console.warn(
+                                            JSON.stringify({
+                                                level: "warn",
+                                                component: "register-page",
+                                                message: "register_parse_error",
+                                                error:
+                                                    error instanceof Error
+                                                        ? error.message
+                                                        : String(error),
+                                            }),
+                                        );
+                                        return null;
+                                    });
                                 const code = String(
                                     body?.error?.code ?? "register_failed",
                                 );

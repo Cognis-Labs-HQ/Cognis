@@ -331,6 +331,7 @@ function createAuthGatewayRoutes(
                                     : String(error),
                         }),
                     );
+                    // Founder status only affects optional UI routing; keep login available on lookup failure.
                     return false;
                 });
             const securitySettings = await readSecuritySettings();

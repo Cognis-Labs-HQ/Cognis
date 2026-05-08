@@ -132,13 +132,19 @@ async function buildMessage(
         : "";
 
     function renderBodyWithLinks(rawBody: string): string {
-        const escapedBody = escapeHtmlForEmail(rawBody);
-        const linkedBody = escapedBody.replace(
-            /(https?:\/\/[^\s<]+)/g,
-            (url) =>
-                `<a href="${url}" style="color:${palette.colorAccent2};text-decoration:underline;">${url}</a>`,
-        );
-        return linkedBody.replace(/\n/g, "<br>");
+        const urlPattern = /https?:\/\/[^\s<]+/g;
+        let html = "";
+        let cursor = 0;
+        for (const match of rawBody.matchAll(urlPattern)) {
+            const index = match.index ?? 0;
+            const rawUrl = match[0];
+            html += escapeHtmlForEmail(rawBody.slice(cursor, index));
+            const safeUrl = escapeHtmlForEmail(rawUrl);
+            html += `<a href="${safeUrl}" style="color:${palette.colorAccent2};text-decoration:underline;">${safeUrl}</a>`;
+            cursor = index + rawUrl.length;
+        }
+        html += escapeHtmlForEmail(rawBody.slice(cursor));
+        return html.replace(/\n/g, "<br>");
     }
 
     const template = await loadEmailTemplate();
