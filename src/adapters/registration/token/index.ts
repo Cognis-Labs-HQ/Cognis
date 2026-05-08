@@ -305,7 +305,15 @@ export function createAdapter(deps: {
         if (!inviterStillExists) throw new Error("inviter_not_found");
 
         const created = await accountStore.register(username, password, false);
-        await upsertVerifiedPrimaryEmail(created.username, invite.inviteeEmail);
+        try {
+            await upsertVerifiedPrimaryEmail(
+                created.username,
+                invite.inviteeEmail,
+            );
+        } catch (error) {
+            await accountStore.delete(created.username).catch(() => undefined);
+            throw error;
+        }
         const displayName = input.displayName?.trim();
         if (displayName) {
             await dbExecutor.execute(
