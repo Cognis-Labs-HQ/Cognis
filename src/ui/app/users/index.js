@@ -387,7 +387,7 @@ async function triggerInviteFlow() {
                     errorMessage = i18n.t("ui.app.users.invite_email_taken");
                 }
             } catch {
-                // fall through to generic invite_failed message (line above)
+                // fall through to generic invite_failed message (line 383)
             }
             showToast(errorMessage, { variant: "error" });
         },
