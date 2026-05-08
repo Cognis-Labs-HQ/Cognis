@@ -190,6 +190,9 @@
   <string name="ui.app.dashboard.member_since">Member since</string>
   <string name="ui.app.dashboard.last_seen">Last seen</string>
   <string name="ui.app.dashboard.never">Never</string>
+  <string name="ui.app.dashboard.element.clock.label">Clock</string>
+  <string name="ui.app.dashboard.element.clock.digital">Digital</string>
+  <string name="ui.app.dashboard.element.clock.analogue">Analogue</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
