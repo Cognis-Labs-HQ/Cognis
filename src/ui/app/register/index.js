@@ -70,7 +70,8 @@ function renderRegisterShell() {
                       .t("ui.app.register.invited_you")
                       .replace("{inviter}", inviteData.inviterDisplayName)
                 : "";
-        const inviteEmail = isInviteFlow && inviteData ? inviteData.inviteeEmail : "";
+        const inviteEmail =
+            isInviteFlow && inviteData ? inviteData.inviteeEmail : "";
         const lockedEmail = inviteEmail || prefilledEmail;
         const emailValue = lockedEmail || "";
         const emailLocked = Boolean(lockedEmail);
