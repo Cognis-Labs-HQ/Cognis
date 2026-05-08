@@ -232,10 +232,6 @@
     display: none;
 }
 
-.founder-only {
-    display: list-item;
-}
-
 .workspace {
     padding: 24px;
     width: var(--shell-content-width);

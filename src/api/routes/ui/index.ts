@@ -7,6 +7,7 @@ import {
     setPageSecurityHeaders,
 } from "../../auth/guard.js";
 import type { ModuleRuntimeGateway } from "@cognis/core";
+import type { GatewayRegistry } from "@cognis/core";
 import type { UIRegistry } from "../../ui-registry.js";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
 
@@ -57,6 +58,7 @@ export function createUiRoutes(
     runtime?: ModuleRuntimeGateway,
     uiRegistry?: UIRegistry,
     accountStore?: LocalAccountStore,
+    gatewayRegistry?: GatewayRegistry,
 ) {
     return async (
         req: IncomingMessage,
@@ -183,6 +185,15 @@ export function createUiRoutes(
             }
             if (session.role !== "admin") {
                 res.writeHead(302, { location: "/dashboard" });
+                res.end();
+                return true;
+            }
+            const registrationGateway = gatewayRegistry?.get("registration");
+            if (
+                !registrationGateway ||
+                registrationGateway.status === "disabled"
+            ) {
+                res.writeHead(302, { location: "/users" });
                 res.end();
                 return true;
             }

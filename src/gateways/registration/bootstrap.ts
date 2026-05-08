@@ -83,11 +83,27 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "registration",
     );
     ctx.routeRegistry.register(createRegistrationPageRoutes(), "registration");
+    const uiDir = path.resolve(
+        process.cwd(),
+        "src",
+        "gateways",
+        "registration",
+        "ui",
+    );
+    ctx.uiRegistry?.registerAdminSection({
+        id: "registration",
+        label: "Invite",
+        scriptUrl: "/static/gateways/registration/admin-section.js",
+    });
+    ctx.uiRegistry?.registerStaticDir("registration", uiDir);
+    ctx.uiRegistry?.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/registration/navbar.js",
+    });
 
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.0.0",
+        version: "1.0.1",
         description: "Invitation-token account registration workflow.",
         publisher: "Cognis Labs",
     });

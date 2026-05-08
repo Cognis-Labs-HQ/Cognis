@@ -248,6 +248,18 @@ code {
 .users-row:hover {
     background: var(--surface-soft);
 }
+.users-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+.users-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+}
+.users-actions-cell {
+    white-space: nowrap;
+}
 .users-toggle-btn,
 .users-menu-btn,
 .invite-revoke-btn {

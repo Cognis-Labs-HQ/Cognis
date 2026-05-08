@@ -1,7 +1,7 @@
 {
     "id": "registration",
     "name": "Registration Gateway",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "required": false,
     "requires": ["db", "auth", "notify"],
     "description": "Invitation-token account registration workflow.",

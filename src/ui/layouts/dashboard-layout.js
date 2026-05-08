@@ -15,12 +15,6 @@ function isAdminRole() {
     return localStorage.getItem("cognis_role") === "admin";
 }
 
-function isFounderAdmin() {
-    return (
-        isAdminRole() && localStorage.getItem("cognis_is_founder") === "true"
-    );
-}
-
 function getDisplayName() {
     return (
         localStorage.getItem("cognis_display_name") ||
@@ -89,13 +83,9 @@ function bindTopbarActions() {
 
     const profileMenu = document.querySelector(".profile-menu");
     const adminOnlyItems = document.querySelectorAll(".admin-only");
-    const founderOnlyItems = document.querySelectorAll(".founder-only");
 
     adminOnlyItems.forEach((item) => {
         item.hidden = !isAdminRole();
-    });
-    founderOnlyItems.forEach((item) => {
-        item.hidden = !isFounderAdmin();
     });
 
     let closeTimeout = null;
