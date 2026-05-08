@@ -30,38 +30,41 @@ const orderedSamples = typingSamples.map(
 );
 
 async function runTypingShowcase() {
-    const typingTarget = document.querySelector("#typing-text");
-    const typingCursor = document.querySelector(".typing-cursor");
-    if (!typingTarget) return;
+    while (true) {
+        for (
+            let sampleIndex = 0;
+            sampleIndex < orderedSamples.length;
+            sampleIndex += 1
+        ) {
+            const sample = orderedSamples[sampleIndex];
 
-    for (
-        let sampleIndex = 0;
-        sampleIndex < orderedSamples.length;
-        sampleIndex += 1
-    ) {
-        const sample = orderedSamples[sampleIndex];
+            for (
+                let charIndex = 0;
+                charIndex <= sample.length;
+                charIndex += 1
+            ) {
+                const el = document.querySelector("#typing-text");
+                if (!el) return;
+                el.textContent = sample.slice(0, charIndex);
+                await new Promise((resolve) => window.setTimeout(resolve, 85));
+            }
 
-        for (let charIndex = 0; charIndex <= sample.length; charIndex += 1) {
-            typingTarget.textContent = sample.slice(0, charIndex);
-            await new Promise((resolve) => window.setTimeout(resolve, 85));
-        }
+            await new Promise((resolve) => window.setTimeout(resolve, 3500));
 
-        await new Promise((resolve) => window.setTimeout(resolve, 60_000));
-
-        const isLastSample = sampleIndex === orderedSamples.length - 1;
-        if (!isLastSample) {
             for (
                 let charIndex = sample.length;
                 charIndex >= 0;
                 charIndex -= 1
             ) {
-                typingTarget.textContent = sample.slice(0, charIndex);
-                await new Promise((resolve) => window.setTimeout(resolve, 42));
+                const el = document.querySelector("#typing-text");
+                if (!el) return;
+                el.textContent = sample.slice(0, charIndex);
+                await new Promise((resolve) => window.setTimeout(resolve, 40));
             }
+
+            await new Promise((resolve) => window.setTimeout(resolve, 400));
         }
     }
-
-    if (typingCursor) typingCursor.textContent = "";
 }
 
 async function loadLoginMethods() {
@@ -320,6 +323,7 @@ const composer = createPageComposer(root, {
     showNavbar: false,
     showFooter: false,
     showThemeToggle: true,
+    frameless: true,
     toolbar: [],
     elements: [
         {

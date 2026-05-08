@@ -1,22 +1,5 @@
 @import url("/static/styles/reuse/theme.css");
 
-.workspace:has(.auth-page--frame) {
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    border: none;
-    background: transparent;
-    border-radius: 0;
-    backdrop-filter: none;
-}
-
-.widget-card:has(.auth-page--frame) {
-    padding: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-}
-
 .auth-page--frame {
     min-height: 100vh;
     padding: 34px;

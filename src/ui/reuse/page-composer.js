@@ -114,6 +114,7 @@ export function createPageComposer(
         showNavbar = true,
         showThemeToggle = true,
         showFooter = true,
+        frameless = false,
         pageOverrides = {},
     },
 ) {
@@ -2495,6 +2496,12 @@ export function createPageComposer(
         contentGrid = root.querySelector(".content-grid");
         if (columns === 2)
             contentGrid?.classList.add("content-grid--two-column");
+
+        if (frameless) {
+            root.querySelector(".workspace")?.classList.add(
+                "app-page--frameless",
+            );
+        }
 
         if (subPageNavigation) {
             const hashId = window.location.hash.slice(1);

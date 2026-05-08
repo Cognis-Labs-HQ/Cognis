@@ -93,6 +93,28 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     box-shadow: var(--shadow);
 }
 
+.workspace.app-page--frameless {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    backdrop-filter: none;
+}
+
+.app-page--frameless .composer-view-grid {
+    gap: 0;
+}
+
+.app-page--frameless .widget-card {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+}
+
 .toolbar,
 .content-panel {
     border: 0;

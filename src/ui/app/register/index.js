@@ -134,6 +134,7 @@ const composer = createPageComposer(root, {
     showNavbar: false,
     showFooter: false,
     showThemeToggle: true,
+    frameless: true,
     toolbar: [],
     elements: [
         {
