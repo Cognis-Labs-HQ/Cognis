@@ -67,7 +67,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     if (!canSendInviteEmail || !sendInviteEmail) return;
 
     const createProfile = ctx.capabilities.get<
-        (accountId: string, handle: string, role?: string) => Promise<void>
+        (
+            accountId: string,
+            handle: string,
+            role?: string,
+            displayName?: string,
+        ) => Promise<void>
     >("profile:createProfile");
     const isEmailRegistered = ctx.capabilities.get<
         (email: string) => Promise<boolean>
