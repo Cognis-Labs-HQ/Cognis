@@ -134,6 +134,24 @@ test("ui static route serves templates and assets from public folder", async () 
     assert.equal(assetRes.headers["content-type"], "image/png");
 });
 
+test("ui routes serve public assets directly from /assets with svg content type", async () => {
+    const route = createUiRoutes();
+
+    const assetRes = createResponseRecorder();
+    await route(
+        { headers: {} } as any,
+        assetRes.res as any,
+        new URL("http://localhost/assets/icons/cognis-icon.svg"),
+    );
+
+    assert.equal(assetRes.status, 200);
+    assert.equal(
+        assetRes.headers["content-type"],
+        "image/svg+xml; charset=utf-8",
+    );
+    assert.match(assetRes.body, /<svg\b/);
+});
+
 test("modules page requires login and serves html when authenticated", async () => {
     const route = createUiRoutes();
     const anonymous = createResponseRecorder();
