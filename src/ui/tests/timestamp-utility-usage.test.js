@@ -12,9 +12,10 @@ test("users popup formats member and login timestamps via timestamp utility", ()
         "utf8",
     );
 
-    assert.match(
-        source,
-        /import\s*\{\s*formatDate,\s*formatDateTime\s*\}\s*from\s*"..\/..\/reuse\/timestamp\.js"/,
+    assert.ok(
+        source.includes(
+            'import { formatDate, formatDateTime } from "../../reuse/timestamp.js";',
+        ),
     );
     assert.match(source, /formatMemberSince\(info\?\.createdAt \?\? null\)/);
     assert.match(source, /formatLastLogin\(info\?\.lastLogin \?\? null\)/);
@@ -26,9 +27,10 @@ test("administration registration table formats invite expiry timestamps via tim
         "utf8",
     );
 
-    assert.match(
-        source,
-        /import\s*\{\s*formatDateTime\s*\}\s*from\s*"\/static\/reuse\/timestamp\.js"/,
+    assert.ok(
+        source.includes(
+            'import { formatDateTime } from "/static/reuse/timestamp.js";',
+        ),
     );
     assert.match(source, /formatDateTime\(token\.expiresAt\)/);
     assert.doesNotMatch(source, /toLocaleString\(/);
