@@ -117,7 +117,7 @@ async function buildMessage(
     const palette = options.theme === "dark" ? DARK_PALETTE : LIGHT_PALETTE;
     const externalHost = options.externalHost ?? "";
     const iconUrl = externalHost
-        ? `${externalHost}/assets/icons/cognis-icon.png`
+        ? `${externalHost}/assets/icons/cognis-icon.svg`
         : "";
 
     const verifyButton = options.verifyUrl

@@ -585,7 +585,7 @@ test("SmtpNotificationSender email includes light theme colors and subject when 
         );
         assert.ok(
             capturedData.includes(
-                "cognis.example.com/assets/icons/cognis-icon.png",
+                "cognis.example.com/assets/icons/cognis-icon.svg",
             ),
             "icon URL should be present",
         );
