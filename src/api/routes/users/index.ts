@@ -170,6 +170,7 @@ export function createUserRoutes(
         }
 
         if (req.method === "DELETE" && !action) {
+            revokeAccessTokensForSubject(username);
             await accountStore.delete(username);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { deleted: true } }));

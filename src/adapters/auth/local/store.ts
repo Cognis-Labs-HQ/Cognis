@@ -278,10 +278,27 @@ export class DbLocalAccountStore implements LocalAccountStore {
         );
     }
     async delete(username: string) {
-        await this.db.execute(
-            `DELETE FROM accounts WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(1)})`,
+        const lookupResult = await this.db.execute(
+            `SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(1)}`,
             [username],
         );
+        const accountId = lookupResult.rows?.[0]?.account_id;
+        if (!accountId) return;
+        await this.db.execute("BEGIN");
+        try {
+            await this.db.execute(
+                `DELETE FROM local_auth_credentials WHERE username = ${this.placeholder(1)}`,
+                [username],
+            );
+            await this.db.execute(
+                `DELETE FROM accounts WHERE id = ${this.placeholder(1)}`,
+                [accountId],
+            );
+            await this.db.execute("COMMIT");
+        } catch (error) {
+            await this.db.execute("ROLLBACK");
+            throw error;
+        }
     }
     async getInfo(username: string): Promise<{
         username: string;

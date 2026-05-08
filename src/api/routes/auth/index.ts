@@ -3,6 +3,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthGateway } from "@cognis/core";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
 import { readJson } from "../../reuse/read-json.js";
+import { getAuthClaims } from "../../auth/guard.js";
 
 function shouldSetSecureCookie(req: IncomingMessage): boolean {
     const forced = process.env.COGNIS_SECURE_COOKIES;
@@ -136,6 +137,40 @@ export function createAuthRoutes(
                     },
                 }),
             );
+            return true;
+        }
+
+        if (url.pathname === "/api/v1/auth/verify" && req.method === "POST") {
+            const claims = getAuthClaims(req);
+            if (!claims) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "unauthorized",
+                            message: "Login required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const body = await readJson(req);
+            const password = String(body.password ?? "");
+            const verified = await accountStore.verify(claims.sub, password);
+            if (!verified) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_credentials",
+                            message: "Incorrect password",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { verified: true } }));
             return true;
         }
 

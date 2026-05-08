@@ -175,7 +175,7 @@ async function runUserMenuAction(action, username) {
     if (action === "delete") {
         const confirmAction = await openPopup({
             title: i18n.t("ui.app.users.delete_user"),
-            body: `<p>${escapeHtml(username)}</p>`,
+            body: `<p>${escapeHtml(username)}</p><p>${escapeHtml(i18n.t("ui.app.users.delete_permanent_warning"))}</p>`,
             variant: "danger",
             actions: [
                 {
@@ -316,17 +316,28 @@ function bindUsersInteractions() {
                             body: JSON.stringify({ email }),
                         },
                     );
-                    showToast(
-                        response.ok
-                            ? i18n.t("ui.app.users.invite_sent")
-                            : i18n.t("ui.app.users.invite_failed"),
-                        { variant: response.ok ? "success" : "error" },
-                    );
+                    if (response.ok) {
+                        showToast(i18n.t("ui.app.users.invite_sent"), {
+                            variant: "success",
+                        });
+                        return;
+                    }
+                    let errorMessage = i18n.t("ui.app.users.invite_failed");
+                    try {
+                        const errorBody = await response.json();
+                        if (errorBody?.error?.code === "email_taken") {
+                            errorMessage = i18n.t(
+                                "ui.app.users.invite_email_taken",
+                            );
+                        }
+                    } catch {
+                        // fall through to generic message (lines above)
+                    }
+                    showToast(errorMessage, { variant: "error" });
                 },
                 {
                     title: i18n.t("ui.app.users.invite"),
                     message: i18n.t("ui.reuse.reprompt.message"),
-                    confirmationWord: i18n.t("ui.reuse.reprompt.default_word"),
                 },
             );
         },

@@ -39,6 +39,13 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - License page section parsing now splits `## Terms and Conditions` into individual sections based on AGPL `###` clause headings (0–17), so navigation and content are broken into meaningful legal units.
 - License page now shows only the section selected from the navigation sidebar; collapsible `<details>` headers are removed. The viewpane has no height cap and no overflow scroll.
 - AI instructions now include a firm rule requiring every UI page to be assembled through `createPageComposer`; bypassing the composer is explicitly prohibited.
+- Founder action labels in Users updated: "Mark as founder" → "Add Founder Status"; "Remove founder status" → "Revoke Founder Status". ([d477185](https://github.com/le-firehawk/Cognis/commit/d477185))
+- Registration gateway navbar plugin now checks `/api/v1/gateways/registration` before inserting the Invite menu item; the entry is suppressed when the gateway is disabled or unreachable. ([d477185](https://github.com/le-firehawk/Cognis/commit/d477185))
+- Sensitive action re-prompt now asks the user to re-enter their password and verifies it server-side via a new `POST /api/v1/auth/verify` endpoint, replacing the previous word-match approach.
+- User deletion now revokes all active access tokens for the deleted account, matching the behaviour already applied on disable.
+- User deletion now performs a two-step purge (`local_auth_credentials` then `accounts`) so the username is reliably freed for re-registration across all supported database backends.
+- Delete user confirmation popup now shows a permanent-deletion warning before the admin confirms.
+- Invite error toast now shows a specific message when the supplied email address is already registered (`email_taken`), replacing the previous generic failure message.
 
 ### Fixed
 

@@ -207,8 +207,7 @@
   <string name="ui.app.register.error.inviter_not_found">招待元アカウントが存在しないため、この招待は利用できません。</string>
   <string name="ui.reuse.reprompt.title">操作の再確認</string>
   <string name="ui.reuse.reprompt.message">この重要な操作を確認してください。</string>
-  <string name="ui.reuse.reprompt.default_word">確認</string>
-  <string name="ui.reuse.reprompt.input_label">続行するには "{word}" と入力してください。</string>
+  <string name="ui.reuse.reprompt.input_label">続行するにはパスワードを入力してください。</string>
   <string name="ui.app.users.page_title">ユーザー</string>
   <string name="ui.app.users.page_subtitle">アカウント管理と招待送信を行います。</string>
   <string name="ui.app.users.invite">招待</string>
@@ -231,9 +230,11 @@
   <string name="ui.app.users.resend_verification">認証メールを再送</string>
   <string name="ui.app.users.verification_resent">認証メールを再送しました。</string>
   <string name="ui.app.users.delete_user">ユーザーを削除</string>
+  <string name="ui.app.users.delete_permanent_warning">この操作は永久的であり、取り消すことはできません。</string>
   <string name="ui.app.users.invite_email">メールアドレス</string>
   <string name="ui.app.users.invite_sent">招待を送信しました。</string>
   <string name="ui.app.users.invite_failed">招待の送信に失敗しました。</string>
+  <string name="ui.app.users.invite_email_taken">このメールアドレスはすでに登録されています。</string>
   <string name="ui.app.invite.page_title">招待</string>
   <string name="ui.app.invite.page_subtitle">登録トークンの状態を確認・管理します。</string>
   <string name="ui.app.invite.invite">招待</string>

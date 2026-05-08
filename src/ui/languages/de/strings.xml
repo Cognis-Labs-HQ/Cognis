@@ -207,8 +207,7 @@
   <string name="ui.app.register.error.inviter_not_found">Das einladende Konto existiert nicht mehr, daher kann diese Einladung nicht eingelöst werden.</string>
   <string name="ui.reuse.reprompt.title">Aktion erneut bestätigen</string>
   <string name="ui.reuse.reprompt.message">Bitte bestätigen Sie diese sensible Aktion.</string>
-  <string name="ui.reuse.reprompt.default_word">BESTÄTIGEN</string>
-  <string name="ui.reuse.reprompt.input_label">Geben Sie "{word}" ein, um fortzufahren.</string>
+  <string name="ui.reuse.reprompt.input_label">Geben Sie Ihr Passwort ein, um fortzufahren.</string>
   <string name="ui.app.users.page_title">Benutzer</string>
   <string name="ui.app.users.page_subtitle">Konten verwalten und Einladungen versenden.</string>
   <string name="ui.app.users.invite">Einladen</string>
@@ -231,9 +230,11 @@
   <string name="ui.app.users.resend_verification">Bestätigungs-E-Mail erneut senden</string>
   <string name="ui.app.users.verification_resent">Bestätigungs-E-Mail erneut angefordert.</string>
   <string name="ui.app.users.delete_user">Benutzer löschen</string>
+  <string name="ui.app.users.delete_permanent_warning">Diese Aktion ist dauerhaft und kann nicht rückgängig gemacht werden.</string>
   <string name="ui.app.users.invite_email">E-Mail-Adresse</string>
   <string name="ui.app.users.invite_sent">Einladung gesendet.</string>
   <string name="ui.app.users.invite_failed">Einladung konnte nicht gesendet werden.</string>
+  <string name="ui.app.users.invite_email_taken">Diese E-Mail-Adresse ist bereits registriert.</string>
   <string name="ui.app.invite.page_title">Einladen</string>
   <string name="ui.app.invite.page_subtitle">Registrierungstoken prüfen und verwalten.</string>
   <string name="ui.app.invite.invite">Einladen</string>

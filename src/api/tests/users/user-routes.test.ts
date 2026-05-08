@@ -274,3 +274,67 @@ test("disabling a user invalidates existing access tokens for that user", async 
     assert.equal(status, 200);
     assert.equal(verifyAccessToken(erinToken), null);
 });
+
+test("deleting a user invalidates existing access tokens for that user", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("frank", "pw", false);
+    const prefs = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, prefs);
+    let status = 0;
+
+    const frankToken = issueAccessToken("frank", "user", 60);
+    assert.equal(verifyAccessToken(frankToken)?.sub, "frank");
+
+    await route(
+        { method: "DELETE", headers } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/frank"),
+    );
+
+    assert.equal(status, 200);
+    assert.equal(verifyAccessToken(frankToken), null);
+});
+
+test("deleting a user frees the username for re-registration", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("grace", "pw", false);
+    const prefs = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, prefs);
+    let status = 0;
+
+    await route(
+        { method: "DELETE", headers } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/grace"),
+    );
+    assert.equal(status, 200);
+    assert.equal(await accounts.has("grace"), false);
+
+    await route(
+        {
+            method: "POST",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"password":"newpw","role":"user"}');
+            },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/grace"),
+    );
+    assert.equal(status, 201);
+});
