@@ -106,21 +106,21 @@ export function buildAnalogueClockMarkup(now, tz) {
         const x2 = cx + inner * Math.cos(tickAngle - Math.PI / 2);
         const y2 = cy + inner * Math.sin(tickAngle - Math.PI / 2);
         const tickClass = major
-            ? "dashboard-clock-analogue-tick-major"
-            : "dashboard-clock-analogue-tick";
+            ? "clock-analogue-tick-major"
+            : "clock-analogue-tick";
         return `<line class="${tickClass}" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/>`;
     }).join("");
 
-    return `<svg class="dashboard-clock-analogue" width="108" height="108" viewBox="0 0 108 108" aria-hidden="true">
-      <circle class="dashboard-clock-analogue-face" cx="${cx}" cy="${cy}" r="${faceRadius}"/>
+    return `<svg class="clock-analogue" width="108" height="108" viewBox="0 0 108 108" aria-hidden="true">
+      <circle class="clock-analogue-face" cx="${cx}" cy="${cy}" r="${faceRadius}"/>
       ${ticks}
-      <line class="dashboard-clock-hand-hour"
+      <line class="clock-hand-hour"
         x1="${cx}" y1="${cy}" x2="${hourEnd.x.toFixed(2)}" y2="${hourEnd.y.toFixed(2)}"/>
-      <line class="dashboard-clock-hand-minute"
+      <line class="clock-hand-minute"
         x1="${cx}" y1="${cy}" x2="${minuteEnd.x.toFixed(2)}" y2="${minuteEnd.y.toFixed(2)}"/>
-      <line class="dashboard-clock-hand-second"
+      <line class="clock-hand-second"
         x1="${cx}" y1="${cy}" x2="${secondEnd.x.toFixed(2)}" y2="${secondEnd.y.toFixed(2)}"/>
-      <circle class="dashboard-clock-analogue-centre" cx="${cx}" cy="${cy}" r="4"/>
+      <circle class="clock-analogue-centre" cx="${cx}" cy="${cy}" r="4"/>
     </svg>`;
 }
 
@@ -145,9 +145,9 @@ export function buildDigitalClockMarkup(now, tz) {
     });
 
     return `
-      <div class="dashboard-clock-digital-stack">
-        <span class="dashboard-clock-digital-time">${timeStr}</span>
-        <span class="dashboard-clock-digital-date">${dateStr}</span>
+      <div class="clock-digital-stack">
+        <span class="clock-digital-time">${timeStr}</span>
+        <span class="clock-digital-date">${dateStr}</span>
       </div>
     `;
 }
