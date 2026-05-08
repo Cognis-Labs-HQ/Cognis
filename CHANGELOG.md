@@ -9,6 +9,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Public `GET /api/v1/ui/auth-typing-messages` route plus shared `src/ui/reuse/auth-typing.js`, allowing enabled gateways (and future module manifests) to contribute extra `typing-text` samples to the login/register auth pages. Registration now contributes `Register your account today`, and Profile now owns the `It's a social space!` sample. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
 - Registration page (`/register`) now shows the cognis-ad-frame typing showcase in the intro panel (same component as the login page). ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 - Registration page: when a valid invite token is present, a live HH:MM:SS countdown (`Expires in: …`) is shown below the inviter greeting and ticks down every second until the token expires. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 - `VerifyTokenService.ttl(token)` method returns the milliseconds remaining for an in-memory email-verification token without consuming it; returns `null` when unknown or expired. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
@@ -18,6 +19,8 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Theme toggle persistence is now auth-aware: authenticated pages still sync `ui-preferences`, while unauthenticated pages (login/register) only update the local theme cookie/localStorage and no longer attempt 401ing preference reads/writes. Theme-toggle binding is also idempotent so auth pages do not double-bind the button. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
+- Timed toasts now render a thin horizontal timeout bar across the top edge that shrinks leftward until dismissal; permanent toasts keep a manual close button. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
 - `login-template-box` CSS class renamed to `cognis-ad-frame` across `login.css` and the login page template. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 - Typing-showcase inter-sample pause (after erasing one phrase before typing the next) extended from 400 ms to 60 s on both the login and registration pages. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 - Login form `preferenceKey` simplified from `login-layout-v2` to `login-layout`; register form from `register-layout-v2` to `register-layout`. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
@@ -25,9 +28,11 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Login submit handler and typing showcase are now bound inside `onRender` so they survive any composer re-render; removed module-level binding that was lost on re-render. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 - Login error handling now guards against a missing `body.error` object and falls back to `ui.app.login.error.generic`. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 - Frameless page-composer mode now also removes the `content-section` border/background, ensuring the background is truly indistinct. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- Frameless auth pages now also clear the remaining workspace/content-panel shell styling so the bottom/outer frame is fully invisible. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
 
 ### Fixed
 
+- Login/register public pages no longer attempt authenticated `ui-preferences` or `{page}-layout` fetches when there is no access token, eliminating the 401 spam that interfered with login-page behaviour. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
 - Invalid registration tokens now show a permanent error toast (`This invitation token is invalid or has expired.`) and render the registration form in a fully disabled state rather than hiding it entirely. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 - Deleted users' email addresses were not released from `user_emails` (no cascade delete), causing "email already registered" errors on re-invite. Resolved by `006_user_emails_cascade` migration. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 
