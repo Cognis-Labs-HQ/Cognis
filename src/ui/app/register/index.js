@@ -86,7 +86,7 @@ function renderRegisterShell() {
       <form id="register-form" class="stack auth-form">
         <label>
           <span>${escapeHtml(i18n.t("ui.app.register.email"))}</span>
-          <input name="email" type="email" value="${escapeHtml(emailValue)}" ${emailReadonly} aria-readonly="${emailLocked ? "true" : "false"}" class="${emailLockedClass.trim()}" required />
+          <input name="email" type="email" value="${escapeHtml(emailValue)}" ${emailReadonly} class="${emailLockedClass.trim()}" required />
         </label>
         <label>
           <span>${escapeHtml(i18n.t("ui.app.register.username"))}</span>
@@ -105,7 +105,10 @@ function renderRegisterShell() {
     `;
     }
 
-    const brandlineHtml = renderAuthBrandline(i18n);
+    const brandlineHtml = renderAuthBrandline(
+        i18n.t("ui.shared.brand.name"),
+        i18n.t("ui.app.login.hero.tagline"),
+    );
     const introPanelHtml = `
       ${brandlineHtml}
       <p class="auth-intro-copy">${escapeHtml(i18n.t("ui.app.register.page_subtitle"))}</p>

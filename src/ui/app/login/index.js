@@ -246,7 +246,7 @@ async function enforceRequiredEmailSetup(accountId) {
                 const payload = await addResponse.json();
                 code = String(payload?.error?.code ?? code);
             } catch {
-                // The request failed either way; keep the generic user-safe fallback code.
+                // the parse failed; keep the generic fallback code assigned at line 244
             }
             if (code === "email_taken") {
                 showToast(i18n.t("ui.app.settings.emails_email_taken"), {
@@ -276,7 +276,10 @@ async function enforceRequiredEmailSetup(accountId) {
 }
 
 function renderLoginShell() {
-    const brandlineHtml = renderAuthBrandline(i18n);
+    const brandlineHtml = renderAuthBrandline(
+        i18n.t("ui.shared.brand.name"),
+        i18n.t("ui.app.login.hero.tagline"),
+    );
     const introPanelHtml = `
       ${brandlineHtml}
       <p class="auth-intro-copy">${escapeHtml(i18n.t("ui.app.login.hero.subtitle"))}</p>

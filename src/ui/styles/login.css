@@ -1,10 +1,6 @@
 @import url("/static/styles/reuse/theme.css");
 
-.content-grid:has(.auth-page--login-frame) {
-    width: 100% !important;
-}
-
-.workspace:has(.auth-page--login-frame) {
+.workspace:has(.auth-page--frame) {
     padding: 0;
     margin: 0;
     width: 100%;
@@ -14,20 +10,23 @@
     backdrop-filter: none;
 }
 
-.widget-card:has(.auth-page--login-frame) {
+.widget-card:has(.auth-page--frame) {
     padding: 0;
     border-radius: 0;
     background: transparent;
     box-shadow: none;
 }
 
-.auth-page--login-frame {
+.auth-page--frame {
     min-height: 100vh;
     padding: 34px;
     background: var(--bg);
     display: flex;
     flex-direction: column;
     justify-content: center;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    box-sizing: border-box;
 }
 
 .auth-layout {
@@ -187,7 +186,7 @@
 }
 
 @media (max-width: 940px) {
-    .auth-page--login-frame {
+    .auth-page--frame {
         padding: 18px;
     }
     .auth-layout {

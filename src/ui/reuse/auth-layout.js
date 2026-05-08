@@ -2,12 +2,15 @@
  * Shared minimal auth shell layout used by login and registration pages.
  *
  * Public exports:
- *   renderAuthBrandline(i18n)  — HTML for the branded logo/name/tagline header block.
- *   renderAuthLayout(opts)     — HTML for the full two-column auth page shell.
+ *   renderAuthBrandline(brandName, tagline) — HTML for the branded logo/name/tagline header block.
+ *   renderAuthLayout(opts)                  — HTML for the full two-column auth page shell.
  *
  * Usage:
  *   import { renderAuthBrandline, renderAuthLayout } from '../../reuse/auth-layout.js';
- *   const brandlineHtml = renderAuthBrandline(i18n);
+ *   const brandlineHtml = renderAuthBrandline(
+ *     i18n.t('ui.shared.brand.name'),
+ *     i18n.t('ui.app.login.hero.tagline'),
+ *   );
  *   const html = renderAuthLayout({
  *     introPanelAriaLabel: i18n.t('ui.app.login.intro.aria'),
  *     introPanelHtml: brandlineHtml + `<p class="auth-intro-copy">...</p>`,
@@ -19,16 +22,17 @@
 import { escapeHtml } from "./escape-html.js";
 
 /**
- * @param {object} i18n - i18n instance with a t(key) method.
+ * @param {string} brandName - Translated brand name string.
+ * @param {string} tagline   - Translated tagline string.
  * @returns {string} HTML string for the shared brand logo/name/tagline block.
  */
-export function renderAuthBrandline(i18n) {
+export function renderAuthBrandline(brandName, tagline) {
     return `
     <div class="auth-brandline">
       <img src="/static/assets/icons/cognis-icon.png" alt="" class="auth-icon" />
       <div>
-        <h1 class="auth-title">${escapeHtml(i18n.t("ui.shared.brand.name"))}</h1>
-        <p class="auth-typing">${escapeHtml(i18n.t("ui.app.login.hero.tagline"))}</p>
+        <h1 class="auth-title">${escapeHtml(brandName)}</h1>
+        <p class="auth-typing">${escapeHtml(tagline)}</p>
       </div>
     </div>
   `;
@@ -45,7 +49,7 @@ export function renderAuthLayout({
     formPanelHtml,
 }) {
     return `
-    <section class="auth-page auth-page--login-frame">
+    <section class="auth-page auth-page--frame">
       <div class="auth-layout">
         <aside class="panel auth-intro" aria-label="${escapeHtml(introPanelAriaLabel)}">${introPanelHtml}</aside>
         <main class="panel auth-panel" aria-label="${escapeHtml(formPanelAriaLabel)}">${formPanelHtml}</main>
