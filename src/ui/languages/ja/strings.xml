@@ -155,6 +155,7 @@
   <string name="ui.app.login.provider.ldap">LDAP</string>
   <string name="ui.app.login.provider.toggle.aria">認証プロバイダーを選択</string>
   <string name="ui.app.login.sso.login_with">{provider} でログイン</string>
+  <string name="ui.app.login.error.generic">ログインに失敗しました。もう一度お試しください。</string>
   <string name="ui.app.demo.switched">デモ: サンドボックスページに切り替えました。</string>
   <string name="ui.app.demo.added">デモ: 学習進捗ウィジェットを追加しました。</string>
   <string name="ui.app.demo.tweaked">デモ: 最初のウィジェット設定を調整しました。</string>
@@ -208,6 +209,8 @@
   <string name="ui.app.register.error.username_taken">このユーザー名はすでに使用されています。</string>
   <string name="ui.app.register.error.username_and_password_required">ユーザー名とパスワードは必須です。</string>
   <string name="ui.app.register.error.inviter_not_found">招待元アカウントが存在しないため、この招待は利用できません。</string>
+  <string name="ui.app.register.token_expires_in">有効期限: {countdown}</string>
+  <string name="ui.app.register.token_expired">この招待は期限切れです。</string>
   <string name="ui.reuse.reprompt.title">操作の再確認</string>
   <string name="ui.reuse.reprompt.message">この重要な操作を確認してください。</string>
   <string name="ui.reuse.reprompt.input_label">続行するにはパスワードを入力してください。</string>

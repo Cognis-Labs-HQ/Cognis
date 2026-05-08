@@ -62,7 +62,7 @@ async function runTypingShowcase() {
                 await new Promise((resolve) => window.setTimeout(resolve, 40));
             }
 
-            await new Promise((resolve) => window.setTimeout(resolve, 400));
+            await new Promise((resolve) => window.setTimeout(resolve, 60000));
         }
     }
 }
@@ -74,7 +74,7 @@ async function loadLoginMethods() {
         const body = await res.json();
         const methods = body.data ?? [];
 
-        const providerInput = document.querySelector("input[name=provider]");
+        const providerInput = document.querySelector("#login-provider");
         const toggleContainer = document.querySelector("#auth-provider-toggle");
         const ssoContainer = document.querySelector("#sso-buttons");
 
@@ -286,21 +286,21 @@ function renderLoginShell() {
     const introPanelHtml = `
       ${brandlineHtml}
       <p class="auth-intro-copy">${escapeHtml(i18n.t("ui.app.login.hero.subtitle"))}</p>
-      <div class="login-template-box" aria-live="polite">
+      <div class="cognis-ad-frame" aria-live="polite">
         <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
       </div>
     `;
     const formPanelHtml = `
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
-      <form id="login-form" class="stack auth-form">
-        <input type="hidden" name="provider" value="local" />
+      <form id="login-form" class="stack auth-form" method="POST">
+        <input type="hidden" id="login-provider" value="local" />
         <label>
           <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
-          <input name="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
+          <input id="login-username" autocomplete="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
         </label>
         <label>
           <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
-          <input name="password" type="password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
+          <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
         </label>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
         <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
@@ -318,7 +318,7 @@ function renderLoginShell() {
 const composer = createPageComposer(root, {
     allowCustomization: false,
     i18n,
-    preferenceKey: "login-layout-v2",
+    preferenceKey: "login-layout",
     showTopbar: false,
     showNavbar: false,
     showFooter: false,
@@ -332,52 +332,76 @@ const composer = createPageComposer(root, {
             pinned: true,
             gridSize: { default: [12, 8], min: [8, 6], max: "full" },
             render: () => renderLoginShell(),
+            onRender: () => {
+                loadLoginMethods();
+                runTypingShowcase();
+                document
+                    .querySelector("#login-form")
+                    ?.addEventListener("submit", async (event) => {
+                        event.preventDefault();
+                        const form = event.target;
+                        const usernameEl =
+                            form.querySelector("#login-username");
+                        const passwordEl =
+                            form.querySelector("#login-password");
+                        const providerEl =
+                            form.querySelector("#login-provider");
+                        const payload = {
+                            username: usernameEl?.value ?? "",
+                            password: passwordEl?.value ?? "",
+                            provider: providerEl?.value ?? "local",
+                        };
+                        const response = await fetch("/api/v1/auth/login", {
+                            method: "POST",
+                            headers: { "content-type": "application/json" },
+                            body: JSON.stringify(payload),
+                        });
+                        const body = await response.json().catch(() => null);
+                        if (response.ok && body?.data) {
+                            localStorage.setItem(
+                                "cognis_token",
+                                body.data.token,
+                            );
+                            localStorage.setItem(
+                                "cognis_account",
+                                body.data.accountId,
+                            );
+                            localStorage.setItem(
+                                "cognis_display_name",
+                                body.data.displayName || body.data.accountId,
+                            );
+                            localStorage.setItem(
+                                "cognis_role",
+                                body.data.role || "user",
+                            );
+                            localStorage.setItem(
+                                "cognis_is_founder",
+                                body.data.isFounder ? "true" : "false",
+                            );
+                            localStorage.setItem(
+                                "cognis_login_time",
+                                new Date().toISOString(),
+                            );
+                            const requiresUserValidation =
+                                body.data.requiredUserValidation === true &&
+                                body.data.userValidationMode === "smtp";
+                            if (requiresUserValidation) {
+                                await enforceRequiredEmailSetup(
+                                    body.data.accountId,
+                                );
+                            }
+                            window.location.href = "/dashboard";
+                            return;
+                        }
+                        const errorMsg =
+                            body?.error?.message ||
+                            i18n.t("ui.app.login.error.generic");
+                        showToast(errorMsg, { variant: "error" });
+                    });
+            },
         },
     ],
 });
 
 await composer.init();
 bindThemeToggle();
-runTypingShowcase();
-loadLoginMethods();
-
-document
-    .querySelector("#login-form")
-    ?.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const form = event.target;
-        const payload = {
-            username: form.username.value,
-            password: form.password.value,
-            provider: form.provider?.value ?? "local",
-        };
-        const response = await fetch("/api/v1/auth/login", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(payload),
-        });
-        const body = await response.json();
-        if (response.ok) {
-            localStorage.setItem("cognis_token", body.data.token);
-            localStorage.setItem("cognis_account", body.data.accountId);
-            localStorage.setItem(
-                "cognis_display_name",
-                body.data.displayName || body.data.accountId,
-            );
-            localStorage.setItem("cognis_role", body.data.role || "user");
-            localStorage.setItem(
-                "cognis_is_founder",
-                body.data.isFounder ? "true" : "false",
-            );
-            localStorage.setItem("cognis_login_time", new Date().toISOString());
-            const requiresUserValidation =
-                body.data.requiredUserValidation === true &&
-                body.data.userValidationMode === "smtp";
-            if (requiresUserValidation) {
-                await enforceRequiredEmailSetup(body.data.accountId);
-            }
-            window.location.href = "/dashboard";
-            return;
-        }
-        showToast(body.error.message, { variant: "error" });
-    });

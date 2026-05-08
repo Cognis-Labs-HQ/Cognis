@@ -23,12 +23,14 @@
  *   dismiss(); // dismiss programmatically before the timer fires
  *
  * Options:
- *   variant  — 'info' | 'success' | 'warning' | 'error'. Default: 'info'.
- *   duration — auto-dismiss delay in ms. Default: 4000 for info/success,
- *              7000 for warning/error.
+ *   variant   — 'info' | 'success' | 'warning' | 'error'. Default: 'info'.
+ *   duration  — auto-dismiss delay in ms. Default: 4000 for info/success,
+ *               7000 for warning/error.
+ *   permanent — when true the toast never auto-dismisses (only the × button
+ *               removes it). Overrides duration.
  *
  * @param {string} message - Plain-text message to display.
- * @param {{ variant?: 'info' | 'success' | 'warning' | 'error', duration?: number }} [options]
+ * @param {{ variant?: 'info' | 'success' | 'warning' | 'error', duration?: number, permanent?: boolean }} [options]
  * @returns {() => void} dismiss — call to immediately dismiss the toast.
  */
 
@@ -101,12 +103,16 @@ function ensureTray() {
     return tray;
 }
 
-export function showToast(message, { variant = "info", duration } = {}) {
+export function showToast(
+    message,
+    { variant = "info", duration, permanent = false } = {},
+) {
     const variantClass = VARIANT_CLASSES[variant] ?? VARIANT_CLASSES.info;
     const icon = VARIANT_ICONS[variant] ?? VARIANT_ICONS.info;
-    const effectiveDuration =
-        duration ??
-        (variant === "warning" || variant === "error" ? 7000 : 4000);
+    const effectiveDuration = permanent
+        ? null
+        : (duration ??
+          (variant === "warning" || variant === "error" ? 7000 : 4000));
 
     ensureStylesheet();
 
@@ -143,7 +149,9 @@ export function showToast(message, { variant = "info", duration } = {}) {
         });
     });
 
-    setTimeout(dismiss, effectiveDuration);
+    if (effectiveDuration !== null) {
+        setTimeout(dismiss, effectiveDuration);
+    }
 
     return dismiss;
 }

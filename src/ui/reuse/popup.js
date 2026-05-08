@@ -195,6 +195,16 @@ export async function openPopup({
         function onKeyDown(e) {
             if (e.key === "Escape") {
                 dismiss(null);
+                return;
+            }
+            if (e.key === "Enter") {
+                const confirmBtn = overlay.querySelector(
+                    "[data-popup-action].btn-confirm",
+                );
+                if (confirmBtn instanceof HTMLButtonElement) {
+                    e.preventDefault();
+                    confirmBtn.click();
+                }
             }
         }
         document.addEventListener("keydown", onKeyDown);

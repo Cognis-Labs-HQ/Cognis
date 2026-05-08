@@ -68,7 +68,7 @@
     color: #d6e7ff;
 }
 
-.login-template-box {
+.cognis-ad-frame {
     margin-top: 8px;
     border-radius: 12px;
     border: 1px solid rgba(80, 128, 208, 0.3);
@@ -204,7 +204,7 @@ body[data-theme="light"] .auth-typing {
     color: #0d7a3e;
 }
 
-body[data-theme="light"] .login-template-box {
+body[data-theme="light"] .cognis-ad-frame {
     background: rgba(191, 219, 254, 0.45);
     border-color: rgba(96, 165, 250, 0.35);
     color: #0f172a;

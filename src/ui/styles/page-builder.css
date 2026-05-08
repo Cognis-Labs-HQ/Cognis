@@ -115,6 +115,12 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     border-radius: 0;
 }
 
+.app-page--frameless .content-section {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
 .toolbar,
 .content-panel {
     border: 0;

@@ -155,6 +155,7 @@
   <string name="ui.app.login.provider.ldap">LDAP</string>
   <string name="ui.app.login.provider.toggle.aria">Authentifizierungsanbieter auswählen</string>
   <string name="ui.app.login.sso.login_with">Anmelden mit {provider}</string>
+  <string name="ui.app.login.error.generic">Anmeldung fehlgeschlagen. Bitte erneut versuchen.</string>
   <string name="ui.app.demo.switched">Demo: zur Sandbox-Seite gewechselt.</string>
   <string name="ui.app.demo.added">Demo: ein Lernfortschritts-Widget hinzugefügt.</string>
   <string name="ui.app.demo.tweaked">Demo: die erste Widget-Konfiguration angepasst.</string>
@@ -208,6 +209,8 @@
   <string name="ui.app.register.error.username_taken">Dieser Benutzername ist bereits vergeben.</string>
   <string name="ui.app.register.error.username_and_password_required">Benutzername und Passwort sind erforderlich.</string>
   <string name="ui.app.register.error.inviter_not_found">Das einladende Konto existiert nicht mehr, daher kann diese Einladung nicht eingelöst werden.</string>
+  <string name="ui.app.register.token_expires_in">Läuft ab in: {countdown}</string>
+  <string name="ui.app.register.token_expired">Diese Einladung ist abgelaufen.</string>
   <string name="ui.reuse.reprompt.title">Aktion erneut bestätigen</string>
   <string name="ui.reuse.reprompt.message">Bitte bestätigen Sie diese sensible Aktion.</string>
   <string name="ui.reuse.reprompt.input_label">Geben Sie Ihr Passwort ein, um fortzufahren.</string>

@@ -9,6 +9,28 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Registration page (`/register`) now shows the cognis-ad-frame typing showcase in the intro panel (same component as the login page). ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- Registration page: when a valid invite token is present, a live HH:MM:SS countdown (`Expires in: …`) is shown below the inviter greeting and ticks down every second until the token expires. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- `VerifyTokenService.ttl(token)` method returns the milliseconds remaining for an in-memory email-verification token without consuming it; returns `null` when unknown or expired. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- `showToast` now accepts a `permanent: true` option that suppresses the auto-dismiss timer; the toast remains until the user clicks the close button. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- Popup `openPopup` now binds the Enter key to the first `btn-confirm`-variant action button, so keyboard-centric users can confirm dialogs without moving to the mouse. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- DB migration `006_user_emails_cascade`: adds `ON DELETE CASCADE` on `user_emails.account_id` for all three supported database backends (SQLite trigger, PostgreSQL/MariaDB FK), so deleting an account also removes its email rows and frees those addresses for re-use. Init SQL for fresh installs updated to include the constraint from the start. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+
+### Changed
+
+- `login-template-box` CSS class renamed to `cognis-ad-frame` across `login.css` and the login page template. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- Typing-showcase inter-sample pause (after erasing one phrase before typing the next) extended from 400 ms to 60 s on both the login and registration pages. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- Login form `preferenceKey` simplified from `login-layout-v2` to `login-layout`; register form from `register-layout-v2` to `register-layout`. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- Login form now uses `method="POST"` and reads credentials by element ID rather than `name` attributes, preventing credentials from appearing in the URL if form submission ever fires natively. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- Login submit handler and typing showcase are now bound inside `onRender` so they survive any composer re-render; removed module-level binding that was lost on re-render. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- Login error handling now guards against a missing `body.error` object and falls back to `ui.app.login.error.generic`. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- Frameless page-composer mode now also removes the `content-section` border/background, ensuring the background is truly indistinct. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+
+### Fixed
+
+- Invalid registration tokens now show a permanent error toast (`This invitation token is invalid or has expired.`) and render the registration form in a fully disabled state rather than hiding it entirely. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+- Deleted users' email addresses were not released from `user_emails` (no cascade delete), causing "email already registered" errors on re-invite. Resolved by `006_user_emails_cascade` migration. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
+
 - Registration gateway (`src/gateways/registration/`) with token-adapter flow (`src/adapters/registration/token/`): admins and founders can issue 24-hour, one-time registration invitations by email; admins can list/revoke all pending tokens; founders can list/revoke only their own pending tokens; founder issuers are capped at 20 active pending invites.
 - Public invitation redemption flow at `/register` with `POST /api/v1/registration/redeem` and `GET /api/v1/registration/invite`, including invite preview text (`🎁 {inviterDisplayName} wants you to join Cognis`) and sender-audit binding (`accounts.invited_by_account_id`) performed at account creation.
 - Admin-only founder flag endpoint `POST /api/v1/users/:username/isfounder` plus CLI command `cognisctl user:isfounder <username> <true|false>`.

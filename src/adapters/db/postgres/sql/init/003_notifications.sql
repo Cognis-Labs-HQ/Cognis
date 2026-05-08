@@ -16,5 +16,6 @@ CREATE TABLE IF NOT EXISTS user_emails (
   is_primary BOOLEAN NOT NULL DEFAULT FALSE,
   verified BOOLEAN NOT NULL DEFAULT FALSE,
   PRIMARY KEY (account_id, email),
-  UNIQUE (email)
+  UNIQUE (email),
+  FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
 );

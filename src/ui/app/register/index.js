@@ -26,6 +26,7 @@ const knownErrorCodes = new Set([
 ]);
 
 let inviteData = null;
+let tokenInvalid = false;
 let openRegistrationsEnabled = false;
 
 if (token) {
@@ -36,9 +37,12 @@ if (token) {
         if (response.ok) {
             const payload = await response.json();
             inviteData = payload.data ?? null;
+        } else {
+            tokenInvalid = true;
         }
     } catch {
         inviteData = null;
+        tokenInvalid = true;
     }
 } else {
     try {
@@ -53,19 +57,82 @@ if (token) {
     }
 }
 
+const typingSamples = [
+    i18n.t("ui.app.login.typing.sample.1"),
+    i18n.t("ui.app.login.typing.sample.2"),
+    i18n.t("ui.app.login.typing.sample.3"),
+    i18n.t("ui.app.login.typing.sample.4"),
+    i18n.t("ui.app.login.typing.sample.5"),
+    i18n.t("ui.app.login.typing.sample.6"),
+];
+
+const startIndex = Math.floor(Math.random() * typingSamples.length);
+const orderedSamples = typingSamples.map(
+    (_, index) => typingSamples[(startIndex + index) % typingSamples.length],
+);
+
+async function runTypingShowcase() {
+    while (true) {
+        for (
+            let sampleIndex = 0;
+            sampleIndex < orderedSamples.length;
+            sampleIndex += 1
+        ) {
+            const sample = orderedSamples[sampleIndex];
+
+            for (
+                let charIndex = 0;
+                charIndex <= sample.length;
+                charIndex += 1
+            ) {
+                const el = document.querySelector("#typing-text");
+                if (!el) return;
+                el.textContent = sample.slice(0, charIndex);
+                await new Promise((resolve) => window.setTimeout(resolve, 85));
+            }
+
+            await new Promise((resolve) => window.setTimeout(resolve, 3500));
+
+            for (
+                let charIndex = sample.length;
+                charIndex >= 0;
+                charIndex -= 1
+            ) {
+                const el = document.querySelector("#typing-text");
+                if (!el) return;
+                el.textContent = sample.slice(0, charIndex);
+                await new Promise((resolve) => window.setTimeout(resolve, 40));
+            }
+
+            await new Promise((resolve) => window.setTimeout(resolve, 60000));
+        }
+    }
+}
+
+function formatCountdown(msRemaining) {
+    if (msRemaining <= 0) return "00:00:00";
+    const totalSeconds = Math.ceil(msRemaining / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return [hours, minutes, seconds]
+        .map((n) => String(n).padStart(2, "0"))
+        .join(":");
+}
+
 function renderRegisterShell() {
     const isInviteFlow = Boolean(token);
+    const isInvalid = isInviteFlow && tokenInvalid;
     const canRenderForm = isInviteFlow
-        ? Boolean(inviteData)
+        ? Boolean(inviteData) || isInvalid
         : openRegistrationsEnabled;
+    const formDisabled = isInvalid;
 
     let formHtml = "";
     let messageHtml = "";
 
     if (!canRenderForm) {
-        const messageKey = isInviteFlow
-            ? "ui.app.register.invalid_token"
-            : "ui.app.register.closed";
+        const messageKey = "ui.app.register.closed";
         messageHtml = `<p class="auth-intro-copy">${escapeHtml(i18n.t(messageKey))}</p>`;
     } else {
         const invitedText =
@@ -79,10 +146,15 @@ function renderRegisterShell() {
         const lockedEmail = inviteEmail || prefilledEmail;
         const emailValue = lockedEmail || "";
         const emailLocked = Boolean(lockedEmail);
-        const emailReadonly = emailLocked ? "disabled" : "";
+        const emailReadonly = emailLocked || formDisabled ? "disabled" : "";
         const emailLockedClass = emailLocked ? " auth-input--locked" : "";
+        const disabledAttr = formDisabled ? "disabled" : "";
+        const countdownHtml = inviteData?.expiresAt
+            ? `<p id="register-countdown" class="auth-intro-copy" style="font-size:1rem;margin-top:4px"></p>`
+            : "";
         formHtml = `
       ${invitedText ? `<p class="auth-intro-copy">${escapeHtml(invitedText)}</p>` : ""}
+      ${countdownHtml}
       <form id="register-form" class="stack auth-form">
         <label>
           <span>${escapeHtml(i18n.t("ui.app.register.email"))}</span>
@@ -90,17 +162,17 @@ function renderRegisterShell() {
         </label>
         <label>
           <span>${escapeHtml(i18n.t("ui.app.register.username"))}</span>
-          <input name="username" required />
+          <input name="username" required ${disabledAttr} />
         </label>
         <label>
           <span>${escapeHtml(i18n.t("ui.app.register.display_name"))}</span>
-          <input name="displayName" />
+          <input name="displayName" ${disabledAttr} />
         </label>
         <label>
           <span>${escapeHtml(i18n.t("ui.app.register.password"))}</span>
-          <input name="password" type="password" required />
+          <input name="password" type="password" required ${disabledAttr} />
         </label>
-        <button type="submit" class="btn-confirm btn-animated">${escapeHtml(i18n.t("ui.app.register.submit"))}</button>
+        <button type="submit" class="btn-confirm btn-animated" ${disabledAttr}>${escapeHtml(i18n.t("ui.app.register.submit"))}</button>
       </form>
     `;
     }
@@ -112,6 +184,9 @@ function renderRegisterShell() {
     const introPanelHtml = `
       ${brandlineHtml}
       <p class="auth-intro-copy">${escapeHtml(i18n.t("ui.app.register.page_subtitle"))}</p>
+      <div class="cognis-ad-frame" aria-live="polite">
+        <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
+      </div>
     `;
     const formPanelHtml = `
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.register.form_title"))}</h2>
@@ -129,7 +204,7 @@ function renderRegisterShell() {
 const composer = createPageComposer(root, {
     allowCustomization: false,
     i18n,
-    preferenceKey: "register-layout-v2",
+    preferenceKey: "register-layout",
     showTopbar: false,
     showNavbar: false,
     showFooter: false,
@@ -144,6 +219,42 @@ const composer = createPageComposer(root, {
             gridSize: { default: [12, 8], min: [8, 6], max: "full" },
             render: () => renderRegisterShell(),
             onRender: () => {
+                runTypingShowcase();
+
+                if (tokenInvalid) {
+                    showToast(i18n.t("ui.app.register.error.invalid_token"), {
+                        variant: "error",
+                        permanent: true,
+                    });
+                }
+
+                if (inviteData?.expiresAt) {
+                    const expiresAtMs = new Date(
+                        inviteData.expiresAt,
+                    ).getTime();
+                    let countdownTimer = null;
+                    function updateCountdown() {
+                        const el = root.querySelector("#register-countdown");
+                        if (!el) {
+                            clearInterval(countdownTimer);
+                            return;
+                        }
+                        const remaining = expiresAtMs - Date.now();
+                        if (remaining <= 0) {
+                            el.textContent = i18n.t(
+                                "ui.app.register.token_expired",
+                            );
+                            clearInterval(countdownTimer);
+                            return;
+                        }
+                        el.textContent = i18n
+                            .t("ui.app.register.token_expires_in")
+                            .replace("{countdown}", formatCountdown(remaining));
+                    }
+                    updateCountdown();
+                    countdownTimer = setInterval(updateCountdown, 1000);
+                }
+
                 const form = root.querySelector("#register-form");
                 if (!(form instanceof HTMLFormElement)) return;
                 form.addEventListener("submit", async (event) => {
