@@ -1,7 +1,6 @@
 import path from "node:path";
 import {
     requireAuth,
-    getAuthClaims,
     readJson,
     CapabilityStore,
     type GatewayBootstrapContext,
@@ -298,34 +297,10 @@ function createAuthGatewayRoutes(
         }
 
         if (url.pathname === "/api/v1/auth/verify" && req.method === "POST") {
-            const claims = getAuthClaims(req);
-            if (!claims) {
-                res.writeHead(401, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "unauthorized",
-                            message: "Login required",
-                        },
-                    }),
-                );
-                return true;
-            }
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
             const body = await readJson(req);
             const password = String(body.password ?? "");
-            const localAdapter = authGateway.getLocalAdapter();
-            if (!localAdapter) {
-                res.writeHead(503, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "local_auth_unavailable",
-                            message: "Local auth verification is not available",
-                        },
-                    }),
-                );
-                return true;
-            }
             const verified = await accountStore.verify(claims.sub, password);
             if (!verified) {
                 res.writeHead(401, { "content-type": "application/json" });

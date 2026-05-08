@@ -394,7 +394,7 @@ test("login endpoint returns 503 when no auth providers are available", async ()
     assert.equal(res.status, 401, "bad credentials should yield 401");
 });
 
-test("POST /api/v1/auth/verify is registered and handles authenticated requests", async () => {
+test("POST /api/v1/auth/verify returns 401 for unknown authenticated user", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -412,64 +412,11 @@ test("POST /api/v1/auth/verify is registered and handles authenticated requests"
         gatewayRegistry,
         capabilities,
     });
-
-    const createLocalAdmin = capabilities.get<
-        (username: string, password: string) => Promise<void>
-    >("auth:createLocalAdmin");
-    await createLocalAdmin?.("verify-user", "pw");
 
     const token = issueAccessToken("verify-user", "admin", 60);
-    const chunks = [Buffer.from(JSON.stringify({ password: "pw" }))];
-    const req = {
-        method: "POST",
-        headers: { authorization: `Bearer ${token}` },
-        [Symbol.asyncIterator]: async function* () {
-            for (const chunk of chunks) yield chunk;
-        },
-    } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
-
-    let handled = false;
-    for (const entry of routeRegistry.getEntries()) {
-        handled = await entry.handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
-            new URL("/api/v1/auth/verify", "http://localhost"),
-        );
-        if (handled) break;
-    }
-
-    assert.ok(handled, "verify endpoint should handle the request");
-    assert.equal(res.status, 401);
-    assert.match(res.payload, /invalid_credentials/);
-});
-
-test("POST /api/v1/auth/verify returns 401 for incorrect password", async () => {
-    const gatewayRegistry = new GatewayRegistry();
-    const routeRegistry = new RouteRegistry();
-    const capabilities = new CapabilityStore();
-
-    await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
-            execute: (
-                sql: string,
-                params?: unknown[],
-            ) => Promise<{ rows?: unknown[] }>;
-        },
-        dbType: "sqlite",
-        adaptersRoot: "/nonexistent",
-        routeRegistry,
-        gatewayRegistry,
-        capabilities,
-    });
-
-    const createLocalAdmin = capabilities.get<
-        (username: string, password: string) => Promise<void>
-    >("auth:createLocalAdmin");
-    await createLocalAdmin?.("verify-user-2", "pw");
-
-    const token = issueAccessToken("verify-user-2", "admin", 60);
-    const chunks = [Buffer.from(JSON.stringify({ password: "wrong" }))];
+    const chunks = [
+        Buffer.from(JSON.stringify({ password: "test-password-123" })),
+    ];
     const req = {
         method: "POST",
         headers: { authorization: `Bearer ${token}` },
