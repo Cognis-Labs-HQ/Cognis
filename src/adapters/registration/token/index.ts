@@ -94,8 +94,8 @@ export function createAdapter(deps: {
         handle: string,
         role?: string,
     ) => Promise<void>;
-    isEmailRegistered?: (email: string) => Promise<boolean>;
-    upsertVerifiedPrimaryEmail?: (
+    isEmailRegistered: (email: string) => Promise<boolean>;
+    upsertVerifiedPrimaryEmail: (
         accountId: string,
         email: string,
     ) => Promise<void>;
@@ -154,9 +154,7 @@ export function createAdapter(deps: {
         if (!canSendInviteEmail()) throw new Error("smtp_unavailable");
         const inviteeEmail = normalizeEmail(input.inviteeEmail);
         if (!inviteeEmail) throw new Error("invitee_email_required");
-        const emailTaken = isEmailRegistered
-            ? await isEmailRegistered(inviteeEmail)
-            : false;
+        const emailTaken = await isEmailRegistered(inviteeEmail);
         if (emailTaken) throw new Error("email_taken");
         if (input.inviterIsFounder) {
             const pendingCount = await pendingFounderInviteCount(
@@ -307,12 +305,7 @@ export function createAdapter(deps: {
         if (!inviterStillExists) throw new Error("inviter_not_found");
 
         const created = await accountStore.register(username, password, false);
-        if (upsertVerifiedPrimaryEmail) {
-            await upsertVerifiedPrimaryEmail(
-                created.username,
-                invite.inviteeEmail,
-            );
-        }
+        await upsertVerifiedPrimaryEmail(created.username, invite.inviteeEmail);
         const displayName = input.displayName?.trim();
         if (displayName) {
             await dbExecutor.execute(

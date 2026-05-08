@@ -75,6 +75,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const upsertVerifiedPrimaryEmail = ctx.capabilities.get<
         (accountId: string, email: string) => Promise<void>
     >("notify:upsertVerifiedPrimaryEmail");
+    if (!isEmailRegistered || !upsertVerifiedPrimaryEmail) return;
     const adapter = createAdapter({
         dbExecutor,
         dbType,

@@ -34,6 +34,11 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
     });
     map.set("notify:canSendRegistrationInviteEmail", () => true);
     map.set("notify:sendRegistrationInviteEmail", async () => {});
+    map.set("notify:isEmailRegistered", async () => false);
+    map.set(
+        "notify:upsertVerifiedPrimaryEmail",
+        async (_accountId: string, _email: string) => {},
+    );
 
     const registeredSections = [];
     const registeredPlugins = [];
