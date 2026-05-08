@@ -392,62 +392,59 @@ function bindModuleToggles() {
 }
 
 function bindGatewayToggles() {
-    root.querySelectorAll('input[type="checkbox"][data-gateway]').forEach(
-        (toggle) => {
-            toggle.addEventListener("change", async () => {
-                const gatewayId = toggle.dataset.gateway;
-                const previousState = !toggle.checked;
-                const action = toggle.checked ? "enable" : "disable";
-                const gw = gateways.find((g) => g.id === gatewayId);
+    root.querySelectorAll(
+        'input[type="checkbox"][data-gateway]:not([data-adapter])',
+    ).forEach((toggle) => {
+        toggle.addEventListener("change", async () => {
+            const gatewayId = toggle.dataset.gateway;
+            const previousState = !toggle.checked;
+            const action = toggle.checked ? "enable" : "disable";
+            const gw = gateways.find((g) => g.id === gatewayId);
 
-                if (action === "enable") {
-                    const disabledDeps = (gw?.requires ?? []).filter(
-                        (depId) => {
-                            const dep = gateways.find((g) => g.id === depId);
-                            return dep && dep.status === "disabled";
-                        },
-                    );
-                    if (disabledDeps.length > 0) {
-                        const depNames = disabledDeps.map((depId) => {
-                            const dep = gateways.find((g) => g.id === depId);
-                            return dep ? dep.name : depId;
-                        });
-                        const result = await openPopup({
-                            title: i18n.t(
-                                "ui.app.admin.enable_confirm_gateway",
-                            ),
-                            body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${depNames.map((n) => `<li><strong>${escapeHtml(n)}</strong></li>`).join("")}</ul>`,
-                            actions: [
-                                {
-                                    id: "confirm",
-                                    label: i18n.t("ui.reuse.generic.enable"),
-                                    variant: "confirm",
-                                },
-                                {
-                                    id: "cancel",
-                                    label: i18n.t("ui.reuse.popup.cancel"),
-                                    variant: "cancel",
-                                },
-                            ],
-                        });
-                        if (result !== "confirm") {
-                            toggle.checked = previousState;
-                            return;
-                        }
-                        for (const depId of disabledDeps) {
-                            await toggleGateway(depId, "enable");
-                        }
-                        gateways = await loadGateways();
-                        allAdapters = await loadAllAdapters(gateways);
-                    }
-                    const enableableAdapters = getGatewayEnableableAdapters(
-                        allAdapters,
-                        gatewayId,
-                    );
-                    let popupOverlay = null;
+            if (action === "enable") {
+                const disabledDeps = (gw?.requires ?? []).filter((depId) => {
+                    const dep = gateways.find((g) => g.id === depId);
+                    return dep && dep.status === "disabled";
+                });
+                if (disabledDeps.length > 0) {
+                    const depNames = disabledDeps.map((depId) => {
+                        const dep = gateways.find((g) => g.id === depId);
+                        return dep ? dep.name : depId;
+                    });
                     const result = await openPopup({
                         title: i18n.t("ui.app.admin.enable_confirm_gateway"),
-                        body: () => `
+                        body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${depNames.map((n) => `<li><strong>${escapeHtml(n)}</strong></li>`).join("")}</ul>`,
+                        actions: [
+                            {
+                                id: "confirm",
+                                label: i18n.t("ui.reuse.generic.enable"),
+                                variant: "confirm",
+                            },
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.popup.cancel"),
+                                variant: "cancel",
+                            },
+                        ],
+                    });
+                    if (result !== "confirm") {
+                        toggle.checked = previousState;
+                        return;
+                    }
+                    for (const depId of disabledDeps) {
+                        await toggleGateway(depId, "enable");
+                    }
+                    gateways = await loadGateways();
+                    allAdapters = await loadAllAdapters(gateways);
+                }
+                const enableableAdapters = getGatewayEnableableAdapters(
+                    allAdapters,
+                    gatewayId,
+                );
+                let popupOverlay = null;
+                const result = await openPopup({
+                    title: i18n.t("ui.app.admin.enable_confirm_gateway"),
+                    body: () => `
                             <p>${escapeHtml(i18n.t("ui.app.admin.enable_gateway_select_adapters"))}</p>
                             ${
                                 enableableAdapters.length > 0
@@ -465,98 +462,97 @@ function bindGatewayToggles() {
                                     : `<p>${escapeHtml(i18n.t("ui.app.admin.enable_gateway_no_adapters"))}</p>`
                             }
                         `,
-                        actions: [
-                            {
-                                id: "confirm",
-                                label: i18n.t("ui.reuse.generic.enable"),
-                                variant: "confirm",
-                            },
-                            {
-                                id: "cancel",
-                                label: i18n.t("ui.reuse.popup.cancel"),
-                                variant: "cancel",
-                            },
-                        ],
-                        onOpen: (overlay) => {
-                            popupOverlay = overlay;
+                    actions: [
+                        {
+                            id: "confirm",
+                            label: i18n.t("ui.reuse.generic.enable"),
+                            variant: "confirm",
                         },
-                    });
-                    if (result !== "confirm") {
-                        toggle.checked = previousState;
-                        return;
-                    }
-
-                    await toggleGateway(gatewayId, action);
-
-                    if (popupOverlay instanceof HTMLElement) {
-                        const selectedAdapterIds = [
-                            ...popupOverlay.querySelectorAll(
-                                'input[name="gateway-enable-adapter"]:checked',
-                            ),
-                        ].map((input) => input.value);
-                        for (const selectedAdapterId of selectedAdapterIds) {
-                            await toggleAdapter(
-                                gatewayId,
-                                selectedAdapterId,
-                                "enable",
-                            );
-                        }
-                    }
-                } else {
-                    const gatewayAdapters = getGatewayAdapters(
-                        allAdapters,
-                        gatewayId,
-                    );
-                    const gatewayDisableWarning =
-                        gatewayAdapters.length > 0
-                            ? `<p>${escapeHtml(i18n.t("ui.app.admin.disable_gateway_with_adapters_warning"))}</p>`
-                            : "";
-                    const result = await openPopup({
-                        title: i18n.t("ui.app.admin.disable_confirm_gateway"),
-                        body: `${gatewayDisableWarning}<strong>${escapeHtml(gw?.name ?? gatewayId)}</strong>`,
-                        variant: "danger",
-                        actions: [
-                            {
-                                id: "confirm",
-                                label: i18n.t("ui.reuse.generic.disable"),
-                                variant: "confirm",
-                            },
-                            {
-                                id: "cancel",
-                                label: i18n.t("ui.reuse.popup.cancel"),
-                                variant: "cancel",
-                            },
-                        ],
-                    });
-                    if (result !== "confirm") {
-                        toggle.checked = previousState;
-                        return;
-                    }
-
-                    await toggleGateway(gatewayId, action);
-
-                    for (const adapter of gatewayAdapters) {
-                        const currentAdapterId = adapter.senderId ?? adapter.id;
-                        if (
-                            currentAdapterId &&
-                            (adapter.active ?? adapter.enabled)
-                        ) {
-                            await toggleAdapter(
-                                gatewayId,
-                                currentAdapterId,
-                                "disable",
-                            );
-                        }
-                    }
+                        {
+                            id: "cancel",
+                            label: i18n.t("ui.reuse.popup.cancel"),
+                            variant: "cancel",
+                        },
+                    ],
+                    onOpen: (overlay) => {
+                        popupOverlay = overlay;
+                    },
+                });
+                if (result !== "confirm") {
+                    toggle.checked = previousState;
+                    return;
                 }
 
-                gateways = await loadGateways();
-                allAdapters = await loadAllAdapters(gateways);
-                composer.refresh(elements);
-                updateNavbarAvatar().catch(() => {});
-            });
-        },
-    );
+                await toggleGateway(gatewayId, action);
+
+                if (popupOverlay instanceof HTMLElement) {
+                    const selectedAdapterIds = [
+                        ...popupOverlay.querySelectorAll(
+                            'input[name="gateway-enable-adapter"]:checked',
+                        ),
+                    ].map((input) => input.value);
+                    for (const selectedAdapterId of selectedAdapterIds) {
+                        await toggleAdapter(
+                            gatewayId,
+                            selectedAdapterId,
+                            "enable",
+                        );
+                    }
+                }
+            } else {
+                const gatewayAdapters = getGatewayAdapters(
+                    allAdapters,
+                    gatewayId,
+                );
+                const gatewayDisableWarning =
+                    gatewayAdapters.length > 0
+                        ? `<p>${escapeHtml(i18n.t("ui.app.admin.disable_gateway_with_adapters_warning"))}</p>`
+                        : "";
+                const result = await openPopup({
+                    title: i18n.t("ui.app.admin.disable_confirm_gateway"),
+                    body: `${gatewayDisableWarning}<strong>${escapeHtml(gw?.name ?? gatewayId)}</strong>`,
+                    variant: "danger",
+                    actions: [
+                        {
+                            id: "confirm",
+                            label: i18n.t("ui.reuse.generic.disable"),
+                            variant: "confirm",
+                        },
+                        {
+                            id: "cancel",
+                            label: i18n.t("ui.reuse.popup.cancel"),
+                            variant: "cancel",
+                        },
+                    ],
+                });
+                if (result !== "confirm") {
+                    toggle.checked = previousState;
+                    return;
+                }
+
+                await toggleGateway(gatewayId, action);
+
+                for (const adapter of gatewayAdapters) {
+                    const currentAdapterId = adapter.senderId ?? adapter.id;
+                    if (
+                        currentAdapterId &&
+                        (adapter.active ?? adapter.enabled)
+                    ) {
+                        await toggleAdapter(
+                            gatewayId,
+                            currentAdapterId,
+                            "disable",
+                        );
+                    }
+                }
+            }
+
+            gateways = await loadGateways();
+            allAdapters = await loadAllAdapters(gateways);
+            composer.refresh(elements);
+            updateNavbarAvatar().catch(() => {});
+        });
+    });
 }
 
 function bindSummarySliderClicks() {

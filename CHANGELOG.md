@@ -66,6 +66,8 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Administration: gateway toggle handler selector now excludes adapter checkboxes (`:not([data-adapter])`), preventing adapter enable/disable events from triggering gateway-level confirm popups and vice versa. Enabling an adapter no longer opens the gateway-enable adapter-selection prompt; disabling an adapter no longer spawns the gateway-disable confirm dialog. ([20ba343](https://github.com/le-firehawk/Cognis/commit/20ba343))
+
 - Login/register public pages no longer attempt authenticated `ui-preferences` or `{page}-layout` fetches when there is no access token, eliminating the 401 spam that interfered with login-page behaviour. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
 - Login/register auth pages now explicitly disable composer layout-preference persistence and theme `ui-preferences` API sync, preventing stale-token 401 preference calls while preserving local theme toggle behavior and typing-text rendering. ([ebe672e](https://github.com/le-firehawk/Cognis/commit/ebe672e))
 - Auth-page composer now invokes per-element `onRender` callbacks in rendered sections, restoring login submit interception and typing-showcase startup on login/register pages. ([692465b](https://github.com/le-firehawk/Cognis/commit/692465b))
