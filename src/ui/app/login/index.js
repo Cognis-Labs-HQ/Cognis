@@ -237,7 +237,7 @@ function renderLoginShell() {
     );
     const introPanelHtml = `
       ${brandlineHtml}
-      <p class="auth-intro-copy">${escapeHtml(i18n.t("ui.app.login.hero.subtitle"))}</p>
+      <p class="auth-intro">${escapeHtml(i18n.t("ui.app.login.hero.subtitle"))}</p>
       <div class="cognis-ad-frame" aria-live="polite">
         <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
       </div>

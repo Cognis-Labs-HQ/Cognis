@@ -16,7 +16,9 @@ applyDocumentTitle(i18n, "ui.page.title.register");
 
 const root = document.querySelector("#app");
 const params = new URLSearchParams(window.location.search);
-const token = params.get("token") ?? "";
+const tokenParam = params.get("token");
+const token = String(tokenParam ?? "").trim();
+const hasTokenParam = tokenParam !== null;
 const prefilledEmail = String(params.get("email") ?? "")
     .trim()
     .toLowerCase();
@@ -47,6 +49,8 @@ if (token) {
         inviteData = null;
         tokenInvalid = true;
     }
+} else if (hasTokenParam) {
+    tokenInvalid = true;
 } else {
     try {
         const response = await fetch("/api/v1/auth/registration-config");
@@ -85,7 +89,7 @@ function renderRegisterShell() {
 
     if (!canRenderForm) {
         const messageKey = "ui.app.register.closed";
-        messageHtml = `<p class="auth-intro-copy">${escapeHtml(i18n.t(messageKey))}</p>`;
+        messageHtml = `<p class="auth-intro">${escapeHtml(i18n.t(messageKey))}</p>`;
     } else {
         const invitedText =
             inviteData && isInviteFlow
@@ -102,30 +106,32 @@ function renderRegisterShell() {
         const emailLockedClass = emailLocked ? " auth-input--locked" : "";
         const disabledAttr = formDisabled ? "disabled" : "";
         const countdownHtml = inviteData?.expiresAt
-            ? `<p id="register-countdown" class="auth-intro-copy" style="font-size:1rem;margin-top:4px"></p>`
+            ? `<p id="register-countdown" class="auth-intro" style="font-size:1rem;margin-top:4px"></p>`
             : "";
         formHtml = `
-      ${invitedText ? `<p class="auth-intro-copy">${escapeHtml(invitedText)}</p>` : ""}
+      ${invitedText ? `<p class="auth-intro">${escapeHtml(invitedText)}</p>` : ""}
       ${countdownHtml}
-      <form id="register-form" class="stack auth-form">
-        <label>
-          <span>${escapeHtml(i18n.t("ui.app.register.email"))}</span>
-          <input name="email" type="email" value="${escapeHtml(emailValue)}" ${emailReadonly} class="${emailLockedClass.trim()}" required />
-        </label>
-        <label>
-          <span>${escapeHtml(i18n.t("ui.app.register.username"))}</span>
-          <input name="username" required ${disabledAttr} />
-        </label>
-        <label>
-          <span>${escapeHtml(i18n.t("ui.app.register.display_name"))}</span>
-          <input name="displayName" ${disabledAttr} />
-        </label>
-        <label>
-          <span>${escapeHtml(i18n.t("ui.app.register.password"))}</span>
-          <input name="password" type="password" required ${disabledAttr} />
-        </label>
-        <button type="submit" class="btn-confirm btn-animated" ${disabledAttr}>${escapeHtml(i18n.t("ui.app.register.submit"))}</button>
-      </form>
+      <div class="auth-form-shell${formDisabled ? " auth-form-shell--disabled" : ""}">
+        <form id="register-form" class="stack auth-form">
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.register.email"))}</span>
+            <input name="email" type="email" value="${escapeHtml(emailValue)}" ${emailReadonly} class="${emailLockedClass.trim()}" required />
+          </label>
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.register.username"))}</span>
+            <input name="username" required ${disabledAttr} />
+          </label>
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.register.display_name"))}</span>
+            <input name="displayName" ${disabledAttr} />
+          </label>
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.register.password"))}</span>
+            <input name="password" type="password" required ${disabledAttr} />
+          </label>
+          <button type="submit" class="btn-confirm btn-animated" ${disabledAttr}>${escapeHtml(i18n.t("ui.app.register.submit"))}</button>
+        </form>
+      </div>
     `;
     }
 
@@ -135,7 +141,7 @@ function renderRegisterShell() {
     );
     const introPanelHtml = `
       ${brandlineHtml}
-      <p class="auth-intro-copy">${escapeHtml(i18n.t("ui.app.register.page_subtitle"))}</p>
+      <p class="auth-intro">${escapeHtml(i18n.t("ui.app.login.hero.subtitle"))}</p>
       <div class="cognis-ad-frame" aria-live="polite">
         <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
       </div>

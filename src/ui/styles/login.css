@@ -21,7 +21,7 @@
     align-items: stretch;
 }
 
-.auth-intro,
+.panel.auth-intro,
 .auth-panel {
     padding: 34px;
     background: linear-gradient(
@@ -62,10 +62,15 @@
     animation: blink-cursor 0.95s steps(1, end) infinite;
 }
 
-.auth-intro-copy {
+p.auth-intro {
     margin: 24px 0 18px;
     font-size: 1.75rem;
     color: #d6e7ff;
+}
+
+.auth-form-shell--disabled {
+    opacity: 0.5;
+    filter: grayscale(0.3);
 }
 
 .cognis-ad-frame {
@@ -108,6 +113,10 @@
     border: 1px solid rgba(89, 133, 255, 0.62);
     background: linear-gradient(145deg, #2550be, #2343a6);
     color: #f1f7ff;
+}
+
+.auth-form-shell {
+    width: 100%;
 }
 
 .auth-input--locked {
@@ -175,13 +184,13 @@
     .auth-layout {
         grid-template-columns: 1fr;
     }
-    .auth-intro,
+    .panel.auth-intro,
     .auth-panel {
         padding: 24px;
     }
 }
 
-body[data-theme="light"] .auth-intro,
+body[data-theme="light"] .panel.auth-intro,
 body[data-theme="light"] .auth-panel {
     background: linear-gradient(
         180deg,
@@ -196,7 +205,7 @@ body[data-theme="light"] .auth-form label span {
     color: #0f172a;
 }
 
-body[data-theme="light"] .auth-intro-copy {
+body[data-theme="light"] p.auth-intro {
     color: #1e293b;
 }
 

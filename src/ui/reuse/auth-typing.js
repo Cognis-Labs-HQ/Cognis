@@ -51,13 +51,14 @@ export async function loadAuthTypingSamples(
     } catch {
         // Public typing-message contributions are best-effort.
     }
-    return Array.from(
-        new Set(
-            keys
-                .map((key) => i18n.t(key))
-                .filter((value) => value && value !== key),
-        ),
-    );
+    const translated = keys
+        .map((key) => ({ key, value: i18n.t(key) }))
+        .filter(
+            ({ key, value }) =>
+                typeof value === "string" && value.length > 0 && value !== key,
+        )
+        .map(({ value }) => value);
+    return Array.from(new Set(translated));
 }
 
 /**
@@ -82,8 +83,15 @@ export function runTypingShowcase(
     activeShowcaseRun += 1;
     const runId = activeShowcaseRun;
     void (async () => {
+        let isFirstSample = true;
         while (runId === activeShowcaseRun) {
             for (const sample of orderedSamples) {
+                if (!isFirstSample) {
+                    await new Promise((resolve) =>
+                        window.setTimeout(resolve, 60000),
+                    );
+                }
+                isFirstSample = false;
                 for (
                     let charIndex = 0;
                     charIndex <= sample.length;
@@ -113,10 +121,6 @@ export function runTypingShowcase(
                         window.setTimeout(resolve, 40),
                     );
                 }
-
-                await new Promise((resolve) =>
-                    window.setTimeout(resolve, 60000),
-                );
             }
             if (orderedSamples.length === 0) return;
         }

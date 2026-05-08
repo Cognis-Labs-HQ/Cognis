@@ -13,7 +13,7 @@
  *   );
  *   const html = renderAuthLayout({
  *     introPanelAriaLabel: i18n.t('ui.app.login.intro.aria'),
- *     introPanelHtml: brandlineHtml + `<p class="auth-intro-copy">...</p>`,
+ *     introPanelHtml: brandlineHtml + `<p class="auth-intro">...</p>`,
  *     formPanelAriaLabel: i18n.t('ui.app.login.title'),
  *     formPanelHtml: `<h2 class="auth-heading">...</h2><form>...</form>`,
  *   });
