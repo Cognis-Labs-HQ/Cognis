@@ -14,6 +14,7 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { checkIsAuthenticated } from "../../reuse/auth-session.js";
+import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.login");
@@ -417,6 +418,7 @@ const composer = createPageComposer(root, {
                                     body.data.accountId,
                                 );
                             }
+                            await syncTimezoneOnLogin(body.data.accountId);
                             window.location.href = "/dashboard";
                             return;
                         }

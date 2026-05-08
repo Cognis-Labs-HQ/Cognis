@@ -190,6 +190,8 @@
   <string name="ui.app.dashboard.member_since">Anggota sejak</string>
   <string name="ui.app.dashboard.last_seen">Terakhir dilihat</string>
   <string name="ui.app.dashboard.never">Tidak pernah</string>
+  <string name="ui.app.dashboard.element.digital_clock.label">Jam Digital</string>
+  <string name="ui.app.dashboard.element.analogue_clock.label">Jam Analog</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
@@ -463,4 +465,8 @@
   <string name="ui.app.settings.emails_domain_blocked_title">Domain tidak diizinkan</string>
   <string name="ui.app.settings.emails_domain_blocked_body">Alamat email ini berasal dari domain yang tidak ada dalam daftar domain tepercaya. Hubungi administrator Anda untuk memperbarui pengaturan keamanan.</string>
   <string name="ui.app.settings.emails_verify_unavailable">Verifikasi email tidak tersedia. Hubungi administrator Anda.</string>
+  <string name="ui.app.settings.datetime">Tanggal &amp; Waktu</string>
+  <string name="ui.app.settings.datetime_tz_heading">Zona Waktu</string>
+  <string name="ui.app.settings.datetime_tz_label">Zona Waktu Tampilan</string>
+  <string name="ui.app.settings.datetime_tz_auto">Deteksi otomatis ({tz})</string>
 </resources>

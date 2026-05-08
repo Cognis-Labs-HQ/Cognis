@@ -1,6 +1,12 @@
 import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
+import {
+    buildAnalogueClockMarkup,
+    buildDigitalClockMarkup,
+    createDateTimeFormatters,
+    mountLiveClock,
+} from "../../reuse/clock-display.js";
 
 const root = document.querySelector("#app");
 const i18n = await createI18n();
@@ -24,32 +30,11 @@ async function loadAccountInfo() {
     }
 }
 
-function formatDate(iso) {
-    if (!iso) return i18n.t("ui.app.dashboard.never");
-    try {
-        return new Date(iso).toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        });
-    } catch {
-        return iso;
-    }
-}
-
-function formatDateTime(iso) {
-    if (!iso) return i18n.t("ui.app.dashboard.never");
-    try {
-        return new Date(iso).toLocaleString(undefined, {
-            dateStyle: "medium",
-            timeStyle: "short",
-        });
-    } catch {
-        return iso;
-    }
-}
-
 const info = await loadAccountInfo();
+const { formatDateValue, formatDateTimeValue } = createDateTimeFormatters({
+    dateFallback: i18n.t("ui.app.dashboard.never"),
+    dateTimeFallback: i18n.t("ui.app.dashboard.never"),
+});
 
 const elements = [
     {
@@ -83,7 +68,7 @@ const elements = [
         <dt>${i18n.t("ui.app.dashboard.role")}</dt>
         <dd>${role}</dd>
         <dt>${i18n.t("ui.app.dashboard.member_since")}</dt>
-        <dd>${formatDate(info?.createdAt ?? null)}</dd>
+        <dd>${formatDateValue(info?.createdAt ?? null)}</dd>
       </dl>
     `,
     },
@@ -94,9 +79,45 @@ const elements = [
         render: () => `
       <h3>${i18n.t("ui.app.dashboard.element.last_login.label")}</h3>
       <p class="dashboard-last-seen">
-        ${i18n.t("ui.app.dashboard.last_seen")}: <strong>${formatDateTime(info?.lastLogin ?? null)}</strong>
+        ${i18n.t("ui.app.dashboard.last_seen")}: <strong>${formatDateTimeValue(info?.lastLogin ?? null)}</strong>
       </p>
     `,
+    },
+    {
+        id: "digital-clock",
+        label: i18n.t("ui.app.dashboard.element.digital_clock.label"),
+        gridSize: { default: [5, 2], min: [4, 2], max: [6, 2] },
+        render: () => `
+      <div class="dashboard-clock dashboard-clock--digital">
+        <div class="dashboard-clock-display" id="dashboard-digital-clock-display"></div>
+        <span class="dashboard-clock-tz" id="dashboard-digital-clock-tz"></span>
+      </div>
+    `,
+        onRender: () => {
+            mountLiveClock({
+                displayId: "dashboard-digital-clock-display",
+                tzId: "dashboard-digital-clock-tz",
+                renderClock: buildDigitalClockMarkup,
+            });
+        },
+    },
+    {
+        id: "analogue-clock",
+        label: i18n.t("ui.app.dashboard.element.analogue_clock.label"),
+        gridSize: { default: [4, 2], min: [3, 2], max: [5, 2] },
+        render: () => `
+      <div class="dashboard-clock dashboard-clock--analogue">
+        <div class="dashboard-clock-display" id="dashboard-analogue-clock-display"></div>
+        <span class="dashboard-clock-tz" id="dashboard-analogue-clock-tz"></span>
+      </div>
+    `,
+        onRender: () => {
+            mountLiveClock({
+                displayId: "dashboard-analogue-clock-display",
+                tzId: "dashboard-analogue-clock-tz",
+                renderClock: buildAnalogueClockMarkup,
+            });
+        },
     },
 ];
 

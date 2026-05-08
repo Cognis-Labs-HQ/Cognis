@@ -190,6 +190,8 @@
   <string name="ui.app.dashboard.member_since">Member since</string>
   <string name="ui.app.dashboard.last_seen">Last seen</string>
   <string name="ui.app.dashboard.never">Never</string>
+  <string name="ui.app.dashboard.element.digital_clock.label">Digital Clock</string>
+  <string name="ui.app.dashboard.element.analogue_clock.label">Analogue Clock</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
@@ -463,4 +465,8 @@
   <string name="ui.app.settings.emails_domain_blocked_title">Domain not permitted</string>
   <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
   <string name="ui.app.settings.emails_verify_unavailable">Email verification is not available. Contact your administrator.</string>
+  <string name="ui.app.settings.datetime">Date &amp; Time</string>
+  <string name="ui.app.settings.datetime_tz_heading">Timezone</string>
+  <string name="ui.app.settings.datetime_tz_label">Display Timezone</string>
+  <string name="ui.app.settings.datetime_tz_auto">Auto-detect ({tz})</string>
 </resources>

@@ -190,6 +190,8 @@
   <string name="ui.app.dashboard.member_since">登録日</string>
   <string name="ui.app.dashboard.last_seen">最終確認</string>
   <string name="ui.app.dashboard.never">なし</string>
+  <string name="ui.app.dashboard.element.digital_clock.label">デジタル時計</string>
+  <string name="ui.app.dashboard.element.analogue_clock.label">アナログ時計</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
@@ -463,4 +465,8 @@
   <string name="ui.app.settings.emails_domain_blocked_title">ドメインが許可されていません</string>
   <string name="ui.app.settings.emails_domain_blocked_body">このメールアドレスは、信頼済みドメインリストに登録されていないドメインのものです。管理者にセキュリティ設定の更新を依頼してください。</string>
   <string name="ui.app.settings.emails_verify_unavailable">メール認証は利用できません。管理者にお問い合わせください。</string>
+  <string name="ui.app.settings.datetime">日付と時刻</string>
+  <string name="ui.app.settings.datetime_tz_heading">タイムゾーン</string>
+  <string name="ui.app.settings.datetime_tz_label">表示タイムゾーン</string>
+  <string name="ui.app.settings.datetime_tz_auto">自動検出 ({tz})</string>
 </resources>

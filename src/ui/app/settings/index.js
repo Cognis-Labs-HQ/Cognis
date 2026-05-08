@@ -18,6 +18,8 @@ import {
 import { initLanguagePrefs } from "./language-prefs.js";
 import { initGeneralPrefs } from "./general-prefs.js";
 import { initNotificationPrefs } from "./notification-prefs.js";
+import { initDateTimePrefs } from "./datetime-prefs.js";
+import { applyTimezoneToLocalStorage } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { showToast } from "../../reuse/toast.js";
@@ -56,6 +58,11 @@ const existingPrefs = await loadPrefs().catch(() => null);
 if (Array.isArray(existingPrefs?.languagePriority))
     languagePriority = existingPrefs.languagePriority;
 
+applyTimezoneToLocalStorage(
+    existingPrefs?.timezone ?? null,
+    existingPrefs?.detectedTimezone ?? null,
+);
+
 const savedMode = getStoredTheme();
 
 let fontPrefs;
@@ -64,6 +71,7 @@ let themePrefs;
 let changesBar;
 let generalPrefs;
 let notifPrefs;
+let datetimePrefs;
 
 function initThemePrefs({ onDirtyChange }) {
     let currentMode = savedMode;
@@ -255,6 +263,37 @@ const elements = [
         },
     },
     {
+        id: "datetime",
+        label: i18n.t("ui.app.settings.datetime"),
+        subComposerOptions: {
+            allowCustomization: false,
+            preferenceKey: "settings-datetime-layout",
+            heading: i18n.t("ui.app.settings.datetime"),
+            elements: [
+                {
+                    id: "datetime-prefs",
+                    label: i18n.t("ui.app.settings.datetime"),
+                    render: () => `
+            <h3>${i18n.t("ui.app.settings.datetime_tz_heading")}</h3>
+            <label class="timezone-label">
+              ${i18n.t("ui.app.settings.datetime_tz_label")}
+              <select id="pref-timezone-select" class="theme-select"></select>
+            </label>
+          `,
+                },
+            ],
+            onRender: () => {
+                datetimePrefs = initDateTimePrefs(root, {
+                    existingPrefs,
+                    i18n,
+                    onDirtyChange: (dirty) =>
+                        changesBar?.markDirty("datetime", dirty),
+                });
+                datetimePrefs.init();
+            },
+        },
+    },
+    {
         id: "advanced",
         label: i18n.t("ui.app.settings.advanced"),
         subComposerOptions: {
@@ -309,6 +348,7 @@ const composer = createPageComposer(root, {
         <li><button data-composer-scroll="appearance">${i18n.t("ui.reuse.appearance")}</button></li>
         <li><button data-composer-scroll="language">${i18n.t("ui.reuse.language")}</button></li>
         <li><button data-composer-scroll="notifications">${i18n.t("ui.reuse.notifications")}</button></li>
+        <li><button data-composer-scroll="datetime">${i18n.t("ui.app.settings.datetime")}</button></li>
         <li><button data-composer-scroll="advanced">${i18n.t("ui.app.settings.advanced")}</button></li>
       </ul>
     `,
@@ -350,11 +390,16 @@ changesBar = createUnsavedChangesBar(floatingSlot, {
             appFontSize: fontPrefs?.getFontSize(),
             languagePriority: languagePrefs?.getPriority() ?? languagePriority,
             mode,
+            timezone:
+                datetimePrefs?.getTimezone() ??
+                existingPrefs?.timezone ??
+                "auto",
         };
         await savePrefs(prefs);
         persistTheme(mode);
         applyTheme(mode);
         setPreferredLanguages(prefs.languagePriority);
+        applyTimezoneToLocalStorage(prefs.timezone ?? null, null);
         localStorage.setItem("cognis_ui_preferences", JSON.stringify(prefs));
         showToast(i18n.t("ui.app.settings.saved_alert"), {
             variant: "success",
@@ -367,5 +412,6 @@ changesBar = createUnsavedChangesBar(floatingSlot, {
         languagePrefs?.discard();
         themePrefs?.discard();
         notifPrefs?.discard();
+        datetimePrefs?.discard();
     },
 });

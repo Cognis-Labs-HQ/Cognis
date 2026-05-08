@@ -1,3 +1,5 @@
+import { formatDateTime } from "/static/reuse/timestamp.js";
+
 export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     let tokens = [];
     let profileGatewayEnabled = false;
@@ -27,7 +29,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             ? `<button class="invite-revoke-btn btn-animated" type="button" data-token-id="${escapeHtml(token.id)}">${escapeHtml(i18n.t("ui.app.invite.revoke"))}</button>`
             : "";
         const expiresAt = token.expiresAt
-            ? escapeHtml(new Date(token.expiresAt).toLocaleString())
+            ? escapeHtml(formatDateTime(token.expiresAt))
             : "";
         const issuerUsername = String(token.inviterAccountId ?? "");
         const redeemedUsername = String(token.redeemedAccountId ?? "");

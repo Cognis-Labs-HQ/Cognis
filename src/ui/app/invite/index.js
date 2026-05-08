@@ -5,6 +5,7 @@ import { showToast } from "../../reuse/toast.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { createRepromptGuard } from "../../reuse/reprompt.js";
+import { formatDateTime } from "../../reuse/timestamp.js";
 
 const root = document.querySelector("#app");
 const i18n = await createI18n();
@@ -65,7 +66,7 @@ function renderTokenRow(row) {
         ? `<button class="invite-revoke-btn btn-cancel btn-animated" data-token-id="${escapeHtml(row.id)}">${escapeHtml(i18n.t("ui.app.invite.revoke"))}</button>`
         : "";
     const expiresAt = row.expiresAt
-        ? escapeHtml(new Date(row.expiresAt).toLocaleString())
+        ? escapeHtml(formatDateTime(row.expiresAt))
         : "—";
     const issuerUsername = String(row.inviterAccountId ?? "");
     const redeemedUsername = String(row.redeemedAccountId ?? "");

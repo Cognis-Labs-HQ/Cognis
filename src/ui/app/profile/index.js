@@ -10,6 +10,7 @@ import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { attachCharCounter } from "../../reuse/char-counter.js";
 import { showToast } from "../../reuse/toast.js";
+import { formatDate } from "../../reuse/timestamp.js";
 
 const root = document.querySelector("#app");
 const i18n = await createI18n();
@@ -18,19 +19,6 @@ applyDocumentTitle(i18n, "ui.page.title.profile");
 function toAbsoluteUrl(url) {
     if (!url) return url;
     return /^https?:\/\//i.test(url) ? url : `https://${url}`;
-}
-
-function formatDate(iso) {
-    if (!iso) return "";
-    try {
-        return new Date(iso).toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        });
-    } catch {
-        return iso;
-    }
 }
 
 async function loadOwnProfile() {

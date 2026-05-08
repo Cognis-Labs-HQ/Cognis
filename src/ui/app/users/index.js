@@ -6,6 +6,7 @@ import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
 import { createRepromptGuard } from "../../reuse/reprompt.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
+import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
 
 const root = document.querySelector("#app");
 const i18n = await createI18n();
@@ -16,6 +17,14 @@ let users = [];
 let registrationGatewayActive = false;
 let composer = null;
 let elements = [];
+
+function formatMemberSince(iso) {
+    return formatDate(iso, i18n.t("ui.app.dashboard.never"));
+}
+
+function formatLastLogin(iso) {
+    return formatDateTime(iso, i18n.t("ui.app.dashboard.never"));
+}
 
 function getCurrentUsername() {
     const token = localStorage.getItem("cognis_token");
@@ -289,8 +298,8 @@ function bindUsersInteractions() {
             await openPopup({
                 title: username,
                 body: `
-            <p>${escapeHtml(i18n.t("ui.app.users.member_since"))}: ${escapeHtml(info?.createdAt ?? i18n.t("ui.app.dashboard.never"))}</p>
-            <p>${escapeHtml(i18n.t("ui.app.users.last_login"))}: ${escapeHtml(info?.lastLogin ?? i18n.t("ui.app.dashboard.never"))}</p>
+            <p>${escapeHtml(i18n.t("ui.app.users.member_since"))}: ${escapeHtml(formatMemberSince(info?.createdAt ?? null))}</p>
+            <p>${escapeHtml(i18n.t("ui.app.users.last_login"))}: ${escapeHtml(formatLastLogin(info?.lastLogin ?? null))}</p>
             <p>${escapeHtml(i18n.t("ui.app.users.founder"))}: ${info?.isFounder ? "true" : "false"}</p>
           `,
             });

@@ -118,6 +118,14 @@ When a comment introduces an alternative or fallback code path (e.g. a catch blo
 
 ## Code quality
 
+### Mission and review feedback
+
+Your mission is to make Cognis the best it can possibly be within the user's request and these instructions. Treat review suggestions as a serious part of that mission, not as noise to be waved away.
+
+Do not dismiss a review suggestion as "out of scope" merely because it was not part of the original prompt. Consider its technical merits carefully. If the suggestion improves correctness, security, maintainability, UX, accessibility, consistency, or alignment with these instructions, and implementing it does not directly violate a higher-priority instruction or explicit user constraint, you are expected to implement it.
+
+If you choose not to implement a review suggestion, the reason must be concrete and rooted in these instructions, the codebase architecture, correctness, security, or an explicit user direction — not convenience, narrow task framing, or a desire to avoid additional work.
+
 ### Readability over terseness
 
 Format all new or modified code for human readability. Do not compress logic, markup, or styles into dense one-liners when a multi-line structure is clearer. A statement that would naturally span 6+ lines in JavaScript should remain that way — humans must be able to eyeball the code meaningfully.
@@ -209,6 +217,7 @@ When applying a symbol or icon (e.g. as a UI label, button decoration, or status
 ## i18n requirements
 
 - Resolve all user-facing text via language keys from XML resources; do not hardcode UI copy in JS/HTML.
+- Route all user-facing date/time output through `src/ui/reuse/timestamp.js` (for example `formatDate` / `formatDateTime`), including Administration surfaces that render DB-backed values.
 - Use `ui.reuse.generic.*` for standalone action words and common UI labels that are not feature-specific (e.g. `save`, `discard`, `reset`, `refresh`, `add`, `remove`, `done`, `enable`, `disable`, `id`, `version`, `class`, `actions`). Check for an existing `ui.reuse.generic.*` key before introducing a new app-specific one.
 - Use shared `ui.reuse.*` keys for labels with meaningful context (section headings, menu items, named features). Reserve `ui.reuse.generic.*` strictly for context-free words usable in any feature area.
 - Module-owned locale keys must be namespaced as `module.<moduleId>.*` and loaded without leaking into global namespaces.

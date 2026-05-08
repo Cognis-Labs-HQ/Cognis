@@ -990,6 +990,102 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     color: var(--text-muted);
 }
 
+.dashboard-clock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 100%;
+    padding: 0;
+    text-align: center;
+}
+
+.dashboard-clock-display {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.dashboard-clock--digital .dashboard-clock-display {
+    align-items: center;
+}
+
+.clock-digital-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.clock-digital-time {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    line-height: 1;
+}
+
+.clock-digital-date {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.dashboard-clock-tz {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.dashboard-clock--analogue {
+    gap: 6px;
+}
+
+.clock-analogue {
+    display: block;
+}
+
+.clock-analogue-face {
+    fill: var(--control-bg);
+    stroke: var(--border-strong);
+    stroke-width: 2;
+}
+
+.clock-analogue-tick {
+    stroke: var(--text-muted);
+    stroke-width: 1;
+}
+
+.clock-analogue-tick-major {
+    stroke: var(--text);
+    stroke-width: 2;
+}
+
+.clock-hand-hour {
+    stroke: var(--text);
+    stroke-width: 4;
+    stroke-linecap: round;
+}
+
+.clock-hand-minute {
+    stroke: var(--text);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+}
+
+.clock-hand-second {
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+}
+
+.clock-analogue-centre {
+    fill: var(--accent);
+}
+
 .composer-grid-overlay {
     position: absolute;
     pointer-events: none;
