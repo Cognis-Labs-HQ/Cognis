@@ -110,6 +110,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 theme,
             ),
     );
+    ctx.capabilities.contribute(
+        "notify:isEmailRegistered",
+        async (email: string) => notifStore.isEmailRegistered(email),
+    );
+    ctx.capabilities.contribute(
+        "notify:upsertVerifiedPrimaryEmail",
+        async (accountId: string, email: string) =>
+            notifStore.upsertVerifiedPrimaryEmail(accountId, email),
+    );
 }
 
 /**

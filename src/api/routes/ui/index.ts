@@ -183,8 +183,8 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            if (session.role !== "admin") {
-                res.writeHead(302, { location: "/dashboard" });
+            if (session.role === "admin") {
+                res.writeHead(302, { location: "/users" });
                 res.end();
                 return true;
             }
@@ -193,7 +193,7 @@ export function createUiRoutes(
                 !registrationGateway ||
                 registrationGateway.status === "disabled"
             ) {
-                res.writeHead(302, { location: "/users" });
+                res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
             }
@@ -201,7 +201,7 @@ export function createUiRoutes(
                 ? await accountStore.isFounder(session.sub).catch(() => false)
                 : false;
             if (!isFounder) {
-                res.writeHead(302, { location: "/users" });
+                res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
             }

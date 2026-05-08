@@ -26,6 +26,7 @@ function issueInviteErrorStatus(code: string): number {
     if (code === "smtp_unavailable") return 503;
     if (code === "founder_token_limit_reached") return 429;
     if (code === "invitee_email_required") return 400;
+    if (code === "email_taken") return 409;
     return 500;
 }
 
@@ -68,6 +69,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const createProfile = ctx.capabilities.get<
         (accountId: string, handle: string, role?: string) => Promise<void>
     >("profile:createProfile");
+    const isEmailRegistered = ctx.capabilities.get<
+        (email: string) => Promise<boolean>
+    >("notify:isEmailRegistered");
+    const upsertVerifiedPrimaryEmail = ctx.capabilities.get<
+        (accountId: string, email: string) => Promise<void>
+    >("notify:upsertVerifiedPrimaryEmail");
     const adapter = createAdapter({
         dbExecutor,
         dbType,
@@ -75,6 +82,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         canSendInviteEmail,
         sendInviteEmail,
         createProfile,
+        isEmailRegistered,
+        upsertVerifiedPrimaryEmail,
     });
     const gateway = new CoreRegistrationGateway(adapter);
 

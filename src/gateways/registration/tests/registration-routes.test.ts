@@ -172,3 +172,43 @@ test("invite endpoint returns inviter details for valid token", async () => {
     assert.equal(res.status, 200);
     assert.match(res.payload, /Founder Name/);
 });
+
+test("issue invite returns 409 when email is already registered", async () => {
+    const route = createRegistrationRoutes(
+        {
+            async listInvites() {
+                return [];
+            },
+            async issueInvite() {
+                throw new Error("email_taken");
+            },
+            async revokeInvite() {
+                return true;
+            },
+            async resolveInvite() {
+                return null;
+            },
+            async redeemInvite() {
+                return { createdAccountId: "x", inviterAccountId: "y" };
+            },
+        } as any,
+        accountStore,
+    );
+
+    const res = makeResponse();
+    const handled = await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${adminToken}` },
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"email":"taken@example.com"}');
+            },
+        } as any,
+        res,
+        new URL("http://localhost/api/v1/registration/tokens"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 409);
+    assert.match(res.payload, /email_taken/);
+});
