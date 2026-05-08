@@ -12,9 +12,6 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Timestamp translation utility (`src/ui/reuse/timestamp.js`): `formatDate`, `formatDateTime`, `getEffectiveTimezone`, and `syncTimezoneOnLogin`. All UI timestamps now route through this module and respect the user's effective timezone. ([eefdcad](https://github.com/le-firehawk/Cognis/commit/eefdcad))
 - Timezone preference in Settings → Date &amp; Time: a dropdown populated from `Intl.supportedValuesOf('timeZone')` lets users override browser auto-detection with a specific IANA timezone. The selection is persisted to `ui-preferences` via the existing preferences API. ([eefdcad](https://github.com/le-firehawk/Cognis/commit/eefdcad))
 - `syncTimezoneOnLogin`: after a successful login, the browser's detected timezone is saved to `ui-preferences.detectedTimezone` (and to `cognis_timezone` in localStorage) whenever the timezone preference is set to "auto". If the user has set a specific timezone, that overrides auto-detection on every login. ([eefdcad](https://github.com/le-firehawk/Cognis/commit/eefdcad))
-
-### Added
-
 - Public registration: 5-minute unverified account cleanup — after a public registration the server schedules a 5-minute timer that deletes the account if no verified email address is present by expiry. The register page now shows an info callout warning the user that email verification is required within 5 minutes. ([fb70bf4](https://github.com/le-firehawk/Cognis/commit/fb70bf4))
 - Invite page: `notify:hasVerifiedEmail(accountId)` capability contributed by the notification gateway bootstrap, backed by a new `DbNotificationStore.hasVerifiedEmail` method. ([fb70bf4](https://github.com/le-firehawk/Cognis/commit/fb70bf4))
 

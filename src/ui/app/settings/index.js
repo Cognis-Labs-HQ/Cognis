@@ -19,6 +19,7 @@ import { initLanguagePrefs } from "./language-prefs.js";
 import { initGeneralPrefs } from "./general-prefs.js";
 import { initNotificationPrefs } from "./notification-prefs.js";
 import { initDateTimePrefs } from "./datetime-prefs.js";
+import { applyTimezoneToLocalStorage } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { showToast } from "../../reuse/toast.js";
@@ -57,11 +58,10 @@ const existingPrefs = await loadPrefs().catch(() => null);
 if (Array.isArray(existingPrefs?.languagePriority))
     languagePriority = existingPrefs.languagePriority;
 
-if (existingPrefs?.timezone && existingPrefs.timezone !== "auto") {
-    localStorage.setItem("cognis_timezone", existingPrefs.timezone);
-} else if (existingPrefs?.detectedTimezone) {
-    localStorage.setItem("cognis_timezone", existingPrefs.detectedTimezone);
-}
+applyTimezoneToLocalStorage(
+    existingPrefs?.timezone ?? null,
+    existingPrefs?.detectedTimezone ?? null,
+);
 
 const savedMode = getStoredTheme();
 
@@ -399,11 +399,7 @@ changesBar = createUnsavedChangesBar(floatingSlot, {
         persistTheme(mode);
         applyTheme(mode);
         setPreferredLanguages(prefs.languagePriority);
-        if (prefs.timezone && prefs.timezone !== "auto") {
-            localStorage.setItem("cognis_timezone", prefs.timezone);
-        } else {
-            localStorage.removeItem("cognis_timezone");
-        }
+        applyTimezoneToLocalStorage(prefs.timezone ?? null, null);
         localStorage.setItem("cognis_ui_preferences", JSON.stringify(prefs));
         showToast(i18n.t("ui.app.settings.saved_alert"), {
             variant: "success",

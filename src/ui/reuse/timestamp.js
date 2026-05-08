@@ -10,12 +10,14 @@
  *   3. Live browser detection via Intl.DateTimeFormat().
  *
  * Public exports:
- *   formatDate(iso, fallback)      — formats an ISO string as a localised date (no time).
- *   formatDateTime(iso, fallback)  — formats an ISO string as a localised date + time.
- *   getEffectiveTimezone()         — returns the IANA timezone string currently in use.
- *   syncTimezoneOnLogin(username)  — reads saved preferences after login; when timezone is
- *                                    "auto" (or unset), detects the browser timezone, persists
- *                                    it, and writes cognis_timezone to localStorage.
+ *   formatDate(iso, fallback)            — formats an ISO string as a localised date (no time).
+ *   formatDateTime(iso, fallback)        — formats an ISO string as a localised date + time.
+ *   getEffectiveTimezone()               — returns the IANA timezone string currently in use.
+ *   applyTimezoneToLocalStorage(tz, det) — writes the effective timezone to cognis_timezone;
+ *                                          pass the saved preference and the detected fallback.
+ *   syncTimezoneOnLogin(username)        — reads saved preferences after login; when timezone is
+ *                                          "auto" (or unset), detects the browser timezone,
+ *                                          persists it, and writes cognis_timezone to localStorage.
  *
  * Usage:
  *   import { formatDate, formatDateTime, syncTimezoneOnLogin } from '../reuse/timestamp.js';
@@ -37,6 +39,16 @@ function detectBrowserTimezone() {
         return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
     } catch {
         return "UTC";
+    }
+}
+
+export function applyTimezoneToLocalStorage(savedTz, detectedTz) {
+    if (savedTz && savedTz !== "auto") {
+        localStorage.setItem(STORAGE_KEY, savedTz);
+    } else if (detectedTz) {
+        localStorage.setItem(STORAGE_KEY, detectedTz);
+    } else {
+        localStorage.removeItem(STORAGE_KEY);
     }
 }
 
@@ -80,17 +92,17 @@ export async function syncTimezoneOnLogin(username) {
         const savedTz = prefs?.timezone;
 
         if (savedTz && savedTz !== "auto") {
-            localStorage.setItem(STORAGE_KEY, savedTz);
+            applyTimezoneToLocalStorage(savedTz, null);
             return;
         }
 
         const detected = detectBrowserTimezone();
-        localStorage.setItem(STORAGE_KEY, detected);
+        applyTimezoneToLocalStorage(null, detected);
 
         if (prefs?.detectedTimezone !== detected) {
             await saveUiPreferences({ detectedTimezone: detected });
         }
     } catch {
-        localStorage.setItem(STORAGE_KEY, detectBrowserTimezone());
+        applyTimezoneToLocalStorage(null, detectBrowserTimezone());
     }
 }
