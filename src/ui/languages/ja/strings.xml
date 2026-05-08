@@ -15,6 +15,10 @@
   <string name="ui.reuse.appearance">外観</string>
   <string name="ui.reuse.language">言語</string>
   <string name="ui.reuse.unsaved_changes">未保存の変更があります。</string>
+  <string name="ui.reuse.unsaved_changes.navigate_away.title">未保存の変更</string>
+  <string name="ui.reuse.unsaved_changes.navigate_away.body">未保存の変更があります。このページを離れると、変更が失われます。</string>
+  <string name="ui.reuse.unsaved_changes.navigate_away.discard">破棄して移動</string>
+  <string name="ui.reuse.unsaved_changes.navigate_away.stay">このページに留まる</string>
 
   <string name="ui.reuse.generic.enable">有効化</string>
   <string name="ui.reuse.generic.disable">無効化</string>
@@ -426,8 +430,8 @@
   <string name="ui.app.admin.security.trusted_domains_label">信頼済みメールドメイン</string>
   <string name="ui.app.admin.security.trusted_domains_hint">許可するドメインのカンマ区切りリスト。すべてのドメインを許可するには空のままにしてください。</string>
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
-  <string name="ui.app.admin.security.enable_registrations_label">登録を有効化</string>
-  <string name="ui.app.admin.security.enable_registrations_hint">招待トークンなしでも誰でも登録を有効にします。</string>
+  <string name="ui.app.admin.security.enable_registrations_label">公開登録</string>
+  <string name="ui.app.admin.security.enable_registrations_hint">招待トークンなしで誰でも登録できるようにします。</string>
   <string name="ui.app.admin.security.user_validation_mode_label">ユーザー検証方式</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">ログイン後にユーザーアカウントの検証を必須にする方式を選択します。</string>
   <string name="ui.app.admin.security.user_validation_mode.none">なし</string>

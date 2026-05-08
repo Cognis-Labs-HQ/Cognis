@@ -90,6 +90,7 @@
  *   showFooter?: boolean,
  *   persistLayoutPreferences?: boolean,
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
+ *   onBeforeSubPageSwitch?: (fromId: string|null, toId: string) => Promise<boolean>,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
@@ -119,6 +120,7 @@ export function createPageComposer(
         frameless = false,
         persistLayoutPreferences = true,
         pageOverrides = {},
+        onBeforeSubPageSwitch,
     },
 ) {
     function escapeHtml(value) {
@@ -2418,7 +2420,11 @@ export function createPageComposer(
         if (toggleEl) toggleEl.hidden = !effectiveShowThemeToggle;
     }
 
-    function switchSubPage(id) {
+    async function switchSubPage(id) {
+        if (onBeforeSubPageSwitch) {
+            const allowed = await onBeforeSubPageSwitch(activeSubPageId, id);
+            if (!allowed) return;
+        }
         const prevId = activeSubPageId;
         activeSubPageId = id;
         const panel =

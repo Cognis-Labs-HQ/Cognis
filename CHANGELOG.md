@@ -9,6 +9,11 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Reusable `renderInfoTooltip(text)` component (`src/ui/reuse/info-tooltip.js` + `src/ui/styles/reuse/info-tooltip.css`): renders a small ℹ icon that reveals a tooltip panel on hover/focus; imported in `page-builder.css`. ([1856b39](https://github.com/le-firehawk/Cognis/commit/1856b39))
+- `createPageComposer` now accepts `onBeforeSubPageSwitch(fromId, toId): Promise<boolean>` — a navigation guard called before switching sub-pages; returning `false` cancels the switch. ([1856b39](https://github.com/le-firehawk/Cognis/commit/1856b39))
+- Administration page: navigation guard prompt when leaving a sub-page with unsaved changes — user is given the option to discard and continue or stay on the current section. ([1856b39](https://github.com/le-firehawk/Cognis/commit/1856b39))
+- Administration page: `beforeunload` handler prevents accidental page refresh/close when security settings are dirty. ([1856b39](https://github.com/le-firehawk/Cognis/commit/1856b39))
+
 - Public `GET /api/v1/ui/auth-typing-messages` route plus shared `src/ui/reuse/auth-typing.js`, allowing enabled gateways (and future module manifests) to contribute extra `typing-text` samples to the login/register auth pages. Registration now contributes `Register your account today`, and Profile now owns the `It's a social space!` sample. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
 - Registration page (`/register`) now shows the cognis-ad-frame typing showcase in the intro panel (same component as the login page). ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 - Registration page: when a valid invite token is present, a live HH:MM:SS countdown (`Expires in: …`) is shown below the inviter greeting and ticks down every second until the token expires. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
@@ -19,6 +24,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Administration → Security: "Enable registrations" heading renamed to "Public Registration"; plain checkbox replaced with a slider toggle. "User validation" renamed to "User Validation Method". Inline hint text replaced with `renderInfoTooltip` icons on all three Security section headings. ([1856b39](https://github.com/le-firehawk/Cognis/commit/1856b39))
 - Theme toggle persistence is now auth-aware: authenticated pages still sync `ui-preferences`, while unauthenticated pages (login/register) only update the local theme cookie/localStorage and no longer attempt 401ing preference reads/writes. Theme-toggle binding is also idempotent so auth pages do not double-bind the button. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
 - Timed toasts now render a thin horizontal timeout bar across the top edge that shrinks leftward until dismissal; permanent toasts keep a manual close button. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
 - Login and Registration intro subtitle markup now uses `auth-intro` and shared copy (`Try learning differently`) to keep both auth pages consistent. ([6f0f3db](https://github.com/le-firehawk/Cognis/commit/6f0f3db))

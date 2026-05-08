@@ -1221,6 +1221,39 @@ let allAdapters = await loadAllAdapters(gateways);
 let composer;
 let changesBar;
 
+async function guardSubPageSwitch() {
+    if (!changesBar?.isAnyDirty()) return true;
+    const result = await openPopup({
+        title: i18n.t("ui.reuse.unsaved_changes.navigate_away.title"),
+        body: `<p>${i18n.t("ui.reuse.unsaved_changes.navigate_away.body")}</p>`,
+        variant: "warning",
+        actions: [
+            {
+                id: "discard",
+                label: i18n.t("ui.reuse.unsaved_changes.navigate_away.discard"),
+                variant: "confirm",
+            },
+            {
+                id: "stay",
+                label: i18n.t("ui.reuse.unsaved_changes.navigate_away.stay"),
+                variant: "cancel",
+            },
+        ],
+    });
+    if (result === "discard") {
+        securitySection.discard();
+        changesBar.markDirty("security", false);
+        return true;
+    }
+    return false;
+}
+
+window.addEventListener("beforeunload", (e) => {
+    if (changesBar?.isAnyDirty()) {
+        e.preventDefault();
+    }
+});
+
 const securitySection = initSecuritySection(root, {
     i18n,
     onDirtyChange: (dirty) => changesBar?.markDirty("security", dirty),
@@ -1335,6 +1368,7 @@ composer = createPageComposer(root, {
     elements,
     preferenceKey: "administration-layout",
     i18n,
+    onBeforeSubPageSwitch: guardSubPageSwitch,
     pageContext: {
         title: i18n.t("ui.app.admin.page_title"),
         subtitle: i18n.t("ui.app.admin.page_subtitle"),

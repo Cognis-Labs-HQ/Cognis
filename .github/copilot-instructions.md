@@ -198,6 +198,7 @@ API sanity and security are paramount.
 - Do not perform speculative or cosmetic changes outside the files directly relevant to the task.
 - Do not add AI process notes, agent reasoning, or session context to any product-facing documentation.
 - Do not use inline result messages or browser alerts for user feedback. All transient user-facing feedback (success confirmations, warnings, errors, info notices) must be delivered via `showToast` from `src/ui/reuse/toast.js`. Never write feedback text directly into a DOM element's `textContent` or `innerHTML`, and never call `alert()`, `confirm()`, or `prompt()`. Reserve `openPopup` exclusively for interactions that require a deliberate user decision (e.g. confirming a destructive action, filling in a form) — not for displaying a result.
+- Do not use inline hint text (`<span class="...-hint">`) below or beside form fields to deliver longer contextual descriptions. Instead, use `renderInfoTooltip(text)` from `src/ui/reuse/info-tooltip.js` placed inline next to the label or heading. This keeps forms visually clean while still making context available on demand. Inline hint text is only appropriate for a single short phrase that must always be visible; anything longer or more contextual belongs in an info tooltip.
 
 ## Symbols and icons
 

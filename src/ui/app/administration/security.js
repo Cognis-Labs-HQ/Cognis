@@ -1,5 +1,6 @@
 import { apiFetch } from "../../reuse/api-client.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 
 /**
  * Security sub-module for the Administration page.
@@ -177,10 +178,10 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             return `
         <div class="security-settings-form">
           <div class="components-section">
-            <h3 class="components-section-heading">${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_label"))}</h3>
-            <label class="security-field-label" for="security-trusted-domains">
-              <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_hint"))}</span>
-            </label>
+            <h3 class="components-section-heading">
+              ${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.trusted_domains_hint"))}
+            </h3>
             <div class="security-field-row">
               <input
                 id="security-trusted-domains"
@@ -191,19 +192,22 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             </div>
           </div>
           <div class="components-section">
-            <h3 class="components-section-heading">${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_label"))}</h3>
-            <label class="security-field-label" for="security-enable-registrations">
-              <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_hint"))}</span>
-            </label>
+            <h3 class="components-section-heading">
+              ${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.enable_registrations_hint"))}
+            </h3>
             <div class="security-field-row">
-              <input id="security-enable-registrations" type="checkbox" />
+              <label class="switch">
+                <input id="security-enable-registrations" type="checkbox" />
+                <span class="slider"></span>
+              </label>
             </div>
           </div>
           <div class="components-section">
-            <h3 class="components-section-heading">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}</h3>
-            <label class="security-field-label" for="security-user-validation-mode">
-              <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_hint"))}</span>
-            </label>
+            <h3 class="components-section-heading">
+              ${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.user_validation_mode_hint"))}
+            </h3>
             <div class="security-field-row">
               <select id="security-user-validation-mode" class="security-domains-input theme-select">
                 <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.none"))}</option>

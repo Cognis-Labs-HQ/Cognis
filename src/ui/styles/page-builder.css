@@ -2,6 +2,7 @@
 @import url("/static/styles/reuse/theme.css");
 @import url("/static/styles/reuse/layout.css");
 @import url("/static/styles/reuse/in-page-callout.css");
+@import url("/static/styles/reuse/info-tooltip.css");
 
 .tabs {
     display: flex;
