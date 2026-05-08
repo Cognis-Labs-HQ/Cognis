@@ -499,12 +499,9 @@ function bindGatewayToggles() {
                     }
                 }
             } else {
-                const gatewayAdapters = getGatewayAdapters(
-                    allAdapters,
-                    gatewayId,
-                );
+                const liveAdapters = await loadGatewayAdapters(gatewayId);
                 const gatewayDisableWarning =
-                    gatewayAdapters.length > 0
+                    liveAdapters.length > 0
                         ? `<p>${escapeHtml(i18n.t("ui.app.admin.disable_gateway_with_adapters_warning"))}</p>`
                         : "";
                 const result = await openPopup({
@@ -529,8 +526,7 @@ function bindGatewayToggles() {
                     return;
                 }
 
-                const freshAdapters = await loadGatewayAdapters(gatewayId);
-                for (const adapter of freshAdapters) {
+                for (const adapter of liveAdapters) {
                     const currentAdapterId = adapter.senderId ?? adapter.id;
                     if (
                         currentAdapterId &&
