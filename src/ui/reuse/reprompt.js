@@ -15,7 +15,7 @@ import { escapeHtml } from "./escape-html.js";
  *     confirmationWord: "INVITE",
  *   });
  *
- * @param {{ i18n: { t: (key: string) => string } }} options
+ * @param {{ i18n: { t: (key: string) => string, [key: string]: unknown } }} options
  * @returns {{ runWithReprompt: (action: () => Promise<void> | void, config?: { title?: string, message?: string, confirmationWord?: string }) => Promise<boolean> }}
  */
 export function createRepromptGuard({ i18n }) {

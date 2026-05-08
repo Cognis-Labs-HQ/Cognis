@@ -103,10 +103,10 @@ function renderUsersTable() {
               <tr class="users-row" data-username="${escapeHtml(user.username)}">
                 <td>${escapeHtml(user.username)}</td>
                 <td>${user.isAdmin ? "admin" : "user"}</td>
-                <td>${user.enabled ? escapeHtml(i18n.t("ui.app.users.enabled")) : escapeHtml(i18n.t("ui.app.users.disabled"))}</td>
-                <td class="users-actions-cell">
-                  <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}">${user.enabled ? escapeHtml(i18n.t("ui.reuse.generic.disable")) : escapeHtml(i18n.t("ui.reuse.generic.enable"))}</button>
-                  <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.profile.banner_menu_label" aria-label="${escapeHtml(i18n.t("ui.app.profile.banner_menu_label"))}" data-username="${escapeHtml(user.username)}">☰</button>
+                  <td>${user.enabled ? escapeHtml(i18n.t("ui.app.users.enabled")) : escapeHtml(i18n.t("ui.app.users.disabled"))}</td>
+                  <td class="users-actions-cell">
+                    <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}">${user.enabled ? escapeHtml(i18n.t("ui.reuse.generic.disable")) : escapeHtml(i18n.t("ui.reuse.generic.enable"))}</button>
+                  <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}">☰</button>
                 </td>
               </tr>
             `,
