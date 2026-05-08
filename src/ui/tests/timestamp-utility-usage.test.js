@@ -1,10 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
 test("users popup formats member and login timestamps via timestamp utility", () => {
     const source = readFileSync(
-        "/home/runner/work/Cognis/Cognis/src/ui/app/users/index.js",
+        resolve(ROOT, "src/ui/app/users/index.js"),
         "utf8",
     );
 
@@ -18,7 +22,7 @@ test("users popup formats member and login timestamps via timestamp utility", ()
 
 test("administration registration table formats invite expiry timestamps via timestamp utility", () => {
     const source = readFileSync(
-        "/home/runner/work/Cognis/Cognis/src/gateways/registration/ui/admin-section.js",
+        resolve(ROOT, "src/gateways/registration/ui/admin-section.js"),
         "utf8",
     );
 
