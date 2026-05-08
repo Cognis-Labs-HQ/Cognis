@@ -1,4 +1,4 @@
-import { getEffectiveTimezone } from "../../reuse/timestamp.js";
+import { getBrowserDetectedTimezone } from "../../reuse/timestamp.js";
 
 /**
  * Date and time preferences sub-module for the Settings page.
@@ -59,7 +59,7 @@ export function initDateTimePrefs(
         const selectEl = root.querySelector("#pref-timezone-select");
         if (!selectEl) return;
 
-        const effectiveTz = getEffectiveTimezone();
+        const effectiveTz = getBrowserDetectedTimezone();
         const autoLabel = i18n
             .t("ui.app.settings.datetime_tz_auto")
             .replace("{tz}", effectiveTz);

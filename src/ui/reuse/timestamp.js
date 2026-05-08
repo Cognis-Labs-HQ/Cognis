@@ -12,6 +12,7 @@
  * Public exports:
  *   formatDate(iso, fallback)            — formats an ISO string as a localised date (no time).
  *   formatDateTime(iso, fallback)        — formats an ISO string as a localised date + time.
+ *   getBrowserDetectedTimezone()         — returns the browser-detected IANA timezone string.
  *   getEffectiveTimezone()               — returns the IANA timezone string currently in use.
  *   applyTimezoneToLocalStorage(tz, det) — writes the effective timezone to cognis_timezone;
  *                                          pass the saved preference and the detected fallback.
@@ -55,6 +56,10 @@ export function applyTimezoneToLocalStorage(savedTz, detectedTz) {
 export function getEffectiveTimezone() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) return stored;
+    return detectBrowserTimezone();
+}
+
+export function getBrowserDetectedTimezone() {
     return detectBrowserTimezone();
 }
 
