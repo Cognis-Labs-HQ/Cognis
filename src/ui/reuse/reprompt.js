@@ -20,7 +20,20 @@ import { apiFetch } from "./api-client.js";
  * @param {{ i18n: { t: (key: string) => string, [key: string]: unknown } }} options
  * @returns {{ runWithReprompt: (action: () => Promise<void> | void, config?: { title?: string, message?: string }) => Promise<boolean> }}
  */
-export function createRepromptGuard({ i18n }) {
+export function createRepromptGuard({
+    i18n,
+    apiFetchImpl = apiFetch,
+    openPopupImpl = openPopup,
+}) {
+    async function verifyCurrentSession(password = "") {
+        const body = password ? { password } : {};
+        return apiFetchImpl("/api/v1/auth/verify", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(body),
+        });
+    }
+
     async function runWithReprompt(action, config = {}) {
         const title = config.title ?? i18n.t("ui.reuse.reprompt.title");
         const message = config.message ?? i18n.t("ui.reuse.reprompt.message");
@@ -28,7 +41,15 @@ export function createRepromptGuard({ i18n }) {
         let warningEl = null;
         let isVerifying = false;
 
-        const result = await openPopup({
+        try {
+            const verificationResponse = await verifyCurrentSession();
+            if (verificationResponse.ok) {
+                await action();
+                return true;
+            }
+        } catch {}
+
+        const result = await openPopupImpl({
             title,
             body: () => `
         <p>${escapeHtml(message)}</p>
@@ -77,11 +98,7 @@ export function createRepromptGuard({ i18n }) {
 
                 isVerifying = true;
                 try {
-                    const res = await apiFetch("/api/v1/auth/verify", {
-                        method: "POST",
-                        headers: { "content-type": "application/json" },
-                        body: JSON.stringify({ password }),
-                    });
+                    const res = await verifyCurrentSession(password);
                     if (!res.ok) {
                         warnAndRefocus();
                         return false;

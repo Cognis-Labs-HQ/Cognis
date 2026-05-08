@@ -7,6 +7,11 @@ import { initSecuritySection } from "./security.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
 import { showToast } from "../../reuse/toast.js";
+import {
+    getAdapterDisableContext,
+    getGatewayAdapters,
+    getGatewayEnableableAdapters,
+} from "./toggle-flows.js";
 
 const root = document.querySelector("#app");
 const i18n = await createI18n();
@@ -184,7 +189,7 @@ function renderAdapterToggle(adapter, gatewayId, isGatewayDisabled) {
     const adapterId = adapter.senderId ?? adapter.id;
     const isEnabled = !!(adapter.active ?? adapter.enabled);
     const isLocked = !!adapter.locked;
-    return `<label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_gateway"))}">
+    return `<label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
       <input type="checkbox" class="adapter-toggle"
         data-adapter="${escapeHtml(adapterId)}"
         data-gateway="${escapeHtml(gatewayId)}"
@@ -432,13 +437,83 @@ function bindGatewayToggles() {
                         for (const depId of disabledDeps) {
                             await toggleGateway(depId, "enable");
                         }
+                        gateways = await loadGateways();
+                        allAdapters = await loadAllAdapters(gateways);
                     }
-                }
+                    const enableableAdapters = getGatewayEnableableAdapters(
+                        allAdapters,
+                        gatewayId,
+                    );
+                    let popupOverlay = null;
+                    const result = await openPopup({
+                        title: i18n.t("ui.app.admin.enable_confirm_gateway"),
+                        body: () => `
+                            <p>${escapeHtml(i18n.t("ui.app.admin.enable_gateway_select_adapters"))}</p>
+                            ${
+                                enableableAdapters.length > 0
+                                    ? `<div class="stack">${enableableAdapters
+                                          .map((adapter) => {
+                                              const currentAdapterId =
+                                                  adapter.senderId ??
+                                                  adapter.id;
+                                              return `<label class="provider-option-row">
+                                                    <span class="provider-option-label">${escapeHtml(adapter.name ?? currentAdapterId)}</span>
+                                                    <input type="checkbox" name="gateway-enable-adapter" value="${escapeHtml(currentAdapterId)}" />
+                                                </label>`;
+                                          })
+                                          .join("")}</div>`
+                                    : `<p>${escapeHtml(i18n.t("ui.app.admin.enable_gateway_no_adapters"))}</p>`
+                            }
+                        `,
+                        actions: [
+                            {
+                                id: "confirm",
+                                label: i18n.t("ui.reuse.generic.enable"),
+                                variant: "confirm",
+                            },
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.popup.cancel"),
+                                variant: "cancel",
+                            },
+                        ],
+                        onOpen: (overlay) => {
+                            popupOverlay = overlay;
+                        },
+                    });
+                    if (result !== "confirm") {
+                        toggle.checked = previousState;
+                        return;
+                    }
 
-                if (action === "disable") {
+                    await toggleGateway(gatewayId, action);
+
+                    if (popupOverlay instanceof HTMLElement) {
+                        const selectedAdapterIds = [
+                            ...popupOverlay.querySelectorAll(
+                                'input[name="gateway-enable-adapter"]:checked',
+                            ),
+                        ].map((input) => input.value);
+                        for (const selectedAdapterId of selectedAdapterIds) {
+                            await toggleAdapter(
+                                gatewayId,
+                                selectedAdapterId,
+                                "enable",
+                            );
+                        }
+                    }
+                } else {
+                    const gatewayAdapters = getGatewayAdapters(
+                        allAdapters,
+                        gatewayId,
+                    );
+                    const gatewayDisableWarning =
+                        gatewayAdapters.length > 0
+                            ? `<p>${escapeHtml(i18n.t("ui.app.admin.disable_gateway_with_adapters_warning"))}</p>`
+                            : "";
                     const result = await openPopup({
                         title: i18n.t("ui.app.admin.disable_confirm_gateway"),
-                        body: `<strong>${escapeHtml(gw?.name ?? gatewayId)}</strong>`,
+                        body: `${gatewayDisableWarning}<strong>${escapeHtml(gw?.name ?? gatewayId)}</strong>`,
                         variant: "danger",
                         actions: [
                             {
@@ -457,20 +532,18 @@ function bindGatewayToggles() {
                         toggle.checked = previousState;
                         return;
                     }
-                }
 
-                await toggleGateway(gatewayId, action);
+                    await toggleGateway(gatewayId, action);
 
-                if (action === "disable") {
-                    const gatewayAdapters = allAdapters.filter(
-                        (a) => a._gatewayId === gatewayId,
-                    );
                     for (const adapter of gatewayAdapters) {
-                        const adapterId = adapter.senderId ?? adapter.id;
-                        if (adapterId) {
+                        const currentAdapterId = adapter.senderId ?? adapter.id;
+                        if (
+                            currentAdapterId &&
+                            (adapter.active ?? adapter.enabled)
+                        ) {
                             await toggleAdapter(
                                 gatewayId,
-                                adapterId,
+                                currentAdapterId,
                                 "disable",
                             );
                         }
@@ -642,37 +715,39 @@ function bindAdapterToggles() {
             }
 
             if (action === "disable") {
-                const gwAdapters = allAdapters.filter(
-                    (a) => a._gatewayId === gatewayId,
+                const { isLastEnabled, targetAdapter } = getAdapterDisableContext(
+                    allAdapters,
+                    gatewayId,
+                    adapterId,
                 );
-                const otherEnabledAdapters = gwAdapters.filter((a) => {
-                    const aId = a.senderId ?? a.id;
-                    return (a.active ?? a.enabled) && aId !== adapterId;
+                const adapterName =
+                    targetAdapter?.name ??
+                    targetAdapter?.senderId ??
+                    targetAdapter?.id ??
+                    adapterId;
+                const disableWarning = isLastEnabled
+                    ? `<p>${escapeHtml(i18n.t("ui.app.admin.disable_last_adapter_warning"))}</p>`
+                    : "";
+                const result = await openPopup({
+                    title: i18n.t("ui.app.admin.disable_confirm_adapter"),
+                    body: `${disableWarning}<strong>${escapeHtml(adapterName)}</strong>`,
+                    variant: "danger",
+                    actions: [
+                        {
+                            id: "confirm",
+                            label: i18n.t("ui.reuse.generic.disable"),
+                            variant: "confirm",
+                        },
+                        {
+                            id: "cancel",
+                            label: i18n.t("ui.reuse.popup.cancel"),
+                            variant: "cancel",
+                        },
+                    ],
                 });
-                const isLastEnabled = otherEnabledAdapters.length === 0;
-
-                if (isLastEnabled) {
-                    const result = await openPopup({
-                        title: i18n.t("ui.app.admin.disable_confirm_gateway"),
-                        body: `<p>${i18n.t("ui.app.admin.disable_last_adapter_warning")}</p>`,
-                        variant: "danger",
-                        actions: [
-                            {
-                                id: "confirm",
-                                label: i18n.t("ui.reuse.generic.disable"),
-                                variant: "confirm",
-                            },
-                            {
-                                id: "cancel",
-                                label: i18n.t("ui.reuse.popup.cancel"),
-                                variant: "cancel",
-                            },
-                        ],
-                    });
-                    if (result !== "confirm") {
-                        toggle.checked = previouslyChecked;
-                        return;
-                    }
+                if (result !== "confirm") {
+                    toggle.checked = previouslyChecked;
+                    return;
                 }
 
                 await toggleAdapter(gatewayId, adapterId, "disable");
