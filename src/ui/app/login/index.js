@@ -13,6 +13,11 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 
+if (localStorage.getItem("cognis_token")) {
+    window.location.replace("/dashboard");
+    await new Promise(() => {});
+}
+
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.login");
 

@@ -208,6 +208,9 @@
   <string name="ui.app.register.username">Nama pengguna</string>
   <string name="ui.app.register.display_name">Nama tampilan</string>
   <string name="ui.app.register.password">Kata sandi</string>
+  <string name="ui.app.register.confirm_password">Konfirmasi kata sandi</string>
+  <string name="ui.app.register.language">Bahasa</string>
+  <string name="ui.app.register.error.password_mismatch">Kata sandi tidak cocok.</string>
   <string name="ui.app.register.submit">Buat akun</string>
   <string name="ui.app.register.closed">Pendaftaran terbuka saat ini dinonaktifkan.</string>
   <string name="ui.app.register.success">Akun berhasil dibuat. Mengalihkan ke login…</string>

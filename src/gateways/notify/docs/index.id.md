@@ -42,7 +42,7 @@ export interface NotificationGateway {
 | Metode | Path                                               | Keterangan                             | Autentikasi |
 | ------ | -------------------------------------------------- | -------------------------------------- | ----------- |
 | `POST` | `/api/v1/notifications/send`                       | Kirim notifikasi                       | Admin       |
-| `GET`  | `/api/v1/notifications/providers`                  | Daftar pengirim terdaftar              | Admin       |
+| `GET`  | `/api/v1/notifications/providers`                  | Daftar pengirim terdaftar              | Pengguna    |
 | `GET`  | `/api/v1/notifications/categories`                 | Daftar kategori notifikasi             | Bearer      |
 | `GET`  | `/api/v1/notifications/preferences`                | Dapatkan preferensi notifikasi sendiri | Bearer      |
 | `PUT`  | `/api/v1/notifications/preferences`                | Perbarui preferensi notifikasi sendiri | Bearer      |

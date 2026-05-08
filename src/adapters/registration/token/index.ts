@@ -93,6 +93,7 @@ export function createAdapter(deps: {
         accountId: string,
         handle: string,
         role?: string,
+        displayName?: string,
     ) => Promise<void>;
     isEmailRegistered: (email: string) => Promise<boolean>;
     upsertVerifiedPrimaryEmail: (
@@ -343,7 +344,12 @@ export function createAdapter(deps: {
             `UPDATE accounts SET invited_by_account_id = ${placeholder(1)} WHERE id = ${placeholder(2)}`,
             [invite.inviterAccountId, created.username],
         );
-        await createProfile?.(created.username, created.username, "user");
+        await createProfile?.(
+            created.username,
+            created.username,
+            "user",
+            displayName || undefined,
+        );
 
         const nowIso = new Date().toISOString();
         const { tokenHash } = parseToken(input.token);

@@ -61,7 +61,7 @@ export function createNotificationRoutes(
             url.pathname === "/api/v1/notifications/providers" &&
             req.method === "GET"
         ) {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!requireAuth(req, res, "user")) return true;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: gateway.listSenders() }));
             return true;

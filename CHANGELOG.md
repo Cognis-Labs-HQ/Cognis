@@ -9,6 +9,17 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Registration form: confirm-password field — submission is rejected client-side if the two password entries do not match. ([8aa9cf8](https://github.com/le-firehawk/Cognis/commit/8aa9cf8))
+- Registration form: language-selector dropdown — queries `/api/v1/system/languages`, pre-selects the best browser-language match (falling back to English), and sets that language as primary preference on successful account creation. ([8aa9cf8](https://github.com/le-firehawk/Cognis/commit/8aa9cf8))
+- Login and Register pages now redirect authenticated users (detected via `cognis_token` in localStorage) to `/dashboard` immediately, preventing already-logged-in users from seeing the auth forms. ([8aa9cf8](https://github.com/le-firehawk/Cognis/commit/8aa9cf8))
+- Invite-based registration now passes the user-supplied `displayName` to the profile gateway's `profile:createProfile` capability, so the display name set at sign-up is immediately visible in the User Profile page when the profile gateway is enabled. ([8aa9cf8](https://github.com/le-firehawk/Cognis/commit/8aa9cf8))
+
+### Fixed
+
+- `createUnsavedChangesBar`: Save button now auto-clears the dirty state and hides the bar immediately after `onSave` resolves, rather than leaving it visible until the page reloads or a toast auto-dismisses. ([8aa9cf8](https://github.com/le-firehawk/Cognis/commit/8aa9cf8))
+- `openPopup`: keyboard Enter handler now only fires for the topmost popup overlay, preventing a nested popup (e.g. the email-input prompt inside the invite reprompt flow) from accidentally re-triggering the parent popup's confirm action. ([8aa9cf8](https://github.com/le-firehawk/Cognis/commit/8aa9cf8))
+- `GET /api/v1/notifications/providers` no longer requires admin role — any authenticated user can now retrieve the list of notification senders, fixing a 403 error that blocked non-admin users from managing their notification preferences. ([8aa9cf8](https://github.com/le-firehawk/Cognis/commit/8aa9cf8))
+
 - Reusable `renderInfoTooltip(text)` component (`src/ui/reuse/info-tooltip.js` + `src/ui/styles/reuse/info-tooltip.css`): renders a small ℹ icon that reveals a tooltip panel on hover/focus; imported in `page-builder.css`. ([1856b39](https://github.com/le-firehawk/Cognis/commit/1856b39))
 - `createPageComposer` now accepts `onBeforeSubPageSwitch(fromId, toId): Promise<boolean>` — a navigation guard called before switching sub-pages; returning `false` cancels the switch. ([1856b39](https://github.com/le-firehawk/Cognis/commit/1856b39))
 - Administration page: navigation guard prompt when leaving a sub-page with unsaved changes — user is given the option to discard and continue or stay on the current section. ([1856b39](https://github.com/le-firehawk/Cognis/commit/1856b39))

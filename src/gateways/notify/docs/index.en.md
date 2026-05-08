@@ -63,7 +63,7 @@ Key source locations:
 | Method | Path                                               | Description                         | Auth   |
 | ------ | -------------------------------------------------- | ----------------------------------- | ------ |
 | `POST` | `/api/v1/notifications/send`                       | Dispatch a notification             | Admin  |
-| `GET`  | `/api/v1/notifications/providers`                  | List registered senders             | Admin  |
+| `GET`  | `/api/v1/notifications/providers`                  | List registered senders             | User   |
 | `GET`  | `/api/v1/notifications/categories`                 | List notification categories        | Bearer |
 | `GET`  | `/api/v1/notifications/preferences`                | Get own notification preferences    | Bearer |
 | `PUT`  | `/api/v1/notifications/preferences`                | Update own notification preferences | Bearer |

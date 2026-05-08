@@ -208,6 +208,9 @@
   <string name="ui.app.register.username">Benutzername</string>
   <string name="ui.app.register.display_name">Anzeigename</string>
   <string name="ui.app.register.password">Passwort</string>
+  <string name="ui.app.register.confirm_password">Passwort bestätigen</string>
+  <string name="ui.app.register.language">Sprache</string>
+  <string name="ui.app.register.error.password_mismatch">Die Passwörter stimmen nicht überein.</string>
   <string name="ui.app.register.submit">Konto erstellen</string>
   <string name="ui.app.register.closed">Die offene Registrierung ist derzeit deaktiviert.</string>
   <string name="ui.app.register.success">Konto erstellt. Weiterleitung zur Anmeldung…</string>

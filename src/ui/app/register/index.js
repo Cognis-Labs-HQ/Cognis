@@ -1,5 +1,9 @@
 import { createPageComposer } from "../../reuse/page-composer.js";
-import { createI18n, applyDocumentTitle } from "../../reuse/i18n.js";
+import {
+    createI18n,
+    applyDocumentTitle,
+    setPreferredLanguages,
+} from "../../reuse/i18n.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
 import { renderInPageCallout } from "../../reuse/in-page-callout.js";
@@ -11,6 +15,11 @@ import {
     renderAuthBrandline,
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
+
+if (localStorage.getItem("cognis_token")) {
+    window.location.replace("/dashboard");
+    await new Promise(() => {});
+}
 
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.register");
@@ -35,6 +44,8 @@ let inviteData = null;
 let tokenInvalid = false;
 let openRegistrationsEnabled = false;
 let invalidTokenToastToken = null;
+let availableLanguages = [];
+let selectedLanguage = "en";
 
 if (token) {
     try {
@@ -65,6 +76,30 @@ if (token) {
         openRegistrationsEnabled = false;
     }
 }
+
+try {
+    const langRes = await fetch("/api/v1/system/languages");
+    if (langRes.ok) {
+        const langPayload = await langRes.json();
+        availableLanguages = langPayload.data ?? [];
+    }
+} catch {
+    availableLanguages = [];
+}
+
+(function detectInitialLanguage() {
+    const browserLangs = navigator.languages?.length
+        ? [...navigator.languages]
+        : [navigator.language || "en"];
+    for (const browserLang of browserLangs) {
+        const code = browserLang.toLowerCase().split("-")[0];
+        if (availableLanguages.some((l) => l.key === code)) {
+            selectedLanguage = code;
+            return;
+        }
+    }
+    selectedLanguage = "en";
+})();
 const typingSamples = await loadAuthTypingSamples(i18n);
 
 function formatCountdown(msRemaining) {
@@ -113,6 +148,19 @@ function renderRegisterShell() {
         const countdownHtml = inviteData?.expiresAt
             ? `<p id="register-countdown" class="auth-intro" style="font-size:1rem;margin-top:4px"></p>`
             : "";
+        const langOptionsHtml = availableLanguages
+            .map(
+                (lang) =>
+                    `<option value="${escapeHtml(lang.key)}"${lang.key === selectedLanguage ? " selected" : ""}>${escapeHtml(lang.name)}</option>`,
+            )
+            .join("");
+        const langSelectHtml =
+            availableLanguages.length > 1
+                ? `<label>
+            <span>${escapeHtml(i18n.t("ui.app.register.language"))}</span>
+            <select name="language">${langOptionsHtml}</select>
+          </label>`
+                : "";
         formHtml = `
       ${invitedText ? `<p class="auth-intro">${escapeHtml(invitedText)}</p>` : ""}
       ${countdownHtml}
@@ -134,6 +182,11 @@ function renderRegisterShell() {
             <span>${escapeHtml(i18n.t("ui.app.register.password"))}</span>
             <input name="password" type="password" required />
           </label>
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.register.confirm_password"))}</span>
+            <input name="confirmPassword" type="password" required />
+          </label>
+          ${langSelectHtml}
           <button type="submit" class="btn-confirm btn-animated">${escapeHtml(i18n.t("ui.app.register.submit"))}</button>
         </form>
       </div>
@@ -232,6 +285,18 @@ const composer = createPageComposer(root, {
                         form.displayName.value ?? "",
                     ).trim();
                     const password = String(form.password.value ?? "");
+                    const confirmPassword = String(
+                        form.confirmPassword.value ?? "",
+                    );
+                    const chosenLanguage =
+                        form.language?.value ?? selectedLanguage;
+                    if (password !== confirmPassword) {
+                        showToast(
+                            i18n.t("ui.app.register.error.password_mismatch"),
+                            { variant: "error" },
+                        );
+                        return;
+                    }
                     try {
                         if (token) {
                             const response = await fetch(
@@ -307,6 +372,9 @@ const composer = createPageComposer(root, {
                                 showToast(message, { variant: "error" });
                                 return;
                             }
+                        }
+                        if (chosenLanguage && chosenLanguage !== "en") {
+                            setPreferredLanguages([chosenLanguage, "en"]);
                         }
                         showToast(i18n.t("ui.app.register.success"), {
                             variant: "success",

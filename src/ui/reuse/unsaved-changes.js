@@ -45,7 +45,13 @@ export function createUnsavedChangesBar(
     floatingEl
         ?.querySelector('[data-action="save"]')
         ?.addEventListener("click", async () => {
-            await onSave?.();
+            try {
+                await onSave?.();
+                dirtyMap.clear();
+                sync();
+            } catch {
+                // save failed — keep bar visible
+            }
         });
 
     floatingEl

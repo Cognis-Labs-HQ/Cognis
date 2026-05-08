@@ -137,11 +137,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             accountId: string,
             handle: string,
             role?: string,
+            displayName?: string,
         ): Promise<void> => {
             await profileStore.createProfile(
                 accountId,
                 handle,
                 (role as AccountRole) ?? "user",
+                displayName,
             );
         },
     );

@@ -208,6 +208,9 @@
   <string name="ui.app.register.username">ユーザー名</string>
   <string name="ui.app.register.display_name">表示名</string>
   <string name="ui.app.register.password">パスワード</string>
+  <string name="ui.app.register.confirm_password">パスワードの確認</string>
+  <string name="ui.app.register.language">言語</string>
+  <string name="ui.app.register.error.password_mismatch">パスワードが一致しません。</string>
   <string name="ui.app.register.submit">アカウントを作成</string>
   <string name="ui.app.register.closed">現在、一般登録は無効です。</string>
   <string name="ui.app.register.success">アカウントを作成しました。ログイン画面へ移動します…</string>

@@ -208,6 +208,9 @@
   <string name="ui.app.register.username">Username</string>
   <string name="ui.app.register.display_name">Display name</string>
   <string name="ui.app.register.password">Password</string>
+  <string name="ui.app.register.confirm_password">Confirm Password</string>
+  <string name="ui.app.register.language">Language</string>
+  <string name="ui.app.register.error.password_mismatch">Passwords do not match.</string>
   <string name="ui.app.register.submit">Create account</string>
   <string name="ui.app.register.closed">Open registration is currently disabled.</string>
   <string name="ui.app.register.success">Account created. Redirecting to login…</string>

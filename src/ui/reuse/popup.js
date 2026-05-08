@@ -193,6 +193,8 @@ export async function openPopup({
         });
 
         function onKeyDown(e) {
+            const overlays = document.querySelectorAll(".popup-overlay");
+            if (overlays[overlays.length - 1] !== overlay) return;
             if (e.key === "Escape") {
                 dismiss(null);
                 return;
