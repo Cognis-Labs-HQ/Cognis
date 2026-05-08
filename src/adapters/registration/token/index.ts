@@ -52,6 +52,21 @@ function sha256(content: string): string {
     return createHash("sha256").update(content, "utf8").digest("hex");
 }
 
+function buildInviteUrl(baseUrl: string, token: string): string {
+    let parsedBase: URL;
+    try {
+        parsedBase = new URL(baseUrl);
+    } catch {
+        throw new Error("invalid_invite_base_url");
+    }
+    if (parsedBase.protocol !== "http:" && parsedBase.protocol !== "https:") {
+        throw new Error("invalid_invite_base_url");
+    }
+    parsedBase.pathname = "/register";
+    parsedBase.search = `token=${encodeURIComponent(token)}`;
+    return parsedBase.toString();
+}
+
 function parseToken(rawToken: string): { tokenId: string; tokenHash: string } {
     const token = rawToken.trim();
     const dotIndex = token.indexOf(".");
@@ -156,7 +171,7 @@ export function createAdapter(deps: {
         const rawToken = `${tokenId}.${secret}`;
         const tokenHash = sha256(rawToken);
         const expiresAt = new Date(Date.now() + INVITE_EXPIRY_MS).toISOString();
-        const inviteUrl = `${input.inviteBaseUrl.replace(/\/$/, "")}/register?token=${encodeURIComponent(rawToken)}`;
+        const inviteUrl = buildInviteUrl(input.inviteBaseUrl, rawToken);
 
         await dbExecutor.execute(
             `INSERT INTO registration_tokens
@@ -279,8 +294,6 @@ export function createAdapter(deps: {
         displayName?: string;
     }): Promise<{ createdAccountId: string; inviterAccountId: string }> {
         const username = input.username.trim();
-        // Preserve password exactly as entered (including spaces), matching
-        // local-auth login semantics.
         const password = input.password;
         if (!username || !password) {
             throw new Error("username_and_password_required");
