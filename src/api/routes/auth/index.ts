@@ -1,4 +1,9 @@
-import { issueAccessToken, type AccessRole } from "../../auth/access-tokens.js";
+import {
+    issueAccessToken,
+    isTokenVerificationFresh,
+    recordTokenVerification,
+    type AccessRole,
+} from "../../auth/access-tokens.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthGateway } from "@cognis/core";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
@@ -76,8 +81,13 @@ export function createAuthRoutes(
                 false,
             );
             await createProfile?.(username, username, "user");
+            const verifyToken = issueAccessToken(
+                result.username,
+                result.isAdmin ? "admin" : "user",
+                1800,
+            );
             res.writeHead(201, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: result }));
+            res.end(JSON.stringify({ data: { ...result, verifyToken } }));
             return true;
         }
 
@@ -154,6 +164,18 @@ export function createAuthRoutes(
                 );
                 return true;
             }
+            const rawAuthHeader = req.headers.authorization ?? "";
+            const rawToken = rawAuthHeader.startsWith("Bearer ")
+                ? rawAuthHeader.slice("Bearer ".length)
+                : "";
+
+            const ONE_HOUR_MS = 60 * 60 * 1000;
+            if (rawToken && isTokenVerificationFresh(rawToken, ONE_HOUR_MS)) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { verified: true } }));
+                return true;
+            }
+
             const body = await readJson(req);
             const password = String(body.password ?? "");
             const verified = await accountStore.verify(claims.sub, password);
@@ -168,6 +190,9 @@ export function createAuthRoutes(
                     }),
                 );
                 return true;
+            }
+            if (rawToken) {
+                recordTokenVerification(rawToken);
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { verified: true } }));

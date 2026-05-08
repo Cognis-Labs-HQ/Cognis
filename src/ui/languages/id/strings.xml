@@ -166,6 +166,9 @@
   <string name="ui.app.login.reason.session_expired">Sesi berakhir, silakan login kembali.</string>
   <string name="ui.app.login.reason.account_disabled">Akun Anda telah dinonaktifkan.</string>
   <string name="ui.app.login.reason.account_deleted">Akun Anda telah dihapus.</string>
+  <string name="ui.app.login.not_registered.title">Belum Terdaftar?</string>
+  <string name="ui.app.login.not_registered.body">Buat akun gratis dan mulai hari ini.</string>
+  <string name="ui.app.login.not_registered.link">Daftar Sekarang!</string>
   <string name="ui.app.demo.switched">Demo: berpindah ke halaman sandbox.</string>
   <string name="ui.app.demo.added">Demo: menambahkan widget progres belajar.</string>
   <string name="ui.app.demo.tweaked">Demo: menyesuaikan konfigurasi widget pertama.</string>
@@ -217,6 +220,7 @@
   <string name="ui.app.register.submit">Buat akun</string>
   <string name="ui.app.register.closed">Pendaftaran terbuka saat ini dinonaktifkan.</string>
   <string name="ui.app.register.success">Akun berhasil dibuat. Mengalihkan ke login…</string>
+  <string name="ui.app.register.verify_email_prompt">Kode verifikasi telah dikirim ke {email}. Masukkan di bawah untuk mengonfirmasi alamat Anda.</string>
   <string name="ui.app.register.error.generic">Tidak dapat menyelesaikan registrasi.</string>
   <string name="ui.app.register.error.invalid_token">Token undangan ini tidak valid atau sudah kedaluwarsa.</string>
   <string name="ui.app.register.error.username_taken">Nama pengguna ini sudah dipakai.</string>
@@ -273,6 +277,7 @@
   <string name="ui.app.invite.status_expired">Kedaluwarsa</string>
   <string name="ui.app.invite.invite_sent">Undangan terkirim.</string>
   <string name="ui.app.invite.invite_failed">Gagal mengirim undangan.</string>
+  <string name="ui.app.invite.email_domain_not_allowed">Domain email ini tidak diizinkan. Gunakan alamat dari domain yang diperbolehkan.</string>
   <string name="ui.app.settings.font_preview">Pratinjau Font</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Bahasa tersedia</string>

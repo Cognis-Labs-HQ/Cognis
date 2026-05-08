@@ -6,6 +6,7 @@ import {
 } from "../../reuse/i18n.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
+import { openPopup } from "../../reuse/popup.js";
 import { renderInPageCallout } from "../../reuse/in-page-callout.js";
 import {
     loadAuthTypingSamples,
@@ -217,6 +218,85 @@ function renderRegisterShell() {
     });
 }
 
+async function promptVerificationCodeForRegister(emailAddress) {
+    let inputEl = null;
+    const action = await openPopup({
+        title: i18n.t("ui.app.settings.emails_verify_title"),
+        body: () => `
+      <p>${escapeHtml(i18n.t("ui.app.register.verify_email_prompt").replace("{email}", emailAddress))}</p>
+      <label class="stack">
+        <span>${escapeHtml(i18n.t("ui.app.settings.emails_verify_submit"))}</span>
+        <input id="reg-verify-code-input" type="text" inputmode="numeric" maxlength="6" />
+      </label>
+    `,
+        actions: [
+            {
+                id: "confirm",
+                label: i18n.t("ui.app.settings.emails_verify_submit"),
+                variant: "confirm",
+            },
+        ],
+        onOpen: (overlay) => {
+            inputEl = overlay.querySelector("#reg-verify-code-input");
+        },
+    });
+    if (action !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
+        return null;
+    }
+    return inputEl.value.trim();
+}
+
+async function runEmailVerificationAfterRegister(
+    accountId,
+    emailAddress,
+    verifyToken,
+) {
+    const addResponse = await fetch(
+        `/api/v1/users/${encodeURIComponent(accountId)}/emails`,
+        {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+                authorization: `Bearer ${verifyToken}`,
+            },
+            body: JSON.stringify({ email: emailAddress }),
+        },
+    );
+    if (!addResponse.ok) {
+        const addPayload = await addResponse.json().catch(() => null);
+        const addCode = String(addPayload?.error?.code ?? "");
+        if (addCode === "smtp_unavailable") {
+            return;
+        }
+        return;
+    }
+    while (true) {
+        const code = await promptVerificationCodeForRegister(emailAddress);
+        if (!code) break;
+        const verifyResponse = await fetch(
+            `/api/v1/users/${encodeURIComponent(accountId)}/emails/${encodeURIComponent(emailAddress)}/verify`,
+            {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                    authorization: `Bearer ${verifyToken}`,
+                },
+                body: JSON.stringify({ code }),
+            },
+        );
+        if (verifyResponse.ok) break;
+        if (verifyResponse.status === 422) {
+            showToast(i18n.t("ui.app.settings.emails_verify_invalid"), {
+                variant: "error",
+            });
+            continue;
+        }
+        showToast(i18n.t("ui.app.settings.emails_verify_failed"), {
+            variant: "error",
+        });
+    }
+}
+
 const composer = createPageComposer(root, {
     allowCustomization: false,
     i18n,
@@ -372,6 +452,22 @@ const composer = createPageComposer(root, {
                                           );
                                 showToast(message, { variant: "error" });
                                 return;
+                            }
+                            const regPayload = await response
+                                .json()
+                                .catch(() => null);
+                            const verifyToken = String(
+                                regPayload?.data?.verifyToken ?? "",
+                            );
+                            const registeredUsername = String(
+                                regPayload?.data?.username ?? username,
+                            );
+                            if (email && verifyToken) {
+                                await runEmailVerificationAfterRegister(
+                                    registeredUsername,
+                                    email,
+                                    verifyToken,
+                                );
                             }
                         }
                         if (chosenLanguage && chosenLanguage !== "en") {

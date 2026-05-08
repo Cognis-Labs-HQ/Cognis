@@ -14,9 +14,11 @@ interface AccessTokenRecord {
     subject: string;
     role: AccessRole;
     expiresAt: number | null;
+    issuedAt?: number;
 }
 
 const tokenStore = new Map<string, AccessTokenRecord>();
+const verifiedAtByToken = new Map<string, number>();
 const MAX_TOKEN_STORE_SIZE = 10_000;
 const tokenStorePath =
     process.env.COGNIS_ACCESS_TOKEN_STORE_PATH ??
@@ -128,15 +130,16 @@ export function issueAccessToken(
     subject: string,
     role: AccessRole,
     ttlSeconds: number | null,
+    options?: { issuedAt?: number },
 ): string {
     pruneExpiredTokens();
     if (tokenStore.size >= MAX_TOKEN_STORE_SIZE) {
         throw new Error("access_token_store_capacity_reached");
     }
     const token = `cgs_${randomBytes(32).toString("base64url")}`;
-    const expiresAt =
-        ttlSeconds === null ? null : Date.now() + ttlSeconds * 1000;
-    tokenStore.set(hashToken(token), { subject, role, expiresAt });
+    const issuedAt = options?.issuedAt ?? Date.now();
+    const expiresAt = ttlSeconds === null ? null : issuedAt + ttlSeconds * 1000;
+    tokenStore.set(hashToken(token), { subject, role, expiresAt, issuedAt });
     persistTokenStore();
     return token;
 }
@@ -161,10 +164,39 @@ export function revokeAccessTokensForSubject(subject: string): number {
     for (const [tokenHash, record] of tokenStore.entries()) {
         if (record.subject !== subject) continue;
         tokenStore.delete(tokenHash);
+        verifiedAtByToken.delete(tokenHash);
         removed++;
     }
     if (removed > 0) {
         persistTokenStore();
     }
     return removed;
+}
+
+/**
+ * Returns true when the given raw token was issued or last password-verified
+ * within the specified millisecond window. Used by the /auth/verify route to
+ * skip re-confirmation for recently authenticated sessions.
+ */
+export function isTokenVerificationFresh(
+    rawToken: string,
+    windowMs: number,
+): boolean {
+    const tokenHash = hashToken(rawToken);
+    const record = tokenStore.get(tokenHash);
+    if (!record) return false;
+    const now = Date.now();
+    if (record.issuedAt && now - record.issuedAt <= windowMs) return true;
+    const lastVerified = verifiedAtByToken.get(tokenHash);
+    return lastVerified !== undefined && now - lastVerified <= windowMs;
+}
+
+/**
+ * Records that the user successfully confirmed their password for this token.
+ * Subsequent calls to isTokenVerificationFresh within the window return true.
+ */
+export function recordTokenVerification(rawToken: string): void {
+    const tokenHash = hashToken(rawToken);
+    if (!tokenStore.has(tokenHash)) return;
+    verifiedAtByToken.set(tokenHash, Date.now());
 }

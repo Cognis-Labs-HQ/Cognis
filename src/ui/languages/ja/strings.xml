@@ -166,6 +166,9 @@
   <string name="ui.app.login.reason.session_expired">セッションの有効期限が切れました。再度ログインしてください。</string>
   <string name="ui.app.login.reason.account_disabled">あなたのアカウントは無効化されました。</string>
   <string name="ui.app.login.reason.account_deleted">あなたのアカウントは削除されました。</string>
+  <string name="ui.app.login.not_registered.title">まだ登録していませんか？</string>
+  <string name="ui.app.login.not_registered.body">無料アカウントを作成して今日から始めましょう。</string>
+  <string name="ui.app.login.not_registered.link">サインアップ！</string>
   <string name="ui.app.demo.switched">デモ: サンドボックスページに切り替えました。</string>
   <string name="ui.app.demo.added">デモ: 学習進捗ウィジェットを追加しました。</string>
   <string name="ui.app.demo.tweaked">デモ: 最初のウィジェット設定を調整しました。</string>
@@ -217,6 +220,7 @@
   <string name="ui.app.register.submit">アカウントを作成</string>
   <string name="ui.app.register.closed">現在、一般登録は無効です。</string>
   <string name="ui.app.register.success">アカウントを作成しました。ログイン画面へ移動します…</string>
+  <string name="ui.app.register.verify_email_prompt">{email} に確認コードを送信しました。アドレスを確認するために下に入力してください。</string>
   <string name="ui.app.register.error.generic">登録を完了できませんでした。</string>
   <string name="ui.app.register.error.invalid_token">この招待トークンは無効か期限切れです。</string>
   <string name="ui.app.register.error.username_taken">このユーザー名はすでに使用されています。</string>
@@ -273,6 +277,7 @@
   <string name="ui.app.invite.status_expired">期限切れ</string>
   <string name="ui.app.invite.invite_sent">招待を送信しました。</string>
   <string name="ui.app.invite.invite_failed">招待の送信に失敗しました。</string>
+  <string name="ui.app.invite.email_domain_not_allowed">このメールドメインは許可されていません。許可されているドメインのアドレスを使用してください。</string>
   <string name="ui.app.settings.font_preview">フォントプレビュー</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">利用可能な言語</string>

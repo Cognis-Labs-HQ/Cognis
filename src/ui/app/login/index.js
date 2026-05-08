@@ -1,3 +1,4 @@
+import { renderInPageCallout } from "../../reuse/in-page-callout.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { apiFetch } from "../../reuse/api-client.js";
@@ -25,6 +26,18 @@ const root = document.querySelector("#app");
 const typingSamples = await loadAuthTypingSamples(i18n);
 const loginReason = new URL(window.location.href).searchParams.get("reason");
 let loginReasonToastShown = false;
+
+let publicRegistrationEnabled = false;
+try {
+    const regConfigRes = await fetch("/api/v1/auth/registration-config");
+    if (regConfigRes.ok) {
+        const regConfigPayload = await regConfigRes.json();
+        publicRegistrationEnabled =
+            regConfigPayload?.data?.registrationsEnabled === true;
+    }
+} catch {
+    publicRegistrationEnabled = false;
+}
 
 function renderLoginReasonToast() {
     if (loginReasonToastShown) return;
@@ -265,6 +278,16 @@ function renderLoginShell() {
         <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
       </div>
     `;
+    const signupCalloutHtml = publicRegistrationEnabled
+        ? renderInPageCallout({
+              variant: "info",
+              title: i18n.t("ui.app.login.not_registered.title"),
+              body: i18n.t("ui.app.login.not_registered.body"),
+          }).replace(
+              "</section>",
+              `<a href="/register" class="in-page-callout__link">${escapeHtml(i18n.t("ui.app.login.not_registered.link"))}</a></section>`,
+          )
+        : "";
     const formPanelHtml = `
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
       <form id="login-form" class="stack auth-form" method="POST">
@@ -278,6 +301,7 @@ function renderLoginShell() {
           <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
         </label>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
+        ${signupCalloutHtml}
         <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
       </form>
       <div id="sso-buttons" class="sso-buttons"></div>

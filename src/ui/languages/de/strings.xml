@@ -166,6 +166,9 @@
   <string name="ui.app.login.reason.session_expired">Sitzung abgelaufen, bitte melde dich erneut an.</string>
   <string name="ui.app.login.reason.account_disabled">Dein Konto wurde deaktiviert.</string>
   <string name="ui.app.login.reason.account_deleted">Dein Konto wurde gelöscht.</string>
+  <string name="ui.app.login.not_registered.title">Noch nicht registriert?</string>
+  <string name="ui.app.login.not_registered.body">Erstelle ein kostenloses Konto und leg noch heute los.</string>
+  <string name="ui.app.login.not_registered.link">Jetzt anmelden!</string>
   <string name="ui.app.demo.switched">Demo: zur Sandbox-Seite gewechselt.</string>
   <string name="ui.app.demo.added">Demo: ein Lernfortschritts-Widget hinzugefügt.</string>
   <string name="ui.app.demo.tweaked">Demo: die erste Widget-Konfiguration angepasst.</string>
@@ -217,6 +220,7 @@
   <string name="ui.app.register.submit">Konto erstellen</string>
   <string name="ui.app.register.closed">Die offene Registrierung ist derzeit deaktiviert.</string>
   <string name="ui.app.register.success">Konto erstellt. Weiterleitung zur Anmeldung…</string>
+  <string name="ui.app.register.verify_email_prompt">Ein Bestätigungscode wurde an {email} gesendet. Gib ihn unten ein, um deine Adresse zu bestätigen.</string>
   <string name="ui.app.register.error.generic">Registrierung konnte nicht abgeschlossen werden.</string>
   <string name="ui.app.register.error.invalid_token">Dieses Einladungs-Token ist ungültig oder abgelaufen.</string>
   <string name="ui.app.register.error.username_taken">Dieser Benutzername ist bereits vergeben.</string>
@@ -273,6 +277,7 @@
   <string name="ui.app.invite.status_expired">Abgelaufen</string>
   <string name="ui.app.invite.invite_sent">Einladung gesendet.</string>
   <string name="ui.app.invite.invite_failed">Einladung konnte nicht gesendet werden.</string>
+  <string name="ui.app.invite.email_domain_not_allowed">Diese E-Mail-Domain ist nicht erlaubt. Bitte verwende eine Adresse einer erlaubten Domain.</string>
   <string name="ui.app.settings.font_preview">Schriftvorschau</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Verfügbare Sprachen</string>

@@ -166,6 +166,9 @@
   <string name="ui.app.login.reason.session_expired">Session expired, please login again.</string>
   <string name="ui.app.login.reason.account_disabled">Your account was disabled.</string>
   <string name="ui.app.login.reason.account_deleted">Your account was deleted.</string>
+  <string name="ui.app.login.not_registered.title">Not Registered?</string>
+  <string name="ui.app.login.not_registered.body">Create a free account and get started today.</string>
+  <string name="ui.app.login.not_registered.link">Sign Up!</string>
   <string name="ui.app.demo.switched">Demo: switched to sandbox page.</string>
   <string name="ui.app.demo.added">Demo: added a learning progress widget.</string>
   <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>
@@ -217,6 +220,7 @@
   <string name="ui.app.register.submit">Create account</string>
   <string name="ui.app.register.closed">Open registration is currently disabled.</string>
   <string name="ui.app.register.success">Account created. Redirecting to login…</string>
+  <string name="ui.app.register.verify_email_prompt">A verification code was sent to {email}. Enter it below to confirm your address.</string>
   <string name="ui.app.register.error.generic">Could not complete registration.</string>
   <string name="ui.app.register.error.invalid_token">This invitation token is invalid or has expired.</string>
   <string name="ui.app.register.error.username_taken">This username is already taken.</string>
@@ -273,6 +277,7 @@
   <string name="ui.app.invite.status_expired">Expired</string>
   <string name="ui.app.invite.invite_sent">Invitation sent.</string>
   <string name="ui.app.invite.invite_failed">Failed to send invitation.</string>
+  <string name="ui.app.invite.email_domain_not_allowed">This email domain is not permitted. Please use an address from an allowed domain.</string>
   <string name="ui.app.settings.font_preview">Font Preview</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Available languages</string>

@@ -12,6 +12,7 @@ import {
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
 import type { LocalAccountStore } from "../../api/reuse/account-store.js";
+import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 import { CoreRegistrationGateway } from "./gateway.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
@@ -28,6 +29,7 @@ function issueInviteErrorStatus(code: string): number {
     if (code === "founder_token_limit_reached") return 429;
     if (code === "invitee_email_required") return 400;
     if (code === "email_taken") return 409;
+    if (code === "email_domain_not_allowed") return 422;
     return 500;
 }
 
@@ -107,8 +109,31 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
     await gateway.loadPersistedConfigs();
 
+    const preferenceStore =
+        ctx.capabilities.get<UserPreferenceStore>("preferences:store");
+
+    const SECURITY_SETTINGS_KEY = "security-settings";
+
+    async function getTrustedDomains(): Promise<string[]> {
+        if (!preferenceStore) return [];
+        const raw = await preferenceStore
+            .get("__system__", SECURITY_SETTINGS_KEY)
+            .catch(() => null);
+        if (!raw) return [];
+        try {
+            const parsed = JSON.parse(raw) as { trustedDomains?: unknown };
+            if (!Array.isArray(parsed.trustedDomains)) return [];
+            return parsed.trustedDomains
+                .filter((d: unknown) => typeof d === "string")
+                .map((d: string) => d.trim().toLowerCase())
+                .filter(Boolean);
+        } catch {
+            return [];
+        }
+    }
+
     ctx.routeRegistry.register(
-        createRegistrationRoutes(gateway, accountStore),
+        createRegistrationRoutes(gateway, accountStore, getTrustedDomains),
         "registration",
     );
     ctx.routeRegistry.register(createRegistrationPageRoutes(), "registration");
@@ -201,12 +226,28 @@ export function createRegistrationPageRoutes() {
 export function createRegistrationRoutes(
     gateway: CoreRegistrationGateway,
     accountStore: LocalAccountStore,
+    getTrustedDomains: () => Promise<string[]> = async () => [],
 ) {
     return async (
         req: IncomingMessage,
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        if (
+            url.pathname === "/api/v1/auth/registration-config" &&
+            req.method === "GET"
+        ) {
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        registrationsEnabled: gateway.isPublicEnabled(),
+                    },
+                }),
+            );
+            return true;
+        }
+
         if (
             url.pathname === "/api/v1/registration/state" &&
             req.method === "GET"
@@ -408,6 +449,27 @@ export function createRegistrationRoutes(
                     }),
                 );
                 return true;
+            }
+            const trustedDomains = await getTrustedDomains();
+            if (trustedDomains.length > 0) {
+                const emailDomain = inviteeEmail.split("@")[1] ?? "";
+                const allowed = trustedDomains.some(
+                    (d) => d === emailDomain || emailDomain.endsWith(`.${d}`),
+                );
+                if (!allowed) {
+                    res.writeHead(422, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "email_domain_not_allowed",
+                                message: "email_domain_not_allowed",
+                            },
+                        }),
+                    );
+                    return true;
+                }
             }
             const inviterDisplayName =
                 (await accountStore.getDisplayName(claims.sub)) ?? claims.sub;

@@ -107,3 +107,11 @@
 .in-page-callout--danger .in-page-callout__title {
     color: var(--color-danger-text);
 }
+
+.in-page-callout__link {
+    display: inline-block;
+    margin-top: 8px;
+    font-weight: 600;
+    color: #93c5fd;
+    text-decoration: underline;
+}

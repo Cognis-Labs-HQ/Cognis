@@ -113,26 +113,45 @@ function bindInviteInteractions() {
         "click",
         async () => {
             await reprompt.runWithReprompt(async () => {
-                const email = await promptEmail();
-                if (!email) return;
-                const response = await apiFetch("/api/v1/registration/tokens", {
-                    method: "POST",
-                    headers: {
-                        "content-type": "application/json",
-                    },
-                    body: JSON.stringify({ email }),
-                });
-                if (!response.ok) {
-                    showToast(i18n.t("ui.app.invite.invite_failed"), {
-                        variant: "error",
+                let email = await promptEmail();
+                while (email) {
+                    const response = await apiFetch(
+                        "/api/v1/registration/tokens",
+                        {
+                            method: "POST",
+                            headers: {
+                                "content-type": "application/json",
+                            },
+                            body: JSON.stringify({ email }),
+                        },
+                    );
+                    if (!response.ok) {
+                        const payload = await response.json().catch(() => null);
+                        const code = String(
+                            payload?.error?.code ?? "invite_failed",
+                        );
+                        if (code === "email_domain_not_allowed") {
+                            showToast(
+                                i18n.t(
+                                    "ui.app.invite.email_domain_not_allowed",
+                                ),
+                                { variant: "error" },
+                            );
+                            email = await promptEmail();
+                            continue;
+                        }
+                        showToast(i18n.t("ui.app.invite.invite_failed"), {
+                            variant: "error",
+                        });
+                        return;
+                    }
+                    showToast(i18n.t("ui.app.invite.invite_sent"), {
+                        variant: "success",
                     });
+                    tokens = await loadTokens();
+                    composer.refresh(elements);
                     return;
                 }
-                showToast(i18n.t("ui.app.invite.invite_sent"), {
-                    variant: "success",
-                });
-                tokens = await loadTokens();
-                composer.refresh(elements);
             });
         },
     );
