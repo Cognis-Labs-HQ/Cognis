@@ -50,3 +50,17 @@ test("register page uses shared auth intro copy and class", () => {
         /<p class="auth-intro">\$\{escapeHtml\(i18n\.t\("ui\.app\.login\.hero\.subtitle"\)\)\}<\/p>/,
     );
 });
+
+test("login and register disable layout preference persistence", () => {
+    const loginSource = readFileSync(
+        resolve(ROOT, "src/ui/app/login/index.js"),
+        "utf8",
+    );
+    const registerSource = readFileSync(
+        resolve(ROOT, "src/ui/app/register/index.js"),
+        "utf8",
+    );
+
+    assert.match(loginSource, /persistLayoutPreferences:\s*false/);
+    assert.match(registerSource, /persistLayoutPreferences:\s*false/);
+});

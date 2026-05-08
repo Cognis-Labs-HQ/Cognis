@@ -34,7 +34,12 @@ function applyActiveNavigation() {
     });
 }
 
-async function bindThemeToggle() {
+async function bindThemeToggle({ usePreferenceApi = true } = {}) {
+    if (!usePreferenceApi) {
+        bindSharedThemeToggle();
+        return;
+    }
+
     const prefs = await loadUiPreferences();
     applyUiPreferences(prefs);
     const storedMode = getStoredTheme();
@@ -199,6 +204,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         showNavbar = true,
         showThemeToggle = true,
         showFooter = true,
+        usePreferenceApi = showTopbar || showNavbar,
     } = slots;
     const i18n = slots.i18n || (await createI18n());
     const template = await loadTemplate("dashboard-layout");
@@ -237,5 +243,5 @@ export async function renderDashboardLayout(root, slots = {}) {
         updateNavbarAvatar().catch(() => {});
         applyActiveNavigation();
     }
-    bindThemeToggle();
+    bindThemeToggle({ usePreferenceApi });
 }

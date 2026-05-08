@@ -87,6 +87,7 @@
  *   showNavbar?: boolean,
  *   showThemeToggle?: boolean,
  *   showFooter?: boolean,
+ *   persistLayoutPreferences?: boolean,
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
@@ -115,6 +116,7 @@ export function createPageComposer(
         showThemeToggle = true,
         showFooter = true,
         frameless = false,
+        persistLayoutPreferences = true,
         pageOverrides = {},
     },
 ) {
@@ -2539,7 +2541,7 @@ export function createPageComposer(
             }
         });
 
-        layout = await loadLayout();
+        layout = persistLayoutPreferences ? await loadLayout() : null;
 
         if (!subPageNavigation && contentGrid) {
             resizeObserver = new ResizeObserver(() => {
