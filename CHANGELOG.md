@@ -22,6 +22,8 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Login redirect reasons now preserve `account_disabled` and `account_deleted` after access-token revocation, instead of falling back to `session_expired` whenever a kicked user hits a protected page. ([85af87c](https://github.com/le-firehawk/Cognis/commit/85af87c))
+- Founder invite navbar access now uses the limited `/api/v1/registration/state` capability (including `gatewayEnabled`) instead of the admin-only registration gateway endpoint, so founders can open Invite when registration is active. ([85af87c](https://github.com/le-firehawk/Cognis/commit/85af87c))
 - Invite/user sensitive actions now reuse a fresh password confirmation before showing the reprompt popup again, so backing out of Invite after confirming does not immediately force another password entry. ([f05d7f2](https://github.com/le-firehawk/Cognis/commit/f05d7f2))
 - Administration gateway lifecycle controls now use single, adapter-aware confirmation flows: disabling any adapter always confirms that adapter first, last-adapter disable warns the gateway will also be disabled, gateway disable warns that all adapters will be disabled, and gateway enable offers optional adapter checkboxes to enable in the same popup. ([f05d7f2](https://github.com/le-firehawk/Cognis/commit/f05d7f2))
 - Administration adapter-config popup now hides the "Send Test Email" controls for adapters that do not support test sending (for example, Registration/Invite), instead of rendering the test-email section unconditionally. ([c4ae99a](https://github.com/le-firehawk/Cognis/commit/c4ae99a))
