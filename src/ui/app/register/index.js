@@ -2,7 +2,10 @@ import { createPageComposer } from "../../reuse/page-composer.js";
 import { createI18n, applyDocumentTitle } from "../../reuse/i18n.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
-import { bindThemeToggle } from "../../reuse/theme-toggle.js";
+import {
+    loadAuthTypingSamples,
+    runTypingShowcase,
+} from "../../reuse/auth-typing.js";
 import {
     renderAuthBrandline,
     renderAuthLayout,
@@ -56,58 +59,7 @@ if (token) {
         openRegistrationsEnabled = false;
     }
 }
-
-const typingSamples = [
-    i18n.t("ui.app.login.typing.sample.1"),
-    i18n.t("ui.app.login.typing.sample.2"),
-    i18n.t("ui.app.login.typing.sample.3"),
-    i18n.t("ui.app.login.typing.sample.4"),
-    i18n.t("ui.app.login.typing.sample.5"),
-    i18n.t("ui.app.login.typing.sample.6"),
-];
-
-const startIndex = Math.floor(Math.random() * typingSamples.length);
-const orderedSamples = typingSamples.map(
-    (_, index) => typingSamples[(startIndex + index) % typingSamples.length],
-);
-
-async function runTypingShowcase() {
-    while (true) {
-        for (
-            let sampleIndex = 0;
-            sampleIndex < orderedSamples.length;
-            sampleIndex += 1
-        ) {
-            const sample = orderedSamples[sampleIndex];
-
-            for (
-                let charIndex = 0;
-                charIndex <= sample.length;
-                charIndex += 1
-            ) {
-                const el = document.querySelector("#typing-text");
-                if (!el) return;
-                el.textContent = sample.slice(0, charIndex);
-                await new Promise((resolve) => window.setTimeout(resolve, 85));
-            }
-
-            await new Promise((resolve) => window.setTimeout(resolve, 3500));
-
-            for (
-                let charIndex = sample.length;
-                charIndex >= 0;
-                charIndex -= 1
-            ) {
-                const el = document.querySelector("#typing-text");
-                if (!el) return;
-                el.textContent = sample.slice(0, charIndex);
-                await new Promise((resolve) => window.setTimeout(resolve, 40));
-            }
-
-            await new Promise((resolve) => window.setTimeout(resolve, 60000));
-        }
-    }
-}
+const typingSamples = await loadAuthTypingSamples(i18n);
 
 function formatCountdown(msRemaining) {
     if (msRemaining <= 0) return "00:00:00";
@@ -219,7 +171,7 @@ const composer = createPageComposer(root, {
             gridSize: { default: [12, 8], min: [8, 6], max: "full" },
             render: () => renderRegisterShell(),
             onRender: () => {
-                runTypingShowcase();
+                runTypingShowcase(typingSamples);
 
                 if (tokenInvalid) {
                     showToast(i18n.t("ui.app.register.error.invalid_token"), {
@@ -361,4 +313,3 @@ const composer = createPageComposer(root, {
 });
 
 await composer.init();
-bindThemeToggle();

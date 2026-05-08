@@ -57,6 +57,7 @@
   <string name="ui.app.login.typing.sample.4">Hausaufgaben machen</string>
   <string name="ui.app.login.typing.sample.5">Es ist ein sozialer Raum!</string>
   <string name="ui.app.login.typing.sample.6">Betrieben mit FOSS</string>
+  <string name="ui.app.login.typing.sample.7">Registrieren Sie Ihr Konto noch heute</string>
   <string name="ui.app.builder.banner.ready">Bereit.</string>
   <string name="ui.app.builder.remove">Entfernen</string>
   <string name="ui.app.builder.custom_widget">Benutzerdefiniertes Widget</string>

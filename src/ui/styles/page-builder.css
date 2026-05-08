@@ -121,6 +121,19 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     box-shadow: none;
 }
 
+.app-page--frameless .content-panel,
+.app-page--frameless .main-window,
+.app-page--frameless .content-grid {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.app-page--frameless .content-panel {
+    padding: 0;
+}
+
 .toolbar,
 .content-panel {
     border: 0;

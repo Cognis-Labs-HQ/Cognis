@@ -43,6 +43,7 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
     const registeredSections = [];
     const registeredPlugins = [];
     const registeredStaticDirs = [];
+    const registeredTypingMessages = [];
 
     await bootstrap({
         capabilities: createCapabilities(map) as any,
@@ -56,6 +57,9 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
             },
             registerStaticDir(id, dir) {
                 registeredStaticDirs.push({ id, dir });
+            },
+            registerAuthTypingMessage(message) {
+                registeredTypingMessages.push(message);
             },
         } as any,
         gatewayRegistry: { register() {} } as any,
@@ -82,4 +86,12 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
         true,
     );
     assert.equal(existsSync(path.resolve(staticDir.dir, "navbar.js")), true);
+    assert.deepEqual(registeredTypingMessages, [
+        {
+            id: "registration-register-today",
+            textKey: "ui.app.login.typing.sample.7",
+            ownerType: "gateway",
+            ownerId: "registration",
+        },
+    ]);
 });

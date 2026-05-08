@@ -59,6 +59,7 @@ export function createUiRoutes(
     uiRegistry?: UIRegistry,
     accountStore?: LocalAccountStore,
     gatewayRegistry?: GatewayRegistry,
+    isModuleEnabled?: (moduleId: string) => boolean,
 ) {
     return async (
         req: IncomingMessage,
@@ -290,6 +291,61 @@ export function createUiRoutes(
             const extensions = uiRegistry?.listPageExtensions(pageId) ?? [];
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: extensions }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/ui/auth-typing-messages" &&
+            req.method === "GET"
+        ) {
+            const gatewayMessages = (uiRegistry?.listAuthTypingMessages() ?? [])
+                .filter((message) => {
+                    if (
+                        message.ownerType === "gateway" &&
+                        message.ownerId &&
+                        gatewayRegistry?.get(message.ownerId)?.status ===
+                            "disabled"
+                    ) {
+                        return false;
+                    }
+                    if (
+                        message.ownerType === "module" &&
+                        message.ownerId &&
+                        isModuleEnabled &&
+                        !isModuleEnabled(message.ownerId)
+                    ) {
+                        return false;
+                    }
+                    return true;
+                })
+                .map(({ id, textKey, ownerType, ownerId }) => ({
+                    id,
+                    textKey,
+                    ownerType,
+                    ownerId,
+                }));
+            const moduleMessages = runtime
+                ? (await runtime.listManifests())
+                      .filter((manifest) =>
+                          isModuleEnabled ? isModuleEnabled(manifest.id) : true,
+                      )
+                      .flatMap((manifest) =>
+                          (manifest.ui?.authTypingMessages ?? []).map(
+                              (textKey, index) => ({
+                                  id: `${manifest.id}:${index}`,
+                                  textKey,
+                                  ownerType: "module",
+                                  ownerId: manifest.id,
+                              }),
+                          ),
+                      )
+                : [];
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: [...gatewayMessages, ...moduleMessages],
+                }),
+            );
             return true;
         }
 

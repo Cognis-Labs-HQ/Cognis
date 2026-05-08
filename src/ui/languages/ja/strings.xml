@@ -57,6 +57,7 @@
   <string name="ui.app.login.typing.sample.4">宿題をしよう</string>
   <string name="ui.app.login.typing.sample.5">交流の場です！</string>
   <string name="ui.app.login.typing.sample.6">FOSS により提供</string>
+  <string name="ui.app.login.typing.sample.7">今すぐアカウントを登録しましょう</string>
   <string name="ui.app.builder.banner.ready">準備完了。</string>
   <string name="ui.app.builder.remove">削除</string>
   <string name="ui.app.builder.custom_widget">カスタムウィジェット</string>

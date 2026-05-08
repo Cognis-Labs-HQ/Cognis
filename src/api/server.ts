@@ -90,6 +90,7 @@ export function buildServer(deps: ApiDependencies) {
         deps.uiRegistry,
         deps.accountStore,
         deps.gatewayRegistry,
+        (moduleId) => enabledModules.has(moduleId),
     );
     const userRoutes = deps.accountStore
         ? createUserRoutes(

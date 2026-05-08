@@ -165,7 +165,8 @@ export function createPageComposer(
 
     async function loadLayout() {
         const account = localStorage.getItem("cognis_account");
-        if (!account) return null;
+        const token = localStorage.getItem("cognis_token");
+        if (!account || !token) return null;
         try {
             const response = await apiFetch(
                 `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(preferenceKey)}`,
@@ -181,7 +182,8 @@ export function createPageComposer(
 
     async function saveLayout() {
         const account = localStorage.getItem("cognis_account");
-        if (!account) return;
+        const token = localStorage.getItem("cognis_token");
+        if (!account || !token) return;
         await apiFetch(
             `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(preferenceKey)}`,
             {

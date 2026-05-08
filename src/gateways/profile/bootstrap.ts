@@ -208,6 +208,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/profile/navbar.js",
     });
+    ctx.uiRegistry?.registerAuthTypingMessage({
+        id: "profile-social-space",
+        textKey: "ui.app.login.typing.sample.5",
+        ownerType: "gateway",
+        ownerId: "profile",
+    });
 
     ctx.log?.("info", "Profile gateway: initialized.");
 }

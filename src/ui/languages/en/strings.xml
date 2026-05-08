@@ -57,6 +57,7 @@
   <string name="ui.app.login.typing.sample.4">Do your homework</string>
   <string name="ui.app.login.typing.sample.5">It's a social space!</string>
   <string name="ui.app.login.typing.sample.6">Powered by FOSS</string>
+  <string name="ui.app.login.typing.sample.7">Register your account today</string>
   <string name="ui.app.builder.banner.ready">Ready.</string>
   <string name="ui.app.builder.remove">Remove</string>
   <string name="ui.app.builder.custom_widget">Custom widget</string>

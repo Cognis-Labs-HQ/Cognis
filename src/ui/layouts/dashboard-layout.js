@@ -9,6 +9,7 @@ import { applyStaticTranslations, createI18n } from "../reuse/i18n.js";
 import {
     loadUiPreferences,
     applyUiPreferences,
+    saveUiPreferences,
 } from "../reuse/ui-preferences.js";
 
 function isAdminRole() {
@@ -31,21 +32,6 @@ function applyActiveNavigation() {
         if (isActive) link.setAttribute("aria-current", "page");
         else link.removeAttribute("aria-current");
     });
-}
-
-async function saveUiPreferences(patch) {
-    const account = localStorage.getItem("cognis_account");
-    if (!account) return;
-    const current = await loadUiPreferences();
-    const merged = { ...(current || {}), ...patch };
-    await apiFetch(
-        `/api/v1/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
-        {
-            method: "PUT",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ layout: merged }),
-        },
-    );
 }
 
 async function bindThemeToggle() {

@@ -1,10 +1,13 @@
-import { bindThemeToggle } from "../../reuse/theme-toggle.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
+import {
+    loadAuthTypingSamples,
+    runTypingShowcase,
+} from "../../reuse/auth-typing.js";
 import {
     renderAuthBrandline,
     renderAuthLayout,
@@ -14,58 +17,7 @@ const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.login");
 
 const root = document.querySelector("#app");
-
-const typingSamples = [
-    i18n.t("ui.app.login.typing.sample.1"),
-    i18n.t("ui.app.login.typing.sample.2"),
-    i18n.t("ui.app.login.typing.sample.3"),
-    i18n.t("ui.app.login.typing.sample.4"),
-    i18n.t("ui.app.login.typing.sample.5"),
-    i18n.t("ui.app.login.typing.sample.6"),
-];
-
-const startIndex = Math.floor(Math.random() * typingSamples.length);
-const orderedSamples = typingSamples.map(
-    (_, index) => typingSamples[(startIndex + index) % typingSamples.length],
-);
-
-async function runTypingShowcase() {
-    while (true) {
-        for (
-            let sampleIndex = 0;
-            sampleIndex < orderedSamples.length;
-            sampleIndex += 1
-        ) {
-            const sample = orderedSamples[sampleIndex];
-
-            for (
-                let charIndex = 0;
-                charIndex <= sample.length;
-                charIndex += 1
-            ) {
-                const el = document.querySelector("#typing-text");
-                if (!el) return;
-                el.textContent = sample.slice(0, charIndex);
-                await new Promise((resolve) => window.setTimeout(resolve, 85));
-            }
-
-            await new Promise((resolve) => window.setTimeout(resolve, 3500));
-
-            for (
-                let charIndex = sample.length;
-                charIndex >= 0;
-                charIndex -= 1
-            ) {
-                const el = document.querySelector("#typing-text");
-                if (!el) return;
-                el.textContent = sample.slice(0, charIndex);
-                await new Promise((resolve) => window.setTimeout(resolve, 40));
-            }
-
-            await new Promise((resolve) => window.setTimeout(resolve, 60000));
-        }
-    }
-}
+const typingSamples = await loadAuthTypingSamples(i18n);
 
 async function loadLoginMethods() {
     try {
@@ -334,7 +286,7 @@ const composer = createPageComposer(root, {
             render: () => renderLoginShell(),
             onRender: () => {
                 loadLoginMethods();
-                runTypingShowcase();
+                runTypingShowcase(typingSamples);
                 document
                     .querySelector("#login-form")
                     ?.addEventListener("submit", async (event) => {
@@ -404,4 +356,3 @@ const composer = createPageComposer(root, {
 });
 
 await composer.init();
-bindThemeToggle();

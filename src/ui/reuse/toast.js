@@ -120,12 +120,23 @@ export function showToast(
 
     const toast = document.createElement("div");
     toast.className = `toast ${variantClass}`;
+    if (effectiveDuration !== null) {
+        toast.style.setProperty("--toast-duration", `${effectiveDuration}ms`);
+    }
     toast.setAttribute(
         "role",
         variant === "warning" || variant === "error" ? "alert" : "status",
     );
 
-    toast.innerHTML = `<span class="toast-icon" aria-hidden="true">${icon}</span><span class="toast-message">${escapeHtml(message)}</span><button class="toast-dismiss" type="button" aria-label="${escapeHtml(dismissLabel)}">&#x2715;</button>`;
+    toast.innerHTML = `${
+        effectiveDuration !== null
+            ? '<span class="toast-timebar" aria-hidden="true"></span>'
+            : ""
+    }<span class="toast-icon" aria-hidden="true">${icon}</span><span class="toast-message">${escapeHtml(message)}</span>${
+        permanent
+            ? `<button class="toast-dismiss" type="button" aria-label="${escapeHtml(dismissLabel)}">&#x2715;</button>`
+            : ""
+    }`;
 
     tray.appendChild(toast);
 
@@ -141,7 +152,7 @@ export function showToast(
         setTimeout(onEnd, 400);
     }
 
-    toast.querySelector(".toast-dismiss").addEventListener("click", dismiss);
+    toast.querySelector(".toast-dismiss")?.addEventListener("click", dismiss);
 
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {

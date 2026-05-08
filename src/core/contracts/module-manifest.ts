@@ -20,6 +20,9 @@ export interface ModuleManifest {
         cli?: string;
         db?: string;
     };
+    ui?: {
+        authTypingMessages?: string[];
+    };
     files?: Array<{
         path: string;
         sha256: string;

@@ -109,6 +109,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/registration/navbar.js",
     });
+    ctx.uiRegistry?.registerAuthTypingMessage({
+        id: "registration-register-today",
+        textKey: "ui.app.login.typing.sample.7",
+        ownerType: "gateway",
+        ownerId: "registration",
+    });
 
     ctx.gatewayRegistry.register({
         id: "registration",
