@@ -122,7 +122,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                             btn.closest("tr")
                                 ?.querySelector(".invite-revoke-btn")
                                 ?.remove();
-                            const statusCell = btn.closest("tr")?.cells[1];
+                            const statusCell = btn.closest("tr")?.cells[3];
                             if (statusCell) {
                                 statusCell.textContent = statusLabel("revoked");
                             }

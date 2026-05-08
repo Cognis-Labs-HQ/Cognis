@@ -7,7 +7,7 @@
  * while still making the context available on demand.
  *
  * Public exports:
- *   renderInfoTooltip(text, id?) — Returns an HTML string: a positioned
+ *   renderInfoTooltip(text, ariaLabel?, id?) — Returns an HTML string: a positioned
  *     wrapper containing the icon button and the tooltip panel.
  *
  * Usage:
@@ -22,10 +22,10 @@
  *
  * @param {string} text   — Plain text to show inside the tooltip panel.
  *                           Do not pass raw HTML; the value is escaped.
- * @param {string} [id]   — Optional stable id prefix; generated when omitted.
  * @param {string} [ariaLabel] — Accessible label for the icon button.
  *                               Pass `i18n.t('ui.reuse.info_tooltip.aria')`.
  *                               Defaults to 'More information'.
+ * @param {string} [id]   — Optional stable id prefix; generated when omitted.
  * @returns {string}
  */
 
@@ -33,7 +33,7 @@ import { escapeHtml } from "./escape-html.js";
 
 let _seq = 0;
 
-export function renderInfoTooltip(text, id, ariaLabel = "More information") {
+export function renderInfoTooltip(text, ariaLabel = "More information", id) {
     const uid = id ?? `info-tooltip-${++_seq}`;
     return `<span class="info-tooltip" data-info-tooltip="${uid}">
       <button

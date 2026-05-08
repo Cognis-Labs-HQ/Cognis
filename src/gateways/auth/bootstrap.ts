@@ -239,7 +239,7 @@ function createAuthGatewayRoutes(
                 }>
             >("registration:public:register");
             if (!registerPublic) {
-                res.writeHead(503, { "content-type": "application/json" });
+                res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {

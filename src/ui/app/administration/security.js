@@ -201,7 +201,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
           <div class="components-section">
             <h3 class="components-section-heading">
               ${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_label"))}
-              ${renderInfoTooltip(i18n.t("ui.app.admin.security.trusted_domains_hint"), undefined, tooltipAria)}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.trusted_domains_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
               <input
@@ -215,7 +215,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
           <div class="components-section">
             <h3 class="components-section-heading">
               ${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_label"))}
-              ${renderInfoTooltip(i18n.t("ui.app.admin.security.enable_registrations_hint"), undefined, tooltipAria)}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.enable_registrations_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
               <label class="switch">
@@ -227,7 +227,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
           <div class="components-section">
             <h3 class="components-section-heading">
               ${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}
-              ${renderInfoTooltip(i18n.t("ui.app.admin.security.user_validation_mode_hint"), undefined, tooltipAria)}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.user_validation_mode_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
               <select id="security-user-validation-mode" class="security-domains-input theme-select">
