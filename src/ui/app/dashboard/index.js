@@ -77,7 +77,9 @@ function buildAnalogueClockMarkup(now, tz) {
         };
     }
 
-    // Clock-hand math: 30° per hour (360/12), 6° per minute/second (360/60), and 3600 seconds per hour.
+    // Clock-hand math:
+    // - hourAngle uses 30° per hour (360°/12) plus minute/second offsets (minute/60, second/3600).
+    // - minuteAngle and secondAngle use 6° per minute/second (360°/60).
     const hourAngle = (hour + minute / 60 + second / 3600) * 30;
     const minuteAngle = (minute + second / 60) * 6;
     const secondAngle = second * 6;

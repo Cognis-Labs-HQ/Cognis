@@ -19,11 +19,11 @@ test("users popup formats member and login timestamps via timestamp utility", ()
     );
     assert.match(
         source,
-        /function formatMemberSince\(iso\)\s*\{\s*return formatDate\(iso,/,
+        /function formatMemberSince\(iso\)\s*\{\s*return formatDate\(iso,\s*i18n\.t\("ui\.app\.dashboard\.never"\)\);/,
     );
     assert.match(
         source,
-        /function formatLastLogin\(iso\)\s*\{\s*return formatDateTime\(iso,/,
+        /function formatLastLogin\(iso\)\s*\{\s*return formatDateTime\(iso,\s*i18n\.t\("ui\.app\.dashboard\.never"\)\);/,
     );
     assert.match(source, /formatMemberSince\(info\?\.createdAt \?\? null\)/);
     assert.match(source, /formatLastLogin\(info\?\.lastLogin \?\? null\)/);
