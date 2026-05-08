@@ -14,6 +14,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Tooling/Auth security: removed arbitrary `cognisctl api:request` access, added `cognisctl api:token`, and introduced `POST /api/v1/auth/emergency-token` (admin-only) to mint a temporary 1-hour privileged token for emergency curl operations. ([105c573](https://github.com/le-firehawk/Cognis/commit/105c573))
 - Invite page: table headers now match the Administration → Registration table (Email, Issuer, Username, Status, Expires At, Actions); dates are formatted with `toLocaleString`; revoke button now shows success/failure toasts and refreshes the page immediately. ([fb70bf4](https://github.com/le-firehawk/Cognis/commit/fb70bf4))
 - Typing message "Register your account today": ownership moved from the registration gateway to the public adapter (`ownerType: "adapter"`, `ownerId: "public"`) and gated by an `isEnabled` callback — the message is only included in the auth-typing response when both the registration gateway and its public adapter are enabled. `AuthTypingMessage` now accepts an optional `isEnabled?: () => boolean` field; the `/api/v1/ui/auth-typing-messages` route evaluates it before the existing owner-type checks. ([fb70bf4](https://github.com/le-firehawk/Cognis/commit/fb70bf4))
 
