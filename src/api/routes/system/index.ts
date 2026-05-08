@@ -1,12 +1,12 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { HealthService } from "@cognis/core";
+import type { BootstrapLog, HealthService } from "@cognis/core";
 import { requireAuth } from "../../auth/guard.js";
 import { readJson } from "../../reuse/read-json.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 
-async function listLanguages() {
+async function listLanguages(log?: BootstrapLog) {
     const root = join(process.cwd(), "src", "ui", "languages");
     const entries = await readdir(root, { withFileTypes: true });
     const languages = [];
@@ -26,7 +26,13 @@ async function listLanguages() {
             );
             if (data.iso_code && data.name)
                 languages.push({ ...data, key: entry.name });
-        } catch {}
+        } catch (error) {
+            log?.("warn", "Skipped malformed language manifest.", {
+                component: "api-system",
+                manifestPath,
+                error: error instanceof Error ? error.message : String(error),
+            });
+        }
     }
     return languages;
 }
@@ -42,7 +48,7 @@ function parseSecuritySettings(raw: string | null): {
     trustedDomains: string[];
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
-} {
+} | null {
     if (!raw) {
         return {
             trustedDomains: [],
@@ -75,11 +81,7 @@ function parseSecuritySettings(raw: string | null): {
             userValidationMode,
         };
     } catch {
-        return {
-            trustedDomains: [],
-            registrationsEnabled: false,
-            userValidationMode: "none",
-        };
+        return null;
     }
 }
 
@@ -106,6 +108,7 @@ function parseTrustedDomainsInput(rawDomains: unknown): string[] {
 export function createSystemRoutes(
     healthService: HealthService,
     preferenceStore?: UserPreferenceStore,
+    log?: BootstrapLog,
 ) {
     const licenseMarkdownFile = resolve(
         process.cwd(),
@@ -121,12 +124,18 @@ export function createSystemRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        const logMeta = {
+            component: "api-system",
+            method: req.method ?? "GET",
+            path: url.pathname,
+        };
         const isHealthRoute =
             (url.pathname === "/api/v1/system/health" ||
                 url.pathname === "/api/v1/system/healthcheck") &&
             req.method === "GET";
 
         if (isHealthRoute) {
+            log?.("debug", "Served health status.", logMeta);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: healthService.status() }));
             return true;
@@ -136,7 +145,11 @@ export function createSystemRoutes(
             url.pathname === "/api/v1/system/languages" &&
             req.method === "GET"
         ) {
-            const languages = await listLanguages();
+            const languages = await listLanguages(log);
+            log?.("debug", "Listed UI languages.", {
+                ...logMeta,
+                count: languages.length,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: languages }));
             return true;
@@ -146,6 +159,10 @@ export function createSystemRoutes(
             url.pathname === "/api/v1/system/ui-config" &&
             req.method === "GET"
         ) {
+            log?.("debug", "Served UI config.", {
+                ...logMeta,
+                demoMode: parseDemoModeFromEnv(),
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({ data: { demoMode: parseDemoModeFromEnv() } }),
@@ -157,13 +174,32 @@ export function createSystemRoutes(
             url.pathname === "/api/v1/system/security" &&
             req.method === "GET"
         ) {
-            if (!requireAuth(req, res, "user")) return true;
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
             const raw = preferenceStore
                 ? await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY)
                 : null;
             const data = parseSecuritySettings(raw);
+            if (!data && raw) {
+                log?.("warn", "Failed to parse persisted security settings.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                });
+            }
+            log?.("debug", "Read security settings.", {
+                ...logMeta,
+                accountId: claims.sub,
+            });
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data }));
+            res.end(
+                JSON.stringify({
+                    data: data ?? {
+                        trustedDomains: [],
+                        registrationsEnabled: false,
+                        userValidationMode: "none",
+                    },
+                }),
+            );
             return true;
         }
 
@@ -171,7 +207,8 @@ export function createSystemRoutes(
             url.pathname === "/api/v1/system/security" &&
             req.method === "PUT"
         ) {
-            if (!requireAuth(req, res, "admin")) return true;
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
             const body = await readJson(req);
             const trustedDomains = parseTrustedDomainsInput(
                 body.trustedDomains,
@@ -193,6 +230,13 @@ export function createSystemRoutes(
                     }),
                 );
             }
+            log?.("info", "Updated security settings.", {
+                ...logMeta,
+                accountId: claims.sub,
+                trustedDomainCount: trustedDomains.length,
+                registrationsEnabled,
+                userValidationMode,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { saved: true } }));
             return true;
@@ -203,6 +247,7 @@ export function createSystemRoutes(
             try {
                 markdown = await readFile(licenseMarkdownFile, "utf8");
             } catch {
+                log?.("warn", "License file was not found.", logMeta);
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -214,6 +259,7 @@ export function createSystemRoutes(
                 );
                 return true;
             }
+            log?.("debug", "Served license markdown.", logMeta);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { markdown } }));
             return true;

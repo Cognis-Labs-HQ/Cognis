@@ -28,7 +28,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | ------------------- | ----------------------------------- | ------- |
 | SMTP Notification   | `src/adapters/notify/smtp/`         | `0.1.0` |
 | Local File Storage  | `src/adapters/file/local/`          | `0.1.0` |
-| Local Auth          | `src/adapters/auth/local/`          | `0.2.0` |
+| Local Auth          | `src/adapters/auth/local/`          | `0.2.1` |
 | SQLite Database     | `src/adapters/db/sqlite/`           | `0.1.0` |
 | PostgreSQL Database | `src/adapters/db/postgres/`         | `0.1.0` |
 | MariaDB Database    | `src/adapters/db/mariadb/`          | `0.1.0` |
@@ -41,11 +41,11 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component             | Path                         | Version |
 | --------------------- | ---------------------------- | ------- |
 | Database (db)         | `src/gateways/db/`           | `1.1.1` |
-| Authentication (auth) | `src/gateways/auth/`         | `1.3.1` |
-| Notification (notify) | `src/gateways/notify/`       | `0.1.0` |
-| Profile               | `src/gateways/profile/`      | `1.1.0` |
+| Authentication (auth) | `src/gateways/auth/`         | `1.3.2` |
+| Notification (notify) | `src/gateways/notify/`       | `1.1.1` |
+| Profile               | `src/gateways/profile/`      | `1.1.1` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
-| Registration          | `src/gateways/registration/` | `1.1.1` |
+| Registration          | `src/gateways/registration/` | `1.1.2` |
 | Logging               | `src/gateways/logging/`      | `1.3.0` |
 
 ## Core contracts
@@ -58,7 +58,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component  | Path       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.1.1` |
+| API Server | `src/api/` | `0.1.2` |
 
 ## Modules
 

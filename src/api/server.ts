@@ -79,10 +79,12 @@ export function buildServer(deps: ApiDependencies) {
         getStatus: (moduleId) =>
             enabledModules.has(moduleId) ? "enabled" : "disabled",
         getIntegrityReport: deps.moduleIntegrityChecker,
+        log,
     });
     const systemRoutes = createSystemRoutes(
         healthService,
         deps.preferenceStore,
+        log,
     );
     const docsRoutes = createDocsRoutes();
     const uiRoutes = createUiRoutes(
@@ -97,6 +99,7 @@ export function buildServer(deps: ApiDependencies) {
               deps.accountStore,
               deps.preferenceStore,
               deps.setProfileRole,
+              log,
           )
         : null;
     const gatewayRoutes = deps.gatewayRegistry
@@ -104,6 +107,7 @@ export function buildServer(deps: ApiDependencies) {
               deps.gatewayRegistry,
               deps.uiRegistry,
               deps.persistGatewayState,
+              log,
           )
         : null;
 

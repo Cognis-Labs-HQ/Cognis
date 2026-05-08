@@ -18,6 +18,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Logging: expanded structured backend coverage across core API routes and gateway bootstraps, added audit-style logs for account mutations, and recorded major registration/auth lifecycle events through the shared logger. ([39dd2b9](https://github.com/le-firehawk/Cognis/commit/39dd2b9))
 - Logging: console output is now pretty-formatted by default while persistent log files remain JSON lines, backend warning paths route through the shared logger, and DB logs record only summarised metadata instead of forwarding raw database messages. ([3eed7dc](https://github.com/le-firehawk/Cognis/commit/3eed7dc))
 - Tooling/Auth security: removed arbitrary `cognisctl api:request` access, added `cognisctl api:token`, and introduced `POST /api/v1/auth/emergency-token` (admin-only) to mint a temporary 1-hour privileged token for emergency curl operations. ([105c573](https://github.com/le-firehawk/Cognis/commit/105c573))
 - User-facing UI timestamps now consistently route through `src/ui/reuse/timestamp.js`, including the Users details popup and the Administration registration invite table backed by DB query results. ([cea7198](https://github.com/le-firehawk/Cognis/commit/cea7198))

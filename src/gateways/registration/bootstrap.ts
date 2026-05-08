@@ -2,6 +2,7 @@ import path from "node:path";
 import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
+    getAuthClaims,
     getCookieSession,
     readJson,
     requireAuth,
@@ -85,6 +86,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     >("notify:upsertVerifiedPrimaryEmail");
     const gateway = new CoreRegistrationGateway(dbExecutor, dbType);
     await gateway.ensureSchema();
+    ctx.log?.("info", "Registration gateway schema ready.", {
+        component: "registration-gateway",
+        dbType,
+    });
     const registrationAdaptersRoot = path.join(
         ctx.adaptersRoot,
         "registration",
@@ -109,6 +114,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             }),
     });
     await gateway.loadPersistedConfigs();
+    ctx.log?.("info", "Registration adapters discovered and configured.", {
+        component: "registration-gateway",
+        adaptersRoot: registrationAdaptersRoot,
+        adapterCount: gateway.listAdapters().length,
+    });
 
     const preferenceStore =
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
@@ -143,10 +153,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             accountStore,
             getTrustedDomains,
             isGatewayEnabled,
+            ctx.log,
         ),
         "registration",
     );
     ctx.routeRegistry.register(createRegistrationPageRoutes(), "registration");
+    ctx.log?.("info", "Registration gateway routes registered.", {
+        component: "registration-gateway",
+    });
     const uiDir = path.resolve(
         process.cwd(),
         "src",
@@ -200,11 +214,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.1.1",
+        version: "1.1.2",
         description:
             "Registration workflows via pluggable invite/public adapters.",
         publisher: "Cognis Labs",
         hasAdapters: true,
+    });
+    ctx.log?.("info", "Registration gateway initialized.", {
+        component: "registration-gateway",
+        adapterCount: gateway.listAdapters().length,
     });
 }
 
@@ -243,16 +261,28 @@ export function createRegistrationRoutes(
     accountStore: LocalAccountStore,
     getTrustedDomains: () => Promise<string[]> = async () => [],
     isGatewayEnabled: () => boolean = () => true,
+    log?: GatewayBootstrapContext["log"],
 ) {
     return async (
         req: IncomingMessage,
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        const claims = getAuthClaims(req);
+        const logMeta = {
+            component: "registration-gateway",
+            method: req.method ?? "GET",
+            path: url.pathname,
+            accountId: claims?.sub,
+        };
         if (
             url.pathname === "/api/v1/auth/registration-config" &&
             req.method === "GET"
         ) {
+            log?.("debug", "Read public registration config.", {
+                ...logMeta,
+                registrationsEnabled: gateway.isPublicEnabled(),
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -270,6 +300,13 @@ export function createRegistrationRoutes(
         ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
+            log?.("debug", "Read registration state.", {
+                ...logMeta,
+                accountId: claims.sub,
+                gatewayEnabled: isGatewayEnabled(),
+                inviteEnabled: gateway.isInviteEnabled(),
+                publicEnabled: gateway.isPublicEnabled(),
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -301,6 +338,11 @@ export function createRegistrationRoutes(
             }
             const token = String(url.searchParams.get("token") ?? "");
             if (!token) {
+                log?.(
+                    "warn",
+                    "Invite lookup failed because token was missing.",
+                    logMeta,
+                );
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -314,6 +356,11 @@ export function createRegistrationRoutes(
             }
             const invite = await gateway.resolveInvite(token);
             if (!invite) {
+                log?.(
+                    "warn",
+                    "Invite lookup failed because token was invalid.",
+                    logMeta,
+                );
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -325,6 +372,11 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
+            log?.("debug", "Resolved registration invite.", {
+                ...logMeta,
+                inviterAccountId: invite.inviterAccountId,
+                inviteeEmail: invite.inviteeEmail,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -366,11 +418,21 @@ export function createRegistrationRoutes(
                     password,
                     displayName,
                 });
+                log?.("info", "Redeemed registration invite.", {
+                    ...logMeta,
+                    createdAccountId: result.createdAccountId,
+                    inviterAccountId: result.inviterAccountId,
+                });
                 res.writeHead(201, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: result }));
             } catch (error) {
                 const code =
                     error instanceof Error ? error.message : "redeem_failed";
+                log?.("warn", "Invite redemption failed.", {
+                    ...logMeta,
+                    code,
+                    username,
+                });
                 const status = redeemInviteErrorStatus(code);
                 res.writeHead(status, { "content-type": "application/json" });
                 res.end(JSON.stringify({ error: { code, message: code } }));
@@ -417,6 +479,12 @@ export function createRegistrationRoutes(
                       includeClosed:
                           url.searchParams.get("includeClosed") === "true",
                   });
+            log?.("debug", "Listed registration invites.", {
+                ...logMeta,
+                accountId: claims.sub,
+                count: invites.length,
+                includeClosed: url.searchParams.get("includeClosed") === "true",
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: invites }));
             return true;
@@ -498,11 +566,23 @@ export function createRegistrationRoutes(
                     inviterIsFounder: !isAdmin && isFounder,
                     inviteBaseUrl: inviteBaseUrl(),
                 });
+                log?.("info", "Issued registration invite.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    inviteeEmail,
+                    tokenId: created.tokenId,
+                });
                 res.writeHead(201, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: created }));
             } catch (error) {
                 const code =
                     error instanceof Error ? error.message : "invite_failed";
+                log?.("warn", "Registration invite issuance failed.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    inviteeEmail,
+                    code,
+                });
                 const status = issueInviteErrorStatus(code);
                 res.writeHead(status, { "content-type": "application/json" });
                 res.end(JSON.stringify({ error: { code, message: code } }));
@@ -562,6 +642,15 @@ export function createRegistrationRoutes(
                 revokedByAccountId: claims.sub,
             });
             if (!revoked) {
+                log?.(
+                    "warn",
+                    "Registration invite revocation failed because token was not found.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                        tokenId,
+                    },
+                );
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -573,6 +662,11 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
+            log?.("info", "Revoked registration invite.", {
+                ...logMeta,
+                accountId: claims.sub,
+                tokenId,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { revoked: true } }));
             return true;

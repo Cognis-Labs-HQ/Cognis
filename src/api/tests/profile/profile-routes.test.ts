@@ -172,6 +172,52 @@ test("profile routes - PATCH updates bio and visibility", async () => {
     assert.equal(parsed.data.visibility, "community");
 });
 
+test("profile routes log profile updates", async () => {
+    const profileStore = new VolatileProfileStore();
+    await profileStore.createProfile("bob", "bob");
+    const token = issueAccessToken("bob", "user", 60);
+    const entries: Array<{
+        level: string;
+        message: string;
+        meta?: Record<string, unknown>;
+    }> = [];
+    const route = createProfileRoutes(
+        profileStore,
+        fakeFileGateway(),
+        undefined,
+        (level, message, meta) => {
+            entries.push({ level, message, meta });
+        },
+    );
+
+    await route(
+        makeReq(
+            "PATCH",
+            token,
+            JSON.stringify({ bio: "Hello world", visibility: "community" }),
+        ),
+        {
+            writeHead() {},
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/profile"),
+    );
+
+    assert.deepEqual(entries, [
+        {
+            level: "info",
+            message: "Updated profile.",
+            meta: {
+                component: "api-profile",
+                method: "PATCH",
+                path: "/api/v1/profile",
+                accountId: "bob",
+                changedFields: ["bio", "visibility"],
+            },
+        },
+    ]);
+});
+
 test("profile routes - PATCH updates displayName", async () => {
     const profileStore = new VolatileProfileStore();
     await profileStore.createProfile("diana", "diana");

@@ -124,12 +124,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const profileStore = new DbProfileStore(dbExecutor, dbType);
     await profileStore.ensureSchema();
+    ctx.log?.("info", "Profile store schema ready.", {
+        component: "profile-gateway",
+        dbType,
+    });
 
     const prefStore = new DbUserPreferenceStore(dbExecutor, dbType);
     await prefStore.ensureSchema();
     ctx.capabilities.contribute("preferences:store", prefStore);
-
-    ctx.log?.("info", "Profile gateway: schema ready.");
+    ctx.log?.("info", "Profile preference store schema ready.", {
+        component: "profile-gateway",
+        dbType,
+    });
 
     ctx.capabilities.contribute(
         "profile:createProfile",
@@ -163,6 +169,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             profileStore,
             fileGateway ?? undefined,
             () => ctx.gatewayRegistry.get("profile")?.status !== "disabled",
+            ctx.log,
         ),
         "profile",
     );
@@ -190,11 +197,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.routeRegistry.register(createPostRoutes(profileStore), "profile");
 
     ctx.routeRegistry.register(createPreferencesRoutes(prefStore), "profile");
+    ctx.log?.("info", "Profile gateway routes registered.", {
+        component: "profile-gateway",
+        hasFileGateway: Boolean(fileGateway),
+    });
 
     ctx.gatewayRegistry.register({
         id: "profile",
         name: "Profile Gateway",
-        version: "1.0.0",
+        version: "1.1.1",
         description: "User profiles, social graph, posts, and file storage.",
         publisher: "Cognis Labs",
     });
@@ -217,5 +228,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ownerId: "profile",
     });
 
-    ctx.log?.("info", "Profile gateway: initialized.");
+    ctx.log?.("info", "Profile gateway: initialized.", {
+        component: "profile-gateway",
+        hasFileGateway: Boolean(fileGateway),
+    });
 }

@@ -1,5 +1,6 @@
 import path from "node:path";
 import {
+    getAuthClaims,
     requireAuth,
     readJson,
     CapabilityStore,
@@ -42,11 +43,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.dbType ??
         "sqlite";
 
-    const accountStore = new DbLocalAccountStore(dbExecutor, dbType);
+    const accountStore = new DbLocalAccountStore(dbExecutor, dbType, ctx.log);
     await accountStore.ensureSchema();
+    ctx.log?.("info", "Auth gateway account schema ready.", {
+        component: "auth-gateway",
+        dbType,
+    });
 
     const authGateway = new CoreAuthGateway(dbExecutor, dbType);
     await authGateway.ensureSchema();
+    ctx.log?.("info", "Auth gateway adapter schema ready.", {
+        component: "auth-gateway",
+        dbType,
+    });
 
     const localAdapterPath = path.resolve(
         process.cwd(),
@@ -61,28 +70,49 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         if (typeof mod.createAdapter === "function") {
             const localAdapter = mod.createAdapter(accountStore);
             authGateway.setLocalAdapter(localAdapter);
+            ctx.log?.("info", "Loaded local authentication adapter.", {
+                component: "auth-gateway",
+                adapterId: "local",
+            });
         }
-    } catch {
-        // Local adapter not found — auth gateway operates without it
+    } catch (error) {
+        ctx.log?.("warn", "Local authentication adapter could not be loaded.", {
+            component: "auth-gateway",
+            adapterId: "local",
+            error: error instanceof Error ? error.message : String(error),
+        });
     }
 
     const authAdaptersRoot = path.join(ctx.adaptersRoot, "auth");
     await authGateway.discoverAdapters(authAdaptersRoot);
     await authGateway.loadPersistedConfigs();
+    ctx.log?.("info", "Authentication adapters discovered and configured.", {
+        component: "auth-gateway",
+        adaptersRoot: authAdaptersRoot,
+        adapterCount: authGateway.listAdapters().length,
+    });
 
     ctx.routeRegistry.register(
-        createAuthGatewayRoutes(authGateway, accountStore, ctx.capabilities),
+        createAuthGatewayRoutes(
+            authGateway,
+            accountStore,
+            ctx.capabilities,
+            ctx.log,
+        ),
         "auth",
     );
     ctx.routeRegistry.register(
-        createAdapterAdminRoutes("auth", authGateway),
+        createAdapterAdminRoutes("auth", authGateway, ctx.log),
         "auth",
     );
+    ctx.log?.("info", "Auth gateway routes registered.", {
+        component: "auth-gateway",
+    });
 
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.3.1",
+        version: "1.3.2",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -114,12 +144,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             .getEnabledAdapters()
             .map((a) => ({ id: a.id, name: a.name })),
     );
+    ctx.log?.("info", "Auth gateway initialized.", {
+        component: "auth-gateway",
+        adapterCount: authGateway.listAdapters().length,
+    });
 }
 
 function createAuthGatewayRoutes(
     authGateway: CoreAuthGateway,
     accountStore: InstanceType<typeof DbLocalAccountStore>,
     capabilities: CapabilityStore,
+    log?: GatewayBootstrapContext["log"],
 ) {
     async function readSecuritySettings(): Promise<{
         registrationsEnabled: boolean;
@@ -170,6 +205,11 @@ function createAuthGatewayRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        const logMeta = {
+            component: "auth-gateway",
+            method: req.method ?? "GET",
+            path: url.pathname,
+        };
         if (
             url.pathname === "/api/v1/auth/login-methods" &&
             req.method === "GET"
@@ -178,6 +218,10 @@ function createAuthGatewayRoutes(
                 id: a.id,
                 name: a.name,
             }));
+            log?.("debug", "Listed login methods.", {
+                ...logMeta,
+                count: methods.length,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: methods }));
             return true;
@@ -187,11 +231,16 @@ function createAuthGatewayRoutes(
             url.pathname === "/api/v1/auth/registration-config" &&
             req.method === "GET"
         ) {
+            const enabled = await registrationsEnabled();
+            log?.("debug", "Read registration config.", {
+                ...logMeta,
+                registrationsEnabled: enabled,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
-                        registrationsEnabled: await registrationsEnabled(),
+                        registrationsEnabled: enabled,
                     },
                 }),
             );
@@ -200,6 +249,11 @@ function createAuthGatewayRoutes(
 
         if (url.pathname === "/api/v1/auth/register" && req.method === "POST") {
             if (!(await registrationsEnabled())) {
+                log?.(
+                    "warn",
+                    "Blocked public registration because registrations are disabled.",
+                    logMeta,
+                );
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -217,6 +271,14 @@ function createAuthGatewayRoutes(
             const email = String(body.email ?? "");
             const displayName = String(body.displayName ?? "").trim();
             if (!username || !password) {
+                log?.(
+                    "warn",
+                    "Rejected public registration with missing credentials.",
+                    {
+                        ...logMeta,
+                        username,
+                    },
+                );
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -241,6 +303,11 @@ function createAuthGatewayRoutes(
                 }>
             >("registration:public:register");
             if (!registerPublic) {
+                log?.(
+                    "warn",
+                    "Blocked public registration because registration capability is unavailable.",
+                    logMeta,
+                );
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -303,6 +370,12 @@ function createAuthGatewayRoutes(
                 timer.unref();
             }
 
+            log?.("info", "Registered public account.", {
+                ...logMeta,
+                accountId: result.username,
+                hasEmail: Boolean(email),
+                hasDisplayName: Boolean(displayName),
+            });
             res.writeHead(201, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ...result, verifyToken } }));
             return true;
@@ -315,6 +388,14 @@ function createAuthGatewayRoutes(
                 authGateway.getEnabledAdapter(provider) ??
                 authGateway.getEnabledAdapter("local");
             if (!adapter) {
+                log?.(
+                    "warn",
+                    "Login failed because no authentication adapter was available.",
+                    {
+                        ...logMeta,
+                        provider,
+                    },
+                );
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -330,6 +411,10 @@ function createAuthGatewayRoutes(
             delete credentials.provider;
             const session = await adapter.authenticate(credentials);
             if (!session) {
+                log?.("warn", "Login failed due to invalid credentials.", {
+                    ...logMeta,
+                    provider,
+                });
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -398,6 +483,13 @@ function createAuthGatewayRoutes(
             const requiresUserValidation = shouldRequireSmtpValidation
                 ? Boolean(canSendVerificationEmail?.())
                 : false;
+            log?.("info", "Login succeeded.", {
+                ...logMeta,
+                accountId: session.accountId,
+                provider: session.provider,
+                role,
+                requiresUserValidation,
+            });
             res.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": `cognis_access_token=${apiToken}; Path=/; HttpOnly; SameSite=Lax`,
@@ -430,6 +522,14 @@ function createAuthGatewayRoutes(
                     : "";
             const oneHourMs = 60 * 60 * 1000;
             if (rawToken && isTokenVerificationFresh(rawToken, oneHourMs)) {
+                log?.(
+                    "debug",
+                    "Password verification reused freshness window.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                    },
+                );
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { verified: true } }));
                 return true;
@@ -438,6 +538,10 @@ function createAuthGatewayRoutes(
             const password = String(body.password ?? "");
             const verified = await accountStore.verify(claims.sub, password);
             if (!verified) {
+                log?.("warn", "Password verification failed.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                });
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -452,6 +556,10 @@ function createAuthGatewayRoutes(
             if (rawToken) {
                 recordTokenVerification(rawToken);
             }
+            log?.("info", "Password verification succeeded.", {
+                ...logMeta,
+                accountId: claims.sub,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { verified: true } }));
             return true;
@@ -468,6 +576,13 @@ function createAuthGatewayRoutes(
             const expiresAt = new Date(
                 Date.now() + ttlSeconds * 1000,
             ).toISOString();
+            log?.("warn", "Issued emergency API token.", {
+                ...logMeta,
+                accountId: claims.sub,
+                role: claims.role,
+                ttlSeconds,
+                expiresAt,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -489,6 +604,7 @@ function createAuthGatewayRoutes(
 function createAdapterAdminRoutes(
     gatewayId: string,
     authGateway: CoreAuthGateway,
+    log?: GatewayBootstrapContext["log"],
 ) {
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
 
@@ -497,8 +613,19 @@ function createAdapterAdminRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        const claims = getAuthClaims(req);
+        const logMeta = {
+            component: "auth-gateway",
+            method: req.method ?? "GET",
+            path: url.pathname,
+            accountId: claims?.sub,
+        };
         if (url.pathname === base && req.method === "GET") {
             if (!requireAuth(req, res, "admin")) return true;
+            log?.("debug", "Listed auth adapters.", {
+                ...logMeta,
+                count: authGateway.listAdapters().length,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: authGateway.listAdapters() }));
             return true;
@@ -514,6 +641,14 @@ function createAdapterAdminRoutes(
             if (req.method === "GET") {
                 if (!requireAuth(req, res, "admin")) return true;
                 if (!adapter) {
+                    log?.(
+                        "warn",
+                        "Auth adapter config lookup failed because adapter was not found.",
+                        {
+                            ...logMeta,
+                            adapterId,
+                        },
+                    );
                     res.writeHead(404, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
@@ -531,6 +666,11 @@ function createAdapterAdminRoutes(
                 const requiredFields = schema
                     .filter((f) => f.required)
                     .map((f) => f.key);
+                log?.("debug", "Read auth adapter config.", {
+                    ...logMeta,
+                    adapterId,
+                    requiredFieldCount: requiredFields.length,
+                });
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -545,6 +685,14 @@ function createAdapterAdminRoutes(
             if (req.method === "PUT") {
                 if (!requireAuth(req, res, "admin")) return true;
                 if (!adapter) {
+                    log?.(
+                        "warn",
+                        "Auth adapter config update failed because adapter was not found.",
+                        {
+                            ...logMeta,
+                            adapterId,
+                        },
+                    );
                     res.writeHead(404, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
@@ -561,6 +709,12 @@ function createAdapterAdminRoutes(
                     adapterId,
                     body as Record<string, unknown>,
                 );
+                log?.("info", "Saved auth adapter config.", {
+                    ...logMeta,
+                    adapterId,
+                    fieldCount: Object.keys(body as Record<string, unknown>)
+                        .length,
+                });
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { saved: true } }));
                 return true;
@@ -575,6 +729,14 @@ function createAdapterAdminRoutes(
             const adapterId = decodeURIComponent(enableMatch[1]);
             const action = enableMatch[2];
             if (adapterId === "local" && action === "disable") {
+                log?.(
+                    "warn",
+                    "Blocked attempt to disable locked auth adapter.",
+                    {
+                        ...logMeta,
+                        adapterId,
+                    },
+                );
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -588,6 +750,15 @@ function createAdapterAdminRoutes(
                 return true;
             }
             if (!authGateway.getAdapter(adapterId)) {
+                log?.(
+                    "warn",
+                    "Auth adapter toggle failed because adapter was not found.",
+                    {
+                        ...logMeta,
+                        adapterId,
+                        action,
+                    },
+                );
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -604,6 +775,10 @@ function createAdapterAdminRoutes(
             } else {
                 await authGateway.disableAdapter(adapterId);
             }
+            log?.("info", `Auth adapter ${action}d.`, {
+                ...logMeta,
+                adapterId,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
             return true;
