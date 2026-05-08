@@ -271,12 +271,12 @@ export function createRegistrationRoutes(
             req.method === "GET"
         ) {
             if (!gateway.isInviteEnabled()) {
-                res.writeHead(404, { "content-type": "application/json" });
+                res.writeHead(409, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "not_found",
-                            message: "Route not found",
+                            code: "invite_disabled",
+                            message: "Invite registration is disabled",
                         },
                     }),
                 );
@@ -681,6 +681,7 @@ function createGatewayAdapterRoutes(
                     data: { enabled: adapter.enabled },
                     requiredFields: [],
                     schema: [],
+                    supportsTest: false,
                 }),
             );
             return true;

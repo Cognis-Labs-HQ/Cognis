@@ -43,6 +43,7 @@ const knownErrorCodes = new Set([
 
 let inviteData = null;
 let tokenInvalid = false;
+let inviteAdapterDisabled = false;
 let openRegistrationsEnabled = false;
 let invalidTokenToastToken = null;
 let availableLanguages = [];
@@ -57,7 +58,13 @@ if (token) {
             const payload = await response.json();
             inviteData = payload.data ?? null;
         } else {
-            tokenInvalid = true;
+            const payload = await response.json().catch(() => null);
+            const code = String(payload?.error?.code ?? "");
+            if (code === "invite_disabled") {
+                inviteAdapterDisabled = true;
+            } else {
+                tokenInvalid = true;
+            }
         }
     } catch {
         inviteData = null;
@@ -116,9 +123,9 @@ function formatCountdown(msRemaining) {
 
 function renderRegisterShell() {
     const isInviteFlow = Boolean(token);
-    const isInvalid = isInviteFlow && tokenInvalid;
+    const isInvalid = isInviteFlow && tokenInvalid && !inviteAdapterDisabled;
     const canRenderForm = isInviteFlow
-        ? Boolean(inviteData) && !isInvalid
+        ? Boolean(inviteData) && !isInvalid && !inviteAdapterDisabled
         : openRegistrationsEnabled;
 
     let formHtml = "";

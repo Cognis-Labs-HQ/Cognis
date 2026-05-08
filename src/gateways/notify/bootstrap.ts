@@ -633,6 +633,7 @@ function createGatewayAdapterRoutes(
                     return true;
                 }
                 res.writeHead(200, { "content-type": "application/json" });
+                const sender = gateway.getSender(adapterId);
                 res.end(
                     JSON.stringify({
                         data: config,
@@ -640,6 +641,8 @@ function createGatewayAdapterRoutes(
                             gateway.getProviderEnvValues(adapterId) ?? {},
                         requiredFields:
                             gateway.getProviderRequiredFields(adapterId) ?? [],
+                        supportsTest:
+                            typeof sender?.sendTestEmail === "function",
                     }),
                 );
                 return true;

@@ -182,6 +182,27 @@ test("invite endpoint returns inviter details for valid token", async () => {
     assert.match(res.payload, /Founder Name/);
 });
 
+test("invite endpoint returns invite_disabled when invite adapter is disabled", async () => {
+    const route = createRegistrationRoutes(
+        {
+            isInviteEnabled() {
+                return false;
+            },
+        } as any,
+        accountStore,
+    );
+
+    const res = makeResponse();
+    const handled = await route(
+        { method: "GET", headers: {} } as any,
+        res,
+        new URL("http://localhost/api/v1/registration/invite?token=a.b"),
+    );
+    assert.equal(handled, true);
+    assert.equal(res.status, 409);
+    assert.match(res.payload, /invite_disabled/);
+});
+
 test("issue invite returns 409 when email is already registered", async () => {
     const route = createRegistrationRoutes(
         {

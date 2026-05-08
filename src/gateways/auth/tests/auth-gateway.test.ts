@@ -473,7 +473,7 @@ test("login endpoint returns 503 when no auth providers are available", async ()
     assert.equal(res.status, 401, "bad credentials should yield 401");
 });
 
-test("POST /api/v1/auth/verify returns 401 for unknown authenticated user", async () => {
+test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -492,7 +492,10 @@ test("POST /api/v1/auth/verify returns 401 for unknown authenticated user", asyn
         capabilities,
     });
 
-    const token = issueAccessToken("verify-user", "admin", 60);
+    const staleIssuedAt = Date.now() - 2 * 60 * 60 * 1000;
+    const token = issueAccessToken("verify-user", "admin", 7200, {
+        issuedAt: staleIssuedAt,
+    });
     const chunks = [
         Buffer.from(JSON.stringify({ password: "test-password-123" })),
     ];
@@ -518,6 +521,49 @@ test("POST /api/v1/auth/verify returns 401 for unknown authenticated user", asyn
     assert.ok(handled, "verify endpoint should handle the request");
     assert.equal(res.status, 401);
     assert.match(res.payload, /invalid_credentials/);
+});
+
+test("POST /api/v1/auth/verify returns 200 for fresh authenticated session", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const token = issueAccessToken("verify-user-fresh", "admin", 60);
+    const req = {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}` },
+        [Symbol.asyncIterator]: async function* () {
+            yield Buffer.from(JSON.stringify({ password: "wrong-password" }));
+        },
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    let handled = false;
+    for (const entry of routeRegistry.getEntries()) {
+        handled = await entry.handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/verify", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.ok(handled, "verify endpoint should handle the request");
+    assert.equal(res.status, 200);
 });
 
 test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
@@ -615,6 +661,11 @@ test("registration:public:register capability is looked up lazily in register ha
     }
 
     assert.equal(createdUsername, "testuser");
+    const body = JSON.parse(res.payload) as {
+        data: { verifyToken?: string };
+    };
+    assert.equal(typeof body.data.verifyToken, "string");
+    assert.ok(body.data.verifyToken);
 });
 
 test("RouteRegistry.getEntries returns handlers with their associated gatewayId", async () => {

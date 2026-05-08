@@ -816,7 +816,7 @@ function fieldNameToLabel(name) {
         .trim();
 }
 
-function renderGenericAdapterForm(descriptors, requiredFields) {
+function renderGenericAdapterForm(descriptors, requiredFields, showTestControls) {
     const requiredSet = new Set(requiredFields);
     const requiredTooltip = i18n.t("ui.app.admin.notif.required_field");
     const conflictTitle = i18n.t("ui.app.admin.notif.field_env_conflict");
@@ -966,10 +966,14 @@ function renderGenericAdapterForm(descriptors, requiredFields) {
       </div>
       ${authFieldsBlock}
       ${boolFieldsHtml}
-      <div class="provider-test-row">
+      ${
+          showTestControls
+              ? `<div class="provider-test-row">
         <input class="provider-test-input" type="email" placeholder="${escapeHtml(i18n.t("ui.app.admin.notif.test_email_to"))}" />
         <button class="btn-animated provider-test-btn" type="button">${i18n.t("ui.app.admin.notif.test_email")}</button>
-      </div>
+      </div>`
+              : ""
+      }
     </div>
   `;
 }
@@ -986,6 +990,7 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
     const requiredFields = Array.isArray(payload.requiredFields)
         ? payload.requiredFields
         : [];
+    const supportsTest = payload.supportsTest === true;
 
     const fieldNames = new Set([
         ...Object.keys(dbData),
@@ -1029,7 +1034,11 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
 
     const result = await openPopup({
         title: name,
-        body: renderGenericAdapterForm(descriptors, requiredFields),
+        body: renderGenericAdapterForm(
+            descriptors,
+            requiredFields,
+            supportsTest,
+        ),
         maxWidth: "640px",
         actions: [
             {
