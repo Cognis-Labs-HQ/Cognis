@@ -9,6 +9,8 @@ import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../../../api/auth/access-tokens.js";
 import { SqliteExecutor } from "../../../gateways/db/executor.js";
 
+type HttpIncomingMessage = import("node:http").IncomingMessage;
+
 function makeInMemoryDb() {
     return {
         execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
@@ -493,7 +495,7 @@ test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user"
     });
 
     const staleIssuedAt = Date.now() - 2 * 60 * 60 * 1000;
-    const token = issueAccessToken("verify-user", "admin", 7200, {
+    const token = issueAccessToken("verify-user", "admin", 10800, {
         issuedAt: staleIssuedAt,
     });
     const chunks = [
@@ -629,7 +631,7 @@ test("POST /api/v1/auth/emergency-token requires admin auth", async () => {
     const req = {
         method: "POST",
         headers: { authorization: `Bearer ${userToken}` },
-    } as unknown as import("node:http").IncomingMessage;
+    } as unknown as HttpIncomingMessage;
     const { handled, res } = await dispatchRoute(
         routeRegistry,
         req,
@@ -663,7 +665,7 @@ test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
     const req = {
         method: "POST",
         headers: { authorization: `Bearer ${adminToken}` },
-    } as unknown as import("node:http").IncomingMessage;
+    } as unknown as HttpIncomingMessage;
     const { handled, res } = await dispatchRoute(
         routeRegistry,
         req,
@@ -683,7 +685,13 @@ test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
     assert.ok(body.data.token.startsWith("cgs_"));
     assert.equal(body.data.role, "admin");
     assert.equal(body.data.ttlSeconds, 3600);
-    assert.ok(Date.parse(body.data.expiresAt) > Date.now());
+    const expiresAtMs = Date.parse(body.data.expiresAt);
+    const expectedExpiresAtMs = Date.now() + body.data.ttlSeconds * 1000;
+    const MAX_EXPIRY_DRIFT_MS = 5_000;
+    assert.ok(expiresAtMs > Date.now());
+    assert.ok(
+        Math.abs(expiresAtMs - expectedExpiresAtMs) <= MAX_EXPIRY_DRIFT_MS,
+    );
 });
 
 test("registration:public:register capability is looked up lazily in register handler", async () => {

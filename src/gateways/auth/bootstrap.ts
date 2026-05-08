@@ -455,7 +455,7 @@ function createAuthGatewayRoutes(
             const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
             const ttlSeconds = 60 * 60;
-            const token = issueAccessToken(claims.sub, "admin", ttlSeconds);
+            const token = issueAccessToken(claims.sub, claims.role, ttlSeconds);
             const expiresAt = new Date(
                 Date.now() + ttlSeconds * 1000,
             ).toISOString();
@@ -464,7 +464,7 @@ function createAuthGatewayRoutes(
                 JSON.stringify({
                     data: {
                         token,
-                        role: "admin",
+                        role: claims.role,
                         ttlSeconds,
                         expiresAt,
                     },
