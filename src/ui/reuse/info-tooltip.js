@@ -23,6 +23,9 @@
  * @param {string} text   — Plain text to show inside the tooltip panel.
  *                           Do not pass raw HTML; the value is escaped.
  * @param {string} [id]   — Optional stable id prefix; generated when omitted.
+ * @param {string} [ariaLabel] — Accessible label for the icon button.
+ *                               Pass `i18n.t('ui.reuse.info_tooltip.aria')`.
+ *                               Defaults to 'More information'.
  * @returns {string}
  */
 
@@ -30,13 +33,13 @@ import { escapeHtml } from "./escape-html.js";
 
 let _seq = 0;
 
-export function renderInfoTooltip(text, id) {
+export function renderInfoTooltip(text, id, ariaLabel = "More information") {
     const uid = id ?? `info-tooltip-${++_seq}`;
     return `<span class="info-tooltip" data-info-tooltip="${uid}">
       <button
         class="info-tooltip__btn"
         type="button"
-        aria-label="More information"
+        aria-label="${escapeHtml(ariaLabel)}"
         aria-describedby="${uid}"
         tabindex="0"
       >ℹ</button>

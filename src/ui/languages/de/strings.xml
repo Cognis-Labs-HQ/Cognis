@@ -39,6 +39,7 @@
   <string name="ui.reuse.generic.dismiss">Schließen</string>
   <string name="ui.reuse.generic.confirm">Bestätigen</string>
   <string name="ui.reuse.generic.error">Fehler</string>
+  <string name="ui.reuse.info_tooltip.aria">Weitere Informationen</string>
 
   <string name="ui.layout.brand.aria">Cognis-Startseite</string>
   <string name="ui.layout.nav.primary">Hauptnavigation</string>

@@ -39,6 +39,7 @@
   <string name="ui.reuse.generic.dismiss">Dismiss</string>
   <string name="ui.reuse.generic.confirm">Confirm</string>
   <string name="ui.reuse.generic.error">Error</string>
+  <string name="ui.reuse.info_tooltip.aria">More information</string>
 
   <string name="ui.layout.brand.aria">Cognis home</string>
   <string name="ui.layout.nav.primary">Primary navigation</string>

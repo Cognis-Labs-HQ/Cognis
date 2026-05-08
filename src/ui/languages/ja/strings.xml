@@ -39,6 +39,7 @@
   <string name="ui.reuse.generic.dismiss">閉じる</string>
   <string name="ui.reuse.generic.confirm">確認</string>
   <string name="ui.reuse.generic.error">エラー</string>
+  <string name="ui.reuse.info_tooltip.aria">詳細情報</string>
 
   <string name="ui.layout.brand.aria">Cognis ホーム</string>
   <string name="ui.layout.nav.primary">メインナビゲーション</string>
