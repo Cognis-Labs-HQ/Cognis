@@ -33,6 +33,7 @@ const knownErrorCodes = new Set([
 let inviteData = null;
 let tokenInvalid = false;
 let openRegistrationsEnabled = false;
+let invalidTokenToastShown = false;
 
 if (token) {
     try {
@@ -179,7 +180,8 @@ const composer = createPageComposer(root, {
             onRender: () => {
                 runTypingShowcase(typingSamples);
 
-                if (tokenInvalid) {
+                if (tokenInvalid && !invalidTokenToastShown) {
+                    invalidTokenToastShown = true;
                     showToast(i18n.t("ui.app.register.error.invalid_token"), {
                         variant: "error",
                         permanent: true,
