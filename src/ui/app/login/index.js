@@ -241,7 +241,9 @@ async function enforceRequiredEmailSetup(accountId) {
             try {
                 const payload = await addResponse.json();
                 code = String(payload?.error?.code ?? code);
-            } catch {}
+            } catch {
+                // Keep generic add_failed when response body is empty or invalid JSON.
+            }
             if (code === "email_taken") {
                 showToast(i18n.t("ui.app.settings.emails_email_taken"), {
                     variant: "error",

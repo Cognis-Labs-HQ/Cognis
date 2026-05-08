@@ -317,7 +317,22 @@ function createAuthGatewayRoutes(
             await createProfile?.(session.accountId, session.accountId, role);
             const isFounder = await accountStore
                 .isFounder(session.accountId)
-                .catch(() => false);
+                .catch((error) => {
+                    console.warn(
+                        JSON.stringify({
+                            level: "warn",
+                            component: "auth-gateway",
+                            message:
+                                "Failed to resolve founder status during login.",
+                            accountId: session.accountId,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        }),
+                    );
+                    return false;
+                });
             const securitySettings = await readSecuritySettings();
             const canSendVerificationEmail = capabilities.get<() => boolean>(
                 "notify:canSendVerificationEmail",
