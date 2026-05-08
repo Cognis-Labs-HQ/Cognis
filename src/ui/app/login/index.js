@@ -12,9 +12,9 @@ import {
     renderAuthBrandline,
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
+import { redirectToDashboardIfAuthenticated } from "../../reuse/auth-session.js";
 
-if (localStorage.getItem("cognis_token")) {
-    window.location.replace("/dashboard");
+if (await redirectToDashboardIfAuthenticated()) {
     await new Promise(() => {});
 }
 
