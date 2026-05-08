@@ -7,11 +7,45 @@ import { RouteRegistry } from "../../../api/route-registry.js";
 import { UIRegistry } from "../../../api/ui-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../../../api/auth/access-tokens.js";
+import { SqliteExecutor } from "../../../gateways/db/executor.js";
 
 function makeInMemoryDb() {
     return {
         execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
     };
+}
+
+function makeJsonRequest(
+    method: string,
+    body: Record<string, unknown>,
+    headers: Record<string, string> = {},
+) {
+    const chunks = [Buffer.from(JSON.stringify(body))];
+    return {
+        method,
+        headers,
+        [Symbol.asyncIterator]: async function* () {
+            for (const chunk of chunks) yield chunk;
+        },
+    } as unknown as import("node:http").IncomingMessage;
+}
+
+async function dispatchRoute(
+    routeRegistry: RouteRegistry,
+    req: import("node:http").IncomingMessage,
+    pathname: string,
+) {
+    const res = makeResponse();
+    let handled = false;
+    for (const entry of routeRegistry.getEntries()) {
+        handled = await entry.handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL(pathname, "http://localhost"),
+        );
+        if (handled) break;
+    }
+    return { handled, res };
 }
 
 function makeResponse() {
@@ -620,4 +654,113 @@ test("auth register endpoint returns 403 when open registration is disabled", as
 
     assert.equal(res.status, 403);
     assert.match(res.payload, /registrations_disabled/);
+});
+
+test("login userValidation fails open when SMTP validation is enabled but unavailable", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("preferences:store", {
+        async get(_accountId: string, _key: string) {
+            return JSON.stringify({
+                trustedDomains: [],
+                registrationsEnabled: true,
+                userValidationMode: "smtp",
+            });
+        },
+    });
+    const db = new SqliteExecutor(":memory:");
+    await bootstrap({
+        dbExecutor: db,
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const registerResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", { username: "alice", password: "pass123" }),
+        "/api/v1/auth/register",
+    );
+    assert.ok(registerResult.handled);
+    assert.equal(registerResult.res.status, 201);
+
+    const loginResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "alice",
+            password: "pass123",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.ok(loginResult.handled);
+    assert.equal(loginResult.res.status, 200);
+    const payload = JSON.parse(loginResult.res.payload) as {
+        data: { requiredUserValidation: boolean; userValidationMode: string };
+    };
+    assert.equal(payload.data.userValidationMode, "smtp");
+    assert.equal(payload.data.requiredUserValidation, false);
+});
+
+test("login userValidation exempts founder admin even when SMTP is available", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("preferences:store", {
+        async get(_accountId: string, _key: string) {
+            return JSON.stringify({
+                trustedDomains: [],
+                registrationsEnabled: true,
+                userValidationMode: "smtp",
+            });
+        },
+    });
+    capabilities.contribute("notify:canSendVerificationEmail", () => true);
+    const db = new SqliteExecutor(":memory:");
+    await bootstrap({
+        dbExecutor: db,
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const createLocalAdmin = capabilities.get<
+        (username: string, password: string) => Promise<void>
+    >("auth:createLocalAdmin");
+    const accountStore = capabilities.get<{
+        setFounder: (username: string, isFounder: boolean) => Promise<void>;
+    }>("auth:accountStore");
+    assert.ok(createLocalAdmin);
+    assert.ok(accountStore);
+    await createLocalAdmin?.("root-admin", "adminpass");
+    await accountStore?.setFounder("root-admin", true);
+
+    const loginResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "root-admin",
+            password: "adminpass",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.ok(loginResult.handled);
+    assert.equal(loginResult.res.status, 200);
+    const payload = JSON.parse(loginResult.res.payload) as {
+        data: {
+            role: string;
+            isFounder: boolean;
+            requiredUserValidation: boolean;
+            userValidationMode: string;
+        };
+    };
+    assert.equal(payload.data.role, "admin");
+    assert.equal(payload.data.isFounder, true);
+    assert.equal(payload.data.userValidationMode, "smtp");
+    assert.equal(payload.data.requiredUserValidation, false);
 });

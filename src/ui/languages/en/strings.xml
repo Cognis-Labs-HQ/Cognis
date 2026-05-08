@@ -417,6 +417,10 @@
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">Enable registrations</string>
   <string name="ui.app.admin.security.enable_registrations_hint">Allow anyone to sign up without an invitation token.</string>
+  <string name="ui.app.admin.security.user_validation_mode_label">User validation</string>
+  <string name="ui.app.admin.security.user_validation_mode_hint">Choose whether user accounts must be validated after login.</string>
+  <string name="ui.app.admin.security.user_validation_mode.none">None</string>
+  <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
   <string name="ui.app.admin.security.saved">Security settings saved.</string>
   <string name="ui.app.admin.security.save_failed">Failed to save security settings.</string>
   <string name="ui.app.settings.emails_domain_blocked_title">Domain not permitted</string>

@@ -41,8 +41,15 @@ const SECURITY_SETTINGS_KEY = "security-settings";
 function parseSecuritySettings(raw: string | null): {
     trustedDomains: string[];
     registrationsEnabled: boolean;
+    userValidationMode: "none" | "smtp";
 } {
-    if (!raw) return { trustedDomains: [], registrationsEnabled: false };
+    if (!raw) {
+        return {
+            trustedDomains: [],
+            registrationsEnabled: false,
+            userValidationMode: "none",
+        };
+    }
     try {
         const parsed = JSON.parse(raw) as { trustedDomains?: unknown };
         const trustedDomains = Array.isArray(parsed.trustedDomains)
@@ -58,22 +65,33 @@ function parseSecuritySettings(raw: string | null): {
                       (parsed as Record<string, unknown>).registrationsEnabled,
                   )
                 : false;
+        const userValidationMode =
+            (parsed as Record<string, unknown>).userValidationMode === "smtp"
+                ? "smtp"
+                : "none";
         return {
             trustedDomains,
             registrationsEnabled,
+            userValidationMode,
         };
     } catch {
-        return { trustedDomains: [], registrationsEnabled: false };
+        return {
+            trustedDomains: [],
+            registrationsEnabled: false,
+            userValidationMode: "none",
+        };
     }
 }
 
 function serializeSecuritySettings(input: {
     trustedDomains: string[];
     registrationsEnabled: boolean;
+    userValidationMode: "none" | "smtp";
 }): string {
     return JSON.stringify({
         trustedDomains: input.trustedDomains,
         registrationsEnabled: input.registrationsEnabled,
+        userValidationMode: input.userValidationMode,
     });
 }
 
@@ -162,6 +180,8 @@ export function createSystemRoutes(
                 typeof body.registrationsEnabled === "boolean"
                     ? body.registrationsEnabled
                     : false;
+            const userValidationMode =
+                body.userValidationMode === "smtp" ? "smtp" : "none";
             if (preferenceStore) {
                 await preferenceStore.set(
                     "__system__",
@@ -169,6 +189,7 @@ export function createSystemRoutes(
                     serializeSecuritySettings({
                         trustedDomains,
                         registrationsEnabled,
+                        userValidationMode,
                     }),
                 );
             }

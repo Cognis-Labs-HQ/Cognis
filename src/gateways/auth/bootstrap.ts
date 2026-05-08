@@ -119,21 +119,46 @@ function createAuthGatewayRoutes(
     accountStore: InstanceType<typeof DbLocalAccountStore>,
     capabilities: CapabilityStore,
 ) {
-    async function registrationsEnabled(): Promise<boolean> {
+    async function readSecuritySettings(): Promise<{
+        registrationsEnabled: boolean;
+        userValidationMode: "none" | "smtp";
+    }> {
         const prefStore =
             capabilities.get<UserPreferenceStore>("preferences:store");
-        if (!prefStore) return false;
+        if (!prefStore) {
+            return {
+                registrationsEnabled: false,
+                userValidationMode: "none",
+            };
+        }
         const raw = await prefStore.get("__system__", "security-settings");
-        if (!raw) return false;
+        if (!raw) {
+            return {
+                registrationsEnabled: false,
+                userValidationMode: "none",
+            };
+        }
         try {
             const parsed = JSON.parse(raw) as Record<string, unknown>;
-            if (typeof parsed.registrationsEnabled === "boolean") {
-                return parsed.registrationsEnabled;
-            }
-            return false;
+            return {
+                registrationsEnabled:
+                    typeof parsed.registrationsEnabled === "boolean"
+                        ? parsed.registrationsEnabled
+                        : false,
+                userValidationMode:
+                    parsed.userValidationMode === "smtp" ? "smtp" : "none",
+            };
         } catch {
-            return false;
+            return {
+                registrationsEnabled: false,
+                userValidationMode: "none",
+            };
         }
+    }
+
+    async function registrationsEnabled(): Promise<boolean> {
+        const settings = await readSecuritySettings();
+        return settings.registrationsEnabled;
     }
 
     return async (
@@ -277,6 +302,17 @@ function createAuthGatewayRoutes(
             const isFounder = await accountStore
                 .isFounder(session.accountId)
                 .catch(() => false);
+            const securitySettings = await readSecuritySettings();
+            const canSendVerificationEmail = capabilities.get<() => boolean>(
+                "notify:canSendVerificationEmail",
+            );
+            const isInitialAdmin = role === "admin" && isFounder;
+            const shouldRequireSmtpValidation =
+                securitySettings.userValidationMode === "smtp" &&
+                !isInitialAdmin;
+            const requiresUserValidation = shouldRequireSmtpValidation
+                ? Boolean(canSendVerificationEmail?.())
+                : false;
             res.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": `cognis_access_token=${apiToken}; Path=/; HttpOnly; SameSite=Lax`,
@@ -290,6 +326,8 @@ function createAuthGatewayRoutes(
                         role,
                         isFounder,
                         token: apiToken,
+                        userValidationMode: securitySettings.userValidationMode,
+                        requiredUserValidation: requiresUserValidation,
                     },
                 }),
             );

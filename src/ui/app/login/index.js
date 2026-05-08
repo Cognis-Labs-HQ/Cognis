@@ -309,7 +309,12 @@ document
                 body.data.isFounder ? "true" : "false",
             );
             localStorage.setItem("cognis_login_time", new Date().toISOString());
-            await enforceRequiredEmailSetup(body.data.accountId);
+            const requiresUserValidation =
+                body.data.requiredUserValidation === true &&
+                body.data.userValidationMode === "smtp";
+            if (requiresUserValidation) {
+                await enforceRequiredEmailSetup(body.data.accountId);
+            }
             window.location.href = "/dashboard";
             return;
         }

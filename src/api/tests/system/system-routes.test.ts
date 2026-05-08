@@ -108,7 +108,8 @@ test("system security settings sanitize and survive malformed persisted data", a
     let status = 0;
     let body = "";
     const preferenceStore = {
-        get: async () => '{ "trustedDomains": ["Example.COM", " ", 7] }',
+        get: async () =>
+            '{ "trustedDomains": ["Example.COM", " ", 7], "userValidationMode": "smtp" }',
     };
     const route = createSystemRoutes(
         healthService as any,
@@ -131,6 +132,7 @@ test("system security settings sanitize and survive malformed persisted data", a
     assert.equal(status, 200);
     assert.deepEqual(JSON.parse(body).data.trustedDomains, ["example.com"]);
     assert.equal(JSON.parse(body).data.registrationsEnabled, false);
+    assert.equal(JSON.parse(body).data.userValidationMode, "smtp");
 
     const malformedStore = { get: async () => "not-json" };
     const malformedRoute = createSystemRoutes(
@@ -154,4 +156,5 @@ test("system security settings sanitize and survive malformed persisted data", a
     assert.equal(status, 200);
     assert.deepEqual(JSON.parse(body).data.trustedDomains, []);
     assert.equal(JSON.parse(body).data.registrationsEnabled, false);
+    assert.equal(JSON.parse(body).data.userValidationMode, "none");
 });

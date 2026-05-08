@@ -32,6 +32,8 @@ import { escapeHtml } from "../../reuse/escape-html.js";
 export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalDomains = [];
     let currentRegistrationsEnabled = false;
+    let originalUserValidationMode = "none";
+    let currentUserValidationMode = "none";
 
     async function loadSettings() {
         const res = await apiFetch("/api/v1/system/security");
@@ -40,11 +42,19 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return payload.data ?? { trustedDomains: [] };
     }
 
-    async function persistSettings(trustedDomains, registrationsEnabled) {
+    async function persistSettings(
+        trustedDomains,
+        registrationsEnabled,
+        userValidationMode,
+    ) {
         const res = await apiFetch("/api/v1/system/security", {
             method: "PUT",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ trustedDomains, registrationsEnabled }),
+            body: JSON.stringify({
+                trustedDomains,
+                registrationsEnabled,
+                userValidationMode,
+            }),
         });
         if (!res.ok) throw new Error("save_failed");
     }
@@ -61,18 +71,43 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return input instanceof HTMLInputElement ? input.value : "";
     }
 
+    function getValidationModeValue() {
+        const select = root.querySelector("#security-user-validation-mode");
+        if (!(select instanceof HTMLSelectElement)) return "none";
+        return select.value === "smtp" ? "smtp" : "none";
+    }
+
+    function markDirtyState() {
+        const currentDomains = parseDomains(getInputValue()).join(",");
+        const originalDomainsValue = originalDomains.join(",");
+        const modeChanged =
+            getValidationModeValue() !== originalUserValidationMode;
+        onDirtyChange?.(currentDomains !== originalDomainsValue || modeChanged);
+    }
+
     function bindInput(settings) {
         const input = root.querySelector("#security-trusted-domains");
         if (!(input instanceof HTMLInputElement)) return;
 
         originalDomains = settings.trustedDomains ?? [];
         currentRegistrationsEnabled = settings.registrationsEnabled === true;
+        currentUserValidationMode =
+            settings.userValidationMode === "smtp" ? "smtp" : "none";
+        originalUserValidationMode = currentUserValidationMode;
         input.value = originalDomains.join(", ");
+        const validationSelect = root.querySelector(
+            "#security-user-validation-mode",
+        );
+        if (validationSelect instanceof HTMLSelectElement) {
+            validationSelect.value = currentUserValidationMode;
+        }
 
         input.addEventListener("input", () => {
-            const current = parseDomains(getInputValue()).join(",");
-            const original = originalDomains.join(",");
-            onDirtyChange?.(current !== original);
+            markDirtyState();
+        });
+
+        validationSelect?.addEventListener("change", () => {
+            markDirtyState();
         });
     }
 
@@ -84,14 +119,27 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
         async save() {
             const domains = parseDomains(getInputValue());
-            await persistSettings(domains, currentRegistrationsEnabled);
+            const validationMode = getValidationModeValue();
+            await persistSettings(
+                domains,
+                currentRegistrationsEnabled,
+                validationMode,
+            );
             originalDomains = domains;
+            currentUserValidationMode = validationMode;
+            originalUserValidationMode = validationMode;
         },
 
         discard() {
             const input = root.querySelector("#security-trusted-domains");
             if (input instanceof HTMLInputElement) {
                 input.value = originalDomains.join(", ");
+            }
+            const validationSelect = root.querySelector(
+                "#security-user-validation-mode",
+            );
+            if (validationSelect instanceof HTMLSelectElement) {
+                validationSelect.value = originalUserValidationMode;
             }
             onDirtyChange?.(false);
         },
@@ -110,6 +158,16 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
               class="security-domains-input"
               placeholder="${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_placeholder"))}"
             />
+          </div>
+          <label class="security-field-label" for="security-user-validation-mode">
+            ${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}
+            <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_hint"))}</span>
+          </label>
+          <div class="security-field-row">
+            <select id="security-user-validation-mode" class="security-domains-input">
+              <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.none"))}</option>
+              <option value="smtp">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.smtp"))}</option>
+            </select>
           </div>
         </div>
       `;

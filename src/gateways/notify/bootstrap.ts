@@ -95,6 +95,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute("notify:canSendRegistrationInviteEmail", () =>
         gateway.canSendRegistrationInviteEmail(),
     );
+    ctx.capabilities.contribute("notify:canSendVerificationEmail", () =>
+        gateway.canSendVerificationEmail(),
+    );
     ctx.capabilities.contribute(
         "notify:sendRegistrationInviteEmail",
         async (

@@ -417,6 +417,10 @@
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">Aktifkan Pendaftaran</string>
   <string name="ui.app.admin.security.enable_registrations_hint">Izinkan siapa pun mendaftar tanpa token undangan.</string>
+  <string name="ui.app.admin.security.user_validation_mode_label">Validasi pengguna</string>
+  <string name="ui.app.admin.security.user_validation_mode_hint">Pilih apakah akun pengguna harus divalidasi setelah login.</string>
+  <string name="ui.app.admin.security.user_validation_mode.none">Tidak ada</string>
+  <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
   <string name="ui.app.admin.security.saved">Pengaturan keamanan disimpan.</string>
   <string name="ui.app.admin.security.save_failed">Gagal menyimpan pengaturan keamanan.</string>
   <string name="ui.app.settings.emails_domain_blocked_title">Domain tidak diizinkan</string>
