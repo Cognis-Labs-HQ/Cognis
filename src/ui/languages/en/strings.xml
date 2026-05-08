@@ -463,4 +463,8 @@
   <string name="ui.app.settings.emails_domain_blocked_title">Domain not permitted</string>
   <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
   <string name="ui.app.settings.emails_verify_unavailable">Email verification is not available. Contact your administrator.</string>
+  <string name="ui.app.settings.datetime">Date &amp; Time</string>
+  <string name="ui.app.settings.datetime_tz_heading">Timezone</string>
+  <string name="ui.app.settings.datetime_tz_label">Display Timezone</string>
+  <string name="ui.app.settings.datetime_tz_auto">Auto-detect ({tz})</string>
 </resources>

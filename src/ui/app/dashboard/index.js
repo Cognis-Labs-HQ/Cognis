@@ -1,6 +1,7 @@
 import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
+import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
 
 const root = document.querySelector("#app");
 const i18n = await createI18n();
@@ -24,29 +25,12 @@ async function loadAccountInfo() {
     }
 }
 
-function formatDate(iso) {
-    if (!iso) return i18n.t("ui.app.dashboard.never");
-    try {
-        return new Date(iso).toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        });
-    } catch {
-        return iso;
-    }
+function localFormatDate(iso) {
+    return formatDate(iso, i18n.t("ui.app.dashboard.never"));
 }
 
-function formatDateTime(iso) {
-    if (!iso) return i18n.t("ui.app.dashboard.never");
-    try {
-        return new Date(iso).toLocaleString(undefined, {
-            dateStyle: "medium",
-            timeStyle: "short",
-        });
-    } catch {
-        return iso;
-    }
+function localFormatDateTime(iso) {
+    return formatDateTime(iso, i18n.t("ui.app.dashboard.never"));
 }
 
 const info = await loadAccountInfo();
@@ -83,7 +67,7 @@ const elements = [
         <dt>${i18n.t("ui.app.dashboard.role")}</dt>
         <dd>${role}</dd>
         <dt>${i18n.t("ui.app.dashboard.member_since")}</dt>
-        <dd>${formatDate(info?.createdAt ?? null)}</dd>
+        <dd>${localFormatDate(info?.createdAt ?? null)}</dd>
       </dl>
     `,
     },
@@ -94,7 +78,7 @@ const elements = [
         render: () => `
       <h3>${i18n.t("ui.app.dashboard.element.last_login.label")}</h3>
       <p class="dashboard-last-seen">
-        ${i18n.t("ui.app.dashboard.last_seen")}: <strong>${formatDateTime(info?.lastLogin ?? null)}</strong>
+        ${i18n.t("ui.app.dashboard.last_seen")}: <strong>${localFormatDateTime(info?.lastLogin ?? null)}</strong>
       </p>
     `,
     },
