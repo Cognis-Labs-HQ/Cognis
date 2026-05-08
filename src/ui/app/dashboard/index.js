@@ -166,7 +166,7 @@ const elements = [
                 }).join("");
 
                 return `<svg class="dashboard-clock-analogue" width="120" height="120" viewBox="0 0 120 120" aria-hidden="true">
-                  <circle class="dashboard-clock-analogue-face" cx="${cx}" cy="${cy}" r="${r}"/>
+                  <circle class="dashboard-clock-analogue-face" cx="${cx}" cy="${cy}" r="${faceRadius}"/>
                   ${ticks}
                   <line class="dashboard-clock-hand-hour"
                     x1="${cx}" y1="${cy}" x2="${hourEnd.x.toFixed(2)}" y2="${hourEnd.y.toFixed(2)}"/>
