@@ -305,7 +305,7 @@ export function createAdapter(deps: {
                 "warn",
                 "Failed to delete account during invite redemption rollback.",
                 {
-                    component: "registration-token",
+                    component: "registration-invite",
                     accountId,
                     error:
                         error instanceof Error ? error.message : String(error),
