@@ -670,6 +670,9 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
         },
     });
     const db = new SqliteExecutor(":memory:");
+    await db.execute(
+        "CREATE TABLE IF NOT EXISTS account_profiles (account_id TEXT PRIMARY KEY, role TEXT)",
+    );
     await bootstrap({
         dbExecutor: db,
         dbType: "sqlite",
@@ -720,6 +723,9 @@ test("login userValidation exempts founder admin even when SMTP is available", a
     });
     capabilities.contribute("notify:canSendVerificationEmail", () => true);
     const db = new SqliteExecutor(":memory:");
+    await db.execute(
+        "CREATE TABLE IF NOT EXISTS account_profiles (account_id TEXT PRIMARY KEY, role TEXT)",
+    );
     await bootstrap({
         dbExecutor: db,
         dbType: "sqlite",
