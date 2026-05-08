@@ -31,6 +31,16 @@ export function initDateTimePrefs(
         onDirtyChange?.(currentTimezone !== savedTimezone);
     }
 
+    /**
+     * Builds timezone choices for the settings selector.
+     *
+     * Uses `Intl.supportedValuesOf('timeZone')` when available. If unavailable,
+     * falls back to a minimal deduplicated list derived from the current
+     * selected timezone, the browser-detected timezone, and UTC.
+     *
+     * @param {{ detectedTimezone: string, selectedTimezone: string }} options
+     * @returns {string[]}
+     */
     function buildTimezoneOptions({ detectedTimezone, selectedTimezone }) {
         let zones = [];
         try {

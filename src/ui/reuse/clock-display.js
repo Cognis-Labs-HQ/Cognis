@@ -45,6 +45,13 @@ export function createDateTimeFormatters({
     };
 }
 
+/**
+ * Resolves hour, minute, and second values in the target timezone for analogue clock rendering.
+ *
+ * @param {Date} now
+ * @param {string} tz
+ * @returns {{ hour: number, minute: number, second: number }}
+ */
 function getClockTimeParts(now, tz) {
     const parts = new Intl.DateTimeFormat(undefined, {
         hour: "numeric",
