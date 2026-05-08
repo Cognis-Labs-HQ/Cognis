@@ -715,11 +715,8 @@ function bindAdapterToggles() {
             }
 
             if (action === "disable") {
-                const { isLastEnabled, targetAdapter } = getAdapterDisableContext(
-                    allAdapters,
-                    gatewayId,
-                    adapterId,
-                );
+                const { isLastEnabled, targetAdapter } =
+                    getAdapterDisableContext(allAdapters, gatewayId, adapterId);
                 const adapterName =
                     targetAdapter?.name ??
                     targetAdapter?.senderId ??

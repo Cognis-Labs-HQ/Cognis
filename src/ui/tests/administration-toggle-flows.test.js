@@ -5,7 +5,7 @@ import {
     getGatewayAdapters,
     getGatewayEnableableAdapters,
     isAdapterActive,
-} from "../toggle-flows.js";
+} from "../app/administration/toggle-flows.js";
 
 const adapters = [
     {
