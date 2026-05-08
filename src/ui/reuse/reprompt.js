@@ -25,6 +25,8 @@ export function createRepromptGuard({ i18n }) {
         const title = config.title ?? i18n.t("ui.reuse.reprompt.title");
         const message = config.message ?? i18n.t("ui.reuse.reprompt.message");
         let inputEl = null;
+        let warningEl = null;
+        let isVerifying = false;
 
         const result = await openPopup({
             title,
@@ -34,6 +36,7 @@ export function createRepromptGuard({ i18n }) {
           <span>${escapeHtml(i18n.t("ui.reuse.reprompt.input_label"))}</span>
           <input id="reprompt-password" type="password" autocomplete="current-password" />
         </label>
+        <p id="reprompt-warning" class="reprompt-warning" role="alert" aria-live="polite" hidden></p>
       `,
             actions: [
                 {
@@ -49,28 +52,57 @@ export function createRepromptGuard({ i18n }) {
             ],
             onOpen: (overlay) => {
                 inputEl = overlay.querySelector("#reprompt-password");
+                warningEl = overlay.querySelector("#reprompt-warning");
+            },
+            onAction: async (actionId) => {
+                if (actionId !== "confirm") return true;
+                if (!(inputEl instanceof HTMLInputElement)) return false;
+                if (isVerifying) return false;
+
+                const password = inputEl.value;
+                if (!password) return false;
+
+                const warn = () => {
+                    if (!(warningEl instanceof HTMLElement)) return;
+                    warningEl.textContent = i18n.t(
+                        "ui.reuse.reprompt.invalid_password",
+                    );
+                    warningEl.hidden = false;
+                };
+
+                isVerifying = true;
+                try {
+                    const res = await apiFetch("/api/v1/auth/verify", {
+                        method: "POST",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({ password }),
+                    });
+                    if (!res.ok) {
+                        warn();
+                        inputEl.focus();
+                        inputEl.select();
+                        return false;
+                    }
+                } catch {
+                    warn();
+                    inputEl.focus();
+                    inputEl.select();
+                    return false;
+                } finally {
+                    isVerifying = false;
+                }
+
+                if (warningEl instanceof HTMLElement) {
+                    warningEl.textContent = "";
+                    warningEl.hidden = true;
+                }
+
+                await action();
+                return true;
             },
         });
 
-        if (result !== "confirm") return false;
-        if (!(inputEl instanceof HTMLInputElement)) return false;
-
-        const password = inputEl.value;
-        if (!password) return false;
-
-        try {
-            const res = await apiFetch("/api/v1/auth/verify", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ password }),
-            });
-            if (!res.ok) return false;
-        } catch {
-            return false;
-        }
-
-        await action();
-        return true;
+        return result === "confirm";
     }
 
     return { runWithReprompt };

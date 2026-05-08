@@ -208,6 +208,7 @@
   <string name="ui.reuse.reprompt.title">Re-confirm action</string>
   <string name="ui.reuse.reprompt.message">Please confirm this sensitive action.</string>
   <string name="ui.reuse.reprompt.input_label">Enter your password to continue.</string>
+  <string name="ui.reuse.reprompt.invalid_password">Incorrect password. Please try again.</string>
   <string name="ui.app.users.page_title">Users</string>
   <string name="ui.app.users.page_subtitle">Manage accounts and issue invites.</string>
   <string name="ui.app.users.invite">Invite</string>

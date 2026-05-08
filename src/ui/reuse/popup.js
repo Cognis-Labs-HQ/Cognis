@@ -46,6 +46,9 @@
  *              handlers on elements rendered inside the popup body before the
  *              fade-in animation begins.
  *
+ *   onAction — Optional async/sync callback invoked before dismissal when an
+ *              action button is clicked. Return `false` to keep the popup open.
+ *
  * @param {{
  *   title: string,
  *   body: string | (() => string),
@@ -53,6 +56,7 @@
  *   actions?: Array<{ id: string, label: string, variant?: string }>,
  *   maxWidth?: string,
  *   onOpen?: (overlay: HTMLElement) => void,
+ *   onAction?: (actionId: string | null, overlay: HTMLElement) => Promise<boolean | void> | boolean | void,
  * }} options
  * @returns {Promise<string|null>}
  */
@@ -93,6 +97,7 @@ export async function openPopup({
     actions,
     maxWidth,
     onOpen,
+    onAction,
 } = {}) {
     await ensureStylesheet();
     return new Promise((resolve) => {
@@ -169,9 +174,21 @@ export async function openPopup({
         });
 
         overlay.querySelectorAll("[data-popup-action]").forEach((btn) => {
-            btn.addEventListener("click", () => {
+            btn.addEventListener("click", async () => {
                 const actionId = btn.dataset.popupAction;
-                dismiss(actionId === "close" ? null : actionId);
+                const resolvedActionId = actionId === "close" ? null : actionId;
+                if (typeof onAction === "function") {
+                    try {
+                        const shouldDismiss = await onAction(
+                            resolvedActionId,
+                            overlay,
+                        );
+                        if (shouldDismiss === false) return;
+                    } catch {
+                        return;
+                    }
+                }
+                dismiss(resolvedActionId);
             });
         });
 

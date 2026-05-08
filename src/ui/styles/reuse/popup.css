@@ -83,6 +83,12 @@
     line-height: 1.55;
 }
 
+.reprompt-warning {
+    margin: 10px 0 0;
+    color: var(--color-danger-text);
+    font-weight: 600;
+}
+
 .popup-footer {
     display: flex;
     align-items: center;

@@ -208,6 +208,7 @@
   <string name="ui.reuse.reprompt.title">Aktion erneut bestätigen</string>
   <string name="ui.reuse.reprompt.message">Bitte bestätigen Sie diese sensible Aktion.</string>
   <string name="ui.reuse.reprompt.input_label">Geben Sie Ihr Passwort ein, um fortzufahren.</string>
+  <string name="ui.reuse.reprompt.invalid_password">Falsches Passwort. Bitte versuchen Sie es erneut.</string>
   <string name="ui.app.users.page_title">Benutzer</string>
   <string name="ui.app.users.page_subtitle">Konten verwalten und Einladungen versenden.</string>
   <string name="ui.app.users.invite">Einladen</string>

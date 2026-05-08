@@ -208,6 +208,7 @@
   <string name="ui.reuse.reprompt.title">Konfirmasi ulang tindakan</string>
   <string name="ui.reuse.reprompt.message">Mohon konfirmasi tindakan sensitif ini.</string>
   <string name="ui.reuse.reprompt.input_label">Masukkan kata sandi Anda untuk melanjutkan.</string>
+  <string name="ui.reuse.reprompt.invalid_password">Kata sandi salah. Silakan coba lagi.</string>
   <string name="ui.app.users.page_title">Pengguna</string>
   <string name="ui.app.users.page_subtitle">Kelola akun dan kirim undangan.</string>
   <string name="ui.app.users.invite">Undang</string>
