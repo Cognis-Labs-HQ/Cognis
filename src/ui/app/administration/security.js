@@ -77,12 +77,24 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return select.value === "smtp" ? "smtp" : "none";
     }
 
+    function getRegistrationsEnabledValue() {
+        const input = root.querySelector("#security-enable-registrations");
+        if (!(input instanceof HTMLInputElement)) return false;
+        return input.checked;
+    }
+
     function markDirtyState() {
         const currentDomains = parseDomains(getInputValue()).join(",");
         const originalDomainsValue = originalDomains.join(",");
         const modeChanged =
             getValidationModeValue() !== originalUserValidationMode;
-        onDirtyChange?.(currentDomains !== originalDomainsValue || modeChanged);
+        const registrationsChanged =
+            getRegistrationsEnabledValue() !== currentRegistrationsEnabled;
+        onDirtyChange?.(
+            currentDomains !== originalDomainsValue ||
+                modeChanged ||
+                registrationsChanged,
+        );
     }
 
     function bindInput(settings) {
@@ -98,8 +110,14 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         const validationSelect = root.querySelector(
             "#security-user-validation-mode",
         );
+        const registrationsToggle = root.querySelector(
+            "#security-enable-registrations",
+        );
         if (validationSelect instanceof HTMLSelectElement) {
             validationSelect.value = currentUserValidationMode;
+        }
+        if (registrationsToggle instanceof HTMLInputElement) {
+            registrationsToggle.checked = currentRegistrationsEnabled;
         }
 
         input.addEventListener("input", () => {
@@ -107,6 +125,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         });
 
         validationSelect?.addEventListener("change", () => {
+            markDirtyState();
+        });
+        registrationsToggle?.addEventListener("change", () => {
             markDirtyState();
         });
     }
@@ -120,12 +141,14 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         async save() {
             const domains = parseDomains(getInputValue());
             const validationMode = getValidationModeValue();
+            const registrationsEnabled = getRegistrationsEnabledValue();
             await persistSettings(
                 domains,
-                currentRegistrationsEnabled,
+                registrationsEnabled,
                 validationMode,
             );
             originalDomains = domains;
+            currentRegistrationsEnabled = registrationsEnabled;
             currentUserValidationMode = validationMode;
             originalUserValidationMode = validationMode;
         },
@@ -140,6 +163,12 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             );
             if (validationSelect instanceof HTMLSelectElement) {
                 validationSelect.value = originalUserValidationMode;
+            }
+            const registrationsToggle = root.querySelector(
+                "#security-enable-registrations",
+            );
+            if (registrationsToggle instanceof HTMLInputElement) {
+                registrationsToggle.checked = currentRegistrationsEnabled;
             }
             onDirtyChange?.(false);
         },
@@ -158,6 +187,13 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
               class="security-domains-input"
               placeholder="${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_placeholder"))}"
             />
+          </div>
+          <label class="security-field-label" for="security-enable-registrations">
+            ${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_label"))}
+            <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_hint"))}</span>
+          </label>
+          <div class="security-field-row">
+            <input id="security-enable-registrations" type="checkbox" />
           </div>
           <label class="security-field-label" for="security-user-validation-mode">
             ${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}

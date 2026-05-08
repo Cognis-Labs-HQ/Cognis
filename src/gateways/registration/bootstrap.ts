@@ -102,7 +102,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     ctx.uiRegistry?.registerAdminSection({
         id: "registration",
-        label: "Invite",
+        label: "Registration",
         scriptUrl: "/static/gateways/registration/admin-section.js",
     });
     ctx.uiRegistry?.registerStaticDir("registration", uiDir);

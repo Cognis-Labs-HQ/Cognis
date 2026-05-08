@@ -1,9 +1,6 @@
 import { bindThemeToggle } from "../../reuse/theme-toggle.js";
-import {
-    applyDocumentTitle,
-    applyStaticTranslations,
-    createI18n,
-} from "../../reuse/i18n.js";
+import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
+import { createPageComposer } from "../../reuse/page-composer.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
@@ -11,7 +8,8 @@ import { showToast } from "../../reuse/toast.js";
 
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.login");
-applyStaticTranslations(i18n);
+
+const root = document.querySelector("#app");
 
 const typingSamples = [
     i18n.t("ui.app.login.typing.sample.1"),
@@ -22,17 +20,14 @@ const typingSamples = [
     i18n.t("ui.app.login.typing.sample.6"),
 ];
 
-bindThemeToggle();
-
-const typingTarget = document.querySelector("#typing-text");
-const typingCursor = document.querySelector(".typing-cursor");
-
 const startIndex = Math.floor(Math.random() * typingSamples.length);
 const orderedSamples = typingSamples.map(
     (_, index) => typingSamples[(startIndex + index) % typingSamples.length],
 );
 
 async function runTypingShowcase() {
+    const typingTarget = document.querySelector("#typing-text");
+    const typingCursor = document.querySelector(".typing-cursor");
     if (!typingTarget) return;
 
     for (
@@ -64,8 +59,6 @@ async function runTypingShowcase() {
 
     if (typingCursor) typingCursor.textContent = "";
 }
-
-runTypingShowcase();
 
 async function loadLoginMethods() {
     try {
@@ -134,8 +127,6 @@ async function loadLoginMethods() {
         // Login methods unavailable — form works with local auth by default
     }
 }
-
-loadLoginMethods();
 
 async function loadUserEmails(accountId) {
     const response = await apiFetch(
@@ -256,12 +247,9 @@ async function enforceRequiredEmailSetup(accountId) {
                     variant: "error",
                 });
             } else if (code === "rate_limited") {
-                showToast(
-                    i18n.t("ui.app.settings.emails_verify_rate_limited"),
-                    {
-                        variant: "error",
-                    },
-                );
+                showToast(i18n.t("ui.app.settings.emails_verify_rate_limited"), {
+                    variant: "error",
+                });
             } else if (code === "smtp_unavailable") {
                 showToast(i18n.t("ui.app.settings.emails_verify_unavailable"), {
                     variant: "error",
@@ -277,6 +265,69 @@ async function enforceRequiredEmailSetup(accountId) {
         await verifyRequiredEmailLoop(accountId, emailAddress);
     }
 }
+
+function renderLoginShell() {
+    return `
+    <section class="auth-page auth-page--login-frame">
+      <div class="login-layout">
+        <aside class="panel login-intro" aria-label="${escapeHtml(i18n.t("ui.app.login.intro.aria"))}">
+          <div class="login-brandline">
+            <img src="/static/assets/icons/cognis-icon.png" alt="" class="login-icon" />
+            <div>
+              <h1 class="login-title">${escapeHtml(i18n.t("ui.shared.brand.name"))}</h1>
+              <p class="login-typing">${escapeHtml(i18n.t("ui.app.login.hero.tagline"))}</p>
+            </div>
+          </div>
+          <p class="login-intro-copy">${escapeHtml(i18n.t("ui.app.login.hero.subtitle"))}</p>
+          <div class="login-template-box" aria-live="polite">
+            <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
+          </div>
+        </aside>
+        <main class="panel login-panel" aria-label="${escapeHtml(i18n.t("ui.app.login.title"))}">
+          <h2 class="login-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
+          <form id="login-form" class="stack login-form">
+            <input type="hidden" name="provider" value="local" />
+            <label>
+              <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
+              <input name="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
+            </label>
+            <label>
+              <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
+              <input name="password" type="password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
+            </label>
+            <div id="auth-provider-toggle" class="auth-provider-toggle" style="display: none"></div>
+            <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
+          </form>
+          <div id="sso-buttons" class="sso-buttons"></div>
+        </main>
+      </div>
+    </section>
+  `;
+}
+
+const composer = createPageComposer(root, {
+    allowCustomization: false,
+    i18n,
+    preferenceKey: "login-layout",
+    showTopbar: false,
+    showNavbar: false,
+    showFooter: false,
+    showThemeToggle: true,
+    toolbar: [],
+    elements: [
+        {
+            id: "login-shell",
+            label: i18n.t("ui.app.login.title"),
+            pinned: true,
+            render: () => renderLoginShell(),
+        },
+    ],
+});
+
+await composer.init();
+bindThemeToggle();
+runTypingShowcase();
+loadLoginMethods();
 
 document
     .querySelector("#login-form")

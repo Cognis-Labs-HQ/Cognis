@@ -329,14 +329,18 @@ export function createAdapter(deps: {
 
         const nowIso = new Date().toISOString();
         const { tokenHash } = parseToken(input.token);
-        await dbExecutor.execute(
+        const redeemResult = await dbExecutor.execute(
             `UPDATE registration_tokens
          SET redeemed_at = ${placeholder(1)}, redeemed_account_id = ${placeholder(2)}
-         WHERE token_hash = ${placeholder(3)}
-           AND revoked_at IS NULL
-           AND redeemed_at IS NULL`,
+          WHERE token_hash = ${placeholder(3)}
+            AND revoked_at IS NULL
+            AND redeemed_at IS NULL`,
             [nowIso, created.username, tokenHash],
         );
+        if (Number(redeemResult.rowCount ?? 0) < 1) {
+            await accountStore.delete(created.username).catch(() => undefined);
+            throw new Error("invalid_token");
+        }
         return {
             createdAccountId: created.username,
             inviterAccountId: invite.inviterAccountId,

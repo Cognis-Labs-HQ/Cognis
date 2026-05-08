@@ -179,6 +179,20 @@ function createAuthGatewayRoutes(
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/auth/registration-config" &&
+            req.method === "GET"
+        ) {
+            const security = await readSecuritySettings();
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: { registrationsEnabled: security.registrationsEnabled },
+                }),
+            );
+            return true;
+        }
+
         if (url.pathname === "/api/v1/auth/register" && req.method === "POST") {
             if (!(await registrationsEnabled())) {
                 res.writeHead(403, { "content-type": "application/json" });

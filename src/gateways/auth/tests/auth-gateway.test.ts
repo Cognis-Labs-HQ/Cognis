@@ -166,6 +166,59 @@ test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
     assert.ok(Array.isArray(body.data));
 });
 
+test("GET /api/v1/auth/registration-config returns open-registration state", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("preferences:store", {
+        async get() {
+            return JSON.stringify({
+                trustedDomains: [],
+                registrationsEnabled: true,
+                userValidationMode: "none",
+            });
+        },
+    });
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const handlers = routeRegistry.getHandlers();
+    const req = {
+        method: "GET",
+        headers: {},
+    } as unknown as import("node:http").IncomingMessage;
+    const res = makeResponse();
+
+    let handled = false;
+    for (const handler of handlers) {
+        handled = await handler(
+            req,
+            res as unknown as import("node:http").ServerResponse,
+            new URL("/api/v1/auth/registration-config", "http://localhost"),
+        );
+        if (handled) break;
+    }
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload) as {
+        data: { registrationsEnabled: boolean };
+    };
+    assert.equal(body.data.registrationsEnabled, true);
+});
+
 test("GET /api/v1/gateways/auth/adapters requires admin auth", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();

@@ -702,3 +702,60 @@ test("SmtpNotificationSender email defaults to light theme when metadata.theme i
         await server.close();
     }
 });
+
+test("SmtpNotificationSender registration invites use Sign Up CTA and clickable invite URL in body", async () => {
+    let capturedData = "";
+
+    const server = await createMockSmtpServer((conn) => {
+        conn.setEncoding("utf8");
+        conn.write("220 mock.example.com SMTP\r\n");
+
+        conn.on("data", (chunk: string) => {
+            capturedData += chunk;
+            const upper = chunk.toUpperCase();
+            if (upper.includes("EHLO") || upper.includes("HELO"))
+                conn.write("250 OK\r\n");
+            if (upper.includes("MAIL FROM")) conn.write("250 OK\r\n");
+            if (upper.includes("RCPT TO")) conn.write("250 OK\r\n");
+            if (upper.includes("\r\nDATA\r\n") || chunk.trim() === "DATA")
+                conn.write("354 Start mail input\r\n");
+            if (chunk.includes("\r\n.\r\n")) conn.write("250 OK\r\n");
+            if (upper.includes("QUIT")) {
+                conn.write("221 Bye\r\n");
+                conn.end();
+            }
+        });
+    });
+
+    try {
+        const sender = new SmtpNotificationSender(
+            {
+                host: server.host,
+                port: server.port,
+                from: "test@example.com",
+                secure: "none",
+                greylistRetries: 0,
+            },
+            undefined,
+            noopSleep,
+        );
+        const inviteUrl =
+            "https://cognis.example.com/register?token=test-token-value";
+        await sender.sendRegistrationInviteEmail(
+            "alice@example.com",
+            "Inviter",
+            inviteUrl,
+            "light",
+        );
+        assert.ok(
+            capturedData.includes("Sign Up"),
+            "registration email should use Sign Up CTA",
+        );
+        assert.ok(
+            capturedData.includes(`href="${inviteUrl}"`),
+            "registration email should include clickable invite URL link",
+        );
+    } finally {
+        await server.close();
+    }
+});
