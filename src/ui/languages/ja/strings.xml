@@ -239,6 +239,9 @@
   <string name="ui.app.users.invite_sent">招待を送信しました。</string>
   <string name="ui.app.users.invite_failed">招待の送信に失敗しました。</string>
   <string name="ui.app.users.invite_email_taken">このメールアドレスはすでに登録されています。</string>
+  <string name="ui.app.users.no_unverified_email">未認証のメールアドレスが見つかりません。</string>
+  <string name="ui.app.users.protected_account">このアカウントは変更できません。</string>
+  <string name="ui.app.admin.registration.no_tokens">登録トークンはまだ発行されていません。</string>
   <string name="ui.app.invite.page_title">招待</string>
   <string name="ui.app.invite.page_subtitle">登録トークンの状態を確認・管理します。</string>
   <string name="ui.app.invite.invite">招待</string>

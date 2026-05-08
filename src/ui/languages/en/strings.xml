@@ -43,7 +43,7 @@
   <string name="ui.layout.avatar.alt">User avatar</string>
   <string name="ui.layout.theme.aria">Toggle theme</string>
   <string name="ui.layout.footer.license">License</string>
-  <string name="ui.app.login.title">Sign in</string>
+  <string name="ui.app.login.title">Sign In</string>
   <string name="ui.app.login.intro.aria">Cognis intro</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>
   <string name="ui.app.login.hero.subtitle">Try learning differently</string>
@@ -208,7 +208,7 @@
   <string name="ui.app.register.error.username_taken">This username is already taken.</string>
   <string name="ui.app.register.error.username_and_password_required">Username and password are required.</string>
   <string name="ui.app.register.error.inviter_not_found">The inviter account no longer exists, so this invitation cannot be redeemed.</string>
-  <string name="ui.reuse.reprompt.title">Re-confirm action</string>
+  <string name="ui.reuse.reprompt.title">Re-Confirm Action</string>
   <string name="ui.reuse.reprompt.message">Please confirm this sensitive action.</string>
   <string name="ui.reuse.reprompt.input_label">Enter your password to continue.</string>
   <string name="ui.reuse.reprompt.invalid_password">Incorrect password. Please try again.</string>
@@ -239,6 +239,9 @@
   <string name="ui.app.users.invite_sent">Invitation sent.</string>
   <string name="ui.app.users.invite_failed">Failed to send invitation.</string>
   <string name="ui.app.users.invite_email_taken">This email address is already registered.</string>
+  <string name="ui.app.users.no_unverified_email">No unverified email address found.</string>
+  <string name="ui.app.users.protected_account">This account cannot be modified.</string>
+  <string name="ui.app.admin.registration.no_tokens">No registration tokens have been issued.</string>
   <string name="ui.app.invite.page_title">Invite</string>
   <string name="ui.app.invite.page_subtitle">Review and manage registration tokens.</string>
   <string name="ui.app.invite.invite">Invite</string>

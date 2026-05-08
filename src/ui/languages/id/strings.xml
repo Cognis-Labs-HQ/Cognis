@@ -239,6 +239,9 @@
   <string name="ui.app.users.invite_sent">Undangan terkirim.</string>
   <string name="ui.app.users.invite_failed">Gagal mengirim undangan.</string>
   <string name="ui.app.users.invite_email_taken">Alamat email ini sudah terdaftar.</string>
+  <string name="ui.app.users.no_unverified_email">Tidak ada alamat email yang belum diverifikasi.</string>
+  <string name="ui.app.users.protected_account">Akun ini tidak dapat dimodifikasi.</string>
+  <string name="ui.app.admin.registration.no_tokens">Belum ada token registrasi yang diterbitkan.</string>
   <string name="ui.app.invite.page_title">Undang</string>
   <string name="ui.app.invite.page_subtitle">Tinjau dan kelola status token registrasi.</string>
   <string name="ui.app.invite.invite">Undang</string>

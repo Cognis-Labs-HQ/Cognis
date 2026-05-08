@@ -75,6 +75,39 @@ export function createUserRoutes(
         const username = decodeURIComponent(match[1]);
         const action = match[2];
 
+        const FOUNDER_PROTECTED_ACTIONS = new Set([
+            "role",
+            "password",
+            "disable",
+            "isfounder",
+        ]);
+        const isFounderProtectedRequest =
+            (req.method === "POST" &&
+                action !== undefined &&
+                FOUNDER_PROTECTED_ACTIONS.has(action)) ||
+            (req.method === "DELETE" && !action);
+        if (isFounderProtectedRequest) {
+            const callerClaims = getAuthClaims(req);
+            if (callerClaims && callerClaims.sub !== username) {
+                const targetInfo = await accountStore.getInfo(username);
+                if (targetInfo?.isAdmin && targetInfo?.isFounder) {
+                    res.writeHead(403, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "protected_account",
+                                message:
+                                    "This account cannot be modified by other admins",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+            }
+        }
+
         if (req.method === "POST" && !action) {
             const body = await readJson(req);
             const role = String(body.role ?? "user");
@@ -141,6 +174,19 @@ export function createUserRoutes(
         }
 
         if (req.method === "POST" && action === "disable") {
+            const callerClaims = getAuthClaims(req);
+            if (callerClaims?.sub === username) {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "cannot_disable_self",
+                            message: "You cannot disable your own account",
+                        },
+                    }),
+                );
+                return true;
+            }
             await accountStore.setEnabled(username, false);
             revokeAccessTokensForSubject(username);
             res.writeHead(200, { "content-type": "application/json" });

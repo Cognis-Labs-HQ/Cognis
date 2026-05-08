@@ -176,34 +176,40 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         renderContent() {
             return `
         <div class="security-settings-form">
-          <label class="security-field-label" for="security-trusted-domains">
-            ${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_label"))}
-            <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_hint"))}</span>
-          </label>
-          <div class="security-field-row">
-            <input
-              id="security-trusted-domains"
-              type="text"
-              class="security-domains-input"
-              placeholder="${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_placeholder"))}"
-            />
+          <div class="components-section">
+            <h3 class="components-section-heading">${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_label"))}</h3>
+            <label class="security-field-label" for="security-trusted-domains">
+              <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_hint"))}</span>
+            </label>
+            <div class="security-field-row">
+              <input
+                id="security-trusted-domains"
+                type="text"
+                class="security-domains-input"
+                placeholder="${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_placeholder"))}"
+              />
+            </div>
           </div>
-          <label class="security-field-label" for="security-enable-registrations">
-            ${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_label"))}
-            <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_hint"))}</span>
-          </label>
-          <div class="security-field-row">
-            <input id="security-enable-registrations" type="checkbox" />
+          <div class="components-section">
+            <h3 class="components-section-heading">${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_label"))}</h3>
+            <label class="security-field-label" for="security-enable-registrations">
+              <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_hint"))}</span>
+            </label>
+            <div class="security-field-row">
+              <input id="security-enable-registrations" type="checkbox" />
+            </div>
           </div>
-          <label class="security-field-label" for="security-user-validation-mode">
-            ${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}
-            <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_hint"))}</span>
-          </label>
-          <div class="security-field-row">
-            <select id="security-user-validation-mode" class="security-domains-input">
-              <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.none"))}</option>
-              <option value="smtp">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.smtp"))}</option>
-            </select>
+          <div class="components-section">
+            <h3 class="components-section-heading">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}</h3>
+            <label class="security-field-label" for="security-user-validation-mode">
+              <span class="security-field-hint">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_hint"))}</span>
+            </label>
+            <div class="security-field-row">
+              <select id="security-user-validation-mode" class="security-domains-input theme-select">
+                <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.none"))}</option>
+                <option value="smtp">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.smtp"))}</option>
+              </select>
+            </div>
           </div>
         </div>
       `;

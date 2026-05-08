@@ -12,6 +12,21 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Registration gateway (`src/gateways/registration/`) with token-adapter flow (`src/adapters/registration/token/`): admins and founders can issue 24-hour, one-time registration invitations by email; admins can list/revoke all pending tokens; founders can list/revoke only their own pending tokens; founder issuers are capped at 20 active pending invites.
 - Public invitation redemption flow at `/register` with `POST /api/v1/registration/redeem` and `GET /api/v1/registration/invite`, including invite preview text (`🎁 {inviterDisplayName} wants you to join Cognis`) and sender-audit binding (`accounts.invited_by_account_id`) performed at account creation.
 - Admin-only founder flag endpoint `POST /api/v1/users/:username/isfounder` plus CLI command `cognisctl user:isfounder <username> <true|false>`.
+- Administration → Registration section now fetches and displays all registration tokens (including used/revoked/expired) via `?includeClosed=true`; shows an italic placeholder when no tokens have been issued; pending tokens have an inline Revoke button. ([75be382](https://github.com/le-firehawk/Cognis/commit/75be382))
+- Invite button in Administration → Registration now navigates to `/users?action=invite`; the Users page auto-opens the invite popup when that URL parameter is present. ([75be382](https://github.com/le-firehawk/Cognis/commit/75be382))
+- Title Case rule added to AI instructions: all English page titles (keys ending in `page_title`), section headings (keys ending in `.title`), and navigation menu items (`ui.reuse.menu.*`) must capitalize every word. A new enforcement test `src/ui/tests/title-case.test.js` validates this for `en/strings.xml`. ([75be382](https://github.com/le-firehawk/Cognis/commit/75be382))
+
+### Changed
+
+- Resend verification email in Users table no longer prompts for an email address; it automatically uses the user's primary unverified email. The "Resend Verification Email" option is hidden in the action menu when the user already has a verified primary email. ([75be382](https://github.com/le-firehawk/Cognis/commit/75be382))
+- Users table height is now adaptive to its content rather than a fixed seven-grid-unit default. ([75be382](https://github.com/le-firehawk/Cognis/commit/75be382))
+- Administration → Security section headings are now separated by dividers matching the Modules/Gateways style in Components. ([75be382](https://github.com/le-firehawk/Cognis/commit/75be382))
+- User Validation dropdown in Administration → Security now uses `theme-select` class for consistent dark/light theme styling. ([75be382](https://github.com/le-firehawk/Cognis/commit/75be382))
+
+### Fixed
+
+- API: admins can no longer disable their own account (`POST /api/v1/users/:username/disable` returns 409 when `username` matches the authenticated caller). ([75be382](https://github.com/le-firehawk/Cognis/commit/75be382))
+- API: founder admin accounts (users with `isFounder && isAdmin`) cannot be demoted, disabled, deleted, or have their password reset by any other admin (returns 403). ([75be382](https://github.com/le-firehawk/Cognis/commit/75be382))
 
 - Toast notification system (`src/ui/reuse/toast.js` + `src/ui/styles/reuse/toast.css`): non-blocking, auto-dismissing feedback messages with four appearance variants — `info`, `success`, `warning`, and `error`. Toasts stack at the top-right of the viewport, slide in with a spring animation, auto-dismiss after 4 s (info/success) or 7 s (warning/error), and can be dismissed manually via a close button. `showToast` is exported from `toast.js` and exposed on the `createPageComposer` return interface.
 - All existing inline result messages replaced with `showToast` calls: email action errors in Settings General, test-email and debug-notification outcomes in Administration, login errors, and security-settings save success/failure. The inline `#email-status` div, the `#msg` login element, and the `.notif-debug-status` / `.provider-test-status` status spans are removed.

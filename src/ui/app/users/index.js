@@ -15,15 +15,38 @@ const reprompt = createRepromptGuard({ i18n });
 let users = [];
 let registrationGatewayActive = false;
 let composer = null;
-const elements = [
-    {
-        id: "users-table",
-        label: i18n.t("ui.reuse.menu.users"),
-        pinned: true,
-        gridSize: { default: [12, 7], min: [6, 4], max: "full" },
-        render: () => renderUsersTable(),
-    },
-];
+let elements = [];
+
+function getCurrentUsername() {
+    const token = localStorage.getItem("cognis_token");
+    if (!token) return null;
+    try {
+        const [, payload] = token.split(".");
+        const decoded = JSON.parse(
+            atob(payload.replace(/-/g, "+").replace(/_/g, "/")),
+        );
+        return decoded.sub ?? null;
+    } catch {
+        return null;
+    }
+}
+
+function buildElements() {
+    const estimatedHeight = Math.max(3, Math.ceil(users.length * 0.5 + 1.5));
+    elements = [
+        {
+            id: "users-table",
+            label: i18n.t("ui.reuse.menu.users"),
+            pinned: true,
+            gridSize: {
+                default: [12, estimatedHeight],
+                min: [6, 3],
+                max: "full",
+            },
+            render: () => renderUsersTable(),
+        },
+    ];
+}
 
 async function loadUsers() {
     const response = await apiFetch("/api/v1/users");
@@ -46,6 +69,15 @@ async function fetchUserInfo(username) {
     if (!response.ok) return null;
     const payload = await response.json();
     return payload?.data ?? null;
+}
+
+async function fetchUserEmails(username) {
+    const response = await apiFetch(
+        `/api/v1/users/${encodeURIComponent(username)}/emails`,
+    );
+    if (!response.ok) return [];
+    const payload = await response.json();
+    return payload?.data ?? [];
 }
 
 async function promptInput({ title, label, type = "text" }) {
@@ -85,9 +117,11 @@ async function refreshData() {
         loadUsers(),
         loadRegistrationGatewayState(),
     ]);
+    buildElements();
 }
 
 function renderUsersTable() {
+    const currentUsername = getCurrentUsername();
     const inviteButtonHtml = registrationGatewayActive
         ? `<div class="controls">
           <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.app.users.invite"))}</button>
@@ -107,19 +141,23 @@ function renderUsersTable() {
         </thead>
         <tbody>
           ${users
-              .map(
-                  (user) => `
+              .map((user) => {
+                  const isProtected = user.isAdmin && user.isFounder;
+                  const isSelf = user.username === currentUsername;
+                  const actionsHtml = isProtected
+                      ? ""
+                      : `
+                        <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.generic.disable")) : escapeHtml(i18n.t("ui.reuse.generic.enable"))}</button>
+                        <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}">☰</button>`;
+                  return `
               <tr class="users-row" data-username="${escapeHtml(user.username)}">
                 <td>${escapeHtml(user.username)}</td>
                 <td>${user.isAdmin ? "admin" : "user"}</td>
-                  <td>${user.enabled ? escapeHtml(i18n.t("ui.app.users.enabled")) : escapeHtml(i18n.t("ui.app.users.disabled"))}</td>
-                  <td class="users-actions-cell">
-                    <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}">${user.enabled ? escapeHtml(i18n.t("ui.reuse.generic.disable")) : escapeHtml(i18n.t("ui.reuse.generic.enable"))}</button>
-                  <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}">☰</button>
-                </td>
+                <td>${user.enabled ? escapeHtml(i18n.t("ui.app.users.enabled")) : escapeHtml(i18n.t("ui.app.users.disabled"))}</td>
+                <td class="users-actions-cell">${actionsHtml}</td>
               </tr>
-            `,
-              )
+            `;
+              })
               .join("")}
         </tbody>
       </table>
@@ -153,14 +191,18 @@ async function runUserMenuAction(action, username) {
     }
 
     if (action === "resend") {
-        const email = await promptInput({
-            title: i18n.t("ui.app.users.resend_verification"),
-            label: i18n.t("ui.app.users.invite_email"),
-            type: "email",
-        });
-        if (!email) return;
+        const emails = await fetchUserEmails(username);
+        const unverifiedEmail =
+            emails.find((e) => e.isPrimary && !e.verified) ??
+            emails.find((e) => !e.verified);
+        if (!unverifiedEmail) {
+            showToast(i18n.t("ui.app.users.no_unverified_email"), {
+                variant: "error",
+            });
+            return;
+        }
         const res = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(email)}/resend`,
+            `/api/v1/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(unverifiedEmail.email)}/resend`,
             { method: "POST" },
         );
         showToast(
@@ -251,12 +293,18 @@ function bindUsersInteractions() {
             const enabled = btn.dataset.enabled === "true";
             if (!username) return;
             const action = enabled ? "disable" : "enable";
-            await apiFetch(
+            const res = await apiFetch(
                 `/api/v1/users/${encodeURIComponent(username)}/${action}`,
                 {
                     method: "POST",
                 },
             );
+            if (!res.ok) {
+                showToast(i18n.t("ui.app.admin.security.save_failed"), {
+                    variant: "error",
+                });
+                return;
+            }
             await refreshData();
             composer.refresh(elements);
         });
@@ -267,31 +315,38 @@ function bindUsersInteractions() {
             const username = btn.dataset.username;
             if (!username || !(btn instanceof HTMLButtonElement)) return;
             const user = users.find((entry) => entry.username === username);
-            const action = await openHamburgerMenu(btn, {
-                items: [
-                    {
-                        id: user?.isFounder ? "unset-founder" : "set-founder",
-                        label: i18n.t(
-                            user?.isFounder
-                                ? "ui.app.users.unmark_founder"
-                                : "ui.app.users.mark_founder",
-                        ),
-                    },
-                    {
-                        id: "password",
-                        label: i18n.t("ui.app.users.reset_password"),
-                    },
-                    {
-                        id: "resend",
-                        label: i18n.t("ui.app.users.resend_verification"),
-                    },
-                    {
-                        id: "delete",
-                        label: i18n.t("ui.app.users.delete_user"),
-                        variant: "danger",
-                    },
-                ],
-            });
+            const emails = await fetchUserEmails(username);
+            const hasPrimaryVerified = emails.some(
+                (e) => e.isPrimary && e.verified,
+            );
+            const menuItems = [
+                {
+                    id: user?.isFounder ? "unset-founder" : "set-founder",
+                    label: i18n.t(
+                        user?.isFounder
+                            ? "ui.app.users.unmark_founder"
+                            : "ui.app.users.mark_founder",
+                    ),
+                },
+                {
+                    id: "password",
+                    label: i18n.t("ui.app.users.reset_password"),
+                },
+                ...(!hasPrimaryVerified
+                    ? [
+                          {
+                              id: "resend",
+                              label: i18n.t("ui.app.users.resend_verification"),
+                          },
+                      ]
+                    : []),
+                {
+                    id: "delete",
+                    label: i18n.t("ui.app.users.delete_user"),
+                    variant: "danger",
+                },
+            ];
+            const action = await openHamburgerMenu(btn, { items: menuItems });
             if (!action) return;
             await runUserMenuAction(action, username);
         });
@@ -300,46 +355,45 @@ function bindUsersInteractions() {
     root.querySelector("#users-invite-btn")?.addEventListener(
         "click",
         async () => {
-            await reprompt.runWithReprompt(
-                async () => {
-                    const email = await promptInput({
-                        title: i18n.t("ui.app.users.invite"),
-                        label: i18n.t("ui.app.users.invite_email"),
-                        type: "email",
-                    });
-                    if (!email) return;
-                    const response = await apiFetch(
-                        "/api/v1/registration/tokens",
-                        {
-                            method: "POST",
-                            headers: { "content-type": "application/json" },
-                            body: JSON.stringify({ email }),
-                        },
-                    );
-                    if (response.ok) {
-                        showToast(i18n.t("ui.app.users.invite_sent"), {
-                            variant: "success",
-                        });
-                        return;
-                    }
-                    let errorMessage = i18n.t("ui.app.users.invite_failed");
-                    try {
-                        const errorBody = await response.json();
-                        if (errorBody?.error?.code === "email_taken") {
-                            errorMessage = i18n.t(
-                                "ui.app.users.invite_email_taken",
-                            );
-                        }
-                    } catch {
-                        // fall through to generic invite_failed message assigned at line 325
-                    }
-                    showToast(errorMessage, { variant: "error" });
-                },
-                {
-                    title: i18n.t("ui.app.users.invite"),
-                    message: i18n.t("ui.reuse.reprompt.message"),
-                },
-            );
+            await triggerInviteFlow();
+        },
+    );
+}
+
+async function triggerInviteFlow() {
+    await reprompt.runWithReprompt(
+        async () => {
+            const email = await promptInput({
+                title: i18n.t("ui.app.users.invite"),
+                label: i18n.t("ui.app.users.invite_email"),
+                type: "email",
+            });
+            if (!email) return;
+            const response = await apiFetch("/api/v1/registration/tokens", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+            if (response.ok) {
+                showToast(i18n.t("ui.app.users.invite_sent"), {
+                    variant: "success",
+                });
+                return;
+            }
+            let errorMessage = i18n.t("ui.app.users.invite_failed");
+            try {
+                const errorBody = await response.json();
+                if (errorBody?.error?.code === "email_taken") {
+                    errorMessage = i18n.t("ui.app.users.invite_email_taken");
+                }
+            } catch {
+                // fall through to generic invite_failed message (line above)
+            }
+            showToast(errorMessage, { variant: "error" });
+        },
+        {
+            title: i18n.t("ui.app.users.invite"),
+            message: i18n.t("ui.reuse.reprompt.message"),
         },
     );
 }
@@ -362,3 +416,8 @@ composer = createPageComposer(root, {
 });
 
 await composer.init();
+
+const pageAction = new URL(location.href).searchParams.get("action");
+if (pageAction === "invite" && registrationGatewayActive) {
+    await triggerInviteFlow();
+}
