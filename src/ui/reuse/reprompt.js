@@ -69,6 +69,11 @@ export function createRepromptGuard({ i18n }) {
                     );
                     warningEl.hidden = false;
                 };
+                const warnAndRefocus = () => {
+                    warn();
+                    inputEl.focus();
+                    inputEl.select();
+                };
 
                 isVerifying = true;
                 try {
@@ -78,15 +83,11 @@ export function createRepromptGuard({ i18n }) {
                         body: JSON.stringify({ password }),
                     });
                     if (!res.ok) {
-                        warn();
-                        inputEl.focus();
-                        inputEl.select();
+                        warnAndRefocus();
                         return false;
                     }
                 } catch {
-                    warn();
-                    inputEl.focus();
-                    inputEl.select();
+                    warnAndRefocus();
                     return false;
                 } finally {
                     isVerifying = false;
