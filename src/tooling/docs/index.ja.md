@@ -26,7 +26,7 @@
 | `system:*`  | `system:health`、`system:info`                                                                |
 | `modules:*` | `modules:list`、`modules:enable`、`modules:disable`                                           |
 | `gateway:*` | `gateway:list`                                                                                |
-| `api:*`     | `api:token`                                                                                   |
+| `api:*`     | `api:token`（curl 用の一時的な 1 時間管理者緊急トークンを発行）                               |
 
 ## 設定
 

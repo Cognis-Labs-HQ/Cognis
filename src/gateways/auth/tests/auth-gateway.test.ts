@@ -606,6 +606,86 @@ test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
     assert.match(res.payload, /unauthorized/);
 });
 
+test("POST /api/v1/auth/emergency-token requires admin auth", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const userToken = issueAccessToken("regular-user", "user", 60);
+    const req = {
+        method: "POST",
+        headers: { authorization: `Bearer ${userToken}` },
+    } as unknown as import("node:http").IncomingMessage;
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        req,
+        "/api/v1/auth/emergency-token",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 403);
+    assert.match(res.payload, /forbidden/);
+});
+
+test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const req = {
+        method: "POST",
+        headers: { authorization: `Bearer ${adminToken}` },
+    } as unknown as import("node:http").IncomingMessage;
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        req,
+        "/api/v1/auth/emergency-token",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload) as {
+        data: {
+            token: string;
+            role: string;
+            ttlSeconds: number;
+            expiresAt: string;
+        };
+    };
+    assert.ok(body.data.token.startsWith("cgs_"));
+    assert.equal(body.data.role, "admin");
+    assert.equal(body.data.ttlSeconds, 3600);
+    assert.ok(Date.parse(body.data.expiresAt) > Date.now());
+});
+
 test("registration:public:register capability is looked up lazily in register handler", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();

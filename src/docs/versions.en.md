@@ -38,7 +38,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component             | Path                    | Version |
 | --------------------- | ----------------------- | ------- |
 | Database (db)         | `src/gateways/db/`      | `1.1.0` |
-| Authentication (auth) | `src/gateways/auth/`    | `1.1.0` |
+| Authentication (auth) | `src/gateways/auth/`    | `1.3.0` |
 | Notification (notify) | `src/gateways/notify/`  | `0.1.0` |
 | Profile               | `src/gateways/profile/` | `1.1.0` |
 | File Storage (files)  | `src/gateways/files/`   | `1.1.0` |

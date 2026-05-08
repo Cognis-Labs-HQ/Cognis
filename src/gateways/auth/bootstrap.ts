@@ -82,7 +82,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.2.1",
+        version: "1.3.0",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -445,6 +445,31 @@ function createAuthGatewayRoutes(
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { verified: true } }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/emergency-token" &&
+            req.method === "POST"
+        ) {
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const ttlSeconds = 60 * 60;
+            const token = issueAccessToken(claims.sub, "admin", ttlSeconds);
+            const expiresAt = new Date(
+                Date.now() + ttlSeconds * 1000,
+            ).toISOString();
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        token,
+                        role: "admin",
+                        ttlSeconds,
+                        expiresAt,
+                    },
+                }),
+            );
             return true;
         }
 
