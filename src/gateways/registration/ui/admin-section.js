@@ -1,4 +1,4 @@
-import { formatDateTime } from "../../../ui/reuse/timestamp.js";
+import { formatDateTime } from "/static/reuse/timestamp.js";
 
 export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     let tokens = [];

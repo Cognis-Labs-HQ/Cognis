@@ -28,7 +28,7 @@ test("administration registration table formats invite expiry timestamps via tim
 
     assert.match(
         source,
-        /import\s*\{\s*formatDateTime\s*\}\s*from\s*"..\/..\/..\/ui\/reuse\/timestamp\.js"/,
+        /import\s*\{\s*formatDateTime\s*\}\s*from\s*"\/static\/reuse\/timestamp\.js"/,
     );
     assert.match(source, /formatDateTime\(token\.expiresAt\)/);
     assert.doesNotMatch(source, /toLocaleString\(/);
