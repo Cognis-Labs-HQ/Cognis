@@ -2,6 +2,7 @@ import { createPageComposer } from "../../reuse/page-composer.js";
 import { createI18n, applyDocumentTitle } from "../../reuse/i18n.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
+import { renderInPageCallout } from "../../reuse/in-page-callout.js";
 import {
     loadAuthTypingSamples,
     runTypingShowcase,
@@ -88,7 +89,10 @@ function renderRegisterShell() {
     let messageHtml = "";
 
     if (isInvalid) {
-        messageHtml = `<p class="auth-intro">${escapeHtml(i18n.t("ui.app.register.error.invalid_token"))}</p>`;
+        messageHtml = renderInPageCallout({
+            variant: "danger",
+            title: i18n.t("ui.reuse.generic.error"),
+        });
     } else if (!canRenderForm) {
         const messageKey = "ui.app.register.closed";
         messageHtml = `<p class="auth-intro">${escapeHtml(i18n.t(messageKey))}</p>`;

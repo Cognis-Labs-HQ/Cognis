@@ -83,15 +83,8 @@ export function runTypingShowcase(
     activeShowcaseRun += 1;
     const runId = activeShowcaseRun;
     void (async () => {
-        let isFirstSample = true;
         while (runId === activeShowcaseRun) {
             for (const sample of orderedSamples) {
-                if (!isFirstSample) {
-                    await new Promise((resolve) =>
-                        window.setTimeout(resolve, 60000),
-                    );
-                }
-                isFirstSample = false;
                 for (
                     let charIndex = 0;
                     charIndex <= sample.length;
@@ -106,7 +99,7 @@ export function runTypingShowcase(
                 }
 
                 await new Promise((resolve) =>
-                    window.setTimeout(resolve, 3500),
+                    window.setTimeout(resolve, 60000),
                 );
 
                 for (
@@ -121,6 +114,8 @@ export function runTypingShowcase(
                         window.setTimeout(resolve, 40),
                     );
                 }
+
+                await new Promise((resolve) => window.setTimeout(resolve, 350));
             }
             if (orderedSamples.length === 0) return;
         }

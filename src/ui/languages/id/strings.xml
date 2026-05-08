@@ -34,6 +34,7 @@
   <string name="ui.reuse.generic.remove">Hapus</string>
   <string name="ui.reuse.generic.dismiss">Tutup</string>
   <string name="ui.reuse.generic.confirm">Konfirmasi</string>
+  <string name="ui.reuse.generic.error">Kesalahan</string>
 
   <string name="ui.layout.brand.aria">Beranda Cognis</string>
   <string name="ui.layout.nav.primary">Navigasi utama</string>

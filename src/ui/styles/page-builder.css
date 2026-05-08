@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap");
 @import url("/static/styles/reuse/theme.css");
 @import url("/static/styles/reuse/layout.css");
+@import url("/static/styles/reuse/in-page-callout.css");
 
 .tabs {
     display: flex;
