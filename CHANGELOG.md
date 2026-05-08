@@ -18,6 +18,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Logging: console output is now pretty-formatted by default while persistent log files remain JSON lines, backend warning paths route through the shared logger, and DB logs record only summarised metadata instead of forwarding raw database messages. ([3eed7dc](https://github.com/le-firehawk/Cognis/commit/3eed7dc))
 - Tooling/Auth security: removed arbitrary `cognisctl api:request` access, added `cognisctl api:token`, and introduced `POST /api/v1/auth/emergency-token` (admin-only) to mint a temporary 1-hour privileged token for emergency curl operations. ([105c573](https://github.com/le-firehawk/Cognis/commit/105c573))
 - User-facing UI timestamps now consistently route through `src/ui/reuse/timestamp.js`, including the Users details popup and the Administration registration invite table backed by DB query results. ([cea7198](https://github.com/le-firehawk/Cognis/commit/cea7198))
 - Invite page: table headers now match the Administration → Registration table (Email, Issuer, Username, Status, Expires At, Actions); dates are formatted with `toLocaleString`; revoke button now shows success/failure toasts and refreshes the page immediately. ([fb70bf4](https://github.com/le-firehawk/Cognis/commit/fb70bf4))
