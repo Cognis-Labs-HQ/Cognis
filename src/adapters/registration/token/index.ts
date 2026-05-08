@@ -285,6 +285,24 @@ export function createAdapter(deps: {
         };
     }
 
+    async function rollbackCreatedAccount(accountId: string): Promise<void> {
+        try {
+            await accountStore.delete(accountId);
+        } catch (error) {
+            console.warn(
+                JSON.stringify({
+                    level: "warn",
+                    component: "registration-token",
+                    message:
+                        "Failed to delete account during invite redemption rollback.",
+                    accountId,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                }),
+            );
+        }
+    }
+
     async function redeemInvite(input: {
         token: string;
         username: string;
@@ -311,7 +329,7 @@ export function createAdapter(deps: {
                 invite.inviteeEmail,
             );
         } catch (error) {
-            await accountStore.delete(created.username).catch(() => undefined);
+            await rollbackCreatedAccount(created.username);
             throw error;
         }
         const displayName = input.displayName?.trim();
@@ -338,7 +356,7 @@ export function createAdapter(deps: {
             [nowIso, created.username, tokenHash],
         );
         if (Number(redeemResult.rowCount ?? 0) < 1) {
-            await accountStore.delete(created.username).catch(() => undefined);
+            await rollbackCreatedAccount(created.username);
             throw new Error("invalid_token");
         }
         return {
