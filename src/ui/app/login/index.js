@@ -313,7 +313,7 @@ function renderLoginShell() {
 const composer = createPageComposer(root, {
     allowCustomization: false,
     i18n,
-    preferenceKey: "login-layout",
+    preferenceKey: "login-layout-v2",
     showTopbar: false,
     showNavbar: false,
     showFooter: false,
@@ -324,6 +324,7 @@ const composer = createPageComposer(root, {
             id: "login-shell",
             label: i18n.t("ui.app.login.title"),
             pinned: true,
+            gridSize: { default: [12, 8], min: [8, 6], max: "full" },
             render: () => renderLoginShell(),
         },
     ],

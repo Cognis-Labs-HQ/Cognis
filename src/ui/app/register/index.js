@@ -8,7 +8,11 @@ const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.register");
 
 const root = document.querySelector("#app");
-const token = new URLSearchParams(window.location.search).get("token") ?? "";
+const params = new URLSearchParams(window.location.search);
+const token = params.get("token") ?? "";
+const prefilledEmail = String(params.get("email") ?? "")
+    .trim()
+    .toLowerCase();
 const knownErrorCodes = new Set([
     "invalid_token",
     "username_taken",
@@ -66,10 +70,12 @@ function renderRegisterShell() {
                       .t("ui.app.register.invited_you")
                       .replace("{inviter}", inviteData.inviterDisplayName)
                 : "";
-        const emailValue =
-            isInviteFlow && inviteData ? inviteData.inviteeEmail : "";
-        const emailReadonly = isInviteFlow ? "readonly" : "";
-        const emailHint = isInviteFlow
+        const inviteEmail = isInviteFlow && inviteData ? inviteData.inviteeEmail : "";
+        const lockedEmail = inviteEmail || prefilledEmail;
+        const emailValue = lockedEmail || "";
+        const emailLocked = Boolean(lockedEmail);
+        const emailReadonly = emailLocked ? "readonly disabled" : "";
+        const emailHint = emailLocked
             ? `<p class="security-field-hint">${escapeHtml(i18n.t("ui.app.register.email_locked_hint"))}</p>`
             : "";
         formHtml = `
@@ -77,7 +83,7 @@ function renderRegisterShell() {
       <form id="register-form" class="stack login-form">
         <label>
           <span>${escapeHtml(i18n.t("ui.app.register.email"))}</span>
-          <input name="email" type="email" value="${escapeHtml(emailValue)}" ${emailReadonly} required />
+          <input name="email" type="email" value="${escapeHtml(emailValue)}" ${emailReadonly} aria-readonly="${emailLocked ? "true" : "false"}" required />
         </label>
         ${emailHint}
         <label>
@@ -123,7 +129,7 @@ function renderRegisterShell() {
 const composer = createPageComposer(root, {
     allowCustomization: false,
     i18n,
-    preferenceKey: "register-layout",
+    preferenceKey: "register-layout-v2",
     showTopbar: false,
     showNavbar: false,
     showFooter: false,
@@ -134,6 +140,7 @@ const composer = createPageComposer(root, {
             id: "register-shell",
             label: i18n.t("ui.app.register.form_title"),
             pinned: true,
+            gridSize: { default: [12, 8], min: [8, 6], max: "full" },
             render: () => renderRegisterShell(),
             onRender: () => {
                 const form = root.querySelector("#register-form");

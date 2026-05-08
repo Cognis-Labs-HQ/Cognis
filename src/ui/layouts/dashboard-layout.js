@@ -191,6 +191,7 @@ export async function updateNavbarAvatar() {
 }
 
 async function loadNavbarPlugins() {
+    if (!localStorage.getItem("cognis_token")) return;
     try {
         const res = await apiFetch("/api/v1/ui/navbar-plugins");
         if (!res.ok) return;
@@ -244,9 +245,11 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (!showFooter) root.querySelector(".global-footer")?.remove();
 
     applyStaticTranslations(i18n, root);
-    bindTopbarActions();
-    await loadNavbarPlugins();
-    updateNavbarAvatar().catch(() => {});
-    applyActiveNavigation();
+    if (showTopbar || showNavbar) {
+        bindTopbarActions();
+        await loadNavbarPlugins();
+        updateNavbarAvatar().catch(() => {});
+        applyActiveNavigation();
+    }
     bindThemeToggle();
 }
