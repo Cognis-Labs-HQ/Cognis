@@ -246,7 +246,7 @@ async function enforceRequiredEmailSetup(accountId) {
                 const payload = await addResponse.json();
                 code = String(payload?.error?.code ?? code);
             } catch {
-                // the parse failed; keep the generic fallback code assigned at line 244
+                // parse failed; keep the generic fallback code
             }
             if (code === "email_taken") {
                 showToast(i18n.t("ui.app.settings.emails_email_taken"), {

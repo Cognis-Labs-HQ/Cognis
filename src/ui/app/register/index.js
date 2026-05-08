@@ -79,7 +79,7 @@ function renderRegisterShell() {
         const lockedEmail = inviteEmail || prefilledEmail;
         const emailValue = lockedEmail || "";
         const emailLocked = Boolean(lockedEmail);
-        const emailReadonly = emailLocked ? "readonly disabled" : "";
+        const emailReadonly = emailLocked ? "disabled" : "";
         const emailLockedClass = emailLocked ? " auth-input--locked" : "";
         formHtml = `
       ${invitedText ? `<p class="auth-intro-copy">${escapeHtml(invitedText)}</p>` : ""}
