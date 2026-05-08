@@ -133,7 +133,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     }
 
     ctx.routeRegistry.register(
-        createRegistrationRoutes(gateway, accountStore, getTrustedDomains),
+        createRegistrationRoutes(
+            gateway,
+            accountStore,
+            getTrustedDomains,
+            () =>
+                ctx.gatewayRegistry.get("registration")?.status !== "disabled",
+        ),
         "registration",
     );
     ctx.routeRegistry.register(createRegistrationPageRoutes(), "registration");
@@ -227,6 +233,7 @@ export function createRegistrationRoutes(
     gateway: CoreRegistrationGateway,
     accountStore: LocalAccountStore,
     getTrustedDomains: () => Promise<string[]> = async () => [],
+    isGatewayEnabled: () => boolean = () => true,
 ) {
     return async (
         req: IncomingMessage,
@@ -258,6 +265,7 @@ export function createRegistrationRoutes(
             res.end(
                 JSON.stringify({
                     data: {
+                        gatewayEnabled: isGatewayEnabled(),
                         inviteEnabled: gateway.isInviteEnabled(),
                         publicEnabled: gateway.isPublicEnabled(),
                     },

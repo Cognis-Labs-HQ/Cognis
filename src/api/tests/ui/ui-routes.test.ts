@@ -2,7 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createUiRoutes } from "../../routes/ui/index.js";
 import path from "node:path";
-import { issueAccessToken } from "../../auth/access-tokens.js";
+import {
+    issueAccessToken,
+    revokeAccessTokensForSubject,
+} from "../../auth/access-tokens.js";
 
 function createResponseRecorder() {
     let status = 0;
@@ -69,6 +72,29 @@ test("dashboard route requires login cookie", async () => {
 
     assert.equal(authed.status, 200);
     assert.match(authed.body, /static\/app\/dashboard\/index\.js/);
+});
+
+test("dashboard route redirects revoked disabled-account sessions with account_disabled reason", async () => {
+    const disabledToken = issueAccessToken("disabled-user", "user", 60);
+    revokeAccessTokensForSubject("disabled-user");
+    const route = createUiRoutes(undefined, undefined, {
+        async getInfo(username: string) {
+            if (username !== "disabled-user") return null;
+            return { enabled: false };
+        },
+    } as any);
+    const recorder = createResponseRecorder();
+
+    await route(
+        {
+            headers: { cookie: `cognis_access_token=${disabledToken}` },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/dashboard"),
+    );
+
+    assert.equal(recorder.status, 302);
+    assert.equal(recorder.headers.location, "/login?reason=account_disabled");
 });
 
 test("login page is served as standalone page html", async () => {

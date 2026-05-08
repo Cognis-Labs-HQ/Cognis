@@ -140,6 +140,37 @@ test("admin can list all pending registration tokens", async () => {
     assert.equal(didUseUnfilteredList, true);
 });
 
+test("registration state exposes founder-safe gateway status", async () => {
+    const route = createRegistrationRoutes(
+        {
+            isInviteEnabled() {
+                return true;
+            },
+            isPublicEnabled() {
+                return false;
+            },
+        } as any,
+        accountStore,
+        async () => [],
+        () => false,
+    );
+
+    const res = makeResponse();
+    const handled = await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${founderToken}` },
+        } as any,
+        res,
+        new URL("http://localhost/api/v1/registration/state"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 200);
+    assert.match(res.payload, /"gatewayEnabled":false/);
+    assert.match(res.payload, /"inviteEnabled":true/);
+});
+
 test("invite endpoint returns inviter details for valid token", async () => {
     const route = createRegistrationRoutes(
         {

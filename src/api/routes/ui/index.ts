@@ -6,6 +6,7 @@ import {
     getCookieSession,
     setPageSecurityHeaders,
 } from "../../auth/guard.js";
+import { lookupAccessToken } from "../../auth/access-tokens.js";
 import type { ModuleRuntimeGateway } from "@cognis/core";
 import type { GatewayRegistry } from "@cognis/core";
 import type { UIRegistry } from "../../ui-registry.js";
@@ -67,9 +68,27 @@ async function resolveLoginRedirectLocation(
 ): Promise<string> {
     const cookieToken = getCookieAccessToken(req);
     const session = getCookieSession(req);
-    if (!cookieToken || !session) {
-        return cookieToken ? "/login?reason=session_expired" : "/login";
+    if (!cookieToken) {
+        return "/login";
     }
+
+    const tokenInfo = lookupAccessToken(cookieToken);
+    const accountId = session?.sub ?? tokenInfo?.sub ?? null;
+
+    if (
+        accountId &&
+        accountStore &&
+        typeof accountStore.getInfo === "function"
+    ) {
+        const info = await accountStore.getInfo(accountId).catch(() => null);
+        if (!info) return "/login?reason=account_deleted";
+        if (info.enabled === false) return "/login?reason=account_disabled";
+    }
+
+    if (!session || !tokenInfo || tokenInfo.revoked) {
+        return "/login?reason=session_expired";
+    }
+
     if (!accountStore || typeof accountStore.getInfo !== "function") return "";
     const info = await accountStore.getInfo(session.sub).catch(() => null);
     if (!info) return "/login?reason=account_deleted";

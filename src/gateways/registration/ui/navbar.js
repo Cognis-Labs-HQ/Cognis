@@ -1,17 +1,6 @@
 import { createI18n } from "/static/reuse/i18n.js";
 
-async function isRegistrationGatewayEnabled() {
-    try {
-        const response = await fetch("/api/v1/gateways/registration");
-        if (!response.ok) return false;
-        const payload = await response.json();
-        return payload?.data?.status !== "disabled";
-    } catch {
-        return false;
-    }
-}
-
-async function isInviteAdapterEnabled() {
+async function loadRegistrationState() {
     try {
         const token = localStorage.getItem("cognis_token");
         const response = await fetch("/api/v1/registration/state", {
@@ -19,11 +8,11 @@ async function isInviteAdapterEnabled() {
                 authorization: token ? `Bearer ${token}` : "",
             },
         });
-        if (!response.ok) return false;
+        if (!response.ok) return null;
         const payload = await response.json();
-        return payload?.data?.inviteEnabled === true;
+        return payload?.data ?? null;
     } catch {
-        return false;
+        return null;
     }
 }
 
@@ -31,8 +20,9 @@ async function registerInviteMenuEntry() {
     const role = localStorage.getItem("cognis_role");
     const isFounder = localStorage.getItem("cognis_is_founder") === "true";
     if (role === "admin" || !isFounder) return;
-    if (!(await isRegistrationGatewayEnabled())) return;
-    if (!(await isInviteAdapterEnabled())) return;
+    const registrationState = await loadRegistrationState();
+    if (!registrationState?.gatewayEnabled) return;
+    if (registrationState.inviteEnabled !== true) return;
 
     const dropdown = document.querySelector("#profile-dropdown");
     if (!(dropdown instanceof HTMLUListElement)) return;
