@@ -17,6 +17,14 @@ test("users popup formats member and login timestamps via timestamp utility", ()
             'import { formatDate, formatDateTime } from "../../reuse/timestamp.js";',
         ),
     );
+    assert.match(
+        source,
+        /function formatMemberSince\(iso\)\s*\{\s*return formatDate\(iso,/,
+    );
+    assert.match(
+        source,
+        /function formatLastLogin\(iso\)\s*\{\s*return formatDateTime\(iso,/,
+    );
     assert.match(source, /formatMemberSince\(info\?\.createdAt \?\? null\)/);
     assert.match(source, /formatLastLogin\(info\?\.lastLogin \?\? null\)/);
 });
