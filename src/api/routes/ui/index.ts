@@ -388,6 +388,9 @@ export function createUiRoutes(
         ) {
             const gatewayMessages = (uiRegistry?.listAuthTypingMessages() ?? [])
                 .filter((message) => {
+                    if (message.isEnabled && !message.isEnabled()) {
+                        return false;
+                    }
                     if (
                         message.ownerType === "gateway" &&
                         message.ownerId &&

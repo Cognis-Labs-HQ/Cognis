@@ -177,11 +177,15 @@ async function buildMessage(
         .map((line) => (line.startsWith(".") ? `.${line}` : line))
         .join("\r\n");
 
+    function sanitizeHeader(value: string): string {
+        return value.replace(/[\r\n]/g, "");
+    }
+
     return (
         [
-            `From: ${fromHeader}`,
-            `To: ${to}`,
-            `Subject: ${subject}`,
+            `From: ${sanitizeHeader(fromHeader)}`,
+            `To: ${sanitizeHeader(to)}`,
+            `Subject: ${sanitizeHeader(subject)}`,
             "MIME-Version: 1.0",
             "Content-Type: text/html; charset=utf-8",
             "",

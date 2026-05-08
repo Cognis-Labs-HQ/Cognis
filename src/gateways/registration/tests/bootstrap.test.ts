@@ -89,12 +89,151 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
         true,
     );
     assert.equal(existsSync(path.resolve(staticDir.dir, "navbar.js")), true);
-    assert.deepEqual(registeredTypingMessages, [
-        {
-            id: "registration-register-today",
-            textKey: "ui.app.login.typing.sample.7",
-            ownerType: "gateway",
-            ownerId: "registration",
+    assert.equal(registeredTypingMessages.length, 1);
+    const msg = registeredTypingMessages[0];
+    assert.equal(msg.id, "registration-register-today");
+    assert.equal(msg.textKey, "ui.app.login.typing.sample.7");
+    assert.equal(msg.ownerType, "adapter");
+    assert.equal(msg.ownerId, "public");
+    assert.equal(typeof msg.isEnabled, "function");
+});
+
+test("registration:public:isEnabled capability returns false when gateway is disabled", async () => {
+    const dbExec = {
+        execute: async () => ({ rows: [], rowCount: 0 }),
+    };
+    const map = new Map();
+    map.set("db:executor", dbExec);
+    map.set("db:type", "sqlite");
+    map.set("auth:accountStore", {
+        async isFounder() {
+            return false;
         },
-    ]);
+        async getDisplayName(username: string) {
+            return username;
+        },
+        async exists() {
+            return true;
+        },
+        async register(username: string) {
+            return { username, isAdmin: false, enabled: true };
+        },
+    });
+    map.set("notify:canSendRegistrationInviteEmail", () => true);
+    map.set("notify:sendRegistrationInviteEmail", async () => {});
+    map.set("notify:isEmailRegistered", async () => false);
+    map.set(
+        "notify:upsertVerifiedPrimaryEmail",
+        async (_accountId: string, _email: string) => {},
+    );
+
+    const gatewayStatus = { status: "active" };
+    const registry = {
+        register() {},
+        get(id: string) {
+            return id === "registration" ? gatewayStatus : null;
+        },
+    };
+
+    await bootstrap({
+        capabilities: {
+            get(key: string) {
+                return map.get(key);
+            },
+            contribute(key: string, value: unknown) {
+                map.set(key, value);
+            },
+        } as any,
+        routeRegistry: { register() {} } as any,
+        uiRegistry: {
+            registerAdminSection() {},
+            registerNavbarPlugin() {},
+            registerStaticDir() {},
+            registerAuthTypingMessage() {},
+        } as any,
+        gatewayRegistry: registry as any,
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+    } as any);
+
+    const isEnabled = map.get("registration:public:isEnabled") as () => boolean;
+    assert.equal(typeof isEnabled, "function");
+
+    gatewayStatus.status = "active";
+    assert.equal(
+        isEnabled(),
+        false,
+        "disabled when public adapter not enabled",
+    );
+
+    gatewayStatus.status = "disabled";
+    assert.equal(isEnabled(), false, "disabled when gateway is disabled");
+});
+
+test("registration:public:register capability throws when gateway is disabled", async () => {
+    const dbExec = {
+        execute: async () => ({ rows: [], rowCount: 0 }),
+    };
+    const map = new Map();
+    map.set("db:executor", dbExec);
+    map.set("db:type", "sqlite");
+    map.set("auth:accountStore", {
+        async isFounder() {
+            return false;
+        },
+        async getDisplayName(username: string) {
+            return username;
+        },
+        async exists() {
+            return true;
+        },
+        async register(username: string) {
+            return { username, isAdmin: false, enabled: true };
+        },
+    });
+    map.set("notify:canSendRegistrationInviteEmail", () => true);
+    map.set("notify:sendRegistrationInviteEmail", async () => {});
+    map.set("notify:isEmailRegistered", async () => false);
+    map.set(
+        "notify:upsertVerifiedPrimaryEmail",
+        async (_accountId: string, _email: string) => {},
+    );
+
+    const gatewayStatus = { status: "disabled" };
+    const registry = {
+        register() {},
+        get(id: string) {
+            return id === "registration" ? gatewayStatus : null;
+        },
+    };
+
+    await bootstrap({
+        capabilities: {
+            get(key: string) {
+                return map.get(key);
+            },
+            contribute(key: string, value: unknown) {
+                map.set(key, value);
+            },
+        } as any,
+        routeRegistry: { register() {} } as any,
+        uiRegistry: {
+            registerAdminSection() {},
+            registerNavbarPlugin() {},
+            registerStaticDir() {},
+            registerAuthTypingMessage() {},
+        } as any,
+        gatewayRegistry: registry as any,
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+    } as any);
+
+    const registerFn = map.get("registration:public:register") as (
+        input: unknown,
+    ) => Promise<unknown>;
+    assert.equal(typeof registerFn, "function");
+
+    await assert.rejects(
+        () => registerFn({ username: "u", password: "p" }),
+        /gateway_disabled/,
+        "should throw gateway_disabled when gateway is disabled",
+    );
 });

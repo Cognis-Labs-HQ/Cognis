@@ -263,6 +263,36 @@ function createAuthGatewayRoutes(
                 result.isAdmin ? "admin" : "user",
                 1800,
             );
+
+            const hasVerifiedEmail = capabilities.get<
+                (accountId: string) => Promise<boolean>
+            >("notify:hasVerifiedEmail");
+            if (hasVerifiedEmail) {
+                const FIVE_MINUTES_MS = 5 * 60 * 1000;
+                const timer = setTimeout(async () => {
+                    try {
+                        const verified = await hasVerifiedEmail(
+                            result.username,
+                        );
+                        if (!verified) {
+                            await accountStore.delete(result.username);
+                            console.info(
+                                JSON.stringify({
+                                    level: "info",
+                                    component: "auth-gateway",
+                                    message:
+                                        "Deleted unverified account after 5-minute window.",
+                                    accountId: result.username,
+                                }),
+                            );
+                        }
+                    } catch {
+                        // Cleanup errors are non-fatal.
+                    }
+                }, FIVE_MINUTES_MS);
+                timer.unref();
+            }
+
             res.writeHead(201, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ...result, verifyToken } }));
             return true;

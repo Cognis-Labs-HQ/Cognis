@@ -59,6 +59,30 @@ async function promptEmail() {
     return inputEl.value.trim();
 }
 
+function renderTokenRow(row) {
+    const isPending = !row.status || row.status === "pending";
+    const revokeHtml = isPending
+        ? `<button class="invite-revoke-btn btn-cancel btn-animated" data-token-id="${escapeHtml(row.id)}">${escapeHtml(i18n.t("ui.app.invite.revoke"))}</button>`
+        : "";
+    const expiresAt = row.expiresAt
+        ? escapeHtml(new Date(row.expiresAt).toLocaleString())
+        : "—";
+    const issuerUsername = String(row.inviterAccountId ?? "");
+    const redeemedUsername = String(row.redeemedAccountId ?? "");
+    return `
+      <tr>
+        <td>${escapeHtml(row.inviteeEmail)}</td>
+        <td>${escapeHtml(issuerUsername)}</td>
+        <td>${redeemedUsername ? escapeHtml(redeemedUsername) : "—"}</td>
+        <td>${escapeHtml(i18n.t(`ui.app.invite.status_${row.status ?? "pending"}`))}</td>
+        <td>${expiresAt}</td>
+        <td>
+          ${revokeHtml}
+        </td>
+      </tr>
+    `;
+}
+
 const inviteState = await loadInviteState();
 let tokens = inviteState.inviteEnabled ? await loadTokens() : [];
 let composer = null;
@@ -81,26 +105,15 @@ const elements = [
           <thead>
             <tr>
               <th>${escapeHtml(i18n.t("ui.app.invite.email"))}</th>
+              <th>${escapeHtml(i18n.t("ui.app.invite.issuer"))}</th>
+              <th>${escapeHtml(i18n.t("ui.app.invite.username"))}</th>
               <th>${escapeHtml(i18n.t("ui.app.invite.status"))}</th>
               <th>${escapeHtml(i18n.t("ui.app.invite.expires_at"))}</th>
               <th>${escapeHtml(i18n.t("ui.reuse.generic.actions"))}</th>
             </tr>
           </thead>
           <tbody>
-            ${tokens
-                .map(
-                    (row) => `
-                <tr>
-                  <td>${escapeHtml(row.inviteeEmail)}</td>
-                  <td>${escapeHtml(i18n.t(`ui.app.invite.status_${row.status ?? "pending"}`))}</td>
-                  <td>${escapeHtml(row.expiresAt ?? "")}</td>
-                  <td>
-                    ${(row.status ?? "pending") === "pending" ? `<button class="invite-revoke-btn btn-cancel btn-animated" data-token-id="${escapeHtml(row.id)}">${escapeHtml(i18n.t("ui.app.invite.revoke"))}</button>` : ""}
-                  </td>
-                </tr>
-              `,
-                )
-                .join("")}
+            ${tokens.map(renderTokenRow).join("")}
           </tbody>
         </table>
         </div>
@@ -160,10 +173,19 @@ function bindInviteInteractions() {
         btn.addEventListener("click", async () => {
             const tokenId = btn.dataset.tokenId;
             if (!tokenId) return;
-            await apiFetch(
+            const response = await apiFetch(
                 `/api/v1/registration/tokens/${encodeURIComponent(tokenId)}/revoke`,
                 { method: "POST" },
             );
+            if (!response.ok) {
+                showToast(i18n.t("ui.app.invite.revoke_failed"), {
+                    variant: "error",
+                });
+                return;
+            }
+            showToast(i18n.t("ui.app.invite.revoke_success"), {
+                variant: "success",
+            });
             tokens = await loadTokens();
             composer.refresh(elements);
         });

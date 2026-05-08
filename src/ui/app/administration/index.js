@@ -529,9 +529,8 @@ function bindGatewayToggles() {
                     return;
                 }
 
-                await toggleGateway(gatewayId, action);
-
-                for (const adapter of gatewayAdapters) {
+                const freshAdapters = await loadGatewayAdapters(gatewayId);
+                for (const adapter of freshAdapters) {
                     const currentAdapterId = adapter.senderId ?? adapter.id;
                     if (
                         currentAdapterId &&
@@ -544,6 +543,8 @@ function bindGatewayToggles() {
                         );
                     }
                 }
+
+                await toggleGateway(gatewayId, action);
             }
 
             gateways = await loadGateways();

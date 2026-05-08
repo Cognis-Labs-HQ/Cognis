@@ -233,6 +233,7 @@
   <string name="ui.app.register.error.inviter_not_found">Das einladende Konto existiert nicht mehr, daher kann diese Einladung nicht eingelöst werden.</string>
   <string name="ui.app.register.token_expires_in">Läuft ab in: {countdown}</string>
   <string name="ui.app.register.token_expired">Diese Einladung ist abgelaufen.</string>
+  <string name="ui.app.register.email_verify_notice">Sie müssen Ihre E-Mail-Adresse innerhalb von 5 Minuten nach der Registrierung bestätigen, sonst wird Ihr Konto automatisch gelöscht.</string>
   <string name="ui.reuse.reprompt.title">Aktion erneut bestätigen</string>
   <string name="ui.reuse.reprompt.message">Bitte bestätigen Sie diese sensible Aktion.</string>
   <string name="ui.reuse.reprompt.input_label">Geben Sie Ihr Passwort ein, um fortzufahren.</string>
@@ -283,6 +284,8 @@
   <string name="ui.app.invite.invite_sent">Einladung gesendet.</string>
   <string name="ui.app.invite.invite_failed">Einladung konnte nicht gesendet werden.</string>
   <string name="ui.app.invite.email_domain_not_allowed">Diese E-Mail-Domain ist nicht erlaubt. Bitte verwende eine Adresse einer erlaubten Domain.</string>
+  <string name="ui.app.invite.revoke_success">Einladung widerrufen.</string>
+  <string name="ui.app.invite.revoke_failed">Einladung konnte nicht widerrufen werden.</string>
   <string name="ui.app.settings.font_preview">Schriftvorschau</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Verfügbare Sprachen</string>

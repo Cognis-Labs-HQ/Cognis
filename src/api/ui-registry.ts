@@ -39,6 +39,7 @@ export interface AuthTypingMessage {
     textKey: string;
     ownerType?: "gateway" | "adapter" | "module" | "core";
     ownerId?: string;
+    isEnabled?: () => boolean;
 }
 
 export class UIRegistry {

@@ -759,3 +759,78 @@ test("SmtpNotificationSender registration invites use Sign Up CTA and clickable 
         await server.close();
     }
 });
+
+test("SmtpNotificationSender strips CR/LF from display name in Subject header", async () => {
+    let capturedData = "";
+
+    const server = await createMockSmtpServer((conn) => {
+        conn.setEncoding("utf8");
+        conn.write("220 mock.example.com SMTP\r\n");
+
+        conn.on("data", (chunk: string) => {
+            capturedData += chunk;
+            const upper = chunk.toUpperCase();
+            if (upper.includes("EHLO") || upper.includes("HELO"))
+                conn.write("250 OK\r\n");
+            if (upper.includes("MAIL FROM")) conn.write("250 OK\r\n");
+            if (upper.includes("RCPT TO")) conn.write("250 OK\r\n");
+            if (upper.includes("\r\nDATA\r\n") || chunk.trim() === "DATA")
+                conn.write("354 Start mail input\r\n");
+            if (chunk.includes("\r\n.\r\n")) conn.write("250 OK\r\n");
+            if (upper.includes("QUIT")) {
+                conn.write("221 Bye\r\n");
+                conn.end();
+            }
+        });
+    });
+
+    try {
+        const sender = new SmtpNotificationSender(
+            {
+                host: server.host,
+                port: server.port,
+                from: "test@example.com",
+                secure: "none",
+                greylistRetries: 0,
+            },
+            undefined,
+            noopSleep,
+        );
+        const maliciousName =
+            "Attacker\r\nBcc: victim@evil.example.com\r\nX-Injected: yes";
+        const inviteUrl = "https://cognis.example.com/register?token=abc";
+        await sender.sendRegistrationInviteEmail(
+            "target@example.com",
+            maliciousName,
+            inviteUrl,
+        );
+        const headerSection = capturedData.split("\r\n\r\n")[0] ?? "";
+        const headerLines = headerSection.split("\r\n");
+        const subjectLine = headerLines.find((line) =>
+            line.startsWith("Subject:"),
+        );
+        assert.ok(subjectLine, "Subject header should be present");
+        const injectedBccHeader = headerLines.some((line) =>
+            /^Bcc:/i.test(line),
+        );
+        assert.equal(
+            injectedBccHeader,
+            false,
+            "No Bcc header should be injected into the SMTP headers",
+        );
+        const injectedCustomHeader = headerLines.some((line) =>
+            /^X-Injected:/i.test(line),
+        );
+        assert.equal(
+            injectedCustomHeader,
+            false,
+            "No X-Injected header should be injected into the SMTP headers",
+        );
+        assert.ok(
+            subjectLine.includes("Attacker"),
+            "Subject header should retain the sanitized display name",
+        );
+    } finally {
+        await server.close();
+    }
+});

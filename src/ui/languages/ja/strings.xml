@@ -233,6 +233,7 @@
   <string name="ui.app.register.error.inviter_not_found">招待元アカウントが存在しないため、この招待は利用できません。</string>
   <string name="ui.app.register.token_expires_in">有効期限: {countdown}</string>
   <string name="ui.app.register.token_expired">この招待は期限切れです。</string>
+  <string name="ui.app.register.email_verify_notice">登録から5分以内にメールアドレスを確認しないと、アカウントが自動的に削除されます。</string>
   <string name="ui.reuse.reprompt.title">操作の再確認</string>
   <string name="ui.reuse.reprompt.message">この重要な操作を確認してください。</string>
   <string name="ui.reuse.reprompt.input_label">続行するにはパスワードを入力してください。</string>
@@ -283,6 +284,8 @@
   <string name="ui.app.invite.invite_sent">招待を送信しました。</string>
   <string name="ui.app.invite.invite_failed">招待の送信に失敗しました。</string>
   <string name="ui.app.invite.email_domain_not_allowed">このメールドメインは許可されていません。許可されているドメインのアドレスを使用してください。</string>
+  <string name="ui.app.invite.revoke_success">招待を取り消しました。</string>
+  <string name="ui.app.invite.revoke_failed">招待の取り消しに失敗しました。</string>
   <string name="ui.app.settings.font_preview">フォントプレビュー</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">利用可能な言語</string>

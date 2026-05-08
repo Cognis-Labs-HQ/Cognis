@@ -132,13 +132,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         }
     }
 
+    function isGatewayEnabled(): boolean {
+        return ctx.gatewayRegistry.get("registration")?.status !== "disabled";
+    }
+
     ctx.routeRegistry.register(
         createRegistrationRoutes(
             gateway,
             accountStore,
             getTrustedDomains,
-            () =>
-                ctx.gatewayRegistry.get("registration")?.status !== "disabled",
+            isGatewayEnabled,
         ),
         "registration",
     );
@@ -162,12 +165,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerAuthTypingMessage({
         id: "registration-register-today",
         textKey: "ui.app.login.typing.sample.7",
-        ownerType: "gateway",
-        ownerId: "registration",
+        ownerType: "adapter",
+        ownerId: "public",
+        isEnabled: () => isGatewayEnabled() && gateway.isPublicEnabled(),
     });
 
-    ctx.capabilities.contribute("registration:public:isEnabled", () =>
-        gateway.isPublicEnabled(),
+    ctx.capabilities.contribute(
+        "registration:public:isEnabled",
+        () => isGatewayEnabled() && gateway.isPublicEnabled(),
     );
     ctx.capabilities.contribute(
         "registration:public:register",
@@ -176,7 +181,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             password: string;
             email?: string;
             displayName?: string;
-        }) => gateway.registerPublic(input),
+        }) => {
+            if (!isGatewayEnabled()) throw new Error("gateway_disabled");
+            return gateway.registerPublic(input);
+        },
     );
 
     ctx.routeRegistry.register(

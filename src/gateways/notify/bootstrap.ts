@@ -122,6 +122,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         async (accountId: string, email: string) =>
             notifStore.upsertVerifiedPrimaryEmail(accountId, email),
     );
+    ctx.capabilities.contribute(
+        "notify:hasVerifiedEmail",
+        async (accountId: string) => notifStore.hasVerifiedEmail(accountId),
+    );
 }
 
 /**

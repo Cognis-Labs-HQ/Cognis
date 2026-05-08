@@ -9,6 +9,22 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Public registration: 5-minute unverified account cleanup — after a public registration the server schedules a 5-minute timer that deletes the account if no verified email address is present by expiry. The register page now shows an info callout warning the user that email verification is required within 5 minutes. ([fb70bf4](https://github.com/le-firehawk/Cognis/commit/fb70bf4))
+- Invite page: `notify:hasVerifiedEmail(accountId)` capability contributed by the notification gateway bootstrap, backed by a new `DbNotificationStore.hasVerifiedEmail` method. ([fb70bf4](https://github.com/le-firehawk/Cognis/commit/fb70bf4))
+
+### Changed
+
+- Invite page: table headers now match the Administration → Registration table (Email, Issuer, Username, Status, Expires At, Actions); dates are formatted with `toLocaleString`; revoke button now shows success/failure toasts and refreshes the page immediately. ([fb70bf4](https://github.com/le-firehawk/Cognis/commit/fb70bf4))
+- Typing message "Register your account today": ownership moved from the registration gateway to the public adapter (`ownerType: "adapter"`, `ownerId: "public"`) and gated by an `isEnabled` callback — the message is only included in the auth-typing response when both the registration gateway and its public adapter are enabled. `AuthTypingMessage` now accepts an optional `isEnabled?: () => boolean` field; the `/api/v1/ui/auth-typing-messages` route evaluates it before the existing owner-type checks. ([fb70bf4](https://github.com/le-firehawk/Cognis/commit/fb70bf4))
+
+### Fixed
+
+- Security: Administration gateway disable now re-queries the live gateway for its current adapter list and disables all enabled adapters _before_ disabling the gateway itself, so the adapter-disable API calls are not skipped by the disabled-gateway route filter. ([fb70bf4](https://github.com/le-firehawk/Cognis/commit/fb70bf4))
+- Security: `registration:public:isEnabled` capability now returns `false` when the registration gateway is disabled, and `registration:public:register` throws `gateway_disabled` in the same state. Previously, disabling the gateway while the public adapter remained enabled allowed unauthenticated users to still create accounts through the auth gateway's `/api/v1/auth/register` route. ([fb70bf4](https://github.com/le-firehawk/Cognis/commit/fb70bf4))
+- Security: SMTP `buildMessage` now strips CR and LF characters from all header values (From, To, Subject) before inserting them into the raw message. A display name containing CR/LF could previously inject arbitrary mail headers (e.g. `Bcc:`) into invite emails. ([fb70bf4](https://github.com/le-firehawk/Cognis/commit/fb70bf4))
+
+### Added
+
 - Invite flow: trusted-domain gate — when a trusted-domains list is configured in Security Settings, sending an invite to an email outside those domains returns `422 email_domain_not_allowed`. The Invite page detects this error, shows a toast, and re-opens the email prompt instead of closing the popup. ([25e730a](https://github.com/le-firehawk/Cognis/commit/25e730a))
 - Password re-confirmation freshness window — `/api/v1/auth/verify` now returns 200 immediately (without checking the password) when the caller's access token was issued or last password-confirmed within the past hour. On successful password confirmation the timestamp is stored per-token; future calls within the window skip re-entry. ([25e730a](https://github.com/le-firehawk/Cognis/commit/25e730a))
 - Login page: Public Registration callout — when the public-registration adapter is enabled, a "Not Registered?" info callout with a "Sign Up!" link to `/register` appears above the Login button. Driven by a new public `GET /api/v1/auth/registration-config` endpoint contributed by the registration bootstrap. ([25e730a](https://github.com/le-firehawk/Cognis/commit/25e730a))

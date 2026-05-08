@@ -172,6 +172,7 @@ function renderRegisterShell() {
         formHtml = `
       ${invitedText ? `<p class="auth-intro">${escapeHtml(invitedText)}</p>` : ""}
       ${countdownHtml}
+      ${!isInviteFlow ? renderInPageCallout({ variant: "info", body: i18n.t("ui.app.register.email_verify_notice") }) : ""}
       <div class="auth-form-shell">
         <form id="register-form" class="stack auth-form">
           <label>

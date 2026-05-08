@@ -233,6 +233,7 @@
   <string name="ui.app.register.error.inviter_not_found">The inviter account no longer exists, so this invitation cannot be redeemed.</string>
   <string name="ui.app.register.token_expires_in">Expires in: {countdown}</string>
   <string name="ui.app.register.token_expired">This invitation has expired.</string>
+  <string name="ui.app.register.email_verify_notice">You must verify your email address within 5 minutes of registering, or your account will be automatically deleted.</string>
   <string name="ui.reuse.reprompt.title">Re-Confirm Action</string>
   <string name="ui.reuse.reprompt.message">Please confirm this sensitive action.</string>
   <string name="ui.reuse.reprompt.input_label">Enter your password to continue.</string>
@@ -283,6 +284,8 @@
   <string name="ui.app.invite.invite_sent">Invitation sent.</string>
   <string name="ui.app.invite.invite_failed">Failed to send invitation.</string>
   <string name="ui.app.invite.email_domain_not_allowed">This email domain is not permitted. Please use an address from an allowed domain.</string>
+  <string name="ui.app.invite.revoke_success">Invitation revoked.</string>
+  <string name="ui.app.invite.revoke_failed">Failed to revoke invitation.</string>
   <string name="ui.app.settings.font_preview">Font Preview</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Available languages</string>

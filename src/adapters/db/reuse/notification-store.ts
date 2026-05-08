@@ -133,6 +133,11 @@ export class DbNotificationStore implements NotificationConfigStore {
         }));
     }
 
+    async hasVerifiedEmail(accountId: string): Promise<boolean> {
+        const emails = await this.getUserEmails(accountId);
+        return emails.some((e) => e.verified);
+    }
+
     async addUserEmail(
         accountId: string,
         email: string,

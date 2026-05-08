@@ -233,6 +233,7 @@
   <string name="ui.app.register.error.inviter_not_found">Akun pengundang sudah tidak ada, jadi undangan ini tidak bisa digunakan.</string>
   <string name="ui.app.register.token_expires_in">Kedaluwarsa dalam: {countdown}</string>
   <string name="ui.app.register.token_expired">Undangan ini sudah kedaluwarsa.</string>
+  <string name="ui.app.register.email_verify_notice">Anda harus memverifikasi alamat email dalam 5 menit setelah mendaftar, atau akun Anda akan dihapus secara otomatis.</string>
   <string name="ui.reuse.reprompt.title">Konfirmasi ulang tindakan</string>
   <string name="ui.reuse.reprompt.message">Mohon konfirmasi tindakan sensitif ini.</string>
   <string name="ui.reuse.reprompt.input_label">Masukkan kata sandi Anda untuk melanjutkan.</string>
@@ -283,6 +284,8 @@
   <string name="ui.app.invite.invite_sent">Undangan terkirim.</string>
   <string name="ui.app.invite.invite_failed">Gagal mengirim undangan.</string>
   <string name="ui.app.invite.email_domain_not_allowed">Domain email ini tidak diizinkan. Gunakan alamat dari domain yang diperbolehkan.</string>
+  <string name="ui.app.invite.revoke_success">Undangan berhasil dibatalkan.</string>
+  <string name="ui.app.invite.revoke_failed">Gagal membatalkan undangan.</string>
   <string name="ui.app.settings.font_preview">Pratinjau Font</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Bahasa tersedia</string>
