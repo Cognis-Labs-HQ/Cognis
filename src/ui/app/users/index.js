@@ -196,6 +196,32 @@ async function runUserMenuAction(action, username) {
         });
         await refreshData();
         composer.refresh(elements);
+        return;
+    }
+
+    if (action === "set-founder" || action === "unset-founder") {
+        const isFounder = action === "set-founder";
+        const res = await apiFetch(
+            `/api/v1/users/${encodeURIComponent(username)}/isfounder`,
+            {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ isFounder }),
+            },
+        );
+        showToast(
+            res.ok
+                ? i18n.t(
+                      isFounder
+                          ? "ui.app.users.founder_enabled"
+                          : "ui.app.users.founder_disabled",
+                  )
+                : i18n.t("ui.app.admin.security.save_failed"),
+            { variant: res.ok ? "success" : "error" },
+        );
+        if (!res.ok) return;
+        await refreshData();
+        composer.refresh(elements);
     }
 }
 
@@ -240,8 +266,17 @@ function bindUsersInteractions() {
         btn.addEventListener("click", async () => {
             const username = btn.dataset.username;
             if (!username || !(btn instanceof HTMLButtonElement)) return;
+            const user = users.find((entry) => entry.username === username);
             const action = await openHamburgerMenu(btn, {
                 items: [
+                    {
+                        id: user?.isFounder ? "unset-founder" : "set-founder",
+                        label: i18n.t(
+                            user?.isFounder
+                                ? "ui.app.users.unmark_founder"
+                                : "ui.app.users.mark_founder",
+                        ),
+                    },
                     {
                         id: "password",
                         label: i18n.t("ui.app.users.reset_password"),

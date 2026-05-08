@@ -3,7 +3,10 @@ import assert from "node:assert/strict";
 import { createUserRoutes } from "../../routes/users/index.js";
 import { VolatileLocalAccountStore } from "../../reuse/account-store.js";
 import { VolatileUserPreferenceStore } from "../../reuse/preference-store.js";
-import { issueAccessToken } from "../../auth/access-tokens.js";
+import {
+    issueAccessToken,
+    verifyAccessToken,
+} from "../../auth/access-tokens.js";
 
 const adminToken = issueAccessToken("admin", "admin", 60);
 const headers = { authorization: `Bearer ${adminToken}` };
@@ -244,4 +247,30 @@ test("admin can set founder flag through isfounder endpoint", async () => {
     assert.equal(status, 200);
     assert.match(body, /"isFounder":true/);
     assert.equal(await accounts.isFounder("dana"), true);
+});
+
+test("disabling a user invalidates existing access tokens for that user", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "pw", true);
+    await accounts.register("erin", "pw", false);
+    const prefs = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, prefs);
+    let status = 0;
+
+    const erinToken = issueAccessToken("erin", "user", 60);
+    assert.equal(verifyAccessToken(erinToken)?.sub, "erin");
+
+    await route(
+        { method: "POST", headers } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/erin/disable"),
+    );
+
+    assert.equal(status, 200);
+    assert.equal(verifyAccessToken(erinToken), null);
 });

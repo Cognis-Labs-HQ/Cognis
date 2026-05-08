@@ -155,3 +155,16 @@ export function verifyAccessToken(
     }
     return { sub: record.subject, role: record.role };
 }
+
+export function revokeAccessTokensForSubject(subject: string): number {
+    let removed = 0;
+    for (const [tokenHash, record] of tokenStore.entries()) {
+        if (record.subject !== subject) continue;
+        tokenStore.delete(tokenHash);
+        removed++;
+    }
+    if (removed > 0) {
+        persistTokenStore();
+    }
+    return removed;
+}

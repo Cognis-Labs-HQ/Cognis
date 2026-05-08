@@ -3,6 +3,7 @@ import type { LocalAccountStore } from "../../reuse/account-store.js";
 import { getAuthClaims, requireAuth } from "../../auth/guard.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 import { readJson } from "../../reuse/read-json.js";
+import { revokeAccessTokensForSubject } from "../../auth/access-tokens.js";
 
 const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin"]);
 
@@ -141,6 +142,7 @@ export function createUserRoutes(
 
         if (req.method === "POST" && action === "disable") {
             await accountStore.setEnabled(username, false);
+            revokeAccessTokensForSubject(username);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
             return true;

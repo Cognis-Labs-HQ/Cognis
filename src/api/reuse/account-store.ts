@@ -41,7 +41,12 @@ export interface LocalAccountStore {
     verify(username: string, password: string): Promise<AuthContext | null>;
     has(username: string): Promise<boolean>;
     list(): Promise<
-        Array<{ username: string; isAdmin: boolean; enabled: boolean }>
+        Array<{
+            username: string;
+            isAdmin: boolean;
+            enabled: boolean;
+            isFounder: boolean;
+        }>
     >;
     setRole(
         username: string,
@@ -131,6 +136,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             username,
             isAdmin: account.isAdmin,
             enabled: account.enabled,
+            isFounder: account.isFounder,
         }));
     }
 

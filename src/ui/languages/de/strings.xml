@@ -220,6 +220,10 @@
   <string name="ui.app.users.member_since">Mitglied seit</string>
   <string name="ui.app.users.last_login">Letzte Anmeldung</string>
   <string name="ui.app.users.founder">Gründer</string>
+  <string name="ui.app.users.mark_founder">Als Gründer markieren</string>
+  <string name="ui.app.users.unmark_founder">Gründerstatus entfernen</string>
+  <string name="ui.app.users.founder_enabled">Gründerstatus aktiviert.</string>
+  <string name="ui.app.users.founder_disabled">Gründerstatus entfernt.</string>
   <string name="ui.app.users.action_menu_help">Wählen Sie eine Aktion aus.</string>
   <string name="ui.app.users.reset_password">Passwort zurücksetzen</string>
   <string name="ui.app.users.new_password">Neues Passwort</string>

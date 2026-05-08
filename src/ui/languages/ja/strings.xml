@@ -220,6 +220,10 @@
   <string name="ui.app.users.member_since">登録日</string>
   <string name="ui.app.users.last_login">最終ログイン</string>
   <string name="ui.app.users.founder">創設者</string>
+  <string name="ui.app.users.mark_founder">創設者として設定</string>
+  <string name="ui.app.users.unmark_founder">創設者設定を解除</string>
+  <string name="ui.app.users.founder_enabled">創設者に設定しました。</string>
+  <string name="ui.app.users.founder_disabled">創設者設定を解除しました。</string>
   <string name="ui.app.users.action_menu_help">操作を選択してください。</string>
   <string name="ui.app.users.reset_password">パスワードをリセット</string>
   <string name="ui.app.users.new_password">新しいパスワード</string>

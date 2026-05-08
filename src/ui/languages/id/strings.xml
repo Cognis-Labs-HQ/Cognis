@@ -220,6 +220,10 @@
   <string name="ui.app.users.member_since">Anggota sejak</string>
   <string name="ui.app.users.last_login">Login terakhir</string>
   <string name="ui.app.users.founder">Pendiri</string>
+  <string name="ui.app.users.mark_founder">Tandai sebagai pendiri</string>
+  <string name="ui.app.users.unmark_founder">Hapus status pendiri</string>
+  <string name="ui.app.users.founder_enabled">Status pendiri diaktifkan.</string>
+  <string name="ui.app.users.founder_disabled">Status pendiri dihapus.</string>
   <string name="ui.app.users.action_menu_help">Pilih tindakan.</string>
   <string name="ui.app.users.reset_password">Reset kata sandi</string>
   <string name="ui.app.users.new_password">Kata sandi baru</string>
