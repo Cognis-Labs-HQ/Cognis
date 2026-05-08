@@ -100,6 +100,11 @@ export function createAdapter(deps: {
         accountId: string,
         email: string,
     ) => Promise<void>;
+    log?: (
+        level: "debug" | "info" | "warn" | "error",
+        message: string,
+        meta?: Record<string, unknown>,
+    ) => void;
 }): RegistrationTokenAdapter {
     const {
         dbExecutor,
@@ -110,6 +115,7 @@ export function createAdapter(deps: {
         createProfile,
         isEmailRegistered,
         upsertVerifiedPrimaryEmail,
+        log,
     } = deps;
     const placeholder = (index: number) =>
         dbType === "postgresql" ? `$${index}` : "?";
@@ -290,16 +296,15 @@ export function createAdapter(deps: {
         try {
             await accountStore.delete(accountId);
         } catch (error) {
-            console.warn(
-                JSON.stringify({
-                    level: "warn",
+            log?.(
+                "warn",
+                "Failed to delete account during invite redemption rollback.",
+                {
                     component: "registration-token",
-                    message:
-                        "Failed to delete account during invite redemption rollback.",
                     accountId,
                     error:
                         error instanceof Error ? error.message : String(error),
-                }),
+                },
             );
         }
     }

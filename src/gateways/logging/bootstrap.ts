@@ -29,13 +29,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             | "error"
             | undefined) ?? "info";
     const filePath = process.env.LOG_FILE ?? "/app/logs/app.log";
+    const consoleFormat = process.env.LOG_FORMAT === "json" ? "json" : "pretty";
 
     const fileAppend =
         ctx.capabilities.get<(fp: string, content: string) => Promise<void>>(
             "file:append",
         );
 
-    const logger = new Logger(level, filePath, fileAppend);
+    const logger = new Logger(level, filePath, fileAppend, consoleFormat);
 
     ctx.capabilities.contribute("logging:logger", logger);
     ctx.capabilities.contribute(
@@ -52,7 +53,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.2.0",
+        version: "1.3.0",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",

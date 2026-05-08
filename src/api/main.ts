@@ -16,6 +16,7 @@ import { issueAccessToken } from "./auth/access-tokens.js";
 import { createHash } from "node:crypto";
 import { RouteRegistry } from "./route-registry.js";
 import { UIRegistry } from "./ui-registry.js";
+import { setAppLogger, writeConsoleLog } from "./logger.js";
 import type { LocalAccountStore } from "./reuse/account-store.js";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
@@ -105,9 +106,7 @@ function bootstrapLog(
     message: string,
     meta?: Record<string, unknown>,
 ) {
-    process.stdout.write(
-        `${JSON.stringify({ ts: new Date().toISOString(), level, message, ...meta })}\n`,
-    );
+    writeConsoleLog(level, message, meta);
 }
 bootstrapLog("info", "Starting Cognis API bootstrap.", { host, port });
 
@@ -152,7 +151,11 @@ const requiredGatewayIds = await gatewayService.bootstrap(gatewaysRoot, {
     uiRegistry,
 });
 
-const log = capabilities.get<BootstrapLog>("logging:log") ?? bootstrapLog;
+const contributedLog = capabilities.get<BootstrapLog>("logging:log");
+if (contributedLog) {
+    setAppLogger(contributedLog);
+}
+const log = contributedLog ?? bootstrapLog;
 
 await log("info", "Gateway bootstrap complete.", {
     adaptersRoot,

@@ -8,25 +8,35 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 
 ## Adapter
 
-| Komponen               | Path                        | Versi   |
-| ---------------------- | --------------------------- | ------- |
-| Notifikasi SMTP        | `src/adapters/notify/smtp/` | `0.1.0` |
-| Penyimpanan File Lokal | `src/adapters/file/local/`  | `0.1.0` |
-| Autentikasi Lokal      | `src/adapters/auth/local/`  | `0.2.0` |
-| Database SQLite        | `src/adapters/db/sqlite/`   | `0.1.0` |
-| Database PostgreSQL    | `src/adapters/db/postgres/` | `0.1.0` |
-| Database MariaDB       | `src/adapters/db/mariadb/`  | `0.1.0` |
+| Komponen               | Path                                | Versi   |
+| ---------------------- | ----------------------------------- | ------- |
+| Notifikasi SMTP        | `src/adapters/notify/smtp/`         | `0.1.0` |
+| Penyimpanan File Lokal | `src/adapters/file/local/`          | `0.1.0` |
+| Autentikasi Lokal      | `src/adapters/auth/local/`          | `0.2.0` |
+| Database SQLite        | `src/adapters/db/sqlite/`           | `0.1.0` |
+| Database PostgreSQL    | `src/adapters/db/postgres/`         | `0.1.0` |
+| Database MariaDB       | `src/adapters/db/mariadb/`          | `0.1.0` |
+| Undangan Registrasi    | `src/adapters/registration/invite/` | `0.1.1` |
+| Token Registrasi       | `src/adapters/registration/token/`  | `0.1.1` |
+| Registrasi Publik      | `src/adapters/registration/public/` | `0.1.0` |
 
 ## Gateway
 
-| Komponen                 | Path                    | Versi   |
-| ------------------------ | ----------------------- | ------- |
-| Database (db)            | `src/gateways/db/`      | `1.1.0` |
-| Autentikasi (auth)       | `src/gateways/auth/`    | `1.1.0` |
-| Notifikasi (notify)      | `src/gateways/notify/`  | `0.1.0` |
-| Profil                   | `src/gateways/profile/` | `1.1.0` |
-| Penyimpanan File (files) | `src/gateways/files/`   | `1.1.0` |
-| Logging                  | `src/gateways/logging/` | `1.1.0` |
+| Komponen                 | Path                         | Versi   |
+| ------------------------ | ---------------------------- | ------- |
+| Database (db)            | `src/gateways/db/`           | `1.1.1` |
+| Autentikasi (auth)       | `src/gateways/auth/`         | `1.3.1` |
+| Notifikasi (notify)      | `src/gateways/notify/`       | `0.1.0` |
+| Profil                   | `src/gateways/profile/`      | `1.1.0` |
+| Penyimpanan File (files) | `src/gateways/files/`        | `1.1.0` |
+| Registrasi               | `src/gateways/registration/` | `1.1.1` |
+| Logging                  | `src/gateways/logging/`      | `1.3.0` |
+
+## API
+
+| Komponen   | Path       | Versi   |
+| ---------- | ---------- | ------- |
+| Server API | `src/api/` | `0.1.1` |
 
 ## Modul
 

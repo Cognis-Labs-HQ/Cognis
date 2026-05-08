@@ -1,7 +1,7 @@
 {
     "id": "db",
     "name": "Database Gateway",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "required": true,
     "description": "Core relational database layer for persistent application data.",
     "publisher": "Cognis Labs"

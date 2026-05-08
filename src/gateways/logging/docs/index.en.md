@@ -10,7 +10,7 @@ The logging gateway must bootstrap after the files gateway. This dependency is d
 
 ## Responsibilities
 
-- Create a `Logger` instance configured from `LOG_LEVEL` and `LOG_FILE`.
+- Create a `Logger` instance configured from `LOG_LEVEL`, `LOG_FILE`, and `LOG_FORMAT`.
 - Contribute `logging:logger` (the full `Logger` instance) and `logging:log` (a plain log function) to the capability store.
 - Route log file writes through `file:append` when available.
 - Register the `logging` gateway in the gateway registry.
@@ -21,7 +21,7 @@ Not responsible for: log aggregation, log rotation, or log shipping to external 
 
 ### Logger class
 
-`Logger` in `src/gateways/logging/logger.ts` accepts a `LogLevel`, a file path, and an optional `FileAppend` function. Every call to `log(level, message, meta?)` serialises the entry as a single-line JSON object and writes it to stdout (non-error) or stderr (error), then appends the same line to the log file.
+`Logger` in `src/gateways/logging/logger.ts` accepts a `LogLevel`, a file path, an optional `FileAppend` function, and a console-output format. Every call to `log(level, message, meta?)` writes a human-readable console line by default while appending the same event as a single-line JSON object to the log file.
 
 ```ts
 export class Logger {
@@ -29,12 +29,14 @@ export class Logger {
         level: LogLevel = "info",
         filePath: string,
         fileAppend?: FileAppend,
+        consoleFormat?: ConsoleLogFormat,
     );
     async log(
         level: LogLevel,
         message: string,
         meta?: Record<string, unknown>,
     ): Promise<void>;
+    debug(message: string, meta?: Record<string, unknown>): Promise<void>;
     info(message: string, meta?: Record<string, unknown>): Promise<void>;
     warn(message: string, meta?: Record<string, unknown>): Promise<void>;
     error(message: string, meta?: Record<string, unknown>): Promise<void>;
@@ -43,7 +45,7 @@ export class Logger {
 
 Log levels in priority order: `debug` (10), `info` (20), `warn` (30), `error` (40). Messages below the configured level are dropped silently.
 
-Each log line is a JSON object:
+Persistent log lines remain JSON objects:
 
 ```json
 {
@@ -70,14 +72,18 @@ const fileAppend =
     ctx.capabilities.get<(fp: string, content: string) => Promise<void>>(
         "file:append",
     );
-const logger = new Logger(level, filePath, fileAppend);
+const consoleFormat = process.env.LOG_FORMAT === "json" ? "json" : "pretty";
+const logger = new Logger(level, filePath, fileAppend, consoleFormat);
 ```
 
 If `file:append` is absent (the capability store returns `undefined`), the `Logger` constructor uses its own `defaultFileAppend` implementation backed by Node's `appendFile`.
 
+The DB gateway uses the shared logger for its own events but records only summarised database metadata (`provider`, SQL statement type, parameter count, error name/code). Raw database-engine messages are intentionally not forwarded verbatim because the database container already emits them at the source.
+
 ## Configuration
 
-| Variable    | Default             | Description                                            |
-| ----------- | ------------------- | ------------------------------------------------------ |
-| `LOG_LEVEL` | `info`              | Minimum log level: `debug`, `info`, `warn`, or `error` |
-| `LOG_FILE`  | `/app/logs/app.log` | Absolute path for the persistent log file              |
+| Variable     | Default             | Description                                                              |
+| ------------ | ------------------- | ------------------------------------------------------------------------ |
+| `LOG_LEVEL`  | `info`              | Minimum log level: `debug`, `info`, `warn`, or `error`                   |
+| `LOG_FILE`   | `/app/logs/app.log` | Absolute path for the persistent log file                                |
+| `LOG_FORMAT` | `pretty`            | Console output format: `pretty` for readable logs or `json` for raw JSON |

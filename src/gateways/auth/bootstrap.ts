@@ -82,7 +82,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.3.0",
+        version: "1.3.1",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -276,18 +276,28 @@ function createAuthGatewayRoutes(
                         );
                         if (!verified) {
                             await accountStore.delete(result.username);
-                            console.info(
-                                JSON.stringify({
-                                    level: "info",
+                            ctx.log?.(
+                                "info",
+                                "Deleted unverified account after 5-minute window.",
+                                {
                                     component: "auth-gateway",
-                                    message:
-                                        "Deleted unverified account after 5-minute window.",
                                     accountId: result.username,
-                                }),
+                                },
                             );
                         }
-                    } catch {
-                        // Cleanup errors are non-fatal.
+                    } catch (error) {
+                        ctx.log?.(
+                            "warn",
+                            "Failed to clean up unverified account after 5-minute window.",
+                            {
+                                component: "auth-gateway",
+                                accountId: result.username,
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        );
                     }
                 }, FIVE_MINUTES_MS);
                 timer.unref();
@@ -362,18 +372,17 @@ function createAuthGatewayRoutes(
             const isFounder = await accountStore
                 .isFounder(session.accountId)
                 .catch((error) => {
-                    console.warn(
-                        JSON.stringify({
-                            level: "warn",
+                    ctx.log?.(
+                        "warn",
+                        "Failed to resolve founder status during login.",
+                        {
                             component: "auth-gateway",
-                            message:
-                                "Failed to resolve founder status during login.",
                             accountId: session.accountId,
                             error:
                                 error instanceof Error
                                     ? error.message
                                     : String(error),
-                        }),
+                        },
                     );
                     // Founder status only affects optional UI routing; keep login available on lookup failure.
                     return false;

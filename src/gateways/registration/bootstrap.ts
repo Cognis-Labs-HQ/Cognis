@@ -93,6 +93,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         dbExecutor,
         dbType,
         accountStore,
+        log: ctx.log,
         canSendInviteEmail: canSendInviteEmail ?? (() => false),
         sendInviteEmail:
             sendInviteEmail ??
@@ -199,7 +200,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.1.0",
+        version: "1.1.1",
         description:
             "Registration workflows via pluggable invite/public adapters.",
         publisher: "Cognis Labs",
