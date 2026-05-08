@@ -1,29 +1,32 @@
 /**
- * Dashboard clock and timestamp-formatting helpers.
+ * Reusable clock display and timestamp-formatting helpers.
  *
- * This module centralises dashboard-specific rendering logic for:
- *   - member/last-login timestamp formatting with the dashboard fallback copy
- *   - digital/analogue clock markup generation
+ * This module centralises common UI helpers for:
+ *   - formatting dates/times with explicit fallback strings
+ *   - generating digital and analogue clock markup for a timezone
  *   - mounting a live clock that refreshes once per second
  *
  * Public exports:
- *   createDashboardDateFormatters(i18n) — returns dashboard date/datetime formatters.
- *   buildDigitalClockMarkup(now, tz)    — returns digital clock markup for the given timezone.
- *   buildAnalogueClockMarkup(now, tz)   — returns analogue clock SVG markup for the given timezone.
- *   mountClock(options)                 — mounts a ticking clock display and updates timezone label.
+ *   createDateTimeFormatters(options) — returns date/datetime formatter callbacks with configured fallbacks.
+ *   buildDigitalClockMarkup(now, tz)  — returns digital clock markup for the given timezone.
+ *   buildAnalogueClockMarkup(now, tz) — returns analogue clock SVG markup for the given timezone.
+ *   mountLiveClock(options)           — mounts a ticking clock display and updates timezone label.
  *
  * Usage:
- *   const { formatMemberSince, formatLastLogin } = createDashboardDateFormatters(i18n);
- *   mountClock({
+ *   const { formatDateValue, formatDateTimeValue } = createDateTimeFormatters({
+ *     dateFallback: i18n.t('ui.app.dashboard.never'),
+ *     dateTimeFallback: i18n.t('ui.app.dashboard.never'),
+ *   });
+ *   mountLiveClock({
  *     displayId: 'dashboard-digital-clock-display',
  *     tzId: 'dashboard-digital-clock-tz',
  *     renderClock: buildDigitalClockMarkup,
  *   });
  *
- * @param {{ t: (key: string) => string }} i18n
+ * @param {{ dateFallback?: string, dateTimeFallback?: string }} options
  * @returns {{
- *   formatMemberSince: (iso: string|null|undefined) => string,
- *   formatLastLogin: (iso: string|null|undefined) => string
+ *   formatDateValue: (iso: string|null|undefined) => string,
+ *   formatDateTimeValue: (iso: string|null|undefined) => string
  * }}
  */
 import {
@@ -32,12 +35,13 @@ import {
     getEffectiveTimezone,
 } from "./timestamp.js";
 
-export function createDashboardDateFormatters(i18n) {
+export function createDateTimeFormatters({
+    dateFallback = "",
+    dateTimeFallback = "",
+} = {}) {
     return {
-        formatMemberSince: (iso) =>
-            formatDate(iso, i18n.t("ui.app.dashboard.never")),
-        formatLastLogin: (iso) =>
-            formatDateTime(iso, i18n.t("ui.app.dashboard.never")),
+        formatDateValue: (iso) => formatDate(iso, dateFallback),
+        formatDateTimeValue: (iso) => formatDateTime(iso, dateTimeFallback),
     };
 }
 
@@ -152,7 +156,7 @@ export function buildDigitalClockMarkup(now, tz) {
  * @param {{ displayId: string, tzId?: string, renderClock: (now: Date, tz: string) => string }} options
  * @returns {void}
  */
-export function mountClock({ displayId, tzId, renderClock }) {
+export function mountLiveClock({ displayId, tzId, renderClock }) {
     const displayEl = document.querySelector(`#${displayId}`);
     const tzEl = tzId ? document.querySelector(`#${tzId}`) : null;
     if (!displayEl) return;

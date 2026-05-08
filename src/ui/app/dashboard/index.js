@@ -4,9 +4,9 @@ import { createPageComposer } from "../../reuse/page-composer.js";
 import {
     buildAnalogueClockMarkup,
     buildDigitalClockMarkup,
-    createDashboardDateFormatters,
-    mountClock,
-} from "../../reuse/dashboard-clocks.js";
+    createDateTimeFormatters,
+    mountLiveClock,
+} from "../../reuse/clock-display.js";
 
 const root = document.querySelector("#app");
 const i18n = await createI18n();
@@ -31,8 +31,10 @@ async function loadAccountInfo() {
 }
 
 const info = await loadAccountInfo();
-const { formatMemberSince, formatLastLogin } =
-    createDashboardDateFormatters(i18n);
+const { formatDateValue, formatDateTimeValue } = createDateTimeFormatters({
+    dateFallback: i18n.t("ui.app.dashboard.never"),
+    dateTimeFallback: i18n.t("ui.app.dashboard.never"),
+});
 
 const elements = [
     {
@@ -66,7 +68,7 @@ const elements = [
         <dt>${i18n.t("ui.app.dashboard.role")}</dt>
         <dd>${role}</dd>
         <dt>${i18n.t("ui.app.dashboard.member_since")}</dt>
-        <dd>${formatMemberSince(info?.createdAt ?? null)}</dd>
+        <dd>${formatDateValue(info?.createdAt ?? null)}</dd>
       </dl>
     `,
     },
@@ -77,7 +79,7 @@ const elements = [
         render: () => `
       <h3>${i18n.t("ui.app.dashboard.element.last_login.label")}</h3>
       <p class="dashboard-last-seen">
-        ${i18n.t("ui.app.dashboard.last_seen")}: <strong>${formatLastLogin(info?.lastLogin ?? null)}</strong>
+        ${i18n.t("ui.app.dashboard.last_seen")}: <strong>${formatDateTimeValue(info?.lastLogin ?? null)}</strong>
       </p>
     `,
     },
@@ -92,7 +94,7 @@ const elements = [
       </div>
     `,
         onRender: () => {
-            mountClock({
+            mountLiveClock({
                 displayId: "dashboard-digital-clock-display",
                 tzId: "dashboard-digital-clock-tz",
                 renderClock: buildDigitalClockMarkup,
@@ -110,7 +112,7 @@ const elements = [
       </div>
     `,
         onRender: () => {
-            mountClock({
+            mountLiveClock({
                 displayId: "dashboard-analogue-clock-display",
                 tzId: "dashboard-analogue-clock-tz",
                 renderClock: buildAnalogueClockMarkup,
