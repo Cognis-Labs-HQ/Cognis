@@ -31,28 +31,32 @@ export function initDateTimePrefs(
         onDirtyChange?.(currentTimezone !== savedTimezone);
     }
 
-    function buildTimezoneOptions() {
-        const options = [];
+    function buildTimezoneOptions({ detectedTimezone, selectedTimezone }) {
+        let zones = [];
         try {
-            const zones = Intl.supportedValuesOf("timeZone");
-            options.push(...zones);
+            if (typeof Intl.supportedValuesOf === "function") {
+                zones = Intl.supportedValuesOf("timeZone");
+            }
         } catch {
-            options.push(
-                "UTC",
-                "America/New_York",
-                "America/Chicago",
-                "America/Denver",
-                "America/Los_Angeles",
-                "Europe/London",
-                "Europe/Paris",
-                "Europe/Berlin",
-                "Asia/Tokyo",
-                "Asia/Shanghai",
-                "Asia/Kolkata",
-                "Australia/Sydney",
-            );
+            zones = [];
         }
-        return options;
+
+        if (!zones.length) {
+            const fallback = [selectedTimezone, detectedTimezone, "UTC"].filter(
+                (zone) => zone && zone !== "auto",
+            );
+            return [...new Set(fallback)];
+        }
+
+        if (
+            selectedTimezone &&
+            selectedTimezone !== "auto" &&
+            !zones.includes(selectedTimezone)
+        ) {
+            zones = [...zones, selectedTimezone];
+        }
+
+        return zones;
     }
 
     function init() {
@@ -69,7 +73,10 @@ export function initDateTimePrefs(
         autoOption.textContent = autoLabel;
         selectEl.append(autoOption);
 
-        const zones = buildTimezoneOptions();
+        const zones = buildTimezoneOptions({
+            detectedTimezone: effectiveTz,
+            selectedTimezone: currentTimezone,
+        });
         zones.forEach((tz) => {
             const opt = document.createElement("option");
             opt.value = tz;
