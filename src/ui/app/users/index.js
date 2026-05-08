@@ -331,7 +331,7 @@ function bindUsersInteractions() {
                             );
                         }
                     } catch {
-                        // fall through to generic message (lines above)
+                        // fall through to generic invite_failed message assigned at line 325
                     }
                     showToast(errorMessage, { variant: "error" });
                 },
