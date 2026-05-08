@@ -1483,6 +1483,9 @@ changesBar = createUnsavedChangesBar(floatingSlot, {
         try {
             await securitySection.save();
             changesBar.markDirty("security", false);
+            gateways = await loadGateways();
+            allAdapters = await loadAllAdapters(gateways);
+            composer.refresh(elements);
             showToast(i18n.t("ui.app.admin.security.saved"), {
                 variant: "success",
             });
