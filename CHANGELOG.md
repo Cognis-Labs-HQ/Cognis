@@ -21,6 +21,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 - Theme toggle persistence is now auth-aware: authenticated pages still sync `ui-preferences`, while unauthenticated pages (login/register) only update the local theme cookie/localStorage and no longer attempt 401ing preference reads/writes. Theme-toggle binding is also idempotent so auth pages do not double-bind the button. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
 - Timed toasts now render a thin horizontal timeout bar across the top edge that shrinks leftward until dismissal; permanent toasts keep a manual close button. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
+- Login and Registration intro subtitle markup now uses `auth-intro` and shared copy (`Try learning differently`) to keep both auth pages consistent. ([6f0f3db](https://github.com/le-firehawk/Cognis/commit/6f0f3db))
 - `login-template-box` CSS class renamed to `cognis-ad-frame` across `login.css` and the login page template. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 - Typing-showcase inter-sample pause (after erasing one phrase before typing the next) extended from 400 ms to 60 s on both the login and registration pages. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 - Login form `preferenceKey` simplified from `login-layout-v2` to `login-layout`; register form from `register-layout-v2` to `register-layout`. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
@@ -33,6 +34,8 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - Login/register public pages no longer attempt authenticated `ui-preferences` or `{page}-layout` fetches when there is no access token, eliminating the 401 spam that interfered with login-page behaviour. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
+- `loadAuthTypingSamples` no longer throws `ReferenceError: key is not defined` when resolving translated typing keys, restoring login/register startup and invite-token invalid toast rendering. ([6f0f3db](https://github.com/le-firehawk/Cognis/commit/6f0f3db))
+- Registration invite pages now treat empty `?token=` as invalid and shade/disable the full registration form shell when invite tokens are invalid/expired. ([6f0f3db](https://github.com/le-firehawk/Cognis/commit/6f0f3db))
 - Invalid registration tokens now show a permanent error toast (`This invitation token is invalid or has expired.`) and render the registration form in a fully disabled state rather than hiding it entirely. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 - Deleted users' email addresses were not released from `user_emails` (no cascade delete), causing "email already registered" errors on re-invite. Resolved by `006_user_emails_cascade` migration. ([381ad89](https://github.com/le-firehawk/Cognis/commit/381ad89))
 
