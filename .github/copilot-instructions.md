@@ -209,6 +209,7 @@ When applying a symbol or icon (e.g. as a UI label, button decoration, or status
 ## i18n requirements
 
 - Resolve all user-facing text via language keys from XML resources; do not hardcode UI copy in JS/HTML.
+- Route all user-facing date/time output through `src/ui/reuse/timestamp.js` (for example `formatDate` / `formatDateTime`), including Administration surfaces that render DB-backed values.
 - Use `ui.reuse.generic.*` for standalone action words and common UI labels that are not feature-specific (e.g. `save`, `discard`, `reset`, `refresh`, `add`, `remove`, `done`, `enable`, `disable`, `id`, `version`, `class`, `actions`). Check for an existing `ui.reuse.generic.*` key before introducing a new app-specific one.
 - Use shared `ui.reuse.*` keys for labels with meaningful context (section headings, menu items, named features). Reserve `ui.reuse.generic.*` strictly for context-free words usable in any feature area.
 - Module-owned locale keys must be namespaced as `module.<moduleId>.*` and loaded without leaking into global namespaces.
