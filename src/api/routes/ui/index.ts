@@ -483,9 +483,16 @@ export function createUiRoutes(
             return true;
         }
 
-        if (!url.pathname.startsWith("/static/")) return false;
+        let relative: string | null = null;
 
-        const relative = url.pathname.replace("/static/", "");
+        if (url.pathname.startsWith("/assets/")) {
+            relative = `assets/${url.pathname.slice("/assets/".length)}`;
+        } else if (url.pathname.startsWith("/static/")) {
+            relative = url.pathname.replace("/static/", "");
+        }
+
+        if (relative === null) return false;
+
         if (!/^[a-zA-Z0-9_./-]+$/.test(relative) || relative.includes("..")) {
             res.writeHead(400, { "content-type": "application/json" });
             res.end(
