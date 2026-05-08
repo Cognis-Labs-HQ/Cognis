@@ -17,3 +17,12 @@ test("page composer refresh preserves existing elements when called without args
         /function refresh\(newElements\)[\s\S]*?if \(Array\.isArray\(newElements\)\)\s*\{\s*elements = newElements;\s*\}[\s\S]*?render\(\);/m,
     );
 });
+
+test("page composer invokes element-level onRender callbacks", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.match(source, /el\?\.onRender\?\.\(\);/);
+});

@@ -72,6 +72,7 @@
  *     id: string,
  *     label: string,
  *     render: () => string,
+ *     onRender?: () => void,
  *     pinned?: boolean,
  *     gridSize?: { default: [number, number], min: [number, number], max?: [number, number] | 'full' | 'half' | ['half'|number, 'half'|number] },
  *   }>,
@@ -2184,6 +2185,12 @@ export function createPageComposer(
             createElementsPanel();
         }
 
+        const renderedElementIds = visiblePlacements.map((p) => p.id);
+        for (const id of renderedElementIds) {
+            const el = elements.find((entry) => entry.id === id);
+            el?.onRender?.();
+        }
+
         onRender?.();
     }
 
@@ -2284,6 +2291,11 @@ export function createPageComposer(
         contentGrid.innerHTML = html;
         bindSubPageComposerEvents();
         syncEditToggle();
+        for (const id of effectiveLayout.order) {
+            if (effectiveLayout.hidden.includes(id)) continue;
+            const el = elements.find((entry) => entry.id === id);
+            el?.onRender?.();
+        }
         onRender?.();
         const activeEl = elements.find((e) => e.id === activeSubPageId);
         if (activeEl?.subComposerOptions) {
