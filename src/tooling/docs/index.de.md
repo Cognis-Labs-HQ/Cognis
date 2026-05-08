@@ -31,7 +31,7 @@ Alles Linting läuft über `npm run lint`, das beide Lint-Skripte in Folge ausf�
 | `system:*`           | `system:health`, `system:info`                                                                |
 | `modules:*`          | `modules:list`, `modules:enable`, `modules:disable`, `modules:install`                        |
 | `gateway:*`          | `gateway:list`                                                                                |
-| `api:*`              | `api:token`                                                                                   |
+| `api:*`              | `api:token` (erstellt ein temporäres 1‑Stunden-Admin-Notfalltoken für curl)                   |
 
 ## Konfiguration
 

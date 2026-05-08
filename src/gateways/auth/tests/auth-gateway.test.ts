@@ -9,6 +9,8 @@ import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../../../api/auth/access-tokens.js";
 import { SqliteExecutor } from "../../../gateways/db/executor.js";
 
+type HttpIncomingMessage = import("node:http").IncomingMessage;
+
 function makeInMemoryDb() {
     return {
         execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
@@ -493,7 +495,7 @@ test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user"
     });
 
     const staleIssuedAt = Date.now() - 2 * 60 * 60 * 1000;
-    const token = issueAccessToken("verify-user", "admin", 7200, {
+    const token = issueAccessToken("verify-user", "admin", 10800, {
         issuedAt: staleIssuedAt,
     });
     const chunks = [
@@ -604,6 +606,92 @@ test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
     assert.ok(handled, "verify endpoint should handle the request");
     assert.equal(res.status, 401);
     assert.match(res.payload, /unauthorized/);
+});
+
+test("POST /api/v1/auth/emergency-token requires admin auth", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const userToken = issueAccessToken("regular-user", "user", 60);
+    const req = {
+        method: "POST",
+        headers: { authorization: `Bearer ${userToken}` },
+    } as unknown as HttpIncomingMessage;
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        req,
+        "/api/v1/auth/emergency-token",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 403);
+    assert.match(res.payload, /forbidden/);
+});
+
+test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        dbType: "sqlite",
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const req = {
+        method: "POST",
+        headers: { authorization: `Bearer ${adminToken}` },
+    } as unknown as HttpIncomingMessage;
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        req,
+        "/api/v1/auth/emergency-token",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload) as {
+        data: {
+            token: string;
+            role: string;
+            ttlSeconds: number;
+            expiresAt: string;
+        };
+    };
+    assert.ok(body.data.token.startsWith("cgs_"));
+    assert.equal(body.data.role, "admin");
+    assert.equal(body.data.ttlSeconds, 3600);
+    const expiresAtMs = Date.parse(body.data.expiresAt);
+    const expectedExpiresAtMs = Date.now() + body.data.ttlSeconds * 1000;
+    const MAX_EXPIRY_DRIFT_MS = 5_000;
+    assert.ok(expiresAtMs > Date.now());
+    assert.ok(
+        Math.abs(expiresAtMs - expectedExpiresAtMs) <= MAX_EXPIRY_DRIFT_MS,
+    );
 });
 
 test("registration:public:register capability is looked up lazily in register handler", async () => {

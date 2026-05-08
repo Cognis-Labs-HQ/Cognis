@@ -203,35 +203,20 @@ register(
 );
 
 register(
-    "api:request",
-    async ({ args, apiBaseUrl, getApiToken }) => {
-        const [method, route, ...rest] = args;
-        if (!method || !route) {
-            throw new Error(
-                "Usage: cognisctl api:request <method> <route> [--body-json <json>]",
-            );
-        }
-
-        let body: unknown;
-        for (let i = 0; i < rest.length; i += 1) {
-            if (rest[i] === "--body-json") {
-                const raw = rest[i + 1];
-                if (!raw) throw new Error("Missing value for --body-json");
-                body = JSON.parse(raw);
-                i += 1;
-            }
-        }
-
-        const payload = await apiRequest(apiBaseUrl, route, {
-            method: method.toUpperCase(),
-            body,
-            apiToken: await getApiToken(),
-        });
+    "api:token",
+    async ({ apiBaseUrl, getApiToken }) => {
+        const payload = await apiPost(
+            apiBaseUrl,
+            "/api/v1/auth/emergency-token",
+            undefined,
+            await getApiToken(),
+        );
         printStructured(payload);
     },
     {
-        usage: "cognisctl api:request <method> <route> [--body-json <json>]",
-        description: "Make an authenticated request to any API route.",
+        usage: "cognisctl api:token",
+        description:
+            "Generate a temporary privileged API token (1h) for emergency curl use.",
     },
 );
 

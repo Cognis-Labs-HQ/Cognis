@@ -64,7 +64,7 @@ Commands are grouped by namespace:
 | `system:*`           | `system:health`, `system:info`                                                                |
 | `modules:*`          | `modules:list`, `modules:enable`, `modules:disable`, `modules:install`                        |
 | `gateway:*`          | `gateway:list`                                                                                |
-| `api:*`              | `api:token`                                                                                   |
+| `api:*`              | `api:token` (mints a temporary 1-hour admin emergency token for curl)                         |
 
 All CLI commands that require authentication read the API token from the path specified in `COGNIS_CLI_TOKEN_PATH`.
 
