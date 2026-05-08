@@ -64,3 +64,15 @@ test("login and register disable layout preference persistence", () => {
     assert.match(loginSource, /persistLayoutPreferences:\s*false/);
     assert.match(registerSource, /persistLayoutPreferences:\s*false/);
 });
+
+test("register page renders invalid-token intro message instead of disabled form shell", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/register/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /if \(isInvalid\) \{\s*messageHtml = `<p class="auth-intro">\$\{escapeHtml\(i18n\.t\("ui\.app\.register\.error\.invalid_token"\)\)\}<\/p>`;/,
+    );
+});

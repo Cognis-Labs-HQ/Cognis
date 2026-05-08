@@ -35,6 +35,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 - Login/register public pages no longer attempt authenticated `ui-preferences` or `{page}-layout` fetches when there is no access token, eliminating the 401 spam that interfered with login-page behaviour. ([a04da95](https://github.com/le-firehawk/Cognis/commit/a04da95))
 - Login/register auth pages now explicitly disable composer layout-preference persistence and theme `ui-preferences` API sync, preventing stale-token 401 preference calls while preserving local theme toggle behavior and typing-text rendering. ([ebe672e](https://github.com/le-firehawk/Cognis/commit/ebe672e))
+- Auth-page composer now invokes per-element `onRender` callbacks in rendered sections, restoring login submit interception and typing-showcase startup on login/register pages. ([692465b](https://github.com/le-firehawk/Cognis/commit/692465b))
 - `loadAuthTypingSamples` no longer throws `ReferenceError: key is not defined` when resolving translated typing keys, restoring login/register startup and invite-token invalid toast rendering. ([6f0f3db](https://github.com/le-firehawk/Cognis/commit/6f0f3db))
 - Registration invite pages now treat empty `?token=` as invalid and shade/disable the full registration form shell when invite tokens are invalid/expired. ([6f0f3db](https://github.com/le-firehawk/Cognis/commit/6f0f3db))
 - Registration invalid-token permanent toast is now guarded against composer re-renders so duplicate persistent error toasts are not created. ([5a88245](https://github.com/le-firehawk/Cognis/commit/5a88245))

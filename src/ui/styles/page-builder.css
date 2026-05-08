@@ -134,6 +134,14 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     padding: 0;
 }
 
+.app-page--frameless .content-panel > *,
+.app-page--frameless .content-panel > :first-child,
+.app-page--frameless .content-panel > :last-child,
+.app-page--frameless .content-panel > .content-section,
+.app-page--frameless .content-section {
+    padding: 0;
+}
+
 .toolbar,
 .content-panel {
     border: 0;

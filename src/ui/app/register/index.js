@@ -81,14 +81,15 @@ function renderRegisterShell() {
     const isInviteFlow = Boolean(token);
     const isInvalid = isInviteFlow && tokenInvalid;
     const canRenderForm = isInviteFlow
-        ? Boolean(inviteData) || isInvalid
+        ? Boolean(inviteData) && !isInvalid
         : openRegistrationsEnabled;
-    const formDisabled = isInvalid;
 
     let formHtml = "";
     let messageHtml = "";
 
-    if (!canRenderForm) {
+    if (isInvalid) {
+        messageHtml = `<p class="auth-intro">${escapeHtml(i18n.t("ui.app.register.error.invalid_token"))}</p>`;
+    } else if (!canRenderForm) {
         const messageKey = "ui.app.register.closed";
         messageHtml = `<p class="auth-intro">${escapeHtml(i18n.t(messageKey))}</p>`;
     } else {
@@ -103,16 +104,15 @@ function renderRegisterShell() {
         const lockedEmail = inviteEmail || prefilledEmail;
         const emailValue = lockedEmail || "";
         const emailLocked = Boolean(lockedEmail);
-        const emailReadonly = emailLocked || formDisabled ? "disabled" : "";
+        const emailReadonly = emailLocked ? "disabled" : "";
         const emailLockedClass = emailLocked ? " auth-input--locked" : "";
-        const disabledAttr = formDisabled ? "disabled" : "";
         const countdownHtml = inviteData?.expiresAt
             ? `<p id="register-countdown" class="auth-intro" style="font-size:1rem;margin-top:4px"></p>`
             : "";
         formHtml = `
       ${invitedText ? `<p class="auth-intro">${escapeHtml(invitedText)}</p>` : ""}
       ${countdownHtml}
-      <div class="auth-form-shell${formDisabled ? " auth-form-shell--disabled" : ""}">
+      <div class="auth-form-shell">
         <form id="register-form" class="stack auth-form">
           <label>
             <span>${escapeHtml(i18n.t("ui.app.register.email"))}</span>
@@ -120,17 +120,17 @@ function renderRegisterShell() {
           </label>
           <label>
             <span>${escapeHtml(i18n.t("ui.app.register.username"))}</span>
-            <input name="username" required ${disabledAttr} />
+            <input name="username" required />
           </label>
           <label>
             <span>${escapeHtml(i18n.t("ui.app.register.display_name"))}</span>
-            <input name="displayName" ${disabledAttr} />
+            <input name="displayName" />
           </label>
           <label>
             <span>${escapeHtml(i18n.t("ui.app.register.password"))}</span>
-            <input name="password" type="password" required ${disabledAttr} />
+            <input name="password" type="password" required />
           </label>
-          <button type="submit" class="btn-confirm btn-animated" ${disabledAttr}>${escapeHtml(i18n.t("ui.app.register.submit"))}</button>
+          <button type="submit" class="btn-confirm btn-animated">${escapeHtml(i18n.t("ui.app.register.submit"))}</button>
         </form>
       </div>
     `;
@@ -176,7 +176,7 @@ const composer = createPageComposer(root, {
             id: "register-shell",
             label: i18n.t("ui.app.register.form_title"),
             pinned: true,
-            gridSize: { default: [12, 8], min: [8, 6], max: "full" },
+            gridSize: { default: [12, 5], min: [8, 4], max: "full" },
             render: () => renderRegisterShell(),
             onRender: () => {
                 runTypingShowcase(typingSamples);
