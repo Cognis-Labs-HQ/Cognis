@@ -187,7 +187,9 @@ function createAuthGatewayRoutes(
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
-                    data: { registrationsEnabled: security.registrationsEnabled },
+                    data: {
+                        registrationsEnabled: security.registrationsEnabled,
+                    },
                 }),
             );
             return true;

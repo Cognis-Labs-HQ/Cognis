@@ -13,7 +13,9 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
                             id: "token-1",
                             inviter_account_id: "inviter",
                             invitee_email: "invitee@example.com",
-                            expires_at: new Date(Date.now() + 60_000).toISOString(),
+                            expires_at: new Date(
+                                Date.now() + 60_000,
+                            ).toISOString(),
                             display_name: "Inviter",
                         },
                     ],

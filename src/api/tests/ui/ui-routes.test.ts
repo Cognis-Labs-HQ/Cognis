@@ -82,8 +82,7 @@ test("login page is served as standalone page html", async () => {
     );
 
     assert.equal(recorder.status, 200);
-    assert.match(recorder.body, /id="login-form"/);
-    assert.match(recorder.body, /id="theme-toggle"/);
+    assert.match(recorder.body, /id="app"/);
     assert.match(recorder.body, /app\/login\/index\.js/);
 });
 

@@ -144,10 +144,7 @@ async function buildMessage(
     const template = await loadEmailTemplate();
     const htmlBody = template
         .replace(/\{\{subject\}\}/g, escapeHtmlForEmail(subject))
-        .replace(
-            /\{\{body\}\}/g,
-            renderBodyWithLinks(body),
-        )
+        .replace(/\{\{body\}\}/g, renderBodyWithLinks(body))
         .replace(/\{\{verifyButton\}\}/g, verifyButton)
         .replace(/\{\{iconUrl\}\}/g, escapeHtmlForEmail(iconUrl))
         .replace(/\{\{externalHost\}\}/g, escapeHtmlForEmail(externalHost))

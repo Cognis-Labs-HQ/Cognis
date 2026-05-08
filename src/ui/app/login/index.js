@@ -79,7 +79,7 @@ async function loadLoginMethods() {
         );
 
         if (credentialProviders.length > 1 && toggleContainer) {
-            toggleContainer.style.display = "";
+            toggleContainer.hidden = false;
             toggleContainer.setAttribute(
                 "aria-label",
                 i18n.t("ui.app.login.provider.toggle.aria"),
@@ -247,9 +247,12 @@ async function enforceRequiredEmailSetup(accountId) {
                     variant: "error",
                 });
             } else if (code === "rate_limited") {
-                showToast(i18n.t("ui.app.settings.emails_verify_rate_limited"), {
-                    variant: "error",
-                });
+                showToast(
+                    i18n.t("ui.app.settings.emails_verify_rate_limited"),
+                    {
+                        variant: "error",
+                    },
+                );
             } else if (code === "smtp_unavailable") {
                 showToast(i18n.t("ui.app.settings.emails_verify_unavailable"), {
                     variant: "error",
@@ -295,7 +298,7 @@ function renderLoginShell() {
               <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
               <input name="password" type="password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
             </label>
-            <div id="auth-provider-toggle" class="auth-provider-toggle" style="display: none"></div>
+            <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
             <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
           </form>
           <div id="sso-buttons" class="sso-buttons"></div>

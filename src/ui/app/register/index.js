@@ -144,7 +144,9 @@ const composer = createPageComposer(root, {
                         .trim()
                         .toLowerCase();
                     const username = String(form.username.value ?? "").trim();
-                    const displayName = String(form.displayName.value ?? "").trim();
+                    const displayName = String(
+                        form.displayName.value ?? "",
+                    ).trim();
                     const password = String(form.password.value ?? "");
                     try {
                         if (token) {
@@ -152,7 +154,9 @@ const composer = createPageComposer(root, {
                                 "/api/v1/registration/redeem",
                                 {
                                     method: "POST",
-                                    headers: { "content-type": "application/json" },
+                                    headers: {
+                                        "content-type": "application/json",
+                                    },
                                     body: JSON.stringify({
                                         token,
                                         username,
@@ -176,24 +180,33 @@ const composer = createPageComposer(root, {
                                 return;
                             }
                         } else {
-                            const response = await fetch("/api/v1/auth/register", {
-                                method: "POST",
-                                headers: { "content-type": "application/json" },
-                                body: JSON.stringify({
-                                    username,
-                                    password,
-                                    email,
-                                }),
-                            });
+                            const response = await fetch(
+                                "/api/v1/auth/register",
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "content-type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                        username,
+                                        password,
+                                        email,
+                                    }),
+                                },
+                            );
                             if (!response.ok) {
-                                const body = await response.json().catch(() => null);
+                                const body = await response
+                                    .json()
+                                    .catch(() => null);
                                 const code = String(
                                     body?.error?.code ?? "register_failed",
                                 );
                                 const message =
                                     code === "registrations_disabled"
                                         ? i18n.t("ui.app.register.closed")
-                                        : i18n.t("ui.app.register.error.generic");
+                                        : i18n.t(
+                                              "ui.app.register.error.generic",
+                                          );
                                 showToast(message, { variant: "error" });
                                 return;
                             }
