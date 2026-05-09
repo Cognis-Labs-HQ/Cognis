@@ -2729,20 +2729,8 @@ export function createPageComposer(
                     );
                 }
 
-                function syncToolbarViewportState() {
-                    toolbarEl.classList.toggle(
-                        "toolbar--mobile-mode",
-                        isMobileDrawerMode(),
-                    );
-                    if (!isMobileDrawerMode() && mobileDrawerOpen) {
-                        setMobileDrawerOpen(false, { restoreFocus: false });
-                    }
-                    setToolbarCollapsedState(collapsed);
-                }
-
                 toolbarEl.insertBefore(collapseBtn, toolbarEl.firstChild);
                 setToolbarCollapsedState(collapsed);
-                syncToolbarViewportState();
 
                 collapseBtn.addEventListener("click", () => {
                     const nowCollapsed =
@@ -2756,15 +2744,6 @@ export function createPageComposer(
                 mobileBackdrop.addEventListener("click", () => {
                     setMobileDrawerOpen(false);
                 });
-                document.addEventListener("keydown", (event) => {
-                    if (event.key === "Escape") {
-                        setMobileDrawerOpen(false, { restoreFocus: false });
-                    }
-                });
-                mobileMedia.addEventListener(
-                    "change",
-                    syncToolbarViewportState,
-                );
 
                 root.querySelectorAll("[data-composer-scroll]").forEach(
                     (btn) => {

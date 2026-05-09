@@ -188,7 +188,7 @@
 .nav-drawer-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.48);
+    background: var(--drawer-backdrop);
     z-index: 590;
     pointer-events: none;
     visibility: hidden;

@@ -321,10 +321,6 @@ code {
     margin-bottom: 0;
 }
 
-.toolbar--mobile-mode {
-    will-change: transform;
-}
-
 .toolbar-mobile-toggle {
     display: none;
     align-items: center;
@@ -344,7 +340,7 @@ code {
 .toolbar-mobile-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(5, 12, 24, 0.58);
+    background: var(--drawer-backdrop);
     opacity: 0;
     pointer-events: none;
     visibility: hidden;
@@ -389,9 +385,15 @@ code {
     .main-window--with-toolbar .toolbar > .toolbar-collapse-btn {
         display: none;
     }
-    .toolbar--collapsed {
-        width: 36px;
+    .main-window--with-toolbar .toolbar.toolbar--collapsed {
+        width: min(320px, 88vw);
         min-width: 0;
+        overflow-y: auto;
+    }
+    .main-window--with-toolbar
+        .toolbar.toolbar--collapsed
+        > *:not(.toolbar-collapse-btn) {
+        display: block;
     }
 }
 
