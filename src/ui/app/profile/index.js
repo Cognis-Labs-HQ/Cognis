@@ -939,6 +939,10 @@ export async function mount(rootEl, { signal } = {}) {
         bannerMenuCloseHandler = null;
     }
 
+    function isAborted() {
+        return signal?.aborted ?? false;
+    }
+
     root = rootEl;
     i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.profile");
@@ -970,15 +974,21 @@ export async function mount(rootEl, { signal } = {}) {
         profile = result;
     }
 
+    if (isAborted()) return;
+
     [followers, following, posts] = await Promise.all([
         loadFollowers(profile?.handle),
         loadFollowing(profile?.handle),
         isOwnProfile ? loadOwnPosts() : loadUserPosts(profile?.handle),
     ]);
 
+    if (isAborted()) return;
+
     avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
     bannerBlobUrl = await loadImageAsBlob(profile?.bannerKey);
     bannerHeight = await loadBannerHeightPreference();
+
+    if (isAborted()) return;
 
     elements = [
         {

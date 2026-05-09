@@ -63,14 +63,15 @@ function hasLanguagePriorityChanged(prev, next) {
     return next.some((lang, i) => lang !== prev[i]);
 }
 
+const LANGUAGE_RELOAD_DELAY_MS = 400;
+
 export async function mount(root, { signal } = {}) {
-    let languagePriority = readPreferredLanguages();
+    let loadedPrefs = await loadPrefs().catch(() => null);
+    let languagePriority = Array.isArray(loadedPrefs?.languagePriority)
+        ? loadedPrefs.languagePriority
+        : readPreferredLanguages();
     const i18n = await createI18n({ preferredLanguages: languagePriority });
     applyDocumentTitle(i18n, "ui.page.title.settings");
-
-    let loadedPrefs = await loadPrefs().catch(() => null);
-    if (Array.isArray(loadedPrefs?.languagePriority))
-        languagePriority = loadedPrefs.languagePriority;
 
     applyTimezoneToLocalStorage(
         loadedPrefs?.timezone ?? null,
@@ -445,8 +446,11 @@ export async function mount(root, { signal } = {}) {
             const next = prefs.languagePriority ?? [];
             const prev = languagePriority ?? [];
             if (hasLanguagePriorityChanged(prev, next)) {
-                // Brief pause so the success toast is visible before the page reloads.
-                await new Promise((resolve) => setTimeout(resolve, 400));
+                // Brief pause so the success toast is visible before the page
+                // reloads (see LANGUAGE_RELOAD_DELAY_MS).
+                await new Promise((resolve) =>
+                    setTimeout(resolve, LANGUAGE_RELOAD_DELAY_MS),
+                );
                 window.location.reload();
             }
         },

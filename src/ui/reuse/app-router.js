@@ -18,9 +18,14 @@
  * Double-mount guard: when the router imports a page module for the first
  * time, the browser evaluates its top-level code, including the module-level
  * `await mount(...)` call used for direct URL loads. To prevent that from
- * running during SPA navigation, the router sets `globalThis.__spaRouter =
- * true` around `route.load()` and each page guards its direct-load call with
- * `if (!globalThis.__spaRouter) await mount(...)`.
+ * running during SPA navigation, the router maintains `globalThis.__spaRouter`
+ * (a boolean) and `globalThis.__spaRouterCount` (a reference count). The count
+ * is incremented before each `route.load()` and decremented in its finally
+ * block; `__spaRouter` is set to true on the first concurrent import and
+ * cleared back to false only when the count reaches zero. Because JavaScript
+ * is single-threaded, the increment executes atomically before any await —
+ * there is no race between concurrent calls to loadRoute(). Each page guards
+ * its direct-load call with `if (!globalThis.__spaRouter)`.
  *
  * @param {HTMLElement} root — the #app element.
  * @returns {void}
@@ -131,12 +136,16 @@ async function loadRoute(path) {
         ? Promise.all(route.stylesheets.map(ensurePageStylesheet))
         : Promise.resolve();
 
+    globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
     globalThis.__spaRouter = true;
     let mod;
     try {
         mod = await route.load();
     } finally {
-        globalThis.__spaRouter = false;
+        globalThis.__spaRouterCount--;
+        if (globalThis.__spaRouterCount === 0) {
+            globalThis.__spaRouter = false;
+        }
     }
     await stylesheetsReady;
     // If another navigation started while loading, bail out.
@@ -192,6 +201,9 @@ export function initRouter(root) {
         // If navigating within the same page section (e.g. docs internal
         // pushState) and this wasn't a router-level push, let the page's
         // own popstate handler deal with it (handled by AbortSignal cleanup).
+        // `event.state?.routerPage` is set by navigateTo() via history.pushState,
+        // so its presence means the router itself triggered this history entry and
+        // must handle the transition even if the base path hasn't changed.
         if (route.base === _currentBase && !event.state?.routerPage) return;
         await loadRoute(path);
     });

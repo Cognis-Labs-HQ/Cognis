@@ -10,6 +10,11 @@
  *                                href if not already present, and returns
  *                                a Promise that resolves once the sheet is
  *                                ready (load event) or has already loaded.
+ *                                If the sheet fails to load (network error,
+ *                                404, etc.) the promise still resolves rather
+ *                                than rejecting, so that a stylesheet failure
+ *                                never prevents the page from mounting. The
+ *                                error is logged to console.error.
  *
  * Usage:
  *   import { ensurePageStylesheet } from '../reuse/page-styles.js';

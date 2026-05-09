@@ -1509,7 +1509,7 @@ export async function mount(rootEl, { signal } = {}) {
             }
         },
         onDiscard: () => {
-            securitySection.discard();
+            securitySection?.discard();
         },
     });
 

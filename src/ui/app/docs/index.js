@@ -97,7 +97,7 @@ export async function mount(root, { signal } = {}) {
         if (docEl && activeHtml !== null) docEl.innerHTML = activeHtml;
     }
 
-    async function showDoc(slug, pushHistory = true, { signal } = {}) {
+    async function showDoc(slug, { pushHistory = true, signal } = {}) {
         const langs = readPreferredLanguages().join(",");
         try {
             activeHtml = await loadMarkdownDocumentHtml(
@@ -191,7 +191,7 @@ export async function mount(root, { signal } = {}) {
             if (!slug) return;
 
             event.preventDefault();
-            await showDoc(slug, true, { signal });
+            await showDoc(slug, { pushHistory: true, signal });
         },
         { signal },
     );
@@ -201,14 +201,14 @@ export async function mount(root, { signal } = {}) {
         (event) => {
             const slug = event.state?.slug;
             if (slug) {
-                showDoc(slug, false);
+                showDoc(slug, { pushHistory: false });
             } else {
                 const subpath = window.location.pathname.replace(
                     /^\/docs\/?/,
                     "",
                 );
                 const fallback = resolveDefaultSlug(subpath, docs);
-                if (fallback) showDoc(fallback, false);
+                if (fallback) showDoc(fallback, { pushHistory: false });
             }
         },
         { signal },
@@ -218,7 +218,7 @@ export async function mount(root, { signal } = {}) {
         const subpath = window.location.pathname.replace(/^\/docs\/?/, "");
         return resolveDefaultSlug(subpath, docs);
     })();
-    if (defaultDoc) await showDoc(defaultDoc, false);
+    if (defaultDoc) await showDoc(defaultDoc, { pushHistory: false });
 }
 
 if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
