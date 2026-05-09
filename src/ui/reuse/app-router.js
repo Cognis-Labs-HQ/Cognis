@@ -82,7 +82,13 @@ async function loadRoute(path) {
     _currentBase = route.base;
     const { signal } = _mountController;
 
-    const mod = await route.load();
+    globalThis.__spaRouter = true;
+    let mod;
+    try {
+        mod = await route.load();
+    } finally {
+        globalThis.__spaRouter = false;
+    }
     // If another navigation started while the module was loading, bail out.
     if (signal.aborted) return false;
     try {

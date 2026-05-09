@@ -174,19 +174,24 @@ export async function mount(root, { signal } = {}) {
         });
     });
 
-    root.addEventListener("click", async (event) => {
-        const link = event.target.closest("a[href]");
-        if (!link || !link.closest("#doc")) return;
+    root.addEventListener(
+        "click",
+        async (event) => {
+            const link = event.target.closest("a[href]");
+            if (!link || !link.closest("#doc")) return;
 
-        const href = link.getAttribute("href") || "";
-        if (href.startsWith("http://") || href.startsWith("https://")) return;
+            const href = link.getAttribute("href") || "";
+            if (href.startsWith("http://") || href.startsWith("https://"))
+                return;
 
-        const slug = normalizeDocSlug(href);
-        if (!slug) return;
+            const slug = normalizeDocSlug(href);
+            if (!slug) return;
 
-        event.preventDefault();
-        await showDoc(slug);
-    });
+            event.preventDefault();
+            await showDoc(slug);
+        },
+        { signal },
+    );
 
     window.addEventListener(
         "popstate",
@@ -213,4 +218,4 @@ export async function mount(root, { signal } = {}) {
     if (defaultDoc) await showDoc(defaultDoc, false);
 }
 
-await mount(document.querySelector("#app"));
+if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));

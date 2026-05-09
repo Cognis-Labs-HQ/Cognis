@@ -1043,4 +1043,4 @@ export async function mount(rootEl, { signal } = {}) {
     await composer.init();
 }
 
-await mount(document.querySelector("#app"));
+if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));

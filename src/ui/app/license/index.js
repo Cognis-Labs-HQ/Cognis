@@ -197,4 +197,4 @@ export async function mount(root) {
     });
 }
 
-await mount(document.querySelector("#app"));
+if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
