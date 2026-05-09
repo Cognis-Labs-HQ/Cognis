@@ -9,6 +9,8 @@
     padding: 6px;
     display: grid;
     gap: 4px;
+    box-sizing: border-box;
+    max-width: calc(100vw - 28px);
 }
 
 .hamburger-menu-item {

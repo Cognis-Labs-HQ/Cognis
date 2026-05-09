@@ -60,9 +60,45 @@ export async function openHamburgerMenu(button, { items }) {
         menu.className = "hamburger-menu";
         menu.setAttribute("role", "menu");
         const rect = button.getBoundingClientRect();
+        const parentRect =
+            button.parentElement?.getBoundingClientRect() ?? null;
+        const viewportPadding = 14;
+        const isMobile = window.matchMedia("(max-width: 640px)").matches;
+        const maxMobileWidth = parentRect
+            ? Math.max(
+                  0,
+                  Math.floor(
+                      Math.min(
+                          parentRect.width,
+                          window.innerWidth - viewportPadding * 2,
+                      ),
+                  ),
+              )
+            : 0;
+        if (isMobile && maxMobileWidth > 0) {
+            menu.style.minWidth = "0";
+            menu.style.width = `${maxMobileWidth}px`;
+            menu.style.maxWidth = `${maxMobileWidth}px`;
+        }
         menu.style.top = `${rect.bottom + window.scrollY + 4}px`;
-        menu.style.left = `${rect.right + window.scrollX}px`;
-        menu.style.transform = "translateX(-100%)";
+        const parentLeft = parentRect
+            ? parentRect.left + window.scrollX
+            : viewportPadding + window.scrollX;
+        const parentRight = parentRect
+            ? parentRect.right + window.scrollX
+            : rect.right + window.scrollX;
+        const rightEdge = Math.min(
+            rect.right + window.scrollX,
+            parentRight,
+            window.scrollX + window.innerWidth - viewportPadding,
+        );
+        if (isMobile && maxMobileWidth > 0) {
+            menu.style.left = `${Math.max(parentLeft, rightEdge - maxMobileWidth)}px`;
+            menu.style.transform = "none";
+        } else {
+            menu.style.left = `${rightEdge}px`;
+            menu.style.transform = "translateX(-100%)";
+        }
         const menuItems = Array.isArray(items) ? items : [];
         menu.innerHTML = menuItems
             .map(
