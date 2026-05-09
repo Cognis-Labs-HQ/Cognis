@@ -132,12 +132,10 @@ test("createInternalNotificationSenderForTesting: send adds to injected store", 
     assert.equal(list[0].read, false);
 });
 
-test("createNotificationSender: ignores process.env arg and routes to module activeStore (regression: factory arg mismatch silently broke dispatch)", async () => {
-    // The notify gateway's discoverSenders() always calls factories as
-    // factory(process.env). Previously the internal adapter treated arg-1 as
-    // storeOverride, so this.storeOverride = process.env and send() called
-    // process.env.add(envelope) — a TypeError that dispatch swallowed,
-    // dropping every notification on the floor. Guard against that.
+test("createNotificationSender: uses module activeStore when called with process.env", async () => {
+    // Regression guard: the notify gateway's discoverSenders() always calls
+    // factories as factory(process.env). The factory must not interpret arg-1
+    // as a store override, or dispatch silently drops every notification.
     const sender = createNotificationSender(
         process.env as Record<string, string | undefined>,
     );
