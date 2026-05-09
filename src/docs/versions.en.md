@@ -36,6 +36,8 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.1` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.0` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.0.0` |
 
 ## Gateways
 
@@ -44,7 +46,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Database (db)         | `src/gateways/db/`           | `1.1.2` |
 | Authentication (auth) | `src/gateways/auth/`         | `1.3.2` |
 | Notification (notify) | `src/gateways/notify/`       | `1.3.0` |
-| Profile               | `src/gateways/profile/`      | `1.1.1` |
+| Social                | `src/gateways/social/`       | `1.2.0` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
 | Registration          | `src/gateways/registration/` | `1.1.2` |
 | Logging               | `src/gateways/logging/`      | `1.4.0` |

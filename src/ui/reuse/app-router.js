@@ -80,6 +80,16 @@ const ROUTES = [
         load: () => import("../app/profile/index.js"),
     },
     {
+        pattern: /^\/messages/,
+        base: "/messages",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/styles/messages.css",
+        ],
+        load: () => import("../app/messages/index.js"),
+    },
+    {
         pattern: /^\/administration/,
         base: "/administration",
         stylesheets: [
