@@ -61,7 +61,7 @@
 
 .global-navrow {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(160px, 1fr) auto;
     align-items: center;
     gap: 18px;
     padding: 10px 30px;
@@ -476,7 +476,7 @@ button.dropdown-item {
         padding-right: 18px;
     }
     .global-navrow {
-        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-columns: auto minmax(160px, 1fr) auto;
         gap: 10px;
         padding-left: 18px;
         padding-right: 18px;

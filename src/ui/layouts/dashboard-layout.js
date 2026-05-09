@@ -204,6 +204,7 @@ async function loadNavbarPlugins() {
 }
 
 function applyCompactNav(root) {
+    const NAV_OVERFLOW_TOLERANCE_PX = 2;
     const navrow = root.querySelector(".global-navrow");
     const topnav = navrow?.querySelector(".topnav");
     const compactToggle = navrow?.querySelector("#nav-compact-toggle");
@@ -219,7 +220,8 @@ function applyCompactNav(root) {
     let drawerOpen = false;
 
     function syncCompactState() {
-        const overflows = topnav.scrollWidth > topnav.clientWidth + 2;
+        const overflows =
+            topnav.scrollWidth > topnav.clientWidth + NAV_OVERFLOW_TOLERANCE_PX;
         navrow.classList.toggle("global-navrow--compact", overflows);
         compactToggle.hidden = !overflows;
         if (!overflows && drawerOpen) closeDrawer();
@@ -242,7 +244,11 @@ function applyCompactNav(root) {
         drawer.setAttribute("aria-hidden", "false");
         compactToggle.setAttribute("aria-expanded", "true");
         backdrop.removeAttribute("hidden");
-        (drawerNav?.querySelector("a") ?? drawerClose ?? compactToggle).focus();
+        const focusTarget =
+            drawerNav?.querySelector("a") ?? drawerClose ?? compactToggle;
+        if (focusTarget instanceof HTMLElement) {
+            focusTarget.focus();
+        }
     }
 
     function closeDrawer() {

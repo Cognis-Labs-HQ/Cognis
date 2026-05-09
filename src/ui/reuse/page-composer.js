@@ -2647,7 +2647,8 @@ export function createPageComposer(
             if (toolbarEl) {
                 const storageKey = `cognis_toolbar_collapsed_${persistLayoutPreferences || "default"}`;
                 const storedValue = localStorage.getItem(storageKey);
-                const collapsed = storedValue !== "false";
+                const collapsed =
+                    storedValue === null || storedValue === "true";
                 const EXPAND_ICON = "▸";
                 const COLLAPSE_ICON = "◂";
                 const collapseBtn = document.createElement("button");
