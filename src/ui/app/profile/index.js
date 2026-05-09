@@ -934,6 +934,12 @@ function bindPageEvents() {
 }
 
 export async function mount(rootEl, { signal } = {}) {
+    // Clean up any stale document-level listener from a previous mount.
+    if (bannerMenuCloseHandler) {
+        document.removeEventListener("click", bannerMenuCloseHandler, true);
+        bannerMenuCloseHandler = null;
+    }
+
     root = rootEl;
     i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.profile");
@@ -951,6 +957,8 @@ export async function mount(rootEl, { signal } = {}) {
     avatarBlobUrl = null;
     bannerBlobUrl = null;
     bannerHeight = null;
+    composer = null;
+    elements = [];
 
     if (isOwnProfile) {
         profile = await loadOwnProfile();

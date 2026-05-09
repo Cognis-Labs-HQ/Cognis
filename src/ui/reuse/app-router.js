@@ -103,8 +103,9 @@ export function initRouter(root) {
     if (_initialized) return;
     _initialized = true;
     _root = root;
-    _currentBase =
-        "/" + (window.location.pathname.split("/")[1] || "dashboard");
+
+    const initialRoute = findRoute(window.location.pathname);
+    _currentBase = initialRoute ? initialRoute.base : null;
 
     document.addEventListener("click", async (event) => {
         const link = event.target.closest("a[href]");

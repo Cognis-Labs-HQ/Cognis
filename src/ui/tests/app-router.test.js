@@ -123,9 +123,14 @@ test("dashboard-layout initialises the router after shell setup", () => {
 
 test("docs page uses signal to clean up its popstate listener", () => {
     const src = readFileSync(resolve(ROOT, "src/ui/app/docs/index.js"), "utf8");
+
+    // Verify the source contains a window.addEventListener("popstate", ...)
+    // call that includes { signal } as its options object, allowing for any
+    // handler body between the event name and the options. The trailing-comma
+    // variant `{ signal },\n)` is explicitly tolerated.
     assert.match(
         src,
-        /window\.addEventListener\(\s*["']popstate["'][\s\S]*?{[\s\S]*?signal[\s\S]*?}\s*\)/m,
+        /window\.addEventListener\(\s*["']popstate["'][\s\S]*?\{\s*signal\s*\},?\s*\)/m,
         "docs/index.js must pass { signal } to its window popstate listener",
     );
 });
@@ -135,9 +140,14 @@ test("administration page uses signal to clean up its beforeunload listener", ()
         resolve(ROOT, "src/ui/app/administration/index.js"),
         "utf8",
     );
+
+    // Verify the source contains a window.addEventListener("beforeunload", ...)
+    // call that includes { signal } as its options object, allowing for any
+    // handler body between the event name and the options. The trailing-comma
+    // variant `{ signal },\n)` is explicitly tolerated.
     assert.match(
         src,
-        /window\.addEventListener\(\s*["']beforeunload["'][\s\S]*?{[\s\S]*?signal[\s\S]*?},?\s*\)/m,
+        /window\.addEventListener\(\s*["']beforeunload["'][\s\S]*?\{\s*signal\s*\},?\s*\)/m,
         "administration/index.js must pass { signal } to its window beforeunload listener",
     );
 });
