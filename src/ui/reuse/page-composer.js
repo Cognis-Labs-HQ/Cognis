@@ -162,8 +162,10 @@ export function createPageComposer(
     let editToggleAbortController = null;
 
     const UNIT = 90; // grid cell size in pixels
+    const TOOLBAR_DRAWER_MIN_WIDTH = 220;
+    const CONTENT_MIN_WIDTH_FOR_INLINE_TOOLBAR = 680;
     const TOOLBAR_COLLAPSE_EXPAND_ICON = "▸";
-    const TOOLBAR_COLLAPSE_COLLAPSE_ICON = "◂";
+    const TOOLBAR_COLLAPSE_ICON = "◂";
 
     function resolveElementRender(el) {
         if (!el.breakpoints?.length) return el.render;
@@ -2728,6 +2730,9 @@ export function createPageComposer(
                         i18n.t("ui.reuse.generic.dismiss"),
                     );
                     const mainWindow = root.querySelector(".main-window");
+                    const toolbarDrawerAbortController = new AbortController();
+                    const { signal: toolbarDrawerSignal } =
+                        toolbarDrawerAbortController;
                     let drawerModeActive = false;
                     let drawerOpen = false;
 
@@ -2744,7 +2749,7 @@ export function createPageComposer(
                             shouldOpen ? "true" : "false",
                         );
                         collapseBtn.textContent = shouldOpen
-                            ? TOOLBAR_COLLAPSE_COLLAPSE_ICON
+                            ? TOOLBAR_COLLAPSE_ICON
                             : TOOLBAR_COLLAPSE_EXPAND_ICON;
                         collapseBtn.setAttribute(
                             "aria-label",
@@ -2759,14 +2764,14 @@ export function createPageComposer(
                         if (!mainWindow || !contentGrid) return;
                         const toolbarNaturalWidth = Math.max(
                             toolbarEl.scrollWidth,
-                            220,
+                            TOOLBAR_DRAWER_MIN_WIDTH,
                         );
-                        const contentMinimumWidth = 680;
                         const availableWidth =
                             mainWindow.getBoundingClientRect().width;
                         const pressured =
                             availableWidth <
-                            toolbarNaturalWidth + contentMinimumWidth;
+                            toolbarNaturalWidth +
+                                CONTENT_MIN_WIDTH_FOR_INLINE_TOOLBAR;
                         drawerModeActive = pressured;
                         mainWindow.classList.toggle(
                             "main-window--toolbar-pressured",
@@ -2796,17 +2801,25 @@ export function createPageComposer(
                     collapseBtn.addEventListener("click", () =>
                         setDrawerOpen(!drawerOpen),
                     );
-                    drawerToggle.addEventListener("click", () =>
-                        setDrawerOpen(!drawerOpen),
+                    drawerToggle.addEventListener(
+                        "click",
+                        () => setDrawerOpen(!drawerOpen),
+                        { signal: toolbarDrawerSignal },
                     );
-                    backdrop.addEventListener("click", () =>
-                        setDrawerOpen(false),
+                    backdrop.addEventListener(
+                        "click",
+                        () => setDrawerOpen(false),
+                        { signal: toolbarDrawerSignal },
                     );
-                    document.addEventListener("keydown", (e) => {
-                        if (e.key === "Escape" && drawerOpen) {
-                            setDrawerOpen(false);
-                        }
-                    });
+                    document.addEventListener(
+                        "keydown",
+                        (e) => {
+                            if (e.key === "Escape" && drawerOpen) {
+                                setDrawerOpen(false);
+                            }
+                        },
+                        { signal: toolbarDrawerSignal },
+                    );
                     const toolbarModeObserver = new ResizeObserver(
                         syncToolbarMode,
                     );
@@ -2814,14 +2827,29 @@ export function createPageComposer(
                         toolbarModeObserver.observe(mainWindow);
                     }
                     toolbarModeObserver.observe(contentGrid);
+                    window.addEventListener(
+                        "pagehide",
+                        () => {
+                            toolbarModeObserver.disconnect();
+                            toolbarDrawerAbortController.abort();
+                        },
+                        {
+                            once: true,
+                            signal: toolbarDrawerSignal,
+                        },
+                    );
 
                     root.querySelectorAll("[data-composer-scroll]").forEach(
                         (btn) => {
-                            btn.addEventListener("click", () => {
-                                if (drawerModeActive && drawerOpen) {
-                                    setDrawerOpen(false);
-                                }
-                            });
+                            btn.addEventListener(
+                                "click",
+                                () => {
+                                    if (drawerModeActive && drawerOpen) {
+                                        setDrawerOpen(false);
+                                    }
+                                },
+                                { signal: toolbarDrawerSignal },
+                            );
                         },
                     );
                 }
