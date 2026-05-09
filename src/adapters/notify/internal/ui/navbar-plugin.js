@@ -471,9 +471,11 @@ function showArrivalToast(notif, i18n) {
 
         await startPolling(i18n);
     } catch (err) {
-        // Initialization failed — navbar plugin degrades gracefully without the notification bell.
-        // Logged so developers can diagnose missing-bell issues during development.
-        // eslint-disable-next-line no-console
+        // Initialization failed — navbar plugin degrades gracefully without the
+        // notification bell. Logged so developers can diagnose missing-bell
+        // issues during development. Browser-side modules in this repo use
+        // console.error directly (see src/ui/reuse/app-router.js:157) since no
+        // server logger is available client-side.
         console.error("[notify-internal] navbar plugin init failed:", err);
     }
 })();

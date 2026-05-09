@@ -58,24 +58,19 @@ export async function bootstrapNotifyAdapter(
     if (ctx.dbExecutor && ctx.dbType) {
         const secret = getDataEncryptionKey();
         if (!secret) {
-            const message =
+            const baseMessage =
                 "DATA_ENCRYPTION_KEY is not set. The internal notification adapter requires a stable server-side encryption key to persist notifications. Set DATA_ENCRYPTION_KEY to a unique high-entropy secret.";
-            if (process.env.NODE_ENV === "production") {
-                ctx.log?.("error", message, {
-                    component: "notify-internal",
-                    fatal: true,
-                });
-                throw new Error(message);
+            const isProduction = process.env.NODE_ENV === "production";
+            const fullMessage = isProduction
+                ? baseMessage
+                : `${baseMessage} Falling back to a per-process random key (data will not survive restarts). This must never happen in production.`;
+            ctx.log?.("error", fullMessage, {
+                component: "notify-internal",
+                fatal: isProduction,
+            });
+            if (isProduction) {
+                throw new Error(baseMessage);
             }
-            ctx.log?.(
-                "error",
-                message +
-                    " Falling back to a per-process random key (data will not survive restarts). This must never happen in production.",
-                {
-                    component: "notify-internal",
-                    fatal: false,
-                },
-            );
         }
         const dbStore = new DbInternalNotificationStore(
             ctx.dbExecutor,
