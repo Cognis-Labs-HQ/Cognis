@@ -126,6 +126,8 @@ Do not dismiss a review suggestion as "out of scope" merely because it was not p
 
 If you choose not to implement a review suggestion, the reason must be concrete and rooted in these instructions, the codebase architecture, correctness, security, or an explicit user direction — not convenience, narrow task framing, or a desire to avoid additional work.
 
+Repeatedly ignoring, hand-waving, or vainly dismissing valid review feedback is a mission failure. When feedback is technically sound, you must either implement it in the same change or explicitly document a concrete, instruction-grounded reason for not doing so.
+
 ### Readability over terseness
 
 Format all new or modified code for human readability. Do not compress logic, markup, or styles into dense one-liners when a multi-line structure is clearer. A statement that would naturally span 6+ lines in JavaScript should remain that way — humans must be able to eyeball the code meaningfully.
