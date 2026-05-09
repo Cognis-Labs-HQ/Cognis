@@ -2,7 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { InternalNotificationStore } from "../store.js";
 import { AsyncInternalNotificationStore } from "../store.js";
-import { createNotificationSender } from "../index.js";
+import {
+    createNotificationSender,
+    createInternalNotificationSenderForTesting,
+    getActiveStoreForTesting,
+} from "../index.js";
 import type { NotificationEnvelope } from "../../../../gateways/notify/gateway.js";
 
 function makeEnvelope(
@@ -117,13 +121,28 @@ test("createNotificationSender: returns a sender with correct id", () => {
     assert.equal(sender.isConfigured?.(), true);
 });
 
-test("createNotificationSender: send adds to store", async () => {
+test("createInternalNotificationSenderForTesting: send adds to injected store", async () => {
     const store = new AsyncInternalNotificationStore();
-    const sender = createNotificationSender(store);
+    const sender = createInternalNotificationSenderForTesting(store);
     await sender.send(makeEnvelope("testuser", "Live test", "Live body"));
     const list = await store.list("testuser");
     assert.equal(list.length, 1);
     assert.equal(list[0].subject, "Live test");
     assert.equal(list[0].body, "Live body");
     assert.equal(list[0].read, false);
+});
+
+test("createNotificationSender: ignores process.env arg and routes to module activeStore (regression: factory arg mismatch silently broke dispatch)", async () => {
+    // The notify gateway's discoverSenders() always calls factories as
+    // factory(process.env). Previously the internal adapter treated arg-1 as
+    // storeOverride, so this.storeOverride = process.env and send() called
+    // process.env.add(envelope) — a TypeError that dispatch swallowed,
+    // dropping every notification on the floor. Guard against that.
+    const sender = createNotificationSender(
+        process.env as Record<string, string | undefined>,
+    );
+    await sender.send(makeEnvelope("env-arg-user", "Subject A", "Body A"));
+    const stored = await getActiveStoreForTesting().list("env-arg-user");
+    assert.equal(stored.length, 1);
+    assert.equal(stored[0].subject, "Subject A");
 });

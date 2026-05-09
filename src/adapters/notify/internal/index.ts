@@ -39,10 +39,35 @@ class InternalNotificationSender implements NotificationSender {
     }
 }
 
+/**
+ * Public factory invoked by the notify gateway's `discoverSenders()` with
+ * `process.env`. The internal adapter does not need any environment
+ * configuration, so the argument is ignored. The returned sender always
+ * resolves its store lazily from the module-level `activeStore`, which
+ * `bootstrapNotifyAdapter` upgrades to a `DbInternalNotificationStore` once
+ * the database is available — that lazy lookup is what lets notifications
+ * persist across logins.
+ *
+ * Tests that need to inject a specific store should call
+ * `createInternalNotificationSenderForTesting(store)` instead. Passing a store
+ * here would be incorrect, since the gateway always supplies `process.env`.
+ */
 export function createNotificationSender(
-    storeOverride?: IInternalNotificationStore,
+    _env?: Record<string, string | undefined>,
 ): NotificationSender {
-    return new InternalNotificationSender(storeOverride ?? null);
+    return new InternalNotificationSender(null);
+}
+
+/**
+ * Test-only factory. Returns a sender bound to the supplied store, bypassing
+ * the module-level `activeStore`. Production code must use
+ * `createNotificationSender` instead so the store can be upgraded by
+ * `bootstrapNotifyAdapter`.
+ */
+export function createInternalNotificationSenderForTesting(
+    store: IInternalNotificationStore,
+): NotificationSender {
+    return new InternalNotificationSender(store);
 }
 
 /** @internal For use in tests only. Returns the active notification store. */
