@@ -33,7 +33,9 @@ test("page composer includes mobile toolbar drawer behavior", () => {
         "utf8",
     );
 
-    assert.match(source, /matchMedia\("\(max-width: 900px\)"\)/);
+    assert.match(source, /MOBILE_TOOLBAR_BREAKPOINT = 900/);
+    assert.match(source, /window\.matchMedia\(/);
+    assert.match(source, /\(max-width: \$\{MOBILE_TOOLBAR_BREAKPOINT\}px\)/);
     assert.match(source, /toolbar--mobile-open/);
     assert.match(source, /toolbar-mobile-backdrop--open/);
 });

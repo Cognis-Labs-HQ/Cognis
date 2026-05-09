@@ -207,8 +207,8 @@ body[data-theme="light"] .prefs-dump {
 }
 
 @media (max-width: 640px) {
-    .email-add-row #email-add-btn,
-    .email-verify-row #popup-verify-btn {
+    .email-add-row .btn-confirm,
+    .email-verify-row .btn-confirm {
         width: 100%;
     }
 }

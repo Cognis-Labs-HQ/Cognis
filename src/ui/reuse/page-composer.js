@@ -147,6 +147,7 @@ export function createPageComposer(
     let editToggleAbortController = null;
 
     const UNIT = 90; // grid cell size in pixels
+    const MOBILE_TOOLBAR_BREAKPOINT = 900;
 
     function handleBeforeUnload(e) {
         e.preventDefault();
@@ -2647,7 +2648,9 @@ export function createPageComposer(
             if (toolbarEl) {
                 const storageKey = `cognis_toolbar_collapsed_${persistLayoutPreferences || "default"}`;
                 const storedValue = localStorage.getItem(storageKey);
-                const mobileMedia = window.matchMedia("(max-width: 900px)");
+                const mobileMedia = window.matchMedia(
+                    `(max-width: ${MOBILE_TOOLBAR_BREAKPOINT}px)`,
+                );
                 let collapsed = storedValue !== "false";
                 let mobileDrawerOpen = false;
                 const EXPAND_ICON = "▸";
@@ -2682,7 +2685,6 @@ export function createPageComposer(
 
                 function setToolbarCollapsedState(nextCollapsed) {
                     collapsed = nextCollapsed;
-                    localStorage.setItem(storageKey, String(nextCollapsed));
                     const effectiveCollapsed =
                         !isMobileDrawerMode() && nextCollapsed;
                     toolbarEl.classList.toggle(
@@ -2698,6 +2700,7 @@ export function createPageComposer(
                             ? i18n.t("ui.layout.toolbar.expand")
                             : i18n.t("ui.layout.toolbar.collapse"),
                     );
+                    localStorage.setItem(storageKey, String(nextCollapsed));
                 }
 
                 function setMobileDrawerOpen(
@@ -2711,12 +2714,8 @@ export function createPageComposer(
                         "toolbar-mobile-backdrop--open",
                         open,
                     );
-                    if (open) {
-                        mobileBackdrop.removeAttribute("hidden");
-                    } else {
-                        mobileBackdrop.setAttribute("hidden", "");
-                        if (restoreFocus) mobileToggleBtn.focus();
-                    }
+                    mobileBackdrop.hidden = !open;
+                    if (!open && restoreFocus) mobileToggleBtn.focus();
                     mobileToggleBtn.setAttribute("aria-expanded", String(open));
                     mobileToggleBtn.textContent = open
                         ? COLLAPSE_ICON
