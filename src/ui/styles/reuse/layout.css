@@ -75,6 +75,84 @@
     z-index: 30;
 }
 
+.global-nav-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-soft);
+    color: var(--text);
+    padding: 0;
+}
+
+.global-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: rgba(2, 6, 23, 0.52);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 45;
+}
+
+.global-nav-backdrop--visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.global-navrow--compact {
+    grid-template-columns: auto 1fr;
+}
+
+.global-navrow--compact .global-nav-toggle {
+    display: inline-flex;
+}
+
+.global-navrow--compact .account-cluster {
+    justify-self: end;
+}
+
+.global-navrow--compact .topnav {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: min(300px, 85vw);
+    max-width: calc(100vw - 24px);
+    padding: 82px 14px 18px;
+    border-right: 1px solid var(--nav-border);
+    background: var(--nav-bg);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transform: translateX(calc(-100% - 12px));
+    transition: transform 0.22s ease;
+    z-index: 55;
+    overflow-y: auto;
+}
+
+.global-navrow--compact .topnav a {
+    border-radius: 8px;
+    padding: 10px 12px;
+    border-bottom: 0;
+}
+
+.global-navrow--compact .topnav a:hover,
+.global-navrow--compact .topnav a.active {
+    border-bottom: 0;
+    background: var(--surface-soft);
+}
+
+.global-navrow--compact.global-navrow--menu-open .topnav {
+    transform: translateX(0);
+}
+
 .topnav {
     display: flex;
     gap: 18px;
@@ -152,6 +230,7 @@
 
 .profile-menu {
     position: relative;
+    max-width: 100%;
 }
 .avatar-button {
     border-radius: 999px;
@@ -194,6 +273,8 @@
     border-radius: 10px;
     padding: 8px;
     min-width: 170px;
+    width: max-content;
+    max-width: min(280px, calc(100vw - 24px));
     box-shadow: var(--shadow);
     opacity: 0;
     transform: translateY(-6px);
@@ -201,6 +282,9 @@
         opacity 0.16s ease,
         transform 0.16s ease;
     pointer-events: none;
+    overflow-wrap: anywhere;
+    overflow-x: auto;
+    z-index: 70;
 }
 
 .profile-menu.open .dropdown {
@@ -337,7 +421,6 @@ button.dropdown-item {
 @media (max-width: 900px) {
     .global-topbar,
     .global-navrow {
-        grid-template-columns: 1fr;
         gap: 10px;
         padding-left: 18px;
         padding-right: 18px;
@@ -356,6 +439,7 @@ button.dropdown-item {
     }
     .account-cluster {
         justify-self: end;
+        min-width: 0;
     }
 }
 
@@ -380,10 +464,15 @@ button.dropdown-item {
         top: 0;
         position: static;
     }
-    .topnav {
+    .user-greeting {
+        display: none;
+    }
+    .account-cluster {
         gap: 10px;
-        font-size: 0.88rem;
-        flex-wrap: wrap;
+    }
+    .dropdown {
+        top: 42px;
+        max-width: calc(100vw - 32px);
     }
     .workspace {
         padding: 12px;

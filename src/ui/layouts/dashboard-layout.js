@@ -56,6 +56,89 @@ async function bindThemeToggle({ usePreferenceApi = true } = {}) {
 }
 
 const PROFILE_MENU_CLOSE_DELAY_MS = 300;
+const NAV_COMPACT_BREAKPOINT_PX = 900;
+
+function bindGlobalNavOverlay(i18n) {
+    const navRow = document.querySelector(".global-navrow");
+    const topnav = navRow?.querySelector(".topnav");
+    if (!(navRow instanceof HTMLElement) || !(topnav instanceof HTMLElement)) {
+        return;
+    }
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "global-nav-toggle";
+    toggle.setAttribute("aria-controls", "global-side-nav");
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", i18n.t("ui.layout.nav.primary"));
+    const icon = document.createElement("span");
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = "☰";
+    toggle.appendChild(icon);
+    navRow.prepend(toggle);
+    topnav.id = "global-side-nav";
+
+    const backdrop = document.createElement("button");
+    backdrop.type = "button";
+    backdrop.className = "global-nav-backdrop";
+    backdrop.setAttribute("aria-label", i18n.t("ui.reuse.generic.dismiss"));
+    navRow.insertAdjacentElement("afterend", backdrop);
+
+    const closeMenu = () => {
+        navRow.classList.remove("global-navrow--menu-open");
+        backdrop.classList.remove("global-nav-backdrop--visible");
+        toggle.setAttribute("aria-expanded", "false");
+    };
+
+    const openMenu = () => {
+        navRow.classList.add("global-navrow--menu-open");
+        backdrop.classList.add("global-nav-backdrop--visible");
+        toggle.setAttribute("aria-expanded", "true");
+    };
+
+    toggle.addEventListener("click", () => {
+        if (navRow.classList.contains("global-navrow--menu-open")) {
+            closeMenu();
+            return;
+        }
+        openMenu();
+    });
+
+    backdrop.addEventListener("click", closeMenu);
+
+    topnav.querySelectorAll("a[href]").forEach((link) => {
+        link.addEventListener("click", closeMenu);
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeMenu();
+    });
+
+    function checkOverflowInExpandedLayout() {
+        const hadCompactClass = navRow.classList.contains(
+            "global-navrow--compact",
+        );
+        if (hadCompactClass) navRow.classList.remove("global-navrow--compact");
+        const hasOverflow = topnav.scrollWidth > topnav.clientWidth + 1;
+        if (hadCompactClass) navRow.classList.add("global-navrow--compact");
+        return hasOverflow;
+    }
+
+    function syncNavMode() {
+        const isSmallViewport = window.matchMedia(
+            `(max-width: ${NAV_COMPACT_BREAKPOINT_PX}px)`,
+        ).matches;
+        const shouldCompact =
+            isSmallViewport || checkOverflowInExpandedLayout();
+        navRow.classList.toggle("global-navrow--compact", shouldCompact);
+        toggle.hidden = !shouldCompact;
+        if (!shouldCompact) closeMenu();
+    }
+
+    new ResizeObserver(syncNavMode).observe(navRow);
+    window.addEventListener("resize", syncNavMode);
+    syncNavMode();
+}
 
 function bindTopbarActions() {
     const toggle = document.querySelector("#profile-toggle");
@@ -99,6 +182,15 @@ function bindTopbarActions() {
     };
 
     toggle?.addEventListener("mouseenter", openMenu);
+    toggle?.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (profileMenu?.classList.contains("open")) {
+            dropdown?.classList.add("hidden");
+            profileMenu?.classList.remove("open");
+            return;
+        }
+        openMenu();
+    });
     profileMenu?.addEventListener("mouseleave", closeMenu);
 
     document.addEventListener("click", (event) => {
@@ -243,6 +335,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         await loadNavbarPlugins();
         updateNavbarAvatar().catch(() => {});
         applyActiveNavigation();
+        if (showNavbar) bindGlobalNavOverlay(i18n);
     }
     bindThemeToggle({ usePreferenceApi });
 }

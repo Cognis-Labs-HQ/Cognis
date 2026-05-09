@@ -145,6 +145,7 @@ export function createPageComposer(
     let lastObservedCols = 0;
     let gridSection = null;
     let editToggleAbortController = null;
+    let closeMobileToolbarMenu = null;
 
     const UNIT = 90; // grid cell size in pixels
 
@@ -2509,14 +2510,7 @@ export function createPageComposer(
         history.replaceState(null, "", `#${activeSubPageId}`);
         applyPageOverrides(id);
         onRender?.();
-        const mainWindow = root.querySelector(".main-window");
-        if (mainWindow?.classList.contains("main-window--nav-open")) {
-            mainWindow.classList.remove("main-window--nav-open");
-            root.querySelector("#toolbar-mobile-toggle")?.setAttribute(
-                "aria-expanded",
-                "false",
-            );
-        }
+        closeMobileToolbarMenu?.();
     }
 
     async function init() {
@@ -2602,12 +2596,27 @@ export function createPageComposer(
             if (mainWindow) mainWindow.prepend(toggle);
             const toolbarEl = root.querySelector(".toolbar");
             if (toolbarEl) toolbarEl.id = "toolbar-nav";
+            const backdrop = document.createElement("button");
+            backdrop.type = "button";
+            backdrop.className = "toolbar-mobile-backdrop";
+            backdrop.setAttribute(
+                "aria-label",
+                i18n.t("ui.reuse.generic.dismiss"),
+            );
+            if (mainWindow) mainWindow.prepend(backdrop);
+            closeMobileToolbarMenu = () => {
+                mainWindow?.classList.remove("main-window--nav-open");
+                toggle.setAttribute("aria-expanded", "false");
+            };
             toggle.addEventListener("click", () => {
                 const open = mainWindow?.classList.toggle(
                     "main-window--nav-open",
                 );
                 toggle.setAttribute("aria-expanded", open ? "true" : "false");
             });
+            backdrop.addEventListener("click", () =>
+                closeMobileToolbarMenu?.(),
+            );
         }
 
         if (subPageNavigation) {
@@ -2627,7 +2636,9 @@ export function createPageComposer(
                     btn.dataset.composerScroll === activeSubPageId,
                 );
                 btn.addEventListener("click", () =>
-                    switchSubPage(btn.dataset.composerScroll),
+                    switchSubPage(btn.dataset.composerScroll).finally(() => {
+                        closeMobileToolbarMenu?.();
+                    }),
                 );
             } else {
                 btn.addEventListener("click", () => {
@@ -2640,6 +2651,7 @@ export function createPageComposer(
                         (b) => b.classList.remove("active"),
                     );
                     btn.classList.add("active");
+                    closeMobileToolbarMenu?.();
                 });
             }
         });
