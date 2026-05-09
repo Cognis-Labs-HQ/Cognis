@@ -100,6 +100,10 @@ function escapeHtml(value) {
     );
 }
 
+function memberDisplayName(member) {
+    return member.displayName || member.handle || member.accountId;
+}
+
 function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
     if (!rooms.length) {
         return `<div class="messages-empty">${escapeHtml(i18n.t("module.social.messages.empty"))}</div>`;
@@ -111,7 +115,8 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
             );
             const titleSource =
                 room.title ||
-                otherMembers.map((member) => member.accountId).join(", ");
+                otherMembers.map(memberDisplayName).join(", ") ||
+                room.id;
             const unreadBadge =
                 room.unread > 0
                     ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
@@ -128,35 +133,60 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
         .join("");
 }
 
-async function renderThread(roomId, key, container) {
+async function renderThread(roomId, key, container, i18n, before) {
+    const params = new URLSearchParams({ limit: "50" });
+    if (before) params.set("before", before);
     const res = await apiFetch(
-        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=50`,
+        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
     );
     if (!res.ok) {
-        container.innerHTML = "";
-        return;
+        if (!before) container.innerHTML = "";
+        return null;
     }
     const payload = await res.json();
-    const messages = (payload?.data ?? []).slice().reverse();
+    const messageList = payload?.data ?? [];
+    const ordered = messageList.slice().reverse();
     const decoded = await Promise.all(
-        messages.map(async (msg) => {
+        ordered.map(async (msg) => {
             const text = key
                 ? await decryptMessage(key, msg.iv, msg.ciphertext)
                 : null;
             return { ...msg, text };
         }),
     );
-    container.innerHTML = decoded
-        .map((msg) => {
-            return `
-      <div class="messages-message" data-message-id="${escapeHtml(msg.id)}">
-        <span class="messages-message-sender">${escapeHtml(msg.senderId)}</span>
-        <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
-      </div>
-    `;
-        })
+    const html = decoded
+        .map(
+            (msg) =>
+                `<div class="messages-message" data-message-id="${escapeHtml(msg.id)}">
+            <span class="messages-message-sender">${escapeHtml(msg.senderHandle || msg.senderDisplayName || msg.senderId)}</span>
+            <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
+        </div>`,
+        )
         .join("");
-    container.scrollTop = container.scrollHeight;
+
+    const hasMore = messageList.length === 50;
+    const oldestId = ordered[0]?.id ?? null;
+
+    if (before) {
+        const savedHeight = container.scrollHeight;
+        container.querySelector(".messages-load-earlier-btn")?.remove();
+        container.insertAdjacentHTML("afterbegin", html);
+        container.scrollTop += container.scrollHeight - savedHeight;
+    } else {
+        container.innerHTML = html;
+        container.scrollTop = container.scrollHeight;
+    }
+
+    if (hasMore && oldestId) {
+        container.insertAdjacentHTML(
+            "afterbegin",
+            `<button type="button" class="messages-load-earlier-btn" data-oldest-id="${escapeHtml(oldestId)}">
+                ${escapeHtml(i18n.t("module.social.messages.load_earlier"))}
+            </button>`,
+        );
+    }
+
+    return oldestId;
 }
 
 async function loadRooms() {
@@ -178,18 +208,31 @@ export async function mount(root, { signal } = {}) {
         ? decodeURIComponent(initialRoomMatch[1])
         : null;
 
-    const rooms = await loadRooms();
+    let rooms = await loadRooms();
     if (signal?.aborted) return;
 
     async function openRoom(roomId) {
-        const list = document.getElementById("messages-thread-list");
-        if (!list) return;
+        const threadList = document.getElementById("messages-thread-list");
+        if (!threadList) return;
         const key = await getRoomKey(roomId);
-        await renderThread(roomId, key, list);
+        await renderThread(roomId, key, threadList, i18n);
         await apiFetch(
             `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/read`,
             { method: "POST" },
         ).catch(() => undefined);
+    }
+
+    async function reloadRoomsList() {
+        rooms = await loadRooms();
+        const roomsList = document.getElementById("messages-rooms-list");
+        if (roomsList) {
+            roomsList.innerHTML = renderRoomList(
+                rooms,
+                currentAccountId,
+                selectedRoomId,
+                i18n,
+            );
+        }
     }
 
     const elements = [
@@ -199,23 +242,126 @@ export async function mount(root, { signal } = {}) {
             gridSize: { default: [3, 6], min: [2, 4] },
             render: () =>
                 `<aside class="messages-rooms">
+                    <header class="messages-rooms-header">
+                        <button type="button" class="messages-new-btn" id="messages-new-btn">
+                            ${escapeHtml(i18n.t("module.social.messages.new"))}
+                        </button>
+                    </header>
+                    <div class="messages-lookup-wrap" id="messages-lookup-wrap" hidden>
+                        <input
+                            type="search"
+                            id="messages-lookup-input"
+                            class="messages-lookup-input"
+                            placeholder="${escapeHtml(i18n.t("module.social.messages.lookup_placeholder"))}"
+                            autocomplete="off"
+                        />
+                        <ul class="messages-lookup-results" id="messages-lookup-results"></ul>
+                    </div>
                     <ul class="messages-rooms-list" id="messages-rooms-list">
                         ${renderRoomList(rooms, currentAccountId, selectedRoomId, i18n)}
                     </ul>
                 </aside>`,
             onRender: () => {
-                const list = document.getElementById("messages-rooms-list");
-                list?.addEventListener("click", async (event) => {
-                    const item = event.target.closest("[data-room-id]");
+                const roomsList = document.getElementById("messages-rooms-list");
+                roomsList?.addEventListener("click", async (clickEvent) => {
+                    const item = clickEvent.target.closest("[data-room-id]");
                     if (!item) return;
                     const id = item.getAttribute("data-room-id");
                     selectedRoomId = id;
+                    roomsList
+                        .querySelectorAll(".messages-room--active")
+                        .forEach((activeItem) =>
+                            activeItem.classList.remove("messages-room--active"),
+                        );
+                    item.classList.add("messages-room--active");
                     history.pushState(
                         {},
                         "",
                         `/messages/${encodeURIComponent(id)}`,
                     );
                     await openRoom(id);
+                });
+
+                const newBtn = document.getElementById("messages-new-btn");
+                const lookupWrap = document.getElementById(
+                    "messages-lookup-wrap",
+                );
+                const lookupInput = document.getElementById(
+                    "messages-lookup-input",
+                );
+                const lookupResults = document.getElementById(
+                    "messages-lookup-results",
+                );
+
+                newBtn?.addEventListener("click", () => {
+                    if (lookupWrap.hasAttribute("hidden")) {
+                        lookupWrap.removeAttribute("hidden");
+                        lookupInput?.focus();
+                    } else {
+                        lookupWrap.setAttribute("hidden", "");
+                    }
+                });
+
+                let lookupDebounce = null;
+                lookupInput?.addEventListener("input", () => {
+                    clearTimeout(lookupDebounce);
+                    lookupDebounce = setTimeout(async () => {
+                        const query = (lookupInput.value ?? "").trim();
+                        if (!query) {
+                            lookupResults.innerHTML = "";
+                            return;
+                        }
+                        const lookupRes = await apiFetch(
+                            `/api/v1/messages/users/lookup?q=${encodeURIComponent(query)}`,
+                        );
+                        if (!lookupRes.ok) return;
+                        const lookupPayload = await lookupRes.json();
+                        const candidates = lookupPayload?.data ?? [];
+                        lookupResults.innerHTML = candidates
+                            .map(
+                                (candidate) =>
+                                    `<li class="messages-lookup-result"
+                                        data-account-id="${escapeHtml(candidate.accountId)}"
+                                        data-handle="${escapeHtml(candidate.handle)}">
+                                        ${escapeHtml(candidate.displayName || candidate.handle)}
+                                    </li>`,
+                            )
+                            .join("");
+                    }, 300);
+                });
+
+                lookupResults?.addEventListener("click", async (clickEvent) => {
+                    const item = clickEvent.target.closest("[data-handle]");
+                    if (!item) return;
+                    const handle = item.getAttribute("data-handle");
+                    const createRes = await apiFetch(
+                        "/api/v1/messages/rooms",
+                        {
+                            method: "POST",
+                            body: JSON.stringify({ handles: [handle] }),
+                        },
+                    );
+                    if (!createRes.ok) {
+                        showToast(
+                            i18n.t("module.social.messages.start_failed"),
+                            { variant: "error" },
+                        );
+                        return;
+                    }
+                    const createPayload = await createRes.json();
+                    const newRoomId = createPayload?.data?.id;
+                    if (!newRoomId) return;
+                    lookupWrap.setAttribute("hidden", "");
+                    lookupInput.value = "";
+                    lookupResults.innerHTML = "";
+                    selectedRoomId = newRoomId;
+                    history.pushState(
+                        {},
+                        "",
+                        `/messages/${encodeURIComponent(newRoomId)}`,
+                    );
+                    await openRoom(newRoomId);
+                    await reloadRoomsList();
                 });
             },
         },
@@ -240,7 +386,28 @@ export async function mount(root, { signal } = {}) {
                     </form>
                 </section>`,
             onRender: () => {
+                const threadList = document.getElementById(
+                    "messages-thread-list",
+                );
                 const form = document.getElementById("messages-composer");
+
+                threadList?.addEventListener("click", async (clickEvent) => {
+                    const button = clickEvent.target.closest(
+                        ".messages-load-earlier-btn",
+                    );
+                    if (!button || !selectedRoomId) return;
+                    const oldestId = button.getAttribute("data-oldest-id");
+                    if (!oldestId) return;
+                    const key = await getRoomKey(selectedRoomId);
+                    await renderThread(
+                        selectedRoomId,
+                        key,
+                        threadList,
+                        i18n,
+                        oldestId,
+                    );
+                });
+
                 form?.addEventListener("submit", async (event) => {
                     event.preventDefault();
                     if (!selectedRoomId) return;
@@ -269,13 +436,16 @@ export async function mount(root, { signal } = {}) {
                     );
                     if (!res.ok) return;
                     if (input) input.value = "";
-                    const list = document.getElementById(
-                        "messages-thread-list",
-                    );
-                    if (list) {
-                        await renderThread(selectedRoomId, key, list);
+                    if (threadList) {
+                        await renderThread(
+                            selectedRoomId,
+                            key,
+                            threadList,
+                            i18n,
+                        );
                     }
                 });
+
                 if (selectedRoomId) {
                     void openRoom(selectedRoomId);
                 }

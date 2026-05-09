@@ -12,7 +12,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { requireAuth } from "../../../api/auth/guard.js";
 import { readJson } from "../../../api/reuse/read-json.js";
-import type { DbMessagesStore } from "./store.js";
+import type { DbMessagesStore, MemberRow } from "./store.js";
 import type {
     DbProfileStore,
     AccountProfile,
@@ -72,6 +72,22 @@ export interface MessagesRoutesDeps {
     profileStore: DbProfileStore;
     dispatch: Dispatch | null;
     isAdapterEnabled: () => boolean;
+}
+
+async function enrichMembersWithProfiles(
+    members: MemberRow[],
+    profileStore: DbProfileStore,
+): Promise<Array<MemberRow & { handle: string | null; displayName: string | null }>> {
+    return Promise.all(
+        members.map(async (memberRow) => {
+            const profile = await profileStore.getProfile(memberRow.accountId);
+            return {
+                ...memberRow,
+                handle: profile?.handle ?? null,
+                displayName: profile?.displayName ?? null,
+            };
+        }),
+    );
 }
 
 export function createMessagesRoutes(deps: MessagesRoutesDeps) {
@@ -149,7 +165,16 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                         messagesStore.unreadCount(room.id, accountId),
                     ]);
                     const last = lastList[0] ?? null;
-                    return { ...room, members, lastMessage: last, unread };
+                    const enrichedMembers = await enrichMembersWithProfiles(
+                        members,
+                        profileStore,
+                    );
+                    return {
+                        ...room,
+                        members: enrichedMembers,
+                        lastMessage: last,
+                        unread,
+                    };
                 }),
             );
             res.writeHead(200, { "content-type": "application/json" });
@@ -287,8 +312,12 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         // GET /messages/rooms/:id
         if (!sub && req.method === "GET") {
             const members = await messagesStore.listMembers(roomId);
+            const enrichedMembers = await enrichMembersWithProfiles(
+                members,
+                profileStore,
+            );
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { ...room, members } }));
+            res.end(JSON.stringify({ data: { ...room, members: enrichedMembers } }));
             return true;
         }
 
@@ -326,8 +355,21 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     limit,
                     before,
                 );
+                const enrichedMessages = await Promise.all(
+                    messages.map(async (message) => {
+                        const senderProfile = await profileStore.getProfile(
+                            message.senderId,
+                        );
+                        return {
+                            ...message,
+                            senderHandle: senderProfile?.handle ?? null,
+                            senderDisplayName:
+                                senderProfile?.displayName ?? null,
+                        };
+                    }),
+                );
                 res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: messages }));
+                res.end(JSON.stringify({ data: enrichedMessages }));
                 return true;
             }
             if (req.method === "POST") {
