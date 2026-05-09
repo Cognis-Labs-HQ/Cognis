@@ -13,12 +13,14 @@ function makeInMemoryDb() {
     };
 }
 
-function makeAdapterCtx(overrides: {
-    gatewayRegistry?: GatewayRegistry;
-    routeRegistry?: RouteRegistry;
-    capabilities?: CapabilityStore;
-    uiRegistry?: UIRegistry;
-} = {}) {
+function makeAdapterCtx(
+    overrides: {
+        gatewayRegistry?: GatewayRegistry;
+        routeRegistry?: RouteRegistry;
+        capabilities?: CapabilityStore;
+        uiRegistry?: UIRegistry;
+    } = {},
+) {
     const gatewayRegistry = overrides.gatewayRegistry ?? new GatewayRegistry();
     const routeRegistry = overrides.routeRegistry ?? new RouteRegistry();
     const capabilities = overrides.capabilities ?? new CapabilityStore();
@@ -41,11 +43,8 @@ function makeAdapterCtx(overrides: {
                 uiRegistry?.registerNavbarPlugin({ scriptUrl }),
             registerStaticDir: (prefix: string, dir: string) =>
                 uiRegistry?.registerStaticDir(prefix, dir),
-            registerAdapterStaticDir: (
-                gw: string,
-                ad: string,
-                dir: string,
-            ) => uiRegistry?.registerAdapterStaticDir(gw, ad, dir),
+            registerAdapterStaticDir: (gw: string, ad: string, dir: string) =>
+                uiRegistry?.registerAdapterStaticDir(gw, ad, dir),
             registerAuthTypingMessage: (
                 m: Parameters<UIRegistry["registerAuthTypingMessage"]>[0],
             ) => uiRegistry?.registerAuthTypingMessage(m),
