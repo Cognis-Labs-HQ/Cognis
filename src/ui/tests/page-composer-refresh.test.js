@@ -41,6 +41,10 @@ test("page composer includes mobile toolbar drawer behavior", () => {
     assert.match(source, /target\.closest\("a\[href\]"\)/);
     assert.match(
         source,
+        /target\.closest\("button:not\(\.toolbar-mobile-toggle\)"\)/,
+    );
+    assert.match(
+        source,
         /mobileToggleBtn\.classList\.toggle\(\s*"toolbar-mobile-toggle--drawer-open",\s*open,\s*\)/m,
     );
     assert.match(source, /mobileToggleBtn\.textContent = open \? "<" : "☰"/);
