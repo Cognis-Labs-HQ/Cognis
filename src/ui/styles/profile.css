@@ -126,6 +126,7 @@
     z-index: 10;
     display: flex;
     flex-direction: column;
+    max-width: calc(100vw - 32px);
 }
 
 .profile-banner-menu-dropdown[hidden] {
@@ -871,6 +872,21 @@
     font-size: 0.82rem;
     padding: 4px 12px;
     margin-left: auto;
+}
+
+@media (max-width: 900px) {
+    .profile-hero--full-banner .profile-hero-content {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .profile-hero-stats-bio {
+        flex-direction: column;
+    }
+
+    .profile-hero-stats-bio .profile-hero-stats {
+        flex-shrink: 1;
+    }
 }
 
 .profile-not-found-message {

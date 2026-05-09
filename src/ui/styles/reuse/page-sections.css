@@ -6,6 +6,10 @@
     padding: 28px;
 }
 
+.content-section :where(input, select, textarea, button) {
+    max-width: 100%;
+}
+
 .widget-card > h2,
 .widget-card > h3 {
     margin: 0 0 14px;
@@ -203,4 +207,30 @@
 
 .components-section-body {
     min-width: 0;
+}
+
+@media (max-width: 900px) {
+    .provider-fields,
+    .provider-auth-fields,
+    .notif-debug-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .provider-test-row,
+    .security-field-row,
+    .notif-debug-actions {
+        flex-wrap: wrap;
+    }
+
+    .provider-test-input,
+    .security-domains-input {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .content-panel > .content-section {
+        padding: 14px;
+    }
 }
