@@ -121,6 +121,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
     ctx.uiRegistry?.registerStaticDir("notify", uiDir);
 
+    // Expose the notification gateway itself + a thin dispatch helper as
+    // capabilities so other adapters (e.g. the social/messages adapter) can
+    // hand off delivery without holding a direct reference to this gateway.
+    ctx.capabilities.contribute("notify:gateway", gateway);
+    ctx.capabilities.contribute(
+        "notify:dispatch",
+        (envelope: Parameters<typeof gateway.dispatch>[0]) =>
+            gateway.dispatch(envelope),
+    );
+    ctx.capabilities.contribute(
+        "notify:registerCategory",
+        (id: string, label: string) => gateway.registerCategory(id, label),
+    );
+
     ctx.capabilities.contribute("notify:canSendRegistrationInviteEmail", () =>
         gateway.canSendRegistrationInviteEmail(),
     );

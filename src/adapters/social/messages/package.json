@@ -1,0 +1,8 @@
+{
+    "name": "@cognis/adapter-social-messages",
+    "version": "1.0.0",
+    "description": "Private messaging adapter for the Social Gateway. Encrypted chatrooms with per-room AES-GCM keys and at-rest re-wrapping.",
+    "type": "module",
+    "main": "index.ts",
+    "private": true
+}

@@ -172,7 +172,10 @@ export async function bootstrapSocialAdapter(
     );
 
     if (fileGateway) {
-        ctx.registerRoute(createFileRoutes(profileStore, fileGateway), "social");
+        ctx.registerRoute(
+            createFileRoutes(profileStore, fileGateway),
+            "social",
+        );
         ctx.log?.("info", "Profile adapter: file routes registered.");
     } else {
         ctx.log?.(
