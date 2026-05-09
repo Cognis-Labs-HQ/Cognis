@@ -809,6 +809,7 @@ code {
 
 .language-table tr[draggable="true"] {
     cursor: grab;
+    touch-action: none;
 }
 
 .language-table .drag-handle {
@@ -816,6 +817,11 @@ code {
     text-align: center;
     color: var(--text-muted);
     font-size: 16px;
+    touch-action: none;
+}
+
+.language-table tr.language-row-dragging {
+    opacity: 0.6;
 }
 
 .language-table tr.drop-target-before td {
@@ -940,6 +946,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     border-bottom: 1px solid var(--border);
     cursor: grab;
     user-select: none;
+    touch-action: none;
 }
 
 .composer-drag-icon {
@@ -1047,6 +1054,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     gap: 8px;
     font-size: 0.88rem;
     cursor: grab;
+    touch-action: none;
 }
 
 .composer-add-btn {
@@ -1358,6 +1366,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     opacity: 0;
     transition: opacity 0.15s ease;
     z-index: 10;
+    touch-action: none;
 }
 
 .composer-cell:hover .composer-resize-handle {
@@ -1420,6 +1429,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     border-bottom: 1px solid var(--border);
     cursor: grab;
     border-radius: 12px 12px 0 0;
+    touch-action: none;
 }
 
 .composer-panel--minimized .composer-panel-header {
@@ -1460,6 +1470,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
 
 .composer-cell--editable {
     cursor: grab;
+    touch-action: none;
 }
 
 .composer-close-btn {
