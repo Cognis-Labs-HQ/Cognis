@@ -410,6 +410,7 @@
   <string name="ui.app.admin.logs.filter_severity">重大度</string>
   <string name="ui.app.admin.logs.filter_keyword">キーワード</string>
   <string name="ui.app.admin.logs.filter_keyword_placeholder">ログメッセージとメタデータを検索</string>
+  <string name="ui.app.admin.logs.filter_time_range">期間</string>
   <string name="ui.app.admin.logs.empty">現在のフィルターに一致するログはありません。</string>
   <string name="ui.app.admin.logs.time_unknown">不明な時刻</string>
   <string name="ui.app.admin.logs.message_missing">ログメッセージを利用できません。</string>
@@ -420,6 +421,12 @@
   <string name="ui.app.admin.logs.severity.info">情報</string>
   <string name="ui.app.admin.logs.severity.warn">警告</string>
   <string name="ui.app.admin.logs.severity.error">エラー</string>
+  <string name="ui.app.admin.logs.time_range.all">全期間</string>
+  <string name="ui.app.admin.logs.time_range.5m">過去5分</string>
+  <string name="ui.app.admin.logs.time_range.15m">過去15分</string>
+  <string name="ui.app.admin.logs.time_range.1h">過去1時間</string>
+  <string name="ui.app.admin.logs.time_range.6h">過去6時間</string>
+  <string name="ui.app.admin.logs.time_range.24h">過去24時間</string>
   <string name="ui.app.admin.notif.active_providers">アクティブなアダプター</string>
   <string name="ui.app.admin.notif.available_providers">利用可能なアダプター</string>
   <string name="ui.app.admin.notif.no_active">アクティブな通知アダプターがありません。</string>

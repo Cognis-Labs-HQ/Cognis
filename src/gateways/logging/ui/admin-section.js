@@ -3,14 +3,25 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 const MAX_DISPLAYED_LOGS = 400;
 const RECONNECT_DELAY_MS = 2000;
 const MAX_SILENT_RECONNECT_ATTEMPTS = 2;
+const AUTO_REFRESH_INTERVAL_MS = 5000;
+const TIME_RANGE_MS_BY_KEY = {
+    "5m": 5 * 60 * 1000,
+    "15m": 15 * 60 * 1000,
+    "1h": 60 * 60 * 1000,
+    "6h": 6 * 60 * 60 * 1000,
+    "24h": 24 * 60 * 60 * 1000,
+};
 
-function buildQuery(severity, keyword) {
+function buildQuery(severity, keyword, timeRange) {
     const params = new URLSearchParams();
     if (severity && severity !== "all") {
         params.set("severity", severity);
     }
     if (keyword) {
         params.set("keyword", keyword);
+    }
+    if (timeRange && timeRange !== "all") {
+        params.set("timeRange", timeRange);
     }
     const query = params.toString();
     return query ? `?${query}` : "";
@@ -63,6 +74,20 @@ function renderLogRow(entry, i18n, escapeHtml) {
     `;
 }
 
+function parseEntryTimestampMs(entry) {
+    const parsed = Date.parse(String(entry?.ts ?? ""));
+    if (Number.isNaN(parsed)) return null;
+    return parsed;
+}
+
+function isWithinTimeRange(entry, timeRange) {
+    const rangeMs = TIME_RANGE_MS_BY_KEY[timeRange];
+    if (!rangeMs) return true;
+    const timestampMs = parseEntryTimestampMs(entry);
+    if (timestampMs === null) return false;
+    return Date.now() - timestampMs <= rangeMs;
+}
+
 /**
  * Logging gateway admin section.
  *
@@ -78,6 +103,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     let flushFrame = null;
     let streamController = null;
     let reconnectTimer = null;
+    let autoRefreshTimer = null;
     let panelEl = null;
     let resultsEl = null;
     let statusEl = null;
@@ -87,6 +113,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     let activeFilters = {
         severity: "all",
         keyword: "",
+        timeRange: "all",
     };
 
     function isPanelActive() {
@@ -167,6 +194,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     }
 
     function queueLog(entry) {
+        if (!isWithinTimeRange(entry, activeFilters.timeRange)) {
+            return;
+        }
         logs.push(entry);
         if (logs.length > MAX_DISPLAYED_LOGS) {
             logs = logs.slice(-MAX_DISPLAYED_LOGS);
@@ -203,6 +233,32 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         }
         reconnectAttempts = 0;
         setStatus("");
+    }
+
+    function stopAutoRefresh() {
+        if (autoRefreshTimer) {
+            clearInterval(autoRefreshTimer);
+            autoRefreshTimer = null;
+        }
+    }
+
+    function refreshByTimeRangeWindow() {
+        if (!(resultsEl instanceof HTMLElement)) return;
+        const nextLogs = logs.filter((entry) =>
+            isWithinTimeRange(entry, activeFilters.timeRange),
+        );
+        if (nextLogs.length === logs.length) {
+            return;
+        }
+        logs = nextLogs;
+        renderSnapshot();
+    }
+
+    function startAutoRefresh() {
+        stopAutoRefresh();
+        autoRefreshTimer = setInterval(() => {
+            refreshByTimeRangeWindow();
+        }, AUTO_REFRESH_INTERVAL_MS);
     }
 
     function scheduleReconnect(sessionId) {
@@ -269,6 +325,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             const query = buildQuery(
                 activeFilters.severity,
                 activeFilters.keyword,
+                activeFilters.timeRange,
             );
             const response = await apiFetch(`/api/v1/logging/stream${query}`, {
                 signal: streamController.signal,
@@ -322,6 +379,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         statusEl = root.querySelector(".logs-stream-status");
         const severitySelect = root.querySelector('[name="logsSeverity"]');
         const keywordInput = root.querySelector('[name="logsKeyword"]');
+        const timeRangeSelect = root.querySelector('[name="logsTimeRange"]');
         const applyButton = root.querySelector(".logs-stream-apply");
 
         if (
@@ -330,6 +388,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             !(statusEl instanceof HTMLElement) ||
             !(severitySelect instanceof HTMLSelectElement) ||
             !(keywordInput instanceof HTMLInputElement) ||
+            !(timeRangeSelect instanceof HTMLSelectElement) ||
             !(applyButton instanceof HTMLButtonElement)
         ) {
             return;
@@ -337,12 +396,14 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
         severitySelect.value = activeFilters.severity;
         keywordInput.value = activeFilters.keyword;
+        timeRangeSelect.value = activeFilters.timeRange;
         renderSnapshot();
 
         const applyFilters = () => {
             activeFilters = {
                 severity: severitySelect.value || "all",
                 keyword: keywordInput.value.trim(),
+                timeRange: timeRangeSelect.value || "all",
             };
             reconnectAttempts = 0;
             resetLogs();
@@ -365,10 +426,12 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             visibilityListenerAttached = true;
         }
 
+        startAutoRefresh();
         void startStream();
     }
 
     function unbindSection() {
+        stopAutoRefresh();
         detachVisibilityListener();
         stopStream();
         panelEl = null;
@@ -409,6 +472,17 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                               name="logsKeyword"
                               placeholder="${escapeHtml(i18n.t("ui.app.admin.logs.filter_keyword_placeholder"))}"
                             />
+                          </label>
+                          <label class="logs-stream-filter">
+                            ${i18n.t("ui.app.admin.logs.filter_time_range")}
+                            <select name="logsTimeRange" class="theme-select">
+                              <option value="all">${i18n.t("ui.app.admin.logs.time_range.all")}</option>
+                              <option value="5m">${i18n.t("ui.app.admin.logs.time_range.5m")}</option>
+                              <option value="15m">${i18n.t("ui.app.admin.logs.time_range.15m")}</option>
+                              <option value="1h">${i18n.t("ui.app.admin.logs.time_range.1h")}</option>
+                              <option value="6h">${i18n.t("ui.app.admin.logs.time_range.6h")}</option>
+                              <option value="24h">${i18n.t("ui.app.admin.logs.time_range.24h")}</option>
+                            </select>
                           </label>
                           <button type="button" class="btn-confirm btn-animated logs-stream-apply">
                             ${i18n.t("ui.reuse.generic.refresh")}

@@ -15,6 +15,13 @@ const MAX_KEYWORD_LENGTH = 120;
 const MAX_SNAPSHOT_ENTRIES = 300;
 const STREAM_POLL_INTERVAL_MS = 1500;
 const STREAM_HEARTBEAT_INTERVAL_MS = 15000;
+const TIME_RANGE_MS_BY_KEY: Record<string, number> = {
+    "5m": 5 * 60 * 1000,
+    "15m": 15 * 60 * 1000,
+    "1h": 60 * 60 * 1000,
+    "6h": 6 * 60 * 60 * 1000,
+    "24h": 24 * 60 * 60 * 1000,
+};
 
 function parseLevelFilter(value: string | null): Set<LogLevel> | null {
     if (!value || value === "all") return null;
@@ -31,6 +38,17 @@ function parseLevelFilter(value: string | null): Set<LogLevel> | null {
 function parseKeywordFilter(value: string | null): string {
     if (!value) return "";
     return value.trim().slice(0, MAX_KEYWORD_LENGTH).toLowerCase();
+}
+
+function parseTimeRangeFilter(value: string | null): number | null {
+    if (!value || value === "all") return null;
+    return TIME_RANGE_MS_BY_KEY[value] ?? null;
+}
+
+function parseTimestampMs(entry: Record<string, unknown>): number | null {
+    const parsed = Date.parse(String(entry.ts ?? ""));
+    if (Number.isNaN(parsed)) return null;
+    return parsed;
 }
 
 function normalizeLogEntry(rawLine: string): Record<string, unknown> {
@@ -59,10 +77,18 @@ function matchesFilters(
     entry: Record<string, unknown>,
     severities: Set<LogLevel> | null,
     keyword: string,
+    timeRangeMs: number | null,
 ): boolean {
     const level = String(entry.level ?? "").toLowerCase() as LogLevel;
     if (severities && !severities.has(level)) {
         return false;
+    }
+    if (timeRangeMs !== null) {
+        const tsMs = parseTimestampMs(entry);
+        if (tsMs === null) return false;
+        if (Date.now() - tsMs > timeRangeMs) {
+            return false;
+        }
     }
     if (!keyword) return true;
     return JSON.stringify(entry).toLowerCase().includes(keyword);
@@ -109,13 +135,17 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
 
         const severities = parseLevelFilter(url.searchParams.get("severity"));
         const keyword = parseKeywordFilter(url.searchParams.get("keyword"));
+        const timeRangeMs = parseTimeRangeFilter(
+            url.searchParams.get("timeRange"),
+        );
         let seq = 0;
         let contentLength = 0;
         let pendingLine = "";
         let closed = false;
 
         const pushEntry = (entry: Record<string, unknown>) => {
-            if (!matchesFilters(entry, severities, keyword)) return;
+            if (!matchesFilters(entry, severities, keyword, timeRangeMs))
+                return;
             writeSseEvent(res, "log", { id: seq++, ...entry });
         };
 
@@ -138,7 +168,7 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
                     .filter((line) => line.length > 0)
                     .map((line) => normalizeLogEntry(line))
                     .filter((entry) =>
-                        matchesFilters(entry, severities, keyword),
+                        matchesFilters(entry, severities, keyword, timeRangeMs),
                     );
                 for (const entry of entries.slice(-MAX_SNAPSHOT_ENTRIES)) {
                     writeSseEvent(res, "log", { id: seq++, ...entry });
@@ -245,6 +275,7 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
             accountId: claims.sub,
             severityFilter: severities ? Array.from(severities) : "all",
             keyword: keyword || undefined,
+            timeRangeMs: timeRangeMs ?? "all",
         });
         return true;
     };
