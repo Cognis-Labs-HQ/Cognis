@@ -27,13 +27,14 @@ function injectStyles() {
 
 function formatRelativeTime(ms) {
     const seconds = Math.floor((Date.now() - ms) / 1000);
-    if (seconds < 60) return `${seconds}s ago`;
+    const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+    if (seconds < 60) return rtf.format(-seconds, "second");
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
+    if (minutes < 60) return rtf.format(-minutes, "minute");
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
+    if (hours < 24) return rtf.format(-hours, "hour");
     const days = Math.floor(hours / 24);
-    return `${days}d ago`;
+    return rtf.format(-days, "day");
 }
 
 async function fetchCount() {
@@ -177,7 +178,7 @@ function buildButton(i18n) {
     btn.setAttribute("type", "button");
     btn.innerHTML =
         '<span class="notification-badge-wrap">' +
-        '<span class="notification-icon" aria-hidden="true">&#128276;</span>' +
+        '<span class="notification-icon" aria-hidden="true">🔔</span>' +
         '<span id="notification-count" class="notification-count" hidden>0</span>' +
         "</span>";
 
