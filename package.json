@@ -6,8 +6,10 @@
     "workspaces": [
         "src/api",
         "src/core",
-        "src/adapters/*",
-        "src/tooling/*"
+        "src/adapters/*/*",
+        "src/tooling/*",
+        "src/gateways",
+        "src/modules"
     ],
     "scripts": {
         "typecheck": "node src/tooling/scripts/gen-tsconfig.mjs && tsc -p tsconfig.json --noEmit",

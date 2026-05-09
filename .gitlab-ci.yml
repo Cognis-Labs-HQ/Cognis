@@ -14,9 +14,8 @@ cache:
 test:
     image: node:22-alpine
     script:
-        - apk add ripgrep
-        - npm ci --ignore-scripts
-        - npm install
+        - apk add ripgrep python3 build-base
+        - npm ci
         - npm test
     tags:
         - shared
