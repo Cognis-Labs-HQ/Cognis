@@ -25,8 +25,18 @@ function makeAdapterCtx(
     const routeRegistry = overrides.routeRegistry ?? new RouteRegistry();
     const capabilities = overrides.capabilities ?? new CapabilityStore();
     const uiRegistry = overrides.uiRegistry;
+    const registeredAdapters: Array<{
+        adapterId: string;
+        adapterName: string;
+    }> = [];
+    const gateway = {
+        registerAdapter(adapter: { adapterId: string; adapterName: string }) {
+            registeredAdapters.push(adapter);
+        },
+    };
     return {
         ctx: {
+            gateway,
             adapterId: "profile",
             adapterRoot: "/nonexistent",
             capabilities,
@@ -52,6 +62,8 @@ function makeAdapterCtx(
             dbType: "sqlite" as const,
             isGatewayEnabled: () => true,
         },
+        gateway,
+        registeredAdapters,
         gatewayRegistry,
         routeRegistry,
         capabilities,
