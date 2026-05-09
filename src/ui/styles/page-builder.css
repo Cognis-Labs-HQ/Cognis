@@ -259,10 +259,7 @@ code {
     width: 100%;
 }
 .main-window--with-toolbar {
-    grid-template-columns: minmax(min-content, min(max-content, 40vw)) minmax(
-            0,
-            1fr
-        );
+    grid-template-columns: fit-content(40vw) minmax(0, 1fr);
 }
 .main-window--with-toolbar .toolbar {
     margin-right: 12px;
