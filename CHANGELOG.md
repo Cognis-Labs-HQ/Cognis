@@ -7,6 +7,11 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- CI test job (`test` stage in `.gitlab-ci.yml`) was failing on native-module tests because `npm ci --ignore-scripts` skipped sqlite3's binary compilation/download and the subsequent `npm install` did not re-run install scripts for already-present packages. Fixed by replacing `npm ci --ignore-scripts` + `npm install` with a single `npm ci`, and adding `python3 build-base` to the `apk add` step so node-gyp can compile native modules on Alpine Linux. ([f6d5e3b](https://github.com/le-firehawk/Cognis/commit/f6d5e3b))
+- `package.json` workspace glob `"src/adapters/*"` did not match the two-level-deep adapter layout (`src/adapters/<type>/<name>/`). Updated to `"src/adapters/*/*"` so all adapter packages are properly discovered. Added `src/gateways` and `src/modules` to the workspace list, which were also missing. Regenerated `package-lock.json` to remove stale flat-path entries (e.g. `src/adapters/auth-ldap`) left from a previous directory restructure. ([f6d5e3b](https://github.com/le-firehawk/Cognis/commit/f6d5e3b))
+
 ### Added
 
 - PWA support so Cognis can be installed as an app from Chrome / Chromium / Edge ("Install Cognis…" / "Add to Home screen") and from Firefox / Firefox for Android. New `src/ui/public/manifest.webmanifest` declares the app name, scope (`/`), `start_url` (`/dashboard`), `display: standalone` (with `display_override: ["standalone","minimal-ui","browser"]`), theme/background colours, dashboard + settings shortcuts, and four PNG icons (192/512 in both `purpose: "any"` and `purpose: "maskable"`) generated from the existing brand asset. New `src/ui/public/sw.js` service worker precaches a small app shell, serves navigation requests network-first with an offline fallback to the cached `/dashboard` shell, serves `/static/*` and the manifest stale-while-revalidate, and never intercepts `/api/*` so authentication and live data always go to the network. New `src/ui/reuse/pwa.js` registers the worker at root scope, captures `beforeinstallprompt` for a future install button, and is hooked into both the dashboard layout (post-auth pages) and the auth shell + verify-email page (pre-auth pages) so installation is offered from every entry point. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
