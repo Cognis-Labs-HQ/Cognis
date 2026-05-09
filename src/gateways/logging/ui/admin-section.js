@@ -141,11 +141,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
     function trimRenderedRows() {
         if (!(resultsEl instanceof HTMLElement)) return;
-        const rows = resultsEl.querySelectorAll(".logs-stream-row");
-        const excess = rows.length - MAX_DISPLAYED_LOGS;
-        if (excess <= 0) return;
-        for (let index = 0; index < excess; index++) {
-            rows[rows.length - index - 1]?.remove();
+        while (resultsEl.childElementCount > MAX_DISPLAYED_LOGS) {
+            resultsEl.lastElementChild?.remove();
         }
     }
 
@@ -201,7 +198,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         }
         logs.unshift(entry);
         if (logs.length > MAX_DISPLAYED_LOGS) {
-            logs = logs.slice(0, MAX_DISPLAYED_LOGS);
+            logs.pop();
         }
         pendingEntries.unshift(entry);
         scheduleFlush();
