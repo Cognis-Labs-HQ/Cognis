@@ -101,6 +101,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         version: "1.3.0",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
+        required: true,
         hasAdapters: true,
     });
 
@@ -736,37 +737,30 @@ function createGatewayAdapterRoutes(
                 }
                 await gateway.enableSender(adapterId);
             } else {
-                try {
-                    await gateway.disableSender(adapterId);
-                } catch (err) {
-                    const code =
-                        err instanceof Error &&
-                        (err as Error & { code?: string }).code;
-                    if (code === "required_sender") {
-                        log?.(
-                            "warn",
-                            "Blocked attempt to disable required adapter.",
-                            {
-                                ...logMeta,
-                                adapterId,
+                if (adapterId === "internal") {
+                    log?.(
+                        "warn",
+                        "Blocked attempt to disable locked notify adapter.",
+                        {
+                            ...logMeta,
+                            adapterId,
+                        },
+                    );
+                    res.writeHead(403, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "locked_adapter",
+                                message:
+                                    "The internal notification adapter cannot be disabled",
                             },
-                        );
-                        res.writeHead(403, {
-                            "content-type": "application/json",
-                        });
-                        res.end(
-                            JSON.stringify({
-                                error: {
-                                    code: "required_sender",
-                                    message:
-                                        "This adapter is required and cannot be disabled",
-                                },
-                            }),
-                        );
-                        return true;
-                    }
-                    throw err;
+                        }),
+                    );
+                    return true;
                 }
+                await gateway.disableSender(adapterId);
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
