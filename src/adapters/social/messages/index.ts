@@ -89,7 +89,7 @@ export async function bootstrapSocialAdapter(
         );
         return;
     }
-    if (!ctx.dbExecutor || !ctx.dbType) {
+    if (!ctx.dbExecutor) {
         ctx.log?.(
             "warn",
             "Messages adapter: no database executor available — messages disabled.",
@@ -98,11 +98,12 @@ export async function bootstrapSocialAdapter(
         return;
     }
 
-    const messagesStore = new DbMessagesStore(ctx.dbExecutor, ctx.dbType);
+    const dbType = ctx.dbType ?? "sqlite";
+    const messagesStore = new DbMessagesStore(ctx.dbExecutor, dbType);
     await messagesStore.ensureSchema();
     ctx.log?.("info", "Messages adapter: schema ready.", {
         component: "social-messages-adapter",
-        dbType: ctx.dbType,
+        dbType,
     });
 
     const dispatch =
