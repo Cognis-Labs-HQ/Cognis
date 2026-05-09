@@ -73,7 +73,7 @@ test("register page renders invalid-token intro message instead of disabled form
 
     assert.match(
         source,
-        /if \(isInvalid\) \{\s*messageHtml = renderInPageCallout\(\{\s*variant: "danger",\s*title: i18n\.t\("ui\.reuse\.generic\.error"\),\s*\}\);/m,
+        /if \(isInvalid\) \{\s*return \{\s*message: renderInPageCallout\(\{\s*variant: "danger",\s*title: i18n\.t\("ui\.reuse\.generic\.error"\),\s*\}\),/m,
     );
 });
 

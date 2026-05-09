@@ -174,13 +174,13 @@ function buildRegisterFormHtml({ compact = false } = {}) {
             <select name="language">${langOptionsHtml}</select>
           </label>`
             : "";
-    const verifyNoticeHtml =
-        !compact && !isInviteFlow
-            ? renderInPageCallout({
-                  variant: "info",
-                  body: i18n.t("ui.app.register.email_verify_notice"),
-              })
-            : "";
+    const showVerifyNotice = !compact && !isInviteFlow;
+    const verifyNoticeHtml = showVerifyNotice
+        ? renderInPageCallout({
+              variant: "info",
+              body: i18n.t("ui.app.register.email_verify_notice"),
+          })
+        : "";
     const form = `
       ${invitedText ? `<p class="auth-intro">${escapeHtml(invitedText)}</p>` : ""}
       ${countdownHtml}
@@ -335,103 +335,6 @@ async function runEmailVerificationAfterRegister(
             variant: "error",
         });
     }
-}
-
-function renderRegisterShellPhone() {
-    const isInviteFlow = Boolean(token);
-    const isInvalid = isInviteFlow && tokenInvalid && !inviteAdapterDisabled;
-    const canRenderForm = isInviteFlow
-        ? Boolean(inviteData) && !isInvalid && !inviteAdapterDisabled
-        : openRegistrationsEnabled;
-
-    let formHtml = "";
-    let messageHtml = "";
-
-    if (isInvalid) {
-        messageHtml = renderInPageCallout({
-            variant: "danger",
-            title: i18n.t("ui.reuse.generic.error"),
-        });
-    } else if (!canRenderForm) {
-        messageHtml = `<p class="auth-intro">${escapeHtml(i18n.t("ui.app.register.closed"))}</p>`;
-    } else {
-        const invitedText =
-            inviteData && isInviteFlow
-                ? i18n
-                      .t("ui.app.register.invited_you")
-                      .replace("{inviter}", inviteData.inviterDisplayName)
-                : "";
-        const inviteEmail =
-            isInviteFlow && inviteData ? inviteData.inviteeEmail : "";
-        const lockedEmail = inviteEmail || prefilledEmail;
-        const emailValue = lockedEmail || "";
-        const emailLocked = Boolean(lockedEmail);
-        const emailReadonly = emailLocked ? "disabled" : "";
-        const emailLockedClass = emailLocked ? " auth-input--locked" : "";
-        const countdownHtml = inviteData?.expiresAt
-            ? `<p id="register-countdown" class="auth-intro" style="font-size:1rem;margin-top:4px"></p>`
-            : "";
-        const langOptionsHtml = availableLanguages
-            .map(
-                (lang) =>
-                    `<option value="${escapeHtml(lang.key)}"${lang.key === selectedLanguage ? " selected" : ""}>${escapeHtml(lang.name)}</option>`,
-            )
-            .join("");
-        const langSelectHtml =
-            availableLanguages.length > 1
-                ? `<label>
-            <span>${escapeHtml(i18n.t("ui.app.register.language"))}</span>
-            <select name="language">${langOptionsHtml}</select>
-          </label>`
-                : "";
-        formHtml = `
-      ${invitedText ? `<p class="auth-intro">${escapeHtml(invitedText)}</p>` : ""}
-      ${countdownHtml}
-      <div class="auth-form-shell">
-        <form id="register-form" class="stack auth-form">
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.register.email"))}</span>
-            <input name="email" type="email" value="${escapeHtml(emailValue)}" ${emailReadonly} class="${emailLockedClass.trim()}" required />
-          </label>
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.register.username"))}</span>
-            <input name="username" required />
-          </label>
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.register.display_name"))}</span>
-            <input name="displayName" />
-          </label>
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.register.password"))}</span>
-            <input name="password" type="password" required />
-          </label>
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.register.confirm_password"))}</span>
-            <input name="confirmPassword" type="password" required />
-          </label>
-          ${langSelectHtml}
-          <button type="submit" class="btn-confirm btn-animated">${escapeHtml(i18n.t("ui.app.register.submit"))}</button>
-        </form>
-      </div>
-    `;
-    }
-
-    const brandlineHtml = renderAuthBrandline(
-        i18n.t("ui.shared.brand.name"),
-        i18n.t("ui.app.login.hero.tagline"),
-    );
-    return `
-      <section class="auth-page auth-page--frame">
-        <div class="auth-layout">
-          <main class="panel auth-panel" aria-label="${escapeHtml(i18n.t("ui.app.register.form_title"))}">
-            ${brandlineHtml}
-            <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.register.form_title"))}</h2>
-            ${messageHtml}
-            ${formHtml}
-          </main>
-        </div>
-      </section>
-    `;
 }
 
 function bindRegisterForm() {
