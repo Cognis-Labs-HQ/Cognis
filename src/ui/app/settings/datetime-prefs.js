@@ -18,13 +18,13 @@ import { getBrowserDetectedTimezone } from "../../reuse/timestamp.js";
  *
  * @param {Element} root
  * @param {{ existingPrefs: object|null, i18n: object, onDirtyChange?: (dirty: boolean) => void }} options
- * @returns {{ init: () => void, getTimezone: () => string, isDirty: () => boolean, discard: () => void }}
+ * @returns {{ init: () => void, getTimezone: () => string, isDirty: () => boolean, commit: () => void, discard: () => void }}
  */
 export function initDateTimePrefs(
     root,
     { existingPrefs, i18n, onDirtyChange },
 ) {
-    const savedTimezone = existingPrefs?.timezone ?? "auto";
+    let savedTimezone = existingPrefs?.timezone ?? "auto";
     let currentTimezone = savedTimezone;
 
     function notifyDirty() {
@@ -102,6 +102,10 @@ export function initDateTimePrefs(
         });
     }
 
+    function commit() {
+        savedTimezone = currentTimezone;
+    }
+
     function discard() {
         currentTimezone = savedTimezone;
         const selectEl = root.querySelector("#pref-timezone-select");
@@ -113,6 +117,7 @@ export function initDateTimePrefs(
         init,
         getTimezone: () => currentTimezone,
         isDirty: () => currentTimezone !== savedTimezone,
+        commit,
         discard,
     };
 }

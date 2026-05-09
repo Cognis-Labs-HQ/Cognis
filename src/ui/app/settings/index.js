@@ -76,6 +76,7 @@ export async function mount(root) {
 
     function initThemePrefs({ onDirtyChange }) {
         let currentMode = savedMode;
+        let savedModeValue = savedMode;
 
         function updateSelector() {
             root.querySelectorAll(".theme-btn[data-theme-value]").forEach(
@@ -92,7 +93,7 @@ export async function mount(root) {
             btn.addEventListener("click", () => {
                 currentMode = btn.dataset.themeValue;
                 updateSelector();
-                onDirtyChange?.(currentMode !== savedMode);
+                onDirtyChange?.(currentMode !== savedModeValue);
             });
         });
 
@@ -100,8 +101,11 @@ export async function mount(root) {
 
         return {
             getMode: () => currentMode,
+            commit: () => {
+                savedModeValue = currentMode;
+            },
             discard: () => {
-                currentMode = savedMode;
+                currentMode = savedModeValue;
                 updateSelector();
                 onDirtyChange?.(false);
             },
@@ -417,6 +421,11 @@ export async function mount(root) {
                 JSON.stringify(prefs),
             );
             applyUiPreferences(prefs);
+            fontPrefs?.commit();
+            themePrefs?.commit();
+            datetimePrefs?.commit();
+            languagePrefs?.commit();
+            notifPrefs?.commit();
             const next = prefs.languagePriority ?? [];
             const prev = languagePriority ?? [];
             const languageChanged =

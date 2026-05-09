@@ -93,10 +93,10 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
         rawStoredSize < 8 ? Math.round(rawStoredSize * 12) : rawStoredSize;
     let fontSize = Math.max(8, Math.min(24, Math.round(normalizedSize)));
 
-    const savedFont = parseSavedFont(
+    let savedFont = parseSavedFont(
         existingPrefs?.appFont || existingPrefs?.greetingFont,
     );
-    const savedSize = fontSize;
+    let savedSize = fontSize;
 
     function isAtDefault() {
         const current = pickerControl?.getValue() || DEFAULT_FONT;
@@ -178,6 +178,11 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
         updateResetButton();
     }
 
+    function commit() {
+        savedFont = pickerControl?.getValue() || DEFAULT_FONT;
+        savedSize = fontSize;
+    }
+
     function discard() {
         pickerControl?.setValue(savedFont);
         updatePreview(savedFont);
@@ -192,6 +197,7 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
             const current = pickerControl?.getValue() || DEFAULT_FONT;
             return current !== savedFont || fontSize !== savedSize;
         },
+        commit,
         discard,
     };
 }
