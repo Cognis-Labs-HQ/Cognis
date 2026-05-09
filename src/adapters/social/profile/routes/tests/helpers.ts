@@ -1,7 +1,7 @@
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { SqliteExecutor } from "../../../../gateways/db/executor.js";
+import { SqliteExecutor } from "../../../../../gateways/db/executor.js";
 
 export function makeTempDb() {
     const dir = mkdtempSync(path.join(tmpdir(), "cognis-profile-test-"));

@@ -478,23 +478,24 @@ test("GET /static/gateways/notify/admin-section.js serves notify gateway admin U
     assert.match(recorder.body, /createAdminSection/);
 });
 
-test("GET /static/gateways/profile/navbar.js serves profile gateway navbar plugin", async () => {
+test("GET /static/adapters/social/profile/navbar.js serves profile adapter navbar plugin", async () => {
     const uiRegistry = new StaticUIRegistry();
     const profileUiDir = path.resolve(
         process.cwd(),
         "src",
-        "gateways",
+        "adapters",
+        "social",
         "profile",
         "ui",
     );
-    uiRegistry.registerStaticDir("profile", profileUiDir);
+    uiRegistry.registerAdapterStaticDir("social", "profile", profileUiDir);
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
     const handled = await route(
         { headers: {} } as any,
         recorder.res as any,
-        new URL("http://localhost/static/gateways/profile/navbar.js"),
+        new URL("http://localhost/static/adapters/social/profile/navbar.js"),
     );
 
     assert.ok(handled);

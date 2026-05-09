@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
-import { DbProfileStore } from "../../../../adapters/db/reuse/profile-store.js";
-import { SqliteExecutor } from "../../../../gateways/db/executor.js";
-import { DbLocalAccountStore } from "../../../../adapters/auth/local/store.js";
+import { DbProfileStore } from "../../../../../adapters/db/reuse/profile-store.js";
+import { SqliteExecutor } from "../../../../../gateways/db/executor.js";
+import { DbLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
 import { createPostRoutes } from "../posts.js";
-import { issueAccessToken } from "../../../../api/auth/access-tokens.js";
+import { issueAccessToken } from "../../../../../api/auth/access-tokens.js";
 import { makeTempDb } from "./helpers.js";
 
 function makeReq(method: string, token: string | null, body?: string) {
