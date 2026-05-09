@@ -12,7 +12,10 @@
             rgba(45, 212, 191, 0.2),
             transparent 55%
         ),
-        linear-gradient(150deg, #030a14 0%, #071421 45%, #020813 100%);
+        repeating-linear-gradient(180deg, #030a14 0%, #071421 50%, #030a14 100%);
+    --bg-repeat: no-repeat, no-repeat, repeat-y;
+    --bg-size: auto, auto, 100% 540px;
+    --bg-attachment: fixed, fixed, scroll;
     --surface: rgba(15, 23, 42, 0.84);
     --surface-2: rgba(19, 29, 51, 0.92);
     --surface-soft: rgba(255, 255, 255, 0.06);
@@ -77,6 +80,7 @@
     --color-success-hover-bg: rgba(52, 211, 153, 0.12);
     --shadow-btn: 0 4px 14px rgba(2, 6, 23, 0.35);
     --shadow-floating: 0 -4px 24px rgba(2, 6, 23, 0.28);
+    --drawer-backdrop: rgba(0, 0, 0, 0.48);
 }
 
 body[data-theme="light"] {
@@ -92,6 +96,7 @@ body[data-theme="light"] {
     --color-success-hover-bg: rgba(5, 150, 105, 0.08);
     --shadow-btn: 0 4px 14px rgba(15, 23, 42, 0.2);
     --shadow-floating: 0 -4px 24px rgba(15, 23, 42, 0.15);
+    --drawer-backdrop: rgba(15, 23, 42, 0.32);
 }
 
 * {
@@ -109,6 +114,9 @@ button {
 body {
     margin: 0;
     background: var(--bg);
+    background-repeat: var(--bg-repeat);
+    background-size: var(--bg-size);
+    background-attachment: var(--bg-attachment);
     color: var(--text);
     font-family:
         var(--app-font), "Audiowide", "Rajdhani", "Exo 2", "Trebuchet MS",
@@ -142,7 +150,10 @@ body[data-theme="light"] {
             rgba(56, 189, 248, 0.16),
             transparent 40%
         ),
-        linear-gradient(180deg, #f4f8ff 0%, #e8eef9 100%);
+        repeating-linear-gradient(180deg, #f4f8ff 0%, #e8eef9 50%, #f4f8ff 100%);
+    --bg-repeat: no-repeat, repeat-y;
+    --bg-size: auto, 100% 540px;
+    --bg-attachment: fixed, scroll;
     --surface: rgba(255, 255, 255, 0.92);
     --surface-2: rgba(248, 250, 255, 0.96);
     --text: #0f172a;

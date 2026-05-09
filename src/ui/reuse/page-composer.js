@@ -145,8 +145,10 @@ export function createPageComposer(
     let lastObservedCols = 0;
     let gridSection = null;
     let editToggleAbortController = null;
+    let layoutProfiles = { layoutsByGrid: {} };
 
     const UNIT = 90; // grid cell size in pixels
+    const MOBILE_TOOLBAR_BREAKPOINT = 900;
 
     function handleBeforeUnload(e) {
         e.preventDefault();
@@ -169,35 +171,199 @@ export function createPageComposer(
         }
     }
 
-    async function loadLayout() {
+    function getLayoutProfileKey(gridColumnCount) {
+        return `cols-${Math.max(1, Number(gridColumnCount) || 0)}`;
+    }
+
+    function parseLayoutProfileColumns(profileKey) {
+        const match = /^cols-(\d+)$/.exec(profileKey);
+        if (!match) return null;
+        return Number.parseInt(match[1], 10);
+    }
+
+    function normalizeLayoutProfiles(rawLayout) {
+        if (
+            rawLayout &&
+            typeof rawLayout === "object" &&
+            !Array.isArray(rawLayout) &&
+            rawLayout.layoutsByGrid &&
+            typeof rawLayout.layoutsByGrid === "object" &&
+            !Array.isArray(rawLayout.layoutsByGrid)
+        ) {
+            return {
+                layoutsByGrid: { ...rawLayout.layoutsByGrid },
+            };
+        }
+        return { layoutsByGrid: {} };
+    }
+
+    function getLayoutForGrid(rawLayout, gridColumnCount) {
+        const normalized = normalizeLayoutProfiles(rawLayout);
+        const profileKey = getLayoutProfileKey(gridColumnCount);
+        const exactLayout = normalized.layoutsByGrid[profileKey];
+        if (exactLayout) {
+            return {
+                layout: exactLayout,
+                profiles: normalized,
+            };
+        }
+
+        const availableKeys = Object.keys(normalized.layoutsByGrid);
+        const targetCols = Math.max(1, Number(gridColumnCount) || 1);
+        let nearestKey = null;
+        let nearestDistance = Number.POSITIVE_INFINITY;
+        for (const key of availableKeys) {
+            const keyCols = parseLayoutProfileColumns(key);
+            if (!Number.isFinite(keyCols)) continue;
+            const distance = Math.abs(keyCols - targetCols);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestKey = key;
+            }
+        }
+        if (nearestKey) {
+            return {
+                layout: normalized.layoutsByGrid[nearestKey],
+                profiles: normalized,
+            };
+        }
+
+        if (
+            rawLayout &&
+            typeof rawLayout === "object" &&
+            !Array.isArray(rawLayout)
+        ) {
+            return {
+                layout: rawLayout,
+                profiles: {
+                    layoutsByGrid: {
+                        [profileKey]: rawLayout,
+                    },
+                },
+            };
+        }
+
+        return {
+            layout: null,
+            profiles: normalized,
+        };
+    }
+
+    function setLayoutForGrid(profiles, gridColumnCount, nextLayout) {
+        const normalized = normalizeLayoutProfiles(profiles);
+        const profileKey = getLayoutProfileKey(gridColumnCount);
+        normalized.layoutsByGrid[profileKey] = nextLayout;
+        return normalized;
+    }
+
+    async function loadLayoutByKey(key, gridColumnCount) {
         const account = localStorage.getItem("cognis_account");
         const token = localStorage.getItem("cognis_token");
-        if (!account || !token) return null;
+        if (!account || !token) {
+            return { layout: null, profiles: { layoutsByGrid: {} } };
+        }
         try {
             const response = await apiFetch(
-                `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(preferenceKey)}`,
+                `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
             );
-            if (!response.ok) return null;
+            if (!response.ok) {
+                return { layout: null, profiles: { layoutsByGrid: {} } };
+            }
             const payload = await response.json();
             const raw = payload?.data?.layoutJson;
-            return raw ? JSON.parse(raw) : null;
+            const parsed = raw ? JSON.parse(raw) : null;
+            return getLayoutForGrid(parsed, gridColumnCount);
         } catch {
-            return null;
+            return { layout: null, profiles: { layoutsByGrid: {} } };
         }
     }
 
-    async function saveLayout() {
+    async function saveLayoutByKey(key, profiles, gridColumnCount, nextLayout) {
         const account = localStorage.getItem("cognis_account");
         const token = localStorage.getItem("cognis_token");
-        if (!account || !token) return;
+        if (!account || !token) {
+            return normalizeLayoutProfiles(profiles);
+        }
+        const nextProfiles = setLayoutForGrid(
+            profiles,
+            gridColumnCount,
+            nextLayout,
+        );
         await apiFetch(
-            `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(preferenceKey)}`,
+            `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
             {
                 method: "PUT",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ layout }),
+                body: JSON.stringify({ layout: nextProfiles }),
             },
         );
+        return nextProfiles;
+    }
+
+    async function loadLayout() {
+        const loaded = await loadLayoutByKey(preferenceKey, gridCols);
+        layoutProfiles = loaded.profiles;
+        return cloneLayoutData(loaded.layout);
+    }
+
+    async function saveLayout() {
+        layoutProfiles = await saveLayoutByKey(
+            preferenceKey,
+            layoutProfiles,
+            gridCols,
+            layout,
+        );
+    }
+
+    function cloneLayoutData(layoutData) {
+        return layoutData ? JSON.parse(JSON.stringify(layoutData)) : null;
+    }
+
+    function applyLayoutForCurrentGridColumns() {
+        const selected = getLayoutForGrid(layoutProfiles, gridCols);
+        if (!selected.layout) return false;
+        layout = cloneLayoutData(selected.layout);
+        return true;
+    }
+
+    function applySubLayoutForCurrentGridColumns(state) {
+        const selected = getLayoutForGrid(state.layoutProfiles, state.gridCols);
+        if (!selected.layout) return false;
+        state.layout = cloneLayoutData(selected.layout);
+        return true;
+    }
+
+    /**
+     * Resolves a stable column count by trying progressively broader width
+     * containers. This prevents transient 0-width reads during init from
+     * incorrectly selecting a narrow layout profile.
+     *
+     * @returns {number}
+     */
+    function getPreferredGridColumnCount() {
+        const widthCandidates = [];
+        if (contentGrid) {
+            contentGrid.style.width = "";
+        }
+        widthCandidates.push(
+            contentGrid ? contentGrid.getBoundingClientRect().width : 0,
+        );
+        widthCandidates.push(
+            contentGrid?.parentElement?.getBoundingClientRect().width ?? 0,
+        );
+        widthCandidates.push(
+            root.querySelector(".main-window")?.getBoundingClientRect().width ??
+                0,
+        );
+        widthCandidates.push(
+            root.querySelector(".workspace")?.getBoundingClientRect().width ??
+                0,
+        );
+        widthCandidates.push(window.innerWidth);
+        const resolvedWidth = widthCandidates.find(
+            (width) => Number.isFinite(width) && width > 0,
+        );
+        return Math.max(1, Math.floor((resolvedWidth ?? UNIT) / UNIT));
     }
 
     function getGridSize(el) {
@@ -262,7 +428,7 @@ export function createPageComposer(
         const extra = editing ? 1 : 0;
         gridRows = Math.max(editing ? 6 : 1, maxBottom + extra);
         contentGrid.style.minHeight = `${gridRows * UNIT}px`;
-        contentGrid.style.width = `${gridCols * UNIT}px`;
+        contentGrid.style.width = editing ? `${gridCols * UNIT}px` : "";
         if (editing && gridSection) {
             gridSection.style.minHeight = `${gridRows * UNIT}px`;
             gridSection.style.width = `${gridCols * UNIT}px`;
@@ -940,14 +1106,22 @@ export function createPageComposer(
             const startY = e.clientY - panel.offsetTop;
 
             function onMove(e) {
-                const maxLeft = window.innerWidth - panel.offsetWidth - 4;
-                const maxTop = window.innerHeight - panel.offsetHeight - 4;
+                const bounds = getComposerPanelHorizontalBounds(
+                    panel.offsetWidth,
+                );
+                const maxLeft = bounds.maxLeft;
+                const minLeft = bounds.minLeft;
+                const minTop = getComposerPanelSafeTop();
+                const maxTop = Math.max(
+                    minTop,
+                    window.innerHeight - panel.offsetHeight - 4,
+                );
                 const newLeft = Math.max(
-                    4,
+                    minLeft,
                     Math.min(maxLeft, e.clientX - startX),
                 );
                 const newTop = Math.max(
-                    4,
+                    minTop,
                     Math.min(maxTop, e.clientY - startY),
                 );
                 panel.style.left = `${newLeft}px`;
@@ -965,6 +1139,52 @@ export function createPageComposer(
             handle.addEventListener("pointerup", onUp);
             handle.addEventListener("pointercancel", onUp);
         });
+    }
+
+    function getComposerPanelSafeTop() {
+        const navRowBottom =
+            root.querySelector(".global-navrow")?.getBoundingClientRect()
+                ?.bottom ?? 0;
+        const topbarBottom =
+            root.querySelector(".global-topbar")?.getBoundingClientRect()
+                ?.bottom ?? 0;
+        return Math.max(
+            12,
+            Math.ceil(Math.max(navRowBottom, topbarBottom) + 12),
+        );
+    }
+
+    /**
+     * Calculates the horizontal drag/placement bounds for the floating composer
+     * panel, preferring workspace bounds when available and falling back to the
+     * viewport when workspace metrics are unavailable.
+     *
+     * @param {number} panelWidth
+     * @returns {{ minLeft: number, maxLeft: number }}
+     */
+    function getComposerPanelHorizontalBounds(panelWidth) {
+        const workspaceRect = root
+            .querySelector(".workspace")
+            ?.getBoundingClientRect();
+        const inset = 12;
+        if (workspaceRect) {
+            const minLeft = Math.ceil(workspaceRect.left + inset);
+            const maxLeft = Math.floor(
+                workspaceRect.right - panelWidth - inset,
+            );
+            if (maxLeft >= minLeft) {
+                return { minLeft, maxLeft };
+            }
+        }
+        return {
+            minLeft: 4,
+            maxLeft: Math.max(4, window.innerWidth - panelWidth - 4),
+        };
+    }
+
+    function clampComposerPanelLeft(nextLeft, panelWidth) {
+        const bounds = getComposerPanelHorizontalBounds(panelWidth);
+        return Math.max(bounds.minLeft, Math.min(bounds.maxLeft, nextLeft));
     }
 
     function createElementsPanel() {
@@ -1002,25 +1222,18 @@ export function createPageComposer(
       </div>
     `;
 
+        const safeTop = getComposerPanelSafeTop();
         if (panelPosition !== null) {
-            panel.style.top = `${panelPosition.top}px`;
-            panel.style.left = `${panelPosition.left}px`;
+            panel.style.top = `${Math.max(safeTop, panelPosition.top)}px`;
+            panel.style.left = `${clampComposerPanelLeft(panelPosition.left, 240)}px`;
             panel.style.right = "auto";
         } else {
             const gridRect = contentGrid.getBoundingClientRect();
-            const panelLeft = gridRect.right + 12;
-            const panelTop = gridRect.top + window.scrollY;
-            const viewportWidth = window.innerWidth;
-
-            if (panelLeft < 0 || panelLeft + 240 > viewportWidth) {
-                panel.style.top = "80px";
-                panel.style.right = "12px";
-                panel.style.left = "auto";
-            } else {
-                panel.style.top = `${Math.max(80, panelTop)}px`;
-                panel.style.left = `${panelLeft}px`;
-                panel.style.right = "auto";
-            }
+            const panelLeft = clampComposerPanelLeft(gridRect.right + 12, 240);
+            const panelTop = gridRect.top;
+            panel.style.top = `${Math.max(safeTop, panelTop)}px`;
+            panel.style.left = `${panelLeft}px`;
+            panel.style.right = "auto";
         }
         document.body.appendChild(panel);
         bindPanelDrag(panel);
@@ -1064,33 +1277,12 @@ export function createPageComposer(
 
     const subStates = new Map();
 
-    async function loadLayoutFor(key) {
-        const account = localStorage.getItem("cognis_account");
-        if (!account) return null;
-        try {
-            const response = await apiFetch(
-                `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
-            );
-            if (!response.ok) return null;
-            const payload = await response.json();
-            const raw = payload?.data?.layoutJson;
-            return raw ? JSON.parse(raw) : null;
-        } catch {
-            return null;
-        }
+    async function loadLayoutFor(key, gridColumnCount) {
+        return loadLayoutByKey(key, gridColumnCount);
     }
 
-    async function saveLayoutFor(key, layoutData) {
-        const account = localStorage.getItem("cognis_account");
-        if (!account) return;
-        await apiFetch(
-            `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
-            {
-                method: "PUT",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ layout: layoutData }),
-            },
-        );
+    async function saveLayoutFor(key, profiles, gridColumnCount, layoutData) {
+        return saveLayoutByKey(key, profiles, gridColumnCount, layoutData);
     }
 
     function getSubPanelId(preferenceKey) {
@@ -1809,24 +2001,18 @@ export function createPageComposer(
       </div>
     `;
 
+        const safeTop = getComposerPanelSafeTop();
         if (state.panelPosition !== null) {
-            panel.style.top = `${state.panelPosition.top}px`;
-            panel.style.left = `${state.panelPosition.left}px`;
+            panel.style.top = `${Math.max(safeTop, state.panelPosition.top)}px`;
+            panel.style.left = `${clampComposerPanelLeft(state.panelPosition.left, 240)}px`;
             panel.style.right = "auto";
         } else {
             const gridRect = state.container.getBoundingClientRect();
-            const panelLeft = gridRect.right + 12;
-            const panelTop = gridRect.top + window.scrollY;
-            const viewportWidth = window.innerWidth;
-            if (panelLeft < 0 || panelLeft + 240 > viewportWidth) {
-                panel.style.top = "80px";
-                panel.style.right = "12px";
-                panel.style.left = "auto";
-            } else {
-                panel.style.top = `${Math.max(80, panelTop)}px`;
-                panel.style.left = `${panelLeft}px`;
-                panel.style.right = "auto";
-            }
+            const panelLeft = clampComposerPanelLeft(gridRect.right + 12, 240);
+            const panelTop = gridRect.top;
+            panel.style.top = `${Math.max(safeTop, panelTop)}px`;
+            panel.style.left = `${panelLeft}px`;
+            panel.style.right = "auto";
         }
 
         document.body.appendChild(panel);
@@ -1841,14 +2027,22 @@ export function createPageComposer(
                 const startX = e.clientX - panel.offsetLeft;
                 const startY = e.clientY - panel.offsetTop;
                 function onMove(e) {
-                    const maxLeft = window.innerWidth - panel.offsetWidth - 4;
-                    const maxTop = window.innerHeight - panel.offsetHeight - 4;
+                    const bounds = getComposerPanelHorizontalBounds(
+                        panel.offsetWidth,
+                    );
+                    const maxLeft = bounds.maxLeft;
+                    const minLeft = bounds.minLeft;
+                    const minTop = getComposerPanelSafeTop();
+                    const maxTop = Math.max(
+                        minTop,
+                        window.innerHeight - panel.offsetHeight - 4,
+                    );
                     const newLeft = Math.max(
-                        4,
+                        minLeft,
                         Math.min(maxLeft, e.clientX - startX),
                     );
                     const newTop = Math.max(
-                        4,
+                        minTop,
                         Math.min(maxTop, e.clientY - startY),
                     );
                     panel.style.left = `${newLeft}px`;
@@ -1883,7 +2077,12 @@ export function createPageComposer(
                 compactSubPlacements(state);
                 state.editing = false;
                 endEditMode();
-                await saveLayoutFor(state.preferenceKey, state.layout);
+                state.layoutProfiles = await saveLayoutFor(
+                    state.preferenceKey,
+                    state.layoutProfiles,
+                    state.gridCols,
+                    state.layout,
+                );
                 renderSubGrid(state);
             });
 
@@ -1968,6 +2167,7 @@ export function createPageComposer(
         if (!state) {
             state = {
                 layout: null,
+                layoutProfiles: { layoutsByGrid: {} },
                 editing: false,
                 layoutSnapshot: null,
                 gridCols: 1,
@@ -1984,7 +2184,18 @@ export function createPageComposer(
                 onRender: el.subComposerOptions.onRender,
                 onUnmount: el.subComposerOptions.onUnmount,
             };
-            state.layout = await loadLayoutFor(state.preferenceKey);
+            const initialGridCols = Math.max(
+                1,
+                Math.floor(
+                    sectionContainer.getBoundingClientRect().width / UNIT,
+                ),
+            );
+            const loaded = await loadLayoutFor(
+                state.preferenceKey,
+                initialGridCols,
+            );
+            state.layout = cloneLayoutData(loaded.layout);
+            state.layoutProfiles = loaded.profiles;
             subStates.set(el.id, state);
         }
 
@@ -2009,6 +2220,10 @@ export function createPageComposer(
             const newCols = Math.max(1, Math.floor(width / UNIT));
             if (newCols !== state.lastObservedCols) {
                 state.lastObservedCols = newCols;
+                state.gridCols = newCols;
+                if (!state.editing) {
+                    applySubLayoutForCurrentGridColumns(state);
+                }
                 computeSubGridDimensions(state);
                 renderSubGrid(state);
             }
@@ -2079,7 +2294,12 @@ export function createPageComposer(
                     compactSubPlacements(state);
                     state.editing = false;
                     endEditMode();
-                    await saveLayoutFor(state.preferenceKey, state.layout);
+                    state.layoutProfiles = await saveLayoutFor(
+                        state.preferenceKey,
+                        state.layoutProfiles,
+                        state.gridCols,
+                        state.layout,
+                    );
                     renderSubGrid(state);
                 },
                 { signal },
@@ -2252,6 +2472,9 @@ export function createPageComposer(
         }
 
         computeGridDimensions();
+        if (!editing && persistLayoutPreferences) {
+            applyLayoutForCurrentGridColumns();
+        }
         initializePlacements();
         computeGridDimensions();
 
@@ -2401,7 +2624,8 @@ export function createPageComposer(
         let html = "";
 
         const cardsHtml = renderCards(effectiveLayout);
-        html += `<article class="content-panel">${cardsHtml}</article>`;
+        const editingClass = editing ? " composer-content-panel--editing" : "";
+        html += `<article class="content-panel${editingClass}">${cardsHtml}</article>`;
 
         if (editing) {
             html += renderLibraryPanel(effectiveLayout);
@@ -2540,7 +2764,7 @@ export function createPageComposer(
     async function switchSubPage(id) {
         if (onBeforeSubPageSwitch) {
             const allowed = await onBeforeSubPageSwitch(activeSubPageId, id);
-            if (!allowed) return;
+            if (!allowed) return false;
         }
         const prevId = activeSubPageId;
         activeSubPageId = id;
@@ -2571,6 +2795,7 @@ export function createPageComposer(
         history.replaceState(null, "", `#${activeSubPageId}`);
         applyPageOverrides(id);
         onRender?.();
+        return true;
     }
 
     async function init() {
@@ -2635,6 +2860,7 @@ export function createPageComposer(
         contentGrid = root.querySelector(".content-grid");
         if (columns === 2)
             contentGrid?.classList.add("content-grid--two-column");
+        let closeMobileDrawerIfNeeded = () => {};
 
         if (frameless) {
             root.querySelector(".workspace")?.classList.add(
@@ -2645,48 +2871,101 @@ export function createPageComposer(
         if (Array.isArray(toolbar) && toolbar.length > 0) {
             const toolbarEl = root.querySelector(".toolbar");
             if (toolbarEl) {
-                const storageKey = `cognis_toolbar_collapsed_${persistLayoutPreferences || "default"}`;
-                const storedValue = localStorage.getItem(storageKey);
-                const collapsed = storedValue !== "false";
-                const EXPAND_ICON = "▸";
-                const COLLAPSE_ICON = "◂";
-                const collapseBtn = document.createElement("button");
-                collapseBtn.type = "button";
-                collapseBtn.className = "toolbar-collapse-btn";
-
-                function setToolbarCollapsedState(nextCollapsed) {
-                    toolbarEl.classList.toggle(
-                        "toolbar--collapsed",
-                        nextCollapsed,
+                const mobileMedia = window.matchMedia(
+                    `(max-width: ${MOBILE_TOOLBAR_BREAKPOINT}px)`,
+                );
+                let mobileDrawerOpen = false;
+                const mainWindow = root.querySelector(".main-window");
+                const shell = root.querySelector(".app-shell");
+                mainWindow?.querySelector(".toolbar-mobile-toggle")?.remove();
+                mainWindow?.querySelector(".toolbar-mobile-backdrop")?.remove();
+                shell?.querySelector(".toolbar-mobile-backdrop")?.remove();
+                const mobileToggleBtn = document.createElement("button");
+                mobileToggleBtn.type = "button";
+                mobileToggleBtn.className = "toolbar-mobile-toggle";
+                const mobileBackdrop = document.createElement("div");
+                mobileBackdrop.className = "toolbar-mobile-backdrop";
+                if (mainWindow) {
+                    mainWindow.insertBefore(
+                        mobileToggleBtn,
+                        toolbarEl.nextSibling,
                     );
-                    collapseBtn.textContent = nextCollapsed
-                        ? EXPAND_ICON
-                        : COLLAPSE_ICON;
-                    collapseBtn.setAttribute(
-                        "aria-label",
-                        nextCollapsed
-                            ? i18n.t("ui.layout.toolbar.expand")
-                            : i18n.t("ui.layout.toolbar.collapse"),
-                    );
-                    localStorage.setItem(storageKey, String(nextCollapsed));
+                }
+                if (mainWindow) {
+                    mainWindow.appendChild(mobileBackdrop);
+                } else if (shell) {
+                    shell.appendChild(mobileBackdrop);
                 }
 
-                toolbarEl.insertBefore(collapseBtn, toolbarEl.firstChild);
-                setToolbarCollapsedState(collapsed);
+                function isMobileDrawerMode() {
+                    return mobileMedia.matches;
+                }
 
-                collapseBtn.addEventListener("click", () => {
-                    const nowCollapsed =
-                        toolbarEl.classList.contains("toolbar--collapsed");
-                    setToolbarCollapsedState(!nowCollapsed);
-                });
+                closeMobileDrawerIfNeeded = () => {
+                    if (isMobileDrawerMode() && mobileDrawerOpen) {
+                        setMobileDrawerOpen(false, { restoreFocus: false });
+                    }
+                };
 
-                root.querySelectorAll("[data-composer-scroll]").forEach(
-                    (btn) => {
-                        btn.addEventListener("click", () => {
-                            setToolbarCollapsedState(true);
-                        });
-                    },
+                function setMobileDrawerOpen(
+                    nextOpen,
+                    { restoreFocus = true } = {},
+                ) {
+                    const open = isMobileDrawerMode() && nextOpen;
+                    mobileDrawerOpen = open;
+                    toolbarEl.classList.toggle("toolbar--mobile-open", open);
+                    mobileBackdrop.classList.toggle(
+                        "toolbar-mobile-backdrop--open",
+                        open,
+                    );
+                    mobileBackdrop.hidden = !open;
+                    if (!open && restoreFocus && mobileToggleBtn.isConnected) {
+                        mobileToggleBtn.focus();
+                    }
+                    mobileToggleBtn.setAttribute("aria-expanded", String(open));
+                    mobileToggleBtn.classList.toggle(
+                        "toolbar-mobile-toggle--drawer-open",
+                        open,
+                    );
+                    mobileToggleBtn.textContent = open ? "<" : "☰";
+                    mobileToggleBtn.setAttribute(
+                        "aria-label",
+                        open
+                            ? i18n.t("ui.layout.toolbar.collapse")
+                            : i18n.t("ui.layout.toolbar.expand"),
+                    );
+                }
+
+                mobileToggleBtn.setAttribute("aria-expanded", "false");
+                mobileToggleBtn.setAttribute(
+                    "aria-label",
+                    i18n.t("ui.layout.toolbar.expand"),
                 );
+                setMobileDrawerOpen(false, { restoreFocus: false });
+
+                mobileToggleBtn.addEventListener("click", () => {
+                    setMobileDrawerOpen(!mobileDrawerOpen);
+                });
+                toolbarEl.addEventListener("click", (event) => {
+                    if (!isMobileDrawerMode() || !mobileDrawerOpen) return;
+                    const target = event.target;
+                    if (!(target instanceof Element)) return;
+                    if (target.closest(".toolbar-mobile-toggle")) return;
+                    if (
+                        target.closest("a[href]") ||
+                        target.closest("button:not(.toolbar-mobile-toggle)")
+                    ) {
+                        setMobileDrawerOpen(false, { restoreFocus: false });
+                    }
+                });
+                mobileBackdrop.addEventListener("click", () => {
+                    setMobileDrawerOpen(false);
+                });
+                mobileMedia.addEventListener("change", () => {
+                    if (!isMobileDrawerMode()) {
+                        setMobileDrawerOpen(false, { restoreFocus: false });
+                    }
+                });
             }
         }
 
@@ -2706,9 +2985,14 @@ export function createPageComposer(
                     "active",
                     btn.dataset.composerScroll === activeSubPageId,
                 );
-                btn.addEventListener("click", () =>
-                    switchSubPage(btn.dataset.composerScroll),
-                );
+                btn.addEventListener("click", async () => {
+                    const didSwitch = await switchSubPage(
+                        btn.dataset.composerScroll,
+                    );
+                    if (didSwitch) {
+                        closeMobileDrawerIfNeeded();
+                    }
+                });
             } else {
                 btn.addEventListener("click", () => {
                     root.querySelector(
@@ -2720,21 +3004,26 @@ export function createPageComposer(
                         (b) => b.classList.remove("active"),
                     );
                     btn.classList.add("active");
+                    closeMobileDrawerIfNeeded();
                 });
             }
         });
+
+        gridCols = getPreferredGridColumnCount();
+        lastObservedCols = gridCols;
 
         layout = persistLayoutPreferences ? await loadLayout() : null;
 
         if (!subPageNavigation && contentGrid) {
             resizeObserver = new ResizeObserver(() => {
                 if (!contentGrid) return;
-                contentGrid.style.width = "";
-                const width = contentGrid.getBoundingClientRect().width;
-                const newCols = Math.max(1, Math.floor(width / UNIT));
+                const newCols = getPreferredGridColumnCount();
                 if (newCols !== lastObservedCols) {
                     lastObservedCols = newCols;
-                    computeGridDimensions();
+                    gridCols = newCols;
+                    if (!editing && persistLayoutPreferences) {
+                        applyLayoutForCurrentGridColumns();
+                    }
                     renderGridComposer();
                 }
             });

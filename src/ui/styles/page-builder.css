@@ -157,6 +157,7 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
 .content-panel > * {
     padding-left: 28px;
     padding-right: 28px;
+    min-width: 0;
 }
 
 .toolbar > :first-child,
@@ -258,7 +259,7 @@ code {
     width: 100%;
 }
 .main-window--with-toolbar {
-    grid-template-columns: minmax(min-content, max-content) minmax(0, 1fr);
+    grid-template-columns: fit-content(40vw) minmax(0, 1fr);
 }
 .main-window--with-toolbar .toolbar {
     margin-right: 12px;
@@ -274,64 +275,99 @@ code {
     width: 100%;
 }
 
-.toolbar-collapse-btn {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-    width: 100%;
-    padding: 6px 14px 6px 6px;
-    background: transparent;
-    border: 0;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 0.85rem;
-    line-height: 1;
-    margin-bottom: 4px;
-    transition: background 0.15s;
-}
-
-.toolbar > .toolbar-collapse-btn {
-    padding-left: 6px;
-    padding-right: 14px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-}
-
-.toolbar-collapse-btn:hover {
-    color: var(--text);
-    background: var(--surface-soft);
-}
-
-.toolbar--collapsed {
-    width: 36px;
-    min-width: 36px;
-    overflow: hidden;
-}
-
-.toolbar--collapsed > *:not(.toolbar-collapse-btn) {
+.toolbar-mobile-toggle {
     display: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin: 0 0 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 1770;
+    transition:
+        left 0.22s ease,
+        top 0.22s ease,
+        border-radius 0.22s ease,
+        box-shadow 0.22s ease;
 }
 
-.toolbar--collapsed > .toolbar-collapse-btn {
-    justify-content: center;
-    border-bottom: 0;
-    padding: 14px 0;
-    margin-bottom: 0;
+.toolbar-mobile-backdrop {
+    position: fixed;
+    inset: 0;
+    background: var(--drawer-backdrop);
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    z-index: 1750;
+    transition: opacity 0.2s ease;
+}
+
+.toolbar-mobile-backdrop--open {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
 }
 
 @media (max-width: 900px) {
     .main-window--with-toolbar {
         grid-template-columns: 1fr;
     }
-    .toolbar--collapsed {
-        width: auto;
-        min-width: 0;
+    .toolbar-mobile-toggle {
+        display: inline-flex;
+    }
+    .main-window--with-toolbar .toolbar-mobile-toggle--drawer-open {
+        position: fixed;
+        top: 12px;
+        left: calc(min(320px, 88vw) - 1px);
+        margin: 0;
+        border-radius: 0 12px 12px 0;
+        box-shadow: var(--shadow);
+    }
+    .main-window--with-toolbar .toolbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: min(320px, 88vw);
+        height: 100dvh;
+        border-radius: 0 14px 14px 0;
+        margin-right: 0;
+        background: var(--surface-2);
+        transform: translateX(-100%);
+        transition: transform 0.26s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 1760;
+        overflow-y: auto;
+        pointer-events: none;
+        visibility: hidden;
+    }
+    .main-window--with-toolbar .toolbar.toolbar--mobile-open {
+        transform: translateX(0);
+        pointer-events: auto;
+        visibility: visible;
     }
 }
 
 @media (max-width: 640px) {
+    .toolbar > *,
+    .content-panel > * {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+    .toolbar > :first-child,
+    .content-panel > :first-child {
+        padding-top: 14px;
+    }
+    .toolbar > :last-child,
+    .content-panel > :last-child {
+        padding-bottom: 14px;
+    }
+    .toolbar button {
+        min-width: 0;
+    }
     .workspace.app-page--frameless {
         padding: 0;
     }
@@ -400,7 +436,7 @@ code {
 .module-row-summary {
     list-style: none;
     display: grid;
-    grid-template-columns: 1fr auto auto auto;
+    grid-template-columns: minmax(0, 1fr) max-content 52px auto;
     gap: 12px;
     align-items: center;
     cursor: pointer;
@@ -412,12 +448,14 @@ code {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    align-self: center;
 }
 
 .switch--inline {
     display: flex;
     align-items: center;
     align-self: center;
+    justify-self: end;
     margin-top: 0;
     height: 28px;
     line-height: 0;
@@ -504,6 +542,7 @@ code {
     grid-template-columns: minmax(120px, 180px) 1fr;
     gap: 14px;
     padding: 8px 0;
+    align-items: start;
 }
 
 .module-detail-key {
@@ -513,6 +552,8 @@ code {
 
 .module-detail-value {
     color: var(--text);
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .dependency-link {
@@ -533,6 +574,8 @@ code {
 }
 
 .slider {
+    display: block;
+    flex: 0 0 auto;
     width: 52px;
     height: 28px;
     border-radius: 999px;
@@ -601,11 +644,16 @@ code {
 }
 
 .state-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 999px;
     padding: 6px 14px;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.02em;
+    min-height: 28px;
+    align-self: center;
 }
 
 .pill-active {
@@ -621,6 +669,19 @@ code {
 .pill-disabled {
     background: rgba(239, 68, 68, 0.24);
     color: #ef4444;
+}
+
+@media (max-width: 640px) {
+    .module-row summary,
+    .module-row-summary {
+        grid-template-columns: minmax(0, 1fr) max-content 52px auto;
+        gap: 10px;
+    }
+
+    .module-detail-item {
+        grid-template-columns: 92px minmax(0, 1fr);
+        gap: 10px;
+    }
 }
 
 .btn-confirm {
@@ -693,8 +754,17 @@ code {
     display: none;
 }
 
+@media (max-width: 640px) {
+    .floating-toolbar {
+        width: 80vw;
+        max-width: 80vw;
+        flex-wrap: wrap;
+    }
+}
+
 .theme-select {
     min-width: 220px;
+    max-width: 100%;
     padding: 8px 12px;
     background: var(--control-bg);
     color: var(--control-text);
@@ -739,6 +809,7 @@ code {
 
 .language-table tr[draggable="true"] {
     cursor: grab;
+    touch-action: none;
 }
 
 .language-table .drag-handle {
@@ -746,6 +817,11 @@ code {
     text-align: center;
     color: var(--text-muted);
     font-size: 16px;
+    touch-action: none;
+}
+
+.language-table tr.language-row-dragging {
+    opacity: 0.6;
 }
 
 .language-table tr.drop-target-before td {
@@ -870,6 +946,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     border-bottom: 1px solid var(--border);
     cursor: grab;
     user-select: none;
+    touch-action: none;
 }
 
 .composer-drag-icon {
@@ -909,6 +986,15 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
 .widget-card.composer-editing {
     border-color: var(--accent-2);
     opacity: 0.95;
+}
+
+.content-panel.composer-content-panel--editing {
+    display: grid;
+    gap: 12px;
+}
+
+.content-panel.composer-content-panel--editing > .content-section {
+    border-radius: 12px;
 }
 
 .widget-card.composer-dragging {
@@ -968,6 +1054,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     gap: 8px;
     font-size: 0.88rem;
     cursor: grab;
+    touch-action: none;
 }
 
 .composer-add-btn {
@@ -1150,6 +1237,16 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     z-index: 0;
 }
 
+.composer-grid-active .composer-grid-overlay,
+.composer-grid-active .composer-cell,
+.composer-grid-active .composer-shade,
+.composer-grid-active .composer-dropzone-line {
+    transform: translate(
+        var(--composer-grid-inset, 0px),
+        var(--composer-grid-inset, 0px)
+    );
+}
+
 .composer-grid-cell {
     position: absolute;
     border: 1px solid var(--border);
@@ -1164,6 +1261,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     z-index: 2;
     display: flex;
     flex-direction: column;
+    padding: 4px;
 }
 
 .composer-cell-content {
@@ -1268,6 +1366,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     opacity: 0;
     transition: opacity 0.15s ease;
     z-index: 10;
+    touch-action: none;
 }
 
 .composer-cell:hover .composer-resize-handle {
@@ -1330,6 +1429,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     border-bottom: 1px solid var(--border);
     cursor: grab;
     border-radius: 12px 12px 0 0;
+    touch-action: none;
 }
 
 .composer-panel--minimized .composer-panel-header {
@@ -1370,6 +1470,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
 
 .composer-cell--editable {
     cursor: grab;
+    touch-action: none;
 }
 
 .composer-close-btn {

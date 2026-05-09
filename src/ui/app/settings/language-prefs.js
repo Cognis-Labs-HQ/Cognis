@@ -34,6 +34,46 @@ export function initLanguagePrefs(
         tdHandle.textContent = "⬍";
 
         tr.append(tdLabel, tdHandle);
+
+        tdHandle.addEventListener("pointerdown", (e) => {
+            if (e.pointerType === "mouse") return;
+            e.preventDefault();
+            tdHandle.setPointerCapture(e.pointerId);
+            tr.classList.add("language-row-dragging");
+            dragLanguage = isoCode;
+
+            function onMove(ev) {
+                ev.preventDefault();
+                clearDropMarkers();
+                const { row: targetRow, rect } = findRowAt(tr, ev.clientY);
+                if (!targetRow) return;
+                targetRow.classList.add(
+                    ev.clientY > rect.top + rect.height / 2
+                        ? "drop-target-after"
+                        : "drop-target-before",
+                );
+            }
+
+            function onEnd(ev) {
+                tdHandle.removeEventListener("pointermove", onMove);
+                tdHandle.removeEventListener("pointerup", onEnd);
+                tdHandle.removeEventListener("pointercancel", onEnd);
+                tr.classList.remove("language-row-dragging");
+                const { row: targetRow, rect } = findRowAt(tr, ev.clientY);
+                const targetTable = findTableAt(ev.clientX, ev.clientY);
+                const targetIsAfter = Boolean(
+                    targetRow && ev.clientY > rect.top + rect.height / 2,
+                );
+                clearDropMarkers();
+                applyDrop(isoCode, targetTable, targetRow, targetIsAfter);
+                dragLanguage = null;
+            }
+
+            tdHandle.addEventListener("pointermove", onMove);
+            tdHandle.addEventListener("pointerup", onEnd);
+            tdHandle.addEventListener("pointercancel", onEnd);
+        });
+
         return tr;
     }
 
@@ -68,40 +108,47 @@ export function initLanguagePrefs(
         });
     }
 
-    let dragLanguage = null;
+    function findRowAt(excludeRow, clientY) {
+        for (const row of root.querySelectorAll("tr[data-lang-row]")) {
+            if (row === excludeRow) continue;
+            const rect = row.getBoundingClientRect();
+            if (clientY >= rect.top && clientY <= rect.bottom)
+                return { row, rect };
+        }
+        return { row: null, rect: null };
+    }
 
-    root.addEventListener("dragstart", (event) => {
-        const row = event.target.closest("tr[data-lang-row]");
-        if (!row) return;
-        dragLanguage = row.getAttribute("data-lang-row");
-        event.dataTransfer?.setData("text/plain", dragLanguage || "");
-    });
+    function findTableAt(clientX, clientY) {
+        for (const table of root.querySelectorAll(
+            "#available-languages, #preferred-languages",
+        )) {
+            const rect = table.getBoundingClientRect();
+            if (
+                clientX >= rect.left &&
+                clientX <= rect.right &&
+                clientY >= rect.top &&
+                clientY <= rect.bottom
+            )
+                return table;
+        }
+        return null;
+    }
 
-    root.addEventListener("dragover", (event) => {
-        const zone = event.target.closest(
-            "#available-languages, #preferred-languages, tr[data-lang-row]",
-        );
-        if (!zone) return;
-        event.preventDefault();
-        clearDropMarkers();
-
-        const row = event.target.closest("tr[data-lang-row]");
-        if (!row) return;
-        const rect = row.getBoundingClientRect();
-        const isAfter = event.clientY > rect.top + rect.height / 2;
-        row.classList.add(isAfter ? "drop-target-after" : "drop-target-before");
-    });
-
-    root.addEventListener("drop", (event) => {
-        const targetTable = event.target.closest(
+    function resolveDropTarget(targetNode, clientY) {
+        const targetTable = targetNode?.closest(
             "#available-languages, #preferred-languages",
         );
-        const targetRow = event.target.closest("tr[data-lang-row]");
+        const targetRow = targetNode?.closest("tr[data-lang-row]");
         const targetIsAfter = Boolean(
-            targetRow?.classList.contains("drop-target-after"),
+            targetRow &&
+            clientY >
+                targetRow.getBoundingClientRect().top +
+                    targetRow.getBoundingClientRect().height / 2,
         );
-        clearDropMarkers();
-        const lang = dragLanguage || event.dataTransfer?.getData("text/plain");
+        return { targetTable, targetRow, targetIsAfter };
+    }
+
+    function applyDrop(lang, targetTable, targetRow, targetIsAfter) {
         if (!lang) return;
 
         if (targetTable?.id === "preferred-languages") {
@@ -132,6 +179,45 @@ export function initLanguagePrefs(
         if (!languagePriority.includes("en")) languagePriority.push("en");
         renderTables();
         notifyDirty();
+    }
+
+    let dragLanguage = null;
+
+    root.addEventListener("dragstart", (event) => {
+        const row = event.target.closest("tr[data-lang-row]");
+        if (!row) return;
+        dragLanguage = row.getAttribute("data-lang-row");
+        event.dataTransfer?.setData("text/plain", dragLanguage || "");
+    });
+
+    root.addEventListener("dragend", () => {
+        clearDropMarkers();
+        dragLanguage = null;
+    });
+
+    root.addEventListener("dragover", (event) => {
+        const zone = event.target.closest(
+            "#available-languages, #preferred-languages, tr[data-lang-row]",
+        );
+        if (!zone) return;
+        event.preventDefault();
+        clearDropMarkers();
+
+        const row = zone.closest("tr[data-lang-row]");
+        if (!row) return;
+        const rect = row.getBoundingClientRect();
+        const isAfter = event.clientY > rect.top + rect.height / 2;
+        row.classList.add(isAfter ? "drop-target-after" : "drop-target-before");
+    });
+
+    root.addEventListener("drop", (event) => {
+        const { targetTable, targetRow, targetIsAfter } = resolveDropTarget(
+            event.target,
+            event.clientY,
+        );
+        clearDropMarkers();
+        const lang = dragLanguage || event.dataTransfer?.getData("text/plain");
+        applyDrop(lang, targetTable, targetRow, targetIsAfter);
         dragLanguage = null;
     });
 

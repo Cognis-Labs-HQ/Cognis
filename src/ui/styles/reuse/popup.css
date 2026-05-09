@@ -120,3 +120,14 @@
     border-color: var(--border-strong);
     transform: translateY(-1px);
 }
+
+@media (max-width: 640px) {
+    .popup-overlay {
+        padding: 0;
+    }
+
+    .popup-dialog {
+        width: 100vw;
+        max-width: none;
+    }
+}

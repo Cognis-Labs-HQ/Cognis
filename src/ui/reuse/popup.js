@@ -165,7 +165,7 @@ export async function openPopup({
       </div>
     `;
 
-        if (maxWidth) {
+        if (maxWidth && !window.matchMedia("(max-width: 640px)").matches) {
             overlay.querySelector(".popup-dialog").style.maxWidth = maxWidth;
         }
 

@@ -7,6 +7,18 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Mobile toolbar drawer: the drawer now also auto-closes when a `<button>` inside the toolbar is tapped, not only when an `<a href>` is clicked. This fixes the docs and license pages where toolbar navigation is handled by `[data-slug]` and `[data-section-id]` button elements — tapping those previously left the fixed drawer and backdrop open over the newly loaded content. ([d11768d](https://github.com/le-firehawk/Cognis/commit/d11768d))
+- `aside.toolbar` width cap: the sidebar toolbar column now uses `fit-content(40vw)` so it cannot exceed 40 % of the viewport while remaining content-sized when narrower; `overflow-wrap: anywhere` on the element ensures long words wrap. The prior attempt used `min(max-content, 40vw)` which is invalid CSS (intrinsic keywords are not permitted inside `min()`), causing browsers to discard the entire grid template and stack the toolbar full-width above the content. ([c56c894](https://github.com/le-firehawk/Cognis/commit/c56c894))
+- Page composer follow-up: Elements edit panel now clamps horizontally to the workspace bounds (not only viewport bounds) so it no longer drifts outside the main page area, and grid-profile selection now re-applies the correct saved profile when grid columns change to keep desktop/mobile layouts isolated. ([703f192](https://github.com/le-firehawk/Cognis/commit/703f192))
+- Profile dropdown: `.dropdown li { display: flex }` was overriding the browser's `[hidden]` attribute, causing admin-only menu items (Administration, Users) to remain visible for non-admin users. Added `.dropdown li[hidden] { display: none }` to restore correct specificity. ([ad3ef46](https://github.com/le-firehawk/Cognis/commit/ad3ef46))
+- Floating toolbar mobile width: `.floating-toolbar` now constrains itself to `max-width: 80vw` at ≤640 px so it no longer overflows the viewport on narrow screens. ([ad3ef46](https://github.com/le-firehawk/Cognis/commit/ad3ef46))
+- Floating toolbar mobile sizing: `.floating-toolbar` now uses `width: 80vw` (not just `max-width`) at ≤640 px so it expands to the intended usable width. ([718f6af](https://github.com/le-firehawk/Cognis/commit/718f6af))
+- Touchscreen drag reliability: page-composer drag/resize surfaces now disable touch panning (`touch-action: none`), and settings language selectors now support pointer-based touch dragging using the same direct-binding pattern as the page-composer (bind on `tdHandle`, capture on `<td>`, use bounding-rect scan for drop targeting) so hold-and-drag interactions stay engaged on mobile devices. ([0a29ebc](https://github.com/le-firehawk/Cognis/commit/0a29ebc))
+- Timezone dropdown overflow: `.theme-select` now carries `max-width: 100%`, and `.timezone-label` uses block-level flex so the select is contained within its element bounds rather than overflowing its panel. ([ad3ef46](https://github.com/le-firehawk/Cognis/commit/ad3ef46))
+- Invite table grid height: the default grid row count for the invite tokens element was reduced from 7 to 4 (630 px → 360 px), matching typical table content height. ([ad3ef46](https://github.com/le-firehawk/Cognis/commit/ad3ef46))
+
 ### Added
 
 - Responsive grid reflow: page-composer grid elements that would overflow the available column count when the viewport shrinks are automatically re-packed into the rows below, preserving display order without altering the saved layout. Applies to both the primary grid and all sub-composer grids. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
@@ -16,6 +28,12 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Navbar plugin caching: gateway-contributed navbar plugins are loaded only once per session; subsequent page renders skip the plugin fetch entirely. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
 
 ### Changed
+
+- Page composer layout persistence now stores separate layout profiles by detected grid column count (`layoutsByGrid`), so editing a page on phone-sized grids and desktop-sized grids no longer overwrites each other. Legacy single-layout preferences are auto-migrated to the active grid profile on first save. ([4870461](https://github.com/le-firehawk/Cognis/commit/4870461))
+- Mobile toolbar drawer: when opened, the page-composer toolbar toggle now moves to the drawer edge and switches to a `<` close affordance; toolbar item activation closes the drawer after successful navigation, and mobile dropdown menus are constrained/aligned to avoid content overflow. ([47a23bb](https://github.com/le-firehawk/Cognis/commit/47a23bb))
+- Administration → Components summary layout now uses explicit control-width columns for the state pill, toggle, and chevron on narrow screens, and the page-composer mobile toolbar toggle now switches between hamburger and close icons to reflect drawer state. ([2953304](https://github.com/le-firehawk/Cognis/commit/2953304))
+- Administration → Components mobile layout: component detail rows now keep their label/value columns aligned on narrow screens, and summary controls (`state-pill`, toggle slider, chevron) share a consistent vertical center line. ([06a63fd](https://github.com/le-firehawk/Cognis/commit/06a63fd))
+- AI instructions: review-feedback handling now explicitly states that repeatedly ignoring or hand-waving valid review comments is a mission failure and requires either implementation or a concrete instruction-grounded justification. ([06a63fd](https://github.com/le-firehawk/Cognis/commit/06a63fd))
 
 - Mobile and tablet responsive layout: the global navrow is now a three-column grid (`[hamburger] [topnav] [account-cluster]`) that gracefully degrades at narrow widths; at ≤640 px the workspace and footer expand to full width with reduced padding and the user-greeting label is hidden to preserve space. The nav drawer and toolbar collapse are also adapted for ≤640 px phone layouts. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
 
