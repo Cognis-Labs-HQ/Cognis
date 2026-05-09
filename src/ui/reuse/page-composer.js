@@ -148,7 +148,7 @@ export function createPageComposer(
     let closeMobileToolbarMenu = null;
 
     const UNIT = 90; // grid cell size in pixels
-    const COMPACT_GRID_MIN_CELL_WIDTH_PX = 220;
+    const COMPACT_GRID_MIN_CELL_WIDTH_PX = 260;
     const COMPACT_EDIT_MIN_SCALE = 0.62;
 
     function handleBeforeUnload(e) {
@@ -294,6 +294,15 @@ export function createPageComposer(
             }
         }
         return true;
+    }
+
+    function getVisiblePlacementColumnCount(placements) {
+        const maxRightEdge = placements.reduce(
+            (maxCol, placement) =>
+                Math.max(maxCol, placement.col + Math.max(1, placement.w)),
+            0,
+        );
+        return Math.max(1, maxRightEdge);
     }
 
     function applyGravity(col, row, w, h, excludeId) {
@@ -2191,10 +2200,21 @@ export function createPageComposer(
         contentGrid.appendChild(panel);
         gridSection = section;
         const availableWidth = contentGrid.getBoundingClientRect().width;
+        const visiblePlacements = layout.placements
+            .filter((p) => !layout.hidden.includes(p.id))
+            .sort((a, b) => a.row - b.row || a.col - b.col);
+        const visibleColumnCount =
+            getVisiblePlacementColumnCount(visiblePlacements);
         const compactGrid =
+            visibleColumnCount > 1 &&
             availableWidth > 0 &&
-            gridCols > 1 &&
-            availableWidth / gridCols < COMPACT_GRID_MIN_CELL_WIDTH_PX;
+            availableWidth / visibleColumnCount <
+                COMPACT_GRID_MIN_CELL_WIDTH_PX;
+
+        section.style.setProperty(
+            "--composer-compact-min-card-width",
+            `${COMPACT_GRID_MIN_CELL_WIDTH_PX}px`,
+        );
 
         if (editing) {
             section.classList.add("composer-grid-active");
@@ -2207,7 +2227,7 @@ export function createPageComposer(
                 // narrow widths without expanding past normal size.
                 const scale = Math.max(
                     COMPACT_EDIT_MIN_SCALE,
-                    Math.min(1, availableWidth / (gridCols * UNIT)),
+                    Math.min(1, availableWidth / (visibleColumnCount * UNIT)),
                 );
                 section.style.setProperty(
                     "--composer-edit-scale",
@@ -2228,10 +2248,6 @@ export function createPageComposer(
                 compactGrid,
             );
         }
-
-        const visiblePlacements = layout.placements
-            .filter((p) => !layout.hidden.includes(p.id))
-            .sort((a, b) => a.row - b.row || a.col - b.col);
 
         for (const placement of visiblePlacements) {
             const el = elements.find((e) => e.id === placement.id);
@@ -2382,6 +2398,34 @@ export function createPageComposer(
         }
     }
 
+    function clearSubPageDragHighlights() {
+        contentGrid.querySelectorAll(".composer-drag-over").forEach((el) => {
+            el.classList.remove("composer-drag-over");
+        });
+    }
+
+    function reorderVisibleSubPageCards(sourceId, targetId) {
+        if (!sourceId || !targetId || sourceId === targetId) return;
+        const effective = getEffectiveLayout();
+        const visibleOrder = effective.order.filter(
+            (id) => !effective.hidden.includes(id),
+        );
+        const sourceIdx = visibleOrder.indexOf(sourceId);
+        const targetIdx = visibleOrder.indexOf(targetId);
+        if (sourceIdx === -1 || targetIdx === -1) return;
+
+        visibleOrder.splice(sourceIdx, 1);
+        const insertIdx = sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
+        visibleOrder.splice(insertIdx, 0, sourceId);
+
+        const newOrder = [
+            ...visibleOrder,
+            ...effective.order.filter((id) => effective.hidden.includes(id)),
+        ];
+        layout = { order: newOrder, hidden: effective.hidden };
+        renderSubPageComposer();
+    }
+
     function bindSubPageComposerEvents() {
         contentGrid
             .querySelectorAll("[data-composer-remove]")
@@ -2420,11 +2464,7 @@ export function createPageComposer(
 
                 card.addEventListener("dragend", () => {
                     card.classList.remove("composer-dragging");
-                    contentGrid
-                        .querySelectorAll(".composer-drag-over")
-                        .forEach((el) => {
-                            el.classList.remove("composer-drag-over");
-                        });
+                    clearSubPageDragHighlights();
                     dragSourceId = null;
                 });
 
@@ -2432,43 +2472,74 @@ export function createPageComposer(
                     event.preventDefault();
                     event.dataTransfer.dropEffect = "move";
                     if (card.dataset.composerElement !== dragSourceId) {
-                        contentGrid
-                            .querySelectorAll(".composer-drag-over")
-                            .forEach((el) => {
-                                el.classList.remove("composer-drag-over");
-                            });
+                        clearSubPageDragHighlights();
                         card.classList.add("composer-drag-over");
                     }
                 });
 
-                card.addEventListener("drop", async (event) => {
+                card.addEventListener("drop", (event) => {
                     event.preventDefault();
                     card.classList.remove("composer-drag-over");
                     const targetId = card.dataset.composerElement;
-                    if (!dragSourceId || dragSourceId === targetId) return;
+                    reorderVisibleSubPageCards(dragSourceId, targetId);
+                });
 
-                    const effective = getEffectiveLayout();
-                    const visibleOrder = effective.order.filter(
-                        (id) => !effective.hidden.includes(id),
+                let touchDrag = null;
+                const handle = card.querySelector(".composer-drag-handle");
+                const dragSurface = handle ?? card;
+                dragSurface.addEventListener("pointerdown", (event) => {
+                    if (event.pointerType === "mouse") return;
+                    touchDrag = {
+                        pointerId: event.pointerId,
+                        sourceId: card.dataset.composerElement,
+                        targetId: null,
+                    };
+                    card.classList.add("composer-dragging");
+                    dragSurface.setPointerCapture(event.pointerId);
+                    event.preventDefault();
+                });
+
+                dragSurface.addEventListener("pointermove", (event) => {
+                    if (!touchDrag || touchDrag.pointerId !== event.pointerId) {
+                        return;
+                    }
+                    const hovered = document
+                        .elementFromPoint(event.clientX, event.clientY)
+                        ?.closest?.("[data-composer-element]");
+                    const hoveredId = hovered?.dataset?.composerElement;
+                    if (!hoveredId || hoveredId === touchDrag.sourceId) {
+                        clearSubPageDragHighlights();
+                        touchDrag.targetId = null;
+                        return;
+                    }
+                    clearSubPageDragHighlights();
+                    hovered.classList.add("composer-drag-over");
+                    touchDrag.targetId = hoveredId;
+                    event.preventDefault();
+                });
+
+                const endTouchDrag = (event) => {
+                    if (!touchDrag || touchDrag.pointerId !== event.pointerId) {
+                        return;
+                    }
+                    card.classList.remove("composer-dragging");
+                    clearSubPageDragHighlights();
+                    reorderVisibleSubPageCards(
+                        touchDrag.sourceId,
+                        touchDrag.targetId,
                     );
-                    const sourceIdx = visibleOrder.indexOf(dragSourceId);
-                    const targetIdx = visibleOrder.indexOf(targetId);
-                    if (sourceIdx === -1 || targetIdx === -1) return;
+                    touchDrag = null;
+                };
 
-                    visibleOrder.splice(sourceIdx, 1);
-                    // Removing source shifts all subsequent indices by -1; adjust targetIdx when source precedes target.
-                    const insertIdx =
-                        sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
-                    visibleOrder.splice(insertIdx, 0, dragSourceId);
-
-                    const newOrder = [
-                        ...visibleOrder,
-                        ...effective.order.filter((id) =>
-                            effective.hidden.includes(id),
-                        ),
-                    ];
-                    layout = { order: newOrder, hidden: effective.hidden };
-                    renderSubPageComposer();
+                dragSurface.addEventListener("pointerup", endTouchDrag);
+                dragSurface.addEventListener("pointercancel", endTouchDrag);
+                dragSurface.addEventListener("lostpointercapture", (event) => {
+                    if (!touchDrag || touchDrag.pointerId !== event.pointerId) {
+                        return;
+                    }
+                    card.classList.remove("composer-dragging");
+                    clearSubPageDragHighlights();
+                    touchDrag = null;
                 });
             });
     }

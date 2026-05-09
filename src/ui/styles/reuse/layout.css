@@ -139,6 +139,8 @@
     z-index: 1190;
     overflow-y: auto;
     box-shadow: 14px 0 28px rgba(2, 6, 23, 0.45);
+    visibility: hidden;
+    pointer-events: none;
 }
 
 .global-navrow--compact .topnav a {
@@ -155,6 +157,8 @@
 
 .global-navrow--compact.global-navrow--menu-open .topnav {
     transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
 }
 
 .topnav {
