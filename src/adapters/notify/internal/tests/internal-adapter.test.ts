@@ -87,6 +87,24 @@ test("InternalNotificationStore: delete returns false for unknown id", () => {
     assert.equal(store.list("grace").length, 1);
 });
 
+test("InternalNotificationStore: deleteAll removes every notification for a user", () => {
+    const store = new InternalNotificationStore();
+    store.add(makeEnvelope("kate", "One"));
+    store.add(makeEnvelope("kate", "Two"));
+    store.add(makeEnvelope("kate", "Three"));
+    store.add(makeEnvelope("leo", "Mine"));
+    const removed = store.deleteAll("kate");
+    assert.equal(removed, 3);
+    assert.equal(store.list("kate").length, 0);
+    assert.equal(store.list("leo").length, 1);
+});
+
+test("InternalNotificationStore: deleteAll returns 0 when user has no notifications", () => {
+    const store = new InternalNotificationStore();
+    const removed = store.deleteAll("nobody");
+    assert.equal(removed, 0);
+});
+
 test("InternalNotificationStore: isolates by username", () => {
     const store = new InternalNotificationStore();
     store.add(makeEnvelope("heidi", "For heidi"));

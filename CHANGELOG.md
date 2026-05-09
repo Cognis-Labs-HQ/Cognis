@@ -18,8 +18,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - Notification list items now display as true multi-line rows: subject (bold), sender (accented), and content preview stack vertically as flex column. The relative timestamp ("X seconds/minutes/hours/days ago") is shown right-aligned outside the body column instead of as a fourth line inside it. CSS updated to add `display: flex; flex-direction: column; gap: 2px` on `.notification-item-body` and reposition `.notification-item-time` as a right-aligned sibling flex item. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
-- Internal notification adapter version bumped to `0.3.0` (`src/adapters/notify/internal/package.json`, `manifest.json`). ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- Internal notification adapter version bumped to `0.4.0` (`src/adapters/notify/internal/package.json`, `manifest.json`). ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
 - Notification panel relative timestamps ("X seconds/minutes ago") now tick up live: each `.notification-item-time` carries its `createdAt` as `data-relative-time`, and a 1-second interval started on panel open (and torn down on close) re-renders every visible time span via `formatRelativeTime`. No additional network polling. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- Notification panel header now includes a 🗑 trash button (top-right) that clears every notification for the current user — the action prompts a danger-style `openPopup` confirmation, then issues `DELETE /api/v1/notifications/inbox` (new bulk-delete route) which calls a new `deleteAll(username)` method on the store interface (in-memory and `DbInternalNotificationStore` implementations both wipe DB rows for the user). ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- Notification panel now updates in real time while it is open: the inbox poll tick previously skipped any work whenever the panel was visible (silently dropping new arrivals from both the list and the popup toast); it now calls a new `refreshOpenPanel(i18n)` helper that re-fetches the inbox, detects arrivals, re-renders the list, and updates the badge. Popups remain suppressed while the panel is open (the user is already looking at the list). ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
 
 ### Fixed
 

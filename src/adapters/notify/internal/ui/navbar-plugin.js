@@ -18,6 +18,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { formatRelativeTime } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { showToast } from "/static/reuse/toast.js";
+import { openPopup } from "/static/reuse/popup.js";
 
 const POLL_INTERVAL_VISIBLE_MS = 10_000;
 const POLL_INTERVAL_HIDDEN_MS = 30_000;
@@ -84,6 +85,15 @@ async function deleteNotification(id) {
     await apiFetch(`/api/v1/notifications/inbox/${encodeURIComponent(id)}`, {
         method: "DELETE",
     });
+}
+
+async function deleteAllNotifications() {
+    const res = await apiFetch("/api/v1/notifications/inbox", {
+        method: "DELETE",
+    });
+    if (!res.ok) {
+        throw new Error(`clear-all failed: ${res.status}`);
+    }
 }
 
 let panelVisible = false;
@@ -203,16 +213,22 @@ async function openPanel(i18n) {
     closeProfileMenu();
     panelEl.hidden = false;
     panelVisible = true;
+    currentNotifications = await fetchNotifications();
+    renderPanelContents(i18n);
+}
+
+function renderPanelContents(i18n) {
+    if (!listEl) return;
     listEl.innerHTML = "";
     if (emptyEl) emptyEl.hidden = true;
 
-    currentNotifications = await fetchNotifications();
     currentNotifications.forEach((n) => seenIds?.add(n.id));
     const unreadCount = currentNotifications.filter((n) => !n.read).length;
     updateBadge(unreadCount);
 
     if (currentNotifications.length === 0) {
         if (emptyEl) emptyEl.hidden = false;
+        stopRelativeTimeTicker();
         return;
     }
 
@@ -220,7 +236,26 @@ async function openPanel(i18n) {
         listEl.appendChild(renderNotificationItem(notif, i18n));
     }
 
+    stopRelativeTimeTicker();
     startRelativeTimeTicker();
+}
+
+async function refreshOpenPanel(i18n) {
+    if (!panelVisible) return;
+    const notifs = await fetchNotifications();
+    const knownIds = new Set(currentNotifications.map((n) => n.id));
+    const arrivals = notifs.filter((n) => !knownIds.has(n.id));
+
+    if (
+        arrivals.length === 0 &&
+        notifs.length === currentNotifications.length
+    ) {
+        updateBadge(notifs.filter((n) => !n.read).length);
+        return;
+    }
+
+    currentNotifications = notifs;
+    renderPanelContents(i18n);
 }
 
 function closePanel() {
@@ -307,6 +342,51 @@ function buildButton(i18n) {
         }
     });
     header.appendChild(markAllBtn);
+
+    const clearAllBtn = document.createElement("button");
+    clearAllBtn.className = "notification-clear-all";
+    clearAllBtn.type = "button";
+    clearAllBtn.setAttribute(
+        "aria-label",
+        i18n.t("ui.adapter.notify.internal.clear_all"),
+    );
+    clearAllBtn.title = i18n.t("ui.adapter.notify.internal.clear_all");
+    clearAllBtn.innerHTML = "&#x1F5D1;";
+    clearAllBtn.addEventListener("click", async () => {
+        const result = await openPopup({
+            title: i18n.t("ui.adapter.notify.internal.clear_all_confirm_title"),
+            body: escapeHtml(
+                i18n.t("ui.adapter.notify.internal.clear_all_confirm_body"),
+            ),
+            variant: "danger",
+            actions: [
+                {
+                    id: "confirm",
+                    label: i18n.t("ui.adapter.notify.internal.clear_all"),
+                    variant: "confirm",
+                },
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.popup.cancel"),
+                    variant: "cancel",
+                },
+            ],
+        });
+        if (result !== "confirm") return;
+
+        try {
+            await deleteAllNotifications();
+            currentNotifications = [];
+            seenIds?.clear();
+            renderPanelContents(i18n);
+        } catch {
+            showToast(i18n.t("ui.adapter.notify.internal.error_clear_all"), {
+                variant: "error",
+            });
+        }
+    });
+    header.appendChild(clearAllBtn);
+
     panel.appendChild(header);
 
     const list = document.createElement("ul");
@@ -374,7 +454,9 @@ async function startPolling(i18n) {
     }
 
     async function tick() {
-        if (!panelVisible) {
+        if (panelVisible) {
+            await refreshOpenPanel(i18n);
+        } else {
             await checkForNew(i18n);
         }
         scheduleNext();

@@ -386,6 +386,10 @@
   <string name="ui.adapter.notify.internal.error_mark_read">Benachrichtigung konnte nicht als gelesen markiert werden. Bitte erneut versuchen.</string>
   <string name="ui.adapter.notify.internal.error_dismiss">Benachrichtigung konnte nicht entfernt werden. Bitte erneut versuchen.</string>
   <string name="ui.adapter.notify.internal.error_mark_all_read">Es konnten nicht alle Benachrichtigungen als gelesen markiert werden. Bitte aktualisieren.</string>
+  <string name="ui.adapter.notify.internal.clear_all">Alle Benachrichtigungen löschen</string>
+  <string name="ui.adapter.notify.internal.clear_all_confirm_title">Alle Benachrichtigungen löschen</string>
+  <string name="ui.adapter.notify.internal.clear_all_confirm_body">Hierdurch werden alle Ihre Benachrichtigungen dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.</string>
+  <string name="ui.adapter.notify.internal.error_clear_all">Benachrichtigungen konnten nicht gelöscht werden. Bitte erneut versuchen.</string>
   <string name="ui.app.settings.general">Allgemein</string>
   <string name="ui.app.settings.emails">E-Mail-Adressen</string>
   <string name="ui.app.settings.emails_add">E-Mail hinzufügen</string>

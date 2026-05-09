@@ -9,6 +9,7 @@ import type { IInternalNotificationStore } from "./store.js";
  *   GET    /api/v1/notifications/inbox/count    unread count for the caller
  *   PUT    /api/v1/notifications/inbox/read     mark all as read
  *   PUT    /api/v1/notifications/inbox/:id/read mark one notification as read
+ *   DELETE /api/v1/notifications/inbox          delete all notifications for the caller
  *   DELETE /api/v1/notifications/inbox/:id      delete one notification
  */
 export function createInternalNotificationRoutes(
@@ -35,6 +36,16 @@ export function createInternalNotificationRoutes(
         }
 
         const username = claims.sub;
+
+        if (
+            url.pathname === "/api/v1/notifications/inbox" &&
+            req.method === "DELETE"
+        ) {
+            const removed = await store.deleteAll(username);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { removed } }));
+            return true;
+        }
 
         if (url.pathname === "/api/v1/notifications/inbox") {
             if (req.method !== "GET") return false;

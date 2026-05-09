@@ -243,4 +243,23 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
         );
         return true;
     }
+
+    async deleteAll(username: string): Promise<number> {
+        const countResult = await this.db.execute(
+            `SELECT COUNT(*) as cnt FROM internal_notifications
+             WHERE account_id = ${this.placeholder(1)}`,
+            [username],
+        );
+        const total = Number(
+            (countResult.rows?.[0] as Record<string, unknown>)?.cnt ?? 0,
+        );
+        if (total === 0) return 0;
+
+        await this.db.execute(
+            `DELETE FROM internal_notifications
+             WHERE account_id = ${this.placeholder(1)}`,
+            [username],
+        );
+        return total;
+    }
 }

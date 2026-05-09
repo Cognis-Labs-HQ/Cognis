@@ -99,6 +99,23 @@
     text-decoration: underline;
 }
 
+.notification-clear-all {
+    margin-left: auto;
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--text-muted, #888);
+    background: transparent;
+    border: 0;
+    padding: 4px 6px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.notification-clear-all:hover {
+    color: var(--danger, #c0392b);
+    background: var(--surface-hover, rgba(0, 0, 0, 0.05));
+}
+
 .notification-list {
     list-style: none;
     margin: 0;

@@ -25,6 +25,7 @@ export interface IInternalNotificationStore {
     markRead(username: string, id: string): Promise<boolean>;
     markAllRead(username: string): Promise<void>;
     delete(username: string, id: string): Promise<boolean>;
+    deleteAll(username: string): Promise<number>;
 }
 
 const MAX_PER_USER = 50;
@@ -94,6 +95,14 @@ export class InternalNotificationStore {
         list.splice(idx, 1);
         return true;
     }
+
+    deleteAll(username: string): number {
+        const list = this.notifications.get(username);
+        if (!list || list.length === 0) return 0;
+        const removed = list.length;
+        this.notifications.delete(username);
+        return removed;
+    }
 }
 
 /**
@@ -126,5 +135,9 @@ export class AsyncInternalNotificationStore implements IInternalNotificationStor
 
     async delete(username: string, id: string): Promise<boolean> {
         return this.inner.delete(username, id);
+    }
+
+    async deleteAll(username: string): Promise<number> {
+        return this.inner.deleteAll(username);
     }
 }
