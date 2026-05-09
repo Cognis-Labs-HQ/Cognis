@@ -50,6 +50,14 @@ async function savePrefs(prefs) {
     );
 }
 
+/**
+ * Returns true when the language priority order has changed between
+ * two saves, indicating a page reload is required to apply new strings.
+ *
+ * @param {string[]} prev - Previously committed language priority list.
+ * @param {string[]} next - Newly saved language priority list.
+ * @returns {boolean}
+ */
 function hasLanguagePriorityChanged(prev, next) {
     if (prev.length !== next.length) return true;
     return next.some((lang, i) => lang !== prev[i]);
