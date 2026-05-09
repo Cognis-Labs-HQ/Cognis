@@ -933,6 +933,16 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     opacity: 0.95;
 }
 
+.content-panel.composer-content-panel--editing {
+    display: grid;
+    gap: 12px;
+}
+
+.content-panel.composer-content-panel--editing > .content-section {
+    padding: 14px;
+    border-radius: 12px;
+}
+
 .widget-card.composer-dragging {
     opacity: 0.45;
     cursor: grabbing;

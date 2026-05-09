@@ -2402,7 +2402,8 @@ export function createPageComposer(
         let html = "";
 
         const cardsHtml = renderCards(effectiveLayout);
-        html += `<article class="content-panel">${cardsHtml}</article>`;
+        const editingClass = editing ? " composer-content-panel--editing" : "";
+        html += `<article class="content-panel${editingClass}">${cardsHtml}</article>`;
 
         if (editing) {
             html += renderLibraryPanel(effectiveLayout);
