@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { ModuleRuntimeGateway } from "@cognis/core";
+import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
 import path from "node:path";
 
 interface RouteHandler {
@@ -24,6 +24,7 @@ export interface ModuleExtensionRoutes {
 export function createModuleExtensionRoutes(
     runtime: ModuleRuntimeGateway,
     isModuleEnabled: (moduleId: string) => boolean,
+    log?: BootstrapLog,
 ): ModuleExtensionRoutes {
     let handlers: RouteHandler[] = [];
     const modulesRoot =
@@ -68,8 +69,13 @@ export function createModuleExtensionRoutes(
                         },
                     });
                 }
-            } catch {
-                // ignore invalid module route plugin
+            } catch (error) {
+                log?.("error", "Failed to load module API route plugin.", {
+                    component: "module-extension-routes",
+                    moduleId: manifest.id,
+                    pluginPath,
+                    error: error instanceof Error ? error.message : String(error),
+                });
             }
         }
 

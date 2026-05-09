@@ -36,7 +36,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 
 | Komponen   | Path       | Versi   |
 | ---------- | ---------- | ------- |
-| Server API | `src/api/` | `0.1.2` |
+| Server API | `src/api/` | `0.1.3` |
 
 ## Modul
 

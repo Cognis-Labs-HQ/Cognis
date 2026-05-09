@@ -66,9 +66,33 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                 try {
                     const raw = await readFile(manifestPath, "utf8");
                     manifests.push(JSON.parse(raw));
-                } catch {}
+                } catch (error) {
+                    writeConsoleLog(
+                        "error",
+                        "Failed to load module manifest during bootstrap.",
+                        {
+                            component: "api-bootstrap",
+                            moduleId: entry,
+                            manifestPath,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                }
             }
-        } catch {}
+        } catch (error) {
+            writeConsoleLog(
+                "error",
+                "Failed to scan modules directory during bootstrap.",
+                {
+                    component: "api-bootstrap",
+                    modulesRoot,
+                    error: error instanceof Error ? error.message : String(error),
+                },
+            );
+        }
         return new InMemoryModuleRuntimeGateway(manifests);
     }
 
@@ -156,6 +180,26 @@ if (contributedLog) {
     setAppLogger(contributedLog);
 }
 const log = contributedLog ?? bootstrapLog;
+
+function logFatalFailure(
+    event: "uncaught_exception" | "unhandled_rejection",
+    error: unknown,
+): void {
+    log("error", "Fatal runtime failure detected.", {
+        component: "api-runtime",
+        fatal: true,
+        event,
+        error: error instanceof Error ? error.message : String(error),
+    });
+}
+
+process.on("uncaughtException", (error) => {
+    logFatalFailure("uncaught_exception", error);
+});
+
+process.on("unhandledRejection", (reason) => {
+    logFatalFailure("unhandled_rejection", reason);
+});
 
 await log("info", "Gateway bootstrap complete.", {
     adaptersRoot,

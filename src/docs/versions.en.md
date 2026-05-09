@@ -58,7 +58,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component  | Path       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.1.2` |
+| API Server | `src/api/` | `0.1.3` |
 
 ## Modules
 

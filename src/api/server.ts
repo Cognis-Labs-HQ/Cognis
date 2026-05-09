@@ -63,6 +63,7 @@ export function buildServer(deps: ApiDependencies) {
     const moduleExtensionRoutes = createModuleExtensionRoutes(
         deps.moduleRuntimeGateway,
         (moduleId) => enabledModules.has(moduleId),
+        log,
     );
 
     const moduleRoutes = createModuleRoutes(moduleService, {
@@ -93,6 +94,7 @@ export function buildServer(deps: ApiDependencies) {
         deps.accountStore,
         deps.gatewayRegistry,
         (moduleId) => enabledModules.has(moduleId),
+        log,
     );
     const userRoutes = deps.accountStore
         ? createUserRoutes(
@@ -139,12 +141,17 @@ export function buildServer(deps: ApiDependencies) {
             }
             return moduleExtensionRoutes.refresh();
         })
-        .catch(() => undefined);
+        .catch((error) => {
+            log("error", "Failed to restore persisted runtime states.", {
+                component: "api-server",
+                error: error instanceof Error ? error.message : String(error),
+            });
+        });
 
     return createServer(async (req, res) => {
         const url = new URL(req.url ?? "/", "http://localhost");
         const startedAt = Date.now();
-        log("debug", "Incoming API request.", {
+        log("info", "Incoming API request.", {
             method: req.method ?? "GET",
             path: url.pathname,
         });
@@ -152,29 +159,21 @@ export function buildServer(deps: ApiDependencies) {
         try {
             const handledByModule = await moduleRoutes(req, res, url);
             if (handledByModule) {
-                log(
-                    (req.method ?? "GET") === "GET" ? "debug" : "info",
-                    "Request handled by module routes.",
-                    {
-                        method: req.method ?? "GET",
-                        path: url.pathname,
-                        durationMs: Date.now() - startedAt,
-                    },
-                );
+                log("info", "Request handled by module routes.", {
+                    method: req.method ?? "GET",
+                    path: url.pathname,
+                    durationMs: Date.now() - startedAt,
+                });
                 return;
             }
 
             const handledBySystem = await systemRoutes(req, res, url);
             if (handledBySystem) {
-                log(
-                    (req.method ?? "GET") === "GET" ? "debug" : "info",
-                    "Request handled by system routes.",
-                    {
-                        method: req.method ?? "GET",
-                        path: url.pathname,
-                        durationMs: Date.now() - startedAt,
-                    },
-                );
+                log("info", "Request handled by system routes.", {
+                    method: req.method ?? "GET",
+                    path: url.pathname,
+                    durationMs: Date.now() - startedAt,
+                });
                 return;
             }
 
@@ -241,7 +240,7 @@ export function buildServer(deps: ApiDependencies) {
 
             const handledByDocs = await docsRoutes(req, res, url);
             if (handledByDocs) {
-                log("debug", "Request handled by docs routes.", {
+                log("info", "Request handled by docs routes.", {
                     method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
@@ -251,7 +250,7 @@ export function buildServer(deps: ApiDependencies) {
 
             const handledByUi = await uiRoutes(req, res, url);
             if (handledByUi) {
-                log("debug", "Request handled by UI routes.", {
+                log("info", "Request handled by UI routes.", {
                     method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
@@ -276,18 +275,15 @@ export function buildServer(deps: ApiDependencies) {
                 JSON.stringify({
                     error: {
                         code: "bad_request",
-                        message:
-                            error instanceof Error
-                                ? error.message
-                                : "Unknown error",
+                        message: "Request failed",
                     },
                 }),
             );
-            log("warn", "Request failed with handled error response.", {
+            log("error", "Request failed with handled error response.", {
                 method: req.method ?? "GET",
                 path: url.pathname,
                 durationMs: Date.now() - startedAt,
-                error: error instanceof Error ? error.message : "Unknown error",
+                error: error instanceof Error ? error.message : String(error),
             });
         }
     });

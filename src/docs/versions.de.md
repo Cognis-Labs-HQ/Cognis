@@ -42,7 +42,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 
 | Komponente | Pfad       | Version |
 | ---------- | ---------- | ------- |
-| API-Server | `src/api/` | `0.1.2` |
+| API-Server | `src/api/` | `0.1.3` |
 
 ## Module
 
