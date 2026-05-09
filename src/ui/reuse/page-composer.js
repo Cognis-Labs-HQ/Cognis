@@ -2465,6 +2465,7 @@ export function createPageComposer(
     }
 
     function renderGridComposer() {
+        if (!document.contains(contentGrid)) return;
         document.getElementById("composer-elements-panel")?.remove();
 
         if (!layout || (layout.order && !layout.placements)) {
@@ -3016,7 +3017,7 @@ export function createPageComposer(
 
         if (!subPageNavigation && contentGrid) {
             resizeObserver = new ResizeObserver(() => {
-                if (!contentGrid) return;
+                if (!contentGrid || !document.contains(contentGrid)) return;
                 const newCols = getPreferredGridColumnCount();
                 if (newCols !== lastObservedCols) {
                     lastObservedCols = newCols;

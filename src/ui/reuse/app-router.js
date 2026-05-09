@@ -85,7 +85,13 @@ async function loadRoute(path) {
     const mod = await route.load();
     // If another navigation started while the module was loading, bail out.
     if (signal.aborted) return false;
-    await mod.mount(_root, { signal });
+    try {
+        await mod.mount(_root, { signal });
+    } catch (err) {
+        if (!signal.aborted) {
+            console.error("[router] mount() error for", path, err);
+        }
+    }
     return true;
 }
 

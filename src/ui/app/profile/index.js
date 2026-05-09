@@ -966,7 +966,7 @@ export async function mount(rootEl, { signal } = {}) {
         const result = await loadUserProfile(urlHandle);
         if (result?.notFound) {
             root.innerHTML = `<p class="profile-not-found-message">${escapeHtml(i18n.t("ui.app.profile.not_found"))}</p>`;
-            throw new Error("profile_not_found");
+            return;
         }
         profile = result;
     }
