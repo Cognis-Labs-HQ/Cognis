@@ -2646,21 +2646,14 @@ export function createPageComposer(
         if (Array.isArray(toolbar) && toolbar.length > 0) {
             const toolbarEl = root.querySelector(".toolbar");
             if (toolbarEl) {
-                const storageKey = `cognis_toolbar_collapsed_${persistLayoutPreferences || "default"}`;
-                const storedValue = localStorage.getItem(storageKey);
                 const mobileMedia = window.matchMedia(
                     `(max-width: ${MOBILE_TOOLBAR_BREAKPOINT}px)`,
                 );
-                let collapsed = storedValue !== "false";
                 let mobileDrawerOpen = false;
-                const EXPAND_ICON = "▸";
-                const COLLAPSE_ICON = "◂";
-                const collapseBtn = document.createElement("button");
-                collapseBtn.type = "button";
-                collapseBtn.className = "toolbar-collapse-btn";
                 const mobileToggleBtn = document.createElement("button");
                 mobileToggleBtn.type = "button";
                 mobileToggleBtn.className = "toolbar-mobile-toggle";
+                mobileToggleBtn.textContent = "☰";
                 const mobileBackdrop = document.createElement("div");
                 mobileBackdrop.className = "toolbar-mobile-backdrop";
                 const mainWindow = root.querySelector(".main-window");
@@ -2682,26 +2675,6 @@ export function createPageComposer(
                     return mobileMedia.matches;
                 }
 
-                function setToolbarCollapsedState(nextCollapsed) {
-                    collapsed = nextCollapsed;
-                    const effectiveCollapsed =
-                        !isMobileDrawerMode() && nextCollapsed;
-                    toolbarEl.classList.toggle(
-                        "toolbar--collapsed",
-                        effectiveCollapsed,
-                    );
-                    collapseBtn.textContent = effectiveCollapsed
-                        ? EXPAND_ICON
-                        : COLLAPSE_ICON;
-                    collapseBtn.setAttribute(
-                        "aria-label",
-                        effectiveCollapsed
-                            ? i18n.t("ui.layout.toolbar.expand")
-                            : i18n.t("ui.layout.toolbar.collapse"),
-                    );
-                    localStorage.setItem(storageKey, String(nextCollapsed));
-                }
-
                 function setMobileDrawerOpen(
                     nextOpen,
                     { restoreFocus = true } = {},
@@ -2718,9 +2691,7 @@ export function createPageComposer(
                         mobileToggleBtn.focus();
                     }
                     mobileToggleBtn.setAttribute("aria-expanded", String(open));
-                    mobileToggleBtn.textContent = open
-                        ? COLLAPSE_ICON
-                        : EXPAND_ICON;
+                    mobileToggleBtn.textContent = "☰";
                     mobileToggleBtn.setAttribute(
                         "aria-label",
                         open
@@ -2729,20 +2700,23 @@ export function createPageComposer(
                     );
                 }
 
-                toolbarEl.insertBefore(collapseBtn, toolbarEl.firstChild);
-                setToolbarCollapsedState(collapsed);
-
-                collapseBtn.addEventListener("click", () => {
-                    const nowCollapsed =
-                        toolbarEl.classList.contains("toolbar--collapsed");
-                    setToolbarCollapsedState(!nowCollapsed);
-                });
+                mobileToggleBtn.setAttribute("aria-expanded", "false");
+                mobileToggleBtn.setAttribute(
+                    "aria-label",
+                    i18n.t("ui.layout.toolbar.expand"),
+                );
+                setMobileDrawerOpen(false, { restoreFocus: false });
 
                 mobileToggleBtn.addEventListener("click", () => {
                     setMobileDrawerOpen(!mobileDrawerOpen);
                 });
                 mobileBackdrop.addEventListener("click", () => {
                     setMobileDrawerOpen(false);
+                });
+                mobileMedia.addEventListener("change", () => {
+                    if (!isMobileDrawerMode()) {
+                        setMobileDrawerOpen(false, { restoreFocus: false });
+                    }
                 });
 
                 root.querySelectorAll("[data-composer-scroll]").forEach(
@@ -2752,8 +2726,6 @@ export function createPageComposer(
                                 setMobileDrawerOpen(false, {
                                     restoreFocus: false,
                                 });
-                            } else {
-                                setToolbarCollapsedState(true);
                             }
                         });
                     },
