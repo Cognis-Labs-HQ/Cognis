@@ -68,13 +68,13 @@ export async function mount(root) {
     const i18n = await createI18n({ preferredLanguages: languagePriority });
     applyDocumentTitle(i18n, "ui.page.title.settings");
 
-    const existingPrefs = await loadPrefs().catch(() => null);
-    if (Array.isArray(existingPrefs?.languagePriority))
-        languagePriority = existingPrefs.languagePriority;
+    let committedPrefs = await loadPrefs().catch(() => null);
+    if (Array.isArray(committedPrefs?.languagePriority))
+        languagePriority = committedPrefs.languagePriority;
 
     applyTimezoneToLocalStorage(
-        existingPrefs?.timezone ?? null,
-        existingPrefs?.detectedTimezone ?? null,
+        committedPrefs?.timezone ?? null,
+        committedPrefs?.detectedTimezone ?? null,
     );
 
     let savedMode = getStoredTheme();
@@ -204,7 +204,7 @@ export async function mount(root) {
                 ],
                 onRender: () => {
                     fontPrefs = initFontPrefs(root, {
-                        existingPrefs,
+                        committedPrefs,
                         i18n,
                         onDirtyChange: (dirty) =>
                             changesBar?.markDirty("font", dirty),
@@ -309,7 +309,7 @@ export async function mount(root) {
                 ],
                 onRender: () => {
                     datetimePrefs = initDateTimePrefs(root, {
-                        existingPrefs,
+                        committedPrefs,
                         i18n,
                         onDirtyChange: (dirty) =>
                             changesBar?.markDirty("datetime", dirty),
@@ -340,8 +340,8 @@ export async function mount(root) {
                     const prefsDumpEl = root.querySelector("#prefs-dump");
                     if (prefsDumpEl) {
                         prefsDumpEl.textContent =
-                            existingPrefs != null
-                                ? JSON.stringify(existingPrefs, null, 2)
+                            committedPrefs != null
+                                ? JSON.stringify(committedPrefs, null, 2)
                                 : "null";
                     }
                 },
@@ -420,10 +420,11 @@ export async function mount(root) {
                 mode,
                 timezone:
                     datetimePrefs?.getTimezone() ??
-                    existingPrefs?.timezone ??
+                    committedPrefs?.timezone ??
                     "auto",
             };
             await savePrefs(prefs);
+            committedPrefs = { ...(committedPrefs ?? {}), ...prefs };
             persistTheme(mode);
             applyTheme(mode);
             setPreferredLanguages(prefs.languagePriority);
@@ -432,7 +433,7 @@ export async function mount(root) {
                 "cognis_ui_preferences",
                 JSON.stringify(prefs),
             );
-            applyUiPreferences(prefs);
+            applyUiPreferences(prefs); // apply font/theme/timezone to live page without reload
             fontPrefs?.commit();
             themePrefs?.commit();
             datetimePrefs?.commit();
@@ -444,7 +445,7 @@ export async function mount(root) {
             const next = prefs.languagePriority ?? [];
             const prev = languagePriority ?? [];
             if (hasLanguagePriorityChanged(prev, next)) {
-                // Brief pause so the success toast is visible before the page navigates.
+                // Brief pause so the success toast is visible before the page reloads.
                 await new Promise((resolve) => setTimeout(resolve, 400));
                 window.location.reload();
             }

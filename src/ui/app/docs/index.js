@@ -97,7 +97,7 @@ export async function mount(root, { signal } = {}) {
         if (docEl && activeHtml !== null) docEl.innerHTML = activeHtml;
     }
 
-    async function showDoc(slug, pushHistory = true) {
+    async function showDoc(slug, pushHistory = true, mountSignal) {
         const langs = readPreferredLanguages().join(",");
         try {
             activeHtml = await loadMarkdownDocumentHtml(
@@ -106,6 +106,9 @@ export async function mount(root, { signal } = {}) {
         } catch {
             return;
         }
+        // If the page was navigated away from while the fetch was in flight,
+        // bail out before touching the DOM or history (fall through to nothing).
+        if (mountSignal?.aborted) return;
         renderActiveDoc();
 
         if (pushHistory) {
@@ -188,7 +191,7 @@ export async function mount(root, { signal } = {}) {
             if (!slug) return;
 
             event.preventDefault();
-            await showDoc(slug);
+            await showDoc(slug, true, signal);
         },
         { signal },
     );
