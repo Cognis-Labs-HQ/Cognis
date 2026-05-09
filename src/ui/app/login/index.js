@@ -294,6 +294,11 @@ function renderLoginShell() {
         i18n.t("ui.shared.brand.name"),
         i18n.t("ui.app.login.hero.tagline"),
     );
+    const mobileBrandlineHtml = renderAuthBrandline(
+        i18n.t("ui.shared.brand.name"),
+        i18n.t("ui.app.login.hero.tagline"),
+        "auth-brandline--panel-mobile",
+    );
     const introPanelHtml = `
       ${brandlineHtml}
       <p class="auth-intro">${escapeHtml(i18n.t("ui.app.login.hero.subtitle"))}</p>
@@ -312,6 +317,7 @@ function renderLoginShell() {
           )
         : "";
     const formPanelHtml = `
+      ${mobileBrandlineHtml}
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
       <form id="login-form" class="stack auth-form" method="POST">
         <input type="hidden" id="login-provider" value="local" />

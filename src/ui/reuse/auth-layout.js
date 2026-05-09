@@ -2,7 +2,7 @@
  * Shared minimal auth shell layout used by login and registration pages.
  *
  * Public exports:
- *   renderAuthBrandline(brandName, tagline) — HTML for the branded logo/name/tagline header block.
+ *   renderAuthBrandline(brandName, tagline, extraClass?) — HTML for the branded logo/name/tagline header block.
  *   renderAuthLayout(opts)                  — HTML for the full two-column auth page shell.
  *
  * Usage:
@@ -24,11 +24,13 @@ import { escapeHtml } from "./escape-html.js";
 /**
  * @param {string} brandName - Translated brand name string.
  * @param {string} tagline   - Translated tagline string.
+ * @param {string} [extraClass] - Optional class appended to the brandline wrapper.
  * @returns {string} HTML string for the shared brand logo/name/tagline block.
  */
-export function renderAuthBrandline(brandName, tagline) {
+export function renderAuthBrandline(brandName, tagline, extraClass = "") {
+    const classes = ["auth-brandline", extraClass].filter(Boolean).join(" ");
     return `
-    <div class="auth-brandline">
+    <div class="${escapeHtml(classes)}">
       <img src="/static/assets/icons/cognis-icon.png" alt="" class="auth-icon" />
       <div>
         <h1 class="auth-title">${escapeHtml(brandName)}</h1>

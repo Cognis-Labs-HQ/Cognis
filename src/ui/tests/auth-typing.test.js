@@ -65,6 +65,20 @@ test("login and register disable layout preference persistence", () => {
     assert.match(registerSource, /persistLayoutPreferences:\s*false/);
 });
 
+test("login and register include mobile auth brandline inside auth panel", () => {
+    const loginSource = readFileSync(
+        resolve(ROOT, "src/ui/app/login/index.js"),
+        "utf8",
+    );
+    const registerSource = readFileSync(
+        resolve(ROOT, "src/ui/app/register/index.js"),
+        "utf8",
+    );
+
+    assert.match(loginSource, /auth-brandline--panel-mobile/);
+    assert.match(registerSource, /auth-brandline--panel-mobile/);
+});
+
 test("register page renders invalid-token intro message instead of disabled form shell", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/register/index.js"),
