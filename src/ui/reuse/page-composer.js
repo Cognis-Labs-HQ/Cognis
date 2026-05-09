@@ -1219,6 +1219,7 @@ export function createPageComposer(
       <div class="composer-panel-actions">
         <button class="composer-discard-btn" type="button">${i18n.t("ui.reuse.generic.discard")}</button>
         <button class="composer-done-btn" type="button">${i18n.t("ui.reuse.generic.done")}</button>
+        <button class="composer-reset-btn" type="button">↺ ${i18n.t("ui.reuse.page_composer.reset_layout")}</button>
       </div>
     `;
 
@@ -1265,6 +1266,16 @@ export function createPageComposer(
                 layout = layoutSnapshot;
                 editing = false;
                 endEditMode();
+                renderGridComposer();
+            });
+
+        panel
+            .querySelector(".composer-reset-btn")
+            .addEventListener("click", async () => {
+                layout = { placements: [], hidden: [] };
+                initializePlacements();
+                layoutSnapshot = JSON.parse(JSON.stringify(layout));
+                await saveLayout();
                 renderGridComposer();
             });
 
@@ -1998,6 +2009,7 @@ export function createPageComposer(
       <div class="composer-panel-actions">
         <button class="composer-discard-btn" type="button">${i18n.t("ui.reuse.generic.discard")}</button>
         <button class="composer-done-btn" type="button">${i18n.t("ui.reuse.generic.done")}</button>
+        <button class="composer-reset-btn" type="button">↺ ${i18n.t("ui.reuse.page_composer.reset_layout")}</button>
       </div>
     `;
 
@@ -2092,6 +2104,21 @@ export function createPageComposer(
                 state.layout = state.layoutSnapshot;
                 state.editing = false;
                 endEditMode();
+                renderSubGrid(state);
+            });
+
+        panel
+            .querySelector(".composer-reset-btn")
+            .addEventListener("click", async () => {
+                state.layout = { placements: [], hidden: [] };
+                initializeSubPlacements(state);
+                state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
+                state.layoutProfiles = await saveLayoutFor(
+                    state.preferenceKey,
+                    state.layoutProfiles,
+                    state.gridCols,
+                    state.layout,
+                );
                 renderSubGrid(state);
             });
 
@@ -2352,10 +2379,26 @@ export function createPageComposer(
         }
     }
 
-    function repackPlacementsIntoColumns(sortedVisible, maxCols) {
+    function repackPlacementsIntoColumns(
+        sortedVisible,
+        maxCols,
+        elems = elements,
+    ) {
         const packed = [];
         for (const orig of sortedVisible) {
-            const w = Math.min(orig.w, maxCols);
+            const el = elems.find((e) => e.id === orig.id);
+            const gs = el ? getGridSize(el) : null;
+            let w;
+            if (gs?.fullWidth) {
+                w = maxCols;
+            } else if (gs?.halfWidth) {
+                w = Math.min(
+                    maxCols,
+                    Math.max(gs.min[0], Math.floor(maxCols / 2)),
+                );
+            } else {
+                w = Math.min(orig.w, maxCols);
+            }
             const h = orig.h;
             let placed = false;
             for (let row = 0; !placed; row++) {
@@ -2445,8 +2488,22 @@ export function createPageComposer(
             .filter((p) => !layout.hidden.includes(p.id))
             .sort((a, b) => a.row - b.row || a.col - b.col);
 
-        const hasOverflow = visible.some((p) => p.col + p.w > gridCols);
-        if (!hasOverflow) return visible;
+        const needsRepack = visible.some((p) => {
+            if (p.col + p.w > gridCols) return true;
+            const el = elements.find((e) => e.id === p.id);
+            if (!el) return false;
+            const gs = getGridSize(el);
+            if (gs.fullWidth && p.w !== gridCols) return true;
+            if (gs.halfWidth) {
+                const target = Math.min(
+                    gridCols,
+                    Math.max(gs.min[0], Math.floor(gridCols / 2)),
+                );
+                if (p.w !== target) return true;
+            }
+            return false;
+        });
+        if (!needsRepack) return visible;
 
         return repackPlacementsIntoColumns(visible, gridCols);
     }
@@ -2456,12 +2513,28 @@ export function createPageComposer(
             .filter((pl) => !state.layout.hidden.includes(pl.id))
             .sort((a, b) => a.row - b.row || a.col - b.col);
 
-        const hasOverflow = visible.some(
-            (pl) => pl.col + pl.w > state.gridCols,
-        );
-        if (!hasOverflow) return visible;
+        const needsRepack = visible.some((pl) => {
+            if (pl.col + pl.w > state.gridCols) return true;
+            const el = state.elements.find((e) => e.id === pl.id);
+            if (!el) return false;
+            const gs = getGridSize(el);
+            if (gs.fullWidth && pl.w !== state.gridCols) return true;
+            if (gs.halfWidth) {
+                const target = Math.min(
+                    state.gridCols,
+                    Math.max(gs.min[0], Math.floor(state.gridCols / 2)),
+                );
+                if (pl.w !== target) return true;
+            }
+            return false;
+        });
+        if (!needsRepack) return visible;
 
-        return repackPlacementsIntoColumns(visible, state.gridCols);
+        return repackPlacementsIntoColumns(
+            visible,
+            state.gridCols,
+            state.elements,
+        );
     }
 
     function renderGridComposer() {
