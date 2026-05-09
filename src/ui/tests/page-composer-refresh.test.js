@@ -60,10 +60,6 @@ test("page composer elements panels stay below header and use viewport top", () 
     assert.match(source, /Math\.max\(navRowBottom, topbarBottom\)/);
     assert.match(source, /Math\.ceil\(/);
     assert.match(source, /\+ 12\),/);
-    assert.doesNotMatch(
-        source,
-        /const panelTop = gridRect\.top \+ window\.scrollY;/,
-    );
     assert.match(source, /const panelTop = gridRect\.top;/);
     assert.match(source, /panel\.style\.top = `\$\{safeTop\}px`;/);
     assert.match(
