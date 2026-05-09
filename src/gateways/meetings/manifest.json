@@ -1,0 +1,9 @@
+{
+    "id": "meetings",
+    "name": "Meetings Gateway",
+    "version": "1.0.0",
+    "required": false,
+    "requires": ["db", "profile"],
+    "description": "Jitsi Meet video meetings between followers, with persistent room URLs and an in-app control overlay.",
+    "publisher": "Cognis Labs"
+}
