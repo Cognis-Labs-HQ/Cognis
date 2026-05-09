@@ -97,7 +97,7 @@ export async function mount(root, { signal } = {}) {
         if (docEl && activeHtml !== null) docEl.innerHTML = activeHtml;
     }
 
-    async function showDoc(slug, pushHistory = true, signal) {
+    async function showDoc(slug, pushHistory = true, { signal } = {}) {
         const langs = readPreferredLanguages().join(",");
         try {
             activeHtml = await loadMarkdownDocumentHtml(
@@ -191,7 +191,7 @@ export async function mount(root, { signal } = {}) {
             if (!slug) return;
 
             event.preventDefault();
-            await showDoc(slug, true, signal);
+            await showDoc(slug, true, { signal });
         },
         { signal },
     );

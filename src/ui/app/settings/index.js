@@ -68,13 +68,13 @@ export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({ preferredLanguages: languagePriority });
     applyDocumentTitle(i18n, "ui.page.title.settings");
 
-    let committedPrefs = await loadPrefs().catch(() => null);
-    if (Array.isArray(committedPrefs?.languagePriority))
-        languagePriority = committedPrefs.languagePriority;
+    let loadedPrefs = await loadPrefs().catch(() => null);
+    if (Array.isArray(loadedPrefs?.languagePriority))
+        languagePriority = loadedPrefs.languagePriority;
 
     applyTimezoneToLocalStorage(
-        committedPrefs?.timezone ?? null,
-        committedPrefs?.detectedTimezone ?? null,
+        loadedPrefs?.timezone ?? null,
+        loadedPrefs?.detectedTimezone ?? null,
     );
 
     let savedMode = getStoredTheme();
@@ -204,7 +204,7 @@ export async function mount(root, { signal } = {}) {
                 ],
                 onRender: () => {
                     fontPrefs = initFontPrefs(root, {
-                        existingPrefs: committedPrefs,
+                        existingPrefs: loadedPrefs,
                         i18n,
                         onDirtyChange: (dirty) =>
                             changesBar?.markDirty("font", dirty),
@@ -309,7 +309,7 @@ export async function mount(root, { signal } = {}) {
                 ],
                 onRender: () => {
                     datetimePrefs = initDateTimePrefs(root, {
-                        existingPrefs: committedPrefs,
+                        existingPrefs: loadedPrefs,
                         i18n,
                         onDirtyChange: (dirty) =>
                             changesBar?.markDirty("datetime", dirty),
@@ -340,8 +340,8 @@ export async function mount(root, { signal } = {}) {
                     const prefsDumpEl = root.querySelector("#prefs-dump");
                     if (prefsDumpEl) {
                         prefsDumpEl.textContent =
-                            committedPrefs != null
-                                ? JSON.stringify(committedPrefs, null, 2)
+                            loadedPrefs != null
+                                ? JSON.stringify(loadedPrefs, null, 2)
                                 : "null";
                     }
                 },
@@ -412,19 +412,19 @@ export async function mount(root, { signal } = {}) {
             const prefs = {
                 appFont: fontPrefs
                     ? toFontFamilyValue(fontPrefs.getFont())
-                    : committedPrefs?.appFont,
+                    : loadedPrefs?.appFont,
                 appFontSize:
-                    fontPrefs?.getFontSize() ?? committedPrefs?.appFontSize,
+                    fontPrefs?.getFontSize() ?? loadedPrefs?.appFontSize,
                 languagePriority:
                     languagePrefs?.getPriority() ?? languagePriority,
                 mode,
                 timezone:
                     datetimePrefs?.getTimezone() ??
-                    committedPrefs?.timezone ??
+                    loadedPrefs?.timezone ??
                     "auto",
             };
             await savePrefs(prefs);
-            committedPrefs = { ...committedPrefs, ...prefs };
+            loadedPrefs = { ...loadedPrefs, ...prefs };
             persistTheme(mode);
             applyTheme(mode);
             setPreferredLanguages(prefs.languagePriority);
