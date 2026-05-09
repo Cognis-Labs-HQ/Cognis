@@ -23,14 +23,37 @@
  * @module api/reuse/crypto
  */
 
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 const ENCRYPT_ALG = "AES-GCM";
 const IV_BYTES = 12;
 const KEY_BITS = 256;
 const HKDF_SALT = new TextEncoder().encode("cognis-data-v1");
-const DEFAULT_INSECURE_KEY_MATERIAL =
-    "default-insecure-key-set-DATA_ENCRYPTION_KEY";
+
+/**
+ * Per-process random fallback used when DATA_ENCRYPTION_KEY is unset.
+ *
+ * Generated lazily on first use and held only in memory for the lifetime of
+ * the running process. Two consequences flow from this design:
+ *   1. There is no globally-known default key shared across deployments — an
+ *      attacker reading the source cannot decrypt data from a deployment that
+ *      forgot to set DATA_ENCRYPTION_KEY.
+ *   2. Any data encrypted with this fallback becomes unreadable after a
+ *      process restart, which surfaces the misconfiguration loudly instead of
+ *      letting it fester silently.
+ *
+ * Production deployments must always set DATA_ENCRYPTION_KEY explicitly; the
+ * notification adapter bootstrap throws when the variable is unset under
+ * `NODE_ENV === "production"`, so this fallback only ever runs in dev/test.
+ */
+let processFallbackSecret: string | null = null;
+
+function getOrCreateFallbackSecret(): string {
+    if (!processFallbackSecret) {
+        processFallbackSecret = randomBytes(32).toString("hex");
+    }
+    return processFallbackSecret;
+}
 
 /**
  * @param content - UTF-8 string to hash.
@@ -43,8 +66,8 @@ export function sha256Of(content: string): string {
 /**
  * Reads the server-side data encryption key from the DATA_ENCRYPTION_KEY
  * environment variable. Returns an empty string if the variable is unset;
- * callers should log a warning in that case as data will be encrypted with a
- * deployment-wide default key.
+ * callers should treat this as a misconfiguration (the notification adapter
+ * bootstrap, for example, throws in production when this is empty).
  */
 export function getDataEncryptionKey(): string {
     return process.env.DATA_ENCRYPTION_KEY ?? "";
@@ -68,10 +91,9 @@ export async function deriveScopedKey(
 ): Promise<CryptoKey> {
     const subtle = globalThis.crypto.subtle;
     const enc = new TextEncoder();
-    const keyMaterial =
-        serverSecret.length > 0
-            ? enc.encode(serverSecret)
-            : enc.encode(DEFAULT_INSECURE_KEY_MATERIAL);
+    const effectiveSecret =
+        serverSecret.length > 0 ? serverSecret : getOrCreateFallbackSecret();
+    const keyMaterial = enc.encode(effectiveSecret);
 
     const baseKey = await subtle.importKey(
         "raw",

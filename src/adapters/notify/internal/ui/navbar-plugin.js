@@ -17,6 +17,7 @@ import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { formatRelativeTime } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+import { showToast } from "/static/reuse/toast.js";
 
 const POLL_INTERVAL_VISIBLE_MS = 10_000;
 const POLL_INTERVAL_HIDDEN_MS = 30_000;
@@ -131,7 +132,10 @@ function renderNotificationItem(notif, i18n) {
                 notif.read = true;
                 await refreshCount();
             } catch {
-                // fall through — server update failed; leave item as unread; the dismiss handler registered below is unaffected
+                showToast(
+                    i18n.t("ui.adapter.notify.internal.error_mark_read"),
+                    { variant: "error" },
+                );
             }
         }
         if (notif.actionUrl) {
@@ -154,7 +158,9 @@ function renderNotificationItem(notif, i18n) {
                 emptyEl.hidden = false;
             }
         } catch {
-            // fall through — server deletion failed; the success-path refreshCount call is skipped; item remains in list
+            showToast(i18n.t("ui.adapter.notify.internal.error_dismiss"), {
+                variant: "error",
+            });
         }
     });
 
@@ -265,7 +271,10 @@ function buildButton(i18n) {
             });
             updateBadge(0);
         } catch {
-            // fall through — server update failed; the mark-all-read success path did not complete; UI state left unchanged
+            showToast(
+                i18n.t("ui.adapter.notify.internal.error_mark_all_read"),
+                { variant: "error" },
+            );
         }
     });
     header.appendChild(markAllBtn);
@@ -461,7 +470,10 @@ function showArrivalToast(notif, i18n) {
         watchProfileMenu();
 
         await startPolling(i18n);
-    } catch {
-        // Initialization failed — navbar plugin degrades gracefully without the notification bell
+    } catch (err) {
+        // Initialization failed — navbar plugin degrades gracefully without the notification bell.
+        // Logged so developers can diagnose missing-bell issues during development.
+        // eslint-disable-next-line no-console
+        console.error("[notify-internal] navbar plugin init failed:", err);
     }
 })();

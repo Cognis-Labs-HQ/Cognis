@@ -383,6 +383,9 @@
   <string name="ui.adapter.notify.internal.mark_all_read">Tandai Semua Dibaca</string>
   <string name="ui.adapter.notify.internal.empty">Tidak ada notifikasi baru</string>
   <string name="ui.adapter.notify.internal.sender_system">Sistem</string>
+  <string name="ui.adapter.notify.internal.error_mark_read">Tidak dapat menandai notifikasi sebagai dibaca. Silakan coba lagi.</string>
+  <string name="ui.adapter.notify.internal.error_dismiss">Tidak dapat menghapus notifikasi. Silakan coba lagi.</string>
+  <string name="ui.adapter.notify.internal.error_mark_all_read">Tidak dapat menandai semua notifikasi sebagai dibaca. Silakan muat ulang.</string>
   <string name="ui.app.settings.general">Umum</string>
   <string name="ui.app.settings.emails">Alamat Email</string>
   <string name="ui.app.settings.emails_add">Tambah email</string>

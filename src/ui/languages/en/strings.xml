@@ -383,6 +383,9 @@
   <string name="ui.adapter.notify.internal.mark_all_read">Mark All as Read</string>
   <string name="ui.adapter.notify.internal.empty">No new notifications</string>
   <string name="ui.adapter.notify.internal.sender_system">System</string>
+  <string name="ui.adapter.notify.internal.error_mark_read">Couldn't mark notification as read. Please try again.</string>
+  <string name="ui.adapter.notify.internal.error_dismiss">Couldn't dismiss notification. Please try again.</string>
+  <string name="ui.adapter.notify.internal.error_mark_all_read">Couldn't mark all notifications as read. Please refresh.</string>
   <string name="ui.app.settings.general">General</string>
   <string name="ui.app.settings.emails">Email Addresses</string>
   <string name="ui.app.settings.emails_add">Add email</string>

@@ -106,29 +106,49 @@ export function formatDateTime(iso, fallback = "", options = {}) {
  * @param {string} fallback — Returned when epochMs is falsy or formatting fails.
  * @returns {string}
  */
-let _rtf;
+let cachedRelativeTimeFormatter;
 export function formatRelativeTime(epochMs, fallback = "") {
     if (!epochMs) return fallback;
     try {
-        _rtf ??= new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+        cachedRelativeTimeFormatter ??= new Intl.RelativeTimeFormat(undefined, {
+            numeric: "auto",
+        });
         const diffMs = epochMs - Date.now();
         const absDiff = Math.abs(diffMs);
         if (absDiff < 60_000) {
-            return _rtf.format(Math.round(diffMs / 1000), "second");
+            return cachedRelativeTimeFormatter.format(
+                Math.round(diffMs / 1000),
+                "second",
+            );
         }
         if (absDiff < 3_600_000) {
-            return _rtf.format(Math.round(diffMs / 60_000), "minute");
+            return cachedRelativeTimeFormatter.format(
+                Math.round(diffMs / 60_000),
+                "minute",
+            );
         }
         if (absDiff < 86_400_000) {
-            return _rtf.format(Math.round(diffMs / 3_600_000), "hour");
+            return cachedRelativeTimeFormatter.format(
+                Math.round(diffMs / 3_600_000),
+                "hour",
+            );
         }
         if (absDiff < 30 * 86_400_000) {
-            return _rtf.format(Math.round(diffMs / 86_400_000), "day");
+            return cachedRelativeTimeFormatter.format(
+                Math.round(diffMs / 86_400_000),
+                "day",
+            );
         }
         if (absDiff < 365 * 86_400_000) {
-            return _rtf.format(Math.round(diffMs / (30 * 86_400_000)), "month");
+            return cachedRelativeTimeFormatter.format(
+                Math.round(diffMs / (30 * 86_400_000)),
+                "month",
+            );
         }
-        return _rtf.format(Math.round(diffMs / (365 * 86_400_000)), "year");
+        return cachedRelativeTimeFormatter.format(
+            Math.round(diffMs / (365 * 86_400_000)),
+            "year",
+        );
     } catch {
         return fallback;
     }
