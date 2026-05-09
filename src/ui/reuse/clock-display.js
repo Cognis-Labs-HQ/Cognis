@@ -85,15 +85,15 @@ function getClockTimeParts(now, tz) {
  */
 export function buildAnalogueClockMarkup(now, tz) {
     const { hour, minute, second } = getClockTimeParts(now, tz);
-    const cx = 54;
-    const cy = 54;
+    const centerX = 54;
+    const centerY = 54;
     const faceRadius = 48;
 
     function handCoords(angleDeg, len) {
         const rad = ((angleDeg - 90) * Math.PI) / 180;
         return {
-            x: cx + len * Math.cos(rad),
-            y: cy + len * Math.sin(rad),
+            x: centerX + len * Math.cos(rad),
+            y: centerY + len * Math.sin(rad),
         };
     }
 
@@ -108,10 +108,10 @@ export function buildAnalogueClockMarkup(now, tz) {
         const major = tickIndex % 5 === 0;
         const tickAngle = (tickIndex * 6 * Math.PI) / 180;
         const inner = major ? faceRadius - 8 : faceRadius - 4;
-        const x1 = cx + faceRadius * Math.cos(tickAngle - Math.PI / 2);
-        const y1 = cy + faceRadius * Math.sin(tickAngle - Math.PI / 2);
-        const x2 = cx + inner * Math.cos(tickAngle - Math.PI / 2);
-        const y2 = cy + inner * Math.sin(tickAngle - Math.PI / 2);
+        const x1 = centerX + faceRadius * Math.cos(tickAngle - Math.PI / 2);
+        const y1 = centerY + faceRadius * Math.sin(tickAngle - Math.PI / 2);
+        const x2 = centerX + inner * Math.cos(tickAngle - Math.PI / 2);
+        const y2 = centerY + inner * Math.sin(tickAngle - Math.PI / 2);
         const tickClass = major
             ? "clock-analogue-tick-major"
             : "clock-analogue-tick";
@@ -119,15 +119,15 @@ export function buildAnalogueClockMarkup(now, tz) {
     }).join("");
 
     return `<svg class="clock-analogue" width="108" height="108" viewBox="0 0 108 108" aria-hidden="true">
-      <circle class="clock-analogue-face" cx="${cx}" cy="${cy}" r="${faceRadius}"/>
+      <circle class="clock-analogue-face" cx="${centerX}" cy="${centerY}" r="${faceRadius}"/>
       ${ticks}
       <line class="clock-hand-hour"
-        x1="${cx}" y1="${cy}" x2="${hourEnd.x.toFixed(2)}" y2="${hourEnd.y.toFixed(2)}"/>
+        x1="${centerX}" y1="${centerY}" x2="${hourEnd.x.toFixed(2)}" y2="${hourEnd.y.toFixed(2)}"/>
       <line class="clock-hand-minute"
-        x1="${cx}" y1="${cy}" x2="${minuteEnd.x.toFixed(2)}" y2="${minuteEnd.y.toFixed(2)}"/>
+        x1="${centerX}" y1="${centerY}" x2="${minuteEnd.x.toFixed(2)}" y2="${minuteEnd.y.toFixed(2)}"/>
       <line class="clock-hand-second"
-        x1="${cx}" y1="${cy}" x2="${secondEnd.x.toFixed(2)}" y2="${secondEnd.y.toFixed(2)}"/>
-      <circle class="clock-analogue-centre" cx="${cx}" cy="${cy}" r="4"/>
+        x1="${centerX}" y1="${centerY}" x2="${secondEnd.x.toFixed(2)}" y2="${secondEnd.y.toFixed(2)}"/>
+      <circle class="clock-analogue-centre" cx="${centerX}" cy="${centerY}" r="4"/>
     </svg>`;
 }
 
@@ -169,10 +169,10 @@ export function mountLiveClock({ displayId, tzId, renderClock }) {
     if (!displayEl) return;
 
     function tick() {
-        const tz = getEffectiveTimezone();
+        const timezone = getEffectiveTimezone();
         const now = new Date();
-        if (tzEl) tzEl.textContent = tz;
-        displayEl.innerHTML = renderClock(now, tz);
+        if (tzEl) tzEl.textContent = timezone;
+        displayEl.innerHTML = renderClock(now, timezone);
     }
 
     tick();

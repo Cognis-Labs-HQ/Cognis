@@ -25,8 +25,8 @@ export function getInitialsText(handle) {
 
 export function pickInitialsColor(handle) {
     let hash = 0;
-    for (const ch of handle ?? "") {
-        hash = (hash * 31 + ch.charCodeAt(0)) | 0;
+    for (const char of handle ?? "") {
+        hash = (hash * 31 + char.charCodeAt(0)) | 0;
     }
     const hue = Math.abs(hash) % 360;
     return `hsl(${hue}, 55%, 42%)`;

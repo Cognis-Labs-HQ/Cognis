@@ -90,9 +90,10 @@ export function runTypingShowcase(
                     charIndex <= sample.length;
                     charIndex += 1
                 ) {
-                    const el = document.querySelector(targetSelector);
-                    if (!el || runId !== activeShowcaseRun) return;
-                    el.textContent = sample.slice(0, charIndex);
+                    const displayElement =
+                        document.querySelector(targetSelector);
+                    if (!displayElement || runId !== activeShowcaseRun) return;
+                    displayElement.textContent = sample.slice(0, charIndex);
                     await new Promise((resolve) =>
                         window.setTimeout(resolve, 85),
                     );
@@ -107,9 +108,10 @@ export function runTypingShowcase(
                     charIndex >= 0;
                     charIndex -= 1
                 ) {
-                    const el = document.querySelector(targetSelector);
-                    if (!el || runId !== activeShowcaseRun) return;
-                    el.textContent = sample.slice(0, charIndex);
+                    const displayElement =
+                        document.querySelector(targetSelector);
+                    if (!displayElement || runId !== activeShowcaseRun) return;
+                    displayElement.textContent = sample.slice(0, charIndex);
                     await new Promise((resolve) =>
                         window.setTimeout(resolve, 40),
                     );

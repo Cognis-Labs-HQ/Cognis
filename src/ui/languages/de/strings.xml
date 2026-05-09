@@ -300,6 +300,7 @@
   <string name="ui.reuse.page_composer.sections">Elemente</string>
   <string name="ui.reuse.page_composer.elements">Elemente</string>
   <string name="ui.reuse.page_composer.all_visible">Alle Elemente sind sichtbar.</string>
+  <string name="ui.reuse.page_composer.reset_layout">Layout zurücksetzen</string>
   <string name="ui.reuse.page_composer.zone_toolbar">Werkzeugleiste</string>
   <string name="ui.reuse.page_composer.zone_floating">Schwebendes Menü</string>
   <string name="ui.reuse.page_composer.zone_main">Hauptbereich</string>

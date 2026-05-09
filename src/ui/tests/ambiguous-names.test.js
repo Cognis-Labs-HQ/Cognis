@@ -27,28 +27,32 @@ const SCAN_ROOTS = [
     join(ROOT, "src/tooling"),
 ];
 
-// Single-letter names that are always acceptable as standalone variable declarations.
-// x, y: spatial coordinates; w, h: layout width/height; _: intentional ignore.
-const ALLOWED_STANDALONE = new Set(["x", "y", "w", "h", "_"]);
+// Short names (1–2 letters) acceptable as standalone variable declarations.
+// x, y: spatial coordinates; w, h: layout width/height; _: intentional ignore;
+// id: universally understood identifier.
+const ALLOWED_STANDALONE = new Set(["x", "y", "w", "h", "_", "id"]);
 
-// Single-letter names acceptable only as the loop counter in a numeric for-loop
-// initialiser (e.g. `for (let i = 0; ...)`). r and c are row/column indices used
-// in nested grid-cell iterations, which follow the same convention as i/j/k.
-const ALLOWED_COUNTER = new Set(["i", "j", "k", "r", "c"]);
+// Short names (1–2 letters) acceptable only as the loop counter in a numeric
+// for-loop initialiser (e.g. `for (let i = 0; ...)`) or a for-of/for-in
+// binding. r and c are row/column indices used in nested grid-cell iterations,
+// which follow the same convention as i/j/k. id is allowed when iterating a
+// collection of identifiers.
+const ALLOWED_COUNTER = new Set(["i", "j", "k", "r", "c", "id"]);
 
 // Matches the counter variable in a numeric for-loop initialiser.
-// Captures the variable name at group 2.
-const FOR_COUNTER_RE = /^\s*for\s*\(\s*(let|var)\s+([a-zA-Z])\s*=/;
+// Captures the variable name at group 2 (1–2 letters).
+const FOR_COUNTER_RE = /^\s*for\s*\(\s*(let|var)\s+([a-zA-Z]{1,2})\s*=/;
 
 // Matches the binding in a for-of or for-in loop.
-// Captures the variable name at group 2.
-const FOR_OF_IN_RE = /^\s*for\s*\(\s*(const|let|var)\s+([a-zA-Z])\s+(of|in)\s/;
+// Captures the variable name at group 2 (1–2 letters).
+const FOR_OF_IN_RE =
+    /^\s*for\s*\(\s*(const|let|var)\s+([a-zA-Z]{1,2})\s+(of|in)\s/;
 
 // Matches a plain variable declaration.
-// Captures the variable name at group 2.
-const DECL_RE = /^\s*(const|let|var)\s+([a-zA-Z])\s*=/;
+// Captures the variable name at group 2 (1–2 letters).
+const DECL_RE = /^\s*(const|let|var)\s+([a-zA-Z]{1,2})\s*=/;
 
-test("no ambiguous single-letter variable names in source files", () => {
+test("no ambiguous short variable names in source files", () => {
     const hits = [];
 
     for (const root of SCAN_ROOTS) {
@@ -73,9 +77,8 @@ test("no ambiguous single-letter variable names in source files", () => {
                 // formats `for (let c = ...)` across lines, the declaration
                 // appears alone on the next line after `for (`.
                 if (prevLineWasForOpen) {
-                    const initMatch = /^\s*(let|var)\s+([a-zA-Z])\s*=/.exec(
-                        line,
-                    );
+                    const initMatch =
+                        /^\s*(let|var)\s+([a-zA-Z]{1,2})\s*=/.exec(line);
                     if (initMatch) {
                         name = initMatch[2];
                         isCounter = true;

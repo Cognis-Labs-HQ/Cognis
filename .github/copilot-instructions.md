@@ -144,6 +144,26 @@ Repeatedly ignoring, hand-waving, or vainly dismissing valid review feedback is 
 
 Format all new or modified code for human readability. Do not compress logic, markup, or styles into dense one-liners when a multi-line structure is clearer. A statement that would naturally span 6+ lines in JavaScript should remain that way — humans must be able to eyeball the code meaningfully.
 
+### Variable naming
+
+Variable and binding names must be descriptive. Single-letter names are only acceptable in the roles listed below; all other one- or two-letter identifiers are forbidden in `const`, `let`, and `var` declarations and in `for-of` / `for-in` bindings:
+
+**Acceptable single-letter names:**
+
+- `x`, `y` — 2-D spatial coordinates.
+- `w`, `h` — layout width / height (in grid units or pixels).
+- `_` — explicitly ignored binding.
+- `i`, `j`, `k` — numeric for-loop counters (e.g. `for (let i = 0; ...)`).
+- `r`, `c` — row / column counters in nested grid-cell loops.
+
+**Acceptable two-letter names:**
+
+- `id` — a unique identifier; universally understood and unambiguous in any context.
+
+Everything else must use a full descriptive name: `element` not `el`, `gridSize` not `gs`, `floatingToolbar` not `ft`, `resizeObserver` not `ro`, `gateway` not `gw`, `timestamp` not `ts`, `listItem` not `li`, `initVector` not `iv`, `timezone` not `tz`, `recipient` not `to`, etc.
+
+A test in `src/ui/tests/ambiguous-names.test.js` enforces this rule automatically for all source files in the scanned directories.
+
 ### Module cohesion
 
 Keep modules focused and cohesive. Avoid duplicated request/serialization logic across routes and pages.

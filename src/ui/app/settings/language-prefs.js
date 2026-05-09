@@ -22,9 +22,9 @@ export function initLanguagePrefs(
     }
 
     function makeRow(isoCode, labelText) {
-        const tr = document.createElement("tr");
-        tr.setAttribute("draggable", "true");
-        tr.setAttribute("data-lang-row", isoCode);
+        const row = document.createElement("tr");
+        row.setAttribute("draggable", "true");
+        row.setAttribute("data-lang-row", isoCode);
 
         const tdLabel = document.createElement("td");
         tdLabel.textContent = labelText;
@@ -33,19 +33,19 @@ export function initLanguagePrefs(
         tdHandle.className = "drag-handle";
         tdHandle.textContent = "⬍";
 
-        tr.append(tdLabel, tdHandle);
+        row.append(tdLabel, tdHandle);
 
         tdHandle.addEventListener("pointerdown", (e) => {
             if (e.pointerType === "mouse") return;
             e.preventDefault();
             tdHandle.setPointerCapture(e.pointerId);
-            tr.classList.add("language-row-dragging");
+            row.classList.add("language-row-dragging");
             dragLanguage = isoCode;
 
             function onMove(ev) {
                 ev.preventDefault();
                 clearDropMarkers();
-                const { row: targetRow, rect } = findRowAt(tr, ev.clientY);
+                const { row: targetRow, rect } = findRowAt(row, ev.clientY);
                 if (!targetRow) return;
                 targetRow.classList.add(
                     ev.clientY > rect.top + rect.height / 2
@@ -58,8 +58,8 @@ export function initLanguagePrefs(
                 tdHandle.removeEventListener("pointermove", onMove);
                 tdHandle.removeEventListener("pointerup", onEnd);
                 tdHandle.removeEventListener("pointercancel", onEnd);
-                tr.classList.remove("language-row-dragging");
-                const { row: targetRow, rect } = findRowAt(tr, ev.clientY);
+                row.classList.remove("language-row-dragging");
+                const { row: targetRow, rect } = findRowAt(row, ev.clientY);
                 const targetTable = findTableAt(ev.clientX, ev.clientY);
                 const targetIsAfter = Boolean(
                     targetRow && ev.clientY > rect.top + rect.height / 2,
@@ -74,7 +74,7 @@ export function initLanguagePrefs(
             tdHandle.addEventListener("pointercancel", onEnd);
         });
 
-        return tr;
+        return row;
     }
 
     function renderTables() {

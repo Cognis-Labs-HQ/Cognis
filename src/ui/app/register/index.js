@@ -346,20 +346,22 @@ const composer = createPageComposer(root, {
                     ).getTime();
                     let countdownTimer = null;
                     function updateCountdown() {
-                        const el = root.querySelector("#register-countdown");
-                        if (!el) {
+                        const countdown = root.querySelector(
+                            "#register-countdown",
+                        );
+                        if (!countdown) {
                             clearInterval(countdownTimer);
                             return;
                         }
                         const remaining = expiresAtMs - Date.now();
                         if (remaining <= 0) {
-                            el.textContent = i18n.t(
+                            countdown.textContent = i18n.t(
                                 "ui.app.register.token_expired",
                             );
                             clearInterval(countdownTimer);
                             return;
                         }
-                        el.textContent = i18n
+                        countdown.textContent = i18n
                             .t("ui.app.register.token_expires_in")
                             .replace("{countdown}", formatCountdown(remaining));
                     }

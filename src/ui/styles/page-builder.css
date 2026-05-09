@@ -1510,6 +1510,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
 
 .composer-panel-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     padding: 10px 12px;
     border-top: 1px solid var(--border);
@@ -1532,6 +1533,24 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
 }
 
 .composer-discard-btn:hover {
+    background: var(--control-hover-bg);
+    border-color: var(--border-strong);
+    color: var(--text);
+}
+
+.composer-reset-btn {
+    flex-basis: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.composer-reset-btn:hover {
     background: var(--control-hover-bg);
     border-color: var(--border-strong);
     color: var(--text);

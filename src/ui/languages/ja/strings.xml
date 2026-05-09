@@ -300,6 +300,7 @@
   <string name="ui.reuse.page_composer.sections">要素</string>
   <string name="ui.reuse.page_composer.elements">要素</string>
   <string name="ui.reuse.page_composer.all_visible">すべての要素が表示されています。</string>
+  <string name="ui.reuse.page_composer.reset_layout">レイアウトをリセット</string>
   <string name="ui.reuse.page_composer.zone_toolbar">ツールバー</string>
   <string name="ui.reuse.page_composer.zone_floating">フローティングメニュー</string>
   <string name="ui.reuse.page_composer.zone_main">メイン</string>

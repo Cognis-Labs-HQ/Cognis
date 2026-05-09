@@ -4,17 +4,18 @@ import { ensurePostgresAuthSchema } from "../auth-schema.js";
 
 test("postgres auth schema applies all statements", async () => {
     const statements: string[] = [];
-    const db = {
+    const executor = {
         query: async () => ({ rows: [], rowCount: 0 }),
         execute: async (statement: string) => {
             statements.push(statement);
             return { affectedRows: 0 };
         },
-        transaction: async <T>(callback: (trx: typeof db) => Promise<T>) =>
-            callback(db),
+        transaction: async <T>(
+            callback: (trx: typeof executor) => Promise<T>,
+        ) => callback(executor),
     };
 
-    await ensurePostgresAuthSchema(db);
+    await ensurePostgresAuthSchema(executor);
 
     assert.equal(statements.length, 3);
     assert.match(statements[1] ?? "", /auth_identities/);

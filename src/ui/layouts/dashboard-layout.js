@@ -74,8 +74,8 @@ function bindTopbarActions() {
 
     window.addEventListener("storage", (event) => {
         if (event.key === "cognis_display_name") {
-            const el = document.querySelector("#profile-name");
-            if (el) el.textContent = getDisplayName();
+            const nameElement = document.querySelector("#profile-name");
+            if (nameElement) nameElement.textContent = getDisplayName();
         }
     });
 
@@ -279,9 +279,9 @@ function applyCompactNav(root) {
         if (e.key === "Escape" && drawerOpen) closeDrawer();
     });
 
-    const ro = new ResizeObserver(syncCompactState);
-    ro.observe(topnav);
-    ro.observe(navrow);
+    const resizeObserver = new ResizeObserver(syncCompactState);
+    resizeObserver.observe(topnav);
+    resizeObserver.observe(navrow);
     syncCompactState();
 }
 
