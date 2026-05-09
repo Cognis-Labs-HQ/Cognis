@@ -2,14 +2,79 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    overflow: auto;
     border-right: 1px solid var(--color-border);
+}
+
+.messages-rooms-header {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.messages-new-btn {
+    background: none;
+    border: 1px solid var(--color-accent);
+    border-radius: 0.25rem;
+    color: var(--color-accent);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.75rem;
+}
+
+.messages-new-btn:hover {
+    background: var(--color-accent);
+    color: var(--color-accent-contrast);
+}
+
+.messages-lookup-wrap {
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.5rem;
+    flex-shrink: 0;
+}
+
+.messages-lookup-input {
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    padding: 0.4rem 0.6rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.messages-lookup-results {
+    list-style: none;
+    margin: 0.25rem 0 0;
+    padding: 0;
+    max-height: 12rem;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    background: var(--color-surface);
+}
+
+.messages-lookup-result {
+    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.messages-lookup-result:last-child {
+    border-bottom: none;
+}
+
+.messages-lookup-result:hover {
+    background: var(--color-surface-elevated);
 }
 
 .messages-rooms-list {
     list-style: none;
     margin: 0;
     padding: 0;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .messages-room {
