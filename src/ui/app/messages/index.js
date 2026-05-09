@@ -22,8 +22,8 @@ const TEXT_DECODER = new TextDecoder();
 
 function hexToBytes(hex) {
     const out = new Uint8Array(hex.length / 2);
-    for (let index = 0; index < out.length; index += 1) {
-        out[index] = parseInt(hex.slice(index * 2, index * 2 + 2), 16);
+    for (let i = 0; i < out.length; i += 1) {
+        out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
     }
     return out;
 }
@@ -251,9 +251,12 @@ export async function mount(root, { signal } = {}) {
                     if (!text) return;
                     const key = await getRoomKey(selectedRoomId);
                     if (!key) {
-                        showToast(i18n.t("module.social.messages.empty"), {
-                            variant: "error",
-                        });
+                        showToast(
+                            i18n.t("module.social.messages.key_unavailable"),
+                            {
+                                variant: "error",
+                            },
+                        );
                         return;
                     }
                     const { iv, ciphertext } = await encryptMessage(key, text);

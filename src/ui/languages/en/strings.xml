@@ -516,4 +516,6 @@
   <string name="module.social.messages.lookup_placeholder">Search by handle…</string>
   <string name="module.social.messages.icon_label">Message</string>
   <string name="module.social.messages.load_earlier">Load earlier</string>
+  <string name="module.social.messages.start_failed">Failed to start conversation.</string>
+  <string name="module.social.messages.key_unavailable">Encryption key unavailable.</string>
 </resources>

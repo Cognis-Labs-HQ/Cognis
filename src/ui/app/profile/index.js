@@ -11,6 +11,7 @@ import { escapeHtml } from "../../reuse/escape-html.js";
 import { attachCharCounter } from "../../reuse/char-counter.js";
 import { showToast } from "../../reuse/toast.js";
 import { formatDate } from "../../reuse/timestamp.js";
+import { navigateTo } from "../../reuse/app-router.js";
 
 let root = null;
 let i18n = null;
@@ -852,7 +853,7 @@ async function doOpenMessageRoom() {
             body: JSON.stringify({ handles: [profile.handle] }),
         });
         if (!res.ok) {
-            showToast(i18n.t("ui.app.profile.post_failed"), {
+            showToast(i18n.t("module.social.messages.start_failed"), {
                 variant: "error",
             });
             return;
@@ -860,9 +861,11 @@ async function doOpenMessageRoom() {
         const payload = await res.json();
         const roomId = payload?.data?.id;
         if (!roomId) return;
-        window.location.href = `/messages/${encodeURIComponent(roomId)}`;
+        await navigateTo(`/messages/${encodeURIComponent(roomId)}`);
     } catch {
-        showToast(i18n.t("ui.app.profile.post_failed"), { variant: "error" });
+        showToast(i18n.t("module.social.messages.start_failed"), {
+            variant: "error",
+        });
     }
 }
 

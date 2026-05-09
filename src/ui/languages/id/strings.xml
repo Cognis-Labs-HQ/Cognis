@@ -516,4 +516,6 @@
   <string name="module.social.messages.lookup_placeholder">Cari berdasarkan handle…</string>
   <string name="module.social.messages.icon_label">Pesan</string>
   <string name="module.social.messages.load_earlier">Muat lebih awal</string>
+  <string name="module.social.messages.start_failed">Gagal memulai percakapan.</string>
+  <string name="module.social.messages.key_unavailable">Kunci enkripsi tidak tersedia.</string>
 </resources>

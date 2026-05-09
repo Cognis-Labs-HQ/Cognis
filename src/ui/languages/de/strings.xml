@@ -516,4 +516,6 @@
   <string name="module.social.messages.lookup_placeholder">Nach Benutzername suchen…</string>
   <string name="module.social.messages.icon_label">Nachricht</string>
   <string name="module.social.messages.load_earlier">Frühere laden</string>
+  <string name="module.social.messages.start_failed">Konversation konnte nicht gestartet werden.</string>
+  <string name="module.social.messages.key_unavailable">Verschlüsselungsschlüssel nicht verfügbar.</string>
 </resources>
