@@ -43,6 +43,10 @@
 
   <string name="ui.layout.brand.aria">Cognis ホーム</string>
   <string name="ui.layout.nav.primary">メインナビゲーション</string>
+  <string name="ui.layout.nav.open_menu">ナビゲーションメニューを開く</string>
+  <string name="ui.layout.nav.close_menu">ナビゲーションメニューを閉じる</string>
+  <string name="ui.layout.toolbar.collapse">ツールバーを折りたたむ</string>
+  <string name="ui.layout.toolbar.expand">ツールバーを展開する</string>
   <string name="ui.layout.greeting">こんにちは、</string>
   <string name="ui.layout.notifications.aria">通知</string>
   <string name="ui.layout.account.aria">アカウントオプション</string>

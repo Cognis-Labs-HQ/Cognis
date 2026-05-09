@@ -273,9 +273,67 @@ code {
 .main-window--with-toolbar .content-grid {
     width: 100%;
 }
+
+.toolbar-collapse-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    width: 100%;
+    padding: 6px 14px 6px 6px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1;
+    margin-bottom: 4px;
+    transition: background 0.15s;
+}
+
+.toolbar > .toolbar-collapse-btn {
+    padding-left: 6px;
+    padding-right: 14px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.toolbar-collapse-btn:hover {
+    color: var(--text);
+    background: var(--surface-soft);
+}
+
+.toolbar--collapsed {
+    width: 36px;
+    min-width: 36px;
+    overflow: hidden;
+}
+
+.toolbar--collapsed > *:not(.toolbar-collapse-btn) {
+    display: none;
+}
+
+.toolbar--collapsed > .toolbar-collapse-btn {
+    justify-content: center;
+    border-bottom: 0;
+    padding: 14px 0;
+    margin-bottom: 0;
+}
+
 @media (max-width: 900px) {
     .main-window--with-toolbar {
         grid-template-columns: 1fr;
+    }
+    .toolbar--collapsed {
+        width: auto;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .workspace.app-page--frameless {
+        padding: 0;
     }
 }
 

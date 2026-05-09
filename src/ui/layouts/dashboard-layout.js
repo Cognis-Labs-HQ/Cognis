@@ -182,7 +182,10 @@ export async function updateNavbarAvatar() {
     avatarBtn.replaceChildren(initialsEl);
 }
 
+let _navbarPluginsLoaded = false;
+
 async function loadNavbarPlugins() {
+    if (_navbarPluginsLoaded) return;
     if (!localStorage.getItem("cognis_token")) return;
     try {
         const res = await apiFetch("/api/v1/ui/navbar-plugins");
@@ -194,9 +197,94 @@ async function loadNavbarPlugins() {
                 p?.scriptUrl ? import(p.scriptUrl).catch(() => {}) : null,
             ),
         );
+        _navbarPluginsLoaded = true;
     } catch {
         // navbar plugin loading is best-effort; layout continues without them
     }
+}
+
+function applyCompactNav(root) {
+    const navrow = root.querySelector(".global-navrow");
+    const topnav = navrow?.querySelector(".topnav");
+    const compactToggle = navrow?.querySelector("#nav-compact-toggle");
+    const drawer = root.querySelector("#nav-drawer");
+    const drawerClose = root.querySelector("#nav-drawer-close");
+    const drawerNav = drawer?.querySelector(".nav-drawer-nav");
+    const backdrop = root.querySelector("#nav-drawer-backdrop");
+    if (!navrow || !topnav || !compactToggle || !drawer || !backdrop) return;
+
+    let drawerOpen = false;
+
+    function syncCompactState() {
+        const overflows = topnav.scrollWidth > topnav.clientWidth + 2;
+        const compact = overflows;
+        navrow.classList.toggle("global-navrow--compact", compact);
+        compactToggle.hidden = !compact;
+        if (!compact && drawerOpen) closeDrawer();
+    }
+
+    function openDrawer() {
+        if (drawerOpen) return;
+        drawerOpen = true;
+        if (drawerNav) {
+            drawerNav.innerHTML = topnav.innerHTML;
+            drawerNav.querySelectorAll("a").forEach((link) => {
+                const isActive =
+                    link.getAttribute("href") === window.location.pathname;
+                link.classList.toggle("active", isActive);
+                if (isActive) link.setAttribute("aria-current", "page");
+                else link.removeAttribute("aria-current");
+            });
+        }
+        drawer.classList.add("nav-drawer--open");
+        drawer.setAttribute("aria-hidden", "false");
+        compactToggle.setAttribute("aria-expanded", "true");
+        backdrop.removeAttribute("hidden");
+        (drawerNav?.querySelector("a") ?? drawerClose ?? compactToggle).focus();
+    }
+
+    function closeDrawer() {
+        if (!drawerOpen) return;
+        drawerOpen = false;
+        drawer.classList.remove("nav-drawer--open");
+        drawer.setAttribute("aria-hidden", "true");
+        compactToggle.setAttribute("aria-expanded", "false");
+        backdrop.setAttribute("hidden", "");
+        compactToggle.focus();
+    }
+
+    compactToggle.addEventListener("click", () => {
+        if (drawerOpen) closeDrawer();
+        else openDrawer();
+    });
+
+    drawerClose?.addEventListener("click", closeDrawer);
+
+    backdrop.addEventListener("click", closeDrawer);
+
+    drawerNav?.addEventListener("click", (e) => {
+        if (e.target.closest("a")) closeDrawer();
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && drawerOpen) closeDrawer();
+    });
+
+    const ro = new ResizeObserver(syncCompactState);
+    ro.observe(topnav);
+    ro.observe(navrow);
+    syncCompactState();
+}
+
+function shellMatchesConfig(root, showTopbar, showNavbar, showFooter) {
+    const hasTopbar = Boolean(root.querySelector(".global-topbar"));
+    const hasNavrow = Boolean(root.querySelector(".global-navrow"));
+    const hasFooter = Boolean(root.querySelector(".global-footer"));
+    return (
+        hasTopbar === showTopbar &&
+        hasNavrow === showNavbar &&
+        hasFooter === showFooter
+    );
 }
 
 export async function renderDashboardLayout(root, slots = {}) {
@@ -208,9 +296,47 @@ export async function renderDashboardLayout(root, slots = {}) {
         usePreferenceApi = showTopbar || showNavbar,
     } = slots;
     const i18n = slots.i18n || (await createI18n());
-    const template = await loadTemplate("dashboard-layout");
+
+    const existingShell = root.querySelector(".app-shell");
     const hasToolbar = Boolean(slots.toolbar);
     const hasFloatingToolbar = Boolean(slots.floatingToolbar);
+
+    if (
+        existingShell &&
+        shellMatchesConfig(root, showTopbar, showNavbar, showFooter)
+    ) {
+        const pageCtxEl = existingShell.querySelector(".page-context");
+        if (pageCtxEl) pageCtxEl.innerHTML = slots.pageContext || "";
+
+        const mainWindow = existingShell.querySelector(".main-window");
+        if (mainWindow) {
+            mainWindow.className = `main-window ${
+                hasToolbar
+                    ? "main-window--with-toolbar"
+                    : "main-window--content-only"
+            }`;
+            mainWindow.innerHTML =
+                (hasToolbar
+                    ? `<aside class="toolbar">${slots.toolbar}</aside>`
+                    : "") +
+                `<section class="content-grid">${slots.content || ""}</section>` +
+                (hasFloatingToolbar
+                    ? `<div class="floating-toolbar" hidden>${slots.floatingToolbar}</div>`
+                    : "");
+        }
+
+        if (!showThemeToggle) {
+            existingShell.querySelector("#theme-toggle")?.remove();
+        }
+        applyStaticTranslations(
+            i18n,
+            existingShell.querySelector(".main-window") ?? existingShell,
+        );
+        applyActiveNavigation();
+        return;
+    }
+
+    const template = await loadTemplate("dashboard-layout");
     root.innerHTML = template
         .replace("{{pageContext}}", slots.pageContext || "")
         .replace("{{topbar}}", slots.topbar)
@@ -243,6 +369,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         await loadNavbarPlugins();
         updateNavbarAvatar().catch(() => {});
         applyActiveNavigation();
+        applyCompactNav(root);
     }
     bindThemeToggle({ usePreferenceApi });
 }

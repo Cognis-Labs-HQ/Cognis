@@ -43,6 +43,10 @@
 
   <string name="ui.layout.brand.aria">Cognis home</string>
   <string name="ui.layout.nav.primary">Primary navigation</string>
+  <string name="ui.layout.nav.open_menu">Open navigation menu</string>
+  <string name="ui.layout.nav.close_menu">Close navigation menu</string>
+  <string name="ui.layout.toolbar.collapse">Collapse toolbar</string>
+  <string name="ui.layout.toolbar.expand">Expand toolbar</string>
   <string name="ui.layout.greeting">Hello,</string>
   <string name="ui.layout.notifications.aria">Notifications</string>
   <string name="ui.layout.account.aria">Account options</string>

@@ -1941,9 +1941,7 @@ export function createPageComposer(
                 state.container.classList.add("content-grid--two-column");
             }
 
-            const sorted = state.layout.placements
-                .filter((p) => !state.layout.hidden.includes(p.id))
-                .sort((a, b) => a.row - b.row || a.col - b.col);
+            const sorted = computeSubViewPlacements(state);
 
             for (const placement of sorted) {
                 const el = state.elements.find((e) => e.id === placement.id);
@@ -2132,6 +2130,114 @@ export function createPageComposer(
         }
     }
 
+    function computeViewPlacements() {
+        const visible = layout.placements
+            .filter((p) => !layout.hidden.includes(p.id))
+            .sort((a, b) => a.row - b.row || a.col - b.col);
+
+        const hasOverflow = visible.some((p) => p.col + p.w > gridCols);
+        if (!hasOverflow) return visible;
+
+        const packed = [];
+        for (const orig of visible) {
+            const w = Math.min(orig.w, gridCols);
+            const h = orig.h;
+            let placed = false;
+            for (let row = 0; !placed; row++) {
+                for (let col = 0; col <= Math.max(0, gridCols - w); col++) {
+                    const occupied = new Set();
+                    for (const existing of packed) {
+                        for (
+                            let r = existing.row;
+                            r < existing.row + existing.h;
+                            r++
+                        ) {
+                            for (
+                                let c = existing.col;
+                                c < existing.col + existing.w;
+                                c++
+                            ) {
+                                occupied.add(`${c},${r}`);
+                            }
+                        }
+                    }
+                    let fits = true;
+                    outer: for (let r = row; r < row + h; r++) {
+                        for (let c = col; c < col + w; c++) {
+                            if (occupied.has(`${c},${r}`)) {
+                                fits = false;
+                                break outer;
+                            }
+                        }
+                    }
+                    if (fits) {
+                        packed.push({ ...orig, col, row, w });
+                        placed = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return packed;
+    }
+
+    function computeSubViewPlacements(state) {
+        const visible = state.layout.placements
+            .filter((pl) => !state.layout.hidden.includes(pl.id))
+            .sort((a, b) => a.row - b.row || a.col - b.col);
+
+        const hasOverflow = visible.some(
+            (pl) => pl.col + pl.w > state.gridCols,
+        );
+        if (!hasOverflow) return visible;
+
+        const packed = [];
+        for (const orig of visible) {
+            const w = Math.min(orig.w, state.gridCols);
+            const h = orig.h;
+            let placed = false;
+            for (let row = 0; !placed; row++) {
+                for (
+                    let col = 0;
+                    col <= Math.max(0, state.gridCols - w);
+                    col++
+                ) {
+                    const occupied = new Set();
+                    for (const existing of packed) {
+                        for (
+                            let r = existing.row;
+                            r < existing.row + existing.h;
+                            r++
+                        ) {
+                            for (
+                                let c = existing.col;
+                                c < existing.col + existing.w;
+                                c++
+                            ) {
+                                occupied.add(`${c},${r}`);
+                            }
+                        }
+                    }
+                    let fits = true;
+                    outer: for (let r = row; r < row + h; r++) {
+                        for (let c = col; c < col + w; c++) {
+                            if (occupied.has(`${c},${r}`)) {
+                                fits = false;
+                                break outer;
+                            }
+                        }
+                    }
+                    if (fits) {
+                        packed.push({ ...orig, col, row, w });
+                        placed = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return packed;
+    }
+
     function renderGridComposer() {
         document.getElementById("composer-elements-panel")?.remove();
 
@@ -2164,9 +2270,11 @@ export function createPageComposer(
             section.classList.add("composer-view-grid");
         }
 
-        const visiblePlacements = layout.placements
-            .filter((p) => !layout.hidden.includes(p.id))
-            .sort((a, b) => a.row - b.row || a.col - b.col);
+        const visiblePlacements = editing
+            ? layout.placements
+                  .filter((p) => !layout.hidden.includes(p.id))
+                  .sort((a, b) => a.row - b.row || a.col - b.col)
+            : computeViewPlacements();
 
         for (const placement of visiblePlacements) {
             const el = elements.find((e) => e.id === placement.id);
@@ -2526,6 +2634,39 @@ export function createPageComposer(
             root.querySelector(".workspace")?.classList.add(
                 "app-page--frameless",
             );
+        }
+
+        if (Array.isArray(toolbar) && toolbar.length > 0) {
+            const toolbarEl = root.querySelector(".toolbar");
+            if (toolbarEl) {
+                const storageKey = `cognis_toolbar_collapsed_${persistLayoutPreferences || "default"}`;
+                const collapsed = localStorage.getItem(storageKey) === "true";
+                const collapseBtn = document.createElement("button");
+                collapseBtn.type = "button";
+                collapseBtn.className = "toolbar-collapse-btn";
+                collapseBtn.setAttribute(
+                    "aria-label",
+                    collapsed
+                        ? i18n.t("ui.layout.toolbar.expand")
+                        : i18n.t("ui.layout.toolbar.collapse"),
+                );
+                collapseBtn.textContent = collapsed ? "›" : "‹";
+                toolbarEl.insertBefore(collapseBtn, toolbarEl.firstChild);
+                if (collapsed) toolbarEl.classList.add("toolbar--collapsed");
+
+                collapseBtn.addEventListener("click", () => {
+                    const nowCollapsed =
+                        toolbarEl.classList.toggle("toolbar--collapsed");
+                    collapseBtn.textContent = nowCollapsed ? "›" : "‹";
+                    collapseBtn.setAttribute(
+                        "aria-label",
+                        nowCollapsed
+                            ? i18n.t("ui.layout.toolbar.expand")
+                            : i18n.t("ui.layout.toolbar.collapse"),
+                    );
+                    localStorage.setItem(storageKey, String(nowCollapsed));
+                });
+            }
         }
 
         if (subPageNavigation) {

@@ -22,6 +22,18 @@
             data-i18n-aria-label="ui.layout.nav.primary"
             aria-label="Primary navigation"
         >
+            <button
+                id="nav-compact-toggle"
+                class="nav-compact-toggle"
+                type="button"
+                data-i18n-aria-label="ui.layout.nav.open_menu"
+                aria-label="Open navigation menu"
+                aria-expanded="false"
+                aria-controls="nav-drawer"
+                hidden
+            >
+                &#9776;
+            </button>
             <div class="topnav global-navrow-surface">
                 <a href="/dashboard" data-i18n="ui.reuse.nav.dashboard"></a>
             </div>
@@ -141,4 +153,32 @@
         <span class="composer-edit-icon" aria-hidden="true"></span>
     </button>
     {{floatingToolbar}}
+    <div
+        id="nav-drawer"
+        class="nav-drawer"
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        data-i18n-aria-label="ui.layout.nav.primary"
+        aria-label="Primary navigation"
+    >
+        <div class="nav-drawer-content">
+            <button
+                id="nav-drawer-close"
+                class="nav-drawer-close"
+                type="button"
+                data-i18n-aria-label="ui.layout.nav.close_menu"
+                aria-label="Close navigation menu"
+            >
+                &times;
+            </button>
+            <nav class="nav-drawer-nav"></nav>
+        </div>
+    </div>
+    <div
+        id="nav-drawer-backdrop"
+        class="nav-drawer-backdrop"
+        aria-hidden="true"
+        hidden
+    ></div>
 </section>

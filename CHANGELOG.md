@@ -9,6 +9,16 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Responsive grid reflow: page-composer grid elements that would overflow the available column count when the viewport shrinks are automatically re-packed into the rows below, preserving display order without altering the saved layout. Applies to both the primary grid and all sub-composer grids. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
+- Hamburger nav drawer: the global navbar now detects when its navigation links overflow the available space (via `ResizeObserver`) and compresses them into a left-side overlay drawer triggered by a hamburger button. The drawer can be closed by clicking any nav link, the backdrop, or pressing Escape. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
+- Toolbar collapse toggle: pages with an aside toolbar now get a collapse button (`‹`/`›`) injected at the top of the toolbar. Clicking it collapses the toolbar to a narrow 36 px strip, freeing content space. The collapsed/expanded state is persisted per-page in `localStorage`. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
+- Shell reuse optimization: `renderDashboardLayout` now detects when the page shell (topbar, navbar, footer) is already rendered with matching configuration and skips re-rendering it, updating only the workspace content. This reduces DOM churn during page transitions. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
+- Navbar plugin caching: gateway-contributed navbar plugins are loaded only once per session; subsequent page renders skip the plugin fetch entirely. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
+
+### Changed
+
+- Mobile and tablet responsive layout: the global navrow is now a three-column grid (`[hamburger] [topnav] [account-cluster]`) that gracefully degrades at narrow widths; at ≤640 px the workspace and footer expand to full width with reduced padding and the user-greeting label is hidden to preserve space. The nav drawer and toolbar collapse are also adapted for ≤640 px phone layouts. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
+
 - Timestamp translation utility (`src/ui/reuse/timestamp.js`): `formatDate`, `formatDateTime`, `getEffectiveTimezone`, and `syncTimezoneOnLogin`. All UI timestamps now route through this module and respect the user's effective timezone. ([eefdcad](https://github.com/le-firehawk/Cognis/commit/eefdcad))
 - Timezone preference in Settings → Date &amp; Time: a dropdown populated from `Intl.supportedValuesOf('timeZone')` lets users override browser auto-detection with a specific IANA timezone. The selection is persisted to `ui-preferences` via the existing preferences API. ([eefdcad](https://github.com/le-firehawk/Cognis/commit/eefdcad))
 - `syncTimezoneOnLogin`: after a successful login, the browser's detected timezone is saved to `ui-preferences.detectedTimezone` (and to `cognis_timezone` in localStorage) whenever the timezone preference is set to "auto". If the user has set a specific timezone, that overrides auto-detection on every login. ([eefdcad](https://github.com/le-firehawk/Cognis/commit/eefdcad))

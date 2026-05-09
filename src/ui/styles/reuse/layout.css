@@ -61,7 +61,7 @@
 
 .global-navrow {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 18px;
     padding: 10px 30px;
@@ -75,18 +75,142 @@
     z-index: 30;
 }
 
+.nav-compact-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    line-height: 1;
+    transition: background 0.15s;
+}
+
+.nav-compact-toggle:hover {
+    background: var(--surface-soft);
+}
+
+.global-navrow--compact .nav-compact-toggle {
+    display: flex;
+}
+
+.global-navrow--compact .topnav {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.nav-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    max-width: 85vw;
+    height: 100%;
+    background: var(--surface-2);
+    border-right: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    z-index: 600;
+    transform: translateX(-100%);
+    transition: transform 0.26s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    overflow-y: auto;
+    pointer-events: none;
+    visibility: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-drawer--open {
+    transform: translateX(0);
+    pointer-events: auto;
+    visibility: visible;
+}
+
+.nav-drawer-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.nav-drawer-close {
+    background: transparent;
+    border: 0;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    align-self: flex-end;
+    padding: 2px 8px;
+    border-radius: 6px;
+    line-height: 1;
+    transition: background 0.15s;
+    margin-bottom: 8px;
+}
+
+.nav-drawer-close:hover {
+    background: var(--surface-soft);
+    color: var(--text);
+}
+
+.nav-drawer-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nav-drawer-nav a {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.97rem;
+    font-weight: 600;
+    opacity: 0.88;
+    transition: background 0.15s;
+}
+
+.nav-drawer-nav a:hover,
+.nav-drawer-nav a.active {
+    background: var(--surface-soft);
+    opacity: 1;
+}
+
+.nav-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.48);
+    z-index: 590;
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.26s ease;
+}
+
+.nav-drawer-backdrop:not([hidden]) {
+    pointer-events: auto;
+    visibility: visible;
+    opacity: 1;
+}
+
 .topnav {
     display: flex;
     gap: 18px;
     font-size: 0.97rem;
     font-weight: 600;
     letter-spacing: 0.01em;
+    overflow: hidden;
 }
 .topnav a {
     color: var(--text);
     text-decoration: none;
     opacity: 0.92;
     padding: 6px 2px;
+    white-space: nowrap;
 }
 .topnav a:hover,
 .topnav a.active {
@@ -335,12 +459,18 @@ button.dropdown-item {
 }
 
 @media (max-width: 900px) {
-    .global-topbar,
-    .global-navrow {
+    .global-topbar {
         grid-template-columns: 1fr;
         gap: 10px;
         padding-left: 18px;
         padding-right: 18px;
+    }
+    .global-navrow {
+        grid-template-columns: auto auto 1fr;
+        gap: 10px;
+        padding-left: 18px;
+        padding-right: 18px;
+        top: 78px;
     }
     .page-context {
         align-items: flex-start;
@@ -351,11 +481,42 @@ button.dropdown-item {
     .page-context p {
         font-size: 0.92rem;
     }
-    .global-navrow {
-        top: 78px;
-    }
     .account-cluster {
         justify-self: end;
+    }
+}
+
+@media (max-width: 640px) {
+    .site-header {
+        width: 100%;
+        border-radius: 0;
+    }
+    .global-topbar {
+        padding: 10px 14px;
+        min-height: 60px;
+    }
+    .global-navrow {
+        padding: 8px 14px;
+        top: 60px;
+        border-radius: 0;
+    }
+    .workspace {
+        width: 100%;
+        margin: 0;
+        padding: 14px;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+    }
+    .global-footer {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+    }
+    .user-greeting {
+        display: none;
     }
 }
 

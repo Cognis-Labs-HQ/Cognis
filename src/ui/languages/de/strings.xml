@@ -43,6 +43,10 @@
 
   <string name="ui.layout.brand.aria">Cognis-Startseite</string>
   <string name="ui.layout.nav.primary">Hauptnavigation</string>
+  <string name="ui.layout.nav.open_menu">Navigationsmenü öffnen</string>
+  <string name="ui.layout.nav.close_menu">Navigationsmenü schließen</string>
+  <string name="ui.layout.toolbar.collapse">Werkzeugleiste einklappen</string>
+  <string name="ui.layout.toolbar.expand">Werkzeugleiste ausklappen</string>
   <string name="ui.layout.greeting">Hallo,</string>
   <string name="ui.layout.notifications.aria">Benachrichtigungen</string>
   <string name="ui.layout.account.aria">Kontoeinstellungen</string>

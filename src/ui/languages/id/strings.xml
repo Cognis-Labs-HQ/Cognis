@@ -43,6 +43,10 @@
 
   <string name="ui.layout.brand.aria">Beranda Cognis</string>
   <string name="ui.layout.nav.primary">Navigasi utama</string>
+  <string name="ui.layout.nav.open_menu">Buka menu navigasi</string>
+  <string name="ui.layout.nav.close_menu">Tutup menu navigasi</string>
+  <string name="ui.layout.toolbar.collapse">Ciutkan bilah alat</string>
+  <string name="ui.layout.toolbar.expand">Perluas bilah alat</string>
   <string name="ui.layout.greeting">Halo,</string>
   <string name="ui.layout.notifications.aria">Notifikasi</string>
   <string name="ui.layout.account.aria">Opsi akun</string>
