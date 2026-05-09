@@ -11,6 +11,7 @@
 | コンポーネント             | パス                                | バージョン |
 | -------------------------- | ----------------------------------- | ---------- |
 | SMTP通知                   | `src/adapters/notify/smtp/`         | `0.1.0`    |
+| 内部通知                   | `src/adapters/notify/internal/`     | `0.5.0`    |
 | ローカルファイルストレージ | `src/adapters/file/local/`          | `0.1.0`    |
 | ローカル認証               | `src/adapters/auth/local/`          | `0.2.2`    |
 | SQLiteデータベース         | `src/adapters/db/sqlite/`           | `0.1.0`    |

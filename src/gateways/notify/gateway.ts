@@ -1,11 +1,39 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { SupportedDbType } from "../db/executor.js";
+
+/**
+ * Context passed to `bootstrapNotifyAdapter` when a notification adapter
+ * exports that function. Provides the minimal surface adapters need to
+ * self-register routes, static assets, and navbar plugins.
+ */
+export interface NotifyAdapterBootstrapCtx {
+    gateway: CoreNotificationGateway;
+    registerRoute(
+        handler: (
+            req: IncomingMessage,
+            res: ServerResponse,
+            url: URL,
+        ) => Promise<boolean>,
+        gatewayId?: string,
+    ): void;
+    registerNavbarPlugin(scriptUrl: string): void;
+    registerStaticDir(urlPrefix: string, absoluteDir: string): void;
+    log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
+    dbExecutor?: DbExecutor;
+    dbType?: SupportedDbType;
+}
+
 export interface NotificationEnvelope {
     category: string;
     recipientUsername: string;
     recipientEmail?: string;
     subject: string;
     body: string;
+    senderName?: string;
+    actionUrl?: string;
     metadata?: Record<string, unknown>;
 }
 
@@ -18,6 +46,8 @@ export interface NotificationSenderInfo {
     senderId: string;
     name: string;
     active: boolean;
+    alwaysOn?: boolean;
+    locked?: boolean;
     requires?: string[];
 }
 
@@ -147,12 +177,21 @@ export class CoreNotificationGateway
     private readonly categories = new Map<string, string>();
     private readonly disabledSenders = new Set<string>();
     private readonly senderRequires = new Map<string, string[]>();
+    private readonly alwaysOnSenders = new Set<string>();
 
     constructor(
         private readonly prefStore: NotificationPreferenceStore,
         private readonly configStore?: NotificationConfigStore,
         private readonly emailStore?: NotificationEmailStore,
     ) {}
+
+    registerAlwaysOnSender(senderId: string): void {
+        this.alwaysOnSenders.add(senderId);
+    }
+
+    isAlwaysOn(senderId: string): boolean {
+        return this.alwaysOnSenders.has(senderId);
+    }
 
     registerSender(sender: NotificationSender, requires?: string[]): void {
         this.senders.set(sender.senderId, sender);
@@ -168,6 +207,7 @@ export class CoreNotificationGateway
     listSenders(): NotificationSenderInfo[] {
         return Array.from(this.senders.values()).map((sender) => {
             const requires = this.senderRequires.get(sender.senderId);
+            const alwaysOn = this.alwaysOnSenders.has(sender.senderId);
             return {
                 senderId: sender.senderId,
                 name: sender.senderName ?? sender.senderId,
@@ -176,6 +216,8 @@ export class CoreNotificationGateway
                     (typeof sender.isConfigured === "function"
                         ? sender.isConfigured()
                         : typeof sender.getConfig === "function"),
+                ...(alwaysOn ? { alwaysOn: true } : {}),
+                locked: alwaysOn,
                 ...(requires && requires.length > 0 ? { requires } : {}),
             };
         });
@@ -359,7 +401,7 @@ export class CoreNotificationGateway
                 }
 
                 const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
-                const mod = await import(`${entryPath}?t=${Date.now()}`);
+                const mod = await import(entryPath);
 
                 if (typeof mod.createNotificationSender === "function") {
                     const factory = mod.createNotificationSender as (
@@ -378,14 +420,63 @@ export class CoreNotificationGateway
         }
     }
 
+    async bootstrapAdapters(
+        adaptersRoot: string,
+        ctx: NotifyAdapterBootstrapCtx,
+    ): Promise<void> {
+        let entries: string[];
+        try {
+            entries = await readdir(adaptersRoot);
+        } catch {
+            return;
+        }
+
+        for (const entry of entries) {
+            const pkgPath = path.join(adaptersRoot, entry, "package.json");
+
+            // Resolve the adapter module, skipping silently if the directory does
+            // not contain a valid package.json or its main entry cannot be imported.
+            let mod: Record<string, unknown>;
+            try {
+                const raw = await readFile(pkgPath, "utf8");
+                const pkg = JSON.parse(raw) as { main?: string };
+                if (!pkg.main) continue;
+
+                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
+                // The import path must be stable (no cache-busting query string) so that
+                // the ESM module cache is shared between discoverSenders() and
+                // bootstrapAdapters(). Using the same module instance ensures the
+                // module-level activeStore set during bootstrap is the same one used by
+                // the sender registered in discoverSenders().
+                mod = await import(entryPath);
+            } catch {
+                continue;
+            }
+
+            if (typeof mod.bootstrapNotifyAdapter === "function") {
+                const bootstrap = mod.bootstrapNotifyAdapter as (
+                    ctx: NotifyAdapterBootstrapCtx,
+                ) => Promise<void> | void;
+                // Let bootstrap errors propagate. Adapters may throw deliberately
+                // to signal fatal startup conditions (e.g. missing DATA_ENCRYPTION_KEY
+                // in production) that must not be silently swallowed.
+                await bootstrap(ctx);
+            }
+        }
+    }
+
     async dispatch(envelope: NotificationEnvelope): Promise<{
         dispatched: string[];
         errors?: Array<{ senderId: string; error: string }>;
     }> {
-        const senderIds = await this.prefStore.getSenderIds(
+        const prefSenderIds = await this.prefStore.getSenderIds(
             envelope.recipientUsername,
             envelope.category,
         );
+        const effectiveSenderIds = new Set([
+            ...prefSenderIds,
+            ...this.alwaysOnSenders,
+        ]);
         const dispatched: string[] = [];
         const errors: Array<{ senderId: string; error: string }> = [];
 
@@ -401,7 +492,7 @@ export class CoreNotificationGateway
             ? { ...envelope, recipientEmail }
             : envelope;
 
-        for (const id of senderIds) {
+        for (const id of effectiveSenderIds) {
             if (this.disabledSenders.has(id)) continue;
             const sender = this.senders.get(id);
             if (!sender) continue;

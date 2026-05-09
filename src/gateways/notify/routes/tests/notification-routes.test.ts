@@ -440,6 +440,63 @@ test("PUT /api/v1/users/:username/notification-prefs returns 200 without notifSt
     assert.equal(res.status, 200);
 });
 
+test("PUT /api/v1/users/:username/notification-prefs strips disabled entries for always-on senders", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    gateway.registerAlwaysOnSender("internal");
+
+    let savedPrefs: Array<{
+        category: string;
+        senderId: string;
+        enabled: boolean;
+    }> = [];
+    const mockStore = {
+        async getUserNotifPrefs() {
+            return savedPrefs;
+        },
+        async saveUserNotifPrefs(
+            _username: string,
+            prefs: Array<{
+                category: string;
+                senderId: string;
+                enabled: boolean;
+            }>,
+        ) {
+            savedPrefs = prefs;
+        },
+        async getConfig() {
+            return null;
+        },
+        async saveConfig() {},
+        async ensureSchema() {},
+    };
+
+    const route = createNotificationRoutes(gateway, mockStore as any);
+    const userToken = issueAccessToken("alice", "user", 60);
+    const res = makeResponse();
+
+    await route(
+        requestWithBody(
+            "PUT",
+            [
+                { category: "system", senderId: "internal", enabled: false },
+                { category: "system", senderId: "smtp", enabled: true },
+            ],
+            userToken,
+        ),
+        res,
+        new URL("http://localhost/api/v1/users/alice/notification-prefs"),
+    );
+
+    assert.equal(res.status, 200);
+    assert.equal(
+        savedPrefs.length,
+        1,
+        "always-on disabled entry must be stripped",
+    );
+    assert.equal(savedPrefs[0].senderId, "smtp");
+});
+
 test("GET /api/v1/notifications/providers/:id/config includes requiredFields when sender implements getRequiredFields", async () => {
     class ConfiguredSender implements NotificationSender {
         readonly senderId = "smtp";

@@ -219,14 +219,16 @@ export function createNotificationRoutes(
                 }
                 const body = await readJson(req);
                 const prefsArray = Array.isArray(body) ? body : [];
-                await notifStore.saveUserNotifPrefs(
-                    username,
+                const filtered = (
                     prefsArray as Array<{
                         category: string;
                         senderId: string;
                         enabled: boolean;
-                    }>,
+                    }>
+                ).filter(
+                    (p) => !(gateway.isAlwaysOn(p.senderId) && !p.enabled),
                 );
+                await notifStore.saveUserNotifPrefs(username, filtered);
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { saved: true } }));
                 return true;

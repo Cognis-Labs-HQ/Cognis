@@ -51,6 +51,22 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         senderCount: gateway.listSenders().length,
     });
 
+    await gateway.bootstrapAdapters(notifyAdaptersRoot, {
+        gateway,
+        registerRoute: (handler, gatewayId) =>
+            ctx.routeRegistry.register(handler, gatewayId),
+        registerNavbarPlugin: (scriptUrl) =>
+            ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl }),
+        registerStaticDir: (prefix, dir) =>
+            ctx.uiRegistry?.registerStaticDir(prefix, dir),
+        log: ctx.log,
+        dbExecutor: ctx.dbExecutor,
+        dbType: ctx.dbType,
+    });
+    ctx.log?.("info", "Notification adapter bootstrapping complete.", {
+        component: "notify-gateway",
+    });
+
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
@@ -84,9 +100,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.1.1",
+        version: "1.3.0",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
+        required: true,
         hasAdapters: true,
     });
 
@@ -722,6 +739,21 @@ function createGatewayAdapterRoutes(
                 }
                 await gateway.enableSender(adapterId);
             } else {
+                if (sender.locked) {
+                    res.writeHead(403, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "locked_adapter",
+                                message:
+                                    "This adapter is always-on and cannot be disabled",
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 await gateway.disableSender(adapterId);
             }
             res.writeHead(200, { "content-type": "application/json" });
