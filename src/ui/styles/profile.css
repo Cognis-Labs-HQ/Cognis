@@ -134,6 +134,8 @@
 }
 
 .profile-banner-menu-item {
+    display: flex;
+    align-items: center;
     background: none;
     border: none;
     padding: 9px 16px;
@@ -143,7 +145,7 @@
     color: var(--text);
     cursor: pointer;
     transition: background 0.12s ease;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .profile-banner-menu-item:hover {
@@ -170,6 +172,16 @@
     height: 1px;
     background: var(--border);
     margin: 4px 0;
+}
+
+@media (max-width: 640px) {
+    .profile-banner-menu-dropdown {
+        width: min(240px, calc(100vw - 28px));
+        max-width: calc(100vw - 28px);
+    }
+    .profile-banner-menu-item {
+        align-items: flex-start;
+    }
 }
 
 .profile-hero-content {

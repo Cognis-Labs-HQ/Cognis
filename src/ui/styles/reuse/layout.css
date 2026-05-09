@@ -337,6 +337,12 @@
         opacity 0.16s ease,
         transform 0.16s ease;
     pointer-events: none;
+    max-width: min(280px, calc(100vw - 32px));
+    overflow: hidden;
+}
+
+.dropdown li {
+    display: flex;
 }
 
 .profile-menu.open .dropdown {
@@ -345,7 +351,9 @@
     pointer-events: auto;
 }
 .dropdown-item {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
     width: 100%;
     text-align: left;
     padding: 8px;
@@ -356,6 +364,9 @@
     font-size: 0.95rem;
     font-weight: 500;
     line-height: 1.25;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
     transition:
         background 0.15s ease,
         transform 0.15s ease;
@@ -530,6 +541,15 @@ button.dropdown-item {
     }
     .user-greeting {
         display: none;
+    }
+    .dropdown {
+        width: min(240px, calc(100vw - 28px));
+        max-width: calc(100vw - 28px);
+        padding: 6px;
+    }
+    .dropdown-item {
+        align-items: flex-start;
+        padding: 10px 12px;
     }
 }
 

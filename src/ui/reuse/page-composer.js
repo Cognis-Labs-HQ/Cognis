@@ -2542,7 +2542,7 @@ export function createPageComposer(
     async function switchSubPage(id) {
         if (onBeforeSubPageSwitch) {
             const allowed = await onBeforeSubPageSwitch(activeSubPageId, id);
-            if (!allowed) return;
+            if (!allowed) return false;
         }
         const prevId = activeSubPageId;
         activeSubPageId = id;
@@ -2573,6 +2573,7 @@ export function createPageComposer(
         history.replaceState(null, "", `#${activeSubPageId}`);
         applyPageOverrides(id);
         onRender?.();
+        return true;
     }
 
     async function init() {
@@ -2637,6 +2638,7 @@ export function createPageComposer(
         contentGrid = root.querySelector(".content-grid");
         if (columns === 2)
             contentGrid?.classList.add("content-grid--two-column");
+        let closeMobileDrawerIfNeeded = () => {};
 
         if (frameless) {
             root.querySelector(".workspace")?.classList.add(
@@ -2664,7 +2666,7 @@ export function createPageComposer(
                 if (mainWindow) {
                     mainWindow.insertBefore(
                         mobileToggleBtn,
-                        mainWindow.firstChild,
+                        toolbarEl.nextSibling,
                     );
                 }
                 if (mainWindow) {
@@ -2676,6 +2678,12 @@ export function createPageComposer(
                 function isMobileDrawerMode() {
                     return mobileMedia.matches;
                 }
+
+                closeMobileDrawerIfNeeded = () => {
+                    if (isMobileDrawerMode() && mobileDrawerOpen) {
+                        setMobileDrawerOpen(false, { restoreFocus: false });
+                    }
+                };
 
                 function setMobileDrawerOpen(
                     nextOpen,
@@ -2693,7 +2701,11 @@ export function createPageComposer(
                         mobileToggleBtn.focus();
                     }
                     mobileToggleBtn.setAttribute("aria-expanded", String(open));
-                    mobileToggleBtn.textContent = open ? "✕" : "☰";
+                    mobileToggleBtn.classList.toggle(
+                        "toolbar-mobile-toggle--drawer-open",
+                        open,
+                    );
+                    mobileToggleBtn.textContent = open ? "<" : "☰";
                     mobileToggleBtn.setAttribute(
                         "aria-label",
                         open
@@ -2720,18 +2732,6 @@ export function createPageComposer(
                         setMobileDrawerOpen(false, { restoreFocus: false });
                     }
                 });
-
-                root.querySelectorAll("[data-composer-scroll]").forEach(
-                    (btn) => {
-                        btn.addEventListener("click", () => {
-                            if (isMobileDrawerMode()) {
-                                setMobileDrawerOpen(false, {
-                                    restoreFocus: false,
-                                });
-                            }
-                        });
-                    },
-                );
             }
         }
 
@@ -2751,9 +2751,14 @@ export function createPageComposer(
                     "active",
                     btn.dataset.composerScroll === activeSubPageId,
                 );
-                btn.addEventListener("click", () =>
-                    switchSubPage(btn.dataset.composerScroll),
-                );
+                btn.addEventListener("click", async () => {
+                    const didSwitch = await switchSubPage(
+                        btn.dataset.composerScroll,
+                    );
+                    if (didSwitch) {
+                        closeMobileDrawerIfNeeded();
+                    }
+                });
             } else {
                 btn.addEventListener("click", () => {
                     root.querySelector(
@@ -2765,6 +2770,7 @@ export function createPageComposer(
                         (b) => b.classList.remove("active"),
                     );
                     btn.classList.add("active");
+                    closeMobileDrawerIfNeeded();
                 });
             }
         });
