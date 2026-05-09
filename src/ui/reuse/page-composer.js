@@ -2130,21 +2130,14 @@ export function createPageComposer(
         }
     }
 
-    function computeViewPlacements() {
-        const visible = layout.placements
-            .filter((p) => !layout.hidden.includes(p.id))
-            .sort((a, b) => a.row - b.row || a.col - b.col);
-
-        const hasOverflow = visible.some((p) => p.col + p.w > gridCols);
-        if (!hasOverflow) return visible;
-
+    function repackPlacementsIntoColumns(sortedVisible, maxCols) {
         const packed = [];
-        for (const orig of visible) {
-            const w = Math.min(orig.w, gridCols);
+        for (const orig of sortedVisible) {
+            const w = Math.min(orig.w, maxCols);
             const h = orig.h;
             let placed = false;
             for (let row = 0; !placed; row++) {
-                for (let col = 0; col <= Math.max(0, gridCols - w); col++) {
+                for (let col = 0; col <= Math.max(0, maxCols - w); col++) {
                     const occupied = new Set();
                     for (const existing of packed) {
                         for (
@@ -2181,6 +2174,17 @@ export function createPageComposer(
         return packed;
     }
 
+    function computeViewPlacements() {
+        const visible = layout.placements
+            .filter((p) => !layout.hidden.includes(p.id))
+            .sort((a, b) => a.row - b.row || a.col - b.col);
+
+        const hasOverflow = visible.some((p) => p.col + p.w > gridCols);
+        if (!hasOverflow) return visible;
+
+        return repackPlacementsIntoColumns(visible, gridCols);
+    }
+
     function computeSubViewPlacements(state) {
         const visible = state.layout.placements
             .filter((pl) => !state.layout.hidden.includes(pl.id))
@@ -2191,51 +2195,7 @@ export function createPageComposer(
         );
         if (!hasOverflow) return visible;
 
-        const packed = [];
-        for (const orig of visible) {
-            const w = Math.min(orig.w, state.gridCols);
-            const h = orig.h;
-            let placed = false;
-            for (let row = 0; !placed; row++) {
-                for (
-                    let col = 0;
-                    col <= Math.max(0, state.gridCols - w);
-                    col++
-                ) {
-                    const occupied = new Set();
-                    for (const existing of packed) {
-                        for (
-                            let r = existing.row;
-                            r < existing.row + existing.h;
-                            r++
-                        ) {
-                            for (
-                                let c = existing.col;
-                                c < existing.col + existing.w;
-                                c++
-                            ) {
-                                occupied.add(`${c},${r}`);
-                            }
-                        }
-                    }
-                    let fits = true;
-                    outer: for (let r = row; r < row + h; r++) {
-                        for (let c = col; c < col + w; c++) {
-                            if (occupied.has(`${c},${r}`)) {
-                                fits = false;
-                                break outer;
-                            }
-                        }
-                    }
-                    if (fits) {
-                        packed.push({ ...orig, col, row, w });
-                        placed = true;
-                        break;
-                    }
-                }
-            }
-        }
-        return packed;
+        return repackPlacementsIntoColumns(visible, state.gridCols);
     }
 
     function renderGridComposer() {

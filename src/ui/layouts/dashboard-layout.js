@@ -213,14 +213,16 @@ function applyCompactNav(root) {
     const backdrop = root.querySelector("#nav-drawer-backdrop");
     if (!navrow || !topnav || !compactToggle || !drawer || !backdrop) return;
 
+    if (navrow.dataset.compactNavBound === "true") return;
+    navrow.dataset.compactNavBound = "true";
+
     let drawerOpen = false;
 
     function syncCompactState() {
         const overflows = topnav.scrollWidth > topnav.clientWidth + 2;
-        const compact = overflows;
-        navrow.classList.toggle("global-navrow--compact", compact);
-        compactToggle.hidden = !compact;
-        if (!compact && drawerOpen) closeDrawer();
+        navrow.classList.toggle("global-navrow--compact", overflows);
+        compactToggle.hidden = !overflows;
+        if (!overflows && drawerOpen) closeDrawer();
     }
 
     function openDrawer() {
