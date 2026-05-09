@@ -62,11 +62,20 @@ export async function registerServiceWorker(options = {}) {
         .catch((error) => {
             // Registration failures are non-fatal — the app still works,
             // just without offline / install support. Surface to the console
-            // so they are visible during development.
+            // so they are visible during development. Clear the cached
+            // promise so a later call (e.g. after a transient network blip
+            // or a manual page-level retry) can attempt registration again
+            // instead of returning the cached null forever.
             console.warn(
                 "[cognis-pwa] service worker registration failed",
                 error,
             );
+            if (
+                typeof window !== "undefined" &&
+                window.__cognisSwRegistered === registrationPromise
+            ) {
+                window.__cognisSwRegistered = null;
+            }
             return null;
         });
 

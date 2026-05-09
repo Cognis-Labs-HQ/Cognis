@@ -40,11 +40,18 @@ self.addEventListener("install", (event) => {
                                     credentials: "same-origin",
                                 }),
                             )
-                            .catch(() => {
-                                // Precache failures (e.g. unauthenticated /dashboard
-                                // returning a 302) are non-fatal; the runtime
-                                // strategies below will still cache successful
-                                // responses on first visit.
+                            .catch((error) => {
+                                // Precache failures (e.g. unauthenticated
+                                // /dashboard returning a 302) are non-fatal;
+                                // the runtime strategies will still cache
+                                // successful responses on first visit. Log so
+                                // the failure is at least visible during
+                                // development.
+                                console.warn(
+                                    "[cognis-sw] precache failed for",
+                                    url,
+                                    error,
+                                );
                             }),
                     ),
                 ),
@@ -104,15 +111,19 @@ async function networkFirstShell(request) {
 async function staleWhileRevalidate(request) {
     const cache = await caches.open(ASSET_CACHE);
     const cached = await cache.match(request);
-    const networkPromise = fetch(request)
-        .then((response) => {
-            if (response && response.ok) {
-                cache.put(request, response.clone()).catch(() => {});
-            }
-            return response;
-        })
-        .catch(() => null);
-    return cached || (await networkPromise) || fetch(request);
+    const networkPromise = fetch(request).then((response) => {
+        if (response && response.ok) {
+            cache.put(request, response.clone()).catch(() => {});
+        }
+        return response;
+    });
+    if (cached) {
+        // Refresh in the background; swallow network errors because we are
+        // already serving the cached copy.
+        networkPromise.catch(() => {});
+        return cached;
+    }
+    return networkPromise;
 }
 
 self.addEventListener("fetch", (event) => {

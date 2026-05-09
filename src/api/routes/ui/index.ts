@@ -41,12 +41,13 @@ async function serveStaticAsset(
     contentType: string,
     log?: BootstrapLog,
     logMeta?: Record<string, unknown>,
+    cacheControl: string = "no-store",
 ) {
     try {
         const file = await readFile(filePath);
         res.writeHead(200, {
             "content-type": contentType,
-            "cache-control": "no-store",
+            "cache-control": cacheControl,
             "x-content-type-options": "nosniff",
         });
         res.end(file);
@@ -188,6 +189,11 @@ export function createUiRoutes(
                 "application/manifest+json; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method },
+                // Allow the browser HTTP cache and the service worker
+                // stale-while-revalidate strategy to retain the manifest,
+                // while still requiring revalidation on every use so updates
+                // (icons, name, shortcuts) roll out promptly.
+                "public, max-age=0, must-revalidate",
             );
             return true;
         }
