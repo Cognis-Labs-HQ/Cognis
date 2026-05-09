@@ -26,6 +26,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Page composer layout persistence now stores separate layout profiles by detected grid column count (`layoutsByGrid`), so editing a page on phone-sized grids and desktop-sized grids no longer overwrites each other. Legacy single-layout preferences are auto-migrated to the active grid profile on first save. ([pending](https://github.com/le-firehawk/Cognis/commit/pending))
 - Mobile toolbar drawer: when opened, the page-composer toolbar toggle now moves to the drawer edge and switches to a `<` close affordance; toolbar item activation closes the drawer after successful navigation, and mobile dropdown menus are constrained/aligned to avoid content overflow. ([47a23bb](https://github.com/le-firehawk/Cognis/commit/47a23bb))
 - Administration → Components summary layout now uses explicit control-width columns for the state pill, toggle, and chevron on narrow screens, and the page-composer mobile toolbar toggle now switches between hamburger and close icons to reflect drawer state. ([2953304](https://github.com/le-firehawk/Cognis/commit/2953304))
 - Administration → Components mobile layout: component detail rows now keep their label/value columns aligned on narrow screens, and summary controls (`state-pill`, toggle slider, chevron) share a consistent vertical center line. ([06a63fd](https://github.com/le-firehawk/Cognis/commit/06a63fd))

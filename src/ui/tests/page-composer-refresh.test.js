@@ -71,3 +71,17 @@ test("page composer elements panels stay below header and use viewport top", () 
         /panel\.style\.top = `\$\{Math\.max\(safeTop, state\.panelPosition\.top\)\}px`;/,
     );
 });
+
+test("page composer persists separate layout profiles per grid size", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.match(source, /function getLayoutProfileKey\(gridColumnCount\)/);
+    assert.match(source, /layoutsByGrid/);
+    assert.match(
+        source,
+        /normalized\.layoutsByGrid\[profileKey\] = nextLayout/,
+    );
+});

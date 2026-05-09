@@ -145,6 +145,7 @@ export function createPageComposer(
     let lastObservedCols = 0;
     let gridSection = null;
     let editToggleAbortController = null;
+    let layoutProfiles = { layoutsByGrid: {} };
 
     const UNIT = 90; // grid cell size in pixels
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
@@ -170,34 +171,147 @@ export function createPageComposer(
         }
     }
 
-    async function loadLayout() {
+    function getLayoutProfileKey(gridColumnCount) {
+        return `cols-${Math.max(1, Number(gridColumnCount) || 1)}`;
+    }
+
+    function parseLayoutProfileColumns(profileKey) {
+        const match = /^cols-(\d+)$/.exec(profileKey);
+        if (!match) return null;
+        return Number.parseInt(match[1], 10);
+    }
+
+    function normalizeLayoutProfiles(rawLayout) {
+        if (
+            rawLayout &&
+            typeof rawLayout === "object" &&
+            !Array.isArray(rawLayout) &&
+            rawLayout.layoutsByGrid &&
+            typeof rawLayout.layoutsByGrid === "object" &&
+            !Array.isArray(rawLayout.layoutsByGrid)
+        ) {
+            return {
+                layoutsByGrid: { ...rawLayout.layoutsByGrid },
+            };
+        }
+        return { layoutsByGrid: {} };
+    }
+
+    function getLayoutForGrid(rawLayout, gridColumnCount) {
+        const normalized = normalizeLayoutProfiles(rawLayout);
+        const profileKey = getLayoutProfileKey(gridColumnCount);
+        const exactLayout = normalized.layoutsByGrid[profileKey];
+        if (exactLayout) {
+            return {
+                layout: exactLayout,
+                profiles: normalized,
+            };
+        }
+
+        const availableKeys = Object.keys(normalized.layoutsByGrid);
+        const targetCols = Math.max(1, Number(gridColumnCount) || 1);
+        let nearestKey = null;
+        let nearestDistance = Number.POSITIVE_INFINITY;
+        for (const key of availableKeys) {
+            const keyCols = parseLayoutProfileColumns(key);
+            if (!Number.isFinite(keyCols)) continue;
+            const distance = Math.abs(keyCols - targetCols);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestKey = key;
+            }
+        }
+        if (nearestKey) {
+            return {
+                layout: normalized.layoutsByGrid[nearestKey],
+                profiles: normalized,
+            };
+        }
+
+        if (
+            rawLayout &&
+            typeof rawLayout === "object" &&
+            !Array.isArray(rawLayout)
+        ) {
+            return {
+                layout: rawLayout,
+                profiles: {
+                    layoutsByGrid: {
+                        [profileKey]: rawLayout,
+                    },
+                },
+            };
+        }
+
+        return {
+            layout: null,
+            profiles: normalized,
+        };
+    }
+
+    function setLayoutForGrid(profiles, gridColumnCount, nextLayout) {
+        const normalized = normalizeLayoutProfiles(profiles);
+        const profileKey = getLayoutProfileKey(gridColumnCount);
+        normalized.layoutsByGrid[profileKey] = nextLayout;
+        return normalized;
+    }
+
+    async function loadLayoutByKey(key, gridColumnCount) {
         const account = localStorage.getItem("cognis_account");
         const token = localStorage.getItem("cognis_token");
-        if (!account || !token) return null;
+        if (!account || !token) {
+            return { layout: null, profiles: { layoutsByGrid: {} } };
+        }
         try {
             const response = await apiFetch(
-                `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(preferenceKey)}`,
+                `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
             );
-            if (!response.ok) return null;
+            if (!response.ok) {
+                return { layout: null, profiles: { layoutsByGrid: {} } };
+            }
             const payload = await response.json();
             const raw = payload?.data?.layoutJson;
-            return raw ? JSON.parse(raw) : null;
+            const parsed = raw ? JSON.parse(raw) : null;
+            return getLayoutForGrid(parsed, gridColumnCount);
         } catch {
-            return null;
+            return { layout: null, profiles: { layoutsByGrid: {} } };
         }
     }
 
-    async function saveLayout() {
+    async function saveLayoutByKey(key, profiles, gridColumnCount, nextLayout) {
         const account = localStorage.getItem("cognis_account");
         const token = localStorage.getItem("cognis_token");
-        if (!account || !token) return;
+        if (!account || !token) {
+            return normalizeLayoutProfiles(profiles);
+        }
+        const nextProfiles = setLayoutForGrid(
+            profiles,
+            gridColumnCount,
+            nextLayout,
+        );
         await apiFetch(
-            `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(preferenceKey)}`,
+            `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
             {
                 method: "PUT",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ layout }),
+                body: JSON.stringify({ layout: nextProfiles }),
             },
+        );
+        return nextProfiles;
+    }
+
+    async function loadLayout() {
+        const loaded = await loadLayoutByKey(preferenceKey, gridCols);
+        layoutProfiles = loaded.profiles;
+        return loaded.layout;
+    }
+
+    async function saveLayout() {
+        layoutProfiles = await saveLayoutByKey(
+            preferenceKey,
+            layoutProfiles,
+            gridCols,
+            layout,
         );
     }
 
@@ -1083,33 +1197,12 @@ export function createPageComposer(
 
     const subStates = new Map();
 
-    async function loadLayoutFor(key) {
-        const account = localStorage.getItem("cognis_account");
-        if (!account) return null;
-        try {
-            const response = await apiFetch(
-                `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
-            );
-            if (!response.ok) return null;
-            const payload = await response.json();
-            const raw = payload?.data?.layoutJson;
-            return raw ? JSON.parse(raw) : null;
-        } catch {
-            return null;
-        }
+    async function loadLayoutFor(key, gridColumnCount) {
+        return loadLayoutByKey(key, gridColumnCount);
     }
 
-    async function saveLayoutFor(key, layoutData) {
-        const account = localStorage.getItem("cognis_account");
-        if (!account) return;
-        await apiFetch(
-            `/api/v1/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
-            {
-                method: "PUT",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ layout: layoutData }),
-            },
-        );
+    async function saveLayoutFor(key, profiles, gridColumnCount, layoutData) {
+        return saveLayoutByKey(key, profiles, gridColumnCount, layoutData);
     }
 
     function getSubPanelId(preferenceKey) {
@@ -1907,7 +2000,12 @@ export function createPageComposer(
                 compactSubPlacements(state);
                 state.editing = false;
                 endEditMode();
-                await saveLayoutFor(state.preferenceKey, state.layout);
+                state.layoutProfiles = await saveLayoutFor(
+                    state.preferenceKey,
+                    state.layoutProfiles,
+                    state.gridCols,
+                    state.layout,
+                );
                 renderSubGrid(state);
             });
 
@@ -1992,6 +2090,7 @@ export function createPageComposer(
         if (!state) {
             state = {
                 layout: null,
+                layoutProfiles: { layoutsByGrid: {} },
                 editing: false,
                 layoutSnapshot: null,
                 gridCols: 1,
@@ -2008,7 +2107,18 @@ export function createPageComposer(
                 onRender: el.subComposerOptions.onRender,
                 onUnmount: el.subComposerOptions.onUnmount,
             };
-            state.layout = await loadLayoutFor(state.preferenceKey);
+            const initialGridCols = Math.max(
+                1,
+                Math.floor(
+                    sectionContainer.getBoundingClientRect().width / UNIT,
+                ),
+            );
+            const loaded = await loadLayoutFor(
+                state.preferenceKey,
+                initialGridCols,
+            );
+            state.layout = loaded.layout;
+            state.layoutProfiles = loaded.profiles;
             subStates.set(el.id, state);
         }
 
@@ -2103,7 +2213,12 @@ export function createPageComposer(
                     compactSubPlacements(state);
                     state.editing = false;
                     endEditMode();
-                    await saveLayoutFor(state.preferenceKey, state.layout);
+                    state.layoutProfiles = await saveLayoutFor(
+                        state.preferenceKey,
+                        state.layoutProfiles,
+                        state.gridCols,
+                        state.layout,
+                    );
                     renderSubGrid(state);
                 },
                 { signal },
@@ -2806,6 +2921,13 @@ export function createPageComposer(
                 });
             }
         });
+
+        if (contentGrid) {
+            contentGrid.style.width = "";
+            const width = contentGrid.getBoundingClientRect().width;
+            gridCols = Math.max(1, Math.floor(width / UNIT));
+            lastObservedCols = gridCols;
+        }
 
         layout = persistLayoutPreferences ? await loadLayout() : null;
 
