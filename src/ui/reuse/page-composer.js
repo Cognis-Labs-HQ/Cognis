@@ -2651,6 +2651,16 @@ export function createPageComposer(
                     `(max-width: ${MOBILE_TOOLBAR_BREAKPOINT}px)`,
                 );
                 let mobileDrawerOpen = false;
+                root.querySelectorAll(".toolbar-mobile-toggle").forEach(
+                    (node) => {
+                        node.remove();
+                    },
+                );
+                root.querySelectorAll(".toolbar-mobile-backdrop").forEach(
+                    (node) => {
+                        node.remove();
+                    },
+                );
                 const mobileToggleBtn = document.createElement("button");
                 mobileToggleBtn.type = "button";
                 mobileToggleBtn.className = "toolbar-mobile-toggle";
@@ -2659,16 +2669,15 @@ export function createPageComposer(
                 mobileBackdrop.className = "toolbar-mobile-backdrop";
                 const mainWindow = root.querySelector(".main-window");
                 const shell = root.querySelector(".app-shell");
-                if (
-                    mainWindow &&
-                    !mainWindow.querySelector(".toolbar-mobile-toggle")
-                ) {
+                if (mainWindow) {
                     mainWindow.insertBefore(
                         mobileToggleBtn,
                         mainWindow.firstChild,
                     );
                 }
-                if (shell && !shell.querySelector(".toolbar-mobile-backdrop")) {
+                if (mainWindow) {
+                    mainWindow.appendChild(mobileBackdrop);
+                } else if (shell) {
                     shell.appendChild(mobileBackdrop);
                 }
 

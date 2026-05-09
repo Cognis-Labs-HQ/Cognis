@@ -298,7 +298,7 @@ code {
     opacity: 0;
     pointer-events: none;
     visibility: hidden;
-    z-index: 1690;
+    z-index: 1700;
     transition: opacity 0.2s ease;
 }
 
@@ -323,9 +323,10 @@ code {
         height: 100dvh;
         border-radius: 0 14px 14px 0;
         margin-right: 0;
+        background: var(--surface-2);
         transform: translateX(-100%);
         transition: transform 0.26s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        z-index: 1700;
+        z-index: 1710;
         overflow-y: auto;
         pointer-events: none;
         visibility: hidden;
