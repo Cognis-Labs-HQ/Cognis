@@ -24,6 +24,15 @@ if (!token) {
     }
 }
 
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
+
 function renderVerifyCard() {
     const icon =
         verifyResult === null
@@ -44,12 +53,14 @@ function renderVerifyCard() {
               ? i18n.t("ui.app.verify_email.success_body")
               : i18n.t("ui.app.verify_email.invalid_body");
     const linkHidden = verifyResult === null;
+    const safeTitle = escapeHtml(title);
+    const safeBody = escapeHtml(body);
     return `
       <div class="verify-card">
         <div class="verify-icon">${icon}</div>
-        <h1 class="verify-title">${title}</h1>
-        <p class="verify-body">${body}</p>
-        <a href="/dashboard" class="verify-link" ${linkHidden ? "hidden" : ""}>
+        <h1 class="verify-title">${safeTitle}</h1>
+        <p class="verify-body">${safeBody}</p>
+        <a href="/dashboard" class="verify-link"${linkHidden ? " hidden" : ""}>
           ${i18n.t("ui.app.verify_email.return_link")}
         </a>
       </div>

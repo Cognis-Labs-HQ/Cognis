@@ -914,7 +914,7 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     border-bottom: 1px solid var(--border);
     cursor: grab;
     user-select: none;
-    touch-action: none;
+    touch-action: manipulation;
 }
 
 .composer-drag-icon {

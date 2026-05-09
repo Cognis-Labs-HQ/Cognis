@@ -2005,8 +2005,6 @@ export function createPageComposer(
         state.container = sectionContainer;
 
         const hasExistingContent =
-            // Preserved non-editing sub-composer DOM always has child nodes
-            // after first mount, so children length is a safe reuse signal.
             !state.editing && sectionContainer.children.length > 0;
 
         if (hasExistingContent) {
@@ -2309,38 +2307,52 @@ export function createPageComposer(
         return { order, hidden };
     }
 
+    function renderSubPageCardHandleMarkup(el) {
+        if (!editing) return "";
+        const safeId = escapeHtml(el.id);
+        const safeLabel = escapeHtml(el.label);
+        return `<div class="composer-drag-handle" aria-hidden="true">
+               <span class="composer-drag-icon">⠿</span>
+               <span class="composer-drag-label">${safeLabel}</span>
+               ${!el.pinned ? `<button class="composer-remove-btn" data-composer-remove="${safeId}" type="button">${i18n.t("ui.reuse.generic.remove")}</button>` : ""}
+              </div>`;
+    }
+
+    function renderSubPageCardMarkup(el) {
+        const safeId = escapeHtml(el.id);
+        const editingClass = editing ? " composer-editing" : "";
+        const dragAttrs = editing ? ` draggable="true"` : "";
+        const dragHandle = renderSubPageCardHandleMarkup(el);
+        return `<section class="widget-card${editingClass}" data-composer-element="${safeId}"${dragAttrs}>${dragHandle}${el.render()}</section>`;
+    }
+
     function renderCards(effectiveLayout) {
         const { order, hidden } = effectiveLayout;
+
         return order
             .filter((id) => !hidden.includes(id))
             .map((id) => {
                 const el = elements.find((e) => e.id === id);
                 if (!el) return "";
-                const dragAttrs = editing ? ` draggable="true"` : "";
-                const dragHandle = editing
-                    ? `<div class="composer-drag-handle" aria-hidden="true">
-               <span class="composer-drag-icon">⠿</span>
-               <span class="composer-drag-label">${el.label}</span>
-               ${!el.pinned ? `<button class="composer-remove-btn" data-composer-remove="${el.id}" type="button">${i18n.t("ui.reuse.generic.remove")}</button>` : ""}
-             </div>`
-                    : "";
-                const editingClass = editing ? " composer-editing" : "";
                 const isActive = subPageNavigation && el.id === activeSubPageId;
                 const activeClass = isActive ? " active" : "";
                 const hiddenAttr =
                     subPageNavigation && !isActive ? " hidden" : "";
                 if (el.subComposerOptions) {
+                    const safeId = escapeHtml(el.id);
                     const headingHtml = el.subComposerOptions.heading
                         ? `<h2 class="sub-composer-heading">${escapeHtml(el.subComposerOptions.heading)}</h2>`
                         : "";
-                    return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
+                    return `<div class="content-section${activeClass}"${hiddenAttr} id="${safeId}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
                 }
                 if (subPageNavigation && !isActive && !editing) {
+                    const safeId = escapeHtml(el.id);
                     // Inactive sub-pages are lazy placeholders; actual render
                     // runs on first activation in switchSubPage.
-                    return `<div class="content-section"${hiddenAttr} id="${el.id}" data-lazy-section></div>`;
+                    return `<div class="content-section"${hiddenAttr} id="${safeId}" data-lazy-section></div>`;
                 }
-                return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
+                const safeId = escapeHtml(el.id);
+                return `<div class="content-section${activeClass}"${hiddenAttr} id="${safeId}">${renderSubPageCardMarkup(el)}</div>`;
             })
             .join("");
     }
@@ -2352,8 +2364,8 @@ export function createPageComposer(
         const listItems = hiddenElements
             .map(
                 (el) => `<li class="composer-library-item">
-           <span>${el.label}</span>
-           <button class="composer-add-btn" data-composer-add="${el.id}" type="button">${i18n.t("ui.reuse.generic.add")}</button>
+           <span>${escapeHtml(el.label)}</span>
+           <button class="composer-add-btn" data-composer-add="${escapeHtml(el.id)}" type="button">${i18n.t("ui.reuse.generic.add")}</button>
          </li>`,
             )
             .join("");
@@ -2493,6 +2505,9 @@ export function createPageComposer(
                         pointerId: event.pointerId,
                         sourceId: card.dataset.composerElement,
                         targetId: null,
+                        rafId: null,
+                        pendingX: event.clientX,
+                        pendingY: event.clientY,
                     };
                     card.classList.add("composer-dragging");
                     dragSurface.setPointerCapture(event.pointerId);
@@ -2503,24 +2518,37 @@ export function createPageComposer(
                     if (!touchDrag || touchDrag.pointerId !== event.pointerId) {
                         return;
                     }
-                    const hovered = document
-                        .elementFromPoint(event.clientX, event.clientY)
-                        ?.closest?.("[data-composer-element]");
-                    const hoveredId = hovered?.dataset?.composerElement;
-                    if (!hoveredId || hoveredId === touchDrag.sourceId) {
+                    touchDrag.pendingX = event.clientX;
+                    touchDrag.pendingY = event.clientY;
+                    if (touchDrag.rafId !== null) return;
+                    touchDrag.rafId = window.requestAnimationFrame(() => {
+                        if (!touchDrag) return;
+                        touchDrag.rafId = null;
+                        const hovered = document
+                            .elementFromPoint(
+                                touchDrag.pendingX,
+                                touchDrag.pendingY,
+                            )
+                            ?.closest("[data-composer-element]");
+                        const hoveredId = hovered?.dataset?.composerElement;
+                        if (!hoveredId || hoveredId === touchDrag.sourceId) {
+                            clearSubPageDragHighlights();
+                            touchDrag.targetId = null;
+                            return;
+                        }
                         clearSubPageDragHighlights();
-                        touchDrag.targetId = null;
-                        return;
-                    }
-                    clearSubPageDragHighlights();
-                    hovered.classList.add("composer-drag-over");
-                    touchDrag.targetId = hoveredId;
+                        hovered.classList.add("composer-drag-over");
+                        touchDrag.targetId = hoveredId;
+                    });
                     event.preventDefault();
                 });
 
                 const endTouchDrag = (event) => {
                     if (!touchDrag || touchDrag.pointerId !== event.pointerId) {
                         return;
+                    }
+                    if (touchDrag.rafId !== null) {
+                        window.cancelAnimationFrame(touchDrag.rafId);
                     }
                     card.classList.remove("composer-dragging");
                     clearSubPageDragHighlights();
@@ -2597,16 +2625,7 @@ export function createPageComposer(
             const sectionEl = contentGrid.querySelector(`#${CSS.escape(id)}`);
             if (sectionEl?.hasAttribute("data-lazy-section")) {
                 sectionEl.removeAttribute("data-lazy-section");
-                const editingClass = editing ? " composer-editing" : "";
-                const dragAttrs = editing ? ` draggable="true"` : "";
-                const dragHandle = editing
-                    ? `<div class="composer-drag-handle" aria-hidden="true">
-               <span class="composer-drag-icon">⠿</span>
-               <span class="composer-drag-label">${newEl.label}</span>
-               ${!newEl.pinned ? `<button class="composer-remove-btn" data-composer-remove="${newEl.id}" type="button">${i18n.t("ui.reuse.generic.remove")}</button>` : ""}
-             </div>`
-                    : "";
-                sectionEl.innerHTML = `<section class="widget-card${editingClass}" data-composer-element="${newEl.id}"${dragAttrs}>${dragHandle}${newEl.render()}</section>`;
+                sectionEl.innerHTML = renderSubPageCardMarkup(newEl);
                 if (editing) bindSubPageComposerEvents();
             }
             newEl.onRender?.();
