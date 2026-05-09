@@ -56,23 +56,31 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
             process.env.COGNIS_MODULES_ROOT ??
             path.resolve(process.cwd(), "src", "modules");
         try {
-            const entries = await readdir(modulesRoot);
-            for (const entry of entries) {
+            const dirEntries = await readdir(modulesRoot, {
+                withFileTypes: true,
+            });
+            for (const dirEntry of dirEntries.filter((e) => e.isDirectory())) {
                 const manifestPath = path.join(
                     modulesRoot,
-                    entry,
+                    dirEntry.name,
                     "manifest.json",
                 );
                 try {
                     const raw = await readFile(manifestPath, "utf8");
                     manifests.push(JSON.parse(raw));
                 } catch (error) {
+                    if (
+                        error instanceof Error &&
+                        (error as NodeJS.ErrnoException).code === "ENOENT"
+                    ) {
+                        continue;
+                    }
                     writeConsoleLog(
                         "error",
                         "Failed to load module manifest during bootstrap.",
                         {
                             component: "api-bootstrap",
-                            moduleId: entry,
+                            moduleId: dirEntry.name,
                             manifestPath,
                             error:
                                 error instanceof Error
