@@ -161,6 +161,15 @@
     text-overflow: ellipsis;
 }
 
+.notification-item-sender {
+    font-size: 0.75rem;
+    color: var(--accent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+
 .notification-item-preview {
     font-size: 0.8rem;
     color: var(--muted);
@@ -171,10 +180,12 @@
 }
 
 .notification-item-time {
-    font-size: 0.73rem;
+    font-size: 0.7rem;
     color: var(--muted);
-    white-space: nowrap;
     margin-top: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .notification-dismiss {
@@ -214,7 +225,6 @@
 
 .arrival-toast-container {
     position: fixed;
-    top: 72px;
     right: 16px;
     z-index: 1200;
     display: flex;
@@ -282,6 +292,14 @@
     font-weight: 600;
     font-size: 0.875rem;
     color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.arrival-toast-sender {
+    font-size: 0.75rem;
+    color: var(--accent);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

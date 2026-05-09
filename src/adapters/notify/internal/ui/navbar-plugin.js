@@ -15,6 +15,7 @@
 import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { formatDateTime } from "/static/reuse/timestamp.js";
 
 const POLL_INTERVAL_VISIBLE_MS = 10_000;
 const POLL_INTERVAL_HIDDEN_MS = 30_000;
@@ -28,18 +29,6 @@ function injectStyles() {
     link.rel = "stylesheet";
     link.href = CSS_HREF;
     document.head.appendChild(link);
-}
-
-function formatRelativeTime(ms) {
-    const seconds = Math.floor((Date.now() - ms) / 1000);
-    const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
-    if (seconds < 60) return rtf.format(-seconds, "second");
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return rtf.format(-minutes, "minute");
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return rtf.format(-hours, "hour");
-    const days = Math.floor(hours / 24);
-    return rtf.format(-days, "day");
 }
 
 async function fetchCount() {
@@ -108,8 +97,9 @@ function renderNotificationItem(notif, i18n) {
         '<span class="notification-item-dot" aria-hidden="true"></span>' +
         '<span class="notification-item-body">' +
         `<span class="notification-item-subject">${escapeHtml(notif.subject)}</span>` +
+        `<span class="notification-item-sender">${escapeHtml(notif.senderName ?? i18n.t("ui.adapter.notify.internal.sender_system"))}</span>` +
         `<span class="notification-item-preview">${escapeHtml(notif.body)}</span>` +
-        `<span class="notification-item-time">${escapeHtml(formatRelativeTime(notif.createdAt))}</span>` +
+        `<span class="notification-item-time">${escapeHtml(formatDateTime(new Date(notif.createdAt).toISOString()))}</span>` +
         "</span>" +
         `<button class="notification-dismiss" type="button" aria-label="${i18n.t("ui.reuse.generic.remove")}">&#215;</button>`;
 
@@ -364,6 +354,13 @@ function getArrivalToastContainer() {
         document.body.appendChild(el);
         arrivalToastContainer = el;
     }
+
+    const navrow = document.querySelector(".global-navrow");
+    if (navrow) {
+        const navBottom = navrow.getBoundingClientRect().bottom;
+        arrivalToastContainer.style.top = `${Math.round(navBottom) + 8}px`;
+    }
+
     return arrivalToastContainer;
 }
 
@@ -378,10 +375,14 @@ function showArrivalToast(notif, i18n) {
             ? notif.body.slice(0, TOAST_BODY_PREVIEW_LENGTH) + "\u2026"
             : notif.body;
 
+    const sender =
+        notif.senderName ?? i18n.t("ui.adapter.notify.internal.sender_system");
+
     toast.innerHTML =
         '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
         '<div class="arrival-toast-text">' +
         `<span class="arrival-toast-subject">${escapeHtml(notif.subject)}</span>` +
+        `<span class="arrival-toast-sender">${escapeHtml(sender)}</span>` +
         `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
         "</div>" +
         `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.generic.dismiss")}">&#215;</button>`;

@@ -7,6 +7,7 @@ export interface InternalNotification {
     subject: string;
     body: string;
     category: string;
+    senderName?: string;
     read: boolean;
     createdAt: number;
 }
@@ -31,6 +32,7 @@ export class InternalNotificationStore {
             subject: envelope.subject,
             body: envelope.body,
             category: envelope.category,
+            senderName: envelope.senderName,
             read: false,
             createdAt: Date.now(),
         });
