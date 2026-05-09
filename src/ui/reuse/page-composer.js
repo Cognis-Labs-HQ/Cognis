@@ -2681,7 +2681,7 @@ export function createPageComposer(
                     nextOpen,
                     { restoreFocus = true } = {},
                 ) {
-                    const open = isMobileDrawerMode() && Boolean(nextOpen);
+                    const open = isMobileDrawerMode() && nextOpen;
                     mobileDrawerOpen = open;
                     toolbarEl.classList.toggle("toolbar--mobile-open", open);
                     mobileBackdrop.classList.toggle(
