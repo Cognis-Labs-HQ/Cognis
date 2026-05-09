@@ -104,10 +104,49 @@ async function apiPost(
 
 function printStructured(value: unknown) {
     if (typeof value === "string") {
+        const trimmed = value.trim();
+        const looksLikeJson =
+            trimmed.startsWith("{") || trimmed.startsWith("[");
+        if (looksLikeJson) {
+            try {
+                console.log(JSON.stringify(JSON.parse(trimmed), null, 2));
+                return;
+            } catch {
+                // not valid JSON
+            }
+        }
         console.log(value);
         return;
     }
     console.log(JSON.stringify(value, null, 2));
+}
+
+function printCommandGroupHelp(commandGroupName: string): boolean {
+    const normalized = commandGroupName.endsWith(":")
+        ? commandGroupName.slice(0, -1)
+        : commandGroupName;
+    if (!normalized || normalized.includes(":")) return false;
+    const groupPrefix = `${normalized}:`;
+    const commands = [...registry.values()]
+        .filter((command) => command.name.startsWith(groupPrefix))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    if (commands.length === 0) return false;
+
+    const maxName = commands.reduce(
+        (acc, command) => Math.max(acc, command.name.length),
+        0,
+    );
+    console.log(`Command group: ${groupPrefix}`);
+    console.log("");
+    console.log("Available commands:");
+    for (const command of commands) {
+        console.log(`  ${command.name.padEnd(maxName + 2)}${command.description}`);
+    }
+    console.log("");
+    console.log(
+        "Run `cognisctl <command> --help` to see command usage details.",
+    );
+    return true;
 }
 
 async function resolveCliToken() {
@@ -177,6 +216,7 @@ function printGlobalHelp() {
 function printCommandHelp(commandName: string) {
     const command = registry.get(commandName);
     if (!command) {
+        if (printCommandGroupHelp(commandName)) return;
         console.error(`Unknown command: ${commandName}`);
         process.exit(1);
     }
@@ -610,6 +650,7 @@ async function main() {
     const spec = registry.get(command);
 
     if (!spec) {
+        if (printCommandGroupHelp(command)) return;
         console.error(`Unknown command: ${command}`);
         console.error("Run `cognisctl --help` to see available commands.");
         process.exit(1);
