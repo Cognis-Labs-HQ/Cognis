@@ -87,6 +87,7 @@ export function buildAnalogueClockMarkup(now, tz) {
     const { hour, minute, second } = getClockTimeParts(now, tz);
     const centerX = 54;
     const centerY = 54;
+    const faceRadius = 48;
 
     function handCoords(angleDeg, len) {
         const rad = ((angleDeg - 90) * Math.PI) / 180;

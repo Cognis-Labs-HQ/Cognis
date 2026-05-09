@@ -1920,6 +1920,10 @@ export function createPageComposer(
             const h = gridSize.halfHeight
                 ? Math.max(gridSize.min[1], Math.floor(state.gridRows / 2))
                 : gridSize.default[1];
+
+            let shade = null;
+            let currentCol = -1;
+            let currentRow = -1;
             let overGrid = false;
 
             function onMove(e) {
