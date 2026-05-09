@@ -947,7 +947,7 @@ export async function mount(rootEl, { signal } = {}) {
         window.location.pathname.split("/")[2] ?? "",
     );
     ownAccount = localStorage.getItem("cognis_account") ?? "";
-    isOwnProfile = !urlHandle || urlHandle === ownAccount;
+    isOwnProfile = !urlHandle || urlHandle === ownAccount; // empty handle means /profile with no path segment → own profile
 
     profile = null;
     followers = [];

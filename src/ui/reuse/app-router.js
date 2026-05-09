@@ -15,49 +15,91 @@
  *   import { initRouter } from '../reuse/app-router.js';
  *   initRouter(document.querySelector('#app'));
  *
+ * Double-mount guard: when the router imports a page module for the first
+ * time, the browser evaluates its top-level code, including the module-level
+ * `await mount(...)` call used for direct URL loads. To prevent that from
+ * running during SPA navigation, the router sets `globalThis.__spaRouter =
+ * true` around `route.load()` and each page guards its direct-load call with
+ * `if (!globalThis.__spaRouter) await mount(...)`.
+ *
  * @param {HTMLElement} root — the #app element.
  * @returns {void}
  */
+
+import { ensurePageStylesheet } from "./page-styles.js";
 
 const ROUTES = [
     {
         pattern: /^\/dashboard$/,
         base: "/dashboard",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+        ],
         load: () => import("../app/dashboard/index.js"),
     },
     {
         pattern: /^\/settings/,
         base: "/settings",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/styles/settings.css",
+        ],
         load: () => import("../app/settings/index.js"),
     },
     {
         pattern: /^\/modules$/,
         base: "/modules",
+        stylesheets: ["/static/styles/page-builder.css"],
         load: () => import("../app/modules/index.js"),
     },
     {
         pattern: /^\/users/,
         base: "/users",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+        ],
         load: () => import("../app/users/index.js"),
     },
     {
         pattern: /^\/profile/,
         base: "/profile",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/styles/profile.css",
+            "/static/styles/reuse/char-counter.css",
+        ],
         load: () => import("../app/profile/index.js"),
     },
     {
         pattern: /^\/administration/,
         base: "/administration",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+        ],
         load: () => import("../app/administration/index.js"),
     },
     {
         pattern: /^\/docs/,
         base: "/docs",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+        ],
         load: () => import("../app/docs/index.js"),
     },
     {
         pattern: /^\/license$/,
         base: "/license",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/styles/license.css",
+        ],
         load: () => import("../app/license/index.js"),
     },
 ];
@@ -82,6 +124,13 @@ async function loadRoute(path) {
     _currentBase = route.base;
     const { signal } = _mountController;
 
+    // Start stylesheet injection and module loading in parallel — both are
+    // network operations and can race. We await both before calling mount()
+    // so CSS is guaranteed present before the page touches the DOM.
+    const stylesheetsReady = route.stylesheets?.length
+        ? Promise.all(route.stylesheets.map(ensurePageStylesheet))
+        : Promise.resolve();
+
     globalThis.__spaRouter = true;
     let mod;
     try {
@@ -89,7 +138,8 @@ async function loadRoute(path) {
     } finally {
         globalThis.__spaRouter = false;
     }
-    // If another navigation started while the module was loading, bail out.
+    await stylesheetsReady;
+    // If another navigation started while loading, bail out.
     if (signal.aborted) return false;
     try {
         await mod.mount(_root, { signal });

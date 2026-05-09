@@ -63,7 +63,7 @@ function hasLanguagePriorityChanged(prev, next) {
     return next.some((lang, i) => lang !== prev[i]);
 }
 
-export async function mount(root) {
+export async function mount(root, { signal } = {}) {
     let languagePriority = readPreferredLanguages();
     const i18n = await createI18n({ preferredLanguages: languagePriority });
     applyDocumentTitle(i18n, "ui.page.title.settings");

@@ -97,7 +97,7 @@ export async function mount(root, { signal } = {}) {
         if (docEl && activeHtml !== null) docEl.innerHTML = activeHtml;
     }
 
-    async function showDoc(slug, pushHistory = true, mountSignal) {
+    async function showDoc(slug, pushHistory = true, signal) {
         const langs = readPreferredLanguages().join(",");
         try {
             activeHtml = await loadMarkdownDocumentHtml(
@@ -108,7 +108,7 @@ export async function mount(root, { signal } = {}) {
         }
         // If the page was navigated away from while the fetch was in flight,
         // bail out before touching the DOM or history (fall through to nothing).
-        if (mountSignal?.aborted) return;
+        if (signal?.aborted) return;
         renderActiveDoc();
 
         if (pushHistory) {
