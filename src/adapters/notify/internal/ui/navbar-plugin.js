@@ -113,7 +113,7 @@ function renderNotificationItem(notif, i18n) {
                 notif.read = true;
                 await refreshCount();
             } catch {
-                // fall through — server update failed, leave item as unread (line 127 dismiss path below)
+                // fall through — server update failed, leave item as unread; dismiss handler (lines 122-137 below) is unaffected
             }
         });
     }
@@ -132,7 +132,7 @@ function renderNotificationItem(notif, i18n) {
                 emptyEl.hidden = false;
             }
         } catch {
-            // fall through — server deletion failed, leave item in list (line 147 refreshCount path below)
+            // fall through — server deletion failed, leave item in list; refreshCount (lines 142-145 below) is not called
         }
     });
 
@@ -243,7 +243,7 @@ function buildButton(i18n) {
             });
             updateBadge(0);
         } catch {
-            // fall through — server update failed, leave UI state unchanged (badge/classes remain)
+            // fall through — server update failed, leave UI state unchanged (badge remains at pre-click value, classes unchanged)
         }
     });
     header.appendChild(markAllBtn);
@@ -343,6 +343,14 @@ async function checkForNew(i18n) {
 }
 
 let arrivalToastContainer = null;
+let cachedNavBottom = 0;
+
+function updateNavBottom() {
+    const navrow = document.querySelector(".global-navrow");
+    if (navrow) {
+        cachedNavBottom = navrow.getBoundingClientRect().bottom;
+    }
+}
 
 function getArrivalToastContainer() {
     if (
@@ -353,12 +361,12 @@ function getArrivalToastContainer() {
         el.className = "arrival-toast-container";
         document.body.appendChild(el);
         arrivalToastContainer = el;
+        updateNavBottom();
+        window.addEventListener("resize", updateNavBottom, { passive: true });
     }
 
-    const navrow = document.querySelector(".global-navrow");
-    if (navrow) {
-        const navBottom = navrow.getBoundingClientRect().bottom;
-        arrivalToastContainer.style.top = `${Math.round(navBottom) + 8}px`;
+    if (cachedNavBottom > 0) {
+        arrivalToastContainer.style.top = `${Math.round(cachedNavBottom) + 8}px`;
     }
 
     return arrivalToastContainer;
