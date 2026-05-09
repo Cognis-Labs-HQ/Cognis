@@ -11,7 +11,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Komponente                | Pfad                                | Version |
 | ------------------------- | ----------------------------------- | ------- |
 | SMTP-Benachrichtigung     | `src/adapters/notify/smtp/`         | `0.1.0` |
-| Interne Benachrichtigung  | `src/adapters/notify/internal/`     | `0.3.0` |
+| Interne Benachrichtigung  | `src/adapters/notify/internal/`     | `0.5.0` |
 | Lokaler Dateispeicher     | `src/adapters/file/local/`          | `0.1.0` |
 | Lokale Auth               | `src/adapters/auth/local/`          | `0.2.2` |
 | SQLite-Datenbank          | `src/adapters/db/sqlite/`           | `0.1.0` |

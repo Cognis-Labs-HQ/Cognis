@@ -531,10 +531,11 @@ async function markArrivalRead(notif) {
             }
         }
         await refreshCount();
-    } catch {
+    } catch (err) {
         // Non-fatal: arrival toast was clicked but read-marking failed.
         // The next inbox poll will still reflect server state when the user
         // opens the panel; do not interrupt navigation/openPanel for this.
+        console.warn("[notify-internal] Failed to mark arrival as read:", err);
     }
 }
 
