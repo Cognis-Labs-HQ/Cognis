@@ -61,7 +61,7 @@
 
 .global-navrow {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: 18px;
     padding: 10px 30px;
@@ -88,6 +88,11 @@
     border-radius: 8px;
     line-height: 1;
     transition: background 0.15s;
+}
+
+.global-navrow .nav-compact-toggle {
+    grid-column: 1;
+    justify-self: start;
 }
 
 .nav-compact-toggle:hover {
@@ -199,6 +204,7 @@
 
 .topnav {
     display: flex;
+    grid-column: 2;
     gap: 18px;
     font-size: 0.97rem;
     font-weight: 600;
@@ -221,8 +227,12 @@
 
 .account-cluster {
     display: flex;
+    grid-column: 3;
     align-items: center;
     gap: 18px;
+    justify-self: end;
+    margin-left: auto;
+    white-space: nowrap;
 }
 .user-greeting {
     color: var(--user-greeting);
@@ -466,7 +476,7 @@ button.dropdown-item {
         padding-right: 18px;
     }
     .global-navrow {
-        grid-template-columns: auto auto 1fr;
+        grid-template-columns: auto minmax(0, 1fr) auto;
         gap: 10px;
         padding-left: 18px;
         padding-right: 18px;

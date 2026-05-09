@@ -2060,6 +2060,7 @@ export function createPageComposer(
             editBtn.addEventListener(
                 "click",
                 () => {
+                    syncSubLayoutToCurrentGridColumns(state);
                     state.layoutSnapshot = JSON.parse(
                         JSON.stringify(state.layout),
                     );
@@ -2104,6 +2105,7 @@ export function createPageComposer(
             editBtn.addEventListener(
                 "click",
                 () => {
+                    syncLayoutToCurrentGridColumns();
                     layoutSnapshot = JSON.parse(JSON.stringify(layout));
                     editing = true;
                     beginEditMode();
@@ -2172,6 +2174,50 @@ export function createPageComposer(
             }
         }
         return packed;
+    }
+
+    function syncLayoutToCurrentGridColumns() {
+        if (!layout || !contentGrid) return;
+        computeGridDimensions();
+        initializePlacements();
+        const adjustedPlacements = computeViewPlacements();
+        const adjustedById = new Map(
+            adjustedPlacements.map((placement) => [placement.id, placement]),
+        );
+        layout.placements = layout.placements.map((placement) => {
+            const adjusted = adjustedById.get(placement.id);
+            return adjusted
+                ? {
+                      ...placement,
+                      col: adjusted.col,
+                      row: adjusted.row,
+                      w: adjusted.w,
+                      h: adjusted.h,
+                  }
+                : placement;
+        });
+    }
+
+    function syncSubLayoutToCurrentGridColumns(state) {
+        if (!state.layout || !state.container) return;
+        computeSubGridDimensions(state);
+        initializeSubPlacements(state);
+        const adjustedPlacements = computeSubViewPlacements(state);
+        const adjustedById = new Map(
+            adjustedPlacements.map((placement) => [placement.id, placement]),
+        );
+        state.layout.placements = state.layout.placements.map((placement) => {
+            const adjusted = adjustedById.get(placement.id);
+            return adjusted
+                ? {
+                      ...placement,
+                      col: adjusted.col,
+                      row: adjusted.row,
+                      w: adjusted.w,
+                      h: adjusted.h,
+                  }
+                : placement;
+        });
     }
 
     function computeViewPlacements() {
@@ -2600,32 +2646,47 @@ export function createPageComposer(
             const toolbarEl = root.querySelector(".toolbar");
             if (toolbarEl) {
                 const storageKey = `cognis_toolbar_collapsed_${persistLayoutPreferences || "default"}`;
-                const collapsed = localStorage.getItem(storageKey) === "true";
+                const storedValue = localStorage.getItem(storageKey);
+                const collapsed = storedValue !== "false";
+                const EXPAND_ICON = "▸";
+                const COLLAPSE_ICON = "◂";
                 const collapseBtn = document.createElement("button");
                 collapseBtn.type = "button";
                 collapseBtn.className = "toolbar-collapse-btn";
-                collapseBtn.setAttribute(
-                    "aria-label",
-                    collapsed
-                        ? i18n.t("ui.layout.toolbar.expand")
-                        : i18n.t("ui.layout.toolbar.collapse"),
-                );
-                collapseBtn.textContent = collapsed ? "›" : "‹";
-                toolbarEl.insertBefore(collapseBtn, toolbarEl.firstChild);
-                if (collapsed) toolbarEl.classList.add("toolbar--collapsed");
 
-                collapseBtn.addEventListener("click", () => {
-                    const nowCollapsed =
-                        toolbarEl.classList.toggle("toolbar--collapsed");
-                    collapseBtn.textContent = nowCollapsed ? "›" : "‹";
+                function setToolbarCollapsedState(nextCollapsed) {
+                    toolbarEl.classList.toggle(
+                        "toolbar--collapsed",
+                        nextCollapsed,
+                    );
+                    collapseBtn.textContent = nextCollapsed
+                        ? EXPAND_ICON
+                        : COLLAPSE_ICON;
                     collapseBtn.setAttribute(
                         "aria-label",
-                        nowCollapsed
+                        nextCollapsed
                             ? i18n.t("ui.layout.toolbar.expand")
                             : i18n.t("ui.layout.toolbar.collapse"),
                     );
-                    localStorage.setItem(storageKey, String(nowCollapsed));
+                    localStorage.setItem(storageKey, String(nextCollapsed));
+                }
+
+                toolbarEl.insertBefore(collapseBtn, toolbarEl.firstChild);
+                setToolbarCollapsedState(collapsed);
+
+                collapseBtn.addEventListener("click", () => {
+                    const nowCollapsed =
+                        toolbarEl.classList.contains("toolbar--collapsed");
+                    setToolbarCollapsedState(!nowCollapsed);
                 });
+
+                root.querySelectorAll("[data-composer-scroll]").forEach(
+                    (btn) => {
+                        btn.addEventListener("click", () => {
+                            setToolbarCollapsedState(true);
+                        });
+                    },
+                );
             }
         }
 
