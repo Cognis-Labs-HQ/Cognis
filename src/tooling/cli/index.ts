@@ -105,9 +105,9 @@ async function apiPost(
 function printStructured(value: unknown) {
     if (typeof value === "string") {
         const trimmed = value.trim();
-        const looksLikeJson =
+        const appearsToBeJson =
             trimmed.startsWith("{") || trimmed.startsWith("[");
-        if (looksLikeJson) {
+        if (appearsToBeJson) {
             try {
                 console.log(JSON.stringify(JSON.parse(trimmed), null, 2));
                 return;
@@ -125,29 +125,27 @@ function printCommandGroupHelp(commandGroupName: string): boolean {
     const normalized = commandGroupName.endsWith(":")
         ? commandGroupName.slice(0, -1)
         : commandGroupName;
-    if (!normalized || normalized.includes(":")) return false;
+    if (!normalized) return false;
     const groupPrefix = `${normalized}:`;
     const commands = [...registry.values()]
         .filter((command) => command.name.startsWith(groupPrefix))
         .sort((a, b) => a.name.localeCompare(b.name));
     if (commands.length === 0) return false;
 
-    const maxName = commands.reduce(
+    const maxNameLength = commands.reduce(
         (acc, command) => Math.max(acc, command.name.length),
         0,
     );
-    console.log(`Command group: ${groupPrefix}`);
+    console.log(`Command Group: ${groupPrefix}`);
+    console.log(`Description: ${commands.length} available command(s).`);
+    console.log("Usage: cognisctl <command> --help");
     console.log("");
-    console.log("Available commands:");
+    console.log("Commands:");
     for (const command of commands) {
         console.log(
-            `  ${command.name.padEnd(maxName + 2)}${command.description}`,
+            `  ${command.name.padEnd(maxNameLength + 2)}${command.description}`,
         );
     }
-    console.log("");
-    console.log(
-        "Run `cognisctl <command> --help` to see command usage details.",
-    );
     return true;
 }
 
