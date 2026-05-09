@@ -320,7 +320,6 @@ code {
         top: 0;
         left: 0;
         width: min(320px, 88vw);
-        max-width: 88vw;
         height: 100dvh;
         border-radius: 0 14px 14px 0;
         margin-right: 0;
