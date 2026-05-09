@@ -38,3 +38,15 @@ test("page composer closes toolbar drawer on menu click only in drawer mode", ()
         /if \(drawerModeActive && drawerOpen\) \{\s*setDrawerOpen\(false\);\s*\}/m,
     );
 });
+
+test("page composer inserts drawer toggle before content grid", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /mainWindow\?\.insertBefore\(drawerToggle, contentGrid\);/,
+    );
+});

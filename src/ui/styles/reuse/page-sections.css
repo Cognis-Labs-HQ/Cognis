@@ -1,9 +1,28 @@
 .content-section {
     min-width: 0;
+    max-width: 100%;
 }
 
 .content-panel > .content-section {
     padding: 28px;
+}
+
+.content-section > *,
+.content-section .widget-card,
+.content-section .sub-composer-inner {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.content-section :where(img, video, canvas, svg, iframe) {
+    max-width: 100%;
+    height: auto;
+}
+
+.content-section :where(table, pre) {
+    display: block;
+    max-width: 100%;
+    overflow: auto;
 }
 
 .widget-card > h2,
