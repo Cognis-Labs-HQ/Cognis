@@ -17,6 +17,9 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Administration → Components mobile layout: component detail rows now keep their label/value columns aligned on narrow screens, and summary controls (`state-pill`, toggle slider, chevron) share a consistent vertical center line. ([06a63fd](https://github.com/le-firehawk/Cognis/commit/06a63fd))
+- AI instructions: review-feedback handling now explicitly states that repeatedly ignoring or hand-waving valid review comments is a mission failure and requires either implementation or a concrete instruction-grounded justification. ([06a63fd](https://github.com/le-firehawk/Cognis/commit/06a63fd))
+
 - Mobile and tablet responsive layout: the global navrow is now a three-column grid (`[hamburger] [topnav] [account-cluster]`) that gracefully degrades at narrow widths; at ≤640 px the workspace and footer expand to full width with reduced padding and the user-greeting label is hidden to preserve space. The nav drawer and toolbar collapse are also adapted for ≤640 px phone layouts. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
 
 - Timestamp translation utility (`src/ui/reuse/timestamp.js`): `formatDate`, `formatDateTime`, `getEffectiveTimezone`, and `syncTimezoneOnLogin`. All UI timestamps now route through this module and respect the user's effective timezone. ([eefdcad](https://github.com/le-firehawk/Cognis/commit/eefdcad))
