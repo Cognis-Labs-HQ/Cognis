@@ -173,6 +173,22 @@ export function createAdapter(deps: {
                 throw new Error("founder_token_limit_reached");
             }
         }
+        const nowBeforeInsert = new Date().toISOString();
+        await dbExecutor.execute(
+            `UPDATE registration_tokens
+         SET revoked_at = ${placeholder(1)}, revoked_by_account_id = ${placeholder(2)}
+         WHERE invitee_email = ${placeholder(3)}
+           AND revoked_at IS NULL
+           AND redeemed_at IS NULL
+           AND expires_at > ${placeholder(4)}`,
+            [
+                nowBeforeInsert,
+                input.inviterAccountId,
+                inviteeEmail,
+                nowBeforeInsert,
+            ],
+        );
+
         const tokenId = randomUUID();
         const secret = randomBytes(32).toString("base64url");
         const rawToken = `${tokenId}.${secret}`;

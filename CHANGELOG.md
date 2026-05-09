@@ -9,6 +9,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Issuing a new invite to the same recipient email now automatically revokes all prior pending tokens for that address, preventing stale invite links from remaining valid. ([828e463](https://github.com/le-firehawk/Cognis/commit/828e463))
 - Language dropdown on the Registration page now correctly renders in the active dark or light theme by adding the missing `theme-select` class. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
 
 ### Added
