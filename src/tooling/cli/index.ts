@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 interface CommandContext {
     args: string[];
@@ -8,7 +9,8 @@ interface CommandContext {
     getApiToken: () => Promise<string>;
 }
 
-type CommandHandler = (ctx: CommandContext) => Promise<void>;
+type CommandHandler = (ctx: CommandContext) => Promise<unknown>;
+type CommandRenderer = (payload: unknown) => string;
 
 interface CommandSpec {
     name: string;
@@ -16,9 +18,11 @@ interface CommandSpec {
     description: string;
     section: string;
     handler: CommandHandler;
+    render?: CommandRenderer;
 }
 
 const registry = new Map<string, CommandSpec>();
+const FIELD_EMPTY_PLACEHOLDER = "—";
 
 function inferSection(name: string): string {
     if (name.startsWith("user:")) return "User";
@@ -33,7 +37,12 @@ function inferSection(name: string): string {
 function register(
     name: string,
     handler: CommandHandler,
-    options?: { usage?: string; description?: string; section?: string },
+    options?: {
+        usage?: string;
+        description?: string;
+        section?: string;
+        render?: CommandRenderer;
+    },
 ) {
     registry.set(name, {
         name,
@@ -41,6 +50,7 @@ function register(
         usage: options?.usage ?? `cognisctl ${name}`,
         description: options?.description ?? "No description provided.",
         section: options?.section ?? inferSection(name),
+        render: options?.render,
     });
 }
 
@@ -102,12 +112,420 @@ async function apiPost(
     return apiRequest(apiBaseUrl, route, { method: "POST", body, apiToken });
 }
 
-function printStructured(value: unknown) {
-    if (typeof value === "string") {
-        console.log(value);
-        return;
+function shouldUseAnsiColors() {
+    return process.stdout.isTTY && !("NO_COLOR" in process.env);
+}
+
+function colorize(
+    value: string,
+    color:
+        | "red"
+        | "green"
+        | "yellow"
+        | "blue"
+        | "magenta"
+        | "cyan"
+        | "gray"
+        | "bold",
+) {
+    if (!shouldUseAnsiColors()) return value;
+    const code =
+        color === "red"
+            ? "\u001b[31m"
+            : color === "green"
+              ? "\u001b[32m"
+              : color === "yellow"
+                ? "\u001b[33m"
+                : color === "blue"
+                  ? "\u001b[34m"
+                  : color === "magenta"
+                    ? "\u001b[35m"
+                    : color === "cyan"
+                      ? "\u001b[36m"
+                      : color === "gray"
+                        ? "\u001b[90m"
+                        : "\u001b[1m";
+    return `${code}${value}\u001b[0m`;
+}
+
+function statusColor(status: string) {
+    const normalized = status.toLowerCase();
+    if (
+        normalized === "ok" ||
+        normalized === "active" ||
+        normalized === "enabled" ||
+        normalized === "verified"
+    ) {
+        return "green" as const;
     }
-    console.log(JSON.stringify(value, null, 2));
+    if (normalized === "available") return "cyan" as const;
+    if (normalized === "disabled" || normalized === "missing") {
+        return "yellow" as const;
+    }
+    if (normalized === "mismatch" || normalized === "error") {
+        return "red" as const;
+    }
+    return "blue" as const;
+}
+
+function formatHeading(title: string, color: Parameters<typeof colorize>[1]) {
+    return colorize(colorize(title, color), "bold");
+}
+
+function formatStatus(status: unknown) {
+    return colorize(String(status), statusColor(String(status)));
+}
+
+function formatField(label: string, value: unknown) {
+    return `${colorize(`${label}:`, "gray")} ${value === undefined || value === null ? FIELD_EMPTY_PLACEHOLDER : String(value)}`;
+}
+
+function formatBoolean(value: boolean, yes = "Yes", no = "No") {
+    return colorize(value ? yes : no, value ? "green" : "yellow");
+}
+
+function formatDurationMs(value: unknown) {
+    if (typeof value !== "number" || !Number.isFinite(value))
+        return String(value);
+    if (value < 1000) return `${value} ms`;
+    const seconds = value / 1000;
+    if (seconds < 60) return `${seconds.toFixed(2)} s`;
+    return `${(seconds / 60).toFixed(2)} min`;
+}
+
+function parseJsonLikeString(value: string) {
+    const trimmed = value.trim();
+    const appearsToBeJson = trimmed.startsWith("{") || trimmed.startsWith("[");
+    if (appearsToBeJson) {
+        try {
+            return JSON.parse(trimmed);
+        } catch {
+            return value;
+        }
+    }
+    return value;
+}
+
+/**
+ * Formats CLI output as a string.
+ *
+ * If the input is a JSON-looking string, it is parsed and pretty-printed.
+ * Plain strings are returned unchanged. Non-string values are stringified as
+ * indented JSON for readable terminal output.
+ *
+ * @param value - The value to render for terminal output.
+ * @returns A formatted string suitable for writing to stdout.
+ */
+export function formatStructured(value: unknown): string {
+    const normalized =
+        typeof value === "string" ? parseJsonLikeString(value) : value;
+    if (typeof normalized === "string") return normalized;
+    return JSON.stringify(normalized, null, 2);
+}
+
+function formatTable(
+    columns: Array<{ key: string; label: string }>,
+    rows: Array<Record<string, unknown>>,
+    options?: { emptyMessage?: string },
+) {
+    if (rows.length === 0) {
+        return colorize(options?.emptyMessage ?? "No entries found.", "gray");
+    }
+
+    const widths = columns.map(({ key, label }) =>
+        rows.reduce(
+            (width, row) =>
+                Math.max(
+                    width,
+                    String(row[key] ?? FIELD_EMPTY_PLACEHOLDER).length,
+                ),
+            label.length,
+        ),
+    );
+    const header = columns
+        .map(({ label }, index) =>
+            colorize(label.padEnd(widths[index]), "bold"),
+        )
+        .join("  ");
+    const body = rows.map((row) =>
+        columns
+            .map(({ key }, index) =>
+                String(row[key] ?? FIELD_EMPTY_PLACEHOLDER).padEnd(
+                    widths[index],
+                ),
+            )
+            .join("  "),
+    );
+    return [header, ...body].join("\n");
+}
+
+function formatCommandGroupSummary(commandCount: number) {
+    return `${commandCount} command${commandCount === 1 ? "" : "s"} available.`;
+}
+
+function formatSuccessBlock(
+    title: string,
+    color: Parameters<typeof colorize>[1],
+    fields: string[],
+) {
+    return [formatHeading(title, color), ...fields].join("\n");
+}
+
+function mergePayloadFields(
+    payload: unknown,
+    fields: Record<string, unknown>,
+): Record<string, unknown> {
+    const base =
+        typeof payload === "object" && payload !== null
+            ? (payload as Record<string, unknown>)
+            : {};
+    return { ...fields, ...base };
+}
+
+function normalizeResponse(payload: unknown) {
+    return typeof payload === "string" ? parseJsonLikeString(payload) : payload;
+}
+
+function renderApiToken(payload: unknown) {
+    const response = normalizeResponse(payload) as {
+        data?: {
+            token?: string;
+            role?: string;
+            ttlSeconds?: number;
+            expiresAt?: string;
+        };
+    };
+    const data = response.data ?? {};
+    return [
+        formatHeading("Emergency API Token", "magenta"),
+        formatField("Role", data.role),
+        formatField(
+            "TTL",
+            data.ttlSeconds ? `${data.ttlSeconds} seconds` : "—",
+        ),
+        formatField("Expires", data.expiresAt),
+        formatField("Token", data.token),
+    ].join("\n");
+}
+
+function renderSystemHealth(payload: unknown) {
+    const response = normalizeResponse(payload) as {
+        data?: {
+            status?: string;
+            timestamp?: string;
+            startedAt?: string;
+            uptimeMs?: number;
+        };
+    };
+    const data = response.data ?? {};
+    return [
+        formatHeading("System Health", "cyan"),
+        formatField("Status", formatStatus(data.status ?? "unknown")),
+        formatField("Checked", data.timestamp),
+        formatField("Started", data.startedAt),
+        formatField("Uptime", formatDurationMs(data.uptimeMs)),
+    ].join("\n");
+}
+
+function renderModulesList(payload: unknown) {
+    const response = normalizeResponse(payload) as {
+        data?: Array<{
+            id?: string;
+            version?: string;
+            class?: string;
+            status?: string;
+        }>;
+    };
+    const data = response.data ?? [];
+    return [
+        formatHeading("Modules", "cyan"),
+        formatTable(
+            [
+                { key: "id", label: "ID" },
+                { key: "version", label: "Version" },
+                { key: "class", label: "Class" },
+                { key: "status", label: "Status" },
+            ],
+            data.map((module) => ({
+                id: module.id ?? FIELD_EMPTY_PLACEHOLDER,
+                version: module.version ?? FIELD_EMPTY_PLACEHOLDER,
+                class: module.class ?? FIELD_EMPTY_PLACEHOLDER,
+                status: module.status ?? FIELD_EMPTY_PLACEHOLDER,
+            })),
+            { emptyMessage: "No modules found." },
+        ),
+    ].join("\n\n");
+}
+
+function renderGatewaysList(payload: unknown) {
+    const response = normalizeResponse(payload) as {
+        data?: Array<{
+            id?: string;
+            name?: string;
+            version?: string;
+            status?: string;
+            required?: boolean;
+        }>;
+    };
+    const data = response.data ?? [];
+    return [
+        formatHeading("Gateways", "cyan"),
+        formatTable(
+            [
+                { key: "id", label: "ID" },
+                { key: "name", label: "Name" },
+                { key: "version", label: "Version" },
+                { key: "status", label: "Status" },
+                { key: "required", label: "Required" },
+            ],
+            data.map((gateway) => ({
+                id: gateway.id ?? FIELD_EMPTY_PLACEHOLDER,
+                name: gateway.name ?? FIELD_EMPTY_PLACEHOLDER,
+                version: gateway.version ?? FIELD_EMPTY_PLACEHOLDER,
+                status: gateway.status ?? FIELD_EMPTY_PLACEHOLDER,
+                required:
+                    typeof gateway.required === "boolean"
+                        ? gateway.required
+                            ? "yes"
+                            : "no"
+                        : "no",
+            })),
+            { emptyMessage: "No gateways found." },
+        ),
+    ].join("\n\n");
+}
+
+function renderUsersList(payload: unknown) {
+    const response = normalizeResponse(payload) as {
+        data?: Array<{
+            username?: string;
+            isAdmin?: boolean;
+            enabled?: boolean;
+            isFounder?: boolean;
+        }>;
+    };
+    const data = response.data ?? [];
+    return [
+        formatHeading("Users", "cyan"),
+        formatTable(
+            [
+                { key: "username", label: "Username" },
+                { key: "role", label: "Role" },
+                { key: "status", label: "Status" },
+                { key: "founder", label: "Founder" },
+            ],
+            data.map((user) => ({
+                username: user.username ?? FIELD_EMPTY_PLACEHOLDER,
+                role: user.isAdmin ? "admin" : "user",
+                status: user.enabled ? "enabled" : "disabled",
+                founder: user.isFounder ? "yes" : "no",
+            })),
+            { emptyMessage: "No users found." },
+        ),
+    ].join("\n\n");
+}
+
+function renderUserCreate(payload: unknown) {
+    const response = normalizeResponse(payload) as {
+        data?: { username?: string; isAdmin?: boolean; enabled?: boolean };
+    };
+    const data = response.data ?? {};
+    return formatSuccessBlock("User Created", "green", [
+        formatField("Username", data.username),
+        formatField("Role", data.isAdmin ? "admin" : "user"),
+        formatField("Status", data.enabled ? "enabled" : "disabled"),
+    ]);
+}
+
+function renderUserMutation(
+    title: string,
+    payload: unknown,
+    extraFields?: (normalizedPayload: Record<string, unknown>) => string[],
+) {
+    const normalizedPayload = normalizeResponse(payload) as Record<
+        string,
+        unknown
+    >;
+    return formatSuccessBlock(title, "green", [
+        formatField("Username", normalizedPayload.username),
+        ...(extraFields ? extraFields(normalizedPayload) : []),
+    ]);
+}
+
+function renderGatewayMutation(title: string, payload: unknown) {
+    const response = normalizeResponse(payload) as {
+        gatewayId?: string;
+        data?: { status?: string };
+    };
+    return formatSuccessBlock(title, "green", [
+        formatField("Gateway", response.gatewayId),
+        formatField("Status", formatStatus(response.data?.status ?? "unknown")),
+    ]);
+}
+
+function renderModuleMutation(title: string, payload: unknown) {
+    const response = normalizeResponse(payload) as {
+        data?: { moduleId?: string; enabled?: boolean };
+    };
+    return formatSuccessBlock(title, "green", [
+        formatField("Module", response.data?.moduleId),
+        formatField(
+            "Status",
+            formatStatus(response.data?.enabled ? "enabled" : "disabled"),
+        ),
+    ]);
+}
+
+function printOutput(text: string) {
+    process.stdout.write(text.endsWith("\n") ? text : `${text}\n`);
+}
+
+/**
+ * Formats the output for a named CLI command.
+ *
+ * When a command registers a custom renderer, that renderer is used to produce
+ * human-friendly terminal output such as headings, aligned fields, or tables.
+ * Commands without a custom renderer fall back to {@link formatStructured}.
+ *
+ * @param commandName - The registered command name to resolve a renderer for.
+ * @param payload - The payload returned by the command handler.
+ * @returns A formatted string ready to write to stdout.
+ */
+export function formatCommandOutput(
+    commandName: string,
+    payload: unknown,
+): string {
+    const spec = registry.get(commandName);
+    if (spec?.render) return spec.render(payload);
+    return formatStructured(payload);
+}
+
+function printCommandGroupHelp(commandGroupName: string): boolean {
+    const normalized = commandGroupName.endsWith(":")
+        ? commandGroupName.slice(0, -1)
+        : commandGroupName;
+    if (!normalized) return false;
+    const groupPrefix = `${normalized}:`;
+    const commands = [...registry.values()]
+        .filter((command) => command.name.startsWith(groupPrefix))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    if (commands.length === 0) return false;
+
+    const maxNameLength = commands.reduce(
+        (acc, command) => Math.max(acc, command.name.length),
+        0,
+    );
+    printOutput(formatHeading(`Command Group: ${groupPrefix}`, "cyan"));
+    printOutput(
+        `${formatField("Description", formatCommandGroupSummary(commands.length))}\n${formatField("Usage", "cognisctl <command> --help")}\n`,
+    );
+    printOutput("Commands:");
+    for (const command of commands) {
+        printOutput(
+            `  ${command.name.padEnd(maxNameLength + 2)}${command.description}`,
+        );
+    }
+    return true;
 }
 
 async function resolveCliToken() {
@@ -177,6 +595,7 @@ function printGlobalHelp() {
 function printCommandHelp(commandName: string) {
     const command = registry.get(commandName);
     if (!command) {
+        if (printCommandGroupHelp(commandName)) return;
         console.error(`Unknown command: ${commandName}`);
         process.exit(1);
     }
@@ -205,34 +624,30 @@ register(
 register(
     "api:token",
     async ({ apiBaseUrl, getApiToken }) => {
-        const payload = await apiPost(
+        return apiPost(
             apiBaseUrl,
             "/api/v1/auth/emergency-token",
             undefined,
             await getApiToken(),
         );
-        printStructured(payload);
     },
     {
         usage: "cognisctl api:token",
         description:
             "Generate a temporary privileged API token (1h) for emergency curl use.",
+        render: renderApiToken,
     },
 );
 
 register(
     "system:health",
     async ({ apiBaseUrl, getApiToken }) => {
-        const payload = await apiGet(
-            apiBaseUrl,
-            "/api/v1/system/health",
-            await getApiToken(),
-        );
-        printStructured(payload);
+        return apiGet(apiBaseUrl, "/api/v1/system/health", await getApiToken());
     },
     {
         usage: "cognisctl system:health",
         description: "Check the API system health endpoint.",
+        render: renderSystemHealth,
     },
 );
 
@@ -248,11 +663,12 @@ register(
             ...module,
             status: module.class === "core" ? "enabled" : "available",
         }));
-        printStructured({ data });
+        return { data };
     },
     {
         usage: "cognisctl modules:list",
         description: "List available modules from the API with status.",
+        render: renderModulesList,
     },
 );
 
@@ -263,17 +679,12 @@ register(
         requireArgs(args, ["moduleId"], "cognisctl modules:enable <moduleId>");
         const acknowledge = args.includes("--ack-external-disclaimer");
         const route = `/api/v1/modules/${encodeURIComponent(moduleId)}/enable${acknowledge ? "?acknowledgeExternalDisclaimer=true" : ""}`;
-        const payload = await apiPost(
-            apiBaseUrl,
-            route,
-            undefined,
-            await getApiToken(),
-        );
-        printStructured(payload);
+        return apiPost(apiBaseUrl, route, undefined, await getApiToken());
     },
     {
         usage: "cognisctl modules:enable <moduleId> [--ack-external-disclaimer]",
         description: "Enable a module by ID.",
+        render: (payload) => renderModuleMutation("Module Enabled", payload),
     },
 );
 
@@ -282,33 +693,29 @@ register(
     async ({ args, apiBaseUrl, getApiToken }) => {
         const [moduleId] = args;
         requireArgs(args, ["moduleId"], "cognisctl modules:disable <moduleId>");
-        const payload = await apiPost(
+        return apiPost(
             apiBaseUrl,
             `/api/v1/modules/${encodeURIComponent(moduleId)}/disable`,
             undefined,
             await getApiToken(),
         );
-        printStructured(payload);
     },
     {
         usage: "cognisctl modules:disable <moduleId>",
         description: "Disable a module by ID.",
+        render: (payload) => renderModuleMutation("Module Disabled", payload),
     },
 );
 
 register(
     "gateway:list",
     async ({ apiBaseUrl, getApiToken }) => {
-        const payload = await apiGet(
-            apiBaseUrl,
-            "/api/v1/gateways",
-            await getApiToken(),
-        );
-        printStructured(payload);
+        return apiGet(apiBaseUrl, "/api/v1/gateways", await getApiToken());
     },
     {
         usage: "cognisctl gateway:list",
         description: "List all registered gateways with their status.",
+        render: renderGatewaysList,
     },
 );
 
@@ -327,11 +734,12 @@ register(
             undefined,
             await getApiToken(),
         );
-        printStructured(payload);
+        return mergePayloadFields(payload, { gatewayId });
     },
     {
         usage: "cognisctl gateway:enable <gatewayId>",
         description: "Enable a gateway by ID.",
+        render: (payload) => renderGatewayMutation("Gateway Enabled", payload),
     },
 );
 
@@ -350,25 +758,25 @@ register(
             undefined,
             await getApiToken(),
         );
-        printStructured(payload);
+        return mergePayloadFields(payload, { gatewayId });
     },
     {
         usage: "cognisctl gateway:disable <gatewayId>",
         description: "Disable a gateway by ID.",
+        render: (payload) => renderGatewayMutation("Gateway Disabled", payload),
     },
 );
 
 register(
     "user:list",
     async ({ apiBaseUrl, getApiToken }) => {
-        const payload = await apiGet(
-            apiBaseUrl,
-            "/api/v1/users",
-            await getApiToken(),
-        );
-        printStructured(payload);
+        return apiGet(apiBaseUrl, "/api/v1/users", await getApiToken());
     },
-    { usage: "cognisctl user:list", description: "List users." },
+    {
+        usage: "cognisctl user:list",
+        description: "List users.",
+        render: renderUsersList,
+    },
 );
 
 register(
@@ -380,17 +788,17 @@ register(
             ["username", "password", "role"],
             "cognisctl user:create <username> <password> <role>",
         );
-        const payload = await apiPost(
+        return apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}`,
             { password, role },
             await getApiToken(),
         );
-        printStructured(payload);
     },
     {
         usage: "cognisctl user:create <username> <password> <role>",
         description: "Create a user.",
+        render: renderUserCreate,
     },
 );
 
@@ -409,11 +817,15 @@ register(
             { role },
             await getApiToken(),
         );
-        printStructured(payload);
+        return mergePayloadFields(payload, { username, role });
     },
     {
         usage: "cognisctl user:role <username> <role>",
         description: "Update a user role.",
+        render: (payload) =>
+            renderUserMutation("User Role Updated", payload, (response) => [
+                formatField("Role", response.role),
+            ]),
     },
 );
 
@@ -432,11 +844,13 @@ register(
             { password },
             await getApiToken(),
         );
-        printStructured(payload);
+        return mergePayloadFields(payload, { username });
     },
     {
         usage: "cognisctl user:set-password <username> <password>",
         description: "Set a user password.",
+        render: (payload) =>
+            renderUserMutation("User Password Updated", payload),
     },
 );
 
@@ -451,11 +865,15 @@ register(
             undefined,
             await getApiToken(),
         );
-        printStructured(payload);
+        return mergePayloadFields(payload, { username });
     },
     {
         usage: "cognisctl user:disable <username>",
         description: "Disable a user.",
+        render: (payload) =>
+            renderUserMutation("User Disabled", payload, () => [
+                formatField("Status", formatStatus("disabled")),
+            ]),
     },
 );
 
@@ -470,11 +888,15 @@ register(
             undefined,
             await getApiToken(),
         );
-        printStructured(payload);
+        return mergePayloadFields(payload, { username });
     },
     {
         usage: "cognisctl user:enable <username>",
         description: "Enable a user.",
+        render: (payload) =>
+            renderUserMutation("User Enabled", payload, () => [
+                formatField("Status", formatStatus("enabled")),
+            ]),
     },
 );
 
@@ -496,11 +918,29 @@ register(
             { isFounder: value === "true" },
             await getApiToken(),
         );
-        printStructured(payload);
+        return mergePayloadFields(payload, {
+            username,
+            isFounder: value === "true",
+        });
     },
     {
         usage: "cognisctl user:isfounder <username> <true|false>",
         description: "Set whether a user is marked as founder.",
+        render: (payload) =>
+            renderUserMutation(
+                "User Founder Flag Updated",
+                payload,
+                (response) => [
+                    formatField(
+                        "Founder",
+                        formatBoolean(
+                            Boolean(response.isFounder),
+                            "true",
+                            "false",
+                        ),
+                    ),
+                ],
+            ),
     },
 );
 
@@ -514,11 +954,12 @@ register(
             `/api/v1/users/${encodeURIComponent(username)}`,
             { method: "DELETE", apiToken: await getApiToken() },
         );
-        printStructured(payload);
+        return mergePayloadFields(payload, { username });
     },
     {
         usage: "cognisctl user:delete <username>",
         description: "Delete a user.",
+        render: (payload) => renderUserMutation("User Deleted", payload),
     },
 );
 
@@ -537,11 +978,13 @@ register(
             undefined,
             await getApiToken(),
         );
-        printStructured(payload);
+        return mergePayloadFields(payload, { username });
     },
     {
         usage: "cognisctl user:preferences:clear <username>",
         description: "Clear saved user preferences.",
+        render: (payload) =>
+            renderUserMutation("User Preferences Cleared", payload),
     },
 );
 
@@ -610,15 +1053,25 @@ async function main() {
     const spec = registry.get(command);
 
     if (!spec) {
+        if (printCommandGroupHelp(command)) return;
         console.error(`Unknown command: ${command}`);
         console.error("Run `cognisctl --help` to see available commands.");
         process.exit(1);
     }
 
-    await spec.handler({ args, apiBaseUrl, getApiToken });
+    const result = await spec.handler({ args, apiBaseUrl, getApiToken });
+    if (result !== undefined) {
+        printOutput(formatCommandOutput(command, result));
+    }
 }
 
-main().catch((error) => {
-    console.error(error instanceof Error ? error.message : error);
-    process.exit(1);
-});
+const isDirectExecution =
+    Boolean(process.argv[1] && process.argv[1].length > 0) &&
+    import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+
+if (isDirectExecution) {
+    main().catch((error) => {
+        console.error(error instanceof Error ? error.message : error);
+        process.exit(1);
+    });
+}

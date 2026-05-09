@@ -28,6 +28,8 @@ Direktori `src/tooling/` berisi semua tooling pengembang untuk kodebase Cognis: 
 | `gateway:*` | `gateway:list`                                                                                |
 | `api:*`     | `api:token` (menerbitkan token admin darurat sementara 1 jam untuk curl)                      |
 
+Perintah bawaan `cognisctl` dapat merender keluaran terminal yang memahami respons dengan judul, kolom sejajar, dan warna ANSI saat terminal mendukungnya; perintah tanpa perender khusus akan kembali ke JSON yang diformat.
+
 ## Konfigurasi
 
 | Variabel                | Default       | Keterangan                                                                   |

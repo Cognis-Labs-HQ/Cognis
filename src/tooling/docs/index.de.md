@@ -33,6 +33,8 @@ Alles Linting läuft über `npm run lint`, das beide Lint-Skripte in Folge ausf�
 | `gateway:*`          | `gateway:list`                                                                                |
 | `api:*`              | `api:token` (erstellt ein temporäres 1‑Stunden-Admin-Notfalltoken für curl)                   |
 
+Eingebaute `cognisctl`-Befehle können antwortungsabhängige Terminalausgabe mit Überschriften, ausgerichteten Feldern und ANSI-Farben rendern, wenn das Terminal sie unterstützt; Befehle ohne benutzerdefinierten Renderer fallen auf formatiertes JSON zurück.
+
 ## Konfiguration
 
 | Variable                | Standard      | Beschreibung                                                              |
