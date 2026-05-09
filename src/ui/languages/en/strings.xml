@@ -410,7 +410,7 @@
   <string name="ui.app.admin.logs.filter_severity">Severity</string>
   <string name="ui.app.admin.logs.filter_keyword">Keyword</string>
   <string name="ui.app.admin.logs.filter_keyword_placeholder">Search log messages and metadata</string>
-  <string name="ui.app.admin.logs.filter_time_range">Time range</string>
+  <string name="ui.app.admin.logs.filter_time_range">Time Range</string>
   <string name="ui.app.admin.logs.empty">No log entries match the current filters.</string>
   <string name="ui.app.admin.logs.time_unknown">Unknown time</string>
   <string name="ui.app.admin.logs.message_missing">Log message unavailable.</string>

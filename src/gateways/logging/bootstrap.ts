@@ -15,13 +15,6 @@ const MAX_KEYWORD_LENGTH = 120;
 const MAX_SNAPSHOT_ENTRIES = 300;
 const STREAM_POLL_INTERVAL_MS = 1500;
 const STREAM_HEARTBEAT_INTERVAL_MS = 15000;
-const TIME_RANGE_MS_BY_KEY: Record<string, number> = {
-    "5m": 5 * 60 * 1000,
-    "15m": 15 * 60 * 1000,
-    "1h": 60 * 60 * 1000,
-    "6h": 6 * 60 * 60 * 1000,
-    "24h": 24 * 60 * 60 * 1000,
-};
 
 function parseLevelFilter(value: string | null): Set<LogLevel> | null {
     if (!value || value === "all") return null;
@@ -42,7 +35,14 @@ function parseKeywordFilter(value: string | null): string {
 
 function parseTimeRangeFilter(value: string | null): number | null {
     if (!value || value === "all") return null;
-    return TIME_RANGE_MS_BY_KEY[value] ?? null;
+    const match = value.match(/^(\d+)(m|h)$/);
+    if (!match) return null;
+    const [, amountRaw, unit] = match;
+    const amount = Number(amountRaw);
+    if (!Number.isFinite(amount) || amount <= 0) return null;
+    if (unit === "m") return amount * 60 * 1000;
+    if (unit === "h") return amount * 60 * 60 * 1000;
+    return null;
 }
 
 function parseTimestampMs(entry: Record<string, unknown>): number | null {
