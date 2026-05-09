@@ -102,10 +102,7 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
                                 ? " checked"
                                 : "";
                         const disabled = isAlwaysOn ? " disabled" : "";
-                        const title = isAlwaysOn
-                            ? ` title="${escapeHtml(i18n.t("ui.adapter.notify.internal.always_on"))}"`
-                            : "";
-                        return `<td><input type="checkbox" data-pref-key="${escapeHtml(prefKey)}" data-sender-id="${escapeHtml(provider.senderId)}"${checked}${disabled}${title} /></td>`;
+                        return `<td><input type="checkbox" data-pref-key="${escapeHtml(prefKey)}" data-sender-id="${escapeHtml(provider.senderId)}"${checked}${disabled} /></td>`;
                     })
                     .join("");
                 return `<tr><td>${escapeHtml(cat.label)}</td>${cells}</tr>`;

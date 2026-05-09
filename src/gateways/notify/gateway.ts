@@ -389,7 +389,7 @@ export class CoreNotificationGateway
                 }
 
                 const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
-                const mod = await import(`${entryPath}?t=${Date.now()}`);
+                const mod = await import(entryPath);
 
                 if (typeof mod.createNotificationSender === "function") {
                     const factory = mod.createNotificationSender as (
@@ -427,7 +427,7 @@ export class CoreNotificationGateway
                 if (!pkg.main) continue;
 
                 const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
-                const mod = await import(`${entryPath}?t=${Date.now()}`);
+                const mod = await import(entryPath);
 
                 if (typeof mod.bootstrapNotifyAdapter === "function") {
                     const bootstrap = mod.bootstrapNotifyAdapter as (

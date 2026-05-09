@@ -382,7 +382,6 @@
   <string name="ui.reuse.notifications">Notifikasi</string>
   <string name="ui.adapter.notify.internal.mark_all_read">Tandai Semua Dibaca</string>
   <string name="ui.adapter.notify.internal.empty">Tidak ada notifikasi baru</string>
-  <string name="ui.adapter.notify.internal.always_on">Selalu aktif — adaptor ini mengirimkan semua notifikasi dalam aplikasi dan tidak dapat dinonaktifkan</string>
   <string name="ui.app.settings.general">Umum</string>
   <string name="ui.app.settings.emails">Alamat Email</string>
   <string name="ui.app.settings.emails_add">Tambah email</string>

@@ -382,7 +382,6 @@
   <string name="ui.reuse.notifications">通知</string>
   <string name="ui.adapter.notify.internal.mark_all_read">すべて既読にする</string>
   <string name="ui.adapter.notify.internal.empty">新しい通知はありません</string>
-  <string name="ui.adapter.notify.internal.always_on">常時オン — このアダプターはすべてのアプリ内通知を配信し、無効にできません</string>
   <string name="ui.app.settings.general">一般</string>
   <string name="ui.app.settings.emails">メールアドレス</string>
   <string name="ui.app.settings.emails_add">メールを追加</string>
