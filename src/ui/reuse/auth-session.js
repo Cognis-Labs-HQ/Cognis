@@ -7,6 +7,8 @@
  *   when invalid.
  * - checkIsAuthenticated() — validates the stored API token and returns true
  *   when still valid, without performing any redirect.
+ * - ensureFullAccountSession() — redirects dashboard-shell pages to login unless
+ *   local storage contains a token/account pair that resolves to an enabled user.
  *
  * Usage:
  *   const redirected = await redirectToDashboardIfAuthenticated();
@@ -14,44 +16,66 @@
  *
  * @returns {Promise<boolean>}
  */
-export async function redirectToDashboardIfAuthenticated() {
+async function validateStoredAccountSession() {
     const token = localStorage.getItem("cognis_token");
-    if (!token) return false;
+    const account = localStorage.getItem("cognis_account");
+    if (!token || !account) {
+        clearStoredAuthSession();
+        return { authenticated: false, reason: "session_expired" };
+    }
 
     try {
-        const response = await fetch("/api/v1/ui/navbar-plugins", {
-            headers: { authorization: `Bearer ${token}` },
-        });
+        const response = await fetch(
+            `/api/v1/users/${encodeURIComponent(account)}/info`,
+            {
+                headers: { authorization: `Bearer ${token}` },
+            },
+        );
         if (response.ok) {
-            window.location.replace("/dashboard");
-            return true;
+            const payload = await response.json().catch(() => null);
+            if (payload?.data?.enabled === false) {
+                clearStoredAuthSession();
+                return { authenticated: false, reason: "account_disabled" };
+            }
+            return { authenticated: true, reason: null };
+        }
+        if (response.status === 404) {
+            clearStoredAuthSession();
+            return { authenticated: false, reason: "account_deleted" };
         }
         if (response.status === 401 || response.status === 403) {
             clearStoredAuthSession();
+            return { authenticated: false, reason: "session_expired" };
         }
     } catch {
         // Network/temporary failures should not force logout on auth pages.
+        return { authenticated: false, reason: null };
     }
 
+    return { authenticated: false, reason: "session_expired" };
+}
+
+export async function redirectToDashboardIfAuthenticated() {
+    const session = await validateStoredAccountSession();
+    if (session.authenticated) {
+        window.location.replace("/dashboard");
+        return true;
+    }
     return false;
 }
 
 export async function checkIsAuthenticated() {
-    const token = localStorage.getItem("cognis_token");
-    if (!token) return false;
+    const session = await validateStoredAccountSession();
+    return session.authenticated;
+}
 
-    try {
-        const response = await fetch("/api/v1/ui/navbar-plugins", {
-            headers: { authorization: `Bearer ${token}` },
-        });
-        if (response.ok) return true;
-        if (response.status === 401 || response.status === 403) {
-            clearStoredAuthSession();
-        }
-    } catch {
-        // Network/temporary failures should not force logout on auth pages.
-    }
-
+export async function ensureFullAccountSession() {
+    const session = await validateStoredAccountSession();
+    if (session.authenticated) return true;
+    const reason = session.reason
+        ? `?reason=${encodeURIComponent(session.reason)}`
+        : "";
+    window.location.replace(`/login${reason}`);
     return false;
 }
 
@@ -63,4 +87,5 @@ export function clearStoredAuthSession() {
     localStorage.removeItem("cognis_is_founder");
     localStorage.removeItem("cognis_user_validation_mode");
     document.cookie = "cognis_token=; Path=/; Max-Age=0";
+    document.cookie = "cognis_access_token=; Path=/; Max-Age=0";
 }
