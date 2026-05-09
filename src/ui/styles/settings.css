@@ -195,7 +195,7 @@ body[data-theme="light"] .prefs-dump {
 
 .email-verify-row input,
 .email-add-row input {
-    flex: 1 1 220px;
+    flex: 1 1 180px;
     min-width: 0;
 }
 
