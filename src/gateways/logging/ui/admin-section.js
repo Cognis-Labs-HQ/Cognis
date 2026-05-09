@@ -56,9 +56,11 @@ function buildMetaHtml(entry, escapeHtml) {
 
 function renderLogRow(entry, i18n, escapeHtml) {
     const level = String(entry.level ?? "info").toLowerCase();
-    const timestamp = entry.ts
-        ? formatDateTime(entry.ts)
-        : i18n.t("ui.app.admin.logs.time_unknown");
+    const timestamp = formatDateTime(
+        entry.ts,
+        i18n.t("ui.app.admin.logs.time_unknown"),
+        { includeSeconds: true },
+    );
     const message = escapeHtml(
         String(entry.message ?? i18n.t("ui.app.admin.logs.message_missing")),
     );
@@ -143,7 +145,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         const excess = rows.length - MAX_DISPLAYED_LOGS;
         if (excess <= 0) return;
         for (let index = 0; index < excess; index++) {
-            rows[index]?.remove();
+            rows[rows.length - index - 1]?.remove();
         }
     }
 
@@ -169,7 +171,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             }
         }
         pendingEntries = [];
-        resultsEl.appendChild(fragment);
+        resultsEl.prepend(fragment);
         trimRenderedRows();
     }
 
@@ -197,11 +199,11 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         if (!isWithinTimeRange(entry, activeFilters.timeRange)) {
             return;
         }
-        logs.push(entry);
+        logs.unshift(entry);
         if (logs.length > MAX_DISPLAYED_LOGS) {
-            logs = logs.slice(-MAX_DISPLAYED_LOGS);
+            logs = logs.slice(0, MAX_DISPLAYED_LOGS);
         }
-        pendingEntries.push(entry);
+        pendingEntries.unshift(entry);
         scheduleFlush();
     }
 
