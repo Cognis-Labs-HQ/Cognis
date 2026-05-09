@@ -531,6 +531,16 @@
   <string name="module.jitsiMeet.token_required">先にミーティングトークンを入力してください。</string>
   <string name="module.jitsiMeet.start_failed">ミーティングを開始できません。</string>
   <string name="module.jitsiMeet.followers_failed">フォロワーを読み込めません。</string>
+  <string name="module.jitsiMeet.api_load_failed">設定済みインスタンスから Jitsi Meet API を読み込めません。</string>
+  <string name="module.jitsiMeet.moderator_auth.title">モデレーター認証が必要です</string>
+  <string name="module.jitsiMeet.moderator_auth.body">この Jitsi インスタンスでは、ミーティングを開始する前にモデレーターのサインインが必要です。</string>
+  <string name="module.jitsiMeet.moderator_auth.detected">このミーティングを開始する前に、Jitsi がモデレーター認証を要求しました。</string>
+  <string name="module.jitsiMeet.moderator_auth.instructions">モデレーターのログインポップアップを開き、Jitsi プロバイダーでサインインしてから「完了」を選択し、ポップアップを閉じてミーティングを再試行します。</string>
+  <string name="module.jitsiMeet.moderator_auth.open">ログインポップアップを開く</string>
+  <string name="module.jitsiMeet.moderator_auth.done">完了</string>
+  <string name="module.jitsiMeet.moderator_auth.cancel">キャンセル</string>
+  <string name="module.jitsiMeet.moderator_auth.opened">モデレーターログインポップアップを開きました。</string>
+  <string name="module.jitsiMeet.moderator_auth.blocked">ブラウザーがログインポップアップをブロックしました。Cognis のポップアップを許可して再試行してください。</string>
   <string name="module.jitsiMeet.chat_title">ミーティングチャット</string>
   <string name="module.jitsiMeet.chat_placeholder">このプレースホルダーは、将来の Cognis ミーティングチャット用の独立したページコンポーザー要素です。Jitsi チャットはミーティングフレームで無効化されています。</string>
   <string name="module.jitsiMeet.chat_sample">チャットのプレースホルダー</string>

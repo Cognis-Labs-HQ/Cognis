@@ -531,6 +531,16 @@
   <string name="module.jitsiMeet.token_required">Enter a meeting token first.</string>
   <string name="module.jitsiMeet.start_failed">Unable to start the meeting.</string>
   <string name="module.jitsiMeet.followers_failed">Unable to load followers.</string>
+  <string name="module.jitsiMeet.api_load_failed">Unable to load the Jitsi Meet API from the configured instance.</string>
+  <string name="module.jitsiMeet.moderator_auth.title">Moderator Authentication Required</string>
+  <string name="module.jitsiMeet.moderator_auth.body">This Jitsi instance requires a moderator to sign in before the meeting can begin.</string>
+  <string name="module.jitsiMeet.moderator_auth.detected">Jitsi requested moderator authentication before this meeting can begin.</string>
+  <string name="module.jitsiMeet.moderator_auth.instructions">Open the moderator login popup, sign in with the Jitsi provider, then choose Done to close the popup and retry the meeting.</string>
+  <string name="module.jitsiMeet.moderator_auth.open">Open Login Popup</string>
+  <string name="module.jitsiMeet.moderator_auth.done">Done</string>
+  <string name="module.jitsiMeet.moderator_auth.cancel">Cancel</string>
+  <string name="module.jitsiMeet.moderator_auth.opened">Moderator login popup opened.</string>
+  <string name="module.jitsiMeet.moderator_auth.blocked">The browser blocked the login popup. Allow popups for Cognis and try again.</string>
   <string name="module.jitsiMeet.chat_title">Meeting Chat</string>
   <string name="module.jitsiMeet.chat_placeholder">This placeholder is a separate page-composer element for the future Cognis meeting chat. Jitsi chat is disabled in the meeting frame.</string>
   <string name="module.jitsiMeet.chat_sample">Chat placeholder</string>

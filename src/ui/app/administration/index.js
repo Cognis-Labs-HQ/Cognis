@@ -88,7 +88,7 @@ function readJitsiSettingsFromForm() {
         authenticationRequired:
             form.querySelector('[name="authenticationRequired"]')?.checked ??
             false,
-        authMode: form.querySelector('[name="authMode"]')?.value ?? "none",
+        authMode: "none",
     };
 }
 
@@ -117,13 +117,7 @@ function renderJitsiSettingsContent(settings) {
           <input name="authenticationRequired" type="checkbox" ${settings.authenticationRequired ? "checked" : ""} />
           <span>${i18n.t("ui.app.admin.jitsi.auth_required")}</span>
         </label>
-        <label>
-          <span>${i18n.t("ui.app.admin.jitsi.auth_mode")}</span>
-          <select name="authMode">
-            <option value="none" ${settings.authMode === "none" ? "selected" : ""}>${i18n.t("ui.app.admin.jitsi.auth_none")}</option>
-            <option value="jwt" ${settings.authMode === "jwt" ? "selected" : ""}>${i18n.t("ui.app.admin.jitsi.auth_jwt")}</option>
-          </select>
-        </label>
+
       </form>
     `;
 }

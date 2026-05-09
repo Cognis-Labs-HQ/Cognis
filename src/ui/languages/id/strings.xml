@@ -531,6 +531,16 @@
   <string name="module.jitsiMeet.token_required">Masukkan token rapat terlebih dahulu.</string>
   <string name="module.jitsiMeet.start_failed">Tidak dapat memulai rapat.</string>
   <string name="module.jitsiMeet.followers_failed">Tidak dapat memuat pengikut.</string>
+  <string name="module.jitsiMeet.api_load_failed">Tidak dapat memuat API Jitsi Meet dari instans yang dikonfigurasi.</string>
+  <string name="module.jitsiMeet.moderator_auth.title">Autentikasi Moderator Diperlukan</string>
+  <string name="module.jitsiMeet.moderator_auth.body">Instans Jitsi ini mengharuskan moderator masuk sebelum rapat dapat dimulai.</string>
+  <string name="module.jitsiMeet.moderator_auth.detected">Jitsi meminta autentikasi moderator sebelum rapat ini dapat dimulai.</string>
+  <string name="module.jitsiMeet.moderator_auth.instructions">Buka popup masuk moderator, masuk dengan penyedia Jitsi, lalu pilih Selesai untuk menutup popup dan mencoba rapat lagi.</string>
+  <string name="module.jitsiMeet.moderator_auth.open">Buka Popup Masuk</string>
+  <string name="module.jitsiMeet.moderator_auth.done">Selesai</string>
+  <string name="module.jitsiMeet.moderator_auth.cancel">Batal</string>
+  <string name="module.jitsiMeet.moderator_auth.opened">Popup masuk moderator dibuka.</string>
+  <string name="module.jitsiMeet.moderator_auth.blocked">Browser memblokir popup masuk. Izinkan popup untuk Cognis dan coba lagi.</string>
   <string name="module.jitsiMeet.chat_title">Obrolan Rapat</string>
   <string name="module.jitsiMeet.chat_placeholder">Placeholder ini adalah elemen page composer terpisah untuk obrolan rapat Cognis mendatang. Obrolan Jitsi dinonaktifkan di bingkai rapat.</string>
   <string name="module.jitsiMeet.chat_sample">Placeholder obrolan</string>

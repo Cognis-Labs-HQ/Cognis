@@ -531,6 +531,16 @@
   <string name="module.jitsiMeet.token_required">Gib zuerst ein Meeting-Token ein.</string>
   <string name="module.jitsiMeet.start_failed">Meeting konnte nicht gestartet werden.</string>
   <string name="module.jitsiMeet.followers_failed">Follower konnten nicht geladen werden.</string>
+  <string name="module.jitsiMeet.api_load_failed">Die Jitsi-Meet-API der konfigurierten Instanz konnte nicht geladen werden.</string>
+  <string name="module.jitsiMeet.moderator_auth.title">Moderator-Authentifizierung erforderlich</string>
+  <string name="module.jitsiMeet.moderator_auth.body">Diese Jitsi-Instanz verlangt, dass sich ein Moderator anmeldet, bevor das Meeting beginnen kann.</string>
+  <string name="module.jitsiMeet.moderator_auth.detected">Jitsi hat eine Moderator-Authentifizierung angefordert, bevor dieses Meeting beginnen kann.</string>
+  <string name="module.jitsiMeet.moderator_auth.instructions">Öffne das Moderator-Anmeldepopup, melde dich beim Jitsi-Anbieter an und wähle danach „Fertig“, um das Popup zu schließen und das Meeting erneut zu starten.</string>
+  <string name="module.jitsiMeet.moderator_auth.open">Anmeldepopup öffnen</string>
+  <string name="module.jitsiMeet.moderator_auth.done">Fertig</string>
+  <string name="module.jitsiMeet.moderator_auth.cancel">Abbrechen</string>
+  <string name="module.jitsiMeet.moderator_auth.opened">Moderator-Anmeldepopup geöffnet.</string>
+  <string name="module.jitsiMeet.moderator_auth.blocked">Der Browser hat das Anmeldepopup blockiert. Erlaube Popups für Cognis und versuche es erneut.</string>
   <string name="module.jitsiMeet.chat_title">Meeting-Chat</string>
   <string name="module.jitsiMeet.chat_placeholder">Dieser Platzhalter ist ein eigenes Page-Composer-Element für den zukünftigen Cognis-Meeting-Chat. Der Jitsi-Chat ist im Meeting-Frame deaktiviert.</string>
   <string name="module.jitsiMeet.chat_sample">Chat-Platzhalter</string>
