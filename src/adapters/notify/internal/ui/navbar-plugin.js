@@ -23,6 +23,7 @@ const POLL_INTERVAL_VISIBLE_MS = 10_000;
 const POLL_INTERVAL_HIDDEN_MS = 30_000;
 const TOAST_BODY_PREVIEW_LENGTH = 90;
 const TOAST_AUTO_DISMISS_MS = 6_000;
+const RELATIVE_TIME_TICK_MS = 1000;
 const CSS_HREF = "/static/gateways/notify-internal/notifications.css";
 
 function injectStyles() {
@@ -95,13 +96,10 @@ let emptyEl = null;
 let markAllBtn = null;
 let currentNotifications = [];
 let seenIds = null;
-
-const RELATIVE_TIME_TICK_MS = 1000;
+let relativeTimeNodes = [];
 
 function tickRelativeTimes() {
-    if (!listEl) return;
-    const nodes = listEl.querySelectorAll("[data-relative-time]");
-    for (const node of nodes) {
+    for (const node of relativeTimeNodes) {
         const ts = Number(node.dataset.relativeTime);
         if (!Number.isFinite(ts)) continue;
         node.textContent = formatRelativeTime(ts);
@@ -109,7 +107,10 @@ function tickRelativeTimes() {
 }
 
 function startRelativeTimeTicker() {
-    if (relativeTimeTimer !== null) return;
+    if (relativeTimeTimer !== null || !listEl) return;
+    relativeTimeNodes = Array.from(
+        listEl.querySelectorAll("[data-relative-time]"),
+    );
     relativeTimeTimer = setInterval(tickRelativeTimes, RELATIVE_TIME_TICK_MS);
 }
 
@@ -117,6 +118,7 @@ function stopRelativeTimeTicker() {
     if (relativeTimeTimer === null) return;
     clearInterval(relativeTimeTimer);
     relativeTimeTimer = null;
+    relativeTimeNodes = [];
 }
 
 function updateBadge(count) {
