@@ -106,10 +106,11 @@ export function formatDateTime(iso, fallback = "", options = {}) {
  * @param {string} fallback — Returned when epochMs is falsy or formatting fails.
  * @returns {string}
  */
+let _rtf;
 export function formatRelativeTime(epochMs, fallback = "") {
     if (!epochMs) return fallback;
     try {
-        const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+        _rtf ??= new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
         const diffMs = epochMs - Date.now();
         const absDiff = Math.abs(diffMs);
         if (absDiff < 60_000) {
