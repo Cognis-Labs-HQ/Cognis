@@ -739,15 +739,7 @@ function createGatewayAdapterRoutes(
                 }
                 await gateway.enableSender(adapterId);
             } else {
-                if (adapterId === "internal") {
-                    log?.(
-                        "warn",
-                        "The internal notification adapter is always-on and cannot be disabled.",
-                        {
-                            ...logMeta,
-                            adapterId,
-                        },
-                    );
+                if (sender.locked) {
                     res.writeHead(403, {
                         "content-type": "application/json",
                     });
@@ -756,7 +748,7 @@ function createGatewayAdapterRoutes(
                             error: {
                                 code: "locked_adapter",
                                 message:
-                                    "The internal notification adapter cannot be disabled",
+                                    "This adapter is always-on and cannot be disabled",
                             },
                         }),
                     );

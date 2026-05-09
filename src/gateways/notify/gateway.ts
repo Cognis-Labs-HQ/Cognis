@@ -433,6 +433,10 @@ export class CoreNotificationGateway
 
         for (const entry of entries) {
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
+
+            // Resolve the adapter module, skipping silently if the directory does
+            // not contain a valid package.json or its main entry cannot be imported.
+            let mod: Record<string, unknown>;
             try {
                 const raw = await readFile(pkgPath, "utf8");
                 const pkg = JSON.parse(raw) as { main?: string };
@@ -444,16 +448,19 @@ export class CoreNotificationGateway
                 // bootstrapAdapters(). Using the same module instance ensures the
                 // module-level activeStore set during bootstrap is the same one used by
                 // the sender registered in discoverSenders().
-                const mod = await import(entryPath);
-
-                if (typeof mod.bootstrapNotifyAdapter === "function") {
-                    const bootstrap = mod.bootstrapNotifyAdapter as (
-                        ctx: NotifyAdapterBootstrapCtx,
-                    ) => Promise<void> | void;
-                    await bootstrap(ctx);
-                }
+                mod = await import(entryPath);
             } catch {
-                // Adapter bootstrap failed — skip silently
+                continue;
+            }
+
+            if (typeof mod.bootstrapNotifyAdapter === "function") {
+                const bootstrap = mod.bootstrapNotifyAdapter as (
+                    ctx: NotifyAdapterBootstrapCtx,
+                ) => Promise<void> | void;
+                // Let bootstrap errors propagate. Adapters may throw deliberately
+                // to signal fatal startup conditions (e.g. missing DATA_ENCRYPTION_KEY
+                // in production) that must not be silently swallowed.
+                await bootstrap(ctx);
             }
         }
     }
