@@ -18,6 +18,8 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 
 const POLL_INTERVAL_VISIBLE_MS = 10_000;
 const POLL_INTERVAL_HIDDEN_MS = 30_000;
+const TOAST_BODY_PREVIEW_LENGTH = 90;
+const TOAST_AUTO_DISMISS_MS = 6_000;
 const CSS_HREF = "/static/gateways/notify-internal/notifications.css";
 
 function injectStyles() {
@@ -336,7 +338,6 @@ async function checkForNew(i18n) {
             showArrivalToast(notif, i18n);
         }
     }
-    notifs.forEach((n) => seenIds.add(n.id));
 }
 
 let arrivalToastContainer = null;
@@ -361,8 +362,8 @@ function showArrivalToast(notif, i18n) {
     toast.setAttribute("role", "alert");
 
     const preview =
-        notif.body.length > 90
-            ? notif.body.slice(0, 90) + "\u2026"
+        notif.body.length > TOAST_BODY_PREVIEW_LENGTH
+            ? notif.body.slice(0, TOAST_BODY_PREVIEW_LENGTH) + "\u2026"
             : notif.body;
 
     toast.innerHTML =
@@ -397,7 +398,7 @@ function showArrivalToast(notif, i18n) {
         });
 
     container.appendChild(toast);
-    setTimeout(dismiss, 6000);
+    setTimeout(dismiss, TOAST_AUTO_DISMISS_MS);
 }
 
 (async function init() {
