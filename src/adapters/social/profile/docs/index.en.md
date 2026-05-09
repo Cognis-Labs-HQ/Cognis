@@ -1,47 +1,62 @@
-# Profile Gateway
+# Profile Adapter
 
 ## Overview
 
-The Profile Gateway owns user profiles, the social graph, posts, and file management for avatar and banner uploads. It is the component that gives each Cognis account a public-facing identity and a place in the community graph. Removing this gateway removes all profile, social, post, and file features from the platform without affecting core, auth, or any other gateway.
+The Profile Adapter owns user profiles, the social graph, posts, and file
+management for avatar and banner uploads. It gives each Cognis account a
+public-facing identity and a place in the community graph. Removing this
+adapter removes all profile, social, post, and file features from the
+platform without affecting core, auth, or any other component.
 
-The gateway is self-contained: it registers its own API routes, serves the profile HTML page, contributes capabilities to the store, and owns its database schema. Core has no knowledge of profiles, follows, blocks, or posts.
+The adapter is self-contained: it registers its own API routes, serves the
+profile HTML page, contributes capabilities to the store, and owns its
+database schema. Core has no knowledge of profiles, follows, blocks, or posts.
 
 ## Responsibilities
 
-- Own and initialise the `account_profiles`, `account_follows`, `account_blocks`, `posts`, and `file_size_limits` database tables.
-- Enforce account-level and post-level visibility on all profile and social endpoints.
-- Manage the social graph: follow, unfollow, block, unblock, and follower/following list queries.
+- Own and initialise the `account_profiles`, `account_follows`,
+  `account_blocks`, `posts`, and `file_size_limits` database tables.
+- Enforce account-level and post-level visibility on all profile and social
+  endpoints.
+- Manage the social graph: follow, unfollow, block, unblock, and
+  follower/following list queries.
 - Handle avatar and banner uploads through the `file:gateway` capability.
 - Serve the `/profile` redirect and `/profile/:handle` HTML page.
-- Contribute `profile:createProfile`, `profile:setRoleByHandle`, and `preferences:store` to the capability store.
+- Contribute `profile:createProfile`, `profile:setRoleByHandle`,
+  `preferences:store`, and `social:profileStore` to the capability store.
 - Register all profile, social, post, file, and preference routes.
+- Self-register with the Social Gateway via `ctx.gateway.registerAdapter(...)`.
 
-Not responsible for: file storage implementation (files gateway), authentication (auth gateway), or any other gateway's data.
+Not responsible for: file storage implementation (files gateway),
+authentication (auth gateway), or private messaging (messages adapter).
 
 ## Architecture
 
-The gateway bootstrap in `src/gateways/profile/bootstrap.ts`:
+The adapter bootstrap in `src/adapters/social/profile/index.ts`:
 
-1. Retrieves `db:executor` and `db:type` from capabilities.
+1. Guards on `ctx.dbExecutor` — logs a warning and returns if unavailable.
 2. Instantiates `DbProfileStore` and calls `ensureSchema()`.
-3. Instantiates `DbUserPreferenceStore`, calls `ensureSchema()`, and contributes `preferences:store`.
+3. Instantiates `DbUserPreferenceStore`, calls `ensureSchema()`, and
+   contributes `preferences:store` and `social:profileStore`.
 4. Contributes `profile:createProfile` and `profile:setRoleByHandle`.
-5. Retrieves `file:gateway` (optional); registers file routes only when the capability is present.
+5. Retrieves `file:gateway` (optional); registers file routes only when the
+   capability is present.
 6. Registers profile, social, post, preference, and page-serving routes.
-7. Registers a navbar UI plugin via `ctx.uiRegistry`.
+7. Registers a navbar UI plugin via `ctx.registerNavbarPlugin`.
+8. Calls `ctx.gateway.registerAdapter({ adapterId: 'profile', adapterName: 'Profile' })`.
 
 ### Key source locations
 
-| Path                                         | Purpose                                                     |
-| -------------------------------------------- | ----------------------------------------------------------- |
-| `src/gateways/profile/bootstrap.ts`          | Bootstrap entry point                                       |
-| `src/gateways/profile/routes/social.ts`      | Follow, unfollow, block, unblock, follower/following routes |
-| `src/gateways/profile/routes/posts.ts`       | Post creation, listing, and deletion                        |
-| `src/gateways/profile/routes/files.ts`       | File upload, download, and admin size-limit management      |
-| `src/gateways/profile/routes/preferences.ts` | User preference get/set                                     |
-| `src/adapters/db/reuse/profile-store.ts`     | `DbProfileStore` — all profile, social graph, and post SQL  |
-| `src/adapters/db/reuse/preference-store.ts`  | `DbUserPreferenceStore`                                     |
-| `src/api/routes/profile/index.ts`            | Own profile and public profile route handlers               |
+| Path                                                | Purpose                                                     |
+| --------------------------------------------------- | ----------------------------------------------------------- |
+| `src/adapters/social/profile/index.ts`              | Adapter bootstrap entry point                               |
+| `src/adapters/social/profile/routes/social.ts`      | Follow, unfollow, block, unblock, follower/following routes |
+| `src/adapters/social/profile/routes/posts.ts`       | Post creation, listing, and deletion                        |
+| `src/adapters/social/profile/routes/files.ts`       | File upload, download, and admin size-limit management      |
+| `src/adapters/social/profile/routes/preferences.ts` | User preference get/set                                     |
+| `src/adapters/db/reuse/profile-store.ts`            | `DbProfileStore` — all profile, social graph, and post SQL  |
+| `src/adapters/db/reuse/preference-store.ts`         | `DbUserPreferenceStore`                                     |
+| `src/api/routes/profile/index.ts`                   | Own profile and public profile route handlers               |
 
 ### Visibility model
 
@@ -52,7 +67,9 @@ The gateway bootstrap in `src/gateways/profile/bootstrap.ts`:
 | `friends`          | Any authenticated user  | Followers only              |
 | `community`        | Any authenticated user  | Any authenticated user      |
 
-Post visibility (`only_me | private | friends | community`) is always capped by the account's tier. Blocked callers receive 404 on any endpoint targeting the blocker.
+Post visibility (`only_me | private | friends | community`) is always capped
+by the account's tier. Blocked callers receive 404 on any endpoint targeting
+the blocker.
 
 ### Capabilities contributed
 
@@ -61,10 +78,15 @@ Post visibility (`only_me | private | friends | community`) is always capped by 
 | `profile:createProfile`   | `(accountId, handle, role?) => Promise<void>` | Creates a profile row; called by auth on register       |
 | `profile:setRoleByHandle` | `(handle, role) => Promise<void>`             | Syncs role on the profile row when admin changes a role |
 | `preferences:store`       | `DbUserPreferenceStore`                       | User preference key/value persistence                   |
+| `social:profileStore`     | `DbProfileStore`                              | Profile store shared with the messages adapter          |
 
 ## Configuration
 
-The profile gateway reads `db:executor`, `db:type`, and optionally `file:gateway` from the capability store. These are contributed by the database and files gateways respectively. No direct environment variable configuration is required.
+The adapter reads `db:executor` and `db:type` from the capability store
+(contributed by the database gateway) and optionally `file:gateway`
+(contributed by the files gateway). No environment variables are required.
+If `db:executor` is absent the adapter logs a warning and exits early without
+registering routes or contributing capabilities.
 
 ## API Routes
 

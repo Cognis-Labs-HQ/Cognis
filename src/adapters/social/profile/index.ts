@@ -115,8 +115,17 @@ export function createProfilePageRoutes(isAdapterEnabled?: () => boolean) {
 export async function bootstrapSocialAdapter(
     ctx: SocialAdapterBootstrapCtx,
 ): Promise<void> {
-    const dbExecutor = ctx.dbExecutor!;
+    const dbExecutor = ctx.dbExecutor;
     const dbType = ctx.dbType ?? "sqlite";
+
+    if (!dbExecutor) {
+        ctx.log?.(
+            "warn",
+            "Profile adapter: no database executor available — profile features disabled.",
+            { component: "social-profile-adapter" },
+        );
+        return;
+    }
 
     const profileStore = new DbProfileStore(dbExecutor, dbType);
     await profileStore.ensureSchema();

@@ -142,8 +142,19 @@ export class CoreSocialGateway {
                 adapterRoot: adapterDir,
             };
 
-            // Errors propagate — adapters may throw to signal fatal conditions.
-            await bootstrapFn(adapterCtx);
+            try {
+                await bootstrapFn(adapterCtx);
+            } catch (err) {
+                baseCtx.log?.(
+                    "error",
+                    `Social gateway: adapter "${entry}" bootstrap failed — skipping.`,
+                    {
+                        component: "social-gateway",
+                        adapter: entry,
+                        error: err instanceof Error ? err.message : String(err),
+                    },
+                );
+            }
         }
     }
 }
