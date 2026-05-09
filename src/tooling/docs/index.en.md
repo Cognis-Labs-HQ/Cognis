@@ -68,6 +68,8 @@ Commands are grouped by namespace:
 
 All CLI commands that require authentication read the API token from the path specified in `COGNIS_CLI_TOKEN_PATH`.
 
+Built-in `cognisctl` commands can render response-aware terminal output with headings, aligned fields, and ANSI colors when the terminal supports them; commands without a custom renderer fall back to formatted JSON.
+
 ### Healthcheck
 
 `healthcheck.mjs` is used as the Docker `HEALTHCHECK` command. It issues a `GET /health` request to the running server and exits with code 0 on success or 1 on failure.
