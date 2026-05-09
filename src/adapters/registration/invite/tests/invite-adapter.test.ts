@@ -66,3 +66,70 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
         "created account should be removed if token redemption cannot be persisted",
     );
 });
+
+test("issueInvite revokes prior pending tokens for the same invitee email", async () => {
+    const revokedEmails: string[] = [];
+    let insertedTokenCount = 0;
+    let sentEmailCount = 0;
+
+    const dbExecutor = {
+        async execute(sql: string, params?: unknown[]) {
+            if (
+                sql.includes("UPDATE registration_tokens") &&
+                sql.includes("invitee_email")
+            ) {
+                // params order: [revokeTimestamp, inviterAccountId, inviteeEmail, revokeTimestamp]
+                revokedEmails.push(String(params?.[2] ?? ""));
+                return { rowCount: 1 };
+            }
+            if (sql.includes("INSERT INTO registration_tokens")) {
+                insertedTokenCount++;
+                return { rowCount: 1 };
+            }
+            return { rows: [], rowCount: 0 };
+        },
+    };
+
+    const adapter = createAdapter({
+        dbExecutor: dbExecutor as any,
+        dbType: "sqlite",
+        accountStore: {} as any,
+        canSendInviteEmail: () => true,
+        sendInviteEmail: async () => {
+            sentEmailCount++;
+        },
+        isEmailRegistered: async () => false,
+        upsertVerifiedPrimaryEmail: async () => {},
+    });
+
+    const inviteAdapter = adapter.invite;
+    assert.ok(inviteAdapter);
+
+    await inviteAdapter!.issueInvite({
+        inviterAccountId: "inviter-1",
+        inviterDisplayName: "Inviter One",
+        inviteeEmail: "recipient@example.com",
+        inviterIsFounder: false,
+        inviteBaseUrl: "https://example.com",
+    });
+
+    await inviteAdapter!.issueInvite({
+        inviterAccountId: "inviter-1",
+        inviterDisplayName: "Inviter One",
+        inviteeEmail: "recipient@example.com",
+        inviterIsFounder: false,
+        inviteBaseUrl: "https://example.com",
+    });
+
+    assert.equal(
+        revokedEmails.length,
+        2,
+        "prior pending tokens should be revoked on each new invite issuance",
+    );
+    assert.ok(
+        revokedEmails.every((email) => email === "recipient@example.com"),
+        "revocation should target the invitee email",
+    );
+    assert.equal(insertedTokenCount, 2, "two tokens should have been inserted");
+    assert.equal(sentEmailCount, 2, "two invite emails should have been sent");
+});

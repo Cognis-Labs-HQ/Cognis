@@ -173,6 +173,25 @@ export function createAdapter(deps: {
                 throw new Error("founder_token_limit_reached");
             }
         }
+        // Any newly issued invite supersedes prior pending ones for the same
+        // recipient, regardless of who originally sent them. This prevents stale
+        // links from remaining valid after a re-invite.
+        const revokeTimestamp = new Date().toISOString();
+        await dbExecutor.execute(
+            `UPDATE registration_tokens
+         SET revoked_at = ${placeholder(1)}, revoked_by_account_id = ${placeholder(2)}
+         WHERE invitee_email = ${placeholder(3)}
+           AND revoked_at IS NULL
+           AND redeemed_at IS NULL
+           AND expires_at > ${placeholder(4)}`,
+            [
+                revokeTimestamp,
+                input.inviterAccountId,
+                inviteeEmail,
+                revokeTimestamp,
+            ],
+        );
+
         const tokenId = randomUUID();
         const secret = randomBytes(32).toString("base64url");
         const rawToken = `${tokenId}.${secret}`;
