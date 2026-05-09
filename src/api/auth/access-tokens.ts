@@ -203,6 +203,8 @@ export function revokeAccessToken(rawToken: string): boolean {
     const tokenHash = hashToken(rawToken);
     const record = tokenStore.get(tokenHash);
     if (!record) return false;
+    if (record.expiresAt !== null && record.expiresAt < Date.now())
+        return false;
     tokenStore.delete(tokenHash);
     revokedTokenStore.set(tokenHash, record);
     verifiedAtByToken.delete(tokenHash);

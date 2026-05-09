@@ -125,7 +125,10 @@ function bindTopbarActions() {
         localStorage.removeItem("cognis_user_validation_mode");
         document.cookie = "cognis_token=; Path=/; Max-Age=0";
         try {
-            await fetch("/api/v1/auth/logout", { method: "POST" });
+            await fetch("/api/v1/auth/logout", {
+                method: "POST",
+                credentials: "same-origin",
+            });
         } catch {
             // Best-effort server-side revocation; navigate to login regardless.
         }
