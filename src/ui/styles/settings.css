@@ -144,7 +144,6 @@ body[data-theme="light"] .prefs-dump {
     min-width: 0;
     font-size: 0.9rem;
     overflow-wrap: anywhere;
-    word-break: break-word;
 }
 
 .email-badge-primary {

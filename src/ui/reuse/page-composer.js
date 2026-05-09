@@ -2663,7 +2663,6 @@ export function createPageComposer(
                 mobileToggleBtn.className = "toolbar-mobile-toggle";
                 const mobileBackdrop = document.createElement("div");
                 mobileBackdrop.className = "toolbar-mobile-backdrop";
-                mobileBackdrop.hidden = true;
                 const mainWindow = root.querySelector(".main-window");
                 const shell = root.querySelector(".app-shell");
                 if (
@@ -2715,7 +2714,9 @@ export function createPageComposer(
                         open,
                     );
                     mobileBackdrop.hidden = !open;
-                    if (!open && restoreFocus) mobileToggleBtn.focus();
+                    if (!open && restoreFocus && mobileToggleBtn.isConnected) {
+                        mobileToggleBtn.focus();
+                    }
                     mobileToggleBtn.setAttribute("aria-expanded", String(open));
                     mobileToggleBtn.textContent = open
                         ? COLLAPSE_ICON
