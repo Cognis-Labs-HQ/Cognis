@@ -140,7 +140,9 @@ function printCommandGroupHelp(commandGroupName: string): boolean {
     console.log("");
     console.log("Available commands:");
     for (const command of commands) {
-        console.log(`  ${command.name.padEnd(maxName + 2)}${command.description}`);
+        console.log(
+            `  ${command.name.padEnd(maxName + 2)}${command.description}`,
+        );
     }
     console.log("");
     console.log(
