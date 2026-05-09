@@ -2693,7 +2693,7 @@ export function createPageComposer(
                         mobileToggleBtn.focus();
                     }
                     mobileToggleBtn.setAttribute("aria-expanded", String(open));
-                    mobileToggleBtn.textContent = "☰";
+                    mobileToggleBtn.textContent = open ? "✕" : "☰";
                     mobileToggleBtn.setAttribute(
                         "aria-label",
                         open

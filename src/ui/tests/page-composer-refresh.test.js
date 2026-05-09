@@ -38,5 +38,5 @@ test("page composer includes mobile toolbar drawer behavior", () => {
     assert.match(source, /\(max-width: \$\{MOBILE_TOOLBAR_BREAKPOINT\}px\)/);
     assert.match(source, /toolbar--mobile-open/);
     assert.match(source, /toolbar-mobile-backdrop--open/);
-    assert.match(source, /mobileToggleBtn\.textContent = "☰"/);
+    assert.match(source, /mobileToggleBtn\.textContent = open \? "✕" : "☰"/);
 });
