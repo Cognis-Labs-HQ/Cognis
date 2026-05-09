@@ -116,25 +116,33 @@ function renderNotificationItem(notif, i18n) {
     if (!notif.read) {
         li.addEventListener("click", async (e) => {
             if (e.target.closest(".notification-dismiss")) return;
-            li.classList.remove("notification-item--unread");
-            li.classList.add("notification-item--read");
-            notif.read = true;
-            await markOneRead(notif.id);
-            await refreshCount();
+            try {
+                await markOneRead(notif.id);
+                li.classList.remove("notification-item--unread");
+                li.classList.add("notification-item--read");
+                notif.read = true;
+                await refreshCount();
+            } catch {
+                // fall through — server update failed, leave item as unread (line 127 dismiss path below)
+            }
         });
     }
 
     const dismissBtn = li.querySelector(".notification-dismiss");
     dismissBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
-        li.remove();
-        currentNotifications = currentNotifications.filter(
-            (n) => n.id !== notif.id,
-        );
-        await deleteNotification(notif.id);
-        await refreshCount();
-        if (currentNotifications.length === 0 && emptyEl) {
-            emptyEl.hidden = false;
+        try {
+            await deleteNotification(notif.id);
+            li.remove();
+            currentNotifications = currentNotifications.filter(
+                (n) => n.id !== notif.id,
+            );
+            await refreshCount();
+            if (currentNotifications.length === 0 && emptyEl) {
+                emptyEl.hidden = false;
+            }
+        } catch {
+            // fall through — server deletion failed, leave item in list (line 147 refreshCount path below)
         }
     });
 
@@ -232,17 +240,21 @@ function buildButton(i18n) {
     markAllBtn.type = "button";
     markAllBtn.textContent = i18n.t("ui.adapter.notify.internal.mark_all_read");
     markAllBtn.addEventListener("click", async () => {
-        await markAllRead();
-        if (listEl) {
-            listEl.querySelectorAll(".notification-item").forEach((el) => {
-                el.classList.remove("notification-item--unread");
-                el.classList.add("notification-item--read");
+        try {
+            await markAllRead();
+            if (listEl) {
+                listEl.querySelectorAll(".notification-item").forEach((el) => {
+                    el.classList.remove("notification-item--unread");
+                    el.classList.add("notification-item--read");
+                });
+            }
+            currentNotifications.forEach((n) => {
+                n.read = true;
             });
+            updateBadge(0);
+        } catch {
+            // fall through — server update failed, leave UI state unchanged (badge/classes remain)
         }
-        currentNotifications.forEach((n) => {
-            n.read = true;
-        });
-        updateBadge(0);
     });
     header.appendChild(markAllBtn);
     panel.appendChild(header);
@@ -404,13 +416,17 @@ function showArrivalToast(notif, i18n) {
 (async function init() {
     if (!localStorage.getItem("cognis_token")) return;
 
-    injectStyles();
+    try {
+        injectStyles();
 
-    const i18n = await createI18n();
+        const i18n = await createI18n();
 
-    const wrap = buildButton(i18n);
-    insertButton(wrap);
-    watchProfileMenu();
+        const wrap = buildButton(i18n);
+        insertButton(wrap);
+        watchProfileMenu();
 
-    await startPolling(i18n);
+        await startPolling(i18n);
+    } catch {
+        // Initialization failed — navbar plugin degrades gracefully without the notification bell
+    }
 })();
