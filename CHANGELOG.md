@@ -16,6 +16,8 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 - Issuing a new invite to the same recipient email now automatically revokes all prior pending tokens for that address, preventing stale invite links from remaining valid. ([828e463](https://github.com/le-firehawk/Cognis/commit/828e463))
 - Language dropdown on the Registration page now correctly renders in the active dark or light theme by adding the missing `theme-select` class. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- **Social Gateway adapter config 404**: `GET /api/v1/gateways/social/adapters/:id/config` now returns an empty config descriptor so the Administration page can open the adapter config popup without a 404. ([bcf89cc](https://github.com/le-firehawk/Cognis/commit/bcf89cc))
+- **Messages adapter silent skip**: fixed an early-exit guard that checked `!ctx.dbType` (undefined when the DB type is not explicitly contributed) — the adapter now defaults `dbType` to `'sqlite'` and only bails when `dbExecutor` is absent, matching the profile adapter's pattern. ([bcf89cc](https://github.com/le-firehawk/Cognis/commit/bcf89cc))
 
 ### Added
 

@@ -32,6 +32,40 @@ function createSocialAdapterRoutes(
             return true;
         }
 
+        const configMatch = url.pathname.match(
+            new RegExp(`^${base}/([^/]+)/config$`),
+        );
+        if (configMatch && (req.method === "GET" || req.method === "PUT")) {
+            if (!requireAuth(req, res, "admin")) return true;
+            const adapterId = decodeURIComponent(configMatch[1]);
+            const adapters = gateway.listAdapters();
+            const found = adapters.find(
+                (a: SocialAdapterInfo) => a.id === adapterId,
+            );
+            if (!found) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Adapter not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {},
+                    envValues: {},
+                    requiredFields: [],
+                    supportsTest: false,
+                }),
+            );
+            return true;
+        }
+
         const toggleMatch = url.pathname.match(
             new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
         );
