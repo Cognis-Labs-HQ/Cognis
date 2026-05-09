@@ -17,6 +17,7 @@ import { createUserRoutes } from "./routes/users/index.js";
 import type { RouteRegistry } from "./route-registry.js";
 import { createGatewayRoutes } from "./routes/gateways/index.js";
 import type { UIRegistry } from "./ui-registry.js";
+import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
 
 export interface ApiDependencies {
     moduleRuntimeGateway: ModuleRuntimeGateway;
@@ -52,6 +53,8 @@ export interface ApiDependencies {
         role?: string,
     ) => Promise<void>;
     setProfileRole?: (handle: string, role: string) => Promise<void>;
+    dbExecutor?: DbExecutor;
+    dbType?: string;
 }
 
 export function buildServer(deps: ApiDependencies) {
@@ -64,6 +67,12 @@ export function buildServer(deps: ApiDependencies) {
         deps.moduleRuntimeGateway,
         (moduleId) => enabledModules.has(moduleId),
         log,
+        {
+            accountStore: deps.accountStore,
+            preferenceStore: deps.preferenceStore,
+            dbExecutor: deps.dbExecutor,
+            dbType: deps.dbType,
+        },
     );
 
     const moduleRoutes = createModuleRoutes(moduleService, {

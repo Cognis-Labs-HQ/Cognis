@@ -1,6 +1,17 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
+import type { LocalAccountStore } from "../../api/reuse/account-store.js";
+import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
+import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
 import path from "node:path";
+
+export interface ModuleRouteContext {
+    accountStore?: LocalAccountStore;
+    preferenceStore?: UserPreferenceStore;
+    dbExecutor?: DbExecutor;
+    dbType?: string;
+    log?: BootstrapLog;
+}
 
 interface RouteHandler {
     method: string;
@@ -25,6 +36,7 @@ export function createModuleExtensionRoutes(
     runtime: ModuleRuntimeGateway,
     isModuleEnabled: (moduleId: string) => boolean,
     log?: BootstrapLog,
+    context: ModuleRouteContext = {},
 ): ModuleExtensionRoutes {
     let handlers: RouteHandler[] = [];
     const modulesRoot =
@@ -44,30 +56,33 @@ export function createModuleExtensionRoutes(
             try {
                 const plugin = await import(`${pluginPath}?t=${Date.now()}`);
                 if (typeof plugin.registerApiRoutes === "function") {
-                    plugin.registerApiRoutes({
-                        get(
-                            routePath: string,
-                            handler: RouteHandler["handler"],
-                        ) {
-                            nextHandlers.push({
-                                method: "GET",
-                                routePath,
-                                moduleId: manifest.id,
-                                handler,
-                            });
+                    plugin.registerApiRoutes(
+                        {
+                            get(
+                                routePath: string,
+                                handler: RouteHandler["handler"],
+                            ) {
+                                nextHandlers.push({
+                                    method: "GET",
+                                    routePath,
+                                    moduleId: manifest.id,
+                                    handler,
+                                });
+                            },
+                            post(
+                                routePath: string,
+                                handler: RouteHandler["handler"],
+                            ) {
+                                nextHandlers.push({
+                                    method: "POST",
+                                    routePath,
+                                    moduleId: manifest.id,
+                                    handler,
+                                });
+                            },
                         },
-                        post(
-                            routePath: string,
-                            handler: RouteHandler["handler"],
-                        ) {
-                            nextHandlers.push({
-                                method: "POST",
-                                routePath,
-                                moduleId: manifest.id,
-                                handler,
-                            });
-                        },
-                    });
+                        { ...context, log },
+                    );
                 }
             } catch (error) {
                 log?.("error", "Failed to load module API route plugin.", {

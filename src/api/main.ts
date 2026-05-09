@@ -284,6 +284,8 @@ const server = buildServer({
     gatewayRegistry,
     uiRegistry,
     log,
+    dbExecutor,
+    dbType,
     createProfile,
     setProfileRole: capabilities.get<
         (handle: string, role: string) => Promise<void>

@@ -1,0 +1,13 @@
+{
+    "id": "jitsi-meet",
+    "name": "Jitsi Meet",
+    "version": "1.0.0",
+    "class": "core",
+    "coreApiVersion": "v1",
+    "capabilities": ["meetings:jitsi", "ui:page"],
+    "entrypoints": {
+        "api": "./api/index.js",
+        "ui": "./ui/pages/meetings.html"
+    },
+    "publisher": "Cognis Labs"
+}

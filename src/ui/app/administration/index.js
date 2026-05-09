@@ -23,6 +23,7 @@ let composer = null;
 let changesBar = null;
 let securitySection = null;
 let elements = [];
+let jitsiSettings = null;
 
 async function loadModules() {
     const response = await apiFetch("/api/v1/modules");
@@ -55,6 +56,76 @@ async function loadGateways() {
     if (!res.ok) return [];
     const payload = await res.json();
     return payload.data ?? [];
+}
+
+async function loadJitsiSettings() {
+    const res = await apiFetch("/api/v1/modules/jitsi-meet/settings");
+    if (!res.ok) {
+        return {
+            domain: "meet.jit.si",
+            tenant: "",
+            authenticationRequired: false,
+            authMode: "none",
+        };
+    }
+    const payload = await res.json();
+    return (
+        payload.data ?? {
+            domain: "meet.jit.si",
+            tenant: "",
+            authenticationRequired: false,
+            authMode: "none",
+        }
+    );
+}
+
+function readJitsiSettingsFromForm() {
+    const form = root?.querySelector("#jitsi-settings-form");
+    if (!form) return jitsiSettings;
+    return {
+        domain: form.querySelector('[name="domain"]')?.value ?? "meet.jit.si",
+        tenant: form.querySelector('[name="tenant"]')?.value ?? "",
+        authenticationRequired:
+            form.querySelector('[name="authenticationRequired"]')?.checked ??
+            false,
+        authMode: form.querySelector('[name="authMode"]')?.value ?? "none",
+    };
+}
+
+async function saveJitsiSettingsFromForm() {
+    const body = readJitsiSettingsFromForm();
+    if (!body) return;
+    const res = await apiFetch("/api/v1/modules/jitsi-meet/settings", {
+        method: "POST",
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error("jitsi_settings_save_failed");
+}
+
+function renderJitsiSettingsContent(settings) {
+    return `
+      <form id="jitsi-settings-form" class="security-settings-form">
+        <label>
+          <span>${i18n.t("ui.app.admin.jitsi.domain")}</span>
+          <input name="domain" type="text" value="${escapeHtml(settings.domain ?? "meet.jit.si")}" placeholder="meet.jit.si" />
+        </label>
+        <label>
+          <span>${i18n.t("ui.app.admin.jitsi.tenant")}</span>
+          <input name="tenant" type="text" value="${escapeHtml(settings.tenant ?? "")}" />
+        </label>
+        <label class="security-field-row">
+          <input name="authenticationRequired" type="checkbox" ${settings.authenticationRequired ? "checked" : ""} />
+          <span>${i18n.t("ui.app.admin.jitsi.auth_required")}</span>
+        </label>
+        <label>
+          <span>${i18n.t("ui.app.admin.jitsi.auth_mode")}</span>
+          <select name="authMode">
+            <option value="none" ${settings.authMode === "none" ? "selected" : ""}>${i18n.t("ui.app.admin.jitsi.auth_none")}</option>
+            <option value="jwt" ${settings.authMode === "jwt" ? "selected" : ""}>${i18n.t("ui.app.admin.jitsi.auth_jwt")}</option>
+          </select>
+        </label>
+      </form>
+    `;
 }
 
 async function loadGatewayAdapters(gatewayId) {
@@ -1332,6 +1403,7 @@ export async function mount(rootEl, { signal } = {}) {
     integrityRows = [];
     gateways = [];
     allAdapters = [];
+    jitsiSettings = null;
 
     [modules, integrityRows] = await Promise.all([
         loadModules(),
@@ -1339,6 +1411,7 @@ export async function mount(rootEl, { signal } = {}) {
     ]);
     gateways = await loadGateways();
     allAdapters = await loadAllAdapters(gateways);
+    jitsiSettings = await loadJitsiSettings();
 
     securitySection = initSecuritySection(root, {
         i18n,
@@ -1428,6 +1501,32 @@ export async function mount(rootEl, { signal } = {}) {
                 },
             },
         },
+        {
+            id: "jitsi-meet",
+            label: i18n.t("ui.app.admin.jitsi.title"),
+            subComposerOptions: {
+                allowCustomization: false,
+                preferenceKey: "administration-jitsi-meet-layout",
+                heading: i18n.t("ui.app.admin.jitsi.title"),
+                elements: [
+                    {
+                        id: "jitsi-meet-content",
+                        label: i18n.t("ui.app.admin.jitsi.title"),
+                        pinned: true,
+                        render: () =>
+                            renderJitsiSettingsContent(jitsiSettings ?? {}),
+                    },
+                ],
+                onRender: () => {
+                    root?.querySelector(
+                        "#jitsi-settings-form",
+                    )?.addEventListener("input", () => {
+                        jitsiSettings = readJitsiSettingsFromForm();
+                        changesBar?.markDirty("jitsi-meet", true);
+                    });
+                },
+            },
+        },
     ];
 
     elements = [
@@ -1446,6 +1545,7 @@ export async function mount(rootEl, { signal } = {}) {
         `<li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>`,
         `<li><button data-composer-scroll="integrity">${i18n.t("ui.reuse.file_integrity")}</button></li>`,
         `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
+        `<li><button data-composer-scroll="jitsi-meet">${i18n.t("ui.app.admin.jitsi.title")}</button></li>`,
         ...gatewaySections.map(
             (sec) =>
                 `<li><button data-composer-scroll="${escapeHtml(sec.id)}">${escapeHtml(sec.label)}</button></li>`,
@@ -1495,21 +1595,27 @@ export async function mount(rootEl, { signal } = {}) {
         onSave: async () => {
             try {
                 await securitySection.save();
+                await saveJitsiSettingsFromForm();
+                jitsiSettings = await loadJitsiSettings();
                 changesBar.markDirty("security", false);
+                changesBar.markDirty("jitsi-meet", false);
                 gateways = await loadGateways();
                 allAdapters = await loadAllAdapters(gateways);
                 composer.refresh(elements);
-                showToast(i18n.t("ui.app.admin.security.saved"), {
+                showToast(i18n.t("ui.app.admin.settings_saved"), {
                     variant: "success",
                 });
             } catch {
-                showToast(i18n.t("ui.app.admin.security.save_failed"), {
+                showToast(i18n.t("ui.app.admin.jitsi.save_failed"), {
                     variant: "error",
                 });
             }
         },
-        onDiscard: () => {
+        onDiscard: async () => {
             securitySection?.discard();
+            jitsiSettings = await loadJitsiSettings();
+            changesBar.markDirty("jitsi-meet", false);
+            composer.refresh(elements);
         },
     });
 

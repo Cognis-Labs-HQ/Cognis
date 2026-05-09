@@ -89,6 +89,16 @@ const ROUTES = [
         load: () => import("../app/administration/index.js"),
     },
     {
+        pattern: /^\/meetings$/,
+        base: "/meetings",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/modules/jitsi-meet/ui/styles/meetings.css",
+        ],
+        load: () => import("/static/modules/jitsi-meet/ui/app/index.js"),
+    },
+    {
         pattern: /^\/docs/,
         base: "/docs",
         stylesheets: [

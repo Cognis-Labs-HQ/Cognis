@@ -491,6 +491,7 @@ export function createUiRoutes(
 
             for (const manifest of manifests) {
                 if (!manifest.entrypoints?.ui) continue;
+                if (isModuleEnabled && !isModuleEnabled(manifest.id)) continue;
 
                 try {
                     const routeFile = path.resolve(
@@ -620,6 +621,45 @@ export function createUiRoutes(
             const plugins = uiRegistry?.listNavbarPlugins() ?? [];
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: plugins }));
+            return true;
+        }
+
+        if (url.pathname.startsWith("/static/modules/")) {
+            const rest = url.pathname.slice("/static/modules/".length);
+            const slashIdx = rest.indexOf("/");
+            if (slashIdx > 0) {
+                const moduleId = rest.slice(0, slashIdx);
+                const filePart = rest.slice(slashIdx + 1);
+                const manifest = runtime
+                    ? (await runtime.listManifests()).find(
+                          (entry) => entry.id === moduleId,
+                      )
+                    : null;
+                if (
+                    manifest &&
+                    (!isModuleEnabled || isModuleEnabled(moduleId)) &&
+                    /^[a-zA-Z0-9_./-]+$/.test(filePart) &&
+                    !filePart.includes("..")
+                ) {
+                    await serveFile(
+                        res,
+                        path.join(MODULES_ROOT, moduleId, filePart),
+                        resolveContentType(filePart),
+                        log,
+                        { path: url.pathname, moduleId },
+                    );
+                    return true;
+                }
+            }
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "not_found",
+                        message: "Module asset not found.",
+                    },
+                }),
+            );
             return true;
         }
 
