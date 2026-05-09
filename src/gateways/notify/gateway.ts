@@ -1,5 +1,27 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import type { IncomingMessage, ServerResponse } from "node:http";
+
+/**
+ * Context passed to `bootstrapNotifyAdapter` when a notification adapter
+ * exports that function. Provides the minimal surface adapters need to
+ * self-register routes, static assets, and navbar plugins.
+ */
+export interface NotifyAdapterBootstrapCtx {
+    gateway: CoreNotificationGateway;
+    registerRoute(
+        handler: (
+            req: IncomingMessage,
+            res: ServerResponse,
+            url: URL,
+        ) => Promise<boolean>,
+        gatewayId?: string,
+    ): void;
+    registerNavbarPlugin(scriptUrl: string): void;
+    registerStaticDir(urlPrefix: string, absoluteDir: string): void;
+    log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
+}
+
 export interface NotificationEnvelope {
     category: string;
     recipientUsername: string;
@@ -147,12 +169,17 @@ export class CoreNotificationGateway
     private readonly categories = new Map<string, string>();
     private readonly disabledSenders = new Set<string>();
     private readonly senderRequires = new Map<string, string[]>();
+    private readonly alwaysOnSenders = new Set<string>();
 
     constructor(
         private readonly prefStore: NotificationPreferenceStore,
         private readonly configStore?: NotificationConfigStore,
         private readonly emailStore?: NotificationEmailStore,
     ) {}
+
+    registerAlwaysOnSender(senderId: string): void {
+        this.alwaysOnSenders.add(senderId);
+    }
 
     registerSender(sender: NotificationSender, requires?: string[]): void {
         this.senders.set(sender.senderId, sender);
@@ -378,14 +405,51 @@ export class CoreNotificationGateway
         }
     }
 
+    async bootstrapAdapters(
+        adaptersRoot: string,
+        ctx: NotifyAdapterBootstrapCtx,
+    ): Promise<void> {
+        let entries: string[];
+        try {
+            entries = await readdir(adaptersRoot);
+        } catch {
+            return;
+        }
+
+        for (const entry of entries) {
+            const pkgPath = path.join(adaptersRoot, entry, "package.json");
+            try {
+                const raw = await readFile(pkgPath, "utf8");
+                const pkg = JSON.parse(raw) as { main?: string };
+                if (!pkg.main) continue;
+
+                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
+                const mod = await import(`${entryPath}?t=${Date.now()}`);
+
+                if (typeof mod.bootstrapNotifyAdapter === "function") {
+                    const bootstrap = mod.bootstrapNotifyAdapter as (
+                        ctx: NotifyAdapterBootstrapCtx,
+                    ) => Promise<void> | void;
+                    await bootstrap(ctx);
+                }
+            } catch {
+                // Adapter bootstrap failed — skip silently
+            }
+        }
+    }
+
     async dispatch(envelope: NotificationEnvelope): Promise<{
         dispatched: string[];
         errors?: Array<{ senderId: string; error: string }>;
     }> {
-        const senderIds = await this.prefStore.getSenderIds(
+        const prefSenderIds = await this.prefStore.getSenderIds(
             envelope.recipientUsername,
             envelope.category,
         );
+        const allSenderIds = new Set([
+            ...prefSenderIds,
+            ...this.alwaysOnSenders,
+        ]);
         const dispatched: string[] = [];
         const errors: Array<{ senderId: string; error: string }> = [];
 
@@ -401,7 +465,7 @@ export class CoreNotificationGateway
             ? { ...envelope, recipientEmail }
             : envelope;
 
-        for (const id of senderIds) {
+        for (const id of allSenderIds) {
             if (this.disabledSenders.has(id)) continue;
             const sender = this.senders.get(id);
             if (!sender) continue;

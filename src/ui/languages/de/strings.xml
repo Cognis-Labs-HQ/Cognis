@@ -380,6 +380,8 @@
   <string name="ui.app.profile.upload_failed">Upload fehlgeschlagen. Bitte versuche es erneut.</string>
   <string name="ui.app.profile.post_failed">Beitrag konnte nicht veröffentlicht werden.</string>
   <string name="ui.reuse.notifications">Benachrichtigungen</string>
+  <string name="ui.adapter.notify.internal.mark_all_read">Alle als gelesen markieren</string>
+  <string name="ui.adapter.notify.internal.empty">Keine neuen Benachrichtigungen</string>
   <string name="ui.app.settings.general">Allgemein</string>
   <string name="ui.app.settings.emails">E-Mail-Adressen</string>
   <string name="ui.app.settings.emails_add">E-Mail hinzufügen</string>

@@ -380,6 +380,8 @@
   <string name="ui.app.profile.upload_failed">Upload failed. Please try again.</string>
   <string name="ui.app.profile.post_failed">Failed to publish post.</string>
   <string name="ui.reuse.notifications">Notifications</string>
+  <string name="ui.adapter.notify.internal.mark_all_read">Mark All as Read</string>
+  <string name="ui.adapter.notify.internal.empty">No new notifications</string>
   <string name="ui.app.settings.general">General</string>
   <string name="ui.app.settings.emails">Email Addresses</string>
   <string name="ui.app.settings.emails_add">Add email</string>
