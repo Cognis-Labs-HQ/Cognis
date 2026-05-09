@@ -148,6 +148,8 @@ export function createPageComposer(
     let closeMobileToolbarMenu = null;
 
     const UNIT = 90; // grid cell size in pixels
+    const COMPACT_GRID_MIN_CELL_WIDTH_PX = 220;
+    const COMPACT_EDIT_MIN_SCALE = 0.62;
 
     function handleBeforeUnload(e) {
         e.preventDefault();
@@ -1994,6 +1996,8 @@ export function createPageComposer(
         state.container = sectionContainer;
 
         const hasExistingContent =
+            // Preserved non-editing sub-composer DOM always has child nodes
+            // after first mount, so children length is a safe reuse signal.
             !state.editing && sectionContainer.children.length > 0;
 
         if (hasExistingContent) {
@@ -2057,6 +2061,9 @@ export function createPageComposer(
             state.container.classList.remove("composer-grid-active");
             state.container.classList.remove("content-grid--two-column");
             if (state.editing) {
+                // Edit mode mounts temporary drag grid markup, so it must be
+                // torn down during unmount; non-editing mode preserves rendered
+                // DOM to avoid costly re-renders when returning to the sub-page.
                 state.container.innerHTML = "";
             }
         }
@@ -2187,7 +2194,7 @@ export function createPageComposer(
         const compactGrid =
             availableWidth > 0 &&
             gridCols > 1 &&
-            availableWidth / gridCols < 220;
+            availableWidth / gridCols < COMPACT_GRID_MIN_CELL_WIDTH_PX;
 
         if (editing) {
             section.classList.add("composer-grid-active");
@@ -2196,8 +2203,10 @@ export function createPageComposer(
                 compactGrid,
             );
             if (compactGrid) {
+                // Clamp compact edit scaling so the grid stays legible on very
+                // narrow widths without expanding past normal size.
                 const scale = Math.max(
-                    0.62,
+                    COMPACT_EDIT_MIN_SCALE,
                     Math.min(1, availableWidth / (gridCols * UNIT)),
                 );
                 section.style.setProperty(
@@ -2311,6 +2320,8 @@ export function createPageComposer(
                     return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
                 }
                 if (subPageNavigation && !isActive && !editing) {
+                    // Inactive sub-pages are lazy placeholders; actual render
+                    // runs on first activation in switchSubPage.
                     return `<div class="content-section"${hiddenAttr} id="${el.id}" data-lazy-section></div>`;
                 }
                 return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
@@ -2661,7 +2672,10 @@ export function createPageComposer(
                     try {
                         await switchSubPage(btn.dataset.composerScroll);
                         closeMobileToolbarMenu?.();
-                    } catch {}
+                    } catch {
+                        // Navigation can fail if a sub-page renderer throws;
+                        // keep current state and leave the menu open.
+                    }
                 });
             } else {
                 btn.addEventListener("click", () => {

@@ -56,6 +56,8 @@ async function bindThemeToggle({ usePreferenceApi = true } = {}) {
 }
 
 const PROFILE_MENU_CLOSE_DELAY_MS = 300;
+// Keeps compact-mode detection stable when scroll/client widths differ by 1 px
+// due to sub-pixel rounding.
 const NAV_OVERFLOW_TOLERANCE_PX = 1;
 
 function bindGlobalNavOverlay(i18n) {
@@ -118,6 +120,9 @@ function bindGlobalNavOverlay(i18n) {
         const hadCompactClass = navRow.classList.contains(
             "global-navrow--compact",
         );
+        // Measure in expanded mode because compact mode applies fixed/translated
+        // drawer styles that detach topnav from normal flow and skew overflow
+        // width metrics.
         if (hadCompactClass) navRow.classList.remove("global-navrow--compact");
         const hasOverflow =
             topnav.scrollWidth > topnav.clientWidth + NAV_OVERFLOW_TOLERANCE_PX;
@@ -132,9 +137,18 @@ function bindGlobalNavOverlay(i18n) {
         if (!shouldCompact) closeMenu();
     }
 
-    new ResizeObserver(syncNavMode).observe(navRow);
-    window.addEventListener("resize", syncNavMode);
-    syncNavMode();
+    let syncRafId = null;
+    const scheduleSyncNavMode = () => {
+        if (syncRafId !== null) return;
+        syncRafId = window.requestAnimationFrame(() => {
+            syncRafId = null;
+            syncNavMode();
+        });
+    };
+
+    new ResizeObserver(scheduleSyncNavMode).observe(navRow);
+    window.addEventListener("resize", scheduleSyncNavMode);
+    scheduleSyncNavMode();
 }
 
 function bindTopbarActions() {
@@ -161,6 +175,15 @@ function bindTopbarActions() {
 
     let closeTimeout = null;
 
+    const closeMenuNow = () => {
+        if (closeTimeout) {
+            clearTimeout(closeTimeout);
+            closeTimeout = null;
+        }
+        dropdown?.classList.add("hidden");
+        profileMenu?.classList.remove("open");
+    };
+
     const openMenu = () => {
         if (closeTimeout) {
             clearTimeout(closeTimeout);
@@ -172,8 +195,7 @@ function bindTopbarActions() {
 
     const closeMenu = () => {
         closeTimeout = setTimeout(() => {
-            dropdown?.classList.add("hidden");
-            profileMenu?.classList.remove("open");
+            closeMenuNow();
             closeTimeout = null;
         }, PROFILE_MENU_CLOSE_DELAY_MS);
     };
@@ -182,8 +204,7 @@ function bindTopbarActions() {
     toggle?.addEventListener("click", (event) => {
         event.stopPropagation();
         if (profileMenu?.classList.contains("open")) {
-            dropdown?.classList.add("hidden");
-            profileMenu?.classList.remove("open");
+            closeMenuNow();
             return;
         }
         openMenu();

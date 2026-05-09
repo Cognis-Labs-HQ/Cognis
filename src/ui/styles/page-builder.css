@@ -327,7 +327,7 @@ code {
         border-radius: 0 12px 12px 0;
         z-index: 1120;
         overflow-y: auto;
-        background: color-mix(in srgb, var(--surface-2) 92%, #000 8%);
+        background: var(--drawer-surface, var(--surface-2));
         padding-bottom: 18px;
     }
     .main-window--nav-open .toolbar {
@@ -340,7 +340,7 @@ code {
         border: 0;
         padding: 0;
         margin: 0;
-        background: rgba(2, 6, 23, 0.72);
+        background: var(--overlay-backdrop, rgba(2, 6, 23, 0.72));
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.2s ease;
