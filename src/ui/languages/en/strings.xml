@@ -178,6 +178,7 @@
   <string name="ui.app.login.not_registered.title">Not Registered?</string>
   <string name="ui.app.login.not_registered.body">Create a free account and get started today.</string>
   <string name="ui.app.login.not_registered.link">Sign Up!</string>
+  <string name="ui.app.login.not_registered.hint">No account? Sign Up!</string>
   <string name="ui.app.demo.switched">Demo: switched to sandbox page.</string>
   <string name="ui.app.demo.added">Demo: added a learning progress widget.</string>
   <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>

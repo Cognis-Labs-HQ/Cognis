@@ -305,6 +305,229 @@ async function runEmailVerificationAfterRegister(
     }
 }
 
+function renderRegisterShellPhone() {
+    const isInviteFlow = Boolean(token);
+    const isInvalid = isInviteFlow && tokenInvalid && !inviteAdapterDisabled;
+    const canRenderForm = isInviteFlow
+        ? Boolean(inviteData) && !isInvalid && !inviteAdapterDisabled
+        : openRegistrationsEnabled;
+
+    let formHtml = "";
+    let messageHtml = "";
+
+    if (isInvalid) {
+        messageHtml = renderInPageCallout({
+            variant: "danger",
+            title: i18n.t("ui.reuse.generic.error"),
+        });
+    } else if (!canRenderForm) {
+        messageHtml = `<p class="auth-intro">${escapeHtml(i18n.t("ui.app.register.closed"))}</p>`;
+    } else {
+        const invitedText =
+            inviteData && isInviteFlow
+                ? i18n
+                      .t("ui.app.register.invited_you")
+                      .replace("{inviter}", inviteData.inviterDisplayName)
+                : "";
+        const inviteEmail =
+            isInviteFlow && inviteData ? inviteData.inviteeEmail : "";
+        const lockedEmail = inviteEmail || prefilledEmail;
+        const emailValue = lockedEmail || "";
+        const emailLocked = Boolean(lockedEmail);
+        const emailReadonly = emailLocked ? "disabled" : "";
+        const emailLockedClass = emailLocked ? " auth-input--locked" : "";
+        const countdownHtml = inviteData?.expiresAt
+            ? `<p id="register-countdown" class="auth-intro" style="font-size:1rem;margin-top:4px"></p>`
+            : "";
+        const langOptionsHtml = availableLanguages
+            .map(
+                (lang) =>
+                    `<option value="${escapeHtml(lang.key)}"${lang.key === selectedLanguage ? " selected" : ""}>${escapeHtml(lang.name)}</option>`,
+            )
+            .join("");
+        const langSelectHtml =
+            availableLanguages.length > 1
+                ? `<label>
+            <span>${escapeHtml(i18n.t("ui.app.register.language"))}</span>
+            <select name="language">${langOptionsHtml}</select>
+          </label>`
+                : "";
+        formHtml = `
+      ${invitedText ? `<p class="auth-intro">${escapeHtml(invitedText)}</p>` : ""}
+      ${countdownHtml}
+      <div class="auth-form-shell">
+        <form id="register-form" class="stack auth-form">
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.register.email"))}</span>
+            <input name="email" type="email" value="${escapeHtml(emailValue)}" ${emailReadonly} class="${emailLockedClass.trim()}" required />
+          </label>
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.register.username"))}</span>
+            <input name="username" required />
+          </label>
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.register.display_name"))}</span>
+            <input name="displayName" />
+          </label>
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.register.password"))}</span>
+            <input name="password" type="password" required />
+          </label>
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.register.confirm_password"))}</span>
+            <input name="confirmPassword" type="password" required />
+          </label>
+          ${langSelectHtml}
+          <button type="submit" class="btn-confirm btn-animated">${escapeHtml(i18n.t("ui.app.register.submit"))}</button>
+        </form>
+      </div>
+    `;
+    }
+
+    const brandlineHtml = renderAuthBrandline(
+        i18n.t("ui.shared.brand.name"),
+        i18n.t("ui.app.login.hero.tagline"),
+    );
+    return `
+      <section class="auth-page auth-page--frame">
+        <div class="auth-layout">
+          <main class="panel auth-panel" aria-label="${escapeHtml(i18n.t("ui.app.register.form_title"))}">
+            ${brandlineHtml}
+            <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.register.form_title"))}</h2>
+            ${messageHtml}
+            ${formHtml}
+          </main>
+        </div>
+      </section>
+    `;
+}
+
+function bindRegisterForm() {
+    if (tokenInvalid && invalidTokenToastToken !== token) {
+        invalidTokenToastToken = token;
+        showToast(i18n.t("ui.app.register.error.invalid_token"), {
+            variant: "error",
+            permanent: true,
+        });
+    }
+
+    if (inviteData?.expiresAt) {
+        const expiresAtMs = new Date(inviteData.expiresAt).getTime();
+        let countdownTimer = null;
+        function updateCountdown() {
+            const el = root.querySelector("#register-countdown");
+            if (!el) {
+                clearInterval(countdownTimer);
+                return;
+            }
+            const remaining = expiresAtMs - Date.now();
+            if (remaining <= 0) {
+                el.textContent = i18n.t("ui.app.register.token_expired");
+                clearInterval(countdownTimer);
+                return;
+            }
+            el.textContent = i18n
+                .t("ui.app.register.token_expires_in")
+                .replace("{countdown}", formatCountdown(remaining));
+        }
+        updateCountdown();
+        countdownTimer = setInterval(updateCountdown, 1000);
+    }
+
+    const form = root.querySelector("#register-form");
+    if (!(form instanceof HTMLFormElement)) return;
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const email = String(form.email.value ?? "").trim().toLowerCase();
+        const username = String(form.username.value ?? "").trim();
+        const displayName = String(form.displayName.value ?? "").trim();
+        const password = String(form.password.value ?? "");
+        const confirmPassword = String(form.confirmPassword.value ?? "");
+        const chosenLanguage = form.language?.value ?? selectedLanguage;
+        if (password !== confirmPassword) {
+            showToast(
+                i18n.t("ui.app.register.error.password_mismatch"),
+                { variant: "error" },
+            );
+            return;
+        }
+        try {
+            if (token) {
+                const response = await fetch("/api/v1/registration/redeem", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ token, username, displayName, password }),
+                });
+                const body = await response.json();
+                if (!response.ok) {
+                    const errorCode = String(body?.error?.code ?? "generic");
+                    const i18nCode = knownErrorCodes.has(errorCode)
+                        ? errorCode
+                        : "generic";
+                    showToast(i18n.t(`ui.app.register.error.${i18nCode}`), {
+                        variant: "error",
+                    });
+                    return;
+                }
+            } else {
+                const response = await fetch("/api/v1/auth/register", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ username, password, email, displayName }),
+                });
+                if (!response.ok) {
+                    const body = await response.json().catch((error) => {
+                        console.warn(
+                            JSON.stringify({
+                                level: "warn",
+                                component: "register-page",
+                                message: "register_parse_error",
+                                error:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            }),
+                        );
+                        return null;
+                    });
+                    const code = String(body?.error?.code ?? "register_failed");
+                    const message =
+                        code === "registrations_disabled"
+                            ? i18n.t("ui.app.register.closed")
+                            : i18n.t("ui.app.register.error.generic");
+                    showToast(message, { variant: "error" });
+                    return;
+                }
+                const regPayload = await response.json().catch(() => null);
+                const verifyToken = String(regPayload?.data?.verifyToken ?? "");
+                const registeredUsername = String(
+                    regPayload?.data?.username ?? username,
+                );
+                if (email && verifyToken) {
+                    await runEmailVerificationAfterRegister(
+                        registeredUsername,
+                        email,
+                        verifyToken,
+                    );
+                }
+            }
+            if (chosenLanguage && chosenLanguage !== "en") {
+                setPreferredLanguages([chosenLanguage, "en"]);
+            }
+            showToast(i18n.t("ui.app.register.success"), {
+                variant: "success",
+            });
+            window.setTimeout(() => {
+                window.location.href = "/login";
+            }, 1200);
+        } catch {
+            showToast(i18n.t("ui.app.register.error.generic"), {
+                variant: "error",
+            });
+        }
+    });
+}
+
 const composer = createPageComposer(root, {
     allowCustomization: false,
     i18n,
@@ -325,177 +548,26 @@ const composer = createPageComposer(root, {
             render: () => renderRegisterShell(),
             onRender: () => {
                 runTypingShowcase(typingSamples);
-
-                if (tokenInvalid && invalidTokenToastToken !== token) {
-                    invalidTokenToastToken = token;
-                    showToast(i18n.t("ui.app.register.error.invalid_token"), {
-                        variant: "error",
-                        permanent: true,
-                    });
-                }
-
-                if (inviteData?.expiresAt) {
-                    const expiresAtMs = new Date(
-                        inviteData.expiresAt,
-                    ).getTime();
-                    let countdownTimer = null;
-                    function updateCountdown() {
-                        const el = root.querySelector("#register-countdown");
-                        if (!el) {
-                            clearInterval(countdownTimer);
-                            return;
-                        }
-                        const remaining = expiresAtMs - Date.now();
-                        if (remaining <= 0) {
-                            el.textContent = i18n.t(
-                                "ui.app.register.token_expired",
-                            );
-                            clearInterval(countdownTimer);
-                            return;
-                        }
-                        el.textContent = i18n
-                            .t("ui.app.register.token_expires_in")
-                            .replace("{countdown}", formatCountdown(remaining));
-                    }
-                    updateCountdown();
-                    countdownTimer = setInterval(updateCountdown, 1000);
-                }
-
-                const form = root.querySelector("#register-form");
-                if (!(form instanceof HTMLFormElement)) return;
-                form.addEventListener("submit", async (event) => {
-                    event.preventDefault();
-                    const email = String(form.email.value ?? "")
-                        .trim()
-                        .toLowerCase();
-                    const username = String(form.username.value ?? "").trim();
-                    const displayName = String(
-                        form.displayName.value ?? "",
-                    ).trim();
-                    const password = String(form.password.value ?? "");
-                    const confirmPassword = String(
-                        form.confirmPassword.value ?? "",
-                    );
-                    const chosenLanguage =
-                        form.language?.value ?? selectedLanguage;
-                    if (password !== confirmPassword) {
-                        showToast(
-                            i18n.t("ui.app.register.error.password_mismatch"),
-                            { variant: "error" },
-                        );
-                        return;
-                    }
-                    try {
-                        if (token) {
-                            const response = await fetch(
-                                "/api/v1/registration/redeem",
-                                {
-                                    method: "POST",
-                                    headers: {
-                                        "content-type": "application/json",
-                                    },
-                                    body: JSON.stringify({
-                                        token,
-                                        username,
-                                        displayName,
-                                        password,
-                                    }),
-                                },
-                            );
-                            const body = await response.json();
-                            if (!response.ok) {
-                                const errorCode = String(
-                                    body?.error?.code ?? "generic",
-                                );
-                                const i18nCode = knownErrorCodes.has(errorCode)
-                                    ? errorCode
-                                    : "generic";
-                                showToast(
-                                    i18n.t(`ui.app.register.error.${i18nCode}`),
-                                    { variant: "error" },
-                                );
-                                return;
-                            }
-                        } else {
-                            const response = await fetch(
-                                "/api/v1/auth/register",
-                                {
-                                    method: "POST",
-                                    headers: {
-                                        "content-type": "application/json",
-                                    },
-                                    body: JSON.stringify({
-                                        username,
-                                        password,
-                                        email,
-                                        displayName,
-                                    }),
-                                },
-                            );
-                            if (!response.ok) {
-                                const body = await response
-                                    .json()
-                                    .catch((error) => {
-                                        console.warn(
-                                            JSON.stringify({
-                                                level: "warn",
-                                                component: "register-page",
-                                                message: "register_parse_error",
-                                                error:
-                                                    error instanceof Error
-                                                        ? error.message
-                                                        : String(error),
-                                            }),
-                                        );
-                                        return null;
-                                    });
-                                const code = String(
-                                    body?.error?.code ?? "register_failed",
-                                );
-                                const message =
-                                    code === "registrations_disabled"
-                                        ? i18n.t("ui.app.register.closed")
-                                        : i18n.t(
-                                              "ui.app.register.error.generic",
-                                          );
-                                showToast(message, { variant: "error" });
-                                return;
-                            }
-                            const regPayload = await response
-                                .json()
-                                .catch(() => null);
-                            const verifyToken = String(
-                                regPayload?.data?.verifyToken ?? "",
-                            );
-                            const registeredUsername = String(
-                                regPayload?.data?.username ?? username,
-                            );
-                            if (email && verifyToken) {
-                                await runEmailVerificationAfterRegister(
-                                    registeredUsername,
-                                    email,
-                                    verifyToken,
-                                );
-                            }
-                        }
-                        if (chosenLanguage && chosenLanguage !== "en") {
-                            setPreferredLanguages([chosenLanguage, "en"]);
-                        }
-                        showToast(i18n.t("ui.app.register.success"), {
-                            variant: "success",
-                        });
-                        window.setTimeout(() => {
-                            window.location.href = "/login";
-                        }, 1200);
-                    } catch {
-                        showToast(i18n.t("ui.app.register.error.generic"), {
-                            variant: "error",
-                        });
-                    }
-                });
+                bindRegisterForm();
             },
         },
     ],
+    responsiveLayouts: {
+        phone: {
+            elements: [
+                {
+                    id: "register-shell",
+                    label: i18n.t("ui.app.register.form_title"),
+                    pinned: true,
+                    gridSize: { default: [12, 5], min: [8, 4], max: "full" },
+                    render: () => renderRegisterShellPhone(),
+                    onRender: () => {
+                        bindRegisterForm();
+                    },
+                },
+            ],
+        },
+    },
 });
 
 await composer.init();

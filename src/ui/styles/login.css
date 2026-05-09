@@ -185,6 +185,28 @@ p.auth-intro {
     }
 }
 
+@media (max-width: 480px) {
+    .auth-page--frame {
+        padding: 10px;
+    }
+    .panel.auth-intro,
+    .auth-panel {
+        padding: 12px;
+    }
+    .auth-title {
+        font-size: 2rem;
+    }
+    .auth-heading {
+        font-size: 1.6rem;
+    }
+    p.auth-intro {
+        font-size: 1.2rem;
+    }
+    .cognis-ad-frame {
+        font-size: 0.95rem;
+    }
+}
+
 body[data-theme="light"] .panel.auth-intro,
 body[data-theme="light"] .auth-panel {
     background: linear-gradient(

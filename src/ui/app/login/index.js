@@ -337,6 +337,101 @@ function renderLoginShell() {
     });
 }
 
+function renderLoginShellPhone() {
+    const brandlineHtml = renderAuthBrandline(
+        i18n.t("ui.shared.brand.name"),
+        i18n.t("ui.app.login.hero.tagline"),
+    );
+    const signupLinkHtml = publicRegistrationEnabled
+        ? `<p class="auth-compact-register">ℹ️ <a href="/register">${escapeHtml(i18n.t("ui.app.login.not_registered.hint"))}</a></p>`
+        : "";
+    return `
+      <section class="auth-page auth-page--frame">
+        <div class="auth-layout">
+          <main class="panel auth-panel" aria-label="${escapeHtml(i18n.t("ui.app.login.title"))}">
+            ${brandlineHtml}
+            <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
+            <form id="login-form" class="stack auth-form" method="POST">
+              <input type="hidden" id="login-provider" value="local" />
+              <label>
+                <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
+                <input id="login-username" autocomplete="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
+              </label>
+              <label>
+                <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
+                <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
+              </label>
+              <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
+              ${signupLinkHtml}
+              <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
+            </form>
+            <div id="sso-buttons" class="sso-buttons"></div>
+          </main>
+        </div>
+      </section>
+    `;
+}
+
+function bindLoginForm() {
+    document
+        .querySelector("#login-form")
+        ?.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const form = event.target;
+            const usernameEl = form.querySelector("#login-username");
+            const passwordEl = form.querySelector("#login-password");
+            const providerEl = form.querySelector("#login-provider");
+            const payload = {
+                username: usernameEl?.value ?? "",
+                password: passwordEl?.value ?? "",
+                provider: providerEl?.value ?? "local",
+            };
+            const response = await fetch("/api/v1/auth/login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            const body = await response.json().catch(() => null);
+            if (response.ok && body?.data) {
+                localStorage.setItem("cognis_token", body.data.token);
+                localStorage.setItem("cognis_account", body.data.accountId);
+                localStorage.setItem(
+                    "cognis_display_name",
+                    body.data.displayName || body.data.accountId,
+                );
+                localStorage.setItem(
+                    "cognis_role",
+                    body.data.role || "user",
+                );
+                localStorage.setItem(
+                    "cognis_is_founder",
+                    body.data.isFounder ? "true" : "false",
+                );
+                localStorage.setItem(
+                    "cognis_login_time",
+                    new Date().toISOString(),
+                );
+                localStorage.setItem(
+                    "cognis_user_validation_mode",
+                    body.data.userValidationMode || "none",
+                );
+                const requiresUserValidation =
+                    body.data.requiredUserValidation === true &&
+                    body.data.userValidationMode === "smtp";
+                if (requiresUserValidation) {
+                    await enforceRequiredEmailSetup(body.data.accountId);
+                }
+                await syncTimezoneOnLogin(body.data.accountId);
+                window.location.href = "/dashboard";
+                return;
+            }
+            const errorMsg =
+                body?.error?.message ||
+                i18n.t("ui.app.login.error.generic");
+            showToast(errorMsg, { variant: "error" });
+        });
+}
+
 const composer = createPageComposer(root, {
     allowCustomization: false,
     i18n,
@@ -359,77 +454,28 @@ const composer = createPageComposer(root, {
                 loadLoginMethods();
                 runTypingShowcase(typingSamples);
                 renderLoginReasonToast();
-                document
-                    .querySelector("#login-form")
-                    ?.addEventListener("submit", async (event) => {
-                        event.preventDefault();
-                        const form = event.target;
-                        const usernameEl =
-                            form.querySelector("#login-username");
-                        const passwordEl =
-                            form.querySelector("#login-password");
-                        const providerEl =
-                            form.querySelector("#login-provider");
-                        const payload = {
-                            username: usernameEl?.value ?? "",
-                            password: passwordEl?.value ?? "",
-                            provider: providerEl?.value ?? "local",
-                        };
-                        const response = await fetch("/api/v1/auth/login", {
-                            method: "POST",
-                            headers: { "content-type": "application/json" },
-                            body: JSON.stringify(payload),
-                        });
-                        const body = await response.json().catch(() => null);
-                        if (response.ok && body?.data) {
-                            localStorage.setItem(
-                                "cognis_token",
-                                body.data.token,
-                            );
-                            localStorage.setItem(
-                                "cognis_account",
-                                body.data.accountId,
-                            );
-                            localStorage.setItem(
-                                "cognis_display_name",
-                                body.data.displayName || body.data.accountId,
-                            );
-                            localStorage.setItem(
-                                "cognis_role",
-                                body.data.role || "user",
-                            );
-                            localStorage.setItem(
-                                "cognis_is_founder",
-                                body.data.isFounder ? "true" : "false",
-                            );
-                            localStorage.setItem(
-                                "cognis_login_time",
-                                new Date().toISOString(),
-                            );
-                            localStorage.setItem(
-                                "cognis_user_validation_mode",
-                                body.data.userValidationMode || "none",
-                            );
-                            const requiresUserValidation =
-                                body.data.requiredUserValidation === true &&
-                                body.data.userValidationMode === "smtp";
-                            if (requiresUserValidation) {
-                                await enforceRequiredEmailSetup(
-                                    body.data.accountId,
-                                );
-                            }
-                            await syncTimezoneOnLogin(body.data.accountId);
-                            window.location.href = "/dashboard";
-                            return;
-                        }
-                        const errorMsg =
-                            body?.error?.message ||
-                            i18n.t("ui.app.login.error.generic");
-                        showToast(errorMsg, { variant: "error" });
-                    });
+                bindLoginForm();
             },
         },
     ],
+    responsiveLayouts: {
+        phone: {
+            elements: [
+                {
+                    id: "login-shell",
+                    label: i18n.t("ui.app.login.title"),
+                    pinned: true,
+                    gridSize: { default: [12, 5], min: [8, 4], max: "full" },
+                    render: () => renderLoginShellPhone(),
+                    onRender: () => {
+                        loadLoginMethods();
+                        renderLoginReasonToast();
+                        bindLoginForm();
+                    },
+                },
+            ],
+        },
+    },
 });
 
 await composer.init();
