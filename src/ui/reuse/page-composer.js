@@ -1997,9 +1997,10 @@ export function createPageComposer(
             !state.editing && sectionContainer.children.length > 0;
 
         if (hasExistingContent) {
-            if (state.columns === 2) {
-                sectionContainer.classList.add("content-grid--two-column");
-            }
+            sectionContainer.classList.toggle(
+                "content-grid--two-column",
+                state.columns === 2,
+            );
             if (state.resizeObserver) {
                 state.resizeObserver.disconnect();
             }
@@ -2328,13 +2329,6 @@ export function createPageComposer(
         contentGrid.innerHTML = html;
         bindSubPageComposerEvents();
         syncEditToggle();
-        for (const id of effectiveLayout.order) {
-            if (effectiveLayout.hidden.includes(id)) continue;
-            const el = elements.find((entry) => entry.id === id);
-            if (!el?.subComposerOptions && id === activeSubPageId) {
-                el?.onRender?.();
-            }
-        }
         onRender?.();
         const activeEl = elements.find((e) => e.id === activeSubPageId);
         if (activeEl?.subComposerOptions) {
@@ -2635,11 +2629,12 @@ export function createPageComposer(
                     "active",
                     btn.dataset.composerScroll === activeSubPageId,
                 );
-                btn.addEventListener("click", () =>
-                    switchSubPage(btn.dataset.composerScroll).finally(() => {
+                btn.addEventListener("click", async () => {
+                    try {
+                        await switchSubPage(btn.dataset.composerScroll);
                         closeMobileToolbarMenu?.();
-                    }),
-                );
+                    } catch {}
+                });
             } else {
                 btn.addEventListener("click", () => {
                     root.querySelector(

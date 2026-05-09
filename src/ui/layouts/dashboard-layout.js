@@ -57,6 +57,7 @@ async function bindThemeToggle({ usePreferenceApi = true } = {}) {
 
 const PROFILE_MENU_CLOSE_DELAY_MS = 300;
 const NAV_COMPACT_BREAKPOINT_PX = 900;
+const NAV_OVERFLOW_TOLERANCE_PX = 1;
 
 function bindGlobalNavOverlay(i18n) {
     const navRow = document.querySelector(".global-navrow");
@@ -119,7 +120,8 @@ function bindGlobalNavOverlay(i18n) {
             "global-navrow--compact",
         );
         if (hadCompactClass) navRow.classList.remove("global-navrow--compact");
-        const hasOverflow = topnav.scrollWidth > topnav.clientWidth + 1;
+        const hasOverflow =
+            topnav.scrollWidth > topnav.clientWidth + NAV_OVERFLOW_TOLERANCE_PX;
         if (hadCompactClass) navRow.classList.add("global-navrow--compact");
         return hasOverflow;
     }

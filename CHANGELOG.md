@@ -7,12 +7,12 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
+### Latest Added
 
 - Mobile/tablet responsive layout: a collapsible navigation toggle (☰) is injected by `createPageComposer` when a toolbar is present, visible only on screens ≤ 900 px wide. Clicking the toggle shows or hides the sidebar; navigating to any sub-page automatically closes it. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
 - Mobile layout improvements: `layout.css` now includes a `max-width: 640px` breakpoint that reduces workspace padding, collapses `global-navrow` from sticky to static, and trims the brand header for phone-sized screens. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
 
-### Changed
+### Latest Changed
 
 - Mobile navigation behavior: on small screens the page-composer sidebar and global navbar now open as animated overlay drawers instead of displacing content, and both auto-collapse after selecting a navigation item; the global navbar also enters compact drawer mode automatically when primary nav links overflow. ([b812d8f](https://github.com/le-firehawk/Cognis/commit/b812d8f))
 - Responsive UI polish: page-composer view grids now wrap cards into new rows on narrow screens instead of squishing saved grid cells, and account dropdown menus are constrained to viewport width to prevent clipping/off-canvas overflow. ([b812d8f](https://github.com/le-firehawk/Cognis/commit/b812d8f))
