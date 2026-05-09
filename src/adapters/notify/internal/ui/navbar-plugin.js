@@ -131,7 +131,7 @@ function renderNotificationItem(notif, i18n) {
                 notif.read = true;
                 await refreshCount();
             } catch {
-                // fall through — server update failed, leave item as unread; dismiss handler (lines below) is unaffected
+                // fall through — server update failed, leave item as unread; dismiss handler (lines 144-159 below) is unaffected
             }
         }
         if (notif.actionUrl) {
@@ -154,7 +154,7 @@ function renderNotificationItem(notif, i18n) {
                 emptyEl.hidden = false;
             }
         } catch {
-            // fall through — server deletion failed, leave item in list; refreshCount (lines 164-167 below) is not called
+            // fall through — server deletion failed; refreshCount (called at line 152 on the success path) is skipped, item remains in list
         }
     });
 
@@ -265,7 +265,7 @@ function buildButton(i18n) {
             });
             updateBadge(0);
         } catch {
-            // fall through — server update failed, leave UI state unchanged (badge remains at pre-click value, classes unchanged)
+            // fall through — server update failed; successful path (lines 256-266 above) did not complete, UI state left unchanged
         }
     });
     header.appendChild(markAllBtn);
