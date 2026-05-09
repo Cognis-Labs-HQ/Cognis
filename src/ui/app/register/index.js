@@ -166,7 +166,7 @@ function renderRegisterShell() {
             availableLanguages.length > 1
                 ? `<label>
             <span>${escapeHtml(i18n.t("ui.app.register.language"))}</span>
-            <select name="language">${langOptionsHtml}</select>
+            <select name="language" class="theme-select">${langOptionsHtml}</select>
           </label>`
                 : "";
         formHtml = `

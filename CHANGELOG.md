@@ -7,6 +7,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Language dropdown on the Registration page now correctly renders in the active dark or light theme by adding the missing `theme-select` class. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+
 ### Added
 
 - Internal notification adapter now persists notifications to the application database (encrypted). Each user's notification payload (subject, body, category, sender, action URL) is encrypted at rest with a per-scope AES-256-GCM key derived via HKDF-SHA-256 from a server-side `DATA_ENCRYPTION_KEY` environment variable and a scope string of the form `user:notifications:<username>`. The general-purpose `getDataEncryptionKey`, `deriveScopedKey`, `encryptPayload`, and `decryptPayload` helpers live in `src/api/reuse/crypto.ts` so future subsystems (e.g. MFA secrets, media metadata) can reuse the same key-derivation primitives by passing their own scope string. The new `reuse/db-store.ts` provides `DbInternalNotificationStore` which replaces the in-memory store when a database executor is available. Falls back to in-memory storage if no executor is provided. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
