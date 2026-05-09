@@ -1,3 +1,4 @@
+import { applyUiPreferences } from "../../reuse/ui-preferences.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import {
     applyDocumentTitle,
@@ -401,11 +402,20 @@ changesBar = createUnsavedChangesBar(floatingSlot, {
         setPreferredLanguages(prefs.languagePriority);
         applyTimezoneToLocalStorage(prefs.timezone ?? null, null);
         localStorage.setItem("cognis_ui_preferences", JSON.stringify(prefs));
+        applyUiPreferences(prefs);
+        const next = prefs.languagePriority ?? [];
+        const prev = languagePriority ?? [];
+        const languageChanged =
+            next.length !== prev.length ||
+            next.some((lang, i) => lang !== prev[i]);
         showToast(i18n.t("ui.app.settings.saved_alert"), {
             variant: "success",
         });
-        await new Promise((resolve) => setTimeout(resolve, 1200));
-        window.location.reload();
+        if (languageChanged) {
+            // Brief pause so the success toast is visible before the page navigates.
+            await new Promise((resolve) => setTimeout(resolve, 400));
+            window.location.reload();
+        }
     },
     onDiscard: () => {
         fontPrefs?.discard();

@@ -17,10 +17,11 @@ async function toggleModule(moduleId, action) {
         `/api/v1/modules/${encodeURIComponent(moduleId)}/${action}`,
         { method: "POST" },
     );
-    window.location.reload();
+    modules = await loadModules();
+    composer.refresh();
 }
 
-const modules = await loadModules();
+let modules = await loadModules();
 
 function renderModulesTable(rows) {
     const rowsHtml = rows

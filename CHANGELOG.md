@@ -7,6 +7,11 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Settings page: saving preferences no longer triggers a full page reload for font, theme, timezone, or notification changes. Font and font-size are applied immediately via CSS custom properties; the page stays interactive after save. A reload is still performed only when the language priority changes, with a short 400 ms delay so the success toast is visible before navigation. ([84f9a9b](https://github.com/le-firehawk/Cognis/commit/84f9a9b))
+- Modules page: toggling a module no longer reloads the page. The module list is re-fetched and the page-composer view is updated in place so the table reflects the new state without a navigation event. ([84f9a9b](https://github.com/le-firehawk/Cognis/commit/84f9a9b))
+
 ### Fixed
 
 - Light mode — email badges: `email-badge-primary` and `email-badge-verified` now render as tinted, dark-text pills in light mode instead of inheriting the dark-mode accent background with hardcoded white text; `email-badge-unverified` now uses a visible slate tint rather than the near-white `--control-bg` that made it invisible against the light page background. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
