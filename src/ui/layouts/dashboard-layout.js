@@ -118,13 +118,12 @@ function bindTopbarActions() {
     });
 
     logout?.addEventListener("click", async () => {
-        localStorage.removeItem("cognis_token");
+        localStorage.removeItem("cognis_access_token");
         localStorage.removeItem("cognis_account");
         localStorage.removeItem("cognis_display_name");
         localStorage.removeItem("cognis_role");
         localStorage.removeItem("cognis_is_founder");
         localStorage.removeItem("cognis_user_validation_mode");
-        document.cookie = "cognis_token=; Path=/; Max-Age=0";
         document.cookie = "cognis_access_token=; Path=/; Max-Age=0";
         try {
             await fetch("/api/v1/auth/logout", {
@@ -203,7 +202,7 @@ let _navbarPluginsLoaded = false;
 
 async function loadNavbarPlugins() {
     if (_navbarPluginsLoaded) return;
-    if (!localStorage.getItem("cognis_token")) return;
+    if (!localStorage.getItem("cognis_access_token")) return;
     try {
         const res = await apiFetch("/api/v1/ui/navbar-plugins");
         if (!res.ok) return;

@@ -15,7 +15,7 @@ import { apiFetch } from "./api-client.js";
 function hasPreferenceApiContext() {
     return Boolean(
         localStorage.getItem("cognis_account") &&
-        localStorage.getItem("cognis_token"),
+        localStorage.getItem("cognis_access_token"),
     );
 }
 

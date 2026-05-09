@@ -59,7 +59,7 @@ test("redirectToDashboardIfAuthenticated requires a stored account matching the 
     let requestedUrl = "";
     const mocks = installBrowserMocks({
         entries: {
-            cognis_token: "token-1",
+            cognis_access_token: "token-1",
             cognis_account: "alice",
         },
         fetchImpl: async (url, options) => {
@@ -85,7 +85,7 @@ test("redirectToDashboardIfAuthenticated requires a stored account matching the 
 test("redirectToDashboardIfAuthenticated clears stale sessions without an account", async () => {
     const mocks = installBrowserMocks({
         entries: {
-            cognis_token: "token-1",
+            cognis_access_token: "token-1",
             cognis_display_name: "Orphaned",
         },
     });
@@ -93,20 +93,19 @@ test("redirectToDashboardIfAuthenticated clears stale sessions without an accoun
     const redirected = await redirectToDashboardIfAuthenticated();
 
     assert.equal(redirected, false);
-    assert.equal(mocks.localStorage.has("cognis_token"), false);
+    assert.equal(mocks.localStorage.has("cognis_access_token"), false);
     assert.equal(mocks.localStorage.has("cognis_display_name"), false);
     assert.ok(
         mocks.cookieWrites.includes("cognis_access_token=; Path=/; Max-Age=0"),
     );
 });
 
-test("clearStoredAuthSession clears both current and legacy auth cookies", () => {
+test("clearStoredAuthSession clears the access-token cookie", () => {
     const mocks = installBrowserMocks();
 
     clearStoredAuthSession();
 
-    assert.ok(mocks.cookieWrites.includes("cognis_token=; Path=/; Max-Age=0"));
-    assert.ok(
-        mocks.cookieWrites.includes("cognis_access_token=; Path=/; Max-Age=0"),
-    );
+    assert.deepEqual(mocks.cookieWrites, [
+        "cognis_access_token=; Path=/; Max-Age=0",
+    ]);
 });

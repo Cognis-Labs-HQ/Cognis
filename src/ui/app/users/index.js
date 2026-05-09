@@ -25,7 +25,7 @@ function formatLastLogin(iso) {
 }
 
 function getCurrentUsername() {
-    const token = localStorage.getItem("cognis_token");
+    const token = localStorage.getItem("cognis_access_token");
     if (!token) return null;
     try {
         const [, payload] = token.split(".");
