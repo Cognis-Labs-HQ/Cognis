@@ -514,6 +514,30 @@ function getArrivalToastContainer() {
     return arrivalToastContainer;
 }
 
+async function markArrivalRead(notif) {
+    if (notif.read) return;
+    try {
+        await markOneRead(notif.id);
+        notif.read = true;
+        const cached = currentNotifications.find((n) => n.id === notif.id);
+        if (cached) cached.read = true;
+        if (panelVisible && listEl) {
+            const item = listEl.querySelector(
+                `[data-id="${CSS.escape(notif.id)}"]`,
+            );
+            if (item) {
+                item.classList.remove("notification-item--unread");
+                item.classList.add("notification-item--read");
+            }
+        }
+        await refreshCount();
+    } catch {
+        // Non-fatal: arrival toast was clicked but read-marking failed.
+        // The next inbox poll will still reflect server state when the user
+        // opens the panel; do not interrupt navigation/openPanel for this.
+    }
+}
+
 function showArrivalToast(notif, i18n) {
     const container = getArrivalToastContainer();
     const toast = document.createElement("div");
@@ -550,6 +574,7 @@ function showArrivalToast(notif, i18n) {
             return;
         }
         dismiss();
+        markArrivalRead(notif);
         if (notif.actionUrl) {
             navigateNotif(notif.actionUrl);
         } else {

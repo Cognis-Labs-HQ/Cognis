@@ -3,7 +3,6 @@
     background: transparent;
     border: 0;
     color: var(--text);
-    border-radius: 999px;
     width: 32px;
     height: 32px;
     padding: 0;
@@ -11,10 +10,6 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-}
-
-.notification-button:hover {
-    background: var(--surface-soft);
 }
 
 .notification-badge-wrap {
