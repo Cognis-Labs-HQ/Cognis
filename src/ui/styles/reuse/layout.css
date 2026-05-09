@@ -345,6 +345,10 @@
     display: flex;
 }
 
+.dropdown li[hidden] {
+    display: none;
+}
+
 .profile-menu.open .dropdown {
     opacity: 1;
     transform: translateY(0);

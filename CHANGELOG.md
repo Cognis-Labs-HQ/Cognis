@@ -7,6 +7,13 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Profile dropdown: `.dropdown li { display: flex }` was overriding the browser's `[hidden]` attribute, causing admin-only menu items (Administration, Users) to remain visible for non-admin users. Added `.dropdown li[hidden] { display: none }` to restore correct specificity. ([ad3ef46](https://github.com/le-firehawk/Cognis/commit/ad3ef46))
+- Floating toolbar mobile width: `.floating-toolbar` now constrains itself to `max-width: 80vw` at ≤640 px so it no longer overflows the viewport on narrow screens. ([ad3ef46](https://github.com/le-firehawk/Cognis/commit/ad3ef46))
+- Timezone dropdown overflow: `.theme-select` now carries `max-width: 100%`, and `.timezone-label` uses block-level flex so the select is contained within its element bounds rather than overflowing its panel. ([ad3ef46](https://github.com/le-firehawk/Cognis/commit/ad3ef46))
+- Invite table grid height: the default grid row count for the invite tokens element was reduced from 7 to 4 (630 px → 360 px), matching typical table content height. ([ad3ef46](https://github.com/le-firehawk/Cognis/commit/ad3ef46))
+
 ### Added
 
 - Responsive grid reflow: page-composer grid elements that would overflow the available column count when the viewport shrinks are automatically re-packed into the rows below, preserving display order without altering the saved layout. Applies to both the primary grid and all sub-composer grids. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))

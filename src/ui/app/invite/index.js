@@ -92,7 +92,7 @@ const elements = [
         id: "invite-tokens",
         label: i18n.t("ui.reuse.menu.invite"),
         pinned: true,
-        gridSize: { default: [12, 7], min: [6, 4], max: "full" },
+        gridSize: { default: [12, 4], min: [6, 4], max: "full" },
         render: () => `
         <div class="controls">
           ${

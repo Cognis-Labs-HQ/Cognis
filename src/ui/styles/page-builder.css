@@ -754,8 +754,16 @@ code {
     display: none;
 }
 
+@media (max-width: 640px) {
+    .floating-toolbar {
+        max-width: 80vw;
+        flex-wrap: wrap;
+    }
+}
+
 .theme-select {
     min-width: 220px;
+    max-width: 100%;
     padding: 8px 12px;
     background: var(--control-bg);
     color: var(--control-text);
