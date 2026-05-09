@@ -1,10 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth } from "../../../api/auth/guard.js";
+import { requireAuth } from "../../../../api/auth/guard.js";
 import type {
     DbProfileStore,
     AccountProfile,
-} from "../../../adapters/db/reuse/profile-store.js";
-import { visibilityRank } from "../../../adapters/db/reuse/profile-store.js";
+} from "../../../../adapters/db/reuse/profile-store.js";
+import { visibilityRank } from "../../../../adapters/db/reuse/profile-store.js";
 
 function publicProfile(profile: AccountProfile) {
     return {
@@ -37,6 +37,77 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        const relationshipMatch = url.pathname.match(
+            /^\/api\/v1\/users\/([^/]+)\/relationship$/,
+        );
+        if (relationshipMatch && req.method === "GET") {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const handle = decodeURIComponent(relationshipMatch[1]);
+            const target = await profileStore.getProfileByHandle(handle);
+            if (!target) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "not_found", message: "User not found" },
+                    }),
+                );
+                return true;
+            }
+            const blockedBy = await profileStore.isBlocked(
+                target.accountId,
+                claims.sub,
+            );
+            if (blockedBy) {
+                // Treat as not-found from the requester's perspective; the blocker
+                // must never appear to exist (mirrors follow/followers handlers below).
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "not_found", message: "User not found" },
+                    }),
+                );
+                return true;
+            }
+            const isSelf = claims.sub === target.accountId;
+            const [following, followedBy, blocked] = await Promise.all([
+                isSelf
+                    ? Promise.resolve(false)
+                    : profileStore.isFollowing(claims.sub, target.accountId),
+                isSelf
+                    ? Promise.resolve(false)
+                    : profileStore.isFollowing(target.accountId, claims.sub),
+                isSelf
+                    ? Promise.resolve(false)
+                    : profileStore.isBlocked(claims.sub, target.accountId),
+            ]);
+            // Messaging eligibility: not blocked in either direction AND
+            // (target follows requester OR target visibility >= community).
+            // The same predicate gates the message icon in the profile UI.
+            const canMessage =
+                !isSelf &&
+                !blocked &&
+                (followedBy ||
+                    visibilityRank(target.visibility) >=
+                        visibilityRank("community"));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        accountId: target.accountId,
+                        handle: target.handle,
+                        self: isSelf,
+                        following,
+                        followedBy,
+                        blocked,
+                        blockedBy: false,
+                        canMessage,
+                    },
+                }),
+            );
+            return true;
+        }
+
         const followMatch = url.pathname.match(
             /^\/api\/v1\/users\/([^/]+)\/follow$/,
         );

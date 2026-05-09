@@ -1,13 +1,13 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth, getAuthClaims } from "../../../api/auth/guard.js";
+import { requireAuth, getAuthClaims } from "../../../../api/auth/guard.js";
 import type {
     DbProfileStore,
     AccountProfile,
     Post,
     PostVisibility,
-} from "../../../adapters/db/reuse/profile-store.js";
-import { visibilityRank } from "../../../adapters/db/reuse/profile-store.js";
-import { readJson } from "../../../api/reuse/read-json.js";
+} from "../../../../adapters/db/reuse/profile-store.js";
+import { visibilityRank } from "../../../../adapters/db/reuse/profile-store.js";
+import { readJson } from "../../../../api/reuse/read-json.js";
 
 const VALID_POST_VISIBILITY = new Set<PostVisibility>([
     "only_me",

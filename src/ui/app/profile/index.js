@@ -481,11 +481,15 @@ function renderPostsList() {
             <time class="profile-post-date" datetime="${escapeHtml(p.createdAt ?? "")}">${formatDate(p.createdAt)}</time>
           </div>
           <p class="profile-post-body">${escapeHtml(p.content)}</p>
-          <div class="profile-post-actions">
+          ${
+              isOwnProfile
+                  ? `<div class="profile-post-actions">
             <button type="button" class="btn-cancel btn-animated post-delete-btn" data-post-id="${escapeHtml(p.id)}">
               ${i18n.t("ui.app.profile.delete_post")}
             </button>
-          </div>
+          </div>`
+                  : ""
+          }
         </li>
       `,
           )
@@ -511,8 +515,11 @@ function renderPosts() {
             ? `<p class="profile-visibility-hint">${escapeHtml(i18n.t("ui.app.profile.post_visibility_hint"))}</p>`
             : "";
 
-    return `
-    <div class="profile-posts-section">
+    // The post composer (authoring UI) is only shown when viewing your own
+    // profile. The post list below remains visible on others' profiles,
+    // subject to existing per-post visibility rules enforced server-side.
+    const composerSection = isOwnProfile
+        ? `
       <h3 class="profile-posts-heading">
         ${i18n.t("ui.app.profile.new_post")}
       </h3>
@@ -541,6 +548,12 @@ function renderPosts() {
         </div>
         ${visibilityHint}
       </div>
+    `
+        : "";
+
+    return `
+    <div class="profile-posts-section">
+      ${composerSection}
       <h3 class="profile-posts-heading">
         ${i18n.t("ui.app.profile.section.posts")}
         <span class="profile-count-badge">${posts.length}</span>

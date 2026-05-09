@@ -45,6 +45,7 @@ export interface AuthTypingMessage {
 export class UIRegistry {
     private readonly sections = new Map<string, AdminSection>();
     private readonly staticDirs = new Map<string, string>();
+    private readonly adapterStaticDirs = new Map<string, string>();
     private readonly pageExtensions = new Map<string, PageElement[]>();
     private readonly navbarPlugins: NavbarPlugin[] = [];
     private readonly authTypingMessages: AuthTypingMessage[] = [];
@@ -59,6 +60,21 @@ export class UIRegistry {
      */
     registerStaticDir(gatewayId: string, absoluteDir: string): void {
         this.staticDirs.set(gatewayId, absoluteDir);
+    }
+
+    /**
+     * Maps a `<gatewayId>/<adapterId>` pair to an absolute filesystem path.
+     * Registered directories are served under
+     * `/static/adapters/<gatewayId>/<adapterId>/`. Adapter-owned UI assets
+     * (navbar plugins, page scripts, styles) should live next to the adapter
+     * code on disk and be exposed via this method.
+     */
+    registerAdapterStaticDir(
+        gatewayId: string,
+        adapterId: string,
+        absoluteDir: string,
+    ): void {
+        this.adapterStaticDirs.set(`${gatewayId}/${adapterId}`, absoluteDir);
     }
 
     /**
@@ -93,6 +109,13 @@ export class UIRegistry {
 
     getStaticDir(gatewayId: string): string | undefined {
         return this.staticDirs.get(gatewayId);
+    }
+
+    getAdapterStaticDir(
+        gatewayId: string,
+        adapterId: string,
+    ): string | undefined {
+        return this.adapterStaticDirs.get(`${gatewayId}/${adapterId}`);
     }
 
     /**

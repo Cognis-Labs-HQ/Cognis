@@ -1,0 +1,8 @@
+{
+    "name": "@cognis/adapter-social-profile",
+    "version": "1.0.0",
+    "description": "Profile, social-graph, and posts adapter for the Social Gateway.",
+    "type": "module",
+    "main": "index.ts",
+    "private": true
+}
