@@ -244,11 +244,14 @@ function applyCompactNav(root) {
         drawer.setAttribute("aria-hidden", "false");
         compactToggle.setAttribute("aria-expanded", "true");
         backdrop.removeAttribute("hidden");
+        const firstLink = drawerNav?.querySelector("a");
         const focusTarget =
-            drawerNav?.querySelector("a") ?? drawerClose ?? compactToggle;
-        if (focusTarget instanceof HTMLElement) {
-            focusTarget.focus();
-        }
+            firstLink instanceof HTMLElement
+                ? firstLink
+                : drawerClose instanceof HTMLElement
+                  ? drawerClose
+                  : compactToggle;
+        focusTarget.focus();
     }
 
     function closeDrawer() {

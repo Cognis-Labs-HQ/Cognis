@@ -2157,11 +2157,11 @@ export function createPageComposer(
                         }
                     }
                     let fits = true;
-                    outer: for (let r = row; r < row + h; r++) {
+                    placementCheck: for (let r = row; r < row + h; r++) {
                         for (let c = col; c < col + w; c++) {
                             if (occupied.has(`${c},${r}`)) {
                                 fits = false;
-                                break outer;
+                                break placementCheck;
                             }
                         }
                     }
@@ -2645,49 +2645,54 @@ export function createPageComposer(
         if (Array.isArray(toolbar) && toolbar.length > 0) {
             const toolbarEl = root.querySelector(".toolbar");
             if (toolbarEl) {
-                const storageKey = `cognis_toolbar_collapsed_${persistLayoutPreferences || "default"}`;
-                const storedValue = localStorage.getItem(storageKey);
-                const collapsed =
-                    storedValue === null || storedValue === "true";
-                const EXPAND_ICON = "▸";
-                const COLLAPSE_ICON = "◂";
-                const collapseBtn = document.createElement("button");
-                collapseBtn.type = "button";
-                collapseBtn.className = "toolbar-collapse-btn";
-
-                function setToolbarCollapsedState(nextCollapsed) {
-                    toolbarEl.classList.toggle(
-                        "toolbar--collapsed",
-                        nextCollapsed,
-                    );
-                    collapseBtn.textContent = nextCollapsed
-                        ? EXPAND_ICON
-                        : COLLAPSE_ICON;
-                    collapseBtn.setAttribute(
-                        "aria-label",
-                        nextCollapsed
-                            ? i18n.t("ui.layout.toolbar.expand")
-                            : i18n.t("ui.layout.toolbar.collapse"),
-                    );
-                    localStorage.setItem(storageKey, String(nextCollapsed));
-                }
-
-                toolbarEl.insertBefore(collapseBtn, toolbarEl.firstChild);
-                setToolbarCollapsedState(collapsed);
-
-                collapseBtn.addEventListener("click", () => {
-                    const nowCollapsed =
-                        toolbarEl.classList.contains("toolbar--collapsed");
-                    setToolbarCollapsedState(!nowCollapsed);
-                });
-
-                root.querySelectorAll("[data-composer-scroll]").forEach(
-                    (btn) => {
-                        btn.addEventListener("click", () => {
-                            setToolbarCollapsedState(true);
-                        });
-                    },
+                const hasCollapsibleContent = [...toolbarEl.children].some(
+                    (child) => child instanceof HTMLElement,
                 );
+                if (hasCollapsibleContent) {
+                    const storageKey = `cognis_toolbar_collapsed_${persistLayoutPreferences || "default"}`;
+                    const storedValue = localStorage.getItem(storageKey);
+                    const collapsed =
+                        storedValue === null || storedValue === "true";
+                    const EXPAND_ICON = "▸";
+                    const COLLAPSE_ICON = "◂";
+                    const collapseBtn = document.createElement("button");
+                    collapseBtn.type = "button";
+                    collapseBtn.className = "toolbar-collapse-btn";
+
+                    function setToolbarCollapsedState(nextCollapsed) {
+                        toolbarEl.classList.toggle(
+                            "toolbar--collapsed",
+                            nextCollapsed,
+                        );
+                        collapseBtn.textContent = nextCollapsed
+                            ? EXPAND_ICON
+                            : COLLAPSE_ICON;
+                        collapseBtn.setAttribute(
+                            "aria-label",
+                            nextCollapsed
+                                ? i18n.t("ui.layout.toolbar.expand")
+                                : i18n.t("ui.layout.toolbar.collapse"),
+                        );
+                        localStorage.setItem(storageKey, String(nextCollapsed));
+                    }
+
+                    toolbarEl.insertBefore(collapseBtn, toolbarEl.firstChild);
+                    setToolbarCollapsedState(collapsed);
+
+                    collapseBtn.addEventListener("click", () => {
+                        const nowCollapsed =
+                            toolbarEl.classList.contains("toolbar--collapsed");
+                        setToolbarCollapsedState(!nowCollapsed);
+                    });
+
+                    root.querySelectorAll("[data-composer-scroll]").forEach(
+                        (btn) => {
+                            btn.addEventListener("click", () => {
+                                setToolbarCollapsedState(true);
+                            });
+                        },
+                    );
+                }
             }
         }
 
