@@ -87,6 +87,7 @@ async function deleteNotification(id) {
 
 let panelVisible = false;
 let pollTimer = null;
+let relativeTimeTimer = null;
 let badgeEl = null;
 let panelEl = null;
 let listEl = null;
@@ -94,6 +95,29 @@ let emptyEl = null;
 let markAllBtn = null;
 let currentNotifications = [];
 let seenIds = null;
+
+const RELATIVE_TIME_TICK_MS = 1000;
+
+function tickRelativeTimes() {
+    if (!listEl) return;
+    const nodes = listEl.querySelectorAll("[data-relative-time]");
+    for (const node of nodes) {
+        const ts = Number(node.dataset.relativeTime);
+        if (!Number.isFinite(ts)) continue;
+        node.textContent = formatRelativeTime(ts);
+    }
+}
+
+function startRelativeTimeTicker() {
+    if (relativeTimeTimer !== null) return;
+    relativeTimeTimer = setInterval(tickRelativeTimes, RELATIVE_TIME_TICK_MS);
+}
+
+function stopRelativeTimeTicker() {
+    if (relativeTimeTimer === null) return;
+    clearInterval(relativeTimeTimer);
+    relativeTimeTimer = null;
+}
 
 function updateBadge(count) {
     if (!badgeEl) return;
@@ -116,7 +140,7 @@ function renderNotificationItem(notif, i18n) {
         `<span class="notification-item-sender">${escapeHtml(notif.senderName ?? i18n.t("ui.adapter.notify.internal.sender_system"))}</span>` +
         `<span class="notification-item-preview">${escapeHtml(notif.body)}</span>` +
         "</span>" +
-        `<span class="notification-item-time">${escapeHtml(formatRelativeTime(notif.createdAt))}</span>` +
+        `<span class="notification-item-time" data-relative-time="${notif.createdAt}">${escapeHtml(formatRelativeTime(notif.createdAt))}</span>` +
         (notif.actionUrl
             ? '<span class="notification-item-link-arrow" aria-hidden="true">&#8250;</span>'
             : "") +
@@ -193,12 +217,15 @@ async function openPanel(i18n) {
     for (const notif of currentNotifications) {
         listEl.appendChild(renderNotificationItem(notif, i18n));
     }
+
+    startRelativeTimeTicker();
 }
 
 function closePanel() {
     if (!panelEl) return;
     panelEl.hidden = true;
     panelVisible = false;
+    stopRelativeTimeTicker();
 }
 
 function closeProfileMenu() {

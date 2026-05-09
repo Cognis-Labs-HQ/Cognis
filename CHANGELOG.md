@@ -19,6 +19,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 - Notification list items now display as true multi-line rows: subject (bold), sender (accented), and content preview stack vertically as flex column. The relative timestamp ("X seconds/minutes/hours/days ago") is shown right-aligned outside the body column instead of as a fourth line inside it. CSS updated to add `display: flex; flex-direction: column; gap: 2px` on `.notification-item-body` and reposition `.notification-item-time` as a right-aligned sibling flex item. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
 - Internal notification adapter version bumped to `0.3.0` (`src/adapters/notify/internal/package.json`, `manifest.json`). ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- Notification panel relative timestamps ("X seconds/minutes ago") now tick up live: each `.notification-item-time` carries its `createdAt` as `data-relative-time`, and a 1-second interval started on panel open (and torn down on close) re-renders every visible time span via `formatRelativeTime`. No additional network polling. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
 
 ### Fixed
 
