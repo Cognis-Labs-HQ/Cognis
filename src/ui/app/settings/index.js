@@ -204,7 +204,7 @@ export async function mount(root, { signal } = {}) {
                 ],
                 onRender: () => {
                     fontPrefs = initFontPrefs(root, {
-                        committedPrefs,
+                        existingPrefs: committedPrefs,
                         i18n,
                         onDirtyChange: (dirty) =>
                             changesBar?.markDirty("font", dirty),
@@ -309,7 +309,7 @@ export async function mount(root, { signal } = {}) {
                 ],
                 onRender: () => {
                     datetimePrefs = initDateTimePrefs(root, {
-                        committedPrefs,
+                        existingPrefs: committedPrefs,
                         i18n,
                         onDirtyChange: (dirty) =>
                             changesBar?.markDirty("datetime", dirty),
@@ -397,7 +397,6 @@ export async function mount(root, { signal } = {}) {
 
     changesBar = createUnsavedChangesBar(floatingSlot, {
         onSave: async () => {
-            const selectedFont = fontPrefs?.getFont();
             const mode = themePrefs?.getMode() ?? savedMode;
             const account = localStorage.getItem("cognis_account") ?? "";
             if (notifPrefs?.isDirty()) {
@@ -411,10 +410,11 @@ export async function mount(root, { signal } = {}) {
                 );
             }
             const prefs = {
-                appFont: selectedFont
-                    ? toFontFamilyValue(selectedFont)
-                    : undefined,
-                appFontSize: fontPrefs?.getFontSize(),
+                appFont: fontPrefs
+                    ? toFontFamilyValue(fontPrefs.getFont())
+                    : committedPrefs?.appFont,
+                appFontSize:
+                    fontPrefs?.getFontSize() ?? committedPrefs?.appFontSize,
                 languagePriority:
                     languagePrefs?.getPriority() ?? languagePriority,
                 mode,
@@ -424,7 +424,7 @@ export async function mount(root, { signal } = {}) {
                     "auto",
             };
             await savePrefs(prefs);
-            committedPrefs = { ...(committedPrefs ?? {}), ...prefs };
+            committedPrefs = { ...committedPrefs, ...prefs };
             persistTheme(mode);
             applyTheme(mode);
             setPreferredLanguages(prefs.languagePriority);
