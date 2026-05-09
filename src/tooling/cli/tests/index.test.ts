@@ -1,3 +1,15 @@
+/**
+ * Tests CLI output formatting helpers.
+ *
+ * Exports:
+ *   none — verifies the public formatter exports from ../index.ts.
+ *
+ * Usage example:
+ *   npm test -- src/tooling/cli/tests/index.test.ts
+ *
+ * The tests cover formatted JSON fallback and command-specific rendering for
+ * representative built-in commands.
+ */
 import test from "node:test";
 import assert from "node:assert/strict";
 import { formatCommandOutput, formatStructured } from "../index.ts";

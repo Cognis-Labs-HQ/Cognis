@@ -22,6 +22,7 @@ interface CommandSpec {
 }
 
 const registry = new Map<string, CommandSpec>();
+const FIELD_EMPTY_PLACEHOLDER = "—";
 
 function inferSection(name: string): string {
     if (name.startsWith("user:")) return "User";
@@ -111,7 +112,7 @@ async function apiPost(
     return apiRequest(apiBaseUrl, route, { method: "POST", body, apiToken });
 }
 
-function useAnsiColors() {
+function shouldUseAnsiColors() {
     return process.stdout.isTTY && !("NO_COLOR" in process.env);
 }
 
@@ -127,7 +128,7 @@ function colorize(
         | "gray"
         | "bold",
 ) {
-    if (!useAnsiColors()) return value;
+    if (!shouldUseAnsiColors()) return value;
     const code =
         color === "red"
             ? "\u001b[31m"
@@ -176,7 +177,7 @@ function formatStatus(status: unknown) {
 }
 
 function formatField(label: string, value: unknown) {
-    return `${colorize(`${label}:`, "gray")} ${value === undefined || value === null ? "—" : String(value)}`;
+    return `${colorize(`${label}:`, "gray")} ${value === undefined || value === null ? FIELD_EMPTY_PLACEHOLDER : String(value)}`;
 }
 
 function formatBoolean(value: boolean, yes = "Yes", no = "No") {
@@ -193,21 +194,28 @@ function formatDurationMs(value: unknown) {
 }
 
 function parseJsonLikeString(value: string) {
-    if (typeof value === "string") {
-        const trimmed = value.trim();
-        const appearsToBeJson =
-            trimmed.startsWith("{") || trimmed.startsWith("[");
-        if (appearsToBeJson) {
-            try {
-                return JSON.parse(trimmed);
-            } catch {
-                return value;
-            }
+    const trimmed = value.trim();
+    const appearsToBeJson = trimmed.startsWith("{") || trimmed.startsWith("[");
+    if (appearsToBeJson) {
+        try {
+            return JSON.parse(trimmed);
+        } catch {
+            return value;
         }
     }
     return value;
 }
 
+/**
+ * Formats CLI output as a string.
+ *
+ * If the input is a JSON-looking string, it is parsed and pretty-printed.
+ * Plain strings are returned unchanged. Non-string values are stringified as
+ * indented JSON for readable terminal output.
+ *
+ * @param value - The value to render for terminal output.
+ * @returns A formatted string suitable for writing to stdout.
+ */
 export function formatStructured(value: unknown): string {
     const normalized =
         typeof value === "string" ? parseJsonLikeString(value) : value;
@@ -218,12 +226,19 @@ export function formatStructured(value: unknown): string {
 function formatTable(
     columns: Array<{ key: string; label: string }>,
     rows: Array<Record<string, unknown>>,
+    options?: { emptyMessage?: string },
 ) {
-    if (rows.length === 0) return colorize("No entries found.", "gray");
+    if (rows.length === 0) {
+        return colorize(options?.emptyMessage ?? "No entries found.", "gray");
+    }
 
     const widths = columns.map(({ key, label }) =>
         rows.reduce(
-            (width, row) => Math.max(width, String(row[key] ?? "—").length),
+            (width, row) =>
+                Math.max(
+                    width,
+                    String(row[key] ?? FIELD_EMPTY_PLACEHOLDER).length,
+                ),
             label.length,
         ),
     );
@@ -235,7 +250,9 @@ function formatTable(
     const body = rows.map((row) =>
         columns
             .map(({ key }, index) =>
-                String(row[key] ?? "—").padEnd(widths[index]),
+                String(row[key] ?? FIELD_EMPTY_PLACEHOLDER).padEnd(
+                    widths[index],
+                ),
             )
             .join("  "),
     );
@@ -254,10 +271,19 @@ function formatSuccessBlock(
     return [formatHeading(title, color), ...fields].join("\n");
 }
 
+function mergePayloadFields(
+    payload: unknown,
+    fields: Record<string, unknown>,
+): Record<string, unknown> {
+    const base =
+        typeof payload === "object" && payload !== null
+            ? (payload as Record<string, unknown>)
+            : {};
+    return { ...fields, ...base };
+}
+
 function normalizeResponse(payload: unknown) {
-    return parseJsonLikeString(
-        typeof payload === "string" ? payload : JSON.stringify(payload),
-    );
+    return typeof payload === "string" ? parseJsonLikeString(payload) : payload;
 }
 
 function renderApiToken(payload: unknown) {
@@ -321,11 +347,12 @@ function renderModulesList(payload: unknown) {
                 { key: "status", label: "Status" },
             ],
             data.map((module) => ({
-                id: module.id ?? "—",
-                version: module.version ?? "—",
-                class: module.class ?? "—",
-                status: module.status ?? "—",
+                id: module.id ?? FIELD_EMPTY_PLACEHOLDER,
+                version: module.version ?? FIELD_EMPTY_PLACEHOLDER,
+                class: module.class ?? FIELD_EMPTY_PLACEHOLDER,
+                status: module.status ?? FIELD_EMPTY_PLACEHOLDER,
             })),
+            { emptyMessage: "No modules found." },
         ),
     ].join("\n\n");
 }
@@ -352,10 +379,10 @@ function renderGatewaysList(payload: unknown) {
                 { key: "required", label: "Required" },
             ],
             data.map((gateway) => ({
-                id: gateway.id ?? "—",
-                name: gateway.name ?? "—",
-                version: gateway.version ?? "—",
-                status: gateway.status ?? "—",
+                id: gateway.id ?? FIELD_EMPTY_PLACEHOLDER,
+                name: gateway.name ?? FIELD_EMPTY_PLACEHOLDER,
+                version: gateway.version ?? FIELD_EMPTY_PLACEHOLDER,
+                status: gateway.status ?? FIELD_EMPTY_PLACEHOLDER,
                 required:
                     typeof gateway.required === "boolean"
                         ? gateway.required
@@ -363,6 +390,7 @@ function renderGatewaysList(payload: unknown) {
                             : "no"
                         : "no",
             })),
+            { emptyMessage: "No gateways found." },
         ),
     ].join("\n\n");
 }
@@ -387,11 +415,12 @@ function renderUsersList(payload: unknown) {
                 { key: "founder", label: "Founder" },
             ],
             data.map((user) => ({
-                username: user.username ?? "—",
+                username: user.username ?? FIELD_EMPTY_PLACEHOLDER,
                 role: user.isAdmin ? "admin" : "user",
                 status: user.enabled ? "enabled" : "disabled",
                 founder: user.isFounder ? "yes" : "no",
             })),
+            { emptyMessage: "No users found." },
         ),
     ].join("\n\n");
 }
@@ -411,15 +440,15 @@ function renderUserCreate(payload: unknown) {
 function renderUserMutation(
     title: string,
     payload: unknown,
-    extraFields?: (response: any) => string[],
+    extraFields?: (normalizedPayload: Record<string, unknown>) => string[],
 ) {
-    const response = normalizeResponse(payload) as {
-        username?: string;
-        data?: Record<string, unknown>;
-    };
+    const normalizedPayload = normalizeResponse(payload) as Record<
+        string,
+        unknown
+    >;
     return formatSuccessBlock(title, "green", [
-        formatField("Username", response.username),
-        ...(extraFields ? extraFields(response) : []),
+        formatField("Username", normalizedPayload.username),
+        ...(extraFields ? extraFields(normalizedPayload) : []),
     ]);
 }
 
@@ -451,6 +480,17 @@ function printOutput(text: string) {
     process.stdout.write(text.endsWith("\n") ? text : `${text}\n`);
 }
 
+/**
+ * Formats the output for a named CLI command.
+ *
+ * When a command registers a custom renderer, that renderer is used to produce
+ * human-friendly terminal output such as headings, aligned fields, or tables.
+ * Commands without a custom renderer fall back to {@link formatStructured}.
+ *
+ * @param commandName - The registered command name to resolve a renderer for.
+ * @param payload - The payload returned by the command handler.
+ * @returns A formatted string ready to write to stdout.
+ */
 export function formatCommandOutput(
     commandName: string,
     payload: unknown,
@@ -694,7 +734,7 @@ register(
             undefined,
             await getApiToken(),
         );
-        return { gatewayId, ...((payload as object) ?? {}) };
+        return mergePayloadFields(payload, { gatewayId });
     },
     {
         usage: "cognisctl gateway:enable <gatewayId>",
@@ -718,7 +758,7 @@ register(
             undefined,
             await getApiToken(),
         );
-        return { gatewayId, ...((payload as object) ?? {}) };
+        return mergePayloadFields(payload, { gatewayId });
     },
     {
         usage: "cognisctl gateway:disable <gatewayId>",
@@ -777,7 +817,7 @@ register(
             { role },
             await getApiToken(),
         );
-        return { username, role, ...((payload as object) ?? {}) };
+        return mergePayloadFields(payload, { username, role });
     },
     {
         usage: "cognisctl user:role <username> <role>",
@@ -804,7 +844,7 @@ register(
             { password },
             await getApiToken(),
         );
-        return { username, ...((payload as object) ?? {}) };
+        return mergePayloadFields(payload, { username });
     },
     {
         usage: "cognisctl user:set-password <username> <password>",
@@ -825,7 +865,7 @@ register(
             undefined,
             await getApiToken(),
         );
-        return { username, ...((payload as object) ?? {}) };
+        return mergePayloadFields(payload, { username });
     },
     {
         usage: "cognisctl user:disable <username>",
@@ -848,7 +888,7 @@ register(
             undefined,
             await getApiToken(),
         );
-        return { username, ...((payload as object) ?? {}) };
+        return mergePayloadFields(payload, { username });
     },
     {
         usage: "cognisctl user:enable <username>",
@@ -878,11 +918,10 @@ register(
             { isFounder: value === "true" },
             await getApiToken(),
         );
-        return {
+        return mergePayloadFields(payload, {
             username,
             isFounder: value === "true",
-            ...((payload as object) ?? {}),
-        };
+        });
     },
     {
         usage: "cognisctl user:isfounder <username> <true|false>",
@@ -915,7 +954,7 @@ register(
             `/api/v1/users/${encodeURIComponent(username)}`,
             { method: "DELETE", apiToken: await getApiToken() },
         );
-        return { username, ...((payload as object) ?? {}) };
+        return mergePayloadFields(payload, { username });
     },
     {
         usage: "cognisctl user:delete <username>",
@@ -939,7 +978,7 @@ register(
             undefined,
             await getApiToken(),
         );
-        return { username, ...((payload as object) ?? {}) };
+        return mergePayloadFields(payload, { username });
     },
     {
         usage: "cognisctl user:preferences:clear <username>",
@@ -1027,7 +1066,7 @@ async function main() {
 }
 
 const isDirectExecution =
-    Boolean(process.argv[1]) &&
+    Boolean(process.argv[1] && process.argv[1].length > 0) &&
     import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
 
 if (isDirectExecution) {
