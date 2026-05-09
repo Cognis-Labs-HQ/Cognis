@@ -1,6 +1,6 @@
 import { formatDateTime } from "/static/reuse/timestamp.js";
 
-const MAX_RENDERED_LOGS = 400;
+const MAX_DISPLAYED_LOGS = 400;
 
 function buildQuery(severity, keyword) {
     const params = new URLSearchParams();
@@ -140,8 +140,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
     function pushLog(entry) {
         logs.push(entry);
-        if (logs.length > MAX_RENDERED_LOGS) {
-            logs = logs.slice(-MAX_RENDERED_LOGS);
+        if (logs.length > MAX_DISPLAYED_LOGS) {
+            logs = logs.slice(-MAX_DISPLAYED_LOGS);
         }
         refreshPanel();
     }

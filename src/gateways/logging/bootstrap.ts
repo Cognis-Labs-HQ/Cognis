@@ -11,6 +11,8 @@ import {
 type LogLevel = "debug" | "info" | "warn" | "error";
 
 const ALLOWED_LEVELS = new Set<LogLevel>(["debug", "info", "warn", "error"]);
+const MAX_KEYWORD_LENGTH = 120;
+const MAX_SNAPSHOT_ENTRIES = 300;
 
 function parseLevelFilter(value: string | null): Set<LogLevel> | null {
     if (!value || value === "all") return null;
@@ -26,7 +28,7 @@ function parseLevelFilter(value: string | null): Set<LogLevel> | null {
 
 function parseKeywordFilter(value: string | null): string {
     if (!value) return "";
-    return value.trim().slice(0, 120).toLowerCase();
+    return value.trim().slice(0, MAX_KEYWORD_LENGTH).toLowerCase();
 }
 
 function normalizeLogEntry(rawLine: string): Record<string, unknown> {
@@ -88,7 +90,6 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
 
         const severities = parseLevelFilter(url.searchParams.get("severity"));
         const keyword = parseKeywordFilter(url.searchParams.get("keyword"));
-        const snapshotLimit = 300;
         let seq = 0;
         let contentLength = 0;
         let pendingLine = "";
@@ -120,7 +121,7 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
                     .filter((entry) =>
                         matchesFilters(entry, severities, keyword),
                     );
-                for (const entry of entries.slice(-snapshotLimit)) {
+                for (const entry of entries.slice(-MAX_SNAPSHOT_ENTRIES)) {
                     writeSseEvent(res, "log", { id: seq++, ...entry });
                 }
             } catch (error) {
