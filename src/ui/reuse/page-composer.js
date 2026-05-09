@@ -333,6 +333,13 @@ export function createPageComposer(
         return true;
     }
 
+    /**
+     * Resolves a stable column count by trying progressively broader width
+     * containers. This prevents transient 0-width reads during init from
+     * incorrectly selecting a narrow layout profile.
+     *
+     * @returns {number}
+     */
     function getPreferredGridColumnCount() {
         const widthCandidates = [];
         if (contentGrid) {
