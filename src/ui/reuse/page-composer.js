@@ -942,13 +942,17 @@ export function createPageComposer(
 
             function onMove(e) {
                 const maxLeft = window.innerWidth - panel.offsetWidth - 4;
-                const maxTop = window.innerHeight - panel.offsetHeight - 4;
+                const minTop = getComposerPanelSafeTop();
+                const maxTop = Math.max(
+                    minTop,
+                    window.innerHeight - panel.offsetHeight - 4,
+                );
                 const newLeft = Math.max(
                     4,
                     Math.min(maxLeft, e.clientX - startX),
                 );
                 const newTop = Math.max(
-                    4,
+                    minTop,
                     Math.min(maxTop, e.clientY - startY),
                 );
                 panel.style.left = `${newLeft}px`;
@@ -966,6 +970,19 @@ export function createPageComposer(
             handle.addEventListener("pointerup", onUp);
             handle.addEventListener("pointercancel", onUp);
         });
+    }
+
+    function getComposerPanelSafeTop() {
+        const navRowBottom =
+            root.querySelector(".global-navrow")?.getBoundingClientRect()
+                ?.bottom ?? 0;
+        const topbarBottom =
+            root.querySelector(".global-topbar")?.getBoundingClientRect()
+                ?.bottom ?? 0;
+        return Math.max(
+            12,
+            Math.ceil(Math.max(navRowBottom, topbarBottom) + 12),
+        );
     }
 
     function createElementsPanel() {
@@ -1003,22 +1020,23 @@ export function createPageComposer(
       </div>
     `;
 
+        const safeTop = getComposerPanelSafeTop();
         if (panelPosition !== null) {
-            panel.style.top = `${panelPosition.top}px`;
+            panel.style.top = `${Math.max(safeTop, panelPosition.top)}px`;
             panel.style.left = `${panelPosition.left}px`;
             panel.style.right = "auto";
         } else {
             const gridRect = contentGrid.getBoundingClientRect();
             const panelLeft = gridRect.right + 12;
-            const panelTop = gridRect.top + window.scrollY;
+            const panelTop = gridRect.top;
             const viewportWidth = window.innerWidth;
 
             if (panelLeft < 0 || panelLeft + 240 > viewportWidth) {
-                panel.style.top = "80px";
+                panel.style.top = `${safeTop}px`;
                 panel.style.right = "12px";
                 panel.style.left = "auto";
             } else {
-                panel.style.top = `${Math.max(80, panelTop)}px`;
+                panel.style.top = `${Math.max(safeTop, panelTop)}px`;
                 panel.style.left = `${panelLeft}px`;
                 panel.style.right = "auto";
             }
@@ -1810,21 +1828,22 @@ export function createPageComposer(
       </div>
     `;
 
+        const safeTop = getComposerPanelSafeTop();
         if (state.panelPosition !== null) {
-            panel.style.top = `${state.panelPosition.top}px`;
+            panel.style.top = `${Math.max(safeTop, state.panelPosition.top)}px`;
             panel.style.left = `${state.panelPosition.left}px`;
             panel.style.right = "auto";
         } else {
             const gridRect = state.container.getBoundingClientRect();
             const panelLeft = gridRect.right + 12;
-            const panelTop = gridRect.top + window.scrollY;
+            const panelTop = gridRect.top;
             const viewportWidth = window.innerWidth;
             if (panelLeft < 0 || panelLeft + 240 > viewportWidth) {
-                panel.style.top = "80px";
+                panel.style.top = `${safeTop}px`;
                 panel.style.right = "12px";
                 panel.style.left = "auto";
             } else {
-                panel.style.top = `${Math.max(80, panelTop)}px`;
+                panel.style.top = `${Math.max(safeTop, panelTop)}px`;
                 panel.style.left = `${panelLeft}px`;
                 panel.style.right = "auto";
             }
@@ -1843,13 +1862,17 @@ export function createPageComposer(
                 const startY = e.clientY - panel.offsetTop;
                 function onMove(e) {
                     const maxLeft = window.innerWidth - panel.offsetWidth - 4;
-                    const maxTop = window.innerHeight - panel.offsetHeight - 4;
+                    const minTop = getComposerPanelSafeTop();
+                    const maxTop = Math.max(
+                        minTop,
+                        window.innerHeight - panel.offsetHeight - 4,
+                    );
                     const newLeft = Math.max(
                         4,
                         Math.min(maxLeft, e.clientX - startX),
                     );
                     const newTop = Math.max(
-                        4,
+                        minTop,
                         Math.min(maxTop, e.clientY - startY),
                     );
                     panel.style.left = `${newLeft}px`;

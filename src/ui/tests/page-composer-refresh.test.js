@@ -49,3 +49,29 @@ test("page composer includes mobile toolbar drawer behavior", () => {
         /if \(didSwitch\) \{\s*closeMobileDrawerIfNeeded\(\);\s*\}/m,
     );
 });
+
+test("page composer elements panels stay below header and use viewport top", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.match(source, /function getComposerPanelSafeTop\(\)/);
+    assert.match(source, /Math\.max\(navRowBottom, topbarBottom\)/);
+    assert.match(source, /Math\.ceil\(/);
+    assert.match(source, /\+ 12\),/);
+    assert.doesNotMatch(
+        source,
+        /const panelTop = gridRect\.top \+ window\.scrollY;/,
+    );
+    assert.match(source, /const panelTop = gridRect\.top;/);
+    assert.match(source, /panel\.style\.top = `\$\{safeTop\}px`;/);
+    assert.match(
+        source,
+        /panel\.style\.top = `\$\{Math\.max\(safeTop, panelPosition\.top\)\}px`;/,
+    );
+    assert.match(
+        source,
+        /panel\.style\.top = `\$\{Math\.max\(safeTop, state\.panelPosition\.top\)\}px`;/,
+    );
+});
