@@ -20,6 +20,7 @@ Adaptor Internal mengirimkan notifikasi langsung ke bel notifikasi dalam aplikas
 | `PUT`    | `/api/v1/notifications/inbox/read`     | Tandai semua sebagai sudah dibaca   | Pengguna |
 | `PUT`    | `/api/v1/notifications/inbox/:id/read` | Tandai satu notifikasi sudah dibaca | Pengguna |
 | `DELETE` | `/api/v1/notifications/inbox/:id`      | Hapus satu notifikasi               | Pengguna |
+| `DELETE` | `/api/v1/notifications/inbox`          | Hapus semua notifikasi pengguna     | Pengguna |
 
 ## Konfigurasi
 

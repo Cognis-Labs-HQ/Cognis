@@ -32,13 +32,14 @@ The navbar plugin (`ui/navbar-plugin.js`) is a self-contained ES module loaded b
 
 ## API Routes
 
-| Method   | Path                                   | Description                     | Auth |
-| -------- | -------------------------------------- | ------------------------------- | ---- |
-| `GET`    | `/api/v1/notifications/inbox`          | List the caller's notifications | User |
-| `GET`    | `/api/v1/notifications/inbox/count`    | Unread count for the caller     | User |
-| `PUT`    | `/api/v1/notifications/inbox/read`     | Mark all notifications as read  | User |
-| `PUT`    | `/api/v1/notifications/inbox/:id/read` | Mark one notification as read   | User |
-| `DELETE` | `/api/v1/notifications/inbox/:id`      | Delete one notification         | User |
+| Method   | Path                                   | Description                              | Auth |
+| -------- | -------------------------------------- | ---------------------------------------- | ---- |
+| `GET`    | `/api/v1/notifications/inbox`          | List the caller's notifications          | User |
+| `GET`    | `/api/v1/notifications/inbox/count`    | Unread count for the caller              | User |
+| `PUT`    | `/api/v1/notifications/inbox/read`     | Mark all notifications as read           | User |
+| `PUT`    | `/api/v1/notifications/inbox/:id/read` | Mark one notification as read            | User |
+| `DELETE` | `/api/v1/notifications/inbox/:id`      | Delete one notification                  | User |
+| `DELETE` | `/api/v1/notifications/inbox`          | Delete all of the caller's notifications | User |
 
 ## Configuration
 

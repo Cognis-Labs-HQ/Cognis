@@ -20,6 +20,7 @@ Der interne Adapter leitet Benachrichtigungen direkt an die In-App-Benachrichtig
 | `PUT`    | `/api/v1/notifications/inbox/read`     | Alle als gelesen markieren                  | Benutzer |
 | `PUT`    | `/api/v1/notifications/inbox/:id/read` | Eine Benachrichtigung als gelesen markieren | Benutzer |
 | `DELETE` | `/api/v1/notifications/inbox/:id`      | Eine Benachrichtigung löschen               | Benutzer |
+| `DELETE` | `/api/v1/notifications/inbox`          | Alle Benachrichtigungen des Nutzers löschen | Benutzer |
 
 ## Konfiguration
 

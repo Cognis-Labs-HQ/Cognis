@@ -20,6 +20,7 @@
 | `PUT`    | `/api/v1/notifications/inbox/read`     | すべて既読にする         | ユーザー |
 | `PUT`    | `/api/v1/notifications/inbox/:id/read` | 1件を既読にする          | ユーザー |
 | `DELETE` | `/api/v1/notifications/inbox/:id`      | 1件の通知を削除する      | ユーザー |
+| `DELETE` | `/api/v1/notifications/inbox`          | すべての通知を削除する   | ユーザー |
 
 ## 設定
 
