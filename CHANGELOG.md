@@ -9,6 +9,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Page composer follow-up: Elements edit panel now clamps horizontally to the workspace bounds (not only viewport bounds) so it no longer drifts outside the main page area, and grid-profile selection now re-applies the correct saved profile when grid columns change to keep desktop/mobile layouts isolated. ([pending](https://github.com/le-firehawk/Cognis/commit/pending))
 - Profile dropdown: `.dropdown li { display: flex }` was overriding the browser's `[hidden]` attribute, causing admin-only menu items (Administration, Users) to remain visible for non-admin users. Added `.dropdown li[hidden] { display: none }` to restore correct specificity. ([ad3ef46](https://github.com/le-firehawk/Cognis/commit/ad3ef46))
 - Floating toolbar mobile width: `.floating-toolbar` now constrains itself to `max-width: 80vw` at ≤640 px so it no longer overflows the viewport on narrow screens. ([ad3ef46](https://github.com/le-firehawk/Cognis/commit/ad3ef46))
 - Floating toolbar mobile sizing: `.floating-toolbar` now uses `width: 80vw` (not just `max-width`) at ≤640 px so it expands to the intended usable width. ([718f6af](https://github.com/le-firehawk/Cognis/commit/718f6af))

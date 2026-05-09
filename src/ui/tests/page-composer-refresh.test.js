@@ -57,11 +57,22 @@ test("page composer elements panels stay below header and use viewport top", () 
     );
 
     assert.match(source, /function getComposerPanelSafeTop\(\)/);
+    assert.match(
+        source,
+        /function getComposerPanelHorizontalBounds\(panelWidth\)/,
+    );
+    assert.match(
+        source,
+        /function clampComposerPanelLeft\(nextLeft, panelWidth\)/,
+    );
     assert.match(source, /Math\.max\(navRowBottom, topbarBottom\)/);
     assert.match(source, /Math\.ceil\(/);
     assert.match(source, /\+ 12\),/);
     assert.match(source, /const panelTop = gridRect\.top;/);
-    assert.match(source, /panel\.style\.top = `\$\{safeTop\}px`;/);
+    assert.match(
+        source,
+        /clampComposerPanelLeft\(gridRect\.right \+ 12, 240\)/,
+    );
     assert.match(
         source,
         /panel\.style\.top = `\$\{Math\.max\(safeTop, panelPosition\.top\)\}px`;/,
@@ -84,4 +95,7 @@ test("page composer persists separate layout profiles per grid size", () => {
         source,
         /normalized\.layoutsByGrid\[profileKey\] = nextLayout/,
     );
+    assert.match(source, /function applyLayoutForCurrentGridColumns\(\)/);
+    assert.match(source, /const newCols = getPreferredGridColumnCount\(\)/);
+    assert.match(source, /applyLayoutForCurrentGridColumns\(\);/);
 });

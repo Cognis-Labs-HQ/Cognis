@@ -303,7 +303,7 @@ export function createPageComposer(
     async function loadLayout() {
         const loaded = await loadLayoutByKey(preferenceKey, gridCols);
         layoutProfiles = loaded.profiles;
-        return loaded.layout;
+        return cloneLayoutData(loaded.layout);
     }
 
     async function saveLayout() {
@@ -313,6 +313,48 @@ export function createPageComposer(
             gridCols,
             layout,
         );
+    }
+
+    function cloneLayoutData(layoutData) {
+        return layoutData ? JSON.parse(JSON.stringify(layoutData)) : null;
+    }
+
+    function applyLayoutForCurrentGridColumns() {
+        const selected = getLayoutForGrid(layoutProfiles, gridCols);
+        if (!selected.layout) return false;
+        layout = cloneLayoutData(selected.layout);
+        return true;
+    }
+
+    function applySubLayoutForCurrentGridColumns(state) {
+        const selected = getLayoutForGrid(state.layoutProfiles, state.gridCols);
+        if (!selected.layout) return false;
+        state.layout = cloneLayoutData(selected.layout);
+        return true;
+    }
+
+    function getPreferredGridColumnCount() {
+        const widthCandidates = [];
+        if (contentGrid) {
+            contentGrid.style.width = "";
+        }
+        widthCandidates.push(contentGrid?.getBoundingClientRect().width ?? 0);
+        widthCandidates.push(
+            contentGrid?.parentElement?.getBoundingClientRect().width ?? 0,
+        );
+        widthCandidates.push(
+            root.querySelector(".main-window")?.getBoundingClientRect().width ??
+                0,
+        );
+        widthCandidates.push(
+            root.querySelector(".workspace")?.getBoundingClientRect().width ??
+                0,
+        );
+        widthCandidates.push(window.innerWidth);
+        const resolvedWidth = widthCandidates.find(
+            (width) => Number.isFinite(width) && width > 0,
+        );
+        return Math.max(1, Math.floor((resolvedWidth ?? UNIT) / UNIT));
     }
 
     function getGridSize(el) {
@@ -1055,14 +1097,18 @@ export function createPageComposer(
             const startY = e.clientY - panel.offsetTop;
 
             function onMove(e) {
-                const maxLeft = window.innerWidth - panel.offsetWidth - 4;
+                const bounds = getComposerPanelHorizontalBounds(
+                    panel.offsetWidth,
+                );
+                const maxLeft = bounds.maxLeft;
+                const minLeft = bounds.minLeft;
                 const minTop = getComposerPanelSafeTop();
                 const maxTop = Math.max(
                     minTop,
                     window.innerHeight - panel.offsetHeight - 4,
                 );
                 const newLeft = Math.max(
-                    4,
+                    minLeft,
                     Math.min(maxLeft, e.clientX - startX),
                 );
                 const newTop = Math.max(
@@ -1097,6 +1143,31 @@ export function createPageComposer(
             12,
             Math.ceil(Math.max(navRowBottom, topbarBottom) + 12),
         );
+    }
+
+    function getComposerPanelHorizontalBounds(panelWidth) {
+        const workspaceRect = root
+            .querySelector(".workspace")
+            ?.getBoundingClientRect();
+        const inset = 12;
+        if (workspaceRect) {
+            const minLeft = Math.ceil(workspaceRect.left + inset);
+            const maxLeft = Math.floor(
+                workspaceRect.right - panelWidth - inset,
+            );
+            if (maxLeft >= minLeft) {
+                return { minLeft, maxLeft };
+            }
+        }
+        return {
+            minLeft: 4,
+            maxLeft: Math.max(4, window.innerWidth - panelWidth - 4),
+        };
+    }
+
+    function clampComposerPanelLeft(nextLeft, panelWidth) {
+        const bounds = getComposerPanelHorizontalBounds(panelWidth);
+        return Math.max(bounds.minLeft, Math.min(bounds.maxLeft, nextLeft));
     }
 
     function createElementsPanel() {
@@ -1137,23 +1208,15 @@ export function createPageComposer(
         const safeTop = getComposerPanelSafeTop();
         if (panelPosition !== null) {
             panel.style.top = `${Math.max(safeTop, panelPosition.top)}px`;
-            panel.style.left = `${panelPosition.left}px`;
+            panel.style.left = `${clampComposerPanelLeft(panelPosition.left, 240)}px`;
             panel.style.right = "auto";
         } else {
             const gridRect = contentGrid.getBoundingClientRect();
-            const panelLeft = gridRect.right + 12;
+            const panelLeft = clampComposerPanelLeft(gridRect.right + 12, 240);
             const panelTop = gridRect.top;
-            const viewportWidth = window.innerWidth;
-
-            if (panelLeft < 0 || panelLeft + 240 > viewportWidth) {
-                panel.style.top = `${safeTop}px`;
-                panel.style.right = "12px";
-                panel.style.left = "auto";
-            } else {
-                panel.style.top = `${Math.max(safeTop, panelTop)}px`;
-                panel.style.left = `${panelLeft}px`;
-                panel.style.right = "auto";
-            }
+            panel.style.top = `${Math.max(safeTop, panelTop)}px`;
+            panel.style.left = `${panelLeft}px`;
+            panel.style.right = "auto";
         }
         document.body.appendChild(panel);
         bindPanelDrag(panel);
@@ -1924,22 +1987,15 @@ export function createPageComposer(
         const safeTop = getComposerPanelSafeTop();
         if (state.panelPosition !== null) {
             panel.style.top = `${Math.max(safeTop, state.panelPosition.top)}px`;
-            panel.style.left = `${state.panelPosition.left}px`;
+            panel.style.left = `${clampComposerPanelLeft(state.panelPosition.left, 240)}px`;
             panel.style.right = "auto";
         } else {
             const gridRect = state.container.getBoundingClientRect();
-            const panelLeft = gridRect.right + 12;
+            const panelLeft = clampComposerPanelLeft(gridRect.right + 12, 240);
             const panelTop = gridRect.top;
-            const viewportWidth = window.innerWidth;
-            if (panelLeft < 0 || panelLeft + 240 > viewportWidth) {
-                panel.style.top = `${safeTop}px`;
-                panel.style.right = "12px";
-                panel.style.left = "auto";
-            } else {
-                panel.style.top = `${Math.max(safeTop, panelTop)}px`;
-                panel.style.left = `${panelLeft}px`;
-                panel.style.right = "auto";
-            }
+            panel.style.top = `${Math.max(safeTop, panelTop)}px`;
+            panel.style.left = `${panelLeft}px`;
+            panel.style.right = "auto";
         }
 
         document.body.appendChild(panel);
@@ -1954,14 +2010,18 @@ export function createPageComposer(
                 const startX = e.clientX - panel.offsetLeft;
                 const startY = e.clientY - panel.offsetTop;
                 function onMove(e) {
-                    const maxLeft = window.innerWidth - panel.offsetWidth - 4;
+                    const bounds = getComposerPanelHorizontalBounds(
+                        panel.offsetWidth,
+                    );
+                    const maxLeft = bounds.maxLeft;
+                    const minLeft = bounds.minLeft;
                     const minTop = getComposerPanelSafeTop();
                     const maxTop = Math.max(
                         minTop,
                         window.innerHeight - panel.offsetHeight - 4,
                     );
                     const newLeft = Math.max(
-                        4,
+                        minLeft,
                         Math.min(maxLeft, e.clientX - startX),
                     );
                     const newTop = Math.max(
@@ -2117,7 +2177,7 @@ export function createPageComposer(
                 state.preferenceKey,
                 initialGridCols,
             );
-            state.layout = loaded.layout;
+            state.layout = cloneLayoutData(loaded.layout);
             state.layoutProfiles = loaded.profiles;
             subStates.set(el.id, state);
         }
@@ -2143,6 +2203,10 @@ export function createPageComposer(
             const newCols = Math.max(1, Math.floor(width / UNIT));
             if (newCols !== state.lastObservedCols) {
                 state.lastObservedCols = newCols;
+                state.gridCols = newCols;
+                if (!state.editing) {
+                    applySubLayoutForCurrentGridColumns(state);
+                }
                 computeSubGridDimensions(state);
                 renderSubGrid(state);
             }
@@ -2391,6 +2455,9 @@ export function createPageComposer(
         }
 
         computeGridDimensions();
+        if (!editing && persistLayoutPreferences) {
+            applyLayoutForCurrentGridColumns();
+        }
         initializePlacements();
         computeGridDimensions();
 
@@ -2922,24 +2989,21 @@ export function createPageComposer(
             }
         });
 
-        if (contentGrid) {
-            contentGrid.style.width = "";
-            const width = contentGrid.getBoundingClientRect().width;
-            gridCols = Math.max(1, Math.floor(width / UNIT));
-            lastObservedCols = gridCols;
-        }
+        gridCols = getPreferredGridColumnCount();
+        lastObservedCols = gridCols;
 
         layout = persistLayoutPreferences ? await loadLayout() : null;
 
         if (!subPageNavigation && contentGrid) {
             resizeObserver = new ResizeObserver(() => {
                 if (!contentGrid) return;
-                contentGrid.style.width = "";
-                const width = contentGrid.getBoundingClientRect().width;
-                const newCols = Math.max(1, Math.floor(width / UNIT));
+                const newCols = getPreferredGridColumnCount();
                 if (newCols !== lastObservedCols) {
                     lastObservedCols = newCols;
-                    computeGridDimensions();
+                    gridCols = newCols;
+                    if (!editing && persistLayoutPreferences) {
+                        applyLayoutForCurrentGridColumns();
+                    }
                     renderGridComposer();
                 }
             });
