@@ -311,6 +311,9 @@ function renderLoginShell() {
               `<a href="/register" class="in-page-callout__link">${escapeHtml(i18n.t("ui.app.login.not_registered.link"))}</a></section>`,
           )
         : "";
+    const signupCompactHtml = publicRegistrationEnabled
+        ? `<p class="auth-compact-register">ℹ️ <a href="/register">${escapeHtml(i18n.t("ui.app.login.not_registered.hint"))}</a></p>`
+        : "";
     const formPanelHtml = `
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
       <form id="login-form" class="stack auth-form" method="POST">
@@ -324,7 +327,8 @@ function renderLoginShell() {
           <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
         </label>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
-        ${signupCalloutHtml}
+        <div class="auth-signup-callout">${signupCalloutHtml}</div>
+        ${signupCompactHtml}
         <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
       </form>
       <div id="sso-buttons" class="sso-buttons"></div>
@@ -335,41 +339,6 @@ function renderLoginShell() {
         formPanelAriaLabel: i18n.t("ui.app.login.title"),
         formPanelHtml,
     });
-}
-
-function renderLoginShellPhone() {
-    const brandlineHtml = renderAuthBrandline(
-        i18n.t("ui.shared.brand.name"),
-        i18n.t("ui.app.login.hero.tagline"),
-    );
-    const signupLinkHtml = publicRegistrationEnabled
-        ? `<p class="auth-compact-register">ℹ️ <a href="/register">${escapeHtml(i18n.t("ui.app.login.not_registered.hint"))}</a></p>`
-        : "";
-    return `
-      <section class="auth-page auth-page--frame">
-        <div class="auth-layout">
-          <main class="panel auth-panel" aria-label="${escapeHtml(i18n.t("ui.app.login.title"))}">
-            ${brandlineHtml}
-            <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
-            <form id="login-form" class="stack auth-form" method="POST">
-              <input type="hidden" id="login-provider" value="local" />
-              <label>
-                <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
-                <input id="login-username" autocomplete="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
-              </label>
-              <label>
-                <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
-                <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
-              </label>
-              <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
-              ${signupLinkHtml}
-              <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
-            </form>
-            <div id="sso-buttons" class="sso-buttons"></div>
-          </main>
-        </div>
-      </section>
-    `;
 }
 
 function bindLoginForm() {
@@ -458,24 +427,6 @@ const composer = createPageComposer(root, {
             },
         },
     ],
-    responsiveLayouts: {
-        phone: {
-            elements: [
-                {
-                    id: "login-shell",
-                    label: i18n.t("ui.app.login.title"),
-                    pinned: true,
-                    gridSize: { default: [12, 5], min: [8, 4], max: "full" },
-                    render: () => renderLoginShellPhone(),
-                    onRender: () => {
-                        loadLoginMethods();
-                        renderLoginReasonToast();
-                        bindLoginForm();
-                    },
-                },
-            ],
-        },
-    },
 });
 
 await composer.init();

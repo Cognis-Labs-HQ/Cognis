@@ -65,12 +65,12 @@
  *   sub-composer grid. The heading is rendered outside the inner grid container so
  *   it is preserved across re-renders triggered by resize or sub-page switching.
  *
- * Responsive layouts:
- *   Pass responsiveLayouts to replace the elements array at specific viewport tiers.
- *   The composer resolves tiers via fixed breakpoints: phone (≤480 px) and tablet (≤900 px).
- *   Any tier not listed falls back to the top-level elements array.
- *   Example: responsiveLayouts: { phone: { elements: [...] }, tablet: { elements: [...] } }
- *   Fully backward-compatible — pages without responsiveLayouts are unaffected.
+ * Responsive tier attribute:
+ *   The composer always applies a `data-viewport-tier` attribute to the root element
+ *   reflecting the current breakpoint tier: `phone` (≤480 px), `tablet` (≤900 px),
+ *   or `default`. This updates automatically as the viewport changes. Pages use it
+ *   in CSS to apply tier-specific styles without any JS in the page itself.
+ *   Example: [data-viewport-tier="phone"] .auth-intro { display: none; }
  *
  * @param {HTMLElement} root - The #app root element for the page.
  * @param {{
@@ -99,7 +99,6 @@
  *   persistLayoutPreferences?: boolean,
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
  *   onBeforeSubPageSwitch?: (fromId: string|null, toId: string) => Promise<boolean>,
- *   responsiveLayouts?: Record<string, { elements: Array }>,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
@@ -131,7 +130,6 @@ export function createPageComposer(
         persistLayoutPreferences = true,
         pageOverrides = {},
         onBeforeSubPageSwitch,
-        responsiveLayouts = {},
     },
 ) {
     function escapeHtml(value) {
@@ -2531,12 +2529,6 @@ export function createPageComposer(
             });
     }
 
-    function applyResponsiveTier(tier) {
-        const tierConfig = responsiveLayouts[tier];
-        elements = tierConfig?.elements ?? initialElements;
-        render();
-    }
-
     function render() {
         if (!contentGrid) return;
         if (subPageNavigation) {
@@ -2764,17 +2756,13 @@ export function createPageComposer(
             resizeObserver.observe(contentGrid.parentElement ?? contentGrid);
         }
 
-        if (Object.keys(responsiveLayouts).length > 0) {
-            const composerBreakpoints = { phone: 480, tablet: 900 };
-            const initialTier = getCurrentBreakpoint(composerBreakpoints);
-            applyResponsiveTier(initialTier);
-            breakpointWatcher = watchBreakpoint(
-                composerBreakpoints,
-                (tier) => applyResponsiveTier(tier),
-            );
-        } else {
-            render();
-        }
+        const composerBreakpoints = { phone: 480, tablet: 900 };
+        root.dataset.viewportTier = getCurrentBreakpoint(composerBreakpoints);
+        breakpointWatcher = watchBreakpoint(composerBreakpoints, (tier) => {
+            root.dataset.viewportTier = tier;
+        });
+
+        render();
     }
 
     function getFloatingSlot(id) {
