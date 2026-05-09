@@ -1,5 +1,223 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { Logger } from "./logger.js";
-import type { GatewayBootstrapContext } from "../shared.js";
+import {
+    requireAuth,
+    type BootstrapLog,
+    type GatewayBootstrapContext,
+} from "../shared.js";
+
+type LogLevel = "debug" | "info" | "warn" | "error";
+
+const ALLOWED_LEVELS = new Set<LogLevel>(["debug", "info", "warn", "error"]);
+
+function parseLevelFilter(value: string | null): Set<LogLevel> | null {
+    if (!value || value === "all") return null;
+    const levels = value
+        .split(",")
+        .map((part) => part.trim().toLowerCase())
+        .filter((part): part is LogLevel =>
+            ALLOWED_LEVELS.has(part as LogLevel),
+        );
+    if (!levels.length) return null;
+    return new Set(levels);
+}
+
+function parseKeywordFilter(value: string | null): string {
+    if (!value) return "";
+    return value.trim().slice(0, 120).toLowerCase();
+}
+
+function normalizeLogEntry(rawLine: string): Record<string, unknown> {
+    try {
+        const parsed = JSON.parse(rawLine) as Record<string, unknown>;
+        const level = String(parsed.level ?? "info").toLowerCase();
+        const ts = parsed.ts ? String(parsed.ts) : new Date().toISOString();
+        const message = parsed.message ? String(parsed.message) : rawLine;
+        return {
+            ...parsed,
+            ts,
+            level: ALLOWED_LEVELS.has(level as LogLevel) ? level : "info",
+            message,
+        };
+    } catch {
+        return {
+            ts: new Date().toISOString(),
+            level: "info",
+            message: rawLine,
+            raw: rawLine,
+        };
+    }
+}
+
+function matchesFilters(
+    entry: Record<string, unknown>,
+    severities: Set<LogLevel> | null,
+    keyword: string,
+): boolean {
+    const level = String(entry.level ?? "").toLowerCase() as LogLevel;
+    if (severities && !severities.has(level)) {
+        return false;
+    }
+    if (!keyword) return true;
+    return JSON.stringify(entry).toLowerCase().includes(keyword);
+}
+
+function writeSseEvent(
+    res: ServerResponse,
+    event: string,
+    payload: Record<string, unknown>,
+): void {
+    res.write(`event: ${event}\n`);
+    res.write(`data: ${JSON.stringify(payload)}\n\n`);
+}
+
+function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
+    return async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        if (url.pathname !== "/api/v1/logging/stream" || req.method !== "GET") {
+            return false;
+        }
+
+        const claims = requireAuth(req, res, "admin");
+        if (!claims) return true;
+
+        const severities = parseLevelFilter(url.searchParams.get("severity"));
+        const keyword = parseKeywordFilter(url.searchParams.get("keyword"));
+        const snapshotLimit = 300;
+        let seq = 0;
+        let contentLength = 0;
+        let pendingLine = "";
+        let closed = false;
+
+        const pushEntry = (entry: Record<string, unknown>) => {
+            if (!matchesFilters(entry, severities, keyword)) return;
+            writeSseEvent(res, "log", { id: seq++, ...entry });
+        };
+
+        const processLines = (lines: string[]) => {
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed) continue;
+                pushEntry(normalizeLogEntry(trimmed));
+            }
+        };
+
+        const sendSnapshot = async () => {
+            try {
+                const raw = await readFile(filePath, "utf8");
+                contentLength = raw.length;
+                const lines = raw.split("\n");
+                pendingLine = lines.pop() ?? "";
+                const entries = lines
+                    .map((line) => line.trim())
+                    .filter((line) => line.length > 0)
+                    .map((line) => normalizeLogEntry(line))
+                    .filter((entry) =>
+                        matchesFilters(entry, severities, keyword),
+                    );
+                for (const entry of entries.slice(-snapshotLimit)) {
+                    writeSseEvent(res, "log", { id: seq++, ...entry });
+                }
+            } catch (error) {
+                log?.(
+                    "error",
+                    "Failed to read log stream snapshot from log file.",
+                    {
+                        component: "logging-gateway",
+                        operation: "stream_snapshot",
+                        accountId: claims.sub,
+                        path: filePath,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    },
+                );
+                writeSseEvent(res, "snapshot_error", {
+                    code: "snapshot_unavailable",
+                });
+            }
+        };
+
+        const pollUpdates = async () => {
+            if (closed) return;
+            try {
+                const raw = await readFile(filePath, "utf8");
+                if (raw.length < contentLength) {
+                    contentLength = 0;
+                    pendingLine = "";
+                    writeSseEvent(res, "reset", { reason: "log_rotated" });
+                }
+                if (raw.length === contentLength) {
+                    return;
+                }
+                const append = raw.slice(contentLength);
+                contentLength = raw.length;
+                const merged = `${pendingLine}${append}`;
+                const chunks = merged.split("\n");
+                pendingLine = chunks.pop() ?? "";
+                processLines(chunks);
+            } catch (error) {
+                log?.(
+                    "error",
+                    "Failed to poll log stream updates from log file.",
+                    {
+                        component: "logging-gateway",
+                        operation: "stream_poll",
+                        accountId: claims.sub,
+                        path: filePath,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    },
+                );
+            }
+        };
+
+        res.writeHead(200, {
+            "content-type": "text/event-stream; charset=utf-8",
+            "cache-control": "no-cache",
+            connection: "keep-alive",
+        });
+        res.write("retry: 1500\n\n");
+
+        await sendSnapshot();
+
+        const pollTimer = setInterval(() => {
+            void pollUpdates();
+        }, 1500);
+        pollTimer.unref?.();
+
+        const closeStream = () => {
+            if (closed) return;
+            closed = true;
+            clearInterval(pollTimer);
+            log?.("info", "Closed admin log stream.", {
+                component: "logging-gateway",
+                operation: "stream_close",
+                accountId: claims.sub,
+            });
+        };
+
+        req.on("close", closeStream);
+        res.on("close", closeStream);
+
+        log?.("info", "Opened admin log stream.", {
+            component: "logging-gateway",
+            operation: "stream_open",
+            accountId: claims.sub,
+            severityFilter: severities ? Array.from(severities) : "all",
+            keyword: keyword || undefined,
+        });
+        return true;
+    };
+}
 
 /**
  * Standard gateway bootstrap entry point for structured application logging.
@@ -21,6 +239,7 @@ import type { GatewayBootstrapContext } from "../shared.js";
  * bootstraps first.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const log = ctx.log;
     const level =
         (process.env.LOG_LEVEL as
             | "debug"
@@ -49,14 +268,37 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             void logger.log(logLevel, message, meta);
         },
     );
+    ctx.routeRegistry.register(createLoggingRoutes(filePath, log), "logging");
+
+    const uiDir = path.resolve(
+        process.cwd(),
+        "src",
+        "gateways",
+        "logging",
+        "ui",
+    );
+    ctx.uiRegistry?.registerAdminSection({
+        id: "logs",
+        label: "Logs",
+        scriptUrl: "/static/gateways/logging/admin-section.js",
+    });
+    ctx.uiRegistry?.registerStaticDir("logging", uiDir);
 
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.3.0",
+        version: "1.4.0",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",
         publisher: "Cognis Labs",
+    });
+
+    log?.("info", "Logging gateway initialized.", {
+        component: "logging-gateway",
+        operation: "bootstrap",
+        filePath,
+        level,
+        consoleFormat,
     });
 }

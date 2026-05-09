@@ -30,7 +30,7 @@
 | プロフィール               | `src/gateways/profile/`      | `1.1.1`    |
 | ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |
 | 登録                       | `src/gateways/registration/` | `1.1.2`    |
-| ログ記録                   | `src/gateways/logging/`      | `1.3.0`    |
+| ログ記録                   | `src/gateways/logging/`      | `1.4.0`    |
 
 ## API
 

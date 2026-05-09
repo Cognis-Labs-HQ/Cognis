@@ -11,6 +11,7 @@ Gateway logging harus di-bootstrap setelah gateway penyimpanan file. Ketergantun
 - Membuat instance `Logger` yang dikonfigurasi dari `LOG_LEVEL`, `LOG_FILE`, dan `LOG_FORMAT`.
 - Berkontribusi `logging:logger` dan `logging:log` ke capability store.
 - Merutekan penulisan file log melalui `file:append` jika tersedia.
+- Menyediakan `GET /api/v1/logging/stream` untuk halaman Administrasi → Log (aliran SSE khusus admin dengan filter tingkat keparahan dan kata kunci).
 
 ## Arsitektur
 

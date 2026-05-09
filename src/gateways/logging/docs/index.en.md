@@ -13,6 +13,7 @@ The logging gateway must bootstrap after the files gateway. This dependency is d
 - Create a `Logger` instance configured from `LOG_LEVEL`, `LOG_FILE`, and `LOG_FORMAT`.
 - Contribute `logging:logger` (the full `Logger` instance) and `logging:log` (a plain log function) to the capability store.
 - Route log file writes through `file:append` when available.
+- Expose `GET /api/v1/logging/stream` for the Administration → Logs page (admin-only SSE stream with severity and keyword filters).
 - Register the `logging` gateway in the gateway registry.
 
 Not responsible for: log aggregation, log rotation, or log shipping to external systems.

@@ -11,6 +11,7 @@
 - `LOG_LEVEL`、`LOG_FILE`、`LOG_FORMAT` から設定された `Logger` インスタンスを作成する。
 - `logging:logger` と `logging:log` をケイパビリティストアに提供する。
 - 利用可能な場合は `file:append` を通じてログファイル書き込みをルーティングする。
+- Administration → ログ画面向けに `GET /api/v1/logging/stream` を提供する（管理者専用 SSE ストリーム、重大度/キーワードフィルター対応）。
 
 ## アーキテクチャ
 

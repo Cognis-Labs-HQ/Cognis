@@ -11,6 +11,7 @@ Das Logging-Gateway muss nach dem Dateispeicher-Gateway gebootstrappt werden. Di
 - Eine `Logger`-Instanz aus `LOG_LEVEL`, `LOG_FILE` und `LOG_FORMAT` erstellen und konfigurieren.
 - `logging:logger` und `logging:log` zum Capability-Store beitragen.
 - Log-Datei-Schreibvorgänge durch `file:append` routen, wenn verfügbar.
+- `GET /api/v1/logging/stream` für die Seite Administration → Protokolle bereitstellen (admin-only SSE-Stream mit Schweregrad- und Stichwortfiltern).
 - Das `logging`-Gateway im Gateway-Registry registrieren.
 
 ## Architektur

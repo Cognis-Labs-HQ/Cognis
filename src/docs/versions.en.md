@@ -46,7 +46,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Profile               | `src/gateways/profile/`      | `1.1.1` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
 | Registration          | `src/gateways/registration/` | `1.1.2` |
-| Logging               | `src/gateways/logging/`      | `1.3.0` |
+| Logging               | `src/gateways/logging/`      | `1.4.0` |
 
 ## Core contracts
 

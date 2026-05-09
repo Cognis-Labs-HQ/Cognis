@@ -30,7 +30,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Profil                    | `src/gateways/profile/`      | `1.1.1` |
 | Dateispeicher (files)     | `src/gateways/files/`        | `1.1.0` |
 | Registrierung             | `src/gateways/registration/` | `1.1.2` |
-| Logging                   | `src/gateways/logging/`      | `1.3.0` |
+| Logging                   | `src/gateways/logging/`      | `1.4.0` |
 
 ## Core
 
