@@ -145,6 +145,7 @@ export async function bootstrapSocialAdapter(
         "ui",
     );
     ctx.registerAdapterStaticDir?.("social", "messages", uiDir);
+    ctx.registerNavbarPlugin("/static/adapters/social/messages/navbar.js");
 
     ctx.log?.("info", "Messages adapter: initialized.", {
         component: "social-messages-adapter",

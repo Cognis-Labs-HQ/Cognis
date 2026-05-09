@@ -86,7 +86,8 @@ export class DbMessagesStore {
             this.dbType === "mariadb"
                 ? "ENUM('owner','admin','member')"
                 : "VARCHAR(16)";
-        const ts = this.dbType === "postgresql" ? "TIMESTAMPTZ" : "DATETIME";
+        const timestampType =
+            this.dbType === "postgresql" ? "TIMESTAMPTZ" : "DATETIME";
         const tsDefault =
             this.dbType === "postgresql"
                 ? "DEFAULT NOW()"
@@ -99,8 +100,8 @@ export class DbMessagesStore {
                 kind ${enumKind} NOT NULL,
                 title TEXT,
                 created_by ${idType} NOT NULL,
-                created_at ${ts} ${tsDefault},
-                updated_at ${ts} ${tsDefault}
+                created_at ${timestampType} ${tsDefault},
+                updated_at ${timestampType} ${tsDefault}
             )`,
         );
 
@@ -109,8 +110,8 @@ export class DbMessagesStore {
                 chatroom_id ${idType} NOT NULL,
                 account_id ${idType} NOT NULL,
                 role ${enumRole} NOT NULL,
-                joined_at ${ts} ${tsDefault},
-                last_read_at ${ts},
+                joined_at ${timestampType} ${tsDefault},
+                last_read_at ${timestampType},
                 muted ${boolType} NOT NULL DEFAULT 0,
                 PRIMARY KEY (chatroom_id, account_id)
             )`,
@@ -125,7 +126,7 @@ export class DbMessagesStore {
                 iv TEXT NOT NULL,
                 auth_tag TEXT NOT NULL DEFAULT '',
                 content_type VARCHAR(64) NOT NULL DEFAULT 'text/plain',
-                created_at ${ts} ${tsDefault}
+                created_at ${timestampType} ${tsDefault}
             )`,
         );
 
@@ -151,7 +152,7 @@ export class DbMessagesStore {
                 chatroom_id ${idType} PRIMARY KEY,
                 wrapped_key TEXT NOT NULL,
                 key_iv TEXT NOT NULL,
-                created_at ${ts} ${tsDefault}
+                created_at ${timestampType} ${tsDefault}
             )`,
         );
     }

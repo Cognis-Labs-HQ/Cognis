@@ -73,6 +73,14 @@ async function bootstrapSocialAdapters(
         return;
     }
 
+    // profile must boot before messages: messages depends on social:profileStore
+    // contributed by profile. Other adapters preserve their discovery order.
+    entries.sort((a, b) => {
+        if (a === "profile") return -1;
+        if (b === "profile") return 1;
+        return a.localeCompare(b);
+    });
+
     for (const entry of entries) {
         const adapterDir = path.join(adaptersRoot, entry);
         const pkgPath = path.join(adapterDir, "package.json");
