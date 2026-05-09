@@ -142,6 +142,7 @@ async function refreshCount() {
 
 async function openPanel(i18n) {
     if (!panelEl || !listEl) return;
+    closeProfileMenu();
     panelEl.hidden = false;
     panelVisible = true;
     listEl.innerHTML = "";
@@ -165,6 +166,27 @@ function closePanel() {
     if (!panelEl) return;
     panelEl.hidden = true;
     panelVisible = false;
+}
+
+function closeProfileMenu() {
+    const dropdown = document.querySelector("#profile-dropdown");
+    const profileMenu = document.querySelector(".profile-menu");
+    dropdown?.classList.add("hidden");
+    profileMenu?.classList.remove("open");
+}
+
+function watchProfileMenu() {
+    const profileMenu = document.querySelector(".profile-menu");
+    if (!profileMenu) return;
+    const observer = new MutationObserver(() => {
+        if (profileMenu.classList.contains("open") && panelVisible) {
+            closePanel();
+        }
+    });
+    observer.observe(profileMenu, {
+        attributes: true,
+        attributeFilter: ["class"],
+    });
 }
 
 function buildButton(i18n) {
@@ -287,6 +309,7 @@ async function startPolling() {
 
     const wrap = buildButton(i18n);
     insertButton(wrap);
+    watchProfileMenu();
 
     await startPolling();
 })();

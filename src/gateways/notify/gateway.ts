@@ -285,6 +285,11 @@ export class CoreNotificationGateway
     }
 
     async disableSender(senderId: string): Promise<void> {
+        if (this.alwaysOnSenders.has(senderId)) {
+            throw Object.assign(new Error("required_sender"), {
+                code: "required_sender",
+            });
+        }
         this.disabledSenders.add(senderId);
         const existing = (await this.configStore?.getConfig(senderId)) ?? null;
         await this.configStore?.saveConfig(senderId, {

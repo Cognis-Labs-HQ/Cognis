@@ -1,8 +1,8 @@
 {
     "id": "notify",
     "name": "Notification Gateway",
-    "version": "1.2.0",
-    "required": false,
+    "version": "1.2.1",
+    "required": true,
     "requires": ["db"],
     "hasAdapters": true,
     "description": "Dispatches notifications via pluggable adapter senders.",

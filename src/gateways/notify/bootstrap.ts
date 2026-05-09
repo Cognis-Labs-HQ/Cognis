@@ -98,7 +98,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.2.0",
+        version: "1.2.1",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
         hasAdapters: true,
@@ -736,7 +736,37 @@ function createGatewayAdapterRoutes(
                 }
                 await gateway.enableSender(adapterId);
             } else {
-                await gateway.disableSender(adapterId);
+                try {
+                    await gateway.disableSender(adapterId);
+                } catch (err) {
+                    const code =
+                        err instanceof Error &&
+                        (err as Error & { code?: string }).code;
+                    if (code === "required_sender") {
+                        log?.(
+                            "warn",
+                            "Blocked attempt to disable required adapter.",
+                            {
+                                ...logMeta,
+                                adapterId,
+                            },
+                        );
+                        res.writeHead(403, {
+                            "content-type": "application/json",
+                        });
+                        res.end(
+                            JSON.stringify({
+                                error: {
+                                    code: "required_sender",
+                                    message:
+                                        "This adapter is required and cannot be disabled",
+                                },
+                            }),
+                        );
+                        return true;
+                    }
+                    throw err;
+                }
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
