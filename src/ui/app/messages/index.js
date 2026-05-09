@@ -45,14 +45,14 @@ async function importRoomKey(hex) {
 }
 
 async function encryptMessage(key, plaintext) {
-    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const initVector = crypto.getRandomValues(new Uint8Array(12));
     const ciphertext = await crypto.subtle.encrypt(
-        { name: "AES-GCM", iv },
+        { name: "AES-GCM", iv: initVector },
         key,
         TEXT_ENCODER.encode(plaintext),
     );
     return {
-        iv: bytesToHex(iv),
+        iv: bytesToHex(initVector),
         ciphertext: bytesToHex(new Uint8Array(ciphertext)),
     };
 }
