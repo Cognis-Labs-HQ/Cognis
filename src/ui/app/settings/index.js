@@ -1,3 +1,4 @@
+import { applyUiPreferences } from "../../reuse/ui-preferences.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import {
     applyDocumentTitle,
@@ -24,11 +25,6 @@ import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { showToast } from "../../reuse/toast.js";
 
-const root = document.querySelector("#app");
-let languagePriority = readPreferredLanguages();
-const i18n = await createI18n({ preferredLanguages: languagePriority });
-applyDocumentTitle(i18n, "ui.page.title.settings");
-
 async function loadPrefs() {
     const account = localStorage.getItem("cognis_account");
     if (!account) return null;
@@ -54,70 +50,94 @@ async function savePrefs(prefs) {
     );
 }
 
-const existingPrefs = await loadPrefs().catch(() => null);
-if (Array.isArray(existingPrefs?.languagePriority))
-    languagePriority = existingPrefs.languagePriority;
-
-applyTimezoneToLocalStorage(
-    existingPrefs?.timezone ?? null,
-    existingPrefs?.detectedTimezone ?? null,
-);
-
-const savedMode = getStoredTheme();
-
-let fontPrefs;
-let languagePrefs;
-let themePrefs;
-let changesBar;
-let generalPrefs;
-let notifPrefs;
-let datetimePrefs;
-
-function initThemePrefs({ onDirtyChange }) {
-    let currentMode = savedMode;
-
-    function updateSelector() {
-        root.querySelectorAll(".theme-btn[data-theme-value]").forEach((btn) => {
-            btn.classList.toggle(
-                "active",
-                btn.dataset.themeValue === currentMode,
-            );
-        });
-    }
-
-    root.querySelectorAll(".theme-btn[data-theme-value]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-            currentMode = btn.dataset.themeValue;
-            updateSelector();
-            onDirtyChange?.(currentMode !== savedMode);
-        });
-    });
-
-    updateSelector();
-
-    return {
-        getMode: () => currentMode,
-        discard: () => {
-            currentMode = savedMode;
-            updateSelector();
-            onDirtyChange?.(false);
-        },
-    };
+/**
+ * Returns true when the language priority order has changed between
+ * two saves, indicating a page reload is required to apply new strings.
+ *
+ * @param {string[]} prev - Previously committed language priority list.
+ * @param {string[]} next - Newly saved language priority list.
+ * @returns {boolean}
+ */
+function hasLanguagePriorityChanged(prev, next) {
+    if (prev.length !== next.length) return true;
+    return next.some((lang, i) => lang !== prev[i]);
 }
 
-const elements = [
-    {
-        id: "general",
-        label: i18n.t("ui.app.settings.general"),
-        subComposerOptions: {
-            allowCustomization: false,
-            preferenceKey: "settings-general-layout",
-            heading: i18n.t("ui.app.settings.general"),
-            elements: [
-                {
-                    id: "general-prefs",
-                    label: i18n.t("ui.app.settings.general"),
-                    render: () => `
+const LANGUAGE_RELOAD_DELAY_MS = 400;
+
+export async function mount(root, { signal } = {}) {
+    let loadedPrefs = await loadPrefs().catch(() => null);
+    let languagePriority = Array.isArray(loadedPrefs?.languagePriority)
+        ? loadedPrefs.languagePriority
+        : readPreferredLanguages();
+    const i18n = await createI18n({ preferredLanguages: languagePriority });
+    applyDocumentTitle(i18n, "ui.page.title.settings");
+
+    applyTimezoneToLocalStorage(
+        loadedPrefs?.timezone ?? null,
+        loadedPrefs?.detectedTimezone ?? null,
+    );
+
+    let savedMode = getStoredTheme();
+
+    let fontPrefs;
+    let languagePrefs;
+    let themePrefs;
+    let changesBar;
+    let generalPrefs;
+    let notifPrefs;
+    let datetimePrefs;
+
+    function initThemePrefs({ onDirtyChange }) {
+        let currentMode = savedMode;
+
+        function updateSelector() {
+            root.querySelectorAll(".theme-btn[data-theme-value]").forEach(
+                (btn) => {
+                    btn.classList.toggle(
+                        "active",
+                        btn.dataset.themeValue === currentMode,
+                    );
+                },
+            );
+        }
+
+        root.querySelectorAll(".theme-btn[data-theme-value]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                currentMode = btn.dataset.themeValue;
+                updateSelector();
+                onDirtyChange?.(currentMode !== savedMode);
+            });
+        });
+
+        updateSelector();
+
+        return {
+            getMode: () => currentMode,
+            commit: () => {
+                savedMode = currentMode;
+            },
+            discard: () => {
+                currentMode = savedMode;
+                updateSelector();
+                onDirtyChange?.(false);
+            },
+        };
+    }
+
+    const elements = [
+        {
+            id: "general",
+            label: i18n.t("ui.app.settings.general"),
+            subComposerOptions: {
+                allowCustomization: false,
+                preferenceKey: "settings-general-layout",
+                heading: i18n.t("ui.app.settings.general"),
+                elements: [
+                    {
+                        id: "general-prefs",
+                        label: i18n.t("ui.app.settings.general"),
+                        render: () => `
             <h3>${i18n.t("ui.app.settings.emails")}</h3>
             <ul id="email-list" class="email-list"></ul>
             <div class="email-add-row">
@@ -125,34 +145,35 @@ const elements = [
               <button id="email-add-btn" class="btn-confirm btn-animated" type="button">${i18n.t("ui.app.settings.emails_add")}</button>
             </div>
           `,
+                    },
+                ],
+                onRender: () => {
+                    const account =
+                        localStorage.getItem("cognis_account") ?? "";
+                    if (!generalPrefs) {
+                        generalPrefs = initGeneralPrefs(root, {
+                            i18n,
+                            username: account,
+                        });
+                        generalPrefs.init();
+                    } else {
+                        generalPrefs.refresh();
+                    }
                 },
-            ],
-            onRender: () => {
-                const account = localStorage.getItem("cognis_account") ?? "";
-                if (!generalPrefs) {
-                    generalPrefs = initGeneralPrefs(root, {
-                        i18n,
-                        username: account,
-                    });
-                    generalPrefs.init();
-                } else {
-                    generalPrefs.refresh();
-                }
             },
         },
-    },
-    {
-        id: "appearance",
-        label: i18n.t("ui.reuse.appearance"),
-        subComposerOptions: {
-            allowCustomization: false,
-            preferenceKey: "settings-appearance-layout",
-            heading: i18n.t("ui.reuse.appearance"),
-            elements: [
-                {
-                    id: "appearance-prefs",
-                    label: i18n.t("ui.reuse.appearance"),
-                    render: () => `
+        {
+            id: "appearance",
+            label: i18n.t("ui.reuse.appearance"),
+            subComposerOptions: {
+                allowCustomization: false,
+                preferenceKey: "settings-appearance-layout",
+                heading: i18n.t("ui.reuse.appearance"),
+                elements: [
+                    {
+                        id: "appearance-prefs",
+                        label: i18n.t("ui.reuse.appearance"),
+                        render: () => `
             <div class="font-heading-row">
               <h3>${i18n.t("ui.app.settings.font_heading")}</h3>
               <button id="pref-font-reset" type="button" disabled>${i18n.t("ui.reuse.generic.reset")}</button>
@@ -180,168 +201,173 @@ const elements = [
               </div>
             </div>
           `,
+                    },
+                ],
+                onRender: () => {
+                    fontPrefs = initFontPrefs(root, {
+                        existingPrefs: loadedPrefs,
+                        i18n,
+                        onDirtyChange: (dirty) =>
+                            changesBar?.markDirty("font", dirty),
+                    });
+                    fontPrefs.init();
+                    themePrefs = initThemePrefs({
+                        onDirtyChange: (dirty) =>
+                            changesBar?.markDirty("theme", dirty),
+                    });
                 },
-            ],
-            onRender: () => {
-                fontPrefs = initFontPrefs(root, {
-                    existingPrefs,
-                    i18n,
-                    onDirtyChange: (dirty) =>
-                        changesBar?.markDirty("font", dirty),
-                });
-                fontPrefs.init();
-                themePrefs = initThemePrefs({
-                    onDirtyChange: (dirty) =>
-                        changesBar?.markDirty("theme", dirty),
-                });
             },
         },
-    },
-    {
-        id: "language",
-        label: i18n.t("ui.reuse.language"),
-        subComposerOptions: {
-            allowCustomization: false,
-            preferenceKey: "settings-language-layout",
-            columns: 2,
-            heading: i18n.t("ui.reuse.language"),
-            elements: [
-                {
-                    id: "available-languages",
-                    label: i18n.t("ui.app.settings.available_languages"),
-                    render: () => `
+        {
+            id: "language",
+            label: i18n.t("ui.reuse.language"),
+            subComposerOptions: {
+                allowCustomization: false,
+                preferenceKey: "settings-language-layout",
+                columns: 2,
+                heading: i18n.t("ui.reuse.language"),
+                elements: [
+                    {
+                        id: "available-languages",
+                        label: i18n.t("ui.app.settings.available_languages"),
+                        render: () => `
             <h3>${i18n.t("ui.app.settings.available_languages")}</h3>
             <table id="available-languages" class="language-table"></table>
           `,
-                },
-                {
-                    id: "preferred-languages",
-                    label: i18n.t("ui.app.settings.preferred_languages"),
-                    render: () => `
+                    },
+                    {
+                        id: "preferred-languages",
+                        label: i18n.t("ui.app.settings.preferred_languages"),
+                        render: () => `
             <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
             <table id="preferred-languages" class="language-table"></table>
           `,
+                    },
+                ],
+                onRender: () => {
+                    if (!languagePrefs) {
+                        languagePrefs = initLanguagePrefs(
+                            root,
+                            languagePriority,
+                            {
+                                onDirtyChange: (dirty) =>
+                                    changesBar?.markDirty("language", dirty),
+                            },
+                        );
+                        languagePrefs.init();
+                    } else {
+                        languagePrefs.renderTables();
+                    }
                 },
-            ],
-            onRender: () => {
-                if (!languagePrefs) {
-                    languagePrefs = initLanguagePrefs(root, languagePriority, {
+            },
+        },
+        {
+            id: "notifications",
+            label: i18n.t("ui.reuse.notifications"),
+            subComposerOptions: {
+                allowCustomization: false,
+                preferenceKey: "settings-notifications-layout",
+                heading: i18n.t("ui.reuse.notifications"),
+                elements: [
+                    {
+                        id: "notif-matrix",
+                        label: i18n.t("ui.app.settings.notif_matrix_heading"),
+                        render: () => `<div id="notif-matrix-container"></div>`,
+                    },
+                ],
+                onRender: () => {
+                    const account =
+                        localStorage.getItem("cognis_account") ?? "";
+                    notifPrefs = initNotificationPrefs(root, {
+                        i18n,
+                        username: account,
                         onDirtyChange: (dirty) =>
-                            changesBar?.markDirty("language", dirty),
+                            changesBar?.markDirty("notifications", dirty),
                     });
-                    languagePrefs.init();
-                } else {
-                    languagePrefs.renderTables();
-                }
-            },
-        },
-    },
-    {
-        id: "notifications",
-        label: i18n.t("ui.reuse.notifications"),
-        subComposerOptions: {
-            allowCustomization: false,
-            preferenceKey: "settings-notifications-layout",
-            heading: i18n.t("ui.reuse.notifications"),
-            elements: [
-                {
-                    id: "notif-matrix",
-                    label: i18n.t("ui.app.settings.notif_matrix_heading"),
-                    render: () => `<div id="notif-matrix-container"></div>`,
+                    notifPrefs.init();
                 },
-            ],
-            onRender: () => {
-                const account = localStorage.getItem("cognis_account") ?? "";
-                notifPrefs = initNotificationPrefs(root, {
-                    i18n,
-                    username: account,
-                    onDirtyChange: (dirty) =>
-                        changesBar?.markDirty("notifications", dirty),
-                });
-                notifPrefs.init();
             },
         },
-    },
-    {
-        id: "datetime",
-        label: i18n.t("ui.app.settings.datetime"),
-        subComposerOptions: {
-            allowCustomization: false,
-            preferenceKey: "settings-datetime-layout",
-            heading: i18n.t("ui.app.settings.datetime"),
-            elements: [
-                {
-                    id: "datetime-prefs",
-                    label: i18n.t("ui.app.settings.datetime"),
-                    render: () => `
+        {
+            id: "datetime",
+            label: i18n.t("ui.app.settings.datetime"),
+            subComposerOptions: {
+                allowCustomization: false,
+                preferenceKey: "settings-datetime-layout",
+                heading: i18n.t("ui.app.settings.datetime"),
+                elements: [
+                    {
+                        id: "datetime-prefs",
+                        label: i18n.t("ui.app.settings.datetime"),
+                        render: () => `
             <h3>${i18n.t("ui.app.settings.datetime_tz_heading")}</h3>
             <label class="timezone-label">
               ${i18n.t("ui.app.settings.datetime_tz_label")}
               <select id="pref-timezone-select" class="theme-select"></select>
             </label>
           `,
+                    },
+                ],
+                onRender: () => {
+                    datetimePrefs = initDateTimePrefs(root, {
+                        existingPrefs: loadedPrefs,
+                        i18n,
+                        onDirtyChange: (dirty) =>
+                            changesBar?.markDirty("datetime", dirty),
+                    });
+                    datetimePrefs.init();
                 },
-            ],
-            onRender: () => {
-                datetimePrefs = initDateTimePrefs(root, {
-                    existingPrefs,
-                    i18n,
-                    onDirtyChange: (dirty) =>
-                        changesBar?.markDirty("datetime", dirty),
-                });
-                datetimePrefs.init();
             },
         },
-    },
-    {
-        id: "advanced",
-        label: i18n.t("ui.app.settings.advanced"),
-        subComposerOptions: {
-            allowCustomization: false,
-            preferenceKey: "settings-advanced-layout",
-            heading: i18n.t("ui.app.settings.advanced"),
-            elements: [
-                {
-                    id: "prefs-dump",
-                    label: i18n.t("ui.app.settings.preferences"),
-                    pinned: true,
-                    render: () => `
+        {
+            id: "advanced",
+            label: i18n.t("ui.app.settings.advanced"),
+            subComposerOptions: {
+                allowCustomization: false,
+                preferenceKey: "settings-advanced-layout",
+                heading: i18n.t("ui.app.settings.advanced"),
+                elements: [
+                    {
+                        id: "prefs-dump",
+                        label: i18n.t("ui.app.settings.preferences"),
+                        pinned: true,
+                        render: () => `
             <h3>${i18n.t("ui.app.settings.preferences")}</h3>
             <pre id="prefs-dump" class="prefs-dump">${i18n.t("ui.app.settings.prefs_loading")}</pre>
           `,
+                    },
+                ],
+                onRender: () => {
+                    const prefsDumpEl = root.querySelector("#prefs-dump");
+                    if (prefsDumpEl) {
+                        prefsDumpEl.textContent =
+                            loadedPrefs != null
+                                ? JSON.stringify(loadedPrefs, null, 2)
+                                : "null";
+                    }
                 },
-            ],
-            onRender: () => {
-                const prefsDumpEl = root.querySelector("#prefs-dump");
-                if (prefsDumpEl) {
-                    prefsDumpEl.textContent =
-                        existingPrefs != null
-                            ? JSON.stringify(existingPrefs, null, 2)
-                            : "null";
-                }
             },
         },
-    },
-];
+    ];
 
-const composer = createPageComposer(root, {
-    allowCustomization: false,
-    subPageNavigation: true,
-    elements,
-    preferenceKey: "settings-layout",
-    i18n,
-    pageContext: {
-        title: i18n.t("ui.app.settings.page_title"),
-        subtitle: i18n.t("ui.app.settings.page_subtitle"),
-    },
-    pageOverrides: {
-        appearance: { showThemeToggle: false },
-    },
-    toolbar: [
-        {
-            id: "settings-nav",
-            label: i18n.t("ui.app.settings.page_title"),
-            render: () => `
+    const composer = createPageComposer(root, {
+        allowCustomization: false,
+        subPageNavigation: true,
+        elements,
+        preferenceKey: "settings-layout",
+        i18n,
+        pageContext: {
+            title: i18n.t("ui.app.settings.page_title"),
+            subtitle: i18n.t("ui.app.settings.page_subtitle"),
+        },
+        pageOverrides: {
+            appearance: { showThemeToggle: false },
+        },
+        toolbar: [
+            {
+                id: "settings-nav",
+                label: i18n.t("ui.app.settings.page_title"),
+                render: () => `
       <h2>${i18n.t("ui.app.settings.page_title")}</h2>
       <ul>
         <li><button data-composer-scroll="general">${i18n.t("ui.app.settings.general")}</button></li>
@@ -352,66 +378,90 @@ const composer = createPageComposer(root, {
         <li><button data-composer-scroll="advanced">${i18n.t("ui.app.settings.advanced")}</button></li>
       </ul>
     `,
-        },
-    ],
-    floatingMenu: [
-        {
-            id: "settings-changes-bar",
-            label: i18n.t("ui.reuse.unsaved_changes"),
-            render: () => `
+            },
+        ],
+        floatingMenu: [
+            {
+                id: "settings-changes-bar",
+                label: i18n.t("ui.reuse.unsaved_changes"),
+                render: () => `
       <span>${i18n.t("ui.reuse.unsaved_changes")}</span>
       <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t("ui.reuse.generic.discard")}</button>
       <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t("ui.reuse.generic.save")}</button>
     `,
-        },
-    ],
-});
-await composer.init();
+            },
+        ],
+    });
+    await composer.init();
 
-const floatingSlot = composer.getFloatingSlot("settings-changes-bar");
+    const floatingSlot = composer.getFloatingSlot("settings-changes-bar");
 
-changesBar = createUnsavedChangesBar(floatingSlot, {
-    onSave: async () => {
-        const selectedFont = fontPrefs?.getFont();
-        const mode = themePrefs?.getMode() ?? savedMode;
-        const account = localStorage.getItem("cognis_account") ?? "";
-        if (notifPrefs?.isDirty()) {
-            await apiFetch(
-                `/api/v1/users/${encodeURIComponent(account)}/notification-prefs`,
-                {
-                    method: "PUT",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify(notifPrefs.getPendingPrefs()),
-                },
+    changesBar = createUnsavedChangesBar(floatingSlot, {
+        onSave: async () => {
+            const mode = themePrefs?.getMode() ?? savedMode;
+            const account = localStorage.getItem("cognis_account") ?? "";
+            if (notifPrefs?.isDirty()) {
+                await apiFetch(
+                    `/api/v1/users/${encodeURIComponent(account)}/notification-prefs`,
+                    {
+                        method: "PUT",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify(notifPrefs.getPendingPrefs()),
+                    },
+                );
+            }
+            const prefs = {
+                appFont: fontPrefs
+                    ? toFontFamilyValue(fontPrefs.getFont())
+                    : loadedPrefs?.appFont,
+                appFontSize:
+                    fontPrefs?.getFontSize() ?? loadedPrefs?.appFontSize,
+                languagePriority:
+                    languagePrefs?.getPriority() ?? languagePriority,
+                mode,
+                timezone:
+                    datetimePrefs?.getTimezone() ??
+                    loadedPrefs?.timezone ??
+                    "auto",
+            };
+            await savePrefs(prefs);
+            loadedPrefs = { ...loadedPrefs, ...prefs };
+            persistTheme(mode);
+            applyTheme(mode);
+            setPreferredLanguages(prefs.languagePriority);
+            applyTimezoneToLocalStorage(prefs.timezone ?? null, null);
+            localStorage.setItem(
+                "cognis_ui_preferences",
+                JSON.stringify(prefs),
             );
-        }
-        const prefs = {
-            appFont: selectedFont ? toFontFamilyValue(selectedFont) : undefined,
-            appFontSize: fontPrefs?.getFontSize(),
-            languagePriority: languagePrefs?.getPriority() ?? languagePriority,
-            mode,
-            timezone:
-                datetimePrefs?.getTimezone() ??
-                existingPrefs?.timezone ??
-                "auto",
-        };
-        await savePrefs(prefs);
-        persistTheme(mode);
-        applyTheme(mode);
-        setPreferredLanguages(prefs.languagePriority);
-        applyTimezoneToLocalStorage(prefs.timezone ?? null, null);
-        localStorage.setItem("cognis_ui_preferences", JSON.stringify(prefs));
-        showToast(i18n.t("ui.app.settings.saved_alert"), {
-            variant: "success",
-        });
-        await new Promise((resolve) => setTimeout(resolve, 1200));
-        window.location.reload();
-    },
-    onDiscard: () => {
-        fontPrefs?.discard();
-        languagePrefs?.discard();
-        themePrefs?.discard();
-        notifPrefs?.discard();
-        datetimePrefs?.discard();
-    },
-});
+            applyUiPreferences(prefs); // apply font/theme/timezone to live page without reload
+            fontPrefs?.commit();
+            themePrefs?.commit();
+            datetimePrefs?.commit();
+            languagePrefs?.commit();
+            notifPrefs?.commit();
+            showToast(i18n.t("ui.app.settings.saved_alert"), {
+                variant: "success",
+            });
+            const next = prefs.languagePriority ?? [];
+            const prev = languagePriority ?? [];
+            if (hasLanguagePriorityChanged(prev, next)) {
+                // Brief pause so the success toast is visible before the page
+                // reloads (see LANGUAGE_RELOAD_DELAY_MS).
+                await new Promise((resolve) =>
+                    setTimeout(resolve, LANGUAGE_RELOAD_DELAY_MS),
+                );
+                window.location.reload();
+            }
+        },
+        onDiscard: () => {
+            fontPrefs?.discard();
+            languagePrefs?.discard();
+            themePrefs?.discard();
+            notifPrefs?.discard();
+            datetimePrefs?.discard();
+        },
+    });
+}
+
+if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));

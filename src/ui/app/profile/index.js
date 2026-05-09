@@ -12,9 +12,21 @@ import { attachCharCounter } from "../../reuse/char-counter.js";
 import { showToast } from "../../reuse/toast.js";
 import { formatDate } from "../../reuse/timestamp.js";
 
-const root = document.querySelector("#app");
-const i18n = await createI18n();
-applyDocumentTitle(i18n, "ui.page.title.profile");
+let root = null;
+let i18n = null;
+let urlHandle = "";
+let ownAccount = "";
+let isOwnProfile = false;
+let profile = null;
+let followers = [];
+let following = [];
+let posts = [];
+let avatarBlobUrl = null;
+let bannerBlobUrl = null;
+let bannerHeight = null;
+let composer = null;
+let elements = [];
+let bannerMenuCloseHandler = null;
 
 function toAbsoluteUrl(url) {
     if (!url) return url;
@@ -134,37 +146,6 @@ async function saveBannerHeightPreference(height) {
         },
     );
 }
-
-const urlHandle = decodeURIComponent(
-    window.location.pathname.split("/")[2] ?? "",
-);
-const ownAccount = localStorage.getItem("cognis_account") ?? "";
-const isOwnProfile = urlHandle === ownAccount;
-
-let profile;
-
-if (isOwnProfile) {
-    profile = await loadOwnProfile();
-} else {
-    const result = await loadUserProfile(urlHandle);
-    if (result?.notFound) {
-        root.innerHTML = `<p class="profile-not-found-message">${escapeHtml(i18n.t("ui.app.profile.not_found"))}</p>`;
-        throw new Error("profile_not_found");
-    }
-    profile = result;
-}
-
-let [followers, following, posts] = await Promise.all([
-    loadFollowers(profile?.handle),
-    loadFollowing(profile?.handle),
-    isOwnProfile ? loadOwnPosts() : loadUserPosts(profile?.handle),
-]);
-
-let avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
-let bannerBlobUrl = await loadImageAsBlob(profile?.bannerKey);
-let bannerHeight = await loadBannerHeightPreference();
-
-let composer;
 
 function visibilityClass(v) {
     const map = {
@@ -846,8 +827,6 @@ function renderFollowRequests() {
   `;
 }
 
-let bannerMenuCloseHandler = null;
-
 function bindPageEvents() {
     root.querySelector(".profile-hero-edit-btn")?.addEventListener(
         "click",
@@ -953,64 +932,125 @@ function bindPageEvents() {
     }
 }
 
-const elements = [
-    {
-        id: "hero",
-        label: i18n.t("ui.app.profile.section.profile"),
-        gridSize: { default: [4, 4], min: [2, 3], max: "full" },
-        render: renderHero,
-    },
-    {
-        id: "followers",
-        label: i18n.t("ui.app.profile.section.followers"),
-        gridSize: { default: [2, 3], min: [2, 1], max: "half" },
-        render: renderFollowers,
-    },
-    {
-        id: "following",
-        label: i18n.t("ui.app.profile.section.following"),
-        gridSize: { default: [2, 3], min: [2, 1], max: "half" },
-        render: renderFollowing,
-    },
-    {
-        id: "posts",
-        label: i18n.t("ui.app.profile.section.posts"),
-        gridSize: { default: [4, 4], min: [2, 2], max: "full" },
-        render: renderPosts,
-    },
-    {
-        id: "social-links",
-        label: i18n.t("ui.app.profile.section.social_links"),
-        defaultHidden: true,
-        gridSize: { default: [2, 2], min: [1, 1], max: "full" },
-        render: renderSocialLinks,
-    },
-    {
-        id: "suggested",
-        label: i18n.t("ui.app.profile.section.suggested"),
-        defaultHidden: true,
-        gridSize: { default: [2, 3], min: [1, 2], max: "full" },
-        render: renderSuggestedContacts,
-    },
-    {
-        id: "follow-requests",
-        label: i18n.t("ui.app.profile.section.follow_requests"),
-        defaultHidden: true,
-        gridSize: { default: [2, 3], min: [2, 2], max: "full" },
-        render: renderFollowRequests,
-    },
-];
+export async function mount(rootEl, { signal } = {}) {
+    // Clean up any stale document-level listener from a previous mount.
+    if (bannerMenuCloseHandler) {
+        document.removeEventListener("click", bannerMenuCloseHandler, true);
+        bannerMenuCloseHandler = null;
+    }
 
-composer = createPageComposer(root, {
-    allowCustomization: true,
-    elements,
-    preferenceKey: "profile-layout",
-    i18n,
-    pageContext: {
-        title: i18n.t("ui.app.profile.page_title"),
-        subtitle: i18n.t("ui.app.profile.page_subtitle"),
-    },
-    onRender: bindPageEvents,
-});
+    function isAborted() {
+        return signal?.aborted ?? false;
+    }
 
-await composer.init();
+    root = rootEl;
+    i18n = await createI18n();
+    applyDocumentTitle(i18n, "ui.page.title.profile");
+
+    urlHandle = decodeURIComponent(
+        window.location.pathname.split("/")[2] ?? "",
+    );
+    ownAccount = localStorage.getItem("cognis_account") ?? "";
+    isOwnProfile = !urlHandle || urlHandle === ownAccount; // empty handle means /profile with no path segment → own profile
+
+    profile = null;
+    followers = [];
+    following = [];
+    posts = [];
+    avatarBlobUrl = null;
+    bannerBlobUrl = null;
+    bannerHeight = null;
+    composer = null;
+    elements = [];
+
+    if (isOwnProfile) {
+        profile = await loadOwnProfile();
+    } else {
+        const result = await loadUserProfile(urlHandle);
+        if (result?.notFound) {
+            root.innerHTML = `<p class="profile-not-found-message">${escapeHtml(i18n.t("ui.app.profile.not_found"))}</p>`;
+            return;
+        }
+        profile = result;
+    }
+
+    if (isAborted()) return;
+
+    [followers, following, posts] = await Promise.all([
+        loadFollowers(profile?.handle),
+        loadFollowing(profile?.handle),
+        isOwnProfile ? loadOwnPosts() : loadUserPosts(profile?.handle),
+    ]);
+
+    if (isAborted()) return;
+
+    avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
+    bannerBlobUrl = await loadImageAsBlob(profile?.bannerKey);
+    bannerHeight = await loadBannerHeightPreference();
+
+    if (isAborted()) return;
+
+    elements = [
+        {
+            id: "hero",
+            label: i18n.t("ui.app.profile.section.profile"),
+            gridSize: { default: [4, 4], min: [2, 3], max: "full" },
+            render: renderHero,
+        },
+        {
+            id: "followers",
+            label: i18n.t("ui.app.profile.section.followers"),
+            gridSize: { default: [2, 3], min: [2, 1], max: "half" },
+            render: renderFollowers,
+        },
+        {
+            id: "following",
+            label: i18n.t("ui.app.profile.section.following"),
+            gridSize: { default: [2, 3], min: [2, 1], max: "half" },
+            render: renderFollowing,
+        },
+        {
+            id: "posts",
+            label: i18n.t("ui.app.profile.section.posts"),
+            gridSize: { default: [4, 4], min: [2, 2], max: "full" },
+            render: renderPosts,
+        },
+        {
+            id: "social-links",
+            label: i18n.t("ui.app.profile.section.social_links"),
+            defaultHidden: true,
+            gridSize: { default: [2, 2], min: [1, 1], max: "full" },
+            render: renderSocialLinks,
+        },
+        {
+            id: "suggested",
+            label: i18n.t("ui.app.profile.section.suggested"),
+            defaultHidden: true,
+            gridSize: { default: [2, 3], min: [1, 2], max: "full" },
+            render: renderSuggestedContacts,
+        },
+        {
+            id: "follow-requests",
+            label: i18n.t("ui.app.profile.section.follow_requests"),
+            defaultHidden: true,
+            gridSize: { default: [2, 3], min: [2, 2], max: "full" },
+            render: renderFollowRequests,
+        },
+    ];
+
+    composer = createPageComposer(root, {
+        allowCustomization: true,
+        elements,
+        preferenceKey: "profile-layout",
+        i18n,
+        pageContext: {
+            title: i18n.t("ui.app.profile.page_title"),
+            subtitle: i18n.t("ui.app.profile.page_subtitle"),
+        },
+        onRender: bindPageEvents,
+    });
+
+    await composer.init();
+}
+
+if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));

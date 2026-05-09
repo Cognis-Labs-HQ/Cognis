@@ -12,7 +12,7 @@ export function initLanguagePrefs(
     { onDirtyChange } = {},
 ) {
     let languagePriority = [...initialPriority];
-    const savedPriority = [...initialPriority];
+    let savedPriority = [...initialPriority];
     let catalog = [];
 
     function notifyDirty() {
@@ -221,6 +221,10 @@ export function initLanguagePrefs(
         dragLanguage = null;
     });
 
+    function commit() {
+        savedPriority = [...languagePriority];
+    }
+
     function discard() {
         languagePriority = [...savedPriority];
         renderTables();
@@ -240,6 +244,7 @@ export function initLanguagePrefs(
         getPriority: () => languagePriority,
         isDirty: () =>
             JSON.stringify(languagePriority) !== JSON.stringify(savedPriority),
+        commit,
         discard,
     };
 }

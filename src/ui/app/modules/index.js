@@ -2,9 +2,10 @@ import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 
-const root = document.querySelector("#app");
-const i18n = await createI18n();
-applyDocumentTitle(i18n, "ui.page.title.modules");
+let root = null;
+let i18n = null;
+let modules = [];
+let composer = null;
 
 async function loadModules() {
     const response = await apiFetch("/api/v1/modules");
@@ -17,10 +18,9 @@ async function toggleModule(moduleId, action) {
         `/api/v1/modules/${encodeURIComponent(moduleId)}/${action}`,
         { method: "POST" },
     );
-    window.location.reload();
+    modules = await loadModules();
+    composer.refresh();
 }
-
-const modules = await loadModules();
 
 function renderModulesTable(rows) {
     const rowsHtml = rows
@@ -52,41 +52,51 @@ function renderModulesTable(rows) {
   `;
 }
 
-const elements = [
-    {
-        id: "modules-list",
-        label: i18n.t("ui.reuse.modules"),
-        render: () =>
-            `<h2>${i18n.t("ui.app.modules.page_title")}</h2>${renderModulesTable(modules)}`,
-    },
-];
+export async function mount(rootEl) {
+    root = rootEl;
+    i18n = await createI18n();
+    applyDocumentTitle(i18n, "ui.page.title.modules");
 
-const composer = createPageComposer(root, {
-    allowCustomization: false,
-    elements,
-    preferenceKey: "modules-layout",
-    i18n,
-    pageContext: {
-        title: i18n.t("ui.app.modules.page_title"),
-        subtitle: i18n.t("ui.app.modules.page_subtitle"),
-    },
-    toolbar: [
+    modules = await loadModules();
+
+    const elements = [
         {
-            id: "modules-nav",
+            id: "modules-list",
             label: i18n.t("ui.reuse.modules"),
             render: () =>
-                `<h3>${i18n.t("ui.reuse.modules")}</h3><p>${i18n.t("ui.app.modules.toolbar_subtitle")}</p>`,
+                `<h2>${i18n.t("ui.app.modules.page_title")}</h2>${renderModulesTable(modules)}`,
         },
-    ],
-    onRender: () => {
-        root.querySelectorAll("button[data-module]").forEach((button) => {
-            button.addEventListener("click", async () => {
-                await toggleModule(
-                    button.dataset.module,
-                    button.dataset.action,
-                );
+    ];
+
+    composer = createPageComposer(root, {
+        allowCustomization: false,
+        elements,
+        preferenceKey: "modules-layout",
+        i18n,
+        pageContext: {
+            title: i18n.t("ui.app.modules.page_title"),
+            subtitle: i18n.t("ui.app.modules.page_subtitle"),
+        },
+        toolbar: [
+            {
+                id: "modules-nav",
+                label: i18n.t("ui.reuse.modules"),
+                render: () =>
+                    `<h3>${i18n.t("ui.reuse.modules")}</h3><p>${i18n.t("ui.app.modules.toolbar_subtitle")}</p>`,
+            },
+        ],
+        onRender: () => {
+            root.querySelectorAll("button[data-module]").forEach((button) => {
+                button.addEventListener("click", async () => {
+                    await toggleModule(
+                        button.dataset.module,
+                        button.dataset.action,
+                    );
+                });
             });
-        });
-    },
-});
-await composer.init();
+        },
+    });
+    await composer.init();
+}
+
+if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));

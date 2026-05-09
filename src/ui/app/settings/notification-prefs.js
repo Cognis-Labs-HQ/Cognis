@@ -21,7 +21,7 @@ import { showToast } from "../../reuse/toast.js";
  *
  * @param {Element} root
  * @param {{ i18n: object, username: string, onDirtyChange?: (dirty: boolean) => void }} options
- * @returns {{ init: () => Promise<void>, discard: () => void, isDirty: () => boolean, getPendingPrefs: () => Array<{senderId: string, category: string, enabled: boolean}> }}
+ * @returns {{ init: () => Promise<void>, commit: () => void, discard: () => void, isDirty: () => boolean, getPendingPrefs: () => Array<{senderId: string, category: string, enabled: boolean}> }}
  */
 export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
     let providers = [];
@@ -158,6 +158,10 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
         return false;
     }
 
+    function commit() {
+        savedPrefs = { ...pendingPrefs };
+    }
+
     function discard() {
         pendingPrefs = { ...savedPrefs };
         renderMatrix();
@@ -200,6 +204,7 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
             renderMatrix();
             bindMatrixToggles();
         },
+        commit,
         discard,
         isDirty,
         getPendingPrefs,

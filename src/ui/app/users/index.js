@@ -8,11 +8,9 @@ import { createRepromptGuard } from "../../reuse/reprompt.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
 
-const root = document.querySelector("#app");
-const i18n = await createI18n();
-applyDocumentTitle(i18n, "ui.page.title.users");
-
-const reprompt = createRepromptGuard({ i18n });
+let root = null;
+let i18n = null;
+let reprompt = null;
 let users = [];
 let registrationGatewayActive = false;
 let composer = null;
@@ -417,26 +415,38 @@ async function triggerInviteFlow() {
     );
 }
 
-await refreshData();
+export async function mount(rootEl, { signal } = {}) {
+    root = rootEl;
+    i18n = await createI18n();
+    applyDocumentTitle(i18n, "ui.page.title.users");
 
-composer = createPageComposer(root, {
-    allowCustomization: false,
-    i18n,
-    preferenceKey: "users-layout",
-    pageContext: {
-        title: i18n.t("ui.app.users.page_title"),
-        subtitle: i18n.t("ui.app.users.page_subtitle"),
-    },
-    toolbar: [],
-    elements,
-    onRender: () => {
-        bindUsersInteractions();
-    },
-});
+    reprompt = createRepromptGuard({ i18n });
+    users = [];
+    registrationGatewayActive = false;
 
-await composer.init();
+    await refreshData();
 
-const pageAction = new URL(location.href).searchParams.get("action");
-if (pageAction === "invite" && registrationGatewayActive) {
-    await triggerInviteFlow();
+    composer = createPageComposer(root, {
+        allowCustomization: false,
+        i18n,
+        preferenceKey: "users-layout",
+        pageContext: {
+            title: i18n.t("ui.app.users.page_title"),
+            subtitle: i18n.t("ui.app.users.page_subtitle"),
+        },
+        toolbar: [],
+        elements,
+        onRender: () => {
+            bindUsersInteractions();
+        },
+    });
+
+    await composer.init();
+
+    const pageAction = new URL(location.href).searchParams.get("action");
+    if (pageAction === "invite" && registrationGatewayActive) {
+        await triggerInviteFlow();
+    }
 }
+
+if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
