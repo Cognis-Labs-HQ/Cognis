@@ -233,6 +233,15 @@ export function createRegistrationPageRoutes() {
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname !== "/register" || req.method !== "GET") return false;
+
+        // Users with a valid session are already authenticated; send them to
+        // the dashboard rather than showing the registration form.
+        if (getCookieSession(req)) {
+            res.writeHead(302, { location: "/dashboard" });
+            res.end();
+            return true;
+        }
+
         try {
             const file = await readFile(
                 path.join(PUBLIC_ROOT, "pages", "register.html"),

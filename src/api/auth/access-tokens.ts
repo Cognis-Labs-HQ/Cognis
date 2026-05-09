@@ -198,6 +198,18 @@ export function verifyAccessToken(
     return { sub: stored.record.subject, role: stored.record.role };
 }
 
+export function revokeAccessToken(rawToken: string): boolean {
+    pruneExpiredTokens();
+    const tokenHash = hashToken(rawToken);
+    const record = tokenStore.get(tokenHash);
+    if (!record) return false;
+    tokenStore.delete(tokenHash);
+    revokedTokenStore.set(tokenHash, record);
+    verifiedAtByToken.delete(tokenHash);
+    persistTokenStore();
+    return true;
+}
+
 export function revokeAccessTokensForSubject(subject: string): number {
     let removed = 0;
     for (const [tokenHash, record] of tokenStore.entries()) {

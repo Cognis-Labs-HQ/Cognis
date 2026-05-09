@@ -7,6 +7,11 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- Logout was client-side only: clearing localStorage did not invalidate the `cognis_access_token` HttpOnly cookie, leaving the session cookie usable after logout. A `POST /api/v1/auth/logout` endpoint now revokes the token server-side and clears the cookie via `Set-Cookie: Max-Age=0`. The dashboard logout handler calls this endpoint before navigating to `/login`. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- The `/register` page route now redirects authenticated users (those with a valid session cookie) to `/dashboard` rather than serving the registration form. This closes the path where a user with a stale-but-valid session cookie could open the register page and then navigate directly to the dashboard without re-authenticating. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+
 ### Fixed
 
 - Issuing a new invite to the same recipient email now automatically revokes all prior pending tokens for that address, preventing stale invite links from remaining valid. ([828e463](https://github.com/le-firehawk/Cognis/commit/828e463))

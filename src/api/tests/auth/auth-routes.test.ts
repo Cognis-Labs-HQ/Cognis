@@ -3,7 +3,10 @@ import assert from "node:assert/strict";
 import { createAuthRoutes } from "../../routes/auth/index.js";
 import { VolatileLocalAccountStore } from "../../reuse/account-store.js";
 import type { AuthContext, AuthGateway } from "@cognis/core";
-import { issueAccessToken } from "../../auth/access-tokens.js";
+import {
+    issueAccessToken,
+    lookupAccessToken,
+} from "../../auth/access-tokens.js";
 
 function makeGateway(store: VolatileLocalAccountStore): AuthGateway {
     return {
@@ -304,4 +307,58 @@ test("login sets secure cookie when request is forwarded over https", async () =
             process.env.COGNIS_SECURE_COOKIES = previousSecureCookies;
         }
     }
+});
+
+test("POST /api/v1/auth/logout revokes the cookie token and clears the cookie", async () => {
+    const accountStore = new VolatileLocalAccountStore();
+    const gateway = makeGateway(accountStore);
+    const route = createAuthRoutes(gateway, accountStore);
+    const token = issueAccessToken("logout-user", "user", 3600);
+    let status = 0;
+    let setCookie = "";
+
+    await route(
+        {
+            method: "POST",
+            headers: { cookie: `cognis_access_token=${token}` },
+        } as any,
+        {
+            writeHead(code: number, headers: Record<string, string>) {
+                status = code;
+                setCookie = headers["set-cookie"] ?? "";
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/auth/logout"),
+    );
+
+    assert.equal(status, 200);
+    assert.match(setCookie, /cognis_access_token=;/);
+    assert.match(setCookie, /Max-Age=0/);
+
+    const tokenInfo = lookupAccessToken(token);
+    assert.ok(
+        tokenInfo?.revoked,
+        "token should be marked as revoked after logout",
+    );
+});
+
+test("POST /api/v1/auth/logout succeeds with no cookie (idempotent)", async () => {
+    const accountStore = new VolatileLocalAccountStore();
+    const gateway = makeGateway(accountStore);
+    const route = createAuthRoutes(gateway, accountStore);
+    let status = 0;
+
+    await route(
+        { method: "POST", headers: {} } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/auth/logout"),
+    );
+
+    assert.equal(status, 200);
 });

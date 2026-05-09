@@ -2,6 +2,7 @@ import {
     issueAccessToken,
     isTokenVerificationFresh,
     recordTokenVerification,
+    revokeAccessToken,
     type AccessRole,
 } from "../../auth/access-tokens.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -196,6 +197,27 @@ export function createAuthRoutes(
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { verified: true } }));
+            return true;
+        }
+
+        if (url.pathname === "/api/v1/auth/logout" && req.method === "POST") {
+            const cookieHeader = req.headers.cookie ?? "";
+            const cookieMatch = cookieHeader.match(
+                /(?:^|; )cognis_access_token=([^;]+)/,
+            );
+            const cookieToken = cookieMatch
+                ? decodeURIComponent(cookieMatch[1])
+                : null;
+            if (cookieToken) {
+                revokeAccessToken(cookieToken);
+            }
+            const useSecure = shouldSetSecureCookie(req);
+            const securePart = useSecure ? "; Secure" : "";
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "set-cookie": `cognis_access_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${securePart}`,
+            });
+            res.end(JSON.stringify({ data: { success: true } }));
             return true;
         }
 

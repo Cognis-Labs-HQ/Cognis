@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { issueAccessToken } from "../../../api/auth/access-tokens.js";
-import { createRegistrationRoutes } from "../bootstrap.js";
+import {
+    createRegistrationRoutes,
+    createRegistrationPageRoutes,
+} from "../bootstrap.js";
 
 function makeResponse() {
     let status = 0;
@@ -275,4 +278,53 @@ test("issue invite returns 409 when email is already registered", async () => {
     assert.equal(handled, true);
     assert.equal(res.status, 409);
     assert.match(res.payload, /email_taken/);
+});
+
+test("GET /register redirects authenticated users to the dashboard", async () => {
+    const route = createRegistrationPageRoutes();
+    const token = issueAccessToken("reg-authed-user", "user", 60);
+    let status = 0;
+    let location = "";
+
+    const handled = await route(
+        {
+            method: "GET",
+            headers: { cookie: `cognis_access_token=${token}` },
+        } as any,
+        {
+            writeHead(code: number, headers: Record<string, string>) {
+                status = code;
+                location = headers?.location ?? "";
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/register"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(status, 302);
+    assert.equal(location, "/dashboard");
+});
+
+test("GET /register serves the registration page to unauthenticated visitors", async () => {
+    const route = createRegistrationPageRoutes();
+    let status = 0;
+
+    const handled = await route(
+        { method: "GET", headers: {} } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/register"),
+    );
+
+    assert.equal(handled, true);
+    assert.notEqual(
+        status,
+        302,
+        "unauthenticated user should not be redirected",
+    );
 });
