@@ -13,9 +13,16 @@ import {
     getGatewayEnableableAdapters,
 } from "./toggle-flows.js";
 
-const root = document.querySelector("#app");
-const i18n = await createI18n();
-applyDocumentTitle(i18n, "ui.page.title.administration");
+let root = null;
+let i18n = null;
+let modules = [];
+let integrityRows = [];
+let gateways = [];
+let allAdapters = [];
+let composer = null;
+let changesBar = null;
+let securitySection = null;
+let elements = [];
 
 async function loadModules() {
     const response = await apiFetch("/api/v1/modules");
@@ -1289,15 +1296,6 @@ async function loadAllAdapters(gatewayList) {
     return results.flat();
 }
 
-let [modules, integrityRows] = await Promise.all([
-    loadModules(),
-    loadIntegrity(),
-]);
-let gateways = await loadGateways();
-let allAdapters = await loadAllAdapters(gateways);
-let composer;
-let changesBar;
-
 async function guardSubPageSwitch() {
     if (!changesBar?.isAnyDirty()) return true;
     const result = await openPopup({
@@ -1325,177 +1323,205 @@ async function guardSubPageSwitch() {
     return false;
 }
 
-window.addEventListener("beforeunload", (e) => {
-    if (changesBar?.isAnyDirty()) {
-        e.preventDefault();
-    }
-});
+export async function mount(rootEl, { signal } = {}) {
+    root = rootEl;
+    i18n = await createI18n();
+    applyDocumentTitle(i18n, "ui.page.title.administration");
 
-const securitySection = initSecuritySection(root, {
-    i18n,
-    onDirtyChange: (dirty) => changesBar?.markDirty("security", dirty),
-});
+    modules = [];
+    integrityRows = [];
+    gateways = [];
+    allAdapters = [];
 
-const sectionMeta = await loadAdminSections();
-const gatewaySections = (
-    await Promise.all(sectionMeta.map(loadGatewaySection))
-).filter(Boolean);
+    [modules, integrityRows] = await Promise.all([
+        loadModules(),
+        loadIntegrity(),
+    ]);
+    gateways = await loadGateways();
+    allAdapters = await loadAllAdapters(gateways);
 
-const baseElements = [
-    {
-        id: "components",
-        label: i18n.t("ui.app.admin.components"),
-        subComposerOptions: {
-            allowCustomization: false,
-            preferenceKey: "administration-components-layout",
-            heading: i18n.t("ui.app.admin.components"),
-            elements: [
-                {
-                    id: "components-content",
-                    label: i18n.t("ui.app.admin.components"),
-                    pinned: true,
-                    render: () =>
-                        renderComponentsContent(modules, gateways, allAdapters),
+    securitySection = initSecuritySection(root, {
+        i18n,
+        onDirtyChange: (dirty) => changesBar?.markDirty("security", dirty),
+    });
+
+    const sectionMeta = await loadAdminSections();
+    const gatewaySections = (
+        await Promise.all(sectionMeta.map(loadGatewaySection))
+    ).filter(Boolean);
+
+    const baseElements = [
+        {
+            id: "components",
+            label: i18n.t("ui.app.admin.components"),
+            subComposerOptions: {
+                allowCustomization: false,
+                preferenceKey: "administration-components-layout",
+                heading: i18n.t("ui.app.admin.components"),
+                elements: [
+                    {
+                        id: "components-content",
+                        label: i18n.t("ui.app.admin.components"),
+                        pinned: true,
+                        render: () =>
+                            renderComponentsContent(
+                                modules,
+                                gateways,
+                                allAdapters,
+                            ),
+                    },
+                ],
+                onRender: () => {
+                    bindModuleToggles();
+                    bindGatewayToggles();
+                    bindAdapterToggles();
+                    bindAdapterRows();
+                    bindSummarySliderClicks();
+                    bindDependencyLinks();
+                    restoreExpandedState();
+                    bindExpandedStateListeners();
                 },
-            ],
-            onRender: () => {
-                bindModuleToggles();
-                bindGatewayToggles();
-                bindAdapterToggles();
-                bindAdapterRows();
-                bindSummarySliderClicks();
-                bindDependencyLinks();
-                restoreExpandedState();
-                bindExpandedStateListeners();
             },
         },
-    },
-    {
-        id: "integrity",
-        label: i18n.t("ui.reuse.file_integrity"),
-        subComposerOptions: {
-            allowCustomization: false,
-            preferenceKey: "administration-integrity-layout",
-            heading: i18n.t("ui.reuse.file_integrity"),
-            elements: [
-                {
-                    id: "integrity-content",
-                    label: i18n.t("ui.reuse.file_integrity"),
-                    pinned: true,
-                    render: () => `
+        {
+            id: "integrity",
+            label: i18n.t("ui.reuse.file_integrity"),
+            subComposerOptions: {
+                allowCustomization: false,
+                preferenceKey: "administration-integrity-layout",
+                heading: i18n.t("ui.reuse.file_integrity"),
+                elements: [
+                    {
+                        id: "integrity-content",
+                        label: i18n.t("ui.reuse.file_integrity"),
+                        pinned: true,
+                        render: () => `
             <div class="integrity-header">
               <button id="rerun-integrity" class="btn-confirm btn-animated" type="button">${i18n.t("ui.reuse.generic.refresh")}</button>
             </div>
             ${renderIntegrityContent(integrityRows)}
           `,
+                    },
+                ],
+                onRender: () => {
+                    bindIntegrityRerun();
                 },
-            ],
-            onRender: () => {
-                bindIntegrityRerun();
             },
         },
-    },
-    {
-        id: "security",
-        label: i18n.t("ui.app.admin.security.title"),
-        subComposerOptions: {
-            allowCustomization: false,
-            preferenceKey: "administration-security-layout",
-            heading: i18n.t("ui.app.admin.security.title"),
-            elements: [
-                {
-                    id: "security-content",
-                    label: i18n.t("ui.app.admin.security.title"),
-                    pinned: true,
-                    render: () => securitySection.renderContent(),
-                },
-            ],
-            onRender: () => {
-                securitySection.init();
-            },
-        },
-    },
-];
-
-const elements = [
-    ...baseElements,
-    ...gatewaySections.map((sec) => ({
-        id: sec.id,
-        label: sec.label,
-        subComposerOptions: {
-            ...sec.subComposerOptions,
-            onRender: () => sec.subComposerOptions?.onRender?.(root),
-        },
-    })),
-];
-
-const navItems = [
-    `<li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>`,
-    `<li><button data-composer-scroll="integrity">${i18n.t("ui.reuse.file_integrity")}</button></li>`,
-    `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
-    ...gatewaySections.map(
-        (sec) =>
-            `<li><button data-composer-scroll="${escapeHtml(sec.id)}">${escapeHtml(sec.label)}</button></li>`,
-    ),
-];
-
-composer = createPageComposer(root, {
-    allowCustomization: false,
-    subPageNavigation: true,
-    elements,
-    preferenceKey: "administration-layout",
-    i18n,
-    onBeforeSubPageSwitch: guardSubPageSwitch,
-    pageContext: {
-        title: i18n.t("ui.app.admin.page_title"),
-        subtitle: i18n.t("ui.app.admin.page_subtitle"),
-    },
-    toolbar: [
         {
-            id: "admin-nav",
-            label: i18n.t("ui.app.admin.page_title"),
-            render: () => `
+            id: "security",
+            label: i18n.t("ui.app.admin.security.title"),
+            subComposerOptions: {
+                allowCustomization: false,
+                preferenceKey: "administration-security-layout",
+                heading: i18n.t("ui.app.admin.security.title"),
+                elements: [
+                    {
+                        id: "security-content",
+                        label: i18n.t("ui.app.admin.security.title"),
+                        pinned: true,
+                        render: () => securitySection.renderContent(),
+                    },
+                ],
+                onRender: () => {
+                    securitySection.init();
+                },
+            },
+        },
+    ];
+
+    elements = [
+        ...baseElements,
+        ...gatewaySections.map((sec) => ({
+            id: sec.id,
+            label: sec.label,
+            subComposerOptions: {
+                ...sec.subComposerOptions,
+                onRender: () => sec.subComposerOptions?.onRender?.(root),
+            },
+        })),
+    ];
+
+    const navItems = [
+        `<li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>`,
+        `<li><button data-composer-scroll="integrity">${i18n.t("ui.reuse.file_integrity")}</button></li>`,
+        `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
+        ...gatewaySections.map(
+            (sec) =>
+                `<li><button data-composer-scroll="${escapeHtml(sec.id)}">${escapeHtml(sec.label)}</button></li>`,
+        ),
+    ];
+
+    composer = createPageComposer(root, {
+        allowCustomization: false,
+        subPageNavigation: true,
+        elements,
+        preferenceKey: "administration-layout",
+        i18n,
+        onBeforeSubPageSwitch: guardSubPageSwitch,
+        pageContext: {
+            title: i18n.t("ui.app.admin.page_title"),
+            subtitle: i18n.t("ui.app.admin.page_subtitle"),
+        },
+        toolbar: [
+            {
+                id: "admin-nav",
+                label: i18n.t("ui.app.admin.page_title"),
+                render: () => `
         <h2>${i18n.t("ui.app.admin.page_title")}</h2>
         <ul>
           ${navItems.join("\n")}
         </ul>
       `,
-        },
-    ],
-    floatingMenu: [
-        {
-            id: "admin-changes-bar",
-            label: i18n.t("ui.reuse.unsaved_changes"),
-            render: () => `
+            },
+        ],
+        floatingMenu: [
+            {
+                id: "admin-changes-bar",
+                label: i18n.t("ui.reuse.unsaved_changes"),
+                render: () => `
         <span>${i18n.t("ui.reuse.unsaved_changes")}</span>
         <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t("ui.reuse.generic.discard")}</button>
         <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t("ui.reuse.generic.save")}</button>
       `,
+            },
+        ],
+    });
+    await composer.init();
+
+    const floatingSlot = composer.getFloatingSlot("admin-changes-bar");
+
+    changesBar = createUnsavedChangesBar(floatingSlot, {
+        onSave: async () => {
+            try {
+                await securitySection.save();
+                changesBar.markDirty("security", false);
+                gateways = await loadGateways();
+                allAdapters = await loadAllAdapters(gateways);
+                composer.refresh(elements);
+                showToast(i18n.t("ui.app.admin.security.saved"), {
+                    variant: "success",
+                });
+            } catch {
+                showToast(i18n.t("ui.app.admin.security.save_failed"), {
+                    variant: "error",
+                });
+            }
         },
-    ],
-});
-await composer.init();
+        onDiscard: () => {
+            securitySection.discard();
+        },
+    });
 
-const floatingSlot = composer.getFloatingSlot("admin-changes-bar");
+    window.addEventListener(
+        "beforeunload",
+        (e) => {
+            if (changesBar?.isAnyDirty()) {
+                e.preventDefault();
+            }
+        },
+        { signal },
+    );
+}
 
-changesBar = createUnsavedChangesBar(floatingSlot, {
-    onSave: async () => {
-        try {
-            await securitySection.save();
-            changesBar.markDirty("security", false);
-            gateways = await loadGateways();
-            allAdapters = await loadAllAdapters(gateways);
-            composer.refresh(elements);
-            showToast(i18n.t("ui.app.admin.security.saved"), {
-                variant: "success",
-            });
-        } catch {
-            showToast(i18n.t("ui.app.admin.security.save_failed"), {
-                variant: "error",
-            });
-        }
-    },
-    onDiscard: () => {
-        securitySection.discard();
-    },
-});
+await mount(document.querySelector("#app"));
