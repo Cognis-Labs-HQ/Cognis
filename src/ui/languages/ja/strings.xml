@@ -516,4 +516,6 @@
   <string name="module.social.messages.lookup_placeholder">ハンドルで検索…</string>
   <string name="module.social.messages.icon_label">メッセージ</string>
   <string name="module.social.messages.load_earlier">以前を読み込む</string>
+  <string name="module.social.messages.start_failed">会話を開始できませんでした。</string>
+  <string name="module.social.messages.key_unavailable">暗号化キーを利用できません。</string>
 </resources>
