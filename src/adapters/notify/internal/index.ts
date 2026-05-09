@@ -22,6 +22,10 @@ class InternalNotificationSender implements NotificationSender {
     readonly senderId = SENDER_ID;
     readonly senderName = "Internal (In-App)";
 
+    constructor(
+        private readonly storeOverride: IInternalNotificationStore | null = null,
+    ) {}
+
     isConfigured(): boolean {
         return true;
     }
@@ -31,12 +35,19 @@ class InternalNotificationSender implements NotificationSender {
     }
 
     async send(envelope: NotificationEnvelope): Promise<void> {
-        await activeStore.add(envelope);
+        await (this.storeOverride ?? activeStore).add(envelope);
     }
 }
 
-export function createNotificationSender(): NotificationSender {
-    return new InternalNotificationSender();
+export function createNotificationSender(
+    storeOverride?: IInternalNotificationStore,
+): NotificationSender {
+    return new InternalNotificationSender(storeOverride ?? null);
+}
+
+/** @internal For use in tests only. Returns the active notification store. */
+export function getActiveStoreForTesting(): IInternalNotificationStore {
+    return activeStore;
 }
 
 export async function bootstrapNotifyAdapter(
@@ -48,10 +59,11 @@ export async function bootstrapNotifyAdapter(
         const secret = getServerSecret();
         if (!secret) {
             ctx.log?.(
-                "warn",
-                "NOTIFICATION_ENCRYPT_SECRET is not set. Notifications will be encrypted with a default key shared across deployments.",
+                "error",
+                "NOTIFICATION_ENCRYPT_SECRET is not set. Notifications will be encrypted with a default key shared across deployments. Set this variable to a unique secret in production.",
                 {
                     component: "notify-internal",
+                    fatal: true,
                 },
             );
         }
@@ -59,6 +71,7 @@ export async function bootstrapNotifyAdapter(
             ctx.dbExecutor,
             ctx.dbType,
             secret,
+            ctx.log,
         );
         await dbStore.ensureSchema();
         activeStore = dbStore;

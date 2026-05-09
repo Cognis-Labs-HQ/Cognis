@@ -742,7 +742,7 @@ function createGatewayAdapterRoutes(
                 if (adapterId === "internal") {
                     log?.(
                         "warn",
-                        "Blocked attempt to disable locked notify adapter.",
+                        "The internal notification adapter is always-on and cannot be disabled.",
                         {
                             ...logMeta,
                             adapterId,

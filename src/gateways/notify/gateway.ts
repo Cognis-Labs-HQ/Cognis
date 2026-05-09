@@ -189,6 +189,10 @@ export class CoreNotificationGateway
         this.alwaysOnSenders.add(senderId);
     }
 
+    isAlwaysOn(senderId: string): boolean {
+        return this.alwaysOnSenders.has(senderId);
+    }
+
     registerSender(sender: NotificationSender, requires?: string[]): void {
         this.senders.set(sender.senderId, sender);
         if (requires && requires.length > 0) {
@@ -435,6 +439,11 @@ export class CoreNotificationGateway
                 if (!pkg.main) continue;
 
                 const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
+                // The import path must be stable (no cache-busting query string) so that
+                // the ESM module cache is shared between discoverSenders() and
+                // bootstrapAdapters(). Using the same module instance ensures the
+                // module-level activeStore set during bootstrap is the same one used by
+                // the sender registered in discoverSenders().
                 const mod = await import(entryPath);
 
                 if (typeof mod.bootstrapNotifyAdapter === "function") {
@@ -457,7 +466,7 @@ export class CoreNotificationGateway
             envelope.recipientUsername,
             envelope.category,
         );
-        const allSenderIds = new Set([
+        const effectiveSenderIds = new Set([
             ...prefSenderIds,
             ...this.alwaysOnSenders,
         ]);
@@ -476,7 +485,7 @@ export class CoreNotificationGateway
             ? { ...envelope, recipientEmail }
             : envelope;
 
-        for (const id of allSenderIds) {
+        for (const id of effectiveSenderIds) {
             if (this.disabledSenders.has(id)) continue;
             const sender = this.senders.get(id);
             if (!sender) continue;

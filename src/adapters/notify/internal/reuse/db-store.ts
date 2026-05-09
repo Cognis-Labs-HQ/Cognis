@@ -35,11 +35,18 @@ interface EncryptedPayload {
 
 const MAX_PER_USER = 50;
 
+type StoreLog = (
+    level: string,
+    msg: string,
+    meta?: Record<string, unknown>,
+) => void;
+
 export class DbInternalNotificationStore implements IInternalNotificationStore {
     constructor(
         private readonly db: DbExecutor,
         private readonly dbType: SupportedDbType,
         private readonly serverSecret: string,
+        private readonly log?: StoreLog,
     ) {}
 
     private placeholder(index: number): string {
@@ -67,8 +74,15 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
                 "CREATE INDEX IF NOT EXISTS idx_internal_notif_account" +
                     " ON internal_notifications (account_id, created_at)",
             );
-        } catch {
-            // Index may already exist in older MariaDB versions that do not support IF NOT EXISTS
+        } catch (err) {
+            this.log?.(
+                "warn",
+                "Could not create index on internal_notifications; queries may be slower.",
+                {
+                    component: "notify-internal",
+                    error: err instanceof Error ? err.message : String(err),
+                },
+            );
         }
     }
 
@@ -162,8 +176,16 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
                     read: Boolean(row.read),
                     createdAt: Number(row.created_at),
                 });
-            } catch {
-                // Decryption failed — skip row (key rotation, corruption, or wrong secret)
+            } catch (err) {
+                this.log?.(
+                    "warn",
+                    "Failed to decrypt notification; row skipped. Check NOTIFICATION_ENCRYPT_SECRET or for database corruption.",
+                    {
+                        component: "notify-internal",
+                        notifId: row.id,
+                        error: err instanceof Error ? err.message : String(err),
+                    },
+                );
             }
         }
 

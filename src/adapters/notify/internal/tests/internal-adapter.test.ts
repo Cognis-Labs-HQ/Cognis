@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { InternalNotificationStore } from "../store.js";
+import { AsyncInternalNotificationStore } from "../store.js";
 import { createNotificationSender } from "../index.js";
 import type { NotificationEnvelope } from "../../../../gateways/notify/gateway.js";
 
@@ -117,6 +118,12 @@ test("createNotificationSender: returns a sender with correct id", () => {
 });
 
 test("createNotificationSender: send adds to store", async () => {
-    const sender = createNotificationSender();
+    const store = new AsyncInternalNotificationStore();
+    const sender = createNotificationSender(store);
     await sender.send(makeEnvelope("testuser", "Live test", "Live body"));
+    const list = await store.list("testuser");
+    assert.equal(list.length, 1);
+    assert.equal(list[0].subject, "Live test");
+    assert.equal(list[0].body, "Live body");
+    assert.equal(list[0].read, false);
 });
