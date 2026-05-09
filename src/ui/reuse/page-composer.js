@@ -2667,7 +2667,10 @@ export function createPageComposer(
                     mainWindow &&
                     !mainWindow.querySelector(".toolbar-mobile-toggle")
                 ) {
-                    mainWindow.insertBefore(mobileToggleBtn, mainWindow.firstChild);
+                    mainWindow.insertBefore(
+                        mobileToggleBtn,
+                        mainWindow.firstChild,
+                    );
                 }
                 if (shell && !shell.querySelector(".toolbar-mobile-backdrop")) {
                     shell.appendChild(mobileBackdrop);
@@ -2697,7 +2700,10 @@ export function createPageComposer(
                     );
                 }
 
-                function setMobileDrawerOpen(nextOpen, { restoreFocus = true } = {}) {
+                function setMobileDrawerOpen(
+                    nextOpen,
+                    { restoreFocus = true } = {},
+                ) {
                     const open = isMobileDrawerMode() && Boolean(nextOpen);
                     mobileDrawerOpen = open;
                     toolbarEl.classList.toggle("toolbar--mobile-open", open);
@@ -2712,7 +2718,9 @@ export function createPageComposer(
                         if (restoreFocus) mobileToggleBtn.focus();
                     }
                     mobileToggleBtn.setAttribute("aria-expanded", String(open));
-                    mobileToggleBtn.textContent = open ? COLLAPSE_ICON : EXPAND_ICON;
+                    mobileToggleBtn.textContent = open
+                        ? COLLAPSE_ICON
+                        : EXPAND_ICON;
                     mobileToggleBtn.setAttribute(
                         "aria-label",
                         open
@@ -2753,7 +2761,10 @@ export function createPageComposer(
                         setMobileDrawerOpen(false, { restoreFocus: false });
                     }
                 });
-                mobileMedia.addEventListener("change", syncToolbarViewportState);
+                mobileMedia.addEventListener(
+                    "change",
+                    syncToolbarViewportState,
+                );
 
                 root.querySelectorAll("[data-composer-scroll]").forEach(
                     (btn) => {
