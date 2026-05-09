@@ -1992,6 +1992,32 @@ export function createPageComposer(
 
         state.container = sectionContainer;
 
+        const hasExistingContent =
+            !state.editing && sectionContainer.children.length > 0;
+
+        if (hasExistingContent) {
+            if (state.columns === 2) {
+                sectionContainer.classList.add("content-grid--two-column");
+            }
+            if (state.resizeObserver) {
+                state.resizeObserver.disconnect();
+            }
+            state.resizeObserver = new ResizeObserver(() => {
+                if (!state.container) return;
+                state.container.style.width = "";
+                const width = state.container.getBoundingClientRect().width;
+                const newCols = Math.max(1, Math.floor(width / UNIT));
+                if (newCols !== state.lastObservedCols) {
+                    state.lastObservedCols = newCols;
+                    computeSubGridDimensions(state);
+                    renderSubGrid(state);
+                }
+            });
+            state.resizeObserver.observe(sectionContainer);
+            state.onRender?.();
+            return;
+        }
+
         if (!state.layout || (state.layout.order && !state.layout.placements)) {
             state.layout = { placements: [], hidden: [] };
         }
@@ -2028,7 +2054,9 @@ export function createPageComposer(
         if (state.container) {
             state.container.classList.remove("composer-grid-active");
             state.container.classList.remove("content-grid--two-column");
-            state.container.innerHTML = "";
+            if (state.editing) {
+                state.container.innerHTML = "";
+            }
         }
         state.container = null;
     }
@@ -2252,6 +2280,9 @@ export function createPageComposer(
                         : "";
                     return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
                 }
+                if (subPageNavigation && !isActive && !editing) {
+                    return `<div class="content-section"${hiddenAttr} id="${el.id}" data-lazy-section></div>`;
+                }
                 return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
             })
             .join("");
@@ -2299,7 +2330,8 @@ export function createPageComposer(
         for (const id of effectiveLayout.order) {
             if (effectiveLayout.hidden.includes(id)) continue;
             const el = elements.find((entry) => entry.id === id);
-            el?.onRender?.();
+            if (!el?.subComposerOptions && id !== activeSubPageId) continue;
+            if (!el?.subComposerOptions) el?.onRender?.();
         }
         onRender?.();
         const activeEl = elements.find((e) => e.id === activeSubPageId);
@@ -2310,6 +2342,8 @@ export function createPageComposer(
                 outerDiv ??
                 contentGrid;
             mountSubComposer(activeEl, sectionDiv).catch(() => {});
+        } else if (activeEl) {
+            activeEl.onRender?.();
         }
     }
 
@@ -2453,10 +2487,35 @@ export function createPageComposer(
                 outerDiv ??
                 contentGrid;
             mountSubComposer(newEl, sectionDiv).catch(() => {});
+        } else if (newEl) {
+            const sectionEl = contentGrid.querySelector(`#${CSS.escape(id)}`);
+            if (sectionEl?.hasAttribute("data-lazy-section")) {
+                sectionEl.removeAttribute("data-lazy-section");
+                const editingClass = editing ? " composer-editing" : "";
+                const dragAttrs = editing ? ` draggable="true"` : "";
+                const dragHandle = editing
+                    ? `<div class="composer-drag-handle" aria-hidden="true">
+               <span class="composer-drag-icon">⠿</span>
+               <span class="composer-drag-label">${newEl.label}</span>
+               ${!newEl.pinned ? `<button class="composer-remove-btn" data-composer-remove="${newEl.id}" type="button">${i18n.t("ui.reuse.generic.remove")}</button>` : ""}
+             </div>`
+                    : "";
+                sectionEl.innerHTML = `<section class="widget-card${editingClass}" data-composer-element="${newEl.id}"${dragAttrs}>${dragHandle}${newEl.render()}</section>`;
+                if (editing) bindSubPageComposerEvents();
+            }
+            newEl.onRender?.();
         }
         history.replaceState(null, "", `#${activeSubPageId}`);
         applyPageOverrides(id);
         onRender?.();
+        const mainWindow = root.querySelector(".main-window");
+        if (mainWindow?.classList.contains("main-window--nav-open")) {
+            mainWindow.classList.remove("main-window--nav-open");
+            root.querySelector("#toolbar-mobile-toggle")?.setAttribute(
+                "aria-expanded",
+                "false",
+            );
+        }
     }
 
     async function init() {
@@ -2526,6 +2585,28 @@ export function createPageComposer(
             root.querySelector(".workspace")?.classList.add(
                 "app-page--frameless",
             );
+        }
+
+        if (Array.isArray(toolbar) && toolbar.length > 0) {
+            const toggle = document.createElement("button");
+            toggle.id = "toolbar-mobile-toggle";
+            toggle.className = "toolbar-mobile-toggle";
+            toggle.setAttribute("aria-label", i18n.t("ui.reuse.navigation"));
+            toggle.setAttribute("aria-expanded", "false");
+            toggle.setAttribute("aria-controls", "toolbar-nav");
+            toggle.innerHTML =
+                '<span class="toolbar-mobile-toggle-icon" aria-hidden="true">☰</span>' +
+                `<span class="toolbar-mobile-toggle-label">${i18n.t("ui.reuse.navigation")}</span>`;
+            const mainWindow = root.querySelector(".main-window");
+            if (mainWindow) mainWindow.prepend(toggle);
+            const toolbarEl = root.querySelector(".toolbar");
+            if (toolbarEl) toolbarEl.id = "toolbar-nav";
+            toggle.addEventListener("click", () => {
+                const open = mainWindow?.classList.toggle(
+                    "main-window--nav-open",
+                );
+                toggle.setAttribute("aria-expanded", open ? "true" : "false");
+            });
         }
 
         if (subPageNavigation) {

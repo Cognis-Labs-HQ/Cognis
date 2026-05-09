@@ -6,16 +6,6 @@
     padding: 0;
 }
 
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    background: #f0f7ff;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-}
-
 .verify-card {
     background: #ffffff;
     border-radius: 10px;
@@ -24,6 +14,7 @@ body {
     max-width: 420px;
     width: 100%;
     text-align: center;
+    margin: 0 auto;
 }
 
 .verify-icon {
@@ -61,23 +52,19 @@ body {
     background: #0d9488;
 }
 
-body[data-theme="dark"] {
-    background: #0f172a;
-}
-
-body[data-theme="dark"] .verify-card {
+[data-theme="dark"] .verify-card {
     background: #1e293b;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
 }
 
-body[data-theme="dark"] .verify-title {
+[data-theme="dark"] .verify-title {
     color: #f1f5f9;
 }
 
-body[data-theme="dark"] .verify-body {
+[data-theme="dark"] .verify-body {
     color: #94a3b8;
 }
 
-body[data-theme="dark"] .verify-icon {
+[data-theme="dark"] .verify-icon {
     color: #f1f5f9;
 }

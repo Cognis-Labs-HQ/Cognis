@@ -9,6 +9,17 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Mobile/tablet responsive layout: a collapsible navigation toggle (☰) is injected by `createPageComposer` when a toolbar is present, visible only on screens ≤ 900 px wide. Clicking the toggle shows or hides the sidebar; navigating to any sub-page automatically closes it. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
+- Mobile layout improvements: `layout.css` now includes a `max-width: 640px` breakpoint that reduces workspace padding, collapses `global-navrow` from sticky to static, and trims the brand header for phone-sized screens. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
+
+### Changed
+
+- Page composer: sub-composer sections (settings, administration) now preserve their rendered DOM across sub-page switches. `unmountSubComposer` no longer clears the inner grid HTML; `mountSubComposer` skips `renderSubGrid` when the container already has child nodes and the sub-composer is not in editing mode, eliminating the full grid re-render on every tab switch. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
+- Page composer: inactive non-sub-composer sections in `subPageNavigation` mode are now lazy-rendered. `renderCards` emits a lightweight placeholder for hidden sections; the actual `element.render()` and `onRender` are deferred to the first visit in `switchSubPage`. This reduces initial page-paint work proportional to the number of off-screen sections. ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
+- Verify-email page is now wired into `createPageComposer` (frameless, no topbar/navbar/footer, theme toggle retained), matching the pattern used by the login and register pages. The page retains its dedicated card CSS; body-level background declarations are removed (theme now provided by the app shell). ([eb5b160](https://github.com/le-firehawk/Cognis/commit/eb5b160))
+
+### Added
+
 - Timestamp translation utility (`src/ui/reuse/timestamp.js`): `formatDate`, `formatDateTime`, `getEffectiveTimezone`, and `syncTimezoneOnLogin`. All UI timestamps now route through this module and respect the user's effective timezone. ([eefdcad](https://github.com/le-firehawk/Cognis/commit/eefdcad))
 - Timezone preference in Settings → Date &amp; Time: a dropdown populated from `Intl.supportedValuesOf('timeZone')` lets users override browser auto-detection with a specific IANA timezone. The selection is persisted to `ui-preferences` via the existing preferences API. ([eefdcad](https://github.com/le-firehawk/Cognis/commit/eefdcad))
 - `syncTimezoneOnLogin`: after a successful login, the browser's detected timezone is saved to `ui-preferences.detectedTimezone` (and to `cognis_timezone` in localStorage) whenever the timezone preference is set to "auto". If the user has set a specific timezone, that overrides auto-detection on every login. ([eefdcad](https://github.com/le-firehawk/Cognis/commit/eefdcad))

@@ -251,6 +251,32 @@ code {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+.toolbar-mobile-toggle {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 8px 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 8px;
+}
+
+.toolbar-mobile-toggle-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.toolbar-mobile-toggle-label {
+    flex: 1;
+}
+
 .main-window {
     display: grid;
     gap: 12px;
@@ -276,6 +302,19 @@ code {
 @media (max-width: 900px) {
     .main-window--with-toolbar {
         grid-template-columns: 1fr;
+    }
+    .toolbar-mobile-toggle {
+        display: flex;
+    }
+    .main-window--with-toolbar .toolbar {
+        display: none;
+        margin-right: 0;
+        margin-bottom: 4px;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    .main-window--nav-open .toolbar {
+        display: block;
     }
 }
 
