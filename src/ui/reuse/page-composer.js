@@ -2330,8 +2330,9 @@ export function createPageComposer(
         for (const id of effectiveLayout.order) {
             if (effectiveLayout.hidden.includes(id)) continue;
             const el = elements.find((entry) => entry.id === id);
-            if (!el?.subComposerOptions && id !== activeSubPageId) continue;
-            if (!el?.subComposerOptions) el?.onRender?.();
+            if (!el?.subComposerOptions && id === activeSubPageId) {
+                el?.onRender?.();
+            }
         }
         onRender?.();
         const activeEl = elements.find((e) => e.id === activeSubPageId);
