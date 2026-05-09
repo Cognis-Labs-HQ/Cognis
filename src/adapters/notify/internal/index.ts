@@ -10,7 +10,7 @@ import {
     AsyncInternalNotificationStore,
 } from "./store.js";
 import { DbInternalNotificationStore } from "./reuse/db-store.js";
-import { getServerSecret } from "./reuse/crypto-keys.js";
+import { getDataEncryptionKey } from "../../../api/reuse/crypto.js";
 import { createInternalNotificationRoutes } from "./routes.js";
 
 const SENDER_ID = "internal";
@@ -56,11 +56,11 @@ export async function bootstrapNotifyAdapter(
     ctx.gateway.registerAlwaysOnSender(SENDER_ID);
 
     if (ctx.dbExecutor && ctx.dbType) {
-        const secret = getServerSecret();
+        const secret = getDataEncryptionKey();
         if (!secret) {
             ctx.log?.(
                 "error",
-                "NOTIFICATION_ENCRYPT_SECRET is not set. Notifications will be encrypted with a default key shared across deployments. Set this variable to a unique secret in production.",
+                "DATA_ENCRYPTION_KEY is not set. Sensitive data will be encrypted with a default key shared across deployments. Set this variable to a unique secret in production.",
                 {
                     component: "notify-internal",
                     fatal: true,

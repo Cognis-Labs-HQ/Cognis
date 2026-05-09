@@ -3,8 +3,8 @@
  *
  * Notifications are persisted in a dedicated `internal_notifications` table.
  * The subject, body, category, senderName, and actionUrl fields are encrypted
- * with a per-user AES-256-GCM key (see reuse/crypto-keys.ts). Only the account
- * ID, read flag, and creation timestamp are stored in plaintext.
+ * with a per-user AES-256-GCM key (see ../../../api/reuse/crypto.ts). Only the
+ * account ID, read flag, and creation timestamp are stored in plaintext.
  *
  * Eviction mirrors the in-memory store: at most MAX_PER_USER rows per user are
  * kept; the oldest are deleted when the cap is exceeded.
@@ -20,10 +20,10 @@ import type {
     IInternalNotificationStore,
 } from "../store.js";
 import {
-    deriveUserKey,
+    deriveScopedKey,
     encryptPayload,
     decryptPayload,
-} from "./crypto-keys.js";
+} from "../../../../api/reuse/crypto.js";
 
 interface EncryptedPayload {
     subject: string;
@@ -87,8 +87,8 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
     }
 
     async add(envelope: NotificationEnvelope): Promise<void> {
-        const key = await deriveUserKey(
-            envelope.recipientUsername,
+        const key = await deriveScopedKey(
+            `user:notifications:${envelope.recipientUsername}`,
             this.serverSecret,
         );
         const payload: EncryptedPayload = {
@@ -153,7 +153,10 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
         );
         if (!result.rows?.length) return [];
 
-        const key = await deriveUserKey(username, this.serverSecret);
+        const key = await deriveScopedKey(
+            `user:notifications:${username}`,
+            this.serverSecret,
+        );
         const notifications: InternalNotification[] = [];
 
         for (const rawRow of result.rows) {
@@ -179,7 +182,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
             } catch (err) {
                 this.log?.(
                     "warn",
-                    "Failed to decrypt notification; row skipped. Check NOTIFICATION_ENCRYPT_SECRET or for database corruption.",
+                    "Failed to decrypt notification; row skipped. Check DATA_ENCRYPTION_KEY or for database corruption.",
                     {
                         component: "notify-internal",
                         notifId: row.id,
