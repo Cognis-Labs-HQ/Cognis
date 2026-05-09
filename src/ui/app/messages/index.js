@@ -251,10 +251,9 @@ export async function mount(root, { signal } = {}) {
                     if (!text) return;
                     const key = await getRoomKey(selectedRoomId);
                     if (!key) {
-                        showToast(
-                            i18n.t("module.social.messages.empty"),
-                            "error",
-                        );
+                        showToast(i18n.t("module.social.messages.empty"), {
+                            variant: "error",
+                        });
                         return;
                     }
                     const { iv, ciphertext } = await encryptMessage(key, text);

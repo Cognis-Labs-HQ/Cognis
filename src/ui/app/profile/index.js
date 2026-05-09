@@ -1027,8 +1027,6 @@ export async function mount(rootEl, { signal } = {}) {
 
     if (isAborted()) return;
 
-    if (isAborted()) return;
-
     [followers, following, posts] = await Promise.all([
         loadFollowers(profile?.handle),
         loadFollowing(profile?.handle),

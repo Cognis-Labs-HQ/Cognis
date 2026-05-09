@@ -198,7 +198,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                         JSON.stringify({
                             error: {
                                 code: "forbidden",
-                                message: `Cannot message ${h}.`,
+                                message: `Cannot message ${handle}.`,
                             },
                         }),
                     );
