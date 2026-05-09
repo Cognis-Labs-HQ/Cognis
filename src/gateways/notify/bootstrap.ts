@@ -60,6 +60,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         registerStaticDir: (prefix, dir) =>
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
         log: ctx.log,
+        dbExecutor: ctx.dbExecutor,
+        dbType: ctx.dbType,
     });
     ctx.log?.("info", "Notification adapter bootstrapping complete.", {
         component: "notify-gateway",

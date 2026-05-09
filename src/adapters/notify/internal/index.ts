@@ -5,12 +5,18 @@ import type {
     NotificationSender,
     NotifyAdapterBootstrapCtx,
 } from "../../../gateways/notify/gateway.js";
-import { InternalNotificationStore } from "./store.js";
+import {
+    type IInternalNotificationStore,
+    AsyncInternalNotificationStore,
+} from "./store.js";
+import { DbInternalNotificationStore } from "./reuse/db-store.js";
+import { getServerSecret } from "./reuse/crypto-keys.js";
 import { createInternalNotificationRoutes } from "./routes.js";
 
 const SENDER_ID = "internal";
 
-const store = new InternalNotificationStore();
+let activeStore: IInternalNotificationStore =
+    new AsyncInternalNotificationStore();
 
 class InternalNotificationSender implements NotificationSender {
     readonly senderId = SENDER_ID;
@@ -25,7 +31,7 @@ class InternalNotificationSender implements NotificationSender {
     }
 
     async send(envelope: NotificationEnvelope): Promise<void> {
-        store.add(envelope);
+        await activeStore.add(envelope);
     }
 }
 
@@ -38,7 +44,43 @@ export async function bootstrapNotifyAdapter(
 ): Promise<void> {
     ctx.gateway.registerAlwaysOnSender(SENDER_ID);
 
-    ctx.registerRoute(createInternalNotificationRoutes(store), "notify");
+    if (ctx.dbExecutor && ctx.dbType) {
+        const secret = getServerSecret();
+        if (!secret) {
+            ctx.log?.(
+                "warn",
+                "NOTIFICATION_ENCRYPT_SECRET is not set. Notifications will be encrypted with a default key shared across deployments.",
+                {
+                    component: "notify-internal",
+                },
+            );
+        }
+        const dbStore = new DbInternalNotificationStore(
+            ctx.dbExecutor,
+            ctx.dbType,
+            secret,
+        );
+        await dbStore.ensureSchema();
+        activeStore = dbStore;
+        ctx.log?.(
+            "info",
+            "Internal notification adapter using database store.",
+            {
+                component: "notify-internal",
+                dbType: ctx.dbType,
+            },
+        );
+    } else {
+        ctx.log?.(
+            "warn",
+            "No database executor available. Internal notifications stored in memory only and will be lost on restart.",
+            {
+                component: "notify-internal",
+            },
+        );
+    }
+
+    ctx.registerRoute(createInternalNotificationRoutes(activeStore), "notify");
 
     const uiDir = path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),

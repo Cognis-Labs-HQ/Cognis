@@ -13,6 +13,20 @@ export interface InternalNotification {
     createdAt: number;
 }
 
+/**
+ * Async store interface implemented by both the in-memory and DB-backed stores.
+ * Routes and the sender use this contract so the backing implementation can be
+ * swapped without touching call sites.
+ */
+export interface IInternalNotificationStore {
+    add(envelope: NotificationEnvelope): Promise<void>;
+    list(username: string): Promise<InternalNotification[]>;
+    countUnread(username: string): Promise<number>;
+    markRead(username: string, id: string): Promise<boolean>;
+    markAllRead(username: string): Promise<void>;
+    delete(username: string, id: string): Promise<boolean>;
+}
+
 const MAX_PER_USER = 50;
 
 /**
@@ -79,5 +93,38 @@ export class InternalNotificationStore {
         if (idx === -1) return false;
         list.splice(idx, 1);
         return true;
+    }
+}
+
+/**
+ * Wraps the synchronous InternalNotificationStore so it satisfies the async
+ * IInternalNotificationStore interface. Used as the default store when no
+ * database executor is available.
+ */
+export class AsyncInternalNotificationStore implements IInternalNotificationStore {
+    private readonly inner = new InternalNotificationStore();
+
+    async add(envelope: NotificationEnvelope): Promise<void> {
+        this.inner.add(envelope);
+    }
+
+    async list(username: string): Promise<InternalNotification[]> {
+        return this.inner.list(username);
+    }
+
+    async countUnread(username: string): Promise<number> {
+        return this.inner.countUnread(username);
+    }
+
+    async markRead(username: string, id: string): Promise<boolean> {
+        return this.inner.markRead(username, id);
+    }
+
+    async markAllRead(username: string): Promise<void> {
+        this.inner.markAllRead(username);
+    }
+
+    async delete(username: string, id: string): Promise<boolean> {
+        return this.inner.delete(username, id);
     }
 }

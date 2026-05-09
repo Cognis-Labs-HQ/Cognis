@@ -27,7 +27,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component             | Path                                | Version |
 | --------------------- | ----------------------------------- | ------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.1.0` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.2.0` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.3.0` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.2` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.1.0` |

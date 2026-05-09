@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { getAuthClaims } from "../../../api/auth/guard.js";
-import type { InternalNotificationStore } from "./store.js";
+import type { IInternalNotificationStore } from "./store.js";
 
 /**
  * Route handler for all internal notification inbox endpoints.
@@ -12,7 +12,7 @@ import type { InternalNotificationStore } from "./store.js";
  *   DELETE /api/v1/notifications/inbox/:id      delete one notification
  */
 export function createInternalNotificationRoutes(
-    store: InternalNotificationStore,
+    store: IInternalNotificationStore,
 ) {
     return async (
         req: IncomingMessage,
@@ -38,7 +38,7 @@ export function createInternalNotificationRoutes(
 
         if (url.pathname === "/api/v1/notifications/inbox") {
             if (req.method !== "GET") return false;
-            const notifications = store.list(username);
+            const notifications = await store.list(username);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: notifications }));
             return true;
@@ -46,7 +46,7 @@ export function createInternalNotificationRoutes(
 
         if (url.pathname === "/api/v1/notifications/inbox/count") {
             if (req.method !== "GET") return false;
-            const count = store.countUnread(username);
+            const count = await store.countUnread(username);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { count } }));
             return true;
@@ -56,7 +56,7 @@ export function createInternalNotificationRoutes(
             url.pathname === "/api/v1/notifications/inbox/read" &&
             req.method === "PUT"
         ) {
-            store.markAllRead(username);
+            await store.markAllRead(username);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
             return true;
@@ -67,7 +67,7 @@ export function createInternalNotificationRoutes(
         );
         if (singleReadMatch && req.method === "PUT") {
             const id = decodeURIComponent(singleReadMatch[1]);
-            const found = store.markRead(username, id);
+            const found = await store.markRead(username, id);
             if (!found) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
@@ -90,7 +90,7 @@ export function createInternalNotificationRoutes(
         );
         if (deleteMatch && req.method === "DELETE") {
             const id = decodeURIComponent(deleteMatch[1]);
-            const found = store.delete(username, id);
+            const found = await store.delete(username, id);
             if (!found) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(

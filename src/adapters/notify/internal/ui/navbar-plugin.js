@@ -15,7 +15,7 @@
 import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { formatDateTime } from "/static/reuse/timestamp.js";
+import { formatRelativeTime } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 
 const POLL_INTERVAL_VISIBLE_MS = 10_000;
@@ -114,8 +114,8 @@ function renderNotificationItem(notif, i18n) {
         `<span class="notification-item-subject">${escapeHtml(notif.subject)}</span>` +
         `<span class="notification-item-sender">${escapeHtml(notif.senderName ?? i18n.t("ui.adapter.notify.internal.sender_system"))}</span>` +
         `<span class="notification-item-preview">${escapeHtml(notif.body)}</span>` +
-        `<span class="notification-item-time">${escapeHtml(formatDateTime(new Date(notif.createdAt).toISOString()))}</span>` +
         "</span>" +
+        `<span class="notification-item-time">${escapeHtml(formatRelativeTime(notif.createdAt))}</span>` +
         (notif.actionUrl
             ? '<span class="notification-item-link-arrow" aria-hidden="true">&#8250;</span>'
             : "") +

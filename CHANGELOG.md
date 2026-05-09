@@ -7,6 +7,17 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Internal notification adapter now persists notifications to the application database (encrypted). Each user's notification payload (subject, body, category, sender, action URL) is encrypted at rest with a per-user AES-256-GCM key derived via HKDF-SHA-256 from a server-side `NOTIFICATION_ENCRYPT_SECRET` environment variable and the user's account ID. The new `reuse/crypto-keys.ts` module provides `deriveUserKey`, `encryptPayload`, and `decryptPayload`. The new `reuse/db-store.ts` provides `DbInternalNotificationStore` which replaces the in-memory store when a database executor is available. Falls back to in-memory storage if no executor is provided. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- `NotifyAdapterBootstrapCtx` extended with optional `dbExecutor` and `dbType` fields so adapter bootstrap functions can access the application database when needed. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- `formatRelativeTime(epochMs, fallback)` added to `src/ui/reuse/timestamp.js`. Uses `Intl.RelativeTimeFormat` to produce locale-aware relative timestamps (e.g. "5 minutes ago", "2 hours ago") without custom translation strings. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+
+### Changed
+
+- Notification list items now display as true multi-line rows: subject (bold), sender (accented), and content preview stack vertically as flex column. The relative timestamp ("X seconds/minutes/hours/days ago") is shown right-aligned outside the body column instead of as a fourth line inside it. CSS updated to add `display: flex; flex-direction: column; gap: 2px` on `.notification-item-body` and reposition `.notification-item-time` as a right-aligned sibling flex item. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- Internal notification adapter version bumped to `0.3.0` (`src/adapters/notify/internal/package.json`, `manifest.json`). ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+
 ### Fixed
 
 - CI test job (`test` stage in `.gitlab-ci.yml`) was failing on native-module tests because `npm ci --ignore-scripts` skipped sqlite3's binary compilation/download and the subsequent `npm install` did not re-run install scripts for already-present packages. Fixed by replacing `npm ci --ignore-scripts` + `npm install` with a single `npm ci`, and adding `python3 build-base` to the `apk add` step so node-gyp can compile native modules on Alpine Linux. ([f6d5e3b](https://github.com/le-firehawk/Cognis/commit/f6d5e3b))

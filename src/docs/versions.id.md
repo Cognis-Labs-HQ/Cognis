@@ -11,6 +11,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Komponen               | Path                                | Versi   |
 | ---------------------- | ----------------------------------- | ------- |
 | Notifikasi SMTP        | `src/adapters/notify/smtp/`         | `0.1.0` |
+| Notifikasi Internal    | `src/adapters/notify/internal/`     | `0.3.0` |
 | Penyimpanan File Lokal | `src/adapters/file/local/`          | `0.1.0` |
 | Autentikasi Lokal      | `src/adapters/auth/local/`          | `0.2.2` |
 | Database SQLite        | `src/adapters/db/sqlite/`           | `0.1.0` |

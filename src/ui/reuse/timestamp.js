@@ -12,6 +12,8 @@
  * Public exports:
  *   formatDate(iso, fallback)            — formats an ISO string as a localised date (no time).
  *   formatDateTime(iso, fallback, opts)  — formats an ISO string as a localised date + time.
+ *   formatRelativeTime(epochMs, fallback) — formats a past epoch timestamp as a relative
+ *                                          locale-aware string, e.g. "5 minutes ago".
  *   getBrowserDetectedTimezone()         — returns the browser-detected IANA timezone string.
  *   getEffectiveTimezone()               — returns the IANA timezone string currently in use.
  *   applyTimezoneToLocalStorage(tz, det) — writes the effective timezone to cognis_timezone;
@@ -21,11 +23,12 @@
  *                                          persists it, and writes cognis_timezone to localStorage.
  *
  * Usage:
- *   import { formatDate, formatDateTime, syncTimezoneOnLogin } from '../reuse/timestamp.js';
+ *   import { formatDate, formatDateTime, formatRelativeTime, syncTimezoneOnLogin } from '../reuse/timestamp.js';
  *
  *   const label = formatDate('2024-03-15T08:00:00Z');
  *   const label = formatDateTime('2024-03-15T08:00:00Z');
  *   const precise = formatDateTime('2024-03-15T08:00:00Z', '', { includeSeconds: true });
+ *   const ago = formatRelativeTime(Date.now() - 300_000); // "5 minutes ago"
  *   await syncTimezoneOnLogin(body.data.accountId);
  *
  * @param {string} iso      — ISO 8601 date/datetime string, e.g. "2024-03-15T08:00:00Z".
@@ -89,6 +92,44 @@ export function formatDateTime(iso, fallback = "", options = {}) {
         });
     } catch {
         return iso;
+    }
+}
+
+/**
+ * Formats a past epoch timestamp as a locale-aware relative time string,
+ * e.g. "5 minutes ago", "2 hours ago", "yesterday".
+ *
+ * Uses Intl.RelativeTimeFormat so the output respects the user's browser locale
+ * without requiring custom translation strings.
+ *
+ * @param {number} epochMs — Unix timestamp in milliseconds.
+ * @param {string} fallback — Returned when epochMs is falsy or formatting fails.
+ * @returns {string}
+ */
+export function formatRelativeTime(epochMs, fallback = "") {
+    if (!epochMs) return fallback;
+    try {
+        const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+        const diffMs = epochMs - Date.now();
+        const absDiff = Math.abs(diffMs);
+        if (absDiff < 60_000) {
+            return rtf.format(Math.round(diffMs / 1000), "second");
+        }
+        if (absDiff < 3_600_000) {
+            return rtf.format(Math.round(diffMs / 60_000), "minute");
+        }
+        if (absDiff < 86_400_000) {
+            return rtf.format(Math.round(diffMs / 3_600_000), "hour");
+        }
+        if (absDiff < 30 * 86_400_000) {
+            return rtf.format(Math.round(diffMs / 86_400_000), "day");
+        }
+        if (absDiff < 365 * 86_400_000) {
+            return rtf.format(Math.round(diffMs / (30 * 86_400_000)), "month");
+        }
+        return rtf.format(Math.round(diffMs / (365 * 86_400_000)), "year");
+    } catch {
+        return fallback;
     }
 }
 
