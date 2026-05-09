@@ -30,7 +30,7 @@ import { escapeHtml } from "./escape-html.js";
 export function renderAuthBrandline(brandName, tagline, extraClass = "") {
     const classes = ["auth-brandline", extraClass].filter(Boolean).join(" ");
     return `
-    <div class="${escapeHtml(classes)}">
+    <div class="${classes}">
       <img src="/static/assets/icons/cognis-icon.png" alt="" class="auth-icon" />
       <div>
         <h1 class="auth-title">${escapeHtml(brandName)}</h1>
