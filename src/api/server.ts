@@ -18,6 +18,7 @@ import type { RouteRegistry } from "./route-registry.js";
 import { createGatewayRoutes } from "./routes/gateways/index.js";
 import type { UIRegistry } from "./ui-registry.js";
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
+import type { NotificationEnvelope } from "../gateways/notify/gateway.js";
 
 export interface ApiDependencies {
     moduleRuntimeGateway: ModuleRuntimeGateway;
@@ -55,6 +56,9 @@ export interface ApiDependencies {
     setProfileRole?: (handle: string, role: string) => Promise<void>;
     dbExecutor?: DbExecutor;
     dbType?: string;
+    notifyDispatch?: (
+        envelope: NotificationEnvelope,
+    ) => Promise<{ dispatched: string[] }>;
 }
 
 export function buildServer(deps: ApiDependencies) {
@@ -72,6 +76,7 @@ export function buildServer(deps: ApiDependencies) {
             preferenceStore: deps.preferenceStore,
             dbExecutor: deps.dbExecutor,
             dbType: deps.dbType,
+            notifyDispatch: deps.notifyDispatch,
         },
     );
 

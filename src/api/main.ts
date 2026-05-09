@@ -286,6 +286,7 @@ const server = buildServer({
     log,
     dbExecutor,
     dbType,
+    notifyDispatch: capabilities.get("notify:dispatch"),
     createProfile,
     setProfileRole: capabilities.get<
         (handle: string, role: string) => Promise<void>

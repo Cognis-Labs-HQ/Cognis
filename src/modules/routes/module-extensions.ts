@@ -3,6 +3,7 @@ import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
 import type { LocalAccountStore } from "../../api/reuse/account-store.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
+import type { NotificationEnvelope } from "../../gateways/notify/gateway.js";
 import path from "node:path";
 
 export interface ModuleRouteContext {
@@ -10,6 +11,9 @@ export interface ModuleRouteContext {
     preferenceStore?: UserPreferenceStore;
     dbExecutor?: DbExecutor;
     dbType?: string;
+    notifyDispatch?: (
+        envelope: NotificationEnvelope,
+    ) => Promise<{ dispatched: string[] }>;
     log?: BootstrapLog;
 }
 

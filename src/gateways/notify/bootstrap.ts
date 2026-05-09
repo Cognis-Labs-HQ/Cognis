@@ -45,6 +45,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     await gateway.discoverSenders(notifyAdaptersRoot);
     await gateway.loadPersistedConfigs();
     gateway.registerCategory("system", "System Notifications");
+    gateway.registerCategory("meeting", "Meeting");
     ctx.log?.("info", "Notification senders discovered and configured.", {
         component: "notify-gateway",
         adaptersRoot: notifyAdaptersRoot,
@@ -126,6 +127,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     ctx.capabilities.contribute("notify:canSendVerificationEmail", () =>
         gateway.canSendVerificationEmail(),
+    );
+    ctx.capabilities.contribute("notify:dispatch", (envelope) =>
+        gateway.dispatch(envelope),
     );
     ctx.capabilities.contribute(
         "notify:sendRegistrationInviteEmail",

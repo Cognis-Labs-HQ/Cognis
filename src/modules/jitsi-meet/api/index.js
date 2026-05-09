@@ -17,9 +17,20 @@ async function readJson(req) {
     return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
-function roomHashFor(a, b) {
-    const pair = [a, b].sort().join(":");
-    return createHash("sha256").update(`cognis:jitsi:${pair}`).digest("hex");
+function roomHashFor(...parts) {
+    const key = parts.flat().map(String).sort().join(":");
+    return createHash("sha256").update(`cognis:jitsi:${key}`).digest("hex");
+}
+
+function normalizeParticipantIds(body) {
+    const raw = Array.isArray(body.accountIds)
+        ? body.accountIds
+        : body.accountId
+          ? [body.accountId]
+          : [];
+    return Array.from(
+        new Set(raw.map((entry) => String(entry ?? "").trim()).filter(Boolean)),
+    );
 }
 
 function normalizeSettings(raw) {
@@ -58,6 +69,14 @@ async function ensureSchema(dbExecutor, dbType) {
       created_at TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMP NOT NULL DEFAULT NOW()
     )`);
+        await dbExecutor.execute(`CREATE TABLE IF NOT EXISTS jitsi_meeting_participants (
+      meeting_pair_key TEXT NOT NULL,
+      account_id TEXT NOT NULL,
+      participant_role TEXT NOT NULL DEFAULT 'participant',
+      invited_by TEXT NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (meeting_pair_key, account_id)
+    )`);
         return;
     }
     if (dbType === "mariadb") {
@@ -70,6 +89,14 @@ async function ensureSchema(dbExecutor, dbType) {
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )`);
+        await dbExecutor.execute(`CREATE TABLE IF NOT EXISTS jitsi_meeting_participants (
+      meeting_pair_key VARCHAR(191) NOT NULL,
+      account_id VARCHAR(191) NOT NULL,
+      participant_role VARCHAR(32) NOT NULL DEFAULT 'participant',
+      invited_by VARCHAR(191) NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (meeting_pair_key, account_id)
+    )`);
         return;
     }
     await dbExecutor.execute(`CREATE TABLE IF NOT EXISTS jitsi_meetings (
@@ -80,6 +107,14 @@ async function ensureSchema(dbExecutor, dbType) {
       title TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`);
+    await dbExecutor.execute(`CREATE TABLE IF NOT EXISTS jitsi_meeting_participants (
+      meeting_pair_key TEXT NOT NULL,
+      account_id TEXT NOT NULL,
+      participant_role TEXT NOT NULL DEFAULT 'participant',
+      invited_by TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (meeting_pair_key, account_id)
     )`);
 }
 
@@ -140,9 +175,15 @@ async function getProfile(dbExecutor, accountId, dbType) {
     return result.rows?.[0] ?? null;
 }
 
-async function getMeeting(dbExecutor, requesterId, targetId, title, dbType) {
-    const sorted = [requesterId, targetId].sort();
-    const pairKey = roomHashFor(sorted[0], sorted[1]);
+async function getMeeting(
+    dbExecutor,
+    requesterId,
+    participantIds,
+    title,
+    dbType,
+) {
+    const sortedParticipants = Array.from(new Set(participantIds)).sort();
+    const pairKey = roomHashFor(requesterId, sortedParticipants);
     const roomName = `cognis-${pairKey.slice(0, 24)}`;
     const p1 = getPlaceholder(dbType, 1);
     const existing = await dbExecutor.execute(
@@ -151,24 +192,25 @@ async function getMeeting(dbExecutor, requesterId, targetId, title, dbType) {
     );
     if (existing.rows?.[0]) return existing.rows[0];
 
+    const userB = sortedParticipants.join(",").slice(0, 190) || requesterId;
     if (dbType === "postgresql") {
         await dbExecutor.execute(
             `INSERT INTO jitsi_meetings (pair_key, user_a, user_b, room_name, title)
        VALUES (${p1}, ${getPlaceholder(dbType, 2)}, ${getPlaceholder(dbType, 3)}, ${getPlaceholder(dbType, 4)}, ${getPlaceholder(dbType, 5)})
        ON CONFLICT (pair_key) DO NOTHING`,
-            [pairKey, sorted[0], sorted[1], roomName, title],
+            [pairKey, requesterId, userB, roomName, title],
         );
     } else if (dbType === "mariadb") {
         await dbExecutor.execute(
             `INSERT IGNORE INTO jitsi_meetings (pair_key, user_a, user_b, room_name, title)
        VALUES (?, ?, ?, ?, ?)`,
-            [pairKey, sorted[0], sorted[1], roomName, title],
+            [pairKey, requesterId, userB, roomName, title],
         );
     } else {
         await dbExecutor.execute(
             `INSERT OR IGNORE INTO jitsi_meetings (pair_key, user_a, user_b, room_name, title)
        VALUES (?, ?, ?, ?, ?)`,
-            [pairKey, sorted[0], sorted[1], roomName, title],
+            [pairKey, requesterId, userB, roomName, title],
         );
     }
     const created = await dbExecutor.execute(
@@ -180,8 +222,84 @@ async function getMeeting(dbExecutor, requesterId, targetId, title, dbType) {
     );
 }
 
+async function addMeetingParticipant(
+    dbExecutor,
+    dbType,
+    pairKey,
+    accountId,
+    invitedBy,
+    role = "participant",
+) {
+    if (dbType === "postgresql") {
+        await dbExecutor.execute(
+            `INSERT INTO jitsi_meeting_participants (meeting_pair_key, account_id, participant_role, invited_by)
+       VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING`,
+            [pairKey, accountId, role, invitedBy],
+        );
+        return;
+    }
+    if (dbType === "mariadb") {
+        await dbExecutor.execute(
+            `INSERT IGNORE INTO jitsi_meeting_participants (meeting_pair_key, account_id, participant_role, invited_by)
+       VALUES (?, ?, ?, ?)`,
+            [pairKey, accountId, role, invitedBy],
+        );
+        return;
+    }
+    await dbExecutor.execute(
+        `INSERT OR IGNORE INTO jitsi_meeting_participants (meeting_pair_key, account_id, participant_role, invited_by)
+       VALUES (?, ?, ?, ?)`,
+        [pairKey, accountId, role, invitedBy],
+    );
+}
+
+async function getMeetingParticipants(dbExecutor, dbType, pairKey) {
+    const p1 = getPlaceholder(dbType, 1);
+    const result = await dbExecutor.execute(
+        `SELECT p.* FROM jitsi_meeting_participants mp
+       JOIN account_profiles p ON p.account_id = mp.account_id
+       WHERE mp.meeting_pair_key = ${p1}
+       ORDER BY mp.created_at ASC`,
+        [pairKey],
+    );
+    return result.rows ?? [];
+}
+
+async function notifyMeetingParticipants({
+    notifyDispatch,
+    participantIds,
+    inviterName,
+    title,
+    meetingUrl,
+    log,
+}) {
+    if (!notifyDispatch) return;
+    for (const participantId of participantIds) {
+        try {
+            await notifyDispatch({
+                category: "meeting",
+                recipientUsername: participantId,
+                subject: title,
+                body: `${inviterName} invited you to ${title}.`,
+                actionUrl: meetingUrl,
+                metadata: {
+                    component: MODULE_ID,
+                    meetingUrl,
+                },
+            });
+        } catch (error) {
+            log?.("error", "Failed to dispatch Jitsi meeting invite.", {
+                component: MODULE_ID,
+                participantId,
+                error: error instanceof Error ? error.message : String(error),
+            });
+        }
+    }
+}
+
 export function registerApiRoutes(router, context = {}) {
-    const { dbExecutor, preferenceStore, accountStore, log } = context;
+    const { dbExecutor, preferenceStore, accountStore, notifyDispatch, log } =
+        context;
     const dbType = context.dbType ?? "sqlite";
     const schemaReady = ensureSchema(dbExecutor, dbType).catch((error) => {
         log?.("error", "Failed to initialize Jitsi Meet module schema.", {
@@ -267,27 +385,31 @@ export function registerApiRoutes(router, context = {}) {
         }
         await schemaReady;
         const body = await readJson(req);
-        const targetId = String(body.accountId ?? "").trim();
-        if (!targetId || targetId === claims.sub) {
+        const participantIds = normalizeParticipantIds(body).filter(
+            (accountId) => accountId !== claims.sub,
+        );
+        if (!participantIds.length) {
             sendJson(res, 400, {
                 error: { code: "bad_request", message: "Select a follower." },
             });
             return;
         }
-        const allowed = await isFollower(
-            dbExecutor,
-            claims.sub,
-            targetId,
-            dbType,
-        );
-        if (!allowed) {
-            sendJson(res, 403, {
-                error: {
-                    code: "not_follower",
-                    message: "Meetings can only be created with followers.",
-                },
-            });
-            return;
+        for (const participantId of participantIds) {
+            const allowed = await isFollower(
+                dbExecutor,
+                claims.sub,
+                participantId,
+                dbType,
+            );
+            if (!allowed) {
+                sendJson(res, 403, {
+                    error: {
+                        code: "not_follower",
+                        message: "Meetings can only be created with followers.",
+                    },
+                });
+                return;
+            }
         }
         const title =
             String(body.title ?? DEFAULT_MEETING_TITLE).trim() ||
@@ -296,18 +418,54 @@ export function registerApiRoutes(router, context = {}) {
         const meeting = await getMeeting(
             dbExecutor,
             claims.sub,
-            targetId,
+            participantIds,
             title,
             dbType,
         );
+        await addMeetingParticipant(
+            dbExecutor,
+            dbType,
+            meeting.pair_key,
+            claims.sub,
+            claims.sub,
+            "owner",
+        );
+        for (const participantId of participantIds) {
+            await addMeetingParticipant(
+                dbExecutor,
+                dbType,
+                meeting.pair_key,
+                participantId,
+                claims.sub,
+                "participant",
+            );
+        }
         const ownProfile = await getProfile(dbExecutor, claims.sub, dbType);
         const displayName = accountStore
             ? await accountStore.getDisplayName(claims.sub).catch(() => null)
             : null;
-        log?.("info", "Resolved Jitsi Meet pairing.", {
+        const participantRows = await getMeetingParticipants(
+            dbExecutor,
+            dbType,
+            meeting.pair_key,
+        );
+        const participants = participantRows.map((row) => publicUser(row));
+        const meetingPath = settings.tenant
+            ? `${settings.tenant}/${meeting.room_name}`
+            : meeting.room_name;
+        const meetingUrl = `https://${settings.domain}/${meetingPath}`;
+        await notifyMeetingParticipants({
+            notifyDispatch,
+            participantIds,
+            inviterName: displayName ?? claims.sub,
+            title,
+            meetingUrl,
+            log,
+        });
+        log?.("info", "Resolved Jitsi Meet participants.", {
             component: MODULE_ID,
             accountId: claims.sub,
-            targetAccountId: targetId,
+            participantCount: participants.length,
             roomName: meeting.room_name,
         });
         sendJson(res, 200, {
@@ -318,6 +476,8 @@ export function registerApiRoutes(router, context = {}) {
                 tenant: settings.tenant,
                 authenticationRequired: settings.authenticationRequired,
                 authMode: settings.authMode,
+                meetingUrl,
+                participants,
                 user: ownProfile
                     ? publicUser(ownProfile, displayName)
                     : {
