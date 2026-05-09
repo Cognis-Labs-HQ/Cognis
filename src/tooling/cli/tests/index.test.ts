@@ -1,9 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-    formatCommandOutput,
-    formatStructured,
-} from "../index.ts";
+import { formatCommandOutput, formatStructured } from "../index.ts";
 
 test("formatStructured pretty-prints JSON strings", () => {
     assert.equal(

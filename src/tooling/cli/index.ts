@@ -184,7 +184,8 @@ function formatBoolean(value: boolean, yes = "Yes", no = "No") {
 }
 
 function formatDurationMs(value: unknown) {
-    if (typeof value !== "number" || !Number.isFinite(value)) return String(value);
+    if (typeof value !== "number" || !Number.isFinite(value))
+        return String(value);
     if (value < 1000) return `${value} ms`;
     const seconds = value / 1000;
     if (seconds < 60) return `${seconds.toFixed(2)} s`;
@@ -227,11 +228,15 @@ function formatTable(
         ),
     );
     const header = columns
-        .map(({ label }, index) => colorize(label.padEnd(widths[index]), "bold"))
+        .map(({ label }, index) =>
+            colorize(label.padEnd(widths[index]), "bold"),
+        )
         .join("  ");
     const body = rows.map((row) =>
         columns
-            .map(({ key }, index) => String(row[key] ?? "—").padEnd(widths[index]))
+            .map(({ key }, index) =>
+                String(row[key] ?? "—").padEnd(widths[index]),
+            )
             .join("  "),
     );
     return [header, ...body].join("\n");
@@ -268,7 +273,10 @@ function renderApiToken(payload: unknown) {
     return [
         formatHeading("Emergency API Token", "magenta"),
         formatField("Role", data.role),
-        formatField("TTL", data.ttlSeconds ? `${data.ttlSeconds} seconds` : "—"),
+        formatField(
+            "TTL",
+            data.ttlSeconds ? `${data.ttlSeconds} seconds` : "—",
+        ),
         formatField("Expires", data.expiresAt),
         formatField("Token", data.token),
     ].join("\n");
@@ -443,7 +451,10 @@ function printOutput(text: string) {
     process.stdout.write(text.endsWith("\n") ? text : `${text}\n`);
 }
 
-export function formatCommandOutput(commandName: string, payload: unknown): string {
+export function formatCommandOutput(
+    commandName: string,
+    payload: unknown,
+): string {
     const spec = registry.get(commandName);
     if (spec?.render) return spec.render(payload);
     return formatStructured(payload);
@@ -591,11 +602,7 @@ register(
 register(
     "system:health",
     async ({ apiBaseUrl, getApiToken }) => {
-        return apiGet(
-            apiBaseUrl,
-            "/api/v1/system/health",
-            await getApiToken(),
-        );
+        return apiGet(apiBaseUrl, "/api/v1/system/health", await getApiToken());
     },
     {
         usage: "cognisctl system:health",
@@ -632,12 +639,7 @@ register(
         requireArgs(args, ["moduleId"], "cognisctl modules:enable <moduleId>");
         const acknowledge = args.includes("--ack-external-disclaimer");
         const route = `/api/v1/modules/${encodeURIComponent(moduleId)}/enable${acknowledge ? "?acknowledgeExternalDisclaimer=true" : ""}`;
-        return apiPost(
-            apiBaseUrl,
-            route,
-            undefined,
-            await getApiToken(),
-        );
+        return apiPost(apiBaseUrl, route, undefined, await getApiToken());
     },
     {
         usage: "cognisctl modules:enable <moduleId> [--ack-external-disclaimer]",
@@ -668,11 +670,7 @@ register(
 register(
     "gateway:list",
     async ({ apiBaseUrl, getApiToken }) => {
-        return apiGet(
-            apiBaseUrl,
-            "/api/v1/gateways",
-            await getApiToken(),
-        );
+        return apiGet(apiBaseUrl, "/api/v1/gateways", await getApiToken());
     },
     {
         usage: "cognisctl gateway:list",
@@ -732,11 +730,7 @@ register(
 register(
     "user:list",
     async ({ apiBaseUrl, getApiToken }) => {
-        return apiGet(
-            apiBaseUrl,
-            "/api/v1/users",
-            await getApiToken(),
-        );
+        return apiGet(apiBaseUrl, "/api/v1/users", await getApiToken());
     },
     {
         usage: "cognisctl user:list",
@@ -815,7 +809,8 @@ register(
     {
         usage: "cognisctl user:set-password <username> <password>",
         description: "Set a user password.",
-        render: (payload) => renderUserMutation("User Password Updated", payload),
+        render: (payload) =>
+            renderUserMutation("User Password Updated", payload),
     },
 );
 
@@ -883,18 +878,30 @@ register(
             { isFounder: value === "true" },
             await getApiToken(),
         );
-        return { username, isFounder: value === "true", ...((payload as object) ?? {}) };
+        return {
+            username,
+            isFounder: value === "true",
+            ...((payload as object) ?? {}),
+        };
     },
     {
         usage: "cognisctl user:isfounder <username> <true|false>",
         description: "Set whether a user is marked as founder.",
         render: (payload) =>
-            renderUserMutation("User Founder Flag Updated", payload, (response) => [
-                formatField(
-                    "Founder",
-                    formatBoolean(Boolean(response.isFounder), "true", "false"),
-                ),
-            ]),
+            renderUserMutation(
+                "User Founder Flag Updated",
+                payload,
+                (response) => [
+                    formatField(
+                        "Founder",
+                        formatBoolean(
+                            Boolean(response.isFounder),
+                            "true",
+                            "false",
+                        ),
+                    ),
+                ],
+            ),
     },
 );
 
