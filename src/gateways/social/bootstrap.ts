@@ -143,11 +143,19 @@ async function bootstrapSocialAdapters(
         const bootstrap = mod.bootstrapSocialAdapter as (
             ctx: SocialAdapterBootstrapCtx,
         ) => Promise<void> | void;
-        await bootstrap(adapterCtx);
-        ctx.log?.("info", "Social adapter bootstrapped.", {
-            component: "social-gateway",
-            adapter: entry,
-        });
+        try {
+            await bootstrap(adapterCtx);
+            ctx.log?.("info", "Social adapter bootstrapped.", {
+                component: "social-gateway",
+                adapter: entry,
+            });
+        } catch (err) {
+            ctx.log?.("warn", "Social adapter bootstrap failed — skipping.", {
+                component: "social-gateway",
+                adapter: entry,
+                error: err instanceof Error ? err.message : String(err),
+            });
+        }
     }
 }
 
