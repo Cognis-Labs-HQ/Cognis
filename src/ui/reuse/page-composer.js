@@ -2647,32 +2647,94 @@ export function createPageComposer(
             if (toolbarEl) {
                 const storageKey = `cognis_toolbar_collapsed_${persistLayoutPreferences || "default"}`;
                 const storedValue = localStorage.getItem(storageKey);
-                const collapsed = storedValue !== "false";
+                const mobileMedia = window.matchMedia("(max-width: 900px)");
+                let collapsed = storedValue !== "false";
+                let mobileDrawerOpen = false;
                 const EXPAND_ICON = "▸";
                 const COLLAPSE_ICON = "◂";
                 const collapseBtn = document.createElement("button");
                 collapseBtn.type = "button";
                 collapseBtn.className = "toolbar-collapse-btn";
+                const mobileToggleBtn = document.createElement("button");
+                mobileToggleBtn.type = "button";
+                mobileToggleBtn.className = "toolbar-mobile-toggle";
+                const mobileBackdrop = document.createElement("div");
+                mobileBackdrop.className = "toolbar-mobile-backdrop";
+                mobileBackdrop.hidden = true;
+                const mainWindow = root.querySelector(".main-window");
+                const shell = root.querySelector(".app-shell");
+                if (
+                    mainWindow &&
+                    !mainWindow.querySelector(".toolbar-mobile-toggle")
+                ) {
+                    mainWindow.insertBefore(mobileToggleBtn, mainWindow.firstChild);
+                }
+                if (shell && !shell.querySelector(".toolbar-mobile-backdrop")) {
+                    shell.appendChild(mobileBackdrop);
+                }
+
+                function isMobileDrawerMode() {
+                    return mobileMedia.matches;
+                }
 
                 function setToolbarCollapsedState(nextCollapsed) {
+                    collapsed = nextCollapsed;
+                    localStorage.setItem(storageKey, String(nextCollapsed));
+                    const effectiveCollapsed =
+                        !isMobileDrawerMode() && nextCollapsed;
                     toolbarEl.classList.toggle(
                         "toolbar--collapsed",
-                        nextCollapsed,
+                        effectiveCollapsed,
                     );
-                    collapseBtn.textContent = nextCollapsed
+                    collapseBtn.textContent = effectiveCollapsed
                         ? EXPAND_ICON
                         : COLLAPSE_ICON;
                     collapseBtn.setAttribute(
                         "aria-label",
-                        nextCollapsed
+                        effectiveCollapsed
                             ? i18n.t("ui.layout.toolbar.expand")
                             : i18n.t("ui.layout.toolbar.collapse"),
                     );
-                    localStorage.setItem(storageKey, String(nextCollapsed));
+                }
+
+                function setMobileDrawerOpen(nextOpen, { restoreFocus = true } = {}) {
+                    const open = isMobileDrawerMode() && Boolean(nextOpen);
+                    mobileDrawerOpen = open;
+                    toolbarEl.classList.toggle("toolbar--mobile-open", open);
+                    mobileBackdrop.classList.toggle(
+                        "toolbar-mobile-backdrop--open",
+                        open,
+                    );
+                    if (open) {
+                        mobileBackdrop.removeAttribute("hidden");
+                    } else {
+                        mobileBackdrop.setAttribute("hidden", "");
+                        if (restoreFocus) mobileToggleBtn.focus();
+                    }
+                    mobileToggleBtn.setAttribute("aria-expanded", String(open));
+                    mobileToggleBtn.textContent = open ? COLLAPSE_ICON : EXPAND_ICON;
+                    mobileToggleBtn.setAttribute(
+                        "aria-label",
+                        open
+                            ? i18n.t("ui.layout.toolbar.collapse")
+                            : i18n.t("ui.layout.toolbar.expand"),
+                    );
+                }
+
+                function syncToolbarViewportState() {
+                    toolbarEl.classList.toggle(
+                        "toolbar--mobile-mode",
+                        isMobileDrawerMode(),
+                    );
+                    if (!isMobileDrawerMode() && mobileDrawerOpen) {
+                        setMobileDrawerOpen(false, { restoreFocus: false });
+                    }
+                    setToolbarCollapsedState(collapsed);
                 }
 
                 toolbarEl.insertBefore(collapseBtn, toolbarEl.firstChild);
                 setToolbarCollapsedState(collapsed);
+                syncToolbarViewportState();
 
                 collapseBtn.addEventListener("click", () => {
                     const nowCollapsed =
@@ -2680,10 +2742,29 @@ export function createPageComposer(
                     setToolbarCollapsedState(!nowCollapsed);
                 });
 
+                mobileToggleBtn.addEventListener("click", () => {
+                    setMobileDrawerOpen(!mobileDrawerOpen);
+                });
+                mobileBackdrop.addEventListener("click", () => {
+                    setMobileDrawerOpen(false);
+                });
+                document.addEventListener("keydown", (event) => {
+                    if (event.key === "Escape") {
+                        setMobileDrawerOpen(false, { restoreFocus: false });
+                    }
+                });
+                mobileMedia.addEventListener("change", syncToolbarViewportState);
+
                 root.querySelectorAll("[data-composer-scroll]").forEach(
                     (btn) => {
                         btn.addEventListener("click", () => {
-                            setToolbarCollapsedState(true);
+                            if (isMobileDrawerMode()) {
+                                setMobileDrawerOpen(false, {
+                                    restoreFocus: false,
+                                });
+                            } else {
+                                setToolbarCollapsedState(true);
+                            }
                         });
                     },
                 );

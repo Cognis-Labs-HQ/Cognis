@@ -133,6 +133,7 @@ body[data-theme="light"] .prefs-dump {
 .email-list-item {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 10px;
     padding: 8px 0;
     border-bottom: 1px solid var(--border);
@@ -140,7 +141,10 @@ body[data-theme="light"] .prefs-dump {
 
 .email-address {
     flex: 1;
+    min-width: 0;
     font-size: 0.9rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .email-badge-primary {
@@ -177,14 +181,36 @@ body[data-theme="light"] .prefs-dump {
 
 .email-verify-row {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin: 4px 0;
 }
 
 .email-add-row {
     display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
     gap: 8px;
     margin: 8px 0 4px;
+}
+
+.email-verify-row input,
+.email-add-row input {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+
+.email-list-item > button,
+.email-add-row button,
+.email-verify-row button {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 640px) {
+    .email-add-row #email-add-btn,
+    .email-verify-row #popup-verify-btn {
+        width: 100%;
+    }
 }
 
 .notif-matrix {

@@ -26,3 +26,14 @@ test("page composer invokes element-level onRender callbacks", () => {
 
     assert.match(source, /el\?\.onRender\?\.\(\);/);
 });
+
+test("page composer includes mobile toolbar drawer behavior", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.match(source, /matchMedia\("\(max-width: 900px\)"\)/);
+    assert.match(source, /toolbar--mobile-open/);
+    assert.match(source, /toolbar-mobile-backdrop--open/);
+});
