@@ -40,6 +40,7 @@ export interface NotificationSenderInfo {
     senderId: string;
     name: string;
     active: boolean;
+    alwaysOn?: boolean;
     requires?: string[];
 }
 
@@ -195,6 +196,7 @@ export class CoreNotificationGateway
     listSenders(): NotificationSenderInfo[] {
         return Array.from(this.senders.values()).map((sender) => {
             const requires = this.senderRequires.get(sender.senderId);
+            const alwaysOn = this.alwaysOnSenders.has(sender.senderId);
             return {
                 senderId: sender.senderId,
                 name: sender.senderName ?? sender.senderId,
@@ -203,6 +205,7 @@ export class CoreNotificationGateway
                     (typeof sender.isConfigured === "function"
                         ? sender.isConfigured()
                         : typeof sender.getConfig === "function"),
+                ...(alwaysOn ? { alwaysOn: true } : {}),
                 ...(requires && requires.length > 0 ? { requires } : {}),
             };
         });

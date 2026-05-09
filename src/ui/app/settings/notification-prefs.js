@@ -96,9 +96,16 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
                 const cells = providers
                     .map((provider) => {
                         const prefKey = makePrefKey(provider.senderId, cat.id);
+                        const isAlwaysOn = provider.alwaysOn === true;
                         const checked =
-                            pendingPrefs[prefKey] === true ? " checked" : "";
-                        return `<td><input type="checkbox" data-pref-key="${escapeHtml(prefKey)}" data-sender-id="${escapeHtml(provider.senderId)}"${checked} /></td>`;
+                            isAlwaysOn || pendingPrefs[prefKey] === true
+                                ? " checked"
+                                : "";
+                        const disabled = isAlwaysOn ? " disabled" : "";
+                        const title = isAlwaysOn
+                            ? ` title="${escapeHtml(i18n.t("ui.adapter.notify.internal.always_on"))}"`
+                            : "";
+                        return `<td><input type="checkbox" data-pref-key="${escapeHtml(prefKey)}" data-sender-id="${escapeHtml(provider.senderId)}"${checked}${disabled}${title} /></td>`;
                     })
                     .join("");
                 return `<tr><td>${escapeHtml(cat.label)}</td>${cells}</tr>`;

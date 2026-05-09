@@ -382,6 +382,7 @@
   <string name="ui.reuse.notifications">Notifications</string>
   <string name="ui.adapter.notify.internal.mark_all_read">Mark All as Read</string>
   <string name="ui.adapter.notify.internal.empty">No new notifications</string>
+  <string name="ui.adapter.notify.internal.always_on">Always on — this adapter delivers all in-app notifications and cannot be disabled</string>
   <string name="ui.app.settings.general">General</string>
   <string name="ui.app.settings.emails">Email Addresses</string>
   <string name="ui.app.settings.emails_add">Add email</string>

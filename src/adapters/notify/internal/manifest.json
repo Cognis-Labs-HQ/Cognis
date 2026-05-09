@@ -1,7 +1,7 @@
 {
     "id": "internal",
     "name": "Internal Notification Adapter",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "required": true,
     "description": "Delivers notifications to the in-app notification bell. Always-on and cannot be disabled.",
     "publisher": "Cognis Labs"

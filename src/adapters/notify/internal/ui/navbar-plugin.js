@@ -2,9 +2,11 @@
  * Internal notification adapter navbar plugin.
  *
  * Injects the notification bell button and panel into the dashboard layout's
- * account cluster. Polls the inbox count endpoint every 30 seconds, updates
- * the unread badge, and lets the user browse, dismiss, and mark notifications
- * as read without leaving the page.
+ * account cluster. Polls the inbox count endpoint every 10 seconds when the
+ * page is visible (30 seconds when hidden), updates the unread badge, and
+ * shows a toast-style popup whenever new notifications arrive. Also lets the
+ * user browse, dismiss, and mark notifications as read without leaving the
+ * page.
  *
  * Public exports: none — side effects only on import.
  *
@@ -14,7 +16,8 @@ import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
-const POLL_INTERVAL_MS = 30_000;
+const POLL_INTERVAL_VISIBLE_MS = 10_000;
+const POLL_INTERVAL_HIDDEN_MS = 30_000;
 const CSS_HREF = "/static/gateways/notify-internal/notifications.css";
 
 function injectStyles() {
@@ -84,6 +87,7 @@ let listEl = null;
 let emptyEl = null;
 let markAllBtn = null;
 let currentNotifications = [];
+let seenIds = null;
 
 function updateBadge(count) {
     if (!badgeEl) return;
@@ -149,6 +153,7 @@ async function openPanel(i18n) {
     if (emptyEl) emptyEl.hidden = true;
 
     currentNotifications = await fetchNotifications();
+    currentNotifications.forEach((n) => seenIds?.add(n.id));
     const unreadCount = currentNotifications.filter((n) => !n.read).length;
     updateBadge(unreadCount);
 
@@ -290,14 +295,109 @@ function insertButton(wrap) {
     }
 }
 
-async function startPolling() {
-    const count = await fetchCount();
-    updateBadge(count);
-    pollTimer = setInterval(async () => {
-        if (panelVisible) return;
-        const unread = await fetchCount();
-        updateBadge(unread);
-    }, POLL_INTERVAL_MS);
+async function startPolling(i18n) {
+    const initial = await fetchNotifications();
+    seenIds = new Set(initial.map((n) => n.id));
+    const unread = initial.filter((n) => !n.read).length;
+    updateBadge(unread);
+
+    function scheduleNext() {
+        const delay =
+            document.visibilityState === "visible"
+                ? POLL_INTERVAL_VISIBLE_MS
+                : POLL_INTERVAL_HIDDEN_MS;
+        pollTimer = setTimeout(tick, delay);
+    }
+
+    async function tick() {
+        if (!panelVisible) {
+            await checkForNew(i18n);
+        }
+        scheduleNext();
+    }
+
+    scheduleNext();
+}
+
+async function checkForNew(i18n) {
+    const notifs = await fetchNotifications();
+    const unread = notifs.filter((n) => !n.read).length;
+    updateBadge(unread);
+
+    if (seenIds === null) {
+        seenIds = new Set(notifs.map((n) => n.id));
+        return;
+    }
+
+    const arrivals = notifs.filter((n) => !seenIds.has(n.id));
+    for (const notif of arrivals) {
+        seenIds.add(notif.id);
+        if (!notif.read) {
+            showArrivalToast(notif, i18n);
+        }
+    }
+    notifs.forEach((n) => seenIds.add(n.id));
+}
+
+let arrivalToastContainer = null;
+
+function getArrivalToastContainer() {
+    if (
+        !arrivalToastContainer ||
+        !document.body.contains(arrivalToastContainer)
+    ) {
+        const el = document.createElement("div");
+        el.className = "arrival-toast-container";
+        document.body.appendChild(el);
+        arrivalToastContainer = el;
+    }
+    return arrivalToastContainer;
+}
+
+function showArrivalToast(notif, i18n) {
+    const container = getArrivalToastContainer();
+    const toast = document.createElement("div");
+    toast.className = "arrival-toast";
+    toast.setAttribute("role", "alert");
+
+    const preview =
+        notif.body.length > 90
+            ? notif.body.slice(0, 90) + "\u2026"
+            : notif.body;
+
+    toast.innerHTML =
+        '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
+        '<div class="arrival-toast-text">' +
+        `<span class="arrival-toast-subject">${escapeHtml(notif.subject)}</span>` +
+        `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
+        "</div>" +
+        `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.generic.dismiss")}">&#215;</button>`;
+
+    const dismiss = () => {
+        toast.classList.add("arrival-toast--out");
+        toast.addEventListener("animationend", () => toast.remove(), {
+            once: true,
+        });
+    };
+
+    toast.addEventListener("click", (e) => {
+        if (e.target.closest(".arrival-toast-dismiss")) {
+            dismiss();
+            return;
+        }
+        dismiss();
+        openPanel(i18n);
+    });
+
+    toast
+        .querySelector(".arrival-toast-dismiss")
+        ?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            dismiss();
+        });
+
+    container.appendChild(toast);
+    setTimeout(dismiss, 6000);
 }
 
 (async function init() {
@@ -311,5 +411,5 @@ async function startPolling() {
     insertButton(wrap);
     watchProfileMenu();
 
-    await startPolling();
+    await startPolling(i18n);
 })();
