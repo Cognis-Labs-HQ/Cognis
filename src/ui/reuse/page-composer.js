@@ -2951,7 +2951,7 @@ export function createPageComposer(
                     const target = event.target;
                     if (!(target instanceof Element)) return;
                     if (target.closest(".toolbar-mobile-toggle")) return;
-                    if (target.closest("a[href]")) {
+                    if (target.closest("a[href]") || target.closest("button")) {
                         setMobileDrawerOpen(false, { restoreFocus: false });
                     }
                 });
