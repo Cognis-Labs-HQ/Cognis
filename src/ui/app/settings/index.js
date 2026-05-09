@@ -64,7 +64,7 @@ export async function mount(root) {
         existingPrefs?.detectedTimezone ?? null,
     );
 
-    const savedMode = getStoredTheme();
+    let savedMode = getStoredTheme();
 
     let fontPrefs;
     let languagePrefs;
@@ -76,7 +76,6 @@ export async function mount(root) {
 
     function initThemePrefs({ onDirtyChange }) {
         let currentMode = savedMode;
-        let savedModeValue = savedMode;
 
         function updateSelector() {
             root.querySelectorAll(".theme-btn[data-theme-value]").forEach(
@@ -93,7 +92,7 @@ export async function mount(root) {
             btn.addEventListener("click", () => {
                 currentMode = btn.dataset.themeValue;
                 updateSelector();
-                onDirtyChange?.(currentMode !== savedModeValue);
+                onDirtyChange?.(currentMode !== savedMode);
             });
         });
 
@@ -102,10 +101,10 @@ export async function mount(root) {
         return {
             getMode: () => currentMode,
             commit: () => {
-                savedModeValue = currentMode;
+                savedMode = currentMode;
             },
             discard: () => {
-                currentMode = savedModeValue;
+                currentMode = savedMode;
                 updateSelector();
                 onDirtyChange?.(false);
             },
