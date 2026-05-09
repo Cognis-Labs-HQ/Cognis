@@ -29,6 +29,7 @@ let composer = null;
 let elements = [];
 let bannerMenuCloseHandler = null;
 let canMessageTarget = false;
+let relationship = null;
 
 function toAbsoluteUrl(url) {
     if (!url) return url;
@@ -287,6 +288,10 @@ function renderHero() {
     </div>
   `;
 
+    const isFollowingTarget = Boolean(relationship?.following);
+    const followLabel = isFollowingTarget
+        ? i18n.t("ui.app.profile.following")
+        : i18n.t("ui.app.profile.follow");
     const actionRow = isOwnProfile
         ? `
       <div class="profile-hero-action-row">
@@ -295,7 +300,7 @@ function renderHero() {
     `
         : `
       <div class="profile-hero-action-row">
-        <button class="profile-hero-follow-btn" type="button">${escapeHtml(i18n.t("ui.app.profile.follow"))}</button>
+        <button class="profile-hero-follow-btn" type="button" data-following="${isFollowingTarget ? "true" : "false"}">${escapeHtml(followLabel)}</button>
         ${
             canMessageTarget
                 ? `<button
@@ -514,7 +519,8 @@ function renderPostsList() {
 function renderPosts() {
     const profileVis = profile?.visibility ?? "hidden";
     const canFollowers = profileVis !== "hidden";
-    const canEveryone = profileVis === "friends" || profileVis === "community";
+    const canFriends = profileVis !== "hidden";
+    const canEveryone = profileVis === "community";
 
     const lockedFollowersTitle = canFollowers
         ? ""
@@ -553,6 +559,7 @@ function renderPosts() {
           <select id="post-visibility" class="profile-field-input theme-select">
             <option value="only_me">${escapeHtml(i18n.t("ui.app.profile.post_visibility.only_me"))}</option>
             <option value="private"${canFollowers ? "" : " disabled"}${lockedFollowersTitle}>${escapeHtml(i18n.t("ui.app.profile.post_visibility.private"))}</option>
+            <option value="friends"${canFriends ? "" : " disabled"}${lockedFollowersTitle}>${escapeHtml(i18n.t("ui.app.profile.post_visibility.friends"))}</option>
             <option value="community"${canEveryone ? "" : " disabled"}${lockedEveryoneTitle}>${escapeHtml(i18n.t("ui.app.profile.post_visibility.community"))}</option>
           </select>
           <button type="button" id="post-submit" class="btn-confirm btn-animated">
@@ -814,14 +821,56 @@ async function doDeletePost(postId) {
 }
 
 async function doFollowUser(handle) {
+    if (!handle) return;
+    const isFollowingTarget = Boolean(relationship?.following);
+    if (isFollowingTarget) {
+        const result = await openPopup({
+            title: i18n.t("ui.app.profile.unfollow_confirm_title"),
+            body: `<p>${escapeHtml(i18n.t("ui.app.profile.unfollow_confirm_body"))}</p><strong>${escapeHtml(handle)}</strong>`,
+            variant: "danger",
+            actions: [
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.popup.cancel"),
+                    variant: "cancel",
+                },
+                {
+                    id: "confirm",
+                    label: i18n.t("ui.app.profile.unfollow"),
+                    variant: "confirm",
+                },
+            ],
+        });
+        if (result !== "confirm") return;
+    }
+
     const res = await apiFetch(
         `/api/v1/users/${encodeURIComponent(handle)}/follow`,
-        { method: "POST" },
+        { method: isFollowingTarget ? "DELETE" : "POST" },
     );
     if (res.ok) {
-        following = await loadFollowing(profile?.handle);
+        relationship = {
+            ...(relationship ?? {}),
+            following: !isFollowingTarget,
+        };
+        [followers, following] = await Promise.all([
+            loadFollowers(profile?.handle),
+            loadFollowing(profile?.handle),
+        ]);
         composer.refresh(elements);
+        showToast(
+            i18n.t(
+                isFollowingTarget
+                    ? "ui.app.profile.unfollowed_toast"
+                    : "ui.app.profile.followed_toast",
+            ),
+            { variant: "success" },
+        );
+        return;
     }
+    showToast(i18n.t("ui.app.profile.follow_unavailable_toast"), {
+        variant: "error",
+    });
 }
 
 async function doBlockUser() {
@@ -1037,6 +1086,7 @@ export async function mount(rootEl, { signal } = {}) {
     ]);
 
     canMessageTarget = false;
+    relationship = null;
     if (!isOwnProfile && profile?.handle) {
         try {
             const res = await apiFetch(
@@ -1044,10 +1094,12 @@ export async function mount(rootEl, { signal } = {}) {
             );
             if (res.ok) {
                 const payload = await res.json();
-                canMessageTarget = Boolean(payload?.data?.canMessage);
+                relationship = payload?.data ?? null;
+                canMessageTarget = Boolean(relationship?.canMessage);
             }
         } catch {
             canMessageTarget = false;
+            relationship = null;
         }
     }
 

@@ -127,6 +127,20 @@
     gap: 0.5rem;
 }
 
+.messages-load-earlier-btn {
+    align-self: center;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 0.35rem 0.85rem;
+}
+
+.messages-load-earlier-btn:hover {
+    background: var(--color-surface-elevated);
+}
+
 .messages-message {
     display: flex;
     flex-direction: column;
@@ -192,6 +206,20 @@
 }
 
 @media (max-width: 640px) {
+    .messages-load-earlier-btn {
+        align-self: center;
+        border: 1px solid var(--color-border);
+        border-radius: 999px;
+        background: var(--color-surface);
+        color: var(--color-text);
+        cursor: pointer;
+        padding: 0.35rem 0.85rem;
+    }
+
+    .messages-load-earlier-btn:hover {
+        background: var(--color-surface-elevated);
+    }
+
     .messages-message {
         max-width: 90%;
     }

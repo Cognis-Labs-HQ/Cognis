@@ -372,6 +372,12 @@
   <string name="ui.app.profile.banner_height.half">半分の高さ</string>
   <string name="ui.app.profile.banner_height.full">全高</string>
   <string name="ui.app.profile.follow">フォロー</string>
+  <string name="ui.app.profile.unfollow">フォロー解除</string>
+  <string name="ui.app.profile.unfollow_confirm_title">ユーザーのフォロー解除</string>
+  <string name="ui.app.profile.unfollow_confirm_body">このユーザーのフォローを解除しますか？</string>
+  <string name="ui.app.profile.followed_toast">このユーザーをフォローしました。</string>
+  <string name="ui.app.profile.unfollowed_toast">このユーザーのフォローを解除しました。</string>
+  <string name="ui.app.profile.follow_unavailable_toast">このユーザーはフォローできません。</string>
   <string name="ui.app.profile.block_user">ユーザーをブロック</string>
   <string name="ui.app.profile.block_user_confirm">このユーザーをブロックしますか？あなたをフォローしたりプロフィールと交流できなくなります。</string>
   <string name="ui.app.profile.block_user_action">ブロック</string>

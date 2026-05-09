@@ -28,17 +28,17 @@ async function canViewPost(
     if (author.visibility === "hidden") return false;
     if (!requesterId) return false;
 
-    if (author.visibility === "private") {
-        return profileStore.isFollowing(requesterId, post.accountId);
-    }
-
-    if (author.visibility === "friends") {
-        const isFollower = await profileStore.isFollowing(
-            requesterId,
-            post.accountId,
-        );
-        if (!isFollower) return false;
-        return post.visibility !== "only_me";
+    if (author.visibility === "private" || author.visibility === "friends") {
+        const [requesterFollowsAuthor, authorFollowsRequester] =
+            await Promise.all([
+                profileStore.isFollowing(requesterId, post.accountId),
+                profileStore.isFollowing(post.accountId, requesterId),
+            ]);
+        if (post.visibility === "private") return requesterFollowsAuthor;
+        if (post.visibility === "friends") {
+            return requesterFollowsAuthor && authorFollowsRequester;
+        }
+        return false;
     }
 
     switch (post.visibility) {
@@ -119,7 +119,7 @@ export function createPostRoutes(profileStore: DbProfileStore) {
                 visibilityRank(profile.visibility) >=
                 visibilityRank("community")
                     ? "community"
-                    : "private";
+                    : "friends";
             if (
                 postVisibilityRank(visibility) > postVisibilityRank(maxAllowed)
             ) {

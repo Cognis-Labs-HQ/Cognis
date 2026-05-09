@@ -12,12 +12,14 @@ import type { SupportedDbType } from "../db/executor.js";
 export interface SocialAdapter {
     readonly adapterId: string;
     readonly adapterName: string;
+    readonly requires?: string[];
 }
 
 export interface SocialAdapterInfo {
     id: string;
     name: string;
     active: boolean;
+    requires?: string[];
 }
 
 /**
@@ -69,7 +71,12 @@ export class CoreSocialGateway {
     private readonly activeOverrides = new Map<string, boolean>();
 
     registerAdapter(adapter: SocialAdapter): void {
-        this.registeredAdapters.set(adapter.adapterId, adapter);
+        const existing = this.registeredAdapters.get(adapter.adapterId);
+        this.registeredAdapters.set(adapter.adapterId, {
+            ...existing,
+            ...adapter,
+            requires: adapter.requires ?? existing?.requires,
+        });
     }
 
     setAdapterActive(adapterId: string, active: boolean): void {
@@ -83,6 +90,9 @@ export class CoreSocialGateway {
             id: adapter.adapterId,
             name: adapter.adapterName,
             active: this.activeOverrides.get(adapter.adapterId) ?? true,
+            ...(adapter.requires && adapter.requires.length > 0
+                ? { requires: adapter.requires }
+                : {}),
         }));
     }
 
@@ -120,17 +130,47 @@ export class CoreSocialGateway {
             const pkgPath = path.join(adapterDir, "package.json");
 
             let mod: Record<string, unknown>;
+            let manifest: {
+                id?: string;
+                name?: string;
+                requires?: string[];
+            } = {};
+            try {
+                const manifestRaw = await readFile(
+                    path.join(adapterDir, "manifest.json"),
+                    "utf8",
+                );
+                manifest = JSON.parse(manifestRaw) as typeof manifest;
+            } catch {
+                // Adapter manifests are optional for discovery; package.json is authoritative.
+            }
+
+            this.registerAdapter({
+                adapterId: entry,
+                adapterName: manifest.name ?? entry,
+                requires: Array.isArray(manifest.requires)
+                    ? manifest.requires
+                    : undefined,
+            });
+
             try {
                 const raw = await readFile(pkgPath, "utf8");
                 const pkg = JSON.parse(raw) as { main?: string };
-                if (!pkg.main) continue;
+                if (!pkg.main) {
+                    this.setAdapterActive(entry, false);
+                    continue;
+                }
                 const entryPath = path.resolve(adapterDir, pkg.main);
                 mod = await import(entryPath);
             } catch {
+                this.setAdapterActive(entry, false);
                 continue;
             }
 
-            if (typeof mod.bootstrapSocialAdapter !== "function") continue;
+            if (typeof mod.bootstrapSocialAdapter !== "function") {
+                this.setAdapterActive(entry, false);
+                continue;
+            }
 
             const bootstrapFn = mod.bootstrapSocialAdapter as (
                 ctx: SocialAdapterBootstrapCtx,
@@ -145,6 +185,7 @@ export class CoreSocialGateway {
             try {
                 await bootstrapFn(adapterCtx);
             } catch (err) {
+                this.setAdapterActive(entry, false);
                 baseCtx.log?.(
                     "error",
                     `Social gateway: adapter "${entry}" bootstrap failed — skipping.`,

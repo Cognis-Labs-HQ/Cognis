@@ -262,7 +262,9 @@ export async function mount(root, { signal } = {}) {
                     </ul>
                 </aside>`,
             onRender: () => {
-                const roomsList = document.getElementById("messages-rooms-list");
+                const roomsList = document.getElementById(
+                    "messages-rooms-list",
+                );
                 roomsList?.addEventListener("click", async (clickEvent) => {
                     const item = clickEvent.target.closest("[data-room-id]");
                     if (!item) return;
@@ -271,7 +273,9 @@ export async function mount(root, { signal } = {}) {
                     roomsList
                         .querySelectorAll(".messages-room--active")
                         .forEach((activeItem) =>
-                            activeItem.classList.remove("messages-room--active"),
+                            activeItem.classList.remove(
+                                "messages-room--active",
+                            ),
                         );
                     item.classList.add("messages-room--active");
                     history.pushState(
@@ -334,13 +338,10 @@ export async function mount(root, { signal } = {}) {
                     const item = clickEvent.target.closest("[data-handle]");
                     if (!item) return;
                     const handle = item.getAttribute("data-handle");
-                    const createRes = await apiFetch(
-                        "/api/v1/messages/rooms",
-                        {
-                            method: "POST",
-                            body: JSON.stringify({ handles: [handle] }),
-                        },
-                    );
+                    const createRes = await apiFetch("/api/v1/messages/rooms", {
+                        method: "POST",
+                        body: JSON.stringify({ handles: [handle] }),
+                    });
                     if (!createRes.ok) {
                         showToast(
                             i18n.t("module.social.messages.start_failed"),
