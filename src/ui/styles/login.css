@@ -185,6 +185,63 @@ p.auth-intro {
     }
 }
 
+@media (max-width: 640px) {
+    .auth-page--frame {
+        min-height: 100dvh;
+        padding: 10px;
+        justify-content: flex-start;
+    }
+
+    .auth-layout {
+        gap: 10px;
+    }
+
+    .panel.auth-intro {
+        display: none;
+    }
+
+    .auth-panel {
+        padding: 14px;
+        min-width: 0;
+    }
+
+    .auth-heading {
+        margin: 0 0 12px;
+        font-size: 1.7rem;
+    }
+
+    .auth-form {
+        gap: 10px;
+    }
+
+    .auth-form label {
+        gap: 6px;
+        font-size: 1rem;
+    }
+
+    .auth-form input,
+    .auth-form button,
+    .sso-login-btn {
+        padding: 10px 12px;
+        font-size: 1rem;
+    }
+
+    .auth-provider-toggle {
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+
+    .auth-provider-btn {
+        min-width: 0;
+        font-size: 0.95rem;
+    }
+
+    .sso-buttons {
+        gap: 8px;
+        margin-top: 6px;
+    }
+}
+
 body[data-theme="light"] .panel.auth-intro,
 body[data-theme="light"] .auth-panel {
     background: linear-gradient(
