@@ -71,6 +71,18 @@ Every UI page must be assembled exclusively through `createPageComposer` from `s
 
 Bypassing the composer is always wrong, even when the page appears to work. Doing so silently breaks theming, accessibility, user layout preferences, and any future infrastructure built into the composer. All of these are non-negotiable requirements for every page in the application.
 
+### UI page navigation must use the app router
+
+All navigation between dashboard-shell pages uses the client-side router in `src/ui/reuse/app-router.js`. The router intercepts clicks on internal navigation links, uses `history.pushState()` to update the URL, and mounts the new page's content in place via each page's `mount()` function — no full browser reload.
+
+Every dashboard page (`src/ui/app/*/index.js`) must:
+
+1. **Export an async mount function**: `export async function mount(root, { signal } = {}) { ... }`. The `signal` parameter is an `AbortSignal` provided by the router; pass it as `{ signal }` to any `window.addEventListener(...)` calls the page registers (e.g. `popstate`, `beforeunload`) so they are automatically removed when the user navigates away.
+2. **Call mount directly for initial browser loads**: the last line of each page module must be `await mount(document.querySelector('#app'))` so that navigating directly to the URL (hard load or server render) still works without the router.
+3. **Register with the router**: every new dashboard page must have a matching entry in the `ROUTES` array inside `src/ui/reuse/app-router.js`.
+
+Never add new top-level navigation using `window.location.href =`, `window.location.replace()`, or `window.location.reload()` for navigation between dashboard pages. Auth-page redirects (`/login`, `/register`, etc.) are exempt since they are outside the dashboard shell.
+
 ### Route file organisation
 
 Route handler files live in subdirectories named after their domain, mirroring the `src/ui/app/` convention. Each handler is `index.ts` inside that directory (e.g. `src/api/routes/profile/index.ts`, `src/api/routes/social/index.ts`). Never place a route handler as a flat `*-routes.ts` file directly inside `routes/`.

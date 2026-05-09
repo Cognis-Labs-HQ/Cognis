@@ -1316,7 +1316,7 @@ async function guardSubPageSwitch() {
         ],
     });
     if (result === "discard") {
-        securitySection.discard();
+        securitySection?.discard();
         changesBar.markDirty("security", false);
         return true;
     }

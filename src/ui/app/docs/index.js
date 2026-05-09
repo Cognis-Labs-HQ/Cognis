@@ -7,10 +7,6 @@ import {
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 
-const root = document.querySelector("#app");
-const i18n = await createI18n();
-applyDocumentTitle(i18n, "ui.page.title.docs");
-
 const GROUP_KEYS = {
     "": "ui.app.docs.group.platform",
     gateways: "ui.app.docs.group.gateways",
@@ -22,7 +18,7 @@ const GROUP_KEYS = {
     tooling: "ui.app.docs.group.tooling",
 };
 
-function groupLabel(group) {
+function groupLabel(i18n, group) {
     const key = GROUP_KEYS[group];
     if (key) return i18n.t(key);
     return group
@@ -58,7 +54,7 @@ function normalizeDocSlug(href) {
         .replace(/\.md$/i, "");
 }
 
-function buildGroupedNav(items) {
+function buildGroupedNav(i18n, items) {
     const groups = new Map();
     for (const item of items) {
         const groupKey = item.group ?? "";
@@ -68,7 +64,7 @@ function buildGroupedNav(items) {
 
     let html = "";
     for (const [group, groupItems] of groups) {
-        const label = groupLabel(group);
+        const label = groupLabel(i18n, group);
         const links = groupItems
             .map(
                 (item) =>
@@ -90,117 +86,131 @@ function buildGroupedNav(items) {
     return html;
 }
 
-let activeHtml = null;
+export async function mount(root, { signal } = {}) {
+    const i18n = await createI18n();
+    applyDocumentTitle(i18n, "ui.page.title.docs");
 
-function renderActiveDoc() {
-    const docEl = root.querySelector("#doc");
-    if (docEl && activeHtml !== null) docEl.innerHTML = activeHtml;
-}
+    let activeHtml = null;
 
-async function showDoc(slug, pushHistory = true) {
-    const langs = readPreferredLanguages().join(",");
-    try {
-        activeHtml = await loadMarkdownDocumentHtml(
-            `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,
+    function renderActiveDoc() {
+        const docEl = root.querySelector("#doc");
+        if (docEl && activeHtml !== null) docEl.innerHTML = activeHtml;
+    }
+
+    async function showDoc(slug, pushHistory = true) {
+        const langs = readPreferredLanguages().join(",");
+        try {
+            activeHtml = await loadMarkdownDocumentHtml(
+                `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,
+            );
+        } catch {
+            return;
+        }
+        renderActiveDoc();
+
+        if (pushHistory) {
+            window.history.pushState({ slug }, "", `/docs/${slug}`);
+        } else {
+            window.history.replaceState({ slug }, "", `/docs/${slug}`);
+        }
+
+        root.querySelectorAll("[data-slug]").forEach((button) => {
+            const isActive = button.dataset.slug === slug;
+            button.classList.toggle("active", isActive);
+            if (isActive) button.setAttribute("aria-current", "page");
+            else button.removeAttribute("aria-current");
+        });
+    }
+
+    function resolveDefaultSlug(subpath, docs) {
+        if (subpath && docs.find((doc) => doc.slug === subpath)) return subpath;
+        return (
+            docs.find((doc) => doc.slug === "overview")?.slug ??
+            docs.find((doc) => doc.slug === "index")?.slug ??
+            docs[0]?.slug
         );
-    } catch {
-        return;
     }
-    renderActiveDoc();
 
-    if (pushHistory) {
-        window.history.pushState({ slug }, "", `/docs/${slug}`);
-    } else {
-        window.history.replaceState({ slug }, "", `/docs/${slug}`);
-    }
+    const docs = await loadDocsIndex();
+
+    const elements = [
+        {
+            id: "doc-reader",
+            label: i18n.t("ui.app.docs.page_title"),
+            gridSize: { default: [4, 8], min: [2, 4], max: "full" },
+            render: () => `<article id="doc" class="content-panel"></article>`,
+        },
+    ];
+
+    const composer = createPageComposer(root, {
+        allowCustomization: false,
+        elements,
+        preferenceKey: "docs-layout",
+        i18n,
+        onRender: renderActiveDoc,
+        pageContext: {
+            title: i18n.t("ui.app.docs.page_title"),
+            subtitle: i18n.t("ui.app.docs.page_subtitle"),
+        },
+        toolbar: [
+            {
+                id: "docs-nav",
+                label: i18n.t("ui.reuse.navigation"),
+                render: () =>
+                    `<h3>${i18n.t("ui.reuse.navigation")}</h3><nav class="docs-nav">${buildGroupedNav(i18n, docs)}</nav>`,
+            },
+        ],
+    });
+    await composer.init();
 
     root.querySelectorAll("[data-slug]").forEach((button) => {
-        const isActive = button.dataset.slug === slug;
-        button.classList.toggle("active", isActive);
-        if (isActive) button.setAttribute("aria-current", "page");
-        else button.removeAttribute("aria-current");
+        button.addEventListener("click", () => showDoc(button.dataset.slug));
     });
-}
 
-const docs = await loadDocsIndex();
+    root.querySelectorAll("details[data-nav-group]").forEach((details) => {
+        details.addEventListener("toggle", () => {
+            const key = `docs-group-open:${details.dataset.navGroup}`;
+            localStorage.setItem(key, details.open ? "true" : "false");
+        });
+    });
 
-const elements = [
-    {
-        id: "doc-reader",
-        label: i18n.t("ui.app.docs.page_title"),
-        gridSize: { default: [4, 8], min: [2, 4], max: "full" },
-        render: () => `<article id="doc" class="content-panel"></article>`,
-    },
-];
+    root.addEventListener("click", async (event) => {
+        const link = event.target.closest("a[href]");
+        if (!link || !link.closest("#doc")) return;
 
-const composer = createPageComposer(root, {
-    allowCustomization: false,
-    elements,
-    preferenceKey: "docs-layout",
-    i18n,
-    onRender: renderActiveDoc,
-    pageContext: {
-        title: i18n.t("ui.app.docs.page_title"),
-        subtitle: i18n.t("ui.app.docs.page_subtitle"),
-    },
-    toolbar: [
-        {
-            id: "docs-nav",
-            label: i18n.t("ui.reuse.navigation"),
-            render: () =>
-                `<h3>${i18n.t("ui.reuse.navigation")}</h3><nav class="docs-nav">${buildGroupedNav(docs)}</nav>`,
+        const href = link.getAttribute("href") || "";
+        if (href.startsWith("http://") || href.startsWith("https://")) return;
+
+        const slug = normalizeDocSlug(href);
+        if (!slug) return;
+
+        event.preventDefault();
+        await showDoc(slug);
+    });
+
+    window.addEventListener(
+        "popstate",
+        (event) => {
+            const slug = event.state?.slug;
+            if (slug) {
+                showDoc(slug, false);
+            } else {
+                const subpath = window.location.pathname.replace(
+                    /^\/docs\/?/,
+                    "",
+                );
+                const fallback = resolveDefaultSlug(subpath, docs);
+                if (fallback) showDoc(fallback, false);
+            }
         },
-    ],
-});
-await composer.init();
-
-root.querySelectorAll("[data-slug]").forEach((button) => {
-    button.addEventListener("click", () => showDoc(button.dataset.slug));
-});
-
-root.querySelectorAll("details[data-nav-group]").forEach((details) => {
-    details.addEventListener("toggle", () => {
-        const key = `docs-group-open:${details.dataset.navGroup}`;
-        localStorage.setItem(key, details.open ? "true" : "false");
-    });
-});
-
-root.addEventListener("click", async (event) => {
-    const link = event.target.closest("a[href]");
-    if (!link || !link.closest("#doc")) return;
-
-    const href = link.getAttribute("href") || "";
-    if (href.startsWith("http://") || href.startsWith("https://")) return;
-
-    const slug = normalizeDocSlug(href);
-    if (!slug) return;
-
-    event.preventDefault();
-    await showDoc(slug);
-});
-
-window.addEventListener("popstate", (event) => {
-    const slug = event.state?.slug;
-    if (slug) {
-        showDoc(slug, false);
-    } else {
-        const subpath = window.location.pathname.replace(/^\/docs\/?/, "");
-        const fallback = resolveDefaultSlug(subpath);
-        if (fallback) showDoc(fallback, false);
-    }
-});
-
-function resolveDefaultSlug(subpath) {
-    if (subpath && docs.find((doc) => doc.slug === subpath)) return subpath;
-    return (
-        docs.find((doc) => doc.slug === "overview")?.slug ??
-        docs.find((doc) => doc.slug === "index")?.slug ??
-        docs[0]?.slug
+        { signal },
     );
+
+    const defaultDoc = (() => {
+        const subpath = window.location.pathname.replace(/^\/docs\/?/, "");
+        return resolveDefaultSlug(subpath, docs);
+    })();
+    if (defaultDoc) await showDoc(defaultDoc, false);
 }
 
-const defaultDoc = (() => {
-    const subpath = window.location.pathname.replace(/^\/docs\/?/, "");
-    return resolveDefaultSlug(subpath);
-})();
-if (defaultDoc) await showDoc(defaultDoc, false);
+await mount(document.querySelector("#app"));

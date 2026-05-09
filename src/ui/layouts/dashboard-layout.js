@@ -11,6 +11,7 @@ import {
     applyUiPreferences,
     saveUiPreferences,
 } from "../reuse/ui-preferences.js";
+import { initRouter } from "../reuse/app-router.js";
 
 function isAdminRole() {
     return localStorage.getItem("cognis_role") === "admin";
@@ -372,6 +373,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         updateNavbarAvatar().catch(() => {});
         applyActiveNavigation();
         applyCompactNav(root);
+        initRouter(root);
     }
     bindThemeToggle({ usePreferenceApi });
 }
