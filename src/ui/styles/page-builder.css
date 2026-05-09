@@ -756,6 +756,7 @@ code {
 
 @media (max-width: 640px) {
     .floating-toolbar {
+        width: 80vw;
         max-width: 80vw;
         flex-wrap: wrap;
     }
