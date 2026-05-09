@@ -90,11 +90,16 @@ async function resolveLoginRedirectLocation(
         typeof accountStore.getInfo === "function"
     ) {
         const info = await accountStore.getInfo(accountId).catch((error) => {
-            log?.("error", "Failed to read account info while resolving login redirect.", {
-                component: "api-ui",
-                accountId,
-                error: error instanceof Error ? error.message : String(error),
-            });
+            log?.(
+                "error",
+                "Failed to read account info while resolving login redirect.",
+                {
+                    component: "api-ui",
+                    accountId,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                },
+            );
             return null;
         });
         if (!info) return "/login?reason=account_deleted";
@@ -107,11 +112,15 @@ async function resolveLoginRedirectLocation(
 
     if (!accountStore || typeof accountStore.getInfo !== "function") return "";
     const info = await accountStore.getInfo(session.sub).catch((error) => {
-        log?.("error", "Failed to read active session account info while resolving login redirect.", {
-            component: "api-ui",
-            accountId: session.sub,
-            error: error instanceof Error ? error.message : String(error),
-        });
+        log?.(
+            "error",
+            "Failed to read active session account info while resolving login redirect.",
+            {
+                component: "api-ui",
+                accountId: session.sub,
+                error: error instanceof Error ? error.message : String(error),
+            },
+        );
         return null;
     });
     if (!info) return "/login?reason=account_deleted";

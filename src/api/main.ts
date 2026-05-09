@@ -89,7 +89,8 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                 {
                     component: "api-bootstrap",
                     modulesRoot,
-                    error: error instanceof Error ? error.message : String(error),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 },
             );
         }

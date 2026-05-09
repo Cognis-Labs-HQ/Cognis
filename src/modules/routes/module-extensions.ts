@@ -74,7 +74,8 @@ export function createModuleExtensionRoutes(
                     component: "module-extension-routes",
                     moduleId: manifest.id,
                     pluginPath,
-                    error: error instanceof Error ? error.message : String(error),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
             }
         }
