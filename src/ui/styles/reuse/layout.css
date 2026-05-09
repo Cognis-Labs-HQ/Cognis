@@ -94,11 +94,11 @@
     border: 0;
     margin: 0;
     padding: 0;
-    background: rgba(2, 6, 23, 0.52);
+    background: rgba(2, 6, 23, 0.72);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
-    z-index: 45;
+    z-index: 1180;
 }
 
 .global-nav-backdrop--visible {
@@ -127,14 +127,15 @@
     max-width: calc(100vw - 24px);
     padding: 82px 14px 18px;
     border-right: 1px solid var(--nav-border);
-    background: var(--nav-bg);
+    background: color-mix(in srgb, var(--surface-2) 92%, #000 8%);
     display: flex;
     flex-direction: column;
     gap: 8px;
     transform: translateX(calc(-100% - 12px));
     transition: transform 0.22s ease;
-    z-index: 55;
+    z-index: 1190;
     overflow-y: auto;
+    box-shadow: 14px 0 28px rgba(2, 6, 23, 0.45);
 }
 
 .global-navrow--compact .topnav a {
@@ -283,7 +284,7 @@
         transform 0.16s ease;
     pointer-events: none;
     overflow-wrap: anywhere;
-    overflow-x: auto;
+    overflow-x: hidden;
     z-index: 70;
 }
 

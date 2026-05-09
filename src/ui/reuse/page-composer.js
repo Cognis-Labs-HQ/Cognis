@@ -2183,15 +2183,41 @@ export function createPageComposer(
         panel.appendChild(section);
         contentGrid.appendChild(panel);
         gridSection = section;
+        const availableWidth = contentGrid.getBoundingClientRect().width;
+        const compactGrid =
+            availableWidth > 0 &&
+            gridCols > 1 &&
+            availableWidth / gridCols < 220;
 
         if (editing) {
             section.classList.add("composer-grid-active");
-            section.style.minHeight = `${gridRows * UNIT}px`;
+            section.classList.toggle(
+                "composer-grid-active--compact",
+                compactGrid,
+            );
+            if (compactGrid) {
+                const scale = Math.max(
+                    0.62,
+                    Math.min(1, availableWidth / (gridCols * UNIT)),
+                );
+                section.style.setProperty(
+                    "--composer-edit-scale",
+                    String(scale),
+                );
+                section.style.minHeight = `${gridRows * UNIT * scale}px`;
+            } else {
+                section.style.removeProperty("--composer-edit-scale");
+                section.style.minHeight = `${gridRows * UNIT}px`;
+            }
             section.style.width = `${gridCols * UNIT}px`;
             section.appendChild(createGridOverlay());
         } else {
             section.style.setProperty("--grid-cols", String(gridCols));
             section.classList.add("composer-view-grid");
+            section.classList.toggle(
+                "composer-view-grid--compact",
+                compactGrid,
+            );
         }
 
         const visiblePlacements = layout.placements
@@ -2207,8 +2233,10 @@ export function createPageComposer(
                 const card = document.createElement("section");
                 card.className = "widget-card";
                 card.dataset.composerElement = el.id;
-                card.style.gridColumn = `${placement.col + 1} / span ${placement.w}`;
-                card.style.gridRow = `${placement.row + 1} / span ${placement.h}`;
+                if (!compactGrid) {
+                    card.style.gridColumn = `${placement.col + 1} / span ${placement.w}`;
+                    card.style.gridRow = `${placement.row + 1} / span ${placement.h}`;
+                }
                 card.innerHTML = el.render();
                 section.appendChild(card);
             }

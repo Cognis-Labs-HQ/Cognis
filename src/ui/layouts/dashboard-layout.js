@@ -56,7 +56,6 @@ async function bindThemeToggle({ usePreferenceApi = true } = {}) {
 }
 
 const PROFILE_MENU_CLOSE_DELAY_MS = 300;
-const NAV_COMPACT_BREAKPOINT_PX = 900;
 const NAV_OVERFLOW_TOLERANCE_PX = 1;
 
 function bindGlobalNavOverlay(i18n) {
@@ -127,11 +126,7 @@ function bindGlobalNavOverlay(i18n) {
     }
 
     function syncNavMode() {
-        const isSmallViewport = window.matchMedia(
-            `(max-width: ${NAV_COMPACT_BREAKPOINT_PX}px)`,
-        ).matches;
-        const shouldCompact =
-            isSmallViewport || checkOverflowInExpandedLayout();
+        const shouldCompact = checkOverflowInExpandedLayout();
         navRow.classList.toggle("global-navrow--compact", shouldCompact);
         toggle.hidden = !shouldCompact;
         if (!shouldCompact) closeMenu();
