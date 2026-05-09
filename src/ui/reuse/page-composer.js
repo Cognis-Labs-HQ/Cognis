@@ -2709,37 +2709,118 @@ export function createPageComposer(
                     const collapseBtn = document.createElement("button");
                     collapseBtn.type = "button";
                     collapseBtn.className = "toolbar-collapse-btn";
+                    const drawerToggle = document.createElement("button");
+                    drawerToggle.type = "button";
+                    drawerToggle.className = "toolbar-drawer-toggle";
+                    drawerToggle.textContent = TOOLBAR_COLLAPSE_EXPAND_ICON;
+                    drawerToggle.hidden = true;
+                    drawerToggle.setAttribute(
+                        "aria-label",
+                        i18n.t("ui.layout.toolbar.expand"),
+                    );
+                    drawerToggle.setAttribute("aria-expanded", "false");
+                    const backdrop = document.createElement("button");
+                    backdrop.type = "button";
+                    backdrop.className = "toolbar-drawer-backdrop";
+                    backdrop.hidden = true;
+                    backdrop.setAttribute(
+                        "aria-label",
+                        i18n.t("ui.reuse.generic.dismiss"),
+                    );
+                    const mainWindow = root.querySelector(".main-window");
+                    let drawerModeActive = false;
+                    let drawerOpen = false;
 
-                    function setToolbarCollapsedState(nextCollapsed) {
+                    function setDrawerOpen(nextOpen) {
+                        const shouldOpen = drawerModeActive && nextOpen;
+                        drawerOpen = shouldOpen;
                         toolbarEl.classList.toggle(
-                            "toolbar--collapsed",
-                            nextCollapsed,
+                            "toolbar--drawer-open",
+                            shouldOpen,
                         );
-                        collapseBtn.textContent = nextCollapsed
-                            ? TOOLBAR_COLLAPSE_EXPAND_ICON
-                            : TOOLBAR_COLLAPSE_COLLAPSE_ICON;
+                        backdrop.hidden = !shouldOpen;
+                        drawerToggle.setAttribute(
+                            "aria-expanded",
+                            shouldOpen ? "true" : "false",
+                        );
+                        collapseBtn.textContent = shouldOpen
+                            ? TOOLBAR_COLLAPSE_COLLAPSE_ICON
+                            : TOOLBAR_COLLAPSE_EXPAND_ICON;
                         collapseBtn.setAttribute(
                             "aria-label",
-                            nextCollapsed
-                                ? i18n.t("ui.layout.toolbar.expand")
-                                : i18n.t("ui.layout.toolbar.collapse"),
+                            shouldOpen
+                                ? i18n.t("ui.layout.toolbar.collapse")
+                                : i18n.t("ui.layout.toolbar.expand"),
                         );
-                        localStorage.setItem(storageKey, String(nextCollapsed));
+                        localStorage.setItem(storageKey, String(!shouldOpen));
+                    }
+
+                    function syncToolbarMode() {
+                        if (!mainWindow || !contentGrid) return;
+                        const toolbarNaturalWidth = Math.max(
+                            toolbarEl.scrollWidth,
+                            220,
+                        );
+                        const contentMinimumWidth = 680;
+                        const availableWidth =
+                            mainWindow.getBoundingClientRect().width;
+                        const pressured =
+                            availableWidth <
+                            toolbarNaturalWidth + contentMinimumWidth;
+                        drawerModeActive = pressured;
+                        mainWindow.classList.toggle(
+                            "main-window--toolbar-pressured",
+                            pressured,
+                        );
+                        toolbarEl.classList.toggle(
+                            "toolbar--drawer",
+                            pressured,
+                        );
+                        drawerToggle.hidden = !pressured;
+                        collapseBtn.hidden = !pressured;
+                        if (!pressured) {
+                            toolbarEl.classList.remove("toolbar--collapsed");
+                            setDrawerOpen(false);
+                            return;
+                        }
+                        setDrawerOpen(drawerOpen);
                     }
 
                     toolbarEl.insertBefore(collapseBtn, toolbarEl.firstChild);
-                    setToolbarCollapsedState(collapsed);
+                    mainWindow?.insertBefore(drawerToggle, contentGrid);
+                    root.appendChild(backdrop);
+                    drawerOpen = !collapsed;
+                    setDrawerOpen(drawerOpen);
+                    syncToolbarMode();
 
-                    collapseBtn.addEventListener("click", () => {
-                        const nowCollapsed =
-                            toolbarEl.classList.contains("toolbar--collapsed");
-                        setToolbarCollapsedState(!nowCollapsed);
+                    collapseBtn.addEventListener("click", () =>
+                        setDrawerOpen(!drawerOpen),
+                    );
+                    drawerToggle.addEventListener("click", () =>
+                        setDrawerOpen(!drawerOpen),
+                    );
+                    backdrop.addEventListener("click", () =>
+                        setDrawerOpen(false),
+                    );
+                    document.addEventListener("keydown", (e) => {
+                        if (e.key === "Escape" && drawerOpen) {
+                            setDrawerOpen(false);
+                        }
                     });
+                    const toolbarModeObserver = new ResizeObserver(
+                        syncToolbarMode,
+                    );
+                    if (mainWindow) {
+                        toolbarModeObserver.observe(mainWindow);
+                    }
+                    toolbarModeObserver.observe(contentGrid);
 
                     root.querySelectorAll("[data-composer-scroll]").forEach(
                         (btn) => {
                             btn.addEventListener("click", () => {
-                                setToolbarCollapsedState(true);
+                                if (drawerModeActive && drawerOpen) {
+                                    setDrawerOpen(false);
+                                }
                             });
                         },
                     );

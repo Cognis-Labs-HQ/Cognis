@@ -26,3 +26,15 @@ test("page composer invokes element-level onRender callbacks", () => {
 
     assert.match(source, /resolveElementOnRender\(el\)\?\.\(\);/);
 });
+
+test("page composer closes toolbar drawer on menu click only in drawer mode", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /if \(drawerModeActive && drawerOpen\) \{\s*setDrawerOpen\(false\);\s*\}/m,
+    );
+});
