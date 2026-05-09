@@ -3,6 +3,9 @@ import {
     applyStaticTranslations,
     createI18n,
 } from "../../reuse/i18n.js";
+import { registerServiceWorker } from "../../reuse/pwa.js";
+
+registerServiceWorker();
 
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.verify_email");

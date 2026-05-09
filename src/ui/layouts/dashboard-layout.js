@@ -12,6 +12,12 @@ import {
     saveUiPreferences,
 } from "../reuse/ui-preferences.js";
 import { initRouter } from "../reuse/app-router.js";
+import {
+    capturePwaInstallPrompt,
+    registerServiceWorker,
+} from "../reuse/pwa.js";
+
+capturePwaInstallPrompt();
 
 function isAdminRole() {
     return localStorage.getItem("cognis_role") === "admin";
@@ -376,4 +382,5 @@ export async function renderDashboardLayout(root, slots = {}) {
         initRouter(root);
     }
     bindThemeToggle({ usePreferenceApi });
+    registerServiceWorker();
 }

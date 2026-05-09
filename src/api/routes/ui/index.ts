@@ -28,8 +28,43 @@ function resolveContentType(filePath: string) {
     if (ext === ".html") return "text/html; charset=utf-8";
     if (ext === ".xml") return "application/xml; charset=utf-8";
     if (ext === ".svg") return "image/svg+xml; charset=utf-8";
+    if (ext === ".webmanifest")
+        return "application/manifest+json; charset=utf-8";
+    if (ext === ".json") return "application/json; charset=utf-8";
 
     return "image/png";
+}
+
+async function serveStaticAsset(
+    res: ServerResponse,
+    filePath: string,
+    contentType: string,
+    log?: BootstrapLog,
+    logMeta?: Record<string, unknown>,
+    cacheControl: string = "no-store",
+) {
+    try {
+        const file = await readFile(filePath);
+        res.writeHead(200, {
+            "content-type": contentType,
+            "cache-control": cacheControl,
+            "x-content-type-options": "nosniff",
+        });
+        res.end(file);
+    } catch (error) {
+        log?.("error", "Failed to serve UI asset.", {
+            component: "api-ui",
+            filePath,
+            ...(logMeta ?? {}),
+            error: error instanceof Error ? error.message : String(error),
+        });
+        res.writeHead(404, { "content-type": "application/json" });
+        res.end(
+            JSON.stringify({
+                error: { code: "not_found", message: "Asset not found." },
+            }),
+        );
+    }
 }
 
 async function serveFile(
@@ -144,6 +179,52 @@ export function createUiRoutes(
         if (url.pathname === "/") {
             res.writeHead(302, { location: "/dashboard" });
             res.end();
+            return true;
+        }
+
+        if (url.pathname === "/manifest.webmanifest" && req.method === "GET") {
+            await serveStaticAsset(
+                res,
+                path.join(PUBLIC_ROOT, "manifest.webmanifest"),
+                "application/manifest+json; charset=utf-8",
+                log,
+                { path: url.pathname, method: req.method },
+                // Allow the browser HTTP cache and the service worker
+                // stale-while-revalidate strategy to retain the manifest,
+                // while still requiring revalidation on every use so updates
+                // (icons, name, shortcuts) roll out promptly.
+                "public, max-age=0, must-revalidate",
+            );
+            return true;
+        }
+
+        if (url.pathname === "/sw.js" && req.method === "GET") {
+            try {
+                const file = await readFile(path.join(PUBLIC_ROOT, "sw.js"));
+                res.writeHead(200, {
+                    "content-type": "text/javascript; charset=utf-8",
+                    "cache-control": "no-cache",
+                    "service-worker-allowed": "/",
+                    "x-content-type-options": "nosniff",
+                });
+                res.end(file);
+            } catch (error) {
+                log?.("error", "Failed to serve service worker.", {
+                    component: "api-ui",
+                    path: url.pathname,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Service worker not found.",
+                        },
+                    }),
+                );
+            }
             return true;
         }
 
