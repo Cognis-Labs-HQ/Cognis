@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { open, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Logger } from "./logger.js";
@@ -13,6 +13,8 @@ type LogLevel = "debug" | "info" | "warn" | "error";
 const ALLOWED_LEVELS = new Set<LogLevel>(["debug", "info", "warn", "error"]);
 const MAX_KEYWORD_LENGTH = 120;
 const MAX_SNAPSHOT_ENTRIES = 300;
+const STREAM_POLL_INTERVAL_MS = 1500;
+const STREAM_HEARTBEAT_INTERVAL_MS = 15000;
 
 function parseLevelFilter(value: string | null): Set<LogLevel> | null {
     if (!value || value === "all") return null;
@@ -73,6 +75,23 @@ function writeSseEvent(
 ): void {
     res.write(`event: ${event}\n`);
     res.write(`data: ${JSON.stringify(payload)}\n\n`);
+}
+
+async function readFileChunk(
+    filePath: string,
+    start: number,
+    end: number,
+): Promise<string> {
+    const length = Math.max(0, end - start);
+    if (length === 0) return "";
+    const fileHandle = await open(filePath, "r");
+    try {
+        const buffer = Buffer.alloc(length);
+        await fileHandle.read(buffer, 0, length, start);
+        return buffer.toString("utf8");
+    } finally {
+        await fileHandle.close();
+    }
 }
 
 function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
@@ -148,17 +167,21 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
         const pollUpdates = async () => {
             if (closed) return;
             try {
-                const raw = await readFile(filePath, "utf8");
-                if (raw.length < contentLength) {
+                const fileStats = await stat(filePath);
+                if (fileStats.size < contentLength) {
                     contentLength = 0;
                     pendingLine = "";
                     writeSseEvent(res, "reset", { reason: "log_rotated" });
                 }
-                if (raw.length === contentLength) {
+                if (fileStats.size === contentLength) {
                     return;
                 }
-                const append = raw.slice(contentLength);
-                contentLength = raw.length;
+                const append = await readFileChunk(
+                    filePath,
+                    contentLength,
+                    fileStats.size,
+                );
+                contentLength = fileStats.size;
                 const merged = `${pendingLine}${append}`;
                 const chunks = merged.split("\n");
                 pendingLine = chunks.pop() ?? "";
@@ -186,19 +209,26 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
             "cache-control": "no-cache",
             connection: "keep-alive",
         });
+        res.flushHeaders?.();
         res.write("retry: 1500\n\n");
 
         await sendSnapshot();
 
         const pollTimer = setInterval(() => {
             void pollUpdates();
-        }, 1500);
+        }, STREAM_POLL_INTERVAL_MS);
         pollTimer.unref?.();
+        const heartbeatTimer = setInterval(() => {
+            if (closed) return;
+            res.write(": keepalive\n\n");
+        }, STREAM_HEARTBEAT_INTERVAL_MS);
+        heartbeatTimer.unref?.();
 
         const closeStream = () => {
             if (closed) return;
             closed = true;
             clearInterval(pollTimer);
+            clearInterval(heartbeatTimer);
             log?.("info", "Closed admin log stream.", {
                 component: "logging-gateway",
                 operation: "stream_close",
