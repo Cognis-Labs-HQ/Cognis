@@ -24,5 +24,5 @@ test("page composer invokes element-level onRender callbacks", () => {
         "utf8",
     );
 
-    assert.match(source, /el\?\.onRender\?\.\(\);/);
+    assert.match(source, /resolveElementOnRender\(el\)\?\.\(\);/);
 });

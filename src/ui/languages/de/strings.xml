@@ -178,6 +178,7 @@
   <string name="ui.app.login.not_registered.title">Noch nicht registriert?</string>
   <string name="ui.app.login.not_registered.body">Erstelle ein kostenloses Konto und leg noch heute los.</string>
   <string name="ui.app.login.not_registered.link">Jetzt anmelden!</string>
+  <string name="ui.app.login.not_registered.hint">Noch kein Konto? Jetzt anmelden!</string>
   <string name="ui.app.demo.switched">Demo: zur Sandbox-Seite gewechselt.</string>
   <string name="ui.app.demo.added">Demo: ein Lernfortschritts-Widget hinzugefügt.</string>
   <string name="ui.app.demo.tweaked">Demo: die erste Widget-Konfiguration angepasst.</string>

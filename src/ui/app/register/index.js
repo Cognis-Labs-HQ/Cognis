@@ -121,58 +121,70 @@ function formatCountdown(msRemaining) {
         .join(":");
 }
 
-function renderRegisterShell() {
+function buildRegisterFormHtml({ compact = false } = {}) {
     const isInviteFlow = Boolean(token);
     const isInvalid = isInviteFlow && tokenInvalid && !inviteAdapterDisabled;
     const canRenderForm = isInviteFlow
         ? Boolean(inviteData) && !isInvalid && !inviteAdapterDisabled
         : openRegistrationsEnabled;
 
-    let formHtml = "";
-    let messageHtml = "";
-
     if (isInvalid) {
-        messageHtml = renderInPageCallout({
-            variant: "danger",
-            title: i18n.t("ui.reuse.generic.error"),
-        });
-    } else if (!canRenderForm) {
-        const messageKey = "ui.app.register.closed";
-        messageHtml = `<p class="auth-intro">${escapeHtml(i18n.t(messageKey))}</p>`;
-    } else {
-        const invitedText =
-            inviteData && isInviteFlow
-                ? i18n
-                      .t("ui.app.register.invited_you")
-                      .replace("{inviter}", inviteData.inviterDisplayName)
-                : "";
-        const inviteEmail =
-            isInviteFlow && inviteData ? inviteData.inviteeEmail : "";
-        const lockedEmail = inviteEmail || prefilledEmail;
-        const emailValue = lockedEmail || "";
-        const emailLocked = Boolean(lockedEmail);
-        const emailReadonly = emailLocked ? "disabled" : "";
-        const emailLockedClass = emailLocked ? " auth-input--locked" : "";
-        const countdownHtml = inviteData?.expiresAt
-            ? `<p id="register-countdown" class="auth-intro" style="font-size:1rem;margin-top:4px"></p>`
+        return {
+            message: renderInPageCallout({
+                variant: "danger",
+                title: i18n.t("ui.reuse.generic.error"),
+            }),
+            form: "",
+        };
+    }
+
+    if (!canRenderForm) {
+        return {
+            message: `<p class="auth-intro">${escapeHtml(i18n.t("ui.app.register.closed"))}</p>`,
+            form: "",
+        };
+    }
+
+    const invitedText =
+        inviteData && isInviteFlow
+            ? i18n
+                  .t("ui.app.register.invited_you")
+                  .replace("{inviter}", inviteData.inviterDisplayName)
             : "";
-        const langOptionsHtml = availableLanguages
-            .map(
-                (lang) =>
-                    `<option value="${escapeHtml(lang.key)}"${lang.key === selectedLanguage ? " selected" : ""}>${escapeHtml(lang.name)}</option>`,
-            )
-            .join("");
-        const langSelectHtml =
-            availableLanguages.length > 1
-                ? `<label>
+    const inviteEmail =
+        isInviteFlow && inviteData ? inviteData.inviteeEmail : "";
+    const lockedEmail = inviteEmail || prefilledEmail;
+    const emailValue = lockedEmail || "";
+    const emailLocked = Boolean(lockedEmail);
+    const emailReadonly = emailLocked ? "disabled" : "";
+    const emailLockedClass = emailLocked ? " auth-input--locked" : "";
+    const countdownHtml = inviteData?.expiresAt
+        ? `<p id="register-countdown" class="auth-intro" style="font-size:1rem;margin-top:4px"></p>`
+        : "";
+    const langOptionsHtml = availableLanguages
+        .map(
+            (lang) =>
+                `<option value="${escapeHtml(lang.key)}"${lang.key === selectedLanguage ? " selected" : ""}>${escapeHtml(lang.name)}</option>`,
+        )
+        .join("");
+    const langSelectHtml =
+        availableLanguages.length > 1
+            ? `<label>
             <span>${escapeHtml(i18n.t("ui.app.register.language"))}</span>
             <select name="language">${langOptionsHtml}</select>
           </label>`
-                : "";
-        formHtml = `
+            : "";
+    const verifyNoticeHtml =
+        !compact && !isInviteFlow
+            ? renderInPageCallout({
+                  variant: "info",
+                  body: i18n.t("ui.app.register.email_verify_notice"),
+              })
+            : "";
+    const form = `
       ${invitedText ? `<p class="auth-intro">${escapeHtml(invitedText)}</p>` : ""}
       ${countdownHtml}
-      ${!isInviteFlow ? renderInPageCallout({ variant: "info", body: i18n.t("ui.app.register.email_verify_notice") }) : ""}
+      ${verifyNoticeHtml}
       <div class="auth-form-shell">
         <form id="register-form" class="stack auth-form">
           <label>
@@ -200,29 +212,49 @@ function renderRegisterShell() {
         </form>
       </div>
     `;
-    }
+    return { message: "", form };
+}
 
+function renderRegisterShell() {
+    const { message, form } = buildRegisterFormHtml();
     const brandlineHtml = renderAuthBrandline(
         i18n.t("ui.shared.brand.name"),
         i18n.t("ui.app.login.hero.tagline"),
     );
-    const introPanelHtml = `
-      ${brandlineHtml}
-      <p class="auth-intro">${escapeHtml(i18n.t("ui.app.login.hero.subtitle"))}</p>
-      <div class="cognis-ad-frame" aria-live="polite">
-        <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
-      </div>
-    `;
-    const formPanelHtml = `
-      <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.register.form_title"))}</h2>
-      ${messageHtml}
-      ${formHtml}
-    `;
     return renderAuthLayout({
         introPanelAriaLabel: i18n.t("ui.app.login.intro.aria"),
-        introPanelHtml,
+        introPanelHtml: `
+          ${brandlineHtml}
+          <p class="auth-intro">${escapeHtml(i18n.t("ui.app.login.hero.subtitle"))}</p>
+          <div class="cognis-ad-frame" aria-live="polite">
+            <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
+          </div>
+        `,
         formPanelAriaLabel: i18n.t("ui.app.register.form_title"),
-        formPanelHtml,
+        formPanelHtml: `
+          <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.register.form_title"))}</h2>
+          ${message}
+          ${form}
+        `,
+    });
+}
+
+function renderRegisterShellCompact() {
+    const { message, form } = buildRegisterFormHtml({ compact: true });
+    const brandlineHtml = renderAuthBrandline(
+        i18n.t("ui.shared.brand.name"),
+        i18n.t("ui.app.login.hero.tagline"),
+    );
+    return renderAuthLayout({
+        introPanelAriaLabel: "",
+        introPanelHtml: "",
+        formPanelAriaLabel: i18n.t("ui.app.register.form_title"),
+        formPanelHtml: `
+          ${brandlineHtml}
+          <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.register.form_title"))}</h2>
+          ${message}
+          ${form}
+        `,
     });
 }
 
@@ -438,17 +470,18 @@ function bindRegisterForm() {
     if (!(form instanceof HTMLFormElement)) return;
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const email = String(form.email.value ?? "").trim().toLowerCase();
+        const email = String(form.email.value ?? "")
+            .trim()
+            .toLowerCase();
         const username = String(form.username.value ?? "").trim();
         const displayName = String(form.displayName.value ?? "").trim();
         const password = String(form.password.value ?? "");
         const confirmPassword = String(form.confirmPassword.value ?? "");
         const chosenLanguage = form.language?.value ?? selectedLanguage;
         if (password !== confirmPassword) {
-            showToast(
-                i18n.t("ui.app.register.error.password_mismatch"),
-                { variant: "error" },
-            );
+            showToast(i18n.t("ui.app.register.error.password_mismatch"), {
+                variant: "error",
+            });
             return;
         }
         try {
@@ -456,7 +489,12 @@ function bindRegisterForm() {
                 const response = await fetch("/api/v1/registration/redeem", {
                     method: "POST",
                     headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ token, username, displayName, password }),
+                    body: JSON.stringify({
+                        token,
+                        username,
+                        displayName,
+                        password,
+                    }),
                 });
                 const body = await response.json();
                 if (!response.ok) {
@@ -473,7 +511,12 @@ function bindRegisterForm() {
                 const response = await fetch("/api/v1/auth/register", {
                     method: "POST",
                     headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ username, password, email, displayName }),
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        email,
+                        displayName,
+                    }),
                 });
                 if (!response.ok) {
                     const body = await response.json().catch((error) => {
@@ -550,24 +593,15 @@ const composer = createPageComposer(root, {
                 runTypingShowcase(typingSamples);
                 bindRegisterForm();
             },
-        },
-    ],
-    responsiveLayouts: {
-        phone: {
-            elements: [
+            breakpoints: [
                 {
-                    id: "register-shell",
-                    label: i18n.t("ui.app.register.form_title"),
-                    pinned: true,
-                    gridSize: { default: [12, 5], min: [8, 4], max: "full" },
-                    render: () => renderRegisterShellPhone(),
-                    onRender: () => {
-                        bindRegisterForm();
-                    },
+                    maxWidth: 480,
+                    render: () => renderRegisterShellCompact(),
+                    onRender: () => bindRegisterForm(),
                 },
             ],
         },
-    },
+    ],
 });
 
 await composer.init();

@@ -65,12 +65,18 @@
  *   sub-composer grid. The heading is rendered outside the inner grid container so
  *   it is preserved across re-renders triggered by resize or sub-page switching.
  *
- * Responsive tier attribute:
- *   The composer always applies a `data-viewport-tier` attribute to the root element
- *   reflecting the current breakpoint tier: `phone` (≤480 px), `tablet` (≤900 px),
- *   or `default`. This updates automatically as the viewport changes. Pages use it
- *   in CSS to apply tier-specific styles without any JS in the page itself.
- *   Example: [data-viewport-tier="phone"] .auth-intro { display: none; }
+ * Per-element responsive breakpoints:
+ *   Each element may declare a breakpoints array to supply alternate render functions
+ *   at specific container widths. The composer measures the content grid width and
+ *   selects the first matching breakpoint (ascending maxWidth). No tier names are
+ *   used — breakpoints are expressed as pixel thresholds on the element itself.
+ *   Example:
+ *     breakpoints: [
+ *       { maxWidth: 480, render: () => compactHtml, onRender: () => bindCompact() },
+ *     ]
+ *   If a breakpoint does not supply onRender, the element's default onRender is used.
+ *   On any resize that crosses a breakpoint threshold the affected elements
+ *   are re-rendered automatically.
  *
  * @param {HTMLElement} root - The #app root element for the page.
  * @param {{
@@ -83,6 +89,7 @@
  *     onUnmount?: () => void,
  *     pinned?: boolean,
  *     gridSize?: { default: [number, number], min: [number, number], max?: [number, number] | 'full' | 'half' | ['half'|number, 'half'|number] },
+ *     breakpoints?: Array<{ maxWidth: number, render: () => string, onRender?: () => void }>,
  *   }>,
  *   preferenceKey: string,
  *   i18n: object,
@@ -107,7 +114,6 @@ import { apiFetch } from "./api-client.js";
 import { renderDashboardLayout } from "../layouts/dashboard-layout.js";
 import { prefersReducedMotion } from "./motion.js";
 import { showToast, configureToastDismissLabel } from "./toast.js";
-import { getCurrentBreakpoint, watchBreakpoint } from "./breakpoint.js";
 
 export function createPageComposer(
     root,
@@ -151,13 +157,49 @@ export function createPageComposer(
     let gridRows = 6;
     let resizeObserver = null;
     let lastObservedCols = 0;
+    let lastObservedWidth = 0;
     let gridSection = null;
     let editToggleAbortController = null;
-    let breakpointWatcher = null;
 
     const UNIT = 90; // grid cell size in pixels
     const TOOLBAR_COLLAPSE_EXPAND_ICON = "▸";
     const TOOLBAR_COLLAPSE_COLLAPSE_ICON = "◂";
+
+    function resolveElementRender(el) {
+        if (!el.breakpoints?.length) return el.render;
+        const w = contentGrid
+            ? contentGrid.getBoundingClientRect().width
+            : Infinity;
+        const sorted = [...el.breakpoints].sort(
+            (a, b) => a.maxWidth - b.maxWidth,
+        );
+        for (const bp of sorted) {
+            if (w <= bp.maxWidth) return bp.render;
+        }
+        return el.render;
+    }
+
+    function resolveElementOnRender(el) {
+        if (!el.breakpoints?.length) return el.onRender;
+        const w = contentGrid
+            ? contentGrid.getBoundingClientRect().width
+            : Infinity;
+        const sorted = [...el.breakpoints].sort(
+            (a, b) => a.maxWidth - b.maxWidth,
+        );
+        for (const bp of sorted) {
+            if (w <= bp.maxWidth) return bp.onRender ?? el.onRender;
+        }
+        return el.onRender;
+    }
+
+    function activeBreakpointMaxWidth(el, w) {
+        if (!el.breakpoints?.length) return null;
+        const sorted = [...el.breakpoints].sort(
+            (a, b) => a.maxWidth - b.maxWidth,
+        );
+        return sorted.find((bp) => w <= bp.maxWidth)?.maxWidth ?? null;
+    }
 
     function handleBeforeUnload(e) {
         e.preventDefault();
@@ -673,7 +715,7 @@ export function createPageComposer(
 
         const content = document.createElement("div");
         content.className = "widget-card composer-cell-content";
-        content.innerHTML = el.render();
+        content.innerHTML = resolveElementRender(el)();
         cell.appendChild(content);
 
         if (editing) {
@@ -2304,7 +2346,7 @@ export function createPageComposer(
                 card.dataset.composerElement = el.id;
                 card.style.gridColumn = `${placement.col + 1} / span ${placement.w}`;
                 card.style.gridRow = `${placement.row + 1} / span ${placement.h}`;
-                card.innerHTML = el.render();
+                card.innerHTML = resolveElementRender(el)();
                 section.appendChild(card);
             }
         }
@@ -2318,7 +2360,7 @@ export function createPageComposer(
         const renderedElementIds = visiblePlacements.map((p) => p.id);
         for (const id of renderedElementIds) {
             const el = elements.find((entry) => entry.id === id);
-            el?.onRender?.();
+            resolveElementOnRender(el)?.();
         }
 
         onRender?.();
@@ -2377,7 +2419,7 @@ export function createPageComposer(
                         : "";
                     return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
                 }
-                return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
+                return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${resolveElementRender(el)()}</section></div>`;
             })
             .join("");
     }
@@ -2424,7 +2466,7 @@ export function createPageComposer(
         for (const id of effectiveLayout.order) {
             if (effectiveLayout.hidden.includes(id)) continue;
             const el = elements.find((entry) => entry.id === id);
-            el?.onRender?.();
+            resolveElementOnRender(el)?.();
         }
         onRender?.();
         const activeEl = elements.find((e) => e.id === activeSubPageId);
@@ -2747,20 +2789,20 @@ export function createPageComposer(
                 contentGrid.style.width = "";
                 const width = contentGrid.getBoundingClientRect().width;
                 const newCols = Math.max(1, Math.floor(width / UNIT));
-                if (newCols !== lastObservedCols) {
+                const hasBreakpointChange = elements.some(
+                    (el) =>
+                        activeBreakpointMaxWidth(el, width) !==
+                        activeBreakpointMaxWidth(el, lastObservedWidth),
+                );
+                if (newCols !== lastObservedCols || hasBreakpointChange) {
                     lastObservedCols = newCols;
+                    lastObservedWidth = width;
                     computeGridDimensions();
                     renderGridComposer();
                 }
             });
             resizeObserver.observe(contentGrid.parentElement ?? contentGrid);
         }
-
-        const composerBreakpoints = { phone: 480, tablet: 900 };
-        root.dataset.viewportTier = getCurrentBreakpoint(composerBreakpoints);
-        breakpointWatcher = watchBreakpoint(composerBreakpoints, (tier) => {
-            root.dataset.viewportTier = tier;
-        });
 
         render();
     }

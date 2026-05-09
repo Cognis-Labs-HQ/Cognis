@@ -178,6 +178,7 @@
   <string name="ui.app.login.not_registered.title">まだ登録していませんか？</string>
   <string name="ui.app.login.not_registered.body">無料アカウントを作成して今日から始めましょう。</string>
   <string name="ui.app.login.not_registered.link">サインアップ！</string>
+  <string name="ui.app.login.not_registered.hint">アカウントをお持ちでないですか？サインアップ！</string>
   <string name="ui.app.demo.switched">デモ: サンドボックスページに切り替えました。</string>
   <string name="ui.app.demo.added">デモ: 学習進捗ウィジェットを追加しました。</string>
   <string name="ui.app.demo.tweaked">デモ: 最初のウィジェット設定を調整しました。</string>

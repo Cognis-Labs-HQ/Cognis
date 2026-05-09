@@ -4,6 +4,8 @@
  * Public exports:
  *   renderAuthBrandline(brandName, tagline) — HTML for the branded logo/name/tagline header block.
  *   renderAuthLayout(opts)                  — HTML for the full two-column auth page shell.
+ *                                             When introPanelHtml is empty the intro panel is
+ *                                             omitted entirely, producing a single-column layout.
  *
  * Usage:
  *   import { renderAuthBrandline, renderAuthLayout } from '../../reuse/auth-layout.js';
@@ -48,10 +50,13 @@ export function renderAuthLayout({
     formPanelAriaLabel,
     formPanelHtml,
 }) {
+    const introPanel = introPanelHtml
+        ? `<aside class="panel auth-intro" aria-label="${escapeHtml(introPanelAriaLabel)}">${introPanelHtml}</aside>`
+        : "";
     return `
     <section class="auth-page auth-page--frame">
       <div class="auth-layout">
-        <aside class="panel auth-intro" aria-label="${escapeHtml(introPanelAriaLabel)}">${introPanelHtml}</aside>
+        ${introPanel}
         <main class="panel auth-panel" aria-label="${escapeHtml(formPanelAriaLabel)}">${formPanelHtml}</main>
       </div>
     </section>

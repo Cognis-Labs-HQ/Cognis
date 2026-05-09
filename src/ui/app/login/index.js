@@ -311,9 +311,6 @@ function renderLoginShell() {
               `<a href="/register" class="in-page-callout__link">${escapeHtml(i18n.t("ui.app.login.not_registered.link"))}</a></section>`,
           )
         : "";
-    const signupCompactHtml = publicRegistrationEnabled
-        ? `<p class="auth-compact-register">ℹ️ <a href="/register">${escapeHtml(i18n.t("ui.app.login.not_registered.hint"))}</a></p>`
-        : "";
     const formPanelHtml = `
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
       <form id="login-form" class="stack auth-form" method="POST">
@@ -327,8 +324,7 @@ function renderLoginShell() {
           <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
         </label>
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
-        <div class="auth-signup-callout">${signupCalloutHtml}</div>
-        ${signupCompactHtml}
+        ${signupCalloutHtml}
         <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
       </form>
       <div id="sso-buttons" class="sso-buttons"></div>
@@ -338,6 +334,40 @@ function renderLoginShell() {
         introPanelHtml,
         formPanelAriaLabel: i18n.t("ui.app.login.title"),
         formPanelHtml,
+    });
+}
+
+function renderLoginShellCompact() {
+    const brandlineHtml = renderAuthBrandline(
+        i18n.t("ui.shared.brand.name"),
+        i18n.t("ui.app.login.hero.tagline"),
+    );
+    const signupHtml = publicRegistrationEnabled
+        ? `<p class="auth-compact-register">ℹ️ <a href="/register">${escapeHtml(i18n.t("ui.app.login.not_registered.hint"))}</a></p>`
+        : "";
+    return renderAuthLayout({
+        introPanelAriaLabel: "",
+        introPanelHtml: "",
+        formPanelAriaLabel: i18n.t("ui.app.login.title"),
+        formPanelHtml: `
+          ${brandlineHtml}
+          <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
+          <form id="login-form" class="stack auth-form" method="POST">
+            <input type="hidden" id="login-provider" value="local" />
+            <label>
+              <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
+              <input id="login-username" autocomplete="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
+            </label>
+            <label>
+              <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
+              <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
+            </label>
+            <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
+            ${signupHtml}
+            <button type="submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
+          </form>
+          <div id="sso-buttons" class="sso-buttons"></div>
+        `,
     });
 }
 
@@ -368,10 +398,7 @@ function bindLoginForm() {
                     "cognis_display_name",
                     body.data.displayName || body.data.accountId,
                 );
-                localStorage.setItem(
-                    "cognis_role",
-                    body.data.role || "user",
-                );
+                localStorage.setItem("cognis_role", body.data.role || "user");
                 localStorage.setItem(
                     "cognis_is_founder",
                     body.data.isFounder ? "true" : "false",
@@ -395,8 +422,7 @@ function bindLoginForm() {
                 return;
             }
             const errorMsg =
-                body?.error?.message ||
-                i18n.t("ui.app.login.error.generic");
+                body?.error?.message || i18n.t("ui.app.login.error.generic");
             showToast(errorMsg, { variant: "error" });
         });
 }
@@ -425,6 +451,17 @@ const composer = createPageComposer(root, {
                 renderLoginReasonToast();
                 bindLoginForm();
             },
+            breakpoints: [
+                {
+                    maxWidth: 480,
+                    render: () => renderLoginShellCompact(),
+                    onRender: () => {
+                        loadLoginMethods();
+                        renderLoginReasonToast();
+                        bindLoginForm();
+                    },
+                },
+            ],
         },
     ],
 });

@@ -207,6 +207,11 @@ p.auth-intro {
     }
 }
 
+.auth-compact-register {
+    margin: 0 0 4px;
+    font-size: 0.95rem;
+}
+
 body[data-theme="light"] .panel.auth-intro,
 body[data-theme="light"] .auth-panel {
     background: linear-gradient(
