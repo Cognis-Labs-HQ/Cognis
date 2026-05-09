@@ -119,7 +119,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "db",
         name: "Database Gateway",
-        version: "1.1.1",
+        version: "1.1.2",
         required: true,
         description:
             "Core relational database layer for persistent application data.",

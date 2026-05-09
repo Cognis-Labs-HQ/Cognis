@@ -204,6 +204,7 @@ Comprehensive logging is required for every new feature and behaviour change.
 - Log uncaught runtime failures as fatal events (`fatal: true` in metadata) so they are easy to detect in operational monitoring.
 - Emit `info` logs for user activity and state-changing actions so flows are auditable end-to-end.
 - Avoid silent `catch` blocks. If a fallback path is intentional, log the failure first, then continue.
+- Use one invocation style for logging in new code: call a local `log` function (`log?.(...)` or `log(...)`) rather than mixing direct property calls (`this.log?.(...)`) and alternate logger names in the same file.
 
 ---
 

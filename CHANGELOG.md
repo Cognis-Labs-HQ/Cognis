@@ -19,6 +19,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - Logging hardening: API startup and routing now log caught failures at error level, uncaught/unhandled runtime failures are marked as fatal events in logs, and request-level activity logging is elevated to info for full user activity tracing. ([b44baa3](https://github.com/le-firehawk/Cognis/commit/b44baa3))
+- Logging consistency: logging call syntax is now normalized around a local `log` callable style (`log(...)` / `log?.(...)`) across runtime token and DB/account logging paths, and AI instructions now require a single logging invocation style in new code. ([465212d](https://github.com/le-firehawk/Cognis/commit/465212d))
 - Logging: expanded structured backend coverage across core API routes and gateway bootstraps, added audit-style logs for account mutations, and recorded major registration/auth lifecycle events through the shared logger. ([39dd2b9](https://github.com/le-firehawk/Cognis/commit/39dd2b9))
 - Local Auth adapter: DB-backed local account mutations now emit shared structured logs for registration, role/password/founder changes, enable/disable, deletion, and last-login updates. ([63c6461](https://github.com/le-firehawk/Cognis/commit/63c6461))
 - Registration Invite adapter: invite-redemption rollback cleanup now reports failures through the shared logger with adapter-specific metadata instead of raw console warnings. ([3eed7dc](https://github.com/le-firehawk/Cognis/commit/3eed7dc))

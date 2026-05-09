@@ -7,7 +7,7 @@ import {
     writeFileSync,
 } from "node:fs";
 import path from "node:path";
-import { logAppEvent } from "../logger.js";
+import { logAppEvent as log } from "../logger.js";
 
 export type AccessRole = "user" | "teacher" | "moderator" | "admin";
 
@@ -58,7 +58,7 @@ function persistTokenStore() {
         if (!hasWarnedPersistFailure) {
             const message =
                 error instanceof Error ? error.message : String(error);
-            logAppEvent("warn", "Failed to persist access token store.", {
+            log("warn", "Failed to persist access token store.", {
                 component: "auth",
                 path: tokenStorePath,
                 error: message,
@@ -128,7 +128,7 @@ function loadTokenStore(now = Date.now()) {
         if (!hasWarnedLoadFailure) {
             const message =
                 error instanceof Error ? error.message : String(error);
-            logAppEvent("warn", "Failed to load access token store.", {
+            log("warn", "Failed to load access token store.", {
                 component: "auth",
                 path: tokenStorePath,
                 error: message,

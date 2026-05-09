@@ -60,6 +60,15 @@ export class DbLocalAccountStore implements LocalAccountStore {
         return "CURRENT_TIMESTAMP";
     }
 
+    private writeLog(
+        level: "debug" | "info" | "warn" | "error",
+        message: string,
+        meta?: Record<string, unknown>,
+    ): void {
+        const log = this.log;
+        log?.(level, message, meta);
+    }
+
     async ensureSchema() {
         if (this.dbType === "postgresql") {
             await this.db.execute(`CREATE TABLE IF NOT EXISTS accounts (
@@ -159,14 +168,14 @@ export class DbLocalAccountStore implements LocalAccountStore {
             await this.db.execute("COMMIT");
         } catch (error) {
             await this.db.execute("ROLLBACK");
-            this.log?.("warn", "Account registration transaction failed.", {
+            this.writeLog("warn", "Account registration transaction failed.", {
                 component: "auth-local-store",
                 accountId: username,
                 error: error instanceof Error ? error.message : String(error),
             });
             throw error;
         }
-        this.log?.("info", "Registered local account.", {
+        this.writeLog("info", "Registered local account.", {
             component: "auth-local-store",
             accountId: username,
             isAdmin,
@@ -234,7 +243,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
        WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(2)})`,
             [role === "admin", username],
         );
-        this.log?.("info", "Updated local account role.", {
+        this.writeLog("info", "Updated local account role.", {
             component: "auth-local-store",
             accountId: username,
             role,
@@ -248,7 +257,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
        WHERE username = ${this.placeholder(3)}`,
             [passwordHash, "scrypt", username],
         );
-        this.log?.("info", "Updated local account password.", {
+        this.writeLog("info", "Updated local account password.", {
             component: "auth-local-store",
             accountId: username,
         });
@@ -259,7 +268,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
        WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(2)})`,
             [isFounder, username],
         );
-        this.log?.("info", "Updated local account founder status.", {
+        this.writeLog("info", "Updated local account founder status.", {
             component: "auth-local-store",
             accountId: username,
             isFounder,
@@ -301,7 +310,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
        WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(2)})`,
             [enabled, username],
         );
-        this.log?.("info", "Updated local account enabled state.", {
+        this.writeLog("info", "Updated local account enabled state.", {
             component: "auth-local-store",
             accountId: username,
             enabled,
@@ -327,14 +336,19 @@ export class DbLocalAccountStore implements LocalAccountStore {
             await this.db.execute("COMMIT");
         } catch (error) {
             await this.db.execute("ROLLBACK");
-            this.log?.("warn", "Local account deletion transaction failed.", {
-                component: "auth-local-store",
-                accountId: username,
-                error: error instanceof Error ? error.message : String(error),
-            });
+            this.writeLog(
+                "warn",
+                "Local account deletion transaction failed.",
+                {
+                    component: "auth-local-store",
+                    accountId: username,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                },
+            );
             throw error;
         }
-        this.log?.("info", "Deleted local account.", {
+        this.writeLog("info", "Deleted local account.", {
             component: "auth-local-store",
             accountId: username,
         });
@@ -371,9 +385,13 @@ export class DbLocalAccountStore implements LocalAccountStore {
        WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(1)})`,
             [username],
         );
-        this.log?.("debug", "Updated last-login timestamp for local account.", {
-            component: "auth-local-store",
-            accountId: username,
-        });
+        this.writeLog(
+            "debug",
+            "Updated last-login timestamp for local account.",
+            {
+                component: "auth-local-store",
+                accountId: username,
+            },
+        );
     }
 }

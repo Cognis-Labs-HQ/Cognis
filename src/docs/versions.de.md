@@ -12,7 +12,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | ------------------------- | ----------------------------------- | ------- |
 | SMTP-Benachrichtigung     | `src/adapters/notify/smtp/`         | `0.1.0` |
 | Lokaler Dateispeicher     | `src/adapters/file/local/`          | `0.1.0` |
-| Lokale Auth               | `src/adapters/auth/local/`          | `0.2.1` |
+| Lokale Auth               | `src/adapters/auth/local/`          | `0.2.2` |
 | SQLite-Datenbank          | `src/adapters/db/sqlite/`           | `0.1.0` |
 | PostgreSQL-Datenbank      | `src/adapters/db/postgres/`         | `0.1.0` |
 | MariaDB-Datenbank         | `src/adapters/db/mariadb/`          | `0.1.0` |
@@ -24,7 +24,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 
 | Komponente                | Pfad                         | Version |
 | ------------------------- | ---------------------------- | ------- |
-| Datenbank (db)            | `src/gateways/db/`           | `1.1.1` |
+| Datenbank (db)            | `src/gateways/db/`           | `1.1.2` |
 | Authentifizierung (auth)  | `src/gateways/auth/`         | `1.3.2` |
 | Benachrichtigung (notify) | `src/gateways/notify/`       | `1.1.1` |
 | Profil                    | `src/gateways/profile/`      | `1.1.1` |

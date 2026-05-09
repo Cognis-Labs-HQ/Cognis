@@ -58,6 +58,15 @@ function buildDbErrorMeta(error: unknown): Record<string, unknown> {
     return meta;
 }
 
+function writeDbLog(
+    log: BootstrapLog | undefined,
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    meta?: Record<string, unknown>,
+): void {
+    log?.(level, message, meta);
+}
+
 export class SqliteExecutor implements DbExecutor {
     private dbPromise: Promise<any> | null = null;
     constructor(
@@ -79,7 +88,7 @@ export class SqliteExecutor implements DbExecutor {
     }
 
     async execute(sql: string, params: unknown[] = []) {
-        this.log?.("debug", "Executing SQL statement.", {
+        writeDbLog(this.log, "debug", "Executing SQL statement.", {
             component: "db",
             provider: "sqlite",
             statement: summarizeStatement(sql),
@@ -125,11 +134,16 @@ export class PostgresExecutor implements DbExecutor {
                     connectionString: this.databaseUrl,
                 });
                 client.on("error", (error: Error) => {
-                    this.log?.("warn", "Database client emitted error event.", {
-                        component: "db",
-                        provider: "postgresql",
-                        ...buildDbErrorMeta(error),
-                    });
+                    writeDbLog(
+                        this.log,
+                        "warn",
+                        "Database client emitted error event.",
+                        {
+                            component: "db",
+                            provider: "postgresql",
+                            ...buildDbErrorMeta(error),
+                        },
+                    );
                 });
                 await client.connect();
                 return client;
@@ -138,7 +152,7 @@ export class PostgresExecutor implements DbExecutor {
         return this.clientPromise;
     }
     async execute(sql: string, params: unknown[] = []) {
-        this.log?.("debug", "Executing SQL statement.", {
+        writeDbLog(this.log, "debug", "Executing SQL statement.", {
             component: "db",
             provider: "postgresql",
             statement: summarizeStatement(sql),
@@ -149,7 +163,7 @@ export class PostgresExecutor implements DbExecutor {
             const result = await client.query(sql, params);
             return { rows: result.rows, rowCount: result.rowCount };
         } catch (error) {
-            this.log?.("warn", "SQL execution failed.", {
+            writeDbLog(this.log, "warn", "SQL execution failed.", {
                 component: "db",
                 provider: "postgresql",
                 statement: summarizeStatement(sql),
@@ -177,7 +191,7 @@ export class MariadbExecutor implements DbExecutor {
         return this.connPromise;
     }
     async execute(sql: string, params: unknown[] = []) {
-        this.log?.("debug", "Executing SQL statement.", {
+        writeDbLog(this.log, "debug", "Executing SQL statement.", {
             component: "db",
             provider: "mariadb",
             statement: summarizeStatement(sql),
@@ -189,7 +203,7 @@ export class MariadbExecutor implements DbExecutor {
             if (Array.isArray(rows)) return { rows, rowCount: rows.length };
             return { rowCount: (rows as any).affectedRows ?? 0 };
         } catch (error) {
-            this.log?.("warn", "SQL execution failed.", {
+            writeDbLog(this.log, "warn", "SQL execution failed.", {
                 component: "db",
                 provider: "mariadb",
                 statement: summarizeStatement(sql),

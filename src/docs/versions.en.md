@@ -28,7 +28,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | ------------------- | ----------------------------------- | ------- |
 | SMTP Notification   | `src/adapters/notify/smtp/`         | `0.1.0` |
 | Local File Storage  | `src/adapters/file/local/`          | `0.1.0` |
-| Local Auth          | `src/adapters/auth/local/`          | `0.2.1` |
+| Local Auth          | `src/adapters/auth/local/`          | `0.2.2` |
 | SQLite Database     | `src/adapters/db/sqlite/`           | `0.1.0` |
 | PostgreSQL Database | `src/adapters/db/postgres/`         | `0.1.0` |
 | MariaDB Database    | `src/adapters/db/mariadb/`          | `0.1.0` |
@@ -40,7 +40,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component             | Path                         | Version |
 | --------------------- | ---------------------------- | ------- |
-| Database (db)         | `src/gateways/db/`           | `1.1.1` |
+| Database (db)         | `src/gateways/db/`           | `1.1.2` |
 | Authentication (auth) | `src/gateways/auth/`         | `1.3.2` |
 | Notification (notify) | `src/gateways/notify/`       | `1.1.1` |
 | Profile               | `src/gateways/profile/`      | `1.1.1` |
