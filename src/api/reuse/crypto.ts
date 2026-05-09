@@ -129,14 +129,16 @@ export async function encryptPayload(
     plaintext: string,
 ): Promise<{ iv: string; ciphertext: string }> {
     const subtle = globalThis.crypto.subtle;
-    const iv = globalThis.crypto.getRandomValues(new Uint8Array(IV_BYTES));
+    const initVector = globalThis.crypto.getRandomValues(
+        new Uint8Array(IV_BYTES),
+    );
     const encrypted = await subtle.encrypt(
-        { name: ENCRYPT_ALG, iv },
+        { name: ENCRYPT_ALG, iv: initVector },
         key,
         new TextEncoder().encode(plaintext),
     );
     return {
-        iv: Buffer.from(iv).toString("hex"),
+        iv: Buffer.from(initVector).toString("hex"),
         ciphertext: Buffer.from(encrypted).toString("hex"),
     };
 }

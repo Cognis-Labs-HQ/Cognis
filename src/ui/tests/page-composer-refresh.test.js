@@ -24,7 +24,7 @@ test("page composer invokes element-level onRender callbacks", () => {
         "utf8",
     );
 
-    assert.match(source, /el\?\.onRender\?\.\(\);/);
+    assert.match(source, /element\?\.onRender\?\.\(\);/);
 });
 
 test("page composer includes mobile toolbar drawer behavior", () => {

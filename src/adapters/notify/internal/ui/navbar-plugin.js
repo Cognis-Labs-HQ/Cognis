@@ -110,9 +110,9 @@ let relativeTimeNodes = [];
 
 function tickRelativeTimes() {
     for (const node of relativeTimeNodes) {
-        const ts = Number(node.dataset.relativeTime);
-        if (!Number.isFinite(ts)) continue;
-        node.textContent = formatRelativeTime(ts);
+        const timestamp = Number(node.dataset.relativeTime);
+        if (!Number.isFinite(timestamp)) continue;
+        node.textContent = formatRelativeTime(timestamp);
     }
 }
 
@@ -138,14 +138,14 @@ function updateBadge(count) {
 }
 
 function renderNotificationItem(notif, i18n) {
-    const li = document.createElement("li");
-    li.className =
+    const listItem = document.createElement("li");
+    listItem.className =
         "notification-item " +
         (notif.read ? "notification-item--read" : "notification-item--unread") +
         (notif.actionUrl ? " notification-item--linked" : "");
-    li.dataset.id = notif.id;
+    listItem.dataset.id = notif.id;
 
-    li.innerHTML =
+    listItem.innerHTML =
         '<span class="notification-item-dot" aria-hidden="true"></span>' +
         '<span class="notification-item-body">' +
         `<span class="notification-item-subject">${escapeHtml(notif.subject)}</span>` +
@@ -158,13 +158,13 @@ function renderNotificationItem(notif, i18n) {
             : "") +
         `<button class="notification-dismiss" type="button" aria-label="${i18n.t("ui.reuse.generic.remove")}">&#215;</button>`;
 
-    li.addEventListener("click", async (e) => {
+    listItem.addEventListener("click", async (e) => {
         if (e.target.closest(".notification-dismiss")) return;
         if (!notif.read) {
             try {
                 await markOneRead(notif.id);
-                li.classList.remove("notification-item--unread");
-                li.classList.add("notification-item--read");
+                listItem.classList.remove("notification-item--unread");
+                listItem.classList.add("notification-item--read");
                 notif.read = true;
                 await refreshCount();
             } catch {
@@ -180,12 +180,12 @@ function renderNotificationItem(notif, i18n) {
         }
     });
 
-    const dismissBtn = li.querySelector(".notification-dismiss");
+    const dismissBtn = listItem.querySelector(".notification-dismiss");
     dismissBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
         try {
             await deleteNotification(notif.id);
-            li.remove();
+            listItem.remove();
             currentNotifications = currentNotifications.filter(
                 (n) => n.id !== notif.id,
             );
@@ -200,7 +200,7 @@ function renderNotificationItem(notif, i18n) {
         }
     });
 
-    return li;
+    return listItem;
 }
 
 async function refreshCount() {
@@ -499,10 +499,10 @@ function getArrivalToastContainer() {
         !arrivalToastContainer ||
         !document.body.contains(arrivalToastContainer)
     ) {
-        const el = document.createElement("div");
-        el.className = "arrival-toast-container";
-        document.body.appendChild(el);
-        arrivalToastContainer = el;
+        const container = document.createElement("div");
+        container.className = "arrival-toast-container";
+        document.body.appendChild(container);
+        arrivalToastContainer = container;
         updateNavBottom();
         window.addEventListener("resize", updateNavBottom, { passive: true });
     }

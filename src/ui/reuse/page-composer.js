@@ -398,9 +398,12 @@ export function createPageComposer(
         if (Array.isArray(maxVal)) {
             halfWidth = maxVal[0] === "half";
             halfHeight = maxVal[1] === "half";
-            const rW = halfWidth ? null : (maxVal[0] ?? null);
-            const rH = halfHeight ? null : (maxVal[1] ?? null);
-            resolvedMax = rW === null && rH === null ? null : [rW, rH];
+            const resolvedWidth = halfWidth ? null : (maxVal[0] ?? null);
+            const resolvedHeight = halfHeight ? null : (maxVal[1] ?? null);
+            resolvedMax =
+                resolvedWidth === null && resolvedHeight === null
+                    ? null
+                    : [resolvedWidth, resolvedHeight];
         }
 
         return {
@@ -551,27 +554,33 @@ export function createPageComposer(
         layout.hidden = layout.hidden.filter((id) =>
             elements.some((e) => e.id === id),
         );
-        for (const el of elements) {
-            if (layout.hidden.includes(el.id)) continue;
-            if (layout.placements.some((p) => p.id === el.id)) continue;
-            if (el.defaultHidden && !el.pinned) {
-                layout.hidden.push(el.id);
+        for (const element of elements) {
+            if (layout.hidden.includes(element.id)) continue;
+            if (layout.placements.some((p) => p.id === element.id)) continue;
+            if (element.defaultHidden && !element.pinned) {
+                layout.hidden.push(element.id);
                 continue;
             }
-            const gs = getGridSize(el);
-            const w = gs.fullWidth
+            const gridSize = getGridSize(element);
+            const w = gridSize.fullWidth
                 ? gridCols
-                : gs.halfWidth
-                  ? Math.max(gs.min[0], Math.floor(gridCols / 2))
-                  : Math.min(gs.default[0], gridCols);
-            const h = gs.halfHeight
-                ? Math.max(gs.min[1], Math.floor(gridRows / 2))
-                : gs.default[1];
+                : gridSize.halfWidth
+                  ? Math.max(gridSize.min[0], Math.floor(gridCols / 2))
+                  : Math.min(gridSize.default[0], gridCols);
+            const h = gridSize.halfHeight
+                ? Math.max(gridSize.min[1], Math.floor(gridRows / 2))
+                : gridSize.default[1];
             let placed = false;
             for (let row = 0; !placed; row++) {
                 for (let col = 0; col <= Math.max(0, gridCols - w); col++) {
                     if (canPlace(col, row, w, h, null)) {
-                        layout.placements.push({ id: el.id, col, row, w, h });
+                        layout.placements.push({
+                            id: element.id,
+                            col,
+                            row,
+                            w,
+                            h,
+                        });
                         placed = true;
                         break;
                     }
@@ -832,10 +841,12 @@ export function createPageComposer(
         cell.appendChild(content);
 
         if (editing) {
-            const gs = getGridSize(el);
+            const gridSize = getGridSize(el);
             const canResizeE =
-                !gs.fullWidth && (!gs.max || gs.max[0] > gs.min[0]);
-            const canResizeS = !gs.max || gs.max[1] > gs.min[1];
+                !gridSize.fullWidth &&
+                (!gridSize.max || gridSize.max[0] > gridSize.min[0]);
+            const canResizeS =
+                !gridSize.max || gridSize.max[1] > gridSize.min[1];
 
             if (canResizeE) {
                 const handleE = document.createElement("div");
@@ -868,7 +879,7 @@ export function createPageComposer(
             e.stopPropagation();
             handle.setPointerCapture(e.pointerId);
 
-            const gs = getGridSize(el);
+            const gridSize = getGridSize(el);
 
             const shade = document.createElement("div");
             shade.className = "composer-shade";
@@ -895,10 +906,12 @@ export function createPageComposer(
                 const y = e.clientY - gridRect.top;
                 if (direction === "e" || direction === "se") {
                     const rawW = Math.round((x - placement.col * UNIT) / UNIT);
-                    const maxW = gs.max ? gs.max[0] : gridCols - placement.col;
+                    const maxW = gridSize.max
+                        ? gridSize.max[0]
+                        : gridCols - placement.col;
                     currentW = clampValue(
                         rawW,
-                        gs.min[0],
+                        gridSize.min[0],
                         Math.min(maxW, gridCols - placement.col),
                     );
                 }
@@ -906,8 +919,8 @@ export function createPageComposer(
                     const rawH = Math.round((y - placement.row * UNIT) / UNIT);
                     currentH = clampValue(
                         rawH,
-                        gs.min[1],
-                        gs.max ? gs.max[1] : null,
+                        gridSize.min[1],
+                        gridSize.max ? gridSize.max[1] : null,
                     );
                 }
                 shade.style.width = `${currentW * UNIT}px`;
@@ -1015,15 +1028,15 @@ export function createPageComposer(
             e.preventDefault();
             item.setPointerCapture(e.pointerId);
 
-            const gs = getGridSize(el);
-            const w = gs.fullWidth
+            const gridSize = getGridSize(el);
+            const w = gridSize.fullWidth
                 ? gridCols
-                : gs.halfWidth
-                  ? Math.max(gs.min[0], Math.floor(gridCols / 2))
-                  : Math.min(gs.default[0], gridCols);
-            const h = gs.halfHeight
-                ? Math.max(gs.min[1], Math.floor(gridRows / 2))
-                : gs.default[1];
+                : gridSize.halfWidth
+                  ? Math.max(gridSize.min[0], Math.floor(gridCols / 2))
+                  : Math.min(gridSize.default[0], gridCols);
+            const h = gridSize.halfHeight
+                ? Math.max(gridSize.min[1], Math.floor(gridRows / 2))
+                : gridSize.default[1];
 
             let shade = null;
             let currentCol = -1;
@@ -1281,8 +1294,8 @@ export function createPageComposer(
 
         panel.querySelectorAll("[data-composer-panel-item]").forEach((item) => {
             const elId = item.dataset.composerPanelItem;
-            const el = elements.find((e) => e.id === elId);
-            if (el) bindPanelItemDrag(item, el);
+            const element = elements.find((e) => e.id === elId);
+            if (element) bindPanelItemDrag(item, element);
         });
     }
 
@@ -1425,22 +1438,23 @@ export function createPageComposer(
         state.layout.hidden = state.layout.hidden.filter((id) =>
             state.elements.some((e) => e.id === id),
         );
-        for (const el of state.elements) {
-            if (state.layout.hidden.includes(el.id)) continue;
-            if (state.layout.placements.some((p) => p.id === el.id)) continue;
-            if (el.defaultHidden && !el.pinned) {
-                state.layout.hidden.push(el.id);
+        for (const element of state.elements) {
+            if (state.layout.hidden.includes(element.id)) continue;
+            if (state.layout.placements.some((p) => p.id === element.id))
+                continue;
+            if (element.defaultHidden && !element.pinned) {
+                state.layout.hidden.push(element.id);
                 continue;
             }
-            const gs = getGridSize(el);
-            const w = gs.fullWidth
+            const gridSize = getGridSize(element);
+            const w = gridSize.fullWidth
                 ? state.gridCols
-                : gs.halfWidth
-                  ? Math.max(gs.min[0], Math.floor(state.gridCols / 2))
-                  : Math.min(gs.default[0], state.gridCols);
-            const h = gs.halfHeight
-                ? Math.max(gs.min[1], Math.floor(state.gridRows / 2))
-                : gs.default[1];
+                : gridSize.halfWidth
+                  ? Math.max(gridSize.min[0], Math.floor(state.gridCols / 2))
+                  : Math.min(gridSize.default[0], state.gridCols);
+            const h = gridSize.halfHeight
+                ? Math.max(gridSize.min[1], Math.floor(state.gridRows / 2))
+                : gridSize.default[1];
             let placed = false;
             for (let row = 0; !placed; row++) {
                 for (
@@ -1450,7 +1464,7 @@ export function createPageComposer(
                 ) {
                     if (canSubPlace(state, col, row, w, h, null)) {
                         state.layout.placements.push({
-                            id: el.id,
+                            id: element.id,
                             col,
                             row,
                             w,
@@ -1525,7 +1539,7 @@ export function createPageComposer(
             e.stopPropagation();
             handle.setPointerCapture(e.pointerId);
 
-            const gs = getGridSize(el);
+            const gridSize = getGridSize(el);
 
             const shade = document.createElement("div");
             shade.className = "composer-shade";
@@ -1552,12 +1566,12 @@ export function createPageComposer(
                 const y = e.clientY - gridRect.top;
                 if (direction === "e" || direction === "se") {
                     const rawW = Math.round((x - placement.col * UNIT) / UNIT);
-                    const maxW = gs.max
-                        ? gs.max[0]
+                    const maxW = gridSize.max
+                        ? gridSize.max[0]
                         : state.gridCols - placement.col;
                     currentW = clampValue(
                         rawW,
-                        gs.min[0],
+                        gridSize.min[0],
                         Math.min(maxW, state.gridCols - placement.col),
                     );
                 }
@@ -1565,8 +1579,8 @@ export function createPageComposer(
                     const rawH = Math.round((y - placement.row * UNIT) / UNIT);
                     currentH = clampValue(
                         rawH,
-                        gs.min[1],
-                        gs.max ? gs.max[1] : null,
+                        gridSize.min[1],
+                        gridSize.max ? gridSize.max[1] : null,
                     );
                 }
                 shade.style.width = `${currentW * UNIT}px`;
@@ -1860,10 +1874,12 @@ export function createPageComposer(
         cell.appendChild(content);
 
         if (state.editing) {
-            const gs = getGridSize(el);
+            const gridSize = getGridSize(el);
             const canResizeE =
-                !gs.fullWidth && (!gs.max || gs.max[0] > gs.min[0]);
-            const canResizeS = !gs.max || gs.max[1] > gs.min[1];
+                !gridSize.fullWidth &&
+                (!gridSize.max || gridSize.max[0] > gridSize.min[0]);
+            const canResizeS =
+                !gridSize.max || gridSize.max[1] > gridSize.min[1];
 
             if (canResizeE) {
                 const handleE = document.createElement("div");
@@ -1895,19 +1911,15 @@ export function createPageComposer(
             e.preventDefault();
             item.setPointerCapture(e.pointerId);
 
-            const gs = getGridSize(el);
-            const w = gs.fullWidth
+            const gridSize = getGridSize(el);
+            const w = gridSize.fullWidth
                 ? state.gridCols
-                : gs.halfWidth
-                  ? Math.max(gs.min[0], Math.floor(state.gridCols / 2))
-                  : Math.min(gs.default[0], state.gridCols);
-            const h = gs.halfHeight
-                ? Math.max(gs.min[1], Math.floor(state.gridRows / 2))
-                : gs.default[1];
-
-            let shade = null;
-            let currentCol = -1;
-            let currentRow = -1;
+                : gridSize.halfWidth
+                  ? Math.max(gridSize.min[0], Math.floor(state.gridCols / 2))
+                  : Math.min(gridSize.default[0], state.gridCols);
+            const h = gridSize.halfHeight
+                ? Math.max(gridSize.min[1], Math.floor(state.gridRows / 2))
+                : gridSize.default[1];
             let overGrid = false;
 
             function onMove(e) {
@@ -2124,8 +2136,8 @@ export function createPageComposer(
 
         panel.querySelectorAll("[data-composer-panel-item]").forEach((item) => {
             const elId = item.dataset.composerPanelItem;
-            const el = state.elements.find((e) => e.id === elId);
-            if (el) bindSubPanelItemDrag(item, el, state);
+            const element = state.elements.find((e) => e.id === elId);
+            if (element) bindSubPanelItemDrag(item, element, state);
         });
     }
 
@@ -2152,10 +2164,12 @@ export function createPageComposer(
                 (p) => !state.layout.hidden.includes(p.id),
             );
             for (const placement of visiblePlacements) {
-                const el = state.elements.find((e) => e.id === placement.id);
-                if (!el) continue;
+                const element = state.elements.find(
+                    (e) => e.id === placement.id,
+                );
+                if (!element) continue;
                 state.container.appendChild(
-                    createSubCell(el, placement, state),
+                    createSubCell(element, placement, state),
                 );
             }
         } else {
@@ -2170,12 +2184,14 @@ export function createPageComposer(
             const sorted = computeSubViewPlacements(state);
 
             for (const placement of sorted) {
-                const el = state.elements.find((e) => e.id === placement.id);
-                if (!el) continue;
+                const element = state.elements.find(
+                    (e) => e.id === placement.id,
+                );
+                if (!element) continue;
                 const card = document.createElement("div");
                 card.className = "widget-card";
-                card.dataset.composerElement = el.id;
-                card.innerHTML = el.render();
+                card.dataset.composerElement = element.id;
+                card.innerHTML = element.render();
                 state.container.appendChild(card);
             }
         }
@@ -2274,14 +2290,14 @@ export function createPageComposer(
     }
 
     function getOrCreateFloatingToolbar() {
-        let ft = root.querySelector(".floating-toolbar");
-        if (!ft) {
-            ft = document.createElement("div");
-            ft.className = "floating-toolbar";
-            ft.hidden = true;
-            root.appendChild(ft);
+        let floatingToolbar = root.querySelector(".floating-toolbar");
+        if (!floatingToolbar) {
+            floatingToolbar = document.createElement("div");
+            floatingToolbar.className = "floating-toolbar";
+            floatingToolbar.hidden = true;
+            root.appendChild(floatingToolbar);
         }
-        return ft;
+        return floatingToolbar;
     }
 
     function syncSubEditToggle(state) {
@@ -2386,15 +2402,15 @@ export function createPageComposer(
     ) {
         const packed = [];
         for (const orig of sortedVisible) {
-            const el = elems.find((e) => e.id === orig.id);
-            const gs = el ? getGridSize(el) : null;
+            const element = elems.find((e) => e.id === orig.id);
+            const gridSize = element ? getGridSize(element) : null;
             let w;
-            if (gs?.fullWidth) {
+            if (gridSize?.fullWidth) {
                 w = maxCols;
-            } else if (gs?.halfWidth) {
+            } else if (gridSize?.halfWidth) {
                 w = Math.min(
                     maxCols,
-                    Math.max(gs.min[0], Math.floor(maxCols / 2)),
+                    Math.max(gridSize.min[0], Math.floor(maxCols / 2)),
                 );
             } else {
                 w = Math.min(orig.w, maxCols);
@@ -2490,14 +2506,14 @@ export function createPageComposer(
 
         const needsRepack = visible.some((p) => {
             if (p.col + p.w > gridCols) return true;
-            const el = elements.find((e) => e.id === p.id);
-            if (!el) return false;
-            const gs = getGridSize(el);
-            if (gs.fullWidth && p.w !== gridCols) return true;
-            if (gs.halfWidth) {
+            const element = elements.find((e) => e.id === p.id);
+            if (!element) return false;
+            const gridSize = getGridSize(element);
+            if (gridSize.fullWidth && p.w !== gridCols) return true;
+            if (gridSize.halfWidth) {
                 const target = Math.min(
                     gridCols,
-                    Math.max(gs.min[0], Math.floor(gridCols / 2)),
+                    Math.max(gridSize.min[0], Math.floor(gridCols / 2)),
                 );
                 if (p.w !== target) return true;
             }
@@ -2515,14 +2531,14 @@ export function createPageComposer(
 
         const needsRepack = visible.some((pl) => {
             if (pl.col + pl.w > state.gridCols) return true;
-            const el = state.elements.find((e) => e.id === pl.id);
-            if (!el) return false;
-            const gs = getGridSize(el);
-            if (gs.fullWidth && pl.w !== state.gridCols) return true;
-            if (gs.halfWidth) {
+            const element = state.elements.find((e) => e.id === pl.id);
+            if (!element) return false;
+            const gridSize = getGridSize(element);
+            if (gridSize.fullWidth && pl.w !== state.gridCols) return true;
+            if (gridSize.halfWidth) {
                 const target = Math.min(
                     state.gridCols,
-                    Math.max(gs.min[0], Math.floor(state.gridCols / 2)),
+                    Math.max(gridSize.min[0], Math.floor(state.gridCols / 2)),
                 );
                 if (pl.w !== target) return true;
             }
@@ -2580,17 +2596,17 @@ export function createPageComposer(
             : computeViewPlacements();
 
         for (const placement of visiblePlacements) {
-            const el = elements.find((e) => e.id === placement.id);
-            if (!el) continue;
+            const element = elements.find((e) => e.id === placement.id);
+            if (!element) continue;
             if (editing) {
-                section.appendChild(createCell(el, placement));
+                section.appendChild(createCell(element, placement));
             } else {
                 const card = document.createElement("section");
                 card.className = "widget-card";
-                card.dataset.composerElement = el.id;
+                card.dataset.composerElement = element.id;
                 card.style.gridColumn = `${placement.col + 1} / span ${placement.w}`;
                 card.style.gridRow = `${placement.row + 1} / span ${placement.h}`;
-                card.innerHTML = el.render();
+                card.innerHTML = element.render();
                 section.appendChild(card);
             }
         }
@@ -2603,8 +2619,8 @@ export function createPageComposer(
 
         const renderedElementIds = visiblePlacements.map((p) => p.id);
         for (const id of renderedElementIds) {
-            const el = elements.find((entry) => entry.id === id);
-            el?.onRender?.();
+            const element = elements.find((entry) => entry.id === id);
+            element?.onRender?.();
         }
 
         onRender?.();
@@ -2642,28 +2658,29 @@ export function createPageComposer(
         return order
             .filter((id) => !hidden.includes(id))
             .map((id) => {
-                const el = elements.find((e) => e.id === id);
-                if (!el) return "";
+                const element = elements.find((e) => e.id === id);
+                if (!element) return "";
                 const dragAttrs = editing ? ` draggable="true"` : "";
                 const dragHandle = editing
                     ? `<div class="composer-drag-handle" aria-hidden="true">
                <span class="composer-drag-icon">⠿</span>
-               <span class="composer-drag-label">${el.label}</span>
-               ${!el.pinned ? `<button class="composer-remove-btn" data-composer-remove="${el.id}" type="button">${i18n.t("ui.reuse.generic.remove")}</button>` : ""}
+               <span class="composer-drag-label">${element.label}</span>
+               ${!element.pinned ? `<button class="composer-remove-btn" data-composer-remove="${element.id}" type="button">${i18n.t("ui.reuse.generic.remove")}</button>` : ""}
              </div>`
                     : "";
                 const editingClass = editing ? " composer-editing" : "";
-                const isActive = subPageNavigation && el.id === activeSubPageId;
+                const isActive =
+                    subPageNavigation && element.id === activeSubPageId;
                 const activeClass = isActive ? " active" : "";
                 const hiddenAttr =
                     subPageNavigation && !isActive ? " hidden" : "";
-                if (el.subComposerOptions) {
-                    const headingHtml = el.subComposerOptions.heading
-                        ? `<h2 class="sub-composer-heading">${escapeHtml(el.subComposerOptions.heading)}</h2>`
+                if (element.subComposerOptions) {
+                    const headingHtml = element.subComposerOptions.heading
+                        ? `<h2 class="sub-composer-heading">${escapeHtml(element.subComposerOptions.heading)}</h2>`
                         : "";
-                    return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
+                    return `<div class="content-section${activeClass}"${hiddenAttr} id="${element.id}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
                 }
-                return `<div class="content-section${activeClass}"${hiddenAttr} id="${el.id}"><section class="widget-card${editingClass}" data-composer-element="${el.id}"${dragAttrs}>${dragHandle}${el.render()}</section></div>`;
+                return `<div class="content-section${activeClass}"${hiddenAttr} id="${element.id}"><section class="widget-card${editingClass}" data-composer-element="${element.id}"${dragAttrs}>${dragHandle}${element.render()}</section></div>`;
             })
             .join("");
     }
@@ -2710,8 +2727,8 @@ export function createPageComposer(
         syncEditToggle();
         for (const id of effectiveLayout.order) {
             if (effectiveLayout.hidden.includes(id)) continue;
-            const el = elements.find((entry) => entry.id === id);
-            el?.onRender?.();
+            const element = elements.find((entry) => entry.id === id);
+            element?.onRender?.();
         }
         onRender?.();
         const activeEl = elements.find((e) => e.id === activeSubPageId);
@@ -2902,31 +2919,35 @@ export function createPageComposer(
         });
 
         if (Array.isArray(floatingMenu) && floatingMenu.length > 0) {
-            const ft = root.querySelector(".floating-toolbar");
-            if (ft) {
-                ft.innerHTML = "";
+            const floatingToolbar = root.querySelector(".floating-toolbar");
+            if (floatingToolbar) {
+                floatingToolbar.innerHTML = "";
                 for (const item of floatingMenu) {
                     const slot = document.createElement("div");
                     slot.dataset.floatingSlot = item.id;
                     slot.hidden = true;
                     slot.innerHTML = item.render();
-                    ft.appendChild(slot);
+                    floatingToolbar.appendChild(slot);
                 }
                 const updateToolbarVisibility = () => {
                     const anyVisible = [
-                        ...ft.querySelectorAll("[data-floating-slot]"),
+                        ...floatingToolbar.querySelectorAll(
+                            "[data-floating-slot]",
+                        ),
                     ].some((s) => !s.hidden);
-                    ft.hidden = !anyVisible;
+                    floatingToolbar.hidden = !anyVisible;
                 };
                 const slotObserver = new MutationObserver(
                     updateToolbarVisibility,
                 );
-                ft.querySelectorAll("[data-floating-slot]").forEach((slot) => {
-                    slotObserver.observe(slot, {
-                        attributes: true,
-                        attributeFilter: ["hidden"],
+                floatingToolbar
+                    .querySelectorAll("[data-floating-slot]")
+                    .forEach((slot) => {
+                        slotObserver.observe(slot, {
+                            attributes: true,
+                            attributeFilter: ["hidden"],
+                        });
                     });
-                });
                 updateToolbarVisibility();
             }
         }

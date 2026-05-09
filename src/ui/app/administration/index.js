@@ -406,13 +406,15 @@ function bindGatewayToggles() {
             const gatewayId = toggle.dataset.gateway;
             const previousState = !toggle.checked;
             const action = toggle.checked ? "enable" : "disable";
-            const gw = gateways.find((g) => g.id === gatewayId);
+            const gateway = gateways.find((g) => g.id === gatewayId);
 
             if (action === "enable") {
-                const disabledDeps = (gw?.requires ?? []).filter((depId) => {
-                    const dep = gateways.find((g) => g.id === depId);
-                    return dep && dep.status === "disabled";
-                });
+                const disabledDeps = (gateway?.requires ?? []).filter(
+                    (depId) => {
+                        const dep = gateways.find((g) => g.id === depId);
+                        return dep && dep.status === "disabled";
+                    },
+                );
                 if (disabledDeps.length > 0) {
                     const depNames = disabledDeps.map((depId) => {
                         const dep = gateways.find((g) => g.id === depId);
@@ -824,12 +826,15 @@ function bindDependencyLinks() {
             if (!targetId) return;
             link.addEventListener("click", (e) => {
                 e.preventDefault();
-                const el = root.querySelector(
+                const targetElement = root.querySelector(
                     `[data-gateway="${CSS.escape(targetId.replace(/^gateway-/, ""))}"], [data-module="${CSS.escape(targetId.replace(/^module-/, ""))}"]`,
                 );
-                if (!(el instanceof HTMLElement)) return;
-                el.setAttribute("open", "");
-                el.scrollIntoView({ behavior: "smooth", block: "start" });
+                if (!(targetElement instanceof HTMLElement)) return;
+                targetElement.setAttribute("open", "");
+                targetElement.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
             });
         },
     );
@@ -1220,7 +1225,7 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
 
             if (testBtn && testInput) {
                 testBtn.addEventListener("click", async () => {
-                    const to =
+                    const recipient =
                         testInput instanceof HTMLInputElement
                             ? testInput.value.trim()
                             : "";
@@ -1242,7 +1247,7 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
                     const testRes = await apiFetch(testUrl, {
                         method: "POST",
                         headers: { "content-type": "application/json" },
-                        body: JSON.stringify({ to, config }),
+                        body: JSON.stringify({ to: recipient, config }),
                     });
                     showToast(
                         testRes.ok
