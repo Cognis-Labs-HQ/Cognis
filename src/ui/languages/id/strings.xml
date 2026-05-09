@@ -1,9 +1,11 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
   <string name="ui.reuse.nav.dashboard">Dasbor</string>
+  <string name="ui.reuse.nav.messages">Pesan</string>
   <string name="ui.reuse.menu.profile">Profil</string>
   <string name="ui.reuse.menu.settings">Pengaturan</string>
   <string name="ui.reuse.menu.docs">Dokumentasi</string>
+  <string name="ui.reuse.menu.messages">Pesan</string>
   <string name="ui.reuse.menu.users">Pengguna</string>
   <string name="ui.reuse.menu.invite">Undang</string>
   <string name="ui.reuse.menu.registration">Pendaftaran</string>
@@ -506,4 +508,12 @@
   <string name="ui.app.settings.datetime_tz_heading">Zona Waktu</string>
   <string name="ui.app.settings.datetime_tz_label">Zona Waktu Tampilan</string>
   <string name="ui.app.settings.datetime_tz_auto">Deteksi otomatis ({tz})</string>
+  <string name="module.social.messages.page_title">Pesan</string>
+  <string name="module.social.messages.empty">Belum ada percakapan.</string>
+  <string name="module.social.messages.placeholder">Ketik pesan…</string>
+  <string name="module.social.messages.send">Kirim</string>
+  <string name="module.social.messages.new">Percakapan Baru</string>
+  <string name="module.social.messages.lookup_placeholder">Cari berdasarkan handle…</string>
+  <string name="module.social.messages.icon_label">Pesan</string>
+  <string name="module.social.messages.load_earlier">Muat lebih awal</string>
 </resources>

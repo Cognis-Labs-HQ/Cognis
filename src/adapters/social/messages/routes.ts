@@ -103,7 +103,9 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             url.pathname === "/api/v1/messages/users/lookup" &&
             req.method === "GET"
         ) {
-            const query = (url.searchParams.get("q") ?? "").trim().toLowerCase();
+            const query = (url.searchParams.get("q") ?? "")
+                .trim()
+                .toLowerCase();
             if (!query) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: [] }));
@@ -237,7 +239,11 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             );
             await messagesStore.addMember(room.id, accountId, "owner");
             for (const target of targets) {
-                await messagesStore.addMember(room.id, target.accountId, "member");
+                await messagesStore.addMember(
+                    room.id,
+                    target.accountId,
+                    "member",
+                );
             }
             await messagesStore.generateAndStoreRoomKey(room.id);
             res.writeHead(201, { "content-type": "application/json" });
@@ -366,7 +372,11 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     const senderHandle = sender?.handle ?? accountId;
                     const members = await messagesStore.listMembers(roomId);
                     for (const otherMember of members) {
-                        if (otherMember.accountId === accountId || otherMember.muted) continue;
+                        if (
+                            otherMember.accountId === accountId ||
+                            otherMember.muted
+                        )
+                            continue;
                         const recipient = await profileStore.getProfile(
                             otherMember.accountId,
                         );

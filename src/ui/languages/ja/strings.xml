@@ -1,9 +1,11 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
   <string name="ui.reuse.nav.dashboard">ダッシュボード</string>
+  <string name="ui.reuse.nav.messages">メッセージ</string>
   <string name="ui.reuse.menu.profile">プロフィール</string>
   <string name="ui.reuse.menu.settings">設定</string>
   <string name="ui.reuse.menu.docs">ドキュメント</string>
+  <string name="ui.reuse.menu.messages">メッセージ</string>
   <string name="ui.reuse.menu.users">ユーザー</string>
   <string name="ui.reuse.menu.invite">招待</string>
   <string name="ui.reuse.menu.registration">登録</string>
@@ -506,4 +508,12 @@
   <string name="ui.app.settings.datetime_tz_heading">タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_label">表示タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_auto">自動検出 ({tz})</string>
+  <string name="module.social.messages.page_title">メッセージ</string>
+  <string name="module.social.messages.empty">まだ会話はありません。</string>
+  <string name="module.social.messages.placeholder">メッセージを入力…</string>
+  <string name="module.social.messages.send">送信</string>
+  <string name="module.social.messages.new">新しい会話</string>
+  <string name="module.social.messages.lookup_placeholder">ハンドルで検索…</string>
+  <string name="module.social.messages.icon_label">メッセージ</string>
+  <string name="module.social.messages.load_earlier">以前を読み込む</string>
 </resources>

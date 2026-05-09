@@ -1,9 +1,11 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
   <string name="ui.reuse.nav.dashboard">Dashboard</string>
+  <string name="ui.reuse.nav.messages">Messages</string>
   <string name="ui.reuse.menu.profile">Profile</string>
   <string name="ui.reuse.menu.settings">Settings</string>
   <string name="ui.reuse.menu.docs">Docs</string>
+  <string name="ui.reuse.menu.messages">Messages</string>
   <string name="ui.reuse.menu.users">Users</string>
   <string name="ui.reuse.menu.invite">Invite</string>
   <string name="ui.reuse.menu.registration">Registration</string>
@@ -506,4 +508,12 @@
   <string name="ui.app.settings.datetime_tz_heading">Timezone</string>
   <string name="ui.app.settings.datetime_tz_label">Display Timezone</string>
   <string name="ui.app.settings.datetime_tz_auto">Auto-detect ({tz})</string>
+  <string name="module.social.messages.page_title">Messages</string>
+  <string name="module.social.messages.empty">No conversations yet.</string>
+  <string name="module.social.messages.placeholder">Type a message…</string>
+  <string name="module.social.messages.send">Send</string>
+  <string name="module.social.messages.new">New Conversation</string>
+  <string name="module.social.messages.lookup_placeholder">Search by handle…</string>
+  <string name="module.social.messages.icon_label">Message</string>
+  <string name="module.social.messages.load_earlier">Load earlier</string>
 </resources>

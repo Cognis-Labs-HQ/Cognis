@@ -27,6 +27,7 @@ let bannerHeight = null;
 let composer = null;
 let elements = [];
 let bannerMenuCloseHandler = null;
+let canMessageTarget = false;
 
 function toAbsoluteUrl(url) {
     if (!url) return url;
@@ -294,6 +295,17 @@ function renderHero() {
         : `
       <div class="profile-hero-action-row">
         <button class="profile-hero-follow-btn" type="button">${escapeHtml(i18n.t("ui.app.profile.follow"))}</button>
+        ${
+            canMessageTarget
+                ? `<button
+                    class="profile-message-button"
+                    type="button"
+                    data-message-target="${escapeHtml(profile?.handle ?? "")}"
+                    aria-label="${escapeHtml(i18n.t("module.social.messages.icon_label"))}"
+                    title="${escapeHtml(i18n.t("module.social.messages.icon_label"))}"
+                  >✉</button>`
+                : ""
+        }
         <button
           class="profile-hero-block-btn"
           type="button"
@@ -832,6 +844,28 @@ async function doBlockUser() {
     if (result !== "confirm") return;
 }
 
+async function doOpenMessageRoom() {
+    if (!profile?.handle) return;
+    try {
+        const res = await apiFetch("/api/v1/messages/rooms", {
+            method: "POST",
+            body: JSON.stringify({ handles: [profile.handle] }),
+        });
+        if (!res.ok) {
+            showToast(i18n.t("ui.app.profile.post_failed"), {
+                variant: "error",
+            });
+            return;
+        }
+        const payload = await res.json();
+        const roomId = payload?.data?.id;
+        if (!roomId) return;
+        window.location.href = `/messages/${encodeURIComponent(roomId)}`;
+    } catch {
+        showToast(i18n.t("ui.app.profile.post_failed"), { variant: "error" });
+    }
+}
+
 function renderFollowRequests() {
     return `
     <div class="profile-follow-requests-section">
@@ -852,6 +886,10 @@ function bindPageEvents() {
     root.querySelector(".profile-hero-block-btn")?.addEventListener(
         "click",
         doBlockUser,
+    );
+    root.querySelector("[data-message-target]")?.addEventListener(
+        "click",
+        doOpenMessageRoom,
     );
     root.querySelector(".profile-hero-banner-btn")?.addEventListener(
         "click",
@@ -989,11 +1027,28 @@ export async function mount(rootEl, { signal } = {}) {
 
     if (isAborted()) return;
 
+    if (isAborted()) return;
+
     [followers, following, posts] = await Promise.all([
         loadFollowers(profile?.handle),
         loadFollowing(profile?.handle),
         isOwnProfile ? loadOwnPosts() : loadUserPosts(profile?.handle),
     ]);
+
+    canMessageTarget = false;
+    if (!isOwnProfile && profile?.handle) {
+        try {
+            const res = await apiFetch(
+                `/api/v1/users/${encodeURIComponent(profile.handle)}/relationship`,
+            );
+            if (res.ok) {
+                const payload = await res.json();
+                canMessageTarget = Boolean(payload?.data?.canMessage);
+            }
+        } catch {
+            canMessageTarget = false;
+        }
+    }
 
     if (isAborted()) return;
 

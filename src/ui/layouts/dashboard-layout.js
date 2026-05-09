@@ -41,6 +41,23 @@ function applyActiveNavigation() {
     });
 }
 
+/**
+ * Reveals the Messages topnav entry only when the messages adapter is loaded
+ * server-side. The adapter exposes `GET /api/v1/messages/ping` for this
+ * detection — mirroring the pattern used by the profile navbar plugin to
+ * gate its avatar provider.
+ */
+async function showMessagesNavIfAvailable(root) {
+    const link = root.querySelector("[data-messages-link]");
+    if (!link) return;
+    try {
+        const res = await apiFetch("/api/v1/messages/ping");
+        if (res.ok) link.removeAttribute("hidden");
+    } catch {
+        // Adapter unavailable — link stays hidden.
+    }
+}
+
 async function bindThemeToggle({ usePreferenceApi = true } = {}) {
     if (!usePreferenceApi) {
         bindSharedThemeToggle();
@@ -379,6 +396,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         updateNavbarAvatar().catch(() => {});
         applyActiveNavigation();
         applyCompactNav(root);
+        showMessagesNavIfAvailable(root).catch(() => {});
         initRouter(root);
     }
     bindThemeToggle({ usePreferenceApi });
