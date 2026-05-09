@@ -188,6 +188,20 @@
     white-space: nowrap;
 }
 
+.notification-item-link-arrow {
+    flex-shrink: 0;
+    align-self: center;
+    font-size: 1rem;
+    color: var(--accent);
+    opacity: 0.5;
+    transition: opacity 0.15s;
+    margin-right: 2px;
+}
+
+.notification-item--linked:hover .notification-item-link-arrow {
+    opacity: 1;
+}
+
 .notification-dismiss {
     flex-shrink: 0;
     background: transparent;

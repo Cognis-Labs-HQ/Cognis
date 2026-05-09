@@ -29,6 +29,7 @@ export interface NotificationEnvelope {
     subject: string;
     body: string;
     senderName?: string;
+    actionUrl?: string;
     metadata?: Record<string, unknown>;
 }
 

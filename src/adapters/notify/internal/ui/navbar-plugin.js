@@ -16,6 +16,7 @@ import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 
 const POLL_INTERVAL_VISIBLE_MS = 10_000;
 const POLL_INTERVAL_HIDDEN_MS = 30_000;
@@ -29,6 +30,19 @@ function injectStyles() {
     link.rel = "stylesheet";
     link.href = CSS_HREF;
     document.head.appendChild(link);
+}
+
+function navigateNotif(actionUrl) {
+    try {
+        const url = new URL(actionUrl, window.location.origin);
+        if (url.origin === window.location.origin) {
+            navigateTo(url.pathname + url.search + url.hash);
+        } else {
+            window.open(actionUrl, "_blank", "noopener,noreferrer");
+        }
+    } catch {
+        // malformed URL — no navigation
+    }
 }
 
 async function fetchCount() {
@@ -90,7 +104,8 @@ function renderNotificationItem(notif, i18n) {
     const li = document.createElement("li");
     li.className =
         "notification-item " +
-        (notif.read ? "notification-item--read" : "notification-item--unread");
+        (notif.read ? "notification-item--read" : "notification-item--unread") +
+        (notif.actionUrl ? " notification-item--linked" : "");
     li.dataset.id = notif.id;
 
     li.innerHTML =
@@ -101,11 +116,14 @@ function renderNotificationItem(notif, i18n) {
         `<span class="notification-item-preview">${escapeHtml(notif.body)}</span>` +
         `<span class="notification-item-time">${escapeHtml(formatDateTime(new Date(notif.createdAt).toISOString()))}</span>` +
         "</span>" +
+        (notif.actionUrl
+            ? '<span class="notification-item-link-arrow" aria-hidden="true">&#8250;</span>'
+            : "") +
         `<button class="notification-dismiss" type="button" aria-label="${i18n.t("ui.reuse.generic.remove")}">&#215;</button>`;
 
-    if (!notif.read) {
-        li.addEventListener("click", async (e) => {
-            if (e.target.closest(".notification-dismiss")) return;
+    li.addEventListener("click", async (e) => {
+        if (e.target.closest(".notification-dismiss")) return;
+        if (!notif.read) {
             try {
                 await markOneRead(notif.id);
                 li.classList.remove("notification-item--unread");
@@ -113,10 +131,14 @@ function renderNotificationItem(notif, i18n) {
                 notif.read = true;
                 await refreshCount();
             } catch {
-                // fall through — server update failed, leave item as unread; dismiss handler (lines 122-137 below) is unaffected
+                // fall through — server update failed, leave item as unread; dismiss handler (lines below) is unaffected
             }
-        });
-    }
+        }
+        if (notif.actionUrl) {
+            closePanel();
+            navigateNotif(notif.actionUrl);
+        }
+    });
 
     const dismissBtn = li.querySelector(".notification-dismiss");
     dismissBtn.addEventListener("click", async (e) => {
@@ -132,7 +154,7 @@ function renderNotificationItem(notif, i18n) {
                 emptyEl.hidden = false;
             }
         } catch {
-            // fall through — server deletion failed, leave item in list; refreshCount (lines 142-145 below) is not called
+            // fall through — server deletion failed, leave item in list; refreshCount (lines 164-167 below) is not called
         }
     });
 
@@ -408,7 +430,11 @@ function showArrivalToast(notif, i18n) {
             return;
         }
         dismiss();
-        openPanel(i18n);
+        if (notif.actionUrl) {
+            navigateNotif(notif.actionUrl);
+        } else {
+            openPanel(i18n);
+        }
     });
 
     toast
