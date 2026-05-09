@@ -50,6 +50,11 @@ async function savePrefs(prefs) {
     );
 }
 
+function hasLanguagePriorityChanged(prev, next) {
+    if (prev.length !== next.length) return true;
+    return next.some((lang, i) => lang !== prev[i]);
+}
+
 export async function mount(root) {
     let languagePriority = readPreferredLanguages();
     const i18n = await createI18n({ preferredLanguages: languagePriority });
@@ -425,15 +430,12 @@ export async function mount(root) {
             datetimePrefs?.commit();
             languagePrefs?.commit();
             notifPrefs?.commit();
-            const next = prefs.languagePriority ?? [];
-            const prev = languagePriority ?? [];
-            const languageChanged =
-                next.length !== prev.length ||
-                next.some((lang, i) => lang !== prev[i]);
             showToast(i18n.t("ui.app.settings.saved_alert"), {
                 variant: "success",
             });
-            if (languageChanged) {
+            const next = prefs.languagePriority ?? [];
+            const prev = languagePriority ?? [];
+            if (hasLanguagePriorityChanged(prev, next)) {
                 // Brief pause so the success toast is visible before the page navigates.
                 await new Promise((resolve) => setTimeout(resolve, 400));
                 window.location.reload();

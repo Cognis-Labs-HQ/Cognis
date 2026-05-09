@@ -26,6 +26,7 @@ let bannerBlobUrl = null;
 let bannerHeight = null;
 let composer = null;
 let elements = [];
+let bannerMenuCloseHandler = null;
 
 function toAbsoluteUrl(url) {
     if (!url) return url;
@@ -826,8 +827,6 @@ function renderFollowRequests() {
   `;
 }
 
-let bannerMenuCloseHandler = null;
-
 function bindPageEvents() {
     root.querySelector(".profile-hero-edit-btn")?.addEventListener(
         "click",
@@ -948,7 +947,7 @@ export async function mount(rootEl, { signal } = {}) {
         window.location.pathname.split("/")[2] ?? "",
     );
     ownAccount = localStorage.getItem("cognis_account") ?? "";
-    isOwnProfile = urlHandle === ownAccount;
+    isOwnProfile = !urlHandle || urlHandle === ownAccount;
 
     profile = null;
     followers = [];
