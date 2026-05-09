@@ -204,6 +204,7 @@ async function loadNavbarPlugins() {
 }
 
 function applyCompactNav(root) {
+    // Accounts for small sub-pixel rounding differences in layout measurements.
     const NAV_OVERFLOW_TOLERANCE_PX = 2;
     const navrow = root.querySelector(".global-navrow");
     const topnav = navrow?.querySelector(".topnav");

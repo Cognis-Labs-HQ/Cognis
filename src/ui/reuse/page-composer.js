@@ -147,6 +147,8 @@ export function createPageComposer(
     let editToggleAbortController = null;
 
     const UNIT = 90; // grid cell size in pixels
+    const TOOLBAR_COLLAPSE_EXPAND_ICON = "▸";
+    const TOOLBAR_COLLAPSE_COLLAPSE_ICON = "◂";
 
     function handleBeforeUnload(e) {
         e.preventDefault();
@@ -2157,11 +2159,11 @@ export function createPageComposer(
                         }
                     }
                     let fits = true;
-                    placementCheck: for (let r = row; r < row + h; r++) {
+                    overlapCheck: for (let r = row; r < row + h; r++) {
                         for (let c = col; c < col + w; c++) {
                             if (occupied.has(`${c},${r}`)) {
                                 fits = false;
-                                break placementCheck;
+                                break overlapCheck;
                             }
                         }
                     }
@@ -2653,8 +2655,6 @@ export function createPageComposer(
                     const storedValue = localStorage.getItem(storageKey);
                     const collapsed =
                         storedValue === null || storedValue === "true";
-                    const EXPAND_ICON = "▸";
-                    const COLLAPSE_ICON = "◂";
                     const collapseBtn = document.createElement("button");
                     collapseBtn.type = "button";
                     collapseBtn.className = "toolbar-collapse-btn";
@@ -2665,8 +2665,8 @@ export function createPageComposer(
                             nextCollapsed,
                         );
                         collapseBtn.textContent = nextCollapsed
-                            ? EXPAND_ICON
-                            : COLLAPSE_ICON;
+                            ? TOOLBAR_COLLAPSE_EXPAND_ICON
+                            : TOOLBAR_COLLAPSE_COLLAPSE_ICON;
                         collapseBtn.setAttribute(
                             "aria-label",
                             nextCollapsed
