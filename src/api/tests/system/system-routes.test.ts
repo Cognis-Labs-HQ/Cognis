@@ -158,3 +158,52 @@ test("system security settings sanitize and survive malformed persisted data", a
     assert.equal(JSON.parse(body).data.registrationsEnabled, false);
     assert.equal(JSON.parse(body).data.userValidationMode, "none");
 });
+
+test("system security settings log malformed persisted data", async () => {
+    const token = issueAccessToken("alice", "user", 60);
+    const headers = { authorization: `Bearer ${token}` };
+    const entries: Array<{
+        level: string;
+        message: string;
+        meta?: Record<string, unknown>;
+    }> = [];
+    const route = createSystemRoutes(
+        healthService as any,
+        { get: async () => "not-json" } as any,
+        (level, message, meta) => {
+            entries.push({ level, message, meta });
+        },
+    );
+
+    await route(
+        { method: "GET", headers } as any,
+        {
+            writeHead() {},
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/system/security"),
+    );
+
+    assert.deepEqual(entries, [
+        {
+            level: "warn",
+            message: "Failed to parse persisted security settings.",
+            meta: {
+                component: "api-system",
+                method: "GET",
+                path: "/api/v1/system/security",
+                accountId: "alice",
+            },
+        },
+        {
+            level: "debug",
+            message: "Read security settings.",
+            meta: {
+                component: "api-system",
+                method: "GET",
+                path: "/api/v1/system/security",
+                accountId: "alice",
+            },
+        },
+    ]);
+});

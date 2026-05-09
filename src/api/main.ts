@@ -16,6 +16,7 @@ import { issueAccessToken } from "./auth/access-tokens.js";
 import { createHash } from "node:crypto";
 import { RouteRegistry } from "./route-registry.js";
 import { UIRegistry } from "./ui-registry.js";
+import { setAppLogger, writeConsoleLog } from "./logger.js";
 import type { LocalAccountStore } from "./reuse/account-store.js";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
@@ -65,9 +66,34 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                 try {
                     const raw = await readFile(manifestPath, "utf8");
                     manifests.push(JSON.parse(raw));
-                } catch {}
+                } catch (error) {
+                    writeConsoleLog(
+                        "error",
+                        "Failed to load module manifest during bootstrap.",
+                        {
+                            component: "api-bootstrap",
+                            moduleId: entry,
+                            manifestPath,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                }
             }
-        } catch {}
+        } catch (error) {
+            writeConsoleLog(
+                "error",
+                "Failed to scan modules directory during bootstrap.",
+                {
+                    component: "api-bootstrap",
+                    modulesRoot,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                },
+            );
+        }
         return new InMemoryModuleRuntimeGateway(manifests);
     }
 
@@ -105,9 +131,7 @@ function bootstrapLog(
     message: string,
     meta?: Record<string, unknown>,
 ) {
-    process.stdout.write(
-        `${JSON.stringify({ ts: new Date().toISOString(), level, message, ...meta })}\n`,
-    );
+    writeConsoleLog(level, message, meta);
 }
 bootstrapLog("info", "Starting Cognis API bootstrap.", { host, port });
 
@@ -152,7 +176,31 @@ const requiredGatewayIds = await gatewayService.bootstrap(gatewaysRoot, {
     uiRegistry,
 });
 
-const log = capabilities.get<BootstrapLog>("logging:log") ?? bootstrapLog;
+const contributedLog = capabilities.get<BootstrapLog>("logging:log");
+if (contributedLog) {
+    setAppLogger(contributedLog);
+}
+const log = contributedLog ?? bootstrapLog;
+
+function logFatalFailure(
+    event: "uncaught_exception" | "unhandled_rejection",
+    error: unknown,
+): void {
+    log("error", "Fatal runtime failure detected.", {
+        component: "api-runtime",
+        fatal: true,
+        event,
+        error: error instanceof Error ? error.message : String(error),
+    });
+}
+
+process.on("uncaughtException", (error) => {
+    logFatalFailure("uncaught_exception", error);
+});
+
+process.on("unhandledRejection", (reason) => {
+    logFatalFailure("unhandled_rejection", reason);
+});
 
 await log("info", "Gateway bootstrap complete.", {
     adaptersRoot,

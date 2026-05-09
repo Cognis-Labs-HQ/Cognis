@@ -29,6 +29,10 @@ import { createNotificationRoutes } from "./routes/notifications.js";
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const notifStore = new DbNotificationStore(ctx.dbExecutor, ctx.dbType);
     await notifStore.ensureSchema();
+    ctx.log?.("info", "Notification store schema ready.", {
+        component: "notify-gateway",
+        dbType: ctx.dbType,
+    });
 
     const notificationPrefStore = new DbNotificationPreferenceStore(notifStore);
     const gateway = new CoreNotificationGateway(
@@ -41,6 +45,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     await gateway.discoverSenders(notifyAdaptersRoot);
     await gateway.loadPersistedConfigs();
     gateway.registerCategory("system", "System Notifications");
+    ctx.log?.("info", "Notification senders discovered and configured.", {
+        component: "notify-gateway",
+        adaptersRoot: notifyAdaptersRoot,
+        senderCount: gateway.listSenders().length,
+    });
 
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
@@ -68,11 +77,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createGatewayAdapterRoutes("notify", gateway, ctx.gatewayRegistry),
         "notify",
     );
+    ctx.log?.("info", "Notification gateway routes registered.", {
+        component: "notify-gateway",
+    });
 
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.0.0",
+        version: "1.1.1",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
         hasAdapters: true,
@@ -126,6 +138,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "notify:hasVerifiedEmail",
         async (accountId: string) => notifStore.hasVerifiedEmail(accountId),
     );
+    ctx.log?.("info", "Notification gateway initialized.", {
+        component: "notify-gateway",
+        senderCount: gateway.listSenders().length,
+    });
 }
 
 /**

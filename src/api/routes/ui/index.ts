@@ -7,7 +7,7 @@ import {
     setPageSecurityHeaders,
 } from "../../auth/guard.js";
 import { lookupAccessToken } from "../../auth/access-tokens.js";
-import type { ModuleRuntimeGateway } from "@cognis/core";
+import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
 import type { GatewayRegistry } from "@cognis/core";
 import type { UIRegistry } from "../../ui-registry.js";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
@@ -36,6 +36,8 @@ async function serveFile(
     res: ServerResponse,
     filePath: string,
     contentType: string,
+    log?: BootstrapLog,
+    logMeta?: Record<string, unknown>,
 ) {
     try {
         const file = await readFile(filePath);
@@ -45,7 +47,13 @@ async function serveFile(
             "cache-control": "no-store",
         });
         res.end(file);
-    } catch {
+    } catch (error) {
+        log?.("error", "Failed to serve UI asset.", {
+            component: "api-ui",
+            filePath,
+            ...(logMeta ?? {}),
+            error: error instanceof Error ? error.message : String(error),
+        });
         res.writeHead(404, { "content-type": "application/json" });
         res.end(
             JSON.stringify({
@@ -65,6 +73,7 @@ function getCookieAccessToken(req: IncomingMessage): string | null {
 async function resolveLoginRedirectLocation(
     req: IncomingMessage,
     accountStore?: LocalAccountStore,
+    log?: BootstrapLog,
 ): Promise<string> {
     const cookieToken = getCookieAccessToken(req);
     const session = getCookieSession(req);
@@ -80,7 +89,19 @@ async function resolveLoginRedirectLocation(
         accountStore &&
         typeof accountStore.getInfo === "function"
     ) {
-        const info = await accountStore.getInfo(accountId).catch(() => null);
+        const info = await accountStore.getInfo(accountId).catch((error) => {
+            log?.(
+                "error",
+                "Failed to read account info while resolving login redirect.",
+                {
+                    component: "api-ui",
+                    accountId,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                },
+            );
+            return null;
+        });
         if (!info) return "/login?reason=account_deleted";
         if (info.enabled === false) return "/login?reason=account_disabled";
     }
@@ -90,7 +111,18 @@ async function resolveLoginRedirectLocation(
     }
 
     if (!accountStore || typeof accountStore.getInfo !== "function") return "";
-    const info = await accountStore.getInfo(session.sub).catch(() => null);
+    const info = await accountStore.getInfo(session.sub).catch((error) => {
+        log?.(
+            "error",
+            "Failed to read active session account info while resolving login redirect.",
+            {
+                component: "api-ui",
+                accountId: session.sub,
+                error: error instanceof Error ? error.message : String(error),
+            },
+        );
+        return null;
+    });
     if (!info) return "/login?reason=account_deleted";
     if (info.enabled === false) return "/login?reason=account_disabled";
     return "";
@@ -102,6 +134,7 @@ export function createUiRoutes(
     accountStore?: LocalAccountStore,
     gatewayRegistry?: GatewayRegistry,
     isModuleEnabled?: (moduleId: string) => boolean,
+    log?: BootstrapLog,
 ) {
     return async (
         req: IncomingMessage,
@@ -118,6 +151,7 @@ export function createUiRoutes(
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
                 accountStore,
+                log,
             );
             if (loginRedirect) {
                 res.writeHead(302, { location: loginRedirect });
@@ -129,6 +163,8 @@ export function createUiRoutes(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "index.html"),
                 "text/html; charset=utf-8",
+                log,
+                { path: url.pathname, method: req.method ?? "GET" },
             );
             return true;
         }
@@ -138,6 +174,8 @@ export function createUiRoutes(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "login.html"),
                 "text/html; charset=utf-8",
+                log,
+                { path: url.pathname, method: req.method ?? "GET" },
             );
             return true;
         }
@@ -147,6 +185,8 @@ export function createUiRoutes(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "verify-email.html"),
                 "text/html; charset=utf-8",
+                log,
+                { path: url.pathname, method: req.method ?? "GET" },
             );
             return true;
         }
@@ -155,6 +195,7 @@ export function createUiRoutes(
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
                 accountStore,
+                log,
             );
             if (loginRedirect) {
                 res.writeHead(302, { location: loginRedirect });
@@ -166,6 +207,8 @@ export function createUiRoutes(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "settings.html"),
                 "text/html; charset=utf-8",
+                log,
+                { path: url.pathname, method: req.method ?? "GET" },
             );
             return true;
         }
@@ -174,6 +217,7 @@ export function createUiRoutes(
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
                 accountStore,
+                log,
             );
             if (loginRedirect) {
                 res.writeHead(302, { location: loginRedirect });
@@ -190,6 +234,8 @@ export function createUiRoutes(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "administration.html"),
                 "text/html; charset=utf-8",
+                log,
+                { path: url.pathname, method: req.method ?? "GET" },
             );
             return true;
         }
@@ -198,6 +244,7 @@ export function createUiRoutes(
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
                 accountStore,
+                log,
             );
             if (loginRedirect) {
                 res.writeHead(302, { location: loginRedirect });
@@ -219,6 +266,7 @@ export function createUiRoutes(
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
                 accountStore,
+                log,
             );
             if (loginRedirect) {
                 res.writeHead(302, { location: loginRedirect });
@@ -242,6 +290,8 @@ export function createUiRoutes(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "users.html"),
                 "text/html; charset=utf-8",
+                log,
+                { path: url.pathname, method: req.method ?? "GET" },
             );
             return true;
         }
@@ -250,6 +300,7 @@ export function createUiRoutes(
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
                 accountStore,
+                log,
             );
             if (loginRedirect) {
                 res.writeHead(302, { location: loginRedirect });
@@ -279,7 +330,21 @@ export function createUiRoutes(
                 return true;
             }
             const isFounder = accountStore
-                ? await accountStore.isFounder(session.sub).catch(() => false)
+                ? await accountStore.isFounder(session.sub).catch((error) => {
+                      log?.(
+                          "error",
+                          "Failed to resolve founder status for invite route access.",
+                          {
+                              component: "api-ui",
+                              accountId: session.sub,
+                              error:
+                                  error instanceof Error
+                                      ? error.message
+                                      : String(error),
+                          },
+                      );
+                      return false;
+                  })
                 : false;
             if (!isFounder) {
                 res.writeHead(302, { location: "/dashboard" });
@@ -290,6 +355,8 @@ export function createUiRoutes(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "invite.html"),
                 "text/html; charset=utf-8",
+                log,
+                { path: url.pathname, method: req.method ?? "GET" },
             );
             return true;
         }
@@ -298,6 +365,7 @@ export function createUiRoutes(
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
                 accountStore,
+                log,
             );
             if (loginRedirect) {
                 res.writeHead(302, { location: loginRedirect });
@@ -309,6 +377,8 @@ export function createUiRoutes(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "docs.html"),
                 "text/html; charset=utf-8",
+                log,
+                { path: url.pathname, method: req.method ?? "GET" },
             );
             return true;
         }
@@ -317,6 +387,7 @@ export function createUiRoutes(
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
                 accountStore,
+                log,
             );
             if (loginRedirect) {
                 res.writeHead(302, { location: loginRedirect });
@@ -328,6 +399,8 @@ export function createUiRoutes(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "license.html"),
                 "text/html; charset=utf-8",
+                log,
+                { path: url.pathname, method: req.method ?? "GET" },
             );
             return true;
         }
@@ -361,11 +434,29 @@ export function createUiRoutes(
                             res,
                             uiFile,
                             "text/html; charset=utf-8",
+                            log,
+                            {
+                                path: url.pathname,
+                                method: req.method ?? "GET",
+                                moduleId: manifest.id,
+                            },
                         );
                         return true;
                     }
-                } catch {
-                    // ignore missing/invalid module route declarations
+                } catch (error) {
+                    log?.(
+                        "error",
+                        "Failed to resolve module UI route declarations.",
+                        {
+                            component: "api-ui",
+                            moduleId: manifest.id,
+                            path: url.pathname,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
                 }
             }
         }

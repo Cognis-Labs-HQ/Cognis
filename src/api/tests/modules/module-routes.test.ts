@@ -33,3 +33,56 @@ test("module routes list modules", async () => {
     assert.equal(status, 200);
     assert.match(body, /sample-analytics/);
 });
+
+test("module routes log enable operations", async () => {
+    const entries: Array<{
+        level: string;
+        message: string;
+        meta?: Record<string, unknown>;
+    }> = [];
+    const route = createModuleRoutes(
+        {
+            list: async () => [],
+            enable: async (moduleId: string) => ({ moduleId, enabled: true }),
+            disable: async () => ({ moduleId: "x", enabled: false }),
+        } as any,
+        {
+            log: (level, message, meta) => {
+                entries.push({ level, message, meta });
+            },
+        },
+    );
+
+    const token = issueAccessToken("admin-user", "admin", 60);
+    let status = 0;
+
+    await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/modules/sample-analytics/enable"),
+    );
+
+    assert.equal(status, 200);
+    assert.deepEqual(entries, [
+        {
+            level: "info",
+            message: "Module enabled.",
+            meta: {
+                component: "api-modules",
+                method: "POST",
+                path: "/api/v1/modules/sample-analytics/enable",
+                accountId: "admin-user",
+                moduleId: "sample-analytics",
+                acknowledgedExternalDisclaimer: false,
+            },
+        },
+    ]);
+});

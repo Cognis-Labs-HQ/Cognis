@@ -27,43 +27,52 @@
  */
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
+import type { BootstrapLog } from "@cognis/core";
 import type { DbExecutor } from "./reuse/db-executor.js";
 
 export type { DbExecutor } from "./reuse/db-executor.js";
 
 export type SupportedDbType = "sqlite" | "postgresql" | "mariadb";
 
-const LOG_LEVEL = process.env.LOG_LEVEL ?? "info";
-function shouldLogDebug() {
-    return LOG_LEVEL === "debug";
+function summarizeStatement(sql: string): string {
+    const statement = sql.trim().split(/\s+/, 1)[0];
+    return statement ? statement.toUpperCase() : "UNKNOWN";
 }
-function logDbDebug(message: string, meta?: Record<string, unknown>) {
-    if (!shouldLogDebug()) return;
-    console.debug(
-        JSON.stringify({
-            ts: new Date().toISOString(),
-            level: "debug",
-            component: "db",
-            message,
-            ...meta,
-        }),
-    );
+
+function getErrorCode(error: unknown): string | undefined {
+    const code = (error as { code?: unknown })?.code;
+    if (typeof code === "string" || typeof code === "number") {
+        return String(code);
+    }
+    return undefined;
 }
-function logDbWarn(message: string, meta?: Record<string, unknown>) {
-    console.warn(
-        JSON.stringify({
-            ts: new Date().toISOString(),
-            level: "warn",
-            component: "db",
-            message,
-            ...meta,
-        }),
-    );
+
+function buildDbErrorMeta(error: unknown): Record<string, unknown> {
+    const meta: Record<string, unknown> = {
+        errorName: error instanceof Error ? error.name : typeof error,
+    };
+    const errorCode = getErrorCode(error);
+    if (errorCode) {
+        meta.errorCode = errorCode;
+    }
+    return meta;
+}
+
+function writeDbLog(
+    log: BootstrapLog | undefined,
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    meta?: Record<string, unknown>,
+): void {
+    log?.(level, message, meta);
 }
 
 export class SqliteExecutor implements DbExecutor {
     private dbPromise: Promise<any> | null = null;
-    constructor(private readonly dbPath: string) {}
+    constructor(
+        private readonly dbPath: string,
+        private readonly log?: BootstrapLog,
+    ) {}
 
     private async getDb() {
         if (!this.dbPromise) {
@@ -79,10 +88,11 @@ export class SqliteExecutor implements DbExecutor {
     }
 
     async execute(sql: string, params: unknown[] = []) {
-        logDbDebug("Executing SQL statement.", {
+        writeDbLog(this.log, "debug", "Executing SQL statement.", {
+            component: "db",
             provider: "sqlite",
-            sql,
-            params,
+            statement: summarizeStatement(sql),
+            parameterCount: params.length,
         });
         const db = await this.getDb();
         const command = sql.trim().toLowerCase();
@@ -112,7 +122,10 @@ export class SqliteExecutor implements DbExecutor {
 
 export class PostgresExecutor implements DbExecutor {
     private clientPromise: Promise<any> | null = null;
-    constructor(private readonly databaseUrl: string) {}
+    constructor(
+        private readonly databaseUrl: string,
+        private readonly log?: BootstrapLog,
+    ) {}
     private async getClient() {
         if (!this.clientPromise) {
             this.clientPromise = (async () => {
@@ -121,9 +134,16 @@ export class PostgresExecutor implements DbExecutor {
                     connectionString: this.databaseUrl,
                 });
                 client.on("error", (error: Error) => {
-                    logDbWarn("PostgreSQL client emitted error event.", {
-                        error: error.message,
-                    });
+                    writeDbLog(
+                        this.log,
+                        "warn",
+                        "Database client emitted error event.",
+                        {
+                            component: "db",
+                            provider: "postgresql",
+                            ...buildDbErrorMeta(error),
+                        },
+                    );
                 });
                 await client.connect();
                 return client;
@@ -132,20 +152,23 @@ export class PostgresExecutor implements DbExecutor {
         return this.clientPromise;
     }
     async execute(sql: string, params: unknown[] = []) {
-        logDbDebug("Executing SQL statement.", {
+        writeDbLog(this.log, "debug", "Executing SQL statement.", {
+            component: "db",
             provider: "postgresql",
-            sql,
-            params,
+            statement: summarizeStatement(sql),
+            parameterCount: params.length,
         });
         const client = await this.getClient();
         try {
             const result = await client.query(sql, params);
             return { rows: result.rows, rowCount: result.rowCount };
         } catch (error) {
-            logDbWarn("SQL execution failed.", {
+            writeDbLog(this.log, "warn", "SQL execution failed.", {
+                component: "db",
                 provider: "postgresql",
-                sql,
-                error: error instanceof Error ? error.message : String(error),
+                statement: summarizeStatement(sql),
+                parameterCount: params.length,
+                ...buildDbErrorMeta(error),
             });
             throw error;
         }
@@ -154,7 +177,10 @@ export class PostgresExecutor implements DbExecutor {
 
 export class MariadbExecutor implements DbExecutor {
     private connPromise: Promise<any> | null = null;
-    constructor(private readonly databaseUrl: string) {}
+    constructor(
+        private readonly databaseUrl: string,
+        private readonly log?: BootstrapLog,
+    ) {}
     private async getConn() {
         if (!this.connPromise) {
             this.connPromise = (async () => {
@@ -165,10 +191,11 @@ export class MariadbExecutor implements DbExecutor {
         return this.connPromise;
     }
     async execute(sql: string, params: unknown[] = []) {
-        logDbDebug("Executing SQL statement.", {
+        writeDbLog(this.log, "debug", "Executing SQL statement.", {
+            component: "db",
             provider: "mariadb",
-            sql,
-            params,
+            statement: summarizeStatement(sql),
+            parameterCount: params.length,
         });
         const conn = await this.getConn();
         try {
@@ -176,10 +203,12 @@ export class MariadbExecutor implements DbExecutor {
             if (Array.isArray(rows)) return { rows, rowCount: rows.length };
             return { rowCount: (rows as any).affectedRows ?? 0 };
         } catch (error) {
-            logDbWarn("SQL execution failed.", {
+            writeDbLog(this.log, "warn", "SQL execution failed.", {
+                component: "db",
                 provider: "mariadb",
-                sql,
-                error: error instanceof Error ? error.message : String(error),
+                statement: summarizeStatement(sql),
+                parameterCount: params.length,
+                ...buildDbErrorMeta(error),
             });
             throw error;
         }
@@ -188,15 +217,16 @@ export class MariadbExecutor implements DbExecutor {
 
 export async function createDbExecutor(
     dbType: SupportedDbType,
+    log?: BootstrapLog,
 ): Promise<DbExecutor> {
     if (dbType === "sqlite") {
         const dbPath =
             process.env.SQLITE_PATH ??
             path.resolve(process.cwd(), "data", "cognis.sqlite");
-        return new SqliteExecutor(dbPath);
+        return new SqliteExecutor(dbPath, log);
     }
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error(`DATABASE_URL is required for DB_TYPE=${dbType}`);
-    if (dbType === "postgresql") return new PostgresExecutor(url);
-    return new MariadbExecutor(url);
+    if (dbType === "postgresql") return new PostgresExecutor(url, log);
+    return new MariadbExecutor(url, log);
 }

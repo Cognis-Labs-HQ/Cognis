@@ -89,6 +89,54 @@ test("user routes create/list/update lifecycle", async () => {
     assert.equal(status, 200);
 });
 
+test("user routes log account disable operations", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "x", true);
+    await accounts.register("alice", "pw", false);
+    const prefs = new VolatileUserPreferenceStore();
+    const entries: Array<{
+        level: string;
+        message: string;
+        meta?: Record<string, unknown>;
+    }> = [];
+    const route = createUserRoutes(
+        accounts,
+        prefs,
+        undefined,
+        (level, message, meta) => {
+            entries.push({ level, message, meta });
+        },
+    );
+    let status = 0;
+
+    await route(
+        { method: "POST", headers } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/alice/disable"),
+    );
+
+    assert.equal(status, 200);
+    assert.deepEqual(entries, [
+        {
+            level: "info",
+            message: "Disabled user account.",
+            meta: {
+                component: "api-users",
+                method: "POST",
+                path: "/api/v1/users/alice/disable",
+                accountId: "admin",
+                targetAccountId: "alice",
+                revokedTokenCount: 0,
+            },
+        },
+    ]);
+});
+
 test("user info endpoint allows self-access and admin access, blocks others", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("alice", "pw", false);

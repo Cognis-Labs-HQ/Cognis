@@ -1,11 +1,12 @@
 import { requireAuth } from "../../auth/guard.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { ModuleService } from "@cognis/core";
+import type { BootstrapLog, ModuleService } from "@cognis/core";
 
 export interface ModuleRouteHooks {
     onEnabled?: (moduleId: string) => Promise<void> | void;
     onDisabled?: (moduleId: string) => Promise<void> | void;
     getStatus?: (moduleId: string) => "enabled" | "disabled" | "available";
+    log?: BootstrapLog;
     getIntegrityReport?: () => Promise<
         Array<{
             moduleId: string;
@@ -26,6 +27,11 @@ export function createModuleRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        const logMeta = {
+            component: "api-modules",
+            method: req.method ?? "GET",
+            path: url.pathname,
+        };
         if (url.pathname === "/api/v1/modules" && req.method === "GET") {
             const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
@@ -36,6 +42,11 @@ export function createModuleRoutes(
                     hooks?.getStatus?.(manifest.id) ??
                     (manifest.class === "core" ? "enabled" : "available"),
             }));
+            hooks?.log?.("debug", "Listed modules.", {
+                ...logMeta,
+                accountId: claims.sub,
+                count: data.length,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data }));
             return true;
@@ -47,6 +58,11 @@ export function createModuleRoutes(
             const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
             const data = (await hooks?.getIntegrityReport?.()) ?? [];
+            hooks?.log?.("debug", "Generated module integrity report.", {
+                ...logMeta,
+                accountId: claims.sub,
+                count: data.length,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data }));
             return true;
@@ -75,6 +91,12 @@ export function createModuleRoutes(
 
         if (action === "enable") await hooks?.onEnabled?.(moduleId);
         if (action === "disable") await hooks?.onDisabled?.(moduleId);
+        hooks?.log?.("info", `Module ${action}d.`, {
+            ...logMeta,
+            accountId: claims.sub,
+            moduleId,
+            acknowledgedExternalDisclaimer: acknowledged,
+        });
 
         res.writeHead(200, { "content-type": "application/json" });
         res.end(JSON.stringify({ data: result }));

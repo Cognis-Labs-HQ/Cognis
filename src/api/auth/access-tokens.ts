@@ -7,6 +7,7 @@ import {
     writeFileSync,
 } from "node:fs";
 import path from "node:path";
+import { logAppEvent as log } from "../logger.js";
 
 export type AccessRole = "user" | "teacher" | "moderator" | "admin";
 
@@ -57,9 +58,11 @@ function persistTokenStore() {
         if (!hasWarnedPersistFailure) {
             const message =
                 error instanceof Error ? error.message : String(error);
-            console.warn(
-                `[auth] failed to persist access token store at ${tokenStorePath}: ${message}`,
-            );
+            log("warn", "Failed to persist access token store.", {
+                component: "auth",
+                path: tokenStorePath,
+                error: message,
+            });
             hasWarnedPersistFailure = true;
         }
         // Keep API available even if persistence is not writable in a given runtime.
@@ -125,9 +128,11 @@ function loadTokenStore(now = Date.now()) {
         if (!hasWarnedLoadFailure) {
             const message =
                 error instanceof Error ? error.message : String(error);
-            console.warn(
-                `[auth] failed to load access token store at ${tokenStorePath}: ${message}`,
-            );
+            log("warn", "Failed to load access token store.", {
+                component: "auth",
+                path: tokenStorePath,
+                error: message,
+            });
             hasWarnedLoadFailure = true;
         }
     }

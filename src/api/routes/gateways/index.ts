@@ -1,5 +1,5 @@
-import { requireAuth } from "../../auth/guard.js";
-import type { GatewayRegistry } from "@cognis/core";
+import { getAuthClaims, requireAuth } from "../../auth/guard.js";
+import type { BootstrapLog, GatewayRegistry } from "@cognis/core";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { UIRegistry } from "../../ui-registry.js";
 
@@ -19,21 +19,39 @@ export function createGatewayRoutes(
         gatewayId: string,
         enabled: boolean,
     ) => Promise<void>,
+    log?: BootstrapLog,
 ) {
     return async (
         req: IncomingMessage,
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        const logMeta = {
+            component: "api-gateways",
+            method: req.method ?? "GET",
+            path: url.pathname,
+        };
         if (url.pathname === "/api/v1/gateways" && req.method === "GET") {
-            if (!requireAuth(req, res, "admin")) return true;
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
+            log?.("debug", "Listed gateways.", {
+                ...logMeta,
+                accountId: claims.sub,
+                count: registry.list().length,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: registry.list() }));
             return true;
         }
 
         if (url.pathname === "/api/v1/admin/sections" && req.method === "GET") {
-            if (!requireAuth(req, res, "admin")) return true;
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
+            log?.("debug", "Listed admin sections.", {
+                ...logMeta,
+                accountId: claims.sub,
+                count: uiRegistry?.listAdminSections().length ?? 0,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({ data: uiRegistry?.listAdminSections() ?? [] }),
@@ -45,10 +63,16 @@ export function createGatewayRoutes(
             /^\/api\/v1\/gateways\/([^/]+)$/,
         );
         if (singleMatch && req.method === "GET") {
-            if (!requireAuth(req, res, "admin")) return true;
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
             const id = decodeURIComponent(singleMatch[1]);
             const manifest = registry.get(id);
             if (!manifest) {
+                log?.("warn", "Gateway lookup failed.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    gatewayId: id,
+                });
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -60,6 +84,12 @@ export function createGatewayRoutes(
                 );
                 return true;
             }
+            log?.("debug", "Read gateway manifest.", {
+                ...logMeta,
+                accountId: claims.sub,
+                gatewayId: id,
+                status: manifest.status,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: manifest }));
             return true;
@@ -69,11 +99,22 @@ export function createGatewayRoutes(
             /^\/api\/v1\/gateways\/([^/]+)\/(enable|disable)$/,
         );
         if (actionMatch && req.method === "POST") {
-            if (!requireAuth(req, res, "admin")) return true;
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
             const id = decodeURIComponent(actionMatch[1]);
             const action = actionMatch[2] as "enable" | "disable";
             const entry = registry.get(id);
             if (!entry) {
+                log?.(
+                    "warn",
+                    "Gateway toggle failed because gateway was not found.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                        gatewayId: id,
+                        action,
+                    },
+                );
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -86,6 +127,11 @@ export function createGatewayRoutes(
                 return true;
             }
             if (entry.required && action === "disable") {
+                log?.("warn", "Blocked attempt to disable required gateway.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    gatewayId: id,
+                });
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -103,6 +149,12 @@ export function createGatewayRoutes(
                 registry.disable(id);
             }
             await persistGatewayState?.(id, action === "enable");
+            log?.("info", `Gateway ${action}d.`, {
+                ...logMeta,
+                accountId: claims.sub,
+                gatewayId: id,
+                status: action === "enable" ? "active" : "disabled",
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({

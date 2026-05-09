@@ -7,7 +7,7 @@ import type {
     AccountRole,
 } from "../../reuse/profile-store.js";
 import { visibilityRank } from "../../reuse/profile-store.js";
-import type { FileStorageGateway } from "@cognis/core";
+import type { BootstrapLog, FileStorageGateway } from "@cognis/core";
 import { readRawBody, readJson } from "../../reuse/read-json.js";
 
 const VALID_VISIBILITY = new Set<AccountVisibility>([
@@ -88,6 +88,7 @@ export function createProfileRoutes(
     profileStore: ProfileStore,
     fileGateway?: FileStorageGateway,
     isGatewayEnabled?: () => boolean,
+    log?: BootstrapLog,
 ) {
     return async (
         req: IncomingMessage,
@@ -95,10 +96,21 @@ export function createProfileRoutes(
         url: URL,
     ): Promise<boolean> => {
         const claims = getAuthClaims(req);
+        const logMeta = {
+            component: "api-profile",
+            method: req.method ?? "GET",
+            path: url.pathname,
+            accountId: claims?.sub,
+        };
 
         if (url.pathname === "/api/v1/profile/ping" && req.method === "GET") {
             if (!requireAuth(req, res, "user")) return true;
             if (isGatewayEnabled && !isGatewayEnabled()) {
+                log?.(
+                    "warn",
+                    "Profile ping failed because the gateway is disabled.",
+                    logMeta,
+                );
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -110,6 +122,7 @@ export function createProfileRoutes(
                 );
                 return true;
             }
+            log?.("debug", "Profile ping succeeded.", logMeta);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { available: true } }));
             return true;
@@ -123,6 +136,14 @@ export function createProfileRoutes(
                     claims!.sub,
                     claims!.sub,
                     (claims!.role as AccountRole) ?? "user",
+                );
+                log?.(
+                    "info",
+                    "Auto-created profile for authenticated account.",
+                    {
+                        ...logMeta,
+                        targetAccountId: claims!.sub,
+                    },
                 );
             }
             if (!profile) {
@@ -142,6 +163,10 @@ export function createProfileRoutes(
                 profileStore.getFollowingCount(profile.accountId),
                 profileStore.getPostsByAccount(profile.accountId),
             ]);
+            log?.("debug", "Read own profile.", {
+                ...logMeta,
+                targetAccountId: profile.accountId,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -175,6 +200,14 @@ export function createProfileRoutes(
             if ("visibility" in body) {
                 const visibility = String(body.visibility);
                 if (!VALID_VISIBILITY.has(visibility as AccountVisibility)) {
+                    log?.(
+                        "warn",
+                        "Rejected profile update with invalid visibility.",
+                        {
+                            ...logMeta,
+                            visibility,
+                        },
+                    );
                     res.writeHead(400, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
@@ -192,6 +225,10 @@ export function createProfileRoutes(
                 claims!.sub,
                 updates,
             );
+            log?.("info", "Updated profile.", {
+                ...logMeta,
+                changedFields: Object.keys(updates),
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: updated }));
             return true;
@@ -200,6 +237,11 @@ export function createProfileRoutes(
         if (url.pathname === "/api/v1/profile/avatar" && req.method === "PUT") {
             if (!requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
+                log?.(
+                    "warn",
+                    "Avatar upload failed because file storage is unavailable.",
+                    logMeta,
+                );
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -216,6 +258,14 @@ export function createProfileRoutes(
                 .trim()
                 .toLowerCase();
             if (!AVATAR_ALLOWED_MIME.has(mime)) {
+                log?.(
+                    "warn",
+                    "Rejected avatar upload with unsupported media type.",
+                    {
+                        ...logMeta,
+                        mime,
+                    },
+                );
                 res.writeHead(415, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -230,6 +280,16 @@ export function createProfileRoutes(
             const maxBytes = await profileStore.getFileSizeLimit("image");
             const body = await readRawBody(req);
             if (body.length > maxBytes) {
+                log?.(
+                    "warn",
+                    "Rejected avatar upload that exceeded the size limit.",
+                    {
+                        ...logMeta,
+                        mime,
+                        sizeBytes: body.length,
+                        maxBytes,
+                    },
+                );
                 res.writeHead(413, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -248,6 +308,12 @@ export function createProfileRoutes(
             const updated = await profileStore.updateProfile(claims!.sub, {
                 avatarKey: stored.key,
             });
+            log?.("info", "Uploaded avatar.", {
+                ...logMeta,
+                mime,
+                sizeBytes: body.length,
+                avatarKey: stored.key,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -263,6 +329,11 @@ export function createProfileRoutes(
         ) {
             if (!requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
+                log?.(
+                    "warn",
+                    "Avatar deletion failed because file storage is unavailable.",
+                    logMeta,
+                );
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -277,6 +348,10 @@ export function createProfileRoutes(
             const profile = await profileStore.getProfile(claims!.sub);
             if (profile?.avatarKey) await fileGateway.delete(profile.avatarKey);
             await profileStore.updateProfile(claims!.sub, { avatarKey: null });
+            log?.("info", "Removed avatar.", {
+                ...logMeta,
+                avatarKey: profile?.avatarKey ?? null,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { removed: true } }));
             return true;
@@ -285,6 +360,11 @@ export function createProfileRoutes(
         if (url.pathname === "/api/v1/profile/banner" && req.method === "PUT") {
             if (!requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
+                log?.(
+                    "warn",
+                    "Banner upload failed because file storage is unavailable.",
+                    logMeta,
+                );
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -301,6 +381,14 @@ export function createProfileRoutes(
                 .trim()
                 .toLowerCase();
             if (!BANNER_ALLOWED_MIME.has(mime)) {
+                log?.(
+                    "warn",
+                    "Rejected banner upload with unsupported media type.",
+                    {
+                        ...logMeta,
+                        mime,
+                    },
+                );
                 res.writeHead(415, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -315,6 +403,16 @@ export function createProfileRoutes(
             const maxBytes = await profileStore.getFileSizeLimit("image");
             const body = await readRawBody(req);
             if (body.length > maxBytes) {
+                log?.(
+                    "warn",
+                    "Rejected banner upload that exceeded the size limit.",
+                    {
+                        ...logMeta,
+                        mime,
+                        sizeBytes: body.length,
+                        maxBytes,
+                    },
+                );
                 res.writeHead(413, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -333,6 +431,12 @@ export function createProfileRoutes(
             const updated = await profileStore.updateProfile(claims!.sub, {
                 bannerKey: stored.key,
             });
+            log?.("info", "Uploaded banner.", {
+                ...logMeta,
+                mime,
+                sizeBytes: body.length,
+                bannerKey: stored.key,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -348,6 +452,11 @@ export function createProfileRoutes(
         ) {
             if (!requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
+                log?.(
+                    "warn",
+                    "Banner deletion failed because file storage is unavailable.",
+                    logMeta,
+                );
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -362,6 +471,10 @@ export function createProfileRoutes(
             const profile = await profileStore.getProfile(claims!.sub);
             if (profile?.bannerKey) await fileGateway.delete(profile.bannerKey);
             await profileStore.updateProfile(claims!.sub, { bannerKey: null });
+            log?.("info", "Removed banner.", {
+                ...logMeta,
+                bannerKey: profile?.bannerKey ?? null,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { removed: true } }));
             return true;
@@ -375,6 +488,10 @@ export function createProfileRoutes(
             const handle = decodeURIComponent(publicProfileMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);
             if (!target) {
+                log?.("debug", "Public profile lookup returned no profile.", {
+                    ...logMeta,
+                    targetHandle: handle,
+                });
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -387,6 +504,11 @@ export function createProfileRoutes(
                 return true;
             }
             if (await profileStore.isBlocked(target.accountId, claims!.sub)) {
+                log?.("debug", "Public profile lookup was blocked.", {
+                    ...logMeta,
+                    targetHandle: handle,
+                    targetAccountId: target.accountId,
+                });
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -405,6 +527,15 @@ export function createProfileRoutes(
                 profileStore,
             );
             if (!visible) {
+                log?.(
+                    "debug",
+                    "Public profile lookup was hidden by visibility rules.",
+                    {
+                        ...logMeta,
+                        targetHandle: handle,
+                        targetAccountId: target.accountId,
+                    },
+                );
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -433,6 +564,12 @@ export function createProfileRoutes(
                       profileStore.getPostsByAccount(target.accountId),
                   ])
                 : [null, null, []];
+            log?.("debug", "Read public profile.", {
+                ...logMeta,
+                targetHandle: handle,
+                targetAccountId: target.accountId,
+                showCounts,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({

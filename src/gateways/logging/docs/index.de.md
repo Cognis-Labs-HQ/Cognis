@@ -8,28 +8,37 @@ Das Logging-Gateway muss nach dem Dateispeicher-Gateway gebootstrappt werden. Di
 
 ## Verantwortlichkeiten
 
-- Eine `Logger`-Instanz aus `LOG_LEVEL` und `LOG_FILE` erstellen und konfigurieren.
+- Eine `Logger`-Instanz aus `LOG_LEVEL`, `LOG_FILE` und `LOG_FORMAT` erstellen und konfigurieren.
 - `logging:logger` und `logging:log` zum Capability-Store beitragen.
 - Log-Datei-Schreibvorgänge durch `file:append` routen, wenn verfügbar.
+- `GET /api/v1/logging/stream` für die Seite Administration → Protokolle bereitstellen (admin-only SSE-Stream mit Schweregrad- und Stichwortfiltern).
 - Das `logging`-Gateway im Gateway-Registry registrieren.
 
 ## Architektur
 
 ```ts
 export class Logger {
-    constructor(level: LogLevel, filePath: string, fileAppend?: FileAppend);
+    constructor(
+        level: LogLevel,
+        filePath: string,
+        fileAppend?: FileAppend,
+        consoleFormat?: ConsoleLogFormat,
+    );
     async log(
         level: LogLevel,
         message: string,
         meta?: Record<string, unknown>,
     ): Promise<void>;
+    debug(message: string, meta?: Record<string, unknown>): Promise<void>;
     info(message: string, meta?: Record<string, unknown>): Promise<void>;
     warn(message: string, meta?: Record<string, unknown>): Promise<void>;
     error(message: string, meta?: Record<string, unknown>): Promise<void>;
 }
 ```
 
-Jede Protokollzeile ist ein JSON-Objekt:
+Standardmäßig schreibt der Logger gut lesbare Konsolenausgaben, während die persistente Protokolldatei weiterhin JSON-Zeilen speichert.
+
+Jede persistente Protokollzeile ist ein JSON-Objekt:
 
 ```json
 {
@@ -47,7 +56,10 @@ Jede Protokollzeile ist ein JSON-Objekt:
 
 ## Konfiguration
 
-| Variable    | Standard            | Beschreibung                                            |
-| ----------- | ------------------- | ------------------------------------------------------- |
-| `LOG_LEVEL` | `info`              | Mindest-Log-Level: `debug`, `info`, `warn` oder `error` |
-| `LOG_FILE`  | `/app/logs/app.log` | Absoluter Pfad für die persistente Protokolldatei       |
+Die DB-Gateway-Ereignisse verwenden ebenfalls den gemeinsamen Logger, protokollieren jedoch nur zusammengefasste Metadaten (`provider`, SQL-Anweisungstyp, Parameteranzahl, Fehlername/-code). Rohmeldungen der Datenbank werden nicht wörtlich weitergereicht, da der Datenbank-Container sie bereits selbst protokolliert.
+
+| Variable     | Standard            | Beschreibung                                                       |
+| ------------ | ------------------- | ------------------------------------------------------------------ |
+| `LOG_LEVEL`  | `info`              | Mindest-Log-Level: `debug`, `info`, `warn` oder `error`            |
+| `LOG_FILE`   | `/app/logs/app.log` | Absoluter Pfad für die persistente Protokolldatei                  |
+| `LOG_FORMAT` | `pretty`            | Konsolenformat: `pretty` für lesbare Logs oder `json` für Roh-JSON |

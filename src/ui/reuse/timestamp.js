@@ -11,7 +11,7 @@
  *
  * Public exports:
  *   formatDate(iso, fallback)            — formats an ISO string as a localised date (no time).
- *   formatDateTime(iso, fallback)        — formats an ISO string as a localised date + time.
+ *   formatDateTime(iso, fallback, opts)  — formats an ISO string as a localised date + time.
  *   getBrowserDetectedTimezone()         — returns the browser-detected IANA timezone string.
  *   getEffectiveTimezone()               — returns the IANA timezone string currently in use.
  *   applyTimezoneToLocalStorage(tz, det) — writes the effective timezone to cognis_timezone;
@@ -25,10 +25,12 @@
  *
  *   const label = formatDate('2024-03-15T08:00:00Z');
  *   const label = formatDateTime('2024-03-15T08:00:00Z');
+ *   const precise = formatDateTime('2024-03-15T08:00:00Z', '', { includeSeconds: true });
  *   await syncTimezoneOnLogin(body.data.accountId);
  *
  * @param {string} iso      — ISO 8601 date/datetime string, e.g. "2024-03-15T08:00:00Z".
  * @param {string} fallback — returned as-is when iso is falsy.
+ * @param {{ includeSeconds?: boolean }} options — optional formatting flags.
  * @returns {string}
  */
 import { loadUiPreferences, saveUiPreferences } from "./ui-preferences.js";
@@ -77,12 +79,12 @@ export function formatDate(iso, fallback = "") {
     }
 }
 
-export function formatDateTime(iso, fallback = "") {
+export function formatDateTime(iso, fallback = "", options = {}) {
     if (!iso) return fallback;
     try {
         return new Date(iso).toLocaleString(undefined, {
             dateStyle: "medium",
-            timeStyle: "short",
+            timeStyle: options.includeSeconds ? "medium" : "short",
             timeZone: getEffectiveTimezone(),
         });
     } catch {

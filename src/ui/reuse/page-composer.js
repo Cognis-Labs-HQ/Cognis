@@ -73,6 +73,7 @@
  *     label: string,
  *     render: () => string,
  *     onRender?: () => void,
+ *     onUnmount?: () => void,
  *     pinned?: boolean,
  *     gridSize?: { default: [number, number], min: [number, number], max?: [number, number] | 'full' | 'half' | ['half'|number, 'half'|number] },
  *   }>,
@@ -1983,6 +1984,7 @@ export function createPageComposer(
                     el.subComposerOptions.allowCustomization ?? false,
                 preferenceKey: el.subComposerOptions.preferenceKey,
                 onRender: el.subComposerOptions.onRender,
+                onUnmount: el.subComposerOptions.onUnmount,
             };
             state.layout = await loadLayoutFor(state.preferenceKey);
             subStates.set(el.id, state);
@@ -2019,6 +2021,7 @@ export function createPageComposer(
     function unmountSubComposer(el) {
         const state = subStates.get(el.id);
         if (!state) return;
+        state.onUnmount?.();
         document.getElementById(getSubPanelId(state.preferenceKey))?.remove();
         state.resizeObserver?.disconnect();
         state.resizeObserver = null;

@@ -87,6 +87,53 @@ test("GET /api/v1/gateways requires admin auth", async () => {
     assert.equal(res.status, 401);
 });
 
+test("gateway routes log enable operations", async () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "notify",
+        name: "Notification Gateway",
+        version: "0.1.0",
+        publisher: "Cognis Labs",
+    });
+    const entries: Array<{
+        level: string;
+        message: string;
+        meta?: Record<string, unknown>;
+    }> = [];
+    const handler = createGatewayRoutes(
+        registry,
+        undefined,
+        undefined,
+        (level, message, meta) => {
+            entries.push({ level, message, meta });
+        },
+    );
+    const req = makeRequest("POST", adminToken);
+    const res = makeResponse();
+
+    await handler(
+        req,
+        res,
+        new URL("/api/v1/gateways/notify/enable", "http://localhost"),
+    );
+
+    assert.equal(res.status, 200);
+    assert.deepEqual(entries, [
+        {
+            level: "info",
+            message: "Gateway enabled.",
+            meta: {
+                component: "api-gateways",
+                method: "POST",
+                path: "/api/v1/gateways/notify/enable",
+                accountId: "test-session",
+                gatewayId: "notify",
+                status: "active",
+            },
+        },
+    ]);
+});
+
 test("GET /api/v1/gateways/:id returns a single gateway manifest", async () => {
     const registry = new GatewayRegistry();
     registry.register({
