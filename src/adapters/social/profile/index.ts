@@ -15,7 +15,7 @@ import {
     setPageSecurityHeaders,
 } from "../../../api/auth/guard.js";
 import type { AccountRole } from "../../db/reuse/profile-store.js";
-import type { SocialAdapterBootstrapCtx } from "../../../gateways/social/bootstrap.js";
+import type { SocialAdapterBootstrapCtx } from "../../../gateways/social/gateway.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
 
@@ -212,5 +212,10 @@ export async function bootstrapSocialAdapter(
     ctx.log?.("info", "Profile adapter: initialized.", {
         component: "social-profile-adapter",
         hasFileGateway: Boolean(fileGateway),
+    });
+
+    ctx.gateway.registerAdapter({
+        adapterId: "profile",
+        adapterName: "Profile",
     });
 }

@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { SocialAdapterBootstrapCtx } from "../../../gateways/social/bootstrap.js";
+import type { SocialAdapterBootstrapCtx } from "../../../gateways/social/gateway.js";
 import { DbMessagesStore } from "./store.js";
 import { createMessagesRoutes } from "./routes.js";
 import {
@@ -150,5 +150,10 @@ export async function bootstrapSocialAdapter(
     ctx.log?.("info", "Messages adapter: initialized.", {
         component: "social-messages-adapter",
         hasDispatch: Boolean(dispatch),
+    });
+
+    ctx.gateway.registerAdapter({
+        adapterId: "messages",
+        adapterName: "Messages",
     });
 }
