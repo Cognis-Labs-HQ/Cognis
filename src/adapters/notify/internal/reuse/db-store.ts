@@ -182,7 +182,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
             } catch (err) {
                 this.log?.(
                     "warn",
-                    "Failed to decrypt notification; row skipped. Check DATA_ENCRYPTION_KEY or for database corruption.",
+                    "Failed to decrypt notification; row skipped. Verify DATA_ENCRYPTION_KEY matches the value used when this notification was encrypted (the key cannot be rotated without re-encrypting existing rows). If the key is unchanged, check the database row for corruption.",
                     {
                         component: "notify-internal",
                         notifId: row.id,

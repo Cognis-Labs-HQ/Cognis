@@ -59,7 +59,7 @@ export async function bootstrapNotifyAdapter(
         const secret = getDataEncryptionKey();
         if (!secret) {
             const baseMessage =
-                "DATA_ENCRYPTION_KEY is not set. The internal notification adapter requires a stable server-side encryption key to persist notifications. Set DATA_ENCRYPTION_KEY to a unique high-entropy secret.";
+                "DATA_ENCRYPTION_KEY is not set. The internal notification adapter requires a stable server-side encryption key to persist notifications. Generate one with `openssl rand -hex 32` (32 random bytes hex-encoded) and set it as DATA_ENCRYPTION_KEY in the environment.";
             const isProduction = process.env.NODE_ENV === "production";
             const fullMessage = isProduction
                 ? baseMessage
