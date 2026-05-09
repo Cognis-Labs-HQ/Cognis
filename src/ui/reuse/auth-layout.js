@@ -3,7 +3,9 @@
  *
  * Public exports:
  *   renderAuthBrandline(brandName, tagline, extraClass?) — HTML for the branded logo/name/tagline header block.
- *   renderAuthLayout(opts)                  — HTML for the full two-column auth page shell.
+ *   renderAuthLayout(opts)                  — HTML for the full two-column auth page shell. Also registers the
+ *                                             site-wide service worker so PWA install support is available from
+ *                                             the unauthenticated entry points.
  *
  * Usage:
  *   import { renderAuthBrandline, renderAuthLayout } from '../../reuse/auth-layout.js';
@@ -20,6 +22,9 @@
  */
 
 import { escapeHtml } from "./escape-html.js";
+import { capturePwaInstallPrompt, registerServiceWorker } from "./pwa.js";
+
+capturePwaInstallPrompt();
 
 /**
  * @param {string} brandName - Translated brand name string.
@@ -50,6 +55,7 @@ export function renderAuthLayout({
     formPanelAriaLabel,
     formPanelHtml,
 }) {
+    registerServiceWorker();
     return `
     <section class="auth-page auth-page--frame">
       <div class="auth-layout">

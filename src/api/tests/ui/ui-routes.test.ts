@@ -532,3 +532,52 @@ test("GET /api/v1/ui/navbar-plugins returns 401 for unauthenticated request", as
 
     assert.equal(recorder.status, 401);
 });
+
+test("manifest.webmanifest is served unauthenticated with PWA mime type", async () => {
+    const route = createUiRoutes();
+    const recorder = createResponseRecorder();
+
+    const handled = await route(
+        { method: "GET", headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/manifest.webmanifest"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(recorder.status, 200);
+    assert.equal(
+        recorder.headers["content-type"],
+        "application/manifest+json; charset=utf-8",
+    );
+    const parsed = JSON.parse(recorder.body);
+    assert.equal(parsed.name, "Cognis");
+    assert.equal(parsed.start_url, "/dashboard");
+    assert.equal(parsed.scope, "/");
+    assert.equal(parsed.display, "standalone");
+    const sizes = parsed.icons.map((icon: any) => icon.sizes);
+    assert.ok(sizes.includes("192x192"));
+    assert.ok(sizes.includes("512x512"));
+    const purposes = parsed.icons.map((icon: any) => icon.purpose);
+    assert.ok(purposes.includes("maskable"));
+});
+
+test("/sw.js is served unauthenticated with root scope header", async () => {
+    const route = createUiRoutes();
+    const recorder = createResponseRecorder();
+
+    const handled = await route(
+        { method: "GET", headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/sw.js"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(recorder.status, 200);
+    assert.equal(
+        recorder.headers["content-type"],
+        "text/javascript; charset=utf-8",
+    );
+    assert.equal(recorder.headers["service-worker-allowed"], "/");
+    assert.match(recorder.body, /addEventListener\(['"]install['"]/);
+    assert.match(recorder.body, /addEventListener\(['"]fetch['"]/);
+});
