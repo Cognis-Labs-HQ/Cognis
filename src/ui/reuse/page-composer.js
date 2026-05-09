@@ -263,7 +263,7 @@ export function createPageComposer(
         const extra = editing ? 1 : 0;
         gridRows = Math.max(editing ? 6 : 1, maxBottom + extra);
         contentGrid.style.minHeight = `${gridRows * UNIT}px`;
-        contentGrid.style.width = `${gridCols * UNIT}px`;
+        contentGrid.style.width = editing ? `${gridCols * UNIT}px` : "";
         if (editing && gridSection) {
             gridSection.style.minHeight = `${gridRows * UNIT}px`;
             gridSection.style.width = `${gridCols * UNIT}px`;
@@ -2723,6 +2723,15 @@ export function createPageComposer(
 
                 mobileToggleBtn.addEventListener("click", () => {
                     setMobileDrawerOpen(!mobileDrawerOpen);
+                });
+                toolbarEl.addEventListener("click", (event) => {
+                    if (!isMobileDrawerMode() || !mobileDrawerOpen) return;
+                    const target = event.target;
+                    if (!(target instanceof Element)) return;
+                    if (target.closest(".toolbar-mobile-toggle")) return;
+                    if (target.closest("a[href]")) {
+                        setMobileDrawerOpen(false, { restoreFocus: false });
+                    }
                 });
                 mobileBackdrop.addEventListener("click", () => {
                     setMobileDrawerOpen(false);
