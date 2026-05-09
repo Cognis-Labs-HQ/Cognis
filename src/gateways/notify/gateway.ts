@@ -41,6 +41,7 @@ export interface NotificationSenderInfo {
     name: string;
     active: boolean;
     alwaysOn?: boolean;
+    locked?: boolean;
     requires?: string[];
 }
 
@@ -205,7 +206,7 @@ export class CoreNotificationGateway
                     (typeof sender.isConfigured === "function"
                         ? sender.isConfigured()
                         : typeof sender.getConfig === "function"),
-                ...(alwaysOn ? { alwaysOn: true } : {}),
+                ...(alwaysOn ? { alwaysOn: true, locked: true } : {}),
                 ...(requires && requires.length > 0 ? { requires } : {}),
             };
         });
