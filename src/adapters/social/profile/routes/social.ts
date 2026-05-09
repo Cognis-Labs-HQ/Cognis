@@ -17,17 +17,29 @@ function publicProfile(profile: AccountProfile) {
     };
 }
 
-async function canViewProfile(
+async function canDiscoverProfile(
     requesterId: string,
     requesterRole: string,
+    target: AccountProfile,
+): Promise<boolean> {
+    if (requesterRole === "admin") return true;
+    if (requesterId === target.accountId) return true;
+    return target.visibility !== "hidden";
+}
+
+async function canFollowProfile(
+    requesterId: string,
+    requesterRole: string,
+    requester: AccountProfile | null,
     target: AccountProfile,
     profileStore: DbProfileStore,
 ): Promise<boolean> {
     if (requesterRole === "admin") return true;
-    if (requesterId === target.accountId) return true;
+    if (!requester || requester.visibility === "hidden") return false;
     if (target.visibility === "hidden") return false;
-    if (target.visibility === "private")
-        return profileStore.isFollowing(requesterId, target.accountId);
+    if (target.visibility === "private") {
+        return profileStore.isFollowing(target.accountId, requesterId);
+    }
     return true;
 }
 
@@ -70,26 +82,47 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                 return true;
             }
             const isSelf = claims.sub === target.accountId;
-            const [following, followedBy, blocked] = await Promise.all([
-                isSelf
-                    ? Promise.resolve(false)
-                    : profileStore.isFollowing(claims.sub, target.accountId),
-                isSelf
-                    ? Promise.resolve(false)
-                    : profileStore.isFollowing(target.accountId, claims.sub),
-                isSelf
-                    ? Promise.resolve(false)
-                    : profileStore.isBlocked(claims.sub, target.accountId),
-            ]);
-            // Messaging eligibility: not blocked in either direction AND
-            // (target follows requester OR target visibility >= community).
+            const canDiscover = await canDiscoverProfile(
+                claims.sub,
+                claims.role,
+                target,
+            );
+            if (!canDiscover) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "not_found", message: "User not found" },
+                    }),
+                );
+                return true;
+            }
+            const [following, followedBy, blocked, requester] =
+                await Promise.all([
+                    isSelf
+                        ? Promise.resolve(false)
+                        : profileStore.isFollowing(
+                              claims.sub,
+                              target.accountId,
+                          ),
+                    isSelf
+                        ? Promise.resolve(false)
+                        : profileStore.isFollowing(
+                              target.accountId,
+                              claims.sub,
+                          ),
+                    isSelf
+                        ? Promise.resolve(false)
+                        : profileStore.isBlocked(claims.sub, target.accountId),
+                    profileStore.getProfile(claims.sub),
+                ]);
+            // Messaging eligibility: neither user is hidden, neither side has
+            // blocked the other, and the target accepts community messages.
             // The same predicate gates the message icon in the profile UI.
             const canMessage =
                 !isSelf &&
                 !blocked &&
-                (followedBy ||
-                    visibilityRank(target.visibility) >=
-                        visibilityRank("community"));
+                requester?.visibility !== "hidden" &&
+                target.visibility === "community";
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -147,19 +180,38 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                     );
                     return true;
                 }
-                const canView = await canViewProfile(
+                const requester = await profileStore.getProfile(claims.sub);
+                const canDiscover = await canDiscoverProfile(
                     claims.sub,
                     claims.role,
                     target,
-                    profileStore,
                 );
-                if (!canView) {
+                if (!canDiscover) {
                     res.writeHead(404, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
                                 message: "User not found",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                const canFollow = await canFollowProfile(
+                    claims.sub,
+                    claims.role,
+                    requester,
+                    target,
+                    profileStore,
+                );
+                if (!canFollow) {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "forbidden",
+                                message: "This user cannot be followed",
                             },
                         }),
                     );
@@ -247,11 +299,10 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                 );
                 return true;
             }
-            const canView = await canViewProfile(
+            const canView = await canDiscoverProfile(
                 claims.sub,
                 claims.role,
                 target,
-                profileStore,
             );
             if (!canView) {
                 res.writeHead(404, { "content-type": "application/json" });
@@ -305,11 +356,10 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                 );
                 return true;
             }
-            const canView = await canViewProfile(
+            const canView = await canDiscoverProfile(
                 claims.sub,
                 claims.role,
                 target,
-                profileStore,
             );
             if (!canView) {
                 res.writeHead(404, { "content-type": "application/json" });

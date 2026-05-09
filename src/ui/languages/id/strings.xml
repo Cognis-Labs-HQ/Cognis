@@ -372,6 +372,12 @@
   <string name="ui.app.profile.banner_height.half">Setengah tinggi</string>
   <string name="ui.app.profile.banner_height.full">Tinggi penuh</string>
   <string name="ui.app.profile.follow">Ikuti</string>
+  <string name="ui.app.profile.unfollow">Berhenti mengikuti</string>
+  <string name="ui.app.profile.unfollow_confirm_title">Berhenti Mengikuti Pengguna</string>
+  <string name="ui.app.profile.unfollow_confirm_body">Berhenti mengikuti pengguna ini?</string>
+  <string name="ui.app.profile.followed_toast">Anda sekarang mengikuti pengguna ini.</string>
+  <string name="ui.app.profile.unfollowed_toast">Anda tidak lagi mengikuti pengguna ini.</string>
+  <string name="ui.app.profile.follow_unavailable_toast">Pengguna ini tidak dapat diikuti.</string>
   <string name="ui.app.profile.block_user">Blokir pengguna</string>
   <string name="ui.app.profile.block_user_confirm">Blokir pengguna ini? Mereka tidak akan dapat mengikuti Anda atau berinteraksi dengan profil Anda.</string>
   <string name="ui.app.profile.block_user_action">Blokir</string>

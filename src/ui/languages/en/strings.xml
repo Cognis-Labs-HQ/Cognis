@@ -372,6 +372,12 @@
   <string name="ui.app.profile.banner_height.half">Half height</string>
   <string name="ui.app.profile.banner_height.full">Full height</string>
   <string name="ui.app.profile.follow">Follow</string>
+  <string name="ui.app.profile.unfollow">Unfollow</string>
+  <string name="ui.app.profile.unfollow_confirm_title">Unfollow User</string>
+  <string name="ui.app.profile.unfollow_confirm_body">Stop following this user?</string>
+  <string name="ui.app.profile.followed_toast">You are now following this user.</string>
+  <string name="ui.app.profile.unfollowed_toast">You are no longer following this user.</string>
+  <string name="ui.app.profile.follow_unavailable_toast">This user cannot be followed.</string>
   <string name="ui.app.profile.block_user">Block user</string>
   <string name="ui.app.profile.block_user_confirm">Block this user? They will no longer be able to follow you or interact with your profile.</string>
   <string name="ui.app.profile.block_user_action">Block</string>

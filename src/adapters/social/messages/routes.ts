@@ -17,7 +17,6 @@ import type {
     DbProfileStore,
     AccountProfile,
 } from "../../db/reuse/profile-store.js";
-import { visibilityRank } from "../../db/reuse/profile-store.js";
 
 interface DispatchEnvelope {
     category: string;
@@ -34,7 +33,7 @@ type Dispatch = (e: DispatchEnvelope) => Promise<{ dispatched: string[] }>;
 /**
  * Messaging eligibility predicate: A may DM B iff
  *   not blocked in either direction, AND
- *   (B follows A OR B's visibility >= community OR they share an existing room).
+ *   B has community visibility or they share an existing room.
  */
 export async function canMessage(
     profileStore: DbProfileStore,
@@ -48,12 +47,19 @@ export async function canMessage(
         profileStore.isBlocked(toId, fromId),
     ]);
     if (aBlockedB || bBlockedA) return false;
-    const targetProfile = await profileStore.getProfile(toId);
-    if (!targetProfile) return false;
-    if (visibilityRank(targetProfile.visibility) >= visibilityRank("community"))
-        return true;
-    const targetFollowsRequester = await profileStore.isFollowing(toId, fromId);
-    if (targetFollowsRequester) return true;
+    const [requesterProfile, targetProfile] = await Promise.all([
+        profileStore.getProfile(fromId),
+        profileStore.getProfile(toId),
+    ]);
+    if (
+        !requesterProfile ||
+        !targetProfile ||
+        requesterProfile.visibility === "hidden" ||
+        targetProfile.visibility === "hidden"
+    ) {
+        return false;
+    }
+    if (targetProfile.visibility === "community") return true;
     const sharedRoom = await messagesStore.findDmBetween(fromId, toId);
     return Boolean(sharedRoom);
 }
@@ -77,7 +83,9 @@ export interface MessagesRoutesDeps {
 async function enrichMembersWithProfiles(
     members: MemberRow[],
     profileStore: DbProfileStore,
-): Promise<Array<MemberRow & { handle: string | null; displayName: string | null }>> {
+): Promise<
+    Array<MemberRow & { handle: string | null; displayName: string | null }>
+> {
     return Promise.all(
         members.map(async (memberRow) => {
             const profile = await profileStore.getProfile(memberRow.accountId);
@@ -317,7 +325,9 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 profileStore,
             );
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { ...room, members: enrichedMembers } }));
+            res.end(
+                JSON.stringify({ data: { ...room, members: enrichedMembers } }),
+            );
             return true;
         }
 
