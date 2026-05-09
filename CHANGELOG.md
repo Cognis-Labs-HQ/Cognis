@@ -20,6 +20,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - `src/ui/tests/app-router.test.js`: tests verifying that all dashboard pages export `mount()`, call it on direct load, that the router exports `initRouter`/`navigateTo`/`getCurrentBase`, registers routes for all pages, uses `history.pushState`, guards against re-initialisation, correctly passes and aborts `AbortController` signals, and that the docs and administration pages wire their `window` listeners with `{ signal }`. ([c9fdc2e](https://github.com/le-firehawk/Cognis/commit/c9fdc2e))
 - AI instructions updated: new "UI page navigation must use the app router" section codifies the `mount()` export contract, the direct-load entry point, and the prohibition on `window.location` mutations for in-shell navigation. ([c9fdc2e](https://github.com/le-firehawk/Cognis/commit/c9fdc2e))
 
+### Fixed
+
+- Service worker (`src/ui/public/sw.js`): unversioned app JS and CSS files (e.g. `/static/app/dashboard/index.js`, `/static/styles/*.css`) were previously served stale-while-revalidate, so after a deployment clients would execute one load with old application code while the fresh response was fetched in the background. The worker now uses a network-first strategy for all `/static/` paths except `/static/assets/` (icons and images, which are effectively stable binary assets and continue to use stale-while-revalidate). The manifest (`/manifest.webmanifest`) also switches to network-first. A new `APP_CACHE` is introduced for network-first app assets; `CACHE_VERSION` is bumped to `v2` so existing clients adopt the updated worker. ([33e087a](https://github.com/le-firehawk/Cognis/commit/33e087a))
+
 ### Changed
 
 - Settings page: saving preferences no longer triggers a full page reload for font, theme, timezone, or notification changes. Font and font-size are applied immediately via CSS custom properties; the page stays interactive after save. A reload is still performed only when the language priority changes, with a short 400 ms delay so the success toast is visible before navigation. ([84f9a9b](https://github.com/le-firehawk/Cognis/commit/84f9a9b))

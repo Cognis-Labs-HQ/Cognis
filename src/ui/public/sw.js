@@ -6,8 +6,12 @@
  *     stylesheet/icon) so the app boots when the user is offline;
  *   - serves navigation requests with a network-first strategy that falls back
  *     to the cached shell;
- *   - serves /static/ asset requests with a stale-while-revalidate strategy so
- *     repeat visits feel instant;
+ *   - serves /static/assets/ (icons, images) with stale-while-revalidate so
+ *     repeat visits feel instant — those binary assets are effectively stable;
+ *   - serves all other /static/ paths (unversioned app JS, CSS, templates,
+ *     reuse modules) with a network-first strategy so clients always execute
+ *     the latest code after a deployment; the cached copy is only used when
+ *     the network is unavailable;
  *   - never intercepts /api/* requests — those always go to the network so the
  *     user sees an authentic failure rather than stale data.
  *
@@ -15,9 +19,10 @@
  * asset list so existing clients pick up the new worker on next visit.
  */
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const SHELL_CACHE = `cognis-shell-${CACHE_VERSION}`;
 const ASSET_CACHE = `cognis-assets-${CACHE_VERSION}`;
+const APP_CACHE = `cognis-app-${CACHE_VERSION}`;
 
 const SHELL_URLS = [
     "/dashboard",
@@ -68,7 +73,10 @@ self.addEventListener("activate", (event) => {
                 Promise.all(
                     keys
                         .filter(
-                            (key) => key !== SHELL_CACHE && key !== ASSET_CACHE,
+                            (key) =>
+                                key !== SHELL_CACHE &&
+                                key !== ASSET_CACHE &&
+                                key !== APP_CACHE,
                         )
                         .map((key) => caches.delete(key)),
                 ),
@@ -126,6 +134,21 @@ async function staleWhileRevalidate(request) {
     return networkPromise;
 }
 
+async function networkFirstAsset(request) {
+    const cache = await caches.open(APP_CACHE);
+    try {
+        const response = await fetch(request);
+        if (response && response.ok) {
+            cache.put(request, response.clone()).catch(() => {});
+        }
+        return response;
+    } catch (error) {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        throw error;
+    }
+}
+
 self.addEventListener("fetch", (event) => {
     const request = event.request;
     if (request.method !== "GET") return;
@@ -144,6 +167,10 @@ self.addEventListener("fetch", (event) => {
         url.pathname.startsWith("/static/") ||
         url.pathname === "/manifest.webmanifest"
     ) {
-        event.respondWith(staleWhileRevalidate(request));
+        if (url.pathname.startsWith("/static/assets/")) {
+            event.respondWith(staleWhileRevalidate(request));
+        } else {
+            event.respondWith(networkFirstAsset(request));
+        }
     }
 });
