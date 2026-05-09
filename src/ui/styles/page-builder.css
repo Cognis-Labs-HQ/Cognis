@@ -939,8 +939,6 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
 }
 
 .content-panel.composer-content-panel--editing > .content-section {
-    --composer-grid-inset: 14px;
-    padding: var(--composer-grid-inset);
     border-radius: 12px;
 }
 
