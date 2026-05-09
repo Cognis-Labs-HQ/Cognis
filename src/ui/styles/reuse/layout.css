@@ -1,6 +1,6 @@
 .app-shell {
     min-height: 100vh;
-    background: var(--bg);
+    background: transparent;
     color: var(--text);
     --shell-content-width: 96%;
     display: flex;

@@ -939,7 +939,8 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
 }
 
 .content-panel.composer-content-panel--editing > .content-section {
-    padding: 14px;
+    --composer-grid-inset: 14px;
+    padding: var(--composer-grid-inset);
     border-radius: 12px;
 }
 
@@ -1180,6 +1181,16 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     position: absolute;
     pointer-events: none;
     z-index: 0;
+}
+
+.composer-grid-active .composer-grid-overlay,
+.composer-grid-active .composer-cell,
+.composer-grid-active .composer-shade,
+.composer-grid-active .composer-dropzone-line {
+    transform: translate(
+        var(--composer-grid-inset, 0px),
+        var(--composer-grid-inset, 0px)
+    );
 }
 
 .composer-grid-cell {

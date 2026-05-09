@@ -3,7 +3,8 @@
 }
 
 .content-panel > .content-section {
-    padding: 28px;
+    --composer-grid-inset: 28px;
+    padding: var(--composer-grid-inset);
 }
 
 .content-section :where(input, select, textarea, button) {
@@ -231,6 +232,7 @@
 
 @media (max-width: 640px) {
     .content-panel > .content-section {
-        padding: 14px;
+        --composer-grid-inset: 14px;
+        padding: var(--composer-grid-inset);
     }
 }
