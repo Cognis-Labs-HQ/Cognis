@@ -173,6 +173,24 @@ body[data-theme="light"] .prefs-dump {
     padding: 2px 7px;
 }
 
+body[data-theme="light"] .email-badge-primary {
+    background: rgba(13, 148, 136, 0.14);
+    color: #0f766e;
+    border: 1px solid rgba(13, 148, 136, 0.38);
+}
+
+body[data-theme="light"] .email-badge-verified {
+    background: rgba(15, 118, 110, 0.12);
+    color: #0f766e;
+    border: 1px solid rgba(15, 118, 110, 0.32);
+}
+
+body[data-theme="light"] .email-badge-unverified {
+    background: rgba(226, 232, 240, 0.88);
+    color: #475569;
+    border-color: rgba(100, 116, 139, 0.36);
+}
+
 .email-verify-prompt {
     font-size: 0.85rem;
     margin: 6px 0 4px;

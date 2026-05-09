@@ -616,6 +616,16 @@ code {
     opacity: 0.45;
     filter: grayscale(0.2);
 }
+
+body[data-theme="light"] .slider {
+    background: linear-gradient(145deg, #cbd5e1, #94a3b8);
+}
+
+body[data-theme="light"] .slider::before {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+}
+
 .integrity-list {
     padding-left: 20px;
 }
