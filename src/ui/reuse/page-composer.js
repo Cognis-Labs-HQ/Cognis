@@ -172,7 +172,7 @@ export function createPageComposer(
     }
 
     function getLayoutProfileKey(gridColumnCount) {
-        return `cols-${Math.max(1, Number(gridColumnCount) || 1)}`;
+        return `cols-${Math.max(1, Number(gridColumnCount) || 0)}`;
     }
 
     function parseLayoutProfileColumns(profileKey) {
@@ -338,7 +338,9 @@ export function createPageComposer(
         if (contentGrid) {
             contentGrid.style.width = "";
         }
-        widthCandidates.push(contentGrid?.getBoundingClientRect().width ?? 0);
+        widthCandidates.push(
+            contentGrid ? contentGrid.getBoundingClientRect().width : 0,
+        );
         widthCandidates.push(
             contentGrid?.parentElement?.getBoundingClientRect().width ?? 0,
         );
@@ -1145,6 +1147,14 @@ export function createPageComposer(
         );
     }
 
+    /**
+     * Calculates the horizontal drag/placement bounds for the floating composer
+     * panel, preferring workspace bounds when available and falling back to the
+     * viewport when workspace metrics are unavailable.
+     *
+     * @param {number} panelWidth
+     * @returns {{ minLeft: number, maxLeft: number }}
+     */
     function getComposerPanelHorizontalBounds(panelWidth) {
         const workspaceRect = root
             .querySelector(".workspace")
