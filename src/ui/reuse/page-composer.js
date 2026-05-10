@@ -51,9 +51,9 @@
  *   Each value is [width, height] in grid units (90 px each).
  *   Magic string values for max:
  *     'full'  — spans all available columns (full width).
- *     'half'  — spans half the available columns (half width); when gridCols
- *               is odd and only one column remains to the right, the element
- *               expands by one column to fill the gap.
+ *     'half'  — spans half the available columns (half width). When the grid
+ *               dimension is odd, placements snap to half-grid increments
+ *               (UNIT / 2 steps) so elements can fill the space evenly.
  *     'fill'  — spans the remaining columns from the placement position to
  *               the right edge of the grid (fill remaining space).
  *   To apply half/fill on both axes, use max: ['half', 'half'] or max: ['fill', 'fill'].
@@ -152,6 +152,55 @@ export function createPageComposer(
 
     const UNIT = 90; // grid cell size in pixels
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
+
+    function gridStep(dim) {
+        return dim % 2 === 1 ? 0.5 : 1;
+    }
+
+    function halfGrid(dim) {
+        return dim % 2 === 1 ? dim / 2 : Math.floor(dim / 2);
+    }
+
+    function snapGridFloor(px, dim) {
+        const step = gridStep(dim);
+        return Math.floor(px / (UNIT * step)) * step;
+    }
+
+    function snapGridRound(raw, dim) {
+        const step = gridStep(dim);
+        return Math.round(raw / step) * step;
+    }
+
+    function buildOccupiedSet(placements, hidden, excludeId) {
+        const cells = new Set();
+        for (const placement of placements) {
+            if (placement.id === excludeId) continue;
+            if (hidden.includes(placement.id)) continue;
+            for (
+                let r = placement.row * 2;
+                r < (placement.row + placement.h) * 2;
+                r++
+            ) {
+                for (
+                    let c = placement.col * 2;
+                    c < (placement.col + placement.w) * 2;
+                    c++
+                ) {
+                    cells.add(`${c},${r}`);
+                }
+            }
+        }
+        return cells;
+    }
+
+    function checkPlacement(cells, col, row, w, h) {
+        for (let r = row * 2; r < (row + h) * 2; r++) {
+            for (let c = col * 2; c < (col + w) * 2; c++) {
+                if (cells.has(`${c},${r}`)) return false;
+            }
+        }
+        return true;
+    }
 
     function handleBeforeUnload(e) {
         e.preventDefault();
@@ -468,30 +517,17 @@ export function createPageComposer(
 
     function canPlace(col, row, w, h, excludeId) {
         if (col < 0 || row < 0 || col + w > gridCols) return false;
-        const occupied = new Set();
-        for (const placement of layout?.placements ?? []) {
-            if (placement.id === excludeId) continue;
-            if ((layout?.hidden ?? []).includes(placement.id)) continue;
-            for (let r = placement.row; r < placement.row + placement.h; r++) {
-                for (
-                    let c = placement.col;
-                    c < placement.col + placement.w;
-                    c++
-                ) {
-                    occupied.add(`${c},${r}`);
-                }
-            }
-        }
-        for (let r = row; r < row + h; r++) {
-            for (let c = col; c < col + w; c++) {
-                if (occupied.has(`${c},${r}`)) return false;
-            }
-        }
-        return true;
+        const cells = buildOccupiedSet(
+            layout?.placements ?? [],
+            layout?.hidden ?? [],
+            excludeId,
+        );
+        return checkPlacement(cells, col, row, w, h);
     }
 
     function applyGravity(col, row, w, h, excludeId) {
-        for (let r = 0; r <= row; r++) {
+        const step = gridStep(gridRows);
+        for (let r = 0; r <= row; r += step) {
             if (canPlace(col, r, w, h, excludeId)) return r;
         }
         return row;
@@ -519,23 +555,17 @@ export function createPageComposer(
                 p.id !== candidate.id &&
                 !(layout?.hidden ?? []).includes(p.id),
         );
-        const occupied = new Set();
-        for (const placement of others) {
-            for (let r = placement.row; r < placement.row + placement.h; r++) {
-                for (
-                    let c = placement.col;
-                    c < placement.col + placement.w;
-                    c++
-                ) {
-                    occupied.add(`${c},${r}`);
-                }
-            }
-        }
-        for (let r = source.row; r < source.row + candidate.h; r++) {
-            for (let c = source.col; c < source.col + candidate.w; c++) {
-                if (occupied.has(`${c},${r}`)) return null;
-            }
-        }
+        const occupied = buildOccupiedSet(others, [], null);
+        if (
+            !checkPlacement(
+                occupied,
+                source.col,
+                source.row,
+                candidate.w,
+                candidate.h,
+            )
+        )
+            return null;
         const postSwapColsOverlap =
             candidate.col < source.col + candidate.w &&
             candidate.col + w > source.col;
@@ -590,24 +620,26 @@ export function createPageComposer(
                 continue;
             }
             const gridSize = getGridSize(element);
+            const cStep = gridStep(gridCols);
+            const rStep = gridStep(gridRows);
             const baseW = gridSize.fullWidth
                 ? gridCols
                 : gridSize.halfWidth
-                  ? Math.max(gridSize.min[0], Math.floor(gridCols / 2))
+                  ? Math.max(gridSize.min[0], halfGrid(gridCols))
                   : Math.min(gridSize.default[0], gridCols);
             const baseH = gridSize.halfHeight
-                ? Math.max(gridSize.min[1], Math.floor(gridRows / 2))
+                ? Math.max(gridSize.min[1], halfGrid(gridRows))
                 : gridSize.default[1];
             let placed = false;
-            for (let row = 0; !placed; row++) {
+            for (let row = 0; !placed; row += rStep) {
                 const colLimit = gridSize.fillWidth
                     ? gridCols
                     : Math.max(0, gridCols - baseW);
-                for (let col = 0; col <= colLimit; col++) {
+                for (let col = 0; col <= colLimit; col += cStep) {
                     const w = gridSize.fillWidth
                         ? Math.max(gridSize.min[0], gridCols - col)
-                        : gridSize.halfWidth && col + baseW + 1 === gridCols
-                          ? baseW + 1
+                        : gridSize.halfWidth && col + baseW + cStep === gridCols
+                          ? baseW + cStep
                           : baseW;
                     const h = gridSize.fillHeight
                         ? Math.max(gridSize.min[1], gridRows - row)
@@ -635,14 +667,21 @@ export function createPageComposer(
         overlay.style.top = "0";
         overlay.style.width = `${gridCols * UNIT}px`;
         overlay.style.height = `${gridRows * UNIT}px`;
-        for (let r = 0; r < gridRows; r++) {
-            for (let c = 0; c < gridCols; c++) {
+        const cStep = gridStep(gridCols);
+        const rStep = gridStep(gridRows);
+        const cellW = UNIT * cStep;
+        const cellH = UNIT * rStep;
+        for (let r = 0; r < gridRows; r += rStep) {
+            for (let c = 0; c < gridCols; c += cStep) {
                 const cell = document.createElement("div");
-                cell.className = "composer-grid-cell";
+                cell.className =
+                    cStep < 1 || rStep < 1
+                        ? "composer-grid-cell composer-grid-cell--half"
+                        : "composer-grid-cell";
                 cell.style.left = `${c * UNIT}px`;
                 cell.style.top = `${r * UNIT}px`;
-                cell.style.width = `${UNIT}px`;
-                cell.style.height = `${UNIT}px`;
+                cell.style.width = `${cellW}px`;
+                cell.style.height = `${cellH}px`;
                 overlay.appendChild(cell);
             }
         }
@@ -719,12 +758,12 @@ export function createPageComposer(
                         0,
                         Math.min(
                             gridCols - placement.w,
-                            Math.round(x / UNIT - placement.w / 2),
+                            snapGridRound(x / UNIT - placement.w / 2, gridCols),
                         ),
                     );
                     const rawRow = Math.max(
                         0,
-                        Math.round(y / UNIT - placement.h / 2),
+                        snapGridRound(y / UNIT - placement.h / 2, gridRows),
                     );
 
                     if (rawRow + placement.h > gridRows) {
@@ -944,7 +983,10 @@ export function createPageComposer(
                 const x = e.clientX - gridRect.left;
                 const y = e.clientY - gridRect.top;
                 if (direction === "e" || direction === "se") {
-                    const rawW = Math.round((x - placement.col * UNIT) / UNIT);
+                    const rawW = snapGridRound(
+                        (x - placement.col * UNIT) / UNIT,
+                        gridCols,
+                    );
                     const maxW = gridSize.max
                         ? gridSize.max[0]
                         : gridCols - placement.col;
@@ -955,7 +997,10 @@ export function createPageComposer(
                     );
                 }
                 if (direction === "s" || direction === "se") {
-                    const rawH = Math.round((y - placement.row * UNIT) / UNIT);
+                    const rawH = snapGridRound(
+                        (y - placement.row * UNIT) / UNIT,
+                        gridRows,
+                    );
                     currentH = clampValue(
                         rawH,
                         gridSize.min[1],
@@ -1011,24 +1056,8 @@ export function createPageComposer(
 
     function canPlaceInSet(set, col, row, w, h) {
         if (col < 0 || row < 0 || col + w > gridCols) return false;
-        const occupied = new Set();
-        for (const placement of set) {
-            for (let r = placement.row; r < placement.row + placement.h; r++) {
-                for (
-                    let c = placement.col;
-                    c < placement.col + placement.w;
-                    c++
-                ) {
-                    occupied.add(`${c},${r}`);
-                }
-            }
-        }
-        for (let r = row; r < row + h; r++) {
-            for (let c = col; c < col + w; c++) {
-                if (occupied.has(`${c},${r}`)) return false;
-            }
-        }
-        return true;
+        const cells = buildOccupiedSet(set, [], null);
+        return checkPlacement(cells, col, row, w, h);
     }
 
     function compactPlacements() {
@@ -1036,10 +1065,11 @@ export function createPageComposer(
             (p) => !layout.hidden.includes(p.id),
         );
         visible.sort((a, b) => a.row - b.row || a.col - b.col);
+        const rStep = gridStep(gridRows);
         const settled = [];
         for (const placement of visible) {
             let bestRow = placement.row;
-            for (let r = 0; r < placement.row; r++) {
+            for (let r = 0; r < placement.row; r += rStep) {
                 if (
                     canPlaceInSet(
                         settled,
@@ -1072,12 +1102,12 @@ export function createPageComposer(
                 gridSize.fullWidth || gridSize.fillWidth
                     ? gridCols
                     : gridSize.halfWidth
-                      ? Math.max(gridSize.min[0], Math.floor(gridCols / 2))
+                      ? Math.max(gridSize.min[0], halfGrid(gridCols))
                       : Math.min(gridSize.default[0], gridCols);
             const h = gridSize.fillHeight
                 ? gridRows
                 : gridSize.halfHeight
-                  ? Math.max(gridSize.min[1], Math.floor(gridRows / 2))
+                  ? Math.max(gridSize.min[1], halfGrid(gridRows))
                   : gridSize.default[1];
 
             let shade = null;
@@ -1101,9 +1131,9 @@ export function createPageComposer(
                     }
                     const col = Math.max(
                         0,
-                        Math.min(gridCols - w, Math.floor(x / UNIT)),
+                        Math.min(gridCols - w, snapGridFloor(x, gridCols)),
                     );
-                    const rawRow = Math.max(0, Math.floor(y / UNIT));
+                    const rawRow = Math.max(0, snapGridFloor(y, gridRows));
                     const row = applyGravity(col, rawRow, w, h, null);
                     currentCol = col;
                     currentRow = row;
@@ -1378,48 +1408,18 @@ export function createPageComposer(
 
     function canSubPlace(state, col, row, w, h, excludeId) {
         if (col < 0 || row < 0 || col + w > state.gridCols) return false;
-        const occupied = new Set();
-        for (const placement of state.layout?.placements ?? []) {
-            if (placement.id === excludeId) continue;
-            if ((state.layout?.hidden ?? []).includes(placement.id)) continue;
-            for (let r = placement.row; r < placement.row + placement.h; r++) {
-                for (
-                    let c = placement.col;
-                    c < placement.col + placement.w;
-                    c++
-                ) {
-                    occupied.add(`${c},${r}`);
-                }
-            }
-        }
-        for (let r = row; r < row + h; r++) {
-            for (let c = col; c < col + w; c++) {
-                if (occupied.has(`${c},${r}`)) return false;
-            }
-        }
-        return true;
+        const cells = buildOccupiedSet(
+            state.layout?.placements ?? [],
+            state.layout?.hidden ?? [],
+            excludeId,
+        );
+        return checkPlacement(cells, col, row, w, h);
     }
 
     function canSubPlaceInSet(state, set, col, row, w, h) {
         if (col < 0 || row < 0 || col + w > state.gridCols) return false;
-        const occupied = new Set();
-        for (const placement of set) {
-            for (let r = placement.row; r < placement.row + placement.h; r++) {
-                for (
-                    let c = placement.col;
-                    c < placement.col + placement.w;
-                    c++
-                ) {
-                    occupied.add(`${c},${r}`);
-                }
-            }
-        }
-        for (let r = row; r < row + h; r++) {
-            for (let c = col; c < col + w; c++) {
-                if (occupied.has(`${c},${r}`)) return false;
-            }
-        }
-        return true;
+        const cells = buildOccupiedSet(set, [], null);
+        return checkPlacement(cells, col, row, w, h);
     }
 
     function findSubSwapCandidate(state, col, row, w, h, excludeId) {
@@ -1444,23 +1444,17 @@ export function createPageComposer(
                 p.id !== candidate.id &&
                 !(state.layout?.hidden ?? []).includes(p.id),
         );
-        const occupied = new Set();
-        for (const placement of others) {
-            for (let r = placement.row; r < placement.row + placement.h; r++) {
-                for (
-                    let c = placement.col;
-                    c < placement.col + placement.w;
-                    c++
-                ) {
-                    occupied.add(`${c},${r}`);
-                }
-            }
-        }
-        for (let r = source.row; r < source.row + candidate.h; r++) {
-            for (let c = source.col; c < source.col + candidate.w; c++) {
-                if (occupied.has(`${c},${r}`)) return null;
-            }
-        }
+        const occupied = buildOccupiedSet(others, [], null);
+        if (
+            !checkPlacement(
+                occupied,
+                source.col,
+                source.row,
+                candidate.w,
+                candidate.h,
+            )
+        )
+            return null;
         const postSwapColsOverlap =
             candidate.col < source.col + candidate.w &&
             candidate.col + w > source.col;
@@ -1489,25 +1483,27 @@ export function createPageComposer(
                 continue;
             }
             const gridSize = getGridSize(element);
+            const cStep = gridStep(state.gridCols);
+            const rStep = gridStep(state.gridRows);
             const baseW = gridSize.fullWidth
                 ? state.gridCols
                 : gridSize.halfWidth
-                  ? Math.max(gridSize.min[0], Math.floor(state.gridCols / 2))
+                  ? Math.max(gridSize.min[0], halfGrid(state.gridCols))
                   : Math.min(gridSize.default[0], state.gridCols);
             const baseH = gridSize.halfHeight
-                ? Math.max(gridSize.min[1], Math.floor(state.gridRows / 2))
+                ? Math.max(gridSize.min[1], halfGrid(state.gridRows))
                 : gridSize.default[1];
             let placed = false;
-            for (let row = 0; !placed; row++) {
+            for (let row = 0; !placed; row += rStep) {
                 const colLimit = gridSize.fillWidth
                     ? state.gridCols
                     : Math.max(0, state.gridCols - baseW);
-                for (let col = 0; col <= colLimit; col++) {
+                for (let col = 0; col <= colLimit; col += cStep) {
                     const w = gridSize.fillWidth
                         ? Math.max(gridSize.min[0], state.gridCols - col)
                         : gridSize.halfWidth &&
-                            col + baseW + 1 === state.gridCols
-                          ? baseW + 1
+                            col + baseW + cStep === state.gridCols
+                          ? baseW + cStep
                           : baseW;
                     const h = gridSize.fillHeight
                         ? Math.max(gridSize.min[1], state.gridRows - row)
@@ -1533,10 +1529,11 @@ export function createPageComposer(
             (p) => !state.layout.hidden.includes(p.id),
         );
         visible.sort((a, b) => a.row - b.row || a.col - b.col);
+        const rStep = gridStep(state.gridRows);
         const settled = [];
         for (const placement of visible) {
             let bestRow = placement.row;
-            for (let r = 0; r < placement.row; r++) {
+            for (let r = 0; r < placement.row; r += rStep) {
                 if (
                     canSubPlaceInSet(
                         state,
@@ -1568,14 +1565,21 @@ export function createPageComposer(
         overlay.style.top = "0";
         overlay.style.width = `${state.gridCols * UNIT}px`;
         overlay.style.height = `${state.gridRows * UNIT}px`;
-        for (let r = 0; r < state.gridRows; r++) {
-            for (let c = 0; c < state.gridCols; c++) {
+        const cStep = gridStep(state.gridCols);
+        const rStep = gridStep(state.gridRows);
+        const cellW = UNIT * cStep;
+        const cellH = UNIT * rStep;
+        for (let r = 0; r < state.gridRows; r += rStep) {
+            for (let c = 0; c < state.gridCols; c += cStep) {
                 const cell = document.createElement("div");
-                cell.className = "composer-grid-cell";
+                cell.className =
+                    cStep < 1 || rStep < 1
+                        ? "composer-grid-cell composer-grid-cell--half"
+                        : "composer-grid-cell";
                 cell.style.left = `${c * UNIT}px`;
                 cell.style.top = `${r * UNIT}px`;
-                cell.style.width = `${UNIT}px`;
-                cell.style.height = `${UNIT}px`;
+                cell.style.width = `${cellW}px`;
+                cell.style.height = `${cellH}px`;
                 overlay.appendChild(cell);
             }
         }
@@ -1615,7 +1619,10 @@ export function createPageComposer(
                 const x = e.clientX - gridRect.left;
                 const y = e.clientY - gridRect.top;
                 if (direction === "e" || direction === "se") {
-                    const rawW = Math.round((x - placement.col * UNIT) / UNIT);
+                    const rawW = snapGridRound(
+                        (x - placement.col * UNIT) / UNIT,
+                        state.gridCols,
+                    );
                     const maxW = gridSize.max
                         ? gridSize.max[0]
                         : state.gridCols - placement.col;
@@ -1626,7 +1633,10 @@ export function createPageComposer(
                     );
                 }
                 if (direction === "s" || direction === "se") {
-                    const rawH = Math.round((y - placement.row * UNIT) / UNIT);
+                    const rawH = snapGridRound(
+                        (y - placement.row * UNIT) / UNIT,
+                        state.gridRows,
+                    );
                     currentH = clampValue(
                         rawH,
                         gridSize.min[1],
@@ -1752,12 +1762,18 @@ export function createPageComposer(
                         0,
                         Math.min(
                             state.gridCols - placement.w,
-                            Math.round(x / UNIT - placement.w / 2),
+                            snapGridRound(
+                                x / UNIT - placement.w / 2,
+                                state.gridCols,
+                            ),
                         ),
                     );
                     const row = Math.max(
                         0,
-                        Math.round(y / UNIT - placement.h / 2),
+                        snapGridRound(
+                            y / UNIT - placement.h / 2,
+                            state.gridRows,
+                        ),
                     );
 
                     if (row + placement.h > state.gridRows) {
@@ -1966,15 +1982,12 @@ export function createPageComposer(
                 gridSize.fullWidth || gridSize.fillWidth
                     ? state.gridCols
                     : gridSize.halfWidth
-                      ? Math.max(
-                            gridSize.min[0],
-                            Math.floor(state.gridCols / 2),
-                        )
+                      ? Math.max(gridSize.min[0], halfGrid(state.gridCols))
                       : Math.min(gridSize.default[0], state.gridCols);
             const h = gridSize.fillHeight
                 ? state.gridRows
                 : gridSize.halfHeight
-                  ? Math.max(gridSize.min[1], Math.floor(state.gridRows / 2))
+                  ? Math.max(gridSize.min[1], halfGrid(state.gridRows))
                   : gridSize.default[1];
 
             let shade = null;
@@ -1998,9 +2011,12 @@ export function createPageComposer(
                     }
                     const col = Math.max(
                         0,
-                        Math.min(state.gridCols - w, Math.floor(x / UNIT)),
+                        Math.min(
+                            state.gridCols - w,
+                            snapGridFloor(x, state.gridCols),
+                        ),
                     );
-                    const row = Math.max(0, Math.floor(y / UNIT));
+                    const row = Math.max(0, snapGridFloor(y, state.gridRows));
                     currentCol = col;
                     currentRow = row;
                     shade.style.left = `${col * UNIT}px`;
@@ -2461,6 +2477,7 @@ export function createPageComposer(
         elems = elements,
     ) {
         const packed = [];
+        const cStep = gridStep(maxCols);
         for (const orig of sortedVisible) {
             const element = elems.find((e) => e.id === orig.id);
             const gridSize = element ? getGridSize(element) : null;
@@ -2470,40 +2487,21 @@ export function createPageComposer(
             } else if (gridSize?.halfWidth) {
                 w = Math.min(
                     maxCols,
-                    Math.max(gridSize.min[0], Math.floor(maxCols / 2)),
+                    Math.max(gridSize.min[0], halfGrid(maxCols)),
                 );
             } else {
                 w = Math.min(orig.w, maxCols);
             }
             const h = orig.h;
             let placed = false;
-            for (let row = 0; !placed; row++) {
-                for (let col = 0; col <= Math.max(0, maxCols - w); col++) {
-                    const occupied = new Set();
-                    for (const existing of packed) {
-                        for (
-                            let r = existing.row;
-                            r < existing.row + existing.h;
-                            r++
-                        ) {
-                            for (
-                                let c = existing.col;
-                                c < existing.col + existing.w;
-                                c++
-                            ) {
-                                occupied.add(`${c},${r}`);
-                            }
-                        }
-                    }
-                    let fits = true;
-                    outer: for (let r = row; r < row + h; r++) {
-                        for (let c = col; c < col + w; c++) {
-                            if (occupied.has(`${c},${r}`)) {
-                                fits = false;
-                                break outer;
-                            }
-                        }
-                    }
+            for (let row = 0; !placed; row += cStep) {
+                for (
+                    let col = 0;
+                    col <= Math.max(0, maxCols - w);
+                    col += cStep
+                ) {
+                    const cells = buildOccupiedSet(packed, [], null);
+                    const fits = checkPlacement(cells, col, row, w, h);
                     if (fits) {
                         packed.push({ ...orig, col, row, w });
                         placed = true;
@@ -2573,7 +2571,7 @@ export function createPageComposer(
             if (gridSize.halfWidth) {
                 const target = Math.min(
                     gridCols,
-                    Math.max(gridSize.min[0], Math.floor(gridCols / 2)),
+                    Math.max(gridSize.min[0], halfGrid(gridCols)),
                 );
                 if (p.w !== target) return true;
             }
@@ -2598,7 +2596,7 @@ export function createPageComposer(
             if (gridSize.halfWidth) {
                 const target = Math.min(
                     state.gridCols,
-                    Math.max(gridSize.min[0], Math.floor(state.gridCols / 2)),
+                    Math.max(gridSize.min[0], halfGrid(state.gridCols)),
                 );
                 if (pl.w !== target) return true;
             }

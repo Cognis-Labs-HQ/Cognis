@@ -75,18 +75,6 @@ export function createPostRoutes(profileStore: DbProfileStore) {
                 );
                 return true;
             }
-            if (profile.visibility === "hidden") {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "forbidden",
-                            message: "Update your visibility to post",
-                        },
-                    }),
-                );
-                return true;
-            }
             const body = await readJson(req);
             const content = String(body.content ?? "").trim();
             if (!content) {
@@ -116,10 +104,12 @@ export function createPostRoutes(profileStore: DbProfileStore) {
             }
             const visibility = rawVisibility as PostVisibility;
             const maxAllowed: PostVisibility =
-                visibilityRank(profile.visibility) >=
-                visibilityRank("community")
-                    ? "community"
-                    : "friends";
+                profile.visibility === "hidden"
+                    ? "only_me"
+                    : visibilityRank(profile.visibility) >=
+                        visibilityRank("community")
+                      ? "community"
+                      : "friends";
             if (
                 postVisibilityRank(visibility) > postVisibilityRank(maxAllowed)
             ) {

@@ -163,7 +163,7 @@ function visibilityClass(v) {
 function renderAvatarBadge(roleValue) {
     if (!roleValue) return "";
     if (roleValue === "admin") {
-        return `<span class="profile-avatar-badge profile-avatar-badge--admin" aria-hidden="true">&#128295;</span>`;
+        return `<span class="profile-avatar-badge profile-avatar-badge--admin" aria-hidden="true"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-avatar-badge-icon" /></span>`;
     }
     if (roleValue === "teacher") {
         return `<span class="profile-avatar-badge profile-avatar-badge--teacher" aria-hidden="true">&#128218;</span>`;
@@ -327,14 +327,15 @@ function renderHero() {
                 : ""
         }
         ${
-            canMessageTarget && !isBlocked
+            !isBlocked &&
+            (profile?.visibility === "community" || relationship?.followedBy)
                 ? `<button
                     class="profile-message-button"
                     type="button"
                     data-message-target="${escapeHtml(profile?.handle ?? "")}"
                     aria-label="${escapeHtml(i18n.t("module.social.messages.icon_label"))}"
                     title="${escapeHtml(i18n.t("module.social.messages.icon_label"))}"
-                  >✉</button>`
+                  ><img src="/static/assets/icons/message-light.svg" alt="" class="profile-message-icon profile-message-icon--light" /><img src="/static/assets/icons/message-dark.svg" alt="" class="profile-message-icon profile-message-icon--dark" /></button>`
                 : ""
         }
         <button
@@ -435,7 +436,7 @@ function renderUserList(list, emptyKey) {
               (u) => `
         <li class="profile-user-item">
           <a class="profile-user-handle" href="/profile/${escapeHtml(encodeURIComponent(u.handle))}">@${escapeHtml(u.handle)}</a>
-          ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin">&#128295;</span>` : ""}
+          ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
           ${u.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>` : ""}
         </li>
       `,
@@ -508,7 +509,7 @@ function renderSuggestedContacts() {
             (u) => `
     <div class="profile-suggested-item">
       <span class="profile-user-handle">@${escapeHtml(u.handle)}</span>
-      ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin">&#128295;</span>` : ""}
+      ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
       ${u.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>` : ""}
       <button
         type="button"
@@ -1248,7 +1249,7 @@ export async function mount(rootEl, { signal } = {}) {
     ];
 
     composer = createPageComposer(root, {
-        allowCustomization: true,
+        allowCustomization: isOwnProfile,
         elements,
         preferenceKey: "profile-layout",
         i18n,
