@@ -307,13 +307,17 @@ test("profile routes - admin always sees hidden profile", async () => {
     assert.match(body, /hidden-user/);
 });
 
-test("profile routes - private profile: follower can see, non-follower cannot", async () => {
+test("profile routes - private profile returns full details only for mutual follows", async () => {
     const profileStore = new VolatileProfileStore();
     await profileStore.createProfile("alice", "alice");
     await profileStore.createProfile("bob", "bob");
     await profileStore.createProfile("carol", "carol");
-    await profileStore.updateProfile("alice", { visibility: "private" });
+    await profileStore.updateProfile("alice", {
+        visibility: "private",
+        bio: "private details",
+    });
     await profileStore.follow("bob", "alice");
+    await profileStore.follow("alice", "bob");
 
     const route = createProfileRoutes(profileStore, fakeFileGateway());
 
@@ -333,7 +337,9 @@ test("profile routes - private profile: follower can see, non-follower cannot", 
         new URL("http://localhost/api/v1/users/alice/profile"),
     );
     assert.equal(status, 200);
-    assert.match(body, /alice/);
+    const bobPayload = JSON.parse(body);
+    assert.equal(bobPayload.data.handle, "alice");
+    assert.equal(bobPayload.data.bio, "private details");
 
     const carolToken = issueAccessToken("carol", "user", 60);
     await route(
@@ -342,11 +348,17 @@ test("profile routes - private profile: follower can see, non-follower cannot", 
             writeHead(c: number) {
                 status = c;
             },
-            end() {},
+            end(p: string) {
+                body = p;
+            },
         } as any,
         new URL("http://localhost/api/v1/users/alice/profile"),
     );
-    assert.equal(status, 404);
+    assert.equal(status, 200);
+    const carolPayload = JSON.parse(body);
+    assert.equal(carolPayload.data.handle, "alice");
+    assert.equal(carolPayload.data.bio, null);
+    assert.equal(carolPayload.data.followerCount, null);
 });
 
 test("profile routes - friends visibility: profile visible but counts hidden for non-follower", async () => {

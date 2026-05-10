@@ -4,14 +4,16 @@ import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
 import { requireAuth } from "../../api/auth/guard.js";
-import { CoreSocialGateway, type SocialAdapterInfo } from "./gateway.js";
+import { readJson } from "../../api/reuse/read-json.js";
+import { CoreSocialGateway } from "./gateway.js";
+import { DbSocialAdapterConfigStore } from "../../adapters/db/reuse/social-adapter-config-store.js";
 
 export type { SocialAdapterBootstrapCtx, SocialAdapter } from "./gateway.js";
 
 /**
- * Route handler for `GET /api/v1/gateways/social/adapters`. Social adapters
- * are always active once bootstrapped and cannot be individually toggled
- * without a restart, so enable/disable actions update the in-memory flag only.
+ * Route handler for social adapter management. Mirrors the notification
+ * gateway adapter controls so Administration sliders persist state and disabled
+ * adapters stop serving routes immediately.
  */
 function createSocialAdapterRoutes(
     gatewayId: string,
@@ -35,35 +37,60 @@ function createSocialAdapterRoutes(
         const configMatch = url.pathname.match(
             new RegExp(`^${base}/([^/]+)/config$`),
         );
-        if (configMatch && (req.method === "GET" || req.method === "PUT")) {
+        if (configMatch) {
             if (!requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(configMatch[1]);
-            const adapters = gateway.listAdapters();
-            const found = adapters.find(
-                (a: SocialAdapterInfo) => a.id === adapterId,
-            );
-            if (!found) {
-                res.writeHead(404, { "content-type": "application/json" });
+
+            if (req.method === "GET") {
+                const config = gateway.getAdapterConfig(adapterId);
+                if (config === null) {
+                    res.writeHead(404, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "not_found",
+                                message: "Adapter not found",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                res.writeHead(200, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
-                        error: {
-                            code: "not_found",
-                            message: "Adapter not found",
-                        },
+                        data: config,
+                        envValues: {},
+                        requiredFields: [],
+                        supportsTest: false,
                     }),
                 );
                 return true;
             }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
-                JSON.stringify({
-                    data: {},
-                    envValues: {},
-                    requiredFields: [],
-                    supportsTest: false,
-                }),
-            );
-            return true;
+
+            if (req.method === "PUT") {
+                if (!gateway.getAdapter(adapterId)) {
+                    res.writeHead(404, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "not_found",
+                                message: "Adapter not found",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                const body = await readJson(req);
+                await gateway.saveAdapterConfig(
+                    adapterId,
+                    body as Record<string, unknown>,
+                );
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { saved: true } }));
+                return true;
+            }
+
+            return false;
         }
 
         const toggleMatch = url.pathname.match(
@@ -73,10 +100,7 @@ function createSocialAdapterRoutes(
             if (!requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(toggleMatch[1]);
             const action = toggleMatch[2] as "enable" | "disable";
-            const adapters = gateway.listAdapters();
-            const adapter = adapters.find(
-                (a: SocialAdapterInfo) => a.id === adapterId,
-            );
+            const adapter = gateway.getAdapter(adapterId);
             if (!adapter) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
@@ -105,10 +129,11 @@ function createSocialAdapterRoutes(
                     return true;
                 }
             }
-            // Social adapters boot once at process start. Toggling `active`
-            // updates the admin UI immediately; the adapter keeps running until
-            // the server restarts. Full lifecycle teardown is a separate effort.
-            gateway.setAdapterActive(adapterId, action === "enable");
+            if (action === "enable") {
+                await gateway.enableAdapter(adapterId);
+            } else {
+                await gateway.disableAdapter(adapterId);
+            }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { enabled: action === "enable" } }));
             return true;
@@ -122,8 +147,23 @@ function createSocialAdapterRoutes(
  * Standard gateway bootstrap entry point for the Social Gateway.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const gateway = new CoreSocialGateway();
+    const dbExecutor =
+        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
+    const dbType =
+        ctx.capabilities.get<SupportedDbType>("db:type") ?? ctx.dbType;
+    const configStore = new DbSocialAdapterConfigStore(dbExecutor, dbType);
+    await configStore.ensureSchema();
+
+    const gateway = new CoreSocialGateway(configStore);
     const adaptersRoot = path.join(ctx.adaptersRoot, "social");
+
+    await gateway.discoverAdapters(adaptersRoot);
+    await gateway.loadPersistedConfigs();
+    ctx.log?.("info", "Social gateway: adapters discovered and configured.", {
+        component: "social-gateway",
+        adaptersRoot,
+        adapterCount: gateway.listAdapters().length,
+    });
 
     await gateway.bootstrapAdapters(adaptersRoot, {
         gateway,
@@ -140,9 +180,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         registerAuthTypingMessage: (message) =>
             ctx.uiRegistry?.registerAuthTypingMessage(message),
         log: ctx.log,
-        dbExecutor:
-            ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor,
-        dbType: ctx.capabilities.get<SupportedDbType>("db:type") ?? ctx.dbType,
+        dbExecutor,
+        dbType,
         isGatewayEnabled: () =>
             ctx.gatewayRegistry.get("social")?.status !== "disabled",
     });

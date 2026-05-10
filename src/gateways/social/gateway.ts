@@ -4,15 +4,21 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
+import type { SocialAdapterConfigStore } from "../../adapters/db/reuse/social-adapter-config-store.js";
 
 /**
- * Implemented by each social adapter and passed to `registerAdapter` so the
- * gateway can list all adapters by their own declared identity.
+ * Implemented by each social adapter and registered during discovery so the
+ * gateway can list, configure, enable, and disable adapters before their
+ * runtime routes bootstrap. This mirrors the Notification gateway sender
+ * lifecycle: discovery establishes adapter identity; bootstrap wires routes.
  */
 export interface SocialAdapter {
     readonly adapterId: string;
     readonly adapterName: string;
     readonly requires?: string[];
+    getConfig?(): Record<string, unknown>;
+    setConfig?(config: Record<string, unknown>): void;
+    isConfigured?(): boolean;
 }
 
 export interface SocialAdapterInfo {
@@ -25,7 +31,7 @@ export interface SocialAdapterInfo {
 /**
  * Context passed to `bootstrapSocialAdapter` when a social adapter exports
  * that function. Mirrors the notify gateway's adapter bootstrap contract.
- * Adapters self-register by calling `ctx.gateway.registerAdapter(...)`.
+ * Adapters self-register during discovery and use bootstrap for runtime wiring.
  */
 export interface SocialAdapterBootstrapCtx {
     gateway: CoreSocialGateway;
@@ -58,55 +64,172 @@ export interface SocialAdapterBootstrapCtx {
     dbExecutor?: DbExecutor;
     dbType?: SupportedDbType;
     isGatewayEnabled(): boolean;
+    isAdapterEnabled(adapterId?: string): boolean;
 }
 
 /** Base context supplied by the caller of `bootstrapAdapters`. */
 type SocialBootstrapBaseCtx = Omit<
     SocialAdapterBootstrapCtx,
-    "adapterId" | "adapterRoot"
+    "adapterId" | "adapterRoot" | "isAdapterEnabled"
 >;
 
 export class CoreSocialGateway {
     private readonly registeredAdapters = new Map<string, SocialAdapter>();
-    private readonly activeOverrides = new Map<string, boolean>();
+    private readonly disabledAdapters = new Set<string>();
+    private readonly adapterRequires = new Map<string, string[]>();
 
-    registerAdapter(adapter: SocialAdapter): void {
-        const existing = this.registeredAdapters.get(adapter.adapterId);
-        this.registeredAdapters.set(adapter.adapterId, {
-            ...existing,
-            ...adapter,
-            requires: adapter.requires ?? existing?.requires,
-        });
-    }
+    constructor(private readonly configStore?: SocialAdapterConfigStore) {}
 
-    setAdapterActive(adapterId: string, active: boolean): void {
-        if (this.registeredAdapters.has(adapterId)) {
-            this.activeOverrides.set(adapterId, active);
+    registerAdapter(adapter: SocialAdapter, requires?: string[]): void {
+        this.registeredAdapters.set(adapter.adapterId, adapter);
+        const effectiveRequires = requires ?? adapter.requires;
+        if (effectiveRequires && effectiveRequires.length > 0) {
+            this.adapterRequires.set(adapter.adapterId, effectiveRequires);
         }
     }
 
     listAdapters(): SocialAdapterInfo[] {
-        return Array.from(this.registeredAdapters.values()).map((adapter) => ({
-            id: adapter.adapterId,
-            name: adapter.adapterName,
-            active: this.activeOverrides.get(adapter.adapterId) ?? true,
-            ...(adapter.requires && adapter.requires.length > 0
-                ? { requires: adapter.requires }
+        return Array.from(this.registeredAdapters.values()).map((adapter) => {
+            const requires = this.adapterRequires.get(adapter.adapterId);
+            return {
+                id: adapter.adapterId,
+                name: adapter.adapterName,
+                active:
+                    !this.disabledAdapters.has(adapter.adapterId) &&
+                    (typeof adapter.isConfigured === "function"
+                        ? adapter.isConfigured()
+                        : true),
+                ...(requires && requires.length > 0 ? { requires } : {}),
+            };
+        });
+    }
+
+    isAdapterEnabled(adapterId: string): boolean {
+        const adapter = this.registeredAdapters.get(adapterId);
+        if (!adapter || this.disabledAdapters.has(adapterId)) return false;
+        if (typeof adapter.isConfigured === "function") {
+            return adapter.isConfigured();
+        }
+        return true;
+    }
+
+    getAdapter(adapterId: string): SocialAdapter | undefined {
+        return this.registeredAdapters.get(adapterId);
+    }
+
+    getAdapterConfig(adapterId: string): Record<string, unknown> | null {
+        const adapter = this.registeredAdapters.get(adapterId);
+        if (!adapter) return null;
+        return {
+            ...(typeof adapter.getConfig === "function"
+                ? adapter.getConfig()
                 : {}),
-        }));
+            enabled: !this.disabledAdapters.has(adapterId),
+        };
+    }
+
+    async saveAdapterConfig(
+        adapterId: string,
+        config: Record<string, unknown>,
+    ): Promise<void> {
+        const adapter = this.registeredAdapters.get(adapterId);
+        if (!adapter) return;
+        const { enabled, ...adapterConfig } = config;
+        if (enabled === false || enabled === "false") {
+            this.disabledAdapters.add(adapterId);
+        } else {
+            this.disabledAdapters.delete(adapterId);
+        }
+        if (typeof adapter.setConfig === "function") {
+            adapter.setConfig(adapterConfig);
+        }
+        await this.configStore?.saveConfig(adapterId, config);
+    }
+
+    async loadPersistedConfigs(): Promise<void> {
+        if (!this.configStore) return;
+        for (const adapter of this.registeredAdapters.values()) {
+            const config = await this.configStore.getConfig(adapter.adapterId);
+            if (!config) continue;
+            if (config.enabled === false || config.enabled === "false") {
+                this.disabledAdapters.add(adapter.adapterId);
+            }
+            if (typeof adapter.setConfig === "function") {
+                const { enabled, ...adapterConfig } = config;
+                adapter.setConfig(adapterConfig);
+            }
+        }
+    }
+
+    async enableAdapter(adapterId: string): Promise<void> {
+        this.disabledAdapters.delete(adapterId);
+        const existing = (await this.configStore?.getConfig(adapterId)) ?? null;
+        await this.configStore?.saveConfig(adapterId, {
+            ...(existing ?? {}),
+            enabled: true,
+        });
+    }
+
+    async disableAdapter(adapterId: string): Promise<void> {
+        this.disabledAdapters.add(adapterId);
+        const existing = (await this.configStore?.getConfig(adapterId)) ?? null;
+        await this.configStore?.saveConfig(adapterId, {
+            ...(existing ?? {}),
+            enabled: false,
+        });
+    }
+
+    async discoverAdapters(adaptersRoot: string): Promise<void> {
+        let entries: string[];
+        try {
+            entries = await readdir(adaptersRoot);
+        } catch {
+            return;
+        }
+
+        entries.sort(sortSocialAdapterEntries);
+
+        for (const entry of entries) {
+            const pkgPath = path.join(adaptersRoot, entry, "package.json");
+            try {
+                const raw = await readFile(pkgPath, "utf8");
+                const pkg = JSON.parse(raw) as { main?: string };
+                if (!pkg.main) continue;
+
+                let requires: string[] | undefined;
+                try {
+                    const manifestRaw = await readFile(
+                        path.join(adaptersRoot, entry, "manifest.json"),
+                        "utf8",
+                    );
+                    const manifest = JSON.parse(manifestRaw) as {
+                        requires?: string[];
+                    };
+                    if (Array.isArray(manifest.requires)) {
+                        requires = manifest.requires;
+                    }
+                } catch {
+                    // No manifest — adapter has no declared dependencies.
+                }
+
+                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
+                const mod = await import(entryPath);
+                if (typeof mod.createSocialAdapter === "function") {
+                    const factory =
+                        mod.createSocialAdapter as () => SocialAdapter | null;
+                    const adapter = factory();
+                    if (adapter) this.registerAdapter(adapter, requires);
+                }
+            } catch {
+                // Adapter could not be loaded — skip silently, matching notify.
+            }
+        }
     }
 
     /**
-     * Discovers all social adapters under `adaptersRoot`, imports each one
-     * that exports `bootstrapSocialAdapter`, and invokes it. Adapters must
-     * call `ctx.gateway.registerAdapter(...)` to appear in `listAdapters()`.
-     *
-     * The profile adapter is sorted first so it can contribute
-     * `social:profileStore` before the messages adapter runs. If profile is
-     * absent, messages will gracefully skip when that capability is missing.
-     *
-     * Adapter bootstrap errors propagate so fatal conditions (e.g. missing
-     * encryption key) are not silently swallowed.
+     * Bootstraps all discovered social adapters under `adaptersRoot`. Discovery
+     * runs separately so admin listings and slider state are available before
+     * route/static/UI registration, matching the Notification gateway lifecycle.
      */
     async bootstrapAdapters(
         adaptersRoot: string,
@@ -119,58 +242,23 @@ export class CoreSocialGateway {
             return;
         }
 
-        entries.sort((a, b) => {
-            if (a === "profile") return -1;
-            if (b === "profile") return 1;
-            return a.localeCompare(b);
-        });
+        entries.sort(sortSocialAdapterEntries);
 
         for (const entry of entries) {
-            const adapterDir = path.join(adaptersRoot, entry);
-            const pkgPath = path.join(adapterDir, "package.json");
+            const pkgPath = path.join(adaptersRoot, entry, "package.json");
 
             let mod: Record<string, unknown>;
-            let manifest: {
-                id?: string;
-                name?: string;
-                requires?: string[];
-            } = {};
-            try {
-                const manifestRaw = await readFile(
-                    path.join(adapterDir, "manifest.json"),
-                    "utf8",
-                );
-                manifest = JSON.parse(manifestRaw) as typeof manifest;
-            } catch {
-                // Adapter manifests are optional for discovery; package.json is authoritative.
-            }
-
-            this.registerAdapter({
-                adapterId: entry,
-                adapterName: manifest.name ?? entry,
-                requires: Array.isArray(manifest.requires)
-                    ? manifest.requires
-                    : undefined,
-            });
-
             try {
                 const raw = await readFile(pkgPath, "utf8");
                 const pkg = JSON.parse(raw) as { main?: string };
-                if (!pkg.main) {
-                    this.setAdapterActive(entry, false);
-                    continue;
-                }
-                const entryPath = path.resolve(adapterDir, pkg.main);
+                if (!pkg.main) continue;
+                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
                 mod = await import(entryPath);
             } catch {
-                this.setAdapterActive(entry, false);
                 continue;
             }
 
-            if (typeof mod.bootstrapSocialAdapter !== "function") {
-                this.setAdapterActive(entry, false);
-                continue;
-            }
+            if (typeof mod.bootstrapSocialAdapter !== "function") continue;
 
             const bootstrapFn = mod.bootstrapSocialAdapter as (
                 ctx: SocialAdapterBootstrapCtx,
@@ -179,13 +267,20 @@ export class CoreSocialGateway {
             const adapterCtx: SocialAdapterBootstrapCtx = {
                 ...baseCtx,
                 adapterId: entry,
-                adapterRoot: adapterDir,
+                adapterRoot: path.join(adaptersRoot, entry),
+                isAdapterEnabled: (adapterId = entry) =>
+                    this.isAdapterEnabled(adapterId),
+                registerRoute: (handler, gatewayId) => {
+                    baseCtx.registerRoute(async (req, res, url) => {
+                        if (!this.isAdapterEnabled(entry)) return false;
+                        return handler(req, res, url);
+                    }, gatewayId);
+                },
             };
 
             try {
                 await bootstrapFn(adapterCtx);
             } catch (err) {
-                this.setAdapterActive(entry, false);
                 baseCtx.log?.(
                     "error",
                     `Social gateway: adapter "${entry}" bootstrap failed — skipping.`,
@@ -198,4 +293,10 @@ export class CoreSocialGateway {
             }
         }
     }
+}
+
+function sortSocialAdapterEntries(a: string, b: string): number {
+    if (a === "profile") return -1;
+    if (b === "profile") return 1;
+    return a.localeCompare(b);
 }

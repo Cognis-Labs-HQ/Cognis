@@ -30,29 +30,30 @@ storage — those belong to the individual adapters.
 ### CoreSocialGateway
 
 `src/gateways/social/gateway.ts` defines `CoreSocialGateway`. Adapters
-self-register by calling `ctx.gateway.registerAdapter(adapter)` at the end
-of a successful `bootstrapSocialAdapter`:
+follow the same discovery/bootstrap lifecycle used by the Notification
+gateway: `createSocialAdapter()` declares adapter identity for admin listings
+and persisted slider state, while `bootstrapSocialAdapter(ctx)` wires routes,
+static assets, navbar entries, and capabilities.
 
-```ts
-ctx.gateway.registerAdapter({ adapterId: "profile", adapterName: "Profile" });
-```
+The gateway exposes these methods:
 
-The gateway exposes three methods:
-
-| Method                         | Description                                  |
-| ------------------------------ | -------------------------------------------- |
-| `registerAdapter(adapter)`     | Records an adapter as active                 |
-| `listAdapters()`               | Returns all registered adapters for the API  |
-| `setAdapterActive(id, active)` | Toggles the admin UI state (non-persistent)  |
-| `bootstrapAdapters(root, ctx)` | Discovers, imports, and invokes each adapter |
+| Method                         | Description                                       |
+| ------------------------------ | ------------------------------------------------- |
+| `discoverAdapters(root)`       | Imports adapter factories and records identities  |
+| `loadPersistedConfigs()`       | Restores persisted enable/disable state           |
+| `registerAdapter(adapter)`     | Records a discovered adapter                      |
+| `listAdapters()`               | Returns all registered adapters for the API       |
+| `enableAdapter(id)`            | Enables an adapter and persists the state         |
+| `disableAdapter(id)`           | Disables an adapter and persists the state        |
+| `bootstrapAdapters(root, ctx)` | Imports and invokes adapter runtime bootstrappers |
 
 ### Adapter bootstrap lifecycle
 
-`bootstrapAdapters` scans the given root directory, reads each subdirectory's
-`package.json`, and dynamically imports the entry point. It calls
-`bootstrapSocialAdapter(ctx)` on any module that exports it. Adapter errors
-are caught per-adapter: a failing adapter is logged and skipped; the gateway
-always registers regardless of adapter outcome.
+`discoverAdapters` scans the given root directory, reads each subdirectory's
+`package.json`, imports the adapter entry point, and registers any module that
+exports `createSocialAdapter()`. After persisted config is loaded,
+`bootstrapAdapters` imports the same modules and calls `bootstrapSocialAdapter`
+when present. Adapter errors are caught per-adapter and logged.
 
 Profile is sorted first so it can contribute `social:profileStore` before
 the messages adapter runs. If profile is absent or fails, messages will not
@@ -62,21 +63,22 @@ find that capability and will skip profile-dependent features gracefully.
 
 Defined in `src/gateways/social/gateway.ts` and passed to every adapter:
 
-| Field                                   | Description                                                 |
-| --------------------------------------- | ----------------------------------------------------------- |
-| `gateway`                               | `CoreSocialGateway` instance — call `registerAdapter` on it |
-| `adapterId`                             | Directory name of the adapter being bootstrapped            |
-| `adapterRoot`                           | Absolute path to the adapter directory                      |
-| `capabilities`                          | Shared `CapabilityStore`                                    |
-| `gatewayRegistry`                       | Gateway registry (read-only use recommended)                |
-| `registerRoute(handler, gwId)`          | Register an HTTP route under the given gateway ID           |
-| `registerStaticDir(prefix, dir)`        | Serve a static directory under `/static/<prefix>/`          |
-| `registerAdapterStaticDir(gw, ad, dir)` | Serve under `/static/adapters/<gw>/<ad>/`                   |
-| `registerNavbarPlugin(url)`             | Contribute a navbar script to the UI shell                  |
-| `log`                                   | Optional structured logger                                  |
-| `dbExecutor`                            | Database executor from `db:executor` capability             |
-| `dbType`                                | Database dialect string                                     |
-| `isGatewayEnabled()`                    | Returns `false` if the social gateway is disabled           |
+| Field                                   | Description                                                |
+| --------------------------------------- | ---------------------------------------------------------- |
+| `gateway`                               | `CoreSocialGateway` instance for gateway-owned controls    |
+| `adapterId`                             | Directory name of the adapter being bootstrapped           |
+| `adapterRoot`                           | Absolute path to the adapter directory                     |
+| `capabilities`                          | Shared `CapabilityStore`                                   |
+| `gatewayRegistry`                       | Gateway registry (read-only use recommended)               |
+| `registerRoute(handler, gwId)`          | Register an HTTP route under the given gateway ID          |
+| `registerStaticDir(prefix, dir)`        | Serve a static directory under `/static/<prefix>/`         |
+| `registerAdapterStaticDir(gw, ad, dir)` | Serve under `/static/adapters/<gw>/<ad>/`                  |
+| `registerNavbarPlugin(url)`             | Contribute a navbar script to the UI shell                 |
+| `log`                                   | Optional structured logger                                 |
+| `dbExecutor`                            | Database executor from `db:executor` capability            |
+| `dbType`                                | Database dialect string                                    |
+| `isGatewayEnabled()`                    | Returns `false` if the social gateway is disabled          |
+| `isAdapterEnabled(id?)`                 | Returns `false` when the current/named adapter is disabled |
 
 ## Bundled Adapters
 
