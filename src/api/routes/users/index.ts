@@ -6,7 +6,7 @@ import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 import { readJson } from "../../reuse/read-json.js";
 import { revokeAccessTokensForSubject } from "../../auth/access-tokens.js";
 
-const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin"]);
+const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin", "owner"]);
 
 export function createUserRoutes(
     accountStore: LocalAccountStore,
@@ -192,6 +192,18 @@ export function createUserRoutes(
         if (req.method === "POST" && action === "role") {
             const body = await readJson(req);
             const role = String(body.role ?? "user");
+            if (role === "owner") {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message: "Owner role cannot be assigned manually",
+                        },
+                    }),
+                );
+                return true;
+            }
             if (!VALID_ROLES.has(role)) {
                 log?.("warn", "Rejected role change with invalid role.", {
                     ...logMeta,

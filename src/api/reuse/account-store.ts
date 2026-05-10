@@ -137,6 +137,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             isAdmin: account.isAdmin,
             enabled: account.enabled,
             isFounder: account.isFounder,
+            role: account.isAdmin ? "admin" : "user",
         }));
     }
 

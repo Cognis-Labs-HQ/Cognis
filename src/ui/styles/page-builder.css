@@ -405,6 +405,20 @@ code {
 .users-actions-cell {
     white-space: nowrap;
 }
+.users-role-select {
+    padding: 4px 8px;
+    border: 1px solid var(--border, #ccc);
+    border-radius: 6px;
+    background: var(--input-bg, #fff);
+    color: var(--text, #111);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+.users-role-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 .users-toggle-btn,
 .users-menu-btn,
 .invite-revoke-btn {

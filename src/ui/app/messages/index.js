@@ -165,7 +165,7 @@ async function renderThread(roomId, key, container, i18n, before) {
         .join("");
 
     const hasMore = messageList.length === 50;
-    const oldestId = ordered[0]?.id ?? null;
+    const oldestCreatedAt = ordered[0]?.createdAt ?? null;
 
     if (before) {
         const savedHeight = container.scrollHeight;
@@ -177,16 +177,16 @@ async function renderThread(roomId, key, container, i18n, before) {
         container.scrollTop = container.scrollHeight;
     }
 
-    if (hasMore && oldestId) {
+    if (hasMore && oldestCreatedAt) {
         container.insertAdjacentHTML(
             "afterbegin",
-            `<button type="button" class="messages-load-earlier-btn" data-oldest-id="${escapeHtml(oldestId)}">
+            `<button type="button" class="messages-load-earlier-btn" data-before-time="${escapeHtml(oldestCreatedAt)}">
                 ${escapeHtml(i18n.t("module.social.messages.load_earlier"))}
             </button>`,
         );
     }
 
-    return oldestId;
+    return oldestCreatedAt;
 }
 
 async function loadRooms() {
@@ -235,149 +235,32 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
+    const sidebarHtml = `<div class="messages-sidebar-content">
+        <header class="messages-rooms-header">
+            <button type="button" class="messages-new-btn" id="messages-new-btn">
+                ${escapeHtml(i18n.t("module.social.messages.new"))}
+            </button>
+        </header>
+        <div class="messages-lookup-wrap" id="messages-lookup-wrap" hidden>
+            <input
+                type="search"
+                id="messages-lookup-input"
+                class="messages-lookup-input"
+                placeholder="${escapeHtml(i18n.t("module.social.messages.lookup_placeholder"))}"
+                autocomplete="off"
+            />
+            <ul class="messages-lookup-results" id="messages-lookup-results"></ul>
+        </div>
+        <ul class="messages-rooms-list" id="messages-rooms-list">
+            ${renderRoomList(rooms, currentAccountId, selectedRoomId, i18n)}
+        </ul>
+    </div>`;
+
     const elements = [
-        {
-            id: "messages-rooms",
-            label: i18n.t("module.social.messages.page_title"),
-            gridSize: { default: [3, 8], min: [2, 4], max: "full" },
-            render: () =>
-                `<aside class="messages-rooms">
-                    <header class="messages-rooms-header">
-                        <button type="button" class="messages-new-btn" id="messages-new-btn">
-                            ${escapeHtml(i18n.t("module.social.messages.new"))}
-                        </button>
-                    </header>
-                    <div class="messages-lookup-wrap" id="messages-lookup-wrap" hidden>
-                        <input
-                            type="search"
-                            id="messages-lookup-input"
-                            class="messages-lookup-input"
-                            placeholder="${escapeHtml(i18n.t("module.social.messages.lookup_placeholder"))}"
-                            autocomplete="off"
-                        />
-                        <ul class="messages-lookup-results" id="messages-lookup-results"></ul>
-                    </div>
-                    <ul class="messages-rooms-list" id="messages-rooms-list">
-                        ${renderRoomList(rooms, currentAccountId, selectedRoomId, i18n)}
-                    </ul>
-                </aside>`,
-            onRender: () => {
-                const roomsList = document.getElementById(
-                    "messages-rooms-list",
-                );
-                roomsList?.addEventListener("click", async (clickEvent) => {
-                    const item = clickEvent.target.closest("[data-room-id]");
-                    if (!item) return;
-                    const id = item.getAttribute("data-room-id");
-                    selectedRoomId = id;
-                    roomsList
-                        .querySelectorAll(".messages-room--active")
-                        .forEach((activeItem) =>
-                            activeItem.classList.remove(
-                                "messages-room--active",
-                            ),
-                        );
-                    item.classList.add("messages-room--active");
-                    history.pushState(
-                        {},
-                        "",
-                        `/messages/${encodeURIComponent(id)}`,
-                    );
-                    await openRoom(id);
-                });
-
-                const newBtn = document.getElementById("messages-new-btn");
-                const lookupWrap = document.getElementById(
-                    "messages-lookup-wrap",
-                );
-                const lookupInput = document.getElementById(
-                    "messages-lookup-input",
-                );
-                const lookupResults = document.getElementById(
-                    "messages-lookup-results",
-                );
-
-                newBtn?.addEventListener("click", () => {
-                    if (lookupWrap.hasAttribute("hidden")) {
-                        lookupWrap.removeAttribute("hidden");
-                        lookupInput?.focus();
-                    } else {
-                        lookupWrap.setAttribute("hidden", "");
-                    }
-                });
-
-                let lookupDebounce = null;
-                lookupInput?.addEventListener("input", () => {
-                    clearTimeout(lookupDebounce);
-                    lookupDebounce = setTimeout(async () => {
-                        const query = (lookupInput.value ?? "").trim();
-                        if (!query) {
-                            lookupResults.innerHTML = "";
-                            return;
-                        }
-                        const lookupRes = await apiFetch(
-                            `/api/v1/messages/users/lookup?q=${encodeURIComponent(query)}`,
-                        );
-                        if (lookupRes.status === 403) {
-                            lookupWrap.setAttribute("hidden", "");
-                            showToast(
-                                i18n.t("ui.app.profile.message_hidden_toast"),
-                                { variant: "error" },
-                            );
-                            return;
-                        }
-                        if (!lookupRes.ok) return;
-                        const lookupPayload = await lookupRes.json();
-                        const candidates = lookupPayload?.data ?? [];
-                        lookupResults.innerHTML = candidates
-                            .map(
-                                (candidate) =>
-                                    `<li class="messages-lookup-result"
-                                        data-account-id="${escapeHtml(candidate.accountId)}"
-                                        data-handle="${escapeHtml(candidate.handle)}">
-                                        ${escapeHtml(candidate.displayName || candidate.handle)}
-                                    </li>`,
-                            )
-                            .join("");
-                    }, 300);
-                });
-
-                lookupResults?.addEventListener("click", async (clickEvent) => {
-                    const item = clickEvent.target.closest("[data-handle]");
-                    if (!item) return;
-                    const handle = item.getAttribute("data-handle");
-                    const createRes = await apiFetch("/api/v1/messages/rooms", {
-                        method: "POST",
-                        body: JSON.stringify({ handles: [handle] }),
-                    });
-                    if (!createRes.ok) {
-                        showToast(
-                            i18n.t("module.social.messages.start_failed"),
-                            { variant: "error" },
-                        );
-                        return;
-                    }
-                    const createPayload = await createRes.json();
-                    const newRoomId = createPayload?.data?.id;
-                    if (!newRoomId) return;
-                    lookupWrap.setAttribute("hidden", "");
-                    lookupInput.value = "";
-                    lookupResults.innerHTML = "";
-                    selectedRoomId = newRoomId;
-                    history.pushState(
-                        {},
-                        "",
-                        `/messages/${encodeURIComponent(newRoomId)}`,
-                    );
-                    await openRoom(newRoomId);
-                    await reloadRoomsList();
-                });
-            },
-        },
         {
             id: "messages-thread",
             label: i18n.t("module.social.messages.page_title"),
-            gridSize: { default: [9, 8], min: [4, 4], max: "full" },
+            gridSize: { default: [12, 8], min: [4, 4], max: "full" },
             render: () =>
                 `<section class="messages-thread">
                     <div class="messages-thread-list" id="messages-thread-list"></div>
@@ -405,15 +288,15 @@ export async function mount(root, { signal } = {}) {
                         ".messages-load-earlier-btn",
                     );
                     if (!button || !selectedRoomId) return;
-                    const oldestId = button.getAttribute("data-oldest-id");
-                    if (!oldestId) return;
+                    const beforeTime = button.getAttribute("data-before-time");
+                    if (!beforeTime) return;
                     const key = await getRoomKey(selectedRoomId);
                     await renderThread(
                         selectedRoomId,
                         key,
                         threadList,
                         i18n,
-                        oldestId,
+                        beforeTime,
                     );
                 });
 
@@ -477,14 +360,120 @@ export async function mount(root, { signal } = {}) {
         { signal },
     );
 
+    function bindSidebarEvents() {
+        const roomsList = document.getElementById("messages-rooms-list");
+        roomsList?.addEventListener("click", async (clickEvent) => {
+            const item = clickEvent.target.closest("[data-room-id]");
+            if (!item) return;
+            const id = item.getAttribute("data-room-id");
+            selectedRoomId = id;
+            roomsList
+                .querySelectorAll(".messages-room--active")
+                .forEach((activeItem) =>
+                    activeItem.classList.remove("messages-room--active"),
+                );
+            item.classList.add("messages-room--active");
+            history.pushState(
+                {},
+                "",
+                `/messages/${encodeURIComponent(id)}`,
+            );
+            await openRoom(id);
+        });
+
+        const newBtn = document.getElementById("messages-new-btn");
+        const lookupWrap = document.getElementById("messages-lookup-wrap");
+        const lookupInput = document.getElementById("messages-lookup-input");
+        const lookupResults = document.getElementById(
+            "messages-lookup-results",
+        );
+
+        newBtn?.addEventListener("click", () => {
+            if (lookupWrap.hasAttribute("hidden")) {
+                lookupWrap.removeAttribute("hidden");
+                lookupInput?.focus();
+            } else {
+                lookupWrap.setAttribute("hidden", "");
+            }
+        });
+
+        let lookupDebounce = null;
+        lookupInput?.addEventListener("input", () => {
+            clearTimeout(lookupDebounce);
+            lookupDebounce = setTimeout(async () => {
+                const query = (lookupInput.value ?? "").trim();
+                if (!query) {
+                    lookupResults.innerHTML = "";
+                    return;
+                }
+                const lookupRes = await apiFetch(
+                    `/api/v1/messages/users/lookup?q=${encodeURIComponent(query)}`,
+                );
+                if (lookupRes.status === 403) {
+                    lookupWrap.setAttribute("hidden", "");
+                    showToast(
+                        i18n.t("ui.app.profile.message_hidden_toast"),
+                        { variant: "error" },
+                    );
+                    return;
+                }
+                if (!lookupRes.ok) return;
+                const lookupPayload = await lookupRes.json();
+                const candidates = lookupPayload?.data ?? [];
+                lookupResults.innerHTML = candidates
+                    .map(
+                        (candidate) =>
+                            `<li class="messages-lookup-result"
+                                data-account-id="${escapeHtml(candidate.accountId)}"
+                                data-handle="${escapeHtml(candidate.handle)}">
+                                ${escapeHtml(candidate.displayName || candidate.handle)}
+                            </li>`,
+                    )
+                    .join("");
+            }, 300);
+        });
+
+        lookupResults?.addEventListener("click", async (clickEvent) => {
+            const item = clickEvent.target.closest("[data-handle]");
+            if (!item) return;
+            const handle = item.getAttribute("data-handle");
+            const createRes = await apiFetch("/api/v1/messages/rooms", {
+                method: "POST",
+                body: JSON.stringify({ handles: [handle] }),
+            });
+            if (!createRes.ok) {
+                showToast(i18n.t("module.social.messages.start_failed"), {
+                    variant: "error",
+                });
+                return;
+            }
+            const createPayload = await createRes.json();
+            const newRoomId = createPayload?.data?.id;
+            if (!newRoomId) return;
+            lookupWrap.setAttribute("hidden", "");
+            lookupInput.value = "";
+            lookupResults.innerHTML = "";
+            selectedRoomId = newRoomId;
+            history.pushState(
+                {},
+                "",
+                `/messages/${encodeURIComponent(newRoomId)}`,
+            );
+            await openRoom(newRoomId);
+            await reloadRoomsList();
+        });
+    }
+
     const composer = createPageComposer(root, {
         allowCustomization: false,
         elements,
         preferenceKey: "messages-layout",
         i18n,
+        toolbar: sidebarHtml,
         pageContext: {
             title: i18n.t("module.social.messages.page_title"),
         },
+        onRender: bindSidebarEvents,
     });
 
     await composer.init();

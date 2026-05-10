@@ -91,7 +91,7 @@ export function createSearchBar({
         expanded = true;
         form.hidden = false;
         toggleBtn.setAttribute("aria-expanded", "true");
-        input.focus();
+        requestAnimationFrame(() => input.focus());
     }
 
     function close() {
@@ -160,9 +160,11 @@ export function createSearchBar({
             return;
         }
         try {
+            const token = localStorage.getItem("cognis_access_token");
+            const headers = token ? { authorization: `Bearer ${token}` } : {};
             const response = await fetch(
                 `${endpoint}?q=${encodeURIComponent(query)}`,
-                { credentials: "same-origin" },
+                { credentials: "same-origin", headers },
             );
             if (!response.ok) return;
             const payload = await response.json();

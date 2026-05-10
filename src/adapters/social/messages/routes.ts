@@ -141,38 +141,28 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            const query = (url.searchParams.get("q") ?? "")
-                .trim()
-                .toLowerCase();
+            const rawQuery = (url.searchParams.get("q") ?? "").trim();
+            const query = rawQuery.replace(/^@/, "").toLowerCase();
             if (!query) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: [] }));
                 return true;
             }
-            // V1 implementation: exact-handle lookup (case-insensitive).
-            const profile = await profileStore.getProfileByHandle(query);
-            if (!profile || profile.accountId === accountId) {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: [] }));
-                return true;
+            const candidates = await profileStore.searchProfiles(query, 10);
+            const results: ReturnType<typeof publicProfileSummary>[] = [];
+            for (const profile of candidates) {
+                if (profile.accountId === accountId) continue;
+                if (profile.visibility === "hidden") continue;
+                const allowed = await canMessage(
+                    profileStore,
+                    messagesStore,
+                    accountId,
+                    profile.accountId,
+                );
+                if (allowed) results.push(publicProfileSummary(profile));
             }
-            if (profile.visibility === "hidden") {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: [] }));
-                return true;
-            }
-            const allowed = await canMessage(
-                profileStore,
-                messagesStore,
-                accountId,
-                profile.accountId,
-            );
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(
-                JSON.stringify({
-                    data: allowed ? [publicProfileSummary(profile)] : [],
-                }),
-            );
+            res.end(JSON.stringify({ data: results }));
             return true;
         }
 

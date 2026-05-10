@@ -161,7 +161,17 @@ function renderUsersTable() {
               .map((user) => {
                   const isProtected = user.isAdmin && user.isFounder;
                   const isSelf = user.username === currentUsername;
-                  const actionsHtml = isProtected
+                  const userRole = user.role ?? (user.isAdmin ? "admin" : "user");
+                  const isOwner = userRole === "owner";
+                  const roleDisabled = isProtected || isOwner || isSelf;
+                  const roleCellHtml = isOwner
+                      ? escapeHtml("owner")
+                      : `<select class="users-role-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>
+                            <option value="user"${userRole === "user" ? " selected" : ""}>${escapeHtml("user")}</option>
+                            <option value="teacher"${userRole === "teacher" ? " selected" : ""}>${escapeHtml("teacher")}</option>
+                            <option value="admin"${userRole === "admin" ? " selected" : ""}>${escapeHtml("admin")}</option>
+                        </select>`;
+                  const actionsHtml = isProtected || isOwner
                       ? ""
                       : `
                         <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.generic.disable")) : escapeHtml(i18n.t("ui.reuse.generic.enable"))}</button>
@@ -169,7 +179,7 @@ function renderUsersTable() {
                   return `
               <tr class="users-row" data-username="${escapeHtml(user.username)}">
                 <td>${escapeHtml(user.username)}</td>
-                <td>${user.isAdmin ? "admin" : "user"}</td>
+                <td>${roleCellHtml}</td>
                 <td>${user.enabled ? escapeHtml(i18n.t("ui.app.users.enabled")) : escapeHtml(i18n.t("ui.app.users.disabled"))}</td>
                 <td class="users-actions-cell">${actionsHtml}</td>
               </tr>
@@ -366,6 +376,35 @@ function bindUsersInteractions() {
             const action = await openHamburgerMenu(btn, { items: menuItems });
             if (!action) return;
             await runUserMenuAction(action, username);
+        });
+    });
+
+    root.querySelectorAll(".users-role-select").forEach((select) => {
+        select.addEventListener("change", async () => {
+            const username = select.dataset.username;
+            const role = select.value;
+            if (!username || !role) return;
+            const res = await apiFetch(
+                `/api/v1/users/${encodeURIComponent(username)}/role`,
+                {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ role }),
+                },
+            );
+            if (res.ok) {
+                showToast(i18n.t("ui.app.users.role_updated"), {
+                    variant: "success",
+                });
+                await refreshData();
+                composer.refresh(elements);
+            } else {
+                showToast(i18n.t("ui.app.admin.security.save_failed"), {
+                    variant: "error",
+                });
+                await refreshData();
+                composer.refresh(elements);
+            }
         });
     });
 

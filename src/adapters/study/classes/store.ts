@@ -115,10 +115,10 @@ export class DbClassesStore {
             [teacherAccountId],
         );
         return result.rows.map((row) => ({
-            id: String(row[0]),
-            languageCode: String(row[1]),
-            teacherAccountId: String(row[2]),
-            createdAt: String(row[3]),
+            id: String(row.id),
+            languageCode: String(row.language_code),
+            teacherAccountId: String(row.teacher_account_id),
+            createdAt: String(row.created_at),
         }));
     }
 
@@ -135,13 +135,13 @@ export class DbClassesStore {
         if (!result.rows.length) return null;
         const row = result.rows[0];
         return {
-            id: String(row[0]),
-            accountId: String(row[1]),
-            languageCode: String(row[2]),
-            status: String(row[3]) as TeacherRequestStatus,
-            reviewedBy: row[4] != null ? String(row[4]) : null,
-            createdAt: String(row[5]),
-            updatedAt: String(row[6]),
+            id: String(row.id),
+            accountId: String(row.account_id),
+            languageCode: String(row.language_code),
+            status: String(row.status) as TeacherRequestStatus,
+            reviewedBy: row.reviewed_by != null ? String(row.reviewed_by) : null,
+            createdAt: String(row.created_at),
+            updatedAt: String(row.updated_at),
         };
     }
 
@@ -154,13 +154,13 @@ export class DbClassesStore {
             [],
         );
         return result.rows.map((row) => ({
-            id: String(row[0]),
-            accountId: String(row[1]),
-            languageCode: String(row[2]),
-            status: String(row[3]) as TeacherRequestStatus,
-            reviewedBy: row[4] != null ? String(row[4]) : null,
-            createdAt: String(row[5]),
-            updatedAt: String(row[6]),
+            id: String(row.id),
+            accountId: String(row.account_id),
+            languageCode: String(row.language_code),
+            status: String(row.status) as TeacherRequestStatus,
+            reviewedBy: row.reviewed_by != null ? String(row.reviewed_by) : null,
+            createdAt: String(row.created_at),
+            updatedAt: String(row.updated_at),
         }));
     }
 
@@ -201,8 +201,8 @@ export class DbClassesStore {
         if (!requestResult.rows.length) return null;
 
         const row = requestResult.rows[0];
-        const accountId = String(row[1]);
-        const languageCode = String(row[2]);
+        const accountId = String(row.account_id);
+        const languageCode = String(row.language_code);
 
         await this.db.execute(
             `UPDATE teacher_requests

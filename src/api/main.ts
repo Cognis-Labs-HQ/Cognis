@@ -269,7 +269,7 @@ const createProfile = capabilities.get<
     (accountId: string, handle: string, role?: string) => Promise<void>
 >("profile:createProfile");
 if (!adminInitialized && createProfile) {
-    await createProfile("admin", "admin", "admin");
+    await createProfile("admin", "admin", "owner");
 }
 
 const accountStore = capabilities.get<LocalAccountStore>("auth:accountStore");

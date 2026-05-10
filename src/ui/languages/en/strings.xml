@@ -278,6 +278,7 @@
   <string name="ui.app.users.invite_failed">Failed to send invitation.</string>
   <string name="ui.app.users.invite_email_taken">This email address is already registered.</string>
   <string name="ui.app.users.no_unverified_email">No unverified email address found.</string>
+  <string name="ui.app.users.role_updated">Role updated.</string>
   <string name="ui.app.users.protected_account">This account cannot be modified.</string>
   <string name="ui.app.admin.registration.no_tokens">No registration tokens have been issued.</string>
   <string name="ui.app.invite.page_title">Invite</string>
