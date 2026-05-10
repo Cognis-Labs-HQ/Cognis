@@ -2,7 +2,7 @@ import { createI18n } from "/static/reuse/i18n.js";
 
 async function loadRegistrationState() {
     try {
-        const token = localStorage.getItem("cognis_token");
+        const token = localStorage.getItem("cognis_access_token");
         const response = await fetch("/api/v1/registration/state", {
             headers: {
                 authorization: token ? `Bearer ${token}` : "",

@@ -16,11 +16,9 @@ import {
     renderAuthBrandline,
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
-import { redirectToDashboardIfAuthenticated } from "../../reuse/auth-session.js";
+import { clearStoredAuthSession } from "../../reuse/auth-session.js";
 
-if (await redirectToDashboardIfAuthenticated()) {
-    await new Promise(() => {});
-}
+clearStoredAuthSession();
 
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.register");

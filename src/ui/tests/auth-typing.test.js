@@ -40,6 +40,20 @@ test("loadAuthTypingSamples resolves translated keys without runtime errors", as
     }
 });
 
+test("register page clears stored auth instead of redirecting authenticated users", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/register/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /import \{ clearStoredAuthSession \} from "\.\.\/\.\.\/reuse\/auth-session\.js";/,
+    );
+    assert.match(source, /clearStoredAuthSession\(\);/);
+    assert.doesNotMatch(source, /redirectToDashboardIfAuthenticated/);
+});
+
 test("register page uses shared auth intro copy and class", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/register/index.js"),

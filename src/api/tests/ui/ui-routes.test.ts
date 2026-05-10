@@ -74,6 +74,27 @@ test("dashboard route requires login cookie", async () => {
     assert.match(authed.body, /static\/app\/dashboard\/index\.js/);
 });
 
+test("dashboard route redirects missing-account sessions with account_deleted reason", async () => {
+    const token = issueAccessToken("missing-user", "user", 60);
+    const route = createUiRoutes(undefined, undefined, {
+        async getInfo() {
+            return null;
+        },
+    } as any);
+    const recorder = createResponseRecorder();
+
+    await route(
+        {
+            headers: { cookie: `cognis_access_token=${token}` },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/dashboard"),
+    );
+
+    assert.equal(recorder.status, 302);
+    assert.equal(recorder.headers.location, "/login?reason=account_deleted");
+});
+
 test("dashboard route redirects revoked disabled-account sessions with account_disabled reason", async () => {
     const disabledToken = issueAccessToken("disabled-user", "user", 60);
     revokeAccessTokensForSubject("disabled-user");

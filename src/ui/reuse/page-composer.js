@@ -258,7 +258,7 @@ export function createPageComposer(
 
     async function loadLayoutByKey(key, gridColumnCount) {
         const account = localStorage.getItem("cognis_account");
-        const token = localStorage.getItem("cognis_token");
+        const token = localStorage.getItem("cognis_access_token");
         if (!account || !token) {
             return { layout: null, profiles: { layoutsByGrid: {} } };
         }
@@ -280,7 +280,7 @@ export function createPageComposer(
 
     async function saveLayoutByKey(key, profiles, gridColumnCount, nextLayout) {
         const account = localStorage.getItem("cognis_account");
-        const token = localStorage.getItem("cognis_token");
+        const token = localStorage.getItem("cognis_access_token");
         if (!account || !token) {
             return normalizeLayoutProfiles(profiles);
         }

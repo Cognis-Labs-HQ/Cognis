@@ -389,7 +389,7 @@ const composer = createPageComposer(root, {
                         const body = await response.json().catch(() => null);
                         if (response.ok && body?.data) {
                             localStorage.setItem(
-                                "cognis_token",
+                                "cognis_access_token",
                                 body.data.token,
                             );
                             localStorage.setItem(
