@@ -171,8 +171,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         gatewayRegistry: ctx.gatewayRegistry,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId ?? "social"),
-        registerNavbarPlugin: (scriptUrl) =>
-            ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl }),
+        registerNavbarPlugin: (scriptUrl, isEnabled) =>
+            ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl, isEnabled }),
         registerStaticDir: (prefix, dir) =>
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
         registerAdapterStaticDir: (gw, ad, dir) =>

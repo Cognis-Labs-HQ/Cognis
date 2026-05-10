@@ -1,4 +1,4 @@
-# Messages Adapter
+# Messages
 
 ## Overview
 

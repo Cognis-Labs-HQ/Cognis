@@ -617,7 +617,9 @@ export function createUiRoutes(
             req.method === "GET"
         ) {
             if (!requireAuth(req, res, "user")) return true;
-            const plugins = uiRegistry?.listNavbarPlugins() ?? [];
+            const plugins = (uiRegistry?.listNavbarPlugins() ?? []).filter(
+                (plugin) => !plugin.isEnabled || plugin.isEnabled(),
+            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: plugins }));
             return true;

@@ -210,6 +210,11 @@ async function loadNavbarPlugins() {
     }
 }
 
+window.addEventListener("cognis:navbar-plugins-refresh", () => {
+    _navbarPluginsLoaded = false;
+    loadNavbarPlugins().catch(() => {});
+});
+
 function applyCompactNav(root) {
     const navrow = root.querySelector(".global-navrow");
     const topnav = navrow?.querySelector(".topnav");

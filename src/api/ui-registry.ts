@@ -32,6 +32,8 @@ export interface PageElement {
 export interface NavbarPlugin {
     /** Browser-absolute URL of the ES module to dynamically import. */
     scriptUrl: string;
+    /** Optional runtime predicate used to hide plugins while their owner is disabled. */
+    isEnabled?: () => boolean;
 }
 
 export interface AuthTypingMessage {

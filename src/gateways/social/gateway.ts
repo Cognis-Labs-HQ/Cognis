@@ -52,7 +52,7 @@ export interface SocialAdapterBootstrapCtx {
         adapterId: string,
         absoluteDir: string,
     ): void;
-    registerNavbarPlugin(scriptUrl: string): void;
+    registerNavbarPlugin(scriptUrl: string, isEnabled?: () => boolean): void;
     registerStaticDir(urlPrefix: string, absoluteDir: string): void;
     registerAuthTypingMessage?(message: {
         id: string;
