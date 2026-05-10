@@ -538,6 +538,41 @@ test("GET /api/v1/ui/navbar-plugins returns registered navbar plugins for authen
     );
 });
 
+test("GET /api/v1/ui/navbar-plugins filters disabled navbar plugins", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    uiRegistry.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/enabled/navbar.js",
+        isEnabled: () => true,
+    });
+    uiRegistry.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/disabled/navbar.js",
+        isEnabled: () => false,
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const userToken = issueAccessToken("u1", "user", 60);
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        {
+            method: "GET",
+            headers: {
+                cookie: `cognis_access_token=${userToken}`,
+                authorization: `Bearer ${userToken}`,
+            },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/navbar-plugins"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    const payload = JSON.parse(recorder.body);
+    assert.deepEqual(
+        payload.data.map((plugin: { scriptUrl: string }) => plugin.scriptUrl),
+        ["/static/gateways/enabled/navbar.js"],
+    );
+});
+
 test("GET /api/v1/ui/navbar-plugins returns 401 for unauthenticated request", async () => {
     const uiRegistry = new StaticUIRegistry();
     uiRegistry.registerNavbarPlugin({

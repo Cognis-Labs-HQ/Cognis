@@ -73,8 +73,8 @@ function createMessagesPageRoutes(isAdapterEnabled: () => boolean) {
 }
 
 /**
- * Messages Adapter for the Social Gateway. Owns chatrooms, members, and
- * messages — see docs/standard.en.md for the full threat model.
+ * Messages for the Social Gateway. Owns chatrooms, members, and messages —
+ * see docs/standard.en.md for the full threat model.
  *
  * Cross-adapter dependencies:
  *   social:profileStore    — DbProfileStore contributed by the profile adapter.
@@ -158,7 +158,10 @@ export async function bootstrapSocialAdapter(
         "ui",
     );
     ctx.registerAdapterStaticDir?.("social", "messages", uiDir);
-    ctx.registerNavbarPlugin("/static/adapters/social/messages/navbar.js");
+    ctx.registerNavbarPlugin(
+        "/static/adapters/social/messages/navbar.js",
+        () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
+    );
 
     ctx.log?.("info", "Messages adapter: initialized.", {
         component: "social-messages-adapter",

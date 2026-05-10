@@ -73,7 +73,7 @@ Defined in `src/gateways/social/gateway.ts` and passed to every adapter:
 | `registerRoute(handler, gwId)`          | Register an HTTP route under the given gateway ID          |
 | `registerStaticDir(prefix, dir)`        | Serve a static directory under `/static/<prefix>/`         |
 | `registerAdapterStaticDir(gw, ad, dir)` | Serve under `/static/adapters/<gw>/<ad>/`                  |
-| `registerNavbarPlugin(url)`             | Contribute a navbar script to the UI shell                 |
+| `registerNavbarPlugin(url, isEnabled?)` | Contribute a conditionally enabled navbar script           |
 | `log`                                   | Optional structured logger                                 |
 | `dbExecutor`                            | Database executor from `db:executor` capability            |
 | `dbType`                                | Database dialect string                                    |
