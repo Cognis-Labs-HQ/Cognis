@@ -25,6 +25,11 @@ function isAdminRole() {
     return localStorage.getItem("cognis_role") === "admin";
 }
 
+function isTeacherOrAdmin() {
+    const role = localStorage.getItem("cognis_role");
+    return role === "admin" || role === "teacher";
+}
+
 function getDisplayName() {
     return (
         localStorage.getItem("cognis_display_name") ||
@@ -86,6 +91,11 @@ function bindTopbarActions() {
 
     adminOnlyItems.forEach((item) => {
         item.hidden = !isAdminRole();
+    });
+
+    const teacherOnlyItems = document.querySelectorAll(".teacher-only");
+    teacherOnlyItems.forEach((item) => {
+        item.hidden = !isTeacherOrAdmin();
     });
 
     let closeTimeout = null;

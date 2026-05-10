@@ -160,6 +160,17 @@ function visibilityClass(v) {
     return map[v] ?? "visibility-hidden";
 }
 
+function renderAvatarBadge(roleValue) {
+    if (!roleValue) return "";
+    if (roleValue === "admin") {
+        return `<span class="profile-avatar-badge profile-avatar-badge--admin" aria-hidden="true">&#128295;</span>`;
+    }
+    if (roleValue === "teacher") {
+        return `<span class="profile-avatar-badge profile-avatar-badge--teacher" aria-hidden="true">&#128218;</span>`;
+    }
+    return "";
+}
+
 function renderAvatarContent() {
     if (avatarBlobUrl) {
         return `<img src="${escapeHtml(avatarBlobUrl)}" class="profile-hero-avatar-img" alt="${i18n.t("ui.layout.avatar.alt")}" />`;
@@ -255,6 +266,7 @@ function renderHero() {
           type="button"
           aria-label="${escapeHtml(i18n.t("ui.app.profile.change_avatar"))}"
         >${renderAvatarContent()}</button>
+        ${renderAvatarBadge(profile?.role)}
         ${
             avatarBlobUrl
                 ? `
@@ -271,18 +283,26 @@ function renderHero() {
         : `
       <div class="profile-avatar-wrap">
         <div class="profile-hero-avatar-display">${renderAvatarContent()}</div>
+        ${renderAvatarBadge(profile?.role)}
       </div>
     `;
 
     const renderedDisplayName =
         profile?.displayName ?? (profile?.handle ?? "").replace(/^@/, "");
+    const visibleToText = i18n
+        .t("ui.app.profile.visible_to")
+        .replace(
+            "{visibility}",
+            i18n.t(
+                `ui.app.profile.visibility.${profile?.visibility ?? "hidden"}`,
+            ),
+        );
     const handleRow = `
     <div class="profile-hero-name-block">
       <div class="profile-hero-display-row">
         <span class="profile-hero-display-name">${escapeHtml(renderedDisplayName)}</span>
         ${isOwnProfile ? `<span class="profile-its-you-pill">${i18n.t("ui.app.profile.its_you")}</span>` : ""}
-        ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ""}
-        <span class="visibility-badge ${visibilityClass(profile?.visibility ?? "hidden")}">${i18n.t(`ui.app.profile.visibility.${profile?.visibility ?? "hidden"}`)}</span>
+        <span class="visibility-badge ${visibilityClass(profile?.visibility ?? "hidden")}">${escapeHtml(visibleToText)}</span>
       </div>
       <em class="profile-hero-handle">@${escapeHtml(profile?.handle ?? "")}</em>
     </div>
@@ -415,7 +435,8 @@ function renderUserList(list, emptyKey) {
               (u) => `
         <li class="profile-user-item">
           <a class="profile-user-handle" href="/profile/${escapeHtml(encodeURIComponent(u.handle))}">@${escapeHtml(u.handle)}</a>
-          <span class="profile-role-badge">${escapeHtml(u.role)}</span>
+          ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin">&#128295;</span>` : ""}
+          ${u.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>` : ""}
         </li>
       `,
           )
@@ -487,7 +508,8 @@ function renderSuggestedContacts() {
             (u) => `
     <div class="profile-suggested-item">
       <span class="profile-user-handle">@${escapeHtml(u.handle)}</span>
-      ${u.role ? `<span class="profile-role-badge">${escapeHtml(u.role)}</span>` : ""}
+      ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin">&#128295;</span>` : ""}
+      ${u.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>` : ""}
       <button
         type="button"
         class="btn-confirm btn-animated profile-follow-btn"
@@ -512,7 +534,7 @@ function renderPostsList() {
         <li class="profile-post-card" data-post-id="${escapeHtml(p.id)}">
           <div class="profile-post-header">
             ${p.title ? `<strong class="profile-post-title">${escapeHtml(p.title)}</strong>` : ""}
-            ${p.visibility ? `<span class="visibility-badge ${visibilityClass(p.visibility)}">${escapeHtml(p.visibility)}</span>` : ""}
+            ${p.visibility ? `<span class="visibility-badge ${visibilityClass(p.visibility)}">${escapeHtml(i18n.t(`ui.app.profile.post_visibility.${p.visibility}`) || p.visibility)}</span>` : ""}
             <time class="profile-post-date" datetime="${escapeHtml(p.createdAt ?? "")}">${formatDate(p.createdAt)}</time>
           </div>
           <p class="profile-post-body">${escapeHtml(p.content)}</p>

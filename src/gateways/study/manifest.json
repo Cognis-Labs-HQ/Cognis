@@ -1,0 +1,10 @@
+{
+    "id": "study",
+    "name": "Study Gateway",
+    "version": "1.0.0",
+    "required": false,
+    "requires": ["db"],
+    "description": "Thin gateway for study features. Concrete capabilities (classes, teacher assignments) are provided by adapters under src/adapters/study/.",
+    "publisher": "Cognis Labs",
+    "hasAdapters": true
+}

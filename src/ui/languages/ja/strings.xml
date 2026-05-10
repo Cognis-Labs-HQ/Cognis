@@ -41,6 +41,7 @@
   <string name="ui.reuse.generic.dismiss">閉じる</string>
   <string name="ui.reuse.generic.confirm">確認</string>
   <string name="ui.reuse.generic.error">エラー</string>
+  <string name="ui.reuse.generic.coming_soon">近日公開</string>
   <string name="ui.reuse.info_tooltip.aria">詳細情報</string>
 
   <string name="ui.layout.brand.aria">Cognis ホーム</string>
@@ -331,6 +332,7 @@
   <string name="ui.app.profile.visibility.private">非公開</string>
   <string name="ui.app.profile.visibility.friends">友達</string>
   <string name="ui.app.profile.visibility.community">コミュニティ</string>
+  <string name="ui.app.profile.visible_to">表示対象: {visibility}</string>
   <string name="ui.app.profile.avatar">アバター</string>
   <string name="ui.app.profile.banner">バナー</string>
   <string name="ui.app.profile.upload_avatar">アバターをアップロード</string>
@@ -533,4 +535,15 @@
   <string name="module.social.messages.load_earlier">以前を読み込む</string>
   <string name="module.social.messages.start_failed">会話を開始できませんでした。</string>
   <string name="module.social.messages.key_unavailable">暗号化キーを利用できません。</string>
+  <string name="ui.reuse.menu.classes">マイクラス</string>
+  <string name="module.study.classes.page_title">クラス</string>
+  <string name="module.study.classes.empty">まだクラスが割り当てられていません。</string>
+  <string name="module.study.classes.request_teacher">教師ステータスをリクエスト</string>
+  <string name="module.study.classes.request_pending">教師申請は承認待ちです。</string>
+  <string name="module.study.classes.request_sent">申請が管理者のレビューに送信されました。</string>
+  <string name="module.study.classes.request_failed">申請の送信に失敗しました。</string>
+  <string name="module.study.classes.language_label">言語</string>
+  <string name="module.study.classes.students_label">生徒</string>
+  <string name="module.study.classes.open_chat">チャットを開く</string>
+  <string name="module.study.classes.open_meeting">ミーティングを開始</string>
 </resources>

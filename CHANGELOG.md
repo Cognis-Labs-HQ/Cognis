@@ -11,6 +11,18 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 - Logout was client-side only: clearing localStorage did not invalidate the `cognis_access_token` HttpOnly cookie, leaving the session cookie usable after logout. A `POST /api/v1/auth/logout` endpoint now revokes the token server-side and clears the cookie via `Set-Cookie: Max-Age=0`. The dashboard logout handler calls this endpoint before navigating to `/login`. ([495d29f](https://github.com/le-firehawk/Cognis/commit/495d29f))
 - The `/register` page route now redirects authenticated users (those with a valid session cookie) to `/dashboard` rather than serving the registration form. This closes the path where a user with a stale-but-valid session cookie could open the register page and then navigate directly to the dashboard without re-authenticating. ([495d29f](https://github.com/le-firehawk/Cognis/commit/495d29f))
+### Added
+
+- **Study Gateway** (`src/gateways/study/`, version `1.0.0`). Thin gateway for study features; discovers and bootstraps adapters under `src/adapters/study/`. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- **Classes Adapter** (`src/adapters/study/classes/`, version `1.0.0`). Manages per-language teacher classes and teacher-request approval workflow. SQL tables: `study_classes`, `teacher_requests`, `teacher_assignments`. Routes under `/api/v1/study/*`. Page at `/classes` (teacher-only). ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- **Profile avatar role badges**. Admins see a 🔧 spanner badge at the bottom-left of their avatar; teachers see a 📖 book badge at the bottom-right. Implemented via `.profile-avatar-badge` CSS overlay on `.profile-avatar-wrap`. Replaces the text `profile-role-badge` pill in the profile hero. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- Inline role icon (🔧 for admin, 📖 for teacher) in followers / following / suggested contacts lists, replacing the text pill. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- **Visibility pill now reads "Visible to: {visibility}"** — uses the new `ui.app.profile.visible_to` key with `{visibility}` placeholder, translated in English, German, Japanese, and Indonesian. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- **Page composer `max: 'fill'`** — new sizing option that expands an element to fill remaining columns (or rows) from its placement position to the grid edge. Supported in `max`, `max: ['fill', n]`, `max: [n, 'fill']`, and `max: ['fill', 'fill']`. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- **Page composer half-width odd-column fill** — when a `halfWidth` element is placed and only one column remains to the right edge, the element expands by one column to eliminate the gap. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- My Classes menu item added to the user dropdown, visible to teachers and admins. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- New i18n keys under `module.study.classes.*` and `ui.reuse.menu.classes` translated for English, German, Japanese, and Indonesian. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
+- Post visibility badge now shows the translated post-visibility label (e.g. "Everyone", "Followers") rather than raw internal value. ([TBD](https://github.com/le-firehawk/Cognis/commit/TBD))
 
 ### Fixed
 

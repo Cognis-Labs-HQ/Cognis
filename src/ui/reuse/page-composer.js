@@ -51,10 +51,13 @@
  *   Each value is [width, height] in grid units (90 px each).
  *   Magic string values for max:
  *     'full'  — spans all available columns (full width).
- *     'half'  — spans half the available columns (half width).
- *   To apply half on both axes (quadrant), use max: ['half', 'half'].
- *   To mix, use max: ['half', n] (half-width, numeric max height) or
- *   max: [n, 'half'] (numeric max width, half-height).
+ *     'half'  — spans half the available columns (half width); when gridCols
+ *               is odd and only one column remains to the right, the element
+ *               expands by one column to fill the gap.
+ *     'fill'  — spans the remaining columns from the placement position to
+ *               the right edge of the grid (fill remaining space).
+ *   To apply half/fill on both axes, use max: ['half', 'half'] or max: ['fill', 'fill'].
+ *   To mix, use max: ['half', n], max: ['fill', n], max: [n, 'half'], etc.
  *
  * Multi-column layout:
  *   Pass columns: 2 to render the content grid in two columns (sub-page navigation
@@ -375,8 +378,23 @@ export function createPageComposer(
                 min: el.gridSize.min ?? [2, 2],
                 max: null,
                 fullWidth: true,
+                fillWidth: false,
                 halfWidth: false,
                 halfHeight: false,
+                fillHeight: false,
+            };
+        }
+
+        if (maxVal === "fill") {
+            return {
+                default: el.gridSize?.default ?? [4, 3],
+                min: el.gridSize?.min ?? [2, 2],
+                max: null,
+                fullWidth: false,
+                fillWidth: true,
+                halfWidth: false,
+                halfHeight: false,
+                fillHeight: false,
             };
         }
 
@@ -386,20 +404,28 @@ export function createPageComposer(
                 min: el.gridSize?.min ?? [2, 2],
                 max: null,
                 fullWidth: false,
+                fillWidth: false,
                 halfWidth: true,
                 halfHeight: false,
+                fillHeight: false,
             };
         }
 
         let resolvedMax = maxVal ?? null;
         let halfWidth = false;
         let halfHeight = false;
+        let fillWidth = false;
+        let fillHeight = false;
 
         if (Array.isArray(maxVal)) {
             halfWidth = maxVal[0] === "half";
+            fillWidth = maxVal[0] === "fill";
             halfHeight = maxVal[1] === "half";
-            const resolvedWidth = halfWidth ? null : (maxVal[0] ?? null);
-            const resolvedHeight = halfHeight ? null : (maxVal[1] ?? null);
+            fillHeight = maxVal[1] === "fill";
+            const resolvedWidth =
+                halfWidth || fillWidth ? null : (maxVal[0] ?? null);
+            const resolvedHeight =
+                halfHeight || fillHeight ? null : (maxVal[1] ?? null);
             resolvedMax =
                 resolvedWidth === null && resolvedHeight === null
                     ? null
@@ -411,8 +437,10 @@ export function createPageComposer(
             min: el.gridSize?.min ?? [2, 2],
             max: resolvedMax,
             fullWidth: false,
+            fillWidth,
             halfWidth,
             halfHeight,
+            fillHeight,
         };
     }
 
@@ -562,17 +590,28 @@ export function createPageComposer(
                 continue;
             }
             const gridSize = getGridSize(element);
-            const w = gridSize.fullWidth
+            const baseW = gridSize.fullWidth
                 ? gridCols
                 : gridSize.halfWidth
                   ? Math.max(gridSize.min[0], Math.floor(gridCols / 2))
                   : Math.min(gridSize.default[0], gridCols);
-            const h = gridSize.halfHeight
+            const baseH = gridSize.halfHeight
                 ? Math.max(gridSize.min[1], Math.floor(gridRows / 2))
                 : gridSize.default[1];
             let placed = false;
             for (let row = 0; !placed; row++) {
-                for (let col = 0; col <= Math.max(0, gridCols - w); col++) {
+                const colLimit = gridSize.fillWidth
+                    ? gridCols
+                    : Math.max(0, gridCols - baseW);
+                for (let col = 0; col <= colLimit; col++) {
+                    const w = gridSize.fillWidth
+                        ? Math.max(gridSize.min[0], gridCols - col)
+                        : gridSize.halfWidth && col + baseW + 1 === gridCols
+                          ? baseW + 1
+                          : baseW;
+                    const h = gridSize.fillHeight
+                        ? Math.max(gridSize.min[1], gridRows - row)
+                        : baseH;
                     if (canPlace(col, row, w, h, null)) {
                         layout.placements.push({
                             id: element.id,
@@ -1029,14 +1068,17 @@ export function createPageComposer(
             item.setPointerCapture(e.pointerId);
 
             const gridSize = getGridSize(el);
-            const w = gridSize.fullWidth
-                ? gridCols
-                : gridSize.halfWidth
-                  ? Math.max(gridSize.min[0], Math.floor(gridCols / 2))
-                  : Math.min(gridSize.default[0], gridCols);
-            const h = gridSize.halfHeight
-                ? Math.max(gridSize.min[1], Math.floor(gridRows / 2))
-                : gridSize.default[1];
+            const w =
+                gridSize.fullWidth || gridSize.fillWidth
+                    ? gridCols
+                    : gridSize.halfWidth
+                      ? Math.max(gridSize.min[0], Math.floor(gridCols / 2))
+                      : Math.min(gridSize.default[0], gridCols);
+            const h = gridSize.fillHeight
+                ? gridRows
+                : gridSize.halfHeight
+                  ? Math.max(gridSize.min[1], Math.floor(gridRows / 2))
+                  : gridSize.default[1];
 
             let shade = null;
             let currentCol = -1;
@@ -1447,21 +1489,29 @@ export function createPageComposer(
                 continue;
             }
             const gridSize = getGridSize(element);
-            const w = gridSize.fullWidth
+            const baseW = gridSize.fullWidth
                 ? state.gridCols
                 : gridSize.halfWidth
                   ? Math.max(gridSize.min[0], Math.floor(state.gridCols / 2))
                   : Math.min(gridSize.default[0], state.gridCols);
-            const h = gridSize.halfHeight
+            const baseH = gridSize.halfHeight
                 ? Math.max(gridSize.min[1], Math.floor(state.gridRows / 2))
                 : gridSize.default[1];
             let placed = false;
             for (let row = 0; !placed; row++) {
-                for (
-                    let col = 0;
-                    col <= Math.max(0, state.gridCols - w);
-                    col++
-                ) {
+                const colLimit = gridSize.fillWidth
+                    ? state.gridCols
+                    : Math.max(0, state.gridCols - baseW);
+                for (let col = 0; col <= colLimit; col++) {
+                    const w = gridSize.fillWidth
+                        ? Math.max(gridSize.min[0], state.gridCols - col)
+                        : gridSize.halfWidth &&
+                            col + baseW + 1 === state.gridCols
+                          ? baseW + 1
+                          : baseW;
+                    const h = gridSize.fillHeight
+                        ? Math.max(gridSize.min[1], state.gridRows - row)
+                        : baseH;
                     if (canSubPlace(state, col, row, w, h, null)) {
                         state.layout.placements.push({
                             id: element.id,
@@ -1912,14 +1962,20 @@ export function createPageComposer(
             item.setPointerCapture(e.pointerId);
 
             const gridSize = getGridSize(el);
-            const w = gridSize.fullWidth
-                ? state.gridCols
-                : gridSize.halfWidth
-                  ? Math.max(gridSize.min[0], Math.floor(state.gridCols / 2))
-                  : Math.min(gridSize.default[0], state.gridCols);
-            const h = gridSize.halfHeight
-                ? Math.max(gridSize.min[1], Math.floor(state.gridRows / 2))
-                : gridSize.default[1];
+            const w =
+                gridSize.fullWidth || gridSize.fillWidth
+                    ? state.gridCols
+                    : gridSize.halfWidth
+                      ? Math.max(
+                            gridSize.min[0],
+                            Math.floor(state.gridCols / 2),
+                        )
+                      : Math.min(gridSize.default[0], state.gridCols);
+            const h = gridSize.fillHeight
+                ? state.gridRows
+                : gridSize.halfHeight
+                  ? Math.max(gridSize.min[1], Math.floor(state.gridRows / 2))
+                  : gridSize.default[1];
 
             let shade = null;
             let currentCol = -1;

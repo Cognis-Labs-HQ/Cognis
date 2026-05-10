@@ -584,16 +584,36 @@
     padding-bottom: 4px;
 }
 
-.profile-role-badge {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 3px 8px;
-    border-radius: 999px;
-    border: 1px solid var(--accent-2);
-    color: var(--accent-2);
-    background: transparent;
+.profile-avatar-badge {
+    position: absolute;
+    font-size: 1.1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+    user-select: none;
+}
+
+.profile-avatar-badge--admin {
+    bottom: 4px;
+    left: 4px;
+}
+
+.profile-avatar-badge--teacher {
+    bottom: 4px;
+    right: 4px;
+}
+
+.profile-user-role-icon {
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: default;
 }
 
 .profile-its-you-pill {

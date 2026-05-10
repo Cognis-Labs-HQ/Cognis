@@ -41,6 +41,7 @@
   <string name="ui.reuse.generic.dismiss">Schließen</string>
   <string name="ui.reuse.generic.confirm">Bestätigen</string>
   <string name="ui.reuse.generic.error">Fehler</string>
+  <string name="ui.reuse.generic.coming_soon">Demnächst verfügbar</string>
   <string name="ui.reuse.info_tooltip.aria">Weitere Informationen</string>
 
   <string name="ui.layout.brand.aria">Cognis-Startseite</string>
@@ -331,6 +332,7 @@
   <string name="ui.app.profile.visibility.private">Privat</string>
   <string name="ui.app.profile.visibility.friends">Freunde</string>
   <string name="ui.app.profile.visibility.community">Community</string>
+  <string name="ui.app.profile.visible_to">Sichtbar für: {visibility}</string>
   <string name="ui.app.profile.avatar">Avatar</string>
   <string name="ui.app.profile.banner">Banner</string>
   <string name="ui.app.profile.upload_avatar">Avatar hochladen</string>
@@ -533,4 +535,15 @@
   <string name="module.social.messages.load_earlier">Frühere laden</string>
   <string name="module.social.messages.start_failed">Konversation konnte nicht gestartet werden.</string>
   <string name="module.social.messages.key_unavailable">Verschlüsselungsschlüssel nicht verfügbar.</string>
+  <string name="ui.reuse.menu.classes">Meine Klassen</string>
+  <string name="module.study.classes.page_title">Klassen</string>
+  <string name="module.study.classes.empty">Noch keine Klassen zugewiesen.</string>
+  <string name="module.study.classes.request_teacher">Lehrerstatus beantragen</string>
+  <string name="module.study.classes.request_pending">Lehrerantrag zur Genehmigung ausstehend.</string>
+  <string name="module.study.classes.request_sent">Ihr Antrag wurde zur Überprüfung durch einen Administrator eingereicht.</string>
+  <string name="module.study.classes.request_failed">Antrag konnte nicht eingereicht werden.</string>
+  <string name="module.study.classes.language_label">Sprache</string>
+  <string name="module.study.classes.students_label">Schüler</string>
+  <string name="module.study.classes.open_chat">Chat öffnen</string>
+  <string name="module.study.classes.open_meeting">Sitzung starten</string>
 </resources>

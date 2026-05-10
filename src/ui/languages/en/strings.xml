@@ -41,6 +41,7 @@
   <string name="ui.reuse.generic.dismiss">Dismiss</string>
   <string name="ui.reuse.generic.confirm">Confirm</string>
   <string name="ui.reuse.generic.error">Error</string>
+  <string name="ui.reuse.generic.coming_soon">Coming Soon</string>
   <string name="ui.reuse.info_tooltip.aria">More information</string>
 
   <string name="ui.layout.brand.aria">Cognis home</string>
@@ -331,6 +332,7 @@
   <string name="ui.app.profile.visibility.private">Private</string>
   <string name="ui.app.profile.visibility.friends">Friends</string>
   <string name="ui.app.profile.visibility.community">Community</string>
+  <string name="ui.app.profile.visible_to">Visible to: {visibility}</string>
   <string name="ui.app.profile.avatar">Avatar</string>
   <string name="ui.app.profile.banner">Banner</string>
   <string name="ui.app.profile.upload_avatar">Upload Avatar</string>
@@ -533,4 +535,15 @@
   <string name="module.social.messages.load_earlier">Load earlier</string>
   <string name="module.social.messages.start_failed">Failed to start conversation.</string>
   <string name="module.social.messages.key_unavailable">Encryption key unavailable.</string>
+  <string name="ui.reuse.menu.classes">My Classes</string>
+  <string name="module.study.classes.page_title">Classes</string>
+  <string name="module.study.classes.empty">No classes assigned yet.</string>
+  <string name="module.study.classes.request_teacher">Request Teacher Status</string>
+  <string name="module.study.classes.request_pending">Teacher request pending approval.</string>
+  <string name="module.study.classes.request_sent">Your request has been submitted for admin review.</string>
+  <string name="module.study.classes.request_failed">Failed to submit request.</string>
+  <string name="module.study.classes.language_label">Language</string>
+  <string name="module.study.classes.students_label">Students</string>
+  <string name="module.study.classes.open_chat">Open Chat</string>
+  <string name="module.study.classes.open_meeting">Start Meeting</string>
 </resources>

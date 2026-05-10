@@ -41,6 +41,7 @@
   <string name="ui.reuse.generic.dismiss">Tutup</string>
   <string name="ui.reuse.generic.confirm">Konfirmasi</string>
   <string name="ui.reuse.generic.error">Kesalahan</string>
+  <string name="ui.reuse.generic.coming_soon">Segera Hadir</string>
   <string name="ui.reuse.info_tooltip.aria">Informasi lainnya</string>
 
   <string name="ui.layout.brand.aria">Beranda Cognis</string>
@@ -331,6 +332,7 @@
   <string name="ui.app.profile.visibility.private">Privat</string>
   <string name="ui.app.profile.visibility.friends">Teman</string>
   <string name="ui.app.profile.visibility.community">Komunitas</string>
+  <string name="ui.app.profile.visible_to">Terlihat oleh: {visibility}</string>
   <string name="ui.app.profile.avatar">Avatar</string>
   <string name="ui.app.profile.banner">Banner</string>
   <string name="ui.app.profile.upload_avatar">Unggah Avatar</string>
@@ -533,4 +535,15 @@
   <string name="module.social.messages.load_earlier">Muat lebih awal</string>
   <string name="module.social.messages.start_failed">Gagal memulai percakapan.</string>
   <string name="module.social.messages.key_unavailable">Kunci enkripsi tidak tersedia.</string>
+  <string name="ui.reuse.menu.classes">Kelas Saya</string>
+  <string name="module.study.classes.page_title">Kelas</string>
+  <string name="module.study.classes.empty">Belum ada kelas yang ditetapkan.</string>
+  <string name="module.study.classes.request_teacher">Minta Status Pengajar</string>
+  <string name="module.study.classes.request_pending">Permintaan pengajar menunggu persetujuan.</string>
+  <string name="module.study.classes.request_sent">Permintaan Anda telah dikirim untuk ditinjau admin.</string>
+  <string name="module.study.classes.request_failed">Gagal mengirim permintaan.</string>
+  <string name="module.study.classes.language_label">Bahasa</string>
+  <string name="module.study.classes.students_label">Siswa</string>
+  <string name="module.study.classes.open_chat">Buka Obrolan</string>
+  <string name="module.study.classes.open_meeting">Mulai Pertemuan</string>
 </resources>

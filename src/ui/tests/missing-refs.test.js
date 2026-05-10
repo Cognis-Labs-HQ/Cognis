@@ -111,6 +111,7 @@ const SELECTOR_HOOK_CLASSES = new Set([
     "global-navrow-surface",
     "panel",
     "stack",
+    "teacher-only",
     "user-dropdown-content",
 ]);
 
