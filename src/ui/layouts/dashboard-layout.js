@@ -11,12 +11,13 @@ import {
     applyUiPreferences,
     saveUiPreferences,
 } from "../reuse/ui-preferences.js";
-import { initRouter } from "../reuse/app-router.js";
+import { initRouter, navigateTo } from "../reuse/app-router.js";
 import {
     capturePwaInstallPrompt,
     registerServiceWorker,
 } from "../reuse/pwa.js";
 import { ensureFullAccountSession } from "../reuse/auth-session.js";
+import { createSearchBar } from "../reuse/search-bar.js";
 
 capturePwaInstallPrompt();
 
@@ -361,6 +362,7 @@ export async function renderDashboardLayout(root, slots = {}) {
             existingShell.querySelector(".main-window") ?? existingShell,
         );
         applyActiveNavigation();
+        if (showTopbar || showNavbar) initSearchBar(i18n);
         return;
     }
 
@@ -399,7 +401,37 @@ export async function renderDashboardLayout(root, slots = {}) {
         applyActiveNavigation();
         applyCompactNav(root);
         initRouter(root);
+        initSearchBar(i18n);
     }
     bindThemeToggle({ usePreferenceApi });
     registerServiceWorker();
+}
+
+const SEARCH_BAR_CSS = "/static/styles/reuse/search-bar.css";
+
+function injectSearchBarStyles() {
+    if (document.querySelector(`link[href="${SEARCH_BAR_CSS}"]`)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = SEARCH_BAR_CSS;
+    document.head.appendChild(link);
+}
+
+function initSearchBar(i18n) {
+    const wrap = document.getElementById("global-search-wrap");
+    if (!wrap || wrap.dataset.searchBarBound === "true") return;
+    wrap.dataset.searchBarBound = "true";
+    injectSearchBarStyles();
+    const bar = createSearchBar({
+        endpoint: "/api/v1/users/search",
+        placeholder: i18n.t("ui.layout.search.placeholder"),
+        ariaLabel: i18n.t("ui.layout.search.aria"),
+        noResultsText: i18n.t("ui.layout.search.no_results"),
+        onSelect: (result) => {
+            if (result?.handle) {
+                navigateTo(`/profile/${encodeURIComponent(result.handle)}`);
+            }
+        },
+    });
+    wrap.appendChild(bar);
 }

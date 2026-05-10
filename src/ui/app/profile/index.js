@@ -289,6 +289,7 @@ function renderHero() {
   `;
 
     const isFollowingTarget = Boolean(relationship?.following);
+    const isBlocked = Boolean(relationship?.blocked);
     const followLabel = isFollowingTarget
         ? i18n.t("ui.app.profile.following")
         : i18n.t("ui.app.profile.follow");
@@ -300,9 +301,13 @@ function renderHero() {
     `
         : `
       <div class="profile-hero-action-row">
-        <button class="profile-hero-follow-btn" type="button" data-following="${isFollowingTarget ? "true" : "false"}">${escapeHtml(followLabel)}</button>
         ${
-            canMessageTarget
+            !isBlocked
+                ? `<button class="profile-hero-follow-btn" type="button" data-following="${isFollowingTarget ? "true" : "false"}">${escapeHtml(followLabel)}</button>`
+                : ""
+        }
+        ${
+            canMessageTarget && !isBlocked
                 ? `<button
                     class="profile-message-button"
                     type="button"
@@ -313,12 +318,22 @@ function renderHero() {
                 : ""
         }
         <button
-          class="profile-hero-block-btn"
+          class="${isBlocked ? "profile-hero-unblock-btn" : "profile-hero-block-btn"}"
           type="button"
-          aria-label="${escapeHtml(i18n.t("ui.app.profile.block_user"))}"
-        >🚫</button>
+          aria-label="${escapeHtml(i18n.t(isBlocked ? "ui.app.profile.unblock_user" : "ui.app.profile.block_user"))}"
+        >${isBlocked ? "🔓" : "🚫"}</button>
       </div>
     `;
+
+    const blockedOverlay = isBlocked
+        ? `<div class="profile-blocked-overlay">
+        <span class="profile-blocked-label">${escapeHtml(i18n.t("ui.app.profile.blocked_overlay_label"))}</span>
+        <button
+          class="profile-hero-unblock-btn btn-confirm"
+          type="button"
+        >${escapeHtml(i18n.t("ui.app.profile.unblock_user_action"))}</button>
+      </div>`
+        : "";
 
     const statsHtml = `
     <div class="profile-hero-stats">
@@ -346,7 +361,7 @@ function renderHero() {
 
     if (bannerHeight === "full") {
         return `
-      <div class="${heroClass}">
+      <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}">
         <div class="profile-hero-banner-wrap">
           ${bannerWrap}
         </div>
@@ -362,12 +377,13 @@ function renderHero() {
           ${bioWrap}
           ${achievementRow}
         </div>
+        ${blockedOverlay}
       </div>
     `;
     }
 
     return `
-    <div class="${heroClass}">
+    <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}">
       <div class="profile-hero-banner-wrap">
         ${bannerWrap}
       </div>
@@ -385,6 +401,7 @@ function renderHero() {
         </div>
         ${achievementRow}
       </div>
+      ${blockedOverlay}
     </div>
   `;
 }
@@ -397,7 +414,7 @@ function renderUserList(list, emptyKey) {
           .map(
               (u) => `
         <li class="profile-user-item">
-          <span class="profile-user-handle">@${escapeHtml(u.handle)}</span>
+          <a class="profile-user-handle" href="/profile/${escapeHtml(encodeURIComponent(u.handle))}">@${escapeHtml(u.handle)}</a>
           <span class="profile-role-badge">${escapeHtml(u.role)}</span>
         </li>
       `,
@@ -868,6 +885,12 @@ async function doFollowUser(handle) {
         );
         return;
     }
+    if (res.status === 403) {
+        showToast(i18n.t("ui.app.profile.follow_hidden_toast"), {
+            variant: "error",
+        });
+        return;
+    }
     showToast(i18n.t("ui.app.profile.follow_unavailable_toast"), {
         variant: "error",
     });
@@ -892,6 +915,46 @@ async function doBlockUser() {
         ],
     });
     if (result !== "confirm") return;
+    const res = await apiFetch(
+        `/api/v1/users/${encodeURIComponent(urlHandle)}/block`,
+        { method: "POST" },
+    );
+    if (!res.ok) return;
+    relationship = { ...(relationship ?? {}), blocked: true, following: false };
+    canMessageTarget = false;
+    [followers, following] = await Promise.all([
+        loadFollowers(profile?.handle),
+        loadFollowing(profile?.handle),
+    ]);
+    composer.refresh(elements);
+}
+
+async function doUnblockUser() {
+    const result = await openPopup({
+        title: i18n.t("ui.app.profile.unblock_user"),
+        body: escapeHtml(i18n.t("ui.app.profile.unblock_user_confirm")),
+        variant: "danger",
+        actions: [
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.popup.cancel"),
+                variant: "cancel",
+            },
+            {
+                id: "confirm",
+                label: i18n.t("ui.app.profile.unblock_user_action"),
+                variant: "confirm",
+            },
+        ],
+    });
+    if (result !== "confirm") return;
+    const res = await apiFetch(
+        `/api/v1/users/${encodeURIComponent(urlHandle)}/block`,
+        { method: "DELETE" },
+    );
+    if (!res.ok) return;
+    relationship = { ...(relationship ?? {}), blocked: false };
+    composer.refresh(elements);
 }
 
 async function doOpenMessageRoom() {
@@ -939,6 +1002,9 @@ function bindPageEvents() {
         "click",
         doBlockUser,
     );
+    root.querySelectorAll(".profile-hero-unblock-btn").forEach((btn) => {
+        btn.addEventListener("click", doUnblockUser);
+    });
     root.querySelector("[data-message-target]")?.addEventListener(
         "click",
         doOpenMessageRoom,

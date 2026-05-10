@@ -51,6 +51,9 @@
   <string name="ui.layout.toolbar.expand">Werkzeugleiste ausklappen</string>
   <string name="ui.layout.greeting">Hallo,</string>
   <string name="ui.layout.notifications.aria">Benachrichtigungen</string>
+  <string name="ui.layout.search.aria">Suche</string>
+  <string name="ui.layout.search.placeholder">Nutzer suchen…</string>
+  <string name="ui.layout.search.no_results">Keine Ergebnisse gefunden.</string>
   <string name="ui.layout.account.aria">Kontoeinstellungen</string>
   <string name="ui.layout.avatar.alt">Benutzeravatar</string>
   <string name="ui.layout.theme.aria">Thema umschalten</string>
@@ -381,6 +384,12 @@
   <string name="ui.app.profile.block_user">Nutzer blockieren</string>
   <string name="ui.app.profile.block_user_confirm">Diesen Nutzer blockieren? Er kann dir nicht mehr folgen oder mit deinem Profil interagieren.</string>
   <string name="ui.app.profile.block_user_action">Blockieren</string>
+  <string name="ui.app.profile.unblock_user">Nutzer entsperren</string>
+  <string name="ui.app.profile.unblock_user_confirm">Blockierung dieses Nutzers aufheben? Er kann dir wieder folgen und mit deinem Profil interagieren.</string>
+  <string name="ui.app.profile.unblock_user_action">Entsperren</string>
+  <string name="ui.app.profile.blocked_overlay_label">Dieses Profil ist blockiert.</string>
+  <string name="ui.app.profile.follow_hidden_toast">Dein Profil ist auf „Versteckt" gesetzt. Ändere deine Sichtbarkeit in den Einstellungen, um anderen zu folgen.</string>
+  <string name="ui.app.profile.message_hidden_toast">Dein Profil ist auf „Versteckt" gesetzt. Ändere deine Sichtbarkeit in den Einstellungen, um Nachrichten zu senden.</string>
   <string name="ui.app.profile.section.follow_requests">Folgeanfragen</string>
   <string name="ui.app.profile.follow_requests.empty">Keine ausstehenden Folgeanfragen.</string>
   <string name="ui.app.profile.not_found">Profil nicht gefunden.</string>

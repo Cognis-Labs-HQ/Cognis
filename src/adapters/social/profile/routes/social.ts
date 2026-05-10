@@ -49,6 +49,25 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        const searchMatch = url.pathname === "/api/v1/users/search";
+        if (searchMatch && req.method === "GET") {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const query = (url.searchParams.get("q") ?? "")
+                .trim()
+                .toLowerCase();
+            if (!query) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: [] }));
+                return true;
+            }
+            const results = await profileStore.searchProfiles(query, 10);
+            const filtered = results.filter((p) => p.accountId !== claims.sub);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: filtered.map(publicProfile) }));
+            return true;
+        }
+
         const relationshipMatch = url.pathname.match(
             /^\/api\/v1\/users\/([^/]+)\/relationship$/,
         );

@@ -300,6 +300,22 @@ export class DbProfileStore implements ProfileCreateStore {
         return row ? rowToProfile(row) : null;
     }
 
+    async searchProfiles(
+        query: string,
+        limit: number = 10,
+    ): Promise<AccountProfile[]> {
+        const pattern = query.toLowerCase().replace(/[%_]/g, "\\$&") + "%";
+        const result = await this.db.execute(
+            `SELECT * FROM account_profiles
+             WHERE visibility != 'hidden'
+               AND LOWER(handle) LIKE ${this.p(1)} ESCAPE '\\'
+             ORDER BY handle ASC
+             LIMIT ${this.p(2)}`,
+            [pattern, limit],
+        );
+        return (result.rows ?? []).map(rowToProfile);
+    }
+
     async updateProfile(
         accountId: string,
         updates: Partial<

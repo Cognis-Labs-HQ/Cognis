@@ -51,6 +51,9 @@
   <string name="ui.layout.toolbar.expand">ツールバーを展開する</string>
   <string name="ui.layout.greeting">こんにちは、</string>
   <string name="ui.layout.notifications.aria">通知</string>
+  <string name="ui.layout.search.aria">検索</string>
+  <string name="ui.layout.search.placeholder">ユーザーを検索…</string>
+  <string name="ui.layout.search.no_results">結果が見つかりません。</string>
   <string name="ui.layout.account.aria">アカウントオプション</string>
   <string name="ui.layout.avatar.alt">ユーザーアバター</string>
   <string name="ui.layout.theme.aria">テーマ切替</string>
@@ -381,6 +384,12 @@
   <string name="ui.app.profile.block_user">ユーザーをブロック</string>
   <string name="ui.app.profile.block_user_confirm">このユーザーをブロックしますか？あなたをフォローしたりプロフィールと交流できなくなります。</string>
   <string name="ui.app.profile.block_user_action">ブロック</string>
+  <string name="ui.app.profile.unblock_user">ブロックを解除</string>
+  <string name="ui.app.profile.unblock_user_confirm">このユーザーのブロックを解除しますか？再びフォローしたりプロフィールと交流できるようになります。</string>
+  <string name="ui.app.profile.unblock_user_action">ブロック解除</string>
+  <string name="ui.app.profile.blocked_overlay_label">このプロフィールはブロックされています。</string>
+  <string name="ui.app.profile.follow_hidden_toast">プロフィールの公開範囲が「非表示」に設定されています。他のユーザーをフォローするには、設定で公開範囲を変更してください。</string>
+  <string name="ui.app.profile.message_hidden_toast">プロフィールの公開範囲が「非表示」に設定されています。メッセージを送るには、設定で公開範囲を変更してください。</string>
   <string name="ui.app.profile.section.follow_requests">フォローリクエスト</string>
   <string name="ui.app.profile.follow_requests.empty">保留中のフォローリクエストはありません。</string>
   <string name="ui.app.profile.not_found">プロフィールが見つかりません。</string>

@@ -51,6 +51,9 @@
   <string name="ui.layout.toolbar.expand">Perluas bilah alat</string>
   <string name="ui.layout.greeting">Halo,</string>
   <string name="ui.layout.notifications.aria">Notifikasi</string>
+  <string name="ui.layout.search.aria">Cari</string>
+  <string name="ui.layout.search.placeholder">Cari pengguna…</string>
+  <string name="ui.layout.search.no_results">Tidak ada hasil ditemukan.</string>
   <string name="ui.layout.account.aria">Opsi akun</string>
   <string name="ui.layout.avatar.alt">Avatar pengguna</string>
   <string name="ui.layout.theme.aria">Ubah tema</string>
@@ -381,6 +384,12 @@
   <string name="ui.app.profile.block_user">Blokir pengguna</string>
   <string name="ui.app.profile.block_user_confirm">Blokir pengguna ini? Mereka tidak akan dapat mengikuti Anda atau berinteraksi dengan profil Anda.</string>
   <string name="ui.app.profile.block_user_action">Blokir</string>
+  <string name="ui.app.profile.unblock_user">Buka Blokir Pengguna</string>
+  <string name="ui.app.profile.unblock_user_confirm">Hapus blokir pengguna ini? Mereka akan dapat mengikuti Anda dan berinteraksi dengan profil Anda lagi.</string>
+  <string name="ui.app.profile.unblock_user_action">Buka Blokir</string>
+  <string name="ui.app.profile.blocked_overlay_label">Profil ini diblokir.</string>
+  <string name="ui.app.profile.follow_hidden_toast">Visibilitas profil Anda diatur ke Tersembunyi. Perbarui visibilitas di Pengaturan untuk mengikuti pengguna lain.</string>
+  <string name="ui.app.profile.message_hidden_toast">Visibilitas profil Anda diatur ke Tersembunyi. Perbarui visibilitas di Pengaturan untuk mengirim pesan.</string>
   <string name="ui.app.profile.section.follow_requests">Permintaan Ikut</string>
   <string name="ui.app.profile.follow_requests.empty">Tidak ada permintaan ikut yang tertunda.</string>
   <string name="ui.app.profile.not_found">Profil tidak ditemukan.</string>

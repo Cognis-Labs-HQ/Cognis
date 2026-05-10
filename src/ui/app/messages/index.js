@@ -239,7 +239,7 @@ export async function mount(root, { signal } = {}) {
         {
             id: "messages-rooms",
             label: i18n.t("module.social.messages.page_title"),
-            gridSize: { default: [3, 6], min: [2, 4] },
+            gridSize: { default: [3, 8], min: [2, 4], max: "full" },
             render: () =>
                 `<aside class="messages-rooms">
                     <header class="messages-rooms-header">
@@ -318,6 +318,14 @@ export async function mount(root, { signal } = {}) {
                         const lookupRes = await apiFetch(
                             `/api/v1/messages/users/lookup?q=${encodeURIComponent(query)}`,
                         );
+                        if (lookupRes.status === 403) {
+                            lookupWrap.setAttribute("hidden", "");
+                            showToast(
+                                i18n.t("ui.app.profile.message_hidden_toast"),
+                                { variant: "error" },
+                            );
+                            return;
+                        }
                         if (!lookupRes.ok) return;
                         const lookupPayload = await lookupRes.json();
                         const candidates = lookupPayload?.data ?? [];
@@ -369,7 +377,7 @@ export async function mount(root, { signal } = {}) {
         {
             id: "messages-thread",
             label: i18n.t("module.social.messages.page_title"),
-            gridSize: { default: [9, 6], min: [4, 4] },
+            gridSize: { default: [9, 8], min: [4, 4], max: "full" },
             render: () =>
                 `<section class="messages-thread">
                     <div class="messages-thread-list" id="messages-thread-list"></div>

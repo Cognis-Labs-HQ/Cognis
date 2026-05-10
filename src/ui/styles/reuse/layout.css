@@ -243,6 +243,10 @@
     font-weight: 700;
 }
 
+.global-search-wrap {
+    display: contents;
+}
+
 .profile-menu {
     position: relative;
 }

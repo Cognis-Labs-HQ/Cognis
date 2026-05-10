@@ -127,6 +127,20 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             url.pathname === "/api/v1/messages/users/lookup" &&
             req.method === "GET"
         ) {
+            const requesterProfile = await profileStore.getProfile(accountId);
+            if (requesterProfile?.visibility === "hidden") {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message:
+                                "Hidden users cannot send messages to others",
+                        },
+                    }),
+                );
+                return true;
+            }
             const query = (url.searchParams.get("q") ?? "")
                 .trim()
                 .toLowerCase();
