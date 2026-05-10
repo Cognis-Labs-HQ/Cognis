@@ -3,9 +3,10 @@
  *
  * Endpoints:
  *   GET /api/v1/search?q=...&type=...
- *     Requires auth. Searches across users and settings.
- *     If type=users, returns only user results.
- *     Otherwise returns grouped results by category.
+ *     Requires auth. Searches across users.
+ *     If type=users, returns only user results as a flat array.
+ *     Otherwise returns grouped results by category (Users only from server;
+ *     settings and other static categories are searched client-side).
  *
  * @module api/routes/search
  */
@@ -23,33 +24,6 @@ interface SearchResultItem {
 interface SearchResultGroup {
     category: string;
     items: SearchResultItem[];
-}
-
-const STATIC_SETTINGS: SearchResultItem[] = [
-    { id: "settings-general", label: "General Preferences", url: "/settings" },
-    {
-        id: "settings-language",
-        label: "Language Preferences",
-        url: "/settings",
-    },
-    { id: "settings-study", label: "Study Preferences", url: "/settings" },
-    {
-        id: "settings-notifications",
-        label: "Notification Preferences",
-        url: "/settings",
-    },
-    {
-        id: "settings-datetime",
-        label: "Date & Time Preferences",
-        url: "/settings",
-    },
-];
-
-function matchSettings(query: string): SearchResultItem[] {
-    const lower = query.toLowerCase();
-    return STATIC_SETTINGS.filter((entry) =>
-        entry.label.toLowerCase().includes(lower),
-    ).slice(0, 5);
 }
 
 type ProfileSearchFn = (
@@ -138,11 +112,6 @@ export function createSearchRoutes(
             } catch {
                 // search failure is silent
             }
-        }
-
-        const settingsMatches = matchSettings(query);
-        if (settingsMatches.length > 0) {
-            groups.push({ category: "Settings", items: settingsMatches });
         }
 
         res.writeHead(200, { "content-type": "application/json" });

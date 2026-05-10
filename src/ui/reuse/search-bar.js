@@ -8,12 +8,15 @@
  * Public exports:
  *   createSearchBar(options) — builds and returns the search bar DOM element.
  *     Options:
- *       endpoint     {string}   Required. API URL prefix; `?q=<query>` is appended.
- *       onSelect     {function} Required. Called with the selected result object.
- *       placeholder  {string}   Input placeholder text.
- *       ariaLabel    {string}   Accessible label for the toggle button.
- *       noResultsText {string}  Text shown when no matches are found.
- *       usersOnly    {boolean}  If true, appends `&type=users` to the request.
+ *       endpoint      {string}   Required. API URL; `?q=<query>` is appended.
+ *       onSelect      {function} Required. Called with the selected result object.
+ *       placeholder   {string}   Input placeholder text.
+ *       ariaLabel     {string}   Accessible label for the toggle button.
+ *       noResultsText {string}   Text shown when no matches are found.
+ *       usersOnly     {boolean}  If true, appends `&type=users` to the request.
+ *       localGroups   {Array}    Client-side result groups searched without an API
+ *                                call. Each entry: `{ category, items: [{id, label, url, ...}] }`.
+ *                                Matched against the query string and merged with API results.
  *
  * Usage example:
  *   import { createSearchBar } from '/static/reuse/search-bar.js';
@@ -22,7 +25,8 @@
  *     placeholder: 'Search…',
  *     ariaLabel: 'Search',
  *     noResultsText: 'No results found.',
- *     onSelect: (result) => navigateTo(`/profile/${encodeURIComponent(result.handle)}`),
+ *     localGroups: [{ category: 'Settings', items: [{ id: 'general', label: 'General', url: '/settings' }] }],
+ *     onSelect: (result) => navigateTo(result.url ?? `/profile/${encodeURIComponent(result.handle)}`),
  *   });
  *   document.querySelector('.account-cluster').prepend(bar);
  *
@@ -30,6 +34,28 @@
  */
 
 const DEBOUNCE_MS = 280;
+
+/**
+ * Filters localGroups by a query string and returns only groups with matches.
+ *
+ * @param {Array} localGroups
+ * @param {string} query
+ * @returns {Array}
+ */
+function filterLocalGroups(localGroups, query) {
+    if (!localGroups?.length || !query) return [];
+    const lower = query.toLowerCase();
+    return localGroups
+        .map((group) => ({
+            category: group.category,
+            items: (group.items ?? []).filter(
+                (item) =>
+                    item.label?.toLowerCase().includes(lower) ||
+                    item.id?.toLowerCase().includes(lower),
+            ),
+        }))
+        .filter((group) => group.items.length > 0);
+}
 
 /**
  * Creates a search bar widget element.
@@ -41,6 +67,7 @@ const DEBOUNCE_MS = 280;
  * @param {string} [options.ariaLabel] - Accessible label for the toggle button.
  * @param {string} [options.noResultsText] - Text shown when search yields no results.
  * @param {boolean} [options.usersOnly] - If true, adds type=users to queries.
+ * @param {Array} [options.localGroups] - Client-side searchable result groups.
  * @returns {HTMLElement}
  */
 export function createSearchBar({
@@ -50,6 +77,7 @@ export function createSearchBar({
     ariaLabel = "Search",
     noResultsText = "No results found.",
     usersOnly = false,
+    localGroups = [],
 }) {
     const wrapper = document.createElement("div");
     wrapper.className = "search-bar-wrap";
@@ -132,6 +160,9 @@ export function createSearchBar({
             resultsContainer.innerHTML = "";
             return;
         }
+
+        const matchedLocalGroups = filterLocalGroups(localGroups, query);
+
         try {
             const token = localStorage.getItem("cognis_access_token");
             const headers = token ? { authorization: `Bearer ${token}` } : {};
@@ -140,21 +171,34 @@ export function createSearchBar({
                 `${endpoint}?q=${encodeURIComponent(query)}${typeParam}`,
                 { credentials: "same-origin", headers },
             );
-            if (!response.ok) return;
+            if (!response.ok) {
+                if (matchedLocalGroups.length > 0) {
+                    renderGroupedResults(resultsContainer, matchedLocalGroups);
+                }
+                return;
+            }
             const payload = await response.json();
             const responseData = payload?.data ?? [];
-            if (
+            const isGrouped =
                 Array.isArray(responseData) &&
                 responseData.length > 0 &&
                 typeof responseData[0] === "object" &&
-                "category" in responseData[0]
-            ) {
-                renderGroupedResults(resultsContainer, responseData);
-            } else {
-                renderFlatResults(resultsContainer, responseData);
+                "category" in responseData[0];
+            const apiGroups = isGrouped ? responseData : [];
+            const flatItems = isGrouped ? [] : responseData;
+            const merged = [...apiGroups, ...matchedLocalGroups];
+            if (merged.length > 0) {
+                renderGroupedResults(resultsContainer, merged);
+            } else if (flatItems.length > 0) {
+                renderFlatResults(resultsContainer, flatItems);
+            } else if (matchedLocalGroups.length === 0) {
+                renderFlatResults(resultsContainer, []);
             }
         } catch {
-            // Search failure is silent; results stay hidden.
+            if (matchedLocalGroups.length > 0) {
+                renderGroupedResults(resultsContainer, matchedLocalGroups);
+            }
+            // API search failure is silent when no local results either.
         }
     }
 

@@ -143,14 +143,22 @@ export class DbClassesStore {
             this.dbType === "postgresql"
                 ? `TIMESTAMPTZ NOT NULL DEFAULT NOW()`
                 : `DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP`;
+        const boolType =
+            this.dbType === "postgresql"
+                ? "BOOLEAN NOT NULL DEFAULT TRUE"
+                : "TINYINT(1) NOT NULL DEFAULT 1";
+        const boolTypeFalse =
+            this.dbType === "postgresql"
+                ? "BOOLEAN NOT NULL DEFAULT FALSE"
+                : "TINYINT(1) NOT NULL DEFAULT 0";
 
         await this.db.execute(
             `CREATE TABLE IF NOT EXISTS study_languages (
                 code VARCHAR(32) PRIMARY KEY,
                 name VARCHAR(128) NOT NULL,
                 flag VARCHAR(8) NOT NULL DEFAULT '',
-                available TINYINT(1) NOT NULL DEFAULT 1,
-                active TINYINT(1) NOT NULL DEFAULT 0,
+                available ${boolType},
+                active ${boolTypeFalse},
                 sort_order INTEGER NOT NULL DEFAULT 0,
                 created_at ${tsDefault}
             )`,

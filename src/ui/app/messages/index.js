@@ -20,6 +20,8 @@ import {
     getInitialsText,
     pickInitialsColor,
 } from "../../reuse/avatar-utils.js";
+import { escapeHtml } from "../../reuse/escape-html.js";
+import { formatDateTime } from "../../reuse/timestamp.js";
 
 const TEXT_ENCODER = new TextEncoder();
 const TEXT_DECODER = new TextDecoder();
@@ -88,20 +90,6 @@ async function getRoomKey(roomId) {
     const key = await importRoomKey(hex);
     roomKeyCache.set(roomId, key);
     return key;
-}
-
-function escapeHtml(value) {
-    return String(value).replace(
-        /[&<>"']/g,
-        (ch) =>
-            ({
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-                "'": "&#39;",
-            })[ch],
-    );
 }
 
 function memberDisplayName(member) {
@@ -242,7 +230,7 @@ async function renderThread(
                 ? ""
                 : `<span class="messages-message-sender">${escapeHtml(msg.senderDisplayName || msg.senderHandle || msg.senderId)}</span>`;
             const timeLabel = msg.createdAt
-                ? `<time class="messages-message-time" datetime="${escapeHtml(msg.createdAt)}">${escapeHtml(new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))}</time>`
+                ? `<time class="messages-message-time" datetime="${escapeHtml(msg.createdAt)}">${escapeHtml(formatDateTime(msg.createdAt))}</time>`
                 : "";
             return `<div class="messages-message${ownClass}" data-message-id="${escapeHtml(msg.id)}">
             ${senderLabel}

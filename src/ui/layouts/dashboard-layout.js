@@ -1,4 +1,5 @@
 import { apiFetch } from "../reuse/api-client.js";
+import { escapeHtml } from "../reuse/escape-html.js";
 import { getInitialsText, pickInitialsColor } from "../reuse/avatar-utils.js";
 import { loadTemplate } from "../reuse/template-loader.js";
 import {
@@ -440,11 +441,37 @@ function initSearchBar(i18n) {
     if (!wrap || wrap.dataset.searchBarBound === "true") return;
     wrap.dataset.searchBarBound = "true";
     injectSearchBarStyles();
+
+    const settingsGroup = {
+        category:
+            i18n.t("ui.reuse.menu.administration") +
+            " / " +
+            i18n.t("ui.app.settings.preferences"),
+        items: [
+            {
+                id: "settings-general",
+                label: i18n.t("ui.app.settings.general"),
+                url: "/settings",
+            },
+            {
+                id: "settings-language",
+                label: i18n.t("ui.reuse.language"),
+                url: "/settings#language",
+            },
+            {
+                id: "settings-study",
+                label: i18n.t("ui.app.settings.study.title"),
+                url: "/settings#study",
+            },
+        ],
+    };
+
     const bar = createSearchBar({
         endpoint: "/api/v1/search",
         placeholder: i18n.t("ui.layout.search.placeholder"),
         ariaLabel: i18n.t("ui.layout.search.aria"),
         noResultsText: i18n.t("ui.layout.search.no_results"),
+        localGroups: [settingsGroup],
         onSelect: (result) => {
             if (result?.handle) {
                 navigateTo(`/profile/${encodeURIComponent(result.handle)}`);
@@ -476,7 +503,7 @@ async function initStudyButton(i18n) {
         const selectOptions = languages
             .map(
                 (lang) =>
-                    `<option value="${lang.code}">${lang.flag || ""} ${lang.name} (${lang.code})</option>`,
+                    `<option value="${escapeHtml(lang.code)}">${escapeHtml(lang.flag || "")} ${escapeHtml(lang.name)} (${escapeHtml(lang.code)})</option>`,
             )
             .join("");
 
