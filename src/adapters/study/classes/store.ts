@@ -104,9 +104,6 @@ export class DbClassesStore {
             )`,
             [],
         );
-
-        const tsType2 = tsType;
-        void tsType2;
     }
 
     async getClassesForTeacher(teacherAccountId: string): Promise<ClassRow[]> {
