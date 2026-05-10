@@ -579,4 +579,6 @@
   <string name="module.study.classes.submit_application">Antrag senden</string>
   <string name="ui.study.picker.title">Lernsprache wählen</string>
   <string name="ui.study.picker.no_languages">Keine Lernsprachen verfügbar.</string>
+  <string name="ui.study.picker.select">Sprache auswählen:</string>
+  <string name="ui.study.picker.start">Lernen</string>
 </resources>

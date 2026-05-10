@@ -464,12 +464,7 @@ async function initStudyButton(i18n) {
     studyBtn.addEventListener("click", async () => {
         let languages = [];
         try {
-            const token = localStorage.getItem("cognis_access_token");
-            const headers = token ? { authorization: `Bearer ${token}` } : {};
-            const response = await fetch("/api/v1/study/languages", {
-                credentials: "same-origin",
-                headers,
-            });
+            const response = await apiFetch("/api/v1/study/languages");
             if (response.ok) {
                 const payload = await response.json();
                 languages = Array.isArray(payload?.data) ? payload.data : [];
@@ -496,7 +491,11 @@ async function initStudyButton(i18n) {
                 </label>
             `,
             actions: [
-                { id: "cancel" },
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.popup.cancel"),
+                    variant: "cancel",
+                },
                 {
                     id: "study",
                     label: i18n.t("ui.study.picker.start"),

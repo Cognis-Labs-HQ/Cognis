@@ -53,6 +53,12 @@ export interface ApiDependencies {
         role?: string,
     ) => Promise<void>;
     setProfileRole?: (handle: string, role: string) => Promise<void>;
+    searchProfiles?: (
+        query: string,
+        limit: number,
+    ) => Promise<
+        Array<{ accountId?: string; handle?: string; displayName?: string }>
+    >;
 }
 
 export function buildServer(deps: ApiDependencies) {
@@ -113,7 +119,7 @@ export function buildServer(deps: ApiDependencies) {
               log,
           )
         : null;
-    const searchRoutes = createSearchRoutes();
+    const searchRoutes = createSearchRoutes(deps.searchProfiles);
 
     Promise.all([
         deps.moduleRuntimeGateway.listManifests(),

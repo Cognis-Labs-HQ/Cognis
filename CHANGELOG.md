@@ -9,19 +9,20 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- **Study languages API** (`GET /api/v1/study/languages`, `POST /api/v1/study/languages`). Persisted via `study_languages` table in the classes adapter; seeded with Japanese on first run. Settings → Study now fetches languages from this endpoint. ([ab7c0da](https://github.com/le-firehawk/Cognis/commit/ab7c0da))
-- **Study button in global navbar**. Clicking the Study button opens a language-picker popup populated from `/api/v1/study/languages`; selecting a language navigates to its study page. ([ab7c0da](https://github.com/le-firehawk/Cognis/commit/ab7c0da))
-- **Japanese study adapter** (`src/adapters/study/japanese/`, version `1.0.0`). Serves a study page at `/study/ja` with sections for Hiragana, Katakana, Vocabulary, Grammar, and Kanji. Registers the `ja` language entry on bootstrap. ([ab7c0da](https://github.com/le-firehawk/Cognis/commit/ab7c0da))
-- **Global search endpoint** (`GET /api/v1/search?q=…`). Returns grouped results across Users (when a profile-search function is wired) and Settings. Supports `type=users` for user-only queries. ([ab7c0da](https://github.com/le-firehawk/Cognis/commit/ab7c0da))
-- **Search bar refactored to popup overlay**. The search widget now opens a centred modal overlay with grouped results instead of an inline expanding dropdown. ([ab7c0da](https://github.com/le-firehawk/Cognis/commit/ab7c0da))
-- **Teacher dashboard element**. Users with the `teacher` or `admin` role see a "My Classes" widget on the dashboard. ([ab7c0da](https://github.com/le-firehawk/Cognis/commit/ab7c0da))
-- **Message timestamps and own-message styling**. Each message now shows its send time; messages sent by the current user are right-aligned with the accent colour. ([ab7c0da](https://github.com/le-firehawk/Cognis/commit/ab7c0da))
-- New i18n keys `ui.reuse.nav.study`, `ui.study.picker.*`, `ui.app.dashboard.element.teacher_classes.*` translated for English, German, Japanese, and Indonesian. ([ab7c0da](https://github.com/le-firehawk/Cognis/commit/ab7c0da))
+- **Study languages API** (`GET /api/v1/study/languages`, `POST /api/v1/study/languages`). Persisted via `study_languages` table in the classes adapter; seeded with Japanese on first run. Settings → Study now fetches languages from this endpoint. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
+- **Study button in global navbar**. Clicking the Study button opens a language-picker popup populated from `/api/v1/study/languages`; selecting a language navigates to its study page. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
+- **Japanese study adapter** (`src/adapters/study/japanese/`, version `1.0.0`). Serves a study page at `/study/ja` with sections for Hiragana, Katakana, Vocabulary, Grammar, and Kanji. Registers the `ja` language entry on bootstrap. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
+- **Global search endpoint** (`GET /api/v1/search?q=…`). Returns grouped results across Users (when a profile-search function is wired) and Settings. Supports `type=users` for user-only queries. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
+- **Search bar refactored to popup overlay**. The search widget now opens a centred modal overlay with grouped results instead of an inline expanding dropdown. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
+- **Teacher dashboard element**. Users with the `teacher` or `admin` role see a "My Classes" widget on the dashboard. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
+- **Message timestamps and own-message styling**. Each message now shows its send time; messages sent by the current user are right-aligned with the accent colour. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
+- New i18n keys `ui.reuse.nav.study`, `ui.study.picker.*`, `ui.app.dashboard.element.teacher_classes.*` translated for English, German, Japanese, and Indonesian. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
+- **Search profile wiring**: `searchProfiles` capability from the social profile adapter is now passed to the global search endpoint, enabling real user results. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
 
 ### Fixed
 
-- Auth and social gateways no longer self-register an admin section, removing stale admin-section entries and the dead `admin-section.js` file reference. ([ab7c0da](https://github.com/le-firehawk/Cognis/commit/ab7c0da))
-- Page composer grid minimum rows in edit mode now scales with content depth instead of forcing a fixed six-row minimum. ([ab7c0da](https://github.com/le-firehawk/Cognis/commit/ab7c0da))
+- Auth and social gateways no longer self-register an admin section, removing stale admin-section entries and the dead `admin-section.js` file reference. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
+- Page composer grid minimum rows in edit mode now scales with content depth instead of forcing a fixed six-row minimum. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
 
 ### Security
 

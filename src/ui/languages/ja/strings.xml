@@ -579,4 +579,6 @@
   <string name="module.study.classes.submit_application">申請を送信</string>
   <string name="ui.study.picker.title">学習言語を選択</string>
   <string name="ui.study.picker.no_languages">利用可能な学習言語がありません。</string>
+  <string name="ui.study.picker.select">言語を選択してください：</string>
+  <string name="ui.study.picker.start">学習開始</string>
 </resources>

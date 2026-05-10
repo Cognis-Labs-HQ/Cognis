@@ -276,6 +276,15 @@ const accountStore = capabilities.get<LocalAccountStore>("auth:accountStore");
 const preferenceStore =
     capabilities.get<UserPreferenceStore>("preferences:store");
 
+const profileStore = capabilities.get<{
+    searchProfiles: (
+        query: string,
+        limit: number,
+    ) => Promise<
+        Array<{ accountId?: string; handle?: string; displayName?: string }>
+    >;
+}>("social:profileStore");
+
 const server = buildServer({
     moduleRuntimeGateway: runtime,
     accountStore,
@@ -288,6 +297,9 @@ const server = buildServer({
     setProfileRole: capabilities.get<
         (handle: string, role: string) => Promise<void>
     >("profile:setRoleByHandle"),
+    searchProfiles: profileStore
+        ? profileStore.searchProfiles.bind(profileStore)
+        : undefined,
     loadModuleStates: async () => {
         const result = await dbExecutor.execute(
             "SELECT module_id, enabled FROM modules",

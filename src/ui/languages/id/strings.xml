@@ -579,4 +579,6 @@
   <string name="module.study.classes.submit_application">Kirim Aplikasi</string>
   <string name="ui.study.picker.title">Pilih Bahasa yang Dipelajari</string>
   <string name="ui.study.picker.no_languages">Tidak ada bahasa belajar yang tersedia.</string>
+  <string name="ui.study.picker.select">Pilih bahasa:</string>
+  <string name="ui.study.picker.start">Mulai Belajar</string>
 </resources>
