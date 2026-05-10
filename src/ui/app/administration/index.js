@@ -515,7 +515,7 @@ function bindGatewayToggles() {
                         : "";
                 const result = await openPopup({
                     title: i18n.t("ui.app.admin.disable_confirm_gateway"),
-                    body: `${gatewayDisableWarning}<strong>${escapeHtml(gw?.name ?? gatewayId)}</strong>`,
+                    body: `${gatewayDisableWarning}<strong>${escapeHtml(gateway?.name ?? gatewayId)}</strong>`,
                     variant: "danger",
                     actions: [
                         {

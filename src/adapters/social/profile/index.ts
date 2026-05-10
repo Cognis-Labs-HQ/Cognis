@@ -15,9 +15,22 @@ import {
     setPageSecurityHeaders,
 } from "../../../api/auth/guard.js";
 import type { AccountRole } from "../../db/reuse/profile-store.js";
-import type { SocialAdapterBootstrapCtx } from "../../../gateways/social/gateway.js";
+import type {
+    SocialAdapter,
+    SocialAdapterBootstrapCtx,
+} from "../../../gateways/social/gateway.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
+
+let adapterReady = false;
+
+export function createSocialAdapter(): SocialAdapter {
+    return {
+        adapterId: "profile",
+        adapterName: "Profile",
+        isConfigured: () => adapterReady,
+    };
+}
 
 /**
  * Creates page-serving route handlers for the profile SPA pages. Owned by
@@ -223,8 +236,5 @@ export async function bootstrapSocialAdapter(
         hasFileGateway: Boolean(fileGateway),
     });
 
-    ctx.gateway.registerAdapter({
-        adapterId: "profile",
-        adapterName: "Profile",
-    });
+    adapterReady = true;
 }

@@ -2,7 +2,10 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { SocialAdapterBootstrapCtx } from "../../../gateways/social/gateway.js";
+import type {
+    SocialAdapter,
+    SocialAdapterBootstrapCtx,
+} from "../../../gateways/social/gateway.js";
 import { DbMessagesStore } from "./store.js";
 import { createMessagesRoutes } from "./routes.js";
 import {
@@ -12,6 +15,16 @@ import {
 import type { DbProfileStore } from "../../db/reuse/profile-store.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
+
+let adapterReady = false;
+
+export function createSocialAdapter(): SocialAdapter {
+    return {
+        adapterId: "messages",
+        adapterName: "Messages",
+        isConfigured: () => adapterReady,
+    };
+}
 
 /**
  * Page-serving route for `/messages` and `/messages/:roomId`. Both serve the
@@ -71,9 +84,8 @@ function createMessagesPageRoutes(isAdapterEnabled: () => boolean) {
  *                            to the notify gateway with category 'messages'.
  *                            Absent → notifications are silently skipped.
  *
- * The adapter does not register itself if the profile adapter has not
- * contributed `social:profileStore`, since every meaningful operation needs
- * profile data.
+ * Runtime routes are not registered if the profile adapter has not contributed
+ * `social:profileStore`, since every meaningful operation needs profile data.
  */
 export async function bootstrapSocialAdapter(
     ctx: SocialAdapterBootstrapCtx,
@@ -153,8 +165,5 @@ export async function bootstrapSocialAdapter(
         hasDispatch: Boolean(dispatch),
     });
 
-    ctx.gateway.registerAdapter({
-        adapterId: "messages",
-        adapterName: "Messages",
-    });
+    adapterReady = true;
 }
