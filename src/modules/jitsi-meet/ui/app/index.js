@@ -2,11 +2,18 @@ import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer.js";
-import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 
 const API_BASE = "/api/v1/modules/jitsi-meet";
 const DEFAULT_TITLE = "Cognis Meeting";
+const JITSI_HOST_STORAGE_KEY = "jitsiLocalStorage";
+const JITSI_AUTH_STORAGE_KEYS = [
+    "jwt",
+    "idToken",
+    "refreshToken",
+    "xmpp_username_override",
+    "xmpp_password_override",
+];
 
 let i18n = null;
 let composer = null;
@@ -16,7 +23,7 @@ let jitsiApi = null;
 let jitsiScriptPromise = null;
 let meetingContainer = null;
 let pipWindow = null;
-let moderatorAuthPromptOpen = false;
+let moderatorAuthNoticeShown = false;
 let jitsiMessageCleanup = null;
 
 function getJitsiOrigin(meeting) {
@@ -78,6 +85,24 @@ function loadJitsiScript(domain) {
     return jitsiScriptPromise;
 }
 
+function getJitsiHostStorage() {
+    const raw = localStorage.getItem(JITSI_HOST_STORAGE_KEY);
+    if (!raw) return {};
+    try {
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+        return {};
+    }
+}
+
+function hasJitsiHostAuthState() {
+    const storage = getJitsiHostStorage();
+    return JITSI_AUTH_STORAGE_KEYS.some((key) =>
+        Boolean(String(storage[key] ?? "").trim()),
+    );
+}
+
 function getAvatarUrl(user) {
     if (!user?.avatarKey) return undefined;
     return `/api/v1/files/${user.avatarKey}`;
@@ -102,6 +127,7 @@ function buildJitsiOptions(meeting) {
             apiLogLevels: ["error", "warn", "info", "debug"],
             subject: meeting.title || DEFAULT_TITLE,
             disableDeepLinking: true,
+            useHostPageLocalStorage: true,
             prejoinPageEnabled: false,
             startWithAudioMuted: true,
             startWithVideoMuted: false,
@@ -168,96 +194,17 @@ function eventMentionsModeratorAuth(payload) {
     return mentionsModerator && mentionsAuth;
 }
 
-function renderModeratorAuthPlaceholder() {
-    meetingContainer?.replaceChildren();
-    const placeholder = document.createElement("div");
-    placeholder.className = "meet-empty";
-    placeholder.innerHTML = `
-      <strong>${escapeHtml(i18n.t("module.jitsiMeet.moderator_auth.title"))}</strong>
-      <span>${escapeHtml(i18n.t("module.jitsiMeet.moderator_auth.detected"))}</span>
-    `;
-    meetingContainer?.append(placeholder);
-}
-
-function openModeratorAuthWindow() {
-    if (!activeMeeting) return null;
-    const authWindow = window.open(
-        getMeetingUrl(activeMeeting),
-        "cognis-jitsi-moderator-auth",
-        "popup=yes,width=1080,height=760",
-    );
-    if (!authWindow) return null;
-    authWindow.opener = null;
-    authWindow.focus?.();
-    return authWindow;
-}
-
-async function promptForModeratorAuth({ detected = false } = {}) {
-    if (!activeMeeting || moderatorAuthPromptOpen) return false;
-    moderatorAuthPromptOpen = true;
-    let authWindow = null;
-
-    const result = await openPopup({
-        title: i18n.t("module.jitsiMeet.moderator_auth.title"),
-        body: `
-          <p>${escapeHtml(
-              detected
-                  ? i18n.t("module.jitsiMeet.moderator_auth.detected")
-                  : i18n.t("module.jitsiMeet.moderator_auth.body"),
-          )}</p>
-          <p>${escapeHtml(i18n.t("module.jitsiMeet.moderator_auth.instructions"))}</p>
-        `,
-        maxWidth: "560px",
-        actions: [
-            {
-                id: "open-login",
-                label: i18n.t("module.jitsiMeet.moderator_auth.open"),
-                variant: "confirm",
-            },
-            {
-                id: "done",
-                label: i18n.t("module.jitsiMeet.moderator_auth.done"),
-                variant: "neutral",
-            },
-            {
-                id: "cancel",
-                label: i18n.t("module.jitsiMeet.moderator_auth.cancel"),
-                variant: "cancel",
-            },
-        ],
-        onAction: (actionId) => {
-            if (actionId !== "open-login") return true;
-            authWindow = openModeratorAuthWindow();
-            if (authWindow) {
-                showToast(i18n.t("module.jitsiMeet.moderator_auth.opened"), {
-                    variant: "info",
-                });
-            } else {
-                showToast(i18n.t("module.jitsiMeet.moderator_auth.blocked"), {
-                    variant: "warning",
-                });
-            }
-            return false;
-        },
+function notifyModeratorAuthRequired() {
+    if (moderatorAuthNoticeShown || hasJitsiHostAuthState()) return;
+    moderatorAuthNoticeShown = true;
+    showToast(i18n.t("module.jitsiMeet.moderator_auth.detected"), {
+        variant: "info",
     });
-
-    if (authWindow && !authWindow.closed) {
-        authWindow.close();
-    }
-    moderatorAuthPromptOpen = false;
-    return result === "done";
 }
 
 async function handleModeratorAuthRequired(payload) {
     if (!eventMentionsModeratorAuth(payload) || !activeMeeting) return;
-    if (moderatorAuthPromptOpen) return;
-    disposeJitsi();
-    renderModeratorAuthPlaceholder();
-    const shouldRetry = await promptForModeratorAuth({ detected: true });
-    if (shouldRetry && activeMeeting) {
-        meetingContainer = document.querySelector("#jitsi-meeting-stage");
-        await mountJitsi(activeMeeting);
-    }
+    notifyModeratorAuthRequired();
 }
 
 function bindJitsiMessageCapture(meeting) {
@@ -291,6 +238,7 @@ async function mountJitsi(meeting) {
     });
     jitsiApi.addListener("participantRoleChanged", (event) => {
         if (event?.role === "moderator") {
+            moderatorAuthNoticeShown = false;
             jitsiApi.executeCommand("subject", meeting.title || DEFAULT_TITLE);
         }
     });
@@ -365,9 +313,10 @@ async function startSelectedMeeting() {
         activeMeeting = await createMeeting(accountId);
         composer.refresh(elements());
         meetingContainer = document.querySelector("#jitsi-meeting-stage");
-        if (activeMeeting.authenticationRequired) {
-            const shouldContinue = await promptForModeratorAuth();
-            if (!shouldContinue) return;
+        if (activeMeeting.authenticationRequired && !hasJitsiHostAuthState()) {
+            showToast(i18n.t("module.jitsiMeet.auth_required"), {
+                variant: "info",
+            });
         }
         await mountJitsi(activeMeeting);
     } catch (error) {
