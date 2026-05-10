@@ -37,7 +37,7 @@ async function setupUser(
     return profileStore;
 }
 
-test("post routes - hidden user cannot post", async () => {
+test("post routes - hidden user cannot post with community visibility", async () => {
     const { dir, executor } = makeTempDb();
     try {
         const profileStore = await setupUser(executor, "alice", "hidden");
@@ -59,7 +59,44 @@ test("post routes - hidden user cannot post", async () => {
             } as any,
             new URL("http://localhost/api/v1/posts"),
         );
-        assert.equal(status, 403);
+        assert.equal(status, 400);
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
+test("post routes - hidden user can post with only_me visibility", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUser(executor, "alice", "hidden");
+        const route = createPostRoutes(profileStore);
+        const token = issueAccessToken("alice", "user", 60);
+        let status = 0;
+        let body = "";
+
+        await route(
+            makeReq(
+                "POST",
+                token,
+                JSON.stringify({
+                    content: "private note",
+                    visibility: "only_me",
+                }),
+            ),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end(p: string) {
+                    body = p;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/posts"),
+        );
+        assert.equal(status, 201);
+        const created = JSON.parse(body).data;
+        assert.equal(created.content, "private note");
+        assert.equal(created.visibility, "only_me");
     } finally {
         rmSync(dir, { recursive: true, force: true });
     }

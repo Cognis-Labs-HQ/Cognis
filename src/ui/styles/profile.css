@@ -307,6 +307,46 @@
     background: rgba(220, 38, 38, 0.1);
 }
 
+.profile-message-button {
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+}
+
+.profile-message-button:hover {
+    background: var(--surface-2);
+}
+
+.profile-message-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    display: none;
+}
+
+:root .profile-message-icon--light {
+    display: block;
+}
+
+:root .profile-message-icon--dark {
+    display: none;
+}
+
+:root[data-theme="dark"] .profile-message-icon--light,
+[data-theme="dark"] .profile-message-icon--light {
+    display: none;
+}
+
+:root[data-theme="dark"] .profile-message-icon--dark,
+[data-theme="dark"] .profile-message-icon--dark {
+    display: block;
+}
+
 .profile-hero-action-row {
     display: flex;
     gap: 8px;
@@ -608,6 +648,18 @@
 .profile-avatar-badge--teacher {
     bottom: 4px;
     right: 4px;
+}
+
+.profile-avatar-badge-icon {
+    width: 1rem;
+    height: 1rem;
+    display: block;
+}
+
+.profile-role-icon-img {
+    width: 0.95rem;
+    height: 0.95rem;
+    vertical-align: middle;
 }
 
 .profile-user-role-icon {

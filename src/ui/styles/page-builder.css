@@ -1265,6 +1265,11 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     box-sizing: border-box;
 }
 
+.composer-grid-cell--half {
+    border-style: dashed;
+    opacity: 0.15;
+}
+
 .composer-cell {
     position: absolute;
     box-sizing: border-box;
