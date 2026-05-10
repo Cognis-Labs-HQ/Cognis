@@ -27,7 +27,7 @@ Nicht verantwortlich für: spezifische Auth-Anbieterlogik (Adapter), spezifische
 ```
 core/            — Verträge, Schnittstellen, Richtliniendienste
 gateways/        — Domänen-Orchestratoren (auth, db, notify, profile, files, logging)
-adapters/        — Konkrete Anbieterimplementierungen (sqlite, ldap, smtp usw.)
+adapters/        — Konkrete Anbieterimplementierungen (postgres, ldap, smtp usw.)
 modules/         — Optionale Funktionserweiterungen
 api/             — HTTP-Server, Routenregistry, Anfrage-/Antwortschicht
 ui/              — Browser-Frontend (Seiten, Layouts, Reuse-Utilities, Styles)

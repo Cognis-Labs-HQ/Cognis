@@ -18,9 +18,8 @@ Setiap adapter berada di bawah `src/adapters/<gateway-id>/<adapter-id>/` dan mem
 ```
 src/adapters/
   db/
-    sqlite/      — SQLite (default)
     mariadb/     — MariaDB/MySQL
-    postgres/    — PostgreSQL
+    postgres/    — PostgreSQL (default)
     memory/      — In-memory (hanya pengujian)
   auth/
     local/       — Kredensial lokal dengan hashing scrypt

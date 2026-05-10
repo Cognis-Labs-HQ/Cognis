@@ -18,9 +18,8 @@
 ```
 src/adapters/
   db/
-    sqlite/      — SQLite（デフォルト）
     mariadb/     — MariaDB/MySQL
-    postgres/    — PostgreSQL
+    postgres/    — PostgreSQL（デフォルト）
     memory/      — インメモリ（テストのみ）
   auth/
     local/       — scryptハッシュのローカル認証情報

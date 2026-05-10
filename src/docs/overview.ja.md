@@ -27,7 +27,7 @@ Cognisは、独立した学習者、教師、およびコミュニティ向け�
 ```
 core/            — コントラクト、インターフェース、ポリシーサービス
 gateways/        — ドメインオーケストレーター (auth, db, notify, profile, files, logging)
-adapters/        — 具体的なプロバイダー実装 (sqlite, ldap, smtp など)
+adapters/        — 具体的なプロバイダー実装 (postgres, ldap, smtp など)
 modules/         — オプションの機能拡張
 api/             — HTTPサーバー、ルートレジストリ、リクエスト/レスポンス層
 ui/              — ブラウザフロントエンド（ページ、レイアウト、再利用ユーティリティ、スタイル）

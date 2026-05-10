@@ -43,11 +43,10 @@
 
 ### デフォルトの永続化設定
 
-| `DB_TYPE`             | バックエンド | 接続                                                         |
-| --------------------- | ------------ | ------------------------------------------------------------ |
-| `sqlite` (デフォルト) | SQLite       | `SQLITE_PATH` のファイル (デフォルト `./data/cognis.sqlite`) |
-| `postgresql`          | PostgreSQL   | `DATABASE_URL` が必要                                        |
-| `mariadb`             | MariaDB      | `DATABASE_URL` が必要                                        |
+| `DB_TYPE`                   | バックエンド | 接続                  |
+| --------------------------- | ------------ | --------------------- |
+| `postgresql` (デフォルト)    | PostgreSQL   | `DATABASE_URL` が必要 |
+| `mariadb`                    | MariaDB      | `DATABASE_URL` が必要 |
 
 ### 主要なソースの場所
 
@@ -66,9 +65,8 @@
 
 | 変数                              | デフォルト                     | 説明                                                               |
 | --------------------------------- | ------------------------------ | ------------------------------------------------------------------ |
-| `DB_TYPE`                         | `sqlite`                       | データベースバックエンド: `sqlite`、`postgresql`、または `mariadb` |
+| `DB_TYPE`                         | `postgresql`                   | データベースバックエンド: `postgresql` または `mariadb`            |
 | `DATABASE_URL`                    | —                              | PostgreSQL または MariaDB の接続文字列                             |
-| `SQLITE_PATH`                     | `./data/cognis.sqlite`         | SQLite ファイルパス (`DB_TYPE=sqlite` の場合のみ)                  |
 | `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | ベアラートークンの有効期限 (秒)                                    |
 | `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | CLI ブートストラップトークンのパス                                 |
 | `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | ゲートウェイ検出のルートディレクトリ                               |

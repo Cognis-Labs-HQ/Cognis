@@ -2,7 +2,7 @@
 
 ## Ikhtisar
 
-Gateway Database adalah satu-satunya titik akses untuk semua operasi database di Cognis. Gateway ini menyediakan antarmuka executor yang seragam yang menyembunyikan perbedaan antara SQLite, PostgreSQL, dan MariaDB. Gateway membaca `DB_TYPE` dari environment, membuat executor yang sesuai, menginisialisasi skema, dan berkontribusi executor dan helper dialek ke capability store.
+Gateway Database adalah satu-satunya titik akses untuk semua operasi database di Cognis. Gateway ini menyediakan antarmuka executor yang seragam yang menyembunyikan perbedaan antara PostgreSQL dan MariaDB. Gateway membaca `DB_TYPE` dari environment, membuat executor yang sesuai, menginisialisasi skema, dan berkontribusi executor dan helper dialek ke capability store.
 
 ## Tanggung Jawab
 
@@ -56,6 +56,5 @@ export interface DbDialectHelper {
 
 | Variabel       | Default                | Keterangan                                                   |
 | -------------- | ---------------------- | ------------------------------------------------------------ |
-| `DB_TYPE`      | `sqlite`               | Backend database: `sqlite`, `postgresql`, atau `mariadb`     |
+| `DB_TYPE`      | `postgresql`           | Backend database: `postgresql` atau `mariadb`                |
 | `DATABASE_URL` | —                      | String koneksi; diperlukan untuk `postgresql` atau `mariadb` |
-| `SQLITE_PATH`  | `./data/cognis.sqlite` | Path file SQLite; hanya digunakan saat `DB_TYPE=sqlite`      |

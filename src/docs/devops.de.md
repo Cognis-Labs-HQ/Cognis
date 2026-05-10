@@ -28,7 +28,7 @@ Das Dockerfile unter `docker/Dockerfile` verwendet eine einzelne `FROM node:22`-
 ```dockerfile
 EXPOSE 3000
 ENV NODE_ENV=production
-ENV DB_TYPE=sqlite
+ENV DB_TYPE=postgresql
 CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 ```
 
@@ -42,7 +42,7 @@ CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 
 | Variable           | Standard | Beschreibung                                        |
 | ------------------ | -------- | --------------------------------------------------- |
-| `DB_TYPE`          | `sqlite` | Datenbank-Backend                                   |
+| `DB_TYPE`          | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`  |
 | `DATABASE_URL`     | —        | Verbindungszeichenkette für PostgreSQL oder MariaDB |
 | `LOG_LEVEL`        | `info`   | Log-Ausführlichkeit                                 |
 | `PORT`             | `3000`   | HTTP-Port                                           |

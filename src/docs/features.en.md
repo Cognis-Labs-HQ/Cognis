@@ -24,7 +24,7 @@ Cognis is a self-hosted language-study platform that combines structured learnin
 
 | Area          | Built-in adapters                         | Notes                                                           |
 | ------------- | ----------------------------------------- | --------------------------------------------------------------- |
-| Database      | `memory`, `sqlite`, `mariadb`, `postgres` | Swap by setting `DB_TYPE`; no code changes needed               |
+| Database      | `memory`, `mariadb`, `postgres`            | Swap by setting `DB_TYPE`; no code changes needed               |
 | Auth          | `local`, `ldap`, `saml`, `oidc`           | Multiple providers can be enabled simultaneously                |
 | File storage  | `local`                                   | Stores uploads on the container filesystem; mounted as a volume |
 | Notifications | `smtp`                                    | Activated by setting `COGNIS_SMTP_HOST`                         |

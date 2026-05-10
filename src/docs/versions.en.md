@@ -30,7 +30,6 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.0` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.2` |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.1.0` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.1.0` |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.1.0` |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.1` |

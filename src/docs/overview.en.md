@@ -27,7 +27,7 @@ Not responsible for: specific auth provider logic (adapters), specific database 
 ```
 core/            — contracts, interfaces, policy services
 gateways/        — domain orchestrators (auth, db, notify, profile, files, logging)
-adapters/        — concrete provider implementations (sqlite, ldap, smtp, etc.)
+adapters/        — concrete provider implementations (postgres, ldap, smtp, etc.)
 modules/         — optional feature extensions
 api/             — HTTP server, route registry, request/response layer
 ui/              — browser frontend (pages, layouts, reuse utilities, styles)
