@@ -200,13 +200,14 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async list() {
         const result = await this.db.execute(
-            "SELECT c.username, a.is_admin, a.enabled, a.is_founder FROM local_auth_credentials c JOIN accounts a ON a.id = c.account_id ORDER BY c.username",
+            "SELECT c.username, a.is_admin, a.enabled, a.is_founder, p.role FROM local_auth_credentials c JOIN accounts a ON a.id = c.account_id LEFT JOIN account_profiles p ON p.account_id = a.id ORDER BY c.username",
         );
         return (result.rows ?? []).map((row) => ({
             username: row.username,
             isAdmin: Boolean(row.is_admin),
             enabled: Boolean(row.enabled),
             isFounder: Boolean(row.is_founder),
+            role: row.role ?? (Boolean(row.is_admin) ? "admin" : "user"),
         }));
     }
 

@@ -1,3 +1,9 @@
+.messages-sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
 .messages-rooms {
     display: flex;
     flex-direction: column;

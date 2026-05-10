@@ -22,12 +22,12 @@ import { createSearchBar } from "../reuse/search-bar.js";
 capturePwaInstallPrompt();
 
 function isAdminRole() {
-    return localStorage.getItem("cognis_role") === "admin";
+    const role = localStorage.getItem("cognis_role");
+    return role === "admin" || role === "owner";
 }
 
-function isTeacherOrAdmin() {
-    const role = localStorage.getItem("cognis_role");
-    return role === "admin" || role === "teacher";
+function isTeacherRole() {
+    return localStorage.getItem("cognis_role") === "teacher";
 }
 
 function getDisplayName() {
@@ -95,7 +95,7 @@ function bindTopbarActions() {
 
     const teacherOnlyItems = document.querySelectorAll(".teacher-only");
     teacherOnlyItems.forEach((item) => {
-        item.hidden = !isTeacherOrAdmin();
+        item.hidden = !isTeacherRole();
     });
 
     let closeTimeout = null;

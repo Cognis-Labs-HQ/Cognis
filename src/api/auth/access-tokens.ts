@@ -9,7 +9,7 @@ import {
 import path from "node:path";
 import { logAppEvent as log } from "../logger.js";
 
-export type AccessRole = "user" | "teacher" | "moderator" | "admin";
+export type AccessRole = "user" | "teacher" | "moderator" | "admin" | "owner";
 
 interface AccessTokenRecord {
     subject: string;
@@ -33,7 +33,8 @@ function isAccessRole(value: unknown): value is AccessRole {
         value === "user" ||
         value === "teacher" ||
         value === "moderator" ||
-        value === "admin"
+        value === "admin" ||
+        value === "owner"
     );
 }
 

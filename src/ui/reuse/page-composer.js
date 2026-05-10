@@ -2643,7 +2643,6 @@ export function createPageComposer(
             section.style.width = `${gridCols * UNIT}px`;
             section.appendChild(createGridOverlay());
         } else {
-            section.style.setProperty("--grid-cols", String(gridCols));
             section.classList.add("composer-view-grid");
         }
 
@@ -2653,19 +2652,41 @@ export function createPageComposer(
                   .sort((a, b) => a.row - b.row || a.col - b.col)
             : computeViewPlacements();
 
-        for (const placement of visiblePlacements) {
-            const element = elements.find((e) => e.id === placement.id);
-            if (!element) continue;
-            if (editing) {
-                section.appendChild(createCell(element, placement));
-            } else {
+        if (!editing) {
+            const hasFractional = visiblePlacements.some(
+                (p) =>
+                    p.col % 1 !== 0 ||
+                    p.row % 1 !== 0 ||
+                    p.w % 1 !== 0 ||
+                    p.h % 1 !== 0,
+            );
+            const scale = hasFractional ? 2 : 1;
+            section.style.setProperty(
+                "--grid-cols",
+                String(gridCols * scale),
+            );
+            for (const placement of visiblePlacements) {
+                const element = elements.find((e) => e.id === placement.id);
+                if (!element) continue;
                 const card = document.createElement("section");
                 card.className = "widget-card";
                 card.dataset.composerElement = element.id;
-                card.style.gridColumn = `${placement.col + 1} / span ${placement.w}`;
-                card.style.gridRow = `${placement.row + 1} / span ${placement.h}`;
+                const scaledCol = placement.col * scale;
+                const scaledRow = placement.row * scale;
+                const scaledWidth = placement.w * scale;
+                const scaledHeight = placement.h * scale;
+                card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
+                card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
                 card.innerHTML = element.render();
                 section.appendChild(card);
+            }
+        }
+
+        if (editing) {
+            for (const placement of visiblePlacements) {
+                const element = elements.find((e) => e.id === placement.id);
+                if (!element) continue;
+                section.appendChild(createCell(element, placement));
             }
         }
 

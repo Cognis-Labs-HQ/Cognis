@@ -14,7 +14,7 @@
 
 import { randomUUID } from "node:crypto";
 
-export type AccountRole = "user" | "teacher" | "moderator" | "admin";
+export type AccountRole = "user" | "teacher" | "moderator" | "admin" | "owner";
 export type AccountVisibility = "hidden" | "private" | "friends" | "community";
 export type PostVisibility = "only_me" | "private" | "friends" | "community";
 
