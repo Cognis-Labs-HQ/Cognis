@@ -429,6 +429,10 @@ function renderHero() {
   `;
 }
 
+function userDisplayName(user) {
+    return user?.displayName || user?.username || user?.handle || "";
+}
+
 function renderUserList(list, emptyKey) {
     if (!list.length) return `<p class="profile-empty">${i18n.t(emptyKey)}</p>`;
     return `
@@ -437,7 +441,7 @@ function renderUserList(list, emptyKey) {
           .map(
               (u) => `
         <li class="profile-user-item">
-          <a class="profile-user-handle" href="/profile/${escapeHtml(encodeURIComponent(u.handle))}">@${escapeHtml(u.handle)}</a>
+          <a class="profile-user-handle" href="/profile/${escapeHtml(encodeURIComponent(u.handle))}">${escapeHtml(userDisplayName(u))}</a>
           ${u.role === "owner" ? `<span class="profile-user-role-icon" aria-label="Owner" title="Owner"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
           ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
           ${u.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>` : ""}
@@ -511,7 +515,7 @@ function renderSuggestedContacts() {
         .map(
             (u) => `
     <div class="profile-suggested-item">
-      <span class="profile-user-handle">@${escapeHtml(u.handle)}</span>
+      <a class="profile-user-handle" href="/profile/${escapeHtml(encodeURIComponent(u.handle))}">${escapeHtml(userDisplayName(u))}</a>
       ${u.role === "owner" ? `<span class="profile-user-role-icon" aria-label="Owner" title="Owner"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
       ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
       ${u.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>` : ""}

@@ -16,6 +16,10 @@ import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { showToast } from "../../reuse/toast.js";
+import {
+    getInitialsText,
+    pickInitialsColor,
+} from "../../reuse/avatar-utils.js";
 
 const TEXT_ENCODER = new TextEncoder();
 const TEXT_DECODER = new TextDecoder();
@@ -101,7 +105,82 @@ function escapeHtml(value) {
 }
 
 function memberDisplayName(member) {
-    return member.displayName || member.handle || member.accountId;
+    return (
+        member.displayName ||
+        member.username ||
+        member.handle ||
+        member.accountId
+    );
+}
+
+function selectedRoomTitle(room, currentAccountId) {
+    if (!room) return "";
+    const otherMembers = (room.members ?? []).filter(
+        (member) => member.accountId !== currentAccountId,
+    );
+    if (room.kind === "dm") {
+        return (
+            otherMembers.map(memberDisplayName).join(", ") ||
+            room.title ||
+            room.id
+        );
+    }
+    return (
+        room.title || otherMembers.map(memberDisplayName).join(", ") || room.id
+    );
+}
+
+function randomSample(values, count) {
+    return values
+        .map((value) => ({ value, rank: Math.random() }))
+        .sort((a, b) => a.rank - b.rank)
+        .slice(0, count)
+        .map((item) => item.value);
+}
+
+function renderMemberInitials(member) {
+    const label = memberDisplayName(member);
+    const color = pickInitialsColor(member.handle || member.accountId || label);
+    return `<span class="messages-classroom-collage-tile" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
+}
+
+function renderRoomAvatar(room, currentAccountId) {
+    if (!room) return "";
+    if (room.avatarKey) {
+        return `<div class="messages-thread-avatar"><img class="messages-thread-avatar-img" src="/api/v1/files/${escapeHtml(room.avatarKey)}" alt="" /></div>`;
+    }
+    const members = room.members ?? [];
+    if (room.kind === "classroom") {
+        const picked = randomSample(members, 4);
+        while (picked.length < 4) picked.push({ handle: "", displayName: "" });
+        return `<div class="messages-classroom-collage">${picked.map(renderMemberInitials).join("")}</div>`;
+    }
+    const other =
+        members.find((member) => member.accountId !== currentAccountId) ??
+        members[0];
+    const label = other ? memberDisplayName(other) : room.title || room.id;
+    const color = pickInitialsColor(other?.handle || other?.accountId || label);
+    return `<div class="messages-thread-avatar"><span class="messages-thread-initials" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span></div>`;
+}
+
+function renderThreadHeader(room, currentAccountId, i18n) {
+    if (!room) return "";
+    const members = room.members ?? [];
+    const canSetAvatar =
+        room.kind === "classroom" &&
+        ["teacher", "admin", "owner"].includes(
+            localStorage.getItem("cognis_role") ?? "",
+        );
+    return `
+        <header class="messages-thread-header" id="messages-thread-header">
+            ${renderRoomAvatar(room, currentAccountId)}
+            <div class="messages-thread-title-wrap">
+                <h2 class="messages-thread-title">${escapeHtml(selectedRoomTitle(room, currentAccountId))}</h2>
+                <span class="messages-thread-subtitle">${escapeHtml(String(members.length))} ${escapeHtml(i18n.t("module.social.messages.members"))}</span>
+            </div>
+            ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}
+        </header>
+    `;
 }
 
 function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
@@ -110,13 +189,7 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
     }
     return rooms
         .map((room) => {
-            const otherMembers = (room.members ?? []).filter(
-                (member) => member.accountId !== currentAccountId,
-            );
-            const titleSource =
-                room.title ||
-                otherMembers.map(memberDisplayName).join(", ") ||
-                room.id;
+            const titleSource = selectedRoomTitle(room, currentAccountId);
             const unreadBadge =
                 room.unread > 0
                     ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
@@ -158,7 +231,7 @@ async function renderThread(roomId, key, container, i18n, before) {
         .map(
             (msg) =>
                 `<div class="messages-message" data-message-id="${escapeHtml(msg.id)}">
-            <span class="messages-message-sender">${escapeHtml(msg.senderHandle || msg.senderDisplayName || msg.senderId)}</span>
+            <span class="messages-message-sender">${escapeHtml(msg.senderDisplayName || msg.senderHandle || msg.senderId)}</span>
             <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
         </div>`,
         )
@@ -200,6 +273,13 @@ export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "module.social.messages.page_title");
 
+    root.classList.add("messages-page");
+    signal?.addEventListener(
+        "abort",
+        () => root.classList.remove("messages-page"),
+        { once: true },
+    );
+
     const currentAccountId = localStorage.getItem("cognis_account") ?? "";
 
     const initialPath = window.location.pathname;
@@ -211,15 +291,69 @@ export async function mount(root, { signal } = {}) {
     let rooms = await loadRooms();
     if (signal?.aborted) return;
 
+    async function loadRoom(roomId) {
+        const res = await apiFetch(
+            `/api/v1/messages/rooms/${encodeURIComponent(roomId)}`,
+        );
+        if (!res.ok) return null;
+        return (await res.json()).data ?? null;
+    }
+
     async function openRoom(roomId) {
         const threadList = document.getElementById("messages-thread-list");
+        const headerSlot = document.getElementById(
+            "messages-thread-header-slot",
+        );
         if (!threadList) return;
+        const room = await loadRoom(roomId);
+        if (headerSlot && room) {
+            headerSlot.innerHTML = renderThreadHeader(
+                room,
+                currentAccountId,
+                i18n,
+            );
+            bindRoomHeaderEvents();
+        }
         const key = await getRoomKey(roomId);
         await renderThread(roomId, key, threadList, i18n);
         await apiFetch(
             `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/read`,
             { method: "POST" },
         ).catch(() => undefined);
+    }
+
+    function extensionFromType(type) {
+        const normalized = (type || "").split(";")[0].toLowerCase();
+        if (normalized === "image/png") return "png";
+        if (normalized === "image/webp") return "webp";
+        if (normalized === "image/gif") return "gif";
+        return "jpg";
+    }
+
+    function bindRoomHeaderEvents() {
+        const input = document.getElementById("messages-room-avatar-input");
+        input?.addEventListener("change", async () => {
+            const file = input.files?.[0];
+            if (!file || !selectedRoomId) return;
+            const ext = extensionFromType(file.type);
+            const key = `chatrooms/${selectedRoomId}-${Date.now()}.${ext}`;
+            const buffer = await file.arrayBuffer();
+            const upload = await apiFetch(`/api/v1/files/${key}`, {
+                method: "PUT",
+                headers: { "content-type": file.type || "image/jpeg" },
+                body: buffer,
+            });
+            if (!upload.ok) return;
+            const update = await apiFetch(
+                `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}`,
+                {
+                    method: "PATCH",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ avatarKey: key }),
+                },
+            );
+            if (update.ok) await openRoom(selectedRoomId);
+        });
     }
 
     async function reloadRoomsList() {
@@ -263,6 +397,7 @@ export async function mount(root, { signal } = {}) {
             gridSize: { default: [12, 8], min: [4, 4], max: "full" },
             render: () =>
                 `<section class="messages-thread">
+                    <div id="messages-thread-header-slot"></div>
                     <div class="messages-thread-list" id="messages-thread-list"></div>
                     <form class="messages-composer" id="messages-composer">
                         <textarea
@@ -373,11 +508,7 @@ export async function mount(root, { signal } = {}) {
                     activeItem.classList.remove("messages-room--active"),
                 );
             item.classList.add("messages-room--active");
-            history.pushState(
-                {},
-                "",
-                `/messages/${encodeURIComponent(id)}`,
-            );
+            history.pushState({}, "", `/messages/${encodeURIComponent(id)}`);
             await openRoom(id);
         });
 
@@ -411,10 +542,9 @@ export async function mount(root, { signal } = {}) {
                 );
                 if (lookupRes.status === 403) {
                     lookupWrap.setAttribute("hidden", "");
-                    showToast(
-                        i18n.t("ui.app.profile.message_hidden_toast"),
-                        { variant: "error" },
-                    );
+                    showToast(i18n.t("ui.app.profile.message_hidden_toast"), {
+                        variant: "error",
+                    });
                     return;
                 }
                 if (!lookupRes.ok) return;

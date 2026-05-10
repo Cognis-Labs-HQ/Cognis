@@ -33,6 +33,10 @@
   <string name="ui.reuse.generic.class">Class</string>
   <string name="ui.reuse.generic.reset">Reset</string>
   <string name="ui.reuse.generic.refresh">Refresh</string>
+  <string name="ui.reuse.profile_preview.loading">Loading…</string>
+  <string name="ui.reuse.profile_preview.followers">followers</string>
+  <string name="ui.reuse.profile_preview.following">following</string>
+  <string name="ui.reuse.profile_preview.posts">posts</string>
   <string name="ui.reuse.generic.save">Save</string>
   <string name="ui.reuse.generic.discard">Discard</string>
   <string name="ui.reuse.generic.done">Done</string>
@@ -535,6 +539,8 @@
   <string name="module.social.messages.icon_label">Message</string>
   <string name="module.social.messages.load_earlier">Load earlier</string>
   <string name="module.social.messages.start_failed">Failed to start conversation.</string>
+  <string name="module.social.messages.members">members</string>
+  <string name="module.social.messages.set_avatar">Set avatar</string>
   <string name="module.social.messages.key_unavailable">Encryption key unavailable.</string>
   <string name="ui.reuse.menu.classes">My Classes</string>
   <string name="module.study.classes.page_title">Classes</string>

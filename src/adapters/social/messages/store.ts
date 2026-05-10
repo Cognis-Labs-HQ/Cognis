@@ -29,13 +29,14 @@ import {
     getDataEncryptionKey,
 } from "../../../api/reuse/crypto.js";
 
-export type ChatroomKind = "dm" | "group";
+export type ChatroomKind = "dm" | "group" | "classroom";
 export type MemberRole = "owner" | "admin" | "member";
 
 export interface RoomRow {
     id: string;
     kind: ChatroomKind;
     title: string | null;
+    avatarKey: string | null;
     createdBy: string;
     createdAt: string;
     updatedAt: string;
@@ -89,7 +90,9 @@ export class DbMessagesStore {
     async ensureSchema(): Promise<void> {
         const idType = this.dbType === "postgresql" ? "TEXT" : "VARCHAR(64)";
         const enumKind =
-            this.dbType === "mariadb" ? "ENUM('dm','group')" : "VARCHAR(8)";
+            this.dbType === "mariadb"
+                ? "ENUM('dm','group','classroom')"
+                : "VARCHAR(16)";
         const enumRole =
             this.dbType === "mariadb"
                 ? "ENUM('owner','admin','member')"
@@ -107,6 +110,7 @@ export class DbMessagesStore {
                 id ${idType} PRIMARY KEY,
                 kind ${enumKind} NOT NULL,
                 title TEXT,
+                avatar_key TEXT,
                 created_by ${idType} NOT NULL,
                 created_at ${timestampType} ${tsDefault},
                 updated_at ${timestampType} ${tsDefault}
@@ -137,6 +141,18 @@ export class DbMessagesStore {
                 created_at ${timestampType} ${tsDefault}
             )`,
         );
+
+        await this.db
+            .execute("ALTER TABLE chatrooms ADD COLUMN avatar_key TEXT")
+            .catch(() => undefined);
+
+        if (this.dbType === "mariadb") {
+            await this.db
+                .execute(
+                    "ALTER TABLE chatrooms MODIFY kind ENUM('dm','group','classroom') NOT NULL",
+                )
+                .catch(() => undefined);
+        }
 
         await this.db
             .execute(
@@ -170,6 +186,7 @@ export class DbMessagesStore {
             id: String(row.id),
             kind: row.kind as ChatroomKind,
             title: (row.title as string | null) ?? null,
+            avatarKey: (row.avatar_key as string | null) ?? null,
             createdBy: String(row.created_by),
             createdAt: String(row.created_at),
             updatedAt: String(row.updated_at),
@@ -223,6 +240,17 @@ export class DbMessagesStore {
             [id],
         );
         return result.rows?.[0] ? this.rowToRoom(result.rows[0]) : null;
+    }
+
+    async updateRoomAvatar(
+        roomId: string,
+        avatarKey: string | null,
+    ): Promise<RoomRow | null> {
+        await this.db.execute(
+            `UPDATE chatrooms SET avatar_key = ${this.p(1)}, updated_at = ${this.nowExpr()} WHERE id = ${this.p(2)}`,
+            [avatarKey, roomId],
+        );
+        return this.getRoom(roomId);
     }
 
     async addMember(

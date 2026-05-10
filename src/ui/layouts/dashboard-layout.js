@@ -18,6 +18,7 @@ import {
 } from "../reuse/pwa.js";
 import { ensureFullAccountSession } from "../reuse/auth-session.js";
 import { createSearchBar } from "../reuse/search-bar.js";
+import { bindProfilePreviews } from "../reuse/profile-preview.js";
 
 capturePwaInstallPrompt();
 
@@ -372,7 +373,10 @@ export async function renderDashboardLayout(root, slots = {}) {
             existingShell.querySelector(".main-window") ?? existingShell,
         );
         applyActiveNavigation();
-        if (showTopbar || showNavbar) initSearchBar(i18n);
+        if (showTopbar || showNavbar) {
+            initSearchBar(i18n);
+            bindProfilePreviews(i18n);
+        }
         return;
     }
 
@@ -412,6 +416,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         applyCompactNav(root);
         initRouter(root);
         initSearchBar(i18n);
+        bindProfilePreviews(i18n);
     }
     bindThemeToggle({ usePreferenceApi });
     registerServiceWorker();

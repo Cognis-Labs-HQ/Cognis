@@ -33,6 +33,10 @@
   <string name="ui.reuse.generic.class">クラス</string>
   <string name="ui.reuse.generic.reset">リセット</string>
   <string name="ui.reuse.generic.refresh">更新</string>
+  <string name="ui.reuse.profile_preview.loading">読み込み中…</string>
+  <string name="ui.reuse.profile_preview.followers">フォロワー</string>
+  <string name="ui.reuse.profile_preview.following">フォロー中</string>
+  <string name="ui.reuse.profile_preview.posts">投稿</string>
   <string name="ui.reuse.generic.save">保存</string>
   <string name="ui.reuse.generic.discard">元に戻す</string>
   <string name="ui.reuse.generic.done">完了</string>
@@ -535,6 +539,8 @@
   <string name="module.social.messages.icon_label">メッセージ</string>
   <string name="module.social.messages.load_earlier">以前を読み込む</string>
   <string name="module.social.messages.start_failed">会話を開始できませんでした。</string>
+  <string name="module.social.messages.members">メンバー</string>
+  <string name="module.social.messages.set_avatar">アバターを設定</string>
   <string name="module.social.messages.key_unavailable">暗号化キーを利用できません。</string>
   <string name="ui.reuse.menu.classes">マイクラス</string>
   <string name="module.study.classes.page_title">クラス</string>

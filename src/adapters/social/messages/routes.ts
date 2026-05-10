@@ -335,6 +335,48 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             return true;
         }
 
+        // PATCH /messages/rooms/:id — teacher/admin room metadata updates.
+        if (!sub && req.method === "PATCH") {
+            const body = (await readJson(req)) as { avatarKey?: unknown };
+            if (room.kind !== "classroom") {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message:
+                                "Only classroom rooms can set chat avatars.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (claims.role !== "teacher" && claims.role !== "admin") {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message:
+                                "Teacher role required to set classroom chat avatar.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const avatarKey =
+                typeof body.avatarKey === "string" && body.avatarKey.trim()
+                    ? body.avatarKey.trim()
+                    : null;
+            const updated = await messagesStore.updateRoomAvatar(
+                roomId,
+                avatarKey,
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: updated }));
+            return true;
+        }
+
         // GET /messages/rooms/:id/key
         if (sub === "key" && !subArg && req.method === "GET") {
             const plaintextKeyHex =
