@@ -37,7 +37,12 @@ export interface LocalAccountStore {
         username: string,
         password: string,
         isAdmin?: boolean,
-    ): Promise<{ username: string; isAdmin: boolean; enabled: boolean }>;
+    ): Promise<{
+        username: string;
+        isAdmin: boolean;
+        enabled: boolean;
+        role?: string;
+    }>;
     verify(username: string, password: string): Promise<AuthContext | null>;
     has(username: string): Promise<boolean>;
     list(): Promise<
@@ -46,6 +51,7 @@ export interface LocalAccountStore {
             isAdmin: boolean;
             enabled: boolean;
             isFounder: boolean;
+            role?: string;
         }>
     >;
     setRole(
@@ -62,6 +68,7 @@ export interface LocalAccountStore {
         enabled: boolean;
         isAdmin: boolean;
         isFounder: boolean;
+        role?: string;
     } | null>;
     updateLastLogin(username: string): Promise<void>;
     setFounder(username: string, isFounder: boolean): Promise<void>;
@@ -77,6 +84,7 @@ interface StoredAccount {
     enabled: boolean;
     lastLogin: string | null;
     displayName: string | null;
+    role: "user" | "teacher" | "moderator" | "admin";
 }
 
 function hashPassword(input: string): string {
@@ -103,8 +111,14 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             enabled: true,
             lastLogin: null,
             displayName: username,
+            role: isAdmin ? "admin" : "user",
         });
-        return { username, isAdmin, enabled: true };
+        return {
+            username,
+            isAdmin,
+            enabled: true,
+            role: isAdmin ? "admin" : "user",
+        };
     }
 
     async verify(
@@ -124,6 +138,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             provider: "local",
             externalUserId: username,
             isAdmin: account.isAdmin,
+            role: account.role,
         };
     }
 
@@ -137,7 +152,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             isAdmin: account.isAdmin,
             enabled: account.enabled,
             isFounder: account.isFounder,
-            role: account.isAdmin ? "admin" : "user",
+            role: account.role,
         }));
     }
 
@@ -147,6 +162,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
     ) {
         const account = this.accounts.get(username);
         if (!account) throw new Error("not_found");
+        account.role = role;
         account.isAdmin = role === "admin";
     }
 
@@ -195,6 +211,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         enabled: boolean;
         isAdmin: boolean;
         isFounder: boolean;
+        role?: string;
     } | null> {
         const account = this.accounts.get(username);
         if (!account) return null;
@@ -205,6 +222,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             enabled: account.enabled,
             isAdmin: account.isAdmin,
             isFounder: account.isFounder,
+            role: account.role,
         };
     }
 

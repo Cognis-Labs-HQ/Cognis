@@ -517,6 +517,8 @@
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">Public Registration</string>
   <string name="ui.app.admin.security.enable_registrations_hint">Allow anyone to sign up without an invitation token.</string>
+  <string name="ui.app.admin.security.require_teacher_approval_label">Require Manual Approval for Teachers</string>
+  <string name="ui.app.admin.security.require_teacher_approval_hint">When enabled, teacher applications must be approved by an admin before the applicant becomes a teacher.</string>
   <string name="ui.app.admin.security.user_validation_mode_label">User Validation Method</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">Choose whether user accounts must be validated after login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">None</string>
@@ -526,6 +528,16 @@
   <string name="ui.app.settings.emails_domain_blocked_title">Domain not permitted</string>
   <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
   <string name="ui.app.settings.emails_verify_unavailable">Email verification is not available. Contact your administrator.</string>
+  <string name="ui.app.settings.study.title">Study</string>
+  <string name="ui.app.settings.study.no_languages">No languages are available.</string>
+  <string name="ui.app.settings.study.learn">Learn</string>
+  <string name="ui.app.settings.study.teach">Teach</string>
+  <string name="ui.app.settings.study.apply_to_teach">Apply to Teach</string>
+  <string name="ui.app.settings.study.teacher_application_title">Teacher Application</string>
+  <string name="ui.app.settings.study.teacher_application_reason">Tell admins why you should be allowed to teach this language.</string>
+  <string name="ui.app.settings.study.submit_application">Submit Application</string>
+  <string name="ui.app.settings.study.application_sent">Teacher application submitted.</string>
+  <string name="ui.app.settings.study.application_failed">Failed to submit teacher application.</string>
   <string name="ui.app.settings.datetime">Date &amp; Time</string>
   <string name="ui.app.settings.datetime_tz_heading">Timezone</string>
   <string name="ui.app.settings.datetime_tz_label">Display Timezone</string>
@@ -553,4 +565,13 @@
   <string name="module.study.classes.students_label">Students</string>
   <string name="module.study.classes.open_chat">Open Chat</string>
   <string name="module.study.classes.open_meeting">Start Meeting</string>
+  <string name="module.study.classes.pending_requests">Pending Teacher Requests</string>
+  <string name="module.study.classes.no_pending_requests">No pending teacher requests.</string>
+  <string name="module.study.classes.approve">Approve</string>
+  <string name="module.study.classes.reject">Reject</string>
+  <string name="module.study.classes.review_saved">Teacher request reviewed.</string>
+  <string name="module.study.classes.review_failed">Failed to review teacher request.</string>
+  <string name="module.study.classes.teacher_application_title">Teacher Application</string>
+  <string name="module.study.classes.teacher_application_reason">Tell admins why you should be allowed to teach this language.</string>
+  <string name="module.study.classes.submit_application">Submit Application</string>
 </resources>

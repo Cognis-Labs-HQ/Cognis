@@ -3,7 +3,9 @@
  *
  * Endpoints:
  *   GET  /api/v1/study/classes                 — list caller's classes (teacher view)
- *   POST /api/v1/study/teacher-requests        — submit a teacher request for a language
+ *   GET  /api/v1/study/preferences             — read caller's study language preferences
+ *   PUT  /api/v1/study/preferences             — save caller's study language preferences
+ *   POST /api/v1/study/teacher-requests        — submit or auto-approve a teacher request for a language
  *   GET  /api/v1/study/teacher-requests        — list all pending requests (admin only)
  *   POST /api/v1/study/teacher-requests/:id/approve — approve a pending request (admin)
  *   POST /api/v1/study/teacher-requests/:id/reject  — reject a pending request (admin)
@@ -15,6 +17,31 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { requireAuth } from "../../../api/auth/guard.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import type { DbClassesStore } from "./store.js";
+
+type SetRole = (username: string, role: "teacher") => Promise<void>;
+type DispatchToRole = (
+    role: "admin" | "teacher" | "user",
+    envelope: {
+        category: string;
+        subject: string;
+        body: string;
+        senderName?: string;
+        actionUrl?: string;
+        metadata?: Record<string, unknown>;
+    },
+) => Promise<unknown>;
+
+export interface ClassesRouteOptions {
+    requireTeacherManualApproval?: () => Promise<boolean> | boolean;
+    setRole?: SetRole;
+    setProfileRole?: SetRole;
+    dispatchToRole?: DispatchToRole;
+    log?: (
+        level: string,
+        message: string,
+        meta?: Record<string, unknown>,
+    ) => void;
+}
 
 function jsonOk(res: ServerResponse, data: unknown): void {
     res.writeHead(200, { "content-type": "application/json" });
@@ -31,19 +58,81 @@ function jsonError(
     res.end(JSON.stringify({ error: { code, message } }));
 }
 
+function normalizeLanguageList(input: unknown): string[] {
+    if (!Array.isArray(input)) return [];
+    return [
+        ...new Set(
+            input
+                .filter((entry): entry is string => typeof entry === "string")
+                .map((entry) => entry.trim().toLowerCase())
+                .filter(Boolean)
+                .slice(0, 25),
+        ),
+    ];
+}
+
 export function createClassesRoutes(
     store: DbClassesStore,
+    options: ClassesRouteOptions = {},
 ): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     return async (
         req: IncomingMessage,
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        const logMeta = {
+            component: "study-classes-routes",
+            method: req.method ?? "GET",
+            path: url.pathname,
+        };
+
         if (url.pathname === "/api/v1/study/classes" && req.method === "GET") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const classes = await store.getClassesForTeacher(claims.accountId);
+            const classes = await store.getClassesForTeacher(claims.sub);
             jsonOk(res, classes);
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/study/preferences" &&
+            req.method === "GET"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const prefs = await store.getStudyPreferences(claims.sub);
+            jsonOk(res, prefs);
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/study/preferences" &&
+            req.method === "PUT"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const body = (await readJson(req)) as {
+                learningLanguages?: unknown;
+                teachingLanguages?: unknown;
+            };
+            const learningLanguages = normalizeLanguageList(
+                body.learningLanguages,
+            );
+            const teachingLanguages = normalizeLanguageList(
+                body.teachingLanguages,
+            );
+            const prefs = await store.saveStudyPreferences(
+                claims.sub,
+                learningLanguages,
+                teachingLanguages,
+            );
+            options.log?.("info", "Saved study preferences.", {
+                ...logMeta,
+                accountId: claims.sub,
+                learningLanguageCount: learningLanguages.length,
+                teachingLanguageCount: teachingLanguages.length,
+            });
+            jsonOk(res, prefs);
             return true;
         }
 
@@ -54,29 +143,83 @@ export function createClassesRoutes(
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
 
-            const body = (await readJson(req)) as { languageCode?: unknown };
+            const body = (await readJson(req)) as {
+                languageCode?: unknown;
+                reason?: unknown;
+            };
             const languageCode =
                 typeof body?.languageCode === "string"
-                    ? body.languageCode.trim()
+                    ? body.languageCode.trim().toLowerCase()
                     : "";
+            const reason =
+                typeof body?.reason === "string" ? body.reason.trim() : "";
             if (!languageCode) {
                 jsonError(res, 400, "bad_request", "languageCode is required.");
                 return true;
             }
 
             const existing = await store.getTeacherRequest(
-                claims.accountId,
+                claims.sub,
                 languageCode,
             );
-            if (existing) {
+            if (existing?.status === "pending") {
                 jsonOk(res, existing);
                 return true;
             }
 
+            const requiresApproval =
+                (await options.requireTeacherManualApproval?.()) ?? true;
+            if (!requiresApproval) {
+                const request =
+                    existing ??
+                    (await store.submitTeacherRequest(
+                        claims.sub,
+                        languageCode,
+                        reason || null,
+                    ));
+                const classRow = await store.approveTeacherRequest(
+                    request.id,
+                    claims.sub,
+                );
+                await options.setRole?.(claims.sub, "teacher");
+                await options.setProfileRole?.(claims.sub, "teacher");
+                options.log?.("info", "Auto-approved teacher request.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    languageCode,
+                });
+                jsonOk(res, { request, class: classRow, autoApproved: true });
+                return true;
+            }
+
+            if (!reason) {
+                jsonError(res, 400, "bad_request", "reason is required.");
+                return true;
+            }
+
             const request = await store.submitTeacherRequest(
-                claims.accountId,
+                claims.sub,
                 languageCode,
+                reason,
             );
+            await options.dispatchToRole?.("admin", {
+                category: "study",
+                subject: `Teacher application for ${languageCode}`,
+                body: `${claims.sub} applied to teach ${languageCode}.`,
+                senderName: claims.sub,
+                actionUrl: "/classes",
+                metadata: {
+                    requestId: request.id,
+                    accountId: claims.sub,
+                    languageCode,
+                },
+            });
+            options.log?.("info", "Submitted teacher request.", {
+                ...logMeta,
+                accountId: claims.sub,
+                languageCode,
+                requestId: request.id,
+            });
             res.writeHead(201, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: request }));
             return true;
@@ -105,7 +248,7 @@ export function createClassesRoutes(
             if (action === "approve") {
                 const classRow = await store.approveTeacherRequest(
                     requestId,
-                    claims.accountId,
+                    claims.sub,
                 );
                 if (!classRow) {
                     jsonError(
@@ -116,9 +259,26 @@ export function createClassesRoutes(
                     );
                     return true;
                 }
+                await options.setRole?.(classRow.teacherAccountId, "teacher");
+                await options.setProfileRole?.(
+                    classRow.teacherAccountId,
+                    "teacher",
+                );
+                options.log?.("info", "Approved teacher request.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    teacherAccountId: classRow.teacherAccountId,
+                    languageCode: classRow.languageCode,
+                    requestId,
+                });
                 jsonOk(res, classRow);
             } else {
-                await store.rejectTeacherRequest(requestId, claims.accountId);
+                await store.rejectTeacherRequest(requestId, claims.sub);
+                options.log?.("info", "Rejected teacher request.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    requestId,
+                });
                 jsonOk(res, { rejected: true });
             }
             return true;

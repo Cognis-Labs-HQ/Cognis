@@ -517,6 +517,8 @@
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">公開登録</string>
   <string name="ui.app.admin.security.enable_registrations_hint">招待トークンなしで誰でも登録できるようにします。</string>
+  <string name="ui.app.admin.security.require_teacher_approval_label">教師の手動承認を必須にする</string>
+  <string name="ui.app.admin.security.require_teacher_approval_hint">有効にすると、申請者が教師になる前に管理者が教師申請を承認する必要があります。</string>
   <string name="ui.app.admin.security.user_validation_mode_label">ユーザー検証方式</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">ログイン後にユーザーアカウントの検証を必須にする方式を選択します。</string>
   <string name="ui.app.admin.security.user_validation_mode.none">なし</string>
@@ -526,6 +528,16 @@
   <string name="ui.app.settings.emails_domain_blocked_title">ドメインが許可されていません</string>
   <string name="ui.app.settings.emails_domain_blocked_body">このメールアドレスは、信頼済みドメインリストに登録されていないドメインのものです。管理者にセキュリティ設定の更新を依頼してください。</string>
   <string name="ui.app.settings.emails_verify_unavailable">メール認証は利用できません。管理者にお問い合わせください。</string>
+  <string name="ui.app.settings.study.title">学習</string>
+  <string name="ui.app.settings.study.no_languages">利用できる言語はありません。</string>
+  <string name="ui.app.settings.study.learn">学ぶ</string>
+  <string name="ui.app.settings.study.teach">教える</string>
+  <string name="ui.app.settings.study.apply_to_teach">教える申請</string>
+  <string name="ui.app.settings.study.teacher_application_title">教師申請</string>
+  <string name="ui.app.settings.study.teacher_application_reason">この言語を教えることを許可されるべき理由を管理者に伝えてください。</string>
+  <string name="ui.app.settings.study.submit_application">申請を送信</string>
+  <string name="ui.app.settings.study.application_sent">教師申請を送信しました。</string>
+  <string name="ui.app.settings.study.application_failed">教師申請の送信に失敗しました。</string>
   <string name="ui.app.settings.datetime">日付と時刻</string>
   <string name="ui.app.settings.datetime_tz_heading">タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_label">表示タイムゾーン</string>
@@ -553,4 +565,13 @@
   <string name="module.study.classes.students_label">生徒</string>
   <string name="module.study.classes.open_chat">チャットを開く</string>
   <string name="module.study.classes.open_meeting">ミーティングを開始</string>
+  <string name="module.study.classes.pending_requests">保留中の教師申請</string>
+  <string name="module.study.classes.no_pending_requests">保留中の教師申請はありません。</string>
+  <string name="module.study.classes.approve">承認</string>
+  <string name="module.study.classes.reject">却下</string>
+  <string name="module.study.classes.review_saved">教師申請を確認しました。</string>
+  <string name="module.study.classes.review_failed">教師申請の確認に失敗しました。</string>
+  <string name="module.study.classes.teacher_application_title">教師申請</string>
+  <string name="module.study.classes.teacher_application_reason">この言語を教えることを許可されるべき理由を管理者に伝えてください。</string>
+  <string name="module.study.classes.submit_application">申請を送信</string>
 </resources>

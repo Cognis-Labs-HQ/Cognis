@@ -517,6 +517,8 @@
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">Registrasi Publik</string>
   <string name="ui.app.admin.security.enable_registrations_hint">Izinkan siapa pun mendaftar tanpa token undangan.</string>
+  <string name="ui.app.admin.security.require_teacher_approval_label">Wajibkan Persetujuan Manual untuk Pengajar</string>
+  <string name="ui.app.admin.security.require_teacher_approval_hint">Jika diaktifkan, aplikasi pengajar harus disetujui admin sebelum pemohon menjadi pengajar.</string>
   <string name="ui.app.admin.security.user_validation_mode_label">Metode Validasi Pengguna</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">Pilih apakah akun pengguna harus divalidasi setelah login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Tidak ada</string>
@@ -526,6 +528,16 @@
   <string name="ui.app.settings.emails_domain_blocked_title">Domain tidak diizinkan</string>
   <string name="ui.app.settings.emails_domain_blocked_body">Alamat email ini berasal dari domain yang tidak ada dalam daftar domain tepercaya. Hubungi administrator Anda untuk memperbarui pengaturan keamanan.</string>
   <string name="ui.app.settings.emails_verify_unavailable">Verifikasi email tidak tersedia. Hubungi administrator Anda.</string>
+  <string name="ui.app.settings.study.title">Studi</string>
+  <string name="ui.app.settings.study.no_languages">Tidak ada bahasa yang tersedia.</string>
+  <string name="ui.app.settings.study.learn">Belajar</string>
+  <string name="ui.app.settings.study.teach">Mengajar</string>
+  <string name="ui.app.settings.study.apply_to_teach">Ajukan untuk Mengajar</string>
+  <string name="ui.app.settings.study.teacher_application_title">Aplikasi Pengajar</string>
+  <string name="ui.app.settings.study.teacher_application_reason">Beri tahu admin mengapa Anda seharusnya diizinkan mengajar bahasa ini.</string>
+  <string name="ui.app.settings.study.submit_application">Kirim Aplikasi</string>
+  <string name="ui.app.settings.study.application_sent">Aplikasi pengajar dikirim.</string>
+  <string name="ui.app.settings.study.application_failed">Gagal mengirim aplikasi pengajar.</string>
   <string name="ui.app.settings.datetime">Tanggal &amp; Waktu</string>
   <string name="ui.app.settings.datetime_tz_heading">Zona Waktu</string>
   <string name="ui.app.settings.datetime_tz_label">Zona Waktu Tampilan</string>
@@ -553,4 +565,13 @@
   <string name="module.study.classes.students_label">Siswa</string>
   <string name="module.study.classes.open_chat">Buka Obrolan</string>
   <string name="module.study.classes.open_meeting">Mulai Pertemuan</string>
+  <string name="module.study.classes.pending_requests">Permintaan Pengajar Tertunda</string>
+  <string name="module.study.classes.no_pending_requests">Tidak ada permintaan pengajar tertunda.</string>
+  <string name="module.study.classes.approve">Setujui</string>
+  <string name="module.study.classes.reject">Tolak</string>
+  <string name="module.study.classes.review_saved">Permintaan pengajar telah ditinjau.</string>
+  <string name="module.study.classes.review_failed">Gagal meninjau permintaan pengajar.</string>
+  <string name="module.study.classes.teacher_application_title">Aplikasi Pengajar</string>
+  <string name="module.study.classes.teacher_application_reason">Beri tahu admin mengapa Anda seharusnya diizinkan mengajar bahasa ini.</string>
+  <string name="module.study.classes.submit_application">Kirim Aplikasi</string>
 </resources>

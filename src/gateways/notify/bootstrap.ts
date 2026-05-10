@@ -131,6 +131,50 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             gateway.dispatch(envelope),
     );
     ctx.capabilities.contribute(
+        "notify:dispatchToRole",
+        async (
+            role: "admin" | "teacher" | "user",
+            envelope: Omit<
+                Parameters<typeof gateway.dispatch>[0],
+                "recipientUsername"
+            >,
+        ) => {
+            const accountStore = ctx.capabilities.get<{
+                list(): Promise<
+                    Array<{
+                        username: string;
+                        role?: string;
+                        isAdmin?: boolean;
+                    }>
+                >;
+            }>("auth:accountStore");
+            if (!accountStore) return { recipients: [], dispatched: [] };
+            const users = await accountStore.list();
+            const recipients = users
+                .filter((user) => {
+                    const userRole =
+                        user.role ?? (user.isAdmin ? "admin" : "user");
+                    if (role === "admin")
+                        return userRole === "admin" || userRole === "owner";
+                    if (role === "teacher") return userRole === "teacher";
+                    return userRole === "user";
+                })
+                .map((user) => user.username);
+            const dispatched: Array<{
+                recipientUsername: string;
+                result: Awaited<ReturnType<typeof gateway.dispatch>>;
+            }> = [];
+            for (const recipientUsername of recipients) {
+                const result = await gateway.dispatch({
+                    ...envelope,
+                    recipientUsername,
+                });
+                dispatched.push({ recipientUsername, result });
+            }
+            return { recipients, dispatched };
+        },
+    );
+    ctx.capabilities.contribute(
         "notify:registerCategory",
         (id: string, label: string) => gateway.registerCategory(id, label),
     );

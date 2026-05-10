@@ -517,6 +517,8 @@
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">Öffentliche Registrierung</string>
   <string name="ui.app.admin.security.enable_registrations_hint">Erlaubt jedem, sich ohne Einladungstoken zu registrieren.</string>
+  <string name="ui.app.admin.security.require_teacher_approval_label">Manuelle Genehmigung für Lehrkräfte erforderlich</string>
+  <string name="ui.app.admin.security.require_teacher_approval_hint">Wenn aktiviert, müssen Lehreranträge von einem Administrator genehmigt werden, bevor die Person Lehrkraft wird.</string>
   <string name="ui.app.admin.security.user_validation_mode_label">Benutzervalidierungsmethode</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">Legen Sie fest, ob Benutzerkonten nach der Anmeldung validiert werden müssen.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Keine</string>
@@ -526,6 +528,16 @@
   <string name="ui.app.settings.emails_domain_blocked_title">Domain nicht erlaubt</string>
   <string name="ui.app.settings.emails_domain_blocked_body">Diese E-Mail-Adresse gehört zu einer Domain, die nicht in der Liste der vertrauenswürdigen Domains steht. Bitten Sie Ihren Administrator, die Sicherheitseinstellungen zu aktualisieren.</string>
   <string name="ui.app.settings.emails_verify_unavailable">E-Mail-Verifizierung ist nicht verfügbar. Bitte wenden Sie sich an Ihren Administrator.</string>
+  <string name="ui.app.settings.study.title">Lernen</string>
+  <string name="ui.app.settings.study.no_languages">Es sind keine Sprachen verfügbar.</string>
+  <string name="ui.app.settings.study.learn">Lernen</string>
+  <string name="ui.app.settings.study.teach">Unterrichten</string>
+  <string name="ui.app.settings.study.apply_to_teach">Zum Unterrichten bewerben</string>
+  <string name="ui.app.settings.study.teacher_application_title">Lehrerantrag</string>
+  <string name="ui.app.settings.study.teacher_application_reason">Erklären Sie den Administratoren, warum Sie diese Sprache unterrichten dürfen sollten.</string>
+  <string name="ui.app.settings.study.submit_application">Antrag senden</string>
+  <string name="ui.app.settings.study.application_sent">Lehrerantrag wurde eingereicht.</string>
+  <string name="ui.app.settings.study.application_failed">Lehrerantrag konnte nicht eingereicht werden.</string>
   <string name="ui.app.settings.datetime">Datum &amp; Uhrzeit</string>
   <string name="ui.app.settings.datetime_tz_heading">Zeitzone</string>
   <string name="ui.app.settings.datetime_tz_label">Anzeigezeitzone</string>
@@ -553,4 +565,13 @@
   <string name="module.study.classes.students_label">Schüler</string>
   <string name="module.study.classes.open_chat">Chat öffnen</string>
   <string name="module.study.classes.open_meeting">Sitzung starten</string>
+  <string name="module.study.classes.pending_requests">Ausstehende Lehreranträge</string>
+  <string name="module.study.classes.no_pending_requests">Keine ausstehenden Lehreranträge.</string>
+  <string name="module.study.classes.approve">Genehmigen</string>
+  <string name="module.study.classes.reject">Ablehnen</string>
+  <string name="module.study.classes.review_saved">Lehrerantrag wurde geprüft.</string>
+  <string name="module.study.classes.review_failed">Lehrerantrag konnte nicht geprüft werden.</string>
+  <string name="module.study.classes.teacher_application_title">Lehrerantrag</string>
+  <string name="module.study.classes.teacher_application_reason">Erklären Sie den Administratoren, warum Sie diese Sprache unterrichten dürfen sollten.</string>
+  <string name="module.study.classes.submit_application">Antrag senden</string>
 </resources>

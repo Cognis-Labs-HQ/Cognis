@@ -7,6 +7,7 @@ import type {
 } from "../../../gateways/study/gateway.js";
 import { DbClassesStore } from "./store.js";
 import { createClassesRoutes } from "./routes.js";
+import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import {
     getCookieSession,
     setPageSecurityHeaders,
@@ -85,9 +86,52 @@ export async function bootstrapStudyAdapter(
     adapterReady = true;
 
     const isEnabled = () => ctx.isAdapterEnabled();
+    const preferenceStore =
+        ctx.capabilities.get<UserPreferenceStore>("preferences:store");
+    const readTeacherManualApproval = async (): Promise<boolean> => {
+        if (!preferenceStore) return true;
+        const raw = await preferenceStore.get(
+            "__system__",
+            "security-settings",
+        );
+        if (!raw) return true;
+        try {
+            const parsed = JSON.parse(raw) as {
+                requireTeacherManualApproval?: unknown;
+            };
+            return parsed.requireTeacherManualApproval !== false;
+        } catch {
+            return true;
+        }
+    };
+    const accountStore = ctx.capabilities.get<{
+        setRole(username: string, role: "teacher"): Promise<void>;
+    }>("auth:accountStore");
+    const setProfileRole = ctx.capabilities.get<
+        (handle: string, role: "teacher") => Promise<void>
+    >("profile:setRoleByHandle");
 
     ctx.registerRoute(createClassesPageRoute(isEnabled), "study");
-    ctx.registerRoute(createClassesRoutes(store), "study");
+    ctx.registerRoute(
+        createClassesRoutes(store, {
+            requireTeacherManualApproval: readTeacherManualApproval,
+            setRole: accountStore
+                ? (username, role) => accountStore.setRole(username, role)
+                : undefined,
+            setProfileRole,
+            dispatchToRole: (role, envelope) => {
+                const dispatch = ctx.capabilities.get<
+                    (
+                        role: "admin" | "teacher" | "user",
+                        envelope: typeof envelope,
+                    ) => Promise<unknown>
+                >("notify:dispatchToRole");
+                return dispatch?.(role, envelope) ?? Promise.resolve(null);
+            },
+            log: ctx.log,
+        }),
+        "study",
+    );
 
     const adapterRoot = path.dirname(fileURLToPath(import.meta.url));
     const uiDir = path.join(adapterRoot, "ui");

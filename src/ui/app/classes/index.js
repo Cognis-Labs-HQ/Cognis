@@ -5,7 +5,7 @@
  * points to the class chat room and (future) Jitsi Meet classroom.
  *
  * For all users: provides a form to request teacher status for a language.
- * Requests are queued for admin approval.
+ * Requests are queued for admin approval when manual approval is enabled.
  *
  * @module app/classes
  */
@@ -23,6 +23,10 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "module.study.classes.page_title");
 
     let classes = [];
+    let pendingRequests = [];
+    const isAdmin = ["admin", "owner"].includes(
+        localStorage.getItem("cognis_role") ?? "",
+    );
 
     async function loadClasses() {
         try {
@@ -36,7 +40,20 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
-    await loadClasses();
+    async function loadPendingRequests() {
+        if (!isAdmin) return;
+        try {
+            const response = await apiFetch("/api/v1/study/teacher-requests");
+            if (response.ok) {
+                const payload = await response.json();
+                pendingRequests = payload?.data ?? [];
+            }
+        } catch {
+            pendingRequests = [];
+        }
+    }
+
+    await Promise.all([loadClasses(), loadPendingRequests()]);
 
     function renderClassList() {
         if (!classes.length) {
@@ -90,13 +107,75 @@ export async function mount(root, { signal } = {}) {
       `;
     }
 
+    function renderPendingRequests() {
+        if (!isAdmin) return "";
+        const rows = pendingRequests.length
+            ? pendingRequests
+                  .map(
+                      (request) => `
+                <li class="classes-item">
+                    <span class="classes-language">${escapeHtml(request.accountId)} · ${escapeHtml(request.languageCode)}</span>
+                    ${request.reason ? `<p class="classes-request-reason">${escapeHtml(request.reason)}</p>` : ""}
+                    <div class="classes-actions">
+                        <button type="button" class="btn-confirm btn-animated classes-review-btn" data-request-id="${escapeHtml(request.id)}" data-action="approve">${escapeHtml(i18n.t("module.study.classes.approve"))}</button>
+                        <button type="button" class="btn-cancel btn-animated classes-review-btn" data-request-id="${escapeHtml(request.id)}" data-action="reject">${escapeHtml(i18n.t("module.study.classes.reject"))}</button>
+                    </div>
+                </li>
+            `,
+                  )
+                  .join("")
+            : `<p class="classes-empty">${escapeHtml(i18n.t("module.study.classes.no_pending_requests"))}</p>`;
+        return `
+            <div class="classes-request-form">
+                <h3 class="classes-section-heading">${escapeHtml(i18n.t("module.study.classes.pending_requests"))}</h3>
+                <ul class="classes-list">${rows}</ul>
+            </div>
+        `;
+    }
+
+    async function askTeacherReason() {
+        let reason = "";
+        const action = await openPopup({
+            title: i18n.t("module.study.classes.teacher_application_title"),
+            body: `
+                <label class="stack">
+                    ${escapeHtml(i18n.t("module.study.classes.teacher_application_reason"))}
+                    <textarea id="classes-teacher-reason" class="theme-select" rows="5"></textarea>
+                </label>
+            `,
+            variant: "confirm",
+            actions: [
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.popup.cancel"),
+                    variant: "cancel",
+                },
+                {
+                    id: "submit",
+                    label: i18n.t("module.study.classes.submit_application"),
+                    variant: "confirm",
+                },
+            ],
+            onAction: (actionId, overlay) => {
+                if (actionId !== "submit") return true;
+                const input = overlay.querySelector("#classes-teacher-reason");
+                reason = input?.value?.trim() ?? "";
+                return true;
+            },
+        });
+        return action === "submit" ? reason : null;
+    }
+
     const classListElement = {
         id: "class-list",
         title: i18n.t("module.study.classes.page_title"),
         render() {
             const section = document.createElement("div");
             section.className = "classes-section";
-            section.innerHTML = renderClassList() + renderRequestForm();
+            section.innerHTML =
+                renderClassList() +
+                renderRequestForm() +
+                renderPendingRequests();
 
             section.addEventListener(
                 "click",
@@ -110,6 +189,34 @@ export async function mount(root, { signal } = {}) {
                         return;
                     }
 
+                    const reviewBtn = event.target.closest(
+                        ".classes-review-btn",
+                    );
+                    if (reviewBtn) {
+                        const requestId = reviewBtn.dataset.requestId;
+                        const action = reviewBtn.dataset.action;
+                        const response = await apiFetch(
+                            `/api/v1/study/teacher-requests/${encodeURIComponent(requestId)}/${action}`,
+                            { method: "POST" },
+                        );
+                        showToast(
+                            i18n.t(
+                                response.ok
+                                    ? "module.study.classes.review_saved"
+                                    : "module.study.classes.review_failed",
+                            ),
+                            { variant: response.ok ? "success" : "error" },
+                        );
+                        if (response.ok) {
+                            await loadPendingRequests();
+                            section.innerHTML =
+                                renderClassList() +
+                                renderRequestForm() +
+                                renderPendingRequests();
+                        }
+                        return;
+                    }
+
                     const requestBtn = event.target.closest(
                         ".classes-request-btn",
                     );
@@ -119,6 +226,8 @@ export async function mount(root, { signal } = {}) {
                         );
                         const languageCode = input?.value?.trim() ?? "";
                         if (!languageCode) return;
+                        const reason = await askTeacherReason();
+                        if (reason === null) return;
 
                         try {
                             const response = await apiFetch(
@@ -128,13 +237,16 @@ export async function mount(root, { signal } = {}) {
                                     headers: {
                                         "content-type": "application/json",
                                     },
-                                    body: JSON.stringify({ languageCode }),
+                                    body: JSON.stringify({
+                                        languageCode,
+                                        reason,
+                                    }),
                                 },
                             );
                             if (response.ok) {
                                 showToast(
                                     i18n.t("module.study.classes.request_sent"),
-                                    "success",
+                                    { variant: "success" },
                                 );
                                 if (input) input.value = "";
                             } else {
@@ -142,13 +254,13 @@ export async function mount(root, { signal } = {}) {
                                     i18n.t(
                                         "module.study.classes.request_failed",
                                     ),
-                                    "error",
+                                    { variant: "error" },
                                 );
                             }
                         } catch {
                             showToast(
                                 i18n.t("module.study.classes.request_failed"),
-                                "error",
+                                { variant: "error" },
                             );
                         }
                     }

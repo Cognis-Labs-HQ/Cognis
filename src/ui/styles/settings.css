@@ -262,3 +262,36 @@ body[data-theme="light"] .email-badge-unverified {
     flex: 1 1 0;
     min-width: 0;
 }
+
+.study-language-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 10px 0;
+}
+
+.study-language-table th,
+.study-language-table td {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.study-language-table th {
+    background: var(--control-bg);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.study-teacher-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.study-teacher-apply-btn {
+    font-size: 0.85rem;
+    padding: 8px 14px;
+}
