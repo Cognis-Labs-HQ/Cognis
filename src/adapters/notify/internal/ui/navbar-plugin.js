@@ -595,7 +595,7 @@ function showArrivalToast(notif, i18n) {
 }
 
 (async function init() {
-    if (!localStorage.getItem("cognis_token")) return;
+    if (!localStorage.getItem("cognis_access_token")) return;
 
     try {
         injectStyles();
