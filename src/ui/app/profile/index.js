@@ -163,7 +163,7 @@ function visibilityClass(v) {
 function renderAvatarBadge(roleValue) {
     if (!roleValue) return "";
     if (roleValue === "owner") {
-        return `<span class="profile-avatar-badge profile-avatar-badge--admin" aria-hidden="true"><img src="/static/assets/icons/crown.svg" alt="" class="profile-avatar-badge-icon" /></span>`;
+        return `<span class="profile-avatar-badge profile-avatar-badge--owner" aria-hidden="true"><img src="/static/assets/icons/crown.svg" alt="" class="profile-avatar-badge-icon" /></span>`;
     }
     if (roleValue === "admin") {
         return `<span class="profile-avatar-badge profile-avatar-badge--admin" aria-hidden="true"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-avatar-badge-icon" /></span>`;
