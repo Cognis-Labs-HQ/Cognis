@@ -169,10 +169,10 @@ export class DbClassesStore {
             `SELECT COUNT(*) AS total FROM study_languages`,
             [],
         );
-        const total = Number(
+        const existingLanguageCount = Number(
             (countResult.rows?.[0] as Record<string, unknown>)?.total ?? 0,
         );
-        if (total === 0) {
+        if (existingLanguageCount === 0) {
             await this.seedStudyLanguages();
         }
     }

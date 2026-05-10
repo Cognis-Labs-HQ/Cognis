@@ -42,6 +42,14 @@ const DEBOUNCE_MS = 280;
  * @param {string} query
  * @returns {Array}
  */
+/**
+ * Filters localGroups against a query string, returning only groups with
+ * at least one item whose `label` or `id` contains the query (case-insensitive).
+ *
+ * @param {Array<{category: string, items: Array<{id: string, label: string}>}>} localGroups
+ * @param {string} query - The search query.
+ * @returns {Array<{category: string, items: Array}>} Groups with matching items only.
+ */
 function filterLocalGroups(localGroups, query) {
     if (!localGroups?.length || !query) return [];
     const lower = query.toLowerCase();
@@ -166,9 +174,9 @@ export function createSearchBar({
         try {
             const token = localStorage.getItem("cognis_access_token");
             const headers = token ? { authorization: `Bearer ${token}` } : {};
-            const typeParam = usersOnly ? "&type=users" : "";
+            const typeFilterParam = usersOnly ? "&type=users" : "";
             const response = await fetch(
-                `${endpoint}?q=${encodeURIComponent(query)}${typeParam}`,
+                `${endpoint}?q=${encodeURIComponent(query)}${typeFilterParam}`,
                 { credentials: "same-origin", headers },
             );
             if (!response.ok) {

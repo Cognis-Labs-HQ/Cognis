@@ -442,7 +442,7 @@ function initSearchBar(i18n) {
     wrap.dataset.searchBarBound = "true";
     injectSearchBarStyles();
 
-    const settingsGroup = {
+    const settingsLocalSearchGroup = {
         category:
             i18n.t("ui.reuse.menu.administration") +
             " / " +
@@ -471,7 +471,7 @@ function initSearchBar(i18n) {
         placeholder: i18n.t("ui.layout.search.placeholder"),
         ariaLabel: i18n.t("ui.layout.search.aria"),
         noResultsText: i18n.t("ui.layout.search.no_results"),
-        localGroups: [settingsGroup],
+        localGroups: [settingsLocalSearchGroup],
         onSelect: (result) => {
             if (result?.handle) {
                 navigateTo(`/profile/${encodeURIComponent(result.handle)}`);
