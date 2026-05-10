@@ -78,6 +78,14 @@ export class DbMessagesStore {
         return this.dbType === "postgresql" ? "NOW()" : "CURRENT_TIMESTAMP";
     }
 
+    private boolDefault(): string {
+        return this.dbType === "postgresql" ? "FALSE" : "0";
+    }
+
+    private boolParam(value: boolean): boolean | number {
+        return this.dbType === "postgresql" ? value : value ? 1 : 0;
+    }
+
     async ensureSchema(): Promise<void> {
         const idType = this.dbType === "postgresql" ? "TEXT" : "VARCHAR(64)";
         const enumKind =
@@ -112,7 +120,7 @@ export class DbMessagesStore {
                 role ${enumRole} NOT NULL,
                 joined_at ${timestampType} ${tsDefault},
                 last_read_at ${timestampType},
-                muted ${boolType} NOT NULL DEFAULT 0,
+                muted ${boolType} NOT NULL DEFAULT ${this.boolDefault()},
                 PRIMARY KEY (chatroom_id, account_id)
             )`,
         );
@@ -374,7 +382,7 @@ export class DbMessagesStore {
         await this.db.execute(
             `UPDATE chatroom_members SET muted = ${this.p(1)}
              WHERE chatroom_id = ${this.p(2)} AND account_id = ${this.p(3)}`,
-            [muted ? 1 : 0, roomId, accountId],
+            [this.boolParam(muted), roomId, accountId],
         );
     }
 
