@@ -167,11 +167,6 @@ export class CoreAuthGateway {
                 "INSERT INTO auth_adapter_configs (adapter_id, enabled, config_json) VALUES ($1, $2, $3) ON CONFLICT (adapter_id) DO UPDATE SET config_json = EXCLUDED.config_json, enabled = EXCLUDED.enabled",
                 [adapterId, enabled, json],
             );
-        } else if (this.dbType === "sqlite") {
-            await this.db.execute(
-                "INSERT INTO auth_adapter_configs (adapter_id, enabled, config_json) VALUES (?, ?, ?) ON CONFLICT(adapter_id) DO UPDATE SET config_json = excluded.config_json, enabled = excluded.enabled",
-                [adapterId, enabled, json],
-            );
         } else {
             await this.db.execute(
                 "INSERT INTO auth_adapter_configs (adapter_id, enabled, config_json) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE config_json = VALUES(config_json), enabled = VALUES(enabled)",
@@ -224,11 +219,6 @@ export class CoreAuthGateway {
         if (this.dbType === "postgresql") {
             await this.db.execute(
                 "INSERT INTO auth_adapter_configs (adapter_id, enabled, config_json) VALUES ($1, $2, $3) ON CONFLICT (adapter_id) DO UPDATE SET enabled = EXCLUDED.enabled",
-                [adapterId, enabledInt, json],
-            );
-        } else if (this.dbType === "sqlite") {
-            await this.db.execute(
-                "INSERT INTO auth_adapter_configs (adapter_id, enabled, config_json) VALUES (?, ?, ?) ON CONFLICT(adapter_id) DO UPDATE SET enabled = excluded.enabled",
                 [adapterId, enabledInt, json],
             );
         } else {

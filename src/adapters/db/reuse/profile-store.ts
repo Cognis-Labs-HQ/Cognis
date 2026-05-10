@@ -68,60 +68,10 @@ export class DbProfileStore implements ProfileCreateStore {
     async ensureSchema(): Promise<void> {
         if (this.dbType === "postgresql") {
             await this.ensureSchemaPostgresql();
-        } else if (this.dbType === "mariadb") {
-            await this.ensureSchemaMariadb();
         } else {
-            await this.ensureSchemaSqlite();
+            await this.ensureSchemaMariadb();
         }
         await this.seedFileSizeLimits();
-    }
-
-    private async ensureSchemaSqlite(): Promise<void> {
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_profiles (
-      account_id TEXT PRIMARY KEY,
-      handle TEXT NOT NULL UNIQUE,
-      display_name TEXT,
-      role TEXT NOT NULL DEFAULT 'user',
-      bio TEXT,
-      location TEXT,
-      website TEXT,
-      avatar_key TEXT,
-      banner_key TEXT,
-      visibility TEXT NOT NULL DEFAULT 'hidden',
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_follows (
-      follower_id TEXT NOT NULL,
-      following_id TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (follower_id, following_id),
-      FOREIGN KEY (follower_id) REFERENCES accounts(id) ON DELETE CASCADE,
-      FOREIGN KEY (following_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_blocks (
-      blocker_id TEXT NOT NULL,
-      blocked_id TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (blocker_id, blocked_id),
-      FOREIGN KEY (blocker_id) REFERENCES accounts(id) ON DELETE CASCADE,
-      FOREIGN KEY (blocked_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS posts (
-      id TEXT PRIMARY KEY,
-      account_id TEXT NOT NULL,
-      title TEXT,
-      content TEXT NOT NULL,
-      visibility TEXT NOT NULL DEFAULT 'community',
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS file_size_limits (
-      category TEXT PRIMARY KEY,
-      max_bytes INTEGER NOT NULL
-    )`);
     }
 
     private async ensureSchemaPostgresql(): Promise<void> {
@@ -228,12 +178,7 @@ export class DbProfileStore implements ProfileCreateStore {
             ["global", 10_485_760],
         ];
         for (const [category, maxBytes] of defaults) {
-            if (this.dbType === "sqlite") {
-                await this.db.execute(
-                    `INSERT OR IGNORE INTO file_size_limits (category, max_bytes) VALUES (${this.p(1)}, ${this.p(2)})`,
-                    [category, maxBytes],
-                );
-            } else if (this.dbType === "postgresql") {
+            if (this.dbType === "postgresql") {
                 await this.db.execute(
                     `INSERT INTO file_size_limits (category, max_bytes) VALUES (${this.p(1)}, ${this.p(2)}) ON CONFLICT (category) DO NOTHING`,
                     [category, maxBytes],
@@ -254,12 +199,7 @@ export class DbProfileStore implements ProfileCreateStore {
         displayName?: string,
     ): Promise<AccountProfile | null> {
         try {
-            if (this.dbType === "sqlite") {
-                await this.db.execute(
-                    `INSERT OR IGNORE INTO account_profiles (account_id, handle, role) VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)})`,
-                    [accountId, handle, role],
-                );
-            } else if (this.dbType === "postgresql") {
+            if (this.dbType === "postgresql") {
                 await this.db.execute(
                     `INSERT INTO account_profiles (account_id, handle, role) VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)}) ON CONFLICT (account_id) DO NOTHING`,
                     [accountId, handle, role],
@@ -380,12 +320,7 @@ export class DbProfileStore implements ProfileCreateStore {
     }
 
     async follow(followerId: string, followingId: string): Promise<void> {
-        if (this.dbType === "sqlite") {
-            await this.db.execute(
-                `INSERT OR IGNORE INTO account_follows (follower_id, following_id) VALUES (${this.p(1)}, ${this.p(2)})`,
-                [followerId, followingId],
-            );
-        } else if (this.dbType === "postgresql") {
+        if (this.dbType === "postgresql") {
             await this.db.execute(
                 `INSERT INTO account_follows (follower_id, following_id) VALUES (${this.p(1)}, ${this.p(2)}) ON CONFLICT DO NOTHING`,
                 [followerId, followingId],
@@ -457,12 +392,7 @@ export class DbProfileStore implements ProfileCreateStore {
     async block(blockerId: string, blockedId: string): Promise<void> {
         await this.unfollow(blockerId, blockedId);
         await this.unfollow(blockedId, blockerId);
-        if (this.dbType === "sqlite") {
-            await this.db.execute(
-                `INSERT OR IGNORE INTO account_blocks (blocker_id, blocked_id) VALUES (${this.p(1)}, ${this.p(2)})`,
-                [blockerId, blockedId],
-            );
-        } else if (this.dbType === "postgresql") {
+        if (this.dbType === "postgresql") {
             await this.db.execute(
                 `INSERT INTO account_blocks (blocker_id, blocked_id) VALUES (${this.p(1)}, ${this.p(2)}) ON CONFLICT DO NOTHING`,
                 [blockerId, blockedId],
@@ -552,13 +482,7 @@ export class DbProfileStore implements ProfileCreateStore {
     }
 
     async setFileSizeLimit(category: string, maxBytes: number): Promise<void> {
-        if (this.dbType === "sqlite") {
-            await this.db.execute(
-                `INSERT INTO file_size_limits (category, max_bytes) VALUES (${this.p(1)}, ${this.p(2)})
-         ON CONFLICT (category) DO UPDATE SET max_bytes = excluded.max_bytes`,
-                [category, maxBytes],
-            );
-        } else if (this.dbType === "postgresql") {
+        if (this.dbType === "postgresql") {
             await this.db.execute(
                 `INSERT INTO file_size_limits (category, max_bytes) VALUES (${this.p(1)}, ${this.p(2)})
          ON CONFLICT (category) DO UPDATE SET max_bytes = EXCLUDED.max_bytes`,

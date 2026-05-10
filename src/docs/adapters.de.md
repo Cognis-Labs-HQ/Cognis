@@ -20,9 +20,8 @@ Jeder Adapter lebt unter `src/adapters/<gateway-id>/<adapter-id>/` und trägt se
 ```
 src/adapters/
   db/
-    sqlite/      — SQLite (Standard)
     mariadb/     — MariaDB/MySQL
-    postgres/    — PostgreSQL
+    postgres/    — PostgreSQL (Standard)
     memory/      — In-Memory (nur Tests)
   auth/
     local/       — Lokale Anmeldedaten mit scrypt-Hashing

@@ -27,7 +27,7 @@ Tidak bertanggung jawab atas: logika penyedia auth tertentu (adapter), SQL basis
 ```
 core/            — kontrak, antarmuka, layanan kebijakan
 gateways/        — orkestrator domain (auth, db, notify, profile, files, logging)
-adapters/        — implementasi penyedia konkret (sqlite, ldap, smtp, dll.)
+adapters/        — implementasi penyedia konkret (postgres, ldap, smtp, dll.)
 modules/         — ekstensi fitur opsional
 api/             — server HTTP, registri rute, lapisan permintaan/respons
 ui/              — frontend browser (halaman, tata letak, utilitas reuse, gaya)

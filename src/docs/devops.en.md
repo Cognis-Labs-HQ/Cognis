@@ -32,8 +32,7 @@ The Dockerfile at `docker/Dockerfile` uses a single `FROM node:22` stage. Key pr
 ```dockerfile
 EXPOSE 3000
 ENV NODE_ENV=production
-ENV DB_TYPE=sqlite
-ENV SQLITE_PATH=/app/data/cognis.sqlite
+ENV DB_TYPE=postgresql
 ENV LOG_LEVEL=info
 CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 ```
@@ -71,9 +70,8 @@ Environment variables needed to run the application:
 
 | Variable                          | Default                        | Description                                                 |
 | --------------------------------- | ------------------------------ | ----------------------------------------------------------- |
-| `DB_TYPE`                         | `sqlite`                       | Database backend: `sqlite`, `postgresql`, or `mariadb`      |
+| `DB_TYPE`                         | `postgresql`                   | Database backend: `postgresql` or `mariadb`                 |
 | `DATABASE_URL`                    | —                              | Connection string for PostgreSQL or MariaDB                 |
-| `SQLITE_PATH`                     | `/app/data/cognis.sqlite`      | SQLite file path (only when `DB_TYPE=sqlite`)               |
 | `MEDIA_LOCATION`                  | `/app/media`                   | Root directory for file uploads                             |
 | `LOG_LEVEL`                       | `info`                         | Log verbosity: `debug`, `info`, `warn`, `error`             |
 | `LOG_FILE`                        | `/app/logs/app.log`            | Log file path inside the container                          |

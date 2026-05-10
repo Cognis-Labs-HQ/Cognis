@@ -1,30 +1,7 @@
-# Adapter Database SQLite
+# Adapter Database SQLite (Dihapus)
 
-## Ikhtisar
+SQLite tidak lagi didukung. Adapter SQLite telah dihapus dari Cognis.
 
-Adapter SQLite menyediakan database relasional tanpa dependensi untuk deployment Cognis di server tunggal. Adapter ini menggunakan klien kompatibel `better-sqlite3` untuk menyimpan semua data platform dalam satu file di filesystem lokal. SQLite adalah titik awal yang direkomendasikan untuk deployment kecil, pengembangan lokal, dan pengujian.
+Platform sekarang mendukung **PostgreSQL** (default) dan **MariaDB** sebagai backend database. Atur `DB_TYPE` ke `postgresql` atau `mariadb` dan berikan string koneksi `DATABASE_URL`.
 
-## Tanggung Jawab
-
-- Mengimplementasikan antarmuka `DatabaseGateway`: `query`, `execute`, dan `transaction`.
-- Membuka (dan jika perlu membuat) file database SQLite saat startup.
-- Mengaktifkan mode WAL dan penegakan foreign key pada setiap koneksi.
-
-## Arsitektur
-
-`SqliteDbGateway` di `src/adapters/db/sqlite/adapter.ts` membungkus handle database `better-sqlite3`.
-
-### Sintaks Placeholder
-
-Gunakan placeholder posisi `?`:
-
-```sql
-SELECT * FROM users WHERE id = ?
-```
-
-## Konfigurasi
-
-| Variabel      | Default                | Keterangan                                                   |
-| ------------- | ---------------------- | ------------------------------------------------------------ |
-| `DB_TYPE`     | —                      | Harus `sqlite` untuk mengaktifkan adapter ini                |
-| `SQLITE_PATH` | `./data/cognis.sqlite` | Path ke file database SQLite; dibuat otomatis jika tidak ada |
+Lihat [dokumentasi Gateway Database](../../../../gateways/db/docs/index.id.md) untuk detail konfigurasi.

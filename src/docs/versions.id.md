@@ -14,7 +14,6 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Notifikasi Internal    | `src/adapters/notify/internal/`     | `0.5.0` |
 | Penyimpanan File Lokal | `src/adapters/file/local/`          | `0.1.0` |
 | Autentikasi Lokal      | `src/adapters/auth/local/`          | `0.2.2` |
-| Database SQLite        | `src/adapters/db/sqlite/`           | `0.1.0` |
 | Database PostgreSQL    | `src/adapters/db/postgres/`         | `0.1.0` |
 | Database MariaDB       | `src/adapters/db/mariadb/`          | `0.1.0` |
 | Undangan Registrasi    | `src/adapters/registration/invite/` | `0.1.1` |

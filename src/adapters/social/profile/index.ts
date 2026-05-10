@@ -19,6 +19,8 @@ import type {
     SocialAdapter,
     SocialAdapterBootstrapCtx,
 } from "../../../gateways/social/gateway.js";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { SupportedDbType } from "../../../gateways/db/executor.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
 
@@ -128,8 +130,12 @@ export function createProfilePageRoutes(isAdapterEnabled?: () => boolean) {
 export async function bootstrapSocialAdapter(
     ctx: SocialAdapterBootstrapCtx,
 ): Promise<void> {
-    const dbExecutor = ctx.dbExecutor;
-    const dbType = ctx.dbType ?? "sqlite";
+    const dbExecutor =
+        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
+    const dbType =
+        ctx.capabilities.get<SupportedDbType>("db:type") ??
+        ctx.dbType ??
+        "postgresql";
 
     if (!dbExecutor) {
         ctx.log?.(

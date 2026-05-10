@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserEmailRoutes } from "../bootstrap.js";
 import { DbNotificationStore } from "../../../adapters/db/reuse/notification-store.js";
-import { SqliteExecutor } from "../../../gateways/db/executor.js";
+import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
 import {
     TfaCodeService,
     InMemoryTfaStore,
@@ -16,8 +16,8 @@ import { VolatileNotificationPreferenceStore } from "../gateway.js";
 import { issueAccessToken } from "../../../api/auth/access-tokens.js";
 
 async function makeNotifStore(): Promise<DbNotificationStore> {
-    const db = new SqliteExecutor(":memory:");
-    const store = new DbNotificationStore(db, "sqlite");
+    const db = new InMemoryTestExecutor();
+    const store = new DbNotificationStore(db, "postgresql");
     await store.ensureSchema();
     return store;
 }

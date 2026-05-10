@@ -2,7 +2,7 @@
 
 ## Overview
 
-`src/adapters/` contains all provider-specific implementations of gateway interfaces. An adapter is a concrete class that implements a contract defined in `src/core/` or a gateway — it knows how to talk to a specific technology (SQLite, MariaDB, LDAP, SMTP) while exposing a uniform interface to the rest of the platform.
+`src/adapters/` contains all provider-specific implementations of gateway interfaces. An adapter is a concrete class that implements a contract defined in `src/core/` or a gateway — it knows how to talk to a specific technology (PostgreSQL, MariaDB, LDAP, SMTP) while exposing a uniform interface to the rest of the platform.
 
 Adapters are intentionally isolated. They may use any provider-specific library internally, but their public behaviour must conform to the interface their gateway defines. Swapping a database backend means changing `DB_TYPE` in the environment; no application code outside the gateway changes.
 
@@ -24,7 +24,6 @@ Not responsible for: business logic, routing, or any behaviour that belongs to t
 ```
 src/adapters/
   db/
-    sqlite/      — SqliteDbGateway implementing DatabaseGateway
     mariadb/     — MariaDbGateway implementing DatabaseGateway
     postgres/    — PostgresDbGateway implementing DatabaseGateway
     memory/      — MemoryDatabaseGateway (test/dev only)
@@ -59,18 +58,17 @@ These reuse modules are instantiated by gateways at bootstrap time. They receive
 
 ## Coverage table
 
-| Area          | Adapter    | Path                        | Notes                               |
-| ------------- | ---------- | --------------------------- | ----------------------------------- |
-| Database      | SQLite     | `src/adapters/db/sqlite/`   | Default; no external service needed |
-| Database      | MariaDB    | `src/adapters/db/mariadb/`  | Production relational DB            |
-| Database      | PostgreSQL | `src/adapters/db/postgres/` | Production relational DB            |
-| Database      | Memory     | `src/adapters/db/memory/`   | Tests and isolated CI only          |
-| Auth          | Local      | `src/adapters/auth/local/`  | Always enabled; scrypt hashing      |
-| Auth          | LDAP       | `src/adapters/auth/ldap/`   | Directory-based enterprise auth     |
-| Auth          | SAML       | `src/adapters/auth/saml/`   | SAML 2.0 assertion-based SSO        |
-| Auth          | OIDC       | `src/adapters/auth/oidc/`   | OAuth2/OIDC token introspection     |
-| File storage  | Local      | `src/adapters/file/local/`  | Filesystem-backed uploads           |
-| Notifications | SMTP       | `src/adapters/notify/smtp/` | Email delivery via SMTP             |
+| Area          | Adapter    | Path                        | Notes                            |
+| ------------- | ---------- | --------------------------- | -------------------------------- |
+| Database      | PostgreSQL | `src/adapters/db/postgres/` | Default production relational DB |
+| Database      | MariaDB    | `src/adapters/db/mariadb/`  | Production relational DB         |
+| Database      | Memory     | `src/adapters/db/memory/`   | Tests and isolated CI only       |
+| Auth          | Local      | `src/adapters/auth/local/`  | Always enabled; scrypt hashing   |
+| Auth          | LDAP       | `src/adapters/auth/ldap/`   | Directory-based enterprise auth  |
+| Auth          | SAML       | `src/adapters/auth/saml/`   | SAML 2.0 assertion-based SSO     |
+| Auth          | OIDC       | `src/adapters/auth/oidc/`   | OAuth2/OIDC token introspection  |
+| File storage  | Local      | `src/adapters/file/local/`  | Filesystem-backed uploads        |
+| Notifications | SMTP       | `src/adapters/notify/smtp/` | Email delivery via SMTP          |
 
 ## Extension Points
 

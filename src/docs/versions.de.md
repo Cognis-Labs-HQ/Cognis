@@ -14,7 +14,6 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Interne Benachrichtigung  | `src/adapters/notify/internal/`     | `0.5.0` |
 | Lokaler Dateispeicher     | `src/adapters/file/local/`          | `0.1.0` |
 | Lokale Auth               | `src/adapters/auth/local/`          | `0.2.2` |
-| SQLite-Datenbank          | `src/adapters/db/sqlite/`           | `0.1.0` |
 | PostgreSQL-Datenbank      | `src/adapters/db/postgres/`         | `0.1.0` |
 | MariaDB-Datenbank         | `src/adapters/db/mariadb/`          | `0.1.0` |
 | Registrierungs-Einladung  | `src/adapters/registration/invite/` | `0.1.1` |

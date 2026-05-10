@@ -6,8 +6,8 @@
  * auth adapter. Nothing outside the auth gateway bootstrap should hold a
  * direct reference to this class.
  *
- * SQL is written inline here using placeholder helpers to support all three
- * supported dialects (SQLite, PostgreSQL, MariaDB). Schema creation is
+ * SQL is written inline here using placeholder helpers to support both
+ * supported dialects (PostgreSQL, MariaDB). Schema creation is
  * handled at boot time via the SQL init scripts under
  * src/adapters/db/<provider>/sql/init/; the ensureSchema() method is a
  * no-op safety net only.
@@ -123,30 +123,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
       )`);
             return;
         }
-
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS accounts (
-      id TEXT PRIMARY KEY,
-      email TEXT,
-      display_name TEXT,
-      is_admin INTEGER NOT NULL DEFAULT 0,
-      enabled INTEGER NOT NULL DEFAULT 1,
-      is_founder INTEGER NOT NULL DEFAULT 0,
-      invited_by_account_id TEXT NULL,
-      last_login TEXT,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      FOREIGN KEY (invited_by_account_id) REFERENCES accounts(id) ON DELETE SET NULL
-    )`);
-        await this.db
-            .execute(`CREATE TABLE IF NOT EXISTS local_auth_credentials (
-      account_id TEXT PRIMARY KEY,
-      username TEXT NOT NULL UNIQUE,
-      password_hash TEXT NOT NULL,
-      password_algorithm TEXT NOT NULL DEFAULT 'sha256',
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
     }
 
     async register(username: string, password: string, isAdmin = false) {

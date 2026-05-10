@@ -49,18 +49,17 @@ These docs are written for developer contributors, not end users. They describe 
 
 ### Adapters
 
-| Doc                                                        | Description                                           |
-| ---------------------------------------------------------- | ----------------------------------------------------- |
-| [Auth: Local](../adapters/auth/local/docs/index.en.md)     | Built-in credential store with scrypt hashing         |
-| [Auth: LDAP](../adapters/auth/ldap/docs/index.en.md)       | Directory-based enterprise authentication             |
-| [Auth: OIDC](../adapters/auth/oidc/docs/index.en.md)       | OAuth2/OIDC SSO for Google, Microsoft, and others     |
-| [Auth: SAML](../adapters/auth/saml/docs/index.en.md)       | SAML 2.0 assertion-based SSO                          |
-| [DB: SQLite](../adapters/db/sqlite/docs/index.en.md)       | Default embedded database; no external service needed |
-| [DB: MariaDB](../adapters/db/mariadb/docs/index.en.md)     | Production-grade relational database                  |
-| [DB: PostgreSQL](../adapters/db/postgres/docs/index.en.md) | Robust open-source relational database                |
-| [DB: Memory](../adapters/db/memory/docs/index.en.md)       | In-memory adapter for tests and isolated CI           |
-| [File: Local](../adapters/file/local/docs/index.en.md)     | Filesystem-backed file storage adapter                |
-| [Notify: SMTP](../adapters/notify/smtp/docs/index.en.md)   | Email delivery via SMTP                               |
+| Doc                                                        | Description                                       |
+| ---------------------------------------------------------- | ------------------------------------------------- |
+| [Auth: Local](../adapters/auth/local/docs/index.en.md)     | Built-in credential store with scrypt hashing     |
+| [Auth: LDAP](../adapters/auth/ldap/docs/index.en.md)       | Directory-based enterprise authentication         |
+| [Auth: OIDC](../adapters/auth/oidc/docs/index.en.md)       | OAuth2/OIDC SSO for Google, Microsoft, and others |
+| [Auth: SAML](../adapters/auth/saml/docs/index.en.md)       | SAML 2.0 assertion-based SSO                      |
+| [DB: PostgreSQL](../adapters/db/postgres/docs/index.en.md) | Default production-grade relational database      |
+| [DB: MariaDB](../adapters/db/mariadb/docs/index.en.md)     | Production-grade relational database              |
+| [DB: Memory](../adapters/db/memory/docs/index.en.md)       | In-memory adapter for tests and isolated CI       |
+| [File: Local](../adapters/file/local/docs/index.en.md)     | Filesystem-backed file storage adapter            |
+| [Notify: SMTP](../adapters/notify/smtp/docs/index.en.md)   | Email delivery via SMTP                           |
 
 ### Modules
 

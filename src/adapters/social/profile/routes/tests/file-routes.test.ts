@@ -2,7 +2,6 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { DbProfileStore } from "../../../../../adapters/db/reuse/profile-store.js";
-import { SqliteExecutor } from "../../../../../gateways/db/executor.js";
 import { DbLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
 import { createFileRoutes } from "../files.js";
 import { issueAccessToken } from "../../../../../api/auth/access-tokens.js";
@@ -69,9 +68,9 @@ function makeReq(
 test("file routes - upload and download a file", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const accountStore = new DbLocalAccountStore(executor, "sqlite");
+        const accountStore = new DbLocalAccountStore(executor, "postgresql");
         await accountStore.ensureSchema();
-        const profileStore = new DbProfileStore(executor, "sqlite");
+        const profileStore = new DbProfileStore(executor, "postgresql");
         await profileStore.ensureSchema();
         const gateway = fakeFileGateway();
         const route = createFileRoutes(profileStore, gateway);
@@ -118,7 +117,7 @@ test("file routes - upload and download a file", async () => {
 test("file routes - GET non-existent file returns 404", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const profileStore = new DbProfileStore(executor, "sqlite");
+        const profileStore = new DbProfileStore(executor, "postgresql");
         await profileStore.ensureSchema();
         const gateway = fakeFileGateway();
         const route = createFileRoutes(profileStore, gateway);
@@ -144,9 +143,9 @@ test("file routes - GET non-existent file returns 404", async () => {
 test("file routes - upload blocked when exceeding size limit", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const accountStore = new DbLocalAccountStore(executor, "sqlite");
+        const accountStore = new DbLocalAccountStore(executor, "postgresql");
         await accountStore.ensureSchema();
-        const profileStore = new DbProfileStore(executor, "sqlite");
+        const profileStore = new DbProfileStore(executor, "postgresql");
         await profileStore.ensureSchema();
         await profileStore.setFileSizeLimit("image", 10);
         const gateway = fakeFileGateway();
@@ -174,7 +173,7 @@ test("file routes - upload blocked when exceeding size limit", async () => {
 test("file routes - non-admin DELETE is rejected", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const profileStore = new DbProfileStore(executor, "sqlite");
+        const profileStore = new DbProfileStore(executor, "postgresql");
         await profileStore.ensureSchema();
         const gateway = fakeFileGateway();
         const route = createFileRoutes(profileStore, gateway);
@@ -200,7 +199,7 @@ test("file routes - non-admin DELETE is rejected", async () => {
 test("file routes - admin can DELETE a file", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const profileStore = new DbProfileStore(executor, "sqlite");
+        const profileStore = new DbProfileStore(executor, "postgresql");
         await profileStore.ensureSchema();
         const gateway = fakeFileGateway();
         await gateway.put(
@@ -237,7 +236,7 @@ test("file routes - admin can DELETE a file", async () => {
 test("file routes - get file size limits (admin only)", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const profileStore = new DbProfileStore(executor, "sqlite");
+        const profileStore = new DbProfileStore(executor, "postgresql");
         await profileStore.ensureSchema();
         const gateway = fakeFileGateway();
         const route = createFileRoutes(profileStore, gateway);
@@ -282,7 +281,7 @@ test("file routes - get file size limits (admin only)", async () => {
 test("file routes - admin can update file size limit", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const profileStore = new DbProfileStore(executor, "sqlite");
+        const profileStore = new DbProfileStore(executor, "postgresql");
         await profileStore.ensureSchema();
         const gateway = fakeFileGateway();
         const route = createFileRoutes(profileStore, gateway);
@@ -315,7 +314,7 @@ test("file routes - admin can update file size limit", async () => {
 test("file routes - invalid maxBytes returns 400", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const profileStore = new DbProfileStore(executor, "sqlite");
+        const profileStore = new DbProfileStore(executor, "postgresql");
         await profileStore.ensureSchema();
         const gateway = fakeFileGateway();
         const route = createFileRoutes(profileStore, gateway);

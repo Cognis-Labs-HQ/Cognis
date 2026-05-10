@@ -2,7 +2,7 @@
 
 ## Überblick
 
-Das Datenbank-Gateway ist der einzige Zugangspunkt für alle Datenbankoperationen in Cognis. Es stellt eine einheitliche Executor-Schnittstelle bereit, die die Unterschiede zwischen SQLite, PostgreSQL und MariaDB verbirgt. Das Gateway liest `DB_TYPE` aus der Umgebung, erstellt den entsprechenden Executor, initialisiert das Schema und trägt Executor und Dialekt-Helfer zum Capability-Store bei.
+Das Datenbank-Gateway ist der einzige Zugangspunkt für alle Datenbankoperationen in Cognis. Es stellt eine einheitliche Executor-Schnittstelle bereit, die die Unterschiede zwischen PostgreSQL und MariaDB verbirgt. Das Gateway liest `DB_TYPE` aus der Umgebung, erstellt den entsprechenden Executor, initialisiert das Schema und trägt Executor und Dialekt-Helfer zum Capability-Store bei.
 
 Kein Komponente außerhalb des Datenbank-Gateway-Baums — kein Route-Handler, kein Gateway-Bootstrap, kein Modul — sollte eine Datenbankverbindung direkt herstellen oder einen Treiber aufrufen. Alle Datenbankzugriffe erfolgen über die `db:executor`-Capability oder die höherstufigen Store-Abstraktionen in `src/adapters/db/reuse/`.
 
@@ -56,8 +56,7 @@ export interface DbDialectHelper {
 
 ## Konfiguration
 
-| Variable       | Standard               | Beschreibung                                                          |
-| -------------- | ---------------------- | --------------------------------------------------------------------- |
-| `DB_TYPE`      | `sqlite`               | Datenbank-Backend: `sqlite`, `postgresql` oder `mariadb`              |
-| `DATABASE_URL` | —                      | Verbindungszeichenkette; erforderlich für `postgresql` oder `mariadb` |
-| `SQLITE_PATH`  | `./data/cognis.sqlite` | SQLite-Dateipfad; nur bei `DB_TYPE=sqlite` verwendet                  |
+| Variable       | Standard     | Beschreibung                                                          |
+| -------------- | ------------ | --------------------------------------------------------------------- |
+| `DB_TYPE`      | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`                        |
+| `DATABASE_URL` | —            | Verbindungszeichenkette; erforderlich für `postgresql` oder `mariadb` |
