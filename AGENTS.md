@@ -8,14 +8,14 @@ See `.github/copilot-instructions.md` for architecture, code quality, testing, l
 
 Standard commands from `package.json`:
 
-| Task | Command |
-|---|---|
-| Install deps | `npm ci` |
-| Typecheck | `npm run typecheck` |
-| Lint | `npm run lint` |
-| Tests | `npm test` |
-| Start server | `npm run start` |
-| CLI | `npm run cli -- <command>` |
+| Task         | Command                    |
+| ------------ | -------------------------- |
+| Install deps | `npm ci`                   |
+| Typecheck    | `npm run typecheck`        |
+| Lint         | `npm run lint`             |
+| Tests        | `npm test`                 |
+| Start server | `npm run start`            |
+| CLI          | `npm run cli -- <command>` |
 
 Lint and tests require `ripgrep` (see `.github/copilot-instructions.md` prerequisites).
 
