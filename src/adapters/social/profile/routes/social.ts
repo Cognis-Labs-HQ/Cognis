@@ -6,6 +6,8 @@ import type {
 } from "../../../../adapters/db/reuse/profile-store.js";
 import { visibilityRank } from "../../../../adapters/db/reuse/profile-store.js";
 
+const SEARCH_RESULTS_LIMIT = 10;
+
 function publicProfile(profile: AccountProfile) {
     return {
         accountId: profile.accountId,
@@ -61,7 +63,10 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                 res.end(JSON.stringify({ data: [] }));
                 return true;
             }
-            const results = await profileStore.searchProfiles(query, 10);
+            const results = await profileStore.searchProfiles(
+                query,
+                SEARCH_RESULTS_LIMIT,
+            );
             const filtered = results.filter((p) => p.accountId !== claims.sub);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: filtered.map(publicProfile) }));

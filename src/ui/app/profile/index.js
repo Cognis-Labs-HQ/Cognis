@@ -329,7 +329,7 @@ function renderHero() {
         ? `<div class="profile-blocked-overlay">
         <span class="profile-blocked-label">${escapeHtml(i18n.t("ui.app.profile.blocked_overlay_label"))}</span>
         <button
-          class="profile-hero-unblock-btn btn-confirm"
+          class="profile-hero-unblock-btn"
           type="button"
         >${escapeHtml(i18n.t("ui.app.profile.unblock_user_action"))}</button>
       </div>`

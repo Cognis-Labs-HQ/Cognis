@@ -304,7 +304,7 @@ export class DbProfileStore implements ProfileCreateStore {
         query: string,
         limit: number = 10,
     ): Promise<AccountProfile[]> {
-        const pattern = query.toLowerCase().replace(/[%_]/g, "\\$&") + "%";
+        const pattern = query.toLowerCase().replace(/[\\%_]/g, "\\$&") + "%";
         const result = await this.db.execute(
             `SELECT * FROM account_profiles
              WHERE visibility != 'hidden'

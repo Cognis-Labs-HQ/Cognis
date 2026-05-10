@@ -384,9 +384,9 @@
   <string name="ui.app.profile.block_user">Blokir pengguna</string>
   <string name="ui.app.profile.block_user_confirm">Blokir pengguna ini? Mereka tidak akan dapat mengikuti Anda atau berinteraksi dengan profil Anda.</string>
   <string name="ui.app.profile.block_user_action">Blokir</string>
-  <string name="ui.app.profile.unblock_user">Buka Blokir Pengguna</string>
+  <string name="ui.app.profile.unblock_user">Buka blokir pengguna</string>
   <string name="ui.app.profile.unblock_user_confirm">Hapus blokir pengguna ini? Mereka akan dapat mengikuti Anda dan berinteraksi dengan profil Anda lagi.</string>
-  <string name="ui.app.profile.unblock_user_action">Buka Blokir</string>
+  <string name="ui.app.profile.unblock_user_action">Buka blokir</string>
   <string name="ui.app.profile.blocked_overlay_label">Profil ini diblokir.</string>
   <string name="ui.app.profile.follow_hidden_toast">Visibilitas profil Anda diatur ke Tersembunyi. Perbarui visibilitas di Pengaturan untuk mengikuti pengguna lain.</string>
   <string name="ui.app.profile.message_hidden_toast">Visibilitas profil Anda diatur ke Tersembunyi. Perbarui visibilitas di Pengaturan untuk mengirim pesan.</string>
