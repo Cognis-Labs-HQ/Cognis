@@ -103,16 +103,10 @@ export class DbNotificationStore implements NotificationConfigStore {
            VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)})`,
                     [accountId, pref.category, pref.senderId],
                 );
-            } else if (this.dbType === "postgresql") {
+            } else {
                 await this.db.execute(
                     `INSERT INTO user_notification_prefs (account_id, category, sender_id)
            VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,
-                    [accountId, pref.category, pref.senderId],
-                );
-            } else {
-                await this.db.execute(
-                    `INSERT OR IGNORE INTO user_notification_prefs (account_id, category, sender_id)
-           VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)})`,
                     [accountId, pref.category, pref.senderId],
                 );
             }
@@ -157,16 +151,10 @@ export class DbNotificationStore implements NotificationConfigStore {
          VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, FALSE)`,
                 [accountId, email, effectiveIsPrimary],
             );
-        } else if (this.dbType === "postgresql") {
+        } else {
             await this.db.execute(
                 `INSERT INTO user_emails (account_id, email, is_primary, verified)
          VALUES ($1, $2, $3, FALSE) ON CONFLICT DO NOTHING`,
-                [accountId, email, effectiveIsPrimary],
-            );
-        } else {
-            await this.db.execute(
-                `INSERT OR IGNORE INTO user_emails (account_id, email, is_primary, verified)
-         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, 0)`,
                 [accountId, email, effectiveIsPrimary],
             );
         }
@@ -280,22 +268,11 @@ export class DbNotificationStore implements NotificationConfigStore {
             return;
         }
 
-        if (this.dbType === "postgresql") {
-            await this.db.execute(
-                `INSERT INTO user_emails (account_id, email, is_primary, verified)
+        await this.db.execute(
+            `INSERT INTO user_emails (account_id, email, is_primary, verified)
          VALUES ($1, $2, TRUE, TRUE)
          ON CONFLICT (account_id, email)
          DO UPDATE SET is_primary = EXCLUDED.is_primary, verified = EXCLUDED.verified`,
-                [accountId, email],
-            );
-            return;
-        }
-
-        await this.db.execute(
-            `INSERT INTO user_emails (account_id, email, is_primary, verified)
-       VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, 1, 1)
-       ON CONFLICT(account_id, email)
-       DO UPDATE SET is_primary = excluded.is_primary, verified = excluded.verified`,
             [accountId, email],
         );
     }

@@ -58,17 +58,17 @@ These reuse modules are instantiated by gateways at bootstrap time. They receive
 
 ## Coverage table
 
-| Area          | Adapter    | Path                        | Notes                               |
-| ------------- | ---------- | --------------------------- | ----------------------------------- |
-| Database      | PostgreSQL | `src/adapters/db/postgres/` | Default production relational DB    |
-| Database      | MariaDB    | `src/adapters/db/mariadb/`  | Production relational DB            |
-| Database      | Memory     | `src/adapters/db/memory/`   | Tests and isolated CI only          |
-| Auth          | Local      | `src/adapters/auth/local/`  | Always enabled; scrypt hashing      |
-| Auth          | LDAP       | `src/adapters/auth/ldap/`   | Directory-based enterprise auth     |
-| Auth          | SAML       | `src/adapters/auth/saml/`   | SAML 2.0 assertion-based SSO        |
-| Auth          | OIDC       | `src/adapters/auth/oidc/`   | OAuth2/OIDC token introspection     |
-| File storage  | Local      | `src/adapters/file/local/`  | Filesystem-backed uploads           |
-| Notifications | SMTP       | `src/adapters/notify/smtp/` | Email delivery via SMTP             |
+| Area          | Adapter    | Path                        | Notes                            |
+| ------------- | ---------- | --------------------------- | -------------------------------- |
+| Database      | PostgreSQL | `src/adapters/db/postgres/` | Default production relational DB |
+| Database      | MariaDB    | `src/adapters/db/mariadb/`  | Production relational DB         |
+| Database      | Memory     | `src/adapters/db/memory/`   | Tests and isolated CI only       |
+| Auth          | Local      | `src/adapters/auth/local/`  | Always enabled; scrypt hashing   |
+| Auth          | LDAP       | `src/adapters/auth/ldap/`   | Directory-based enterprise auth  |
+| Auth          | SAML       | `src/adapters/auth/saml/`   | SAML 2.0 assertion-based SSO     |
+| Auth          | OIDC       | `src/adapters/auth/oidc/`   | OAuth2/OIDC token introspection  |
+| File storage  | Local      | `src/adapters/file/local/`  | Filesystem-backed uploads        |
+| Notifications | SMTP       | `src/adapters/notify/smtp/` | Email delivery via SMTP          |
 
 ## Extension Points
 

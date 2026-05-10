@@ -1,16 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SqliteDbGateway } from "../../adapters/db/sqlite/adapter.js";
 import { PostgresDbGateway } from "../../adapters/db/postgres/adapter.js";
 import { MariaDbGateway } from "../../adapters/db/mariadb/adapter.js";
 import { MemoryDatabaseGateway } from "../../adapters/db/memory/adapter.js";
 
 test("all supported db gateways simulate query/execute/transaction operations", async () => {
-    const sqlite = new SqliteDbGateway({
-        all: async () => [{ ok: 1 }],
-        run: async () => ({ changes: 1 }),
-        exec: async () => {},
-    });
     const postgres = new PostgresDbGateway({
         query: async () => ({ rows: [{ ok: 1 }], rowCount: 1 }),
     });
@@ -22,7 +16,7 @@ test("all supported db gateways simulate query/execute/transaction operations", 
     });
     const memory = new MemoryDatabaseGateway();
 
-    for (const executor of [sqlite, postgres, mariadb, memory]) {
+    for (const executor of [postgres, mariadb, memory]) {
         const queryResult = await executor.query("select 1");
         assert.ok(queryResult.rowCount >= 0);
         const execResult = await executor.execute("update test");

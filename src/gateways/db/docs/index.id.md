@@ -54,7 +54,7 @@ export interface DbDialectHelper {
 
 ## Konfigurasi
 
-| Variabel       | Default                | Keterangan                                                   |
-| -------------- | ---------------------- | ------------------------------------------------------------ |
-| `DB_TYPE`      | `postgresql`           | Backend database: `postgresql` atau `mariadb`                |
-| `DATABASE_URL` | —                      | String koneksi; diperlukan untuk `postgresql` atau `mariadb` |
+| Variabel       | Default      | Keterangan                                                   |
+| -------------- | ------------ | ------------------------------------------------------------ |
+| `DB_TYPE`      | `postgresql` | Backend database: `postgresql` atau `mariadb`                |
+| `DATABASE_URL` | —            | String koneksi; diperlukan untuk `postgresql` atau `mariadb` |

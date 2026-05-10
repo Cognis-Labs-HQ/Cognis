@@ -229,7 +229,7 @@ try {
 
 const dbExecutor = capabilities.get<DbExecutor>("db:executor")!;
 const dbDialect = capabilities.get<DbDialectHelper>("db:dialect")!;
-const dbType = capabilities.get<string>("db:type") ?? "sqlite";
+const dbType = capabilities.get<string>("db:type") ?? "postgresql";
 
 const adminStatePlaceholder = dbType === "postgresql" ? "$1" : "?";
 const adminStateResult = await dbExecutor.execute(

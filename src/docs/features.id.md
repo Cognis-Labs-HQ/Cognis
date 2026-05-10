@@ -20,9 +20,9 @@ Cognis adalah platform belajar bahasa yang di-hosting sendiri yang menggabungkan
 
 ## Cakupan Adapter
 
-| Area             | Adapter Bawaan                            |
-| ---------------- | ----------------------------------------- |
-| Database         | `memory`, `mariadb`, `postgres`            |
-| Autentikasi      | `local`, `ldap`, `saml`, `oidc`           |
-| Penyimpanan file | `local`                                   |
-| Notifikasi       | `smtp`                                    |
+| Area             | Adapter Bawaan                  |
+| ---------------- | ------------------------------- |
+| Database         | `memory`, `mariadb`, `postgres` |
+| Autentikasi      | `local`, `ldap`, `saml`, `oidc` |
+| Penyimpanan file | `local`                         |
+| Notifikasi       | `smtp`                          |

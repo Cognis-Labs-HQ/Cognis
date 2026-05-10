@@ -20,12 +20,12 @@ Cognis ist eine selbst gehostete Sprachlernplattform, die strukturierte Lerninha
 
 ## Adapter-Abdeckung
 
-| Bereich            | Eingebaute Adapter                        |
-| ------------------ | ----------------------------------------- |
-| Datenbank          | `memory`, `mariadb`, `postgres`            |
-| Auth               | `local`, `ldap`, `saml`, `oidc`           |
-| Dateispeicher      | `local`                                   |
-| Benachrichtigungen | `smtp`                                    |
+| Bereich            | Eingebaute Adapter              |
+| ------------------ | ------------------------------- |
+| Datenbank          | `memory`, `mariadb`, `postgres` |
+| Auth               | `local`, `ldap`, `saml`, `oidc` |
+| Dateispeicher      | `local`                         |
+| Benachrichtigungen | `smtp`                          |
 
 ## Admin-Fähigkeiten
 

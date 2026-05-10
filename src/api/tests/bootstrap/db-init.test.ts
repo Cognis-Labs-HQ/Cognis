@@ -11,7 +11,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturesRoot = path.resolve(__dirname, "fixtures");
 
 test("db init resolves supported providers", () => {
-    assert.equal(resolveDbProviderDir("sqlite"), "sqlite");
     assert.equal(resolveDbProviderDir("postgresql"), "postgres");
     assert.equal(resolveDbProviderDir("mariadb"), "mariadb");
     assert.equal(resolveDbProviderDir("mysql"), "mariadb");
@@ -63,7 +62,12 @@ test("init phase runs SQL files the first time and records sentinel", async () =
     const executor = makeMockExecutor();
     const logger = { info: async () => {} };
 
-    await initializeDatabaseSchema("sqlite", logger, executor, fixturesRoot);
+    await initializeDatabaseSchema(
+        "postgresql",
+        logger,
+        executor,
+        fixturesRoot,
+    );
 
     const sentinelInserts = insertCalls(executor.calls, "db_migrations").filter(
         (c) => Array.isArray(c.params) && c.params[0] === "init:__phase__",
@@ -76,12 +80,17 @@ test("init phase is skipped when sentinel already recorded", async () => {
     const logger = { info: async () => {} };
 
     executor.mockSelectRows(
-        "SELECT id FROM db_migrations WHERE id = ?",
+        "SELECT id FROM db_migrations WHERE id = $1",
         ["init:__phase__"],
         [{ id: "init:__phase__" }],
     );
 
-    await initializeDatabaseSchema("sqlite", logger, executor, fixturesRoot);
+    await initializeDatabaseSchema(
+        "postgresql",
+        logger,
+        executor,
+        fixturesRoot,
+    );
 
     const initDdl = executor.calls.filter(
         (c) =>
@@ -100,12 +109,17 @@ test("migration runs the first time and records it", async () => {
     const logger = { info: async () => {} };
 
     executor.mockSelectRows(
-        "SELECT id FROM db_migrations WHERE id = ?",
+        "SELECT id FROM db_migrations WHERE id = $1",
         ["init:__phase__"],
         [{ id: "init:__phase__" }],
     );
 
-    await initializeDatabaseSchema("sqlite", logger, executor, fixturesRoot);
+    await initializeDatabaseSchema(
+        "postgresql",
+        logger,
+        executor,
+        fixturesRoot,
+    );
 
     const migrationInserts = insertCalls(
         executor.calls,
@@ -127,17 +141,22 @@ test("migration is skipped when already recorded", async () => {
     const logger = { info: async () => {} };
 
     executor.mockSelectRows(
-        "SELECT id FROM db_migrations WHERE id = ?",
+        "SELECT id FROM db_migrations WHERE id = $1",
         ["init:__phase__"],
         [{ id: "init:__phase__" }],
     );
     executor.mockSelectRows(
-        "SELECT id FROM db_migrations WHERE id = ?",
+        "SELECT id FROM db_migrations WHERE id = $1",
         ["migrate:001_test.sql"],
         [{ id: "migrate:001_test.sql" }],
     );
 
-    await initializeDatabaseSchema("sqlite", logger, executor, fixturesRoot);
+    await initializeDatabaseSchema(
+        "postgresql",
+        logger,
+        executor,
+        fixturesRoot,
+    );
 
     const alterStatements = executor.calls.filter((c) =>
         c.sql.toLowerCase().startsWith("alter"),
@@ -149,7 +168,12 @@ test("db_migrations table is always created", async () => {
     const executor = makeMockExecutor();
     const logger = { info: async () => {} };
 
-    await initializeDatabaseSchema("sqlite", logger, executor, fixturesRoot);
+    await initializeDatabaseSchema(
+        "postgresql",
+        logger,
+        executor,
+        fixturesRoot,
+    );
 
     const created = executor.calls.some((c) =>
         c.sql

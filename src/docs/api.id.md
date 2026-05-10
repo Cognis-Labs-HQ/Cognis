@@ -44,9 +44,9 @@ Dapatkan token melalui `POST /api/v1/auth/login`. Kirim token sebagai `Authoriza
 
 ## Konfigurasi
 
-| Variabel                          | Default                | Keterangan                                   |
-| --------------------------------- | ---------------------- | -------------------------------------------- |
-| `DB_TYPE`                         | `postgresql`           | Backend database: `postgresql` atau `mariadb` |
-| `DATABASE_URL`                    | —                      | String koneksi untuk PostgreSQL atau MariaDB  |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                | Masa berlaku token Bearer dalam detik        |
-| `PORT`                            | `3000`                 | Port HTTP                                    |
+| Variabel                          | Default      | Keterangan                                    |
+| --------------------------------- | ------------ | --------------------------------------------- |
+| `DB_TYPE`                         | `postgresql` | Backend database: `postgresql` atau `mariadb` |
+| `DATABASE_URL`                    | —            | String koneksi untuk PostgreSQL atau MariaDB  |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`      | Masa berlaku token Bearer dalam detik         |
+| `PORT`                            | `3000`       | Port HTTP                                     |

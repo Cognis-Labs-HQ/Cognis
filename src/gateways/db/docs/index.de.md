@@ -56,7 +56,7 @@ export interface DbDialectHelper {
 
 ## Konfiguration
 
-| Variable       | Standard               | Beschreibung                                                          |
-| -------------- | ---------------------- | --------------------------------------------------------------------- |
-| `DB_TYPE`      | `postgresql`           | Datenbank-Backend: `postgresql` oder `mariadb`                        |
-| `DATABASE_URL` | —                      | Verbindungszeichenkette; erforderlich für `postgresql` oder `mariadb` |
+| Variable       | Standard     | Beschreibung                                                          |
+| -------------- | ------------ | --------------------------------------------------------------------- |
+| `DB_TYPE`      | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`                        |
+| `DATABASE_URL` | —            | Verbindungszeichenkette; erforderlich für `postgresql` oder `mariadb` |

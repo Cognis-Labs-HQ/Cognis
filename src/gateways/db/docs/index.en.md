@@ -69,17 +69,17 @@ export interface DbDialectHelper {
 
 Key source locations:
 
-| Path                                   | Purpose                                                                     |
-| -------------------------------------- | --------------------------------------------------------------------------- |
-| `src/gateways/db/gateway.ts`           | `DatabaseGateway` interface                                                 |
-| `src/gateways/db/executor.ts`          | `createDbExecutor`, `PostgresExecutor`, `MariadbExecutor`                   |
-| `src/gateways/db/init.ts`              | `initializeDatabaseSchema`                                                  |
-| `src/gateways/db/bootstrap.ts`         | Bootstrap entry point; `DbDialectHelper`                                    |
-| `src/gateways/db/reuse/db-executor.ts` | Abstract `DbExecutor` interface                                             |
+| Path                                   | Purpose                                                   |
+| -------------------------------------- | --------------------------------------------------------- |
+| `src/gateways/db/gateway.ts`           | `DatabaseGateway` interface                               |
+| `src/gateways/db/executor.ts`          | `createDbExecutor`, `PostgresExecutor`, `MariadbExecutor` |
+| `src/gateways/db/init.ts`              | `initializeDatabaseSchema`                                |
+| `src/gateways/db/bootstrap.ts`         | Bootstrap entry point; `DbDialectHelper`                  |
+| `src/gateways/db/reuse/db-executor.ts` | Abstract `DbExecutor` interface                           |
 
 ## Configuration
 
-| Variable       | Default                | Description                                                             |
-| -------------- | ---------------------- | ----------------------------------------------------------------------- |
-| `DB_TYPE`      | `postgresql`           | Database backend: `postgresql` or `mariadb`                             |
-| `DATABASE_URL` | —                      | Connection string; required for `postgresql` or `mariadb`               |
+| Variable       | Default      | Description                                               |
+| -------------- | ------------ | --------------------------------------------------------- |
+| `DB_TYPE`      | `postgresql` | Database backend: `postgresql` or `mariadb`               |
+| `DATABASE_URL` | —            | Connection string; required for `postgresql` or `mariadb` |

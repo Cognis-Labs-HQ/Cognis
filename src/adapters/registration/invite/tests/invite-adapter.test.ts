@@ -41,7 +41,7 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
     };
     const adapter = createAdapter({
         dbExecutor: dbExecutor as any,
-        dbType: "sqlite",
+        dbType: "postgresql",
         accountStore: accountStore as any,
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {},
@@ -92,7 +92,7 @@ test("issueInvite revokes prior pending tokens for the same invitee email", asyn
 
     const adapter = createAdapter({
         dbExecutor: dbExecutor as any,
-        dbType: "sqlite",
+        dbType: "postgresql",
         accountStore: {} as any,
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {

@@ -43,10 +43,10 @@
 
 ### デフォルトの永続化設定
 
-| `DB_TYPE`                   | バックエンド | 接続                  |
-| --------------------------- | ------------ | --------------------- |
-| `postgresql` (デフォルト)    | PostgreSQL   | `DATABASE_URL` が必要 |
-| `mariadb`                    | MariaDB      | `DATABASE_URL` が必要 |
+| `DB_TYPE`                 | バックエンド | 接続                  |
+| ------------------------- | ------------ | --------------------- |
+| `postgresql` (デフォルト) | PostgreSQL   | `DATABASE_URL` が必要 |
+| `mariadb`                 | MariaDB      | `DATABASE_URL` が必要 |
 
 ### 主要なソースの場所
 
@@ -63,17 +63,17 @@
 
 ## 設定
 
-| 変数                              | デフォルト                     | 説明                                                               |
-| --------------------------------- | ------------------------------ | ------------------------------------------------------------------ |
-| `DB_TYPE`                         | `postgresql`                   | データベースバックエンド: `postgresql` または `mariadb`            |
-| `DATABASE_URL`                    | —                              | PostgreSQL または MariaDB の接続文字列                             |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | ベアラートークンの有効期限 (秒)                                    |
-| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | CLI ブートストラップトークンのパス                                 |
-| `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | ゲートウェイ検出のルートディレクトリ                               |
-| `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | アダプター検出のルートディレクトリ                                 |
-| `COGNIS_MODULES_ROOT`             | `src/modules`                  | モジュール検出のルートディレクトリ                                 |
-| `PORT`                            | `3000`                         | HTTP ポート                                                        |
-| `LISTEN_HOST`                     | `0.0.0.0`                      | バインドアドレス                                                   |
+| 変数                              | デフォルト                     | 説明                                                    |
+| --------------------------------- | ------------------------------ | ------------------------------------------------------- |
+| `DB_TYPE`                         | `postgresql`                   | データベースバックエンド: `postgresql` または `mariadb` |
+| `DATABASE_URL`                    | —                              | PostgreSQL または MariaDB の接続文字列                  |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | ベアラートークンの有効期限 (秒)                         |
+| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | CLI ブートストラップトークンのパス                      |
+| `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | ゲートウェイ検出のルートディレクトリ                    |
+| `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | アダプター検出のルートディレクトリ                      |
+| `COGNIS_MODULES_ROOT`             | `src/modules`                  | モジュール検出のルートディレクトリ                      |
+| `PORT`                            | `3000`                         | HTTP ポート                                             |
+| `LISTEN_HOST`                     | `0.0.0.0`                      | バインドアドレス                                        |
 
 ## API ルート
 
