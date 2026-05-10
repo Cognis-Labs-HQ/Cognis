@@ -2,6 +2,7 @@
   <string name="ui.shared.brand.name">Cognis</string>
   <string name="ui.reuse.nav.dashboard">ダッシュボード</string>
   <string name="ui.reuse.nav.messages">メッセージ</string>
+  <string name="ui.reuse.nav.study">学習</string>
   <string name="ui.reuse.menu.profile">プロフィール</string>
   <string name="ui.reuse.menu.settings">設定</string>
   <string name="ui.reuse.menu.docs">ドキュメント</string>
@@ -206,6 +207,8 @@
   <string name="ui.app.dashboard.never">なし</string>
   <string name="ui.app.dashboard.element.digital_clock.label">デジタル時計</string>
   <string name="ui.app.dashboard.element.analogue_clock.label">アナログ時計</string>
+  <string name="ui.app.dashboard.element.teacher_classes.label">担当クラス</string>
+  <string name="ui.app.dashboard.element.teacher_classes.empty">まだクラスが割り当てられていません。</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
@@ -574,4 +577,6 @@
   <string name="module.study.classes.teacher_application_title">教師申請</string>
   <string name="module.study.classes.teacher_application_reason">この言語を教えることを許可されるべき理由を管理者に伝えてください。</string>
   <string name="module.study.classes.submit_application">申請を送信</string>
+  <string name="ui.study.picker.title">学習言語を選択</string>
+  <string name="ui.study.picker.no_languages">利用可能な学習言語がありません。</string>
 </resources>

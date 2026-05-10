@@ -156,9 +156,31 @@
     max-width: 70%;
 }
 
+.messages-message--own {
+    align-self: flex-end;
+    background: var(--color-accent);
+    color: var(--color-accent-contrast);
+}
+
+.messages-message--own .messages-message-sender {
+    display: none;
+}
+
 .messages-message-sender {
     font-size: 0.75rem;
     color: var(--color-text-muted);
+}
+
+.messages-message-time {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    align-self: flex-end;
+    margin-top: 0.2rem;
+    opacity: 0.75;
+}
+
+.messages-message--own .messages-message-time {
+    color: var(--color-accent-contrast);
 }
 
 .messages-message-body {

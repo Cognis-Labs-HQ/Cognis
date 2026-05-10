@@ -1161,6 +1161,12 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     color: var(--text-muted);
 }
 
+.dashboard-teacher-classes-placeholder {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 12px 0 0;
+}
 .dashboard-clock {
     display: flex;
     flex-direction: column;

@@ -2,6 +2,7 @@
   <string name="ui.shared.brand.name">Cognis</string>
   <string name="ui.reuse.nav.dashboard">Dashboard</string>
   <string name="ui.reuse.nav.messages">Messages</string>
+  <string name="ui.reuse.nav.study">Study</string>
   <string name="ui.reuse.menu.profile">Profile</string>
   <string name="ui.reuse.menu.settings">Settings</string>
   <string name="ui.reuse.menu.docs">Docs</string>
@@ -206,6 +207,8 @@
   <string name="ui.app.dashboard.never">Never</string>
   <string name="ui.app.dashboard.element.digital_clock.label">Digital Clock</string>
   <string name="ui.app.dashboard.element.analogue_clock.label">Analogue Clock</string>
+  <string name="ui.app.dashboard.element.teacher_classes.label">My Classes</string>
+  <string name="ui.app.dashboard.element.teacher_classes.empty">No classes assigned yet.</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
@@ -574,4 +577,6 @@
   <string name="module.study.classes.teacher_application_title">Teacher Application</string>
   <string name="module.study.classes.teacher_application_reason">Tell admins why you should be allowed to teach this language.</string>
   <string name="module.study.classes.submit_application">Submit Application</string>
+  <string name="ui.study.picker.title">Choose A Language To Study</string>
+  <string name="ui.study.picker.no_languages">No study languages available.</string>
 </resources>

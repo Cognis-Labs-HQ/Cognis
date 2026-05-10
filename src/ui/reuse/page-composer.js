@@ -506,7 +506,10 @@ export function createPageComposer(
             0,
         );
         const extra = editing ? 1 : 0;
-        gridRows = Math.max(editing ? 6 : 1, maxBottom + extra);
+        gridRows = Math.max(
+            editing ? Math.max(3, maxBottom + 2) : 1,
+            maxBottom + extra,
+        );
         contentGrid.style.minHeight = `${gridRows * UNIT}px`;
         contentGrid.style.width = editing ? `${gridCols * UNIT}px` : "";
         if (editing && gridSection) {
@@ -1401,7 +1404,10 @@ export function createPageComposer(
             0,
         );
         const extra = state.editing ? 1 : 0;
-        state.gridRows = Math.max(state.editing ? 6 : 1, maxBottom + extra);
+        state.gridRows = Math.max(
+            state.editing ? Math.max(3, maxBottom + 2) : 1,
+            maxBottom + extra,
+        );
         state.container.style.minHeight = `${state.gridRows * UNIT}px`;
         state.container.style.width = `${state.gridCols * UNIT}px`;
     }
@@ -2661,10 +2667,7 @@ export function createPageComposer(
                     p.h % 1 !== 0,
             );
             const scale = hasFractional ? 2 : 1;
-            section.style.setProperty(
-                "--grid-cols",
-                String(gridCols * scale),
-            );
+            section.style.setProperty("--grid-cols", String(gridCols * scale));
             for (const placement of visiblePlacements) {
                 const element = elements.find((e) => e.id === placement.id);
                 if (!element) continue;

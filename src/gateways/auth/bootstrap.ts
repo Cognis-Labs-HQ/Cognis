@@ -121,11 +121,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     const uiDir = path.resolve(process.cwd(), "src", "gateways", "auth", "ui");
-    ctx.uiRegistry?.registerAdminSection({
-        id: "security",
-        label: "Security",
-        scriptUrl: "/static/gateways/auth/admin-section.js",
-    });
     ctx.uiRegistry?.registerStaticDir("auth", uiDir);
 
     ctx.capabilities.contribute("auth:accountStore", accountStore);
@@ -429,7 +424,9 @@ function createAuthGatewayRoutes(
             }
             let role = resolveRole(session.role, session.isAdmin);
             const profileStore = capabilities.get<{
-                getProfile(accountId: string): Promise<{ role?: string } | null>;
+                getProfile(
+                    accountId: string,
+                ): Promise<{ role?: string } | null>;
             }>("social:profileStore");
             if (profileStore) {
                 const existingProfile = await profileStore
@@ -488,7 +485,8 @@ function createAuthGatewayRoutes(
             const canSendVerificationEmail = capabilities.get<() => boolean>(
                 "notify:canSendVerificationEmail",
             );
-            const isInitialAdmin = (role === "admin" || role === "owner") && isFounder;
+            const isInitialAdmin =
+                (role === "admin" || role === "owner") && isFounder;
             const shouldRequireSmtpValidation =
                 securitySettings.userValidationMode === "smtp" &&
                 !isInitialAdmin;

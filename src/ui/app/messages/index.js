@@ -206,7 +206,14 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
         .join("");
 }
 
-async function renderThread(roomId, key, container, i18n, before) {
+async function renderThread(
+    roomId,
+    key,
+    container,
+    i18n,
+    currentAccountId,
+    before,
+) {
     const params = new URLSearchParams({ limit: "50" });
     if (before) params.set("before", before);
     const res = await apiFetch(
@@ -228,13 +235,21 @@ async function renderThread(roomId, key, container, i18n, before) {
         }),
     );
     const html = decoded
-        .map(
-            (msg) =>
-                `<div class="messages-message" data-message-id="${escapeHtml(msg.id)}">
-            <span class="messages-message-sender">${escapeHtml(msg.senderDisplayName || msg.senderHandle || msg.senderId)}</span>
+        .map((msg) => {
+            const isOwn = msg.senderId === currentAccountId;
+            const ownClass = isOwn ? " messages-message--own" : "";
+            const senderLabel = isOwn
+                ? ""
+                : `<span class="messages-message-sender">${escapeHtml(msg.senderDisplayName || msg.senderHandle || msg.senderId)}</span>`;
+            const timeLabel = msg.createdAt
+                ? `<time class="messages-message-time" datetime="${escapeHtml(msg.createdAt)}">${escapeHtml(new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))}</time>`
+                : "";
+            return `<div class="messages-message${ownClass}" data-message-id="${escapeHtml(msg.id)}">
+            ${senderLabel}
             <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
-        </div>`,
-        )
+            ${timeLabel}
+        </div>`;
+        })
         .join("");
 
     const hasMore = messageList.length === 50;
@@ -315,7 +330,7 @@ export async function mount(root, { signal } = {}) {
             bindRoomHeaderEvents();
         }
         const key = await getRoomKey(roomId);
-        await renderThread(roomId, key, threadList, i18n);
+        await renderThread(roomId, key, threadList, i18n, currentAccountId);
         await apiFetch(
             `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/read`,
             { method: "POST" },
@@ -431,6 +446,7 @@ export async function mount(root, { signal } = {}) {
                         key,
                         threadList,
                         i18n,
+                        currentAccountId,
                         beforeTime,
                     );
                 });
@@ -469,6 +485,7 @@ export async function mount(root, { signal } = {}) {
                             key,
                             threadList,
                             i18n,
+                            currentAccountId,
                         );
                     }
                 });

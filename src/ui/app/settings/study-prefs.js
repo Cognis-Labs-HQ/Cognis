@@ -24,7 +24,7 @@ export function initStudyPrefs(root, { i18n, onDirtyChange }) {
     let pendingTeachingLanguages = [];
 
     async function loadLanguages() {
-        const res = await apiFetch("/api/v1/system/languages");
+        const res = await apiFetch("/api/v1/study/languages");
         if (!res.ok) return [];
         const payload = await res.json();
         return Array.isArray(payload?.data) ? payload.data : [];
@@ -66,11 +66,12 @@ export function initStudyPrefs(root, { i18n, onDirtyChange }) {
                 <tbody>
                     ${languages
                         .map((language) => {
-                            const code = language.iso_code || language.key;
+                            const code = language.code;
                             const name = language.name || code;
+                            const flag = language.flag || "";
                             return `
                                 <tr>
-                                    <td>${escapeHtml(name)} <code>${escapeHtml(code)}</code></td>
+                                    <td>${escapeHtml(flag)} ${escapeHtml(name)} <code>${escapeHtml(code)}</code></td>
                                     <td><input type="checkbox" data-study-learn="${escapeHtml(code)}" ${pendingLearningLanguages.includes(code) ? "checked" : ""} /></td>
                                     <td><input type="checkbox" data-study-teach="${escapeHtml(code)}" ${pendingTeachingLanguages.includes(code) ? "checked" : ""} /></td>
                                 </tr>

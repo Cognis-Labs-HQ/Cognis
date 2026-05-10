@@ -121,6 +121,20 @@ export async function mount(root) {
         },
     ];
 
+    if (role === "teacher" || role === "admin") {
+        elements.push({
+            id: "teacher-classes",
+            label: i18n.t("ui.app.dashboard.element.teacher_classes.label"),
+            gridSize: { default: [6, 3], min: [3, 2] },
+            render: () => `
+      <h3>${i18n.t("ui.app.dashboard.element.teacher_classes.label")}</h3>
+      <p class="dashboard-teacher-classes-placeholder">
+        ${i18n.t("ui.app.dashboard.element.teacher_classes.empty")}
+      </p>
+    `,
+        });
+    }
+
     const composer = createPageComposer(root, {
         allowCustomization: true,
         elements,

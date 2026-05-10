@@ -213,11 +213,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "social",
         "ui",
     );
-    ctx.uiRegistry?.registerAdminSection({
-        id: "social",
-        label: "Social",
-        scriptUrl: "/static/gateways/social/admin-section.js",
-    });
     ctx.uiRegistry?.registerStaticDir("social", uiDir);
 
     ctx.log?.("info", "Social gateway: initialized.", {

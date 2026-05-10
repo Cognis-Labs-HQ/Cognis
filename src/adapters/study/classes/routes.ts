@@ -16,7 +16,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { requireAuth } from "../../../api/auth/guard.js";
 import { readJson } from "../../../api/reuse/read-json.js";
-import type { DbClassesStore } from "./store.js";
+import type { DbClassesStore, StudyLanguageRow } from "./store.js";
 
 type SetRole = (username: string, role: "teacher") => Promise<void>;
 type DispatchToRole = (
@@ -281,6 +281,42 @@ export function createClassesRoutes(
                 });
                 jsonOk(res, { rejected: true });
             }
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/study/languages" &&
+            req.method === "GET"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const languages = await store.listStudyLanguages(true);
+            jsonOk(res, languages);
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/study/languages" &&
+            req.method === "POST"
+        ) {
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const body = (await readJson(req)) as Partial<StudyLanguageRow> & {
+                code?: string;
+            };
+            if (!body?.code || typeof body.code !== "string") {
+                jsonError(res, 400, "bad_request", "code is required.");
+                return true;
+            }
+            const language = await store.upsertStudyLanguage(
+                body as Partial<StudyLanguageRow> & { code: string },
+            );
+            options.log?.("info", "Upserted study language.", {
+                ...logMeta,
+                accountId: claims.sub,
+                code: language.code,
+            });
+            jsonOk(res, language);
             return true;
         }
 

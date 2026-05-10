@@ -161,7 +161,8 @@ function renderUsersTable() {
               .map((user) => {
                   const isProtected = user.isAdmin && user.isFounder;
                   const isSelf = user.username === currentUsername;
-                  const userRole = user.role ?? (user.isAdmin ? "admin" : "user");
+                  const userRole =
+                      user.role ?? (user.isAdmin ? "admin" : "user");
                   const isOwner = userRole === "owner";
                   const roleDisabled = isProtected || isOwner || isSelf;
                   const roleCellHtml = isOwner
@@ -171,9 +172,10 @@ function renderUsersTable() {
                             <option value="teacher"${userRole === "teacher" ? " selected" : ""}>${escapeHtml("teacher")}</option>
                             <option value="admin"${userRole === "admin" ? " selected" : ""}>${escapeHtml("admin")}</option>
                         </select>`;
-                  const actionsHtml = isProtected || isOwner
-                      ? ""
-                      : `
+                  const actionsHtml =
+                      isProtected || isOwner
+                          ? ""
+                          : `
                         <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.generic.disable")) : escapeHtml(i18n.t("ui.reuse.generic.enable"))}</button>
                         <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}">☰</button>`;
                   return `

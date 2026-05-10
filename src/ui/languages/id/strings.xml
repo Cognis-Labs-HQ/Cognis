@@ -2,6 +2,7 @@
   <string name="ui.shared.brand.name">Cognis</string>
   <string name="ui.reuse.nav.dashboard">Dasbor</string>
   <string name="ui.reuse.nav.messages">Pesan</string>
+  <string name="ui.reuse.nav.study">Belajar</string>
   <string name="ui.reuse.menu.profile">Profil</string>
   <string name="ui.reuse.menu.settings">Pengaturan</string>
   <string name="ui.reuse.menu.docs">Dokumentasi</string>
@@ -206,6 +207,8 @@
   <string name="ui.app.dashboard.never">Tidak pernah</string>
   <string name="ui.app.dashboard.element.digital_clock.label">Jam Digital</string>
   <string name="ui.app.dashboard.element.analogue_clock.label">Jam Analog</string>
+  <string name="ui.app.dashboard.element.teacher_classes.label">Kelas Saya</string>
+  <string name="ui.app.dashboard.element.teacher_classes.empty">Belum ada kelas yang ditugaskan.</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
@@ -574,4 +577,6 @@
   <string name="module.study.classes.teacher_application_title">Aplikasi Pengajar</string>
   <string name="module.study.classes.teacher_application_reason">Beri tahu admin mengapa Anda seharusnya diizinkan mengajar bahasa ini.</string>
   <string name="module.study.classes.submit_application">Kirim Aplikasi</string>
+  <string name="ui.study.picker.title">Pilih Bahasa yang Dipelajari</string>
+  <string name="ui.study.picker.no_languages">Tidak ada bahasa belajar yang tersedia.</string>
 </resources>

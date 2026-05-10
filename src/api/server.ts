@@ -1,3 +1,4 @@
+import { createSearchRoutes } from "./routes/search/index.js";
 import { createServer } from "node:http";
 import {
     HealthService,
@@ -112,6 +113,7 @@ export function buildServer(deps: ApiDependencies) {
               log,
           )
         : null;
+    const searchRoutes = createSearchRoutes();
 
     Promise.all([
         deps.moduleRuntimeGateway.listManifests(),
@@ -199,6 +201,16 @@ export function buildServer(deps: ApiDependencies) {
                     });
                     return;
                 }
+            }
+
+            const handledBySearch = await searchRoutes(req, res, url);
+            if (handledBySearch) {
+                log("info", "Request handled by search routes.", {
+                    method: req.method ?? "GET",
+                    path: url.pathname,
+                    durationMs: Date.now() - startedAt,
+                });
+                return;
             }
 
             // Gateway-registered route handlers run after core routes but before

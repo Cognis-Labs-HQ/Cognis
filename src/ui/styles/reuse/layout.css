@@ -227,6 +227,26 @@
     border-bottom: 2px solid var(--accent-2);
 }
 
+.topnav-study-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: inherit;
+    color: var(--nav-link-color, var(--text));
+    padding: 0.35rem 0.7rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+    display: inline-block;
+    font-weight: 500;
+}
+
+.topnav-study-btn:hover,
+.topnav-study-btn.active {
+    background: var(--nav-active-bg, rgba(128, 128, 128, 0.15));
+    color: var(--nav-active-color, var(--accent));
+}
+
 .account-cluster {
     display: flex;
     grid-column: 3;

@@ -19,6 +19,15 @@ import type { SupportedDbType } from "../../../gateways/db/executor.js";
 
 export type TeacherRequestStatus = "pending" | "approved" | "rejected";
 
+export interface StudyLanguageRow {
+    code: string;
+    name: string;
+    flag: string;
+    available: boolean;
+    active: boolean;
+    sortOrder: number;
+}
+
 export interface ClassRow {
     id: string;
     languageCode: string;
@@ -125,6 +134,150 @@ export class DbClassesStore {
             )`,
             [],
         );
+
+        await this.ensureStudyLanguagesSchema();
+    }
+
+    async ensureStudyLanguagesSchema(): Promise<void> {
+        const tsDefault =
+            this.dbType === "postgresql"
+                ? `TIMESTAMPTZ NOT NULL DEFAULT NOW()`
+                : `DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP`;
+
+        await this.db.execute(
+            `CREATE TABLE IF NOT EXISTS study_languages (
+                code VARCHAR(32) PRIMARY KEY,
+                name VARCHAR(128) NOT NULL,
+                flag VARCHAR(8) NOT NULL DEFAULT '',
+                available TINYINT(1) NOT NULL DEFAULT 1,
+                active TINYINT(1) NOT NULL DEFAULT 0,
+                sort_order INTEGER NOT NULL DEFAULT 0,
+                created_at ${tsDefault}
+            )`,
+            [],
+        );
+
+        const countResult = await this.db.execute(
+            `SELECT COUNT(*) AS total FROM study_languages`,
+            [],
+        );
+        const total = Number(
+            (countResult.rows?.[0] as Record<string, unknown>)?.total ?? 0,
+        );
+        if (total === 0) {
+            await this.seedStudyLanguages();
+        }
+    }
+
+    private async seedStudyLanguages(): Promise<void> {
+        const seeds = [
+            { code: "ja", name: "Japanese", flag: "🇯🇵", sortOrder: 1 },
+            { code: "zh", name: "Chinese", flag: "🇨🇳", sortOrder: 2 },
+            { code: "ko", name: "Korean", flag: "🇰🇷", sortOrder: 3 },
+            { code: "es", name: "Spanish", flag: "🇪🇸", sortOrder: 4 },
+            { code: "fr", name: "French", flag: "🇫🇷", sortOrder: 5 },
+            { code: "de", name: "German", flag: "🇩🇪", sortOrder: 6 },
+            { code: "pt", name: "Portuguese", flag: "🇵🇹", sortOrder: 7 },
+            { code: "ar", name: "Arabic", flag: "🇸🇦", sortOrder: 8 },
+            { code: "ru", name: "Russian", flag: "🇷🇺", sortOrder: 9 },
+            { code: "it", name: "Italian", flag: "🇮🇹", sortOrder: 10 },
+        ];
+        for (const seed of seeds) {
+            await this.db
+                .execute(
+                    `INSERT INTO study_languages (code, name, flag, available, active, sort_order)
+                     VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, 1, 0, ${this.placeholder(4)})`,
+                    [seed.code, seed.name, seed.flag, seed.sortOrder],
+                )
+                .catch(() => undefined);
+        }
+    }
+
+    private rowToStudyLanguage(row: Record<string, unknown>): StudyLanguageRow {
+        return {
+            code: String(row.code),
+            name: String(row.name),
+            flag: String(row.flag ?? ""),
+            available: Boolean(row.available),
+            active: Boolean(row.active),
+            sortOrder: Number(row.sort_order ?? 0),
+        };
+    }
+
+    async listStudyLanguages(
+        onlyAvailable = false,
+    ): Promise<StudyLanguageRow[]> {
+        const where = onlyAvailable ? " WHERE available = 1" : "";
+        const result = await this.db.execute(
+            `SELECT code, name, flag, available, active, sort_order
+             FROM study_languages${where}
+             ORDER BY sort_order, code`,
+            [],
+        );
+        return (result.rows ?? []).map((row) =>
+            this.rowToStudyLanguage(row as Record<string, unknown>),
+        );
+    }
+
+    async upsertStudyLanguage(
+        row: Partial<StudyLanguageRow> & { code: string },
+    ): Promise<StudyLanguageRow> {
+        if (this.dbType === "mariadb") {
+            await this.db.execute(
+                `INSERT INTO study_languages (code, name, flag, available, active, sort_order)
+                 VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)}, ${this.placeholder(5)}, ${this.placeholder(6)})
+                 ON DUPLICATE KEY UPDATE
+                   name = VALUES(name),
+                   flag = VALUES(flag),
+                   available = VALUES(available),
+                   active = VALUES(active),
+                   sort_order = VALUES(sort_order)`,
+                [
+                    row.code,
+                    row.name ?? "",
+                    row.flag ?? "",
+                    row.available !== false ? 1 : 0,
+                    row.active ? 1 : 0,
+                    row.sortOrder ?? 0,
+                ],
+            );
+        } else {
+            await this.db.execute(
+                `INSERT INTO study_languages (code, name, flag, available, active, sort_order)
+                 VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)}, ${this.placeholder(5)}, ${this.placeholder(6)})
+                 ON CONFLICT (code) DO UPDATE SET
+                   name = EXCLUDED.name,
+                   flag = EXCLUDED.flag,
+                   available = EXCLUDED.available,
+                   active = EXCLUDED.active,
+                   sort_order = EXCLUDED.sort_order`,
+                [
+                    row.code,
+                    row.name ?? "",
+                    row.flag ?? "",
+                    row.available !== false ? 1 : 0,
+                    row.active ? 1 : 0,
+                    row.sortOrder ?? 0,
+                ],
+            );
+        }
+        const result = await this.db.execute(
+            `SELECT code, name, flag, available, active, sort_order
+             FROM study_languages WHERE code = ${this.placeholder(1)}`,
+            [row.code],
+        );
+        const found = result.rows?.[0];
+        if (!found) {
+            return {
+                code: row.code,
+                name: row.name ?? "",
+                flag: row.flag ?? "",
+                available: row.available !== false,
+                active: row.active ?? false,
+                sortOrder: row.sortOrder ?? 0,
+            };
+        }
+        return this.rowToStudyLanguage(found as Record<string, unknown>);
     }
 
     private rowToTeacherRequest(
