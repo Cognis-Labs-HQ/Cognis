@@ -32,6 +32,7 @@ test("social routes - follow and unfollow", async () => {
     const { dir, executor } = makeTempDb();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
+        await profileStore.updateProfile("alice", { visibility: "community" });
         await profileStore.updateProfile("bob", { visibility: "community" });
         const route = createSocialRoutes(profileStore);
         const aliceToken = issueAccessToken("alice", "user", 60);
