@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Database Gateway is the single point of access for all database operations in Cognis. It provides a uniform executor interface that hides the differences between SQLite, PostgreSQL, and MariaDB so that the rest of the application never needs to know which database is running. The gateway reads `DB_TYPE` from the environment, creates the appropriate executor, initialises the schema, and contributes the executor and dialect helpers to the capability store.
+The Database Gateway is the single point of access for all database operations in Cognis. It provides a uniform executor interface that hides the differences between PostgreSQL and MariaDB so that the rest of the application never needs to know which database is running. The gateway reads `DB_TYPE` from the environment, creates the appropriate executor, initialises the schema, and contributes the executor and dialect helpers to the capability store.
 
 No component outside the database gateway tree — no route handler, no gateway bootstrap, no module — should obtain a database connection or call a driver directly. All database access goes through the `db:executor` capability or through the higher-level store abstractions in `src/adapters/db/reuse/`.
 
@@ -42,7 +42,6 @@ export interface DatabaseGateway {
 
 The internal `DbExecutor` abstraction in `src/gateways/db/reuse/db-executor.ts` is used by the gateway's store layer and by the auth gateway. The factory function `createDbExecutor(dbType)` in `src/gateways/db/executor.ts` selects and instantiates the right executor based on `DB_TYPE`:
 
-- `sqlite` — `SqliteExecutor` using the `sqlite3` driver; file path from `SQLITE_PATH`.
 - `postgresql` — `PostgresExecutor` using the `pg` driver; connection from `DATABASE_URL`.
 - `mariadb` — `MariadbExecutor` using `mysql2/promise`; connection from `DATABASE_URL`.
 
@@ -62,7 +61,7 @@ export interface DbDialectHelper {
 }
 ```
 
-`upsert` emits `ON CONFLICT ... DO UPDATE SET` (SQLite/PostgreSQL) or `ON DUPLICATE KEY UPDATE` (MariaDB). `insertIgnore` emits `INSERT OR IGNORE` (SQLite), `ON CONFLICT DO NOTHING` (PostgreSQL), or `INSERT IGNORE` (MariaDB).
+`upsert` emits `ON CONFLICT ... DO UPDATE SET` (PostgreSQL) or `ON DUPLICATE KEY UPDATE` (MariaDB). `insertIgnore` emits `ON CONFLICT DO NOTHING` (PostgreSQL) or `INSERT IGNORE` (MariaDB).
 
 ### Schema initialisation
 
@@ -70,18 +69,17 @@ export interface DbDialectHelper {
 
 Key source locations:
 
-| Path                                   | Purpose                                                                     |
-| -------------------------------------- | --------------------------------------------------------------------------- |
-| `src/gateways/db/gateway.ts`           | `DatabaseGateway` interface                                                 |
-| `src/gateways/db/executor.ts`          | `createDbExecutor`, `SqliteExecutor`, `PostgresExecutor`, `MariadbExecutor` |
-| `src/gateways/db/init.ts`              | `initializeDatabaseSchema`                                                  |
-| `src/gateways/db/bootstrap.ts`         | Bootstrap entry point; `DbDialectHelper`                                    |
-| `src/gateways/db/reuse/db-executor.ts` | Abstract `DbExecutor` interface                                             |
+| Path                                   | Purpose                                                   |
+| -------------------------------------- | --------------------------------------------------------- |
+| `src/gateways/db/gateway.ts`           | `DatabaseGateway` interface                               |
+| `src/gateways/db/executor.ts`          | `createDbExecutor`, `PostgresExecutor`, `MariadbExecutor` |
+| `src/gateways/db/init.ts`              | `initializeDatabaseSchema`                                |
+| `src/gateways/db/bootstrap.ts`         | Bootstrap entry point; `DbDialectHelper`                  |
+| `src/gateways/db/reuse/db-executor.ts` | Abstract `DbExecutor` interface                           |
 
 ## Configuration
 
-| Variable       | Default                | Description                                                             |
-| -------------- | ---------------------- | ----------------------------------------------------------------------- |
-| `DB_TYPE`      | `sqlite`               | Database backend: `sqlite`, `postgresql`, or `mariadb`                  |
-| `DATABASE_URL` | —                      | Connection string; required when `DB_TYPE` is `postgresql` or `mariadb` |
-| `SQLITE_PATH`  | `./data/cognis.sqlite` | SQLite file path; only used when `DB_TYPE=sqlite`                       |
+| Variable       | Default      | Description                                               |
+| -------------- | ------------ | --------------------------------------------------------- |
+| `DB_TYPE`      | `postgresql` | Database backend: `postgresql` or `mariadb`               |
+| `DATABASE_URL` | —            | Connection string; required for `postgresql` or `mariadb` |

@@ -8,13 +8,11 @@
 export type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 export type {
     SupportedDbType,
-    SqliteExecutor,
     PostgresExecutor,
     MariadbExecutor,
 } from "../../../gateways/db/executor.js";
 export {
     createDbExecutor,
-    SqliteExecutor,
     PostgresExecutor,
     MariadbExecutor,
 } from "../../../gateways/db/executor.js";

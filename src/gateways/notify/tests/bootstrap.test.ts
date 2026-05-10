@@ -46,7 +46,7 @@ test("bootstrap registers notify gateway with GatewayRegistry", async () => {
 
     await bootstrap({
         dbExecutor: db as any,
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -65,7 +65,7 @@ test("bootstrap registers routes with RouteRegistry", async () => {
 
     await bootstrap({
         dbExecutor: db as any,
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -84,7 +84,7 @@ test("GET /api/v1/gateways/notify/adapters returns empty list when no senders", 
 
     await bootstrap({
         dbExecutor: db as any,
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -117,7 +117,7 @@ test("gateway adapter route requires admin auth", async () => {
 
     await bootstrap({
         dbExecutor: db as any,
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -149,7 +149,7 @@ test("notify gateway bootstrap registers correct static dir and admin-section.js
 
     await bootstrap({
         dbExecutor: db as any,
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -182,7 +182,7 @@ test("notify gateway bootstrap registers admin section scriptUrl that resolves w
 
     await bootstrap({
         dbExecutor: db as any,
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,

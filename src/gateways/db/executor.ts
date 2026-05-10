@@ -13,11 +13,10 @@
  *
  * Exports:
  *   SupportedDbType     — union of supported provider identifiers.
- *   SqliteExecutor      — concrete SQLite driver.
  *   PostgresExecutor    — concrete PostgreSQL driver.
  *   MariadbExecutor     — concrete MariaDB / MySQL driver.
- *   createDbExecutor    — factory that reads DB_TYPE / SQLITE_PATH /
- *                         DATABASE_URL from the environment.
+ *   createDbExecutor    — factory that reads DB_TYPE / DATABASE_URL
+ *                         from the environment.
  *
  * Adding a new DB provider?
  *   1. Add the type string to SupportedDbType.
@@ -25,14 +24,12 @@
  *   3. Handle the new type in createDbExecutor().
  *   4. Add SQL init/migrate scripts under src/adapters/db/<provider>/sql/.
  */
-import { mkdir } from "node:fs/promises";
-import path from "node:path";
 import type { BootstrapLog } from "@cognis/core";
 import type { DbExecutor } from "./reuse/db-executor.js";
 
 export type { DbExecutor } from "./reuse/db-executor.js";
 
-export type SupportedDbType = "sqlite" | "postgresql" | "mariadb";
+export type SupportedDbType = "postgresql" | "mariadb";
 
 function summarizeStatement(sql: string): string {
     const statement = sql.trim().split(/\s+/, 1)[0];
@@ -65,59 +62,6 @@ function writeDbLog(
     meta?: Record<string, unknown>,
 ): void {
     log?.(level, message, meta);
-}
-
-export class SqliteExecutor implements DbExecutor {
-    private dbPromise: Promise<any> | null = null;
-    constructor(
-        private readonly dbPath: string,
-        private readonly log?: BootstrapLog,
-    ) {}
-
-    private async getDb() {
-        if (!this.dbPromise) {
-            this.dbPromise = (async () => {
-                const sqlite3 = await import("sqlite3").then(
-                    (mod: any) => mod.default ?? mod,
-                );
-                await mkdir(path.dirname(this.dbPath), { recursive: true });
-                return new sqlite3.Database(this.dbPath);
-            })();
-        }
-        return this.dbPromise;
-    }
-
-    async execute(sql: string, params: unknown[] = []) {
-        writeDbLog(this.log, "debug", "Executing SQL statement.", {
-            component: "db",
-            provider: "sqlite",
-            statement: summarizeStatement(sql),
-            parameterCount: params.length,
-        });
-        const db = await this.getDb();
-        const command = sql.trim().toLowerCase();
-        if (command.startsWith("select")) {
-            const rows = await new Promise<any[]>((resolve, reject) => {
-                db.all(sql, params, (err: Error | null, result: any[]) => {
-                    if (err) reject(err);
-                    else resolve(result);
-                });
-            });
-            return { rows, rowCount: rows.length };
-        }
-
-        const rowCount = await new Promise<number>((resolve, reject) => {
-            db.run(
-                sql,
-                params,
-                function (this: { changes: number }, err: Error | null) {
-                    if (err) reject(err);
-                    else resolve(this.changes ?? 0);
-                },
-            );
-        });
-        return { rowCount };
-    }
 }
 
 export class PostgresExecutor implements DbExecutor {
@@ -219,12 +163,6 @@ export async function createDbExecutor(
     dbType: SupportedDbType,
     log?: BootstrapLog,
 ): Promise<DbExecutor> {
-    if (dbType === "sqlite") {
-        const dbPath =
-            process.env.SQLITE_PATH ??
-            path.resolve(process.cwd(), "data", "cognis.sqlite");
-        return new SqliteExecutor(dbPath, log);
-    }
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error(`DATABASE_URL is required for DB_TYPE=${dbType}`);
     if (dbType === "postgresql") return new PostgresExecutor(url, log);

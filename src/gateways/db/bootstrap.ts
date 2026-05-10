@@ -37,20 +37,13 @@ function buildDialectHelper(
                 .map((col, i) =>
                     dbType === "postgresql"
                         ? `${col} = EXCLUDED.${col}`
-                        : dbType === "mariadb"
-                          ? `${col} = VALUES(${col})`
-                          : `${col} = excluded.${col}`,
+                        : `${col} = VALUES(${col})`,
                 )
                 .join(", ");
 
             if (dbType === "postgresql") {
                 await executor.execute(
                     `INSERT INTO ${table} (${cols}) VALUES (${placeholders}) ON CONFLICT (${keyCol}) DO UPDATE SET ${updateSet}`,
-                    allVals,
-                );
-            } else if (dbType === "sqlite") {
-                await executor.execute(
-                    `INSERT INTO ${table} (${cols}) VALUES (${placeholders}) ON CONFLICT(${keyCol}) DO UPDATE SET ${updateSet}`,
                     allVals,
                 );
             } else {
@@ -73,11 +66,6 @@ function buildDialectHelper(
                     `INSERT INTO ${table} (${cols}) VALUES (${placeholders}) ON CONFLICT DO NOTHING`,
                     vals,
                 );
-            } else if (dbType === "sqlite") {
-                await executor.execute(
-                    `INSERT OR IGNORE INTO ${table} (${cols}) VALUES (${placeholders})`,
-                    vals,
-                );
             } else {
                 await executor.execute(
                     `INSERT IGNORE INTO ${table} (${cols}) VALUES (${placeholders})`,
@@ -90,7 +78,7 @@ function buildDialectHelper(
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbType =
-        (process.env.DB_TYPE as SupportedDbType | undefined) ?? "sqlite";
+        (process.env.DB_TYPE as SupportedDbType | undefined) ?? "postgresql";
     const adaptersRoot =
         ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters");
 

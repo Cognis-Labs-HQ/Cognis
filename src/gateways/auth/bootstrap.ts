@@ -41,7 +41,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbType =
         ctx.capabilities.get<SupportedDbType>("db:type") ??
         ctx.dbType ??
-        "sqlite";
+        "postgresql";
 
     const accountStore = new DbLocalAccountStore(dbExecutor, dbType, ctx.log);
     await accountStore.ensureSchema();

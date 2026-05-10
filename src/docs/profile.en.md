@@ -32,7 +32,7 @@ Not responsible for: file storage implementation (that is the files gateway), au
 | `posts`            | User-authored posts with per-post visibility                                                |
 | `file_size_limits` | Per-category upload size caps (`image`, `video`, `text`, `global`)                          |
 
-Schema SQL is in `src/adapters/db/{sqlite,mariadb,postgres}/sql/init/002_profile.sql`.
+Schema SQL is in `src/adapters/db/{mariadb,postgres}/sql/init/002_profile.sql`.
 
 ### Key source locations
 

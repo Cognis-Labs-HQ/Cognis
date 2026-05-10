@@ -27,16 +27,16 @@ CognisはNode 22をベースにした単一のDockerイメージとして提供�
 ```dockerfile
 EXPOSE 3000
 ENV NODE_ENV=production
-ENV DB_TYPE=sqlite
+ENV DB_TYPE=postgresql
 CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 ```
 
 ## 設定
 
-| 変数               | デフォルト | 説明                                |
-| ------------------ | ---------- | ----------------------------------- |
-| `DB_TYPE`          | `sqlite`   | データベースバックエンド            |
-| `DATABASE_URL`     | —          | PostgreSQLまたはMariaDBの接続文字列 |
-| `LOG_LEVEL`        | `info`     | ログの詳細度                        |
-| `PORT`             | `3000`     | HTTPポート                          |
-| `COGNIS_SMTP_HOST` | —          | SMTPサーバーのホスト名              |
+| 変数               | デフォルト   | 説明                                                    |
+| ------------------ | ------------ | ------------------------------------------------------- |
+| `DB_TYPE`          | `postgresql` | データベースバックエンド: `postgresql` または `mariadb` |
+| `DATABASE_URL`     | —            | PostgreSQLまたはMariaDBの接続文字列                     |
+| `LOG_LEVEL`        | `info`       | ログの詳細度                                            |
+| `PORT`             | `3000`       | HTTPポート                                              |
+| `COGNIS_SMTP_HOST` | —            | SMTPサーバーのホスト名                                  |

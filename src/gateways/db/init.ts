@@ -36,9 +36,8 @@ export interface DbInitLogger {
 }
 
 export function resolveDbProviderDir(dbType: string) {
-    if (dbType === "postgresql") return "postgres";
     if (dbType === "mariadb" || dbType === "mysql") return "mariadb";
-    return "sqlite";
+    return "postgres";
 }
 
 function splitSqlStatements(sql: string): string[] {
@@ -99,11 +98,6 @@ async function recordMigration(
     if (dir === "postgres") {
         await executor.execute(
             "INSERT INTO db_migrations (id, sha256, applied_at) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING",
-            [id, checksum, now],
-        );
-    } else if (dir === "sqlite") {
-        await executor.execute(
-            "INSERT OR IGNORE INTO db_migrations (id, sha256, applied_at) VALUES (?, ?, ?)",
             [id, checksum, now],
         );
     } else {

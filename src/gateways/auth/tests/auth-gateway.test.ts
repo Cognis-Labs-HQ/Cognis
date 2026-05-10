@@ -7,7 +7,7 @@ import { RouteRegistry } from "../../../api/route-registry.js";
 import { UIRegistry } from "../../../api/ui-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../../../api/auth/access-tokens.js";
-import { SqliteExecutor } from "../../../gateways/db/executor.js";
+import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
 
 type HttpIncomingMessage = import("node:http").IncomingMessage;
 
@@ -88,7 +88,7 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -113,7 +113,7 @@ test("auth gateway contributes auth:accountStore capability", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -138,7 +138,7 @@ test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -181,7 +181,7 @@ test("GET /api/v1/auth/registration-config returns open-registration state", asy
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -225,7 +225,7 @@ test("GET /api/v1/gateways/auth/adapters requires admin auth", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -265,7 +265,7 @@ test("GET /api/v1/gateways/auth/adapters returns adapter list to admin", async (
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -308,7 +308,7 @@ test("auth gateway bootstrap registers correct static dir and admin-section.js e
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -347,7 +347,7 @@ test("auth gateway bootstrap registers admin section scriptUrl that resolves wit
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -391,7 +391,7 @@ test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", as
         ) => Promise<{ rows?: unknown[] }>;
     };
 
-    const gw = new CoreAuthGateway(db, "sqlite");
+    const gw = new CoreAuthGateway(db, "postgresql");
 
     const mockAdapter = {
         id: "oidc",
@@ -435,7 +435,7 @@ test("login endpoint returns 503 when no auth providers are available", async ()
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -487,7 +487,7 @@ test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user"
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -537,7 +537,7 @@ test("POST /api/v1/auth/verify returns 200 for fresh authenticated session", asy
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -580,7 +580,7 @@ test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -620,7 +620,7 @@ test("POST /api/v1/auth/emergency-token requires admin auth", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -655,7 +655,7 @@ test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -708,7 +708,7 @@ test("registration:public:register capability is looked up lazily in register ha
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -790,7 +790,7 @@ test("auth register endpoint returns 403 when open registration is disabled", as
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -859,13 +859,10 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
             });
         },
     });
-    const db = new SqliteExecutor(":memory:");
-    await db.execute(
-        "CREATE TABLE IF NOT EXISTS account_profiles (account_id TEXT PRIMARY KEY, role TEXT)",
-    );
+    const db = new InMemoryTestExecutor();
     await bootstrap({
         dbExecutor: db,
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -912,13 +909,10 @@ test("login userValidation exempts founder admin even when SMTP is available", a
         },
     });
     capabilities.contribute("notify:canSendVerificationEmail", () => true);
-    const db = new SqliteExecutor(":memory:");
-    await db.execute(
-        "CREATE TABLE IF NOT EXISTS account_profiles (account_id TEXT PRIMARY KEY, role TEXT)",
-    );
+    const db = new InMemoryTestExecutor();
     await bootstrap({
         dbExecutor: db,
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,

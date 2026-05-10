@@ -27,16 +27,16 @@ Dockerfile di `docker/Dockerfile` menggunakan satu stage `FROM node:22`:
 ```dockerfile
 EXPOSE 3000
 ENV NODE_ENV=production
-ENV DB_TYPE=sqlite
+ENV DB_TYPE=postgresql
 CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 ```
 
 ## Konfigurasi
 
-| Variabel           | Default  | Keterangan                                   |
-| ------------------ | -------- | -------------------------------------------- |
-| `DB_TYPE`          | `sqlite` | Backend database                             |
-| `DATABASE_URL`     | —        | String koneksi untuk PostgreSQL atau MariaDB |
-| `LOG_LEVEL`        | `info`   | Verbositas log                               |
-| `PORT`             | `3000`   | Port HTTP                                    |
-| `COGNIS_SMTP_HOST` | —        | Hostname server SMTP                         |
+| Variabel           | Default      | Keterangan                                    |
+| ------------------ | ------------ | --------------------------------------------- |
+| `DB_TYPE`          | `postgresql` | Backend database: `postgresql` atau `mariadb` |
+| `DATABASE_URL`     | —            | String koneksi untuk PostgreSQL atau MariaDB  |
+| `LOG_LEVEL`        | `info`       | Verbositas log                                |
+| `PORT`             | `3000`       | Port HTTP                                     |
+| `COGNIS_SMTP_HOST` | —            | Hostname server SMTP                          |

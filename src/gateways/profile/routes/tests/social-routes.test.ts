@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { DbProfileStore } from "../../../../adapters/db/reuse/profile-store.js";
-import { SqliteExecutor } from "../../../../gateways/db/executor.js";
+import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
 import { DbLocalAccountStore } from "../../../../adapters/auth/local/store.js";
 import { createSocialRoutes } from "../social.js";
 import { issueAccessToken } from "../../../../api/auth/access-tokens.js";
@@ -17,9 +17,9 @@ function makeReq(method: string, token: string | null) {
 }
 
 async function setupUsers(executor: any, ...usernames: string[]) {
-    const accountStore = new DbLocalAccountStore(executor, "sqlite");
+    const accountStore = new DbLocalAccountStore(executor, "postgresql");
     await accountStore.ensureSchema();
-    const profileStore = new DbProfileStore(executor, "sqlite");
+    const profileStore = new DbProfileStore(executor, "postgresql");
     await profileStore.ensureSchema();
     for (const username of usernames) {
         await accountStore.register(username, "pw");

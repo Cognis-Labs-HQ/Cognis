@@ -20,7 +20,7 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
     map.set("db:executor", {
         execute: async () => ({ rows: [], rowCount: 0 }),
     });
-    map.set("db:type", "sqlite");
+    map.set("db:type", "postgresql");
     map.set("auth:accountStore", {
         async isFounder() {
             return false;
@@ -104,7 +104,7 @@ test("registration:public:isEnabled capability returns false when gateway is dis
     };
     const map = new Map();
     map.set("db:executor", dbExec);
-    map.set("db:type", "sqlite");
+    map.set("db:type", "postgresql");
     map.set("auth:accountStore", {
         async isFounder() {
             return false;
@@ -175,7 +175,7 @@ test("registration:public:register capability throws when gateway is disabled", 
     };
     const map = new Map();
     map.set("db:executor", dbExec);
-    map.set("db:type", "sqlite");
+    map.set("db:type", "postgresql");
     map.set("auth:accountStore", {
         async isFounder() {
             return false;

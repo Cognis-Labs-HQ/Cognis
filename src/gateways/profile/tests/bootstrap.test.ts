@@ -20,7 +20,7 @@ test("profile gateway bootstrap registers in GatewayRegistry", async () => {
 
     await bootstrap({
         dbExecutor: makeInMemoryDb() as any,
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -40,7 +40,7 @@ test("profile gateway bootstrap registers correct static dir and navbar.js exist
 
     await bootstrap({
         dbExecutor: makeInMemoryDb() as any,
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -74,7 +74,7 @@ test("profile gateway bootstrap registers navbar plugin scriptUrl that resolves 
 
     await bootstrap({
         dbExecutor: makeInMemoryDb() as any,
-        dbType: "sqlite",
+        dbType: "postgresql",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,

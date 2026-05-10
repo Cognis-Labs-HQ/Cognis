@@ -53,7 +53,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbType =
         ctx.capabilities.get<SupportedDbType>("db:type") ??
         ctx.dbType ??
-        "sqlite";
+        "postgresql";
     const accountStore =
         ctx.capabilities.get<LocalAccountStore>("auth:accountStore");
     if (!accountStore) return;

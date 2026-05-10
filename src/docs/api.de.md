@@ -43,11 +43,10 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 
 ### Standard-Persistenzeinstellungen
 
-| `DB_TYPE`           | Backend    | Verbindung                                                  |
-| ------------------- | ---------- | ----------------------------------------------------------- |
-| `sqlite` (Standard) | SQLite     | Datei unter `SQLITE_PATH` (Standard `./data/cognis.sqlite`) |
-| `postgresql`        | PostgreSQL | `DATABASE_URL` erforderlich                                 |
-| `mariadb`           | MariaDB    | `DATABASE_URL` erforderlich                                 |
+| `DB_TYPE`               | Backend    | Verbindung                  |
+| ----------------------- | ---------- | --------------------------- |
+| `postgresql` (Standard) | PostgreSQL | `DATABASE_URL` erforderlich |
+| `mariadb`               | MariaDB    | `DATABASE_URL` erforderlich |
 
 ### Wichtige Quelldateien
 
@@ -64,18 +63,17 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 
 ## Konfiguration
 
-| Variable                          | Standard                       | Beschreibung                                             |
-| --------------------------------- | ------------------------------ | -------------------------------------------------------- |
-| `DB_TYPE`                         | `sqlite`                       | Datenbank-Backend: `sqlite`, `postgresql` oder `mariadb` |
-| `DATABASE_URL`                    | —                              | Verbindungszeichenfolge für PostgreSQL oder MariaDB      |
-| `SQLITE_PATH`                     | `./data/cognis.sqlite`         | SQLite-Dateipfad (nur wenn `DB_TYPE=sqlite`)             |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer-Token-Lebensdauer in Sekunden                     |
-| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Pfad für das CLI-Bootstrap-Token                         |
-| `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | Stammverzeichnis für Gateway-Erkennung                   |
-| `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | Stammverzeichnis für Adapter-Erkennung                   |
-| `COGNIS_MODULES_ROOT`             | `src/modules`                  | Stammverzeichnis für Modul-Erkennung                     |
-| `PORT`                            | `3000`                         | HTTP-Port                                                |
-| `LISTEN_HOST`                     | `0.0.0.0`                      | Bind-Adresse                                             |
+| Variable                          | Standard                       | Beschreibung                                        |
+| --------------------------------- | ------------------------------ | --------------------------------------------------- |
+| `DB_TYPE`                         | `postgresql`                   | Datenbank-Backend: `postgresql` oder `mariadb`      |
+| `DATABASE_URL`                    | —                              | Verbindungszeichenfolge für PostgreSQL oder MariaDB |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer-Token-Lebensdauer in Sekunden                |
+| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Pfad für das CLI-Bootstrap-Token                    |
+| `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | Stammverzeichnis für Gateway-Erkennung              |
+| `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | Stammverzeichnis für Adapter-Erkennung              |
+| `COGNIS_MODULES_ROOT`             | `src/modules`                  | Stammverzeichnis für Modul-Erkennung                |
+| `PORT`                            | `3000`                         | HTTP-Port                                           |
+| `LISTEN_HOST`                     | `0.0.0.0`                      | Bind-Adresse                                        |
 
 ## API-Routen
 

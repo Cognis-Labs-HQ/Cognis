@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { DbProfileStore } from "../../../../adapters/db/reuse/profile-store.js";
-import { SqliteExecutor } from "../../../../gateways/db/executor.js";
+import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
 import { DbLocalAccountStore } from "../../../../adapters/auth/local/store.js";
 import { createPostRoutes } from "../posts.js";
 import { issueAccessToken } from "../../../../api/auth/access-tokens.js";
@@ -24,9 +24,9 @@ async function setupUser(
     username: string,
     visibility = "community",
 ) {
-    const accountStore = new DbLocalAccountStore(executor, "sqlite");
+    const accountStore = new DbLocalAccountStore(executor, "postgresql");
     await accountStore.ensureSchema();
-    const profileStore = new DbProfileStore(executor, "sqlite");
+    const profileStore = new DbProfileStore(executor, "postgresql");
     await profileStore.ensureSchema();
     await accountStore.register(username, "pw");
     await profileStore.createProfile(username, username);
@@ -249,9 +249,9 @@ test("post routes - delete own post", async () => {
 test("post routes - cannot delete another user post without elevated role", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const accountStore = new DbLocalAccountStore(executor, "sqlite");
+        const accountStore = new DbLocalAccountStore(executor, "postgresql");
         await accountStore.ensureSchema();
-        const profileStore = new DbProfileStore(executor, "sqlite");
+        const profileStore = new DbProfileStore(executor, "postgresql");
         await profileStore.ensureSchema();
         await accountStore.register("alice", "pw");
         await accountStore.register("bob", "pw");
@@ -405,9 +405,9 @@ test("post routes - admin can delete another user post", async () => {
 test("post routes - only_me posts not visible to others", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const accountStore = new DbLocalAccountStore(executor, "sqlite");
+        const accountStore = new DbLocalAccountStore(executor, "postgresql");
         await accountStore.ensureSchema();
-        const profileStore = new DbProfileStore(executor, "sqlite");
+        const profileStore = new DbProfileStore(executor, "postgresql");
         await profileStore.ensureSchema();
         await accountStore.register("alice", "pw");
         await accountStore.register("bob", "pw");
@@ -463,9 +463,9 @@ test("post routes - only_me posts not visible to others", async () => {
 test("post routes - blocked caller gets 404 on user posts", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const accountStore = new DbLocalAccountStore(executor, "sqlite");
+        const accountStore = new DbLocalAccountStore(executor, "postgresql");
         await accountStore.ensureSchema();
-        const profileStore = new DbProfileStore(executor, "sqlite");
+        const profileStore = new DbProfileStore(executor, "postgresql");
         await profileStore.ensureSchema();
         await accountStore.register("alice", "pw");
         await accountStore.register("bob", "pw");
@@ -497,9 +497,9 @@ test("post routes - blocked caller gets 404 on user posts", async () => {
 test("post routes - private account posts only visible to followers", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const accountStore = new DbLocalAccountStore(executor, "sqlite");
+        const accountStore = new DbLocalAccountStore(executor, "postgresql");
         await accountStore.ensureSchema();
-        const profileStore = new DbProfileStore(executor, "sqlite");
+        const profileStore = new DbProfileStore(executor, "postgresql");
         await profileStore.ensureSchema();
         await accountStore.register("alice", "pw");
         await accountStore.register("bob", "pw");

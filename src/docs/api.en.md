@@ -43,11 +43,10 @@ Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200
 
 ### Persistence defaults
 
-| `DB_TYPE`          | Backend    | Connection                                             |
-| ------------------ | ---------- | ------------------------------------------------------ |
-| `sqlite` (default) | SQLite     | File at `SQLITE_PATH` (default `./data/cognis.sqlite`) |
-| `postgresql`       | PostgreSQL | `DATABASE_URL` required                                |
-| `mariadb`          | MariaDB    | `DATABASE_URL` required                                |
+| `DB_TYPE`              | Backend    | Connection              |
+| ---------------------- | ---------- | ----------------------- |
+| `postgresql` (default) | PostgreSQL | `DATABASE_URL` required |
+| `mariadb`              | MariaDB    | `DATABASE_URL` required |
 
 ### Key source locations
 
@@ -64,18 +63,17 @@ Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200
 
 ## Configuration
 
-| Variable                          | Default                        | Description                                            |
-| --------------------------------- | ------------------------------ | ------------------------------------------------------ |
-| `DB_TYPE`                         | `sqlite`                       | Database backend: `sqlite`, `postgresql`, or `mariadb` |
-| `DATABASE_URL`                    | —                              | Connection string for PostgreSQL or MariaDB            |
-| `SQLITE_PATH`                     | `./data/cognis.sqlite`         | SQLite file path (only when `DB_TYPE=sqlite`)          |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer token lifetime in seconds                       |
-| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Path for the CLI bootstrap token                       |
-| `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | Root directory for gateway discovery                   |
-| `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | Root directory for adapter discovery                   |
-| `COGNIS_MODULES_ROOT`             | `src/modules`                  | Root directory for module discovery                    |
-| `PORT`                            | `3000`                         | HTTP port                                              |
-| `LISTEN_HOST`                     | `0.0.0.0`                      | Bind address                                           |
+| Variable                          | Default                        | Description                                 |
+| --------------------------------- | ------------------------------ | ------------------------------------------- |
+| `DB_TYPE`                         | `postgresql`                   | Database backend: `postgresql` or `mariadb` |
+| `DATABASE_URL`                    | —                              | Connection string for PostgreSQL or MariaDB |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer token lifetime in seconds            |
+| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Path for the CLI bootstrap token            |
+| `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | Root directory for gateway discovery        |
+| `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | Root directory for adapter discovery        |
+| `COGNIS_MODULES_ROOT`             | `src/modules`                  | Root directory for module discovery         |
+| `PORT`                            | `3000`                         | HTTP port                                   |
+| `LISTEN_HOST`                     | `0.0.0.0`                      | Bind address                                |
 
 ## API Routes
 

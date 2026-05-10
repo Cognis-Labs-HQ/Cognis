@@ -276,15 +276,6 @@ export class CoreRegistrationGateway {
             );
             return;
         }
-        if (this.dbType === "sqlite") {
-            await this.db.execute(
-                `INSERT INTO registration_adapter_configs (adapter_id, enabled)
-         VALUES (${this.placeholder(1)}, ${this.placeholder(2)})
-         ON CONFLICT(adapter_id) DO UPDATE SET enabled = excluded.enabled`,
-                [adapterId, enabled ? 1 : 0],
-            );
-            return;
-        }
         await this.db.execute(
             `INSERT INTO registration_adapter_configs (adapter_id, enabled)
        VALUES (${this.placeholder(1)}, ${this.placeholder(2)})
