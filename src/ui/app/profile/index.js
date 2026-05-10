@@ -162,7 +162,10 @@ function visibilityClass(v) {
 
 function renderAvatarBadge(roleValue) {
     if (!roleValue) return "";
-    if (roleValue === "admin" || roleValue === "owner") {
+    if (roleValue === "owner") {
+        return `<span class="profile-avatar-badge profile-avatar-badge--admin" aria-hidden="true"><img src="/static/assets/icons/crown.svg" alt="" class="profile-avatar-badge-icon" /></span>`;
+    }
+    if (roleValue === "admin") {
         return `<span class="profile-avatar-badge profile-avatar-badge--admin" aria-hidden="true"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-avatar-badge-icon" /></span>`;
     }
     if (roleValue === "teacher") {
@@ -435,7 +438,8 @@ function renderUserList(list, emptyKey) {
               (u) => `
         <li class="profile-user-item">
           <a class="profile-user-handle" href="/profile/${escapeHtml(encodeURIComponent(u.handle))}">@${escapeHtml(u.handle)}</a>
-          ${u.role === "admin" || u.role === "owner" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+          ${u.role === "owner" ? `<span class="profile-user-role-icon" aria-label="Owner" title="Owner"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+          ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
           ${u.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>` : ""}
         </li>
       `,
@@ -508,7 +512,8 @@ function renderSuggestedContacts() {
             (u) => `
     <div class="profile-suggested-item">
       <span class="profile-user-handle">@${escapeHtml(u.handle)}</span>
-      ${u.role === "admin" || u.role === "owner" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+      ${u.role === "owner" ? `<span class="profile-user-role-icon" aria-label="Owner" title="Owner"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+      ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
       ${u.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>` : ""}
       <button
         type="button"
