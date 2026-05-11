@@ -110,9 +110,15 @@ export class DbClassesStore {
             [],
         );
 
-        await this.db
-            .execute("ALTER TABLE teacher_requests ADD COLUMN reason TEXT")
-            .catch(() => undefined);
+        if (this.dbType === "postgresql") {
+            await this.db.execute(
+                "ALTER TABLE teacher_requests ADD COLUMN IF NOT EXISTS reason TEXT",
+            );
+        } else {
+            await this.db
+                .execute("ALTER TABLE teacher_requests ADD COLUMN reason TEXT")
+                .catch(() => undefined);
+        }
 
         await this.db.execute(
             `CREATE TABLE IF NOT EXISTS teacher_assignments (
@@ -178,6 +184,8 @@ export class DbClassesStore {
     }
 
     private async seedStudyLanguages(): Promise<void> {
+        const availableValue = this.dbType === "postgresql" ? true : 1;
+        const activeValue = this.dbType === "postgresql" ? false : 0;
         const seeds = [
             { code: "ja", name: "Japanese", flag: "🇯🇵", sortOrder: 1 },
             { code: "zh", name: "Chinese", flag: "🇨🇳", sortOrder: 2 },
@@ -194,8 +202,15 @@ export class DbClassesStore {
             await this.db
                 .execute(
                     `INSERT INTO study_languages (code, name, flag, available, active, sort_order)
-                     VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, 1, 0, ${this.placeholder(4)})`,
-                    [seed.code, seed.name, seed.flag, seed.sortOrder],
+                     VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)}, ${this.placeholder(5)}, ${this.placeholder(6)})`,
+                    [
+                        seed.code,
+                        seed.name,
+                        seed.flag,
+                        availableValue,
+                        activeValue,
+                        seed.sortOrder,
+                    ],
                 )
                 .catch(() => undefined);
         }
@@ -244,8 +259,8 @@ export class DbClassesStore {
                     row.code,
                     row.name ?? "",
                     row.flag ?? "",
-                    row.available !== false ? 1 : 0,
-                    row.active ? 1 : 0,
+                    row.available !== false,
+                    row.active === true,
                     row.sortOrder ?? 0,
                 ],
             );
