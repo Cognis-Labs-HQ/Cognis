@@ -7,7 +7,6 @@ export const POSTGRES_AUTH_SCHEMA_STATEMENTS = [
     display_name TEXT,
     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     role TEXT NOT NULL DEFAULT 'user',
-  role TEXT NOT NULL DEFAULT 'user',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )`,

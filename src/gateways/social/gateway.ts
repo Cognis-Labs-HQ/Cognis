@@ -4,7 +4,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
-import type { SocialAdapterConfigStore } from "../../adapters/db/reuse/social-adapter-config-store.js";
+import type { AdapterConfigStore } from "./adapter-config-store.js";
 
 /**
  * Implemented by each social adapter and registered during discovery so the
@@ -78,7 +78,7 @@ export class CoreSocialGateway {
     private readonly disabledAdapters = new Set<string>();
     private readonly adapterRequires = new Map<string, string[]>();
 
-    constructor(private readonly configStore?: SocialAdapterConfigStore) {}
+    constructor(private readonly configStore?: AdapterConfigStore) {}
 
     registerAdapter(adapter: SocialAdapter, requires?: string[]): void {
         this.registeredAdapters.set(adapter.adapterId, adapter);

@@ -1,6 +1,9 @@
-import type { DbExecutor, SupportedDbType } from "./account-store.js";
+import type {
+    DbExecutor,
+    SupportedDbType,
+} from "../../adapters/db/reuse/account-store.js";
 
-export interface SocialAdapterConfigStore {
+export interface AdapterConfigStore {
     getConfig(adapterId: string): Promise<Record<string, unknown> | null>;
     saveConfig(
         adapterId: string,
@@ -8,7 +11,7 @@ export interface SocialAdapterConfigStore {
     ): Promise<void>;
 }
 
-export class DbSocialAdapterConfigStore implements SocialAdapterConfigStore {
+export class DbAdapterConfigStore implements AdapterConfigStore {
     constructor(
         private readonly db: DbExecutor,
         private readonly dbType: SupportedDbType,

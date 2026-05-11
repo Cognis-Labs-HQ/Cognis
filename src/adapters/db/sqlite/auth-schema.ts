@@ -7,7 +7,6 @@ export const SQLITE_AUTH_SCHEMA_STATEMENTS = [
     display_name TEXT,
     is_admin INTEGER NOT NULL DEFAULT 0,
     role TEXT NOT NULL DEFAULT 'user',
-  role TEXT NOT NULL DEFAULT 'user',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
   )`,

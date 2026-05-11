@@ -5,8 +5,8 @@ import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
 import { requireAuth } from "../../api/auth/guard.js";
 import { readJson } from "../../api/reuse/read-json.js";
+import { DbAdapterConfigStore } from "./adapter-config-store.js";
 import { CoreSocialGateway } from "./gateway.js";
-import { DbSocialAdapterConfigStore } from "../../adapters/db/reuse/social-adapter-config-store.js";
 
 export type { SocialAdapterBootstrapCtx, SocialAdapter } from "./gateway.js";
 
@@ -151,7 +151,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
     const dbType =
         ctx.capabilities.get<SupportedDbType>("db:type") ?? ctx.dbType;
-    const configStore = new DbSocialAdapterConfigStore(dbExecutor, dbType);
+        const configStore = new DbAdapterConfigStore(dbExecutor, dbType);
     await configStore.ensureSchema();
 
     const gateway = new CoreSocialGateway(configStore);

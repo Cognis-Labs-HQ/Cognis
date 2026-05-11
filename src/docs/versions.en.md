@@ -30,8 +30,9 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.1` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.2` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.1.0` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.1.0` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.2.1` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.2.1` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.2.1` |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.1` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
@@ -47,7 +48,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Database (db)         | `src/gateways/db/`           | `1.1.2` |
 | Authentication (auth) | `src/gateways/auth/`         | `1.3.2` |
 | Notification (notify) | `src/gateways/notify/`       | `1.3.0` |
-| Social                | `src/gateways/social/`       | `1.2.0` |
+| Social                | `src/gateways/social/`       | `1.2.1` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
 | Registration          | `src/gateways/registration/` | `1.1.3` |
 | Logging               | `src/gateways/logging/`      | `1.4.0` |
@@ -70,5 +71,5 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component                 | Path                              | Version |
 | ------------------------- | --------------------------------- | ------- |
 | Sample Analytics          | `src/modules/sample-analytics/`   | `0.1.0` |
-| Study Language Japanese   | `src/modules/study-language-ja/`  | `1.1.0` |
+| Cognis Japanese           | `src/modules/study-language-ja/`  | `1.1.1` |
 | Japanese Language (Study) | `src/modules/study/languages/ja/` | `1.1.0` |
