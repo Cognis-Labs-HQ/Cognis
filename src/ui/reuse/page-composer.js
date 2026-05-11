@@ -2677,10 +2677,7 @@ export function createPageComposer(
                 );
             const scale = hasFractional ? 2 : 1;
             if (!frameless) {
-                section.style.setProperty(
-                    "--grid-cols",
-                    String(gridCols * scale),
-                );
+                section.style.setProperty("--grid-cols", String(gridCols * scale));
                 section.style.setProperty(
                     "--composer-grid-row-size",
                     `${UNIT / scale}px`,
