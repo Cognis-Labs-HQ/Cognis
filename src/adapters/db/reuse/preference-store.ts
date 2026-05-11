@@ -9,12 +9,15 @@ export class DbUserPreferenceStore {
     constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema() {
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS user_preferences (
-      pref_key VARCHAR(64) PRIMARY KEY,
-      account_id VARCHAR(255) NOT NULL,
-      page_id VARCHAR(255) NOT NULL,
-      layout_json TEXT NOT NULL
-    )`);
+        await this.db.ensureTable({
+            name: "user_preferences",
+            columns: [
+                { name: "pref_key", type: "text", notNull: true, primaryKey: true },
+                { name: "account_id", type: "text", notNull: true },
+                { name: "page_id", type: "text", notNull: true },
+                { name: "layout_json", type: "text", notNull: true },
+            ],
+        });
     }
 
     async get(accountId: string, pageId: string) {

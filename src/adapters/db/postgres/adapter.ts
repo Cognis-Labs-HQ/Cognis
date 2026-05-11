@@ -174,62 +174,86 @@ class PostgresExecutor implements RawDbExecutor {
     async transaction<T>(
         callback: (executor: RawDbExecutor) => Promise<T>,
     ): Promise<T> {
-        await this.execute('BEGIN');
+        await this.execute("BEGIN");
         try {
             const result = await callback(this);
-            await this.execute('COMMIT');
+            await this.execute("COMMIT");
             return result;
         } catch (error) {
-            await this.execute('ROLLBACK').catch(() => undefined);
+            await this.execute("ROLLBACK").catch(() => undefined);
             throw error;
         }
     }
 
     async ensureTable(def: StructuredDbTableDef): Promise<void> {
-        const pgType = (col: StructuredDbTableDef['columns'][number]): string => {
+        const pgType = (
+            col: StructuredDbTableDef["columns"][number],
+        ): string => {
             switch (col.type) {
-                case 'text': return 'TEXT';
-                case 'integer': return 'INTEGER';
-                case 'bigint': return 'BIGINT';
-                case 'boolean': return 'BOOLEAN';
-                case 'timestamp': return 'TIMESTAMP';
-                case 'blob': return 'BYTEA';
+                case "text":
+                    return "TEXT";
+                case "integer":
+                    return "INTEGER";
+                case "bigint":
+                    return "BIGINT";
+                case "boolean":
+                    return "BOOLEAN";
+                case "timestamp":
+                    return "TIMESTAMP";
+                case "blob":
+                    return "BYTEA";
             }
         };
-        const pgDefault = (value: StructuredDbTableDef['columns'][number]['default']): string => {
-            if (value === 'now') return 'CURRENT_TIMESTAMP';
-            if (value === 'true') return 'TRUE';
-            if (value === 'false') return 'FALSE';
-            if (value === null) return 'NULL';
-            if (typeof value === 'number') return String(value);
+        const pgDefault = (
+            value: StructuredDbTableDef["columns"][number]["default"],
+        ): string => {
+            if (value === "now") return "CURRENT_TIMESTAMP";
+            if (value === "true") return "TRUE";
+            if (value === "false") return "FALSE";
+            if (value === null) return "NULL";
+            if (typeof value === "number") return String(value);
             return `'${String(value).replace(/'/g, "''")}'`;
         };
         const compositePk = def.primaryKey ?? [];
         const columnDefs = def.columns.map((col) => {
             const parts: string[] = [`${col.name} ${pgType(col)}`];
-            if (col.notNull || col.primaryKey) parts.push('NOT NULL');
-            if (col.primaryKey && compositePk.length === 0) parts.push('PRIMARY KEY');
-            if (col.unique && !(def.uniqueKeys ?? []).some((uk) => uk.length === 1 && uk[0] === col.name)) {
-                parts.push('UNIQUE');
+            if (col.notNull || col.primaryKey) parts.push("NOT NULL");
+            if (col.primaryKey && compositePk.length === 0)
+                parts.push("PRIMARY KEY");
+            if (
+                col.unique &&
+                !(def.uniqueKeys ?? []).some(
+                    (uk) => uk.length === 1 && uk[0] === col.name,
+                )
+            ) {
+                parts.push("UNIQUE");
             }
-            if (col.default !== undefined) parts.push(`DEFAULT ${pgDefault(col.default)}`);
+            if (col.default !== undefined)
+                parts.push(`DEFAULT ${pgDefault(col.default)}`);
             if (col.references) {
-                parts.push(`REFERENCES ${col.references.table}(${col.references.column})`);
-                if (col.references.onDelete) parts.push(`ON DELETE ${col.references.onDelete}`);
+                parts.push(
+                    `REFERENCES ${col.references.table}(${col.references.column})`,
+                );
+                if (col.references.onDelete)
+                    parts.push(`ON DELETE ${col.references.onDelete}`);
             }
-            return parts.join(' ');
+            return parts.join(" ");
         });
         const tableConstraints: string[] = [];
-        if (compositePk.length > 0) tableConstraints.push(`PRIMARY KEY (${compositePk.join(', ')})`);
-        for (const uk of def.uniqueKeys ?? []) {
-            tableConstraints.push(`UNIQUE (${uk.join(', ')})`);
+        if (compositePk.length > 0)
+            tableConstraints.push(`PRIMARY KEY (${compositePk.join(", ")})`);
+        for (const uniqueKey of def.uniqueKeys ?? []) {
+            tableConstraints.push(`UNIQUE (${uniqueKey.join(", ")})`);
         }
         const allDefs = [...columnDefs, ...tableConstraints];
-        await this.execute(`CREATE TABLE IF NOT EXISTS ${def.name} (${allDefs.join(', ')})`);
+        await this.execute(
+            `CREATE TABLE IF NOT EXISTS ${def.name} (${allDefs.join(", ")})`,
+        );
         for (const index of def.indexes ?? []) {
-            const indexName = index.name ?? `idx_${def.name}_${index.columns.join('_')}`;
+            const indexName =
+                index.name ?? `idx_${def.name}_${index.columns.join("_")}`;
             await this.execute(
-                `CREATE INDEX IF NOT EXISTS ${indexName} ON ${def.name} (${index.columns.join(', ')})`,
+                `CREATE INDEX IF NOT EXISTS ${indexName} ON ${def.name} (${index.columns.join(", ")})`,
             ).catch(() => undefined);
         }
     }

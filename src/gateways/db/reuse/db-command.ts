@@ -199,7 +199,9 @@ function buildWhereClause(
 
         if (operator === "LIKE") {
             const ph = placeholder(params, clause.value);
-            const escape = clause.escapeChar ? ` ESCAPE '${clause.escapeChar}'` : "";
+            const escape = clause.escapeChar
+                ? ` ESCAPE '${clause.escapeChar}'`
+                : "";
             return `${column} LIKE ${ph}${escape}`;
         }
 
@@ -218,10 +220,12 @@ function buildSelectStatement(
         ? ["COUNT(*) AS cnt"]
         : command.columns && command.columns.length > 0
           ? command.columns.map((column) => {
-                if (typeof column !== 'string') {
-                    return `${assertIdentifier(column.col, 'select column')} AS ${assertIdentifier(column.as, 'column alias')}`;
+                if (typeof column !== "string") {
+                    return `${assertIdentifier(column.col, "select column")} AS ${assertIdentifier(column.as, "column alias")}`;
                 }
-                return column === "*" ? "*" : assertIdentifier(column, "select column");
+                return column === "*"
+                    ? "*"
+                    : assertIdentifier(column, "select column");
             })
           : ["*"];
     const table = assertIdentifier(command.table, "table");

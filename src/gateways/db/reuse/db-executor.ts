@@ -36,9 +36,7 @@ export interface DbExecutor {
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult>;
     ensureTable(def: StructuredDbTableDef): Promise<void>;
-    transaction<T>(
-        callback: (executor: DbExecutor) => Promise<T>,
-    ): Promise<T>;
+    transaction<T>(callback: (executor: DbExecutor) => Promise<T>): Promise<T>;
 }
 
 /**

@@ -79,9 +79,24 @@ const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
             { name: "website", type: "text" },
             { name: "avatar_key", type: "text" },
             { name: "banner_key", type: "text" },
-            { name: "visibility", type: "text", notNull: true, default: "hidden" },
-            { name: "created_at", type: "timestamp", notNull: true, default: "now" },
-            { name: "updated_at", type: "timestamp", notNull: true, default: "now" },
+            {
+                name: "visibility",
+                type: "text",
+                notNull: true,
+                default: "hidden",
+            },
+            {
+                name: "created_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+            {
+                name: "updated_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
         ],
     },
     {
@@ -89,7 +104,12 @@ const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
         columns: [
             { name: "follower_id", type: "text", notNull: true },
             { name: "following_id", type: "text", notNull: true },
-            { name: "created_at", type: "timestamp", notNull: true, default: "now" },
+            {
+                name: "created_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
         ],
         primaryKey: ["follower_id", "following_id"],
     },
@@ -98,7 +118,12 @@ const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
         columns: [
             { name: "blocker_id", type: "text", notNull: true },
             { name: "blocked_id", type: "text", notNull: true },
-            { name: "created_at", type: "timestamp", notNull: true, default: "now" },
+            {
+                name: "created_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
         ],
         primaryKey: ["blocker_id", "blocked_id"],
     },
@@ -109,9 +134,24 @@ const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
             { name: "account_id", type: "text", notNull: true },
             { name: "title", type: "text" },
             { name: "content", type: "text", notNull: true },
-            { name: "visibility", type: "text", notNull: true, default: "community" },
-            { name: "created_at", type: "timestamp", notNull: true, default: "now" },
-            { name: "updated_at", type: "timestamp", notNull: true, default: "now" },
+            {
+                name: "visibility",
+                type: "text",
+                notNull: true,
+                default: "community",
+            },
+            {
+                name: "created_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
+            {
+                name: "updated_at",
+                type: "timestamp",
+                notNull: true,
+                default: "now",
+            },
         ],
     },
     {
@@ -208,7 +248,12 @@ export class DbProfileStore implements ProfileCreateStore {
             table: "account_profiles",
             where: [
                 { column: "visibility", operator: "!=", value: "hidden" },
-                { column: "handle", operator: "LIKE", value: pattern, escapeChar: "\\" },
+                {
+                    column: "handle",
+                    operator: "LIKE",
+                    value: pattern,
+                    escapeChar: "\\",
+                },
             ],
         });
 
@@ -217,14 +262,22 @@ export class DbProfileStore implements ProfileCreateStore {
             table: "account_profiles",
             where: [
                 { column: "visibility", operator: "!=", value: "hidden" },
-                { column: "display_name", operator: "LIKE", value: pattern, escapeChar: "\\" },
+                {
+                    column: "display_name",
+                    operator: "LIKE",
+                    value: pattern,
+                    escapeChar: "\\",
+                },
             ],
         });
 
         const seen = new Set<string>();
         const merged: AccountProfile[] = [];
 
-        for (const row of [...(byHandle.rows ?? []), ...(byDisplayName.rows ?? [])]) {
+        for (const row of [
+            ...(byHandle.rows ?? []),
+            ...(byDisplayName.rows ?? []),
+        ]) {
             const profile = rowToProfile(row);
             if (!seen.has(profile.accountId)) {
                 seen.add(profile.accountId);
@@ -233,7 +286,11 @@ export class DbProfileStore implements ProfileCreateStore {
         }
 
         merged.sort((profileA, profileB) =>
-            profileA.handle < profileB.handle ? -1 : profileA.handle > profileB.handle ? 1 : 0,
+            profileA.handle < profileB.handle
+                ? -1
+                : profileA.handle > profileB.handle
+                  ? 1
+                  : 0,
         );
         return merged.slice(0, limit);
     }
@@ -271,7 +328,8 @@ export class DbProfileStore implements ProfileCreateStore {
             }
         }
 
-        if (Object.keys(setRecord).length === 0) return this.getProfile(accountId);
+        if (Object.keys(setRecord).length === 0)
+            return this.getProfile(accountId);
 
         setRecord.updated_at = new Date().toISOString();
 
@@ -350,7 +408,10 @@ export class DbProfileStore implements ProfileCreateStore {
                     type: "INNER",
                     table: "account_profiles",
                     alias: "p",
-                    on: { leftColumn: "p.account_id", rightColumn: "f.follower_id" },
+                    on: {
+                        leftColumn: "p.account_id",
+                        rightColumn: "f.follower_id",
+                    },
                 },
             ],
             where: [{ column: "f.following_id", value: accountId }],
@@ -370,7 +431,10 @@ export class DbProfileStore implements ProfileCreateStore {
                     type: "INNER",
                     table: "account_profiles",
                     alias: "p",
-                    on: { leftColumn: "p.account_id", rightColumn: "f.following_id" },
+                    on: {
+                        leftColumn: "p.account_id",
+                        rightColumn: "f.following_id",
+                    },
                 },
             ],
             where: [{ column: "f.follower_id", value: accountId }],

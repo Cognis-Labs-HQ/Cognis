@@ -270,7 +270,10 @@ export class DbLocalAccountStore implements LocalAccountStore {
         await this.db.executeCommand({
             option: "UPDATE",
             table: "accounts",
-            set: { is_founder: isFounder, updated_at: new Date().toISOString() },
+            set: {
+                is_founder: isFounder,
+                updated_at: new Date().toISOString(),
+            },
             where: [{ column: "id", value: accountId }],
         });
         this.writeLog("info", "Updated local account founder status.", {

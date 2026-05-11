@@ -13,26 +13,33 @@ export class DbNotificationStore implements NotificationConfigStore {
     constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db
-            .execute(`CREATE TABLE IF NOT EXISTS notification_provider_configs (
-      sender_id VARCHAR(191) PRIMARY KEY,
-      config_json TEXT NOT NULL
-    )`);
-        await this.db
-            .execute(`CREATE TABLE IF NOT EXISTS user_notification_prefs (
-      account_id VARCHAR(191) NOT NULL,
-      category VARCHAR(191) NOT NULL,
-      sender_id VARCHAR(191) NOT NULL,
-      PRIMARY KEY (account_id, category, sender_id)
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS user_emails (
-      account_id VARCHAR(191) NOT NULL,
-      email VARCHAR(320) NOT NULL,
-      is_primary BOOLEAN NOT NULL DEFAULT FALSE,
-      verified BOOLEAN NOT NULL DEFAULT FALSE,
-      PRIMARY KEY (account_id, email),
-      UNIQUE (email)
-    )`);
+        await this.db.ensureTable({
+            name: "notification_provider_configs",
+            columns: [
+                { name: "sender_id", type: "text", notNull: true, primaryKey: true },
+                { name: "config_json", type: "text", notNull: true },
+            ],
+        });
+        await this.db.ensureTable({
+            name: "user_notification_prefs",
+            columns: [
+                { name: "account_id", type: "text", notNull: true },
+                { name: "category", type: "text", notNull: true },
+                { name: "sender_id", type: "text", notNull: true },
+            ],
+            primaryKey: ["account_id", "category", "sender_id"],
+        });
+        await this.db.ensureTable({
+            name: "user_emails",
+            columns: [
+                { name: "account_id", type: "text", notNull: true },
+                { name: "email", type: "text", notNull: true },
+                { name: "is_primary", type: "boolean", notNull: true, default: "false" },
+                { name: "verified", type: "boolean", notNull: true, default: "false" },
+            ],
+            primaryKey: ["account_id", "email"],
+            uniqueKeys: [["email"]],
+        });
     }
 
     async getConfig(senderId: string): Promise<Record<string, unknown> | null> {

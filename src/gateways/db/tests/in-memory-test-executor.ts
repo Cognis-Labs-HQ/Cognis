@@ -129,11 +129,11 @@ export class InMemoryTestExecutor implements DbExecutor {
     }
 
     private parseTableDefault(
-        value: StructuredDbTableDef['columns'][number]['default'],
+        value: StructuredDbTableDef["columns"][number]["default"],
     ): unknown {
-        if (value === 'now') return '__NOW__';
-        if (value === 'true') return true;
-        if (value === 'false') return false;
+        if (value === "now") return "__NOW__";
+        if (value === "true") return true;
+        if (value === "false") return false;
         if (value === null) return null;
         return value;
     }
@@ -252,7 +252,13 @@ export class InMemoryTestExecutor implements DbExecutor {
         for (let i = 0; i < rows.length; i++) {
             if (i === excludeIndex) continue;
             for (const uk of schema.uniqueCols) {
-                if (uk.every((col) => rows[i][col] !== undefined && rows[i][col] === row[col])) {
+                if (
+                    uk.every(
+                        (col) =>
+                            rows[i][col] !== undefined &&
+                            rows[i][col] === row[col],
+                    )
+                ) {
                     return true;
                 }
             }
@@ -368,9 +374,9 @@ export class InMemoryTestExecutor implements DbExecutor {
         const selectMatch = sql.match(/^SELECT\s+([\s\S]+?)\s+FROM\s+/i);
         if (!selectMatch) return [];
         const rawColumns = selectMatch[1].trim();
-        if (rawColumns === '*') return [];
+        if (rawColumns === "*") return [];
 
-        return rawColumns.split(',').map((part) => {
+        return rawColumns.split(",").map((part) => {
             const trimmed = part.trim();
             const asMatch = trimmed.match(/^(?:\w+\.)?(\w+)\s+AS\s+(\w+)$/i);
             if (asMatch) {
@@ -500,7 +506,11 @@ export class InMemoryTestExecutor implements DbExecutor {
         return { rows, rowCount: rows.length };
     }
 
-    private applyWhere(rows: Row[], whereText: string, params: unknown[]): Row[] {
+    private applyWhere(
+        rows: Row[],
+        whereText: string,
+        params: unknown[],
+    ): Row[] {
         const conditions = whereText.split(/\s+AND\s+/i);
         let result = rows;
         for (const cond of conditions) {
@@ -525,7 +535,9 @@ export class InMemoryTestExecutor implements DbExecutor {
                 const col = gtMatch[2];
                 const pidx = Number(gtMatch[3]) - 1;
                 const val = params[pidx];
-                result = result.filter((r) => String(r[col] ?? '') > String(val ?? ''));
+                result = result.filter(
+                    (r) => String(r[col] ?? "") > String(val ?? ""),
+                );
                 continue;
             }
             const ltMatch = cond.match(/(?:(\w+)\.)?(\w+)\s*<\s*\$(\d+)/);
@@ -533,20 +545,22 @@ export class InMemoryTestExecutor implements DbExecutor {
                 const col = ltMatch[2];
                 const pidx = Number(ltMatch[3]) - 1;
                 const val = params[pidx];
-                result = result.filter((r) => String(r[col] ?? '') < String(val ?? ''));
+                result = result.filter(
+                    (r) => String(r[col] ?? "") < String(val ?? ""),
+                );
                 continue;
             }
             const likeMatch = cond.match(/(?:(\w+)\.)?(\w+)\s+LIKE\s+\$(\d+)/i);
             if (likeMatch) {
                 const col = likeMatch[2];
                 const pidx = Number(likeMatch[3]) - 1;
-                const pattern = String(params[pidx] ?? '');
+                const pattern = String(params[pidx] ?? "");
                 const regexPattern = pattern
-                    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-                    .replace(/%/g, '.*')
-                    .replace(/_/g, '.');
-                const re = new RegExp(`^${regexPattern}$`, 'i');
-                result = result.filter((r) => re.test(String(r[col] ?? '')));
+                    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+                    .replace(/%/g, ".*")
+                    .replace(/_/g, ".");
+                const re = new RegExp(`^${regexPattern}$`, "i");
+                result = result.filter((r) => re.test(String(r[col] ?? "")));
                 continue;
             }
             const isNullMatch = cond.match(/(?:(\w+)\.)?(\w+)\s+IS\s+NULL/i);
@@ -555,7 +569,9 @@ export class InMemoryTestExecutor implements DbExecutor {
                 result = result.filter((r) => r[col] == null);
                 continue;
             }
-            const isNotNullMatch = cond.match(/(?:(\w+)\.)?(\w+)\s+IS\s+NOT\s+NULL/i);
+            const isNotNullMatch = cond.match(
+                /(?:(\w+)\.)?(\w+)\s+IS\s+NOT\s+NULL/i,
+            );
             if (isNotNullMatch) {
                 const col = isNotNullMatch[2];
                 result = result.filter((r) => r[col] != null);
