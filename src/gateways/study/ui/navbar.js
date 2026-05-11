@@ -4,7 +4,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { createI18n } from "/static/reuse/i18n.js";
 
-const i18n = createI18n();
+const i18n = await createI18n();
 
 function createStudyNavButton() {
     const studyBtn = document.createElement("button");
