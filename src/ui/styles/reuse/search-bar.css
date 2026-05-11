@@ -4,20 +4,26 @@
 }
 
 .search-bar-toggle {
-    background: var(--surface-2, rgba(128, 128, 128, 0.12));
-    border: 1px solid var(--border-color, #ccc);
+    background: transparent;
+    border: 0;
     cursor: pointer;
     font-size: 1.1rem;
     line-height: 1;
-    padding: 0.3rem 0.45rem;
-    border-radius: 6px;
-    color: var(--topbar-text, inherit);
+    padding: 0.2rem 0.3rem;
+    border-radius: 999px;
+    color: var(--text, inherit);
     flex-shrink: 0;
-    transition: background-color 0.15s ease;
+    opacity: 0.86;
+    transition:
+        color 0.15s ease,
+        opacity 0.15s ease,
+        transform 0.15s ease;
 }
 
 .search-bar-toggle:hover {
-    background-color: var(--hover-tint, rgba(128, 128, 128, 0.25));
+    color: var(--accent-2);
+    opacity: 1;
+    transform: translateY(-1px);
 }
 
 .search-popup-overlay {
@@ -27,8 +33,8 @@
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding-top: 14vh;
-    z-index: 900;
+    padding: max(110px, 12vh) 16px 16px;
+    z-index: 2100;
     animation: search-overlay-in 0.15s ease;
 }
 
@@ -42,10 +48,10 @@
 }
 
 .search-popup {
-    background: var(--card-bg, #fff);
-    border: 1px solid var(--border-color, #ccc);
-    border-radius: 10px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
     width: min(560px, 90vw);
     max-height: 62vh;
     display: flex;
@@ -58,11 +64,15 @@
     box-sizing: border-box;
     padding: 0.75rem 1rem;
     border: none;
-    border-bottom: 1px solid var(--border-color, #ccc);
-    background: transparent;
-    color: var(--input-text, #111);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
     font-size: 1rem;
     outline: none;
+}
+
+.search-popup-input::placeholder {
+    color: var(--text-muted);
 }
 
 .search-popup-results {
@@ -75,7 +85,7 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--text-muted, #888);
+    color: var(--text-muted);
     padding: 0.5rem 1rem 0.2rem;
     margin: 0;
 }
@@ -90,19 +100,19 @@
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
     cursor: pointer;
-    color: var(--text-color, #111);
+    color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .search-popup-result:hover {
-    background: var(--hover-tint, rgba(128, 128, 128, 0.1));
+    background: var(--surface-soft);
 }
 
 .search-popup-no-results {
     padding: 0.75rem 1rem;
     font-size: 0.875rem;
-    color: var(--text-muted, #888);
+    color: var(--text-muted);
     font-style: italic;
 }

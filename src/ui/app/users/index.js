@@ -39,7 +39,7 @@ function getCurrentUsername() {
 }
 
 function buildElements() {
-    const estimatedHeight = Math.max(3, Math.ceil(users.length * 0.5 + 1.5));
+    const estimatedHeight = Math.max(6, Math.ceil(users.length * 0.65 + 2));
     elements = [
         {
             id: "users-table",
@@ -47,8 +47,8 @@ function buildElements() {
             pinned: true,
             gridSize: {
                 default: [12, estimatedHeight],
-                min: [6, 3],
-                max: "full",
+                min: [6, 5],
+                max: ["full", "fill"],
             },
             render: () => renderUsersTable(),
         },

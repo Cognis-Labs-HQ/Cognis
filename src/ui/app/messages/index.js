@@ -21,6 +21,7 @@ import {
     pickInitialsColor,
 } from "../../reuse/avatar-utils.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { openSearchPopup } from "../../reuse/search-bar.js";
 import { formatDateTime } from "../../reuse/timestamp.js";
 
 const TEXT_ENCODER = new TextEncoder();
@@ -372,22 +373,32 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
+    async function createConversationFromHandle(handle) {
+        const createRes = await apiFetch("/api/v1/messages/rooms", {
+            method: "POST",
+            body: JSON.stringify({ handles: [handle] }),
+        });
+        if (!createRes.ok) {
+            showToast(i18n.t("module.social.messages.start_failed"), {
+                variant: "error",
+            });
+            return;
+        }
+        const createPayload = await createRes.json();
+        const newRoomId = createPayload?.data?.id;
+        if (!newRoomId) return;
+        selectedRoomId = newRoomId;
+        history.pushState({}, "", `/messages/${encodeURIComponent(newRoomId)}`);
+        await openRoom(newRoomId);
+        await reloadRoomsList();
+    }
+
     const sidebarHtml = `<div class="messages-sidebar-content">
         <header class="messages-rooms-header">
             <button type="button" class="messages-new-btn" id="messages-new-btn">
                 ${escapeHtml(i18n.t("module.social.messages.new"))}
             </button>
         </header>
-        <div class="messages-lookup-wrap" id="messages-lookup-wrap" hidden>
-            <input
-                type="search"
-                id="messages-lookup-input"
-                class="messages-lookup-input"
-                placeholder="${escapeHtml(i18n.t("module.social.messages.lookup_placeholder"))}"
-                autocomplete="off"
-            />
-            <ul class="messages-lookup-results" id="messages-lookup-results"></ul>
-        </div>
         <ul class="messages-rooms-list" id="messages-rooms-list">
             ${renderRoomList(rooms, currentAccountId, selectedRoomId, i18n)}
         </ul>
@@ -518,84 +529,20 @@ export async function mount(root, { signal } = {}) {
         });
 
         const newBtn = document.getElementById("messages-new-btn");
-        const lookupWrap = document.getElementById("messages-lookup-wrap");
-        const lookupInput = document.getElementById("messages-lookup-input");
-        const lookupResults = document.getElementById(
-            "messages-lookup-results",
-        );
-
         newBtn?.addEventListener("click", () => {
-            if (lookupWrap.hasAttribute("hidden")) {
-                lookupWrap.removeAttribute("hidden");
-                lookupInput?.focus();
-            } else {
-                lookupWrap.setAttribute("hidden", "");
-            }
-        });
-
-        let lookupDebounce = null;
-        lookupInput?.addEventListener("input", () => {
-            clearTimeout(lookupDebounce);
-            lookupDebounce = setTimeout(async () => {
-                const query = (lookupInput.value ?? "").trim();
-                if (!query) {
-                    lookupResults.innerHTML = "";
-                    return;
-                }
-                const lookupRes = await apiFetch(
-                    `/api/v1/messages/users/lookup?q=${encodeURIComponent(query)}`,
-                );
-                if (lookupRes.status === 403) {
-                    lookupWrap.setAttribute("hidden", "");
-                    showToast(i18n.t("ui.app.profile.message_hidden_toast"), {
-                        variant: "error",
-                    });
-                    return;
-                }
-                if (!lookupRes.ok) return;
-                const lookupPayload = await lookupRes.json();
-                const candidates = lookupPayload?.data ?? [];
-                lookupResults.innerHTML = candidates
-                    .map(
-                        (candidate) =>
-                            `<li class="messages-lookup-result"
-                                data-account-id="${escapeHtml(candidate.accountId)}"
-                                data-handle="${escapeHtml(candidate.handle)}">
-                                ${escapeHtml(candidate.displayName || candidate.handle)}
-                            </li>`,
-                    )
-                    .join("");
-            }, 300);
-        });
-
-        lookupResults?.addEventListener("click", async (clickEvent) => {
-            const item = clickEvent.target.closest("[data-handle]");
-            if (!item) return;
-            const handle = item.getAttribute("data-handle");
-            const createRes = await apiFetch("/api/v1/messages/rooms", {
-                method: "POST",
-                body: JSON.stringify({ handles: [handle] }),
+            openSearchPopup({
+                endpoint: "/api/v1/search",
+                typeFilter: "users",
+                placeholder: i18n.t(
+                    "module.social.messages.lookup_placeholder",
+                ),
+                ariaLabel: i18n.t("module.social.messages.new"),
+                noResultsText: i18n.t("ui.layout.search.no_results"),
+                onSelect: async (result) => {
+                    if (!result?.handle) return;
+                    await createConversationFromHandle(result.handle);
+                },
             });
-            if (!createRes.ok) {
-                showToast(i18n.t("module.social.messages.start_failed"), {
-                    variant: "error",
-                });
-                return;
-            }
-            const createPayload = await createRes.json();
-            const newRoomId = createPayload?.data?.id;
-            if (!newRoomId) return;
-            lookupWrap.setAttribute("hidden", "");
-            lookupInput.value = "";
-            lookupResults.innerHTML = "";
-            selectedRoomId = newRoomId;
-            history.pushState(
-                {},
-                "",
-                `/messages/${encodeURIComponent(newRoomId)}`,
-            );
-            await openRoom(newRoomId);
-            await reloadRoomsList();
         });
     }
 

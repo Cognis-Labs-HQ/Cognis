@@ -1209,29 +1209,55 @@ export async function mount(rootEl, { signal } = {}) {
 
     if (isAborted()) return;
 
+    const socialSectionRowCount = Math.max(
+        4,
+        Math.ceil(Math.max(followers.length, following.length) * 0.7 + 2),
+    );
+    const postsSectionRowCount = Math.max(
+        5,
+        Math.ceil(posts.length * 0.85 + 4),
+    );
+    const heroRowCount = bannerHeight === "full" ? 7 : 5;
+
     elements = [
         {
             id: "hero",
             label: i18n.t("ui.app.profile.section.profile"),
-            gridSize: { default: [4, 4], min: [2, 3], max: "full" },
+            gridSize: {
+                default: [4, heroRowCount],
+                min: [2, 4],
+                max: "full",
+            },
             render: renderHero,
         },
         {
             id: "followers",
             label: i18n.t("ui.app.profile.section.followers"),
-            gridSize: { default: [2, 3], min: [2, 1], max: "half" },
+            gridSize: {
+                default: [2, socialSectionRowCount],
+                min: [2, 3],
+                max: "half",
+            },
             render: renderFollowers,
         },
         {
             id: "following",
             label: i18n.t("ui.app.profile.section.following"),
-            gridSize: { default: [2, 3], min: [2, 1], max: "half" },
+            gridSize: {
+                default: [2, socialSectionRowCount],
+                min: [2, 3],
+                max: "half",
+            },
             render: renderFollowing,
         },
         {
             id: "posts",
             label: i18n.t("ui.app.profile.section.posts"),
-            gridSize: { default: [4, 4], min: [2, 2], max: "full" },
+            gridSize: {
+                default: [4, postsSectionRowCount],
+                min: [2, 4],
+                max: "full",
+            },
             render: renderPosts,
         },
         ...(isOwnProfile
@@ -1239,7 +1265,11 @@ export async function mount(rootEl, { signal } = {}) {
                   {
                       id: "posts-new",
                       label: i18n.t("ui.app.profile.section.posts_new"),
-                      gridSize: { default: [4, 3], min: [2, 2], max: "full" },
+                      gridSize: {
+                          default: [4, 4],
+                          min: [2, 3],
+                          max: "full",
+                      },
                       render: renderNewPost,
                   },
               ]
