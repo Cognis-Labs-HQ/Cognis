@@ -80,7 +80,7 @@ export async function bootstrapNotifyAdapter(
 ): Promise<void> {
     ctx.gateway.registerAlwaysOnSender(SENDER_ID);
 
-    if (ctx.dbExecutor && ctx.dbType) {
+    if (ctx.dbExecutor) {
         const secret = getDataEncryptionKey();
         if (!secret) {
             const baseMessage =

@@ -1,7 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
-import type { DbProviderId } from "../../gateways/db/reuse/provider-id.js";
 import type { LocalAccountStore } from "./reuse/local-account-store.js";
 
 export interface AuthContext {

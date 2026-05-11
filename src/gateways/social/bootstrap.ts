@@ -2,7 +2,6 @@ import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { DbProviderId } from "../db/reuse/provider-id.js";
 import { requireAuth } from "../../api/auth/guard.js";
 import { readJson } from "../../api/reuse/read-json.js";
 import { DbAdapterConfigStore } from "./adapter-config-store.js";
@@ -149,7 +148,6 @@ function createSocialAdapterRoutes(
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor =
         ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
-    const dbType = ctx.capabilities.get<DbProviderId>("db:type") ?? ctx.dbType;
     const configStore = new DbAdapterConfigStore(dbExecutor);
     await configStore.ensureSchema();
 
@@ -180,7 +178,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.uiRegistry?.registerAuthTypingMessage(message),
         log: ctx.log,
         dbExecutor,
-        dbType,
         isGatewayEnabled: () =>
             ctx.gatewayRegistry.get("social")?.status !== "disabled",
     });

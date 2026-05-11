@@ -52,7 +52,6 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
     };
     const adapter = createAdapter({
         dbExecutor: dbExecutor as any,
-        dbType: "memory",
         accountStore: accountStore as any,
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {},

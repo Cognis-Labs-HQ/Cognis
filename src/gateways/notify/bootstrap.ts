@@ -84,7 +84,6 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
         notificationStoreModule.DbNotificationStore as
             | (new (
                   dbExecutor: GatewayBootstrapContext["dbExecutor"],
-                  dbType: GatewayBootstrapContext["dbType"],
               ) => NotificationStoreWithSchema)
             | undefined;
     const NotificationPreferenceStoreClass =
@@ -94,7 +93,7 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
     if (!NotificationStoreClass || !NotificationPreferenceStoreClass) {
         throw new Error("notification_store_adapter_exports_missing");
     }
-    const notifStore = new NotificationStoreClass(ctx.dbExecutor, ctx.dbType);
+    const notifStore = new NotificationStoreClass(ctx.dbExecutor);
     const notificationPrefStore = new NotificationPreferenceStoreClass(
         notifStore,
     );
@@ -113,7 +112,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     await notifStore.ensureSchema();
     ctx.log?.("info", "Notification store schema ready.", {
         component: "notify-gateway",
-        dbType: ctx.dbType,
     });
 
     const gateway = new CoreNotificationGateway(
@@ -142,7 +140,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
         log: ctx.log,
         dbExecutor: ctx.dbExecutor,
-        dbType: ctx.dbType,
     });
     ctx.log?.("info", "Notification adapter bootstrapping complete.", {
         component: "notify-gateway",

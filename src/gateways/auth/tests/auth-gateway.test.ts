@@ -93,7 +93,6 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -118,7 +117,6 @@ test("auth gateway contributes auth:accountStore capability", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -143,7 +141,6 @@ test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -186,7 +183,6 @@ test("GET /api/v1/auth/registration-config returns open-registration state", asy
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -230,7 +226,6 @@ test("GET /api/v1/gateways/auth/adapters requires admin auth", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -270,7 +265,6 @@ test("GET /api/v1/gateways/auth/adapters returns adapter list to admin", async (
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -313,7 +307,6 @@ test("auth gateway bootstrap registers correct static dir and admin-section.js e
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -346,7 +339,6 @@ test("auth gateway bootstrap does not register a security admin section", async 
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -423,7 +415,6 @@ test("login endpoint returns 503 when no auth providers are available", async ()
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -475,7 +466,6 @@ test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user"
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -525,7 +515,6 @@ test("POST /api/v1/auth/verify returns 200 for fresh authenticated session", asy
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -568,7 +557,6 @@ test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -608,7 +596,6 @@ test("POST /api/v1/auth/emergency-token requires admin auth", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -643,7 +630,6 @@ test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -696,7 +682,6 @@ test("registration:public:register capability is looked up lazily in register ha
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -778,7 +763,6 @@ test("auth register endpoint returns 403 when open registration is disabled", as
                 params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -850,7 +834,6 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
     const db = new InMemoryTestExecutor();
     await bootstrap({
         dbExecutor: db,
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
@@ -900,7 +883,6 @@ test("login userValidation exempts founder admin even when SMTP is available", a
     const db = new InMemoryTestExecutor();
     await bootstrap({
         dbExecutor: db,
-        dbType: "memory",
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,

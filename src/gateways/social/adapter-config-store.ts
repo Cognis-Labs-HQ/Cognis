@@ -1,5 +1,4 @@
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { DbProviderId } from "../db/reuse/provider-id.js";
 
 export interface AdapterConfigStore {
     getConfig(adapterId: string): Promise<Record<string, unknown> | null>;

@@ -62,7 +62,6 @@ function makeAdapterCtx(
                 m: Parameters<UIRegistry["registerAuthTypingMessage"]>[0],
             ) => uiRegistry?.registerAuthTypingMessage(m),
             dbExecutor: makeInMemoryDb() as never,
-            dbType: "sqlite" as const,
             isGatewayEnabled: () => true,
         },
         gateway,

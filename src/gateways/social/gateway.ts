@@ -3,7 +3,6 @@ import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { DbProviderId } from "../db/reuse/provider-id.js";
 import type { AdapterConfigStore } from "./adapter-config-store.js";
 
 /**
@@ -62,7 +61,6 @@ export interface SocialAdapterBootstrapCtx {
     }): void;
     log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
     dbExecutor?: DbExecutor;
-    dbType?: DbProviderId;
     isGatewayEnabled(): boolean;
     isAdapterEnabled(adapterId?: string): boolean;
 }
