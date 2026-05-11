@@ -21,6 +21,9 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Fixed study gateway static UI registration and classes dashboard extension loading so `/static/gateways/study/navbar.js` and `/static/gateways/study/classes-dashboard-element.js` resolve correctly again; updated teacher role/visibility guardrails and messaging/search UX regressions. ([0faa97b](https://github.com/le-firehawk/Cognis/commit/0faa97b))
+- Improved follow-up consistency by formatting the updated routes/UI modules and revalidating lint/test compliance after the regression fixes. ([22b5914](https://github.com/le-firehawk/Cognis/commit/22b5914))
+
 - **Study button style** now matches the other nav links in the topnav bar (same font weight, underline-on-hover, opacity treatment) instead of having a distinct pill/button appearance.
 - **Page composer element heights** are now strictly enforced in view mode. Each widget-card gets an explicit `height: h × 90px` so element dimensions match the grid data exactly in both view and edit modes, regardless of CSS grid gap.
 - **Avatar hover preview caching**: `profile-preview.js` now caches avatar blob URLs by avatar key so the avatar image is only fetched once per session rather than on every profile link hover.

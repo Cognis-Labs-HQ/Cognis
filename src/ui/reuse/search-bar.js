@@ -10,6 +10,29 @@
 
 const DEBOUNCE_MS = 280;
 
+/**
+ * Converts a singular category token into a basic plural form for placeholder
+ * text in the search popup.
+ *
+ * @param {string} category
+ * @returns {string}
+ */
+function pluralizeCategory(category) {
+    if (!category) return "";
+    if (/(s|x|z|ch|sh)$/i.test(category)) return `${category}es`;
+    if (/[aeiou]y$/i.test(category)) return `${category}s`;
+    if (/y$/i.test(category)) return `${category.slice(0, -1)}ies`;
+    return `${category}s`;
+}
+
+/**
+ * Resolves the visible search-input placeholder, supporting the
+ * `{{category}}` token and a generic fallback when no category is provided.
+ *
+ * @param {string} rawPlaceholder
+ * @param {string} category
+ * @returns {string}
+ */
 function resolvePopupPlaceholder(rawPlaceholder, category) {
     const trimmedCategory = typeof category === "string" ? category.trim() : "";
     const trimmedPlaceholder =
@@ -26,7 +49,7 @@ function resolvePopupPlaceholder(rawPlaceholder, category) {
     }
 
     if (trimmedCategory) {
-        return `Search for ${trimmedCategory}s...`;
+        return `Search for ${pluralizeCategory(trimmedCategory)}...`;
     }
     return "Search for something...";
 }
@@ -114,12 +137,7 @@ function renderFlatResults(
         const listItem = document.createElement("li");
         listItem.className = "search-popup-result";
         listItem.textContent =
-            item.displayName ||
-            item.username ||
-            item.accountId ||
-            item.label ||
-            item.id ||
-            "";
+            item.label || item.displayName || item.accountId || item.id || "";
         listItem.addEventListener("mousedown", (event) => {
             event.preventDefault();
             closeOverlay();

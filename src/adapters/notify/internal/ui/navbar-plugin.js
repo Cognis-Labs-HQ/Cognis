@@ -52,8 +52,8 @@ function navigateNotif(actionUrl) {
 
 function hexToBytes(hex) {
     const bytes = new Uint8Array(hex.length / 2);
-    for (let index = 0; index < bytes.length; index += 1) {
-        bytes[index] = parseInt(hex.slice(index * 2, index * 2 + 2), 16);
+    for (let i = 0; i < bytes.length; i += 1) {
+        bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
     }
     return bytes;
 }
@@ -115,6 +115,9 @@ async function decryptRoomMessage(roomId) {
         );
         return notificationTextDecoder.decode(decrypted).trim() || null;
     } catch {
+        console.warn(
+            "[notify-internal] Failed to decrypt latest room message.",
+        );
         return null;
     }
 }
@@ -619,8 +622,9 @@ async function showArrivalToast(notif, i18n) {
     let toastSubject = notif.subject;
     let toastPreview = notif.body;
     if (notif.category === "messages") {
-        toastSubject = "New message";
-        toastPreview = "New message";
+        const genericMessage = i18n.t("ui.adapter.notify.internal.new_message");
+        toastSubject = genericMessage;
+        toastPreview = genericMessage;
         const roomId = parseRoomId(notif.actionUrl);
         if (roomId) {
             const decryptedPreview = await decryptRoomMessage(roomId);

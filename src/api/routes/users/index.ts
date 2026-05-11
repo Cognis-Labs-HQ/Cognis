@@ -292,6 +292,9 @@ export function createUserRoutes(
                 );
                 return true;
             }
+            // Validation and enforcement are intentionally split:
+            // this first block rejects hidden/private profiles, while the
+            // post-update block below normalizes teacher visibility to friends.
             if (role === "teacher") {
                 const currentVisibility =
                     await getProfileVisibility?.(username);
@@ -316,6 +319,12 @@ export function createUserRoutes(
             await setProfileRole?.(username, role);
             if (role === "teacher") {
                 await setProfileVisibility?.(username, "friends");
+                log?.("info", "Updated teacher visibility default.", {
+                    ...logMeta,
+                    accountId: adminClaims.sub,
+                    targetAccountId: username,
+                    visibility: "friends",
+                });
             }
             log?.("info", "Updated user role.", {
                 ...logMeta,

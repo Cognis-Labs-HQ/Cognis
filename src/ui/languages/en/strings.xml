@@ -419,6 +419,7 @@
   <string name="ui.adapter.notify.internal.clear_all_confirm_title">Clear All Notifications</string>
   <string name="ui.adapter.notify.internal.clear_all_confirm_body">This will permanently delete all of your notifications. This cannot be undone.</string>
   <string name="ui.adapter.notify.internal.error_clear_all">Couldn't clear notifications. Please try again.</string>
+  <string name="ui.adapter.notify.internal.new_message">New message</string>
   <string name="ui.app.settings.general">General</string>
   <string name="ui.app.settings.emails">Email Addresses</string>
   <string name="ui.app.settings.emails_add">Add email</string>

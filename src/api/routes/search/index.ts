@@ -78,12 +78,10 @@ export function createSearchRoutes(
                                     profile.accountId ??
                                     profile.handle ??
                                     undefined,
-                                username: profile.accountId,
                                 accountId: profile.accountId,
                                 handle: profile.handle,
                                 displayName: profile.displayName,
                             }) as SearchResultItem & {
-                                username?: string;
                                 accountId?: string;
                                 handle?: string;
                                 displayName?: string;

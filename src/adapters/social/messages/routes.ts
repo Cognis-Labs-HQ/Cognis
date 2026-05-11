@@ -37,7 +37,6 @@ type Dispatch = (e: DispatchEnvelope) => Promise<{ dispatched: string[] }>;
  */
 export async function canMessage(
     profileStore: DbProfileStore,
-    _messagesStore: DbMessagesStore,
     fromId: string,
     toId: string,
 ): Promise<boolean> {
@@ -154,7 +153,6 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 if (profile.visibility === "hidden") continue;
                 const allowed = await canMessage(
                     profileStore,
-                    messagesStore,
                     accountId,
                     profile.accountId,
                 );
@@ -224,7 +222,6 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 if (!candidate || candidate.accountId === accountId) continue;
                 const allowed = await canMessage(
                     profileStore,
-                    messagesStore,
                     accountId,
                     candidate.accountId,
                 );
@@ -549,7 +546,6 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             }
             const allowed = await canMessage(
                 profileStore,
-                messagesStore,
                 accountId,
                 target.accountId,
             );
