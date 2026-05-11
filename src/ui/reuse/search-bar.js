@@ -11,8 +11,7 @@
 const DEBOUNCE_MS = 280;
 
 function resolvePopupPlaceholder(rawPlaceholder, category) {
-    const trimmedCategory =
-        typeof category === "string" ? category.trim() : "";
+    const trimmedCategory = typeof category === "string" ? category.trim() : "";
     const trimmedPlaceholder =
         typeof rawPlaceholder === "string" ? rawPlaceholder.trim() : "";
 

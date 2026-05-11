@@ -293,7 +293,8 @@ export function createUserRoutes(
                 return true;
             }
             if (role === "teacher") {
-                const currentVisibility = await getProfileVisibility?.(username);
+                const currentVisibility =
+                    await getProfileVisibility?.(username);
                 if (
                     currentVisibility === "hidden" ||
                     currentVisibility === "private"

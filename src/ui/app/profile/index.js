@@ -693,15 +693,13 @@ async function openEditPopup() {
           ${escapeHtml(i18n.t("ui.app.profile.visibility"))}
           <select id="popup-edit-visibility" class="profile-field-input">
             ${["hidden", "private", "friends", "community"]
-                .map(
-                    (visibilityOption) => {
-                        const isRestrictedForTeacher =
-                            profileIsTeacher &&
-                            (visibilityOption === "hidden" ||
-                                visibilityOption === "private");
-                        return `<option value="${visibilityOption}"${currentVisibility === visibilityOption ? " selected" : ""}${isRestrictedForTeacher ? " disabled" : ""}>${escapeHtml(i18n.t(`ui.app.profile.visibility.${visibilityOption}`))}</option>`;
-                    },
-                )
+                .map((visibilityOption) => {
+                    const isRestrictedForTeacher =
+                        profileIsTeacher &&
+                        (visibilityOption === "hidden" ||
+                            visibilityOption === "private");
+                    return `<option value="${visibilityOption}"${currentVisibility === visibilityOption ? " selected" : ""}${isRestrictedForTeacher ? " disabled" : ""}>${escapeHtml(i18n.t(`ui.app.profile.visibility.${visibilityOption}`))}</option>`;
+                })
                 .join("")}
           </select>
         </label>
@@ -773,7 +771,7 @@ async function openEditPopup() {
                     ? error.message
                     : i18n.t("ui.app.profile.save_failed"),
                 {
-                variant: "error",
+                    variant: "error",
                 },
             );
         }

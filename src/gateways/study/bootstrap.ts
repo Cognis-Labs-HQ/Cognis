@@ -122,10 +122,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         component: "study-gateway",
     });
 
-    ctx.uiRegistry?.registerStaticDir(
-        "study",
-        path.join(GATEWAY_ROOT, "ui"),
-    );
+    ctx.uiRegistry?.registerStaticDir("study", path.join(GATEWAY_ROOT, "ui"));
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/study/navbar.js",
     });
