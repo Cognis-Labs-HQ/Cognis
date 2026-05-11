@@ -1,13 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-    buildStructuredDbCommandStatement,
-    type StructuredDbCommand,
-} from "../reuse/db-command.js";
-import {
-    createDbDialectHelper,
-    type DbDialectHelper,
-} from "../bootstrap.js";
+import { buildStructuredDbCommandStatement } from "../reuse/db-command.js";
+import { createDbDialectHelper, type DbDialectHelper } from "../bootstrap.js";
 import type { DbExecutor } from "../reuse/db-executor.js";
 
 test("gateway command builder emits postgres delete placeholders", () => {

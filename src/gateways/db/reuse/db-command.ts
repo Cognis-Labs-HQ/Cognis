@@ -89,6 +89,28 @@ export interface StructuredDbCommandResult<Row = Record<string, unknown>> {
     rowCount?: number;
 }
 
+const STRUCTURED_DB_OPERATORS = new Set<StructuredDbOperator>([
+    "=",
+    "!=",
+    "<",
+    ">",
+    "<=",
+    ">=",
+    "LIKE",
+    "IN",
+    "IS NULL",
+    "IS NOT NULL",
+]);
+
+const STRUCTURED_DB_JOIN_TYPES = new Set<StructuredDbJoinClause["type"]>([
+    "INNER",
+    "LEFT",
+]);
+
+const STRUCTURED_DB_ORDER_DIRECTIONS = new Set<
+    StructuredDbOrderByClause["direction"]
+>(["ASC", "DESC"]);
+
 function assertIdentifier(identifier: string, label: string): string {
     const segments = identifier.split(".");
     if (
@@ -129,6 +151,9 @@ function buildWhereClause(
     const sqlClauses = clauses.map((clause) => {
         const column = assertIdentifier(clause.column, "where column");
         const operator = clause.operator ?? "=";
+        if (!STRUCTURED_DB_OPERATORS.has(operator)) {
+            throw new Error(`Unsupported structured DB operator: ${operator}`);
+        }
 
         if (operator === "IS NULL" || operator === "IS NOT NULL") {
             return `${column} ${operator}`;
@@ -136,7 +161,9 @@ function buildWhereClause(
 
         if (operator === "IN") {
             if (!Array.isArray(clause.value) || clause.value.length === 0) {
-                throw new Error("Structured DB IN clauses require a non-empty array.");
+                throw new Error(
+                    "Structured DB IN clauses require a non-empty array.",
+                );
             }
             const placeholders = clause.value.map((value) =>
                 placeholder(params, value),
@@ -171,6 +198,11 @@ function buildSelectStatement(
     const joins = (command.joins ?? [])
         .map((join) => {
             const joinType = join.type ?? "INNER";
+            if (!STRUCTURED_DB_JOIN_TYPES.has(joinType)) {
+                throw new Error(
+                    `Unsupported structured DB join type: ${joinType}`,
+                );
+            }
             const joinTable = assertIdentifier(join.table, "join table");
             const joinAlias = join.alias
                 ? ` ${assertIdentifier(join.alias, "join alias")}`
@@ -197,6 +229,11 @@ function buildSelectStatement(
                           "order by column",
                       );
                       const direction = entry.direction ?? "ASC";
+                      if (!STRUCTURED_DB_ORDER_DIRECTIONS.has(direction)) {
+                          throw new Error(
+                              `Unsupported structured DB order direction: ${direction}`,
+                          );
+                      }
                       return `${column} ${direction}`;
                   })
                   .join(", ")}`
@@ -205,7 +242,9 @@ function buildSelectStatement(
     let limitClause = "";
     if (command.limit !== undefined) {
         if (!Number.isInteger(command.limit) || command.limit < 0) {
-            throw new Error("Structured DB SELECT limit must be a non-negative integer.");
+            throw new Error(
+                "Structured DB SELECT limit must be a non-negative integer.",
+            );
         }
         limitClause = ` LIMIT ${command.limit}`;
     }
@@ -238,13 +277,18 @@ function buildInsertStatement(
         assertIdentifier(column, "insert column"),
     );
     const values = entries.map(([, value]) => value);
-    const insertPlaceholders = values.map((value) => placeholder(params, value));
+    const insertPlaceholders = values.map((value) =>
+        placeholder(params, value),
+    );
 
     let prefix = "INSERT INTO";
     if (command.conflict?.action === "ignore") {
         if (dialect === "mariadb") {
             prefix = "INSERT IGNORE INTO";
-        } else if (dialect === "sqlite") {
+        } else if (
+            dialect === "sqlite" &&
+            (!command.conflict.target || command.conflict.target.length === 0)
+        ) {
             prefix = "INSERT OR IGNORE INTO";
         }
     }
@@ -279,10 +323,7 @@ function buildInsertStatement(
         );
     }
 
-    const conflictTarget = assertColumnList(
-        conflict.target,
-        "conflict column",
-    );
+    const conflictTarget = assertColumnList(conflict.target, "conflict column");
     const updateEntries = Object.entries(
         conflict.update ??
             Object.fromEntries(
@@ -312,7 +353,10 @@ function buildInsertStatement(
     }
 
     const assignments = updateEntries.map(([column, value]) => {
-        const validatedColumn = assertIdentifier(column, "upsert update column");
+        const validatedColumn = assertIdentifier(
+            column,
+            "upsert update column",
+        );
         if (conflict.update) {
             return `${validatedColumn} = ${placeholder(params, value)}`;
         }

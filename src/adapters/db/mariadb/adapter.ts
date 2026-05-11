@@ -21,10 +21,7 @@ export class MariaDbGateway implements DatabaseGateway {
     async executeCommand<Row = Record<string, unknown>>(
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult<Row>> {
-        const statement = buildStructuredDbCommandStatement(
-            command,
-            "mariadb",
-        );
+        const statement = buildStructuredDbCommandStatement(command, "mariadb");
         const [rows, meta] = await this.client.query(
             statement.sql,
             statement.params,

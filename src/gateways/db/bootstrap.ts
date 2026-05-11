@@ -35,7 +35,10 @@ export function createDbDialectHelper(
 ): DbDialectHelper {
     return {
         async executeCommand(command) {
-            const statement = buildStructuredDbCommandStatement(command, dbType);
+            const statement = buildStructuredDbCommandStatement(
+                command,
+                dbType,
+            );
             return executor.execute(statement.sql, statement.params);
         },
         async upsert(table, keyCol, keyVal, extraData) {
