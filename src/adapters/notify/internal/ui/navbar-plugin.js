@@ -178,6 +178,7 @@ let panelEl = null;
 let listEl = null;
 let emptyEl = null;
 let markAllBtn = null;
+let mobileBackdropEl = null;
 let currentNotifications = [];
 let seenIds = null;
 let relativeTimeNodes = [];
@@ -286,6 +287,7 @@ async function openPanel(i18n) {
     if (!panelEl || !listEl) return;
     closeProfileMenu();
     panelEl.hidden = false;
+    if (mobileBackdropEl) mobileBackdropEl.hidden = false;
     panelVisible = true;
     currentNotifications = await fetchNotifications();
     renderPanelContents(i18n);
@@ -335,6 +337,7 @@ async function refreshOpenPanel(i18n) {
 function closePanel() {
     if (!panelEl) return;
     panelEl.hidden = true;
+    if (mobileBackdropEl) mobileBackdropEl.hidden = true;
     panelVisible = false;
     stopRelativeTimeTicker();
 }
@@ -479,6 +482,15 @@ function buildButton(i18n) {
     panelEl = panel;
     wrap.appendChild(btn);
     wrap.appendChild(panel);
+
+    const mobileBackdrop = document.createElement("button");
+    mobileBackdrop.className = "notification-mobile-backdrop";
+    mobileBackdrop.type = "button";
+    mobileBackdrop.hidden = true;
+    mobileBackdrop.setAttribute("aria-label", i18n.t("ui.reuse.popup.close"));
+    mobileBackdrop.addEventListener("click", () => closePanel());
+    mobileBackdropEl = mobileBackdrop;
+    wrap.appendChild(mobileBackdrop);
 
     btn.addEventListener("click", (e) => {
         e.stopPropagation();

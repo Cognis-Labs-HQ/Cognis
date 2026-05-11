@@ -13,7 +13,7 @@
 }
 
 .auth-layout {
-    width: 100%;
+    width: min(1060px, 100%);
     margin: 0 auto;
     display: grid;
     gap: 22px;

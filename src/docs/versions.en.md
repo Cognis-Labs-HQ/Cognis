@@ -27,7 +27,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component             | Path                                | Version |
 | --------------------- | ----------------------------------- | ------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.1.0` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.0` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.1` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.2` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.1.0` |
@@ -49,9 +49,9 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Notification (notify) | `src/gateways/notify/`       | `1.3.0` |
 | Social                | `src/gateways/social/`       | `1.2.0` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
-| Registration          | `src/gateways/registration/` | `1.1.2` |
+| Registration          | `src/gateways/registration/` | `1.1.3` |
 | Logging               | `src/gateways/logging/`      | `1.4.0` |
-| Study                 | `src/gateways/study/`        | `1.2.0` |
+| Study                 | `src/gateways/study/`        | `1.2.1` |
 
 ## Core contracts
 
@@ -70,4 +70,5 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component                 | Path                              | Version |
 | ------------------------- | --------------------------------- | ------- |
 | Sample Analytics          | `src/modules/sample-analytics/`   | `0.1.0` |
+| Study Language Japanese   | `src/modules/study-language-ja/`  | `1.1.0` |
 | Japanese Language (Study) | `src/modules/study/languages/ja/` | `1.1.0` |

@@ -292,29 +292,6 @@ export function createUserRoutes(
                 );
                 return true;
             }
-            // Validation and enforcement are intentionally split:
-            // this first block rejects hidden/private profiles, while the
-            // post-update block below normalizes teacher visibility to friends.
-            if (role === "teacher") {
-                const currentVisibility =
-                    await getProfileVisibility?.(username);
-                if (
-                    currentVisibility === "hidden" ||
-                    currentVisibility === "private"
-                ) {
-                    res.writeHead(409, { "content-type": "application/json" });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "teacher_visibility_incompatible",
-                                message:
-                                    "Visibility must be friends or community before assigning teacher role",
-                            },
-                        }),
-                    );
-                    return true;
-                }
-            }
             await accountStore.setRole(username, role as any);
             await setProfileRole?.(username, role);
             if (role === "teacher") {

@@ -197,6 +197,21 @@ export class CoreStudyGateway {
         return this.registeredAdapters.get(adapterId);
     }
 
+    getAdapterConfig(adapterId: string): Record<string, unknown> | null {
+        const adapter = this.registeredAdapters.get(adapterId);
+        if (!adapter) return null;
+        return adapter.getConfig?.() ?? {};
+    }
+
+    async saveAdapterConfig(
+        adapterId: string,
+        config: Record<string, unknown>,
+    ): Promise<void> {
+        const adapter = this.registeredAdapters.get(adapterId);
+        if (!adapter || typeof adapter.setConfig !== "function") return;
+        await Promise.resolve(adapter.setConfig(config));
+    }
+
     async discoverAdapters(adaptersRoot: string): Promise<void> {
         let entries: string[];
         try {
@@ -206,6 +221,7 @@ export class CoreStudyGateway {
         }
 
         for (const entry of entries.sort()) {
+            if (entry === "japanese") continue;
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
             try {
                 const raw = await readFile(pkgPath, "utf8");
@@ -237,6 +253,7 @@ export class CoreStudyGateway {
         }
 
         for (const entry of entries.sort()) {
+            if (entry === "japanese") continue;
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
 
             let mod: Record<string, unknown>;

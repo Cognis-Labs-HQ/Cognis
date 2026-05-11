@@ -214,7 +214,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.1.2",
+        version: "1.1.3",
         description:
             "Registration workflows via pluggable invite/public adapters.",
         publisher: "Cognis Labs",
@@ -233,14 +233,6 @@ export function createRegistrationPageRoutes() {
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname !== "/register" || req.method !== "GET") return false;
-
-        // Users with a valid session are already authenticated; send them to
-        // the dashboard rather than showing the registration form.
-        if (getCookieSession(req)) {
-            res.writeHead(302, { location: "/dashboard" });
-            res.end();
-            return true;
-        }
 
         try {
             const file = await readFile(

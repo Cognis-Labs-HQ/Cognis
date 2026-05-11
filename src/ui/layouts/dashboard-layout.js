@@ -97,9 +97,33 @@ function bindTopbarActions() {
     });
 
     const teacherOnlyItems = document.querySelectorAll(".teacher-only");
-    teacherOnlyItems.forEach((item) => {
-        item.hidden = !isTeacherRole();
-    });
+    const applyTeacherVisibility = () => {
+        teacherOnlyItems.forEach((item) => {
+            item.hidden = !isTeacherRole();
+        });
+    };
+    applyTeacherVisibility();
+    void (async () => {
+        try {
+            const accountId = localStorage.getItem("cognis_account");
+            const accessToken = localStorage.getItem("cognis_access_token");
+            if (!accountId || !accessToken) return;
+            const response = await fetch(
+                `/api/v1/users/${encodeURIComponent(accountId)}/info`,
+                {
+                    headers: { authorization: `Bearer ${accessToken}` },
+                },
+            );
+            if (!response.ok) return;
+            const payload = await response.json().catch(() => null);
+            const resolvedRole = String(payload?.data?.role ?? "").trim();
+            if (!resolvedRole) return;
+            localStorage.setItem("cognis_role", resolvedRole);
+            applyTeacherVisibility();
+        } catch {
+            // Keep existing menu visibility when role refresh fails.
+        }
+    })();
 
     let closeTimeout = null;
 

@@ -259,6 +259,10 @@
     position: relative;
 }
 
+.notification-mobile-backdrop {
+    display: none;
+}
+
 .arrival-toast-container {
     position: fixed;
     right: 16px;
@@ -367,6 +371,10 @@
 }
 
 @media (max-width: 480px) {
+    .notification-panel-wrap {
+        position: static;
+    }
+
     .notification-panel {
         position: fixed;
         top: auto;
@@ -375,5 +383,15 @@
         transform: translateX(-50%);
         width: calc(100vw - 24px);
         max-width: 400px;
+        z-index: 1201;
+    }
+
+    .notification-mobile-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        border: 0;
+        background: rgba(3, 7, 18, 0.48);
+        z-index: 1200;
     }
 }

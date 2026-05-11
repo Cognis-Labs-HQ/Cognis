@@ -174,31 +174,37 @@ export async function mount(root, { signal } = {}) {
         id: "class-list",
         title: i18n.t("module.study.classes.page_title"),
         render() {
-            const section = document.createElement("div");
-            section.className = "classes-section";
-            section.innerHTML =
+            return `<div class="classes-section">${
                 (isTeacher ? renderClassList() : "") +
                 renderRequestForm() +
-                renderPendingRequests();
-
+                renderPendingRequests()
+            }</div>`;
+        },
+        onRender() {
+            const section = root.querySelector(".classes-section");
+            if (!(section instanceof HTMLElement)) return;
+            if (section.dataset.bound === "true") return;
+            section.dataset.bound = "true";
             section.addEventListener(
                 "click",
                 async (event) => {
-                    const chatBtn = event.target.closest(".classes-chat-btn");
-                    if (chatBtn) {
-                        const classId = chatBtn.dataset.classId;
+                    const eventTarget = event.target;
+                    if (!(eventTarget instanceof Element)) return;
+                    const chatButton = eventTarget.closest(".classes-chat-btn");
+                    if (chatButton) {
+                        const classId = chatButton.dataset.classId;
                         navigateTo(
                             `/messages?class=${encodeURIComponent(classId)}`,
                         );
                         return;
                     }
 
-                    const reviewBtn = event.target.closest(
+                    const reviewButton = eventTarget.closest(
                         ".classes-review-btn",
                     );
-                    if (reviewBtn) {
-                        const requestId = reviewBtn.dataset.requestId;
-                        const action = reviewBtn.dataset.action;
+                    if (reviewButton) {
+                        const requestId = reviewButton.dataset.requestId;
+                        const action = reviewButton.dataset.action;
                         const response = await apiFetch(
                             `/api/v1/study/teacher-requests/${encodeURIComponent(requestId)}/${action}`,
                             { method: "POST" },
@@ -217,62 +223,61 @@ export async function mount(root, { signal } = {}) {
                                 (isTeacher ? renderClassList() : "") +
                                 renderRequestForm() +
                                 renderPendingRequests();
+                            section.dataset.bound = "false";
+                            classListElement.onRender();
                         }
                         return;
                     }
 
-                    const requestBtn = event.target.closest(
+                    const requestButton = eventTarget.closest(
                         ".classes-request-btn",
                     );
-                    if (requestBtn) {
-                        const input = section.querySelector(
-                            ".classes-language-input",
-                        );
-                        const languageCode = input?.value?.trim() ?? "";
-                        if (!languageCode) return;
-                        const reason = await askTeacherReason();
-                        if (reason === null) return;
+                    if (!requestButton) return;
+                    const languageInput = section.querySelector(
+                        ".classes-language-input",
+                    );
+                    const languageCode = languageInput?.value?.trim() ?? "";
+                    if (!languageCode) return;
+                    const reason = await askTeacherReason();
+                    if (reason === null) return;
 
-                        try {
-                            const response = await apiFetch(
-                                "/api/v1/study/teacher-requests",
-                                {
-                                    method: "POST",
-                                    headers: {
-                                        "content-type": "application/json",
-                                    },
-                                    body: JSON.stringify({
-                                        languageCode,
-                                        reason,
-                                    }),
+                    try {
+                        const response = await apiFetch(
+                            "/api/v1/study/teacher-requests",
+                            {
+                                method: "POST",
+                                headers: {
+                                    "content-type": "application/json",
                                 },
+                                body: JSON.stringify({
+                                    languageCode,
+                                    reason,
+                                }),
+                            },
+                        );
+                        if (response.ok) {
+                            showToast(
+                                i18n.t("module.study.classes.request_sent"),
+                                { variant: "success" },
                             );
-                            if (response.ok) {
-                                showToast(
-                                    i18n.t("module.study.classes.request_sent"),
-                                    { variant: "success" },
-                                );
-                                if (input) input.value = "";
-                            } else {
-                                showToast(
-                                    i18n.t(
-                                        "module.study.classes.request_failed",
-                                    ),
-                                    { variant: "error" },
-                                );
-                            }
-                        } catch {
+                            if (languageInput) languageInput.value = "";
+                        } else {
                             showToast(
                                 i18n.t("module.study.classes.request_failed"),
                                 { variant: "error" },
                             );
                         }
+                    } catch {
+                        showToast(
+                            i18n.t("module.study.classes.request_failed"),
+                            {
+                                variant: "error",
+                            },
+                        );
                     }
                 },
                 { signal },
             );
-
-            return section;
         },
         gridSize: { default: [6, 4], min: [2, 2], max: "full" },
     };

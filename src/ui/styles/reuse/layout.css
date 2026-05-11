@@ -227,28 +227,6 @@
     border-bottom: 2px solid var(--accent-2);
 }
 
-.topnav-study-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: inherit;
-    font-family: inherit;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    color: var(--text);
-    padding: 6px 2px;
-    opacity: 0.92;
-    white-space: nowrap;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.topnav-study-btn:hover,
-.topnav-study-btn.active {
-    opacity: 1;
-    border-bottom: 2px solid var(--accent-2);
-}
-
 .account-cluster {
     display: flex;
     grid-column: 3;

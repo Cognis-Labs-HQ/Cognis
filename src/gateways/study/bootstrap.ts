@@ -5,6 +5,7 @@ import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
 import { requireAuth } from "../../api/auth/guard.js";
+import { readJson } from "../../api/reuse/read-json.js";
 import { CoreStudyGateway } from "./gateway.js";
 
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -57,6 +58,65 @@ function createStudyAdapterRoutes(
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: components }));
             return true;
+        }
+
+        const configMatch = url.pathname.match(
+            new RegExp(`^${base}/([^/]+)/config$`),
+        );
+        if (configMatch) {
+            if (!requireAuth(req, res, "admin")) return true;
+            const adapterId = decodeURIComponent(configMatch[1]);
+
+            if (req.method === "GET") {
+                const config = gateway.getAdapterConfig(adapterId);
+                if (config === null) {
+                    res.writeHead(404, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "not_found",
+                                message: "Adapter not found",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        data: config,
+                        envValues: {},
+                        requiredFields: [],
+                        supportsTest: false,
+                    }),
+                );
+                return true;
+            }
+
+            if (req.method === "PUT") {
+                if (!gateway.getAdapter(adapterId)) {
+                    res.writeHead(404, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "not_found",
+                                message: "Adapter not found",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                const body = await readJson(req);
+                await gateway.saveAdapterConfig(
+                    adapterId,
+                    body as Record<string, unknown>,
+                );
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { saved: true } }));
+                return true;
+            }
+
+            return false;
         }
 
         return false;
@@ -143,7 +203,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.2.0",
+        version: "1.2.1",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",

@@ -8,9 +8,8 @@ const i18n = await createI18n();
 globalThis.__studyGatewayAvailable = true;
 
 function createStudyNavButton() {
-    const studyBtn = document.createElement("button");
-    studyBtn.type = "button";
-    studyBtn.className = "topnav-study-btn";
+    const studyBtn = document.createElement("a");
+    studyBtn.href = "/study";
     studyBtn.dataset.studyBound = "false";
     studyBtn.textContent = i18n.t("ui.reuse.nav.study");
     return studyBtn;
@@ -69,12 +68,31 @@ async function handleStudyButtonClick() {
     const select = document.getElementById("study-language-select");
     const selectedCode = select?.value;
     if (selectedCode) {
+        try {
+            const modulesResponse = await apiFetch(
+                `/api/v1/study/languages/${encodeURIComponent(selectedCode)}/modules`,
+            );
+            if (modulesResponse.ok) {
+                const modulesPayload = await modulesResponse.json();
+                const firstModule = Array.isArray(modulesPayload?.data)
+                    ? modulesPayload.data[0]
+                    : null;
+                const firstPageUrl = String(firstModule?.pageUrl ?? "").trim();
+                if (firstPageUrl) {
+                    navigateTo(firstPageUrl);
+                    return;
+                }
+            }
+        } catch {
+            // Fall back to language root below.
+        }
         navigateTo(`/study/${encodeURIComponent(selectedCode)}`);
     }
 }
 
 const studyBtn = createStudyNavButton();
-studyBtn.addEventListener("click", () => {
+studyBtn.addEventListener("click", (event) => {
+    event.preventDefault();
     void handleStudyButtonClick();
 });
 insertStudyButton(studyBtn);

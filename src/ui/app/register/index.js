@@ -18,10 +18,31 @@ import {
 } from "../../reuse/auth-layout.js";
 import { clearStoredAuthSession } from "../../reuse/auth-session.js";
 
-clearStoredAuthSession();
+async function resetAuthSessionForRegister() {
+    const hadStoredSession =
+        Boolean(localStorage.getItem("cognis_access_token")) ||
+        Boolean(localStorage.getItem("cognis_account"));
+    try {
+        await fetch("/api/v1/auth/logout", {
+            method: "POST",
+            credentials: "same-origin",
+        });
+    } catch {
+        // Best-effort cookie revocation; local reset still runs.
+    }
+    clearStoredAuthSession();
+    return hadStoredSession;
+}
+
+const hadStoredSession = await resetAuthSessionForRegister();
 
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.register");
+if (hadStoredSession) {
+    showToast(i18n.t("ui.app.login.reason.session_expired"), {
+        variant: "info",
+    });
+}
 
 const root = document.querySelector("#app");
 const params = new URLSearchParams(window.location.search);

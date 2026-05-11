@@ -452,20 +452,22 @@ test("admin cannot demote disable or delete other admins", async () => {
     assert.equal(status, 200);
 });
 
-test("teacher role change is blocked when profile visibility is hidden or private", async () => {
+test("teacher role change normalizes hidden/private visibility to friends", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "pw", true);
     await accounts.register("alice", "pw", false);
     const prefs = new VolatileUserPreferenceStore();
     let status = 0;
-    let body = "";
+    const appliedVisibilityUpdates: string[] = [];
     const route = createUserRoutes(
         accounts,
         prefs,
         undefined,
         undefined,
         async () => "hidden",
-        async () => undefined,
+        async (_accountId, visibility) => {
+            appliedVisibilityUpdates.push(visibility);
+        },
     );
 
     await route(
@@ -480,15 +482,13 @@ test("teacher role change is blocked when profile visibility is hidden or privat
             writeHead(code: number) {
                 status = code;
             },
-            end(payload: string) {
-                body = payload;
-            },
+            end() {},
         } as any,
         new URL("http://localhost/api/v1/users/alice/role"),
     );
 
-    assert.equal(status, 409);
-    assert.match(body, /teacher_visibility_incompatible/);
+    assert.equal(status, 200);
+    assert.deepEqual(appliedVisibilityUpdates, ["friends"]);
 });
 
 test("teacher role change sets profile visibility to friends", async () => {
