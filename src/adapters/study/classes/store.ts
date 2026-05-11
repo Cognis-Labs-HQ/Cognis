@@ -265,16 +265,18 @@ export class DbClassesStore {
                 ],
             );
         } else {
+            const availableBoolean = row.available !== false;
+            const activeBoolean = row.active === true;
             const availableValue =
                 this.dbType === "postgresql"
-                    ? row.available !== false
-                    : row.available !== false
+                    ? availableBoolean
+                    : availableBoolean
                       ? 1
                       : 0;
             const activeValue =
                 this.dbType === "postgresql"
-                    ? row.active === true
-                    : row.active
+                    ? activeBoolean
+                    : activeBoolean
                       ? 1
                       : 0;
             await this.db.execute(
