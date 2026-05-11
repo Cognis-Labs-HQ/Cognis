@@ -110,7 +110,7 @@ export class DbClassesStore {
             [],
         );
 
-        if (this.dbType === "postgresql") {
+        if (this.dbType === "postgresql" || this.dbType === "mariadb") {
             await this.db.execute(
                 "ALTER TABLE teacher_requests ADD COLUMN IF NOT EXISTS reason TEXT",
             );
