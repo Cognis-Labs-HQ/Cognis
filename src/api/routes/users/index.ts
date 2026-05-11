@@ -116,16 +116,7 @@ export function createUserRoutes(
         const callerIsOwner = callerClaims?.role === "owner";
         const callerIsAdmin = callerClaims?.role === "admin";
         let targetInfoCache:
-            | {
-                  username: string;
-                  createdAt: string | null;
-                  lastLogin: string | null;
-                  enabled: boolean;
-                  isAdmin: boolean;
-                  isFounder: boolean;
-                  role?: string;
-              }
-            | null
+            | Awaited<ReturnType<LocalAccountStore["getInfo"]>>
             | undefined;
 
         async function getTargetInfo() {

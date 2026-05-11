@@ -144,7 +144,6 @@ async function refreshData() {
 function renderUsersTable() {
     const currentUsername = getCurrentUsername();
     const currentRole = getCurrentRole();
-    const viewerIsOwner = currentRole === "owner";
     const viewerIsAdmin = currentRole === "admin";
     const inviteButtonHtml = registrationGatewayActive
         ? `<div class="controls">
@@ -172,10 +171,7 @@ function renderUsersTable() {
                       user.role ?? (user.isAdmin ? "admin" : "user");
                   const isOwner = userRole === "owner";
                   const protectAdminFromAdmin =
-                      viewerIsAdmin &&
-                      !viewerIsOwner &&
-                      userRole === "admin" &&
-                      !isSelf;
+                      viewerIsAdmin && userRole === "admin" && !isSelf;
                   const roleDisabled =
                       isProtected || isOwner || isSelf || protectAdminFromAdmin;
                   const roleCellHtml = isOwner
@@ -184,7 +180,6 @@ function renderUsersTable() {
                             <option value="user"${userRole === "user" ? " selected" : ""}>${escapeHtml("user")}</option>
                             <option value="teacher"${userRole === "teacher" ? " selected" : ""}>${escapeHtml("teacher")}</option>
                             <option value="admin"${userRole === "admin" ? " selected" : ""}>${escapeHtml("admin")}</option>
-                            <option value="owner" disabled>${escapeHtml("owner")}</option>
                          </select>`;
                   const actionsHtml =
                       isProtected || isOwner || protectAdminFromAdmin
