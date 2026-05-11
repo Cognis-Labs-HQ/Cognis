@@ -29,7 +29,9 @@ async function listDbAdapterDirs(adaptersRoot: string): Promise<string[]> {
         const entries = await readdir(path.resolve(adaptersRoot, "db"), {
             withFileTypes: true,
         });
-        return entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+        return entries
+            .filter((entry) => entry.isDirectory())
+            .map((entry) => entry.name);
     } catch {
         return [];
     }
@@ -39,9 +41,16 @@ async function loadDbExecutorFactoryModule(
     adaptersRoot: string,
     adapterId: string,
 ): Promise<DbExecutorFactoryModule | null> {
-    const modulePath = path.resolve(adaptersRoot, "db", adapterId, "adapter.ts");
+    const modulePath = path.resolve(
+        adaptersRoot,
+        "db",
+        adapterId,
+        "adapter.ts",
+    );
     try {
-        return (await import(`${modulePath}?t=${Date.now()}`)) as DbExecutorFactoryModule;
+        return (await import(
+            `${modulePath}?t=${Date.now()}`
+        )) as DbExecutorFactoryModule;
     } catch {
         return null;
     }

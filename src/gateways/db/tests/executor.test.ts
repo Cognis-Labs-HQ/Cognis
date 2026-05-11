@@ -6,7 +6,9 @@ import path from "node:path";
 import { createDbExecutor } from "../executor.js";
 
 test("createDbExecutor loads the matching adapter factory on the fly", async () => {
-    const tempRoot = await mkdtemp(path.join(os.tmpdir(), "cognis-db-adapter-"));
+    const tempRoot = await mkdtemp(
+        path.join(os.tmpdir(), "cognis-db-adapter-"),
+    );
     const adapterDir = path.join(tempRoot, "db", "custom");
     await mkdir(adapterDir, { recursive: true });
     await writeFile(

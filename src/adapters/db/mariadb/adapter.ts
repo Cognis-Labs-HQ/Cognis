@@ -171,7 +171,9 @@ class MariaDbExecutor implements DbExecutor {
             if (Array.isArray(rows)) {
                 return { rows, rowCount: rows.length };
             }
-            return { rowCount: (rows as { affectedRows?: number }).affectedRows ?? 0 };
+            return {
+                rowCount: (rows as { affectedRows?: number }).affectedRows ?? 0,
+            };
         } catch (error) {
             writeDbLog(this.log, "warn", "SQL execution failed.", {
                 component: "db",
