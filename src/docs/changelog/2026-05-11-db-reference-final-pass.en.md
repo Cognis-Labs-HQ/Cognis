@@ -12,18 +12,18 @@ entries under `src/docs/changelog/`.
 ## Changed components and files
 
 - AI contribution instructions:
-  - `.github/copilot-instructions.md`
+    - `.github/copilot-instructions.md`
 - Documentation index/versioning:
-  - `src/docs/index.en.md`
-  - `src/docs/versions.en.md`
-  - `src/docs/versions.de.md`
-  - `src/docs/versions.id.md`
-  - `src/docs/versions.ja.md`
+    - `src/docs/index.en.md`
+    - `src/docs/versions.en.md`
+    - `src/docs/versions.de.md`
+    - `src/docs/versions.id.md`
+    - `src/docs/versions.ja.md`
 - New changelog docs:
-  - `src/docs/changelog/index.en.md`
-  - `src/docs/changelog/2026-05-11-db-reference-final-pass.en.md`
+    - `src/docs/changelog/index.en.md`
+    - `src/docs/changelog/2026-05-11-db-reference-final-pass.en.md`
 - Removed root changelog:
-  - `CHANGELOG.md`
+    - `CHANGELOG.md`
 
 ## Commits
 

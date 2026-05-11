@@ -11,10 +11,10 @@ easy to audit.
 - Filename: `YYYY-MM-DD-<short-pr-slug>.en.md`
 - One file per PR
 - Include:
-  - PR title
-  - Summary
-  - Changed components/files
-  - Commit links
+    - PR title
+    - Summary
+    - Changed components/files
+    - Commit links
 
 ## Entries
 
