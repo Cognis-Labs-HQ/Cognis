@@ -69,11 +69,24 @@ export class CoreAuthGateway {
     constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS auth_adapter_configs (
-      adapter_id VARCHAR(191) PRIMARY KEY,
-      enabled INTEGER NOT NULL DEFAULT 0,
-      config_json TEXT NOT NULL DEFAULT '{}'
-    )`);
+        await this.db.ensureTable({
+            name: "auth_adapter_configs",
+            columns: [
+                {
+                    name: "adapter_id",
+                    type: "text",
+                    notNull: true,
+                    primaryKey: true,
+                },
+                { name: "enabled", type: "integer", notNull: true, default: 0 },
+                {
+                    name: "config_json",
+                    type: "text",
+                    notNull: true,
+                    default: "{}",
+                },
+            ],
+        });
     }
 
     registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): void {
@@ -104,9 +117,11 @@ export class CoreAuthGateway {
     }
 
     async loadPersistedConfigs(): Promise<void> {
-        const result = await this.db.execute(
-            "SELECT adapter_id, enabled, config_json FROM auth_adapter_configs",
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "auth_adapter_configs",
+            columns: ["adapter_id", "enabled", "config_json"],
+        });
         for (const row of result.rows ?? []) {
             const adapterId = String(row.adapter_id);
             const adapter = this.adapters.get(adapterId);

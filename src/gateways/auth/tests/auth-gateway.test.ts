@@ -14,6 +14,11 @@ type HttpIncomingMessage = import("node:http").IncomingMessage;
 function makeInMemoryDb() {
     return {
         execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
+        executeCommand: async () => ({ rows: [] }),
+        ensureTable: async () => {},
+        transaction: async <T>(
+            cb: (db: ReturnType<typeof makeInMemoryDb>) => Promise<T>,
+        ) => cb(makeInMemoryDb()),
     };
 }
 

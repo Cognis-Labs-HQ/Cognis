@@ -4,35 +4,53 @@ import { DbMessagesStore } from "../store.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { StructuredDbUpdateCommand } from "../../../../gateways/db/reuse/db-command.js";
+import type { StructuredDbTableDef } from "../../../../gateways/db/reuse/db-table.js";
 
 function createRecordingExecutor() {
-    const sqlCalls: Array<{ sql: string; params?: unknown[] }> = [];
+    const tableDefs: Array<StructuredDbTableDef> = [];
     const commandCalls: Array<StructuredDbCommand> = [];
     const db: DbExecutor = {
-        async execute(sql: string, params?: unknown[]) {
-            sqlCalls.push({ sql, params });
-            return { rows: [] };
+        async ensureTable(def: StructuredDbTableDef) {
+            tableDefs.push(def);
         },
         async executeCommand(command: StructuredDbCommand) {
             commandCalls.push(command);
             return { rows: [] };
         },
+        async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
+            return callback(db);
+        },
     };
-    return { db, sqlCalls, commandCalls };
+    return { db, tableDefs, commandCalls };
 }
 
 test("messages schema uses portable integer default for muted flag", async () => {
-    const { db, sqlCalls } = createRecordingExecutor();
+    const { db, tableDefs } = createRecordingExecutor();
     const store = new DbMessagesStore(db);
 
     await store.ensureSchema();
 
-    const membersSchema = sqlCalls.find((call) =>
-        call.sql.includes("CREATE TABLE IF NOT EXISTS chatroom_members"),
+    const membersTableDef = tableDefs.find(
+        (def) => def.name === "chatroom_members",
     );
-    assert.ok(membersSchema);
-    assert.match(membersSchema.sql, /muted INTEGER NOT NULL DEFAULT 0/);
-    assert.doesNotMatch(membersSchema.sql, /BOOLEAN/);
+    assert.ok(membersTableDef, "chatroom_members table should be ensured");
+
+    const mutedCol = membersTableDef.columns.find(
+        (col) => col.name === "muted",
+    );
+    assert.ok(mutedCol, "muted column should exist");
+    assert.equal(
+        mutedCol.type,
+        "integer",
+        "muted column should use integer type",
+    );
+    assert.equal(mutedCol.default, 0, "muted column should default to 0");
+    assert.equal(mutedCol.notNull, true, "muted column should be NOT NULL");
+    assert.notEqual(
+        mutedCol.type,
+        "boolean",
+        "muted column must not use boolean type",
+    );
 });
 
 test("messages setMuted uses executeCommand with integer muted value", async () => {

@@ -315,9 +315,11 @@ const server = buildServer({
           }
         : undefined,
     loadModuleStates: async () => {
-        const result = await dbExecutor.execute(
-            "SELECT module_id, enabled FROM modules",
-        );
+        const result = await dbExecutor.executeCommand({
+            option: "SELECT",
+            table: "modules",
+            columns: ["module_id", "enabled"],
+        });
         return (result.rows ?? []).map((row) => ({
             moduleId: row.module_id,
             enabled: Boolean(row.enabled),
@@ -327,9 +329,11 @@ const server = buildServer({
         await dbDialect.upsert("modules", "module_id", moduleId, { enabled });
     },
     loadGatewayStates: async () => {
-        const result = await dbExecutor.execute(
-            "SELECT gateway_id, enabled FROM gateways",
-        );
+        const result = await dbExecutor.executeCommand({
+            option: "SELECT",
+            table: "gateways",
+            columns: ["gateway_id", "enabled"],
+        });
         return (result.rows ?? []).map((row) => ({
             gatewayId: row.gateway_id,
             enabled: Boolean(row.enabled),

@@ -5,8 +5,12 @@ import { createAdapter } from "../index.js";
 test("redeemInvite deletes created account when token cannot be marked redeemed", async () => {
     let deletedAccountId = "";
     const dbExecutor = {
-        async execute(sql: string) {
-            if (sql.includes("SELECT t.id, t.inviter_account_id")) {
+        async ensureTable() {},
+        async executeCommand(command: { option: string; table?: string }) {
+            if (
+                command.option === "SELECT" &&
+                command.table === "registration_tokens"
+            ) {
                 return {
                     rows: [
                         {
@@ -22,13 +26,18 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
                     rowCount: 1,
                 };
             }
-            if (sql.includes("UPDATE registration_tokens")) {
-                return { rowCount: 0 };
+            if (
+                command.option === "UPDATE" &&
+                command.table === "registration_tokens"
+            ) {
+                return { rows: [], rowCount: 0 };
             }
             return { rows: [], rowCount: 1 };
         },
-        async executeCommand() {
-            return { rows: [] };
+        async transaction<T>(
+            callback: (executor: typeof dbExecutor) => Promise<T>,
+        ) {
+            return callback(dbExecutor);
         },
     };
     const accountStore = {
@@ -75,18 +84,24 @@ test("issueInvite revokes prior pending tokens for the same invitee email", asyn
     let sentEmailCount = 0;
 
     const dbExecutor = {
-        async execute(sql: string, params?: unknown[]) {
+        async executeCommand(command: {
+            option: string;
+            table?: string;
+            where?: Array<{ column: string; value?: unknown }>;
+        }) {
             if (
-                sql.includes("UPDATE registration_tokens") &&
-                sql.includes("invitee_email")
+                command.option === "UPDATE" &&
+                command.table === "registration_tokens" &&
+                command.where?.some(
+                    (clause) => clause.column === "invitee_email",
+                )
             ) {
-                // params order: [revokeTimestamp, inviterAccountId, inviteeEmail]
-                revokedEmails.push(String(params?.[2] ?? ""));
-                return { rowCount: 1 };
+                const emailClause = command.where.find(
+                    (clause) => clause.column === "invitee_email",
+                );
+                revokedEmails.push(String(emailClause?.value ?? ""));
+                return { rows: [], rowCount: 1 };
             }
-            return { rows: [], rowCount: 0 };
-        },
-        async executeCommand(command: { option: string; table?: string }) {
             if (
                 command.option === "INSERT" &&
                 command.table === "registration_tokens"
@@ -94,6 +109,12 @@ test("issueInvite revokes prior pending tokens for the same invitee email", asyn
                 insertedTokenCount++;
             }
             return { rows: [] };
+        },
+        async ensureTable() {},
+        async transaction<T>(
+            callback: (executor: typeof dbExecutor) => Promise<T>,
+        ) {
+            return callback(dbExecutor);
         },
     };
 

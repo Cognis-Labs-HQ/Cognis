@@ -48,32 +48,23 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
     ) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.execute(`
-            CREATE TABLE IF NOT EXISTS internal_notifications (
-                id VARCHAR(36) NOT NULL,
-                account_id VARCHAR(191) NOT NULL,
-                iv VARCHAR(32) NOT NULL,
-                payload_enc TEXT NOT NULL,
-                read INTEGER NOT NULL DEFAULT 0,
-                created_at BIGINT NOT NULL,
-                PRIMARY KEY (id)
-            )
-        `);
-        try {
-            await this.db.execute(
-                "CREATE INDEX IF NOT EXISTS idx_internal_notif_account" +
-                    " ON internal_notifications (account_id, created_at)",
-            );
-        } catch (err) {
-            this.log?.(
-                "warn",
-                "Could not create index on internal_notifications; queries may be slower.",
+        await this.db.ensureTable({
+            name: "internal_notifications",
+            columns: [
+                { name: "id", type: "text", notNull: true, primaryKey: true },
+                { name: "account_id", type: "text", notNull: true },
+                { name: "iv", type: "text", notNull: true },
+                { name: "payload_enc", type: "text", notNull: true },
+                { name: "read", type: "integer", notNull: true, default: 0 },
+                { name: "created_at", type: "bigint", notNull: true },
+            ],
+            indexes: [
                 {
-                    component: "notify-internal",
-                    error: err instanceof Error ? err.message : String(err),
+                    columns: ["account_id", "created_at"],
+                    name: "idx_internal_notif_account",
                 },
-            );
-        }
+            ],
+        });
     }
 
     async add(envelope: NotificationEnvelope): Promise<void> {

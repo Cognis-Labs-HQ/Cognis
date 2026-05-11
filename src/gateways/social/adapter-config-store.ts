@@ -13,11 +13,18 @@ export class DbAdapterConfigStore implements AdapterConfigStore {
     constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db
-            .execute(`CREATE TABLE IF NOT EXISTS social_adapter_configs (
-      adapter_id VARCHAR(191) PRIMARY KEY,
-      config_json TEXT NOT NULL
-    )`);
+        await this.db.ensureTable({
+            name: "social_adapter_configs",
+            columns: [
+                {
+                    name: "adapter_id",
+                    type: "text",
+                    notNull: true,
+                    primaryKey: true,
+                },
+                { name: "config_json", type: "text", notNull: true },
+            ],
+        });
     }
 
     async getConfig(

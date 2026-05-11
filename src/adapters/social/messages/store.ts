@@ -68,69 +68,97 @@ export class DbMessagesStore {
     constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.execute(
-            `CREATE TABLE IF NOT EXISTS chatrooms (
-        id TEXT PRIMARY KEY,
-        kind TEXT NOT NULL,
-        title TEXT,
-        avatar_key TEXT,
-        created_by TEXT NOT NULL,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )`,
-        );
+        await this.db.ensureTable({
+            name: "chatrooms",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                { name: "kind", type: "text", notNull: true },
+                { name: "title", type: "text" },
+                { name: "avatar_key", type: "text" },
+                { name: "created_by", type: "text", notNull: true },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+                {
+                    name: "updated_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+        });
 
-        await this.db.execute(
-            `CREATE TABLE IF NOT EXISTS chatroom_members (
-        chatroom_id TEXT NOT NULL,
-        account_id TEXT NOT NULL,
-        role TEXT NOT NULL,
-        joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        last_read_at TIMESTAMP,
-        muted INTEGER NOT NULL DEFAULT 0,
-        PRIMARY KEY (chatroom_id, account_id)
-      )`,
-        );
+        await this.db.ensureTable({
+            name: "chatroom_members",
+            columns: [
+                { name: "chatroom_id", type: "text", notNull: true },
+                { name: "account_id", type: "text", notNull: true },
+                { name: "role", type: "text", notNull: true },
+                {
+                    name: "joined_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+                { name: "last_read_at", type: "timestamp" },
+                { name: "muted", type: "integer", notNull: true, default: 0 },
+            ],
+            primaryKey: ["chatroom_id", "account_id"],
+            indexes: [
+                {
+                    columns: ["account_id"],
+                    name: "idx_chatroom_members_account",
+                },
+            ],
+        });
 
-        await this.db.execute(
-            `CREATE TABLE IF NOT EXISTS chat_messages (
-        id TEXT PRIMARY KEY,
-        chatroom_id TEXT NOT NULL,
-        sender_id TEXT NOT NULL,
-        ciphertext TEXT NOT NULL,
-        iv TEXT NOT NULL,
-        auth_tag TEXT NOT NULL DEFAULT '',
-        content_type VARCHAR(64) NOT NULL DEFAULT 'text/plain',
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )`,
-        );
+        await this.db.ensureTable({
+            name: "chat_messages",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                { name: "chatroom_id", type: "text", notNull: true },
+                { name: "sender_id", type: "text", notNull: true },
+                { name: "ciphertext", type: "text", notNull: true },
+                { name: "iv", type: "text", notNull: true },
+                { name: "auth_tag", type: "text", notNull: true, default: "" },
+                {
+                    name: "content_type",
+                    type: "text",
+                    notNull: true,
+                    default: "text/plain",
+                },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            indexes: [
+                {
+                    columns: ["chatroom_id", "created_at"],
+                    name: "idx_chat_messages_room_time",
+                },
+            ],
+        });
 
-        await this.db.execute(
-            `CREATE TABLE IF NOT EXISTS chatroom_keys (
-        chatroom_id TEXT PRIMARY KEY,
-        wrapped_key TEXT NOT NULL,
-        key_iv TEXT NOT NULL,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )`,
-        );
-
-        await this.db
-            .execute(
-                "ALTER TABLE chatrooms ADD COLUMN IF NOT EXISTS avatar_key TEXT",
-            )
-            .catch(() => undefined);
-
-        await this.db
-            .execute(
-                "CREATE INDEX IF NOT EXISTS idx_chat_messages_room_time ON chat_messages (chatroom_id, created_at DESC)",
-            )
-            .catch(() => undefined);
-
-        await this.db
-            .execute(
-                "CREATE INDEX IF NOT EXISTS idx_chatroom_members_account ON chatroom_members (account_id)",
-            )
-            .catch(() => undefined);
+        await this.db.ensureTable({
+            name: "chatroom_keys",
+            columns: [
+                { name: "chatroom_id", type: "text", primaryKey: true },
+                { name: "wrapped_key", type: "text", notNull: true },
+                { name: "key_iv", type: "text", notNull: true },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+        });
     }
 
     private rowToRoom(row: Record<string, unknown>): RoomRow {
@@ -175,22 +203,33 @@ export class DbMessagesStore {
         createdBy: string,
     ): Promise<RoomRow> {
         const id = randomUUID();
-        await this.db.execute(
-            `INSERT INTO chatrooms (id, kind, title, created_by) VALUES (?, ?, ?, ?)`,
-            [id, kind, title, createdBy],
-        );
-        const result = await this.db.execute(
-            `SELECT * FROM chatrooms WHERE id = ?`,
-            [id],
-        );
+        const nowIso = new Date().toISOString();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "chatrooms",
+            values: {
+                id,
+                kind,
+                title,
+                created_by: createdBy,
+                created_at: nowIso,
+                updated_at: nowIso,
+            },
+        });
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chatrooms",
+            where: [{ column: "id", value: id }],
+        });
         return this.rowToRoom(result.rows![0]);
     }
 
     async getRoom(id: string): Promise<RoomRow | null> {
-        const result = await this.db.execute(
-            `SELECT * FROM chatrooms WHERE id = ?`,
-            [id],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chatrooms",
+            where: [{ column: "id", value: id }],
+        });
         return result.rows?.[0] ? this.rowToRoom(result.rows[0]) : null;
     }
 
@@ -198,10 +237,15 @@ export class DbMessagesStore {
         roomId: string,
         avatarKey: string | null,
     ): Promise<RoomRow | null> {
-        await this.db.execute(
-            `UPDATE chatrooms SET avatar_key = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-            [avatarKey, roomId],
-        );
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "chatrooms",
+            set: {
+                avatar_key: avatarKey,
+                updated_at: new Date().toISOString(),
+            },
+            where: [{ column: "id", value: roomId }],
+        });
         return this.getRoom(roomId);
     }
 
@@ -219,52 +263,87 @@ export class DbMessagesStore {
     }
 
     async removeMember(roomId: string, accountId: string): Promise<void> {
-        await this.db.execute(
-            `DELETE FROM chatroom_members WHERE chatroom_id = ? AND account_id = ?`,
-            [roomId, accountId],
-        );
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "chatroom_members",
+            where: [
+                { column: "chatroom_id", value: roomId },
+                { column: "account_id", value: accountId },
+            ],
+        });
     }
 
     async getMember(
         roomId: string,
         accountId: string,
     ): Promise<MemberRow | null> {
-        const result = await this.db.execute(
-            `SELECT * FROM chatroom_members WHERE chatroom_id = ? AND account_id = ?`,
-            [roomId, accountId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chatroom_members",
+            where: [
+                { column: "chatroom_id", value: roomId },
+                { column: "account_id", value: accountId },
+            ],
+        });
         return result.rows?.[0] ? this.rowToMember(result.rows[0]) : null;
     }
 
     async listMembers(roomId: string): Promise<MemberRow[]> {
-        const result = await this.db.execute(
-            `SELECT * FROM chatroom_members WHERE chatroom_id = ? ORDER BY joined_at ASC`,
-            [roomId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chatroom_members",
+            where: [{ column: "chatroom_id", value: roomId }],
+            orderBy: [{ column: "joined_at", direction: "ASC" }],
+        });
         return (result.rows ?? []).map((row) => this.rowToMember(row));
     }
 
     async listRoomsForAccount(accountId: string): Promise<RoomRow[]> {
-        const result = await this.db.execute(
-            `SELECT c.* FROM chatrooms c
-       JOIN chatroom_members m ON m.chatroom_id = c.id
-       WHERE m.account_id = ?
-       ORDER BY c.updated_at DESC`,
-            [accountId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chatrooms",
+            alias: "c",
+            joins: [
+                {
+                    type: "INNER",
+                    table: "chatroom_members",
+                    alias: "m",
+                    on: { leftColumn: "m.chatroom_id", rightColumn: "c.id" },
+                },
+            ],
+            where: [{ column: "m.account_id", value: accountId }],
+            orderBy: [{ column: "c.updated_at", direction: "DESC" }],
+        });
         return (result.rows ?? []).map((row) => this.rowToRoom(row));
     }
 
     /** Returns a DM room shared by both accounts, or null. */
     async findDmBetween(a: string, b: string): Promise<RoomRow | null> {
-        const result = await this.db.execute(
-            `SELECT c.* FROM chatrooms c
-       JOIN chatroom_members m1 ON m1.chatroom_id = c.id AND m1.account_id = ?
-       JOIN chatroom_members m2 ON m2.chatroom_id = c.id AND m2.account_id = ?
-       WHERE c.kind = 'dm'
-       LIMIT 1`,
-            [a, b],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chatrooms",
+            alias: "c",
+            joins: [
+                {
+                    type: "INNER",
+                    table: "chatroom_members",
+                    alias: "m1",
+                    on: { leftColumn: "m1.chatroom_id", rightColumn: "c.id" },
+                },
+                {
+                    type: "INNER",
+                    table: "chatroom_members",
+                    alias: "m2",
+                    on: { leftColumn: "m2.chatroom_id", rightColumn: "c.id" },
+                },
+            ],
+            where: [
+                { column: "m1.account_id", value: a },
+                { column: "m2.account_id", value: b },
+                { column: "c.kind", value: "dm" },
+            ],
+            limit: 1,
+        });
         return result.rows?.[0] ? this.rowToRoom(result.rows[0]) : null;
     }
 
@@ -277,28 +356,35 @@ export class DbMessagesStore {
         contentType?: string;
     }): Promise<MessageRow> {
         const id = randomUUID();
-        await this.db.execute(
-            `INSERT INTO chat_messages (id, chatroom_id, sender_id, ciphertext, iv, auth_tag, content_type)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [
-                id,
-                input.roomId,
-                input.senderId,
-                input.ciphertext,
-                input.iv,
-                input.authTag ?? "",
-                input.contentType ?? "text/plain",
-            ],
-        );
-        await this.db.execute(
-            `UPDATE chatrooms SET updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-            [input.roomId],
-        );
-        const result = await this.db.execute(
-            `SELECT * FROM chat_messages WHERE id = ?`,
-            [id],
-        );
-        return this.rowToMessage(result.rows![0]);
+        const nowIso = new Date().toISOString();
+        return this.db.transaction(async (executor) => {
+            await executor.executeCommand({
+                option: "INSERT",
+                table: "chat_messages",
+                values: {
+                    id,
+                    chatroom_id: input.roomId,
+                    sender_id: input.senderId,
+                    ciphertext: input.ciphertext,
+                    iv: input.iv,
+                    auth_tag: input.authTag ?? "",
+                    content_type: input.contentType ?? "text/plain",
+                    created_at: nowIso,
+                },
+            });
+            await executor.executeCommand({
+                option: "UPDATE",
+                table: "chatrooms",
+                set: { updated_at: nowIso },
+                where: [{ column: "id", value: input.roomId }],
+            });
+            const result = await executor.executeCommand({
+                option: "SELECT",
+                table: "chat_messages",
+                where: [{ column: "id", value: id }],
+            });
+            return this.rowToMessage(result.rows![0]);
+        });
     }
 
     async listMessages(
@@ -306,30 +392,37 @@ export class DbMessagesStore {
         limit: number,
         before?: string,
     ): Promise<MessageRow[]> {
-        if (before) {
-            const result = await this.db.execute(
-                `SELECT * FROM chat_messages
-         WHERE chatroom_id = ? AND created_at < ?
-         ORDER BY created_at DESC LIMIT ?`,
-                [roomId, before, limit],
-            );
-            return (result.rows ?? []).map((row) => this.rowToMessage(row));
-        }
-        const result = await this.db.execute(
-            `SELECT * FROM chat_messages
-       WHERE chatroom_id = ?
-       ORDER BY created_at DESC LIMIT ?`,
-            [roomId, limit],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_messages",
+            where: [
+                { column: "chatroom_id", value: roomId },
+                ...(before
+                    ? [
+                          {
+                              column: "created_at",
+                              operator: "<" as const,
+                              value: before,
+                          },
+                      ]
+                    : []),
+            ],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+            limit,
+        });
         return (result.rows ?? []).map((row) => this.rowToMessage(row));
     }
 
     async markRead(roomId: string, accountId: string): Promise<void> {
-        await this.db.execute(
-            `UPDATE chatroom_members SET last_read_at = CURRENT_TIMESTAMP
-       WHERE chatroom_id = ? AND account_id = ?`,
-            [roomId, accountId],
-        );
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "chatroom_members",
+            set: { last_read_at: new Date().toISOString() },
+            where: [
+                { column: "chatroom_id", value: roomId },
+                { column: "account_id", value: accountId },
+            ],
+        });
     }
 
     async unreadCount(roomId: string, accountId: string): Promise<number> {
@@ -402,10 +495,12 @@ export class DbMessagesStore {
     }
 
     async getUnwrappedRoomKey(roomId: string): Promise<string | null> {
-        const result = await this.db.execute(
-            `SELECT wrapped_key, key_iv FROM chatroom_keys WHERE chatroom_id = ?`,
-            [roomId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chatroom_keys",
+            columns: ["wrapped_key", "key_iv"],
+            where: [{ column: "chatroom_id", value: roomId }],
+        });
         const row = result.rows?.[0];
         if (!row) return null;
         const secret = getDataEncryptionKey();

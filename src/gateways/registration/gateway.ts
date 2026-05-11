@@ -82,11 +82,18 @@ export class CoreRegistrationGateway {
     constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db
-            .execute(`CREATE TABLE IF NOT EXISTS registration_adapter_configs (
-      adapter_id VARCHAR(191) PRIMARY KEY,
-      enabled INTEGER NOT NULL DEFAULT 0
-    )`);
+        await this.db.ensureTable({
+            name: "registration_adapter_configs",
+            columns: [
+                {
+                    name: "adapter_id",
+                    type: "text",
+                    notNull: true,
+                    primaryKey: true,
+                },
+                { name: "enabled", type: "integer", notNull: true, default: 0 },
+            ],
+        });
     }
 
     private registerAdapter(adapter: RegistrationGatewayAdapter): void {
@@ -130,9 +137,11 @@ export class CoreRegistrationGateway {
     }
 
     async loadPersistedConfigs(): Promise<void> {
-        const result = await this.db.execute(
-            "SELECT adapter_id, enabled FROM registration_adapter_configs",
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "registration_adapter_configs",
+            columns: ["adapter_id", "enabled"],
+        });
         for (const row of result.rows ?? []) {
             const adapterId = String(row.adapter_id ?? "");
             if (!adapterId || !this.adapters.has(adapterId)) continue;

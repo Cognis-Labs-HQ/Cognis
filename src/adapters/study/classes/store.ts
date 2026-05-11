@@ -63,67 +63,123 @@ export class DbClassesStore {
     constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.execute(
-            `CREATE TABLE IF NOT EXISTS study_classes (
-        id TEXT PRIMARY KEY,
-        language_code VARCHAR(32) NOT NULL,
-        teacher_account_id TEXT NOT NULL,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )`,
-        );
+        await this.db.ensureTable({
+            name: "study_classes",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                { name: "language_code", type: "text", notNull: true },
+                { name: "teacher_account_id", type: "text", notNull: true },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+        });
 
-        await this.db.execute(
-            `CREATE TABLE IF NOT EXISTS teacher_requests (
-        id TEXT PRIMARY KEY,
-        account_id TEXT NOT NULL,
-        language_code VARCHAR(32) NOT NULL,
-        reason TEXT,
-        status VARCHAR(16) NOT NULL DEFAULT 'pending',
-        reviewed_by TEXT,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE (account_id, language_code)
-      )`,
-        );
+        await this.db.ensureTable({
+            name: "teacher_requests",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                { name: "account_id", type: "text", notNull: true },
+                { name: "language_code", type: "text", notNull: true },
+                { name: "reason", type: "text" },
+                {
+                    name: "status",
+                    type: "text",
+                    notNull: true,
+                    default: "pending",
+                },
+                { name: "reviewed_by", type: "text" },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+                {
+                    name: "updated_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            uniqueKeys: [["account_id", "language_code"]],
+        });
 
-        await this.db
-            .execute("ALTER TABLE teacher_requests ADD COLUMN reason TEXT")
-            .catch(() => undefined);
+        await this.db.ensureTable({
+            name: "teacher_assignments",
+            columns: [
+                { name: "account_id", type: "text", notNull: true },
+                { name: "language_code", type: "text", notNull: true },
+                { name: "class_id", type: "text", notNull: true },
+                {
+                    name: "assigned_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            primaryKey: ["account_id", "language_code"],
+        });
 
-        await this.db.execute(
-            `CREATE TABLE IF NOT EXISTS teacher_assignments (
-        account_id TEXT NOT NULL,
-        language_code VARCHAR(32) NOT NULL,
-        class_id TEXT NOT NULL,
-        assigned_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (account_id, language_code)
-      )`,
-        );
-
-        await this.db.execute(
-            `CREATE TABLE IF NOT EXISTS study_user_preferences (
-        account_id TEXT PRIMARY KEY,
-        learning_languages TEXT NOT NULL DEFAULT '[]',
-        teaching_languages TEXT NOT NULL DEFAULT '[]',
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )`,
-        );
+        await this.db.ensureTable({
+            name: "study_user_preferences",
+            columns: [
+                { name: "account_id", type: "text", primaryKey: true },
+                {
+                    name: "learning_languages",
+                    type: "text",
+                    notNull: true,
+                    default: "[]",
+                },
+                {
+                    name: "teaching_languages",
+                    type: "text",
+                    notNull: true,
+                    default: "[]",
+                },
+                {
+                    name: "updated_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+        });
 
         await this.ensureStudyLanguagesSchema();
     }
 
     async ensureStudyLanguagesSchema(): Promise<void> {
-        await this.db.execute(
-            `CREATE TABLE IF NOT EXISTS study_languages (
-        code VARCHAR(32) PRIMARY KEY,
-        name VARCHAR(128) NOT NULL,
-        flag VARCHAR(8) NOT NULL DEFAULT '',
-        available INTEGER NOT NULL DEFAULT 1,
-        active INTEGER NOT NULL DEFAULT 0,
-        sort_order INTEGER NOT NULL DEFAULT 0,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-      )`,
-        );
+        await this.db.ensureTable({
+            name: "study_languages",
+            columns: [
+                { name: "code", type: "text", primaryKey: true },
+                { name: "name", type: "text", notNull: true },
+                { name: "flag", type: "text", notNull: true, default: "" },
+                {
+                    name: "available",
+                    type: "integer",
+                    notNull: true,
+                    default: 1,
+                },
+                { name: "active", type: "integer", notNull: true, default: 0 },
+                {
+                    name: "sort_order",
+                    type: "integer",
+                    notNull: true,
+                    default: 0,
+                },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+        });
 
         const countResult = await this.db.executeCommand({
             option: "SELECT",
@@ -232,12 +288,25 @@ export class DbClassesStore {
     async listStudyLanguages(
         onlyAvailable = false,
     ): Promise<StudyLanguageRow[]> {
-        const where = onlyAvailable ? " WHERE available = 1" : "";
-        const result = await this.db.execute(
-            `SELECT code, name, flag, available, active, sort_order
-       FROM study_languages${where}
-       ORDER BY sort_order, code`,
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_languages",
+            columns: [
+                "code",
+                "name",
+                "flag",
+                "available",
+                "active",
+                "sort_order",
+            ],
+            ...(onlyAvailable
+                ? { where: [{ column: "available", value: 1 }] }
+                : {}),
+            orderBy: [
+                { column: "sort_order", direction: "ASC" },
+                { column: "code", direction: "ASC" },
+            ],
+        });
         return (result.rows ?? []).map((row) =>
             this.rowToStudyLanguage(row as Record<string, unknown>),
         );
@@ -262,11 +331,19 @@ export class DbClassesStore {
                 target: ["code"],
             },
         });
-        const result = await this.db.execute(
-            `SELECT code, name, flag, available, active, sort_order
-       FROM study_languages WHERE code = ?`,
-            [row.code],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_languages",
+            columns: [
+                "code",
+                "name",
+                "flag",
+                "available",
+                "active",
+                "sort_order",
+            ],
+            where: [{ column: "code", value: row.code }],
+        });
         const found = result.rows?.[0];
         if (!found) {
             return {
@@ -311,12 +388,17 @@ export class DbClassesStore {
     }
 
     async getStudyPreferences(accountId: string): Promise<StudyPreferencesRow> {
-        const result = await this.db.execute(
-            `SELECT account_id, learning_languages, teaching_languages, updated_at
-       FROM study_user_preferences
-       WHERE account_id = ?`,
-            [accountId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_user_preferences",
+            columns: [
+                "account_id",
+                "learning_languages",
+                "teaching_languages",
+                "updated_at",
+            ],
+            where: [{ column: "account_id", value: accountId }],
+        });
         const row = result.rows?.[0];
         if (!row) {
             return {
@@ -359,14 +441,19 @@ export class DbClassesStore {
     }
 
     async getClassesForTeacher(teacherAccountId: string): Promise<ClassRow[]> {
-        const result = await this.db.execute(
-            `SELECT id, language_code, teacher_account_id, created_at
-       FROM study_classes
-       WHERE teacher_account_id = ?
-       ORDER BY language_code`,
-            [teacherAccountId],
-        );
-        return result.rows.map((row) => ({
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_classes",
+            columns: [
+                "id",
+                "language_code",
+                "teacher_account_id",
+                "created_at",
+            ],
+            where: [{ column: "teacher_account_id", value: teacherAccountId }],
+            orderBy: [{ column: "language_code", direction: "ASC" }],
+        });
+        return (result.rows ?? []).map((row) => ({
             id: String(row.id),
             languageCode: String(row.language_code),
             teacherAccountId: String(row.teacher_account_id),
@@ -378,24 +465,46 @@ export class DbClassesStore {
         accountId: string,
         languageCode: string,
     ): Promise<TeacherRequestRow | null> {
-        const result = await this.db.execute(
-            `SELECT id, account_id, language_code, reason, status, reviewed_by, created_at, updated_at
-       FROM teacher_requests
-       WHERE account_id = ? AND language_code = ?`,
-            [accountId, languageCode],
-        );
-        if (!result.rows.length) return null;
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "teacher_requests",
+            columns: [
+                "id",
+                "account_id",
+                "language_code",
+                "reason",
+                "status",
+                "reviewed_by",
+                "created_at",
+                "updated_at",
+            ],
+            where: [
+                { column: "account_id", value: accountId },
+                { column: "language_code", value: languageCode },
+            ],
+        });
+        if (!result.rows?.length) return null;
         return this.rowToTeacherRequest(result.rows[0]);
     }
 
     async listPendingRequests(): Promise<TeacherRequestRow[]> {
-        const result = await this.db.execute(
-            `SELECT id, account_id, language_code, reason, status, reviewed_by, created_at, updated_at
-       FROM teacher_requests
-       WHERE status = 'pending'
-       ORDER BY created_at`,
-        );
-        return result.rows.map((row) => this.rowToTeacherRequest(row));
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "teacher_requests",
+            columns: [
+                "id",
+                "account_id",
+                "language_code",
+                "reason",
+                "status",
+                "reviewed_by",
+                "created_at",
+                "updated_at",
+            ],
+            where: [{ column: "status", value: "pending" }],
+            orderBy: [{ column: "created_at", direction: "ASC" }],
+        });
+        return (result.rows ?? []).map((row) => this.rowToTeacherRequest(row));
     }
 
     async submitTeacherRequest(
@@ -404,12 +513,20 @@ export class DbClassesStore {
         reason: string | null,
     ): Promise<TeacherRequestRow> {
         const requestId = randomUUID();
-        await this.db.execute(
-            `INSERT INTO teacher_requests
-       (id, account_id, language_code, reason, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-            [requestId, accountId, languageCode, reason],
-        );
+        const nowIso = new Date().toISOString();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "teacher_requests",
+            values: {
+                id: requestId,
+                account_id: accountId,
+                language_code: languageCode,
+                reason,
+                status: "pending",
+                created_at: nowIso,
+                updated_at: nowIso,
+            },
+        });
         return {
             id: requestId,
             accountId,
@@ -417,8 +534,8 @@ export class DbClassesStore {
             status: "pending",
             reason,
             reviewedBy: null,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+            createdAt: nowIso,
+            updatedAt: nowIso,
         };
     }
 
@@ -426,64 +543,87 @@ export class DbClassesStore {
         requestId: string,
         reviewerAccountId: string,
     ): Promise<ClassRow | null> {
-        const requestResult = await this.db.execute(
-            `SELECT id, account_id, language_code FROM teacher_requests
-       WHERE id = ? AND status = 'pending'`,
-            [requestId],
-        );
-        if (!requestResult.rows.length) return null;
+        return this.db.transaction(async (executor) => {
+            const requestResult = await executor.executeCommand({
+                option: "SELECT",
+                table: "teacher_requests",
+                columns: ["id", "account_id", "language_code"],
+                where: [
+                    { column: "id", value: requestId },
+                    { column: "status", value: "pending" },
+                ],
+            });
+            if (!requestResult.rows?.length) return null;
 
-        const row = requestResult.rows[0];
-        const accountId = String(row.account_id);
-        const languageCode = String(row.language_code);
+            const requestRow = requestResult.rows[0];
+            const accountId = String(requestRow.account_id);
+            const languageCode = String(requestRow.language_code);
+            const nowIso = new Date().toISOString();
 
-        await this.db.execute(
-            `UPDATE teacher_requests
-       SET status = 'approved', reviewed_by = ?, updated_at = CURRENT_TIMESTAMP
-       WHERE id = ?`,
-            [reviewerAccountId, requestId],
-        );
+            await executor.executeCommand({
+                option: "UPDATE",
+                table: "teacher_requests",
+                set: {
+                    status: "approved",
+                    reviewed_by: reviewerAccountId,
+                    updated_at: nowIso,
+                },
+                where: [{ column: "id", value: requestId }],
+            });
 
-        const classId = randomUUID();
-        await this.db.execute(
-            `INSERT INTO study_classes (id, language_code, teacher_account_id, created_at)
-       VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
-            [classId, languageCode, accountId],
-        );
+            const classId = randomUUID();
+            await executor.executeCommand({
+                option: "INSERT",
+                table: "study_classes",
+                values: {
+                    id: classId,
+                    language_code: languageCode,
+                    teacher_account_id: accountId,
+                    created_at: nowIso,
+                },
+            });
 
-        await this.db.executeCommand({
-            option: "INSERT",
-            table: "teacher_assignments",
-            values: {
-                account_id: accountId,
-                language_code: languageCode,
-                class_id: classId,
-                assigned_at: new Date().toISOString(),
-            },
-            conflict: {
-                action: "update",
-                target: ["account_id", "language_code"],
-                update: { class_id: classId },
-            },
+            await executor.executeCommand({
+                option: "INSERT",
+                table: "teacher_assignments",
+                values: {
+                    account_id: accountId,
+                    language_code: languageCode,
+                    class_id: classId,
+                    assigned_at: nowIso,
+                },
+                conflict: {
+                    action: "update",
+                    target: ["account_id", "language_code"],
+                    update: { class_id: classId },
+                },
+            });
+
+            return {
+                id: classId,
+                languageCode,
+                teacherAccountId: accountId,
+                createdAt: nowIso,
+            };
         });
-
-        return {
-            id: classId,
-            languageCode,
-            teacherAccountId: accountId,
-            createdAt: new Date().toISOString(),
-        };
     }
 
     async rejectTeacherRequest(
         requestId: string,
         reviewerAccountId: string,
     ): Promise<void> {
-        await this.db.execute(
-            `UPDATE teacher_requests
-       SET status = 'rejected', reviewed_by = ?, updated_at = CURRENT_TIMESTAMP
-       WHERE id = ? AND status = 'pending'`,
-            [reviewerAccountId, requestId],
-        );
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "teacher_requests",
+            set: {
+                status: "rejected",
+                reviewed_by: reviewerAccountId,
+                updated_at: new Date().toISOString(),
+            },
+            where: [
+                { column: "id", value: requestId },
+                { column: "status", value: "pending" },
+            ],
+        });
     }
 }
