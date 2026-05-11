@@ -326,7 +326,7 @@ const composer = createPageComposer(root, {
             label: i18n.t("ui.app.register.form_title"),
             pinned: true,
             gridSize: {
-                default: ["full", 6],
+                default: [12, 6],
                 min: [8, 5],
                 max: ["full", "fill"],
             },
