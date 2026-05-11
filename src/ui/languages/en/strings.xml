@@ -27,7 +27,6 @@
   <string name="ui.reuse.generic.disable">Disable</string>
   <string name="ui.reuse.generic.true">True</string>
   <string name="ui.reuse.generic.false">False</string>
-  <string name="ui.reuse.generic.configure">Configure</string>
   <string name="ui.reuse.generic.actions">Actions</string>
   <string name="ui.reuse.generic.id">ID</string>
   <string name="ui.reuse.generic.version">Version</string>
