@@ -1,7 +1,7 @@
 @import url("/static/styles/reuse/theme.css");
 
 .auth-page--frame {
-    min-height: 0;
+    min-height: 100vh;
     padding: 20px;
     background: var(--bg);
     display: flex;
@@ -191,7 +191,7 @@ p.auth-intro {
 
 @media (max-width: 640px) {
     .auth-page--frame {
-        min-height: 0;
+        min-height: 100dvh;
         padding: 10px;
         justify-content: flex-start;
     }
