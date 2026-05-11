@@ -3,6 +3,11 @@ import { createDbExecutor, type SupportedDbType } from "./executor.js";
 import { initializeDatabaseSchema } from "./init.js";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "./reuse/db-executor.js";
+import {
+    buildStructuredDbCommandStatement,
+    type StructuredDbCommand,
+    type StructuredDbCommandResult,
+} from "./reuse/db-command.js";
 
 /**
  * Dialect-aware SQL helper contributed as 'db:dialect'.
@@ -12,6 +17,9 @@ import type { DbExecutor } from "./reuse/db-executor.js";
  * branching from application code.
  */
 export interface DbDialectHelper {
+    executeCommand(
+        command: StructuredDbCommand,
+    ): Promise<StructuredDbCommandResult>;
     upsert(
         table: string,
         keyCol: string,
@@ -21,57 +29,39 @@ export interface DbDialectHelper {
     insertIgnore(table: string, data: Record<string, unknown>): Promise<void>;
 }
 
-function buildDialectHelper(
+export function createDbDialectHelper(
     executor: DbExecutor,
     dbType: SupportedDbType,
 ): DbDialectHelper {
-    const ph = (i: number) => (dbType === "postgresql" ? `$${i}` : "?");
-
     return {
+        async executeCommand(command) {
+            const statement = buildStructuredDbCommandStatement(command, dbType);
+            return executor.execute(statement.sql, statement.params);
+        },
         async upsert(table, keyCol, keyVal, extraData) {
-            const allKeys = [keyCol, ...Object.keys(extraData)];
-            const allVals = [keyVal, ...Object.values(extraData)];
-            const cols = allKeys.join(", ");
-            const placeholders = allKeys.map((_, i) => ph(i + 1)).join(", ");
-            const updateSet = Object.keys(extraData)
-                .map((col, i) =>
-                    dbType === "postgresql"
-                        ? `${col} = EXCLUDED.${col}`
-                        : `${col} = VALUES(${col})`,
-                )
-                .join(", ");
-
-            if (dbType === "postgresql") {
-                await executor.execute(
-                    `INSERT INTO ${table} (${cols}) VALUES (${placeholders}) ON CONFLICT (${keyCol}) DO UPDATE SET ${updateSet}`,
-                    allVals,
-                );
-            } else {
-                await executor.execute(
-                    `INSERT INTO ${table} (${cols}) VALUES (${placeholders}) ON DUPLICATE KEY UPDATE ${updateSet}`,
-                    allVals,
-                );
-            }
+            await this.executeCommand({
+                option: "INSERT",
+                table,
+                values: {
+                    [keyCol]: keyVal,
+                    ...extraData,
+                },
+                conflict: {
+                    action: "update",
+                    target: [keyCol],
+                },
+            });
         },
 
         async insertIgnore(table, data) {
-            const cols = Object.keys(data).join(", ");
-            const placeholders = Object.keys(data)
-                .map((_, i) => ph(i + 1))
-                .join(", ");
-            const vals = Object.values(data);
-
-            if (dbType === "postgresql") {
-                await executor.execute(
-                    `INSERT INTO ${table} (${cols}) VALUES (${placeholders}) ON CONFLICT DO NOTHING`,
-                    vals,
-                );
-            } else {
-                await executor.execute(
-                    `INSERT IGNORE INTO ${table} (${cols}) VALUES (${placeholders})`,
-                    vals,
-                );
-            }
+            await this.executeCommand({
+                option: "INSERT",
+                table,
+                values: data,
+                conflict: {
+                    action: "ignore",
+                },
+            });
         },
     };
 }
@@ -91,7 +81,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     await initializeDatabaseSchema(dbType, logger, executor, adaptersRoot);
 
-    const dialect = buildDialectHelper(executor, dbType);
+    const dialect = createDbDialectHelper(executor, dbType);
     await dialect.insertIgnore("modules", {
         module_id: "cognis-core",
         enabled: true,
@@ -107,7 +97,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "db",
         name: "Database Gateway",
-        version: "1.1.2",
+        version: "1.2.0",
         required: true,
         description:
             "Core relational database layer for persistent application data.",

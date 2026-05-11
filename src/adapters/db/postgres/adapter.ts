@@ -1,4 +1,9 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
+import {
+    buildStructuredDbCommandStatement,
+    type StructuredDbCommand,
+    type StructuredDbCommandResult,
+} from "../../../gateways/db/reuse/db-command.js";
 
 export interface PostgresQueryResult<Row = Record<string, unknown>> {
     rows: Row[];
@@ -14,6 +19,20 @@ export interface PostgresClient {
 
 export class PostgresDbGateway implements DatabaseGateway {
     constructor(private readonly client: PostgresClient) {}
+
+    async executeCommand<Row = Record<string, unknown>>(
+        command: StructuredDbCommand,
+    ): Promise<StructuredDbCommandResult<Row>> {
+        const statement = buildStructuredDbCommandStatement(
+            command,
+            "postgresql",
+        );
+        const result = await this.client.query<Row>(
+            statement.sql,
+            statement.params,
+        );
+        return { rows: result.rows, rowCount: result.rowCount };
+    }
 
     async query<Row = Record<string, unknown>>(
         statement: string,

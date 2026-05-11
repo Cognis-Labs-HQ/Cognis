@@ -1,4 +1,9 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
+import {
+    buildStructuredDbCommandStatement,
+    type StructuredDbCommand,
+    type StructuredDbCommandResult,
+} from "../../../gateways/db/reuse/db-command.js";
 
 export interface SqliteRunResult {
     changes: number;
@@ -15,6 +20,21 @@ export interface SqliteClient {
 
 export class SqliteDbGateway implements DatabaseGateway {
     constructor(private readonly client: SqliteClient) {}
+
+    async executeCommand<Row = Record<string, unknown>>(
+        command: StructuredDbCommand,
+    ): Promise<StructuredDbCommandResult<Row>> {
+        const statement = buildStructuredDbCommandStatement(command, "sqlite");
+        if (statement.returnsRows) {
+            const rows = await this.client.all<Row>(
+                statement.sql,
+                statement.params,
+            );
+            return { rows, rowCount: rows.length };
+        }
+        const result = await this.client.run(statement.sql, statement.params);
+        return { rowCount: result.changes ?? 0 };
+    }
 
     async query<Row = Record<string, unknown>>(
         statement: string,

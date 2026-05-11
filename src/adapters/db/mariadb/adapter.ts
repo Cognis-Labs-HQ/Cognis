@@ -1,4 +1,9 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
+import {
+    buildStructuredDbCommandStatement,
+    type StructuredDbCommand,
+    type StructuredDbCommandResult,
+} from "../../../gateways/db/reuse/db-command.js";
 
 export interface MariaDbClient {
     query(
@@ -12,6 +17,24 @@ export interface MariaDbClient {
 
 export class MariaDbGateway implements DatabaseGateway {
     constructor(private readonly client: MariaDbClient) {}
+
+    async executeCommand<Row = Record<string, unknown>>(
+        command: StructuredDbCommand,
+    ): Promise<StructuredDbCommandResult<Row>> {
+        const statement = buildStructuredDbCommandStatement(
+            command,
+            "mariadb",
+        );
+        const [rows, meta] = await this.client.query(
+            statement.sql,
+            statement.params,
+        );
+        if (statement.returnsRows) {
+            const typedRows = rows as Row[];
+            return { rows: typedRows, rowCount: typedRows.length };
+        }
+        return { rowCount: meta.affectedRows ?? 0 };
+    }
 
     async query<Row = Record<string, unknown>>(
         statement: string,
