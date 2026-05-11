@@ -3,10 +3,9 @@ import { createDbExecutor, type SupportedDbType } from "./executor.js";
 import { initializeDatabaseSchema } from "./init.js";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "./reuse/db-executor.js";
-import {
-    buildStructuredDbCommandStatement,
-    type StructuredDbCommand,
-    type StructuredDbCommandResult,
+import type {
+    StructuredDbCommand,
+    StructuredDbCommandResult,
 } from "./reuse/db-command.js";
 
 /**
@@ -29,17 +28,10 @@ export interface DbDialectHelper {
     insertIgnore(table: string, data: Record<string, unknown>): Promise<void>;
 }
 
-export function createDbDialectHelper(
-    executor: DbExecutor,
-    dbType: SupportedDbType,
-): DbDialectHelper {
+export function createDbDialectHelper(executor: DbExecutor): DbDialectHelper {
     return {
         async executeCommand(command) {
-            const statement = buildStructuredDbCommandStatement(
-                command,
-                dbType,
-            );
-            return executor.execute(statement.sql, statement.params);
+            return executor.executeCommand(command);
         },
         async upsert(table, keyCol, keyVal, extraData) {
             await this.executeCommand({
@@ -84,7 +76,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     await initializeDatabaseSchema(dbType, logger, executor, adaptersRoot);
 
-    const dialect = createDbDialectHelper(executor, dbType);
+    const dialect = createDbDialectHelper(executor);
     await dialect.insertIgnore("modules", {
         module_id: "cognis-core",
         enabled: true,

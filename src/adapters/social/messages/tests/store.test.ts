@@ -10,6 +10,9 @@ function createRecordingExecutor() {
             calls.push({ sql, params });
             return { rows: [] };
         },
+        async executeCommand() {
+            return { rows: [] };
+        },
     };
     return { db, calls };
 }

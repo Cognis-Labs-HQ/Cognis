@@ -26,10 +26,74 @@
  */
 import type { BootstrapLog } from "@cognis/core";
 import type { DbExecutor } from "./reuse/db-executor.js";
+import {
+    buildStructuredDbCommandStatement,
+    type StructuredDbCommand,
+    type StructuredDbCommandResult,
+    type StructuredDbDialect,
+} from "./reuse/db-command.js";
 
 export type { DbExecutor } from "./reuse/db-executor.js";
 
 export type SupportedDbType = "postgresql" | "mariadb";
+
+const POSTGRESQL_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
+    createPlaceholder(parameterIndex) {
+        return `$${parameterIndex}`;
+    },
+    buildInsertPrefix() {
+        return "INSERT INTO";
+    },
+    buildInsertConflictClause({
+        conflict,
+        conflictTarget,
+        updateEntries,
+        addParameter,
+        hasExplicitUpdate,
+    }) {
+        if (conflict.action === "ignore") {
+            const target =
+                conflictTarget.length > 0
+                    ? ` (${conflictTarget.join(", ")})`
+                    : "";
+            return ` ON CONFLICT${target} DO NOTHING`;
+        }
+        const assignments = updateEntries.map(([column, value]) =>
+            hasExplicitUpdate
+                ? `${column} = ${addParameter(value)}`
+                : `${column} = EXCLUDED.${column}`,
+        );
+        return ` ON CONFLICT (${conflictTarget.join(", ")}) DO UPDATE SET ${assignments.join(", ")}`;
+    },
+};
+
+const MARIADB_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
+    createPlaceholder() {
+        return "?";
+    },
+    buildInsertPrefix(conflict) {
+        if (conflict?.action === "ignore") {
+            return "INSERT IGNORE INTO";
+        }
+        return "INSERT INTO";
+    },
+    buildInsertConflictClause({
+        conflict,
+        updateEntries,
+        addParameter,
+        hasExplicitUpdate,
+    }) {
+        if (conflict.action === "ignore") {
+            return "";
+        }
+        const assignments = updateEntries.map(([column, value]) =>
+            hasExplicitUpdate
+                ? `${column} = ${addParameter(value)}`
+                : `${column} = VALUES(${column})`,
+        );
+        return ` ON DUPLICATE KEY UPDATE ${assignments.join(", ")}`;
+    },
+};
 
 function summarizeStatement(sql: string): string {
     const statement = sql.trim().split(/\s+/, 1)[0];
@@ -117,6 +181,16 @@ export class PostgresExecutor implements DbExecutor {
             throw error;
         }
     }
+
+    async executeCommand(
+        command: StructuredDbCommand,
+    ): Promise<StructuredDbCommandResult> {
+        const statement = buildStructuredDbCommandStatement(
+            command,
+            POSTGRESQL_STRUCTURED_DB_DIALECT,
+        );
+        return this.execute(statement.sql, statement.params);
+    }
 }
 
 export class MariadbExecutor implements DbExecutor {
@@ -156,6 +230,16 @@ export class MariadbExecutor implements DbExecutor {
             });
             throw error;
         }
+    }
+
+    async executeCommand(
+        command: StructuredDbCommand,
+    ): Promise<StructuredDbCommandResult> {
+        const statement = buildStructuredDbCommandStatement(
+            command,
+            MARIADB_STRUCTURED_DB_DIALECT,
+        );
+        return this.execute(statement.sql, statement.params);
     }
 }
 

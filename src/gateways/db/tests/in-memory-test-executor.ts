@@ -6,6 +6,12 @@
  * behave correctly with conflict detection and missing-column defaults.
  */
 import type { DbExecutor } from "../reuse/db-executor.js";
+import {
+    buildStructuredDbCommandStatement,
+    type StructuredDbCommand,
+    type StructuredDbCommandResult,
+    type StructuredDbDialect,
+} from "../reuse/db-command.js";
 
 type Row = Record<string, unknown>;
 
@@ -18,6 +24,36 @@ interface TableSchema {
 export class InMemoryTestExecutor implements DbExecutor {
     private tables = new Map<string, Row[]>();
     private schemas = new Map<string, TableSchema>();
+
+    private readonly structuredDbDialect: StructuredDbDialect = {
+        createPlaceholder(parameterIndex) {
+            return `$${parameterIndex}`;
+        },
+        buildInsertPrefix() {
+            return "INSERT INTO";
+        },
+        buildInsertConflictClause({
+            conflict,
+            conflictTarget,
+            updateEntries,
+            addParameter,
+            hasExplicitUpdate,
+        }) {
+            if (conflict.action === "ignore") {
+                const target =
+                    conflictTarget.length > 0
+                        ? ` (${conflictTarget.join(", ")})`
+                        : "";
+                return ` ON CONFLICT${target} DO NOTHING`;
+            }
+            const assignments = updateEntries.map(([column, value]) =>
+                hasExplicitUpdate
+                    ? `${column} = ${addParameter(value)}`
+                    : `${column} = EXCLUDED.${column}`,
+            );
+            return ` ON CONFLICT (${conflictTarget.join(", ")}) DO UPDATE SET ${assignments.join(", ")}`;
+        },
+    };
 
     private getTable(name: string): Row[] {
         if (!this.tables.has(name)) this.tables.set(name, []);
@@ -52,6 +88,16 @@ export class InMemoryTestExecutor implements DbExecutor {
         if (upper.startsWith("DELETE"))
             return this.handleDelete(trimmed, params);
         return { rowCount: 0 };
+    }
+
+    async executeCommand(
+        command: StructuredDbCommand,
+    ): Promise<StructuredDbCommandResult<Row>> {
+        const statement = buildStructuredDbCommandStatement(
+            command,
+            this.structuredDbDialect,
+        );
+        return this.execute(statement.sql, statement.params);
     }
 
     private parseCreateTable(sql: string): void {

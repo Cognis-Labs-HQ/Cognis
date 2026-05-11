@@ -3,6 +3,7 @@ import {
     buildStructuredDbCommandStatement,
     type StructuredDbCommand,
     type StructuredDbCommandResult,
+    type StructuredDbDialect,
 } from "../../../gateways/db/reuse/db-command.js";
 
 export interface PostgresQueryResult<Row = Record<string, unknown>> {
@@ -17,6 +18,36 @@ export interface PostgresClient {
     ): Promise<PostgresQueryResult<Row>>;
 }
 
+const POSTGRESQL_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
+    createPlaceholder(parameterIndex) {
+        return `$${parameterIndex}`;
+    },
+    buildInsertPrefix() {
+        return "INSERT INTO";
+    },
+    buildInsertConflictClause({
+        conflict,
+        conflictTarget,
+        updateEntries,
+        addParameter,
+        hasExplicitUpdate,
+    }) {
+        if (conflict.action === "ignore") {
+            const target =
+                conflictTarget.length > 0
+                    ? ` (${conflictTarget.join(", ")})`
+                    : "";
+            return ` ON CONFLICT${target} DO NOTHING`;
+        }
+        const assignments = updateEntries.map(([column, value]) =>
+            hasExplicitUpdate
+                ? `${column} = ${addParameter(value)}`
+                : `${column} = EXCLUDED.${column}`,
+        );
+        return ` ON CONFLICT (${conflictTarget.join(", ")}) DO UPDATE SET ${assignments.join(", ")}`;
+    },
+};
+
 export class PostgresDbGateway implements DatabaseGateway {
     constructor(private readonly client: PostgresClient) {}
 
@@ -25,7 +56,7 @@ export class PostgresDbGateway implements DatabaseGateway {
     ): Promise<StructuredDbCommandResult<Row>> {
         const statement = buildStructuredDbCommandStatement(
             command,
-            "postgresql",
+            POSTGRESQL_STRUCTURED_DB_DIALECT,
         );
         const result = await this.client.query<Row>(
             statement.sql,

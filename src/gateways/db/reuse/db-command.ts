@@ -1,5 +1,3 @@
-export type StructuredDbDialect = "postgresql" | "mariadb" | "sqlite";
-
 export type StructuredDbOption = "SELECT" | "INSERT" | "UPDATE" | "DELETE";
 
 export type StructuredDbOperator =
@@ -89,6 +87,18 @@ export interface StructuredDbCommandResult<Row = Record<string, unknown>> {
     rowCount?: number;
 }
 
+export interface StructuredDbDialect {
+    createPlaceholder(parameterIndex: number): string;
+    buildInsertPrefix(conflict?: StructuredDbConflictClause): string;
+    buildInsertConflictClause(args: {
+        conflict: StructuredDbConflictClause;
+        conflictTarget: string[];
+        updateEntries: Array<[string, unknown]>;
+        addParameter: (value: unknown) => string;
+        hasExplicitUpdate: boolean;
+    }): string;
+}
+
 const STRUCTURED_DB_OPERATORS = new Set<StructuredDbOperator>([
     "=",
     "!=",
@@ -111,11 +121,21 @@ const STRUCTURED_DB_ORDER_DIRECTIONS = new Set<
     StructuredDbOrderByClause["direction"]
 >(["ASC", "DESC"]);
 
+const MAX_STRUCTURED_DB_IDENTIFIER_LENGTH = 128;
+const MAX_STRUCTURED_DB_IDENTIFIER_SEGMENT_LENGTH = 64;
+const MAX_STRUCTURED_DB_SELECT_LIMIT = 10000;
+
 function assertIdentifier(identifier: string, label: string): string {
     const segments = identifier.split(".");
     if (
         segments.length === 0 ||
-        segments.some((segment) => !/^[A-Za-z_][A-Za-z0-9_]*$/.test(segment))
+        identifier.length > MAX_STRUCTURED_DB_IDENTIFIER_LENGTH ||
+        segments.some(
+            (segment) =>
+                segment.length === 0 ||
+                segment.length > MAX_STRUCTURED_DB_IDENTIFIER_SEGMENT_LENGTH ||
+                !/^[A-Za-z_][A-Za-z0-9_]*$/.test(segment),
+        )
     ) {
         throw new Error(`Invalid ${label}: ${identifier}`);
     }
@@ -132,10 +152,7 @@ function createPlaceholderFactory(
     let index = 1;
     return (params: unknown[], value: unknown): string => {
         params.push(value);
-        if (dialect === "postgresql") {
-            return `$${index++}`;
-        }
-        return "?";
+        return dialect.createPlaceholder(index++);
     };
 }
 
@@ -162,7 +179,7 @@ function buildWhereClause(
         if (operator === "IN") {
             if (!Array.isArray(clause.value) || clause.value.length === 0) {
                 throw new Error(
-                    "Structured DB IN clauses require a non-empty array.",
+                    `Structured DB IN clause for column '${column}' requires a non-empty array.`,
                 );
             }
             const placeholders = clause.value.map((value) =>
@@ -241,9 +258,13 @@ function buildSelectStatement(
 
     let limitClause = "";
     if (command.limit !== undefined) {
-        if (!Number.isInteger(command.limit) || command.limit < 0) {
+        if (
+            !Number.isInteger(command.limit) ||
+            command.limit < 0 ||
+            command.limit > MAX_STRUCTURED_DB_SELECT_LIMIT
+        ) {
             throw new Error(
-                "Structured DB SELECT limit must be a non-negative integer.",
+                `Structured DB SELECT limit must be a non-negative integer no greater than ${MAX_STRUCTURED_DB_SELECT_LIMIT}.`,
             );
         }
         limitClause = ` LIMIT ${command.limit}`;
@@ -281,18 +302,7 @@ function buildInsertStatement(
         placeholder(params, value),
     );
 
-    let prefix = "INSERT INTO";
-    if (command.conflict?.action === "ignore") {
-        if (dialect === "mariadb") {
-            prefix = "INSERT IGNORE INTO";
-        } else if (
-            dialect === "sqlite" &&
-            (!command.conflict.target || command.conflict.target.length === 0)
-        ) {
-            prefix = "INSERT OR IGNORE INTO";
-        }
-    }
-
+    const prefix = dialect.buildInsertPrefix(command.conflict);
     let sql = `${prefix} ${table} (${columns.join(", ")}) VALUES (${insertPlaceholders.join(", ")})`;
     const conflict = command.conflict;
 
@@ -301,19 +311,16 @@ function buildInsertStatement(
     }
 
     if (conflict.action === "ignore") {
-        if (dialect === "postgresql") {
-            const target =
-                conflict.target && conflict.target.length > 0
-                    ? ` (${assertColumnList(conflict.target, "conflict column").join(", ")})`
-                    : "";
-            sql += ` ON CONFLICT${target} DO NOTHING`;
-        } else if (dialect === "sqlite") {
-            const target =
-                conflict.target && conflict.target.length > 0
-                    ? ` ON CONFLICT (${assertColumnList(conflict.target, "conflict column").join(", ")}) DO NOTHING`
-                    : "";
-            sql += target;
-        }
+        const conflictTarget = conflict.target
+            ? assertColumnList(conflict.target, "conflict column")
+            : [];
+        sql += dialect.buildInsertConflictClause({
+            conflict,
+            conflictTarget,
+            updateEntries: [],
+            addParameter: (value: unknown) => placeholder(params, value),
+            hasExplicitUpdate: false,
+        });
         return { sql, params, returnsRows: false };
     }
 
@@ -337,32 +344,16 @@ function buildInsertStatement(
         );
     }
 
-    if (dialect === "mariadb") {
-        const assignments = updateEntries.map(([column, value]) => {
-            const validatedColumn = assertIdentifier(
-                column,
-                "upsert update column",
-            );
-            if (conflict.update) {
-                return `${validatedColumn} = ${placeholder(params, value)}`;
-            }
-            return `${validatedColumn} = VALUES(${validatedColumn})`;
-        });
-        sql += ` ON DUPLICATE KEY UPDATE ${assignments.join(", ")}`;
-        return { sql, params, returnsRows: false };
-    }
-
-    const assignments = updateEntries.map(([column, value]) => {
-        const validatedColumn = assertIdentifier(
-            column,
-            "upsert update column",
-        );
-        if (conflict.update) {
-            return `${validatedColumn} = ${placeholder(params, value)}`;
-        }
-        return `${validatedColumn} = EXCLUDED.${validatedColumn}`;
+    sql += dialect.buildInsertConflictClause({
+        conflict,
+        conflictTarget,
+        updateEntries: updateEntries.map(([column, value]) => [
+            assertIdentifier(column, "upsert update column"),
+            value,
+        ]),
+        addParameter: (value: unknown) => placeholder(params, value),
+        hasExplicitUpdate: Boolean(conflict.update),
     });
-    sql += ` ON CONFLICT (${conflictTarget.join(", ")}) DO UPDATE SET ${assignments.join(", ")}`;
 
     return { sql, params, returnsRows: false };
 }

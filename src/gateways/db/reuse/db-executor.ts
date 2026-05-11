@@ -19,9 +19,17 @@
  * @example
  *   import type { DbExecutor } from '../../gateways/db/reuse/db-executor.js';
  */
+import type {
+    StructuredDbCommand,
+    StructuredDbCommandResult,
+} from "./db-command.js";
+
 export interface DbExecutor {
     execute(
         sql: string,
         params?: unknown[],
     ): Promise<{ rows?: any[]; rowCount?: number }>;
+    executeCommand(
+        command: StructuredDbCommand,
+    ): Promise<StructuredDbCommandResult>;
 }
