@@ -4,6 +4,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
+import type { AccessRole } from "../../api/auth/access-tokens.js";
 
 /**
  * A single study activity or tool for a language, registered by its parent
@@ -18,6 +19,8 @@ export interface LanguageChildComponent {
     readonly pageUrl: string;
     /** Lower numbers appear first. Defaults to 0. */
     readonly order?: number;
+    /** Optional minimum role required to see this child component in sub-nav. */
+    readonly minRole?: AccessRole;
 }
 
 /**
@@ -102,6 +105,15 @@ export interface StudyAdapterBootstrapCtx {
     ): void;
     registerStaticDir(urlPrefix: string, absoluteDir: string): void;
     registerNavbarPlugin(scriptUrl: string, isEnabled?: () => boolean): void;
+    registerPageExtension(
+        pageId: string,
+        element: {
+            id: string;
+            label: string;
+            scriptUrl: string;
+            isEnabled?: () => boolean;
+        },
+    ): void;
     isAdapterEnabled(adapterId?: string): boolean;
     log?(
         level: string,
@@ -133,11 +145,25 @@ export class CoreStudyGateway {
         this.registeredLanguageModules.set(module.languageCode, module);
     }
 
-    listChildComponents(languageCode: string): LanguageChildComponent[] {
+    listChildComponents(
+        languageCode: string,
+        viewerRole: AccessRole = "user",
+    ): LanguageChildComponent[] {
         const module = this.registeredLanguageModules.get(languageCode);
         if (!module) return [];
+        const roleRank: Record<AccessRole, number> = {
+            user: 1,
+            teacher: 2,
+            moderator: 3,
+            admin: 4,
+            owner: 5,
+        };
         return module
             .listChildComponents()
+            .filter((childComponent) => {
+                if (!childComponent.minRole) return true;
+                return roleRank[viewerRole] >= roleRank[childComponent.minRole];
+            })
             .slice()
             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     }

@@ -21,6 +21,8 @@ export interface PageElement {
     label: string;
     /** Browser-absolute URL of the ES module to dynamically import. */
     scriptUrl: string;
+    /** Optional runtime predicate used to hide extensions while their owner is disabled. */
+    isEnabled?: () => boolean;
 }
 
 /**

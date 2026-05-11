@@ -455,11 +455,15 @@ function initSearchBar(i18n) {
                 label: i18n.t("ui.reuse.language"),
                 url: "/settings#language",
             },
-            {
-                id: "settings-study",
-                label: i18n.t("ui.app.settings.study.title"),
-                url: "/settings#study",
-            },
+            ...(globalThis.__studyGatewayAvailable
+                ? [
+                      {
+                          id: "settings-study",
+                          label: i18n.t("ui.app.settings.study.title"),
+                          url: "/settings#study",
+                      },
+                  ]
+                : []),
         ],
     };
 

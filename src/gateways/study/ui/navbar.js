@@ -5,6 +5,7 @@ import { navigateTo } from "/static/reuse/app-router.js";
 import { createI18n } from "/static/reuse/i18n.js";
 
 const i18n = await createI18n();
+globalThis.__studyGatewayAvailable = true;
 
 function createStudyNavButton() {
     const studyBtn = document.createElement("button");

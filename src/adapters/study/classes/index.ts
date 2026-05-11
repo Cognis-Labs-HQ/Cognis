@@ -136,6 +136,12 @@ export async function bootstrapStudyAdapter(
     const adapterRoot = path.dirname(fileURLToPath(import.meta.url));
     const uiDir = path.join(adapterRoot, "ui");
     ctx.registerStaticDir("adapters/study/classes", uiDir);
+    ctx.registerPageExtension("dashboard", {
+        id: "study-classes-dashboard",
+        label: "My Classes",
+        scriptUrl: "/static/gateways/study/classes-dashboard-element.js",
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
 
     ctx.log?.("info", "Study/classes adapter: bootstrapped.", {
         component: "study-classes",

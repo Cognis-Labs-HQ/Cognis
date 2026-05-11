@@ -51,6 +51,15 @@ async function savePrefs(prefs) {
     );
 }
 
+async function isStudyGatewayAvailable() {
+    try {
+        const response = await apiFetch("/api/v1/study/languages");
+        return response.ok;
+    } catch {
+        return false;
+    }
+}
+
 /**
  * Returns true when the language priority order has changed between
  * two saves, indicating a page reload is required to apply new strings.
@@ -78,6 +87,7 @@ export async function mount(root, { signal } = {}) {
         loadedPrefs?.timezone ?? null,
         loadedPrefs?.detectedTimezone ?? null,
     );
+    const studyGatewayAvailable = await isStudyGatewayAvailable();
 
     let savedMode = getStoredTheme();
 
@@ -291,30 +301,35 @@ export async function mount(root, { signal } = {}) {
             },
         },
 
-        {
-            id: "study",
-            label: i18n.t("ui.app.settings.study.title"),
-            subComposerOptions: {
-                allowCustomization: false,
-                preferenceKey: "settings-study-layout",
-                heading: i18n.t("ui.app.settings.study.title"),
-                elements: [
-                    {
-                        id: "study-prefs",
-                        label: i18n.t("ui.app.settings.study.title"),
-                        render: () => `<div id="study-prefs-container"></div>`,
-                    },
-                ],
-                onRender: () => {
-                    studyPrefs = initStudyPrefs(root, {
-                        i18n,
-                        onDirtyChange: (dirty) =>
-                            changesBar?.markDirty("study", dirty),
-                    });
-                    studyPrefs.init();
-                },
-            },
-        },
+        ...(studyGatewayAvailable
+            ? [
+                  {
+                      id: "study",
+                      label: i18n.t("ui.app.settings.study.title"),
+                      subComposerOptions: {
+                          allowCustomization: false,
+                          preferenceKey: "settings-study-layout",
+                          heading: i18n.t("ui.app.settings.study.title"),
+                          elements: [
+                              {
+                                  id: "study-prefs",
+                                  label: i18n.t("ui.app.settings.study.title"),
+                                  render: () =>
+                                      `<div id="study-prefs-container"></div>`,
+                              },
+                          ],
+                          onRender: () => {
+                              studyPrefs = initStudyPrefs(root, {
+                                  i18n,
+                                  onDirtyChange: (dirty) =>
+                                      changesBar?.markDirty("study", dirty),
+                              });
+                              studyPrefs.init();
+                          },
+                      },
+                  },
+              ]
+            : []),
         {
             id: "datetime",
             label: i18n.t("ui.app.settings.datetime"),
@@ -401,7 +416,7 @@ export async function mount(root, { signal } = {}) {
         <li><button data-composer-scroll="appearance">${i18n.t("ui.reuse.appearance")}</button></li>
         <li><button data-composer-scroll="language">${i18n.t("ui.reuse.language")}</button></li>
         <li><button data-composer-scroll="notifications">${i18n.t("ui.reuse.notifications")}</button></li>
-        <li><button data-composer-scroll="study">${i18n.t("ui.app.settings.study.title")}</button></li>
+        ${studyGatewayAvailable ? `<li><button data-composer-scroll="study">${i18n.t("ui.app.settings.study.title")}</button></li>` : ""}
         <li><button data-composer-scroll="datetime">${i18n.t("ui.app.settings.datetime")}</button></li>
         <li><button data-composer-scroll="advanced">${i18n.t("ui.app.settings.advanced")}</button></li>
       </ul>

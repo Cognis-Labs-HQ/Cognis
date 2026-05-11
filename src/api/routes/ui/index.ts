@@ -548,7 +548,11 @@ export function createUiRoutes(
         if (pageExtMatch && req.method === "GET") {
             if (!requireAuth(req, res, "user")) return true;
             const pageId = decodeURIComponent(pageExtMatch[1]);
-            const extensions = uiRegistry?.listPageExtensions(pageId) ?? [];
+            const extensions = (
+                uiRegistry?.listPageExtensions(pageId) ?? []
+            ).filter(
+                (extension) => !extension.isEnabled || extension.isEnabled(),
+            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: extensions }));
             return true;

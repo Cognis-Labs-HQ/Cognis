@@ -47,9 +47,13 @@ function createStudyAdapterRoutes(
             /^\/api\/v1\/study\/languages\/([^/]+)\/modules$/,
         );
         if (modulesMatch && req.method === "GET") {
-            if (!requireAuth(req, res)) return true;
+            const claims = requireAuth(req, res);
+            if (!claims) return true;
             const languageCode = decodeURIComponent(modulesMatch[1]);
-            const components = gateway.listChildComponents(languageCode);
+            const components = gateway.listChildComponents(
+                languageCode,
+                claims.role,
+            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: components }));
             return true;
@@ -86,6 +90,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.routeRegistry.register(handler, gatewayId ?? "study"),
         registerNavbarPlugin: (scriptUrl, isEnabled) =>
             ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl, isEnabled }),
+        registerPageExtension: (pageId, element) =>
+            ctx.uiRegistry?.registerPageExtension(pageId, element),
         registerStaticDir: (prefix, dir) =>
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
         log: ctx.log,
@@ -132,7 +138,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.1.0",
+        version: "1.2.0",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",

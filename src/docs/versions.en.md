@@ -37,7 +37,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.0.0` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `1.0.0` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.0.0` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.1.0` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
 ## Gateways
@@ -51,7 +51,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
 | Registration          | `src/gateways/registration/` | `1.1.2` |
 | Logging               | `src/gateways/logging/`      | `1.4.0` |
-| Study                 | `src/gateways/study/`        | `1.1.0` |
+| Study                 | `src/gateways/study/`        | `1.2.0` |
 
 ## Core contracts
 
@@ -70,4 +70,4 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component                 | Path                              | Version |
 | ------------------------- | --------------------------------- | ------- |
 | Sample Analytics          | `src/modules/sample-analytics/`   | `0.1.0` |
-| Japanese Language (Study) | `src/modules/study/languages/ja/` | `1.0.0` |
+| Japanese Language (Study) | `src/modules/study/languages/ja/` | `1.1.0` |

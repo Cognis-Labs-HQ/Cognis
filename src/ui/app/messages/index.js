@@ -604,7 +604,13 @@ export async function mount(root, { signal } = {}) {
         elements,
         preferenceKey: "messages-layout",
         i18n,
-        toolbar: sidebarHtml,
+        toolbar: [
+            {
+                id: "messages-sidebar",
+                label: i18n.t("module.social.messages.page_title"),
+                render: () => sidebarHtml,
+            },
+        ],
         pageContext: {
             title: i18n.t("module.social.messages.page_title"),
         },

@@ -1,8 +1,8 @@
 /**
  * Layer 5 — Sentences.
- * Ordered sequences of words. If `definitionId` is set, that definition is
- * used for the sentence meaning; otherwise meaning is derived by concatenating
- * the primary definition of each constituent word.
+ *
+ * Data source:
+ *   src/modules/study/languages/ja/data/sentences/*.json
  */
 
 export interface Sentence {
@@ -10,10 +10,3 @@ export interface Sentence {
     wordIds: string[];
     definitionId?: string;
 }
-
-export const SENTENCES: Sentence[] = [
-    {
-        id: "ja:sentence:nihongo-ga-suki",
-        wordIds: ["ja:word:nihongo"],
-    },
-];
