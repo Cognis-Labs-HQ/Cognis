@@ -7,10 +7,6 @@ import {
     type GatewayRegistry,
 } from "../shared.js";
 import { CoreNotificationGateway } from "./gateway.js";
-import {
-    DbNotificationStore,
-    DbNotificationPreferenceStore,
-} from "../../adapters/db/reuse/notification-store.js";
 import { TfaCodeService, InMemoryTfaStore } from "../../api/reuse/tfa-code.js";
 import {
     VerifyTokenService,
@@ -42,6 +38,69 @@ interface NotificationUserEmailStore {
     isEmailRegistered(email: string): Promise<boolean>;
 }
 
+interface NotificationStoreWithSchema extends NotificationUserEmailStore {
+    ensureSchema(): Promise<void>;
+    getConfig(senderId: string): Promise<Record<string, unknown> | null>;
+    saveConfig(
+        senderId: string,
+        config: Record<string, unknown>,
+    ): Promise<void>;
+    getSenderIds(
+        recipientUsername: string,
+        category: string,
+    ): Promise<string[]>;
+}
+
+interface NotificationPreferenceStoreCtor {
+    new (store: NotificationStoreWithSchema): {
+        getSenderIds(
+            recipientUsername: string,
+            category: string,
+        ): Promise<string[]>;
+    };
+}
+
+async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
+    notifStore: NotificationStoreWithSchema;
+    notificationPrefStore: {
+        getSenderIds(
+            recipientUsername: string,
+            category: string,
+        ): Promise<string[]>;
+    };
+}> {
+    const notificationStoreModulePath = path.resolve(
+        process.cwd(),
+        "src",
+        "adapters",
+        "db",
+        "reuse",
+        "notification-store.ts",
+    );
+    const notificationStoreModule = await import(
+        `${notificationStoreModulePath}?t=${Date.now()}`
+    );
+    const NotificationStoreClass =
+        notificationStoreModule.DbNotificationStore as
+            | (new (
+                  dbExecutor: GatewayBootstrapContext["dbExecutor"],
+                  dbType: GatewayBootstrapContext["dbType"],
+              ) => NotificationStoreWithSchema)
+            | undefined;
+    const NotificationPreferenceStoreClass =
+        notificationStoreModule.DbNotificationPreferenceStore as
+            | NotificationPreferenceStoreCtor
+            | undefined;
+    if (!NotificationStoreClass || !NotificationPreferenceStoreClass) {
+        throw new Error("notification_store_adapter_exports_missing");
+    }
+    const notifStore = new NotificationStoreClass(ctx.dbExecutor, ctx.dbType);
+    const notificationPrefStore = new NotificationPreferenceStoreClass(
+        notifStore,
+    );
+    return { notifStore, notificationPrefStore };
+}
+
 /**
  * Standard gateway bootstrap entry point. Discovers notification adapters,
  * wires all notification and user-email routes into the route registry, and
@@ -49,14 +108,14 @@ interface NotificationUserEmailStore {
  * inside this module directly.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const notifStore = new DbNotificationStore(ctx.dbExecutor, ctx.dbType);
+    const { notifStore, notificationPrefStore } =
+        await loadNotificationStores(ctx);
     await notifStore.ensureSchema();
     ctx.log?.("info", "Notification store schema ready.", {
         component: "notify-gateway",
         dbType: ctx.dbType,
     });
 
-    const notificationPrefStore = new DbNotificationPreferenceStore(notifStore);
     const gateway = new CoreNotificationGateway(
         notificationPrefStore,
         notifStore,
