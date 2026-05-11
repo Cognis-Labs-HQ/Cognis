@@ -16,7 +16,6 @@ import { CoreAuthGateway } from "./gateway.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthProviderAdapter } from "./gateway.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { DbProviderId } from "../db/reuse/provider-id.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 
 interface AuthAccountStore {
@@ -29,7 +28,6 @@ interface AuthAccountStore {
 
 async function loadLocalAccountStore(
     dbExecutor: DbExecutor,
-    dbType: DbProviderId,
     log?: GatewayBootstrapContext["log"],
 ): Promise<AuthAccountStore> {
     const localStorePath = path.resolve(
@@ -44,14 +42,13 @@ async function loadLocalAccountStore(
     const LocalAccountStoreClass = localStoreModule.DbLocalAccountStore as
         | (new (
               dbExecutor: DbExecutor,
-              dbType: DbProviderId,
               log?: GatewayBootstrapContext["log"],
           ) => AuthAccountStore)
         | undefined;
     if (!LocalAccountStoreClass) {
         throw new Error("local_account_store_missing");
     }
-    return new LocalAccountStoreClass(dbExecutor, dbType, log);
+    return new LocalAccountStoreClass(dbExecutor, log);
 }
 
 function resolveRole(
@@ -73,27 +70,17 @@ function resolveRole(
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor = (ctx.capabilities.get<DbExecutor>("db:executor") ??
         ctx.dbExecutor)!;
-    const dbType =
-        ctx.capabilities.get<DbProviderId>("db:type") ??
-        ctx.dbType ??
-        "postgresql";
 
-    const accountStore = await loadLocalAccountStore(
-        dbExecutor,
-        dbType,
-        ctx.log,
-    );
+    const accountStore = await loadLocalAccountStore(dbExecutor, ctx.log);
     await accountStore.ensureSchema();
     ctx.log?.("info", "Auth gateway account schema ready.", {
         component: "auth-gateway",
-        dbType,
     });
 
     const authGateway = new CoreAuthGateway(dbExecutor);
     await authGateway.ensureSchema();
     ctx.log?.("info", "Auth gateway adapter schema ready.", {
         component: "auth-gateway",
-        dbType,
     });
 
     const localAdapterPath = path.resolve(

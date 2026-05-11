@@ -64,7 +64,9 @@ export class InMemoryTestExecutor implements DbExecutor {
         sql: string,
         params: unknown[] = [],
     ): Promise<{ rows?: Row[]; rowCount?: number }> {
-        const trimmed = sql.trim();
+        let paramIndex = 1;
+        const normalizedSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
+        const trimmed = normalizedSql.trim();
         const upper = trimmed.toUpperCase();
 
         if (upper.startsWith("CREATE ")) {

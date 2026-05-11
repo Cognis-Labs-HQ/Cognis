@@ -252,10 +252,9 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 `DELETE FROM local_auth_credentials WHERE username = ?`,
                 [username],
             );
-            await this.db.execute(
-                `DELETE FROM accounts WHERE id = ?`,
-                [accountId],
-            );
+            await this.db.execute(`DELETE FROM accounts WHERE id = ?`, [
+                accountId,
+            ]);
             await this.db.execute("COMMIT");
         } catch (error) {
             await this.db.execute("ROLLBACK");

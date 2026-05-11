@@ -11,7 +11,6 @@ import {
     type GatewayRegistry,
 } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { DbProviderId } from "../db/reuse/provider-id.js";
 import type { LocalAccountStore } from "../../api/reuse/account-store.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 import { CoreRegistrationGateway } from "./gateway.js";
@@ -50,10 +49,6 @@ function redeemInviteErrorStatus(code: string): number {
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor = (ctx.capabilities.get<DbExecutor>("db:executor") ??
         ctx.dbExecutor)!;
-    const dbType =
-        ctx.capabilities.get<DbProviderId>("db:type") ??
-        ctx.dbType ??
-        "postgresql";
     const accountStore =
         ctx.capabilities.get<LocalAccountStore>("auth:accountStore");
     if (!accountStore) return;
@@ -88,7 +83,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     await gateway.ensureSchema();
     ctx.log?.("info", "Registration gateway schema ready.", {
         component: "registration-gateway",
-        dbType,
     });
     const registrationAdaptersRoot = path.join(
         ctx.adaptersRoot,
@@ -96,7 +90,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     await gateway.discoverAdapters(registrationAdaptersRoot, {
         dbExecutor,
-        dbType,
         accountStore,
         log: ctx.log,
         canSendInviteEmail: canSendInviteEmail ?? (() => false),

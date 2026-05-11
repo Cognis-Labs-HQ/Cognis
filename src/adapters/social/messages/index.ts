@@ -110,12 +110,10 @@ export async function bootstrapSocialAdapter(
         return;
     }
 
-    const dbType = ctx.dbType ?? "sqlite";
-    const messagesStore = new DbMessagesStore(ctx.dbExecutor, dbType);
+    const messagesStore = new DbMessagesStore(ctx.dbExecutor);
     await messagesStore.ensureSchema();
     ctx.log?.("info", "Messages adapter: schema ready.", {
         component: "social-messages-adapter",
-        dbType,
     });
 
     const dispatch =

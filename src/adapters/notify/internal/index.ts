@@ -99,7 +99,6 @@ export async function bootstrapNotifyAdapter(
         }
         const dbStore = new DbInternalNotificationStore(
             ctx.dbExecutor,
-            ctx.dbType,
             secret,
             ctx.log,
         );
@@ -110,7 +109,6 @@ export async function bootstrapNotifyAdapter(
             "Internal notification adapter using database store.",
             {
                 component: "notify-internal",
-                dbType: ctx.dbType,
             },
         );
     } else {

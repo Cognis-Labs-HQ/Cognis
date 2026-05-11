@@ -20,7 +20,6 @@ import type {
     SocialAdapterBootstrapCtx,
 } from "../../../gateways/social/gateway.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { SupportedDbType } from "../../../gateways/db/executor.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
 
@@ -132,10 +131,6 @@ export async function bootstrapSocialAdapter(
 ): Promise<void> {
     const dbExecutor =
         ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
-    const dbType =
-        ctx.capabilities.get<SupportedDbType>("db:type") ??
-        ctx.dbType ??
-        "postgresql";
 
     if (!dbExecutor) {
         ctx.log?.(
@@ -146,11 +141,10 @@ export async function bootstrapSocialAdapter(
         return;
     }
 
-    const profileStore = new DbProfileStore(dbExecutor, dbType);
+    const profileStore = new DbProfileStore(dbExecutor);
     await profileStore.ensureSchema();
     ctx.log?.("info", "Profile store schema ready.", {
         component: "social-profile-adapter",
-        dbType,
     });
 
     const prefStore = new DbUserPreferenceStore(dbExecutor);
@@ -159,7 +153,6 @@ export async function bootstrapSocialAdapter(
     ctx.capabilities.contribute("social:profileStore", profileStore);
     ctx.log?.("info", "Profile preference store schema ready.", {
         component: "social-profile-adapter",
-        dbType,
     });
 
     ctx.capabilities.contribute(

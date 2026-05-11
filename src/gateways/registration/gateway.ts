@@ -1,7 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { DbProviderId } from "../db/reuse/provider-id.js";
 
 export interface InviteRecord {
     id: string;
@@ -71,7 +70,6 @@ export interface RegistrationAdapterInfo {
 
 export interface RegistrationAdapterDeps {
     dbExecutor: DbExecutor;
-    dbType: DbProviderId;
     [key: string]: unknown;
 }
 
