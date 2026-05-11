@@ -6,6 +6,62 @@ import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
 
 /**
+ * A single study activity or tool for a language, registered by its parent
+ * language module. The UI builds a sub-navigation menu from these descriptors.
+ */
+export interface LanguageChildComponent {
+    /** Unique within the language, e.g. 'hiragana-alphabet'. */
+    readonly id: string;
+    /** Display name shown in the sub-nav, e.g. 'Hiragana Alphabet'. */
+    readonly label: string;
+    /** URL the router navigates to, e.g. '/study/ja/hiragana'. */
+    readonly pageUrl: string;
+    /** Lower numbers appear first. Defaults to 0. */
+    readonly order?: number;
+}
+
+/**
+ * Implemented by each language module. A language module is not an adapter;
+ * it is a content module that lives under
+ * `src/modules/study/languages/<code>/` and registers itself with the Study
+ * gateway at bootstrap time.
+ */
+export interface LanguageModule {
+    /** BCP 47 language code, e.g. 'ja', 'ko', 'zh-TW'. */
+    readonly languageCode: string;
+    /** Human-readable name in the language itself, e.g. '日本語'. */
+    readonly languageName: string;
+    /** Emoji flag, e.g. '🇯🇵'. */
+    readonly languageFlag: string;
+    /** Semver version of this module. */
+    readonly version: string;
+    listChildComponents(): LanguageChildComponent[];
+}
+
+/**
+ * Context passed to `bootstrapLanguageModule` so a module can register its
+ * routes, static assets, and child components.
+ */
+export interface LanguageModuleBootstrapCtx {
+    gateway: CoreStudyGateway;
+    languageCode: string;
+    moduleRoot: string;
+    registerChildRoute(
+        handler: (
+            req: IncomingMessage,
+            res: ServerResponse,
+            url: URL,
+        ) => Promise<boolean>,
+    ): void;
+    registerStaticDir(urlPrefix: string, absoluteDir: string): void;
+    log?(
+        level: string,
+        message: string,
+        meta?: Record<string, unknown>,
+    ): void | Promise<void>;
+}
+
+/**
  * Implemented by each study adapter and registered during discovery so the
  * gateway can list, configure, enable, and disable adapters before their
  * runtime routes bootstrap.
@@ -64,9 +120,26 @@ type StudyBootstrapBaseCtx = Omit<
 export class CoreStudyGateway {
     private readonly registeredAdapters = new Map<string, StudyAdapter>();
     private readonly disabledAdapters = new Set<string>();
+    private readonly registeredLanguageModules = new Map<
+        string,
+        LanguageModule
+    >();
 
     registerAdapter(adapter: StudyAdapter): void {
         this.registeredAdapters.set(adapter.adapterId, adapter);
+    }
+
+    registerLanguageModule(module: LanguageModule): void {
+        this.registeredLanguageModules.set(module.languageCode, module);
+    }
+
+    listChildComponents(languageCode: string): LanguageChildComponent[] {
+        const module = this.registeredLanguageModules.get(languageCode);
+        if (!module) return [];
+        return module
+            .listChildComponents()
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     }
 
     listAdapters(): StudyAdapterInfo[] {
@@ -176,6 +249,92 @@ export class CoreStudyGateway {
                     {
                         component: "study-gateway",
                         adapter: entry,
+                        error: err instanceof Error ? err.message : String(err),
+                    },
+                );
+            }
+        }
+    }
+
+    async discoverLanguageModules(modulesRoot: string): Promise<void> {
+        let entries: string[];
+        try {
+            entries = await readdir(modulesRoot);
+        } catch {
+            return;
+        }
+
+        for (const entry of entries.sort()) {
+            const pkgPath = path.join(modulesRoot, entry, "package.json");
+            try {
+                const raw = await readFile(pkgPath, "utf8");
+                const pkg = JSON.parse(raw) as { main?: string };
+                if (!pkg.main) continue;
+                const entryPath = path.resolve(modulesRoot, entry, pkg.main);
+                const mod = await import(entryPath);
+                if (typeof mod.createLanguageModule === "function") {
+                    const factory =
+                        mod.createLanguageModule as () => LanguageModule | null;
+                    const languageModule = factory();
+                    if (languageModule)
+                        this.registerLanguageModule(languageModule);
+                }
+            } catch {
+                // Language module could not be loaded — skip silently.
+            }
+        }
+    }
+
+    async bootstrapLanguageModules(
+        modulesRoot: string,
+        baseCtx: Omit<
+            LanguageModuleBootstrapCtx,
+            "languageCode" | "moduleRoot" | "gateway"
+        >,
+    ): Promise<void> {
+        let entries: string[];
+        try {
+            entries = await readdir(modulesRoot);
+        } catch {
+            return;
+        }
+
+        for (const entry of entries.sort()) {
+            const pkgPath = path.join(modulesRoot, entry, "package.json");
+
+            let mod: Record<string, unknown>;
+            try {
+                const raw = await readFile(pkgPath, "utf8");
+                const pkg = JSON.parse(raw) as { main?: string };
+                if (!pkg.main) continue;
+                const entryPath = path.resolve(modulesRoot, entry, pkg.main);
+                mod = await import(entryPath);
+            } catch {
+                continue;
+            }
+
+            if (typeof mod.bootstrapLanguageModule !== "function") continue;
+
+            const bootstrapFn = mod.bootstrapLanguageModule as (
+                ctx: LanguageModuleBootstrapCtx,
+            ) => Promise<void> | void;
+
+            const moduleCtx: LanguageModuleBootstrapCtx = {
+                ...baseCtx,
+                gateway: this,
+                languageCode: entry,
+                moduleRoot: path.join(modulesRoot, entry),
+            };
+
+            try {
+                await bootstrapFn(moduleCtx);
+            } catch (err) {
+                baseCtx.log?.(
+                    "error",
+                    `Study gateway: language module "${entry}" bootstrap failed — skipping.`,
+                    {
+                        component: "study-gateway",
+                        languageModule: entry,
                         error: err instanceof Error ? err.message : String(err),
                     },
                 );

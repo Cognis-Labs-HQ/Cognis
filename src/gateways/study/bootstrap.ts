@@ -8,8 +8,18 @@ import { requireAuth } from "../../api/auth/guard.js";
 import { CoreStudyGateway } from "./gateway.js";
 
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
+const LANGUAGE_MODULES_ROOT = path.resolve(
+    GATEWAY_ROOT,
+    "../../../modules/study/languages",
+);
 
-export type { StudyAdapterBootstrapCtx, StudyAdapter } from "./gateway.js";
+export type {
+    StudyAdapterBootstrapCtx,
+    StudyAdapter,
+    LanguageModule,
+    LanguageChildComponent,
+    LanguageModuleBootstrapCtx,
+} from "./gateway.js";
 
 /**
  * Route handler for study adapter management — mirrors the social gateway
@@ -32,6 +42,19 @@ function createStudyAdapterRoutes(
             res.end(JSON.stringify({ data: gateway.listAdapters() }));
             return true;
         }
+
+        const modulesMatch = url.pathname.match(
+            /^\/api\/v1\/study\/languages\/([^/]+)\/modules$/,
+        );
+        if (modulesMatch && req.method === "GET") {
+            if (!requireAuth(req, res)) return true;
+            const languageCode = decodeURIComponent(modulesMatch[1]);
+            const components = gateway.listChildComponents(languageCode);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: components }));
+            return true;
+        }
+
         return false;
     };
 }
@@ -75,6 +98,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterCount: gateway.listAdapters().length,
     });
 
+    await gateway.discoverLanguageModules(LANGUAGE_MODULES_ROOT);
+    ctx.log?.("info", "Study gateway: language modules discovered.", {
+        component: "study-gateway",
+        modulesRoot: LANGUAGE_MODULES_ROOT,
+    });
+
+    await gateway.bootstrapLanguageModules(LANGUAGE_MODULES_ROOT, {
+        registerChildRoute: (handler) =>
+            ctx.routeRegistry.register(handler, "study"),
+        registerStaticDir: (prefix, dir) =>
+            ctx.uiRegistry?.registerStaticDir(prefix, dir),
+        log: ctx.log,
+    });
+
+    ctx.log?.("info", "Study gateway: language modules bootstrapped.", {
+        component: "study-gateway",
+    });
+
     ctx.uiRegistry?.registerStaticDir(
         "gateways/study",
         path.join(GATEWAY_ROOT, "ui"),
@@ -91,7 +132,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.0.0",
+        version: "1.1.0",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",
