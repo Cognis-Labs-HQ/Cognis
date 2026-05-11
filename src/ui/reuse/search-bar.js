@@ -205,11 +205,12 @@ export function openSearchPopup({
 }) {
     const existingOverlay = document.querySelector(".search-popup-overlay");
     if (existingOverlay) {
-        existingOverlay.remove();
+        existingOverlay.__closeSearchPopup?.();
     }
 
     let debounceTimer = null;
     let currentQuery = "";
+    const eventController = new AbortController();
 
     const overlay = document.createElement("div");
     overlay.className = "search-popup-overlay";
@@ -237,10 +238,12 @@ export function openSearchPopup({
 
     const closeOverlay = () => {
         clearTimeout(debounceTimer);
-        document.removeEventListener("keydown", onKeyDown);
+        eventController.abort();
         overlay.remove();
         onClose?.();
     };
+
+    overlay.__closeSearchPopup = closeOverlay;
 
     const onKeyDown = (event) => {
         if (event.key === "Escape") {
@@ -273,13 +276,19 @@ export function openSearchPopup({
         );
     });
 
-    overlay.addEventListener("mousedown", (event) => {
-        if (event.target === overlay) {
-            closeOverlay();
-        }
-    });
+    overlay.addEventListener(
+        "mousedown",
+        (event) => {
+            if (event.target === overlay) {
+                closeOverlay();
+            }
+        },
+        { signal: eventController.signal },
+    );
 
-    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown, {
+        signal: eventController.signal,
+    });
     requestAnimationFrame(() => input.focus());
 
     return closeOverlay;

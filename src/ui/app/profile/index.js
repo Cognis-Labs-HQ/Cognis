@@ -1222,6 +1222,9 @@ export async function mount(rootEl, { signal } = {}) {
         5,
         Math.ceil(posts.length * 0.85 + 4),
     );
+    // The hero needs extra rows for banner + identity stack; full-banner mode
+    // needs 7 rows so the overlaid card cluster clears the taller banner, while
+    // half-banner mode is comfortable at 5 rows.
     const heroRowCount = bannerHeight === "full" ? 7 : 5;
 
     elements = [
