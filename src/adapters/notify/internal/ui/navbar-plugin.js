@@ -483,12 +483,19 @@ function buildButton(i18n) {
     wrap.appendChild(btn);
     wrap.appendChild(panel);
 
-    const mobileBackdrop = document.createElement("button");
+    const mobileBackdrop = document.createElement("div");
     mobileBackdrop.className = "notification-mobile-backdrop";
-    mobileBackdrop.type = "button";
+    mobileBackdrop.setAttribute("role", "button");
+    mobileBackdrop.tabIndex = 0;
     mobileBackdrop.hidden = true;
     mobileBackdrop.setAttribute("aria-label", i18n.t("ui.reuse.popup.close"));
     mobileBackdrop.addEventListener("click", () => closePanel());
+    mobileBackdrop.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            closePanel();
+        }
+    });
     mobileBackdropEl = mobileBackdrop;
     wrap.appendChild(mobileBackdrop);
 

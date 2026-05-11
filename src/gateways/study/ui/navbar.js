@@ -67,27 +67,28 @@ async function handleStudyButtonClick() {
     if (action !== "study") return;
     const select = document.getElementById("study-language-select");
     const selectedCode = select?.value;
-    if (selectedCode) {
-        try {
-            const modulesResponse = await apiFetch(
-                `/api/v1/study/languages/${encodeURIComponent(selectedCode)}/modules`,
-            );
-            if (modulesResponse.ok) {
-                const modulesPayload = await modulesResponse.json();
-                const firstModule = Array.isArray(modulesPayload?.data)
-                    ? modulesPayload.data[0]
-                    : null;
-                const firstPageUrl = String(firstModule?.pageUrl ?? "").trim();
-                if (firstPageUrl) {
-                    navigateTo(firstPageUrl);
-                    return;
-                }
-            }
-        } catch {
-            // Fall back to language root below.
+    if (!selectedCode) return;
+    try {
+        const modulesResponse = await apiFetch(
+            `/api/v1/study/languages/${encodeURIComponent(selectedCode)}/modules`,
+        );
+        if (!modulesResponse.ok) {
+            navigateTo(`/study/${encodeURIComponent(selectedCode)}`);
+            return;
         }
-        navigateTo(`/study/${encodeURIComponent(selectedCode)}`);
+        const modulesPayload = await modulesResponse.json();
+        const firstModule = Array.isArray(modulesPayload?.data)
+            ? modulesPayload.data[0]
+            : null;
+        const firstPageUrl = String(firstModule?.pageUrl ?? "").trim();
+        if (firstPageUrl) {
+            navigateTo(firstPageUrl);
+            return;
+        }
+    } catch {
+        // Fall back to language root below.
     }
+    navigateTo(`/study/${encodeURIComponent(selectedCode)}`);
 }
 
 const studyBtn = createStudyNavButton();

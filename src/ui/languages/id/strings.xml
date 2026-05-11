@@ -244,6 +244,7 @@
   <string name="ui.app.register.submit">Buat akun</string>
   <string name="ui.app.register.closed">Pendaftaran terbuka saat ini dinonaktifkan.</string>
   <string name="ui.app.register.success">Akun berhasil dibuat. Mengalihkan ke login…</string>
+  <string name="ui.app.register.reason.session_cleared">Sesi login yang ada telah dihapus sebelum memuat halaman pendaftaran.</string>
   <string name="ui.app.register.verify_email_prompt">Kode verifikasi telah dikirim ke {email}. Masukkan di bawah untuk mengonfirmasi alamat Anda.</string>
   <string name="ui.app.register.error.generic">Tidak dapat menyelesaikan registrasi.</string>
   <string name="ui.app.register.error.invalid_token">Token undangan ini tidak valid atau sudah kedaluwarsa.</string>

@@ -39,7 +39,7 @@ const hadStoredSession = await resetAuthSessionForRegister();
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.register");
 if (hadStoredSession) {
-    showToast(i18n.t("ui.app.login.reason.session_expired"), {
+    showToast(i18n.t("ui.app.register.reason.session_cleared"), {
         variant: "info",
     });
 }

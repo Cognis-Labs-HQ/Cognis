@@ -244,6 +244,7 @@
   <string name="ui.app.register.submit">Create account</string>
   <string name="ui.app.register.closed">Open registration is currently disabled.</string>
   <string name="ui.app.register.success">Account created. Redirecting to login…</string>
+  <string name="ui.app.register.reason.session_cleared">Existing login session was cleared before loading registration.</string>
   <string name="ui.app.register.verify_email_prompt">A verification code was sent to {email}. Enter it below to confirm your address.</string>
   <string name="ui.app.register.error.generic">Could not complete registration.</string>
   <string name="ui.app.register.error.invalid_token">This invitation token is invalid or has expired.</string>

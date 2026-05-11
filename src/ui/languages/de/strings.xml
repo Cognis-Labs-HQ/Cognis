@@ -244,6 +244,7 @@
   <string name="ui.app.register.submit">Konto erstellen</string>
   <string name="ui.app.register.closed">Die offene Registrierung ist derzeit deaktiviert.</string>
   <string name="ui.app.register.success">Konto erstellt. Weiterleitung zur Anmeldung…</string>
+  <string name="ui.app.register.reason.session_cleared">Eine bestehende Anmeldesitzung wurde vor dem Laden der Registrierung gelöscht.</string>
   <string name="ui.app.register.verify_email_prompt">Ein Bestätigungscode wurde an {email} gesendet. Gib ihn unten ein, um deine Adresse zu bestätigen.</string>
   <string name="ui.app.register.error.generic">Registrierung konnte nicht abgeschlossen werden.</string>
   <string name="ui.app.register.error.invalid_token">Dieses Einladungs-Token ist ungültig oder abgelaufen.</string>

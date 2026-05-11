@@ -200,7 +200,8 @@ export class CoreStudyGateway {
     getAdapterConfig(adapterId: string): Record<string, unknown> | null {
         const adapter = this.registeredAdapters.get(adapterId);
         if (!adapter) return null;
-        return adapter.getConfig?.() ?? {};
+        if (typeof adapter.getConfig !== "function") return null;
+        return adapter.getConfig();
     }
 
     async saveAdapterConfig(
@@ -221,6 +222,8 @@ export class CoreStudyGateway {
         }
 
         for (const entry of entries.sort()) {
+            // Legacy adapter is intentionally skipped because Japanese now ships
+            // as a Study language module (see src/modules/study-language-ja/).
             if (entry === "japanese") continue;
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
             try {
@@ -253,6 +256,8 @@ export class CoreStudyGateway {
         }
 
         for (const entry of entries.sort()) {
+            // Legacy adapter is intentionally skipped because Japanese now ships
+            // as a Study language module (see src/modules/study-language-ja/).
             if (entry === "japanese") continue;
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
 

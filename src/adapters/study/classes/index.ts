@@ -20,6 +20,8 @@ export function createStudyAdapter(): StudyAdapter {
     return {
         adapterId: "classes",
         adapterName: "Classes",
+        getConfig: () => ({}),
+        setConfig: () => {},
         isConfigured: () => adapterReady,
     };
 }

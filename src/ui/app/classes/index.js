@@ -188,9 +188,9 @@ export async function mount(root, { signal } = {}) {
             section.addEventListener(
                 "click",
                 async (event) => {
-                    const eventTarget = event.target;
-                    if (!(eventTarget instanceof Element)) return;
-                    const chatButton = eventTarget.closest(".classes-chat-btn");
+                    if (!(event.target instanceof Element)) return;
+                    const chatButton =
+                        event.target.closest(".classes-chat-btn");
                     if (chatButton) {
                         const classId = chatButton.dataset.classId;
                         navigateTo(
@@ -199,7 +199,7 @@ export async function mount(root, { signal } = {}) {
                         return;
                     }
 
-                    const reviewButton = eventTarget.closest(
+                    const reviewButton = event.target.closest(
                         ".classes-review-btn",
                     );
                     if (reviewButton) {
@@ -223,13 +223,11 @@ export async function mount(root, { signal } = {}) {
                                 (isTeacher ? renderClassList() : "") +
                                 renderRequestForm() +
                                 renderPendingRequests();
-                            section.dataset.bound = "false";
-                            classListElement.onRender();
                         }
                         return;
                     }
 
-                    const requestButton = eventTarget.closest(
+                    const requestButton = event.target.closest(
                         ".classes-request-btn",
                     );
                     if (!requestButton) return;

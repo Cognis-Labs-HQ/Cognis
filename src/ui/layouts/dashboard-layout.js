@@ -103,7 +103,7 @@ function bindTopbarActions() {
         });
     };
     applyTeacherVisibility();
-    void (async () => {
+    (async () => {
         try {
             const accountId = localStorage.getItem("cognis_account");
             const accessToken = localStorage.getItem("cognis_access_token");
