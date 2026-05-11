@@ -259,12 +259,24 @@ export class DbClassesStore {
                     row.code,
                     row.name ?? "",
                     row.flag ?? "",
-                    row.available !== false,
-                    row.active === true,
+                    row.available !== false ? 1 : 0,
+                    row.active ? 1 : 0,
                     row.sortOrder ?? 0,
                 ],
             );
         } else {
+            const availableValue =
+                this.dbType === "postgresql"
+                    ? row.available !== false
+                    : row.available !== false
+                      ? 1
+                      : 0;
+            const activeValue =
+                this.dbType === "postgresql"
+                    ? row.active === true
+                    : row.active
+                      ? 1
+                      : 0;
             await this.db.execute(
                 `INSERT INTO study_languages (code, name, flag, available, active, sort_order)
                  VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)}, ${this.placeholder(5)}, ${this.placeholder(6)})
@@ -278,8 +290,8 @@ export class DbClassesStore {
                     row.code,
                     row.name ?? "",
                     row.flag ?? "",
-                    row.available !== false ? 1 : 0,
-                    row.active ? 1 : 0,
+                    availableValue,
+                    activeValue,
                     row.sortOrder ?? 0,
                 ],
             );
