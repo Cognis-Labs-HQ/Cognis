@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
 export type {
     AccountRole,
     AccountVisibility,
@@ -50,55 +51,85 @@ function rowToPost(row: any): Post {
     };
 }
 
+const JOINED_PROFILE_COLUMNS: Array<{ col: string; as: string }> = [
+    { col: "p.account_id", as: "account_id" },
+    { col: "p.handle", as: "handle" },
+    { col: "p.display_name", as: "display_name" },
+    { col: "p.role", as: "role" },
+    { col: "p.bio", as: "bio" },
+    { col: "p.location", as: "location" },
+    { col: "p.website", as: "website" },
+    { col: "p.avatar_key", as: "avatar_key" },
+    { col: "p.banner_key", as: "banner_key" },
+    { col: "p.visibility", as: "visibility" },
+    { col: "p.created_at", as: "created_at" },
+    { col: "p.updated_at", as: "updated_at" },
+];
+
+const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
+    {
+        name: "account_profiles",
+        columns: [
+            { name: "account_id", type: "text", primaryKey: true },
+            { name: "handle", type: "text", notNull: true, unique: true },
+            { name: "display_name", type: "text" },
+            { name: "role", type: "text", notNull: true, default: "user" },
+            { name: "bio", type: "text" },
+            { name: "location", type: "text" },
+            { name: "website", type: "text" },
+            { name: "avatar_key", type: "text" },
+            { name: "banner_key", type: "text" },
+            { name: "visibility", type: "text", notNull: true, default: "hidden" },
+            { name: "created_at", type: "timestamp", notNull: true, default: "now" },
+            { name: "updated_at", type: "timestamp", notNull: true, default: "now" },
+        ],
+    },
+    {
+        name: "account_follows",
+        columns: [
+            { name: "follower_id", type: "text", notNull: true },
+            { name: "following_id", type: "text", notNull: true },
+            { name: "created_at", type: "timestamp", notNull: true, default: "now" },
+        ],
+        primaryKey: ["follower_id", "following_id"],
+    },
+    {
+        name: "account_blocks",
+        columns: [
+            { name: "blocker_id", type: "text", notNull: true },
+            { name: "blocked_id", type: "text", notNull: true },
+            { name: "created_at", type: "timestamp", notNull: true, default: "now" },
+        ],
+        primaryKey: ["blocker_id", "blocked_id"],
+    },
+    {
+        name: "posts",
+        columns: [
+            { name: "id", type: "text", primaryKey: true },
+            { name: "account_id", type: "text", notNull: true },
+            { name: "title", type: "text" },
+            { name: "content", type: "text", notNull: true },
+            { name: "visibility", type: "text", notNull: true, default: "community" },
+            { name: "created_at", type: "timestamp", notNull: true, default: "now" },
+            { name: "updated_at", type: "timestamp", notNull: true, default: "now" },
+        ],
+    },
+    {
+        name: "file_size_limits",
+        columns: [
+            { name: "category", type: "text", primaryKey: true },
+            { name: "max_bytes", type: "bigint", notNull: true },
+        ],
+    },
+];
+
 export class DbProfileStore implements ProfileCreateStore {
     constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_profiles (
-  account_id TEXT PRIMARY KEY,
-  handle TEXT NOT NULL UNIQUE,
-  display_name TEXT,
-  role TEXT NOT NULL DEFAULT 'user',
-  bio TEXT,
-  location TEXT,
-  website TEXT,
-  avatar_key TEXT,
-  banner_key TEXT,
-  visibility TEXT NOT NULL DEFAULT 'hidden',
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-)`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_follows (
-  follower_id TEXT NOT NULL,
-  following_id TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (follower_id, following_id),
-  FOREIGN KEY (follower_id) REFERENCES accounts(id) ON DELETE CASCADE,
-  FOREIGN KEY (following_id) REFERENCES accounts(id) ON DELETE CASCADE
-)`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_blocks (
-  blocker_id TEXT NOT NULL,
-  blocked_id TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (blocker_id, blocked_id),
-  FOREIGN KEY (blocker_id) REFERENCES accounts(id) ON DELETE CASCADE,
-  FOREIGN KEY (blocked_id) REFERENCES accounts(id) ON DELETE CASCADE
-)`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS posts (
-  id TEXT PRIMARY KEY,
-  account_id TEXT NOT NULL,
-  title TEXT,
-  content TEXT NOT NULL,
-  visibility TEXT NOT NULL DEFAULT 'community',
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-)`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS file_size_limits (
-  category TEXT PRIMARY KEY,
-  max_bytes BIGINT NOT NULL
-)`);
+        for (const def of SCHEMA_TABLE_DEFS) {
+            await this.db.ensureTable(def);
+        }
         await this.seedFileSizeLimits();
     }
 
@@ -133,10 +164,12 @@ export class DbProfileStore implements ProfileCreateStore {
                 conflict: { action: "ignore" },
             });
             if (displayName) {
-                await this.db.execute(
-                    `UPDATE account_profiles SET display_name = ? WHERE account_id = ?`,
-                    [displayName, accountId],
-                );
+                await this.db.executeCommand({
+                    option: "UPDATE",
+                    table: "account_profiles",
+                    set: { display_name: displayName },
+                    where: [{ column: "account_id", value: accountId }],
+                });
             }
             return this.getProfile(accountId);
         } catch {
@@ -145,19 +178,21 @@ export class DbProfileStore implements ProfileCreateStore {
     }
 
     async getProfile(accountId: string): Promise<AccountProfile | null> {
-        const result = await this.db.execute(
-            `SELECT * FROM account_profiles WHERE account_id = ?`,
-            [accountId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+            where: [{ column: "account_id", value: accountId }],
+        });
         const row = result.rows?.[0];
         return row ? rowToProfile(row) : null;
     }
 
     async getProfileByHandle(handle: string): Promise<AccountProfile | null> {
-        const result = await this.db.execute(
-            `SELECT * FROM account_profiles WHERE handle = ?`,
-            [handle],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+            where: [{ column: "handle", value: handle }],
+        });
         const row = result.rows?.[0];
         return row ? rowToProfile(row) : null;
     }
@@ -167,18 +202,38 @@ export class DbProfileStore implements ProfileCreateStore {
         limit: number = 10,
     ): Promise<AccountProfile[]> {
         const pattern = query.toLowerCase().replace(/[\\%_]/g, "\\$&") + "%";
-        const result = await this.db.execute(
-            `SELECT * FROM account_profiles
-       WHERE visibility != 'hidden'
-         AND (
-           LOWER(handle) LIKE ? ESCAPE '\\'
-           OR LOWER(COALESCE(display_name, '')) LIKE ? ESCAPE '\\'
-         )
-       ORDER BY handle ASC
-       LIMIT ?`,
-            [pattern, pattern, limit],
-        );
-        return (result.rows ?? []).map(rowToProfile);
+
+        const byHandle = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+            where: [
+                { column: "visibility", operator: "!=", value: "hidden" },
+                { column: "handle", operator: "LIKE", value: pattern, escapeChar: "\\" },
+            ],
+        });
+
+        const byDisplayName = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+            where: [
+                { column: "visibility", operator: "!=", value: "hidden" },
+                { column: "display_name", operator: "LIKE", value: pattern, escapeChar: "\\" },
+            ],
+        });
+
+        const seen = new Set<string>();
+        const merged: AccountProfile[] = [];
+
+        for (const row of [...(byHandle.rows ?? []), ...(byDisplayName.rows ?? [])]) {
+            const profile = rowToProfile(row);
+            if (!seen.has(profile.accountId)) {
+                seen.add(profile.accountId);
+                merged.push(profile);
+            }
+        }
+
+        merged.sort((profileA, profileB) => profileA.handle.localeCompare(profileB.handle));
+        return merged.slice(0, limit);
     }
 
     async updateProfile(
@@ -206,40 +261,43 @@ export class DbProfileStore implements ProfileCreateStore {
             displayName: "display_name",
         };
 
-        const setClauses: string[] = [];
-        const params: unknown[] = [];
+        const setRecord: Record<string, unknown> = {};
 
         for (const [key, col] of Object.entries(fieldMap)) {
             if (key in updates) {
-                setClauses.push(`${col} = ?`);
-                params.push((updates as any)[key] ?? null);
+                setRecord[col] = (updates as any)[key] ?? null;
             }
         }
 
-        if (setClauses.length === 0) return this.getProfile(accountId);
+        if (Object.keys(setRecord).length === 0) return this.getProfile(accountId);
 
-        setClauses.push(`updated_at = CURRENT_TIMESTAMP`);
-        params.push(accountId);
+        setRecord.updated_at = new Date().toISOString();
 
-        await this.db.execute(
-            `UPDATE account_profiles SET ${setClauses.join(", ")} WHERE account_id = ?`,
-            params,
-        );
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "account_profiles",
+            set: setRecord,
+            where: [{ column: "account_id", value: accountId }],
+        });
         return this.getProfile(accountId);
     }
 
     async setRoleByHandle(handle: string, role: AccountRole): Promise<void> {
-        await this.db.execute(
-            `UPDATE account_profiles SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE handle = ?`,
-            [role, handle],
-        );
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "account_profiles",
+            set: { role, updated_at: new Date().toISOString() },
+            where: [{ column: "handle", value: handle }],
+        });
     }
 
     async getRole(accountId: string): Promise<AccountRole> {
-        const result = await this.db.execute(
-            `SELECT role FROM account_profiles WHERE account_id = ?`,
-            [accountId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+            columns: ["role"],
+            where: [{ column: "account_id", value: accountId }],
+        });
         return (result.rows?.[0]?.role as AccountRole) ?? "user";
     }
 
@@ -253,58 +311,89 @@ export class DbProfileStore implements ProfileCreateStore {
     }
 
     async unfollow(followerId: string, followingId: string): Promise<void> {
-        await this.db.execute(
-            `DELETE FROM account_follows WHERE follower_id = ? AND following_id = ?`,
-            [followerId, followingId],
-        );
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "account_follows",
+            where: [
+                { column: "follower_id", value: followerId },
+                { column: "following_id", value: followingId },
+            ],
+        });
     }
 
     async isFollowing(
         followerId: string,
         followingId: string,
     ): Promise<boolean> {
-        const result = await this.db.execute(
-            `SELECT 1 FROM account_follows WHERE follower_id = ? AND following_id = ?`,
-            [followerId, followingId],
-        );
-        return Boolean(result.rows?.length);
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_follows",
+            count: true,
+            where: [
+                { column: "follower_id", value: followerId },
+                { column: "following_id", value: followingId },
+            ],
+        });
+        return Number(result.rows?.[0]?.cnt ?? 0) > 0;
     }
 
     async getFollowers(accountId: string): Promise<AccountProfile[]> {
-        const result = await this.db.execute(
-            `SELECT p.* FROM account_follows f
-       JOIN account_profiles p ON p.account_id = f.follower_id
-       WHERE f.following_id = ?
-       ORDER BY f.created_at DESC`,
-            [accountId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_follows",
+            alias: "f",
+            columns: JOINED_PROFILE_COLUMNS,
+            joins: [
+                {
+                    type: "INNER",
+                    table: "account_profiles",
+                    alias: "p",
+                    on: { leftColumn: "p.account_id", rightColumn: "f.follower_id" },
+                },
+            ],
+            where: [{ column: "f.following_id", value: accountId }],
+            orderBy: [{ column: "f.created_at", direction: "DESC" }],
+        });
         return (result.rows ?? []).map(rowToProfile);
     }
 
     async getFollowing(accountId: string): Promise<AccountProfile[]> {
-        const result = await this.db.execute(
-            `SELECT p.* FROM account_follows f
-       JOIN account_profiles p ON p.account_id = f.following_id
-       WHERE f.follower_id = ?
-       ORDER BY f.created_at DESC`,
-            [accountId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_follows",
+            alias: "f",
+            columns: JOINED_PROFILE_COLUMNS,
+            joins: [
+                {
+                    type: "INNER",
+                    table: "account_profiles",
+                    alias: "p",
+                    on: { leftColumn: "p.account_id", rightColumn: "f.following_id" },
+                },
+            ],
+            where: [{ column: "f.follower_id", value: accountId }],
+            orderBy: [{ column: "f.created_at", direction: "DESC" }],
+        });
         return (result.rows ?? []).map(rowToProfile);
     }
 
     async getFollowerCount(accountId: string): Promise<number> {
-        const result = await this.db.execute(
-            `SELECT COUNT(*) AS cnt FROM account_follows WHERE following_id = ?`,
-            [accountId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_follows",
+            count: true,
+            where: [{ column: "following_id", value: accountId }],
+        });
         return Number(result.rows?.[0]?.cnt ?? 0);
     }
 
     async getFollowingCount(accountId: string): Promise<number> {
-        const result = await this.db.execute(
-            `SELECT COUNT(*) AS cnt FROM account_follows WHERE follower_id = ?`,
-            [accountId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_follows",
+            count: true,
+            where: [{ column: "follower_id", value: accountId }],
+        });
         return Number(result.rows?.[0]?.cnt ?? 0);
     }
 
@@ -320,18 +409,27 @@ export class DbProfileStore implements ProfileCreateStore {
     }
 
     async unblock(blockerId: string, blockedId: string): Promise<void> {
-        await this.db.execute(
-            `DELETE FROM account_blocks WHERE blocker_id = ? AND blocked_id = ?`,
-            [blockerId, blockedId],
-        );
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "account_blocks",
+            where: [
+                { column: "blocker_id", value: blockerId },
+                { column: "blocked_id", value: blockedId },
+            ],
+        });
     }
 
     async isBlocked(blockerId: string, blockedId: string): Promise<boolean> {
-        const result = await this.db.execute(
-            `SELECT 1 FROM account_blocks WHERE blocker_id = ? AND blocked_id = ?`,
-            [blockerId, blockedId],
-        );
-        return Boolean(result.rows?.length);
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_blocks",
+            count: true,
+            where: [
+                { column: "blocker_id", value: blockerId },
+                { column: "blocked_id", value: blockedId },
+            ],
+        });
+        return Number(result.rows?.[0]?.cnt ?? 0) > 0;
     }
 
     async createPost(
@@ -339,58 +437,68 @@ export class DbProfileStore implements ProfileCreateStore {
         input: { title?: string; content: string; visibility: PostVisibility },
     ): Promise<Post> {
         const id = randomUUID();
-        await this.db.execute(
-            `INSERT INTO posts (id, account_id, title, content, visibility)
-       VALUES (?, ?, ?, ?, ?)`,
-            [
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "posts",
+            values: {
                 id,
-                accountId,
-                input.title ?? null,
-                input.content,
-                input.visibility,
-            ],
-        );
-        const result = await this.db.execute(
-            `SELECT * FROM posts WHERE id = ?`,
-            [id],
-        );
+                account_id: accountId,
+                title: input.title ?? null,
+                content: input.content,
+                visibility: input.visibility,
+            },
+        });
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "posts",
+            where: [{ column: "id", value: id }],
+        });
         return rowToPost(result.rows![0]);
     }
 
     async getPostsByAccount(accountId: string): Promise<Post[]> {
-        const result = await this.db.execute(
-            `SELECT * FROM posts WHERE account_id = ? ORDER BY created_at DESC`,
-            [accountId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "posts",
+            where: [{ column: "account_id", value: accountId }],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+        });
         return (result.rows ?? []).map(rowToPost);
     }
 
     async getPostById(postId: string): Promise<Post | null> {
-        const result = await this.db.execute(
-            `SELECT * FROM posts WHERE id = ?`,
-            [postId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "posts",
+            where: [{ column: "id", value: postId }],
+        });
         const row = result.rows?.[0];
         return row ? rowToPost(row) : null;
     }
 
     async deletePost(postId: string): Promise<boolean> {
-        const result = await this.db.execute(`DELETE FROM posts WHERE id = ?`, [
-            postId,
-        ]);
+        const result = await this.db.executeCommand({
+            option: "DELETE",
+            table: "posts",
+            where: [{ column: "id", value: postId }],
+        });
         return (result.rowCount ?? 0) > 0;
     }
 
     async getFileSizeLimit(category: string): Promise<number> {
-        const result = await this.db.execute(
-            `SELECT max_bytes FROM file_size_limits WHERE category = ?`,
-            [category],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "file_size_limits",
+            columns: ["max_bytes"],
+            where: [{ column: "category", value: category }],
+        });
         if (result.rows?.length) return Number(result.rows[0].max_bytes);
-        const fallback = await this.db.execute(
-            `SELECT max_bytes FROM file_size_limits WHERE category = ?`,
-            ["global"],
-        );
+        const fallback = await this.db.executeCommand({
+            option: "SELECT",
+            table: "file_size_limits",
+            columns: ["max_bytes"],
+            where: [{ column: "category", value: "global" }],
+        });
         return Number(fallback.rows?.[0]?.max_bytes ?? 10_485_760);
     }
 
@@ -407,11 +515,14 @@ export class DbProfileStore implements ProfileCreateStore {
     }
 
     async getAllFileSizeLimits(): Promise<FileSizeLimit[]> {
-        const result = await this.db.execute(
-            "SELECT category, max_bytes FROM file_size_limits ORDER BY category",
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "file_size_limits",
+            columns: ["category", "max_bytes"],
+            orderBy: [{ column: "category" }],
+        });
         return (result.rows ?? []).map((row) => ({
-            category: row.category,
+            category: row.category as string,
             maxBytes: Number(row.max_bytes),
         }));
     }

@@ -9,6 +9,8 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Eliminate all raw `execute()` calls from `DbProfileStore`** (`src/adapters/db/reuse/profile-store.ts`). Replaced every raw SQL `execute()` call with `executeCommand()` (DML), `ensureTable()` (DDL), or JS-level merge logic. `ensureSchema()` now uses five structured `StructuredDbTableDef` definitions. `searchProfiles()` issues two separate LIKE queries (by handle and display_name) then merges, deduplicates, sorts, and slices in JS. Join queries (`getFollowers`, `getFollowing`) use the DSL `joins` field with explicit aliased column projections. `updateProfile()` and `setRoleByHandle()` build a `set` record and pass it to `executeCommand UPDATE`. Added `import type { StructuredDbTableDef }` from the DB gateway reuse layer. ([INSERT_SHA](https://github.com/le-firehawk/Cognis/commit/INSERT_SHA))
+
 - **Provider-neutral SQL in gateway stores** (`src/adapters/db/reuse/profile-store.ts`, `src/adapters/social/messages/store.ts`, `src/adapters/study/classes/store.ts`, `src/adapters/registration/token/index.ts`, `src/adapters/registration/invite/index.ts`). Removed all provider-specific SQL branching (`$N` placeholders, `NOW()`, `INSERT IGNORE`, `ON DUPLICATE KEY`, `BOOLEAN` defaults). Unified to `?` placeholders (translated internally by each adapter), `CURRENT_TIMESTAMP`, portable DDL (`TEXT`, `INTEGER`, `TIMESTAMP`), and `executeCommand({…})` for structured CRUD operations. Constructors no longer accept a `dbType` parameter. Tests updated to reflect portable schema assertions and `executeCommand`-based mocks. ([2630730](https://github.com/le-firehawk/Cognis/commit/2630730))
 
 ### Added
