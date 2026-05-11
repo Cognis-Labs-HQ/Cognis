@@ -1,7 +1,5 @@
-import type {
-    DbExecutor,
-    SupportedDbType,
-} from "../../adapters/db/reuse/account-store.js";
+import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { SupportedDbType } from "../db/executor.js";
 
 export interface AdapterConfigStore {
     getConfig(adapterId: string): Promise<Record<string, unknown> | null>;
