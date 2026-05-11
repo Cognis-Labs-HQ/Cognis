@@ -282,8 +282,8 @@
   <string name="ui.app.users.delete_user">Hapus pengguna</string>
   <string name="ui.app.users.delete_permanent_warning">Tindakan ini bersifat permanen dan tidak dapat dibatalkan.</string>
   <string name="ui.app.users.invite_email">Alamat email</string>
-  <string name="ui.app.users.invite_sent">Undangan terkirim.</string>
-  <string name="ui.app.users.invite_failed">Gagal mengirim undangan.</string>
+  <string name="ui.reuse.registration.invite_sent">Undangan terkirim.</string>
+  <string name="ui.reuse.registration.invite_failed">Gagal mengirim undangan.</string>
   <string name="ui.app.users.invite_email_taken">Alamat email ini sudah terdaftar.</string>
   <string name="ui.app.users.no_unverified_email">Tidak ada alamat email yang belum diverifikasi.</string>
   <string name="ui.app.users.role_updated">Peran diperbarui.</string>
@@ -302,8 +302,6 @@
   <string name="ui.app.invite.status_redeemed">Ditukar</string>
   <string name="ui.app.invite.status_revoked">Dicabut</string>
   <string name="ui.app.invite.status_expired">Kedaluwarsa</string>
-  <string name="ui.app.invite.invite_sent">Undangan terkirim.</string>
-  <string name="ui.app.invite.invite_failed">Gagal mengirim undangan.</string>
   <string name="ui.app.invite.email_domain_not_allowed">Domain email ini tidak diizinkan. Gunakan alamat dari domain yang diperbolehkan.</string>
   <string name="ui.app.invite.revoke_success">Undangan berhasil dibatalkan.</string>
   <string name="ui.app.invite.revoke_failed">Gagal membatalkan undangan.</string>
@@ -370,7 +368,6 @@
   <string name="ui.app.profile.post_visibility_hint">Beberapa opsi visibilitas postingan dikunci berdasarkan visibilitas profil Anda.</string>
   <string name="ui.app.profile.edit_profile">Edit Profil</string>
   <string name="ui.app.profile.its_you">Itu Anda</string>
-  <string name="ui.app.profile.close">Tutup</string>
   <string name="ui.app.profile.photo_set">Unggah foto</string>
   <string name="ui.app.profile.photo_remove">Hapus foto</string>
   <string name="ui.app.profile.followers_stat">pengikut</string>

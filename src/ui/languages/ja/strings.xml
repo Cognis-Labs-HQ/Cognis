@@ -282,8 +282,8 @@
   <string name="ui.app.users.delete_user">ユーザーを削除</string>
   <string name="ui.app.users.delete_permanent_warning">この操作は永久的であり、取り消すことはできません。</string>
   <string name="ui.app.users.invite_email">メールアドレス</string>
-  <string name="ui.app.users.invite_sent">招待を送信しました。</string>
-  <string name="ui.app.users.invite_failed">招待の送信に失敗しました。</string>
+  <string name="ui.reuse.registration.invite_sent">招待を送信しました。</string>
+  <string name="ui.reuse.registration.invite_failed">招待の送信に失敗しました。</string>
   <string name="ui.app.users.invite_email_taken">このメールアドレスはすでに登録されています。</string>
   <string name="ui.app.users.no_unverified_email">未認証のメールアドレスが見つかりません。</string>
   <string name="ui.app.users.role_updated">ロールが更新されました。</string>
@@ -302,8 +302,6 @@
   <string name="ui.app.invite.status_redeemed">引き換え済み</string>
   <string name="ui.app.invite.status_revoked">取り消し済み</string>
   <string name="ui.app.invite.status_expired">期限切れ</string>
-  <string name="ui.app.invite.invite_sent">招待を送信しました。</string>
-  <string name="ui.app.invite.invite_failed">招待の送信に失敗しました。</string>
   <string name="ui.app.invite.email_domain_not_allowed">このメールドメインは許可されていません。許可されているドメインのアドレスを使用してください。</string>
   <string name="ui.app.invite.revoke_success">招待を取り消しました。</string>
   <string name="ui.app.invite.revoke_failed">招待の取り消しに失敗しました。</string>
@@ -370,7 +368,6 @@
   <string name="ui.app.profile.post_visibility_hint">プロフィール公開設定に基づいて一部の投稿公開設定はロックされています。</string>
   <string name="ui.app.profile.edit_profile">プロフィールを編集</string>
   <string name="ui.app.profile.its_you">あなたです</string>
-  <string name="ui.app.profile.close">閉じる</string>
   <string name="ui.app.profile.photo_set">写真をアップロード</string>
   <string name="ui.app.profile.photo_remove">写真を削除</string>
   <string name="ui.app.profile.followers_stat">フォロワー</string>
