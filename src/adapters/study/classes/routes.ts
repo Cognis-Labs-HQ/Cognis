@@ -87,7 +87,7 @@ export function createClassesRoutes(
         };
 
         if (url.pathname === "/api/v1/study/classes" && req.method === "GET") {
-            const claims = requireAuth(req, res, "user");
+            const claims = requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classes = await store.getClassesForTeacher(claims.sub);
             jsonOk(res, classes);

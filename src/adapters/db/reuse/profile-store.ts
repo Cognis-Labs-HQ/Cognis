@@ -248,7 +248,10 @@ export class DbProfileStore implements ProfileCreateStore {
         const result = await this.db.execute(
             `SELECT * FROM account_profiles
              WHERE visibility != 'hidden'
-               AND LOWER(handle) LIKE ${this.p(1)} ESCAPE '\\'
+               AND (
+                 LOWER(handle) LIKE ${this.p(1)} ESCAPE '\\'
+                 OR LOWER(COALESCE(display_name, '')) LIKE ${this.p(1)} ESCAPE '\\'
+               )
              ORDER BY handle ASC
              LIMIT ${this.p(2)}`,
             [pattern, limit],

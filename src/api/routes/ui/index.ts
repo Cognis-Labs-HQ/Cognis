@@ -699,6 +699,45 @@ export function createUiRoutes(
             return true;
         }
 
+        if (url.pathname.startsWith("/static/modules/")) {
+            const urlPath = url.pathname.slice("/static/modules/".length);
+            if (
+                !urlPath ||
+                !/^[a-zA-Z0-9_./-]+$/.test(urlPath) ||
+                urlPath.includes("..")
+            ) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Module asset not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const resolved = uiRegistry?.resolveModulePath(urlPath);
+            if (resolved) {
+                await serveFile(
+                    res,
+                    path.join(resolved.dir, resolved.relPath),
+                    resolveContentType(resolved.relPath),
+                );
+                return true;
+            }
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "not_found",
+                        message: "Module asset not found.",
+                    },
+                }),
+            );
+            return true;
+        }
+
         let relative: string | null = null;
 
         if (url.pathname.startsWith("/assets/")) {

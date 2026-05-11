@@ -24,11 +24,15 @@ export async function mount(root, { signal } = {}) {
 
     let classes = [];
     let pendingRequests = [];
-    const isAdmin = ["admin", "owner"].includes(
-        localStorage.getItem("cognis_role") ?? "",
-    );
+    const storedRole = (localStorage.getItem("cognis_role") ?? "").trim();
+    const isAdmin = storedRole === "admin" || storedRole === "owner";
+    const isTeacher =
+        storedRole === "teacher" ||
+        storedRole === "admin" ||
+        storedRole === "owner";
 
     async function loadClasses() {
+        if (!isTeacher) return;
         try {
             const response = await apiFetch("/api/v1/study/classes");
             if (response.ok) {
@@ -173,7 +177,7 @@ export async function mount(root, { signal } = {}) {
             const section = document.createElement("div");
             section.className = "classes-section";
             section.innerHTML =
-                renderClassList() +
+                (isTeacher ? renderClassList() : "") +
                 renderRequestForm() +
                 renderPendingRequests();
 
@@ -210,7 +214,7 @@ export async function mount(root, { signal } = {}) {
                         if (response.ok) {
                             await loadPendingRequests();
                             section.innerHTML =
-                                renderClassList() +
+                                (isTeacher ? renderClassList() : "") +
                                 renderRequestForm() +
                                 renderPendingRequests();
                         }

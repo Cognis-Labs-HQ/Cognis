@@ -113,8 +113,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     await gateway.bootstrapLanguageModules(LANGUAGE_MODULES_ROOT, {
         registerChildRoute: (handler) =>
             ctx.routeRegistry.register(handler, "study"),
-        registerStaticDir: (prefix, dir) =>
-            ctx.uiRegistry?.registerStaticDir(prefix, dir),
+        registerStaticDir: (prefix, dir) => {
+            if (prefix.startsWith("modules/")) {
+                ctx.uiRegistry?.registerModuleStaticDir(
+                    prefix.slice("modules/".length),
+                    dir,
+                );
+            } else {
+                ctx.uiRegistry?.registerStaticDir(prefix, dir);
+            }
+        },
         log: ctx.log,
     });
 

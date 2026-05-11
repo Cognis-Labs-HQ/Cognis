@@ -440,6 +440,69 @@ function initSearchBar(i18n) {
     wrap.dataset.searchBarBound = "true";
     injectSearchBarStyles();
 
+    const pagesLocalSearchGroup = {
+        category: i18n.t("ui.reuse.navigation"),
+        items: [
+            {
+                id: "page-dashboard",
+                label: i18n.t("ui.reuse.nav.dashboard"),
+                url: "/dashboard",
+            },
+            {
+                id: "page-messages",
+                label: i18n.t("ui.reuse.nav.messages"),
+                url: "/messages",
+            },
+            {
+                id: "page-settings",
+                label: i18n.t("ui.reuse.menu.settings"),
+                url: "/settings",
+            },
+            {
+                id: "page-docs",
+                label: i18n.t("ui.reuse.menu.docs"),
+                url: "/docs",
+            },
+            ...(globalThis.__studyGatewayAvailable
+                ? [
+                      {
+                          id: "page-study",
+                          label: i18n.t("ui.reuse.nav.study"),
+                          url: "/study",
+                      },
+                  ]
+                : []),
+            ...(isTeacherRole()
+                ? [
+                      {
+                          id: "page-classes",
+                          label: i18n.t("ui.reuse.menu.classes"),
+                          url: "/classes",
+                      },
+                  ]
+                : []),
+            ...(isAdminRole()
+                ? [
+                      {
+                          id: "page-administration",
+                          label: i18n.t("ui.reuse.menu.administration"),
+                          url: "/administration",
+                      },
+                      {
+                          id: "page-users",
+                          label: i18n.t("ui.reuse.menu.users"),
+                          url: "/users",
+                      },
+                      {
+                          id: "page-modules",
+                          label: i18n.t("ui.reuse.modules"),
+                          url: "/modules",
+                      },
+                  ]
+                : []),
+        ],
+    };
+
     const settingsLocalSearchGroup = {
         category:
             i18n.t("ui.reuse.menu.administration") +
@@ -472,7 +535,7 @@ function initSearchBar(i18n) {
         endpoint: "/api/v1/search",
         ariaLabel: i18n.t("ui.layout.search.aria"),
         noResultsText: i18n.t("ui.layout.search.no_results"),
-        localGroups: [settingsLocalSearchGroup],
+        localGroups: [pagesLocalSearchGroup, settingsLocalSearchGroup],
         onSelect: (result) => {
             if (result?.handle) {
                 navigateTo(`/profile/${encodeURIComponent(result.handle)}`);

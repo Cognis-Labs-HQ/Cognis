@@ -3108,7 +3108,9 @@ export function createPageComposer(
                         "toolbar-mobile-toggle--drawer-open",
                         open,
                     );
-                    mobileToggleBtn.textContent = open ? "<" : "☰";
+                    mobileToggleBtn.innerHTML = open
+                        ? '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M6 3V6H12L12 10H6L6 13L5 13L0 8L5 3L6 3Z" fill="currentColor"/><path d="M16 2L14.6172 14H14L14 2L16 2Z" fill="currentColor"/></svg>'
+                        : '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M10 3V6H4L4 10H10L10 13L11 13L16 8L11 3L10 3Z" fill="currentColor"/><path d="M0 2L1.38281e-06 14H2L2 2L0 2Z" fill="currentColor"/></svg>';
                     mobileToggleBtn.setAttribute(
                         "aria-label",
                         open
@@ -3118,6 +3120,8 @@ export function createPageComposer(
                 }
 
                 mobileToggleBtn.setAttribute("aria-expanded", "false");
+                mobileToggleBtn.innerHTML =
+                    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M10 3V6H4L4 10H10L10 13L11 13L16 8L11 3L10 3Z" fill="currentColor"/><path d="M0 2L1.38281e-06 14H2L2 2L0 2Z" fill="currentColor"/></svg>';
                 mobileToggleBtn.setAttribute(
                     "aria-label",
                     i18n.t("ui.layout.toolbar.expand"),

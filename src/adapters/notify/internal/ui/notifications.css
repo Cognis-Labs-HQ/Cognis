@@ -365,3 +365,15 @@
 .arrival-toast-dismiss:hover {
     color: var(--text);
 }
+
+@media (max-width: 480px) {
+    .notification-panel {
+        position: fixed;
+        top: auto;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100vw - 24px);
+        max-width: 400px;
+    }
+}

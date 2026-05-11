@@ -233,6 +233,23 @@
     height: 100%;
 }
 
+@media (max-width: 900px) {
+    .messages-page .main-window--with-toolbar {
+        grid-template-columns: 1fr;
+        height: calc(100dvh - 130px);
+    }
+
+    .messages-page .content-panel,
+    .messages-page .content-grid {
+        height: 100%;
+    }
+
+    .messages-page .messages-sidebar-content,
+    .messages-page .messages-thread {
+        height: 100%;
+    }
+}
+
 .messages-thread-header {
     display: flex;
     align-items: center;

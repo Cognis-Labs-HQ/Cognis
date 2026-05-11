@@ -507,6 +507,57 @@ test("GET /static/adapters/social/profile/navbar.js serves profile adapter navba
     assert.match(recorder.body, /registerAvatarProvider/);
 });
 
+test("GET /static/modules/study/languages/ja/components/hiragana-alphabet/app.js serves module assets", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    const hiraganaUiDir = path.resolve(
+        process.cwd(),
+        "src",
+        "modules",
+        "study",
+        "languages",
+        "ja",
+        "components",
+        "hiragana-alphabet",
+        "ui",
+    );
+    uiRegistry.registerModuleStaticDir(
+        "study/languages/ja/components/hiragana-alphabet",
+        hiraganaUiDir,
+    );
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL(
+            "http://localhost/static/modules/study/languages/ja/components/hiragana-alphabet/app.js",
+        ),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    assert.equal(
+        recorder.headers["content-type"],
+        "text/javascript; charset=utf-8",
+    );
+});
+
+test("GET /static/modules/unknown/file.js returns 404 for unregistered module prefix", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/modules/unknown/file.js"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 404);
+});
+
 test("GET /api/v1/ui/navbar-plugins returns registered navbar plugins for authenticated user", async () => {
     const uiRegistry = new StaticUIRegistry();
     uiRegistry.registerNavbarPlugin({

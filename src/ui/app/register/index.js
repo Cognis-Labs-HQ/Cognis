@@ -325,7 +325,11 @@ const composer = createPageComposer(root, {
             id: "register-shell",
             label: i18n.t("ui.app.register.form_title"),
             pinned: true,
-            gridSize: { default: [12, 6], min: [8, 5], max: ["full", "fill"] },
+            gridSize: {
+                default: ["full", 6],
+                min: [8, 5],
+                max: ["full", "fill"],
+            },
             render: () => renderRegisterShell(),
             onRender: () => {
                 runTypingShowcase(typingSamples);

@@ -9,6 +9,20 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Page indexing in global search** (`dashboard-layout.js`). The search popup now includes a Navigation group listing all pages accessible to the current user (role-aware: admin/teacher-only pages only shown to eligible roles), enabling quick keyboard-driven navigation. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
+- **`/static/modules/` route** (`src/api/routes/ui/index.ts`, `src/api/ui-registry.ts`). New `UIRegistry.registerModuleStaticDir(prefix, dir)` and `resolveModulePath(urlPath)` methods, plus a `/static/modules/` serving route, enabling language modules to serve their own UI assets (JavaScript, CSS) at `registerStaticDir("modules/…", dir)` paths. Fixes the Japanese module's Hiragana and Library components which were silently 404ing. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
+
+### Changed
+
+- **Nav compact-toggle icon** replaced the hamburger (☰) with the brand right-arrow SVG (both in `dashboard-layout.html` and `page-composer.js`). The page-composer mobile toolbar toggle also uses the mirrored (left-arrow) variant when the drawer is open. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
+- **Login and registration page width** set to `"full"` by default so the auth shell spans the entire content grid. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
+- **Search results label order** now falls back to handle before accountId (`displayName → handle → accountId`) so users are always identified by a human-readable name rather than an opaque UUID. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
+- **Search display-name matching** (`profile-store.ts`). `searchProfiles()` now matches on `display_name` in addition to `handle`, keeping both lowercase comparisons case-insensitive. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
+- **Notification panel** centers itself horizontally in the viewport on screens narrower than 480 px instead of anchoring to the right edge. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
+- **Messages page mobile layout** — added `@media (max-width: 900px)` rule that reverts the messages-specific grid override to a single column, so the page-composer's mobile toolbar drawer works as designed on phones and tablets. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
+- **My Classes teacher-only enforcement unified**. The `GET /api/v1/study/classes` endpoint now requires `teacher` role (was `user`). The classes page client also checks the `cognis_role` localStorage value before loading or rendering the class list, so non-teachers only see the teacher-application form. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
+- **Study bootstrap** routes `registerStaticDir` calls with a `"modules/"` prefix to the new `registerModuleStaticDir` registry method rather than the gateway-keyed `registerStaticDir`. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
+
 - **Study language framework documentation** (`src/docs/study-language-framework.{en,de,ja,id}.md`). Documents the layered library architecture (characters → alt_characters → definitions → words → sentences), language module contract, child component registration, and directory layout. Updated `copilot-instructions.md` with the Study language module pattern. ([0a1914b](https://github.com/le-firehawk/Cognis/commit/0a1914b))
 - **Data-driven Japanese library source files** under `src/modules/study/languages/ja/data/` (`characters`, `alt-characters`, `definitions`, `words`, `sentences`) plus a reusable `JapaneseLibraryStore` interface for query/add/update/remove operations with graph-sanity validation.
 - **Admin-only Study Library child component** at `/study/ja/library`, including direct CRUD controls for all library layers and sub-navigation integration through `GET /api/v1/study/languages/:code/modules`.

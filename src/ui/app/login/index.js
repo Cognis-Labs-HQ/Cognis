@@ -359,7 +359,11 @@ const composer = createPageComposer(root, {
             id: "login-shell",
             label: i18n.t("ui.app.login.title"),
             pinned: true,
-            gridSize: { default: [12, 6], min: [8, 5], max: ["full", "fill"] },
+            gridSize: {
+                default: ["full", 6],
+                min: [8, 5],
+                max: ["full", "fill"],
+            },
             render: () => renderLoginShell(),
             onRender: () => {
                 loadLoginMethods();

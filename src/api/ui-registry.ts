@@ -50,6 +50,7 @@ export class UIRegistry {
     private readonly sections = new Map<string, AdminSection>();
     private readonly staticDirs = new Map<string, string>();
     private readonly adapterStaticDirs = new Map<string, string>();
+    private readonly moduleStaticDirs = new Map<string, string>();
     private readonly pageExtensions = new Map<string, PageElement[]>();
     private readonly navbarPlugins: NavbarPlugin[] = [];
     private readonly authTypingMessages: AuthTypingMessage[] = [];
@@ -120,6 +121,43 @@ export class UIRegistry {
         adapterId: string,
     ): string | undefined {
         return this.adapterStaticDirs.get(`${gatewayId}/${adapterId}`);
+    }
+
+    /**
+     * Registers a URL prefix under /static/modules/ that the server serves
+     * from the given absolute filesystem directory. Modules call this via the
+     * `registerStaticDir` hook on their bootstrap context (the gateway routes
+     * prefixes that start with "modules/" here instead of to staticDirs).
+     */
+    registerModuleStaticDir(urlPrefix: string, absoluteDir: string): void {
+        this.moduleStaticDirs.set(urlPrefix, absoluteDir);
+    }
+
+    /**
+     * Given the path portion after /static/modules/ (e.g.
+     * "study/languages/ja/components/hiragana-alphabet/app.js"), finds the
+     * longest registered module URL prefix and returns the directory and the
+     * relative file path within it. Returns undefined when no prefix matches.
+     */
+    resolveModulePath(
+        urlPath: string,
+    ): { dir: string; relPath: string } | undefined {
+        let bestPrefix = "";
+        let bestDir: string | undefined;
+        for (const [prefix, dir] of this.moduleStaticDirs) {
+            if (urlPath === prefix || urlPath.startsWith(prefix + "/")) {
+                if (prefix.length > bestPrefix.length) {
+                    bestPrefix = prefix;
+                    bestDir = dir;
+                }
+            }
+        }
+        if (!bestDir) return undefined;
+        const relPath =
+            urlPath.length > bestPrefix.length
+                ? urlPath.slice(bestPrefix.length + 1)
+                : "";
+        return { dir: bestDir, relPath };
     }
 
     /**

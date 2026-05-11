@@ -68,15 +68,15 @@ export function createSearchRoutes(
                                 id: profile.handle ?? profile.accountId ?? "",
                                 label:
                                     profile.displayName ??
-                                    profile.accountId ??
                                     profile.handle ??
+                                    profile.accountId ??
                                     "",
                                 url: profile.handle
                                     ? `/profile/${encodeURIComponent(profile.handle)}`
                                     : undefined,
                                 meta:
-                                    profile.accountId ??
                                     profile.handle ??
+                                    profile.accountId ??
                                     undefined,
                                 accountId: profile.accountId,
                                 handle: profile.handle,
@@ -108,8 +108,8 @@ export function createSearchRoutes(
                             id: profile.handle ?? profile.accountId ?? "",
                             label:
                                 profile.displayName ??
-                                profile.accountId ??
                                 profile.handle ??
+                                profile.accountId ??
                                 "",
                             url: profile.handle
                                 ? `/profile/${encodeURIComponent(profile.handle)}`
