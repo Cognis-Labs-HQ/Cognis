@@ -7,6 +7,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Provider-neutral SQL in gateway stores** (`src/adapters/db/reuse/profile-store.ts`, `src/adapters/social/messages/store.ts`, `src/adapters/study/classes/store.ts`, `src/adapters/registration/token/index.ts`, `src/adapters/registration/invite/index.ts`). Removed all provider-specific SQL branching (`$N` placeholders, `NOW()`, `INSERT IGNORE`, `ON DUPLICATE KEY`, `BOOLEAN` defaults). Unified to `?` placeholders (translated internally by each adapter), `CURRENT_TIMESTAMP`, portable DDL (`TEXT`, `INTEGER`, `TIMESTAMP`), and `executeCommand({…})` for structured CRUD operations. Constructors no longer accept a `dbType` parameter. Tests updated to reflect portable schema assertions and `executeCommand`-based mocks. ([2630730](https://github.com/le-firehawk/Cognis/commit/2630730))
+
 ### Added
 
 - **Page indexing in global search** (`dashboard-layout.js`). The search popup now includes a Navigation group listing all pages accessible to the current user (role-aware: admin/teacher-only pages only shown to eligible roles), enabling quick keyboard-driven navigation. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))

@@ -10,6 +10,7 @@ import { bootstrapSocialAdapter } from "../index.js";
 function makeInMemoryDb() {
     return {
         execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
+        executeCommand: async (_command: unknown) => ({ rows: [] }),
     };
 }
 
