@@ -20,7 +20,6 @@ import {
 import { ensureFullAccountSession } from "../reuse/auth-session.js";
 import { createSearchBar } from "../reuse/search-bar.js";
 import { bindProfilePreviews } from "../reuse/profile-preview.js";
-import { openPopup } from "../reuse/popup.js";
 
 capturePwaInstallPrompt();
 
@@ -377,7 +376,6 @@ export async function renderDashboardLayout(root, slots = {}) {
         applyActiveNavigation();
         if (showTopbar || showNavbar) {
             initSearchBar(i18n);
-            void initStudyButton(i18n);
             bindProfilePreviews(i18n);
         }
         return;
@@ -419,7 +417,6 @@ export async function renderDashboardLayout(root, slots = {}) {
         applyCompactNav(root);
         initRouter(root);
         initSearchBar(i18n);
-        void initStudyButton(i18n);
         bindProfilePreviews(i18n);
     }
     bindThemeToggle({ usePreferenceApi });
@@ -481,61 +478,4 @@ function initSearchBar(i18n) {
         },
     });
     wrap.appendChild(bar);
-}
-
-async function initStudyButton(i18n) {
-    const studyBtn = document.getElementById("nav-study-btn");
-    if (!studyBtn || studyBtn.dataset.studyBound === "true") return;
-    studyBtn.dataset.studyBound = "true";
-
-    studyBtn.addEventListener("click", async () => {
-        let languages = [];
-        try {
-            const response = await apiFetch("/api/v1/study/languages");
-            if (response.ok) {
-                const payload = await response.json();
-                languages = Array.isArray(payload?.data) ? payload.data : [];
-            }
-        } catch {
-            // language fetch failed; proceed with empty list
-        }
-
-        const selectOptions = languages
-            .map(
-                (lang) =>
-                    `<option value="${escapeHtml(lang.code)}">${escapeHtml(lang.flag || "")} ${escapeHtml(lang.name)} (${escapeHtml(lang.code)})</option>`,
-            )
-            .join("");
-
-        const action = await openPopup({
-            title: i18n.t("ui.study.picker.title"),
-            body: `
-                <label class="stack">
-                    ${i18n.t("ui.study.picker.select")}
-                    <select id="study-language-select" class="theme-select">
-                        ${selectOptions}
-                    </select>
-                </label>
-            `,
-            actions: [
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.popup.cancel"),
-                    variant: "cancel",
-                },
-                {
-                    id: "study",
-                    label: i18n.t("ui.study.picker.start"),
-                    variant: "confirm",
-                },
-            ],
-        });
-
-        if (action !== "study") return;
-        const select = document.getElementById("study-language-select");
-        const selectedCode = select?.value;
-        if (selectedCode) {
-            navigateTo(`/study/${encodeURIComponent(selectedCode)}`);
-        }
-    });
 }

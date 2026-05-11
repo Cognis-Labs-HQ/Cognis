@@ -26,7 +26,9 @@ Every language module exports two named functions:
 
 ```ts
 export function createLanguageModule(): LanguageModule | null;
-export async function bootstrapLanguageModule(ctx: LanguageModuleBootstrapCtx): Promise<void>;
+export async function bootstrapLanguageModule(
+    ctx: LanguageModuleBootstrapCtx,
+): Promise<void>;
 ```
 
 `createLanguageModule` is called during adapter-discovery so the gateway can populate its language registry quickly, before full bootstrap. Return `null` to gracefully opt out (e.g. when a required environment variable is absent).
@@ -37,11 +39,11 @@ The `LanguageModule` interface:
 
 ```ts
 interface LanguageModule {
-  readonly languageCode: string;    // BCP 47 code, e.g. 'ja', 'ko', 'zh-TW'
-  readonly languageName: string;    // Human-readable name in the language itself
-  readonly languageFlag: string;    // Emoji flag, e.g. '🇯🇵'
-  readonly version: string;         // Semver
-  listChildComponents(): LanguageChildComponent[];
+    readonly languageCode: string; // BCP 47 code, e.g. 'ja', 'ko', 'zh-TW'
+    readonly languageName: string; // Human-readable name in the language itself
+    readonly languageFlag: string; // Emoji flag, e.g. '🇯🇵'
+    readonly version: string; // Semver
+    listChildComponents(): LanguageChildComponent[];
 }
 ```
 
@@ -54,22 +56,22 @@ The atomic writing units of the language. For Japanese this is hiragana and kata
 
 ```ts
 interface Character {
-  id: string;           // Stable unique identifier, e.g. 'ja:char:a'
-  symbol: string;       // The rendered glyph, e.g. 'あ'
-  romanization?: string; // Standard romanization, e.g. 'a'
-  category?: string;    // Grouping within the script, e.g. 'hiragana', 'katakana'
+    id: string; // Stable unique identifier, e.g. 'ja:char:a'
+    symbol: string; // The rendered glyph, e.g. 'あ'
+    romanization?: string; // Standard romanization, e.g. 'a'
+    category?: string; // Grouping within the script, e.g. 'hiragana', 'katakana'
 }
 ```
 
-**Layer 2 — Alternate Characters (`alt_characters`)** *(optional)*
+**Layer 2 — Alternate Characters (`alt_characters`)** _(optional)_
 Compound or logographic symbols derived from base characters. Kanji are the canonical example: each kanji can map to one or more base characters or to a combination of base characters. Every alt_character carries:
 
 ```ts
 interface AltCharacter {
-  id: string;           // Stable unique identifier, e.g. 'ja:kanji:日'
-  symbol: string;       // The rendered glyph, e.g. '日'
-  components: string[]; // IDs of constituent characters or other alt_characters
-  readings?: string[];  // Romanized or phonetic readings, e.g. ['nichi', 'jitsu', 'hi']
+    id: string; // Stable unique identifier, e.g. 'ja:kanji:日'
+    symbol: string; // The rendered glyph, e.g. '日'
+    components: string[]; // IDs of constituent characters or other alt_characters
+    readings?: string[]; // Romanized or phonetic readings, e.g. ['nichi', 'jitsu', 'hi']
 }
 ```
 
@@ -78,9 +80,9 @@ A flat store of meanings. A definition is a short phrase or sentence in a specif
 
 ```ts
 interface Definition {
-  id: string;              // Stable unique identifier
-  text: string;            // The definition text
-  language: string;        // BCP 47 code of the definition language, e.g. 'en'
+    id: string; // Stable unique identifier
+    text: string; // The definition text
+    language: string; // BCP 47 code of the definition language, e.g. 'en'
 }
 ```
 
@@ -89,11 +91,11 @@ Combinations of one or more characters or alt_characters that form a meaningful 
 
 ```ts
 interface Word {
-  id: string;             // Stable unique identifier, e.g. 'ja:word:nihon'
-  graphemes: string[];    // Ordered list of character/alt_character IDs
-  definitionIds: string[]; // Ordered by commonality (primary first)
-  reading?: string;       // Romanized reading of the whole word
-  jlptLevel?: string;     // Optional proficiency tag, e.g. 'N5'
+    id: string; // Stable unique identifier, e.g. 'ja:word:nihon'
+    graphemes: string[]; // Ordered list of character/alt_character IDs
+    definitionIds: string[]; // Ordered by commonality (primary first)
+    reading?: string; // Romanized reading of the whole word
+    jlptLevel?: string; // Optional proficiency tag, e.g. 'N5'
 }
 ```
 
@@ -102,9 +104,9 @@ Ordered sequences of words. A sentence may carry an explicit definition referenc
 
 ```ts
 interface Sentence {
-  id: string;          // Stable unique identifier
-  wordIds: string[];   // Ordered word IDs that form the sentence
-  definitionId?: string; // Optional explicit definition; falls back to word definitions
+    id: string; // Stable unique identifier
+    wordIds: string[]; // Ordered word IDs that form the sentence
+    definitionId?: string; // Optional explicit definition; falls back to word definitions
 }
 ```
 
@@ -114,10 +116,10 @@ A child component is an independently deliverable study feature for a specific l
 
 ```ts
 interface LanguageChildComponent {
-  id: string;            // Unique within the language, e.g. 'hiragana-alphabet'
-  label: string;         // Display name shown in the sub-nav, e.g. 'Hiragana Alphabet'
-  pageUrl: string;       // URL the router navigates to, e.g. '/study/ja/hiragana'
-  order?: number;        // Lower numbers appear first in the sub-nav menu
+    id: string; // Unique within the language, e.g. 'hiragana-alphabet'
+    label: string; // Display name shown in the sub-nav, e.g. 'Hiragana Alphabet'
+    pageUrl: string; // URL the router navigates to, e.g. '/study/ja/hiragana'
+    order?: number; // Lower numbers appear first in the sub-nav menu
 }
 ```
 

@@ -23,7 +23,7 @@ Pustaka adalah register berlapis yang berisi semua elemen suatu bahasa. Lapisan-
 
 **Lapisan 1 — Karakter (`characters`)**: Unit penulisan atomik bahasa. Untuk bahasa Jepang, ini adalah hiragana dan katakana (bukan Kanji — itu ada di alt_characters). Setiap karakter memiliki `id`, `symbol`, `romanization`, dan `category`.
 
-**Lapisan 2 — Karakter Alternatif (`alt_characters`)** *(opsional)*: Simbol majemuk atau logografis. Kanji adalah contoh kanonik. Setiap karakter alternatif memiliki `id`, `symbol`, `components` (ID karakter dasar), dan `readings`.
+**Lapisan 2 — Karakter Alternatif (`alt_characters`)** _(opsional)_: Simbol majemuk atau logografis. Kanji adalah contoh kanonik. Setiap karakter alternatif memiliki `id`, `symbol`, `components` (ID karakter dasar), dan `readings`.
 
 **Lapisan 3 — Definisi (`definitions`)**: Penyimpanan makna yang datar dalam bahasa tertentu. Direferensikan oleh kata dan kalimat.
 

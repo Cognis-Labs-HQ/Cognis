@@ -329,6 +329,7 @@
   <string name="ui.app.profile.section.followers">フォロワー</string>
   <string name="ui.app.profile.section.following">フォロー中</string>
   <string name="ui.app.profile.section.posts">投稿</string>
+  <string name="ui.app.profile.section.posts_new">新しい投稿</string>
   <string name="ui.app.profile.section.social_links">ソーシャルリンク</string>
   <string name="ui.app.profile.section.suggested">おすすめ</string>
   <string name="ui.app.profile.bio">自己紹介</string>

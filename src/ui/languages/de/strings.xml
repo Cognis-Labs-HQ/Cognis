@@ -329,6 +329,7 @@
   <string name="ui.app.profile.section.followers">Follower</string>
   <string name="ui.app.profile.section.following">Folge ich</string>
   <string name="ui.app.profile.section.posts">Beiträge</string>
+  <string name="ui.app.profile.section.posts_new">Neuer Beitrag</string>
   <string name="ui.app.profile.section.social_links">Soziale Links</string>
   <string name="ui.app.profile.section.suggested">Vorschläge</string>
   <string name="ui.app.profile.bio">Biografie</string>

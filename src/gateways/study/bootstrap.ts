@@ -1,10 +1,13 @@
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
 import { requireAuth } from "../../api/auth/guard.js";
 import { CoreStudyGateway } from "./gateway.js";
+
+const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
 export type { StudyAdapterBootstrapCtx, StudyAdapter } from "./gateway.js";
 
@@ -70,6 +73,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.log?.("info", "Study gateway: adapters bootstrapped.", {
         component: "study-gateway",
         adapterCount: gateway.listAdapters().length,
+    });
+
+    ctx.uiRegistry?.registerStaticDir(
+        "gateways/study",
+        path.join(GATEWAY_ROOT, "ui"),
+    );
+    ctx.uiRegistry?.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/study/navbar.js",
     });
 
     ctx.routeRegistry.register(

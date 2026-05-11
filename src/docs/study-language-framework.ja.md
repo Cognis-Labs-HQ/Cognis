@@ -23,7 +23,7 @@
 
 **レイヤー1 — 文字 (`characters`)**: 言語の原子的な書き単位。日本語ではひらがなとカタカナ（漢字はalt_charactersへ）。各文字は `id`, `symbol`, `romanization`, `category` を持ちます。
 
-**レイヤー2 — 代替文字 (`alt_characters`)** *(省略可)*: 複合または表語記号。漢字が典型例。各代替文字は `id`, `symbol`, `components`（基本文字のID）, `readings` を持ちます。
+**レイヤー2 — 代替文字 (`alt_characters`)** _(省略可)_: 複合または表語記号。漢字が典型例。各代替文字は `id`, `symbol`, `components`（基本文字のID）, `readings` を持ちます。
 
 **レイヤー3 — 定義 (`definitions`)**: 特定の言語での意味のフラットストア。単語と文から参照されます。
 
@@ -41,7 +41,7 @@
 
 ## APIルート
 
-| メソッド | パス                                    | 説明                                     | 認証     |
-| -------- | --------------------------------------- | ---------------------------------------- | -------- |
-| GET      | `/api/v1/study/languages`               | 利用可能な学習言語の一覧取得             | Required |
-| GET      | `/api/v1/study/languages/:code/modules` | 言語の子コンポーネント一覧取得           | Required |
+| メソッド | パス                                    | 説明                           | 認証     |
+| -------- | --------------------------------------- | ------------------------------ | -------- |
+| GET      | `/api/v1/study/languages`               | 利用可能な学習言語の一覧取得   | Required |
+| GET      | `/api/v1/study/languages/:code/modules` | 言語の子コンポーネント一覧取得 | Required |

@@ -23,7 +23,7 @@ Die Bibliothek ist das maßgebliche mehrschichtige Register aller Elemente einer
 
 **Schicht 1 — Zeichen (`characters`)**: Die atomaren Schreibeinheiten. Für Japanisch sind das Hiragana und Katakana; nicht Kanji (die gehören in alt_characters). Jedes Zeichen trägt `id`, `symbol`, `romanization` und `category`.
 
-**Schicht 2 — Alt-Zeichen (`alt_characters`)** *(optional)*: Zusammengesetzte oder logografische Symbole. Kanji ist das kanonische Beispiel. Jedes Alt-Zeichen führt `id`, `symbol`, `components` (IDs der Basiszeichen) und `readings`.
+**Schicht 2 — Alt-Zeichen (`alt_characters`)** _(optional)_: Zusammengesetzte oder logografische Symbole. Kanji ist das kanonische Beispiel. Jedes Alt-Zeichen führt `id`, `symbol`, `components` (IDs der Basiszeichen) und `readings`.
 
 **Schicht 3 — Definitionen (`definitions`)**: Ein flacher Speicher von Bedeutungen in einer bestimmten Sprache. Definitionen werden von Wörtern und Sätzen referenziert.
 
@@ -41,7 +41,7 @@ Sprachmodule leben unter `src/modules/study/languages/<code>/`. Kindkomponenten 
 
 ## API-Routen
 
-| Methode | Pfad                                    | Beschreibung                                       | Auth     |
-| ------- | --------------------------------------- | -------------------------------------------------- | -------- |
-| GET     | `/api/v1/study/languages`               | Alle verfügbaren Lernsprachen auflisten            | Required |
-| GET     | `/api/v1/study/languages/:code/modules` | Kindkomponenten einer Sprache auflisten            | Required |
+| Methode | Pfad                                    | Beschreibung                            | Auth     |
+| ------- | --------------------------------------- | --------------------------------------- | -------- |
+| GET     | `/api/v1/study/languages`               | Alle verfügbaren Lernsprachen auflisten | Required |
+| GET     | `/api/v1/study/languages/:code/modules` | Kindkomponenten einer Sprache auflisten | Required |

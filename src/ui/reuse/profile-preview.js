@@ -5,6 +5,7 @@ import { escapeHtml } from "./escape-html.js";
 const SHOW_DELAY_MS = 250;
 const HIDE_DELAY_MS = 150;
 const profileCache = new Map();
+const avatarUrlCache = new Map();
 let previewEl = null;
 let activeLink = null;
 let showTimer = null;
@@ -34,13 +35,15 @@ async function loadProfilePreview(handle) {
 
 async function loadAvatarUrl(avatarKey) {
     if (!avatarKey) return null;
-    try {
-        const res = await apiFetch(`/api/v1/files/${avatarKey}`);
-        if (!res.ok) return null;
-        return URL.createObjectURL(await res.blob());
-    } catch {
-        return null;
-    }
+    if (avatarUrlCache.has(avatarKey)) return avatarUrlCache.get(avatarKey);
+    const promise = apiFetch(`/api/v1/files/${avatarKey}`)
+        .then(async (res) => {
+            if (!res.ok) return null;
+            return URL.createObjectURL(await res.blob());
+        })
+        .catch(() => null);
+    avatarUrlCache.set(avatarKey, promise);
+    return promise;
 }
 
 function ensurePreview() {
@@ -101,7 +104,6 @@ async function showPreview(link) {
     }
     const avatarUrl = await loadAvatarUrl(profile.avatarKey);
     if (activeLink !== link) {
-        if (avatarUrl) URL.revokeObjectURL(avatarUrl);
         return;
     }
 

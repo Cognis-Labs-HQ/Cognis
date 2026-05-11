@@ -9,7 +9,18 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- **Study languages API** (`GET /api/v1/study/languages`, `POST /api/v1/study/languages`). Persisted via `study_languages` table in the classes adapter; seeded with Japanese on first run. Settings → Study now fetches languages from this endpoint. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
+- **Study language framework documentation** (`src/docs/study-language-framework.{en,de,ja,id}.md`). Documents the layered library architecture (characters → alt_characters → definitions → words → sentences), language module contract, child component registration, and directory layout. Updated `copilot-instructions.md` with the Study language module pattern. ([0a1914b](https://github.com/le-firehawk/Cognis/commit/0a1914b))
+- **Followers/following user cards**. The followers and following lists on the Profile page now render as a freely-wrapping grid of compact user cards (name, handle, role icon) instead of a full-width vertical list. Each card is a clickable link to the user's profile.
+- **Profile "New Post" element separated from post list**. The post composer form is now its own independent page-composer element (`posts-new`) and only appears on the current user's own profile. The `posts` element now renders only the post list and is visible on all profiles.
+- **Study gateway navbar plugin**. The Study button in the global navbar is now created and managed by a navbar plugin registered directly by the Study Gateway (`src/gateways/study/ui/navbar.js`). The button disappears automatically when the Study Gateway is disabled, and no longer lives in the static dashboard layout template.
+
+### Changed
+
+- **Study button style** now matches the other nav links in the topnav bar (same font weight, underline-on-hover, opacity treatment) instead of having a distinct pill/button appearance.
+- **Page composer element heights** are now strictly enforced in view mode. Each widget-card gets an explicit `height: h × 90px` so element dimensions match the grid data exactly in both view and edit modes, regardless of CSS grid gap.
+- **Avatar hover preview caching**: `profile-preview.js` now caches avatar blob URLs by avatar key so the avatar image is only fetched once per session rather than on every profile link hover.
+
+
 - **Study button in global navbar**. Clicking the Study button opens a language-picker popup populated from `/api/v1/study/languages`; selecting a language navigates to its study page. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
 - **Japanese study adapter** (`src/adapters/study/japanese/`, version `1.0.0`). Serves a study page at `/study/ja` with sections for Hiragana, Katakana, Vocabulary, Grammar, and Kanji. Registers the `ja` language entry on bootstrap. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
 - **Global search endpoint** (`GET /api/v1/search?q=…`). Returns grouped results across Users (when a profile-search function is wired) and Settings. Supports `type=users` for user-only queries. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))

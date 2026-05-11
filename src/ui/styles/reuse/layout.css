@@ -232,19 +232,21 @@
     border: none;
     cursor: pointer;
     font-size: inherit;
-    color: var(--nav-link-color, var(--text));
-    padding: 0.35rem 0.7rem;
-    border-radius: 5px;
+    font-family: inherit;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--text);
+    padding: 6px 2px;
+    opacity: 0.92;
+    white-space: nowrap;
     text-decoration: none;
-    transition: background-color 0.15s ease;
     display: inline-block;
-    font-weight: 500;
 }
 
 .topnav-study-btn:hover,
 .topnav-study-btn.active {
-    background: var(--nav-active-bg, rgba(128, 128, 128, 0.15));
-    color: var(--nav-active-color, var(--accent));
+    opacity: 1;
+    border-bottom: 2px solid var(--accent-2);
 }
 
 .account-cluster {

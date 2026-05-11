@@ -329,6 +329,7 @@
   <string name="ui.app.profile.section.followers">Pengikut</string>
   <string name="ui.app.profile.section.following">Mengikuti</string>
   <string name="ui.app.profile.section.posts">Postingan</string>
+  <string name="ui.app.profile.section.posts_new">Postingan Baru</string>
   <string name="ui.app.profile.section.social_links">Tautan Sosial</string>
   <string name="ui.app.profile.section.suggested">Kontak yang Disarankan</string>
   <string name="ui.app.profile.bio">Bio</string>

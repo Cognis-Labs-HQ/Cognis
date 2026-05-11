@@ -129,12 +129,13 @@ Study language modules are **not** gateways or adapters. They are content module
 Every language module owns a **library** — a layered, deep-linked register of the language's written elements:
 
 1. **Characters** — the atomic writing units (e.g. hiragana, katakana). For CJK languages, compound symbols such as Kanji are NOT characters; they belong in alt_characters.
-2. **Alt characters** *(optional)* — compound or logographic symbols (e.g. Kanji) that map to one or more base characters or combinations thereof. Each alt_character is uniquely identifiable and can reference other alt_characters.
+2. **Alt characters** _(optional)_ — compound or logographic symbols (e.g. Kanji) that map to one or more base characters or combinations thereof. Each alt_character is uniquely identifiable and can reference other alt_characters.
 3. **Definitions** — language-scoped meaning records. A definition is a short phrase in the learner's UI language that describes a concept. Definitions are referenced by words and sentences rather than embedded.
 4. **Words** — one or more characters or alt_characters forming a meaningful unit, mapped to one or more definitions ranked by commonality.
 5. **Sentences** — ordered sequences of words with an optional explicit definition reference; if no explicit definition, meaning is derived from each word's primary definition.
 
 A language module also advertises **child components** — independently deliverable study features (e.g. "Hiragana Alphabet", "Kanji Explorer"). Each child component:
+
 - Registers its own route via `ctx.registerChildRoute()` during `bootstrapLanguageModule`.
 - Returns a `LanguageChildComponent` descriptor with a `pageUrl` that the UI uses for sub-navigation.
 - Lives in `src/modules/study/languages/<code>/components/<component-id>/`.

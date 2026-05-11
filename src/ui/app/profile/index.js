@@ -436,20 +436,23 @@ function userDisplayName(user) {
 function renderUserList(list, emptyKey) {
     if (!list.length) return `<p class="profile-empty">${i18n.t(emptyKey)}</p>`;
     return `
-    <ul class="profile-user-list">
+    <div class="profile-user-card-grid">
       ${list
           .map(
               (u) => `
-        <li class="profile-user-item">
-          <a class="profile-user-handle" href="/profile/${escapeHtml(encodeURIComponent(u.handle))}">${escapeHtml(userDisplayName(u))}</a>
-          ${u.role === "owner" ? `<span class="profile-user-role-icon" aria-label="Owner" title="Owner"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
-          ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
-          ${u.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>` : ""}
-        </li>
+        <a class="profile-user-card" href="/profile/${escapeHtml(encodeURIComponent(u.handle))}">
+          <span class="profile-user-card-name">${escapeHtml(userDisplayName(u))}</span>
+          <span class="profile-user-card-handle">@${escapeHtml(u.handle)}</span>
+          <span class="profile-user-card-icons">
+            ${u.role === "owner" ? `<span class="profile-user-role-icon" aria-label="Owner" title="Owner"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+            ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+            ${u.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>` : ""}
+          </span>
+        </a>
       `,
           )
           .join("")}
-    </ul>
+    </div>
   `;
 }
 
@@ -564,7 +567,7 @@ function renderPostsList() {
   `;
 }
 
-function renderPosts() {
+function renderNewPost() {
     const profileVis = profile?.visibility ?? "hidden";
     const canFollowers = profileVis !== "hidden";
     const canFriends = profileVis !== "hidden";
@@ -582,11 +585,8 @@ function renderPosts() {
             ? `<p class="profile-visibility-hint">${escapeHtml(i18n.t("ui.app.profile.post_visibility_hint"))}</p>`
             : "";
 
-    // The post composer (authoring UI) is only shown when viewing your own
-    // profile. The post list below remains visible on others' profiles,
-    // subject to existing per-post visibility rules enforced server-side.
-    const composerSection = isOwnProfile
-        ? `
+    return `
+    <div class="profile-posts-section">
       <h3 class="profile-posts-heading">
         ${i18n.t("ui.app.profile.new_post")}
       </h3>
@@ -616,12 +616,13 @@ function renderPosts() {
         </div>
         ${visibilityHint}
       </div>
-    `
-        : "";
+    </div>
+  `;
+}
 
+function renderPosts() {
     return `
     <div class="profile-posts-section">
-      ${composerSection}
       <h3 class="profile-posts-heading">
         ${i18n.t("ui.app.profile.section.posts")}
         <span class="profile-count-badge">${posts.length}</span>
@@ -1233,6 +1234,16 @@ export async function mount(rootEl, { signal } = {}) {
             gridSize: { default: [4, 4], min: [2, 2], max: "full" },
             render: renderPosts,
         },
+        ...(isOwnProfile
+            ? [
+                  {
+                      id: "posts-new",
+                      label: i18n.t("ui.app.profile.section.posts_new"),
+                      gridSize: { default: [4, 3], min: [2, 2], max: "full" },
+                      render: renderNewPost,
+                  },
+              ]
+            : []),
         {
             id: "social-links",
             label: i18n.t("ui.app.profile.section.social_links"),

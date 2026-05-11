@@ -2680,6 +2680,8 @@ export function createPageComposer(
                 const scaledHeight = placement.h * scale;
                 card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
                 card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
+                card.style.height = `${Math.round(scaledHeight) * UNIT}px`;
+                card.style.overflow = "auto";
                 card.innerHTML = element.render();
                 section.appendChild(card);
             }
