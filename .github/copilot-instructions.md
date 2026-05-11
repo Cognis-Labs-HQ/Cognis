@@ -122,6 +122,27 @@ Gateways, adapters, and modules are responsible for their own resources. This in
 
 Prefer scanning the filesystem to discover gateways, adapters, and modules over maintaining hardcoded import lists. The core should load gateways by discovering directories under `src/api/gateways/`; gateways should load adapters by discovering directories under `src/adapters/<gateway-id>/`. Static imports in `src/core/index.ts` or `src/api/server.ts` that enumerate individual components by name work against this goal and create coupling.
 
+### Study language modules
+
+Study language modules are **not** gateways or adapters. They are content modules that live under `src/modules/study/languages/<bcp47-code>/` and register themselves with the Study gateway at bootstrap time via `createLanguageModule()` and `bootstrapLanguageModule(ctx)`. The Study gateway discovers them automatically by scanning that directory.
+
+Every language module owns a **library** — a layered, deep-linked register of the language's written elements:
+
+1. **Characters** — the atomic writing units (e.g. hiragana, katakana). For CJK languages, compound symbols such as Kanji are NOT characters; they belong in alt_characters.
+2. **Alt characters** *(optional)* — compound or logographic symbols (e.g. Kanji) that map to one or more base characters or combinations thereof. Each alt_character is uniquely identifiable and can reference other alt_characters.
+3. **Definitions** — language-scoped meaning records. A definition is a short phrase in the learner's UI language that describes a concept. Definitions are referenced by words and sentences rather than embedded.
+4. **Words** — one or more characters or alt_characters forming a meaningful unit, mapped to one or more definitions ranked by commonality.
+5. **Sentences** — ordered sequences of words with an optional explicit definition reference; if no explicit definition, meaning is derived from each word's primary definition.
+
+A language module also advertises **child components** — independently deliverable study features (e.g. "Hiragana Alphabet", "Kanji Explorer"). Each child component:
+- Registers its own route via `ctx.registerChildRoute()` during `bootstrapLanguageModule`.
+- Returns a `LanguageChildComponent` descriptor with a `pageUrl` that the UI uses for sub-navigation.
+- Lives in `src/modules/study/languages/<code>/components/<component-id>/`.
+
+Child components may themselves contain sub-components for deeply nested functionality (e.g. stroke order and vocabulary within a Kanji explorer). Internal sub-navigation within a component is handled client-side; only the top-level `pageUrl` is registered with the gateway.
+
+The Study gateway exposes `GET /api/v1/study/languages/:code/modules` to list all registered child components for a language. The study UI uses this endpoint to build the sub-navigation menu under the selected language. See `src/docs/study-language-framework.en.md` for the complete contract, data model, and directory layout.
+
 ### Comment references for alternate control flow
 
 When a comment introduces an alternative or fallback code path (e.g. a catch block that intentionally falls through, or a condition that skips the normal path), it must explicitly reference the line numbers or label of the alternate block — for example: `// fall through to initials fallback (lines 141-146 below)` or `// handled by the block starting at line 82`. This helps reviewers trace non-obvious flow.
