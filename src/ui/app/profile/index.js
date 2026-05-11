@@ -1209,6 +1209,9 @@ export async function mount(rootEl, { signal } = {}) {
 
     if (isAborted()) return;
 
+    // These heuristics reserve a small fixed padding plus estimated rows per
+    // visible item so profile widgets stop clipping or creating avoidable
+    // internal scrollbars at the default layout.
     const socialSectionRowCount = Math.max(
         4,
         Math.ceil(Math.max(followers.length, following.length) * 0.7 + 2),

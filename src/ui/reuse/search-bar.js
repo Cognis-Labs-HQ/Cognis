@@ -25,13 +25,11 @@ function filterLocalGroups(localGroups, query) {
         .filter((group) => group.items.length > 0);
 }
 
-function buildSearchUrl(endpoint, query, typeFilter, usersOnly) {
+function buildSearchUrl(endpoint, query, typeFilter) {
     const resolvedTypeFilter =
         typeof typeFilter === "string" && typeFilter.trim()
             ? typeFilter.trim()
-            : usersOnly
-              ? "users"
-              : "";
+            : "";
     const connector = endpoint.includes("?") ? "&" : "?";
     const typeFilterParam = resolvedTypeFilter
         ? `&type=${encodeURIComponent(resolvedTypeFilter)}`
@@ -113,7 +111,6 @@ async function runSearch({
     query,
     resultsContainer,
     typeFilter,
-    usersOnly,
     localGroups,
     noResultsText,
     onSelect,
@@ -130,7 +127,7 @@ async function runSearch({
         const token = localStorage.getItem("cognis_access_token");
         const headers = token ? { authorization: `Bearer ${token}` } : {};
         const response = await fetch(
-            buildSearchUrl(endpoint, query, typeFilter, usersOnly),
+            buildSearchUrl(endpoint, query, typeFilter),
             {
                 credentials: "same-origin",
                 headers,
@@ -204,7 +201,6 @@ export function openSearchPopup({
     ariaLabel = "Search",
     noResultsText = "No results found.",
     typeFilter = "",
-    usersOnly = false,
     localGroups = [],
 }) {
     const existingOverlay = document.querySelector(".search-popup-overlay");
@@ -268,7 +264,6 @@ export function openSearchPopup({
                     query,
                     resultsContainer,
                     typeFilter,
-                    usersOnly,
                     localGroups,
                     noResultsText,
                     onSelect,
@@ -297,7 +292,6 @@ export function createSearchBar({
     ariaLabel = "Search",
     noResultsText = "No results found.",
     typeFilter = "",
-    usersOnly = false,
     localGroups = [],
 }) {
     const wrapper = document.createElement("div");
@@ -332,7 +326,6 @@ export function createSearchBar({
             ariaLabel,
             noResultsText,
             typeFilter,
-            usersOnly,
             localGroups,
         });
     });
