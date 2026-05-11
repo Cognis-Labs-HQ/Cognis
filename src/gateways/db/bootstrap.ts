@@ -1,5 +1,5 @@
 import path from "node:path";
-import { createDbExecutor, type SupportedDbType } from "./executor.js";
+import { createDbExecutor } from "./executor.js";
 import { initializeDatabaseSchema } from "./init.js";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "./reuse/db-executor.js";
@@ -7,6 +7,7 @@ import type {
     StructuredDbCommand,
     StructuredDbCommandResult,
 } from "./reuse/db-command.js";
+import type { DbProviderId } from "./reuse/provider-id.js";
 
 /**
  * Dialect-aware SQL helper contributed as 'db:dialect'.
@@ -63,11 +64,11 @@ export function createDbDialectHelper(executor: DbExecutor): DbDialectHelper {
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbType =
-        (process.env.DB_TYPE as SupportedDbType | undefined) ?? "postgresql";
+        (process.env.DB_TYPE as DbProviderId | undefined) ?? "postgresql";
     const adaptersRoot =
         ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters");
 
-    const executor = await createDbExecutor(dbType, ctx.log);
+    const executor = await createDbExecutor(dbType, ctx.log, adaptersRoot);
     const logger = {
         info: (msg: string, meta?: Record<string, unknown>) => {
             void ctx.log?.("info", msg, meta);

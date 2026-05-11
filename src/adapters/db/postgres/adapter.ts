@@ -1,4 +1,7 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
+import type { BootstrapLog } from "@cognis/core";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
 import {
     buildStructuredDbCommandStatement,
     type StructuredDbCommand,
@@ -16,6 +19,39 @@ export interface PostgresClient {
         sql: string,
         params?: unknown[],
     ): Promise<PostgresQueryResult<Row>>;
+}
+
+function summarizeStatement(sql: string): string {
+    const statement = sql.trim().split(/\s+/, 1)[0];
+    return statement ? statement.toUpperCase() : "UNKNOWN";
+}
+
+function getErrorCode(error: unknown): string | undefined {
+    const code = (error as { code?: unknown })?.code;
+    if (typeof code === "string" || typeof code === "number") {
+        return String(code);
+    }
+    return undefined;
+}
+
+function buildDbErrorMeta(error: unknown): Record<string, unknown> {
+    const meta: Record<string, unknown> = {
+        errorName: error instanceof Error ? error.name : typeof error,
+    };
+    const errorCode = getErrorCode(error);
+    if (errorCode) {
+        meta.errorCode = errorCode;
+    }
+    return meta;
+}
+
+function writeDbLog(
+    log: BootstrapLog | undefined,
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    meta?: Record<string, unknown>,
+): void {
+    log?.(level, message, meta);
 }
 
 const POSTGRESQL_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
@@ -94,4 +130,80 @@ export class PostgresDbGateway implements DatabaseGateway {
             throw error;
         }
     }
+}
+
+class PostgresExecutor implements DbExecutor {
+    private clientPromise: Promise<PostgresClient> | null = null;
+
+    constructor(
+        private readonly databaseUrl: string,
+        private readonly log?: BootstrapLog,
+    ) {}
+
+    private async getClient(): Promise<PostgresClient> {
+        if (!this.clientPromise) {
+            this.clientPromise = (async () => {
+                const { Client } = await import("pg");
+                const client = new Client({
+                    connectionString: this.databaseUrl,
+                });
+                client.on("error", (error: Error) => {
+                    writeDbLog(
+                        this.log,
+                        "warn",
+                        "Database client emitted error event.",
+                        {
+                            component: "db",
+                            provider: "postgresql",
+                            ...buildDbErrorMeta(error),
+                        },
+                    );
+                });
+                await client.connect();
+                return client as PostgresClient;
+            })();
+        }
+        return this.clientPromise;
+    }
+
+    async execute(sql: string, params: unknown[] = []) {
+        writeDbLog(this.log, "debug", "Executing SQL statement.", {
+            component: "db",
+            provider: "postgresql",
+            statement: summarizeStatement(sql),
+            parameterCount: params.length,
+        });
+        const client = await this.getClient();
+        try {
+            const result = await client.query(sql, params);
+            return { rows: result.rows, rowCount: result.rowCount };
+        } catch (error) {
+            writeDbLog(this.log, "warn", "SQL execution failed.", {
+                component: "db",
+                provider: "postgresql",
+                statement: summarizeStatement(sql),
+                parameterCount: params.length,
+                ...buildDbErrorMeta(error),
+            });
+            throw error;
+        }
+    }
+
+    async executeCommand(
+        command: StructuredDbCommand,
+    ): Promise<StructuredDbCommandResult> {
+        const gateway = new PostgresDbGateway(await this.getClient());
+        return gateway.executeCommand(command);
+    }
+}
+
+export function canHandleDbProvider(providerId: DbProviderId): boolean {
+    return providerId === "postgresql";
+}
+
+export async function createDbExecutor(args: {
+    databaseUrl: string;
+    log?: BootstrapLog;
+}): Promise<DbExecutor> {
+    return new PostgresExecutor(args.databaseUrl, args.log);
 }

@@ -3,9 +3,8 @@
  *
  * This interface is the only import that code outside the DB gateway
  * (e.g. api/bootstrap/db-init.ts, api/gateway-bootstrap.ts, DB adapters)
- * should take from the DB gateway tree. Every concrete driver implementation
- * (PostgresExecutor, MariadbExecutor) lives inside the DB adapter and
- * satisfies this interface.
+ * should take from the DB gateway tree. Concrete driver implementations live
+ * inside DB adapters and satisfy this interface.
  *
  * Why it lives here rather than in src/api/reuse/:
  *   DbExecutor is the DB gateway's own contract — knowing its shape requires

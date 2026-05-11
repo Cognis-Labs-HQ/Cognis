@@ -1,6 +1,6 @@
 {
     "name": "@cognis/adapter-db-postgres",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "private": true,
     "type": "module",
     "main": "postgres-db-gateway.ts",

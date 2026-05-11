@@ -1,4 +1,7 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
+import type { BootstrapLog } from "@cognis/core";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
 import {
     buildStructuredDbCommandStatement,
     type StructuredDbCommand,
@@ -14,6 +17,39 @@ export interface MariaDbClient {
     beginTransaction(): Promise<void>;
     commit(): Promise<void>;
     rollback(): Promise<void>;
+}
+
+function summarizeStatement(sql: string): string {
+    const statement = sql.trim().split(/\s+/, 1)[0];
+    return statement ? statement.toUpperCase() : "UNKNOWN";
+}
+
+function getErrorCode(error: unknown): string | undefined {
+    const code = (error as { code?: unknown })?.code;
+    if (typeof code === "string" || typeof code === "number") {
+        return String(code);
+    }
+    return undefined;
+}
+
+function buildDbErrorMeta(error: unknown): Record<string, unknown> {
+    const meta: Record<string, unknown> = {
+        errorName: error instanceof Error ? error.name : typeof error,
+    };
+    const errorCode = getErrorCode(error);
+    if (errorCode) {
+        meta.errorCode = errorCode;
+    }
+    return meta;
+}
+
+function writeDbLog(
+    log: BootstrapLog | undefined,
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    meta?: Record<string, unknown>,
+): void {
+    log?.(level, message, meta);
 }
 
 const MARIADB_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
@@ -100,4 +136,69 @@ export class MariaDbGateway implements DatabaseGateway {
             throw error;
         }
     }
+}
+
+class MariaDbExecutor implements DbExecutor {
+    private connectionPromise: Promise<MariaDbClient> | null = null;
+
+    constructor(
+        private readonly databaseUrl: string,
+        private readonly log?: BootstrapLog,
+    ) {}
+
+    private async getClient(): Promise<MariaDbClient> {
+        if (!this.connectionPromise) {
+            this.connectionPromise = (async () => {
+                const mariadb = await import("mysql2/promise");
+                return (await mariadb.createConnection(
+                    this.databaseUrl,
+                )) as MariaDbClient;
+            })();
+        }
+        return this.connectionPromise;
+    }
+
+    async execute(sql: string, params: unknown[] = []) {
+        writeDbLog(this.log, "debug", "Executing SQL statement.", {
+            component: "db",
+            provider: "mariadb",
+            statement: summarizeStatement(sql),
+            parameterCount: params.length,
+        });
+        const client = await this.getClient();
+        try {
+            const [rows] = await client.query(sql, params);
+            if (Array.isArray(rows)) {
+                return { rows, rowCount: rows.length };
+            }
+            return { rowCount: (rows as { affectedRows?: number }).affectedRows ?? 0 };
+        } catch (error) {
+            writeDbLog(this.log, "warn", "SQL execution failed.", {
+                component: "db",
+                provider: "mariadb",
+                statement: summarizeStatement(sql),
+                parameterCount: params.length,
+                ...buildDbErrorMeta(error),
+            });
+            throw error;
+        }
+    }
+
+    async executeCommand(
+        command: StructuredDbCommand,
+    ): Promise<StructuredDbCommandResult> {
+        const gateway = new MariaDbGateway(await this.getClient());
+        return gateway.executeCommand(command);
+    }
+}
+
+export function canHandleDbProvider(providerId: DbProviderId): boolean {
+    return providerId === "mariadb";
+}
+
+export async function createDbExecutor(args: {
+    databaseUrl: string;
+    log?: BootstrapLog;
+}): Promise<DbExecutor> {
+    return new MariaDbExecutor(args.databaseUrl, args.log);
 }
