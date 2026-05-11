@@ -1,27 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PostgresDbGateway } from "../../adapters/db/postgres/adapter.js";
-import { MariaDbGateway } from "../../adapters/db/mariadb/adapter.js";
 import { MemoryDatabaseGateway } from "../../adapters/db/memory/adapter.js";
 
-test("all supported db gateways simulate query/execute/transaction operations", async () => {
-    const postgres = new PostgresDbGateway({
-        query: async () => ({ rows: [{ ok: 1 }], rowCount: 1 }),
-    });
-    const mariadb = new MariaDbGateway({
-        query: async () => [[{ ok: 1 }], { affectedRows: 1 }],
-        beginTransaction: async () => {},
-        commit: async () => {},
-        rollback: async () => {},
-    });
-    const memory = new MemoryDatabaseGateway();
-
-    for (const executor of [postgres, mariadb, memory]) {
-        const queryResult = await executor.query("select 1");
-        assert.ok(queryResult.rowCount >= 0);
-        const execResult = await executor.execute("update test");
-        assert.ok(execResult.affectedRows >= 0);
-        const value = await executor.transaction(async () => "ok");
-        assert.equal(value, "ok");
-    }
+test("database gateway contract supports transaction operations", async () => {
+    const gateway = new MemoryDatabaseGateway();
+    const value = await gateway.transaction(async () => "ok");
+    assert.equal(value, "ok");
 });

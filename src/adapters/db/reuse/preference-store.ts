@@ -12,7 +12,12 @@ export class DbUserPreferenceStore {
         await this.db.ensureTable({
             name: "user_preferences",
             columns: [
-                { name: "pref_key", type: "text", notNull: true, primaryKey: true },
+                {
+                    name: "pref_key",
+                    type: "text",
+                    notNull: true,
+                    primaryKey: true,
+                },
                 { name: "account_id", type: "text", notNull: true },
                 { name: "page_id", type: "text", notNull: true },
                 { name: "layout_json", type: "text", notNull: true },

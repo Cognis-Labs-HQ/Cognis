@@ -16,7 +16,12 @@ export class DbNotificationStore implements NotificationConfigStore {
         await this.db.ensureTable({
             name: "notification_provider_configs",
             columns: [
-                { name: "sender_id", type: "text", notNull: true, primaryKey: true },
+                {
+                    name: "sender_id",
+                    type: "text",
+                    notNull: true,
+                    primaryKey: true,
+                },
                 { name: "config_json", type: "text", notNull: true },
             ],
         });
@@ -34,8 +39,18 @@ export class DbNotificationStore implements NotificationConfigStore {
             columns: [
                 { name: "account_id", type: "text", notNull: true },
                 { name: "email", type: "text", notNull: true },
-                { name: "is_primary", type: "boolean", notNull: true, default: "false" },
-                { name: "verified", type: "boolean", notNull: true, default: "false" },
+                {
+                    name: "is_primary",
+                    type: "boolean",
+                    notNull: true,
+                    default: "false",
+                },
+                {
+                    name: "verified",
+                    type: "boolean",
+                    notNull: true,
+                    default: "false",
+                },
             ],
             primaryKey: ["account_id", "email"],
             uniqueKeys: [["email"]],
