@@ -373,6 +373,13 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
+    /**
+     * Creates or reopens a direct conversation from a selected user handle and
+     * updates the page state to show that room immediately.
+     *
+     * @param {string} handle - The selected user's handle.
+     * @returns {Promise<void>}
+     */
     async function createConversationFromHandle(handle) {
         const createRes = await apiFetch("/api/v1/messages/rooms", {
             method: "POST",

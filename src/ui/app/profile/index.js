@@ -1211,7 +1211,9 @@ export async function mount(rootEl, { signal } = {}) {
 
     // These heuristics reserve a small fixed padding plus estimated rows per
     // visible item so profile widgets stop clipping or creating avoidable
-    // internal scrollbars at the default layout.
+    // internal scrollbars at the default layout: ~0.7 rows per social-card
+    // entry is enough for the compact card density, +2 rows covers headers and
+    // gutters, and the 4/5 row minimums preserve readable empty/small states.
     const socialSectionRowCount = Math.max(
         4,
         Math.ceil(Math.max(followers.length, following.length) * 0.7 + 2),
