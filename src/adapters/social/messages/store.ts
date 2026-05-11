@@ -343,14 +343,14 @@ export class DbMessagesStore {
                 { column: "chatroom_id", value: roomId },
                 {
                     column: "sender_id",
-                    operator: "!=" as const,
+                    operator: "!=",
                     value: accountId,
                 },
                 ...(member.lastReadAt
                     ? [
                           {
                               column: "created_at",
-                              operator: ">" as const,
+                              operator: ">",
                               value: member.lastReadAt,
                           },
                       ]
