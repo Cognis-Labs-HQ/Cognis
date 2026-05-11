@@ -13,7 +13,6 @@
  */
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
-import type { SupportedDbType } from "../../../../gateways/db/executor.js";
 import type { NotificationEnvelope } from "../../../../gateways/notify/gateway.js";
 import type {
     InternalNotification,
@@ -44,18 +43,9 @@ type StoreLog = (
 export class DbInternalNotificationStore implements IInternalNotificationStore {
     constructor(
         private readonly db: DbExecutor,
-        private readonly dbType: SupportedDbType,
         private readonly serverSecret: string,
         private readonly log?: StoreLog,
     ) {}
-
-    private placeholder(index: number): string {
-        return this.dbType === "postgresql" ? `$${index}` : "?";
-    }
-
-    private boolRead(): string {
-        return this.dbType === "mariadb" ? "TINYINT(1)" : "INTEGER";
-    }
 
     async ensureSchema(): Promise<void> {
         await this.db.execute(`
@@ -64,7 +54,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
                 account_id VARCHAR(191) NOT NULL,
                 iv VARCHAR(32) NOT NULL,
                 payload_enc TEXT NOT NULL,
-                read ${this.boolRead()} NOT NULL DEFAULT 0,
+                read INTEGER NOT NULL DEFAULT 0,
                 created_at BIGINT NOT NULL,
                 PRIMARY KEY (id)
             )
@@ -105,52 +95,63 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
         const id = randomUUID();
         const now = Date.now();
 
-        await this.db.execute(
-            `INSERT INTO internal_notifications (id, account_id, iv, payload_enc, read, created_at)
-             VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)}, 0, ${this.placeholder(5)})`,
-            [id, envelope.recipientUsername, iv, ciphertext, now],
-        );
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "internal_notifications",
+            values: {
+                id,
+                account_id: envelope.recipientUsername,
+                iv,
+                payload_enc: ciphertext,
+                read: 0,
+                created_at: now,
+            },
+        });
 
         await this.evictOldest(envelope.recipientUsername);
     }
 
     private async evictOldest(accountId: string): Promise<void> {
-        const countResult = await this.db.execute(
-            `SELECT COUNT(*) as cnt FROM internal_notifications WHERE account_id = ${this.placeholder(1)}`,
-            [accountId],
-        );
+        const countResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "internal_notifications",
+            count: true,
+            where: [{ column: "account_id", value: accountId }],
+        });
         const total = Number(
             (countResult.rows?.[0] as Record<string, unknown>)?.cnt ?? 0,
         );
         if (total <= MAX_PER_USER) return;
 
         const excess = total - MAX_PER_USER;
-        const idsResult = await this.db.execute(
-            `SELECT id FROM internal_notifications
-             WHERE account_id = ${this.placeholder(1)}
-             ORDER BY created_at ASC
-             LIMIT ${excess}`,
-            [accountId],
-        );
+        const idsResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "internal_notifications",
+            columns: ["id"],
+            where: [{ column: "account_id", value: accountId }],
+            orderBy: [{ column: "created_at", direction: "ASC" }],
+            limit: excess,
+        });
         const ids = (idsResult.rows ?? []).map(
-            (r) => (r as Record<string, unknown>).id as string,
+            (row) => (row as Record<string, unknown>).id as string,
         );
         for (const id of ids) {
-            await this.db.execute(
-                `DELETE FROM internal_notifications WHERE id = ${this.placeholder(1)}`,
-                [id],
-            );
+            await this.db.executeCommand({
+                option: "DELETE",
+                table: "internal_notifications",
+                where: [{ column: "id", value: id }],
+            });
         }
     }
 
     async list(username: string): Promise<InternalNotification[]> {
-        const result = await this.db.execute(
-            `SELECT id, iv, payload_enc, read, created_at
-             FROM internal_notifications
-             WHERE account_id = ${this.placeholder(1)}
-             ORDER BY created_at DESC`,
-            [username],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "internal_notifications",
+            columns: ["id", "iv", "payload_enc", "read", "created_at"],
+            where: [{ column: "account_id", value: username }],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+        });
         if (!result.rows?.length) return [];
 
         const key = await deriveScopedKey(
@@ -196,70 +197,91 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
     }
 
     async countUnread(username: string): Promise<number> {
-        const result = await this.db.execute(
-            `SELECT COUNT(*) as cnt FROM internal_notifications
-             WHERE account_id = ${this.placeholder(1)} AND read = 0`,
-            [username],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "internal_notifications",
+            count: true,
+            where: [
+                { column: "account_id", value: username },
+                { column: "read", value: 0 },
+            ],
+        });
         return Number((result.rows?.[0] as Record<string, unknown>)?.cnt ?? 0);
     }
 
     async markRead(username: string, id: string): Promise<boolean> {
-        const check = await this.db.execute(
-            `SELECT id FROM internal_notifications
-             WHERE id = ${this.placeholder(1)} AND account_id = ${this.placeholder(2)}`,
-            [id, username],
-        );
+        const check = await this.db.executeCommand({
+            option: "SELECT",
+            table: "internal_notifications",
+            columns: ["id"],
+            where: [
+                { column: "id", value: id },
+                { column: "account_id", value: username },
+            ],
+        });
         if (!check.rows?.length) return false;
 
-        await this.db.execute(
-            `UPDATE internal_notifications SET read = 1
-             WHERE id = ${this.placeholder(1)} AND account_id = ${this.placeholder(2)}`,
-            [id, username],
-        );
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "internal_notifications",
+            set: { read: 1 },
+            where: [
+                { column: "id", value: id },
+                { column: "account_id", value: username },
+            ],
+        });
         return true;
     }
 
     async markAllRead(username: string): Promise<void> {
-        await this.db.execute(
-            `UPDATE internal_notifications SET read = 1
-             WHERE account_id = ${this.placeholder(1)}`,
-            [username],
-        );
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "internal_notifications",
+            set: { read: 1 },
+            where: [{ column: "account_id", value: username }],
+        });
     }
 
     async delete(username: string, id: string): Promise<boolean> {
-        const check = await this.db.execute(
-            `SELECT id FROM internal_notifications
-             WHERE id = ${this.placeholder(1)} AND account_id = ${this.placeholder(2)}`,
-            [id, username],
-        );
+        const check = await this.db.executeCommand({
+            option: "SELECT",
+            table: "internal_notifications",
+            columns: ["id"],
+            where: [
+                { column: "id", value: id },
+                { column: "account_id", value: username },
+            ],
+        });
         if (!check.rows?.length) return false;
 
-        await this.db.execute(
-            `DELETE FROM internal_notifications
-             WHERE id = ${this.placeholder(1)} AND account_id = ${this.placeholder(2)}`,
-            [id, username],
-        );
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "internal_notifications",
+            where: [
+                { column: "id", value: id },
+                { column: "account_id", value: username },
+            ],
+        });
         return true;
     }
 
     async deleteAll(username: string): Promise<number> {
-        const countResult = await this.db.execute(
-            `SELECT COUNT(*) as cnt FROM internal_notifications
-             WHERE account_id = ${this.placeholder(1)}`,
-            [username],
-        );
+        const countResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "internal_notifications",
+            count: true,
+            where: [{ column: "account_id", value: username }],
+        });
         const total = Number(
             (countResult.rows?.[0] as Record<string, unknown>)?.cnt ?? 0,
         );
         if (total === 0) return 0;
 
-        await this.db.execute(
-            `DELETE FROM internal_notifications
-             WHERE account_id = ${this.placeholder(1)}`,
-            [username],
-        );
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "internal_notifications",
+            where: [{ column: "account_id", value: username }],
+        });
         return total;
     }
 }

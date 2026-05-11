@@ -1,6 +1,5 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { SupportedDbType } from "../../../gateways/db/executor.js";
 import type { LocalAccountStore } from "../../../api/reuse/account-store.js";
 import type { RegistrationGatewayAdapter } from "../../../gateways/registration/gateway.js";
 
@@ -83,7 +82,6 @@ function parseToken(rawToken: string): { tokenId: string; tokenHash: string } {
 
 export function createAdapter(deps: {
     dbExecutor: DbExecutor;
-    dbType: SupportedDbType;
     accountStore: LocalAccountStore;
     canSendInviteEmail: () => boolean;
     sendInviteEmail: (
@@ -110,7 +108,6 @@ export function createAdapter(deps: {
 }): RegistrationGatewayAdapter {
     const {
         dbExecutor,
-        dbType,
         accountStore,
         canSendInviteEmail,
         sendInviteEmail,
@@ -119,17 +116,15 @@ export function createAdapter(deps: {
         upsertVerifiedPrimaryEmail,
         log,
     } = deps;
-    const placeholder = (index: number) =>
-        dbType === "postgresql" ? `$${index}` : "?";
 
     async function readInviteByTokenHash(tokenHash: string) {
         const result = await dbExecutor.execute(
             `SELECT t.id, t.inviter_account_id, t.invitee_email, t.expires_at, a.display_name
-         FROM registration_tokens t
-         JOIN accounts a ON a.id = t.inviter_account_id
-         WHERE t.token_hash = ${placeholder(1)}
-           AND t.revoked_at IS NULL
-           AND t.redeemed_at IS NULL`,
+       FROM registration_tokens t
+       JOIN accounts a ON a.id = t.inviter_account_id
+       WHERE t.token_hash = ?
+         AND t.revoked_at IS NULL
+         AND t.redeemed_at IS NULL`,
             [tokenHash],
         );
         return result.rows?.[0];
@@ -141,11 +136,11 @@ export function createAdapter(deps: {
         const nowIso = new Date().toISOString();
         const result = await dbExecutor.execute(
             `SELECT COUNT(*) AS count
-         FROM registration_tokens
-         WHERE inviter_account_id = ${placeholder(1)}
-           AND revoked_at IS NULL
-           AND redeemed_at IS NULL
-           AND expires_at > ${placeholder(2)}`,
+       FROM registration_tokens
+       WHERE inviter_account_id = ?
+         AND revoked_at IS NULL
+         AND redeemed_at IS NULL
+         AND expires_at > ?`,
             [inviterAccountId, nowIso],
         );
         const raw = result.rows?.[0]?.count;
@@ -173,17 +168,18 @@ export function createAdapter(deps: {
                 throw new Error("founder_token_limit_reached");
             }
         }
+
         // Any newly issued invite supersedes prior pending ones for the same
         // recipient, regardless of who originally sent them. This prevents stale
         // links from remaining valid after a re-invite.
         const revokeTimestamp = new Date().toISOString();
         await dbExecutor.execute(
             `UPDATE registration_tokens
-         SET revoked_at = ${placeholder(1)}, revoked_by_account_id = ${placeholder(2)}
-         WHERE invitee_email = ${placeholder(3)}
-           AND revoked_at IS NULL
-           AND redeemed_at IS NULL
-           AND expires_at > ${placeholder(4)}`,
+       SET revoked_at = ?, revoked_by_account_id = ?
+       WHERE invitee_email = ?
+         AND revoked_at IS NULL
+         AND redeemed_at IS NULL
+         AND expires_at > ?`,
             [
                 revokeTimestamp,
                 input.inviterAccountId,
@@ -199,18 +195,17 @@ export function createAdapter(deps: {
         const expiresAt = new Date(Date.now() + INVITE_EXPIRY_MS).toISOString();
         const inviteUrl = buildInviteUrl(input.inviteBaseUrl, rawToken);
 
-        await dbExecutor.execute(
-            `INSERT INTO registration_tokens
-         (id, token_hash, inviter_account_id, invitee_email, expires_at)
-         VALUES (${placeholder(1)}, ${placeholder(2)}, ${placeholder(3)}, ${placeholder(4)}, ${placeholder(5)})`,
-            [
-                tokenId,
-                tokenHash,
-                input.inviterAccountId,
-                inviteeEmail,
-                expiresAt,
-            ],
-        );
+        await dbExecutor.executeCommand({
+            option: "INSERT",
+            table: "registration_tokens",
+            values: {
+                id: tokenId,
+                token_hash: tokenHash,
+                inviter_account_id: input.inviterAccountId,
+                invitee_email: inviteeEmail,
+                expires_at: expiresAt,
+            },
+        });
 
         try {
             await sendInviteEmail(
@@ -219,10 +214,11 @@ export function createAdapter(deps: {
                 inviteUrl,
             );
         } catch (error) {
-            await dbExecutor.execute(
-                `DELETE FROM registration_tokens WHERE id = ${placeholder(1)}`,
-                [tokenId],
-            );
+            await dbExecutor.executeCommand({
+                option: "DELETE",
+                table: "registration_tokens",
+                where: [{ column: "id", value: tokenId }],
+            });
             throw error;
         }
         return { tokenId, inviteUrl, expiresAt };
@@ -239,7 +235,7 @@ export function createAdapter(deps: {
        WHERE 1 = 1`;
         const params: unknown[] = [];
         if (filter?.inviterAccountId) {
-            sql += ` AND t.inviter_account_id = ${placeholder(params.length + 1)}`;
+            sql += ` AND t.inviter_account_id = ?`;
             params.push(filter.inviterAccountId);
         }
         sql += " ORDER BY t.created_at DESC";
@@ -287,11 +283,11 @@ export function createAdapter(deps: {
         const nowIso = new Date().toISOString();
         const result = await dbExecutor.execute(
             `UPDATE registration_tokens
-         SET revoked_at = ${placeholder(1)}, revoked_by_account_id = ${placeholder(2)}
-         WHERE id = ${placeholder(3)}
-           AND revoked_at IS NULL
-           AND redeemed_at IS NULL
-           AND expires_at > ${placeholder(4)}`,
+       SET revoked_at = ?, revoked_by_account_id = ?
+       WHERE id = ?
+         AND revoked_at IS NULL
+         AND redeemed_at IS NULL
+         AND expires_at > ?`,
             [nowIso, input.revokedByAccountId, input.tokenId, nowIso],
         );
         return Number(result.rowCount ?? 0) > 0;
@@ -365,12 +361,12 @@ export function createAdapter(deps: {
         const displayName = input.displayName?.trim();
         if (displayName) {
             await dbExecutor.execute(
-                `UPDATE accounts SET display_name = ${placeholder(1)} WHERE id = ${placeholder(2)}`,
+                `UPDATE accounts SET display_name = ? WHERE id = ?`,
                 [displayName, created.username],
             );
         }
         await dbExecutor.execute(
-            `UPDATE accounts SET invited_by_account_id = ${placeholder(1)} WHERE id = ${placeholder(2)}`,
+            `UPDATE accounts SET invited_by_account_id = ? WHERE id = ?`,
             [invite.inviterAccountId, created.username],
         );
         await createProfile?.(
@@ -384,10 +380,10 @@ export function createAdapter(deps: {
         const { tokenHash } = parseToken(input.token);
         const redeemResult = await dbExecutor.execute(
             `UPDATE registration_tokens
-         SET redeemed_at = ${placeholder(1)}, redeemed_account_id = ${placeholder(2)}
-          WHERE token_hash = ${placeholder(3)}
-            AND revoked_at IS NULL
-            AND redeemed_at IS NULL`,
+       SET redeemed_at = ?, redeemed_account_id = ?
+       WHERE token_hash = ?
+         AND revoked_at IS NULL
+         AND redeemed_at IS NULL`,
             [nowIso, created.username, tokenHash],
         );
         if (Number(redeemResult.rowCount ?? 0) < 1) {

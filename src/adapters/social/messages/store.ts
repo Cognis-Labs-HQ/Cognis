@@ -2,8 +2,8 @@
  * DbMessagesStore — persistence layer for the messages adapter.
  *
  * Responsibilities:
- *   - Schema migration for the three tables: chatrooms, chatroom_members,
- *     chat_messages.
+ *   - Schema migration for the four tables: chatrooms, chatroom_members,
+ *     chat_messages, chatroom_keys.
  *   - All CRUD operations on those tables.
  *   - At-rest re-wrapping of message bodies using DATA_ENCRYPTION_KEY,
  *     mirroring the pattern used by the internal notification adapter. The
@@ -21,7 +21,6 @@
 
 import { randomUUID, randomBytes } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { SupportedDbType } from "../../../gateways/db/executor.js";
 import {
     deriveScopedKey,
     encryptPayload,
@@ -66,80 +65,53 @@ export interface MessageRow {
 }
 
 export class DbMessagesStore {
-    constructor(
-        private readonly db: DbExecutor,
-        private readonly dbType: SupportedDbType,
-    ) {}
-
-    private p(n: number): string {
-        return this.dbType === "postgresql" ? `$${n}` : "?";
-    }
-
-    private nowExpr(): string {
-        return this.dbType === "postgresql" ? "NOW()" : "CURRENT_TIMESTAMP";
-    }
-
-    private boolDefault(): string {
-        return this.dbType === "postgresql" ? "FALSE" : "0";
-    }
-
-    private boolParam(value: boolean): boolean | number {
-        return this.dbType === "postgresql" ? value : value ? 1 : 0;
-    }
+    constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        const idType = this.dbType === "postgresql" ? "TEXT" : "VARCHAR(64)";
-        const enumKind =
-            this.dbType === "mariadb"
-                ? "ENUM('dm','group','classroom')"
-                : "VARCHAR(16)";
-        const enumRole =
-            this.dbType === "mariadb"
-                ? "ENUM('owner','admin','member')"
-                : "VARCHAR(16)";
-        const timestampType =
-            this.dbType === "postgresql" ? "TIMESTAMPTZ" : "DATETIME";
-        const tsDefault =
-            this.dbType === "postgresql"
-                ? "DEFAULT NOW()"
-                : "DEFAULT CURRENT_TIMESTAMP";
-        const boolType = this.dbType === "postgresql" ? "BOOLEAN" : "INTEGER";
-
         await this.db.execute(
             `CREATE TABLE IF NOT EXISTS chatrooms (
-                id ${idType} PRIMARY KEY,
-                kind ${enumKind} NOT NULL,
-                title TEXT,
-                avatar_key TEXT,
-                created_by ${idType} NOT NULL,
-                created_at ${timestampType} ${tsDefault},
-                updated_at ${timestampType} ${tsDefault}
-            )`,
+        id TEXT PRIMARY KEY,
+        kind TEXT NOT NULL,
+        title TEXT,
+        avatar_key TEXT,
+        created_by TEXT NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
         );
 
         await this.db.execute(
             `CREATE TABLE IF NOT EXISTS chatroom_members (
-                chatroom_id ${idType} NOT NULL,
-                account_id ${idType} NOT NULL,
-                role ${enumRole} NOT NULL,
-                joined_at ${timestampType} ${tsDefault},
-                last_read_at ${timestampType},
-                muted ${boolType} NOT NULL DEFAULT ${this.boolDefault()},
-                PRIMARY KEY (chatroom_id, account_id)
-            )`,
+        chatroom_id TEXT NOT NULL,
+        account_id TEXT NOT NULL,
+        role TEXT NOT NULL,
+        joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        last_read_at TIMESTAMP,
+        muted INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (chatroom_id, account_id)
+      )`,
         );
 
         await this.db.execute(
             `CREATE TABLE IF NOT EXISTS chat_messages (
-                id ${idType} PRIMARY KEY,
-                chatroom_id ${idType} NOT NULL,
-                sender_id ${idType} NOT NULL,
-                ciphertext TEXT NOT NULL,
-                iv TEXT NOT NULL,
-                auth_tag TEXT NOT NULL DEFAULT '',
-                content_type VARCHAR(64) NOT NULL DEFAULT 'text/plain',
-                created_at ${timestampType} ${tsDefault}
-            )`,
+        id TEXT PRIMARY KEY,
+        chatroom_id TEXT NOT NULL,
+        sender_id TEXT NOT NULL,
+        ciphertext TEXT NOT NULL,
+        iv TEXT NOT NULL,
+        auth_tag TEXT NOT NULL DEFAULT '',
+        content_type VARCHAR(64) NOT NULL DEFAULT 'text/plain',
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
+        );
+
+        await this.db.execute(
+            `CREATE TABLE IF NOT EXISTS chatroom_keys (
+        chatroom_id TEXT PRIMARY KEY,
+        wrapped_key TEXT NOT NULL,
+        key_iv TEXT NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )`,
         );
 
         await this.db
@@ -147,14 +119,6 @@ export class DbMessagesStore {
                 "ALTER TABLE chatrooms ADD COLUMN IF NOT EXISTS avatar_key TEXT",
             )
             .catch(() => undefined);
-
-        if (this.dbType === "mariadb") {
-            await this.db
-                .execute(
-                    "ALTER TABLE chatrooms MODIFY kind ENUM('dm','group','classroom') NOT NULL",
-                )
-                .catch(() => undefined);
-        }
 
         await this.db
             .execute(
@@ -167,20 +131,6 @@ export class DbMessagesStore {
                 "CREATE INDEX IF NOT EXISTS idx_chatroom_members_account ON chatroom_members (account_id)",
             )
             .catch(() => undefined);
-
-        // Per-room wrapped key. The plaintext room key is generated server-side
-        // when the room is created, then wrapped with DATA_ENCRYPTION_KEY for
-        // at-rest storage. Authorized members fetch the unwrapped key over TLS
-        // via GET /messages/rooms/:id/key and use it client-side to encrypt and
-        // decrypt message bodies.
-        await this.db.execute(
-            `CREATE TABLE IF NOT EXISTS chatroom_keys (
-                chatroom_id ${idType} PRIMARY KEY,
-                wrapped_key TEXT NOT NULL,
-                key_iv TEXT NOT NULL,
-                created_at ${timestampType} ${tsDefault}
-            )`,
-        );
     }
 
     private rowToRoom(row: Record<string, unknown>): RoomRow {
@@ -226,11 +176,11 @@ export class DbMessagesStore {
     ): Promise<RoomRow> {
         const id = randomUUID();
         await this.db.execute(
-            `INSERT INTO chatrooms (id, kind, title, created_by) VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)}, ${this.p(4)})`,
+            `INSERT INTO chatrooms (id, kind, title, created_by) VALUES (?, ?, ?, ?)`,
             [id, kind, title, createdBy],
         );
         const result = await this.db.execute(
-            `SELECT * FROM chatrooms WHERE id = ${this.p(1)}`,
+            `SELECT * FROM chatrooms WHERE id = ?`,
             [id],
         );
         return this.rowToRoom(result.rows![0]);
@@ -238,7 +188,7 @@ export class DbMessagesStore {
 
     async getRoom(id: string): Promise<RoomRow | null> {
         const result = await this.db.execute(
-            `SELECT * FROM chatrooms WHERE id = ${this.p(1)}`,
+            `SELECT * FROM chatrooms WHERE id = ?`,
             [id],
         );
         return result.rows?.[0] ? this.rowToRoom(result.rows[0]) : null;
@@ -249,7 +199,7 @@ export class DbMessagesStore {
         avatarKey: string | null,
     ): Promise<RoomRow | null> {
         await this.db.execute(
-            `UPDATE chatrooms SET avatar_key = ${this.p(1)}, updated_at = ${this.nowExpr()} WHERE id = ${this.p(2)}`,
+            `UPDATE chatrooms SET avatar_key = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
             [avatarKey, roomId],
         );
         return this.getRoom(roomId);
@@ -260,18 +210,17 @@ export class DbMessagesStore {
         accountId: string,
         role: MemberRole,
     ): Promise<void> {
-        const stmt =
-            this.dbType === "sqlite"
-                ? `INSERT OR IGNORE INTO chatroom_members (chatroom_id, account_id, role) VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)})`
-                : this.dbType === "postgresql"
-                  ? `INSERT INTO chatroom_members (chatroom_id, account_id, role) VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)}) ON CONFLICT DO NOTHING`
-                  : `INSERT IGNORE INTO chatroom_members (chatroom_id, account_id, role) VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)})`;
-        await this.db.execute(stmt, [roomId, accountId, role]);
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "chatroom_members",
+            values: { chatroom_id: roomId, account_id: accountId, role },
+            conflict: { action: "ignore" },
+        });
     }
 
     async removeMember(roomId: string, accountId: string): Promise<void> {
         await this.db.execute(
-            `DELETE FROM chatroom_members WHERE chatroom_id = ${this.p(1)} AND account_id = ${this.p(2)}`,
+            `DELETE FROM chatroom_members WHERE chatroom_id = ? AND account_id = ?`,
             [roomId, accountId],
         );
     }
@@ -281,7 +230,7 @@ export class DbMessagesStore {
         accountId: string,
     ): Promise<MemberRow | null> {
         const result = await this.db.execute(
-            `SELECT * FROM chatroom_members WHERE chatroom_id = ${this.p(1)} AND account_id = ${this.p(2)}`,
+            `SELECT * FROM chatroom_members WHERE chatroom_id = ? AND account_id = ?`,
             [roomId, accountId],
         );
         return result.rows?.[0] ? this.rowToMember(result.rows[0]) : null;
@@ -289,7 +238,7 @@ export class DbMessagesStore {
 
     async listMembers(roomId: string): Promise<MemberRow[]> {
         const result = await this.db.execute(
-            `SELECT * FROM chatroom_members WHERE chatroom_id = ${this.p(1)} ORDER BY joined_at ASC`,
+            `SELECT * FROM chatroom_members WHERE chatroom_id = ? ORDER BY joined_at ASC`,
             [roomId],
         );
         return (result.rows ?? []).map((row) => this.rowToMember(row));
@@ -298,9 +247,9 @@ export class DbMessagesStore {
     async listRoomsForAccount(accountId: string): Promise<RoomRow[]> {
         const result = await this.db.execute(
             `SELECT c.* FROM chatrooms c
-             JOIN chatroom_members m ON m.chatroom_id = c.id
-             WHERE m.account_id = ${this.p(1)}
-             ORDER BY c.updated_at DESC`,
+       JOIN chatroom_members m ON m.chatroom_id = c.id
+       WHERE m.account_id = ?
+       ORDER BY c.updated_at DESC`,
             [accountId],
         );
         return (result.rows ?? []).map((row) => this.rowToRoom(row));
@@ -310,10 +259,10 @@ export class DbMessagesStore {
     async findDmBetween(a: string, b: string): Promise<RoomRow | null> {
         const result = await this.db.execute(
             `SELECT c.* FROM chatrooms c
-             JOIN chatroom_members m1 ON m1.chatroom_id = c.id AND m1.account_id = ${this.p(1)}
-             JOIN chatroom_members m2 ON m2.chatroom_id = c.id AND m2.account_id = ${this.p(2)}
-             WHERE c.kind = 'dm'
-             LIMIT 1`,
+       JOIN chatroom_members m1 ON m1.chatroom_id = c.id AND m1.account_id = ?
+       JOIN chatroom_members m2 ON m2.chatroom_id = c.id AND m2.account_id = ?
+       WHERE c.kind = 'dm'
+       LIMIT 1`,
             [a, b],
         );
         return result.rows?.[0] ? this.rowToRoom(result.rows[0]) : null;
@@ -330,7 +279,7 @@ export class DbMessagesStore {
         const id = randomUUID();
         await this.db.execute(
             `INSERT INTO chat_messages (id, chatroom_id, sender_id, ciphertext, iv, auth_tag, content_type)
-             VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)}, ${this.p(4)}, ${this.p(5)}, ${this.p(6)}, ${this.p(7)})`,
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
                 id,
                 input.roomId,
@@ -342,11 +291,11 @@ export class DbMessagesStore {
             ],
         );
         await this.db.execute(
-            `UPDATE chatrooms SET updated_at = ${this.nowExpr()} WHERE id = ${this.p(1)}`,
+            `UPDATE chatrooms SET updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
             [input.roomId],
         );
         const result = await this.db.execute(
-            `SELECT * FROM chat_messages WHERE id = ${this.p(1)}`,
+            `SELECT * FROM chat_messages WHERE id = ?`,
             [id],
         );
         return this.rowToMessage(result.rows![0]);
@@ -360,16 +309,16 @@ export class DbMessagesStore {
         if (before) {
             const result = await this.db.execute(
                 `SELECT * FROM chat_messages
-                 WHERE chatroom_id = ${this.p(1)} AND created_at < ${this.p(2)}
-                 ORDER BY created_at DESC LIMIT ${this.p(3)}`,
+         WHERE chatroom_id = ? AND created_at < ?
+         ORDER BY created_at DESC LIMIT ?`,
                 [roomId, before, limit],
             );
             return (result.rows ?? []).map((row) => this.rowToMessage(row));
         }
         const result = await this.db.execute(
             `SELECT * FROM chat_messages
-             WHERE chatroom_id = ${this.p(1)}
-             ORDER BY created_at DESC LIMIT ${this.p(2)}`,
+       WHERE chatroom_id = ?
+       ORDER BY created_at DESC LIMIT ?`,
             [roomId, limit],
         );
         return (result.rows ?? []).map((row) => this.rowToMessage(row));
@@ -377,8 +326,8 @@ export class DbMessagesStore {
 
     async markRead(roomId: string, accountId: string): Promise<void> {
         await this.db.execute(
-            `UPDATE chatroom_members SET last_read_at = ${this.nowExpr()}
-             WHERE chatroom_id = ${this.p(1)} AND account_id = ${this.p(2)}`,
+            `UPDATE chatroom_members SET last_read_at = CURRENT_TIMESTAMP
+       WHERE chatroom_id = ? AND account_id = ?`,
             [roomId, accountId],
         );
     }
@@ -386,21 +335,28 @@ export class DbMessagesStore {
     async unreadCount(roomId: string, accountId: string): Promise<number> {
         const member = await this.getMember(roomId, accountId);
         if (!member) return 0;
-        if (!member.lastReadAt) {
-            const result = await this.db.execute(
-                `SELECT COUNT(*) AS cnt FROM chat_messages
-                 WHERE chatroom_id = ${this.p(1)} AND sender_id <> ${this.p(2)}`,
-                [roomId, accountId],
-            );
-            return Number(result.rows?.[0]?.cnt ?? 0);
-        }
-        const result = await this.db.execute(
-            `SELECT COUNT(*) AS cnt FROM chat_messages
-             WHERE chatroom_id = ${this.p(1)}
-               AND sender_id <> ${this.p(2)}
-               AND created_at > ${this.p(3)}`,
-            [roomId, accountId, member.lastReadAt],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_messages",
+            count: true,
+            where: [
+                { column: "chatroom_id", value: roomId },
+                {
+                    column: "sender_id",
+                    operator: "!=" as const,
+                    value: accountId,
+                },
+                ...(member.lastReadAt
+                    ? [
+                          {
+                              column: "created_at",
+                              operator: ">" as const,
+                              value: member.lastReadAt,
+                          },
+                      ]
+                    : []),
+            ],
+        });
         return Number(result.rows?.[0]?.cnt ?? 0);
     }
 
@@ -409,11 +365,15 @@ export class DbMessagesStore {
         accountId: string,
         muted: boolean,
     ): Promise<void> {
-        await this.db.execute(
-            `UPDATE chatroom_members SET muted = ${this.p(1)}
-             WHERE chatroom_id = ${this.p(2)} AND account_id = ${this.p(3)}`,
-            [this.boolParam(muted), roomId, accountId],
-        );
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "chatroom_members",
+            set: { muted: muted ? 1 : 0 },
+            where: [
+                { column: "chatroom_id", value: roomId },
+                { column: "account_id", value: accountId },
+            ],
+        });
     }
 
     async storeWrappedRoomKey(
@@ -429,21 +389,21 @@ export class DbMessagesStore {
             wrapper,
             plaintextKeyHex,
         );
-        const stmt =
-            this.dbType === "sqlite"
-                ? `INSERT INTO chatroom_keys (chatroom_id, wrapped_key, key_iv) VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)})
-                   ON CONFLICT (chatroom_id) DO UPDATE SET wrapped_key = excluded.wrapped_key, key_iv = excluded.key_iv`
-                : this.dbType === "postgresql"
-                  ? `INSERT INTO chatroom_keys (chatroom_id, wrapped_key, key_iv) VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)})
-                     ON CONFLICT (chatroom_id) DO UPDATE SET wrapped_key = EXCLUDED.wrapped_key, key_iv = EXCLUDED.key_iv`
-                  : `INSERT INTO chatroom_keys (chatroom_id, wrapped_key, key_iv) VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)})
-                     ON DUPLICATE KEY UPDATE wrapped_key = VALUES(wrapped_key), key_iv = VALUES(key_iv)`;
-        await this.db.execute(stmt, [roomId, ciphertext, iv]);
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "chatroom_keys",
+            values: {
+                chatroom_id: roomId,
+                wrapped_key: ciphertext,
+                key_iv: iv,
+            },
+            conflict: { action: "update", target: ["chatroom_id"] },
+        });
     }
 
     async getUnwrappedRoomKey(roomId: string): Promise<string | null> {
         const result = await this.db.execute(
-            `SELECT wrapped_key, key_iv FROM chatroom_keys WHERE chatroom_id = ${this.p(1)}`,
+            `SELECT wrapped_key, key_iv FROM chatroom_keys WHERE chatroom_id = ?`,
             [roomId],
         );
         const row = result.rows?.[0];

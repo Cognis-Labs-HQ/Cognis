@@ -139,21 +139,23 @@ class PostgresExecutor implements DbExecutor {
     }
 
     async execute(sql: string, params: unknown[] = []) {
+        let paramIndex = 1;
+        const normalizedSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
         writeDbLog(this.log, "debug", "Executing SQL statement.", {
             component: "db",
             provider: "postgresql",
-            statement: summarizeStatement(sql),
+            statement: summarizeStatement(normalizedSql),
             parameterCount: params.length,
         });
         const client = await this.getClient();
         try {
-            const result = await client.query(sql, params);
+            const result = await client.query(normalizedSql, params);
             return { rows: result.rows, rowCount: result.rowCount };
         } catch (error) {
             writeDbLog(this.log, "warn", "SQL execution failed.", {
                 component: "db",
                 provider: "postgresql",
-                statement: summarizeStatement(sql),
+                statement: summarizeStatement(normalizedSql),
                 parameterCount: params.length,
                 ...buildDbErrorMeta(error),
             });

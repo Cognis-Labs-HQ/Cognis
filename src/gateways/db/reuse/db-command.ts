@@ -44,6 +44,7 @@ export interface StructuredDbSelectCommand {
     table: string;
     alias?: string;
     columns?: string[];
+    count?: boolean;
     joins?: StructuredDbJoinClause[];
     where?: StructuredDbWhereClause[];
     orderBy?: StructuredDbOrderByClause[];
@@ -199,14 +200,15 @@ function buildSelectStatement(
     params: unknown[],
     placeholder: (params: unknown[], value: unknown) => string,
 ): StructuredDbCommandStatement {
-    const columns =
-        command.columns && command.columns.length > 0
-            ? command.columns.map((column) =>
-                  column === "*"
-                      ? "*"
-                      : assertIdentifier(column, "select column"),
-              )
-            : ["*"];
+    const columns = command.count
+        ? ["COUNT(*) AS cnt"]
+        : command.columns && command.columns.length > 0
+          ? command.columns.map((column) =>
+                column === "*"
+                    ? "*"
+                    : assertIdentifier(column, "select column"),
+            )
+          : ["*"];
     const table = assertIdentifier(command.table, "table");
     const alias = command.alias
         ? ` ${assertIdentifier(command.alias, "table alias")}`

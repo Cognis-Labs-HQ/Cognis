@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { SupportedDbType } from "./account-store.js";
-import type { DbExecutor } from "./account-store.js";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 export type {
     AccountRole,
     AccountVisibility,
@@ -52,122 +51,55 @@ function rowToPost(row: any): Post {
 }
 
 export class DbProfileStore implements ProfileCreateStore {
-    constructor(
-        private readonly db: DbExecutor,
-        private readonly dbType: SupportedDbType,
-    ) {}
-
-    private p(index: number): string {
-        return this.dbType === "postgresql" ? `$${index}` : "?";
-    }
-
-    private nowExpr(): string {
-        return this.dbType === "postgresql" ? "NOW()" : "CURRENT_TIMESTAMP";
-    }
+    constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        if (this.dbType === "postgresql") {
-            await this.ensureSchemaPostgresql();
-        } else {
-            await this.ensureSchemaMariadb();
-        }
+        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_profiles (
+  account_id TEXT PRIMARY KEY,
+  handle TEXT NOT NULL UNIQUE,
+  display_name TEXT,
+  role TEXT NOT NULL DEFAULT 'user',
+  bio TEXT,
+  location TEXT,
+  website TEXT,
+  avatar_key TEXT,
+  banner_key TEXT,
+  visibility TEXT NOT NULL DEFAULT 'hidden',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+)`);
+        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_follows (
+  follower_id TEXT NOT NULL,
+  following_id TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (follower_id, following_id),
+  FOREIGN KEY (follower_id) REFERENCES accounts(id) ON DELETE CASCADE,
+  FOREIGN KEY (following_id) REFERENCES accounts(id) ON DELETE CASCADE
+)`);
+        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_blocks (
+  blocker_id TEXT NOT NULL,
+  blocked_id TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (blocker_id, blocked_id),
+  FOREIGN KEY (blocker_id) REFERENCES accounts(id) ON DELETE CASCADE,
+  FOREIGN KEY (blocked_id) REFERENCES accounts(id) ON DELETE CASCADE
+)`);
+        await this.db.execute(`CREATE TABLE IF NOT EXISTS posts (
+  id TEXT PRIMARY KEY,
+  account_id TEXT NOT NULL,
+  title TEXT,
+  content TEXT NOT NULL,
+  visibility TEXT NOT NULL DEFAULT 'community',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+)`);
+        await this.db.execute(`CREATE TABLE IF NOT EXISTS file_size_limits (
+  category TEXT PRIMARY KEY,
+  max_bytes BIGINT NOT NULL
+)`);
         await this.seedFileSizeLimits();
-    }
-
-    private async ensureSchemaPostgresql(): Promise<void> {
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_profiles (
-      account_id TEXT PRIMARY KEY,
-      handle TEXT NOT NULL UNIQUE,
-      display_name TEXT,
-      role TEXT NOT NULL DEFAULT 'user',
-      bio TEXT,
-      location TEXT,
-      website TEXT,
-      avatar_key TEXT,
-      banner_key TEXT,
-      visibility TEXT NOT NULL DEFAULT 'hidden',
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_follows (
-      follower_id TEXT NOT NULL,
-      following_id TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      PRIMARY KEY (follower_id, following_id),
-      FOREIGN KEY (follower_id) REFERENCES accounts(id) ON DELETE CASCADE,
-      FOREIGN KEY (following_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_blocks (
-      blocker_id TEXT NOT NULL,
-      blocked_id TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      PRIMARY KEY (blocker_id, blocked_id),
-      FOREIGN KEY (blocker_id) REFERENCES accounts(id) ON DELETE CASCADE,
-      FOREIGN KEY (blocked_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS posts (
-      id TEXT PRIMARY KEY,
-      account_id TEXT NOT NULL,
-      title TEXT,
-      content TEXT NOT NULL,
-      visibility TEXT NOT NULL DEFAULT 'community',
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS file_size_limits (
-      category TEXT PRIMARY KEY,
-      max_bytes BIGINT NOT NULL
-    )`);
-    }
-
-    private async ensureSchemaMariadb(): Promise<void> {
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_profiles (
-      account_id VARCHAR(191) PRIMARY KEY,
-      handle VARCHAR(191) NOT NULL UNIQUE,
-      display_name VARCHAR(255) DEFAULT NULL,
-      role VARCHAR(32) NOT NULL DEFAULT 'user',
-      bio TEXT,
-      location VARCHAR(255),
-      website VARCHAR(2048),
-      avatar_key VARCHAR(512),
-      banner_key VARCHAR(512),
-      visibility VARCHAR(32) NOT NULL DEFAULT 'hidden',
-      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_follows (
-      follower_id VARCHAR(191) NOT NULL,
-      following_id VARCHAR(191) NOT NULL,
-      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (follower_id, following_id),
-      FOREIGN KEY (follower_id) REFERENCES accounts(id) ON DELETE CASCADE,
-      FOREIGN KEY (following_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS account_blocks (
-      blocker_id VARCHAR(191) NOT NULL,
-      blocked_id VARCHAR(191) NOT NULL,
-      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (blocker_id, blocked_id),
-      FOREIGN KEY (blocker_id) REFERENCES accounts(id) ON DELETE CASCADE,
-      FOREIGN KEY (blocked_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS posts (
-      id VARCHAR(191) PRIMARY KEY,
-      account_id VARCHAR(191) NOT NULL,
-      title VARCHAR(512),
-      content LONGTEXT NOT NULL,
-      visibility VARCHAR(32) NOT NULL DEFAULT 'community',
-      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-    )`);
-        await this.db.execute(`CREATE TABLE IF NOT EXISTS file_size_limits (
-      category VARCHAR(64) PRIMARY KEY,
-      max_bytes BIGINT NOT NULL
-    )`);
     }
 
     private async seedFileSizeLimits(): Promise<void> {
@@ -178,17 +110,12 @@ export class DbProfileStore implements ProfileCreateStore {
             ["global", 10_485_760],
         ];
         for (const [category, maxBytes] of defaults) {
-            if (this.dbType === "postgresql") {
-                await this.db.execute(
-                    `INSERT INTO file_size_limits (category, max_bytes) VALUES (${this.p(1)}, ${this.p(2)}) ON CONFLICT (category) DO NOTHING`,
-                    [category, maxBytes],
-                );
-            } else {
-                await this.db.execute(
-                    `INSERT IGNORE INTO file_size_limits (category, max_bytes) VALUES (${this.p(1)}, ${this.p(2)})`,
-                    [category, maxBytes],
-                );
-            }
+            await this.db.executeCommand({
+                option: "INSERT",
+                table: "file_size_limits",
+                values: { category, max_bytes: maxBytes },
+                conflict: { action: "ignore" },
+            });
         }
     }
 
@@ -199,20 +126,15 @@ export class DbProfileStore implements ProfileCreateStore {
         displayName?: string,
     ): Promise<AccountProfile | null> {
         try {
-            if (this.dbType === "postgresql") {
-                await this.db.execute(
-                    `INSERT INTO account_profiles (account_id, handle, role) VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)}) ON CONFLICT (account_id) DO NOTHING`,
-                    [accountId, handle, role],
-                );
-            } else {
-                await this.db.execute(
-                    `INSERT IGNORE INTO account_profiles (account_id, handle, role) VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)})`,
-                    [accountId, handle, role],
-                );
-            }
+            await this.db.executeCommand({
+                option: "INSERT",
+                table: "account_profiles",
+                values: { account_id: accountId, handle, role },
+                conflict: { action: "ignore" },
+            });
             if (displayName) {
                 await this.db.execute(
-                    `UPDATE account_profiles SET display_name = ${this.p(1)} WHERE account_id = ${this.p(2)}`,
+                    `UPDATE account_profiles SET display_name = ? WHERE account_id = ?`,
                     [displayName, accountId],
                 );
             }
@@ -224,7 +146,7 @@ export class DbProfileStore implements ProfileCreateStore {
 
     async getProfile(accountId: string): Promise<AccountProfile | null> {
         const result = await this.db.execute(
-            `SELECT * FROM account_profiles WHERE account_id = ${this.p(1)}`,
+            `SELECT * FROM account_profiles WHERE account_id = ?`,
             [accountId],
         );
         const row = result.rows?.[0];
@@ -233,7 +155,7 @@ export class DbProfileStore implements ProfileCreateStore {
 
     async getProfileByHandle(handle: string): Promise<AccountProfile | null> {
         const result = await this.db.execute(
-            `SELECT * FROM account_profiles WHERE handle = ${this.p(1)}`,
+            `SELECT * FROM account_profiles WHERE handle = ?`,
             [handle],
         );
         const row = result.rows?.[0];
@@ -247,14 +169,14 @@ export class DbProfileStore implements ProfileCreateStore {
         const pattern = query.toLowerCase().replace(/[\\%_]/g, "\\$&") + "%";
         const result = await this.db.execute(
             `SELECT * FROM account_profiles
-             WHERE visibility != 'hidden'
-               AND (
-                 LOWER(handle) LIKE ${this.p(1)} ESCAPE '\\'
-                 OR LOWER(COALESCE(display_name, '')) LIKE ${this.p(1)} ESCAPE '\\'
-               )
-             ORDER BY handle ASC
-             LIMIT ${this.p(2)}`,
-            [pattern, limit],
+       WHERE visibility != 'hidden'
+         AND (
+           LOWER(handle) LIKE ? ESCAPE '\\'
+           OR LOWER(COALESCE(display_name, '')) LIKE ? ESCAPE '\\'
+         )
+       ORDER BY handle ASC
+       LIMIT ?`,
+            [pattern, pattern, limit],
         );
         return (result.rows ?? []).map(rowToProfile);
     }
@@ -286,22 +208,21 @@ export class DbProfileStore implements ProfileCreateStore {
 
         const setClauses: string[] = [];
         const params: unknown[] = [];
-        let idx = 1;
 
         for (const [key, col] of Object.entries(fieldMap)) {
             if (key in updates) {
-                setClauses.push(`${col} = ${this.p(idx++)}`);
+                setClauses.push(`${col} = ?`);
                 params.push((updates as any)[key] ?? null);
             }
         }
 
         if (setClauses.length === 0) return this.getProfile(accountId);
 
-        setClauses.push(`updated_at = ${this.nowExpr()}`);
+        setClauses.push(`updated_at = CURRENT_TIMESTAMP`);
         params.push(accountId);
 
         await this.db.execute(
-            `UPDATE account_profiles SET ${setClauses.join(", ")} WHERE account_id = ${this.p(idx)}`,
+            `UPDATE account_profiles SET ${setClauses.join(", ")} WHERE account_id = ?`,
             params,
         );
         return this.getProfile(accountId);
@@ -309,36 +230,31 @@ export class DbProfileStore implements ProfileCreateStore {
 
     async setRoleByHandle(handle: string, role: AccountRole): Promise<void> {
         await this.db.execute(
-            `UPDATE account_profiles SET role = ${this.p(1)}, updated_at = ${this.nowExpr()} WHERE handle = ${this.p(2)}`,
+            `UPDATE account_profiles SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE handle = ?`,
             [role, handle],
         );
     }
 
     async getRole(accountId: string): Promise<AccountRole> {
         const result = await this.db.execute(
-            `SELECT role FROM account_profiles WHERE account_id = ${this.p(1)}`,
+            `SELECT role FROM account_profiles WHERE account_id = ?`,
             [accountId],
         );
         return (result.rows?.[0]?.role as AccountRole) ?? "user";
     }
 
     async follow(followerId: string, followingId: string): Promise<void> {
-        if (this.dbType === "postgresql") {
-            await this.db.execute(
-                `INSERT INTO account_follows (follower_id, following_id) VALUES (${this.p(1)}, ${this.p(2)}) ON CONFLICT DO NOTHING`,
-                [followerId, followingId],
-            );
-        } else {
-            await this.db.execute(
-                `INSERT IGNORE INTO account_follows (follower_id, following_id) VALUES (${this.p(1)}, ${this.p(2)})`,
-                [followerId, followingId],
-            );
-        }
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "account_follows",
+            values: { follower_id: followerId, following_id: followingId },
+            conflict: { action: "ignore" },
+        });
     }
 
     async unfollow(followerId: string, followingId: string): Promise<void> {
         await this.db.execute(
-            `DELETE FROM account_follows WHERE follower_id = ${this.p(1)} AND following_id = ${this.p(2)}`,
+            `DELETE FROM account_follows WHERE follower_id = ? AND following_id = ?`,
             [followerId, followingId],
         );
     }
@@ -348,7 +264,7 @@ export class DbProfileStore implements ProfileCreateStore {
         followingId: string,
     ): Promise<boolean> {
         const result = await this.db.execute(
-            `SELECT 1 FROM account_follows WHERE follower_id = ${this.p(1)} AND following_id = ${this.p(2)}`,
+            `SELECT 1 FROM account_follows WHERE follower_id = ? AND following_id = ?`,
             [followerId, followingId],
         );
         return Boolean(result.rows?.length);
@@ -358,7 +274,7 @@ export class DbProfileStore implements ProfileCreateStore {
         const result = await this.db.execute(
             `SELECT p.* FROM account_follows f
        JOIN account_profiles p ON p.account_id = f.follower_id
-       WHERE f.following_id = ${this.p(1)}
+       WHERE f.following_id = ?
        ORDER BY f.created_at DESC`,
             [accountId],
         );
@@ -369,7 +285,7 @@ export class DbProfileStore implements ProfileCreateStore {
         const result = await this.db.execute(
             `SELECT p.* FROM account_follows f
        JOIN account_profiles p ON p.account_id = f.following_id
-       WHERE f.follower_id = ${this.p(1)}
+       WHERE f.follower_id = ?
        ORDER BY f.created_at DESC`,
             [accountId],
         );
@@ -378,7 +294,7 @@ export class DbProfileStore implements ProfileCreateStore {
 
     async getFollowerCount(accountId: string): Promise<number> {
         const result = await this.db.execute(
-            `SELECT COUNT(*) AS cnt FROM account_follows WHERE following_id = ${this.p(1)}`,
+            `SELECT COUNT(*) AS cnt FROM account_follows WHERE following_id = ?`,
             [accountId],
         );
         return Number(result.rows?.[0]?.cnt ?? 0);
@@ -386,7 +302,7 @@ export class DbProfileStore implements ProfileCreateStore {
 
     async getFollowingCount(accountId: string): Promise<number> {
         const result = await this.db.execute(
-            `SELECT COUNT(*) AS cnt FROM account_follows WHERE follower_id = ${this.p(1)}`,
+            `SELECT COUNT(*) AS cnt FROM account_follows WHERE follower_id = ?`,
             [accountId],
         );
         return Number(result.rows?.[0]?.cnt ?? 0);
@@ -395,29 +311,24 @@ export class DbProfileStore implements ProfileCreateStore {
     async block(blockerId: string, blockedId: string): Promise<void> {
         await this.unfollow(blockerId, blockedId);
         await this.unfollow(blockedId, blockerId);
-        if (this.dbType === "postgresql") {
-            await this.db.execute(
-                `INSERT INTO account_blocks (blocker_id, blocked_id) VALUES (${this.p(1)}, ${this.p(2)}) ON CONFLICT DO NOTHING`,
-                [blockerId, blockedId],
-            );
-        } else {
-            await this.db.execute(
-                `INSERT IGNORE INTO account_blocks (blocker_id, blocked_id) VALUES (${this.p(1)}, ${this.p(2)})`,
-                [blockerId, blockedId],
-            );
-        }
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "account_blocks",
+            values: { blocker_id: blockerId, blocked_id: blockedId },
+            conflict: { action: "ignore" },
+        });
     }
 
     async unblock(blockerId: string, blockedId: string): Promise<void> {
         await this.db.execute(
-            `DELETE FROM account_blocks WHERE blocker_id = ${this.p(1)} AND blocked_id = ${this.p(2)}`,
+            `DELETE FROM account_blocks WHERE blocker_id = ? AND blocked_id = ?`,
             [blockerId, blockedId],
         );
     }
 
     async isBlocked(blockerId: string, blockedId: string): Promise<boolean> {
         const result = await this.db.execute(
-            `SELECT 1 FROM account_blocks WHERE blocker_id = ${this.p(1)} AND blocked_id = ${this.p(2)}`,
+            `SELECT 1 FROM account_blocks WHERE blocker_id = ? AND blocked_id = ?`,
             [blockerId, blockedId],
         );
         return Boolean(result.rows?.length);
@@ -430,7 +341,7 @@ export class DbProfileStore implements ProfileCreateStore {
         const id = randomUUID();
         await this.db.execute(
             `INSERT INTO posts (id, account_id, title, content, visibility)
-       VALUES (${this.p(1)}, ${this.p(2)}, ${this.p(3)}, ${this.p(4)}, ${this.p(5)})`,
+       VALUES (?, ?, ?, ?, ?)`,
             [
                 id,
                 accountId,
@@ -440,7 +351,7 @@ export class DbProfileStore implements ProfileCreateStore {
             ],
         );
         const result = await this.db.execute(
-            `SELECT * FROM posts WHERE id = ${this.p(1)}`,
+            `SELECT * FROM posts WHERE id = ?`,
             [id],
         );
         return rowToPost(result.rows![0]);
@@ -448,7 +359,7 @@ export class DbProfileStore implements ProfileCreateStore {
 
     async getPostsByAccount(accountId: string): Promise<Post[]> {
         const result = await this.db.execute(
-            `SELECT * FROM posts WHERE account_id = ${this.p(1)} ORDER BY created_at DESC`,
+            `SELECT * FROM posts WHERE account_id = ? ORDER BY created_at DESC`,
             [accountId],
         );
         return (result.rows ?? []).map(rowToPost);
@@ -456,7 +367,7 @@ export class DbProfileStore implements ProfileCreateStore {
 
     async getPostById(postId: string): Promise<Post | null> {
         const result = await this.db.execute(
-            `SELECT * FROM posts WHERE id = ${this.p(1)}`,
+            `SELECT * FROM posts WHERE id = ?`,
             [postId],
         );
         const row = result.rows?.[0];
@@ -464,40 +375,35 @@ export class DbProfileStore implements ProfileCreateStore {
     }
 
     async deletePost(postId: string): Promise<boolean> {
-        const result = await this.db.execute(
-            `DELETE FROM posts WHERE id = ${this.p(1)}`,
-            [postId],
-        );
+        const result = await this.db.execute(`DELETE FROM posts WHERE id = ?`, [
+            postId,
+        ]);
         return (result.rowCount ?? 0) > 0;
     }
 
     async getFileSizeLimit(category: string): Promise<number> {
         const result = await this.db.execute(
-            `SELECT max_bytes FROM file_size_limits WHERE category = ${this.p(1)}`,
+            `SELECT max_bytes FROM file_size_limits WHERE category = ?`,
             [category],
         );
         if (result.rows?.length) return Number(result.rows[0].max_bytes);
         const fallback = await this.db.execute(
-            `SELECT max_bytes FROM file_size_limits WHERE category = ${this.p(1)}`,
+            `SELECT max_bytes FROM file_size_limits WHERE category = ?`,
             ["global"],
         );
         return Number(fallback.rows?.[0]?.max_bytes ?? 10_485_760);
     }
 
     async setFileSizeLimit(category: string, maxBytes: number): Promise<void> {
-        if (this.dbType === "postgresql") {
-            await this.db.execute(
-                `INSERT INTO file_size_limits (category, max_bytes) VALUES (${this.p(1)}, ${this.p(2)})
-         ON CONFLICT (category) DO UPDATE SET max_bytes = EXCLUDED.max_bytes`,
-                [category, maxBytes],
-            );
-        } else {
-            await this.db.execute(
-                `INSERT INTO file_size_limits (category, max_bytes) VALUES (${this.p(1)}, ${this.p(2)})
-         ON DUPLICATE KEY UPDATE max_bytes = VALUES(max_bytes)`,
-                [category, maxBytes],
-            );
-        }
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "file_size_limits",
+            values: { category, max_bytes: maxBytes },
+            conflict: {
+                action: "update",
+                target: ["category"],
+            },
+        });
     }
 
     async getAllFileSizeLimits(): Promise<FileSizeLimit[]> {

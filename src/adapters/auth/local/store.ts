@@ -6,10 +6,8 @@
  * auth adapter. Nothing outside the auth gateway bootstrap should hold a
  * direct reference to this class.
  *
- * SQL is written inline here using placeholder helpers to support both
- * supported dialects (PostgreSQL, MariaDB). Schema creation is
- * handled at boot time via the SQL init scripts under
- * src/adapters/db/<provider>/sql/init/; the ensureSchema() method is a
+ * The actual database schema is initialised by the SQL init scripts under
+ * src/adapters/db/<provider>/sql/init/. The ensureSchema() method is a
  * no-op safety net only.
  */
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
@@ -17,7 +15,6 @@ import { promisify } from "node:util";
 import type { AuthContext, BootstrapLog } from "@cognis/core";
 import type { LocalAccountStore } from "../../../api/reuse/account-store.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { SupportedDbType } from "../../../gateways/db/executor.js";
 
 const scryptAsync = promisify(scrypt);
 
@@ -46,105 +43,19 @@ async function verifyPassword(
 export class DbLocalAccountStore implements LocalAccountStore {
     constructor(
         private readonly db: DbExecutor,
-        private readonly dbType: SupportedDbType,
         private readonly log?: BootstrapLog,
     ) {}
-
-    private placeholder(index: number) {
-        if (this.dbType === "postgresql") return `$${index}`;
-        return "?";
-    }
-
-    private currentTimestampExpression() {
-        if (this.dbType === "postgresql") return "NOW()";
-        return "CURRENT_TIMESTAMP";
-    }
 
     private writeLog(
         level: "debug" | "info" | "warn" | "error",
         message: string,
         meta?: Record<string, unknown>,
     ): void {
-        const log = this.log;
-        log?.(level, message, meta);
+        this.log?.(level, message, meta);
     }
 
     async ensureSchema() {
-        if (this.dbType === "postgresql") {
-            await this.db.execute(`CREATE TABLE IF NOT EXISTS accounts (
-        id TEXT PRIMARY KEY,
-        email TEXT,
-        display_name TEXT,
-        is_admin BOOLEAN NOT NULL DEFAULT FALSE,
-        role TEXT NOT NULL DEFAULT 'user',
-        enabled BOOLEAN NOT NULL DEFAULT TRUE,
-        is_founder BOOLEAN NOT NULL DEFAULT FALSE,
-        invited_by_account_id TEXT NULL,
-        last_login TIMESTAMPTZ,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        FOREIGN KEY (invited_by_account_id) REFERENCES accounts(id) ON DELETE SET NULL
-      )`);
-            await this.db
-                .execute(`CREATE TABLE IF NOT EXISTS local_auth_credentials (
-        account_id TEXT PRIMARY KEY,
-        username TEXT NOT NULL UNIQUE,
-        password_hash TEXT NOT NULL,
-        password_algorithm TEXT NOT NULL DEFAULT 'sha256',
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-      )`);
-            await this.db
-                .execute(
-                    `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user'`,
-                )
-                .catch(() => undefined);
-            await this.db
-                .execute(
-                    `UPDATE accounts SET role = 'admin' WHERE is_admin = TRUE AND role = 'user'`,
-                )
-                .catch(() => undefined);
-            return;
-        }
-
-        if (this.dbType === "mariadb") {
-            await this.db.execute(`CREATE TABLE IF NOT EXISTS accounts (
-        id VARCHAR(191) PRIMARY KEY,
-        email VARCHAR(320) NULL,
-        display_name VARCHAR(255) NULL,
-        is_admin BOOLEAN NOT NULL DEFAULT FALSE,
-        role TEXT NOT NULL DEFAULT 'user',
-        enabled BOOLEAN NOT NULL DEFAULT TRUE,
-        is_founder BOOLEAN NOT NULL DEFAULT FALSE,
-        invited_by_account_id VARCHAR(191) NULL,
-        last_login TIMESTAMP NULL,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (invited_by_account_id) REFERENCES accounts(id) ON DELETE SET NULL
-      )`);
-            await this.db
-                .execute(`CREATE TABLE IF NOT EXISTS local_auth_credentials (
-        account_id VARCHAR(191) PRIMARY KEY,
-        username VARCHAR(191) NOT NULL UNIQUE,
-        password_hash VARCHAR(255) NOT NULL,
-        password_algorithm VARCHAR(64) NOT NULL DEFAULT 'sha256',
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
-      )`);
-            await this.db
-                .execute(
-                    `ALTER TABLE accounts ADD COLUMN role VARCHAR(32) NOT NULL DEFAULT 'user'`,
-                )
-                .catch(() => undefined);
-            await this.db
-                .execute(
-                    `UPDATE accounts SET role = 'admin' WHERE is_admin = TRUE AND role = 'user'`,
-                )
-                .catch(() => undefined);
-            return;
-        }
+        // Schema is created by provider init scripts; this is a no-op safety net.
     }
 
     async register(username: string, password: string, isAdmin = false) {
@@ -155,12 +66,12 @@ export class DbLocalAccountStore implements LocalAccountStore {
         try {
             await this.db.execute(
                 `INSERT INTO accounts (id, display_name, is_admin, role, created_at, updated_at)
-         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)}, ${this.currentTimestampExpression()}, ${this.currentTimestampExpression()})`,
+         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
                 [username, username, role === "admin", role],
             );
             await this.db.execute(
                 `INSERT INTO local_auth_credentials (account_id, username, password_hash, password_algorithm, created_at, updated_at)
-         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)}, ${this.currentTimestampExpression()}, ${this.currentTimestampExpression()})`,
+         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
                 [username, username, passwordHash, "scrypt"],
             );
             await this.db.execute("COMMIT");
@@ -190,7 +101,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
        FROM local_auth_credentials c
        JOIN accounts a ON a.id = c.account_id
        LEFT JOIN account_profiles p ON p.account_id = a.id
-       WHERE c.username = ${this.placeholder(1)}`,
+       WHERE c.username = ?`,
             [username],
         );
         const account = result.rows?.[0];
@@ -216,7 +127,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async has(username: string) {
         const result = await this.db.execute(
-            `SELECT username FROM local_auth_credentials WHERE username = ${this.placeholder(1)}`,
+            `SELECT username FROM local_auth_credentials WHERE username = ?`,
             [username],
         );
         return Boolean(result.rows && result.rows.length > 0);
@@ -224,7 +135,11 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async list() {
         const result = await this.db.execute(
-            "SELECT c.username, a.is_admin, a.role, a.enabled, a.is_founder, p.role AS profile_role FROM local_auth_credentials c JOIN accounts a ON a.id = c.account_id LEFT JOIN account_profiles p ON p.account_id = a.id ORDER BY c.username",
+            `SELECT c.username, a.is_admin, a.role, a.enabled, a.is_founder, p.role AS profile_role
+             FROM local_auth_credentials c
+             JOIN accounts a ON a.id = c.account_id
+             LEFT JOIN account_profiles p ON p.account_id = a.id
+             ORDER BY c.username`,
         );
         return (result.rows ?? []).map((row) => ({
             username: row.username,
@@ -243,8 +158,8 @@ export class DbLocalAccountStore implements LocalAccountStore {
         role: "user" | "teacher" | "moderator" | "admin",
     ) {
         await this.db.execute(
-            `UPDATE accounts SET is_admin = ${this.placeholder(1)}, role = ${this.placeholder(2)}, updated_at = ${this.currentTimestampExpression()}
-       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(3)})`,
+            `UPDATE accounts SET is_admin = ?, role = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ?)`,
             [role === "admin", role, username],
         );
         this.writeLog("info", "Updated local account role.", {
@@ -253,12 +168,13 @@ export class DbLocalAccountStore implements LocalAccountStore {
             role,
         });
     }
+
     async setPassword(username: string, password: string) {
         const passwordHash = await hashPassword(password);
         await this.db.execute(
             `UPDATE local_auth_credentials
-       SET password_hash = ${this.placeholder(1)}, password_algorithm = ${this.placeholder(2)}, updated_at = ${this.currentTimestampExpression()}
-       WHERE username = ${this.placeholder(3)}`,
+       SET password_hash = ?, password_algorithm = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE username = ?`,
             [passwordHash, "scrypt", username],
         );
         this.writeLog("info", "Updated local account password.", {
@@ -266,10 +182,11 @@ export class DbLocalAccountStore implements LocalAccountStore {
             accountId: username,
         });
     }
+
     async setFounder(username: string, isFounder: boolean) {
         await this.db.execute(
-            `UPDATE accounts SET is_founder = ${this.placeholder(1)}, updated_at = ${this.currentTimestampExpression()}
-       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(2)})`,
+            `UPDATE accounts SET is_founder = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ?)`,
             [isFounder, username],
         );
         this.writeLog("info", "Updated local account founder status.", {
@@ -283,7 +200,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         const result = await this.db.execute(
             `SELECT a.is_founder FROM accounts a
        JOIN local_auth_credentials c ON c.account_id = a.id
-       WHERE c.username = ${this.placeholder(1)}`,
+       WHERE c.username = ?`,
             [username],
         );
         return Boolean(result.rows?.[0]?.is_founder);
@@ -291,7 +208,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async exists(username: string): Promise<boolean> {
         const result = await this.db.execute(
-            `SELECT id FROM accounts WHERE id = ${this.placeholder(1)}`,
+            `SELECT id FROM accounts WHERE id = ?`,
             [username],
         );
         return (result.rows?.length ?? 0) > 0;
@@ -301,17 +218,18 @@ export class DbLocalAccountStore implements LocalAccountStore {
         const result = await this.db.execute(
             `SELECT a.display_name FROM accounts a
        JOIN local_auth_credentials c ON c.account_id = a.id
-       WHERE c.username = ${this.placeholder(1)}`,
+       WHERE c.username = ?`,
             [username],
         );
         const value = result.rows?.[0]?.display_name;
         if (!value) return username;
         return String(value);
     }
+
     async setEnabled(username: string, enabled: boolean) {
         await this.db.execute(
-            `UPDATE accounts SET enabled = ${this.placeholder(1)}, updated_at = ${this.currentTimestampExpression()}
-       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(2)})`,
+            `UPDATE accounts SET enabled = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ?)`,
             [enabled, username],
         );
         this.writeLog("info", "Updated local account enabled state.", {
@@ -320,9 +238,10 @@ export class DbLocalAccountStore implements LocalAccountStore {
             enabled,
         });
     }
+
     async delete(username: string) {
         const lookupResult = await this.db.execute(
-            `SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(1)}`,
+            `SELECT account_id FROM local_auth_credentials WHERE username = ?`,
             [username],
         );
         const accountId = lookupResult.rows?.[0]?.account_id;
@@ -330,11 +249,11 @@ export class DbLocalAccountStore implements LocalAccountStore {
         await this.db.execute("BEGIN");
         try {
             await this.db.execute(
-                `DELETE FROM local_auth_credentials WHERE username = ${this.placeholder(1)}`,
+                `DELETE FROM local_auth_credentials WHERE username = ?`,
                 [username],
             );
             await this.db.execute(
-                `DELETE FROM accounts WHERE id = ${this.placeholder(1)}`,
+                `DELETE FROM accounts WHERE id = ?`,
                 [accountId],
             );
             await this.db.execute("COMMIT");
@@ -357,6 +276,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
             accountId: username,
         });
     }
+
     async getInfo(username: string): Promise<{
         username: string;
         createdAt: string | null;
@@ -366,9 +286,10 @@ export class DbLocalAccountStore implements LocalAccountStore {
         isFounder: boolean;
     } | null> {
         const result = await this.db.execute(
-            `SELECT c.username, a.created_at, a.last_login, a.enabled, a.is_admin, a.is_founder, a.role FROM local_auth_credentials c
-       JOIN accounts a ON a.id = c.account_id
-       WHERE c.username = ${this.placeholder(1)}`,
+            `SELECT c.username, a.created_at, a.last_login, a.enabled, a.is_admin, a.is_founder, a.role
+             FROM local_auth_credentials c
+             JOIN accounts a ON a.id = c.account_id
+             WHERE c.username = ?`,
             [username],
         );
         const row = result.rows?.[0];
@@ -388,8 +309,8 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async updateLastLogin(username: string): Promise<void> {
         await this.db.execute(
-            `UPDATE accounts SET last_login = ${this.currentTimestampExpression()}, updated_at = ${this.currentTimestampExpression()}
-       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(1)})`,
+            `UPDATE accounts SET last_login = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ?)`,
             [username],
         );
         this.writeLog(
