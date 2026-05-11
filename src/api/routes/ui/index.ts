@@ -305,7 +305,8 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            if (getCookieSession(req)?.role !== "admin") {
+            const session = getCookieSession(req);
+            if (session?.role !== "admin" && session?.role !== "owner") {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
@@ -332,7 +333,8 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            if (getCookieSession(req)?.role !== "admin") {
+            const session = getCookieSession(req);
+            if (session?.role !== "admin" && session?.role !== "owner") {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
@@ -362,7 +364,7 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            if (session.role !== "admin") {
+            if (session.role !== "admin" && session.role !== "owner") {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
@@ -548,7 +550,11 @@ export function createUiRoutes(
         if (pageExtMatch && req.method === "GET") {
             if (!requireAuth(req, res, "user")) return true;
             const pageId = decodeURIComponent(pageExtMatch[1]);
-            const extensions = uiRegistry?.listPageExtensions(pageId) ?? [];
+            const extensions = (
+                uiRegistry?.listPageExtensions(pageId) ?? []
+            ).filter(
+                (extension) => !extension.isEnabled || extension.isEnabled(),
+            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: extensions }));
             return true;
@@ -617,9 +623,47 @@ export function createUiRoutes(
             req.method === "GET"
         ) {
             if (!requireAuth(req, res, "user")) return true;
-            const plugins = uiRegistry?.listNavbarPlugins() ?? [];
+            const plugins = (uiRegistry?.listNavbarPlugins() ?? []).filter(
+                (plugin) => !plugin.isEnabled || plugin.isEnabled(),
+            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: plugins }));
+            return true;
+        }
+
+        if (url.pathname.startsWith("/static/adapters/")) {
+            const rest = url.pathname.slice("/static/adapters/".length);
+            const parts = rest.split("/");
+            if (parts.length >= 3) {
+                const gatewayId = parts[0];
+                const adapterId = parts[1];
+                const filePart = parts.slice(2).join("/");
+                const dir = uiRegistry?.getAdapterStaticDir(
+                    gatewayId,
+                    adapterId,
+                );
+                if (
+                    dir &&
+                    /^[a-zA-Z0-9_./-]+$/.test(filePart) &&
+                    !filePart.includes("..")
+                ) {
+                    await serveFile(
+                        res,
+                        path.join(dir, filePart),
+                        resolveContentType(filePart),
+                    );
+                    return true;
+                }
+            }
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "not_found",
+                        message: "Adapter asset not found.",
+                    },
+                }),
+            );
             return true;
         }
 
@@ -649,6 +693,47 @@ export function createUiRoutes(
                     error: {
                         code: "not_found",
                         message: "Gateway asset not found.",
+                    },
+                }),
+            );
+            return true;
+        }
+
+        if (url.pathname.startsWith("/static/modules/")) {
+            const urlPath = url.pathname.slice("/static/modules/".length);
+            if (
+                !urlPath ||
+                !/^[a-zA-Z0-9][a-zA-Z0-9_./-]*$/.test(urlPath) ||
+                urlPath.includes("..") ||
+                urlPath.includes("//") ||
+                urlPath.split("/").some((segment) => segment.startsWith("."))
+            ) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Module asset not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const resolved = uiRegistry?.resolveModulePath(urlPath);
+            if (resolved) {
+                await serveFile(
+                    res,
+                    path.join(resolved.dir, resolved.relPath),
+                    resolveContentType(resolved.relPath),
+                );
+                return true;
+            }
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "not_found",
+                        message: "Module asset not found.",
                     },
                 }),
             );

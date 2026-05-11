@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   email TEXT,
   display_name TEXT,
   is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+  role TEXT NOT NULL DEFAULT 'user',
   enabled BOOLEAN NOT NULL DEFAULT TRUE,
   is_founder BOOLEAN NOT NULL DEFAULT FALSE,
   invited_by_account_id TEXT NULL REFERENCES accounts(id) ON DELETE SET NULL,

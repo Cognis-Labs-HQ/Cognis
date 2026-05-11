@@ -20,6 +20,7 @@ import { initLanguagePrefs } from "./language-prefs.js";
 import { initGeneralPrefs } from "./general-prefs.js";
 import { initNotificationPrefs } from "./notification-prefs.js";
 import { initDateTimePrefs } from "./datetime-prefs.js";
+import { initStudyPrefs } from "./study-prefs.js";
 import { applyTimezoneToLocalStorage } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
@@ -50,6 +51,15 @@ async function savePrefs(prefs) {
     );
 }
 
+async function isStudyGatewayAvailable() {
+    try {
+        const response = await apiFetch("/api/v1/study/languages");
+        return response.ok;
+    } catch {
+        return false;
+    }
+}
+
 /**
  * Returns true when the language priority order has changed between
  * two saves, indicating a page reload is required to apply new strings.
@@ -77,6 +87,7 @@ export async function mount(root, { signal } = {}) {
         loadedPrefs?.timezone ?? null,
         loadedPrefs?.detectedTimezone ?? null,
     );
+    const studyGatewayAvailable = await isStudyGatewayAvailable();
 
     let savedMode = getStoredTheme();
 
@@ -87,6 +98,7 @@ export async function mount(root, { signal } = {}) {
     let generalPrefs;
     let notifPrefs;
     let datetimePrefs;
+    let studyPrefs;
 
     function initThemePrefs({ onDirtyChange }) {
         let currentMode = savedMode;
@@ -288,6 +300,36 @@ export async function mount(root, { signal } = {}) {
                 },
             },
         },
+
+        ...(studyGatewayAvailable
+            ? [
+                  {
+                      id: "study",
+                      label: i18n.t("ui.app.settings.study.title"),
+                      subComposerOptions: {
+                          allowCustomization: false,
+                          preferenceKey: "settings-study-layout",
+                          heading: i18n.t("ui.app.settings.study.title"),
+                          elements: [
+                              {
+                                  id: "study-prefs",
+                                  label: i18n.t("ui.app.settings.study.title"),
+                                  render: () =>
+                                      `<div id="study-prefs-container"></div>`,
+                              },
+                          ],
+                          onRender: () => {
+                              studyPrefs = initStudyPrefs(root, {
+                                  i18n,
+                                  onDirtyChange: (dirty) =>
+                                      changesBar?.markDirty("study", dirty),
+                              });
+                              studyPrefs.init();
+                          },
+                      },
+                  },
+              ]
+            : []),
         {
             id: "datetime",
             label: i18n.t("ui.app.settings.datetime"),
@@ -374,6 +416,7 @@ export async function mount(root, { signal } = {}) {
         <li><button data-composer-scroll="appearance">${i18n.t("ui.reuse.appearance")}</button></li>
         <li><button data-composer-scroll="language">${i18n.t("ui.reuse.language")}</button></li>
         <li><button data-composer-scroll="notifications">${i18n.t("ui.reuse.notifications")}</button></li>
+        ${studyGatewayAvailable ? `<li><button data-composer-scroll="study">${i18n.t("ui.app.settings.study.title")}</button></li>` : ""}
         <li><button data-composer-scroll="datetime">${i18n.t("ui.app.settings.datetime")}</button></li>
         <li><button data-composer-scroll="advanced">${i18n.t("ui.app.settings.advanced")}</button></li>
       </ul>
@@ -410,6 +453,13 @@ export async function mount(root, { signal } = {}) {
                     },
                 );
             }
+            if (studyPrefs?.isDirty()) {
+                await apiFetch("/api/v1/study/preferences", {
+                    method: "PUT",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify(studyPrefs.getPendingPrefs()),
+                });
+            }
             const prefs = {
                 appFont: fontPrefs
                     ? toFontFamilyValue(fontPrefs.getFont())
@@ -440,6 +490,7 @@ export async function mount(root, { signal } = {}) {
             datetimePrefs?.commit();
             languagePrefs?.commit();
             notifPrefs?.commit();
+            studyPrefs?.commit();
             showToast(i18n.t("ui.app.settings.saved_alert"), {
                 variant: "success",
             });
@@ -459,6 +510,7 @@ export async function mount(root, { signal } = {}) {
             languagePrefs?.discard();
             themePrefs?.discard();
             notifPrefs?.discard();
+            studyPrefs?.discard();
             datetimePrefs?.discard();
         },
     });

@@ -307,6 +307,46 @@
     background: rgba(220, 38, 38, 0.1);
 }
 
+.profile-message-button {
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+}
+
+.profile-message-button:hover {
+    background: var(--surface-2);
+}
+
+.profile-message-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    display: none;
+}
+
+:root .profile-message-icon--light {
+    display: block;
+}
+
+:root .profile-message-icon--dark {
+    display: none;
+}
+
+:root[data-theme="dark"] .profile-message-icon--light,
+[data-theme="dark"] .profile-message-icon--light {
+    display: none;
+}
+
+:root[data-theme="dark"] .profile-message-icon--dark,
+[data-theme="dark"] .profile-message-icon--dark {
+    display: block;
+}
+
 .profile-hero-action-row {
     display: flex;
     gap: 8px;
@@ -584,16 +624,62 @@
     padding-bottom: 4px;
 }
 
-.profile-role-badge {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 3px 8px;
-    border-radius: 999px;
-    border: 1px solid var(--accent-2);
-    color: var(--accent-2);
+.profile-avatar-badge {
+    position: absolute;
+    font-size: 1.1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+    user-select: none;
+}
+
+.profile-avatar-badge--admin {
+    bottom: 2px;
+    left: 2px;
+    width: 2rem;
+    height: 2rem;
     background: transparent;
+    box-shadow: none;
+}
+
+.profile-avatar-badge--owner {
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2rem;
+    height: 2rem;
+    background: transparent;
+    box-shadow: none;
+}
+
+.profile-avatar-badge--teacher {
+    bottom: 4px;
+    right: 4px;
+}
+
+.profile-avatar-badge-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+    display: block;
+}
+
+.profile-role-icon-img {
+    width: 0.95rem;
+    height: 0.95rem;
+    vertical-align: middle;
+}
+
+.profile-user-role-icon {
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: default;
 }
 
 .profile-its-you-pill {
@@ -703,29 +789,51 @@
     vertical-align: middle;
 }
 
-.profile-user-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+.profile-user-card-grid {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
-.profile-user-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: 8px;
+.profile-user-card {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 8px 12px;
+    border-radius: 10px;
     background: var(--surface-2);
     border: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.12s ease;
+    min-width: 0;
 }
 
-.profile-user-handle {
+.profile-user-card:hover {
+    background: var(--surface-soft);
+    border-color: var(--accent, #4a90e2);
+}
+
+.profile-user-card-name {
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+}
+
+.profile-user-card-handle {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.profile-user-card-icons {
+    display: flex;
+    gap: 4px;
+    margin-top: 2px;
 }
 
 .profile-empty {
@@ -880,6 +988,18 @@
     flex-wrap: wrap;
 }
 
+.profile-user-handle {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.profile-user-handle:hover {
+    text-decoration: underline;
+    color: var(--accent, #4a90e2);
+}
+
 .profile-suggested-item .profile-follow-btn {
     font-size: 0.82rem;
     padding: 4px 12px;
@@ -910,4 +1030,47 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.profile-hero--blocked {
+    position: relative;
+}
+
+.profile-hero--blocked .profile-hero-banner-wrap,
+.profile-hero--blocked .profile-hero-content {
+    opacity: 0.25;
+    pointer-events: none;
+    user-select: none;
+}
+
+.profile-blocked-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    z-index: 10;
+}
+
+.profile-blocked-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-muted, #888);
+}
+
+.profile-hero-unblock-btn {
+    padding: 0.5rem 1.4rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border, #ccc);
+    background: var(--surface-2, #f5f5f5);
+    color: var(--text, #111);
+    transition: background-color 0.15s ease;
+}
+
+.profile-hero-unblock-btn:hover {
+    background: var(--surface-3, #e8e8e8);
 }

@@ -48,12 +48,14 @@ function parseSecuritySettings(raw: string | null): {
     trustedDomains: string[];
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
+    requireTeacherManualApproval: boolean;
 } | null {
     if (!raw) {
         return {
             trustedDomains: [],
             registrationsEnabled: false,
             userValidationMode: "none",
+            requireTeacherManualApproval: true,
         };
     }
     try {
@@ -75,10 +77,16 @@ function parseSecuritySettings(raw: string | null): {
             (parsed as Record<string, unknown>).userValidationMode === "smtp"
                 ? "smtp"
                 : "none";
+        const requireTeacherManualApproval =
+            (parsed as Record<string, unknown>).requireTeacherManualApproval ===
+            false
+                ? false
+                : true;
         return {
             trustedDomains,
             registrationsEnabled,
             userValidationMode,
+            requireTeacherManualApproval,
         };
     } catch {
         return null;
@@ -89,11 +97,13 @@ function serializeSecuritySettings(input: {
     trustedDomains: string[];
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
+    requireTeacherManualApproval: boolean;
 }): string {
     return JSON.stringify({
         trustedDomains: input.trustedDomains,
         registrationsEnabled: input.registrationsEnabled,
         userValidationMode: input.userValidationMode,
+        requireTeacherManualApproval: input.requireTeacherManualApproval,
     });
 }
 
@@ -197,6 +207,7 @@ export function createSystemRoutes(
                         trustedDomains: [],
                         registrationsEnabled: false,
                         userValidationMode: "none",
+                        requireTeacherManualApproval: true,
                     },
                 }),
             );
@@ -219,6 +230,8 @@ export function createSystemRoutes(
                     : false;
             const userValidationMode =
                 body.userValidationMode === "smtp" ? "smtp" : "none";
+            const requireTeacherManualApproval =
+                body.requireTeacherManualApproval === false ? false : true;
             if (preferenceStore) {
                 await preferenceStore.set(
                     "__system__",
@@ -227,6 +240,7 @@ export function createSystemRoutes(
                         trustedDomains,
                         registrationsEnabled,
                         userValidationMode,
+                        requireTeacherManualApproval,
                     }),
                 );
             }
@@ -236,6 +250,7 @@ export function createSystemRoutes(
                 trustedDomainCount: trustedDomains.length,
                 registrationsEnabled,
                 userValidationMode,
+                requireTeacherManualApproval,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { saved: true } }));

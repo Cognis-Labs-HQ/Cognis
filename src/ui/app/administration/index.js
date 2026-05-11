@@ -515,7 +515,7 @@ function bindGatewayToggles() {
                         : "";
                 const result = await openPopup({
                     title: i18n.t("ui.app.admin.disable_confirm_gateway"),
-                    body: `${gatewayDisableWarning}<strong>${escapeHtml(gw?.name ?? gatewayId)}</strong>`,
+                    body: `${gatewayDisableWarning}<strong>${escapeHtml(gateway?.name ?? gatewayId)}</strong>`,
                     variant: "danger",
                     actions: [
                         {
@@ -554,6 +554,8 @@ function bindGatewayToggles() {
 
             gateways = await loadGateways();
             allAdapters = await loadAllAdapters(gateways);
+            window.dispatchEvent(new Event("cognis:navbar-plugins-refresh"));
+            window.dispatchEvent(new Event("cognis:navbar-refresh"));
             composer.refresh(elements);
             updateNavbarAvatar().catch(() => {});
         });
@@ -757,6 +759,8 @@ function bindAdapterToggles() {
             }
 
             allAdapters = await loadAllAdapters(gateways);
+            window.dispatchEvent(new Event("cognis:navbar-plugins-refresh"));
+            window.dispatchEvent(new Event("cognis:navbar-refresh"));
             composer.refresh(elements);
         });
     });

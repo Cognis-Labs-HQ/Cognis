@@ -280,7 +280,7 @@ test("issue invite returns 409 when email is already registered", async () => {
     assert.match(res.payload, /email_taken/);
 });
 
-test("GET /register redirects authenticated users to the dashboard", async () => {
+test("GET /register does not redirect authenticated users to dashboard", async () => {
     const route = createRegistrationPageRoutes();
     const token = issueAccessToken("reg-authed-user", "user", 60);
     let status = 0;
@@ -302,8 +302,8 @@ test("GET /register redirects authenticated users to the dashboard", async () =>
     );
 
     assert.equal(handled, true);
-    assert.equal(status, 302);
-    assert.equal(location, "/dashboard");
+    assert.notEqual(status, 302);
+    assert.notEqual(location, "/dashboard");
 });
 
 test("GET /register serves the registration page to unauthenticated visitors", async () => {

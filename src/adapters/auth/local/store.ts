@@ -76,6 +76,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         email TEXT,
         display_name TEXT,
         is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+        role TEXT NOT NULL DEFAULT 'user',
         enabled BOOLEAN NOT NULL DEFAULT TRUE,
         is_founder BOOLEAN NOT NULL DEFAULT FALSE,
         invited_by_account_id TEXT NULL,
@@ -94,6 +95,16 @@ export class DbLocalAccountStore implements LocalAccountStore {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
       )`);
+            await this.db
+                .execute(
+                    `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user'`,
+                )
+                .catch(() => undefined);
+            await this.db
+                .execute(
+                    `UPDATE accounts SET role = 'admin' WHERE is_admin = TRUE AND role = 'user'`,
+                )
+                .catch(() => undefined);
             return;
         }
 
@@ -103,6 +114,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         email VARCHAR(320) NULL,
         display_name VARCHAR(255) NULL,
         is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+        role TEXT NOT NULL DEFAULT 'user',
         enabled BOOLEAN NOT NULL DEFAULT TRUE,
         is_founder BOOLEAN NOT NULL DEFAULT FALSE,
         invited_by_account_id VARCHAR(191) NULL,
@@ -121,6 +133,16 @@ export class DbLocalAccountStore implements LocalAccountStore {
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
       )`);
+            await this.db
+                .execute(
+                    `ALTER TABLE accounts ADD COLUMN role VARCHAR(32) NOT NULL DEFAULT 'user'`,
+                )
+                .catch(() => undefined);
+            await this.db
+                .execute(
+                    `UPDATE accounts SET role = 'admin' WHERE is_admin = TRUE AND role = 'user'`,
+                )
+                .catch(() => undefined);
             return;
         }
     }
@@ -132,9 +154,9 @@ export class DbLocalAccountStore implements LocalAccountStore {
         await this.db.execute("BEGIN");
         try {
             await this.db.execute(
-                `INSERT INTO accounts (id, display_name, is_admin, created_at, updated_at)
-         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.currentTimestampExpression()}, ${this.currentTimestampExpression()})`,
-                [username, username, role === "admin"],
+                `INSERT INTO accounts (id, display_name, is_admin, role, created_at, updated_at)
+         VALUES (${this.placeholder(1)}, ${this.placeholder(2)}, ${this.placeholder(3)}, ${this.placeholder(4)}, ${this.currentTimestampExpression()}, ${this.currentTimestampExpression()})`,
+                [username, username, role === "admin", role],
             );
             await this.db.execute(
                 `INSERT INTO local_auth_credentials (account_id, username, password_hash, password_algorithm, created_at, updated_at)
@@ -156,7 +178,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
             accountId: username,
             isAdmin,
         });
-        return { username, isAdmin, enabled: true };
+        return { username, isAdmin, enabled: true, role };
     }
 
     async verify(
@@ -164,7 +186,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         password: string,
     ): Promise<AuthContext | null> {
         const result = await this.db.execute(
-            `SELECT c.username, c.password_hash, a.is_admin, a.enabled, p.role
+            `SELECT c.username, c.password_hash, a.is_admin, a.role, a.enabled, p.role AS profile_role
        FROM local_auth_credentials c
        JOIN accounts a ON a.id = c.account_id
        LEFT JOIN account_profiles p ON p.account_id = a.id
@@ -180,7 +202,9 @@ export class DbLocalAccountStore implements LocalAccountStore {
         );
         if (!passwordOk) return null;
         const derivedRole =
-            account.role ?? (Boolean(account.is_admin) ? "admin" : "user");
+            account.role ??
+            account.profile_role ??
+            (Boolean(account.is_admin) ? "admin" : "user");
         return {
             accountId: username,
             provider: "local",
@@ -200,13 +224,17 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async list() {
         const result = await this.db.execute(
-            "SELECT c.username, a.is_admin, a.enabled, a.is_founder FROM local_auth_credentials c JOIN accounts a ON a.id = c.account_id ORDER BY c.username",
+            "SELECT c.username, a.is_admin, a.role, a.enabled, a.is_founder, p.role AS profile_role FROM local_auth_credentials c JOIN accounts a ON a.id = c.account_id LEFT JOIN account_profiles p ON p.account_id = a.id ORDER BY c.username",
         );
         return (result.rows ?? []).map((row) => ({
             username: row.username,
             isAdmin: Boolean(row.is_admin),
             enabled: Boolean(row.enabled),
             isFounder: Boolean(row.is_founder),
+            role:
+                row.role ??
+                row.profile_role ??
+                (Boolean(row.is_admin) ? "admin" : "user"),
         }));
     }
 
@@ -215,9 +243,9 @@ export class DbLocalAccountStore implements LocalAccountStore {
         role: "user" | "teacher" | "moderator" | "admin",
     ) {
         await this.db.execute(
-            `UPDATE accounts SET is_admin = ${this.placeholder(1)}, updated_at = ${this.currentTimestampExpression()}
-       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(2)})`,
-            [role === "admin", username],
+            `UPDATE accounts SET is_admin = ${this.placeholder(1)}, role = ${this.placeholder(2)}, updated_at = ${this.currentTimestampExpression()}
+       WHERE id = (SELECT account_id FROM local_auth_credentials WHERE username = ${this.placeholder(3)})`,
+            [role === "admin", role, username],
         );
         this.writeLog("info", "Updated local account role.", {
             component: "auth-local-store",
@@ -338,7 +366,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         isFounder: boolean;
     } | null> {
         const result = await this.db.execute(
-            `SELECT c.username, a.created_at, a.last_login, a.enabled, a.is_admin, a.is_founder FROM local_auth_credentials c
+            `SELECT c.username, a.created_at, a.last_login, a.enabled, a.is_admin, a.is_founder, a.role FROM local_auth_credentials c
        JOIN accounts a ON a.id = c.account_id
        WHERE c.username = ${this.placeholder(1)}`,
             [username],
@@ -352,6 +380,9 @@ export class DbLocalAccountStore implements LocalAccountStore {
             enabled: Boolean(row.enabled),
             isAdmin: Boolean(row.is_admin),
             isFounder: Boolean(row.is_founder),
+            role:
+                (row.role as string | undefined) ??
+                (Boolean(row.is_admin) ? "admin" : "user"),
         };
     }
 

@@ -2,7 +2,7 @@
 
 .auth-page--frame {
     min-height: 100vh;
-    padding: 34px;
+    padding: 20px;
     background: var(--bg);
     display: flex;
     flex-direction: column;

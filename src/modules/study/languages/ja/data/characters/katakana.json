@@ -1,0 +1,7 @@
+[
+    { "id": "ja:char:ka:A", "symbol": "ア", "romanization": "a" },
+    { "id": "ja:char:ka:I", "symbol": "イ", "romanization": "i" },
+    { "id": "ja:char:ka:U", "symbol": "ウ", "romanization": "u" },
+    { "id": "ja:char:ka:E", "symbol": "エ", "romanization": "e" },
+    { "id": "ja:char:ka:O", "symbol": "オ", "romanization": "o" }
+]

@@ -25,6 +25,7 @@ These docs are written for developer contributors, not end users. They describe 
 | [Core](./core.en.md)         | Contracts, interfaces, and policy services; the foundation layer          |
 | [API](./api.en.md)           | HTTP server, route groups, auth model, and response envelopes             |
 | [UI](./ui.en.md)             | Browser frontend: pages, layouts, i18n, theme requirements                |
+| [Gateways](./gateways.en.md) | How to create gateways and adapters; boot order; capability store         |
 | [Adapters](./adapters.en.md) | Platform-level overview of the adapters layer and all adapter types       |
 | [DevOps](./devops.en.md)     | Dockerfile, GitHub Actions, GitLab CI, and environment variable reference |
 
@@ -37,14 +38,14 @@ These docs are written for developer contributors, not end users. They describe 
 
 ### Gateways
 
-| Doc                                                     | Description                                                 |
-| ------------------------------------------------------- | ----------------------------------------------------------- |
-| [Auth Gateway](../gateways/auth/docs/index.en.md)       | Authentication providers, adapter discovery, token issuance |
-| [Database Gateway](../gateways/db/docs/index.en.md)     | Single database access point, executor, dialect helper      |
-| [Files Gateway](../gateways/files/docs/index.en.md)     | Local file storage capabilities                             |
-| [Logging Gateway](../gateways/logging/docs/index.en.md) | Structured logging to stdout/stderr and file                |
-| [Notify Gateway](../gateways/notify/docs/index.en.md)   | Pluggable notification dispatch, TFA, email verification    |
-| [Profile Gateway](../gateways/profile/docs/index.en.md) | Profiles, social graph, posts, and file management          |
+| Doc                                                      | Description                                                 |
+| -------------------------------------------------------- | ----------------------------------------------------------- |
+| [Auth Gateway](../gateways/auth/docs/index.en.md)        | Authentication providers, adapter discovery, token issuance |
+| [Database Gateway](../gateways/db/docs/index.en.md)      | Single database access point, executor, dialect helper      |
+| [Files Gateway](../gateways/files/docs/index.en.md)      | Local file storage capabilities                             |
+| [Logging Gateway](../gateways/logging/docs/index.en.md)  | Structured logging to stdout/stderr and file                |
+| [Notify Gateway](../gateways/notify/docs/index.en.md)    | Pluggable notification dispatch, TFA, email verification    |
+| [Social Gateway](../gateways/social/docs/standard.en.md) | Profiles, social graph, posts, messaging, and preferences   |
 
 ### Adapters
 

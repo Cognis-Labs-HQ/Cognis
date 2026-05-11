@@ -326,15 +326,9 @@ test("auth gateway bootstrap registers correct static dir and admin-section.js e
         access(staticDir),
         `static dir must exist on disk: ${staticDir}`,
     );
-
-    const adminSectionPath = path.join(staticDir, "admin-section.js");
-    await assert.doesNotReject(
-        access(adminSectionPath),
-        `admin-section.js must exist in the registered static dir: ${adminSectionPath}`,
-    );
 });
 
-test("auth gateway bootstrap registers admin section scriptUrl that resolves within static dir", async () => {
+test("auth gateway bootstrap does not register a security admin section", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -358,25 +352,12 @@ test("auth gateway bootstrap registers admin section scriptUrl that resolves wit
     const sections = uiRegistry.listAdminSections();
     const securitySection = sections.find((s) => s.id === "security");
     assert.ok(
-        securitySection,
-        "auth gateway must register a 'security' admin section",
+        !securitySection,
+        "auth gateway must NOT register a 'security' admin section",
     );
 
     const staticDir = uiRegistry.getStaticDir("auth");
     assert.ok(staticDir, "auth gateway must register a static dir");
-
-    const urlPrefix = "/static/gateways/auth/";
-    assert.ok(
-        securitySection.scriptUrl.startsWith(urlPrefix),
-        `scriptUrl must start with ${urlPrefix}, got: ${securitySection.scriptUrl}`,
-    );
-
-    const filePart = securitySection.scriptUrl.slice(urlPrefix.length);
-    const resolvedPath = path.join(staticDir, filePart);
-    await assert.doesNotReject(
-        access(resolvedPath),
-        `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,
-    );
 });
 
 test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", async () => {

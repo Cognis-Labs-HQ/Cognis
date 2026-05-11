@@ -269,12 +269,26 @@ const createProfile = capabilities.get<
     (accountId: string, handle: string, role?: string) => Promise<void>
 >("profile:createProfile");
 if (!adminInitialized && createProfile) {
-    await createProfile("admin", "admin", "admin");
+    await createProfile("admin", "admin", "owner");
 }
 
 const accountStore = capabilities.get<LocalAccountStore>("auth:accountStore");
 const preferenceStore =
     capabilities.get<UserPreferenceStore>("preferences:store");
+
+const profileStore = capabilities.get<{
+    getProfile: (accountId: string) => Promise<{ visibility?: string } | null>;
+    updateProfile: (
+        accountId: string,
+        updates: { visibility?: "friends" },
+    ) => Promise<unknown>;
+    searchProfiles: (
+        query: string,
+        limit: number,
+    ) => Promise<
+        Array<{ accountId?: string; handle?: string; displayName?: string }>
+    >;
+}>("social:profileStore");
 
 const server = buildServer({
     moduleRuntimeGateway: runtime,
@@ -288,6 +302,18 @@ const server = buildServer({
     setProfileRole: capabilities.get<
         (handle: string, role: string) => Promise<void>
     >("profile:setRoleByHandle"),
+    searchProfiles: profileStore
+        ? profileStore.searchProfiles.bind(profileStore)
+        : undefined,
+    getProfileVisibility: profileStore
+        ? async (accountId: string) =>
+              (await profileStore.getProfile(accountId))?.visibility
+        : undefined,
+    setProfileVisibility: profileStore
+        ? async (accountId: string, visibility: "friends") => {
+              await profileStore.updateProfile(accountId, { visibility });
+          }
+        : undefined,
     loadModuleStates: async () => {
         const result = await dbExecutor.execute(
             "SELECT module_id, enabled FROM modules",

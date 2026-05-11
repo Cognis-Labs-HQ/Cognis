@@ -20,13 +20,14 @@ Dokumen-dokumen ini ditulis untuk kontributor pengembang, bukan pengguna akhir. 
 
 ### Lapisan Arsitektur
 
-| Dokumen                     | Keterangan                                                 |
-| --------------------------- | ---------------------------------------------------------- |
-| [Inti](./core.en.md)        | Kontrak, antarmuka, dan layanan kebijakan                  |
-| [API](./api.id.md)          | Server HTTP, grup route, model autentikasi                 |
-| [UI](./ui.id.md)            | Frontend browser: halaman, layout, i18n                    |
-| [Adapter](./adapters.id.md) | Ikhtisar lapisan adapter platform                          |
-| [DevOps](./devops.id.md)    | Dockerfile, GitHub Actions, referensi variabel environment |
+| Dokumen                     | Keterangan                                                      |
+| --------------------------- | --------------------------------------------------------------- |
+| [Inti](./core.en.md)        | Kontrak, antarmuka, dan layanan kebijakan                       |
+| [API](./api.id.md)          | Server HTTP, grup route, model autentikasi                      |
+| [UI](./ui.id.md)            | Frontend browser: halaman, layout, i18n                         |
+| [Adapter](./adapters.id.md) | Ikhtisar lapisan adapter platform                               |
+| [Gateway](./gateways.id.md) | Cara membuat gateway dan adapter; urutan boot; capability store |
+| [DevOps](./devops.id.md)    | Dockerfile, GitHub Actions, referensi variabel environment      |
 
 ### Gateway
 
@@ -37,4 +38,4 @@ Dokumen-dokumen ini ditulis untuk kontributor pengembang, bukan pengguna akhir. 
 | [Gateway File](../gateways/files/docs/index.id.md)        | Capability penyimpanan file lokal         |
 | [Gateway Logging](../gateways/logging/docs/index.id.md)   | Logging terstruktur                       |
 | [Gateway Notifikasi](../gateways/notify/docs/index.id.md) | Pengiriman notifikasi yang dapat dipasang |
-| [Gateway Profil](../gateways/profile/docs/index.id.md)    | Profil, grafik sosial, postingan          |
+| [Gateway Sosial](../gateways/social/docs/standard.en.md)  | Profil, grafik sosial, postingan, pesan   |

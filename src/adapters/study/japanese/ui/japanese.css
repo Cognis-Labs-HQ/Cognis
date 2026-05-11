@@ -1,0 +1,38 @@
+.japanese-study-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 0 0 40px;
+}
+
+.study-subnav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.study-subnav-link {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    transition: background 0.12s ease;
+    white-space: nowrap;
+}
+
+.study-subnav-link:hover {
+    background: var(--surface-soft);
+    color: var(--text);
+}
+
+.study-subnav-link--active {
+    background: var(--accent, #4a90e2);
+    border-color: var(--accent, #4a90e2);
+    color: #fff;
+}

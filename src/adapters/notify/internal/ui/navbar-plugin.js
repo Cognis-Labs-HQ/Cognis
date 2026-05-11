@@ -26,6 +26,8 @@ const TOAST_BODY_PREVIEW_LENGTH = 90;
 const TOAST_AUTO_DISMISS_MS = 6_000;
 const RELATIVE_TIME_TICK_MS = 1000;
 const CSS_HREF = "/static/gateways/notify-internal/notifications.css";
+const notificationTextDecoder = new TextDecoder();
+const roomKeyCache = new Map();
 
 function injectStyles() {
     if (document.querySelector(`link[href="${CSS_HREF}"]`)) return;
@@ -45,6 +47,78 @@ function navigateNotif(actionUrl) {
         }
     } catch {
         // malformed URL — no navigation
+    }
+}
+
+function hexToBytes(hex) {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < bytes.length; i += 1) {
+        bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+    }
+    return bytes;
+}
+
+async function importRoomKey(hex) {
+    return crypto.subtle.importKey(
+        "raw",
+        hexToBytes(hex),
+        { name: "AES-GCM" },
+        false,
+        ["decrypt"],
+    );
+}
+
+async function getRoomKey(roomId) {
+    if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
+    const response = await apiFetch(
+        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/key`,
+    );
+    if (!response.ok) return null;
+    const payload = await response.json().catch(() => null);
+    const roomKeyHex = payload?.data?.key;
+    if (typeof roomKeyHex !== "string" || roomKeyHex.length === 0) return null;
+    const roomKey = await importRoomKey(roomKeyHex);
+    roomKeyCache.set(roomId, roomKey);
+    return roomKey;
+}
+
+function parseRoomId(actionUrl) {
+    if (typeof actionUrl !== "string" || actionUrl.length === 0) return null;
+    const match = actionUrl.match(/^\/messages\/([^/?#]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
+async function decryptRoomMessage(roomId) {
+    const roomKey = await getRoomKey(roomId);
+    if (!roomKey) return null;
+    const response = await apiFetch(
+        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=1`,
+    );
+    if (!response.ok) return null;
+    const payload = await response.json().catch(() => null);
+    const latestMessage = Array.isArray(payload?.data) ? payload.data[0] : null;
+    if (
+        !latestMessage ||
+        typeof latestMessage.iv !== "string" ||
+        typeof latestMessage.ciphertext !== "string"
+    ) {
+        return null;
+    }
+    try {
+        const decrypted = await crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                iv: hexToBytes(latestMessage.iv),
+            },
+            roomKey,
+            hexToBytes(latestMessage.ciphertext),
+        );
+        return notificationTextDecoder.decode(decrypted).trim() || null;
+    } catch {
+        console.warn(
+            "[notify-internal] Failed to decrypt latest room message.",
+        );
+        return null;
     }
 }
 
@@ -104,6 +178,7 @@ let panelEl = null;
 let listEl = null;
 let emptyEl = null;
 let markAllBtn = null;
+let mobileBackdropEl = null;
 let currentNotifications = [];
 let seenIds = null;
 let relativeTimeNodes = [];
@@ -212,6 +287,7 @@ async function openPanel(i18n) {
     if (!panelEl || !listEl) return;
     closeProfileMenu();
     panelEl.hidden = false;
+    if (mobileBackdropEl) mobileBackdropEl.hidden = false;
     panelVisible = true;
     currentNotifications = await fetchNotifications();
     renderPanelContents(i18n);
@@ -261,6 +337,7 @@ async function refreshOpenPanel(i18n) {
 function closePanel() {
     if (!panelEl) return;
     panelEl.hidden = true;
+    if (mobileBackdropEl) mobileBackdropEl.hidden = true;
     panelVisible = false;
     stopRelativeTimeTicker();
 }
@@ -297,7 +374,7 @@ function buildButton(i18n) {
     btn.setAttribute("type", "button");
     btn.innerHTML =
         '<span class="notification-badge-wrap">' +
-        '<span class="notification-icon" aria-hidden="true">🔔</span>' +
+        '<span class="notification-icon" aria-hidden="true"><img src="/static/assets/icons/bell.svg" alt="" class="notification-icon-img" /></span>' +
         '<span id="notification-count" class="notification-count" hidden>0</span>' +
         "</span>";
 
@@ -406,6 +483,22 @@ function buildButton(i18n) {
     wrap.appendChild(btn);
     wrap.appendChild(panel);
 
+    const mobileBackdrop = document.createElement("div");
+    mobileBackdrop.className = "notification-mobile-backdrop";
+    mobileBackdrop.setAttribute("role", "button");
+    mobileBackdrop.tabIndex = 0;
+    mobileBackdrop.hidden = true;
+    mobileBackdrop.setAttribute("aria-label", i18n.t("ui.reuse.popup.close"));
+    mobileBackdrop.addEventListener("click", () => closePanel());
+    mobileBackdrop.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            closePanel();
+        }
+    });
+    mobileBackdropEl = mobileBackdrop;
+    wrap.appendChild(mobileBackdrop);
+
     btn.addEventListener("click", (e) => {
         e.stopPropagation();
         if (panelVisible) {
@@ -479,7 +572,7 @@ async function checkForNew(i18n) {
     for (const notif of arrivals) {
         seenIds.add(notif.id);
         if (!notif.read) {
-            showArrivalToast(notif, i18n);
+            void showArrivalToast(notif, i18n);
         }
     }
 }
@@ -539,16 +632,31 @@ async function markArrivalRead(notif) {
     }
 }
 
-function showArrivalToast(notif, i18n) {
+async function showArrivalToast(notif, i18n) {
     const container = getArrivalToastContainer();
     const toast = document.createElement("div");
     toast.className = "arrival-toast";
     toast.setAttribute("role", "alert");
 
+    let toastSubject = notif.subject;
+    let toastPreview = notif.body;
+    if (notif.category === "messages") {
+        const genericMessage = i18n.t("ui.adapter.notify.internal.new_message");
+        toastSubject = genericMessage;
+        toastPreview = genericMessage;
+        const roomId = parseRoomId(notif.actionUrl);
+        if (roomId) {
+            const decryptedPreview = await decryptRoomMessage(roomId);
+            if (decryptedPreview) {
+                toastPreview = decryptedPreview;
+            }
+        }
+    }
+
     const preview =
-        notif.body.length > TOAST_BODY_PREVIEW_LENGTH
-            ? notif.body.slice(0, TOAST_BODY_PREVIEW_LENGTH) + "\u2026"
-            : notif.body;
+        toastPreview.length > TOAST_BODY_PREVIEW_LENGTH
+            ? toastPreview.slice(0, TOAST_BODY_PREVIEW_LENGTH) + "\u2026"
+            : toastPreview;
 
     const sender =
         notif.senderName ?? i18n.t("ui.adapter.notify.internal.sender_system");
@@ -556,7 +664,7 @@ function showArrivalToast(notif, i18n) {
     toast.innerHTML =
         '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
         '<div class="arrival-toast-text">' +
-        `<span class="arrival-toast-subject">${escapeHtml(notif.subject)}</span>` +
+        `<span class="arrival-toast-subject">${escapeHtml(toastSubject)}</span>` +
         `<span class="arrival-toast-sender">${escapeHtml(sender)}</span>` +
         `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
         "</div>" +

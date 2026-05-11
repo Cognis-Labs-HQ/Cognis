@@ -1,9 +1,12 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
   <string name="ui.reuse.nav.dashboard">Dashboard</string>
+  <string name="ui.reuse.nav.messages">Messages</string>
+  <string name="ui.reuse.nav.study">Study</string>
   <string name="ui.reuse.menu.profile">Profile</string>
   <string name="ui.reuse.menu.settings">Settings</string>
   <string name="ui.reuse.menu.docs">Docs</string>
+  <string name="ui.reuse.menu.messages">Messages</string>
   <string name="ui.reuse.menu.users">Users</string>
   <string name="ui.reuse.menu.invite">Invite</string>
   <string name="ui.reuse.menu.registration">Registration</string>
@@ -31,6 +34,10 @@
   <string name="ui.reuse.generic.class">Class</string>
   <string name="ui.reuse.generic.reset">Reset</string>
   <string name="ui.reuse.generic.refresh">Refresh</string>
+  <string name="ui.reuse.profile_preview.loading">Loading…</string>
+  <string name="ui.reuse.profile_preview.followers">followers</string>
+  <string name="ui.reuse.profile_preview.following">following</string>
+  <string name="ui.reuse.profile_preview.posts">posts</string>
   <string name="ui.reuse.generic.save">Save</string>
   <string name="ui.reuse.generic.discard">Discard</string>
   <string name="ui.reuse.generic.done">Done</string>
@@ -39,6 +46,7 @@
   <string name="ui.reuse.generic.dismiss">Dismiss</string>
   <string name="ui.reuse.generic.confirm">Confirm</string>
   <string name="ui.reuse.generic.error">Error</string>
+  <string name="ui.reuse.generic.coming_soon">Coming Soon</string>
   <string name="ui.reuse.info_tooltip.aria">More information</string>
 
   <string name="ui.layout.brand.aria">Cognis home</string>
@@ -49,6 +57,9 @@
   <string name="ui.layout.toolbar.expand">Expand toolbar</string>
   <string name="ui.layout.greeting">Hello,</string>
   <string name="ui.layout.notifications.aria">Notifications</string>
+  <string name="ui.layout.search.aria">Search</string>
+  <string name="ui.layout.search.placeholder">Search users…</string>
+  <string name="ui.layout.search.no_results">No results found.</string>
   <string name="ui.layout.account.aria">Account options</string>
   <string name="ui.layout.avatar.alt">User avatar</string>
   <string name="ui.layout.theme.aria">Toggle theme</string>
@@ -196,6 +207,8 @@
   <string name="ui.app.dashboard.never">Never</string>
   <string name="ui.app.dashboard.element.digital_clock.label">Digital Clock</string>
   <string name="ui.app.dashboard.element.analogue_clock.label">Analogue Clock</string>
+  <string name="ui.app.dashboard.element.teacher_classes.label">My Classes</string>
+  <string name="ui.app.dashboard.element.teacher_classes.empty">No classes assigned yet.</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
@@ -231,6 +244,7 @@
   <string name="ui.app.register.submit">Create account</string>
   <string name="ui.app.register.closed">Open registration is currently disabled.</string>
   <string name="ui.app.register.success">Account created. Redirecting to login…</string>
+  <string name="ui.app.register.reason.session_cleared">Existing login session was cleared before loading registration.</string>
   <string name="ui.app.register.verify_email_prompt">A verification code was sent to {email}. Enter it below to confirm your address.</string>
   <string name="ui.app.register.error.generic">Could not complete registration.</string>
   <string name="ui.app.register.error.invalid_token">This invitation token is invalid or has expired.</string>
@@ -272,6 +286,7 @@
   <string name="ui.app.users.invite_failed">Failed to send invitation.</string>
   <string name="ui.app.users.invite_email_taken">This email address is already registered.</string>
   <string name="ui.app.users.no_unverified_email">No unverified email address found.</string>
+  <string name="ui.app.users.role_updated">Role updated.</string>
   <string name="ui.app.users.protected_account">This account cannot be modified.</string>
   <string name="ui.app.admin.registration.no_tokens">No registration tokens have been issued.</string>
   <string name="ui.app.invite.page_title">Invite</string>
@@ -315,6 +330,7 @@
   <string name="ui.app.profile.section.followers">Followers</string>
   <string name="ui.app.profile.section.following">Following</string>
   <string name="ui.app.profile.section.posts">Posts</string>
+  <string name="ui.app.profile.section.posts_new">New Post</string>
   <string name="ui.app.profile.section.social_links">Social Links</string>
   <string name="ui.app.profile.section.suggested">Suggested Contacts</string>
   <string name="ui.app.profile.bio">Bio</string>
@@ -326,6 +342,7 @@
   <string name="ui.app.profile.visibility.private">Private</string>
   <string name="ui.app.profile.visibility.friends">Friends</string>
   <string name="ui.app.profile.visibility.community">Community</string>
+  <string name="ui.app.profile.visible_to">Visible to: {visibility}</string>
   <string name="ui.app.profile.avatar">Avatar</string>
   <string name="ui.app.profile.banner">Banner</string>
   <string name="ui.app.profile.upload_avatar">Upload Avatar</string>
@@ -370,9 +387,21 @@
   <string name="ui.app.profile.banner_height.half">Half height</string>
   <string name="ui.app.profile.banner_height.full">Full height</string>
   <string name="ui.app.profile.follow">Follow</string>
+  <string name="ui.app.profile.unfollow">Unfollow</string>
+  <string name="ui.app.profile.unfollow_confirm_title">Unfollow User</string>
+  <string name="ui.app.profile.unfollow_confirm_body">Stop following this user?</string>
+  <string name="ui.app.profile.followed_toast">You are now following this user.</string>
+  <string name="ui.app.profile.unfollowed_toast">You are no longer following this user.</string>
+  <string name="ui.app.profile.follow_unavailable_toast">This user cannot be followed.</string>
   <string name="ui.app.profile.block_user">Block user</string>
   <string name="ui.app.profile.block_user_confirm">Block this user? They will no longer be able to follow you or interact with your profile.</string>
   <string name="ui.app.profile.block_user_action">Block</string>
+  <string name="ui.app.profile.unblock_user">Unblock User</string>
+  <string name="ui.app.profile.unblock_user_confirm">Remove the block on this user? They will be able to follow you and interact with your profile again.</string>
+  <string name="ui.app.profile.unblock_user_action">Unblock</string>
+  <string name="ui.app.profile.blocked_overlay_label">This profile is blocked.</string>
+  <string name="ui.app.profile.follow_hidden_toast">Your profile visibility is set to Hidden. Update your visibility in Settings to follow others.</string>
+  <string name="ui.app.profile.message_hidden_toast">Your profile visibility is set to Hidden. Update your visibility in Settings to send messages.</string>
   <string name="ui.app.profile.section.follow_requests">Follow Requests</string>
   <string name="ui.app.profile.follow_requests.empty">No pending follow requests.</string>
   <string name="ui.app.profile.not_found">Profile not found.</string>
@@ -391,6 +420,7 @@
   <string name="ui.adapter.notify.internal.clear_all_confirm_title">Clear All Notifications</string>
   <string name="ui.adapter.notify.internal.clear_all_confirm_body">This will permanently delete all of your notifications. This cannot be undone.</string>
   <string name="ui.adapter.notify.internal.error_clear_all">Couldn't clear notifications. Please try again.</string>
+  <string name="ui.adapter.notify.internal.new_message">New message</string>
   <string name="ui.app.settings.general">General</string>
   <string name="ui.app.settings.emails">Email Addresses</string>
   <string name="ui.app.settings.emails_add">Add email</string>
@@ -493,6 +523,8 @@
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">Public Registration</string>
   <string name="ui.app.admin.security.enable_registrations_hint">Allow anyone to sign up without an invitation token.</string>
+  <string name="ui.app.admin.security.require_teacher_approval_label">Require Manual Approval for Teachers</string>
+  <string name="ui.app.admin.security.require_teacher_approval_hint">When enabled, teacher applications must be approved by an admin before the applicant becomes a teacher.</string>
   <string name="ui.app.admin.security.user_validation_mode_label">User Validation Method</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">Choose whether user accounts must be validated after login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">None</string>
@@ -502,8 +534,54 @@
   <string name="ui.app.settings.emails_domain_blocked_title">Domain not permitted</string>
   <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
   <string name="ui.app.settings.emails_verify_unavailable">Email verification is not available. Contact your administrator.</string>
+  <string name="ui.app.settings.study.title">Study</string>
+  <string name="ui.app.settings.study.no_languages">No languages are available.</string>
+  <string name="ui.app.settings.study.learn">Learn</string>
+  <string name="ui.app.settings.study.teach">Teach</string>
+  <string name="ui.app.settings.study.apply_to_teach">Apply to Teach</string>
+  <string name="ui.app.settings.study.teacher_application_title">Teacher Application</string>
+  <string name="ui.app.settings.study.teacher_application_reason">Tell admins why you should be allowed to teach this language.</string>
+  <string name="ui.app.settings.study.submit_application">Submit Application</string>
+  <string name="ui.app.settings.study.application_sent">Teacher application submitted.</string>
+  <string name="ui.app.settings.study.application_failed">Failed to submit teacher application.</string>
   <string name="ui.app.settings.datetime">Date &amp; Time</string>
   <string name="ui.app.settings.datetime_tz_heading">Timezone</string>
   <string name="ui.app.settings.datetime_tz_label">Display Timezone</string>
   <string name="ui.app.settings.datetime_tz_auto">Auto-detect ({tz})</string>
+  <string name="module.social.messages.page_title">Messages</string>
+  <string name="module.social.messages.empty">No conversations yet.</string>
+  <string name="module.social.messages.placeholder">Type a message…</string>
+  <string name="module.social.messages.send">Send</string>
+  <string name="module.social.messages.new">New Conversation</string>
+  <string name="module.social.messages.lookup_placeholder">Search by handle…</string>
+  <string name="module.social.messages.icon_label">Message</string>
+  <string name="module.social.messages.load_earlier">Load earlier</string>
+  <string name="module.social.messages.start_failed">Failed to start conversation.</string>
+  <string name="module.social.messages.members">members</string>
+  <string name="module.social.messages.set_avatar">Set avatar</string>
+  <string name="module.social.messages.key_unavailable">Encryption key unavailable.</string>
+  <string name="ui.reuse.menu.classes">My Classes</string>
+  <string name="module.study.classes.page_title">Classes</string>
+  <string name="module.study.classes.empty">No classes assigned yet.</string>
+  <string name="module.study.classes.request_teacher">Request Teacher Status</string>
+  <string name="module.study.classes.request_pending">Teacher request pending approval.</string>
+  <string name="module.study.classes.request_sent">Your request has been submitted for admin review.</string>
+  <string name="module.study.classes.request_failed">Failed to submit request.</string>
+  <string name="module.study.classes.language_label">Language</string>
+  <string name="module.study.classes.students_label">Students</string>
+  <string name="module.study.classes.open_chat">Open Chat</string>
+  <string name="module.study.classes.open_meeting">Start Meeting</string>
+  <string name="module.study.classes.pending_requests">Pending Teacher Requests</string>
+  <string name="module.study.classes.no_pending_requests">No pending teacher requests.</string>
+  <string name="module.study.classes.approve">Approve</string>
+  <string name="module.study.classes.reject">Reject</string>
+  <string name="module.study.classes.review_saved">Teacher request reviewed.</string>
+  <string name="module.study.classes.review_failed">Failed to review teacher request.</string>
+  <string name="module.study.classes.teacher_application_title">Teacher Application</string>
+  <string name="module.study.classes.teacher_application_reason">Tell admins why you should be allowed to teach this language.</string>
+  <string name="module.study.classes.submit_application">Submit Application</string>
+  <string name="ui.study.picker.title">Choose A Language To Study</string>
+  <string name="ui.study.picker.no_languages">No study languages available.</string>
+  <string name="ui.study.picker.select">Select a language:</string>
+  <string name="ui.study.picker.start">Study</string>
 </resources>

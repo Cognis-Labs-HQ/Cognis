@@ -2,11 +2,11 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 
 export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     let tokens = [];
-    let profileGatewayEnabled = false;
+    let socialGatewayEnabled = false;
 
     const dataReady = Promise.all([
         apiFetch("/api/v1/registration/tokens?includeClosed=true"),
-        apiFetch("/api/v1/gateways/profile"),
+        apiFetch("/api/v1/gateways/social"),
     ]).then(async ([tokensRes, profileRes]) => {
         if (tokensRes.ok) {
             const payload = await tokensRes.json();
@@ -14,7 +14,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         }
         if (profileRes.ok) {
             const payload = await profileRes.json();
-            profileGatewayEnabled = payload?.data?.status !== "disabled";
+            socialGatewayEnabled = payload?.data?.status !== "disabled";
         }
     });
 
@@ -33,11 +33,11 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             : "";
         const issuerUsername = String(token.inviterAccountId ?? "");
         const redeemedUsername = String(token.redeemedAccountId ?? "");
-        const issuerCell = profileGatewayEnabled
+        const issuerCell = socialGatewayEnabled
             ? `<a href="/profile/${encodeURIComponent(issuerUsername)}">${escapeHtml(issuerUsername)}</a>`
             : escapeHtml(issuerUsername);
         const redeemedCell = redeemedUsername
-            ? profileGatewayEnabled
+            ? socialGatewayEnabled
                 ? `<a href="/profile/${encodeURIComponent(redeemedUsername)}">${escapeHtml(redeemedUsername)}</a>`
                 : escapeHtml(redeemedUsername)
             : "—";

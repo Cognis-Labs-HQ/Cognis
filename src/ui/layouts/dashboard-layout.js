@@ -1,4 +1,5 @@
 import { apiFetch } from "../reuse/api-client.js";
+import { escapeHtml } from "../reuse/escape-html.js";
 import { getInitialsText, pickInitialsColor } from "../reuse/avatar-utils.js";
 import { loadTemplate } from "../reuse/template-loader.js";
 import {
@@ -11,17 +12,25 @@ import {
     applyUiPreferences,
     saveUiPreferences,
 } from "../reuse/ui-preferences.js";
-import { initRouter } from "../reuse/app-router.js";
+import { initRouter, navigateTo } from "../reuse/app-router.js";
 import {
     capturePwaInstallPrompt,
     registerServiceWorker,
 } from "../reuse/pwa.js";
 import { ensureFullAccountSession } from "../reuse/auth-session.js";
+import { createSearchBar } from "../reuse/search-bar.js";
+import { bindProfilePreviews } from "../reuse/profile-preview.js";
 
 capturePwaInstallPrompt();
 
 function isAdminRole() {
-    return localStorage.getItem("cognis_role") === "admin";
+    const role = localStorage.getItem("cognis_role");
+    return role === "admin" || role === "owner";
+}
+
+function isTeacherRole() {
+    const role = (localStorage.getItem("cognis_role") ?? "").trim();
+    return role === "teacher";
 }
 
 function getDisplayName() {
@@ -86,6 +95,35 @@ function bindTopbarActions() {
     adminOnlyItems.forEach((item) => {
         item.hidden = !isAdminRole();
     });
+
+    const teacherOnlyItems = document.querySelectorAll(".teacher-only");
+    const applyTeacherVisibility = () => {
+        teacherOnlyItems.forEach((item) => {
+            item.hidden = !isTeacherRole();
+        });
+    };
+    applyTeacherVisibility();
+    (async () => {
+        try {
+            const accountId = localStorage.getItem("cognis_account");
+            const accessToken = localStorage.getItem("cognis_access_token");
+            if (!accountId || !accessToken) return;
+            const response = await fetch(
+                `/api/v1/users/${encodeURIComponent(accountId)}/info`,
+                {
+                    headers: { authorization: `Bearer ${accessToken}` },
+                },
+            );
+            if (!response.ok) return;
+            const payload = await response.json().catch(() => null);
+            const resolvedRole = String(payload?.data?.role ?? "").trim();
+            if (!resolvedRole) return;
+            localStorage.setItem("cognis_role", resolvedRole);
+            applyTeacherVisibility();
+        } catch {
+            // Keep existing menu visibility when role refresh fails.
+        }
+    })();
 
     let closeTimeout = null;
 
@@ -218,6 +256,11 @@ async function loadNavbarPlugins() {
         // navbar plugin loading is best-effort; layout continues without them
     }
 }
+
+window.addEventListener("cognis:navbar-plugins-refresh", () => {
+    _navbarPluginsLoaded = false;
+    loadNavbarPlugins().catch(() => {});
+});
 
 function applyCompactNav(root) {
     const navrow = root.querySelector(".global-navrow");
@@ -356,6 +399,10 @@ export async function renderDashboardLayout(root, slots = {}) {
             existingShell.querySelector(".main-window") ?? existingShell,
         );
         applyActiveNavigation();
+        if (showTopbar || showNavbar) {
+            initSearchBar(i18n);
+            bindProfilePreviews(i18n);
+        }
         return;
     }
 
@@ -394,7 +441,132 @@ export async function renderDashboardLayout(root, slots = {}) {
         applyActiveNavigation();
         applyCompactNav(root);
         initRouter(root);
+        initSearchBar(i18n);
+        bindProfilePreviews(i18n);
     }
     bindThemeToggle({ usePreferenceApi });
     registerServiceWorker();
+}
+
+const SEARCH_BAR_CSS = "/static/styles/reuse/search-bar.css";
+
+function injectSearchBarStyles() {
+    if (document.querySelector(`link[href="${SEARCH_BAR_CSS}"]`)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = SEARCH_BAR_CSS;
+    document.head.appendChild(link);
+}
+
+function initSearchBar(i18n) {
+    const wrap = document.getElementById("global-search-wrap");
+    if (!wrap || wrap.dataset.searchBarBound === "true") return;
+    wrap.dataset.searchBarBound = "true";
+    injectSearchBarStyles();
+
+    const navigationSearchGroup = {
+        category: i18n.t("ui.reuse.navigation"),
+        items: [
+            {
+                id: "page-dashboard",
+                label: i18n.t("ui.reuse.nav.dashboard"),
+                url: "/dashboard",
+            },
+            {
+                id: "page-messages",
+                label: i18n.t("ui.reuse.nav.messages"),
+                url: "/messages",
+            },
+            {
+                id: "page-settings",
+                label: i18n.t("ui.reuse.menu.settings"),
+                url: "/settings",
+            },
+            {
+                id: "page-docs",
+                label: i18n.t("ui.reuse.menu.docs"),
+                url: "/docs",
+            },
+            ...(globalThis.__studyGatewayAvailable
+                ? [
+                      {
+                          id: "page-study",
+                          label: i18n.t("ui.reuse.nav.study"),
+                          url: "/study",
+                      },
+                  ]
+                : []),
+            ...(isTeacherRole()
+                ? [
+                      {
+                          id: "page-classes",
+                          label: i18n.t("ui.reuse.menu.classes"),
+                          url: "/classes",
+                      },
+                  ]
+                : []),
+            ...(isAdminRole()
+                ? [
+                      {
+                          id: "page-administration",
+                          label: i18n.t("ui.reuse.menu.administration"),
+                          url: "/administration",
+                      },
+                      {
+                          id: "page-users",
+                          label: i18n.t("ui.reuse.menu.users"),
+                          url: "/users",
+                      },
+                      {
+                          id: "page-modules",
+                          label: i18n.t("ui.reuse.modules"),
+                          url: "/modules",
+                      },
+                  ]
+                : []),
+        ],
+    };
+
+    const settingsLocalSearchGroup = {
+        category:
+            i18n.t("ui.reuse.menu.administration") +
+            " / " +
+            i18n.t("ui.app.settings.preferences"),
+        items: [
+            {
+                id: "settings-general",
+                label: i18n.t("ui.app.settings.general"),
+                url: "/settings",
+            },
+            {
+                id: "settings-language",
+                label: i18n.t("ui.reuse.language"),
+                url: "/settings#language",
+            },
+            ...(globalThis.__studyGatewayAvailable
+                ? [
+                      {
+                          id: "settings-study",
+                          label: i18n.t("ui.app.settings.study.title"),
+                          url: "/settings#study",
+                      },
+                  ]
+                : []),
+        ],
+    };
+
+    const bar = createSearchBar({
+        endpoint: "/api/v1/search",
+        ariaLabel: i18n.t("ui.layout.search.aria"),
+        noResultsText: i18n.t("ui.layout.search.no_results"),
+        localGroups: [navigationSearchGroup, settingsLocalSearchGroup],
+        onSelect: (result) => {
+            if (result?.handle) {
+                navigateTo(`/profile/${encodeURIComponent(result.handle)}`);
+            } else if (result?.url) {
+                navigateTo(result.url);
+            }
+        },
+    });
+    wrap.appendChild(bar);
 }

@@ -22,6 +22,37 @@ async function loadAccountInfo(account) {
     }
 }
 
+async function loadDashboardExtensions({ i18n, account, role }) {
+    try {
+        const response = await apiFetch("/api/v1/ui/page-extensions/dashboard");
+        if (!response.ok) return [];
+        const payload = await response.json();
+        const extensions = Array.isArray(payload?.data) ? payload.data : [];
+        const loadedElements = await Promise.all(
+            extensions.map(async (extension) => {
+                if (!extension?.scriptUrl) return null;
+                try {
+                    const module = await import(extension.scriptUrl);
+                    if (typeof module.createPageElement !== "function") {
+                        return null;
+                    }
+                    const pageElement = module.createPageElement({
+                        i18n,
+                        account,
+                        role,
+                    });
+                    return pageElement;
+                } catch {
+                    return null;
+                }
+            }),
+        );
+        return loadedElements.filter(Boolean);
+    } catch {
+        return [];
+    }
+}
+
 export async function mount(root) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.dashboard");
@@ -120,6 +151,13 @@ export async function mount(root) {
             },
         },
     ];
+
+    const extensionElements = await loadDashboardExtensions({
+        i18n,
+        account,
+        role,
+    });
+    elements.push(...extensionElements);
 
     const composer = createPageComposer(root, {
         allowCustomization: true,

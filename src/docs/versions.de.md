@@ -19,6 +19,8 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Registrierungs-Einladung  | `src/adapters/registration/invite/` | `0.1.1` |
 | Registrierungs-Token      | `src/adapters/registration/token/`  | `0.1.1` |
 | Öffentliche Registrierung | `src/adapters/registration/public/` | `0.1.0` |
+| Profil (Social)           | `src/adapters/social/profile/`      | `1.0.0` |
+| Nachrichten (Social)      | `src/adapters/social/messages/`     | `1.0.0` |
 
 ## Gateways
 
@@ -27,7 +29,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Datenbank (db)            | `src/gateways/db/`           | `1.1.2` |
 | Authentifizierung (auth)  | `src/gateways/auth/`         | `1.3.2` |
 | Benachrichtigung (notify) | `src/gateways/notify/`       | `1.1.1` |
-| Profil                    | `src/gateways/profile/`      | `1.1.1` |
+| Social                    | `src/gateways/social/`       | `1.2.0` |
 | Dateispeicher (files)     | `src/gateways/files/`        | `1.1.0` |
 | Registrierung             | `src/gateways/registration/` | `1.1.2` |
 | Logging                   | `src/gateways/logging/`      | `1.4.0` |

@@ -43,6 +43,8 @@ Use `reuse/` as the name for any directory that holds cross-cutting utilities wi
 
 Promote code reactively: when writing a new feature in area B, if you notice similar logic already exists in area A, move it to `reuse/`, update area A to import it, and use it in area B. The threshold for promotion is any parameterisable snippet of 5 or more lines that provides distinct enough functionality to be worth a named function.
 
+Files inside a `reuse/` directory must also be generically named for the reusable abstraction they provide. If a file name needs a feature- or adapter-specific prefix (for example `social-...`), it does not belong in `reuse/`; keep it beside that feature instead.
+
 Every module in `src/ui/reuse/` must open with a JSDoc block that documents: what the module does, its public exports with a one-line description each, a concrete usage example, and `@param` / `@returns` annotations on non-trivial exported functions. See `unsaved-changes.js` for the canonical form.
 
 ### UI app page structure
@@ -121,6 +123,28 @@ Gateways, adapters, and modules are responsible for their own resources. This in
 ### Auto-discovery over static wiring
 
 Prefer scanning the filesystem to discover gateways, adapters, and modules over maintaining hardcoded import lists. The core should load gateways by discovering directories under `src/api/gateways/`; gateways should load adapters by discovering directories under `src/adapters/<gateway-id>/`. Static imports in `src/core/index.ts` or `src/api/server.ts` that enumerate individual components by name work against this goal and create coupling.
+
+### Study language modules
+
+Study language modules are **not** gateways or adapters. They are content modules that live under `src/modules/study/languages/<bcp47-code>/` and register themselves with the Study gateway at bootstrap time via `createLanguageModule()` and `bootstrapLanguageModule(ctx)`. The Study gateway discovers them automatically by scanning that directory.
+
+Every language module owns a **library** — a layered, deep-linked register of the language's written elements:
+
+1. **Characters** — the atomic writing units (e.g. hiragana, katakana). For CJK languages, compound symbols such as Kanji are NOT characters; they belong in alt_characters.
+2. **Alt characters** _(optional)_ — compound or logographic symbols (e.g. Kanji) that map to one or more base characters or combinations thereof. Each alt_character is uniquely identifiable and can reference other alt_characters.
+3. **Definitions** — language-scoped meaning records. A definition is a short phrase in the learner's UI language that describes a concept. Definitions are referenced by words and sentences rather than embedded.
+4. **Words** — one or more characters or alt_characters forming a meaningful unit, mapped to one or more definitions ranked by commonality.
+5. **Sentences** — ordered sequences of words with an optional explicit definition reference; if no explicit definition, meaning is derived from each word's primary definition.
+
+A language module also advertises **child components** — independently deliverable study features (e.g. "Hiragana Alphabet", "Kanji Explorer"). Each child component:
+
+- Registers its own route via `ctx.registerChildRoute()` during `bootstrapLanguageModule`.
+- Returns a `LanguageChildComponent` descriptor with a `pageUrl` that the UI uses for sub-navigation.
+- Lives in `src/modules/study/languages/<code>/components/<component-id>/`.
+
+Child components may themselves contain sub-components for deeply nested functionality (e.g. stroke order and vocabulary within a Kanji explorer). Internal sub-navigation within a component is handled client-side; only the top-level `pageUrl` is registered with the gateway.
+
+The Study gateway exposes `GET /api/v1/study/languages/:code/modules` to list all registered child components for a language. The study UI uses this endpoint to build the sub-navigation menu under the selected language. See `src/docs/study-language-framework.en.md` for the complete contract, data model, and directory layout.
 
 ### Comment references for alternate control flow
 

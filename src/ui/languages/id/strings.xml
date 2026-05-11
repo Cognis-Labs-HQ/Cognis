@@ -1,9 +1,12 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
   <string name="ui.reuse.nav.dashboard">Dasbor</string>
+  <string name="ui.reuse.nav.messages">Pesan</string>
+  <string name="ui.reuse.nav.study">Belajar</string>
   <string name="ui.reuse.menu.profile">Profil</string>
   <string name="ui.reuse.menu.settings">Pengaturan</string>
   <string name="ui.reuse.menu.docs">Dokumentasi</string>
+  <string name="ui.reuse.menu.messages">Pesan</string>
   <string name="ui.reuse.menu.users">Pengguna</string>
   <string name="ui.reuse.menu.invite">Undang</string>
   <string name="ui.reuse.menu.registration">Pendaftaran</string>
@@ -31,6 +34,10 @@
   <string name="ui.reuse.generic.class">Kelas</string>
   <string name="ui.reuse.generic.reset">Setel ulang</string>
   <string name="ui.reuse.generic.refresh">Segarkan</string>
+  <string name="ui.reuse.profile_preview.loading">Memuat…</string>
+  <string name="ui.reuse.profile_preview.followers">pengikut</string>
+  <string name="ui.reuse.profile_preview.following">mengikuti</string>
+  <string name="ui.reuse.profile_preview.posts">postingan</string>
   <string name="ui.reuse.generic.save">Simpan</string>
   <string name="ui.reuse.generic.discard">Batalkan</string>
   <string name="ui.reuse.generic.done">Selesai</string>
@@ -39,6 +46,7 @@
   <string name="ui.reuse.generic.dismiss">Tutup</string>
   <string name="ui.reuse.generic.confirm">Konfirmasi</string>
   <string name="ui.reuse.generic.error">Kesalahan</string>
+  <string name="ui.reuse.generic.coming_soon">Segera Hadir</string>
   <string name="ui.reuse.info_tooltip.aria">Informasi lainnya</string>
 
   <string name="ui.layout.brand.aria">Beranda Cognis</string>
@@ -49,6 +57,9 @@
   <string name="ui.layout.toolbar.expand">Perluas bilah alat</string>
   <string name="ui.layout.greeting">Halo,</string>
   <string name="ui.layout.notifications.aria">Notifikasi</string>
+  <string name="ui.layout.search.aria">Cari</string>
+  <string name="ui.layout.search.placeholder">Cari pengguna…</string>
+  <string name="ui.layout.search.no_results">Tidak ada hasil ditemukan.</string>
   <string name="ui.layout.account.aria">Opsi akun</string>
   <string name="ui.layout.avatar.alt">Avatar pengguna</string>
   <string name="ui.layout.theme.aria">Ubah tema</string>
@@ -196,6 +207,8 @@
   <string name="ui.app.dashboard.never">Tidak pernah</string>
   <string name="ui.app.dashboard.element.digital_clock.label">Jam Digital</string>
   <string name="ui.app.dashboard.element.analogue_clock.label">Jam Analog</string>
+  <string name="ui.app.dashboard.element.teacher_classes.label">Kelas Saya</string>
+  <string name="ui.app.dashboard.element.teacher_classes.empty">Belum ada kelas yang ditugaskan.</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
@@ -231,6 +244,7 @@
   <string name="ui.app.register.submit">Buat akun</string>
   <string name="ui.app.register.closed">Pendaftaran terbuka saat ini dinonaktifkan.</string>
   <string name="ui.app.register.success">Akun berhasil dibuat. Mengalihkan ke login…</string>
+  <string name="ui.app.register.reason.session_cleared">Sesi login yang ada telah dihapus sebelum memuat halaman pendaftaran.</string>
   <string name="ui.app.register.verify_email_prompt">Kode verifikasi telah dikirim ke {email}. Masukkan di bawah untuk mengonfirmasi alamat Anda.</string>
   <string name="ui.app.register.error.generic">Tidak dapat menyelesaikan registrasi.</string>
   <string name="ui.app.register.error.invalid_token">Token undangan ini tidak valid atau sudah kedaluwarsa.</string>
@@ -272,6 +286,7 @@
   <string name="ui.app.users.invite_failed">Gagal mengirim undangan.</string>
   <string name="ui.app.users.invite_email_taken">Alamat email ini sudah terdaftar.</string>
   <string name="ui.app.users.no_unverified_email">Tidak ada alamat email yang belum diverifikasi.</string>
+  <string name="ui.app.users.role_updated">Peran diperbarui.</string>
   <string name="ui.app.users.protected_account">Akun ini tidak dapat dimodifikasi.</string>
   <string name="ui.app.admin.registration.no_tokens">Belum ada token registrasi yang diterbitkan.</string>
   <string name="ui.app.invite.page_title">Undang</string>
@@ -315,6 +330,7 @@
   <string name="ui.app.profile.section.followers">Pengikut</string>
   <string name="ui.app.profile.section.following">Mengikuti</string>
   <string name="ui.app.profile.section.posts">Postingan</string>
+  <string name="ui.app.profile.section.posts_new">Postingan Baru</string>
   <string name="ui.app.profile.section.social_links">Tautan Sosial</string>
   <string name="ui.app.profile.section.suggested">Kontak yang Disarankan</string>
   <string name="ui.app.profile.bio">Bio</string>
@@ -326,6 +342,7 @@
   <string name="ui.app.profile.visibility.private">Privat</string>
   <string name="ui.app.profile.visibility.friends">Teman</string>
   <string name="ui.app.profile.visibility.community">Komunitas</string>
+  <string name="ui.app.profile.visible_to">Terlihat oleh: {visibility}</string>
   <string name="ui.app.profile.avatar">Avatar</string>
   <string name="ui.app.profile.banner">Banner</string>
   <string name="ui.app.profile.upload_avatar">Unggah Avatar</string>
@@ -370,9 +387,21 @@
   <string name="ui.app.profile.banner_height.half">Setengah tinggi</string>
   <string name="ui.app.profile.banner_height.full">Tinggi penuh</string>
   <string name="ui.app.profile.follow">Ikuti</string>
+  <string name="ui.app.profile.unfollow">Berhenti mengikuti</string>
+  <string name="ui.app.profile.unfollow_confirm_title">Berhenti Mengikuti Pengguna</string>
+  <string name="ui.app.profile.unfollow_confirm_body">Berhenti mengikuti pengguna ini?</string>
+  <string name="ui.app.profile.followed_toast">Anda sekarang mengikuti pengguna ini.</string>
+  <string name="ui.app.profile.unfollowed_toast">Anda tidak lagi mengikuti pengguna ini.</string>
+  <string name="ui.app.profile.follow_unavailable_toast">Pengguna ini tidak dapat diikuti.</string>
   <string name="ui.app.profile.block_user">Blokir pengguna</string>
   <string name="ui.app.profile.block_user_confirm">Blokir pengguna ini? Mereka tidak akan dapat mengikuti Anda atau berinteraksi dengan profil Anda.</string>
   <string name="ui.app.profile.block_user_action">Blokir</string>
+  <string name="ui.app.profile.unblock_user">Buka blokir pengguna</string>
+  <string name="ui.app.profile.unblock_user_confirm">Hapus blokir pengguna ini? Mereka akan dapat mengikuti Anda dan berinteraksi dengan profil Anda lagi.</string>
+  <string name="ui.app.profile.unblock_user_action">Buka blokir</string>
+  <string name="ui.app.profile.blocked_overlay_label">Profil ini diblokir.</string>
+  <string name="ui.app.profile.follow_hidden_toast">Visibilitas profil Anda diatur ke Tersembunyi. Perbarui visibilitas di Pengaturan untuk mengikuti pengguna lain.</string>
+  <string name="ui.app.profile.message_hidden_toast">Visibilitas profil Anda diatur ke Tersembunyi. Perbarui visibilitas di Pengaturan untuk mengirim pesan.</string>
   <string name="ui.app.profile.section.follow_requests">Permintaan Ikut</string>
   <string name="ui.app.profile.follow_requests.empty">Tidak ada permintaan ikut yang tertunda.</string>
   <string name="ui.app.profile.not_found">Profil tidak ditemukan.</string>
@@ -391,6 +420,7 @@
   <string name="ui.adapter.notify.internal.clear_all_confirm_title">Hapus Semua Notifikasi</string>
   <string name="ui.adapter.notify.internal.clear_all_confirm_body">Semua notifikasi Anda akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.</string>
   <string name="ui.adapter.notify.internal.error_clear_all">Tidak dapat menghapus notifikasi. Silakan coba lagi.</string>
+  <string name="ui.adapter.notify.internal.new_message">Pesan baru</string>
   <string name="ui.app.settings.general">Umum</string>
   <string name="ui.app.settings.emails">Alamat Email</string>
   <string name="ui.app.settings.emails_add">Tambah email</string>
@@ -493,6 +523,8 @@
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">Registrasi Publik</string>
   <string name="ui.app.admin.security.enable_registrations_hint">Izinkan siapa pun mendaftar tanpa token undangan.</string>
+  <string name="ui.app.admin.security.require_teacher_approval_label">Wajibkan Persetujuan Manual untuk Pengajar</string>
+  <string name="ui.app.admin.security.require_teacher_approval_hint">Jika diaktifkan, aplikasi pengajar harus disetujui admin sebelum pemohon menjadi pengajar.</string>
   <string name="ui.app.admin.security.user_validation_mode_label">Metode Validasi Pengguna</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">Pilih apakah akun pengguna harus divalidasi setelah login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Tidak ada</string>
@@ -502,8 +534,54 @@
   <string name="ui.app.settings.emails_domain_blocked_title">Domain tidak diizinkan</string>
   <string name="ui.app.settings.emails_domain_blocked_body">Alamat email ini berasal dari domain yang tidak ada dalam daftar domain tepercaya. Hubungi administrator Anda untuk memperbarui pengaturan keamanan.</string>
   <string name="ui.app.settings.emails_verify_unavailable">Verifikasi email tidak tersedia. Hubungi administrator Anda.</string>
+  <string name="ui.app.settings.study.title">Studi</string>
+  <string name="ui.app.settings.study.no_languages">Tidak ada bahasa yang tersedia.</string>
+  <string name="ui.app.settings.study.learn">Belajar</string>
+  <string name="ui.app.settings.study.teach">Mengajar</string>
+  <string name="ui.app.settings.study.apply_to_teach">Ajukan untuk Mengajar</string>
+  <string name="ui.app.settings.study.teacher_application_title">Aplikasi Pengajar</string>
+  <string name="ui.app.settings.study.teacher_application_reason">Beri tahu admin mengapa Anda seharusnya diizinkan mengajar bahasa ini.</string>
+  <string name="ui.app.settings.study.submit_application">Kirim Aplikasi</string>
+  <string name="ui.app.settings.study.application_sent">Aplikasi pengajar dikirim.</string>
+  <string name="ui.app.settings.study.application_failed">Gagal mengirim aplikasi pengajar.</string>
   <string name="ui.app.settings.datetime">Tanggal &amp; Waktu</string>
   <string name="ui.app.settings.datetime_tz_heading">Zona Waktu</string>
   <string name="ui.app.settings.datetime_tz_label">Zona Waktu Tampilan</string>
   <string name="ui.app.settings.datetime_tz_auto">Deteksi otomatis ({tz})</string>
+  <string name="module.social.messages.page_title">Pesan</string>
+  <string name="module.social.messages.empty">Belum ada percakapan.</string>
+  <string name="module.social.messages.placeholder">Ketik pesan…</string>
+  <string name="module.social.messages.send">Kirim</string>
+  <string name="module.social.messages.new">Percakapan Baru</string>
+  <string name="module.social.messages.lookup_placeholder">Cari berdasarkan handle…</string>
+  <string name="module.social.messages.icon_label">Pesan</string>
+  <string name="module.social.messages.load_earlier">Muat lebih awal</string>
+  <string name="module.social.messages.start_failed">Gagal memulai percakapan.</string>
+  <string name="module.social.messages.members">anggota</string>
+  <string name="module.social.messages.set_avatar">Atur avatar</string>
+  <string name="module.social.messages.key_unavailable">Kunci enkripsi tidak tersedia.</string>
+  <string name="ui.reuse.menu.classes">Kelas Saya</string>
+  <string name="module.study.classes.page_title">Kelas</string>
+  <string name="module.study.classes.empty">Belum ada kelas yang ditetapkan.</string>
+  <string name="module.study.classes.request_teacher">Minta Status Pengajar</string>
+  <string name="module.study.classes.request_pending">Permintaan pengajar menunggu persetujuan.</string>
+  <string name="module.study.classes.request_sent">Permintaan Anda telah dikirim untuk ditinjau admin.</string>
+  <string name="module.study.classes.request_failed">Gagal mengirim permintaan.</string>
+  <string name="module.study.classes.language_label">Bahasa</string>
+  <string name="module.study.classes.students_label">Siswa</string>
+  <string name="module.study.classes.open_chat">Buka Obrolan</string>
+  <string name="module.study.classes.open_meeting">Mulai Pertemuan</string>
+  <string name="module.study.classes.pending_requests">Permintaan Pengajar Tertunda</string>
+  <string name="module.study.classes.no_pending_requests">Tidak ada permintaan pengajar tertunda.</string>
+  <string name="module.study.classes.approve">Setujui</string>
+  <string name="module.study.classes.reject">Tolak</string>
+  <string name="module.study.classes.review_saved">Permintaan pengajar telah ditinjau.</string>
+  <string name="module.study.classes.review_failed">Gagal meninjau permintaan pengajar.</string>
+  <string name="module.study.classes.teacher_application_title">Aplikasi Pengajar</string>
+  <string name="module.study.classes.teacher_application_reason">Beri tahu admin mengapa Anda seharusnya diizinkan mengajar bahasa ini.</string>
+  <string name="module.study.classes.submit_application">Kirim Aplikasi</string>
+  <string name="ui.study.picker.title">Pilih Bahasa yang Dipelajari</string>
+  <string name="ui.study.picker.no_languages">Tidak ada bahasa belajar yang tersedia.</string>
+  <string name="ui.study.picker.select">Pilih bahasa:</string>
+  <string name="ui.study.picker.start">Mulai Belajar</string>
 </resources>

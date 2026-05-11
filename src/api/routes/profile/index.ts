@@ -6,7 +6,6 @@ import type {
     AccountVisibility,
     AccountRole,
 } from "../../reuse/profile-store.js";
-import { visibilityRank } from "../../reuse/profile-store.js";
 import type { BootstrapLog, FileStorageGateway } from "@cognis/core";
 import { readRawBody, readJson } from "../../reuse/read-json.js";
 
@@ -56,7 +55,38 @@ function profileResponse(
     };
 }
 
-async function canViewProfile(
+function minimalProfileResponse(profile: AccountProfile) {
+    return {
+        accountId: profile.accountId,
+        handle: profile.handle,
+        displayName: null,
+        role: null,
+        bio: null,
+        location: null,
+        website: null,
+        avatarKey: null,
+        bannerKey: null,
+        visibility: profile.visibility,
+        followerCount: null,
+        followingCount: null,
+        postCount: null,
+        createdAt: null,
+        updatedAt: null,
+    };
+}
+
+async function canDiscoverProfile(
+    requesterId: string | null,
+    requesterRole: string | null,
+    target: AccountProfile,
+): Promise<boolean> {
+    if (requesterRole === "admin") return true;
+    if (requesterId === target.accountId) return true;
+    if (!requesterId) return false;
+    return target.visibility !== "hidden";
+}
+
+async function canViewFullProfile(
     requesterId: string | null,
     requesterRole: string | null,
     target: AccountProfile,
@@ -64,12 +94,13 @@ async function canViewProfile(
 ): Promise<boolean> {
     if (requesterRole === "admin") return true;
     if (requesterId === target.accountId) return true;
-    if (target.visibility === "hidden") return false;
-    if (target.visibility === "private") {
-        if (!requesterId) return false;
-        return profileStore.isFollowing(requesterId, target.accountId);
-    }
-    return requesterId !== null;
+    if (!requesterId || target.visibility === "hidden") return false;
+    if (target.visibility === "community") return true;
+    const [requesterFollowsTarget, targetFollowsRequester] = await Promise.all([
+        profileStore.isFollowing(requesterId, target.accountId),
+        profileStore.isFollowing(target.accountId, requesterId),
+    ]);
+    return requesterFollowsTarget && targetFollowsRequester;
 }
 
 /**
@@ -214,6 +245,22 @@ export function createProfileRoutes(
                             error: {
                                 code: "bad_request",
                                 message: `Invalid visibility: ${visibility}`,
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                if (
+                    claims?.role === "teacher" &&
+                    (visibility === "hidden" || visibility === "private")
+                ) {
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "teacher_visibility_incompatible",
+                                message:
+                                    "Teacher accounts must use friends or community visibility",
                             },
                         }),
                     );
@@ -520,11 +567,10 @@ export function createProfileRoutes(
                 );
                 return true;
             }
-            const visible = await canViewProfile(
+            const visible = await canDiscoverProfile(
                 claims!.sub,
                 claims!.role,
                 target,
-                profileStore,
             );
             if (!visible) {
                 log?.(
@@ -547,17 +593,13 @@ export function createProfileRoutes(
                 );
                 return true;
             }
-            const isFollower = await profileStore.isFollowing(
+            const showDetails = await canViewFullProfile(
                 claims!.sub,
-                target.accountId,
+                claims!.role,
+                target,
+                profileStore,
             );
-            const showCounts =
-                claims!.role === "admin" ||
-                claims!.sub === target.accountId ||
-                visibilityRank(target.visibility) >=
-                    visibilityRank("community") ||
-                isFollower;
-            const [followerCount, followingCount, posts] = showCounts
+            const [followerCount, followingCount, posts] = showDetails
                 ? await Promise.all([
                       profileStore.getFollowerCount(target.accountId),
                       profileStore.getFollowingCount(target.accountId),
@@ -568,17 +610,19 @@ export function createProfileRoutes(
                 ...logMeta,
                 targetHandle: handle,
                 targetAccountId: target.accountId,
-                showCounts,
+                showDetails,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
-                    data: profileResponse(
-                        target,
-                        followerCount,
-                        followingCount,
-                        showCounts ? posts.length : null,
-                    ),
+                    data: showDetails
+                        ? profileResponse(
+                              target,
+                              followerCount,
+                              followingCount,
+                              posts.length,
+                          )
+                        : minimalProfileResponse(target),
                 }),
             );
             return true;

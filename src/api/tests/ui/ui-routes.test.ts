@@ -4,6 +4,7 @@ import { createUiRoutes } from "../../routes/ui/index.js";
 import path from "node:path";
 import {
     issueAccessToken,
+    lookupAccessToken,
     revokeAccessTokensForSubject,
 } from "../../auth/access-tokens.js";
 
@@ -116,6 +117,40 @@ test("dashboard route redirects revoked disabled-account sessions with account_d
 
     assert.equal(recorder.status, 302);
     assert.equal(recorder.headers.location, "/login?reason=account_disabled");
+});
+
+test("login page serves html for authenticated sessions", async () => {
+    const route = createUiRoutes();
+    const token = issueAccessToken("u1", "user", 60);
+    const recorder = createResponseRecorder();
+
+    await route(
+        { headers: { cookie: `cognis_access_token=${token}` } } as any,
+        recorder.res as any,
+        new URL("http://localhost/login"),
+    );
+
+    assert.equal(recorder.status, 200);
+    assert.match(recorder.body, /id="app"/);
+    assert.match(recorder.body, /app\/login\/index\.js/);
+});
+
+test("login page serves html for revoked cookie tokens", async () => {
+    const route = createUiRoutes();
+    const token = issueAccessToken("u2", "user", 60);
+    revokeAccessTokensForSubject("u2");
+    assert.equal(lookupAccessToken(token)?.revoked, true);
+    const recorder = createResponseRecorder();
+
+    await route(
+        { headers: { cookie: `cognis_access_token=${token}` } } as any,
+        recorder.res as any,
+        new URL("http://localhost/login"),
+    );
+
+    assert.equal(recorder.status, 200);
+    assert.match(recorder.body, /id="app"/);
+    assert.match(recorder.body, /app\/login\/index\.js/);
 });
 
 test("login page is served as standalone page html", async () => {
@@ -478,23 +513,24 @@ test("GET /static/gateways/notify/admin-section.js serves notify gateway admin U
     assert.match(recorder.body, /createAdminSection/);
 });
 
-test("GET /static/gateways/profile/navbar.js serves profile gateway navbar plugin", async () => {
+test("GET /static/adapters/social/profile/navbar.js serves profile adapter navbar plugin", async () => {
     const uiRegistry = new StaticUIRegistry();
     const profileUiDir = path.resolve(
         process.cwd(),
         "src",
-        "gateways",
+        "adapters",
+        "social",
         "profile",
         "ui",
     );
-    uiRegistry.registerStaticDir("profile", profileUiDir);
+    uiRegistry.registerAdapterStaticDir("social", "profile", profileUiDir);
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
     const handled = await route(
         { headers: {} } as any,
         recorder.res as any,
-        new URL("http://localhost/static/gateways/profile/navbar.js"),
+        new URL("http://localhost/static/adapters/social/profile/navbar.js"),
     );
 
     assert.ok(handled);
@@ -504,6 +540,57 @@ test("GET /static/gateways/profile/navbar.js serves profile gateway navbar plugi
         "text/javascript; charset=utf-8",
     );
     assert.match(recorder.body, /registerAvatarProvider/);
+});
+
+test("GET /static/modules/study/languages/ja/components/hiragana-alphabet/app.js serves module assets", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    const hiraganaUiDir = path.resolve(
+        process.cwd(),
+        "src",
+        "modules",
+        "study",
+        "languages",
+        "ja",
+        "components",
+        "hiragana-alphabet",
+        "ui",
+    );
+    uiRegistry.registerModuleStaticDir(
+        "study/languages/ja/components/hiragana-alphabet",
+        hiraganaUiDir,
+    );
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL(
+            "http://localhost/static/modules/study/languages/ja/components/hiragana-alphabet/app.js",
+        ),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    assert.equal(
+        recorder.headers["content-type"],
+        "text/javascript; charset=utf-8",
+    );
+});
+
+test("GET /static/modules/unknown/file.js returns 404 for unregistered module prefix", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/modules/unknown/file.js"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 404);
 });
 
 test("GET /api/v1/ui/navbar-plugins returns registered navbar plugins for authenticated user", async () => {
@@ -534,6 +621,41 @@ test("GET /api/v1/ui/navbar-plugins returns registered navbar plugins for authen
     assert.equal(
         payload.data[0].scriptUrl,
         "/static/gateways/profile/navbar.js",
+    );
+});
+
+test("GET /api/v1/ui/navbar-plugins filters disabled navbar plugins", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    uiRegistry.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/enabled/navbar.js",
+        isEnabled: () => true,
+    });
+    uiRegistry.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/disabled/navbar.js",
+        isEnabled: () => false,
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const userToken = issueAccessToken("u1", "user", 60);
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        {
+            method: "GET",
+            headers: {
+                cookie: `cognis_access_token=${userToken}`,
+                authorization: `Bearer ${userToken}`,
+            },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/navbar-plugins"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    const payload = JSON.parse(recorder.body);
+    assert.deepEqual(
+        payload.data.map((plugin: { scriptUrl: string }) => plugin.scriptUrl),
+        ["/static/gateways/enabled/navbar.js"],
     );
 });
 

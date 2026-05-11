@@ -20,21 +20,22 @@ Diese Dokumente sind für Entwickler-Mitwirkende geschrieben, nicht für Endbenu
 
 ### Architekturschichten
 
-| Dokument                    | Beschreibung                                   |
-| --------------------------- | ---------------------------------------------- |
-| [Core](./core.en.md)        | Contracts, Schnittstellen und Policy-Services  |
-| [API](./api.de.md)          | HTTP-Server, Route-Gruppen, Auth-Modell        |
-| [UI](./ui.de.md)            | Browser-Frontend: Seiten, Layouts, i18n        |
-| [Adapter](./adapters.de.md) | Plattformweite Übersicht der Adapters-Schicht  |
-| [DevOps](./devops.de.md)    | Dockerfile, GitHub Actions, Umgebungsvariablen |
+| Dokument                     | Beschreibung                                                   |
+| ---------------------------- | -------------------------------------------------------------- |
+| [Core](./core.en.md)         | Contracts, Schnittstellen und Policy-Services                  |
+| [API](./api.de.md)           | HTTP-Server, Route-Gruppen, Auth-Modell                        |
+| [UI](./ui.de.md)             | Browser-Frontend: Seiten, Layouts, i18n                        |
+| [Adapter](./adapters.de.md)  | Plattformweite Übersicht der Adapters-Schicht                  |
+| [Gateways](./gateways.de.md) | Gateways und Adapter erstellen; Startreihenfolge; Capabilities |
+| [DevOps](./devops.de.md)     | Dockerfile, GitHub Actions, Umgebungsvariablen                 |
 
 ### Gateways
 
-| Dokument                                                | Beschreibung                                  |
-| ------------------------------------------------------- | --------------------------------------------- |
-| [Auth-Gateway](../gateways/auth/docs/index.de.md)       | Authentifizierungsanbieter, Token-Ausstellung |
-| [Datenbank-Gateway](../gateways/db/docs/index.de.md)    | Datenbankzugriff, Executor, Dialekt-Helfer    |
-| [Dateien-Gateway](../gateways/files/docs/index.de.md)   | Lokale Dateispeicher-Capabilities             |
-| [Logging-Gateway](../gateways/logging/docs/index.de.md) | Strukturiertes Logging                        |
-| [Notify-Gateway](../gateways/notify/docs/index.de.md)   | Pluggbarer Benachrichtigungsversand           |
-| [Profil-Gateway](../gateways/profile/docs/index.de.md)  | Profile, sozialer Graph, Beiträge             |
+| Dokument                                                 | Beschreibung                                   |
+| -------------------------------------------------------- | ---------------------------------------------- |
+| [Auth-Gateway](../gateways/auth/docs/index.de.md)        | Authentifizierungsanbieter, Token-Ausstellung  |
+| [Datenbank-Gateway](../gateways/db/docs/index.de.md)     | Datenbankzugriff, Executor, Dialekt-Helfer     |
+| [Dateien-Gateway](../gateways/files/docs/index.de.md)    | Lokale Dateispeicher-Capabilities              |
+| [Logging-Gateway](../gateways/logging/docs/index.de.md)  | Strukturiertes Logging                         |
+| [Notify-Gateway](../gateways/notify/docs/index.de.md)    | Pluggbarer Benachrichtigungsversand            |
+| [Social-Gateway](../gateways/social/docs/standard.en.md) | Profile, sozialer Graph, Beiträge, Nachrichten |

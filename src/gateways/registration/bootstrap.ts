@@ -214,7 +214,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.1.2",
+        version: "1.1.3",
         description:
             "Registration workflows via pluggable invite/public adapters.",
         publisher: "Cognis Labs",
@@ -233,14 +233,6 @@ export function createRegistrationPageRoutes() {
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname !== "/register" || req.method !== "GET") return false;
-
-        // Users with a valid session are already authenticated; send them to
-        // the dashboard rather than showing the registration form.
-        if (getCookieSession(req)) {
-            res.writeHead(302, { location: "/dashboard" });
-            res.end();
-            return true;
-        }
 
         try {
             const file = await readFile(
@@ -467,9 +459,10 @@ export function createRegistrationRoutes(
             }
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const isAdmin = claims.role === "admin";
+            const isPrivilegedRole =
+                claims.role === "admin" || claims.role === "owner";
             const isFounder = await accountStore.isFounder(claims.sub);
-            if (!isAdmin && !isFounder) {
+            if (!isPrivilegedRole && !isFounder) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -478,7 +471,7 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
-            const invites = isAdmin
+            const invites = isPrivilegedRole
                 ? await gateway.listInvites({
                       includeClosed:
                           url.searchParams.get("includeClosed") === "true",
@@ -517,9 +510,10 @@ export function createRegistrationRoutes(
             }
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const isAdmin = claims.role === "admin";
+            const isPrivilegedRole =
+                claims.role === "admin" || claims.role === "owner";
             const isFounder = await accountStore.isFounder(claims.sub);
-            if (!isAdmin && !isFounder) {
+            if (!isPrivilegedRole && !isFounder) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -572,7 +566,7 @@ export function createRegistrationRoutes(
                     inviterAccountId: claims.sub,
                     inviterDisplayName,
                     inviteeEmail,
-                    inviterIsFounder: !isAdmin && isFounder,
+                    inviterIsFounder: !isPrivilegedRole && isFounder,
                     inviteBaseUrl: inviteBaseUrl(),
                 });
                 log?.("info", "Issued registration invite.", {
@@ -618,9 +612,10 @@ export function createRegistrationRoutes(
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const tokenId = decodeURIComponent(revokeMatch[1]);
-            const isAdmin = claims.role === "admin";
+            const isPrivilegedRole =
+                claims.role === "admin" || claims.role === "owner";
             const isFounder = await accountStore.isFounder(claims.sub);
-            if (!isAdmin && !isFounder) {
+            if (!isPrivilegedRole && !isFounder) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -629,7 +624,7 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
-            if (!isAdmin) {
+            if (!isPrivilegedRole) {
                 const myInvites = await gateway.listInvites({
                     inviterAccountId: claims.sub,
                 });

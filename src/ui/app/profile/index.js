@@ -11,6 +11,7 @@ import { escapeHtml } from "../../reuse/escape-html.js";
 import { attachCharCounter } from "../../reuse/char-counter.js";
 import { showToast } from "../../reuse/toast.js";
 import { formatDate } from "../../reuse/timestamp.js";
+import { navigateTo } from "../../reuse/app-router.js";
 
 let root = null;
 let i18n = null;
@@ -27,6 +28,8 @@ let bannerHeight = null;
 let composer = null;
 let elements = [];
 let bannerMenuCloseHandler = null;
+let canMessageTarget = false;
+let relationship = null;
 
 function toAbsoluteUrl(url) {
     if (!url) return url;
@@ -157,6 +160,20 @@ function visibilityClass(v) {
     return map[v] ?? "visibility-hidden";
 }
 
+function renderAvatarBadge(roleValue) {
+    if (!roleValue) return "";
+    if (roleValue === "owner") {
+        return `<span class="profile-avatar-badge profile-avatar-badge--owner" aria-hidden="true"><img src="/static/assets/icons/crown.svg" alt="" class="profile-avatar-badge-icon" /></span>`;
+    }
+    if (roleValue === "admin") {
+        return `<span class="profile-avatar-badge profile-avatar-badge--admin" aria-hidden="true"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-avatar-badge-icon" /></span>`;
+    }
+    if (roleValue === "teacher") {
+        return `<span class="profile-avatar-badge profile-avatar-badge--teacher" aria-hidden="true">&#128218;</span>`;
+    }
+    return "";
+}
+
 function renderAvatarContent() {
     if (avatarBlobUrl) {
         return `<img src="${escapeHtml(avatarBlobUrl)}" class="profile-hero-avatar-img" alt="${i18n.t("ui.layout.avatar.alt")}" />`;
@@ -252,6 +269,7 @@ function renderHero() {
           type="button"
           aria-label="${escapeHtml(i18n.t("ui.app.profile.change_avatar"))}"
         >${renderAvatarContent()}</button>
+        ${renderAvatarBadge(profile?.role)}
         ${
             avatarBlobUrl
                 ? `
@@ -268,23 +286,36 @@ function renderHero() {
         : `
       <div class="profile-avatar-wrap">
         <div class="profile-hero-avatar-display">${renderAvatarContent()}</div>
+        ${renderAvatarBadge(profile?.role)}
       </div>
     `;
 
     const renderedDisplayName =
         profile?.displayName ?? (profile?.handle ?? "").replace(/^@/, "");
+    const visibleToText = i18n
+        .t("ui.app.profile.visible_to")
+        .replace(
+            "{visibility}",
+            i18n.t(
+                `ui.app.profile.visibility.${profile?.visibility ?? "hidden"}`,
+            ),
+        );
     const handleRow = `
     <div class="profile-hero-name-block">
       <div class="profile-hero-display-row">
         <span class="profile-hero-display-name">${escapeHtml(renderedDisplayName)}</span>
         ${isOwnProfile ? `<span class="profile-its-you-pill">${i18n.t("ui.app.profile.its_you")}</span>` : ""}
-        ${profile?.role ? `<span class="profile-role-badge">${escapeHtml(profile.role)}</span>` : ""}
-        <span class="visibility-badge ${visibilityClass(profile?.visibility ?? "hidden")}">${i18n.t(`ui.app.profile.visibility.${profile?.visibility ?? "hidden"}`)}</span>
+        <span class="visibility-badge ${visibilityClass(profile?.visibility ?? "hidden")}">${escapeHtml(visibleToText)}</span>
       </div>
       <em class="profile-hero-handle">@${escapeHtml(profile?.handle ?? "")}</em>
     </div>
   `;
 
+    const isFollowingTarget = Boolean(relationship?.following);
+    const isBlocked = Boolean(relationship?.blocked);
+    const followLabel = isFollowingTarget
+        ? i18n.t("ui.app.profile.following")
+        : i18n.t("ui.app.profile.follow");
     const actionRow = isOwnProfile
         ? `
       <div class="profile-hero-action-row">
@@ -293,14 +324,39 @@ function renderHero() {
     `
         : `
       <div class="profile-hero-action-row">
-        <button class="profile-hero-follow-btn" type="button">${escapeHtml(i18n.t("ui.app.profile.follow"))}</button>
+        ${
+            !isBlocked
+                ? `<button class="profile-hero-follow-btn" type="button" data-following="${isFollowingTarget ? "true" : "false"}">${escapeHtml(followLabel)}</button>`
+                : ""
+        }
+        ${
+            !isBlocked && canMessageTarget
+                ? `<button
+                    class="profile-message-button"
+                    type="button"
+                    data-message-target="${escapeHtml(profile?.handle ?? "")}"
+                    aria-label="${escapeHtml(i18n.t("module.social.messages.icon_label"))}"
+                    title="${escapeHtml(i18n.t("module.social.messages.icon_label"))}"
+                  ><img src="/static/assets/icons/message-light.svg" alt="" class="profile-message-icon profile-message-icon--light" /><img src="/static/assets/icons/message-dark.svg" alt="" class="profile-message-icon profile-message-icon--dark" /></button>`
+                : ""
+        }
         <button
-          class="profile-hero-block-btn"
+          class="${isBlocked ? "profile-hero-unblock-btn" : "profile-hero-block-btn"}"
           type="button"
-          aria-label="${escapeHtml(i18n.t("ui.app.profile.block_user"))}"
-        >🚫</button>
+          aria-label="${escapeHtml(i18n.t(isBlocked ? "ui.app.profile.unblock_user" : "ui.app.profile.block_user"))}"
+        >${isBlocked ? "🔓" : "🚫"}</button>
       </div>
     `;
+
+    const blockedOverlay = isBlocked
+        ? `<div class="profile-blocked-overlay">
+        <span class="profile-blocked-label">${escapeHtml(i18n.t("ui.app.profile.blocked_overlay_label"))}</span>
+        <button
+          class="profile-hero-unblock-btn"
+          type="button"
+        >${escapeHtml(i18n.t("ui.app.profile.unblock_user_action"))}</button>
+      </div>`
+        : "";
 
     const statsHtml = `
     <div class="profile-hero-stats">
@@ -328,7 +384,7 @@ function renderHero() {
 
     if (bannerHeight === "full") {
         return `
-      <div class="${heroClass}">
+      <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}">
         <div class="profile-hero-banner-wrap">
           ${bannerWrap}
         </div>
@@ -344,12 +400,13 @@ function renderHero() {
           ${bioWrap}
           ${achievementRow}
         </div>
+        ${blockedOverlay}
       </div>
     `;
     }
 
     return `
-    <div class="${heroClass}">
+    <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}">
       <div class="profile-hero-banner-wrap">
         ${bannerWrap}
       </div>
@@ -367,25 +424,35 @@ function renderHero() {
         </div>
         ${achievementRow}
       </div>
+      ${blockedOverlay}
     </div>
   `;
+}
+
+function userDisplayName(user) {
+    return user?.displayName || user?.username || user?.handle || "";
 }
 
 function renderUserList(list, emptyKey) {
     if (!list.length) return `<p class="profile-empty">${i18n.t(emptyKey)}</p>`;
     return `
-    <ul class="profile-user-list">
+    <div class="profile-user-card-grid">
       ${list
           .map(
               (u) => `
-        <li class="profile-user-item">
-          <span class="profile-user-handle">@${escapeHtml(u.handle)}</span>
-          <span class="profile-role-badge">${escapeHtml(u.role)}</span>
-        </li>
+        <a class="profile-user-card" href="/profile/${escapeHtml(encodeURIComponent(u.handle))}">
+          <span class="profile-user-card-name">${escapeHtml(userDisplayName(u))}</span>
+          <span class="profile-user-card-handle">@${escapeHtml(u.handle)}</span>
+          <span class="profile-user-card-icons">
+            ${u.role === "owner" ? `<span class="profile-user-role-icon" aria-label="Owner" title="Owner"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+            ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+            ${u.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>` : ""}
+          </span>
+        </a>
       `,
           )
           .join("")}
-    </ul>
+    </div>
   `;
 }
 
@@ -451,8 +518,10 @@ function renderSuggestedContacts() {
         .map(
             (u) => `
     <div class="profile-suggested-item">
-      <span class="profile-user-handle">@${escapeHtml(u.handle)}</span>
-      ${u.role ? `<span class="profile-role-badge">${escapeHtml(u.role)}</span>` : ""}
+      <a class="profile-user-handle" href="/profile/${escapeHtml(encodeURIComponent(u.handle))}">${escapeHtml(userDisplayName(u))}</a>
+      ${u.role === "owner" ? `<span class="profile-user-role-icon" aria-label="Owner" title="Owner"><img src="/static/assets/icons/crown.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+      ${u.role === "admin" ? `<span class="profile-user-role-icon" aria-label="Admin" title="Admin"><img src="/static/assets/icons/wrench.svg" alt="" class="profile-role-icon-img" /></span>` : ""}
+      ${u.role === "teacher" ? `<span class="profile-user-role-icon" aria-label="Teacher" title="Teacher">&#128218;</span>` : ""}
       <button
         type="button"
         class="btn-confirm btn-animated profile-follow-btn"
@@ -477,15 +546,19 @@ function renderPostsList() {
         <li class="profile-post-card" data-post-id="${escapeHtml(p.id)}">
           <div class="profile-post-header">
             ${p.title ? `<strong class="profile-post-title">${escapeHtml(p.title)}</strong>` : ""}
-            ${p.visibility ? `<span class="visibility-badge ${visibilityClass(p.visibility)}">${escapeHtml(p.visibility)}</span>` : ""}
+            ${p.visibility ? `<span class="visibility-badge ${visibilityClass(p.visibility)}">${escapeHtml(i18n.t(`ui.app.profile.post_visibility.${p.visibility}`) || p.visibility)}</span>` : ""}
             <time class="profile-post-date" datetime="${escapeHtml(p.createdAt ?? "")}">${formatDate(p.createdAt)}</time>
           </div>
           <p class="profile-post-body">${escapeHtml(p.content)}</p>
-          <div class="profile-post-actions">
+          ${
+              isOwnProfile
+                  ? `<div class="profile-post-actions">
             <button type="button" class="btn-cancel btn-animated post-delete-btn" data-post-id="${escapeHtml(p.id)}">
               ${i18n.t("ui.app.profile.delete_post")}
             </button>
-          </div>
+          </div>`
+                  : ""
+          }
         </li>
       `,
           )
@@ -494,10 +567,11 @@ function renderPostsList() {
   `;
 }
 
-function renderPosts() {
+function renderNewPost() {
     const profileVis = profile?.visibility ?? "hidden";
     const canFollowers = profileVis !== "hidden";
-    const canEveryone = profileVis === "friends" || profileVis === "community";
+    const canFriends = profileVis !== "hidden";
+    const canEveryone = profileVis === "community";
 
     const lockedFollowersTitle = canFollowers
         ? ""
@@ -533,6 +607,7 @@ function renderPosts() {
           <select id="post-visibility" class="profile-field-input theme-select">
             <option value="only_me">${escapeHtml(i18n.t("ui.app.profile.post_visibility.only_me"))}</option>
             <option value="private"${canFollowers ? "" : " disabled"}${lockedFollowersTitle}>${escapeHtml(i18n.t("ui.app.profile.post_visibility.private"))}</option>
+            <option value="friends"${canFriends ? "" : " disabled"}${lockedFollowersTitle}>${escapeHtml(i18n.t("ui.app.profile.post_visibility.friends"))}</option>
             <option value="community"${canEveryone ? "" : " disabled"}${lockedEveryoneTitle}>${escapeHtml(i18n.t("ui.app.profile.post_visibility.community"))}</option>
           </select>
           <button type="button" id="post-submit" class="btn-confirm btn-animated">
@@ -541,6 +616,13 @@ function renderPosts() {
         </div>
         ${visibilityHint}
       </div>
+    </div>
+  `;
+}
+
+function renderPosts() {
+    return `
+    <div class="profile-posts-section">
       <h3 class="profile-posts-heading">
         ${i18n.t("ui.app.profile.section.posts")}
         <span class="profile-count-badge">${posts.length}</span>
@@ -585,6 +667,7 @@ async function openEditPopup() {
     const currentWebsite = profile?.website ?? "";
     const currentVisibility = profile?.visibility ?? "hidden";
     const currentDisplayName = profile?.displayName ?? "";
+    const profileIsTeacher = profile?.role === "teacher";
 
     const popupPromise = openPopup({
         title: i18n.t("ui.app.profile.edit_profile"),
@@ -610,10 +693,13 @@ async function openEditPopup() {
           ${escapeHtml(i18n.t("ui.app.profile.visibility"))}
           <select id="popup-edit-visibility" class="profile-field-input">
             ${["hidden", "private", "friends", "community"]
-                .map(
-                    (v) =>
-                        `<option value="${v}"${currentVisibility === v ? " selected" : ""}>${escapeHtml(i18n.t(`ui.app.profile.visibility.${v}`))}</option>`,
-                )
+                .map((visibilityOption) => {
+                    const isRestrictedForTeacher =
+                        profileIsTeacher &&
+                        (visibilityOption === "hidden" ||
+                            visibilityOption === "private");
+                    return `<option value="${visibilityOption}"${currentVisibility === visibilityOption ? " selected" : ""}${isRestrictedForTeacher ? " disabled" : ""}>${escapeHtml(i18n.t(`ui.app.profile.visibility.${visibilityOption}`))}</option>`;
+                })
                 .join("")}
           </select>
         </label>
@@ -667,16 +753,27 @@ async function openEditPopup() {
                     visibility,
                 }),
             });
-            if (!res.ok) throw new Error("save_failed");
+            if (!res.ok) {
+                const responseBody = await res.json().catch(() => null);
+                const responseMessage =
+                    responseBody?.error?.message ??
+                    i18n.t("ui.app.profile.save_failed");
+                throw new Error(responseMessage);
+            }
             localStorage.setItem("cognis_display_name", displayName);
             profile = await loadOwnProfile();
             composer.refresh(elements);
             updateNavbarAvatar().catch(() => {});
             showToast(i18n.t("ui.app.profile.saved"), { variant: "success" });
-        } catch {
-            showToast(i18n.t("ui.app.profile.save_failed"), {
-                variant: "error",
-            });
+        } catch (error) {
+            showToast(
+                error instanceof Error
+                    ? error.message
+                    : i18n.t("ui.app.profile.save_failed"),
+                {
+                    variant: "error",
+                },
+            );
         }
     }
 }
@@ -788,14 +885,62 @@ async function doDeletePost(postId) {
 }
 
 async function doFollowUser(handle) {
+    if (!handle) return;
+    const isFollowingTarget = Boolean(relationship?.following);
+    if (isFollowingTarget) {
+        const result = await openPopup({
+            title: i18n.t("ui.app.profile.unfollow_confirm_title"),
+            body: `<p>${escapeHtml(i18n.t("ui.app.profile.unfollow_confirm_body"))}</p><strong>${escapeHtml(handle)}</strong>`,
+            variant: "danger",
+            actions: [
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.popup.cancel"),
+                    variant: "cancel",
+                },
+                {
+                    id: "confirm",
+                    label: i18n.t("ui.app.profile.unfollow"),
+                    variant: "confirm",
+                },
+            ],
+        });
+        if (result !== "confirm") return;
+    }
+
     const res = await apiFetch(
         `/api/v1/users/${encodeURIComponent(handle)}/follow`,
-        { method: "POST" },
+        { method: isFollowingTarget ? "DELETE" : "POST" },
     );
     if (res.ok) {
-        following = await loadFollowing(profile?.handle);
+        relationship = {
+            ...(relationship ?? {}),
+            following: !isFollowingTarget,
+        };
+        [followers, following] = await Promise.all([
+            loadFollowers(profile?.handle),
+            loadFollowing(profile?.handle),
+        ]);
         composer.refresh(elements);
+        showToast(
+            i18n.t(
+                isFollowingTarget
+                    ? "ui.app.profile.unfollowed_toast"
+                    : "ui.app.profile.followed_toast",
+            ),
+            { variant: "success" },
+        );
+        return;
     }
+    if (res.status === 403) {
+        showToast(i18n.t("ui.app.profile.follow_hidden_toast"), {
+            variant: "error",
+        });
+        return;
+    }
+    showToast(i18n.t("ui.app.profile.follow_unavailable_toast"), {
+        variant: "error",
+    });
 }
 
 async function doBlockUser() {
@@ -817,6 +962,70 @@ async function doBlockUser() {
         ],
     });
     if (result !== "confirm") return;
+    const res = await apiFetch(
+        `/api/v1/users/${encodeURIComponent(urlHandle)}/block`,
+        { method: "POST" },
+    );
+    if (!res.ok) return;
+    relationship = { ...(relationship ?? {}), blocked: true, following: false };
+    canMessageTarget = false;
+    [followers, following] = await Promise.all([
+        loadFollowers(profile?.handle),
+        loadFollowing(profile?.handle),
+    ]);
+    composer.refresh(elements);
+}
+
+async function doUnblockUser() {
+    const result = await openPopup({
+        title: i18n.t("ui.app.profile.unblock_user"),
+        body: escapeHtml(i18n.t("ui.app.profile.unblock_user_confirm")),
+        variant: "danger",
+        actions: [
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.popup.cancel"),
+                variant: "cancel",
+            },
+            {
+                id: "confirm",
+                label: i18n.t("ui.app.profile.unblock_user_action"),
+                variant: "confirm",
+            },
+        ],
+    });
+    if (result !== "confirm") return;
+    const res = await apiFetch(
+        `/api/v1/users/${encodeURIComponent(urlHandle)}/block`,
+        { method: "DELETE" },
+    );
+    if (!res.ok) return;
+    relationship = { ...(relationship ?? {}), blocked: false };
+    composer.refresh(elements);
+}
+
+async function doOpenMessageRoom() {
+    if (!profile?.handle) return;
+    try {
+        const res = await apiFetch("/api/v1/messages/rooms", {
+            method: "POST",
+            body: JSON.stringify({ handles: [profile.handle] }),
+        });
+        if (!res.ok) {
+            showToast(i18n.t("module.social.messages.start_failed"), {
+                variant: "error",
+            });
+            return;
+        }
+        const payload = await res.json();
+        const roomId = payload?.data?.id;
+        if (!roomId) return;
+        await navigateTo(`/messages/${encodeURIComponent(roomId)}`);
+    } catch {
+        showToast(i18n.t("module.social.messages.start_failed"), {
+            variant: "error",
+        });
+    }
 }
 
 function renderFollowRequests() {
@@ -839,6 +1048,13 @@ function bindPageEvents() {
     root.querySelector(".profile-hero-block-btn")?.addEventListener(
         "click",
         doBlockUser,
+    );
+    root.querySelectorAll(".profile-hero-unblock-btn").forEach((btn) => {
+        btn.addEventListener("click", doUnblockUser);
+    });
+    root.querySelector("[data-message-target]")?.addEventListener(
+        "click",
+        doOpenMessageRoom,
     );
     root.querySelector(".profile-hero-banner-btn")?.addEventListener(
         "click",
@@ -982,6 +1198,24 @@ export async function mount(rootEl, { signal } = {}) {
         isOwnProfile ? loadOwnPosts() : loadUserPosts(profile?.handle),
     ]);
 
+    canMessageTarget = false;
+    relationship = null;
+    if (!isOwnProfile && profile?.handle) {
+        try {
+            const res = await apiFetch(
+                `/api/v1/users/${encodeURIComponent(profile.handle)}/relationship`,
+            );
+            if (res.ok) {
+                const payload = await res.json();
+                relationship = payload?.data ?? null;
+                canMessageTarget = Boolean(relationship?.canMessage);
+            }
+        } catch {
+            canMessageTarget = false;
+            relationship = null;
+        }
+    }
+
     if (isAborted()) return;
 
     avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
@@ -990,29 +1224,77 @@ export async function mount(rootEl, { signal } = {}) {
 
     if (isAborted()) return;
 
+    // These heuristics reserve a small fixed padding plus estimated rows per
+    // visible item so profile widgets stop clipping or creating avoidable
+    // internal scrollbars at the default layout: ~0.7 rows per social-card
+    // entry is enough for the compact card density, +2 rows covers headers and
+    // gutters, and the 4/5 row minimums preserve readable empty/small states.
+    const socialSectionRowCount = Math.max(
+        4,
+        Math.ceil(Math.max(followers.length, following.length) * 0.7 + 2),
+    );
+    const postsSectionRowCount = Math.max(
+        5,
+        Math.ceil(posts.length * 0.85 + 4),
+    );
+    // The hero needs extra rows for banner + identity stack; full-banner mode
+    // needs 7 rows so the overlaid card cluster clears the taller banner, while
+    // half-banner mode is comfortable at 5 rows.
+    const heroRowCount = bannerHeight === "full" ? 7 : 5;
+
     elements = [
         {
             id: "hero",
             label: i18n.t("ui.app.profile.section.profile"),
-            gridSize: { default: [4, 4], min: [2, 3], max: "full" },
+            gridSize: {
+                default: [4, heroRowCount],
+                min: [2, 4],
+                max: "full",
+            },
             render: renderHero,
         },
         {
             id: "followers",
             label: i18n.t("ui.app.profile.section.followers"),
-            gridSize: { default: [2, 3], min: [2, 1], max: "half" },
+            gridSize: {
+                default: [2, socialSectionRowCount],
+                min: [2, 3],
+                max: "half",
+            },
             render: renderFollowers,
         },
         {
             id: "following",
             label: i18n.t("ui.app.profile.section.following"),
-            gridSize: { default: [2, 3], min: [2, 1], max: "half" },
+            gridSize: {
+                default: [2, socialSectionRowCount],
+                min: [2, 3],
+                max: "half",
+            },
             render: renderFollowing,
         },
+        ...(isOwnProfile
+            ? [
+                  {
+                      id: "posts-new",
+                      label: i18n.t("ui.app.profile.section.posts_new"),
+                      gridSize: {
+                          default: [4, 4],
+                          min: [2, 3],
+                          max: "full",
+                      },
+                      render: renderNewPost,
+                  },
+              ]
+            : []),
         {
             id: "posts",
             label: i18n.t("ui.app.profile.section.posts"),
-            gridSize: { default: [4, 4], min: [2, 2], max: "full" },
+            gridSize: {
+                default: [4, postsSectionRowCount],
+                min: [2, 4],
+                max: "full",
+            },
             render: renderPosts,
         },
         {
@@ -1039,7 +1321,7 @@ export async function mount(rootEl, { signal } = {}) {
     ];
 
     composer = createPageComposer(root, {
-        allowCustomization: true,
+        allowCustomization: isOwnProfile,
         elements,
         preferenceKey: "profile-layout",
         i18n,

@@ -1,9 +1,12 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
   <string name="ui.reuse.nav.dashboard">ダッシュボード</string>
+  <string name="ui.reuse.nav.messages">メッセージ</string>
+  <string name="ui.reuse.nav.study">学習</string>
   <string name="ui.reuse.menu.profile">プロフィール</string>
   <string name="ui.reuse.menu.settings">設定</string>
   <string name="ui.reuse.menu.docs">ドキュメント</string>
+  <string name="ui.reuse.menu.messages">メッセージ</string>
   <string name="ui.reuse.menu.users">ユーザー</string>
   <string name="ui.reuse.menu.invite">招待</string>
   <string name="ui.reuse.menu.registration">登録</string>
@@ -31,6 +34,10 @@
   <string name="ui.reuse.generic.class">クラス</string>
   <string name="ui.reuse.generic.reset">リセット</string>
   <string name="ui.reuse.generic.refresh">更新</string>
+  <string name="ui.reuse.profile_preview.loading">読み込み中…</string>
+  <string name="ui.reuse.profile_preview.followers">フォロワー</string>
+  <string name="ui.reuse.profile_preview.following">フォロー中</string>
+  <string name="ui.reuse.profile_preview.posts">投稿</string>
   <string name="ui.reuse.generic.save">保存</string>
   <string name="ui.reuse.generic.discard">元に戻す</string>
   <string name="ui.reuse.generic.done">完了</string>
@@ -39,6 +46,7 @@
   <string name="ui.reuse.generic.dismiss">閉じる</string>
   <string name="ui.reuse.generic.confirm">確認</string>
   <string name="ui.reuse.generic.error">エラー</string>
+  <string name="ui.reuse.generic.coming_soon">近日公開</string>
   <string name="ui.reuse.info_tooltip.aria">詳細情報</string>
 
   <string name="ui.layout.brand.aria">Cognis ホーム</string>
@@ -49,6 +57,9 @@
   <string name="ui.layout.toolbar.expand">ツールバーを展開する</string>
   <string name="ui.layout.greeting">こんにちは、</string>
   <string name="ui.layout.notifications.aria">通知</string>
+  <string name="ui.layout.search.aria">検索</string>
+  <string name="ui.layout.search.placeholder">ユーザーを検索…</string>
+  <string name="ui.layout.search.no_results">結果が見つかりません。</string>
   <string name="ui.layout.account.aria">アカウントオプション</string>
   <string name="ui.layout.avatar.alt">ユーザーアバター</string>
   <string name="ui.layout.theme.aria">テーマ切替</string>
@@ -196,6 +207,8 @@
   <string name="ui.app.dashboard.never">なし</string>
   <string name="ui.app.dashboard.element.digital_clock.label">デジタル時計</string>
   <string name="ui.app.dashboard.element.analogue_clock.label">アナログ時計</string>
+  <string name="ui.app.dashboard.element.teacher_classes.label">担当クラス</string>
+  <string name="ui.app.dashboard.element.teacher_classes.empty">まだクラスが割り当てられていません。</string>
 
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
@@ -231,6 +244,7 @@
   <string name="ui.app.register.submit">アカウントを作成</string>
   <string name="ui.app.register.closed">現在、一般登録は無効です。</string>
   <string name="ui.app.register.success">アカウントを作成しました。ログイン画面へ移動します…</string>
+  <string name="ui.app.register.reason.session_cleared">登録ページの読み込み前に既存のログインセッションを削除しました。</string>
   <string name="ui.app.register.verify_email_prompt">{email} に確認コードを送信しました。アドレスを確認するために下に入力してください。</string>
   <string name="ui.app.register.error.generic">登録を完了できませんでした。</string>
   <string name="ui.app.register.error.invalid_token">この招待トークンは無効か期限切れです。</string>
@@ -272,6 +286,7 @@
   <string name="ui.app.users.invite_failed">招待の送信に失敗しました。</string>
   <string name="ui.app.users.invite_email_taken">このメールアドレスはすでに登録されています。</string>
   <string name="ui.app.users.no_unverified_email">未認証のメールアドレスが見つかりません。</string>
+  <string name="ui.app.users.role_updated">ロールが更新されました。</string>
   <string name="ui.app.users.protected_account">このアカウントは変更できません。</string>
   <string name="ui.app.admin.registration.no_tokens">登録トークンはまだ発行されていません。</string>
   <string name="ui.app.invite.page_title">招待</string>
@@ -315,6 +330,7 @@
   <string name="ui.app.profile.section.followers">フォロワー</string>
   <string name="ui.app.profile.section.following">フォロー中</string>
   <string name="ui.app.profile.section.posts">投稿</string>
+  <string name="ui.app.profile.section.posts_new">新しい投稿</string>
   <string name="ui.app.profile.section.social_links">ソーシャルリンク</string>
   <string name="ui.app.profile.section.suggested">おすすめ</string>
   <string name="ui.app.profile.bio">自己紹介</string>
@@ -326,6 +342,7 @@
   <string name="ui.app.profile.visibility.private">非公開</string>
   <string name="ui.app.profile.visibility.friends">友達</string>
   <string name="ui.app.profile.visibility.community">コミュニティ</string>
+  <string name="ui.app.profile.visible_to">表示対象: {visibility}</string>
   <string name="ui.app.profile.avatar">アバター</string>
   <string name="ui.app.profile.banner">バナー</string>
   <string name="ui.app.profile.upload_avatar">アバターをアップロード</string>
@@ -370,9 +387,21 @@
   <string name="ui.app.profile.banner_height.half">半分の高さ</string>
   <string name="ui.app.profile.banner_height.full">全高</string>
   <string name="ui.app.profile.follow">フォロー</string>
+  <string name="ui.app.profile.unfollow">フォロー解除</string>
+  <string name="ui.app.profile.unfollow_confirm_title">ユーザーのフォロー解除</string>
+  <string name="ui.app.profile.unfollow_confirm_body">このユーザーのフォローを解除しますか？</string>
+  <string name="ui.app.profile.followed_toast">このユーザーをフォローしました。</string>
+  <string name="ui.app.profile.unfollowed_toast">このユーザーのフォローを解除しました。</string>
+  <string name="ui.app.profile.follow_unavailable_toast">このユーザーはフォローできません。</string>
   <string name="ui.app.profile.block_user">ユーザーをブロック</string>
   <string name="ui.app.profile.block_user_confirm">このユーザーをブロックしますか？あなたをフォローしたりプロフィールと交流できなくなります。</string>
   <string name="ui.app.profile.block_user_action">ブロック</string>
+  <string name="ui.app.profile.unblock_user">ブロックを解除</string>
+  <string name="ui.app.profile.unblock_user_confirm">このユーザーのブロックを解除しますか？再びフォローしたりプロフィールと交流できるようになります。</string>
+  <string name="ui.app.profile.unblock_user_action">ブロック解除</string>
+  <string name="ui.app.profile.blocked_overlay_label">このプロフィールはブロックされています。</string>
+  <string name="ui.app.profile.follow_hidden_toast">プロフィールの公開範囲が「非表示」に設定されています。他のユーザーをフォローするには、設定で公開範囲を変更してください。</string>
+  <string name="ui.app.profile.message_hidden_toast">プロフィールの公開範囲が「非表示」に設定されています。メッセージを送るには、設定で公開範囲を変更してください。</string>
   <string name="ui.app.profile.section.follow_requests">フォローリクエスト</string>
   <string name="ui.app.profile.follow_requests.empty">保留中のフォローリクエストはありません。</string>
   <string name="ui.app.profile.not_found">プロフィールが見つかりません。</string>
@@ -391,6 +420,7 @@
   <string name="ui.adapter.notify.internal.clear_all_confirm_title">すべての通知を削除</string>
   <string name="ui.adapter.notify.internal.clear_all_confirm_body">すべての通知が完全に削除されます。この操作は取り消せません。</string>
   <string name="ui.adapter.notify.internal.error_clear_all">通知を削除できませんでした。もう一度お試しください。</string>
+  <string name="ui.adapter.notify.internal.new_message">新しいメッセージ</string>
   <string name="ui.app.settings.general">一般</string>
   <string name="ui.app.settings.emails">メールアドレス</string>
   <string name="ui.app.settings.emails_add">メールを追加</string>
@@ -493,6 +523,8 @@
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">公開登録</string>
   <string name="ui.app.admin.security.enable_registrations_hint">招待トークンなしで誰でも登録できるようにします。</string>
+  <string name="ui.app.admin.security.require_teacher_approval_label">教師の手動承認を必須にする</string>
+  <string name="ui.app.admin.security.require_teacher_approval_hint">有効にすると、申請者が教師になる前に管理者が教師申請を承認する必要があります。</string>
   <string name="ui.app.admin.security.user_validation_mode_label">ユーザー検証方式</string>
   <string name="ui.app.admin.security.user_validation_mode_hint">ログイン後にユーザーアカウントの検証を必須にする方式を選択します。</string>
   <string name="ui.app.admin.security.user_validation_mode.none">なし</string>
@@ -502,8 +534,54 @@
   <string name="ui.app.settings.emails_domain_blocked_title">ドメインが許可されていません</string>
   <string name="ui.app.settings.emails_domain_blocked_body">このメールアドレスは、信頼済みドメインリストに登録されていないドメインのものです。管理者にセキュリティ設定の更新を依頼してください。</string>
   <string name="ui.app.settings.emails_verify_unavailable">メール認証は利用できません。管理者にお問い合わせください。</string>
+  <string name="ui.app.settings.study.title">学習</string>
+  <string name="ui.app.settings.study.no_languages">利用できる言語はありません。</string>
+  <string name="ui.app.settings.study.learn">学ぶ</string>
+  <string name="ui.app.settings.study.teach">教える</string>
+  <string name="ui.app.settings.study.apply_to_teach">教える申請</string>
+  <string name="ui.app.settings.study.teacher_application_title">教師申請</string>
+  <string name="ui.app.settings.study.teacher_application_reason">この言語を教えることを許可されるべき理由を管理者に伝えてください。</string>
+  <string name="ui.app.settings.study.submit_application">申請を送信</string>
+  <string name="ui.app.settings.study.application_sent">教師申請を送信しました。</string>
+  <string name="ui.app.settings.study.application_failed">教師申請の送信に失敗しました。</string>
   <string name="ui.app.settings.datetime">日付と時刻</string>
   <string name="ui.app.settings.datetime_tz_heading">タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_label">表示タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_auto">自動検出 ({tz})</string>
+  <string name="module.social.messages.page_title">メッセージ</string>
+  <string name="module.social.messages.empty">まだ会話はありません。</string>
+  <string name="module.social.messages.placeholder">メッセージを入力…</string>
+  <string name="module.social.messages.send">送信</string>
+  <string name="module.social.messages.new">新しい会話</string>
+  <string name="module.social.messages.lookup_placeholder">ハンドルで検索…</string>
+  <string name="module.social.messages.icon_label">メッセージ</string>
+  <string name="module.social.messages.load_earlier">以前を読み込む</string>
+  <string name="module.social.messages.start_failed">会話を開始できませんでした。</string>
+  <string name="module.social.messages.members">メンバー</string>
+  <string name="module.social.messages.set_avatar">アバターを設定</string>
+  <string name="module.social.messages.key_unavailable">暗号化キーを利用できません。</string>
+  <string name="ui.reuse.menu.classes">マイクラス</string>
+  <string name="module.study.classes.page_title">クラス</string>
+  <string name="module.study.classes.empty">まだクラスが割り当てられていません。</string>
+  <string name="module.study.classes.request_teacher">教師ステータスをリクエスト</string>
+  <string name="module.study.classes.request_pending">教師申請は承認待ちです。</string>
+  <string name="module.study.classes.request_sent">申請が管理者のレビューに送信されました。</string>
+  <string name="module.study.classes.request_failed">申請の送信に失敗しました。</string>
+  <string name="module.study.classes.language_label">言語</string>
+  <string name="module.study.classes.students_label">生徒</string>
+  <string name="module.study.classes.open_chat">チャットを開く</string>
+  <string name="module.study.classes.open_meeting">ミーティングを開始</string>
+  <string name="module.study.classes.pending_requests">保留中の教師申請</string>
+  <string name="module.study.classes.no_pending_requests">保留中の教師申請はありません。</string>
+  <string name="module.study.classes.approve">承認</string>
+  <string name="module.study.classes.reject">却下</string>
+  <string name="module.study.classes.review_saved">教師申請を確認しました。</string>
+  <string name="module.study.classes.review_failed">教師申請の確認に失敗しました。</string>
+  <string name="module.study.classes.teacher_application_title">教師申請</string>
+  <string name="module.study.classes.teacher_application_reason">この言語を教えることを許可されるべき理由を管理者に伝えてください。</string>
+  <string name="module.study.classes.submit_application">申請を送信</string>
+  <string name="ui.study.picker.title">学習言語を選択</string>
+  <string name="ui.study.picker.no_languages">利用可能な学習言語がありません。</string>
+  <string name="ui.study.picker.select">言語を選択してください：</string>
+  <string name="ui.study.picker.start">学習開始</string>
 </resources>

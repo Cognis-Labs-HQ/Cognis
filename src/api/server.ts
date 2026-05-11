@@ -1,3 +1,4 @@
+import { createSearchRoutes } from "./routes/search/index.js";
 import { createServer } from "node:http";
 import {
     HealthService,
@@ -52,6 +53,19 @@ export interface ApiDependencies {
         role?: string,
     ) => Promise<void>;
     setProfileRole?: (handle: string, role: string) => Promise<void>;
+    searchProfiles?: (
+        query: string,
+        limit: number,
+    ) => Promise<
+        Array<{ accountId?: string; handle?: string; displayName?: string }>
+    >;
+    getProfileVisibility?: (
+        accountId: string,
+    ) => Promise<string | null | undefined>;
+    setProfileVisibility?: (
+        accountId: string,
+        visibility: "friends",
+    ) => Promise<void>;
 }
 
 export function buildServer(deps: ApiDependencies) {
@@ -102,6 +116,8 @@ export function buildServer(deps: ApiDependencies) {
               deps.preferenceStore,
               deps.setProfileRole,
               log,
+              deps.getProfileVisibility,
+              deps.setProfileVisibility,
           )
         : null;
     const gatewayRoutes = deps.gatewayRegistry
@@ -112,6 +128,7 @@ export function buildServer(deps: ApiDependencies) {
               log,
           )
         : null;
+    const searchRoutes = createSearchRoutes(deps.searchProfiles);
 
     Promise.all([
         deps.moduleRuntimeGateway.listManifests(),
@@ -199,6 +216,16 @@ export function buildServer(deps: ApiDependencies) {
                     });
                     return;
                 }
+            }
+
+            const handledBySearch = await searchRoutes(req, res, url);
+            if (handledBySearch) {
+                log("info", "Request handled by search routes.", {
+                    method: req.method ?? "GET",
+                    path: url.pathname,
+                    durationMs: Date.now() - startedAt,
+                });
+                return;
             }
 
             // Gateway-registered route handlers run after core routes but before

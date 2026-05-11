@@ -38,8 +38,12 @@ function getCurrentUsername() {
     }
 }
 
+function getCurrentRole() {
+    return (localStorage.getItem("cognis_role") ?? "user").trim();
+}
+
 function buildElements() {
-    const estimatedHeight = Math.max(3, Math.ceil(users.length * 0.5 + 1.5));
+    const estimatedHeight = Math.max(6, Math.ceil(users.length * 0.65 + 2));
     elements = [
         {
             id: "users-table",
@@ -47,8 +51,8 @@ function buildElements() {
             pinned: true,
             gridSize: {
                 default: [12, estimatedHeight],
-                min: [6, 3],
-                max: "full",
+                min: [6, 5],
+                max: ["full", "fill"],
             },
             render: () => renderUsersTable(),
         },
@@ -139,6 +143,8 @@ async function refreshData() {
 
 function renderUsersTable() {
     const currentUsername = getCurrentUsername();
+    const currentRole = getCurrentRole();
+    const viewerIsAdmin = currentRole === "admin";
     const inviteButtonHtml = registrationGatewayActive
         ? `<div class="controls">
           <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.app.users.invite"))}</button>
@@ -161,15 +167,30 @@ function renderUsersTable() {
               .map((user) => {
                   const isProtected = user.isAdmin && user.isFounder;
                   const isSelf = user.username === currentUsername;
-                  const actionsHtml = isProtected
-                      ? ""
-                      : `
+                  const userRole =
+                      user.role ?? (user.isAdmin ? "admin" : "user");
+                  const isOwner = userRole === "owner";
+                  const protectAdminFromAdmin =
+                      viewerIsAdmin && userRole === "admin" && !isSelf;
+                  const roleDisabled =
+                      isProtected || isOwner || isSelf || protectAdminFromAdmin;
+                  const roleCellHtml = isOwner
+                      ? escapeHtml("owner")
+                      : `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>
+                            <option value="user"${userRole === "user" ? " selected" : ""}>${escapeHtml("user")}</option>
+                            <option value="teacher"${userRole === "teacher" ? " selected" : ""}>${escapeHtml("teacher")}</option>
+                            <option value="admin"${userRole === "admin" ? " selected" : ""}>${escapeHtml("admin")}</option>
+                         </select>`;
+                  const actionsHtml =
+                      isProtected || isOwner || protectAdminFromAdmin
+                          ? ""
+                          : `
                         <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.generic.disable")) : escapeHtml(i18n.t("ui.reuse.generic.enable"))}</button>
                         <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}">☰</button>`;
                   return `
               <tr class="users-row" data-username="${escapeHtml(user.username)}">
                 <td>${escapeHtml(user.username)}</td>
-                <td>${user.isAdmin ? "admin" : "user"}</td>
+                <td>${roleCellHtml}</td>
                 <td>${user.enabled ? escapeHtml(i18n.t("ui.app.users.enabled")) : escapeHtml(i18n.t("ui.app.users.disabled"))}</td>
                 <td class="users-actions-cell">${actionsHtml}</td>
               </tr>
@@ -366,6 +387,39 @@ function bindUsersInteractions() {
             const action = await openHamburgerMenu(btn, { items: menuItems });
             if (!action) return;
             await runUserMenuAction(action, username);
+        });
+    });
+
+    root.querySelectorAll(".users-role-select").forEach((select) => {
+        select.addEventListener("change", async () => {
+            const username = select.dataset.username;
+            const role = select.value;
+            if (!username || !role) return;
+            const res = await apiFetch(
+                `/api/v1/users/${encodeURIComponent(username)}/role`,
+                {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ role }),
+                },
+            );
+            if (res.ok) {
+                showToast(i18n.t("ui.app.users.role_updated"), {
+                    variant: "success",
+                });
+                await refreshData();
+                composer.refresh(elements);
+            } else {
+                const responseBody = await res.json().catch(() => null);
+                const responseMessage =
+                    responseBody?.error?.message ??
+                    i18n.t("ui.app.admin.security.save_failed");
+                showToast(responseMessage, {
+                    variant: "error",
+                });
+                await refreshData();
+                composer.refresh(elements);
+            }
         });
     });
 
