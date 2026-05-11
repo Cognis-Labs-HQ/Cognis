@@ -46,7 +46,9 @@ async function loadLocalFileGateway(
         "local",
         "adapter.ts",
     );
-    const localAdapterModule = await import(`${localAdapterPath}?t=${Date.now()}`);
+    const localAdapterModule = await import(
+        `${localAdapterPath}?t=${Date.now()}`
+    );
     const LocalAdapterGatewayClass = localAdapterModule.LocalFileGateway as
         | (new (rootPath: string) => FileGatewayLike)
         | undefined;
