@@ -434,7 +434,7 @@ export class JapaneseLibraryStore {
         );
 
         this.#log?.("info", "Japanese language library persisted to disk.", {
-            component: "study-language-ja",
+            component: "study/languages/ja",
         });
     }
 }

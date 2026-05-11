@@ -319,7 +319,7 @@ export async function bootstrapLanguageModule(
     );
 
     ctx.log?.("info", "Japanese language module: bootstrapped.", {
-        component: "study-language-ja",
+        component: "study/languages/ja",
         childComponents: CHILD_COMPONENTS.length,
     });
 }

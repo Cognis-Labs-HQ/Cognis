@@ -23,6 +23,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - **My Classes teacher-only enforcement unified**. The `GET /api/v1/study/classes` endpoint now requires `teacher` role (was `user`). The classes page client also checks the `cognis_role` localStorage value before loading or rendering the class list, so non-teachers only see the teacher-application form. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
 - **Study bootstrap** routes `registerStaticDir` calls with a `"modules/"` prefix to the new `registerModuleStaticDir` registry method rather than the gateway-keyed `registerStaticDir`. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
 
+### Fixed
+
+- **Social review follow-ups**. Removed duplicate auth-schema `role` columns in the DB adapters, moved the social adapter config store out of `src/adapters/db/reuse/`, clarified the `reuse/` file-naming rule, renamed the Study Language Japanese module to Cognis Japanese, and updated Japanese module path references to `study/languages/ja`. ([69672f2](https://github.com/le-firehawk/Cognis/commit/69672f2))
+
 - **Study language framework documentation** (`src/docs/study-language-framework.{en,de,ja,id}.md`). Documents the layered library architecture (characters → alt_characters → definitions → words → sentences), language module contract, child component registration, and directory layout. Updated `copilot-instructions.md` with the Study language module pattern. ([0a1914b](https://github.com/le-firehawk/Cognis/commit/0a1914b))
 - **Data-driven Japanese library source files** under `src/modules/study/languages/ja/data/` (`characters`, `alt-characters`, `definitions`, `words`, `sentences`) plus a reusable `JapaneseLibraryStore` interface for query/add/update/remove operations with graph-sanity validation.
 - **Admin-only Study Library child component** at `/study/ja/library`, including direct CRUD controls for all library layers and sub-navigation integration through `GET /api/v1/study/languages/:code/modules`.
