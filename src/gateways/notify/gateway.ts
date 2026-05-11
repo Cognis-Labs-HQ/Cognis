@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { SupportedDbType } from "../db/executor.js";
+import type { DbProviderId } from "../db/reuse/provider-id.js";
 
 /**
  * Context passed to `bootstrapNotifyAdapter` when a notification adapter
@@ -23,7 +23,7 @@ export interface NotifyAdapterBootstrapCtx {
     registerStaticDir(urlPrefix: string, absoluteDir: string): void;
     log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
     dbExecutor?: DbExecutor;
-    dbType?: SupportedDbType;
+    dbType?: DbProviderId;
 }
 
 export interface NotificationEnvelope {

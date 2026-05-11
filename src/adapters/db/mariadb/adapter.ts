@@ -3,6 +3,11 @@ import type { BootstrapLog } from "@cognis/core";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
 import {
+    buildDbErrorMeta,
+    summarizeStatement,
+    writeDbLog,
+} from "../reuse/executor-log.js";
+import {
     buildStructuredDbCommandStatement,
     type StructuredDbCommand,
     type StructuredDbCommandResult,
@@ -17,39 +22,6 @@ export interface MariaDbClient {
     beginTransaction(): Promise<void>;
     commit(): Promise<void>;
     rollback(): Promise<void>;
-}
-
-function summarizeStatement(sql: string): string {
-    const statement = sql.trim().split(/\s+/, 1)[0];
-    return statement ? statement.toUpperCase() : "UNKNOWN";
-}
-
-function getErrorCode(error: unknown): string | undefined {
-    const code = (error as { code?: unknown })?.code;
-    if (typeof code === "string" || typeof code === "number") {
-        return String(code);
-    }
-    return undefined;
-}
-
-function buildDbErrorMeta(error: unknown): Record<string, unknown> {
-    const meta: Record<string, unknown> = {
-        errorName: error instanceof Error ? error.name : typeof error,
-    };
-    const errorCode = getErrorCode(error);
-    if (errorCode) {
-        meta.errorCode = errorCode;
-    }
-    return meta;
-}
-
-function writeDbLog(
-    log: BootstrapLog | undefined,
-    level: "debug" | "info" | "warn" | "error",
-    message: string,
-    meta?: Record<string, unknown>,
-): void {
-    log?.(level, message, meta);
 }
 
 const MARIADB_STRUCTURED_DB_DIALECT: StructuredDbDialect = {

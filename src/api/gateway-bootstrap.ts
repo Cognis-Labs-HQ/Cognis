@@ -1,5 +1,5 @@
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
-import type { SupportedDbType } from "../gateways/db/executor.js";
+import type { DbProviderId } from "../gateways/db/reuse/provider-id.js";
 import type { RouteRegistry } from "./route-registry.js";
 import type { UIRegistry } from "./ui-registry.js";
 
@@ -30,7 +30,7 @@ export interface GatewayBootstrapContext extends GatewayBootstrapBase {
     /** @deprecated Use capabilities.get('db:executor') instead. */
     dbExecutor?: DbExecutor;
     /** @deprecated Use capabilities.get('db:type') instead. */
-    dbType?: SupportedDbType;
+    dbType?: DbProviderId;
     adaptersRoot: string;
     routeRegistry: RouteRegistry;
     uiRegistry?: UIRegistry;

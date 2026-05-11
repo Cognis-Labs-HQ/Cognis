@@ -1,9 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import type {
-    DbExecutor,
-    SupportedDbType,
-} from "../../gateways/db/executor.js";
+import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
+import type { DbProviderId } from "../../gateways/db/reuse/provider-id.js";
 import type { LocalAccountStore } from "./reuse/local-account-store.js";
 
 export interface AuthContext {
@@ -70,7 +68,7 @@ export class CoreAuthGateway {
 
     constructor(
         private readonly db: DbExecutor,
-        private readonly dbType: SupportedDbType,
+        private readonly dbType: DbProviderId,
     ) {}
 
     private placeholder(index: number): string {

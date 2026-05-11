@@ -48,9 +48,7 @@ async function loadDbExecutorFactoryModule(
         "adapter.ts",
     );
     try {
-        return (await import(
-            `${modulePath}?t=${Date.now()}`
-        )) as DbExecutorFactoryModule;
+        return (await import(modulePath)) as DbExecutorFactoryModule;
     } catch {
         return null;
     }

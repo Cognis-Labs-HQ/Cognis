@@ -1,5 +1,5 @@
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { SupportedDbType } from "../db/executor.js";
+import type { DbProviderId } from "../db/reuse/provider-id.js";
 
 export interface AdapterConfigStore {
     getConfig(adapterId: string): Promise<Record<string, unknown> | null>;
@@ -12,7 +12,7 @@ export interface AdapterConfigStore {
 export class DbAdapterConfigStore implements AdapterConfigStore {
     constructor(
         private readonly db: DbExecutor,
-        private readonly dbType: SupportedDbType,
+        private readonly dbType: DbProviderId,
     ) {}
 
     private placeholder(index: number): string {

@@ -16,7 +16,7 @@ import { CoreAuthGateway } from "./gateway.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthProviderAdapter } from "./gateway.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { SupportedDbType } from "../db/executor.js";
+import type { DbProviderId } from "../db/reuse/provider-id.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 
 interface AuthAccountStore {
@@ -29,7 +29,7 @@ interface AuthAccountStore {
 
 async function loadLocalAccountStore(
     dbExecutor: DbExecutor,
-    dbType: SupportedDbType,
+    dbType: DbProviderId,
     log?: GatewayBootstrapContext["log"],
 ): Promise<AuthAccountStore> {
     const localStorePath = path.resolve(
@@ -44,7 +44,7 @@ async function loadLocalAccountStore(
     const LocalAccountStoreClass = localStoreModule.DbLocalAccountStore as
         | (new (
               dbExecutor: DbExecutor,
-              dbType: SupportedDbType,
+              dbType: DbProviderId,
               log?: GatewayBootstrapContext["log"],
           ) => AuthAccountStore)
         | undefined;
@@ -74,7 +74,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor = (ctx.capabilities.get<DbExecutor>("db:executor") ??
         ctx.dbExecutor)!;
     const dbType =
-        ctx.capabilities.get<SupportedDbType>("db:type") ??
+        ctx.capabilities.get<DbProviderId>("db:type") ??
         ctx.dbType ??
         "postgresql";
 
