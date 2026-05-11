@@ -703,8 +703,10 @@ export function createUiRoutes(
             const urlPath = url.pathname.slice("/static/modules/".length);
             if (
                 !urlPath ||
-                !/^[a-zA-Z0-9_./-]+$/.test(urlPath) ||
-                urlPath.includes("..")
+                !/^[a-zA-Z0-9][a-zA-Z0-9_./-]*$/.test(urlPath) ||
+                urlPath.includes("..") ||
+                urlPath.includes("//") ||
+                urlPath.split("/").some((segment) => segment.startsWith("."))
             ) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
