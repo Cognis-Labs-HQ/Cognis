@@ -4,7 +4,7 @@
 
 Dieses Dokument verfolgt die aktuelle Version jedes Gateways, Adapters und Moduls in der Cognis-Codebase. Es dient als Changelog-Index und schnelle Referenz.
 
-Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit einem `version`-Feld. Wenn Sie eine Komponente modifizieren, müssen Sie die Version in dieser `package.json` nach Semantic Versioning erhöhen.
+Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit einem `version`-Feld. Wenn Sie eine Komponente modifizieren, müssen Sie die Version in dieser `package.json` nach Semantic Versioning erhöhen. Changelog-Einträge werden als PR-spezifische Dateien unter `src/docs/changelog/` gespeichert.
 
 ## Adapter
 

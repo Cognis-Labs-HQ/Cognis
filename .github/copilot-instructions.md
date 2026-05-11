@@ -101,13 +101,15 @@ Adapters live under `src/adapters/<gateway-id>/<adapter-id>/`. For example, the 
 
 ### Versioned manifests for gateways, adapters, and modules
 
-Every gateway, adapter, and module must carry a `package.json` (or equivalent manifest) with a `version` field. Any change to the code, schema, or API within that component's scope must be accompanied by a version bump. This prevents silent drift between components that depend on each other. A higher-level versioning document at `src/components/docs/versions.en.md` tracks the current version of each component and serves as a changelog index.
+Every gateway, adapter, and module must carry a `package.json` (or equivalent manifest) with a `version` field. Any change to the code, schema, or API within that component's scope must be accompanied by a version bump. This prevents silent drift between components that depend on each other. A higher-level versioning document at `src/docs/versions.en.md` tracks the current version of each component and serves as a changelog index.
 
-### CHANGELOG.md
+### Changelog entries
 
-Maintain a `CHANGELOG.md` at the repository root conforming to [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) standards and [Semantic Versioning](https://semver.org/). Every commit that changes behaviour, fixes a bug, or adds a feature must add an entry under the `[Unreleased]` section with: the commit short-SHA as a parenthetical link, the change type sub-heading (Added / Changed / Deprecated / Removed / Fixed / Security), and a one-line summary. Commit links follow the pattern `https://github.com/le-firehawk/Cognis/commit/<sha>`.
+Store changelog entries under `src/docs/changelog/` instead of a root `CHANGELOG.md`.
 
-When a pull request is created that targets an imminent release, compress the `[Unreleased]` section into a versioned release block listing each commit with its working URL since the previous release tag, then open a new empty `[Unreleased]` section above it.
+Every pull request must add exactly one new changelog file for that PR using the filename pattern `YYYY-MM-DD-<short-pr-slug>.en.md`. The file must include: a short title, a summary section, a changed-files/components section, and commit links following `https://github.com/le-firehawk/Cognis/commit/<sha>`.
+
+Do not append to or recreate a global monolithic changelog file. Existing changelog entry files in `src/docs/changelog/` are historical records and should remain immutable except for factual corrections.
 
 ### Component self-containment
 
