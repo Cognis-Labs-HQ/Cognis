@@ -232,7 +232,9 @@ export class DbProfileStore implements ProfileCreateStore {
             }
         }
 
-        merged.sort((profileA, profileB) => profileA.handle.localeCompare(profileB.handle));
+        merged.sort((profileA, profileB) =>
+            profileA.handle < profileB.handle ? -1 : profileA.handle > profileB.handle ? 1 : 0,
+        );
         return merged.slice(0, limit);
     }
 

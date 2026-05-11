@@ -22,13 +22,34 @@ import type {
     StructuredDbCommand,
     StructuredDbCommandResult,
 } from "./db-command.js";
+import type { StructuredDbTableDef } from "./db-table.js";
 
+/**
+ * Public DB executor interface for application code.
+ *
+ * No raw SQL is exposed here. All queries go through the structured
+ * command DSL. DDL is expressed via ensureTable(); transactional
+ * grouping via transaction().
+ */
 export interface DbExecutor {
+    executeCommand(
+        command: StructuredDbCommand,
+    ): Promise<StructuredDbCommandResult>;
+    ensureTable(def: StructuredDbTableDef): Promise<void>;
+    transaction<T>(
+        callback: (executor: DbExecutor) => Promise<T>,
+    ): Promise<T>;
+}
+
+/**
+ * Extended interface for DB adapter internals only.
+ *
+ * Exposes the raw execute() method. Nothing outside
+ * src/adapters/db/ or src/gateways/db/ may import or call this.
+ */
+export interface RawDbExecutor extends DbExecutor {
     execute(
         sql: string,
         params?: unknown[],
     ): Promise<{ rows?: any[]; rowCount?: number }>;
-    executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult>;
 }

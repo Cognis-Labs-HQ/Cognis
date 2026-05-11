@@ -16,6 +16,14 @@ export interface StructuredDbWhereClause {
     column: string;
     operator?: StructuredDbOperator;
     value?: unknown;
+    /** ESCAPE character for LIKE expressions. Only valid when operator is 'LIKE'. */
+    escapeChar?: string;
+}
+
+/** Column with an optional alias for SELECT statements. */
+export interface StructuredDbSelectColumn {
+    col: string;
+    as: string;
 }
 
 export interface StructuredDbJoinClause {
@@ -43,7 +51,7 @@ export interface StructuredDbSelectCommand {
     option: "SELECT";
     table: string;
     alias?: string;
-    columns?: string[];
+    columns?: (string | StructuredDbSelectColumn)[];
     count?: boolean;
     joins?: StructuredDbJoinClause[];
     where?: StructuredDbWhereClause[];
@@ -189,6 +197,12 @@ function buildWhereClause(
             return `${column} IN (${placeholders.join(", ")})`;
         }
 
+        if (operator === "LIKE") {
+            const ph = placeholder(params, clause.value);
+            const escape = clause.escapeChar ? ` ESCAPE '${clause.escapeChar}'` : "";
+            return `${column} LIKE ${ph}${escape}`;
+        }
+
         return `${column} ${operator} ${placeholder(params, clause.value)}`;
     });
 
@@ -203,11 +217,12 @@ function buildSelectStatement(
     const columns = command.count
         ? ["COUNT(*) AS cnt"]
         : command.columns && command.columns.length > 0
-          ? command.columns.map((column) =>
-                column === "*"
-                    ? "*"
-                    : assertIdentifier(column, "select column"),
-            )
+          ? command.columns.map((column) => {
+                if (typeof column !== 'string') {
+                    return `${assertIdentifier(column.col, 'select column')} AS ${assertIdentifier(column.as, 'column alias')}`;
+                }
+                return column === "*" ? "*" : assertIdentifier(column, "select column");
+            })
           : ["*"];
     const table = assertIdentifier(command.table, "table");
     const alias = command.alias

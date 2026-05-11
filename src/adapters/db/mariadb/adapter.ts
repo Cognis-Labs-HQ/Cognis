@@ -1,7 +1,8 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import type { BootstrapLog } from "@cognis/core";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
+import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
 import {
     buildDbErrorMeta,
     summarizeStatement,
@@ -110,7 +111,7 @@ export class MariaDbGateway implements DatabaseGateway {
     }
 }
 
-class MariaDbExecutor implements DbExecutor {
+class MariaDbExecutor implements RawDbExecutor {
     private connectionPromise: Promise<MariaDbClient> | null = null;
 
     constructor(
@@ -164,6 +165,70 @@ class MariaDbExecutor implements DbExecutor {
         const gateway = new MariaDbGateway(await this.getClient());
         return gateway.executeCommand(command);
     }
+
+    async transaction<T>(
+        callback: (executor: RawDbExecutor) => Promise<T>,
+    ): Promise<T> {
+        const client = await this.getClient();
+        await client.beginTransaction();
+        try {
+            const result = await callback(this);
+            await client.commit();
+            return result;
+        } catch (error) {
+            await client.rollback().catch(() => undefined);
+            throw error;
+        }
+    }
+
+    async ensureTable(def: StructuredDbTableDef): Promise<void> {
+        const dbType = (col: StructuredDbTableDef['columns'][number]): string => {
+            switch (col.type) {
+                case 'text': return 'TEXT';
+                case 'integer': return 'INT';
+                case 'bigint': return 'BIGINT';
+                case 'boolean': return 'TINYINT(1)';
+                case 'timestamp': return 'DATETIME';
+                case 'blob': return 'BLOB';
+            }
+        };
+        const dbDefault = (value: StructuredDbTableDef['columns'][number]['default']): string => {
+            if (value === 'now') return 'CURRENT_TIMESTAMP';
+            if (value === 'true') return '1';
+            if (value === 'false') return '0';
+            if (value === null) return 'NULL';
+            if (typeof value === 'number') return String(value);
+            return `'${String(value).replace(/'/g, "''")}'`;
+        };
+        const compositePk = def.primaryKey ?? [];
+        const columnDefs = def.columns.map((col) => {
+            const parts: string[] = [`${col.name} ${dbType(col)}`];
+            if (col.notNull || col.primaryKey) parts.push('NOT NULL');
+            if (col.primaryKey && compositePk.length === 0) parts.push('PRIMARY KEY');
+            if (col.unique && !(def.uniqueKeys ?? []).some((uk) => uk.length === 1 && uk[0] === col.name)) {
+                parts.push('UNIQUE');
+            }
+            if (col.default !== undefined) parts.push(`DEFAULT ${dbDefault(col.default)}`);
+            if (col.references) {
+                parts.push(`REFERENCES ${col.references.table}(${col.references.column})`);
+                if (col.references.onDelete) parts.push(`ON DELETE ${col.references.onDelete}`);
+            }
+            return parts.join(' ');
+        });
+        const tableConstraints: string[] = [];
+        if (compositePk.length > 0) tableConstraints.push(`PRIMARY KEY (${compositePk.join(', ')})`);
+        for (const uk of def.uniqueKeys ?? []) {
+            tableConstraints.push(`UNIQUE (${uk.join(', ')})`);
+        }
+        const allDefs = [...columnDefs, ...tableConstraints];
+        await this.execute(`CREATE TABLE IF NOT EXISTS ${def.name} (${allDefs.join(', ')})`);
+        for (const index of def.indexes ?? []) {
+            const indexName = index.name ?? `idx_${def.name}_${index.columns.join('_')}`;
+            await this.execute(
+                `CREATE INDEX IF NOT EXISTS ${indexName} ON ${def.name} (${index.columns.join(', ')})`,
+            ).catch(() => undefined);
+        }
+    }
 }
 
 export function canHandleDbProvider(providerId: DbProviderId): boolean {
@@ -173,6 +238,6 @@ export function canHandleDbProvider(providerId: DbProviderId): boolean {
 export async function createDbExecutor(args: {
     databaseUrl: string;
     log?: BootstrapLog;
-}): Promise<DbExecutor> {
+}): Promise<RawDbExecutor> {
     return new MariaDbExecutor(args.databaseUrl, args.log);
 }
