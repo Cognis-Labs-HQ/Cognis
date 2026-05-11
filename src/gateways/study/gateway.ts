@@ -6,6 +6,14 @@ import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
 import type { AccessRole } from "../../api/auth/access-tokens.js";
 
+const ACCESS_ROLE_RANK: Record<AccessRole, number> = {
+    user: 1,
+    teacher: 2,
+    moderator: 3,
+    admin: 4,
+    owner: 5,
+};
+
 /**
  * A single study activity or tool for a language, registered by its parent
  * language module. The UI builds a sub-navigation menu from these descriptors.
@@ -151,18 +159,14 @@ export class CoreStudyGateway {
     ): LanguageChildComponent[] {
         const module = this.registeredLanguageModules.get(languageCode);
         if (!module) return [];
-        const roleRank: Record<AccessRole, number> = {
-            user: 1,
-            teacher: 2,
-            moderator: 3,
-            admin: 4,
-            owner: 5,
-        };
         return module
             .listChildComponents()
             .filter((childComponent) => {
                 if (!childComponent.minRole) return true;
-                return roleRank[viewerRole] >= roleRank[childComponent.minRole];
+                return (
+                    ACCESS_ROLE_RANK[viewerRole] >=
+                    ACCESS_ROLE_RANK[childComponent.minRole]
+                );
             })
             .slice()
             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));

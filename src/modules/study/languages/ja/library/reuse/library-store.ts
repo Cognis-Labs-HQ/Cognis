@@ -74,7 +74,7 @@ interface LibraryStoreOptions {
     ) => void | Promise<void>;
 }
 
-function deepClone(value) {
+function deepClone(value: unknown) {
     return JSON.parse(JSON.stringify(value));
 }
 
@@ -303,7 +303,7 @@ export class JapaneseLibraryStore {
         };
     }
 
-    #validateGraph(state): void {
+    #validateGraph(state: LanguageLibrarySnapshot): void {
         ensureUniqueIds("characters", state.characters);
         ensureUniqueIds("alt_characters", state.alt_characters);
         ensureUniqueIds("definitions", state.definitions);

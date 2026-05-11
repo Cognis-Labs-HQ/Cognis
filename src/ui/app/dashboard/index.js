@@ -41,7 +41,7 @@ async function loadDashboardExtensions({ i18n, account, role }) {
                         account,
                         role,
                     });
-                    return pageElement ?? null;
+                    return pageElement;
                 } catch {
                     return null;
                 }
