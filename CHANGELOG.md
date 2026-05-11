@@ -7,11 +7,6 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Fixed
-
-- **Classes adapter fails to load on startup** (`src/adapters/study/classes/index.ts`). Missing `import path from "node:path"` caused a `ReferenceError` at module load time; the study gateway's `discoverAdapters` silently swallowed it, so the adapter was never registered, its schema never ran, and the `study_languages` table was never created. The Japanese adapter's `upsertStudyLanguage` call then failed with `relation "study_languages" does not exist` (PostgreSQL error 42P01). ([d6a24d9](https://github.com/le-firehawk/Cognis/commit/d6a24d9))
-- **Spurious SQL WARN on every restart** (`src/adapters/social/messages/store.ts`). `ALTER TABLE chatrooms ADD COLUMN avatar_key TEXT` was issued without `IF NOT EXISTS`, so on any restart after the first the DB layer logged a WARN for error 42701 (duplicate column). Changed to `ADD COLUMN IF NOT EXISTS` to make the statement a no-op when the column already exists. ([d6a24d9](https://github.com/le-firehawk/Cognis/commit/d6a24d9))
-
 ### Added
 
 - **Page indexing in global search** (`dashboard-layout.js`). The search popup now includes a Navigation group listing all pages accessible to the current user (role-aware: admin/teacher-only pages only shown to eligible roles), enabling quick keyboard-driven navigation. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
@@ -356,6 +351,8 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Classes adapter fails to load on startup** (`src/adapters/study/classes/index.ts`). Missing `import path from "node:path"` caused a `ReferenceError` at module load time; the study gateway's `discoverAdapters` silently swallowed it, so the adapter was never registered, its schema never ran, and the `study_languages` table was never created. The Japanese adapter's `upsertStudyLanguage` call then failed with `relation "study_languages" does not exist` (PostgreSQL error 42P01). ([d6a24d9](https://github.com/le-firehawk/Cognis/commit/d6a24d9))
+- **Spurious SQL WARN on every restart** (`src/adapters/social/messages/store.ts`). `ALTER TABLE chatrooms ADD COLUMN avatar_key TEXT` was issued without `IF NOT EXISTS`, so on any restart after the first the DB layer logged a WARN for error 42701 (duplicate column). Changed to `ADD COLUMN IF NOT EXISTS` to make the statement a no-op when the column already exists. ([d6a24d9](https://github.com/le-firehawk/Cognis/commit/d6a24d9))
 - Auth and social gateways no longer self-register an admin section, removing stale admin-section entries and the dead `admin-section.js` file reference. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
 - Page composer grid minimum rows in edit mode now scales with content depth instead of forcing a fixed six-row minimum. ([d685666](https://github.com/le-firehawk/Cognis/commit/d685666))
 - Issuing a new invite to the same recipient email now automatically revokes all prior pending tokens for that address, preventing stale invite links from remaining valid. ([828e463](https://github.com/le-firehawk/Cognis/commit/828e463))
@@ -511,3 +508,4 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 - Logout was client-side only: clearing localStorage did not invalidate the `cognis_access_token` HttpOnly cookie, leaving the session cookie usable after logout. A `POST /api/v1/auth/logout` endpoint now revokes the token server-side and clears the cookie via `Set-Cookie: Max-Age=0`. The dashboard logout handler calls this endpoint before navigating to `/login`. ([495d29f](https://github.com/le-firehawk/Cognis/commit/495d29f))
 - The `/register` page route now redirects authenticated users (those with a valid session cookie) to `/dashboard` rather than serving the registration form. This closes the path where a user with a stale-but-valid session cookie could open the register page and then navigate directly to the dashboard without re-authenticating. ([495d29f](https://github.com/le-firehawk/Cognis/commit/495d29f))
+
