@@ -143,7 +143,9 @@ export class DbMessagesStore {
         );
 
         await this.db
-            .execute("ALTER TABLE chatrooms ADD COLUMN avatar_key TEXT")
+            .execute(
+                "ALTER TABLE chatrooms ADD COLUMN IF NOT EXISTS avatar_key TEXT",
+            )
             .catch(() => undefined);
 
         if (this.dbType === "mariadb") {

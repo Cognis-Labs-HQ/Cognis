@@ -13,37 +13,10 @@ import {
     renderAuthBrandline,
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
-import { checkIsAuthenticated } from "../../reuse/auth-session.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 
 const i18n = await createI18n();
 applyDocumentTitle(i18n, "ui.page.title.login");
-
-if (await checkIsAuthenticated()) {
-    const accountId = localStorage.getItem("cognis_account");
-    if (
-        accountId &&
-        localStorage.getItem("cognis_user_validation_mode") === "smtp"
-    ) {
-        const emailsRes = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(accountId)}/emails`,
-        );
-        if (emailsRes.ok) {
-            const emailPayload = await emailsRes.json();
-            const emails = Array.isArray(emailPayload?.data)
-                ? emailPayload.data
-                : [];
-            const hasVerifiedPrimary = emails.some(
-                (entry) => entry.primary && entry.verified,
-            );
-            if (!hasVerifiedPrimary) {
-                await enforceRequiredEmailSetup(accountId);
-            }
-        }
-    }
-    window.location.replace("/dashboard");
-    await new Promise(() => {});
-}
 
 const root = document.querySelector("#app");
 const typingSamples = await loadAuthTypingSamples(i18n);

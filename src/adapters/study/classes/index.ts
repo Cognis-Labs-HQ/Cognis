@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type {
     StudyAdapter,

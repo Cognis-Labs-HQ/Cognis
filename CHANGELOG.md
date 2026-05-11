@@ -7,6 +7,11 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Classes adapter fails to load on startup** (`src/adapters/study/classes/index.ts`). Missing `import path from "node:path"` caused a `ReferenceError` at module load time; the study gateway's `discoverAdapters` silently swallowed it, so the adapter was never registered, its schema never ran, and the `study_languages` table was never created. The Japanese adapter's `upsertStudyLanguage` call then failed with `relation "study_languages" does not exist` (PostgreSQL error 42P01). ([d6a24d9](https://github.com/le-firehawk/Cognis/commit/d6a24d9))
+- **Spurious SQL WARN on every restart** (`src/adapters/social/messages/store.ts`). `ALTER TABLE chatrooms ADD COLUMN avatar_key TEXT` was issued without `IF NOT EXISTS`, so on any restart after the first the DB layer logged a WARN for error 42701 (duplicate column). Changed to `ADD COLUMN IF NOT EXISTS` to make the statement a no-op when the column already exists. ([d6a24d9](https://github.com/le-firehawk/Cognis/commit/d6a24d9))
+
 ### Added
 
 - **Page indexing in global search** (`dashboard-layout.js`). The search popup now includes a Navigation group listing all pages accessible to the current user (role-aware: admin/teacher-only pages only shown to eligible roles), enabling quick keyboard-driven navigation. ([88375ab](https://github.com/le-firehawk/Cognis/commit/88375ab))
