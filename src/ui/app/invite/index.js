@@ -157,7 +157,7 @@ function bindInviteInteractions() {
                         showToast(
                             i18n.t("ui.reuse.registration.invite_failed"),
                             {
-                            variant: "error",
+                                variant: "error",
                             },
                         );
                         return;
