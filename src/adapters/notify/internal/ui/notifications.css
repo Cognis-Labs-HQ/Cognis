@@ -263,6 +263,10 @@
     display: none;
 }
 
+.notification-mobile-backdrop[hidden] {
+    display: none;
+}
+
 .arrival-toast-container {
     position: fixed;
     right: 16px;
@@ -386,7 +390,7 @@
         z-index: 1201;
     }
 
-    .notification-mobile-backdrop {
+    .notification-mobile-backdrop:not([hidden]) {
         display: block;
         position: fixed;
         inset: 0;

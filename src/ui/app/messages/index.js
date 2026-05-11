@@ -538,8 +538,7 @@ export async function mount(root, { signal } = {}) {
         const newBtn = document.getElementById("messages-new-btn");
         newBtn?.addEventListener("click", () => {
             openSearchPopup({
-                endpoint: "/api/v1/search",
-                typeFilter: "users",
+                endpoint: "/api/v1/messages/users/lookup",
                 category: "user",
                 ariaLabel: i18n.t("module.social.messages.new"),
                 noResultsText: i18n.t("ui.layout.search.no_results"),

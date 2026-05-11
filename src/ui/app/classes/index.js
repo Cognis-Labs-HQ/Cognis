@@ -24,12 +24,40 @@ export async function mount(root, { signal } = {}) {
 
     let classes = [];
     let pendingRequests = [];
-    const storedRole = (localStorage.getItem("cognis_role") ?? "").trim();
-    const isAdmin = storedRole === "admin" || storedRole === "owner";
-    const isTeacher =
+    let storedRole = (localStorage.getItem("cognis_role") ?? "").trim();
+    const isAdminRole = () => storedRole === "admin" || storedRole === "owner";
+    const isTeacherRole = () =>
         storedRole === "teacher" ||
         storedRole === "admin" ||
         storedRole === "owner";
+    let isTeacher = isTeacherRole();
+
+    if (!isTeacher) {
+        try {
+            const accountId = localStorage.getItem("cognis_account");
+            if (accountId) {
+                const response = await apiFetch(
+                    `/api/v1/users/${encodeURIComponent(accountId)}/info`,
+                );
+                if (response.ok) {
+                    const payload = await response.json();
+                    storedRole = String(payload?.data?.role ?? "").trim();
+                    localStorage.setItem("cognis_role", storedRole);
+                    isTeacher =
+                        storedRole === "teacher" ||
+                        storedRole === "admin" ||
+                        storedRole === "owner";
+                }
+            }
+        } catch {
+            isTeacher = false;
+        }
+    }
+
+    if (!isTeacher) {
+        navigateTo("/dashboard");
+        return;
+    }
 
     async function loadClasses() {
         if (!isTeacher) return;
@@ -45,7 +73,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function loadPendingRequests() {
-        if (!isAdmin) return;
+        if (!isAdminRole()) return;
         try {
             const response = await apiFetch("/api/v1/study/teacher-requests");
             if (response.ok) {
@@ -112,7 +140,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     function renderPendingRequests() {
-        if (!isAdmin) return "";
+        if (!isAdminRole()) return "";
         const rows = pendingRequests.length
             ? pendingRequests
                   .map(

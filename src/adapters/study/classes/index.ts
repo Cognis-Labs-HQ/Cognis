@@ -38,8 +38,18 @@ function createClassesPageRoute(isAdapterEnabled: () => boolean) {
         if (req.method && req.method !== "GET") return false;
         if (!isAdapterEnabled()) return false;
         if (url.pathname !== "/classes") return false;
-        if (!getCookieSession(req)) {
+        const session = getCookieSession(req);
+        if (!session) {
             res.writeHead(302, { location: "/login" });
+            res.end();
+            return true;
+        }
+        if (
+            session.role !== "teacher" &&
+            session.role !== "admin" &&
+            session.role !== "owner"
+        ) {
+            res.writeHead(302, { location: "/dashboard" });
             res.end();
             return true;
         }
