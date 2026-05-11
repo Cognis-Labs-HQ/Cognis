@@ -17,7 +17,7 @@ import { issueAccessToken } from "../../../api/auth/access-tokens.js";
 
 async function makeNotifStore(): Promise<DbNotificationStore> {
     const db = new InMemoryTestExecutor();
-    const store = new DbNotificationStore(db, "postgresql");
+    const store = new DbNotificationStore(db);
     await store.ensureSchema();
     return store;
 }

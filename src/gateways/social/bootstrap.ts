@@ -150,7 +150,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor =
         ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
     const dbType = ctx.capabilities.get<DbProviderId>("db:type") ?? ctx.dbType;
-    const configStore = new DbAdapterConfigStore(dbExecutor, dbType);
+    const configStore = new DbAdapterConfigStore(dbExecutor);
     await configStore.ensureSchema();
 
     const gateway = new CoreSocialGateway(configStore);

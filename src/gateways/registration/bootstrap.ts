@@ -84,7 +84,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const upsertVerifiedPrimaryEmail = ctx.capabilities.get<
         (accountId: string, email: string) => Promise<void>
     >("notify:upsertVerifiedPrimaryEmail");
-    const gateway = new CoreRegistrationGateway(dbExecutor, dbType);
+    const gateway = new CoreRegistrationGateway(dbExecutor);
     await gateway.ensureSchema();
     ctx.log?.("info", "Registration gateway schema ready.", {
         component: "registration-gateway",

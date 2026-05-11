@@ -153,7 +153,7 @@ export async function bootstrapSocialAdapter(
         dbType,
     });
 
-    const prefStore = new DbUserPreferenceStore(dbExecutor, dbType);
+    const prefStore = new DbUserPreferenceStore(dbExecutor);
     await prefStore.ensureSchema();
     ctx.capabilities.contribute("preferences:store", prefStore);
     ctx.capabilities.contribute("social:profileStore", profileStore);

@@ -89,7 +89,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         dbType,
     });
 
-    const authGateway = new CoreAuthGateway(dbExecutor, dbType);
+    const authGateway = new CoreAuthGateway(dbExecutor);
     await authGateway.ensureSchema();
     ctx.log?.("info", "Auth gateway adapter schema ready.", {
         component: "auth-gateway",

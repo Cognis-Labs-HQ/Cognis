@@ -81,19 +81,12 @@ export class CoreRegistrationGateway {
     private inviteAdapterId: string | null = null;
     private publicAdapterId: string | null = null;
 
-    constructor(
-        private readonly db: DbExecutor,
-        private readonly dbType: DbProviderId,
-    ) {}
-
-    private placeholder(index: number): string {
-        return this.dbType === "postgresql" ? `$${index}` : "?";
-    }
+    constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db
             .execute(`CREATE TABLE IF NOT EXISTS registration_adapter_configs (
-      adapter_id ${this.dbType === "mariadb" ? "VARCHAR(191)" : "TEXT"} PRIMARY KEY,
+      adapter_id VARCHAR(191) PRIMARY KEY,
       enabled INTEGER NOT NULL DEFAULT 0
     )`);
     }
@@ -267,20 +260,20 @@ export class CoreRegistrationGateway {
         adapterId: string,
         enabled: boolean,
     ): Promise<void> {
-        if (this.dbType === "postgresql") {
-            await this.db.execute(
-                `INSERT INTO registration_adapter_configs (adapter_id, enabled)
-         VALUES (${this.placeholder(1)}, ${this.placeholder(2)})
-         ON CONFLICT(adapter_id) DO UPDATE SET enabled = EXCLUDED.enabled`,
-                [adapterId, enabled ? 1 : 0],
-            );
-            return;
-        }
-        await this.db.execute(
-            `INSERT INTO registration_adapter_configs (adapter_id, enabled)
-       VALUES (${this.placeholder(1)}, ${this.placeholder(2)})
-       ON DUPLICATE KEY UPDATE enabled = VALUES(enabled)`,
-            [adapterId, enabled ? 1 : 0],
-        );
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "registration_adapter_configs",
+            values: {
+                adapter_id: adapterId,
+                enabled: enabled ? 1 : 0,
+            },
+            conflict: {
+                action: "update",
+                target: ["adapter_id"],
+                update: {
+                    enabled: enabled ? 1 : 0,
+                },
+            },
+        });
     }
 }

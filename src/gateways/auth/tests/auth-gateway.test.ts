@@ -365,14 +365,16 @@ test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", as
 
     const db = {
         execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
+        executeCommand: async () => ({ rows: [] }),
     } as ReturnType<typeof makeInMemoryDb> & {
         execute: (
             sql: string,
             params?: unknown[],
         ) => Promise<{ rows?: unknown[] }>;
+        executeCommand: () => Promise<{ rows?: unknown[] }>;
     };
 
-    const gw = new CoreAuthGateway(db, "postgresql");
+    const gw = new CoreAuthGateway(db);
 
     const mockAdapter = {
         id: "oidc",

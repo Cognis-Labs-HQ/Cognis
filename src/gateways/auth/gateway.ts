@@ -66,18 +66,11 @@ export class CoreAuthGateway {
           })
         | null = null;
 
-    constructor(
-        private readonly db: DbExecutor,
-        private readonly dbType: DbProviderId,
-    ) {}
-
-    private placeholder(index: number): string {
-        return this.dbType === "postgresql" ? `$${index}` : "?";
-    }
+    constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db.execute(`CREATE TABLE IF NOT EXISTS auth_adapter_configs (
-      adapter_id ${this.dbType === "mariadb" ? "VARCHAR(191)" : "TEXT"} PRIMARY KEY,
+      adapter_id VARCHAR(191) PRIMARY KEY,
       enabled INTEGER NOT NULL DEFAULT 0,
       config_json TEXT NOT NULL DEFAULT '{}'
     )`);
@@ -160,17 +153,23 @@ export class CoreAuthGateway {
         adapter.configure(adapterConfig);
         const json = JSON.stringify(adapterConfig);
         const enabled = this.enabledAdapters.has(adapterId) ? 1 : 0;
-        if (this.dbType === "postgresql") {
-            await this.db.execute(
-                "INSERT INTO auth_adapter_configs (adapter_id, enabled, config_json) VALUES ($1, $2, $3) ON CONFLICT (adapter_id) DO UPDATE SET config_json = EXCLUDED.config_json, enabled = EXCLUDED.enabled",
-                [adapterId, enabled, json],
-            );
-        } else {
-            await this.db.execute(
-                "INSERT INTO auth_adapter_configs (adapter_id, enabled, config_json) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE config_json = VALUES(config_json), enabled = VALUES(enabled)",
-                [adapterId, enabled, json],
-            );
-        }
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "auth_adapter_configs",
+            values: {
+                adapter_id: adapterId,
+                enabled,
+                config_json: json,
+            },
+            conflict: {
+                action: "update",
+                target: ["adapter_id"],
+                update: {
+                    config_json: json,
+                    enabled,
+                },
+            },
+        });
     }
 
     async enableAdapter(adapterId: string): Promise<void> {
@@ -191,10 +190,13 @@ export class CoreAuthGateway {
     async getPersistedConfig(
         adapterId: string,
     ): Promise<Record<string, unknown>> {
-        const result = await this.db.execute(
-            `SELECT config_json FROM auth_adapter_configs WHERE adapter_id = ${this.placeholder(1)}`,
-            [adapterId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "auth_adapter_configs",
+            columns: ["config_json"],
+            where: [{ column: "adapter_id", value: adapterId }],
+            limit: 1,
+        });
         const row = result.rows?.[0];
         if (!row) return {};
         try {
@@ -214,17 +216,22 @@ export class CoreAuthGateway {
     ): Promise<void> {
         const json = JSON.stringify(config);
         const enabledInt = enabled ? 1 : 0;
-        if (this.dbType === "postgresql") {
-            await this.db.execute(
-                "INSERT INTO auth_adapter_configs (adapter_id, enabled, config_json) VALUES ($1, $2, $3) ON CONFLICT (adapter_id) DO UPDATE SET enabled = EXCLUDED.enabled",
-                [adapterId, enabledInt, json],
-            );
-        } else {
-            await this.db.execute(
-                "INSERT INTO auth_adapter_configs (adapter_id, enabled, config_json) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE enabled = VALUES(enabled)",
-                [adapterId, enabledInt, json],
-            );
-        }
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "auth_adapter_configs",
+            values: {
+                adapter_id: adapterId,
+                enabled: enabledInt,
+                config_json: json,
+            },
+            conflict: {
+                action: "update",
+                target: ["adapter_id"],
+                update: {
+                    enabled: enabledInt,
+                },
+            },
+        });
     }
 
     getAdapter(adapterId: string): AuthProviderAdapter | null {

@@ -10,14 +10,7 @@ export interface AdapterConfigStore {
 }
 
 export class DbAdapterConfigStore implements AdapterConfigStore {
-    constructor(
-        private readonly db: DbExecutor,
-        private readonly dbType: DbProviderId,
-    ) {}
-
-    private placeholder(index: number): string {
-        return this.dbType === "postgresql" ? `$${index}` : "?";
-    }
+    constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db
@@ -30,10 +23,13 @@ export class DbAdapterConfigStore implements AdapterConfigStore {
     async getConfig(
         adapterId: string,
     ): Promise<Record<string, unknown> | null> {
-        const result = await this.db.execute(
-            `SELECT config_json FROM social_adapter_configs WHERE adapter_id = ${this.placeholder(1)}`,
-            [adapterId],
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "social_adapter_configs",
+            columns: ["config_json"],
+            where: [{ column: "adapter_id", value: adapterId }],
+            limit: 1,
+        });
         const row = result.rows?.[0];
         if (!row) return null;
         return JSON.parse(row.config_json) as Record<string, unknown>;
@@ -44,20 +40,20 @@ export class DbAdapterConfigStore implements AdapterConfigStore {
         config: Record<string, unknown>,
     ): Promise<void> {
         const json = JSON.stringify(config);
-        if (this.dbType === "mariadb") {
-            await this.db.execute(
-                `INSERT INTO social_adapter_configs (adapter_id, config_json)
-         VALUES (${this.placeholder(1)}, ${this.placeholder(2)})
-         ON DUPLICATE KEY UPDATE config_json = VALUES(config_json)`,
-                [adapterId, json],
-            );
-            return;
-        }
-        await this.db.execute(
-            `INSERT INTO social_adapter_configs (adapter_id, config_json)
-       VALUES (${this.placeholder(1)}, ${this.placeholder(2)})
-       ON CONFLICT (adapter_id) DO UPDATE SET config_json = EXCLUDED.config_json`,
-            [adapterId, json],
-        );
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "social_adapter_configs",
+            values: {
+                adapter_id: adapterId,
+                config_json: json,
+            },
+            conflict: {
+                action: "update",
+                target: ["adapter_id"],
+                update: {
+                    config_json: json,
+                },
+            },
+        });
     }
 }
