@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { DbMessagesStore } from "../store.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
+import type { StructuredDbUpdateCommand } from "../../../../gateways/db/reuse/db-command.js";
 
 function createRecordingExecutor() {
     const sqlCalls: Array<{ sql: string; params?: unknown[] }> = [];
@@ -41,8 +42,9 @@ test("messages setMuted uses executeCommand with integer muted value", async () 
     await store.setMuted("room-1", "account-1", true);
 
     const updateCmd = commandCalls.find(
-        (cmd) => cmd.option === "UPDATE" && cmd.table === "chatroom_members",
+        (cmd): cmd is StructuredDbUpdateCommand =>
+            cmd.option === "UPDATE" && cmd.table === "chatroom_members",
     );
     assert.ok(updateCmd);
-    assert.equal((updateCmd as any).set.muted, 1);
+    assert.equal(updateCmd.set.muted, 1);
 });
