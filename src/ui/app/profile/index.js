@@ -1258,16 +1258,6 @@ export async function mount(rootEl, { signal } = {}) {
             },
             render: renderFollowing,
         },
-        {
-            id: "posts",
-            label: i18n.t("ui.app.profile.section.posts"),
-            gridSize: {
-                default: [4, postsSectionRowCount],
-                min: [2, 4],
-                max: "full",
-            },
-            render: renderPosts,
-        },
         ...(isOwnProfile
             ? [
                   {
@@ -1282,6 +1272,16 @@ export async function mount(rootEl, { signal } = {}) {
                   },
               ]
             : []),
+        {
+            id: "posts",
+            label: i18n.t("ui.app.profile.section.posts"),
+            gridSize: {
+                default: [4, postsSectionRowCount],
+                min: [2, 4],
+                max: "full",
+            },
+            render: renderPosts,
+        },
         {
             id: "social-links",
             label: i18n.t("ui.app.profile.section.social_links"),

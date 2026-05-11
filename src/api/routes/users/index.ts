@@ -56,7 +56,11 @@ export function createUserRoutes(
                 return true;
             }
             const target = decodeURIComponent(infoMatch[1]);
-            if (claims.sub !== target && claims.role !== "admin") {
+            if (
+                claims.sub !== target &&
+                claims.role !== "admin" &&
+                claims.role !== "owner"
+            ) {
                 log?.("warn", "Blocked unauthorized user info lookup.", {
                     ...logMeta,
                     accountId: claims.sub,
@@ -108,6 +112,71 @@ export function createUserRoutes(
 
         const username = decodeURIComponent(match[1]);
         const action = match[2];
+        const callerClaims = getAuthClaims(req);
+        const callerIsOwner = callerClaims?.role === "owner";
+        const callerIsAdmin = callerClaims?.role === "admin";
+        let targetInfoCache:
+            | {
+                  username: string;
+                  createdAt: string | null;
+                  lastLogin: string | null;
+                  enabled: boolean;
+                  isAdmin: boolean;
+                  isFounder: boolean;
+                  role?: string;
+              }
+            | null
+            | undefined;
+
+        async function getTargetInfo() {
+            if (targetInfoCache !== undefined) return targetInfoCache;
+            targetInfoCache = await accountStore.getInfo(username);
+            return targetInfoCache;
+        }
+
+        const isRestrictedAdminManagementAction =
+            (req.method === "POST" &&
+                (action === "role" || action === "disable")) ||
+            (req.method === "DELETE" && !action);
+
+        if (
+            isRestrictedAdminManagementAction &&
+            callerClaims &&
+            callerIsAdmin &&
+            callerClaims.sub !== username
+        ) {
+            const targetInfo = await getTargetInfo();
+            const targetRole =
+                targetInfo?.role ?? (targetInfo?.isAdmin ? "admin" : "user");
+            const targetIsAdminOrOwner =
+                targetRole === "admin" || targetRole === "owner";
+            if (targetIsAdminOrOwner) {
+                log?.(
+                    "warn",
+                    "Blocked admin attempt to modify admin account.",
+                    {
+                        ...logMeta,
+                        accountId: callerClaims.sub,
+                        targetAccountId: username,
+                        action,
+                        targetRole,
+                    },
+                );
+                res.writeHead(403, {
+                    "content-type": "application/json",
+                });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "protected_admin_account",
+                            message:
+                                "Only owner can demote, disable, or delete other admins",
+                        },
+                    }),
+                );
+                return true;
+            }
+        }
 
         const FOUNDER_PROTECTED_ACTIONS = new Set([
             "role",
@@ -121,9 +190,12 @@ export function createUserRoutes(
                 FOUNDER_PROTECTED_ACTIONS.has(action)) ||
             (req.method === "DELETE" && !action);
         if (isFounderProtectedRequest) {
-            const callerClaims = getAuthClaims(req);
-            if (callerClaims && callerClaims.sub !== username) {
-                const targetInfo = await accountStore.getInfo(username);
+            if (
+                callerClaims &&
+                !callerIsOwner &&
+                callerClaims.sub !== username
+            ) {
+                const targetInfo = await getTargetInfo();
                 if (targetInfo?.isAdmin && targetInfo?.isFounder) {
                     log?.(
                         "warn",
@@ -264,7 +336,6 @@ export function createUserRoutes(
         }
 
         if (req.method === "POST" && action === "disable") {
-            const callerClaims = getAuthClaims(req);
             if (callerClaims?.sub === username) {
                 log?.("warn", "Blocked self-disable attempt.", {
                     ...logMeta,

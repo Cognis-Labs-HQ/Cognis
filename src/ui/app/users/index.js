@@ -38,6 +38,10 @@ function getCurrentUsername() {
     }
 }
 
+function getCurrentRole() {
+    return (localStorage.getItem("cognis_role") ?? "user").trim();
+}
+
 function buildElements() {
     const estimatedHeight = Math.max(6, Math.ceil(users.length * 0.65 + 2));
     elements = [
@@ -139,6 +143,9 @@ async function refreshData() {
 
 function renderUsersTable() {
     const currentUsername = getCurrentUsername();
+    const currentRole = getCurrentRole();
+    const viewerIsOwner = currentRole === "owner";
+    const viewerIsAdmin = currentRole === "admin";
     const inviteButtonHtml = registrationGatewayActive
         ? `<div class="controls">
           <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.app.users.invite"))}</button>
@@ -164,16 +171,23 @@ function renderUsersTable() {
                   const userRole =
                       user.role ?? (user.isAdmin ? "admin" : "user");
                   const isOwner = userRole === "owner";
-                  const roleDisabled = isProtected || isOwner || isSelf;
+                  const protectAdminFromAdmin =
+                      viewerIsAdmin &&
+                      !viewerIsOwner &&
+                      userRole === "admin" &&
+                      !isSelf;
+                  const roleDisabled =
+                      isProtected || isOwner || isSelf || protectAdminFromAdmin;
                   const roleCellHtml = isOwner
                       ? escapeHtml("owner")
-                      : `<select class="users-role-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>
+                      : `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>
                             <option value="user"${userRole === "user" ? " selected" : ""}>${escapeHtml("user")}</option>
                             <option value="teacher"${userRole === "teacher" ? " selected" : ""}>${escapeHtml("teacher")}</option>
                             <option value="admin"${userRole === "admin" ? " selected" : ""}>${escapeHtml("admin")}</option>
-                        </select>`;
+                            <option value="owner" disabled>${escapeHtml("owner")}</option>
+                         </select>`;
                   const actionsHtml =
-                      isProtected || isOwner
+                      isProtected || isOwner || protectAdminFromAdmin
                           ? ""
                           : `
                         <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.generic.disable")) : escapeHtml(i18n.t("ui.reuse.generic.enable"))}</button>

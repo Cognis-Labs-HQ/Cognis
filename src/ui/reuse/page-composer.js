@@ -2668,6 +2668,10 @@ export function createPageComposer(
             );
             const scale = hasFractional ? 2 : 1;
             section.style.setProperty("--grid-cols", String(gridCols * scale));
+            section.style.setProperty(
+                "--composer-grid-row-size",
+                `${UNIT / scale}px`,
+            );
             for (const placement of visiblePlacements) {
                 const element = elements.find((e) => e.id === placement.id);
                 if (!element) continue;
@@ -2680,8 +2684,6 @@ export function createPageComposer(
                 const scaledHeight = placement.h * scale;
                 card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
                 card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
-                card.style.height = `${Math.round(scaledHeight) * UNIT}px`;
-                card.style.overflow = "auto";
                 card.innerHTML = element.render();
                 section.appendChild(card);
             }

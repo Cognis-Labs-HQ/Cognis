@@ -18,7 +18,11 @@ export function createPreferencesRoutes(store: UserPreferenceStore) {
         const claims = requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = decodeURIComponent(match[1]);
-        if (claims.sub !== accountId && claims.role !== "admin") {
+        if (
+            claims.sub !== accountId &&
+            claims.role !== "admin" &&
+            claims.role !== "owner"
+        ) {
             res.writeHead(403, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({

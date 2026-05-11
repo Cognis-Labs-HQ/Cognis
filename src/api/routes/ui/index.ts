@@ -305,7 +305,8 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            if (getCookieSession(req)?.role !== "admin") {
+            const session = getCookieSession(req);
+            if (session?.role !== "admin" && session?.role !== "owner") {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
@@ -332,7 +333,8 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            if (getCookieSession(req)?.role !== "admin") {
+            const session = getCookieSession(req);
+            if (session?.role !== "admin" && session?.role !== "owner") {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
@@ -362,7 +364,7 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            if (session.role !== "admin") {
+            if (session.role !== "admin" && session.role !== "owner") {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
