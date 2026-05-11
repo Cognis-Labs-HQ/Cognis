@@ -20,6 +20,13 @@ import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { SupportedDbType } from "../db/executor.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 
+interface AuthAccountStore {
+    has(username: string): Promise<boolean>;
+    delete(username: string): Promise<void>;
+    isFounder(username: string): Promise<boolean>;
+    verify(username: string, password: string): Promise<boolean>;
+}
+
 function resolveRole(
     sessionRole: string | undefined,
     isAdmin: boolean | undefined,
@@ -148,7 +155,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
 function createAuthGatewayRoutes(
     authGateway: CoreAuthGateway,
-    accountStore: InstanceType<typeof DbLocalAccountStore>,
+    accountStore: AuthAccountStore,
     capabilities: CapabilityStore,
     log?: GatewayBootstrapContext["log"],
 ) {

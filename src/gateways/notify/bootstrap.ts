@@ -17,8 +17,30 @@ import {
     InMemoryVerifyTokenStore,
 } from "../../api/reuse/verify-token.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { DbNotificationStore as IDbNotificationStore } from "../../adapters/db/reuse/notification-store.js";
 import { createNotificationRoutes } from "./routes/notifications.js";
+
+interface NotificationUserEmailStore {
+    getUserEmails(
+        accountId: string,
+    ): Promise<Array<{ email: string; primary: boolean; verified: boolean }>>;
+    addUserEmail(
+        accountId: string,
+        email: string,
+        isPrimary?: boolean,
+    ): Promise<void>;
+    removeUserEmail(accountId: string, email: string): Promise<void>;
+    removeUnverifiedEmail(accountId: string, email: string): Promise<void>;
+    isEmailRegisteredByOtherUser(
+        email: string,
+        excludeAccountId: string,
+    ): Promise<boolean>;
+    setPrimaryEmail(accountId: string, email: string): Promise<void>;
+    verifyUserEmail(accountId: string, email: string): Promise<void>;
+    upsertVerifiedPrimaryEmail(accountId: string, email: string): Promise<void>;
+    getPrimaryEmail(accountId: string): Promise<string | null>;
+    hasVerifiedEmail(accountId: string): Promise<boolean>;
+    isEmailRegistered(email: string): Promise<boolean>;
+}
 
 /**
  * Standard gateway bootstrap entry point. Discovers notification adapters,
@@ -235,7 +257,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
  *   POST   /api/v1/verify-email
  */
 export function createUserEmailRoutes(
-    notifStore: IDbNotificationStore,
+    notifStore: NotificationUserEmailStore,
     tfaService: TfaCodeService,
     verifyTokenService: VerifyTokenService,
     gateway: CoreNotificationGateway,
