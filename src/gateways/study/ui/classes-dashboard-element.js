@@ -4,7 +4,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
  * Dashboard page extension factory for the Study/Classes adapter.
  */
 export function createPageElement({ i18n, role }) {
-    if (role !== "teacher" && role !== "admin") {
+    if (role !== "teacher") {
         return null;
     }
 

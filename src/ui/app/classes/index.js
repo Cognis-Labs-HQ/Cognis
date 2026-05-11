@@ -26,10 +26,7 @@ export async function mount(root, { signal } = {}) {
     let pendingRequests = [];
     let storedRole = (localStorage.getItem("cognis_role") ?? "").trim();
     const isAdminRole = () => storedRole === "admin" || storedRole === "owner";
-    const isTeacherRole = () =>
-        storedRole === "teacher" ||
-        storedRole === "admin" ||
-        storedRole === "owner";
+    const isTeacherRole = () => storedRole === "teacher";
     let isTeacher = isTeacherRole();
 
     if (!isTeacher) {
@@ -43,10 +40,7 @@ export async function mount(root, { signal } = {}) {
                     const payload = await response.json();
                     storedRole = String(payload?.data?.role ?? "").trim();
                     localStorage.setItem("cognis_role", storedRole);
-                    isTeacher =
-                        storedRole === "teacher" ||
-                        storedRole === "admin" ||
-                        storedRole === "owner";
+                    isTeacher = isTeacherRole();
                 }
             }
         } catch {

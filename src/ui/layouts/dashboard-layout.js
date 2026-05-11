@@ -30,7 +30,7 @@ function isAdminRole() {
 
 function isTeacherRole() {
     const role = (localStorage.getItem("cognis_role") ?? "").trim();
-    return role === "teacher" || role === "admin" || role === "owner";
+    return role === "teacher";
 }
 
 function getDisplayName() {

@@ -44,11 +44,7 @@ function createClassesPageRoute(isAdapterEnabled: () => boolean) {
             res.end();
             return true;
         }
-        if (
-            session.role !== "teacher" &&
-            session.role !== "admin" &&
-            session.role !== "owner"
-        ) {
+        if (session.role !== "teacher") {
             res.writeHead(302, { location: "/dashboard" });
             res.end();
             return true;
