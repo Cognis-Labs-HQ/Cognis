@@ -516,7 +516,8 @@ export function createPageComposer(
             editing ? Math.max(3, maxBottom + 2) : 1,
             maxBottom + extra,
         );
-        contentGrid.style.minHeight = `${gridRows * UNIT}px`;
+        contentGrid.style.minHeight =
+            frameless && !editing ? "" : `${gridRows * UNIT}px`;
         contentGrid.style.width = editing ? `${gridCols * UNIT}px` : "";
         if (editing && gridSection) {
             gridSection.style.minHeight = `${gridRows * UNIT}px`;
@@ -2654,7 +2655,7 @@ export function createPageComposer(
             section.style.minHeight = `${gridRows * UNIT}px`;
             section.style.width = `${gridCols * UNIT}px`;
             section.appendChild(createGridOverlay());
-        } else {
+        } else if (!frameless) {
             section.classList.add("composer-view-grid");
         }
 
@@ -2665,31 +2666,37 @@ export function createPageComposer(
             : computeViewPlacements();
 
         if (!editing) {
-            const hasFractional = visiblePlacements.some(
-                (p) =>
-                    p.col % 1 !== 0 ||
-                    p.row % 1 !== 0 ||
-                    p.w % 1 !== 0 ||
-                    p.h % 1 !== 0,
-            );
+            const hasFractional =
+                !frameless &&
+                visiblePlacements.some(
+                    (p) =>
+                        p.col % 1 !== 0 ||
+                        p.row % 1 !== 0 ||
+                        p.w % 1 !== 0 ||
+                        p.h % 1 !== 0,
+                );
             const scale = hasFractional ? 2 : 1;
-            section.style.setProperty("--grid-cols", String(gridCols * scale));
-            section.style.setProperty(
-                "--composer-grid-row-size",
-                `${UNIT / scale}px`,
-            );
+            if (!frameless) {
+                section.style.setProperty("--grid-cols", String(gridCols * scale));
+                section.style.setProperty(
+                    "--composer-grid-row-size",
+                    `${UNIT / scale}px`,
+                );
+            }
             for (const placement of visiblePlacements) {
                 const element = elements.find((e) => e.id === placement.id);
                 if (!element) continue;
                 const card = document.createElement("section");
                 card.className = "widget-card";
                 card.dataset.composerElement = element.id;
-                const scaledCol = placement.col * scale;
-                const scaledRow = placement.row * scale;
-                const scaledWidth = placement.w * scale;
-                const scaledHeight = placement.h * scale;
-                card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
-                card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
+                if (!frameless) {
+                    const scaledCol = placement.col * scale;
+                    const scaledRow = placement.row * scale;
+                    const scaledWidth = placement.w * scale;
+                    const scaledHeight = placement.h * scale;
+                    card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
+                    card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
+                }
                 card.innerHTML = element.render();
                 section.appendChild(card);
             }
