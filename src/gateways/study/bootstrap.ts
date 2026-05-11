@@ -123,7 +123,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.uiRegistry?.registerStaticDir(
-        "gateways/study",
+        "study",
         path.join(GATEWAY_ROOT, "ui"),
     );
     ctx.uiRegistry?.registerNavbarPlugin({

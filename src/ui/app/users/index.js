@@ -410,7 +410,11 @@ function bindUsersInteractions() {
                 await refreshData();
                 composer.refresh(elements);
             } else {
-                showToast(i18n.t("ui.app.admin.security.save_failed"), {
+                const responseBody = await res.json().catch(() => null);
+                const responseMessage =
+                    responseBody?.error?.message ??
+                    i18n.t("ui.app.admin.security.save_failed");
+                showToast(responseMessage, {
                     variant: "error",
                 });
                 await refreshData();

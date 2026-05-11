@@ -14,7 +14,9 @@ export async function apiFetch(path, options = {}) {
     const token = localStorage.getItem("cognis_access_token");
     const headers = {
         ...(options.headers ?? {}),
-        authorization: token ? `Bearer ${token}` : "",
     };
+    if (token) {
+        headers.authorization = `Bearer ${token}`;
+    }
     return fetch(path, { ...options, headers });
 }

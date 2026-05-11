@@ -33,11 +33,11 @@ type Dispatch = (e: DispatchEnvelope) => Promise<{ dispatched: string[] }>;
 /**
  * Messaging eligibility predicate: A may DM B iff
  *   not blocked in either direction, AND
- *   B has community visibility or they share an existing room.
+ *   B has community visibility or B already follows A.
  */
 export async function canMessage(
     profileStore: DbProfileStore,
-    messagesStore: DbMessagesStore,
+    _messagesStore: DbMessagesStore,
     fromId: string,
     toId: string,
 ): Promise<boolean> {
@@ -60,8 +60,7 @@ export async function canMessage(
         return false;
     }
     if (targetProfile.visibility === "community") return true;
-    const sharedRoom = await messagesStore.findDmBetween(fromId, toId);
-    return Boolean(sharedRoom);
+    return profileStore.isFollowing(toId, fromId);
 }
 
 function publicProfileSummary(profile: AccountProfile) {
@@ -482,8 +481,8 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                         await dispatch({
                             category: "messages",
                             recipientUsername: recipient.handle,
-                            subject: `New message from ${senderHandle}`,
-                            body: "(encrypted)",
+                            subject: "New message",
+                            body: "New message",
                             senderName: senderHandle,
                             actionUrl: `/messages/${roomId}`,
                             metadata: {

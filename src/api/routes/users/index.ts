@@ -13,6 +13,13 @@ export function createUserRoutes(
     preferenceStore: UserPreferenceStore | undefined,
     setProfileRole?: (handle: string, role: string) => Promise<void>,
     log?: BootstrapLog,
+    getProfileVisibility?: (
+        accountId: string,
+    ) => Promise<string | null | undefined>,
+    setProfileVisibility?: (
+        accountId: string,
+        visibility: "friends",
+    ) => Promise<void>,
 ) {
     return async (
         req: IncomingMessage,
@@ -285,8 +292,30 @@ export function createUserRoutes(
                 );
                 return true;
             }
+            if (role === "teacher") {
+                const currentVisibility = await getProfileVisibility?.(username);
+                if (
+                    currentVisibility === "hidden" ||
+                    currentVisibility === "private"
+                ) {
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "teacher_visibility_incompatible",
+                                message:
+                                    "Visibility must be friends or community before assigning teacher role",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+            }
             await accountStore.setRole(username, role as any);
             await setProfileRole?.(username, role);
+            if (role === "teacher") {
+                await setProfileVisibility?.(username, "friends");
+            }
             log?.("info", "Updated user role.", {
                 ...logMeta,
                 accountId: adminClaims.sub,

@@ -540,9 +540,7 @@ export async function mount(root, { signal } = {}) {
             openSearchPopup({
                 endpoint: "/api/v1/search",
                 typeFilter: "users",
-                placeholder: i18n.t(
-                    "module.social.messages.lookup_placeholder",
-                ),
+                category: "user",
                 ariaLabel: i18n.t("module.social.messages.new"),
                 noResultsText: i18n.t("ui.layout.search.no_results"),
                 onSelect: async (result) => {

@@ -214,12 +214,23 @@
 
 .messages-page .main-window--with-toolbar {
     grid-template-columns: minmax(220px, min(320px, 30vw)) minmax(0, 1fr);
+    height: calc(100dvh - 176px);
+    min-height: 0;
 }
 
 .messages-page .main-window--with-toolbar .toolbar {
     width: min(320px, 30vw);
     min-width: 220px;
     box-sizing: border-box;
+    min-height: 0;
+}
+
+.messages-page .content-panel,
+.messages-page .content-grid,
+.messages-page .messages-sidebar-content,
+.messages-page .messages-thread {
+    min-height: 0;
+    height: 100%;
 }
 
 .messages-thread-header {

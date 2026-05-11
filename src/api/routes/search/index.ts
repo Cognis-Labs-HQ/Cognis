@@ -66,16 +66,25 @@ export function createSearchRoutes(
                         (profile) =>
                             ({
                                 id: profile.handle ?? profile.accountId ?? "",
-                                label: profile.displayName
-                                    ? `${profile.displayName} (@${profile.handle})`
-                                    : `@${profile.handle ?? profile.accountId}`,
+                                label:
+                                    profile.displayName ??
+                                    profile.accountId ??
+                                    profile.handle ??
+                                    "",
                                 url: profile.handle
                                     ? `/profile/${encodeURIComponent(profile.handle)}`
                                     : undefined,
-                                meta: profile.handle,
+                                meta:
+                                    profile.accountId ??
+                                    profile.handle ??
+                                    undefined,
+                                username: profile.accountId,
+                                accountId: profile.accountId,
                                 handle: profile.handle,
                                 displayName: profile.displayName,
                             }) as SearchResultItem & {
+                                username?: string;
+                                accountId?: string;
                                 handle?: string;
                                 displayName?: string;
                             },
@@ -99,13 +108,15 @@ export function createSearchRoutes(
                         category: "Users",
                         items: profiles.map((profile) => ({
                             id: profile.handle ?? profile.accountId ?? "",
-                            label: profile.displayName
-                                ? `${profile.displayName} (@${profile.handle})`
-                                : `@${profile.handle ?? profile.accountId}`,
+                            label:
+                                profile.displayName ??
+                                profile.accountId ??
+                                profile.handle ??
+                                "",
                             url: profile.handle
                                 ? `/profile/${encodeURIComponent(profile.handle)}`
                                 : undefined,
-                            meta: profile.handle,
+                            meta: profile.accountId ?? profile.handle,
                         })),
                     });
                 }

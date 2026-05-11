@@ -470,7 +470,6 @@ function initSearchBar(i18n) {
 
     const bar = createSearchBar({
         endpoint: "/api/v1/search",
-        placeholder: i18n.t("ui.layout.search.placeholder"),
         ariaLabel: i18n.t("ui.layout.search.aria"),
         noResultsText: i18n.t("ui.layout.search.no_results"),
         localGroups: [settingsLocalSearchGroup],

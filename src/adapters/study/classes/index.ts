@@ -1,5 +1,3 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type {
     StudyAdapter,
@@ -133,9 +131,6 @@ export async function bootstrapStudyAdapter(
         "study",
     );
 
-    const adapterRoot = path.dirname(fileURLToPath(import.meta.url));
-    const uiDir = path.join(adapterRoot, "ui");
-    ctx.registerStaticDir("adapters/study/classes", uiDir);
     ctx.registerPageExtension("dashboard", {
         id: "study-classes-dashboard",
         label: "My Classes",

@@ -250,6 +250,22 @@ export function createProfileRoutes(
                     );
                     return true;
                 }
+                if (
+                    claims?.role === "teacher" &&
+                    (visibility === "hidden" || visibility === "private")
+                ) {
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "teacher_visibility_incompatible",
+                                message:
+                                    "Teacher accounts must use friends or community visibility",
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 updates.visibility = visibility as AccountVisibility;
             }
             const updated = await profileStore.updateProfile(

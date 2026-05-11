@@ -26,6 +26,8 @@ const TOAST_BODY_PREVIEW_LENGTH = 90;
 const TOAST_AUTO_DISMISS_MS = 6_000;
 const RELATIVE_TIME_TICK_MS = 1000;
 const CSS_HREF = "/static/gateways/notify-internal/notifications.css";
+const notificationTextDecoder = new TextDecoder();
+const roomKeyCache = new Map();
 
 function injectStyles() {
     if (document.querySelector(`link[href="${CSS_HREF}"]`)) return;
@@ -45,6 +47,75 @@ function navigateNotif(actionUrl) {
         }
     } catch {
         // malformed URL — no navigation
+    }
+}
+
+function hexToBytes(hex) {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let index = 0; index < bytes.length; index += 1) {
+        bytes[index] = parseInt(hex.slice(index * 2, index * 2 + 2), 16);
+    }
+    return bytes;
+}
+
+async function importRoomKey(hex) {
+    return crypto.subtle.importKey(
+        "raw",
+        hexToBytes(hex),
+        { name: "AES-GCM" },
+        false,
+        ["decrypt"],
+    );
+}
+
+async function getRoomKey(roomId) {
+    if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
+    const response = await apiFetch(
+        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/key`,
+    );
+    if (!response.ok) return null;
+    const payload = await response.json().catch(() => null);
+    const roomKeyHex = payload?.data?.key;
+    if (typeof roomKeyHex !== "string" || roomKeyHex.length === 0) return null;
+    const roomKey = await importRoomKey(roomKeyHex);
+    roomKeyCache.set(roomId, roomKey);
+    return roomKey;
+}
+
+function parseRoomId(actionUrl) {
+    if (typeof actionUrl !== "string" || actionUrl.length === 0) return null;
+    const match = actionUrl.match(/^\/messages\/([^/?#]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
+async function decryptRoomMessage(roomId) {
+    const roomKey = await getRoomKey(roomId);
+    if (!roomKey) return null;
+    const response = await apiFetch(
+        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=1`,
+    );
+    if (!response.ok) return null;
+    const payload = await response.json().catch(() => null);
+    const latestMessage = Array.isArray(payload?.data) ? payload.data[0] : null;
+    if (
+        !latestMessage ||
+        typeof latestMessage.iv !== "string" ||
+        typeof latestMessage.ciphertext !== "string"
+    ) {
+        return null;
+    }
+    try {
+        const decrypted = await crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                iv: hexToBytes(latestMessage.iv),
+            },
+            roomKey,
+            hexToBytes(latestMessage.ciphertext),
+        );
+        return notificationTextDecoder.decode(decrypted).trim() || null;
+    } catch {
+        return null;
     }
 }
 
@@ -479,7 +550,7 @@ async function checkForNew(i18n) {
     for (const notif of arrivals) {
         seenIds.add(notif.id);
         if (!notif.read) {
-            showArrivalToast(notif, i18n);
+            void showArrivalToast(notif, i18n);
         }
     }
 }
@@ -539,16 +610,30 @@ async function markArrivalRead(notif) {
     }
 }
 
-function showArrivalToast(notif, i18n) {
+async function showArrivalToast(notif, i18n) {
     const container = getArrivalToastContainer();
     const toast = document.createElement("div");
     toast.className = "arrival-toast";
     toast.setAttribute("role", "alert");
 
+    let toastSubject = notif.subject;
+    let toastPreview = notif.body;
+    if (notif.category === "messages") {
+        toastSubject = "New message";
+        toastPreview = "New message";
+        const roomId = parseRoomId(notif.actionUrl);
+        if (roomId) {
+            const decryptedPreview = await decryptRoomMessage(roomId);
+            if (decryptedPreview) {
+                toastPreview = decryptedPreview;
+            }
+        }
+    }
+
     const preview =
-        notif.body.length > TOAST_BODY_PREVIEW_LENGTH
-            ? notif.body.slice(0, TOAST_BODY_PREVIEW_LENGTH) + "\u2026"
-            : notif.body;
+        toastPreview.length > TOAST_BODY_PREVIEW_LENGTH
+            ? toastPreview.slice(0, TOAST_BODY_PREVIEW_LENGTH) + "\u2026"
+            : toastPreview;
 
     const sender =
         notif.senderName ?? i18n.t("ui.adapter.notify.internal.sender_system");
@@ -556,7 +641,7 @@ function showArrivalToast(notif, i18n) {
     toast.innerHTML =
         '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
         '<div class="arrival-toast-text">' +
-        `<span class="arrival-toast-subject">${escapeHtml(notif.subject)}</span>` +
+        `<span class="arrival-toast-subject">${escapeHtml(toastSubject)}</span>` +
         `<span class="arrival-toast-sender">${escapeHtml(sender)}</span>` +
         `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
         "</div>" +

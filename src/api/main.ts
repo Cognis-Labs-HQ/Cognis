@@ -277,6 +277,11 @@ const preferenceStore =
     capabilities.get<UserPreferenceStore>("preferences:store");
 
 const profileStore = capabilities.get<{
+    getProfile: (accountId: string) => Promise<{ visibility?: string } | null>;
+    updateProfile: (
+        accountId: string,
+        updates: { visibility?: "friends" },
+    ) => Promise<unknown>;
     searchProfiles: (
         query: string,
         limit: number,
@@ -299,6 +304,15 @@ const server = buildServer({
     >("profile:setRoleByHandle"),
     searchProfiles: profileStore
         ? profileStore.searchProfiles.bind(profileStore)
+        : undefined,
+    getProfileVisibility: profileStore
+        ? async (accountId: string) =>
+              (await profileStore.getProfile(accountId))?.visibility
+        : undefined,
+    setProfileVisibility: profileStore
+        ? async (accountId: string, visibility: "friends") => {
+              await profileStore.updateProfile(accountId, { visibility });
+          }
         : undefined,
     loadModuleStates: async () => {
         const result = await dbExecutor.execute(

@@ -146,7 +146,8 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                 !isSelf &&
                 !blocked &&
                 requester?.visibility !== "hidden" &&
-                target.visibility === "community";
+                target.visibility !== "hidden" &&
+                (target.visibility === "community" || followedBy);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({

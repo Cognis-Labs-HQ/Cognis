@@ -10,6 +10,28 @@
 
 const DEBOUNCE_MS = 280;
 
+function resolvePopupPlaceholder(rawPlaceholder, category) {
+    const trimmedCategory =
+        typeof category === "string" ? category.trim() : "";
+    const trimmedPlaceholder =
+        typeof rawPlaceholder === "string" ? rawPlaceholder.trim() : "";
+
+    if (trimmedPlaceholder) {
+        if (trimmedPlaceholder.includes("{{category}}")) {
+            return trimmedPlaceholder.replace(
+                "{{category}}",
+                trimmedCategory || "something",
+            );
+        }
+        return trimmedPlaceholder;
+    }
+
+    if (trimmedCategory) {
+        return `Search for ${trimmedCategory}s...`;
+    }
+    return "Search for something...";
+}
+
 function filterLocalGroups(localGroups, query) {
     if (!localGroups?.length || !query) return [];
     const lowerQuery = query.toLowerCase();
@@ -92,9 +114,13 @@ function renderFlatResults(
     for (const item of items) {
         const listItem = document.createElement("li");
         listItem.className = "search-popup-result";
-        listItem.textContent = item.displayName
-            ? `${item.displayName} (@${item.handle})`
-            : item.label || item.id || `@${item.handle}`;
+        listItem.textContent =
+            item.displayName ||
+            item.username ||
+            item.accountId ||
+            item.label ||
+            item.id ||
+            "";
         listItem.addEventListener("mousedown", (event) => {
             event.preventDefault();
             closeOverlay();
@@ -198,6 +224,7 @@ export function openSearchPopup({
     onSelect,
     onClose,
     placeholder = "",
+    category = "",
     ariaLabel = "Search",
     noResultsText = "No results found.",
     typeFilter = "",
@@ -224,7 +251,7 @@ export function openSearchPopup({
     const input = document.createElement("input");
     input.type = "search";
     input.className = "search-popup-input";
-    input.placeholder = placeholder;
+    input.placeholder = resolvePopupPlaceholder(placeholder, category);
     input.setAttribute("aria-label", ariaLabel);
     input.setAttribute("autocomplete", "off");
 
@@ -298,6 +325,7 @@ export function createSearchBar({
     endpoint,
     onSelect,
     placeholder = "",
+    category = "",
     ariaLabel = "Search",
     noResultsText = "No results found.",
     typeFilter = "",
@@ -332,6 +360,7 @@ export function createSearchBar({
                 closePopup = null;
             },
             placeholder,
+            category,
             ariaLabel,
             noResultsText,
             typeFilter,

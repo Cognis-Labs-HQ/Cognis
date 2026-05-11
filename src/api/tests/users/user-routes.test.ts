@@ -451,3 +451,81 @@ test("admin cannot demote disable or delete other admins", async () => {
     );
     assert.equal(status, 200);
 });
+
+test("teacher role change is blocked when profile visibility is hidden or private", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "pw", true);
+    await accounts.register("alice", "pw", false);
+    const prefs = new VolatileUserPreferenceStore();
+    let status = 0;
+    let body = "";
+    const route = createUserRoutes(
+        accounts,
+        prefs,
+        undefined,
+        undefined,
+        async () => "hidden",
+        async () => undefined,
+    );
+
+    await route(
+        {
+            method: "POST",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"role":"teacher"}');
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/users/alice/role"),
+    );
+
+    assert.equal(status, 409);
+    assert.match(body, /teacher_visibility_incompatible/);
+});
+
+test("teacher role change sets profile visibility to friends", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "pw", true);
+    await accounts.register("alice", "pw", false);
+    const prefs = new VolatileUserPreferenceStore();
+    let status = 0;
+    const appliedVisibilityUpdates: string[] = [];
+    const route = createUserRoutes(
+        accounts,
+        prefs,
+        undefined,
+        undefined,
+        async () => "community",
+        async (_accountId, visibility) => {
+            appliedVisibilityUpdates.push(visibility);
+        },
+    );
+
+    await route(
+        {
+            method: "POST",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"role":"teacher"}');
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/alice/role"),
+    );
+
+    assert.equal(status, 200);
+    assert.deepEqual(appliedVisibilityUpdates, ["friends"]);
+});

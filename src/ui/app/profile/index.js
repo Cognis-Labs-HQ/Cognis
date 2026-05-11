@@ -667,6 +667,7 @@ async function openEditPopup() {
     const currentWebsite = profile?.website ?? "";
     const currentVisibility = profile?.visibility ?? "hidden";
     const currentDisplayName = profile?.displayName ?? "";
+    const profileIsTeacher = profile?.role === "teacher";
 
     const popupPromise = openPopup({
         title: i18n.t("ui.app.profile.edit_profile"),
@@ -693,8 +694,13 @@ async function openEditPopup() {
           <select id="popup-edit-visibility" class="profile-field-input">
             ${["hidden", "private", "friends", "community"]
                 .map(
-                    (v) =>
-                        `<option value="${v}"${currentVisibility === v ? " selected" : ""}>${escapeHtml(i18n.t(`ui.app.profile.visibility.${v}`))}</option>`,
+                    (visibilityOption) => {
+                        const isRestrictedForTeacher =
+                            profileIsTeacher &&
+                            (visibilityOption === "hidden" ||
+                                visibilityOption === "private");
+                        return `<option value="${visibilityOption}"${currentVisibility === visibilityOption ? " selected" : ""}${isRestrictedForTeacher ? " disabled" : ""}>${escapeHtml(i18n.t(`ui.app.profile.visibility.${visibilityOption}`))}</option>`;
+                    },
                 )
                 .join("")}
           </select>
@@ -749,16 +755,27 @@ async function openEditPopup() {
                     visibility,
                 }),
             });
-            if (!res.ok) throw new Error("save_failed");
+            if (!res.ok) {
+                const responseBody = await res.json().catch(() => null);
+                const responseMessage =
+                    responseBody?.error?.message ??
+                    i18n.t("ui.app.profile.save_failed");
+                throw new Error(responseMessage);
+            }
             localStorage.setItem("cognis_display_name", displayName);
             profile = await loadOwnProfile();
             composer.refresh(elements);
             updateNavbarAvatar().catch(() => {});
             showToast(i18n.t("ui.app.profile.saved"), { variant: "success" });
-        } catch {
-            showToast(i18n.t("ui.app.profile.save_failed"), {
+        } catch (error) {
+            showToast(
+                error instanceof Error
+                    ? error.message
+                    : i18n.t("ui.app.profile.save_failed"),
+                {
                 variant: "error",
-            });
+                },
+            );
         }
     }
 }

@@ -59,6 +59,13 @@ export interface ApiDependencies {
     ) => Promise<
         Array<{ accountId?: string; handle?: string; displayName?: string }>
     >;
+    getProfileVisibility?: (
+        accountId: string,
+    ) => Promise<string | null | undefined>;
+    setProfileVisibility?: (
+        accountId: string,
+        visibility: "friends",
+    ) => Promise<void>;
 }
 
 export function buildServer(deps: ApiDependencies) {
@@ -109,6 +116,8 @@ export function buildServer(deps: ApiDependencies) {
               deps.preferenceStore,
               deps.setProfileRole,
               log,
+              deps.getProfileVisibility,
+              deps.setProfileVisibility,
           )
         : null;
     const gatewayRoutes = deps.gatewayRegistry
