@@ -57,30 +57,33 @@ export function createModuleExtensionRoutes(
                         isModuleEnabled,
                         log,
                     };
-                    plugin.registerApiRoutes({
-                        get(
-                            routePath: string,
-                            handler: RouteHandler["handler"],
-                        ) {
-                            nextHandlers.push({
-                                method: "GET",
-                                routePath,
-                                moduleId: manifest.id,
-                                handler,
-                            });
+                    plugin.registerApiRoutes(
+                        {
+                            get(
+                                routePath: string,
+                                handler: RouteHandler["handler"],
+                            ) {
+                                nextHandlers.push({
+                                    method: "GET",
+                                    routePath,
+                                    moduleId: manifest.id,
+                                    handler,
+                                });
+                            },
+                            post(
+                                routePath: string,
+                                handler: RouteHandler["handler"],
+                            ) {
+                                nextHandlers.push({
+                                    method: "POST",
+                                    routePath,
+                                    moduleId: manifest.id,
+                                    handler,
+                                });
+                            },
                         },
-                        post(
-                            routePath: string,
-                            handler: RouteHandler["handler"],
-                        ) {
-                            nextHandlers.push({
-                                method: "POST",
-                                routePath,
-                                moduleId: manifest.id,
-                                handler,
-                            });
-                        },
-                    }, moduleContext);
+                        moduleContext,
+                    );
                 }
             } catch (error) {
                 log?.("error", "Failed to load module API route plugin.", {

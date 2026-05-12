@@ -20,4 +20,6 @@
   <string name="module.jitsi_meet.password_label">Masukkan kata sandi moderator yang diminta oleh instance Jitsi ini.</string>
   <string name="module.jitsi_meet.password_submit">Kirim</string>
   <string name="module.jitsi_meet.no_session">Tidak ada sesi rapat aktif. Buat rapat untuk memulai.</string>
+  <string name="module.jitsi_meet.default_user">Pengguna Cognis</string>
+  <string name="module.jitsi_meet.default_meeting_title">Rapat Cognis</string>
 </resources>

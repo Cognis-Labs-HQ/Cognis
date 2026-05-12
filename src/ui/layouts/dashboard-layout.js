@@ -458,6 +458,20 @@ function injectSearchBarStyles() {
     document.head.appendChild(link);
 }
 
+function getMeetingsNavigationItems(i18n) {
+    const meetingsLink = document.querySelector("[data-meetings-link]");
+    if (!meetingsLink || meetingsLink.hasAttribute("hidden")) {
+        return [];
+    }
+    return [
+        {
+            id: "page-meetings",
+            label: i18n.t("ui.reuse.meetings"),
+            url: "/meetings",
+        },
+    ];
+}
+
 function initSearchBar(i18n) {
     const wrap = document.getElementById("global-search-wrap");
     if (!wrap || wrap.dataset.searchBarBound === "true") return;
@@ -477,17 +491,7 @@ function initSearchBar(i18n) {
                 label: i18n.t("ui.reuse.messages"),
                 url: "/messages",
             },
-            ...(document
-                .querySelector("[data-meetings-link]")
-                ?.hasAttribute("hidden")
-                ? []
-                : [
-                      {
-                          id: "page-meetings",
-                          label: i18n.t("ui.reuse.meetings"),
-                          url: "/meetings",
-                      },
-                  ]),
+            ...getMeetingsNavigationItems(i18n),
             {
                 id: "page-settings",
                 label: i18n.t("ui.reuse.settings"),

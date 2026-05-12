@@ -20,4 +20,6 @@
   <string name="module.jitsi_meet.password_label">この Jitsi インスタンスで要求されるモデレーターパスワードを入力してください。</string>
   <string name="module.jitsi_meet.password_submit">送信</string>
   <string name="module.jitsi_meet.no_session">アクティブなミーティングセッションがありません。開始するにはミーティングを作成してください。</string>
+  <string name="module.jitsi_meet.default_user">Cognis ユーザー</string>
+  <string name="module.jitsi_meet.default_meeting_title">Cognis ミーティング</string>
 </resources>

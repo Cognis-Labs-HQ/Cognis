@@ -4,18 +4,13 @@
     "version": "1.0.0",
     "class": "extension",
     "coreApiVersion": "v1",
-    "capabilities": [
-        "jitsi:meetings",
-        "ui:page"
-    ],
+    "capabilities": ["jitsi:meetings", "ui:page"],
     "entrypoints": {
         "api": "./api/index.js",
         "ui": "./ui/pages/meetings.html"
     },
     "ui": {
-        "navbarPlugins": [
-            "./ui/navbar.js"
-        ]
+        "navbarPlugins": ["./ui/navbar.js"]
     },
     "publisher": "Cognis Labs"
 }

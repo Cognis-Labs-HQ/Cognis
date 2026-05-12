@@ -135,13 +135,15 @@ export async function bootstrapSocialAdapter(
             const uniqueMembers = Array.from(
                 new Set([createdBy, ...memberAccountIds]),
             );
-            for (const memberAccountId of uniqueMembers) {
-                await messagesStore.addMember(
-                    room.id,
-                    memberAccountId,
-                    memberAccountId === createdBy ? "owner" : "member",
-                );
-            }
+            await Promise.all(
+                uniqueMembers.map((memberAccountId) =>
+                    messagesStore.addMember(
+                        room.id,
+                        memberAccountId,
+                        memberAccountId === createdBy ? "owner" : "member",
+                    ),
+                ),
+            );
             await messagesStore.generateAndStoreRoomKey(room.id);
             return room;
         },

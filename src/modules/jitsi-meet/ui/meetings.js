@@ -1,11 +1,14 @@
-import { apiFetch } from '/static/reuse/api-client.js';
-import { applyDocumentTitle, createI18n } from '/static/reuse/i18n.js';
-import { createPageComposer } from '/static/reuse/page-composer.js';
-import { openPopup } from '/static/reuse/popup.js';
-import { showToast } from '/static/reuse/toast.js';
-import { escapeHtml } from '/static/reuse/escape-html.js';
+import { apiFetch } from "/static/reuse/api-client.js";
+import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
+import { createPageComposer } from "/static/reuse/page-composer.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { showToast } from "/static/reuse/toast.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 
-const JITSI_EXTERNAL_APIS = new Map();
+const jitsiExternalApiLoaders = new Map();
+const ACCOUNT_STORAGE_KEY = "cognis_account";
+const DISPLAY_NAME_STORAGE_KEY = "cognis_display_name";
 
 let i18n = null;
 let composer = null;
@@ -18,10 +21,21 @@ let activeMeetingSession = null;
 let jitsiApi = null;
 let userProfile = null;
 
+/**
+ * Returns the account IDs currently selected for the meeting.
+ *
+ * @returns {string[]}
+ */
 function selectedUserIds() {
     return selectedUsers.map((user) => user.accountId);
 }
 
+/**
+ * Builds a human-readable label for a user entry.
+ *
+ * @param {{ displayName?: string, handle?: string, accountId: string }} user
+ * @returns {string}
+ */
 function userLabel(user) {
     return user.displayName || user.handle || user.accountId;
 }
@@ -41,7 +55,7 @@ function mergeUsers(users) {
 }
 
 async function loadProfile() {
-    const response = await apiFetch('/api/v1/profile');
+    const response = await apiFetch("/api/v1/profile");
     if (!response.ok) return null;
     const payload = await response.json();
     return payload?.data ?? null;
@@ -81,7 +95,7 @@ async function searchUsers(query) {
 }
 
 async function loadMeetings() {
-    const response = await apiFetch('/api/v1/modules/jitsi-meet/meetings');
+    const response = await apiFetch("/api/v1/modules/jitsi-meet/meetings");
     if (!response.ok) {
         meetings = [];
         return;
@@ -112,21 +126,21 @@ function renderMeetingPanel() {
         <section class="meetings-panel">
             <div class="meetings-toolbar">
                 <button type="button" class="btn-neutral btn-animated" data-meetings-refresh-session>
-                    ${escapeHtml(i18n.t('module.jitsi_meet.refresh_session'))}
+                    ${escapeHtml(i18n.t("module.jitsi_meet.refresh_session"))}
                 </button>
                 <button type="button" class="btn-neutral btn-animated" data-meetings-new-tab>
-                    ${escapeHtml(i18n.t('module.jitsi_meet.open_new_tab'))}
+                    ${escapeHtml(i18n.t("module.jitsi_meet.open_new_tab"))}
                 </button>
             </div>
             <div class="meetings-stage">
                 <div id="jitsi-meet-container" class="meetings-stage-frame"></div>
                 <div class="meetings-overlay">
                     <button type="button" class="btn-confirm btn-animated" data-meetings-restart>
-                        ${escapeHtml(i18n.t('module.jitsi_meet.restart_meeting'))}
+                        ${escapeHtml(i18n.t("module.jitsi_meet.restart_meeting"))}
                     </button>
                 </div>
             </div>
-            <p class="meetings-status">${escapeHtml(activeMeetingSession ? activeMeetingSession.title : i18n.t('module.jitsi_meet.no_session'))}</p>
+            <p class="meetings-status">${escapeHtml(activeMeetingSession ? activeMeetingSession.title : i18n.t("module.jitsi_meet.no_session"))}</p>
         </section>
     `;
 }
@@ -138,36 +152,36 @@ function renderParticipantsPanel() {
             (meeting) =>
                 `<option value="${escapeHtml(meeting.id)}">${escapeHtml(meeting.title)} • ${escapeHtml(meeting.id)}</option>`,
         )
-        .join('');
+        .join("");
     return `
         <section class="meetings-panel">
             <div class="meetings-row">
-                <input type="text" class="theme-input meetings-input" placeholder="${escapeHtml(i18n.t('module.jitsi_meet.search_users'))}" data-meetings-user-search />
+                <input type="text" class="theme-input meetings-input" placeholder="${escapeHtml(i18n.t("module.jitsi_meet.search_users"))}" data-meetings-user-search />
             </div>
             <div class="meetings-row">
-                <input type="text" class="theme-input meetings-input" placeholder="${escapeHtml(i18n.t('module.jitsi_meet.classroom_id'))}" data-meetings-classroom-id />
+                <input type="text" class="theme-input meetings-input" placeholder="${escapeHtml(i18n.t("module.jitsi_meet.classroom_id"))}" data-meetings-classroom-id />
             </div>
             <div class="meetings-row">
                 <button type="button" class="btn-confirm btn-animated" data-meetings-create>
-                    ${escapeHtml(i18n.t('module.jitsi_meet.start_meeting'))}
+                    ${escapeHtml(i18n.t("module.jitsi_meet.start_meeting"))}
                 </button>
                 <select class="theme-select" data-meetings-existing>
-                    <option value="">${escapeHtml(i18n.t('ui.reuse.loading'))}</option>
+                    <option value="">${escapeHtml(i18n.t("ui.reuse.loading"))}</option>
                     ${meetingsOptions}
                 </select>
             </div>
-            <p class="meetings-status">${escapeHtml(i18n.t('module.jitsi_meet.drag_hint'))}</p>
+            <p class="meetings-status">${escapeHtml(i18n.t("module.jitsi_meet.drag_hint"))}</p>
             <div class="meetings-columns">
                 <div>
-                    <h3>${escapeHtml(i18n.t('module.jitsi_meet.available_users'))}</h3>
+                    <h3>${escapeHtml(i18n.t("module.jitsi_meet.available_users"))}</h3>
                     <ul class="meetings-list" data-meetings-available>
-                        ${availableUsers.map((user) => renderUserCard(user)).join('')}
+                        ${availableUsers.map((user) => renderUserCard(user)).join("")}
                     </ul>
                 </div>
                 <div>
-                    <h3>${escapeHtml(i18n.t('module.jitsi_meet.selected_users'))}</h3>
+                    <h3>${escapeHtml(i18n.t("module.jitsi_meet.selected_users"))}</h3>
                     <ul class="meetings-list" data-meetings-selected>
-                        ${selectedUsers.map((user) => renderUserCard(user)).join('')}
+                        ${selectedUsers.map((user) => renderUserCard(user)).join("")}
                     </ul>
                 </div>
             </div>
@@ -182,17 +196,17 @@ function renderChatPanel() {
             <p class="meetings-status">
                 ${escapeHtml(
                     hasChatroom
-                        ? i18n.t('module.jitsi_meet.chat_ready')
-                        : i18n.t('module.jitsi_meet.chat_unavailable'),
+                        ? i18n.t("module.jitsi_meet.chat_ready")
+                        : i18n.t("module.jitsi_meet.chat_unavailable"),
                 )}
             </p>
             <button
                 type="button"
                 class="btn-neutral btn-animated"
                 data-meetings-open-chat
-                ${hasChatroom ? '' : 'disabled'}
+                ${hasChatroom ? "" : "disabled"}
             >
-                ${escapeHtml(i18n.t('module.jitsi_meet.chat_open'))}
+                ${escapeHtml(i18n.t("module.jitsi_meet.chat_open"))}
             </button>
         </section>
     `;
@@ -201,75 +215,79 @@ function renderChatPanel() {
 function getElements() {
     return [
         {
-            id: 'meeting-window',
-            label: i18n.t('module.jitsi_meet.meeting_panel'),
-            gridSize: { default: [8, 6], min: [4, 4], max: ['full', 'fill'] },
+            id: "meeting-window",
+            label: i18n.t("module.jitsi_meet.meeting_panel"),
+            gridSize: { default: [8, 6], min: [4, 4], max: ["full", "fill"] },
             render: renderMeetingPanel,
         },
         {
-            id: 'meeting-participants',
-            label: i18n.t('module.jitsi_meet.participants_panel'),
-            gridSize: { default: [4, 6], min: [3, 4], max: ['half', 'fill'] },
+            id: "meeting-participants",
+            label: i18n.t("module.jitsi_meet.participants_panel"),
+            gridSize: { default: [4, 6], min: [3, 4], max: ["half", "fill"] },
             render: renderParticipantsPanel,
         },
         {
-            id: 'meeting-chat',
-            label: i18n.t('module.jitsi_meet.chat_panel'),
-            gridSize: { default: [4, 4], min: [3, 3], max: ['half', 'fill'] },
+            id: "meeting-chat",
+            label: i18n.t("module.jitsi_meet.chat_panel"),
+            gridSize: { default: [4, 4], min: [3, 3], max: ["half", "fill"] },
             render: renderChatPanel,
         },
     ];
 }
 
 async function ensureExternalApi(baseUrl) {
-    if (JITSI_EXTERNAL_APIS.has(baseUrl)) {
-        return JITSI_EXTERNAL_APIS.get(baseUrl);
+    if (jitsiExternalApiLoaders.has(baseUrl)) {
+        return jitsiExternalApiLoaders.get(baseUrl);
     }
     const loadingPromise = new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = `${baseUrl.replace(/\/+$/, '')}/external_api.js`;
+        const script = document.createElement("script");
+        script.src = `${baseUrl.replace(/\/+$/, "")}/external_api.js`;
         script.async = true;
         script.onload = () => resolve(window.JitsiMeetExternalAPI);
-        script.onerror = () => reject(new Error('Failed to load Jitsi external_api.js'));
+        script.onerror = () =>
+            reject(new Error("Failed to load Jitsi external_api.js"));
         document.head.appendChild(script);
     });
-    JITSI_EXTERNAL_APIS.set(baseUrl, loadingPromise);
+    loadingPromise.catch(() => {
+        jitsiExternalApiLoaders.delete(baseUrl);
+    });
+    jitsiExternalApiLoaders.set(baseUrl, loadingPromise);
     return loadingPromise;
 }
 
 async function promptForModeratorPassword() {
-    let password = '';
+    let password = "";
     const action = await openPopup({
-        title: i18n.t('module.jitsi_meet.password_title'),
+        title: i18n.t("module.jitsi_meet.password_title"),
         body: `
             <label class="stack">
-                ${escapeHtml(i18n.t('module.jitsi_meet.password_label'))}
+                ${escapeHtml(i18n.t("module.jitsi_meet.password_label"))}
                 <input type="password" id="jitsi-moderator-password" class="theme-input" autocomplete="off" />
             </label>
         `,
         actions: [
             {
-                id: 'cancel',
-                label: i18n.t('ui.reuse.cancel'),
-                variant: 'cancel',
+                id: "cancel",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "cancel",
             },
             {
-                id: 'submit',
-                label: i18n.t('module.jitsi_meet.password_submit'),
-                variant: 'confirm',
+                id: "submit",
+                label: i18n.t("module.jitsi_meet.password_submit"),
+                variant: "confirm",
             },
         ],
         onOpen: (overlay) => {
-            overlay.querySelector('#jitsi-moderator-password')?.focus();
+            overlay.querySelector("#jitsi-moderator-password")?.focus();
         },
         onAction: (actionId, overlay) => {
-            if (actionId !== 'submit') return true;
-            const input = overlay.querySelector('#jitsi-moderator-password');
-            password = (input?.value ?? '').trim();
+            if (actionId !== "submit") return true;
+            const input = overlay.querySelector("#jitsi-moderator-password");
+            password = (input?.value ?? "").trim();
             return Boolean(password);
         },
     });
-    if (action !== 'submit') return null;
+    if (action !== "submit") return null;
     return password || null;
 }
 
@@ -279,8 +297,8 @@ async function startSession(meetingId) {
     );
     if (!response.ok) {
         showToast({
-            type: 'error',
-            message: i18n.t('ui.reuse.error'),
+            type: "error",
+            message: i18n.t("ui.reuse.error"),
         });
         return;
     }
@@ -293,12 +311,12 @@ async function startSession(meetingId) {
 
 async function bootJitsiIfReady() {
     const session = activeMeetingSession;
-    const container = document.querySelector('#jitsi-meet-container');
+    const container = document.querySelector("#jitsi-meet-container");
     if (!session || !container) return;
 
     const externalApi = await ensureExternalApi(session.baseUrl);
     if (!externalApi) {
-        showToast({ type: 'error', message: i18n.t('ui.reuse.error') });
+        showToast({ type: "error", message: i18n.t("ui.reuse.error") });
         return;
     }
 
@@ -309,9 +327,9 @@ async function bootJitsiIfReady() {
 
     const jitsiUrl = new URL(session.baseUrl);
     const displayName =
-        localStorage.getItem('cognis_display_name') ||
-        localStorage.getItem('cognis_account') ||
-        'Cognis User';
+        localStorage.getItem(DISPLAY_NAME_STORAGE_KEY) ||
+        localStorage.getItem(ACCOUNT_STORAGE_KEY) ||
+        i18n.t("module.jitsi_meet.default_user");
 
     jitsiApi = new externalApi(jitsiUrl.host, {
         roomName: session.roomName,
@@ -323,15 +341,15 @@ async function bootJitsiIfReady() {
             requireDisplayName: false,
             subject: session.title,
             toolbarButtons: [
-                'microphone',
-                'camera',
-                'desktop',
-                'participants-pane',
-                'tileview',
-                'raisehand',
-                'hangup',
-                'settings',
-                'toggle-camera',
+                "microphone",
+                "camera",
+                "desktop",
+                "participants-pane",
+                "tileview",
+                "raisehand",
+                "hangup",
+                "settings",
+                "toggle-camera",
             ],
         },
         interfaceConfigOverwrite: {
@@ -346,42 +364,41 @@ async function bootJitsiIfReady() {
         },
     });
 
-    jitsiApi.addListener('passwordRequired', async () => {
+    jitsiApi.addListener("passwordRequired", async () => {
         const password = await promptForModeratorPassword();
         if (!password) return;
-        jitsiApi.executeCommand('password', password);
+        jitsiApi.executeCommand("password", password);
     });
 
-    jitsiApi.addListener('readyToClose', () => {
-        const restartButton = document.querySelector('[data-meetings-restart]');
+    jitsiApi.addListener("readyToClose", () => {
+        const restartButton = document.querySelector("[data-meetings-restart]");
         if (restartButton) restartButton.hidden = false;
     });
 
-    const restartButton = document.querySelector('[data-meetings-restart]');
+    const restartButton = document.querySelector("[data-meetings-restart]");
     if (restartButton) restartButton.hidden = true;
 }
 
 async function handleCreateMeeting(root) {
-    const classroomInput = root.querySelector('[data-meetings-classroom-id]');
+    const classroomInput = root.querySelector("[data-meetings-classroom-id]");
     const classroomId = classroomInput?.value?.trim() || null;
 
     const payload = {
         participantIds: selectedUserIds(),
         classroomId,
-        title: 'Cognis Meeting',
+        title: i18n.t("module.jitsi_meet.default_meeting_title"),
     };
-    const response = await apiFetch('/api/v1/modules/jitsi-meet/meetings', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
+    const response = await apiFetch("/api/v1/modules/jitsi-meet/meetings", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
         const failurePayload = await response.json().catch(() => null);
         showToast({
-            type: 'error',
-            message:
-                failurePayload?.error?.message || i18n.t('ui.reuse.error'),
+            type: "error",
+            message: failurePayload?.error?.message || i18n.t("ui.reuse.error"),
         });
         return;
     }
@@ -392,115 +409,167 @@ async function handleCreateMeeting(root) {
 
     await loadMeetings();
     await startSession(meeting.id);
-    showToast({ type: 'success', message: i18n.t('ui.reuse.done') });
+    showToast({ type: "success", message: i18n.t("ui.reuse.done") });
 }
 
 function setupDnD(root) {
-    const availableList = root.querySelector('[data-meetings-available]');
-    const selectedList = root.querySelector('[data-meetings-selected]');
+    const availableList = root.querySelector("[data-meetings-available]");
+    const selectedList = root.querySelector("[data-meetings-selected]");
     if (!availableList || !selectedList) return;
 
     function bindListItems() {
-        root.querySelectorAll('.meetings-user[draggable="true"]').forEach((item) => {
-            item.addEventListener('dragstart', (event) => {
-                event.dataTransfer?.setData('text/plain', item.dataset.userId || '');
-                event.dataTransfer.effectAllowed = 'move';
-            });
-        });
+        root.querySelectorAll('.meetings-user[draggable="true"]').forEach(
+            (item) => {
+                item.addEventListener("dragstart", (event) => {
+                    event.dataTransfer?.setData(
+                        "text/plain",
+                        item.dataset.userId || "",
+                    );
+                    if (event.dataTransfer) {
+                        event.dataTransfer.effectAllowed = "move";
+                    }
+                });
+            },
+        );
     }
 
     function bindDropZone(zone, mode) {
-        zone.addEventListener('dragover', (event) => {
+        zone.addEventListener("dragover", (event) => {
             event.preventDefault();
-            zone.classList.add('meetings-list--drop');
+            zone.classList.add("meetings-list--drop");
         });
-        zone.addEventListener('dragleave', () => {
-            zone.classList.remove('meetings-list--drop');
+        zone.addEventListener("dragleave", () => {
+            zone.classList.remove("meetings-list--drop");
         });
-        zone.addEventListener('drop', (event) => {
+        zone.addEventListener("drop", (event) => {
             event.preventDefault();
-            zone.classList.remove('meetings-list--drop');
-            const userId = event.dataTransfer?.getData('text/plain') || '';
+            zone.classList.remove("meetings-list--drop");
+            const userId = event.dataTransfer?.getData("text/plain") || "";
             if (!userId) return;
-            const sourceUser = mergeUsers([...allEligibleUsers, ...searchResults, ...selectedUsers])
-                .find((user) => user.accountId === userId);
+            const sourceUser = mergeUsers([
+                ...allEligibleUsers,
+                ...searchResults,
+                ...selectedUsers,
+            ]).find((user) => user.accountId === userId);
             if (!sourceUser) return;
 
-            if (mode === 'select') {
+            if (mode === "select") {
                 selectedUsers = mergeUsers([...selectedUsers, sourceUser]);
             } else {
-                selectedUsers = selectedUsers.filter((user) => user.accountId !== userId);
+                selectedUsers = selectedUsers.filter(
+                    (user) => user.accountId !== userId,
+                );
             }
             composer.refresh(getElements());
         });
     }
 
-    bindDropZone(selectedList, 'select');
-    bindDropZone(availableList, 'remove');
+    bindDropZone(selectedList, "select");
+    bindDropZone(availableList, "remove");
     bindListItems();
 }
 
 function bindActions(root) {
-    root.querySelector('[data-meetings-create]')?.addEventListener('click', async () => {
-        await handleCreateMeeting(root);
-    });
+    root.querySelector("[data-meetings-create]")?.addEventListener(
+        "click",
+        async () => {
+            await handleCreateMeeting(root);
+        },
+    );
 
-    root.querySelector('[data-meetings-refresh-session]')?.addEventListener('click', async () => {
-        if (!activeMeetingId) return;
-        await startSession(activeMeetingId);
-    });
+    root.querySelector("[data-meetings-refresh-session]")?.addEventListener(
+        "click",
+        async () => {
+            if (!activeMeetingId) return;
+            await startSession(activeMeetingId);
+        },
+    );
 
-    root.querySelector('[data-meetings-restart]')?.addEventListener('click', async () => {
-        if (!activeMeetingId) return;
-        await startSession(activeMeetingId);
-    });
+    root.querySelector("[data-meetings-restart]")?.addEventListener(
+        "click",
+        async () => {
+            if (!activeMeetingId) return;
+            await startSession(activeMeetingId);
+        },
+    );
 
-    root.querySelector('[data-meetings-new-tab]')?.addEventListener('click', () => {
-        if (!activeMeetingSession?.joinUrl) return;
-        window.open(activeMeetingSession.joinUrl, '_blank', 'noopener,noreferrer');
-    });
+    root.querySelector("[data-meetings-new-tab]")?.addEventListener(
+        "click",
+        () => {
+            if (!activeMeetingSession?.joinUrl) return;
+            window.open(
+                activeMeetingSession.joinUrl,
+                "_blank",
+                "noopener,noreferrer",
+            );
+        },
+    );
 
-    root.querySelector('[data-meetings-open-chat]')?.addEventListener('click', () => {
-        if (!activeMeetingSession?.chatroomId) return;
-        window.location.href = `/messages/${encodeURIComponent(activeMeetingSession.chatroomId)}`;
-    });
+    root.querySelector("[data-meetings-open-chat]")?.addEventListener(
+        "click",
+        () => {
+            if (!activeMeetingSession?.chatroomId) return;
+            navigateTo(
+                `/messages/${encodeURIComponent(activeMeetingSession.chatroomId)}`,
+            );
+        },
+    );
 
-    root.querySelector('[data-meetings-existing]')?.addEventListener('change', async (event) => {
-        const meetingId = event.target.value;
-        if (!meetingId) return;
-        await startSession(meetingId);
-    });
+    root.querySelector("[data-meetings-existing]")?.addEventListener(
+        "change",
+        async (event) => {
+            const meetingId = event.target.value;
+            if (!meetingId) return;
+            await startSession(meetingId);
+        },
+    );
 
-    root.querySelector('[data-meetings-user-search]')?.addEventListener('input', async (event) => {
-        await searchUsers(event.target.value || '');
-        composer.refresh(getElements());
-    });
+    root.querySelector("[data-meetings-user-search]")?.addEventListener(
+        "input",
+        async (event) => {
+            await searchUsers(event.target.value || "");
+            composer.refresh(getElements());
+        },
+    );
 
     setupDnD(root);
 }
 
-export async function mount(root) {
+/**
+ * Mounts the Jitsi Meetings page into the dashboard shell.
+ *
+ * @param {HTMLElement} root
+ * @param {{ signal?: AbortSignal }} [options]
+ * @returns {Promise<void>}
+ */
+export async function mount(root, { signal } = {}) {
     i18n = await createI18n({
-        componentStringBaseUrls: ['/static/modules/jitsi-meet/ui/languages'],
+        componentStringBaseUrls: ["/static/modules/jitsi-meet/ui/languages"],
     });
-    applyDocumentTitle(i18n, 'module.jitsi_meet.page_title');
+    applyDocumentTitle(i18n, "module.jitsi_meet.page_title");
 
-    const pingResponse = await apiFetch('/api/v1/modules/jitsi-meet/ping');
+    const pingResponse = await apiFetch("/api/v1/modules/jitsi-meet/ping");
     if (!pingResponse.ok) {
-        showToast({ type: 'error', message: i18n.t('ui.reuse.error') });
+        showToast({ type: "error", message: i18n.t("ui.reuse.error") });
         return;
     }
 
     userProfile = await loadProfile();
     selectedUsers = mergeUsers([
         {
-            accountId: userProfile?.accountId || localStorage.getItem('cognis_account') || '',
-            handle: userProfile?.handle || localStorage.getItem('cognis_account') || '',
+            accountId:
+                userProfile?.accountId ||
+                localStorage.getItem(ACCOUNT_STORAGE_KEY) ||
+                "",
+            handle:
+                userProfile?.handle ||
+                localStorage.getItem(ACCOUNT_STORAGE_KEY) ||
+                "",
             displayName:
                 userProfile?.displayName ||
-                localStorage.getItem('cognis_display_name') ||
-                localStorage.getItem('cognis_account') ||
-                '',
+                localStorage.getItem(DISPLAY_NAME_STORAGE_KEY) ||
+                localStorage.getItem(ACCOUNT_STORAGE_KEY) ||
+                "",
             avatarKey: userProfile?.avatarKey || null,
         },
     ]).filter((user) => user.accountId);
@@ -510,21 +579,32 @@ export async function mount(root) {
     composer = createPageComposer(root, {
         allowCustomization: true,
         elements: getElements(),
-        preferenceKey: 'jitsi-meetings-layout',
+        preferenceKey: "jitsi-meetings-layout",
         i18n,
         pageContext: {
-            title: i18n.t('module.jitsi_meet.page_title'),
-            subtitle: i18n.t('module.jitsi_meet.page_subtitle'),
+            title: i18n.t("module.jitsi_meet.page_title"),
+            subtitle: i18n.t("module.jitsi_meet.page_subtitle"),
         },
         onRender: () => bindActions(root),
     });
 
     await composer.init();
 
-    const queryMeetingId = new URL(window.location.href).searchParams.get('meetingId');
+    const queryMeetingId = new URL(window.location.href).searchParams.get(
+        "meetingId",
+    );
     if (queryMeetingId) {
         await startSession(queryMeetingId);
     }
+
+    if (signal) {
+        signal.addEventListener("abort", () => {
+            if (jitsiApi) {
+                jitsiApi.dispose();
+                jitsiApi = null;
+            }
+        });
+    }
 }
 
-await mount(document.querySelector('#app'));
+await mount(document.querySelector("#app"));

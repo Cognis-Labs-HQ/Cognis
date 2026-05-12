@@ -15,7 +15,11 @@
     border: 1px solid var(--border, #1f2a44);
     border-radius: 0.85rem;
     overflow: hidden;
-    background: radial-gradient(circle at top, rgba(29, 78, 216, 0.2), rgba(2, 6, 23, 0.95));
+    background: radial-gradient(
+        circle at top,
+        rgba(29, 78, 216, 0.2),
+        rgba(2, 6, 23, 0.95)
+    );
 }
 
 .meetings-stage-frame {

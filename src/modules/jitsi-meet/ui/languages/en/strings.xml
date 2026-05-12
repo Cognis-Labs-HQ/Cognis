@@ -20,4 +20,6 @@
   <string name="module.jitsi_meet.password_label">Enter the moderator password required by this Jitsi instance.</string>
   <string name="module.jitsi_meet.password_submit">Submit</string>
   <string name="module.jitsi_meet.no_session">No active meeting session. Create a meeting to begin.</string>
+  <string name="module.jitsi_meet.default_user">Cognis User</string>
+  <string name="module.jitsi_meet.default_meeting_title">Cognis Meeting</string>
 </resources>

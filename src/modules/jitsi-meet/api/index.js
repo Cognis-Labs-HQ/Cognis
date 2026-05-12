@@ -1,30 +1,31 @@
-import { createHash, randomUUID } from 'node:crypto';
-import { requireAuth } from '../../../gateways/auth/guard.js';
-import { readJson } from '../../../api/reuse/read-json.js';
+import { createHash, randomUUID } from "node:crypto";
+import { requireAuth } from "../../../gateways/auth/guard.js";
+import { readJson } from "../../../api/reuse/read-json.js";
 
-const MODULE_SETTINGS_ACCOUNT = '__system__';
-const MODULE_SETTINGS_KEY = 'module:jitsi-meet:settings';
+// Module-level settings are stored in the system-scoped preferences namespace.
+const MODULE_SETTINGS_NAMESPACE = "__system__";
+const MODULE_SETTINGS_KEY = "module:jitsi-meet:settings";
 const DEFAULT_SETTINGS = Object.freeze({
-    baseUrl: 'https://meet.jit.si',
-    roomPrefix: 'cognis-meeting',
-    meetingTitle: 'Cognis Meeting',
+    baseUrl: "https://meet.jit.si",
+    roomPrefix: "cognis-meeting",
+    meetingTitle: "Cognis Meeting",
 });
 
 let schemaReady = false;
 let schemaPromise = null;
 
 function jsonOk(res, data, status = 200) {
-    res.writeHead(status, { 'content-type': 'application/json' });
+    res.writeHead(status, { "content-type": "application/json" });
     res.end(JSON.stringify({ data }));
 }
 
 function jsonError(res, status, code, message) {
-    res.writeHead(status, { 'content-type': 'application/json' });
+    res.writeHead(status, { "content-type": "application/json" });
     res.end(JSON.stringify({ error: { code, message } }));
 }
 
 function normalizeBaseUrl(value) {
-    const raw = typeof value === 'string' ? value.trim() : '';
+    const raw = typeof value === "string" ? value.trim() : "";
     const candidate = raw || DEFAULT_SETTINGS.baseUrl;
     let parsed;
     try {
@@ -32,23 +33,23 @@ function normalizeBaseUrl(value) {
     } catch {
         return null;
     }
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
         return null;
     }
-    parsed.hash = '';
-    parsed.search = '';
-    return parsed.toString().replace(/\/+$/, '');
+    parsed.hash = "";
+    parsed.search = "";
+    return parsed.toString().replace(/\/+$/, "");
 }
 
 function normalizeRoomPrefix(value) {
-    const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
-    const sanitized = raw.replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
+    const raw = typeof value === "string" ? value.trim().toLowerCase() : "";
+    const sanitized = raw.replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
     if (!sanitized) return DEFAULT_SETTINGS.roomPrefix;
     return sanitized.slice(0, 48);
 }
 
 function normalizeMeetingTitle(value) {
-    const raw = typeof value === 'string' ? value.trim() : '';
+    const raw = typeof value === "string" ? value.trim() : "";
     if (!raw) return DEFAULT_SETTINGS.meetingTitle;
     return raw.slice(0, 120);
 }
@@ -57,7 +58,7 @@ function normalizeParticipantIds(value) {
     if (!Array.isArray(value)) return [];
     const unique = new Set(
         value
-            .filter((entry) => typeof entry === 'string')
+            .filter((entry) => typeof entry === "string")
             .map((entry) => entry.trim())
             .filter(Boolean),
     );
@@ -65,7 +66,7 @@ function normalizeParticipantIds(value) {
 }
 
 function parseParticipantIds(raw) {
-    if (typeof raw !== 'string') return [];
+    if (typeof raw !== "string") return [];
     try {
         return normalizeParticipantIds(JSON.parse(raw));
     } catch {
@@ -77,24 +78,29 @@ function buildMeetingKey({ participantIds, classroomId }) {
     if (classroomId) {
         return `classroom:${classroomId}`;
     }
-    return `participants:${participantIds.join(',')}`;
+    return `participants:${participantIds.join(",")}`;
 }
 
 function buildRoomName(prefix, meetingKey) {
-    const digest = createHash('sha256').update(meetingKey).digest('hex').slice(0, 16);
+    const digest = createHash("sha256")
+        .update(meetingKey)
+        .digest("hex")
+        .slice(0, 16);
     return `${prefix}-${digest}`;
 }
 
 function buildJoinUrl({ baseUrl, roomName, title }) {
-    const url = new URL(`${baseUrl.replace(/\/+$/, '')}/${encodeURIComponent(roomName)}`);
+    const url = new URL(
+        `${baseUrl.replace(/\/+$/, "")}/${encodeURIComponent(roomName)}`,
+    );
     const params = new URLSearchParams();
-    params.set('config.prejoinPageEnabled', 'false');
-    params.set('config.prejoinConfig.enabled', 'false');
-    params.set('config.disableDeepLinking', 'true');
-    params.set('interfaceConfig.DISABLE_CHAT', 'true');
-    params.set('interfaceConfig.DISABLE_PROFILE', 'true');
-    params.set('config.disableProfile', 'true');
-    params.set('config.subject', title || DEFAULT_SETTINGS.meetingTitle);
+    params.set("config.prejoinPageEnabled", "false");
+    params.set("config.prejoinConfig.enabled", "false");
+    params.set("config.disableDeepLinking", "true");
+    params.set("interfaceConfig.DISABLE_CHAT", "true");
+    params.set("interfaceConfig.DISABLE_PROFILE", "true");
+    params.set("config.disableProfile", "true");
+    params.set("config.subject", title || DEFAULT_SETTINGS.meetingTitle);
     url.hash = params.toString();
     return url.toString();
 }
@@ -107,43 +113,49 @@ async function ensureSchema(db) {
     }
     schemaPromise = (async () => {
         await db.ensureTable({
-            name: 'meeting_rooms',
+            name: "meeting_rooms",
             columns: [
-                { name: 'id', type: 'text', primaryKey: true },
-                { name: 'meeting_key', type: 'text', notNull: true },
-                { name: 'room_name', type: 'text', notNull: true },
+                { name: "id", type: "text", primaryKey: true },
+                { name: "meeting_key", type: "text", notNull: true },
+                { name: "room_name", type: "text", notNull: true },
                 {
-                    name: 'title',
-                    type: 'text',
+                    name: "title",
+                    type: "text",
                     notNull: true,
                     default: DEFAULT_SETTINGS.meetingTitle,
                 },
                 {
-                    name: 'participant_ids',
-                    type: 'text',
+                    name: "participant_ids",
+                    type: "text",
                     notNull: true,
-                    default: '[]',
+                    default: "[]",
                 },
-                { name: 'classroom_id', type: 'text' },
-                { name: 'chatroom_id', type: 'text' },
-                { name: 'created_by', type: 'text', notNull: true },
+                { name: "classroom_id", type: "text" },
+                { name: "chatroom_id", type: "text" },
+                { name: "created_by", type: "text", notNull: true },
                 {
-                    name: 'created_at',
-                    type: 'timestamp',
+                    name: "created_at",
+                    type: "timestamp",
                     notNull: true,
-                    default: 'now',
+                    default: "now",
                 },
                 {
-                    name: 'updated_at',
-                    type: 'timestamp',
+                    name: "updated_at",
+                    type: "timestamp",
                     notNull: true,
-                    default: 'now',
+                    default: "now",
                 },
             ],
-            uniqueKeys: [['meeting_key'], ['room_name']],
+            uniqueKeys: [["meeting_key"], ["room_name"]],
             indexes: [
-                { columns: ['created_by'], name: 'idx_meeting_rooms_created_by' },
-                { columns: ['classroom_id'], name: 'idx_meeting_rooms_classroom' },
+                {
+                    columns: ["created_by"],
+                    name: "idx_meeting_rooms_created_by",
+                },
+                {
+                    columns: ["classroom_id"],
+                    name: "idx_meeting_rooms_classroom",
+                },
             ],
         });
         schemaReady = true;
@@ -168,9 +180,9 @@ function mapMeetingRow(row) {
 
 async function getMeetingById(db, meetingId) {
     const result = await db.executeCommand({
-        option: 'SELECT',
-        table: 'meeting_rooms',
-        where: [{ column: 'id', value: meetingId }],
+        option: "SELECT",
+        table: "meeting_rooms",
+        where: [{ column: "id", value: meetingId }],
         limit: 1,
     });
     if (!result.rows?.[0]) return null;
@@ -179,9 +191,9 @@ async function getMeetingById(db, meetingId) {
 
 async function getMeetingByKey(db, meetingKey) {
     const result = await db.executeCommand({
-        option: 'SELECT',
-        table: 'meeting_rooms',
-        where: [{ column: 'meeting_key', value: meetingKey }],
+        option: "SELECT",
+        table: "meeting_rooms",
+        where: [{ column: "meeting_key", value: meetingKey }],
         limit: 1,
     });
     if (!result.rows?.[0]) return null;
@@ -190,9 +202,9 @@ async function getMeetingByKey(db, meetingKey) {
 
 async function listMeetings(db) {
     const result = await db.executeCommand({
-        option: 'SELECT',
-        table: 'meeting_rooms',
-        orderBy: [{ column: 'updated_at', direction: 'DESC' }],
+        option: "SELECT",
+        table: "meeting_rooms",
+        orderBy: [{ column: "updated_at", direction: "DESC" }],
         limit: 200,
     });
     return (result.rows ?? []).map((row) => mapMeetingRow(row));
@@ -200,20 +212,20 @@ async function listMeetings(db) {
 
 async function updateMeetingChatroomId(db, meetingId, chatroomId) {
     await db.executeCommand({
-        option: 'UPDATE',
-        table: 'meeting_rooms',
+        option: "UPDATE",
+        table: "meeting_rooms",
         set: {
             chatroom_id: chatroomId,
             updated_at: new Date().toISOString(),
         },
-        where: [{ column: 'id', value: meetingId }],
+        where: [{ column: "id", value: meetingId }],
     });
 }
 
 async function insertMeeting(db, input) {
     await db.executeCommand({
-        option: 'INSERT',
-        table: 'meeting_rooms',
+        option: "INSERT",
+        table: "meeting_rooms",
         values: {
             id: input.id,
             meeting_key: input.meetingKey,
@@ -233,7 +245,10 @@ async function readSettings(preferenceStore) {
     if (!preferenceStore) {
         return { ...DEFAULT_SETTINGS };
     }
-    const raw = await preferenceStore.get(MODULE_SETTINGS_ACCOUNT, MODULE_SETTINGS_KEY);
+    const raw = await preferenceStore.get(
+        MODULE_SETTINGS_NAMESPACE,
+        MODULE_SETTINGS_KEY,
+    );
     if (!raw) {
         return { ...DEFAULT_SETTINGS };
     }
@@ -253,7 +268,7 @@ async function readSettings(preferenceStore) {
 async function writeSettings(preferenceStore, nextSettings) {
     if (!preferenceStore) return;
     await preferenceStore.set(
-        MODULE_SETTINGS_ACCOUNT,
+        MODULE_SETTINGS_NAMESPACE,
         MODULE_SETTINGS_KEY,
         JSON.stringify(nextSettings),
     );
@@ -291,12 +306,12 @@ function canAccessMeeting(accountId, participantIds) {
 }
 
 async function createLinkedChatroom(capabilities, input) {
-    const messagesApi = capabilities?.get('messages:createRoom');
-    if (!messagesApi || typeof messagesApi.createRoom !== 'function') {
+    const messagesApi = capabilities?.get("messages:createRoom");
+    if (!messagesApi || typeof messagesApi.createRoom !== "function") {
         return null;
     }
     const room = await messagesApi.createRoom({
-        kind: input.classroomId ? 'classroom' : 'group',
+        kind: input.classroomId ? "classroom" : "group",
         title: input.title,
         createdBy: input.createdBy,
         memberAccountIds: input.participantIds,
@@ -319,38 +334,58 @@ function buildMeetingPayload(meeting, settings, effectiveParticipants) {
     };
 }
 
+/**
+ * Registers Jitsi Meet module API routes.
+ *
+ * @param {{
+ *   get(path: string, handler: (req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse) => Promise<void> | void): void,
+ *   post(path: string, handler: (req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse) => Promise<void> | void): void,
+ * }} router
+ * @param {{ capabilities?: { get?: (key: string) => unknown } }} [context]
+ * @returns {void}
+ */
 export function registerApiRoutes(router, context = {}) {
-    const capabilities = context.capabilities;
-    const db = capabilities?.get('db:executor');
-    const preferenceStore = capabilities?.get('preferences:store');
+    const capabilities = context?.capabilities;
+    const db = capabilities?.get("db:executor");
+    const preferenceStore = capabilities?.get("preferences:store");
 
-    const classroomsApi = capabilities?.get('study:classrooms');
+    const classroomsApi = capabilities?.get("study:classrooms");
 
-    router.get('/api/v1/modules/jitsi-meet/ping', async (req, res) => {
-        const claims = requireAuth(req, res, 'user');
+    router.get("/api/v1/modules/jitsi-meet/ping", async (req, res) => {
+        const claims = requireAuth(req, res, "user");
         if (!claims) return;
         if (!db) {
-            jsonError(res, 503, 'unavailable', 'Database executor unavailable.');
+            jsonError(
+                res,
+                503,
+                "unavailable",
+                "Database executor unavailable.",
+            );
             return;
         }
         await ensureSchema(db);
         jsonOk(res, { ready: true });
     });
 
-    router.get('/api/v1/modules/jitsi-meet/settings', async (req, res) => {
-        const claims = requireAuth(req, res, 'admin');
+    router.get("/api/v1/modules/jitsi-meet/settings", async (req, res) => {
+        const claims = requireAuth(req, res, "admin");
         if (!claims) return;
         const settings = await readSettings(preferenceStore);
         jsonOk(res, settings);
     });
 
-    router.post('/api/v1/modules/jitsi-meet/settings', async (req, res) => {
-        const claims = requireAuth(req, res, 'admin');
+    router.post("/api/v1/modules/jitsi-meet/settings", async (req, res) => {
+        const claims = requireAuth(req, res, "admin");
         if (!claims) return;
         const body = await readJson(req);
         const baseUrl = normalizeBaseUrl(body?.baseUrl);
         if (!baseUrl) {
-            jsonError(res, 400, 'bad_request', 'A valid Jitsi baseUrl is required.');
+            jsonError(
+                res,
+                400,
+                "bad_request",
+                "A valid Jitsi baseUrl is required.",
+            );
             return;
         }
         const nextSettings = {
@@ -362,27 +397,34 @@ export function registerApiRoutes(router, context = {}) {
         jsonOk(res, nextSettings);
     });
 
-    router.get('/api/v1/modules/jitsi-meet/classrooms', async (req, res) => {
-        const claims = requireAuth(req, res, 'user');
+    router.get("/api/v1/modules/jitsi-meet/classrooms", async (req, res) => {
+        const claims = requireAuth(req, res, "user");
         if (!claims) return;
         if (!classroomsApi) {
             jsonOk(res, []);
             return;
         }
-        if (claims.role === 'admin' || claims.role === 'owner') {
+        if (claims.role === "admin" || claims.role === "owner") {
             const classrooms = await classroomsApi.listClassrooms?.();
             jsonOk(res, classrooms ?? []);
             return;
         }
-        const classrooms = await classroomsApi.listClassroomsForTeacher?.(claims.sub);
+        const classrooms = await classroomsApi.listClassroomsForTeacher?.(
+            claims.sub,
+        );
         jsonOk(res, classrooms ?? []);
     });
 
-    router.get('/api/v1/modules/jitsi-meet/meetings', async (req, res) => {
-        const claims = requireAuth(req, res, 'user');
+    router.get("/api/v1/modules/jitsi-meet/meetings", async (req, res) => {
+        const claims = requireAuth(req, res, "user");
         if (!claims) return;
         if (!db) {
-            jsonError(res, 503, 'unavailable', 'Database executor unavailable.');
+            jsonError(
+                res,
+                503,
+                "unavailable",
+                "Database executor unavailable.",
+            );
             return;
         }
         await ensureSchema(db);
@@ -390,26 +432,38 @@ export function registerApiRoutes(router, context = {}) {
         const meetings = await listMeetings(db);
         const visibleMeetings = [];
         for (const meeting of meetings) {
-            const participantIds = await resolveEffectiveParticipants(meeting, classroomsApi);
+            const participantIds = await resolveEffectiveParticipants(
+                meeting,
+                classroomsApi,
+            );
             if (!canAccessMeeting(claims.sub, participantIds)) continue;
-            visibleMeetings.push(buildMeetingPayload(meeting, settings, participantIds));
+            visibleMeetings.push(
+                buildMeetingPayload(meeting, settings, participantIds),
+            );
         }
         jsonOk(res, visibleMeetings);
     });
 
-    router.post('/api/v1/modules/jitsi-meet/meetings', async (req, res) => {
-        const claims = requireAuth(req, res, 'user');
+    router.post("/api/v1/modules/jitsi-meet/meetings", async (req, res) => {
+        const claims = requireAuth(req, res, "user");
         if (!claims) return;
         if (!db) {
-            jsonError(res, 503, 'unavailable', 'Database executor unavailable.');
+            jsonError(
+                res,
+                503,
+                "unavailable",
+                "Database executor unavailable.",
+            );
             return;
         }
         await ensureSchema(db);
 
         const body = await readJson(req);
-        const directParticipantIds = normalizeParticipantIds(body?.participantIds);
+        const directParticipantIds = normalizeParticipantIds(
+            body?.participantIds,
+        );
         const classroomId =
-            typeof body?.classroomId === 'string' && body.classroomId.trim()
+            typeof body?.classroomId === "string" && body.classroomId.trim()
                 ? body.classroomId.trim()
                 : null;
 
@@ -417,14 +471,16 @@ export function registerApiRoutes(router, context = {}) {
             jsonError(
                 res,
                 400,
-                'bad_request',
-                'participantIds or classroomId is required.',
+                "bad_request",
+                "participantIds or classroomId is required.",
             );
             return;
         }
 
         const settings = await readSettings(preferenceStore);
-        const title = normalizeMeetingTitle(body?.title || settings.meetingTitle);
+        const title = normalizeMeetingTitle(
+            body?.title || settings.meetingTitle,
+        );
 
         let classroomParticipants = [];
         if (classroomId) {
@@ -432,8 +488,8 @@ export function registerApiRoutes(router, context = {}) {
                 jsonError(
                     res,
                     409,
-                    'classroom_unavailable',
-                    'Classroom support is unavailable.',
+                    "classroom_unavailable",
+                    "Classroom support is unavailable.",
                 );
                 return;
             }
@@ -442,7 +498,7 @@ export function registerApiRoutes(router, context = {}) {
                 classroomId,
             );
             if (!resolvedClassroom.classroom) {
-                jsonError(res, 404, 'not_found', 'Classroom not found.');
+                jsonError(res, 404, "not_found", "Classroom not found.");
                 return;
             }
             classroomParticipants = resolvedClassroom.members;
@@ -454,7 +510,12 @@ export function registerApiRoutes(router, context = {}) {
             claims.sub,
         ]);
         if (!effectiveParticipants.includes(claims.sub)) {
-            jsonError(res, 403, 'forbidden', 'Only participants can create meetings.');
+            jsonError(
+                res,
+                403,
+                "forbidden",
+                "Only participants can create meetings.",
+            );
             return;
         }
 
@@ -484,13 +545,26 @@ export function registerApiRoutes(router, context = {}) {
         }
 
         if (!meeting) {
-            jsonError(res, 500, 'create_failed', 'Meeting could not be created.');
+            jsonError(
+                res,
+                500,
+                "create_failed",
+                "Meeting could not be created.",
+            );
             return;
         }
 
-        const currentParticipants = await resolveEffectiveParticipants(meeting, classroomsApi);
+        const currentParticipants = await resolveEffectiveParticipants(
+            meeting,
+            classroomsApi,
+        );
         if (!canAccessMeeting(claims.sub, currentParticipants)) {
-            jsonError(res, 403, 'forbidden', 'You are not allowed to access this meeting.');
+            jsonError(
+                res,
+                403,
+                "forbidden",
+                "You are not allowed to access this meeting.",
+            );
             return;
         }
 
@@ -507,41 +581,62 @@ export function registerApiRoutes(router, context = {}) {
             }
         }
 
-        jsonOk(res, buildMeetingPayload(meeting, settings, currentParticipants), 201);
+        jsonOk(
+            res,
+            buildMeetingPayload(meeting, settings, currentParticipants),
+            201,
+        );
     });
 
-    router.get('/api/v1/modules/jitsi-meet/meeting-session', async (req, res) => {
-        const claims = requireAuth(req, res, 'user');
-        if (!claims) return;
-        if (!db) {
-            jsonError(res, 503, 'unavailable', 'Database executor unavailable.');
-            return;
-        }
-        await ensureSchema(db);
-        const meetingId = (req.url ? new URL(req.url, 'http://localhost') : null)
-            ?.searchParams.get('meetingId');
-        if (!meetingId) {
-            jsonError(res, 400, 'bad_request', 'meetingId is required.');
-            return;
-        }
-        const meeting = await getMeetingById(db, meetingId);
-        if (!meeting) {
-            jsonError(res, 404, 'not_found', 'Meeting not found.');
-            return;
-        }
-        const participantIds = await resolveEffectiveParticipants(meeting, classroomsApi);
-        if (!canAccessMeeting(claims.sub, participantIds)) {
-            jsonError(res, 403, 'forbidden', 'You are not allowed to access this meeting.');
-            return;
-        }
-        const settings = await readSettings(preferenceStore);
-        jsonOk(res, {
-            ...buildMeetingPayload(meeting, settings, participantIds),
-            joinUrl: buildJoinUrl({
-                baseUrl: settings.baseUrl,
-                roomName: meeting.roomName,
-                title: meeting.title,
-            }),
-        });
-    });
+    router.get(
+        "/api/v1/modules/jitsi-meet/meeting-session",
+        async (req, res) => {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            if (!db) {
+                jsonError(
+                    res,
+                    503,
+                    "unavailable",
+                    "Database executor unavailable.",
+                );
+                return;
+            }
+            await ensureSchema(db);
+            const meetingId = (
+                req.url ? new URL(req.url, "http://localhost") : null
+            )?.searchParams.get("meetingId");
+            if (!meetingId) {
+                jsonError(res, 400, "bad_request", "meetingId is required.");
+                return;
+            }
+            const meeting = await getMeetingById(db, meetingId);
+            if (!meeting) {
+                jsonError(res, 404, "not_found", "Meeting not found.");
+                return;
+            }
+            const participantIds = await resolveEffectiveParticipants(
+                meeting,
+                classroomsApi,
+            );
+            if (!canAccessMeeting(claims.sub, participantIds)) {
+                jsonError(
+                    res,
+                    403,
+                    "forbidden",
+                    "You are not allowed to access this meeting.",
+                );
+                return;
+            }
+            const settings = await readSettings(preferenceStore);
+            jsonOk(res, {
+                ...buildMeetingPayload(meeting, settings, participantIds),
+                joinUrl: buildJoinUrl({
+                    baseUrl: settings.baseUrl,
+                    roomName: meeting.roomName,
+                    title: meeting.title,
+                }),
+            });
+        },
+    );
 }

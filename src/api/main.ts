@@ -302,11 +302,11 @@ const profileStore = capabilities.get<{
     >;
 }>("social:profileStore");
 
-    const server = buildServer({
-        moduleRuntimeGateway: runtime,
-        capabilities,
-        accountStore,
-        preferenceStore,
+const server = buildServer({
+    moduleRuntimeGateway: runtime,
+    capabilities,
+    accountStore,
+    preferenceStore,
     routeRegistry,
     gatewayRegistry,
     uiRegistry,

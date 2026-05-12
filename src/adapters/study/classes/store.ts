@@ -696,13 +696,17 @@ export class DbClassesStore {
         });
     }
 
+    private toStringField(value: unknown): string {
+        return typeof value === "string" ? value : String(value ?? "");
+    }
+
     private rowToClassroom(row: Record<string, unknown>): ClassroomRow {
         return {
-            id: String(row.id),
-            title: String(row.title),
-            teacherAccountId: String(row.teacher_account_id),
-            createdAt: String(row.created_at),
-            updatedAt: String(row.updated_at),
+            id: this.toStringField(row.id),
+            title: this.toStringField(row.title),
+            teacherAccountId: this.toStringField(row.teacher_account_id),
+            createdAt: this.toStringField(row.created_at),
+            updatedAt: this.toStringField(row.updated_at),
         };
     }
 
@@ -710,7 +714,13 @@ export class DbClassesStore {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_classrooms",
-            columns: ["id", "title", "teacher_account_id", "created_at", "updated_at"],
+            columns: [
+                "id",
+                "title",
+                "teacher_account_id",
+                "created_at",
+                "updated_at",
+            ],
             where: [{ column: "id", value: classroomId }],
             limit: 1,
         });
@@ -719,7 +729,9 @@ export class DbClassesStore {
         return this.rowToClassroom(row as Record<string, unknown>);
     }
 
-    async listClassroomMembers(classroomId: string): Promise<ClassroomMemberRow[]> {
+    async listClassroomMembers(
+        classroomId: string,
+    ): Promise<ClassroomMemberRow[]> {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_classroom_members",
@@ -727,22 +739,33 @@ export class DbClassesStore {
             where: [{ column: "classroom_id", value: classroomId }],
             orderBy: [{ column: "joined_at", direction: "ASC" }],
         });
-        return (result.rows ?? []).map((row) => ({
-            classroomId: String(row.classroom_id),
-            accountId: String(row.account_id),
-            role:
-                String(row.role) === "teacher" || String(row.role) === "student"
-                    ? (String(row.role) as "teacher" | "student")
-                    : "student",
-            joinedAt: String(row.joined_at),
-        }));
+        return (result.rows ?? []).map((row) => {
+            const roleValue = String(row.role);
+            return {
+                classroomId: String(row.classroom_id),
+                accountId: String(row.account_id),
+                role:
+                    roleValue === "teacher" || roleValue === "student"
+                        ? (roleValue as "teacher" | "student")
+                        : "student",
+                joinedAt: String(row.joined_at),
+            };
+        });
     }
 
-    async listClassroomsForTeacher(teacherAccountId: string): Promise<ClassroomRow[]> {
+    async listClassroomsForTeacher(
+        teacherAccountId: string,
+    ): Promise<ClassroomRow[]> {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_classrooms",
-            columns: ["id", "title", "teacher_account_id", "created_at", "updated_at"],
+            columns: [
+                "id",
+                "title",
+                "teacher_account_id",
+                "created_at",
+                "updated_at",
+            ],
             where: [{ column: "teacher_account_id", value: teacherAccountId }],
             orderBy: [{ column: "created_at", direction: "DESC" }],
         });
@@ -755,7 +778,13 @@ export class DbClassesStore {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_classrooms",
-            columns: ["id", "title", "teacher_account_id", "created_at", "updated_at"],
+            columns: [
+                "id",
+                "title",
+                "teacher_account_id",
+                "created_at",
+                "updated_at",
+            ],
             orderBy: [{ column: "created_at", direction: "DESC" }],
         });
         return (result.rows ?? []).map((row) =>

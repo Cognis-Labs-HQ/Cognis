@@ -625,9 +625,9 @@ export function createUiRoutes(
             req.method === "GET"
         ) {
             if (!requireAuth(req, res, "user")) return true;
-            const gatewayPlugins = (uiRegistry?.listNavbarPlugins() ?? []).filter(
-                (plugin) => !plugin.isEnabled || plugin.isEnabled(),
-            );
+            const gatewayPlugins = (
+                uiRegistry?.listNavbarPlugins() ?? []
+            ).filter((plugin) => !plugin.isEnabled || plugin.isEnabled());
             const modulePlugins = runtime
                 ? (await runtime.listManifests())
                       .filter((manifest) =>
@@ -642,7 +642,9 @@ export function createUiRoutes(
                       )
                 : [];
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: [...gatewayPlugins, ...modulePlugins] }));
+            res.end(
+                JSON.stringify({ data: [...gatewayPlugins, ...modulePlugins] }),
+            );
             return true;
         }
 
@@ -747,18 +749,34 @@ export function createUiRoutes(
             if (slashIndex > 0) {
                 const moduleId = urlPath.slice(0, slashIndex);
                 const relPath = urlPath.slice(slashIndex + 1);
+                // Defend against module static path traversal and hidden-file
+                // probing by normalizing, blocking absolute/parent segments,
+                // and disallowing dot-prefixed path segments.
+                const normalizedRelPath = path
+                    .normalize(relPath)
+                    .replace(/^(\.\.[/\\])+/, "");
                 if (
                     (!isModuleEnabled || isModuleEnabled(moduleId)) &&
                     /^[a-zA-Z0-9_./-]+$/.test(relPath) &&
-                    !relPath.includes("..") &&
-                    !relPath.includes("//") &&
-                    !relPath.split("/").some((segment) => segment.startsWith("."))
+                    !path.isAbsolute(normalizedRelPath) &&
+                    !normalizedRelPath.includes("..") &&
+                    !normalizedRelPath.includes("//") &&
+                    !normalizedRelPath
+                        .split("/")
+                        .some(
+                            (segment) =>
+                                segment.startsWith(".") || segment === ".",
+                        )
                 ) {
-                    const filePath = path.join(MODULES_ROOT, moduleId, relPath);
+                    const filePath = path.join(
+                        MODULES_ROOT,
+                        moduleId,
+                        normalizedRelPath,
+                    );
                     await serveFile(
                         res,
                         filePath,
-                        resolveContentType(relPath),
+                        resolveContentType(normalizedRelPath),
                         log,
                         {
                             path: url.pathname,

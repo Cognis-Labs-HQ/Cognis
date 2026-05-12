@@ -20,4 +20,6 @@
   <string name="module.jitsi_meet.password_label">Geben Sie das von dieser Jitsi-Instanz geforderte Moderator-Passwort ein.</string>
   <string name="module.jitsi_meet.password_submit">Senden</string>
   <string name="module.jitsi_meet.no_session">Keine aktive Besprechungssitzung. Erstellen Sie eine Besprechung, um zu beginnen.</string>
+  <string name="module.jitsi_meet.default_user">Cognis-Benutzer</string>
+  <string name="module.jitsi_meet.default_meeting_title">Cognis-Besprechung</string>
 </resources>
