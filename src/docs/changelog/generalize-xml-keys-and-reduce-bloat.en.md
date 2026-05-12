@@ -28,3 +28,10 @@ Moved component-specific i18n keys out of the core language files and into per-c
 - `src/ui/app/classes/index.js` — updated language label key
 - `src/ui/app/users/index.js` — updated save_failed key to `ui.reuse.generic.save_failed`
 - `src/ui/languages/*/strings.xml` — removed ~90 dead/moved keys, added `ui.reuse.generic.save_failed`
+
+## Commits
+
+- https://github.com/le-firehawk/Cognis/commit/8e82369
+- https://github.com/le-firehawk/Cognis/commit/867e397
+- https://github.com/le-firehawk/Cognis/commit/8ef54f9
+- https://github.com/le-firehawk/Cognis/commit/f624f07

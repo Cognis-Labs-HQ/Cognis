@@ -28,3 +28,10 @@ Kunci i18n yang spesifik untuk komponen dipindahkan dari file bahasa inti ke dir
 - `src/ui/app/classes/index.js` — kunci label bahasa diperbarui
 - `src/ui/app/users/index.js` — kunci save_failed diperbarui ke `ui.reuse.generic.save_failed`
 - `src/ui/languages/*/strings.xml` — ~90 kunci usang/dipindahkan dihapus, `ui.reuse.generic.save_failed` ditambahkan
+
+## Commits
+
+- https://github.com/le-firehawk/Cognis/commit/8e82369
+- https://github.com/le-firehawk/Cognis/commit/867e397
+- https://github.com/le-firehawk/Cognis/commit/8ef54f9
+- https://github.com/le-firehawk/Cognis/commit/f624f07

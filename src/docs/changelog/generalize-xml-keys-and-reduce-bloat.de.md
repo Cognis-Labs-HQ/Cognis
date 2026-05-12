@@ -28,3 +28,10 @@ Komponentenspezifische i18n-Schlüssel wurden aus den zentralen Sprachdateien in
 - `src/ui/app/classes/index.js` — Schlüssel für Sprachbezeichnung aktualisiert
 - `src/ui/app/users/index.js` — save_failed-Schlüssel auf `ui.reuse.generic.save_failed` umgestellt
 - `src/ui/languages/*/strings.xml` — ~90 veraltete/verschobene Schlüssel entfernt, `ui.reuse.generic.save_failed` hinzugefügt
+
+## Commits
+
+- https://github.com/le-firehawk/Cognis/commit/8e82369
+- https://github.com/le-firehawk/Cognis/commit/867e397
+- https://github.com/le-firehawk/Cognis/commit/8ef54f9
+- https://github.com/le-firehawk/Cognis/commit/f624f07

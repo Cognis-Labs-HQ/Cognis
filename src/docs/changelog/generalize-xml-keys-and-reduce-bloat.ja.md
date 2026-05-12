@@ -28,3 +28,10 @@
 - `src/ui/app/classes/index.js` — 言語ラベルキーを更新
 - `src/ui/app/users/index.js` — save_failedキーを`ui.reuse.generic.save_failed`に更新
 - `src/ui/languages/*/strings.xml` — 約90個の不使用/移動済みキーを削除、`ui.reuse.generic.save_failed`を追加
+
+## Commits
+
+- https://github.com/le-firehawk/Cognis/commit/8e82369
+- https://github.com/le-firehawk/Cognis/commit/867e397
+- https://github.com/le-firehawk/Cognis/commit/8ef54f9
+- https://github.com/le-firehawk/Cognis/commit/f624f07
