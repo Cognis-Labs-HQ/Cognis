@@ -67,3 +67,17 @@ und Studienpräferenzen.
 
 - [e349311](https://github.com/le-firehawk/Cognis/commit/e349311)
 - [e81c254](https://github.com/le-firehawk/Cognis/commit/e81c254)
+
+---
+
+## Pass 2 — Auth, Profil und Notify-UI Co-location
+
+### Zusammenfassung
+
+Weitere fehlerplatzierte Core-Dateien wurden an ihren kanonischen Eigentümerort verschoben. Die Auth-Token-Utilities (`access-tokens.ts`, `guard.ts`) wurden aus `src/api/auth/` nach `src/gateways/auth/` verschoben. Der Auth-Route-Handler und sein Test wurden nach `src/gateways/auth/routes/` und `src/gateways/auth/tests/` verschoben. Der Profil-Route-Handler und die Store-Schnittstelle wurden aus `src/api/` in `src/adapters/social/profile/` verschoben. Die E-Mail-Verifizierungsseite (HTML, JS, CSS) wurde aus `src/ui/` nach `src/gateways/notify/ui/` verschoben. Das Notify-Gateway ist nun für diese Seite zuständig. Der `src/modules/study-language-ja/`-Stub wurde entfernt und sein Manifest in das eigentliche japanische Modul unter `src/modules/study/languages/ja/` integriert. Veraltete `src/docs/profile.*`-Dokumente wurden gelöscht.
+
+### Pass 2 Commits
+
+- [34fc21c](https://github.com/le-firehawk/Cognis/commit/34fc21c)
+- [47a2c1a](https://github.com/le-firehawk/Cognis/commit/47a2c1a)
+- [7916873](https://github.com/le-firehawk/Cognis/commit/7916873)

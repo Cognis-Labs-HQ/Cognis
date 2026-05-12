@@ -50,16 +50,16 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 
 ### Wichtige Quelldateien
 
-| Pfad                            | Zweck                                                                    |
-| ------------------------------- | ------------------------------------------------------------------------ |
-| `src/api/main.ts`               | Server-Einstiegspunkt                                                    |
-| `src/api/server.ts`             | HTTP-Server-Einrichtung und Routen-Verteilung                            |
-| `src/api/route-registry.ts`     | Routen-Registry, die von Gateways zur Selbstregistrierung verwendet wird |
-| `src/api/gateway-bootstrap.ts`  | Lädt und bootet alle Gateways                                            |
-| `src/api/auth/guard.ts`         | Middleware `requireAuth`, `getAuthClaims`                                |
-| `src/api/auth/access-tokens.ts` | Token-Ausstellung und -Validierung                                       |
-| `src/api/bootstrap/db-init.ts`  | Schema-Initialisierung beim Start                                        |
-| `src/api/reuse/`                | Gemeinsame Hilfsprogramme (Krypto, JSON-Lesen, Store-Helfer)             |
+| Pfad                                 | Zweck                                                                    |
+| ------------------------------------ | ------------------------------------------------------------------------ |
+| `src/api/main.ts`                    | Server-Einstiegspunkt                                                    |
+| `src/api/server.ts`                  | HTTP-Server-Einrichtung und Routen-Verteilung                            |
+| `src/api/route-registry.ts`          | Routen-Registry, die von Gateways zur Selbstregistrierung verwendet wird |
+| `src/api/gateway-bootstrap.ts`       | Lädt und bootet alle Gateways                                            |
+| `src/gateways/auth/guard.ts`         | Middleware `requireAuth`, `getAuthClaims`                                |
+| `src/gateways/auth/access-tokens.ts` | Token-Ausstellung und -Validierung                                       |
+| `src/api/bootstrap/db-init.ts`       | Schema-Initialisierung beim Start                                        |
+| `src/api/reuse/`                     | Gemeinsame Hilfsprogramme (Krypto, JSON-Lesen, Store-Helfer)             |
 
 ## Konfiguration
 

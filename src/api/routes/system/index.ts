@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog, HealthService } from "@cognis/core";
-import { requireAuth } from "../../auth/guard.js";
+import { requireAuth } from "../../../gateways/auth/guard.js";
 import { readJson } from "../../reuse/read-json.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 

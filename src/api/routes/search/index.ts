@@ -12,7 +12,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth } from "../../auth/guard.js";
+import { requireAuth } from "../../../gateways/auth/guard.js";
 
 interface SearchResultItem {
     id: string;

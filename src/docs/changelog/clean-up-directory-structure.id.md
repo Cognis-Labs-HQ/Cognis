@@ -64,3 +64,17 @@ menghapus impor yang di-hardcode untuk notifikasi dan preferensi studi.
 
 - [e349311](https://github.com/le-firehawk/Cognis/commit/e349311)
 - [e81c254](https://github.com/le-firehawk/Cognis/commit/e81c254)
+
+---
+
+## Pass 2 — Co-lokasi Auth, Profil, dan UI Notify
+
+### Ringkasan
+
+File-file inti yang salah lokasi dipindahkan ke lokasi pemilik kanoniknya. Utilitas token autentikasi (`access-tokens.ts`, `guard.ts`) dipindahkan dari `src/api/auth/` ke `src/gateways/auth/`. Handler route auth dan tesnya dipindahkan ke `src/gateways/auth/routes/` dan `src/gateways/auth/tests/`. Handler route profil dan antarmuka store dipindahkan dari `src/api/` ke `src/adapters/social/profile/`. Halaman verify-email (HTML, JS, CSS) dipindahkan dari `src/ui/` ke `src/gateways/notify/ui/`; gateway notify sekarang memiliki dan melayani halaman ini. Stub `src/modules/study-language-ja/` dihapus dan manifestnya digabungkan ke modul Jepang di `src/modules/study/languages/ja/`. Dokumen `src/docs/profile.*` yang usang dihapus.
+
+### Commit Pass 2
+
+- [34fc21c](https://github.com/le-firehawk/Cognis/commit/34fc21c)
+- [47a2c1a](https://github.com/le-firehawk/Cognis/commit/47a2c1a)
+- [7916873](https://github.com/le-firehawk/Cognis/commit/7916873)

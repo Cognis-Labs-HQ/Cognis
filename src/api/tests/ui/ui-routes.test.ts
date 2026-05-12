@@ -6,7 +6,7 @@ import {
     issueAccessToken,
     lookupAccessToken,
     revokeAccessTokensForSubject,
-} from "../../auth/access-tokens.js";
+} from "../../../gateways/auth/access-tokens.js";
 
 function createResponseRecorder() {
     let status = 0;

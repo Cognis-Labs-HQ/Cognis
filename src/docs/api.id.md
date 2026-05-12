@@ -40,7 +40,7 @@ Dapatkan token melalui `POST /api/v1/auth/login`. Kirim token sebagai `Authoriza
 | `src/api/server.ts`            | Setup server HTTP dan dispatch route             |
 | `src/api/route-registry.ts`    | Registry route untuk pendaftaran mandiri gateway |
 | `src/api/gateway-bootstrap.ts` | Memuat dan mem-bootstrap semua gateway           |
-| `src/api/auth/guard.ts`        | Middleware `requireAuth`, `getAuthClaims`        |
+| `src/gateways/auth/guard.ts`   | Middleware `requireAuth`, `getAuthClaims`        |
 
 ## Konfigurasi
 

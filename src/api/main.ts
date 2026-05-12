@@ -12,7 +12,7 @@ import {
 } from "@cognis/core";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { issueAccessToken } from "./auth/access-tokens.js";
+import { issueAccessToken } from "../gateways/auth/access-tokens.js";
 import { createHash } from "node:crypto";
 import { RouteRegistry } from "./route-registry.js";
 import { UIRegistry } from "./ui-registry.js";

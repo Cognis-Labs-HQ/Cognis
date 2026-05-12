@@ -11,16 +11,16 @@ Cognis has four roles. `user` is the default granted on registration and covers 
 - Define the authoritative set of roles and the actions each role may take.
 - Serve as the reference document for contributors implementing new protected endpoints.
 
-Not responsible for: enforcement (that lives in `requireAuth` in `src/api/auth/guard.ts` and in route-level admin checks throughout the route handlers).
+Not responsible for: enforcement (that lives in `requireAuth` in `src/gateways/auth/guard.ts` and in route-level admin checks throughout the route handlers).
 
 ## Architecture
 
 Role checks are enforced in two places:
 
-- **`requireAuth(req, res, role?)`** in `src/api/auth/guard.ts` — validates the bearer token and optionally asserts a minimum role. All protected routes call this before any business logic.
+- **`requireAuth(req, res, role?)`** in `src/gateways/auth/guard.ts` — validates the bearer token and optionally asserts a minimum role. All protected routes call this before any business logic.
 - **Admin-specific checks** — routes that require admin access call `requireAuth(req, res, 'admin')`. Moderator-level checks (e.g. delete any post) are inline in the relevant route handler.
 
-Role values are embedded in the access token at issuance in `src/api/auth/access-tokens.ts`. The resolved role comes from the account record at login time; the auth gateway's `resolveRole` function maps provider-specific role signals (e.g. `isAdmin: true` from an LDAP group) to the Cognis role set.
+Role values are embedded in the access token at issuance in `src/gateways/auth/access-tokens.ts`. The resolved role comes from the account record at login time; the auth gateway's `resolveRole` function maps provider-specific role signals (e.g. `isAdmin: true` from an LDAP group) to the Cognis role set.
 
 ## Role matrix
 

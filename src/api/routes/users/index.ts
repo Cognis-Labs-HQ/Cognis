@@ -1,10 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog } from "@cognis/core";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
-import { getAuthClaims, requireAuth } from "../../auth/guard.js";
+import { getAuthClaims, requireAuth } from "../../../gateways/auth/guard.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 import { readJson } from "../../reuse/read-json.js";
-import { revokeAccessTokensForSubject } from "../../auth/access-tokens.js";
+import { revokeAccessTokensForSubject } from "../../../gateways/auth/access-tokens.js";
 
 const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin", "owner"]);
 

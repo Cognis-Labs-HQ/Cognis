@@ -36,10 +36,8 @@ test("guard enforces role scopes", () => {
 test("token store persists tokens to disk across module reload", async () => {
     const tempDir = mkdtempSync(path.join(tmpdir(), "cognis-token-store-"));
     const tokenStorePath = path.join(tempDir, "access-tokens.json");
-    const tokenModulePath = new URL(
-        "../access-tokens.ts",
-        import.meta.url,
-    ).href;
+    const tokenModulePath = new URL("../access-tokens.ts", import.meta.url)
+        .href;
 
     process.env.COGNIS_ACCESS_TOKEN_STORE_PATH = tokenStorePath;
 

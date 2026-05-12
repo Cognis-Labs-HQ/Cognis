@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createGatewayRoutes } from "../../routes/gateways/index.js";
 import { GatewayRegistry } from "@cognis/core";
-import { issueAccessToken } from "../../auth/access-tokens.js";
+import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 
 function makeResponse() {
     let status = 0;

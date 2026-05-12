@@ -66,3 +66,32 @@ sections, removing hardcoded imports for notifications and study preferences.
 
 - [e349311](https://github.com/le-firehawk/Cognis/commit/e349311)
 - [e81c254](https://github.com/le-firehawk/Cognis/commit/e81c254)
+
+---
+
+## Pass 2 — Auth, Profile, and Notify UI Co-location
+
+### Summary
+
+Continued co-location of misplaced core files. Auth token utilities (`access-tokens.ts`, `guard.ts`) moved from `src/api/auth/` to `src/gateways/auth/`. The auth route handler and its test moved to `src/gateways/auth/routes/` and `src/gateways/auth/tests/`. The profile route handler and store interface moved from `src/api/routes/profile/` and `src/api/reuse/` into `src/adapters/social/profile/`. The verify-email page (HTML, JS, CSS) moved from `src/ui/` to `src/gateways/notify/ui/`; the notify gateway now owns and serves this page. The `src/modules/study-language-ja/` stub was removed and its manifest merged into the real Japanese module at `src/modules/study/languages/ja/`. Stale `src/docs/profile.*` documents deleted.
+
+### Changed Files
+
+- `src/gateways/auth/{access-tokens,guard}.ts` (moved from `src/api/auth/`)
+- `src/gateways/auth/routes/index.ts` (moved from `src/api/routes/auth/index.ts`)
+- `src/gateways/auth/tests/{auth-routes,access-token-guard}.test.ts` (moved from `src/api/tests/auth/`)
+- `src/adapters/social/profile/profile-store.ts` (moved from `src/api/reuse/profile-store.ts`)
+- `src/adapters/social/profile/routes/index.ts` (moved from `src/api/routes/profile/index.ts`)
+- `src/adapters/social/profile/routes/tests/profile-routes.test.ts` (moved from `src/api/tests/profile/`)
+- `src/gateways/notify/ui/verify-email.{html,js,css}` (moved from `src/ui/`)
+- `src/gateways/notify/bootstrap.ts` (registers `GET /verify-email` page route)
+- `src/modules/study/languages/ja/manifest.json` (added)
+- `src/modules/study-language-ja/` (removed)
+- `src/docs/profile.{de,en,id,ja}.md` (removed — superseded by adapter docs)
+- All importers of the moved files updated (~30 files)
+
+### Pass 2 Commits
+
+- [34fc21c](https://github.com/le-firehawk/Cognis/commit/34fc21c)
+- [47a2c1a](https://github.com/le-firehawk/Cognis/commit/47a2c1a)
+- [7916873](https://github.com/le-firehawk/Cognis/commit/7916873)

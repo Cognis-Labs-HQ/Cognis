@@ -6,7 +6,7 @@ import { VolatileUserPreferenceStore } from "../../reuse/preference-store.js";
 import {
     issueAccessToken,
     verifyAccessToken,
-} from "../../auth/access-tokens.js";
+} from "../../../gateways/auth/access-tokens.js";
 
 const adminToken = issueAccessToken("admin", "admin", 60);
 const ownerToken = issueAccessToken("owner", "owner", 60);

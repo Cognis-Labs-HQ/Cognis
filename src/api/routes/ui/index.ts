@@ -5,8 +5,8 @@ import {
     requireAuth,
     getCookieSession,
     setPageSecurityHeaders,
-} from "../../gateways/auth/guard.js";
-import { lookupAccessToken } from "../../gateways/auth/access-tokens.js";
+} from "../../../gateways/auth/guard.js";
+import { lookupAccessToken } from "../../../gateways/auth/access-tokens.js";
 import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
 import type { GatewayRegistry } from "@cognis/core";
 import type { UIRegistry } from "../../ui-registry.js";

@@ -153,6 +153,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : undefined);
 
+    const uiDir = path.resolve(
+        process.cwd(),
+        "src",
+        "gateways",
+        "notify",
+        "ui",
+    );
+
     ctx.routeRegistry.register(
         createNotificationRoutes(gateway, notifStore),
         "notify",
@@ -167,38 +175,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ),
         "notify",
     );
-    ctx.routeRegistry.register(
-        createGatewayAdapterRoutes("notify", gateway, ctx.gatewayRegistry),
-        "notify",
-    );
-    ctx.log?.("info", "Notification gateway routes registered.", {
-        component: "notify-gateway",
-    });
-
-    ctx.gatewayRegistry.register({
-        id: "notify",
-        name: "Notification Gateway",
-        version: "1.3.0",
-        description: "Dispatches notifications via pluggable adapter senders.",
-        publisher: "Cognis Labs",
-        required: true,
-        hasAdapters: true,
-    });
-
-    const uiDir = path.resolve(
-        process.cwd(),
-        "src",
-        "gateways",
-        "notify",
-        "ui",
-    );
-    ctx.uiRegistry?.registerAdminSection({
-        id: "notifications",
-        label: "Notifications",
-        scriptUrl: "/static/gateways/notify/admin-section.js",
-        stringsBaseUrl: "/static/gateways/notify/languages",
-    });
-    ctx.uiRegistry?.registerStaticDir("notify", uiDir);
     ctx.routeRegistry.register(
         async (
             req: IncomingMessage,
@@ -234,6 +210,31 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
         "notify",
     );
+    ctx.routeRegistry.register(
+        createGatewayAdapterRoutes("notify", gateway, ctx.gatewayRegistry),
+        "notify",
+    );
+    ctx.log?.("info", "Notification gateway routes registered.", {
+        component: "notify-gateway",
+    });
+
+    ctx.gatewayRegistry.register({
+        id: "notify",
+        name: "Notification Gateway",
+        version: "1.3.0",
+        description: "Dispatches notifications via pluggable adapter senders.",
+        publisher: "Cognis Labs",
+        required: true,
+        hasAdapters: true,
+    });
+
+    ctx.uiRegistry?.registerAdminSection({
+        id: "notifications",
+        label: "Notifications",
+        scriptUrl: "/static/gateways/notify/admin-section.js",
+        stringsBaseUrl: "/static/gateways/notify/languages",
+    });
+    ctx.uiRegistry?.registerStaticDir("notify", uiDir);
     ctx.uiRegistry?.registerSettingsSection({
         id: "notifications",
         label: "Notifications",

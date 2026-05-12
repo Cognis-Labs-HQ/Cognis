@@ -64,3 +64,17 @@ CSSスタイルシートを `src/ui/` から各アダプター・ゲートウェ
 
 - [e349311](https://github.com/le-firehawk/Cognis/commit/e349311)
 - [e81c254](https://github.com/le-firehawk/Cognis/commit/e81c254)
+
+---
+
+## パス2 — Auth・プロフィール・通知UIの共配置
+
+### 概要
+
+誤配置されていたコアファイルをそれぞれの正式な所有者の場所に移動しました。Auth トークンユーティリティ（`access-tokens.ts`、`guard.ts`）を `src/api/auth/` から `src/gateways/auth/` に移動しました。Auth ルートハンドラとそのテストを `src/gateways/auth/routes/` と `src/gateways/auth/tests/` に移動しました。プロフィールルートハンドラとストアインターフェースを `src/api/` から `src/adapters/social/profile/` に移動しました。verify-email ページ（HTML・JS・CSS）を `src/ui/` から `src/gateways/notify/ui/` に移動し、notify ゲートウェイがこのページを担当するようになりました。`src/modules/study-language-ja/` スタブを削除し、そのマニフェストを `src/modules/study/languages/ja/` の日本語モジュールに統合しました。廃止された `src/docs/profile.*` ドキュメントを削除しました。
+
+### パス2コミット
+
+- [34fc21c](https://github.com/le-firehawk/Cognis/commit/34fc21c)
+- [47a2c1a](https://github.com/le-firehawk/Cognis/commit/47a2c1a)
+- [7916873](https://github.com/le-firehawk/Cognis/commit/7916873)
