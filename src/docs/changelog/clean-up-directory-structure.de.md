@@ -13,6 +13,22 @@ keine hartkodierte Legacy-Ausnahme mehr verwendet wird.
 Auf der Profilseite wurde ein Inline-Hinweistext durch einen Info-Tooltip für
 die Sichtbarkeit von Beiträgen ersetzt.
 
+Gateway- und adapterspezifische HTML-Seiten, JavaScript-App-Module und
+CSS-Stylesheets wurden aus `src/ui/` in die jeweiligen Adapter- und
+Gateway-Verzeichnisse verschoben, entsprechend dem Prinzip der
+Komponentenselbstständigkeit. Die Adapter für Profil, Nachrichten und Klassen
+stellen jetzt jeweils `index.html`, `app.js` und CSS aus einem `ui/`-
+Unterverzeichnis bereit. Die Einstellungsmodule für Benachrichtigungen und
+Studienpräferenzen wurden in die jeweiligen Gateway-`ui/`-Verzeichnisse
+verschoben und um einen `createSettingsSection`-Export erweitert.
+
+Ein `SettingsSection`-Pluginsystem wurde zur `UIRegistry` hinzugefügt, damit
+Gateways Abschnitte der Einstellungsseite dynamisch registrieren können. Ein
+neuer `GET /api/v1/ui/settings-sections`-Endpunkt stellt registrierte
+Abschnitte dem Client bereit. Die Einstellungsseite lädt beigesteuerte
+Abschnitte jetzt dynamisch, ohne hartkodierte Importe für Benachrichtigungen
+und Studienpräferenzen.
+
 ## Geänderte Dateien/Komponenten
 
 - Study-Gateway:
@@ -21,10 +37,33 @@ die Sichtbarkeit von Beiträgen ersetzt.
     - `src/gateways/study/manifest.json`
 - Entfernte Legacy-Adapter:
     - `src/adapters/study/japanese/` (entfernt)
-- Profil-UI:
-    - `src/ui/app/profile/index.js`
-    - `src/ui/styles/profile.css`
+- Profil-Adapter:
+    - `src/adapters/social/profile/index.ts`
+    - `src/adapters/social/profile/ui/app.js`
+    - `src/adapters/social/profile/ui/index.html`
+    - `src/adapters/social/profile/ui/profile.css`
+- Nachrichten-Adapter:
+    - `src/adapters/social/messages/index.ts`
+    - `src/adapters/social/messages/ui/app.js`
+    - `src/adapters/social/messages/ui/index.html`
+    - `src/adapters/social/messages/ui/messages.css`
+- Klassen-Adapter:
+    - `src/adapters/study/classes/index.ts`
+    - `src/adapters/study/classes/ui/app.js`
+    - `src/adapters/study/classes/ui/index.html`
+    - `src/adapters/study/classes/ui/classes.css`
+- Notify-Gateway:
+    - `src/gateways/notify/bootstrap.ts`
+    - `src/gateways/notify/ui/notification-prefs.js`
+- Study-Gateway:
+    - `src/gateways/study/ui/study-prefs.js`
+- UI-Infrastruktur:
+    - `src/api/ui-registry.ts`
+    - `src/api/routes/ui/index.ts`
+    - `src/ui/app/settings/index.js`
+    - `src/ui/reuse/app-router.js`
 
 ## Commits
 
 - [e349311](https://github.com/le-firehawk/Cognis/commit/e349311)
+- [e81c254](https://github.com/le-firehawk/Cognis/commit/e81c254)
