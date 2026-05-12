@@ -1,15 +1,24 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
 import path from "node:path";
+import {
+    requireRoleAccess,
+    type RoleAccessPolicy,
+} from "../../gateways/auth/guard.js";
 
 interface RouteHandler {
     method: string;
     routePath: string;
     moduleId: string;
+    access?: RoleAccessPolicy;
     handler: (
         req: IncomingMessage,
         res: ServerResponse,
     ) => Promise<void> | void;
+}
+
+interface ModuleRouteOptions {
+    access?: RoleAccessPolicy;
 }
 
 export interface ModuleExtensionRoutes {
@@ -48,22 +57,26 @@ export function createModuleExtensionRoutes(
                         get(
                             routePath: string,
                             handler: RouteHandler["handler"],
+                            options?: ModuleRouteOptions,
                         ) {
                             nextHandlers.push({
                                 method: "GET",
                                 routePath,
                                 moduleId: manifest.id,
+                                access: options?.access,
                                 handler,
                             });
                         },
                         post(
                             routePath: string,
                             handler: RouteHandler["handler"],
+                            options?: ModuleRouteOptions,
                         ) {
                             nextHandlers.push({
                                 method: "POST",
                                 routePath,
                                 moduleId: manifest.id,
+                                access: options?.access,
                                 handler,
                             });
                         },
@@ -91,6 +104,10 @@ export function createModuleExtensionRoutes(
                     entry.method === method && entry.routePath === url.pathname,
             );
             if (!match) return false;
+            if (match.access) {
+                const claims = requireRoleAccess(req, res, match.access);
+                if (!claims) return true;
+            }
             await match.handler(req, res);
             return true;
         },

@@ -6,7 +6,33 @@ interface AuthClaims {
     role: AccessRole;
 }
 
-const roleRank = { user: 1, teacher: 2, moderator: 3, admin: 4, owner: 5 };
+const roleRank: Record<AccessRole, number> = {
+    user: 1,
+    teacher: 2,
+    moderator: 3,
+    admin: 4,
+    owner: 5,
+};
+
+const ACCESS_ROLES: readonly AccessRole[] = [
+    "user",
+    "teacher",
+    "moderator",
+    "admin",
+    "owner",
+];
+
+export interface RoleAccessPolicy {
+    minRole?: AccessRole;
+    onlyRole?: AccessRole;
+}
+
+export function isAccessRole(value: unknown): value is AccessRole {
+    return (
+        typeof value === "string" &&
+        ACCESS_ROLES.includes(value as AccessRole)
+    );
+}
 
 /**
  * Returns true when the given role meets or exceeds the minimum required role.
@@ -14,9 +40,19 @@ const roleRank = { user: 1, teacher: 2, moderator: 3, admin: 4, owner: 5 };
  */
 export function hasMinRole(
     role: AccessRole,
-    minRole: keyof typeof roleRank,
+    minRole: AccessRole,
 ): boolean {
     return roleRank[role] >= roleRank[minRole];
+}
+
+export function isRoleAllowed(
+    role: AccessRole,
+    policy?: RoleAccessPolicy,
+): boolean {
+    if (!policy) return true;
+    if (policy.onlyRole && role !== policy.onlyRole) return false;
+    if (policy.minRole && !hasMinRole(role, policy.minRole)) return false;
+    return true;
 }
 
 /**
@@ -43,7 +79,7 @@ export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
 export function requireAuth(
     req: IncomingMessage,
     res: ServerResponse,
-    minRole: keyof typeof roleRank = "user",
+    minRole: AccessRole = "user",
 ) {
     const claims = getAuthClaims(req);
     if (!claims) {
@@ -68,6 +104,28 @@ export function requireAuth(
         return null;
     }
     return claims;
+}
+
+export function requireRoleAccess(
+    req: IncomingMessage,
+    res: ServerResponse,
+    policy: RoleAccessPolicy,
+): AuthClaims | null {
+    const claims = requireAuth(req, res, policy.minRole ?? "user");
+    if (!claims) return null;
+    if (!policy.onlyRole || claims.role === policy.onlyRole) {
+        return claims;
+    }
+    res.writeHead(403, { "content-type": "application/json" });
+    res.end(
+        JSON.stringify({
+            error: {
+                code: "forbidden",
+                message: `Requires ${policy.onlyRole} role`,
+            },
+        }),
+    );
+    return null;
 }
 
 /**

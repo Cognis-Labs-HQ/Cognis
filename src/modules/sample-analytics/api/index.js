@@ -9,5 +9,6 @@ export function registerApiRoutes(router) {
                 }),
             );
         },
+        { access: { minRole: "admin" } },
     );
 }

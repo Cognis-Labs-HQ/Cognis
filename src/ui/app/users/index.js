@@ -7,6 +7,7 @@ import { showToast } from "../../reuse/toast.js";
 import { createRepromptGuard } from "../../reuse/reprompt.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
+import { ACCESS_ROLES, getRoleLabel } from "../../reuse/access-role.js";
 
 let root = null;
 let i18n = null;
@@ -175,11 +176,14 @@ function renderUsersTable() {
                   const roleDisabled =
                       isProtected || isOwner || isSelf || protectAdminFromAdmin;
                   const roleCellHtml = isOwner
-                      ? escapeHtml("owner")
+                      ? escapeHtml(getRoleLabel(i18n, "owner"))
                       : `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>
-                            <option value="user"${userRole === "user" ? " selected" : ""}>${escapeHtml("user")}</option>
-                            <option value="teacher"${userRole === "teacher" ? " selected" : ""}>${escapeHtml("teacher")}</option>
-                            <option value="admin"${userRole === "admin" ? " selected" : ""}>${escapeHtml("admin")}</option>
+                            ${ACCESS_ROLES.filter((roleId) => roleId !== "owner")
+                                .map(
+                                    (roleId) =>
+                                        `<option value="${escapeHtml(roleId)}"${userRole === roleId ? " selected" : ""}>${escapeHtml(getRoleLabel(i18n, roleId))}</option>`,
+                                )
+                                .join("")}
                          </select>`;
                   const actionsHtml =
                       isProtected || isOwner || protectAdminFromAdmin

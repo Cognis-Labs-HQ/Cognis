@@ -10,10 +10,13 @@
  *   - CapabilityStore          Key-value store for inter-gateway capability sharing.
  *   - BootstrapLog             Logging function type contributed by the logging gateway.
  *   - requireAuth              Guard that validates the caller's access token and role.
+ *   - requireRoleAccess        Guard that enforces a role access policy (minRole / onlyRole).
  *   - getAuthClaims            Extracts validated claims from an authenticated request.
  *   - getCookieSession         Reads the access token from the request cookie.
  *   - setPageSecurityHeaders   Writes security headers on HTML page responses.
  *   - hasMinRole               Returns true when a role meets or exceeds the minimum required rank.
+ *   - isRoleAllowed            Returns true when a role satisfies a role access policy.
+ *   - isAccessRole             Runtime check for AccessRole values.
  *   - canAccessUserData        Returns true when the caller may access a target user's data.
  *   - readJson                 Parses the request body as JSON.
  *
@@ -32,10 +35,13 @@ export type {
 export { GatewayRegistry, CapabilityStore } from "@cognis/core";
 export {
     requireAuth,
+    requireRoleAccess,
     getAuthClaims,
     getCookieSession,
     setPageSecurityHeaders,
     hasMinRole,
+    isRoleAllowed,
+    isAccessRole,
     canAccessUserData,
 } from "./auth/guard.js";
 export { readJson } from "../api/reuse/read-json.js";

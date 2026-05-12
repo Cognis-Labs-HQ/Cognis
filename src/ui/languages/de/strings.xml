@@ -54,6 +54,11 @@
   <string name="ui.reuse.subject">Betreff</string>
   <string name="ui.reuse.message">Nachricht</string>
 
+  <string name="ui.reuse.role_user">Benutzer</string>
+  <string name="ui.reuse.role_teacher">Lehrkraft</string>
+  <string name="ui.reuse.role_moderator">Moderator</string>
+  <string name="ui.reuse.role_admin">Administrator</string>
+  <string name="ui.reuse.role_owner">Eigentümer</string>
   <string name="ui.layout.brand.aria">Cognis-Startseite</string>
   <string name="ui.layout.nav.primary">Hauptnavigation</string>
   <string name="ui.layout.nav.open_menu">Navigationsmenü öffnen</string>

@@ -256,6 +256,55 @@ test("GET /api/v1/admin/sections returns registered sections", async () => {
     );
 });
 
+test("GET /api/v1/admin/sections filters sections by role access policy", async () => {
+    const registry = new GatewayRegistry();
+    const uiReg = new UIRegistry();
+    uiReg.registerAdminSection({
+        id: "audit",
+        label: "Audit",
+        scriptUrl: "/static/gateways/logging/audit.js",
+    });
+    uiReg.registerAdminSection({
+        id: "owner-only",
+        label: "Owner",
+        scriptUrl: "/static/gateways/logging/owner.js",
+        access: { onlyRole: "owner" },
+    });
+    const handler = createGatewayRoutes(registry, uiReg);
+
+    const adminReq = makeRequest(
+        "GET",
+        issueAccessToken("admin-user", "admin", 60),
+    );
+    const adminRes = makeResponse();
+    await handler(
+        adminReq,
+        adminRes,
+        new URL("/api/v1/admin/sections", "http://localhost"),
+    );
+    const adminBody = JSON.parse(adminRes.payload);
+    assert.deepEqual(
+        adminBody.data.map((entry: { id: string }) => entry.id),
+        ["audit"],
+    );
+
+    const ownerReq = makeRequest(
+        "GET",
+        issueAccessToken("owner-user", "owner", 60),
+    );
+    const ownerRes = makeResponse();
+    await handler(
+        ownerReq,
+        ownerRes,
+        new URL("/api/v1/admin/sections", "http://localhost"),
+    );
+    const ownerBody = JSON.parse(ownerRes.payload);
+    assert.deepEqual(
+        ownerBody.data.map((entry: { id: string }) => entry.id),
+        ["audit", "owner-only"],
+    );
+});
+
 test("POST /api/v1/gateways/:id/enable sets gateway status to active", async () => {
     const registry = new GatewayRegistry();
     registry.register({

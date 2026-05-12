@@ -12,7 +12,7 @@ The Cognis module framework lets third-party and community developers extend the
 - Block module routes from overriding protected system prefixes.
 - Refresh registered module routes when modules are enabled or disabled.
 
-Not responsible for: authenticating module API calls (the platform auth layer handles that), providing module-level data persistence (modules use the `db:executor` capability), or rendering module UI pages (modules supply their own HTML entry points via `entrypoints.ui`).
+Not responsible for: providing module-level data persistence (modules use the `db:executor` capability), or rendering module UI pages (modules supply their own HTML entry points via `entrypoints.ui`).
 
 ## Architecture
 
@@ -64,11 +64,21 @@ Modules that supply `entrypoints.ui` must export their page at the declared path
 export function registerApiRoutes(router) {
     router.get("/api/v1/modules/my-module/data", async (req, res) => {
         // handler
-    });
+    }, { access: { minRole: "moderator" } });
+    router.post("/api/v1/modules/my-module/admin-audit", async (req, res) => {
+        // handler
+    }, { access: { onlyRole: "owner" } });
 }
 ```
 
 `createModuleExtensionRoutes` in `src/modules/routes/module-extensions.ts` calls `registerApiRoutes` for every enabled module that declares `entrypoints.api`. Routes are reloaded on every enable/disable cycle via `refresh()`.
+
+Each module route can declare optional access policy metadata through the third
+router argument:
+
+- `access.minRole` — allows the target role and every higher role
+  (`user < teacher < moderator < admin < owner`)
+- `access.onlyRole` — allows exactly one role group
 
 ### Protected route prefixes
 
@@ -82,7 +92,18 @@ Module routes must not start with any of the following prefixes:
 | `/public`        | Platform static assets |
 | `/ui`            | Platform UI assets     |
 
-Attempting to register a route under a protected prefix is silently ignored and a warning is logged.
+Attempting to register a route under a protected prefix blocks module enablement.
+
+`routes.json` supports either plain route strings or route objects with access
+policy metadata for UI pages:
+
+```json
+[
+  "/api/v1/modules/my-module/data",
+  { "path": "/my-module/page", "access": { "minRole": "admin" } },
+  { "path": "/my-module/owner-audit", "access": { "onlyRole": "owner" } }
+]
+```
 
 ## Configuration
 
