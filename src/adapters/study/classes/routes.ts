@@ -100,10 +100,10 @@ export function createClassesRoutes(
             const claims = requireAuth(req, res, "teacher");
             if (!claims) return true;
             const languageFilter =
-                url.searchParams.get("language") ?? undefined;
+                url.searchParams.get("language") || undefined;
             const classes = await store.getClassesForTeacherWithFilter(
                 claims.sub,
-                languageFilter || undefined,
+                languageFilter,
             );
             jsonOk(res, classes);
             return true;
@@ -142,9 +142,9 @@ export function createClassesRoutes(
             if (!claims) return true;
             try {
                 const languageCode =
-                    url.searchParams.get("language") ?? undefined;
+                    url.searchParams.get("language") || undefined;
                 const classes = await store.getAvailableClasses(
-                    languageCode || undefined,
+                    languageCode,
                     claims.sub,
                 );
                 jsonOk(res, classes);

@@ -59,12 +59,7 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
-    const results = await Promise.allSettled([loadEnrolled(), loadAvailable()]);
-    if (results.some((result) => result.status === "rejected")) {
-        showToast(i18n.t("module.study.classes.load_failed"), {
-            variant: "error",
-        });
-    }
+    await Promise.all([loadEnrolled(), loadAvailable()]);
 
     function buildLanguageOptions() {
         const languages = [

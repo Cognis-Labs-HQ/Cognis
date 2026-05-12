@@ -829,10 +829,10 @@ export class DbClassesStore {
                 return { ...cls, memberCount };
             }),
         );
-        return countResults.map((result) =>
+        return countResults.map((result, index) =>
             result.status === "fulfilled"
                 ? result.value
-                : { ...classes[countResults.indexOf(result)], memberCount: 0 },
+                : { ...classes[index], memberCount: 0 },
         );
     }
 
