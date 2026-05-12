@@ -12,7 +12,7 @@ import {
     getCookieSession,
     setPageSecurityHeaders,
 } from "../../../api/auth/guard.js";
-import type { DbProfileStore } from "../../db/reuse/profile-store.js";
+import type { DbProfileStore } from "../profile/store.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
 

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { DbExecutor } from "./account-store.js";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 
 function cacheKey(accountId: string, pageId: string) {
     return createHash("sha256").update(`${accountId}:${pageId}`).digest("hex");

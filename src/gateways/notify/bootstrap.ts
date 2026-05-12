@@ -72,9 +72,8 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
     const notificationStoreModulePath = path.resolve(
         process.cwd(),
         "src",
-        "adapters",
-        "db",
-        "reuse",
+        "gateways",
+        "notify",
         "notification-store.ts",
     );
     const notificationStoreModule = await import(
@@ -91,7 +90,7 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
             | NotificationPreferenceStoreCtor
             | undefined;
     if (!NotificationStoreClass || !NotificationPreferenceStoreClass) {
-        throw new Error("notification_store_adapter_exports_missing");
+        throw new Error("notification_store_gateway_exports_missing");
     }
     const notifStore = new NotificationStoreClass(ctx.dbExecutor);
     const notificationPrefStore = new NotificationPreferenceStoreClass(

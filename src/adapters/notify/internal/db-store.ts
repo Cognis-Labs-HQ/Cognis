@@ -9,7 +9,7 @@
  * Eviction mirrors the in-memory store: at most MAX_PER_USER rows per user are
  * kept; the oldest are deleted when the cap is exceeded.
  *
- * @module notify-internal/reuse/db-store
+ * @module notify-internal/db-store
  */
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
@@ -22,7 +22,7 @@ import {
     deriveScopedKey,
     encryptPayload,
     decryptPayload,
-} from "../../../../api/reuse/crypto.js";
+} from "../../../api/reuse/crypto.js";
 
 interface EncryptedPayload {
     subject: string;

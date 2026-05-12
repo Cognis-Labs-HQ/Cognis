@@ -7,7 +7,7 @@ import {
     buildDbErrorMeta,
     summarizeStatement,
     writeDbLog,
-} from "../reuse/executor-log.js";
+} from "../../../gateways/db/reuse/executor-log.js";
 import {
     buildStructuredDbCommandStatement,
     type StructuredDbCommand,

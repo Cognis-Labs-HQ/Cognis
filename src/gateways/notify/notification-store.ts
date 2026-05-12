@@ -1,4 +1,4 @@
-import type { DbExecutor } from "./account-store.js";
+import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { NotificationPreferenceStore } from "../../../gateways/notify/gateway.js";
 
 export interface NotificationConfigStore {

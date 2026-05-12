@@ -10,8 +10,8 @@
  *   without creating a circular dependency.
  *
  *   The concrete DB-backed implementation (DbLocalAccountStore) lives in
- *   src/adapters/db/reuse/account-store.ts and is only imported by the Auth
- *   gateway bootstrap, which is the sole point of wiring.
+ *   src/adapters/auth/local/store.ts and is only imported by the Auth gateway
+ *   bootstrap, which is the sole point of wiring.
  *
  * Exports:
  *   LocalAccountStore         — abstract interface for route factories.

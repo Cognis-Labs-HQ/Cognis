@@ -9,7 +9,7 @@ import {
     type IInternalNotificationStore,
     AsyncInternalNotificationStore,
 } from "./store.js";
-import { DbInternalNotificationStore } from "./reuse/db-store.js";
+import { DbInternalNotificationStore } from "./db-store.js";
 import { getDataEncryptionKey } from "../../../api/reuse/crypto.js";
 import { createInternalNotificationRoutes } from "./routes.js";
 

@@ -2,8 +2,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { DbProfileStore } from "../../db/reuse/profile-store.js";
-import { DbUserPreferenceStore } from "../../db/reuse/preference-store.js";
+import { DbProfileStore } from "./store.js";
+import { DbUserPreferenceStore } from "./preference-store.js";
 import { createProfileRoutes } from "../../../api/routes/profile/index.js";
 import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
@@ -14,7 +14,7 @@ import {
     getCookieSession,
     setPageSecurityHeaders,
 } from "../../../api/auth/guard.js";
-import type { AccountRole } from "../../db/reuse/profile-store.js";
+import type { AccountRole } from "./store.js";
 import type {
     SocialAdapter,
     SocialAdapterBootstrapCtx,

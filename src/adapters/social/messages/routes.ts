@@ -16,7 +16,7 @@ import type { DbMessagesStore, MemberRow } from "./store.js";
 import type {
     DbProfileStore,
     AccountProfile,
-} from "../../db/reuse/profile-store.js";
+} from "../profile/store.js";
 
 interface DispatchEnvelope {
     category: string;
