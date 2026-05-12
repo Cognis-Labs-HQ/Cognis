@@ -107,7 +107,7 @@ Every gateway, adapter, and module must carry a `package.json` (or equivalent ma
 
 Store changelog entries under `src/docs/changelog/` instead of a root `CHANGELOG.md`.
 
-Every pull request must add exactly one new changelog file for that PR using the filename pattern `YYYY-MM-DD-<short-pr-slug>.en.md`. The file must include: a short title, a summary section, a changed-files/components section, and commit links following `https://github.com/le-firehawk/Cognis/commit/<sha>`.
+Every pull request must add exactly one new changelog file for that PR using the filename pattern `<branch-name-without-copilot-prefix>.en.md` (for example, branch `copilot/cleanup-strings-and-codebase` maps to `cleanup-strings-and-codebase.en.md`). The file must include: a short title, a summary section, a changed-files/components section, and commit links following `https://github.com/le-firehawk/Cognis/commit/<sha>`.
 
 Do not append to or recreate a global monolithic changelog file. Existing changelog entry files in `src/docs/changelog/` are historical records and should remain immutable except for factual corrections.
 

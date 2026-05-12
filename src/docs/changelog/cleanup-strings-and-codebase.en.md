@@ -1,10 +1,10 @@
-# PR Changelog — DB Reference Final Pass
+# PR Changelog — Cleanup Strings and Codebase
 
 ## Summary
 
-Performed a final pass for `db.execute`, `postgres`, and `mariadb` references
-and confirmed remaining matches are expected within DB adapters/gateway
-implementations, provider-specific tests, and provider documentation.
+Performed a final pass for provider-related references and confirmed remaining
+matches are expected within DB adapters/gateway implementations,
+provider-specific tests, and provider documentation.
 
 Migrated changelog policy from a monolithic root `CHANGELOG.md` to per-PR
 entries under `src/docs/changelog/`.
@@ -21,7 +21,7 @@ entries under `src/docs/changelog/`.
     - `src/docs/versions.ja.md`
 - New changelog docs:
     - `src/docs/changelog/index.en.md`
-    - `src/docs/changelog/2026-05-11-db-reference-final-pass.en.md`
+    - `src/docs/changelog/cleanup-strings-and-codebase.en.md`
 - Removed root changelog:
     - `CHANGELOG.md`
 

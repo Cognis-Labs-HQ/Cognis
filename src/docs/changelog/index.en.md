@@ -8,7 +8,7 @@ easy to audit.
 
 ## Entry format
 
-- Filename: `YYYY-MM-DD-<short-pr-slug>.en.md`
+- Filename: `<branch-name-without-copilot-prefix>.en.md`
 - One file per PR
 - Include:
     - PR title
@@ -18,4 +18,4 @@ easy to audit.
 
 ## Entries
 
-- [2026-05-11-db-reference-final-pass](./2026-05-11-db-reference-final-pass.en.md)
+- [cleanup-strings-and-codebase](./cleanup-strings-and-codebase.en.md)
