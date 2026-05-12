@@ -220,9 +220,6 @@ export class CoreStudyGateway {
         }
 
         for (const entry of entries.sort()) {
-            // Legacy adapter is intentionally skipped because Japanese now ships
-            // as a Study language module (see src/modules/study/languages/ja/).
-            if (entry === "japanese") continue;
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
             try {
                 const raw = await readFile(pkgPath, "utf8");
@@ -254,9 +251,6 @@ export class CoreStudyGateway {
         }
 
         for (const entry of entries.sort()) {
-            // Legacy adapter is intentionally skipped because Japanese now ships
-            // as a Study language module (see src/modules/study/languages/ja/).
-            if (entry === "japanese") continue;
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
 
             let mod: Record<string, unknown>;

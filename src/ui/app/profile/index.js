@@ -12,6 +12,7 @@ import { attachCharCounter } from "../../reuse/char-counter.js";
 import { showToast } from "../../reuse/toast.js";
 import { formatDate } from "../../reuse/timestamp.js";
 import { navigateTo } from "../../reuse/app-router.js";
+import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 
 let root = null;
 let i18n = null;
@@ -582,7 +583,7 @@ function renderNewPost() {
 
     const visibilityHint =
         !canFollowers || !canEveryone
-            ? `<p class="profile-visibility-hint">${escapeHtml(i18n.t("ui.app.profile.post_visibility_hint"))}</p>`
+            ? `<span class="profile-visibility-tooltip">${renderInfoTooltip(i18n.t("ui.app.profile.post_visibility_hint"), i18n.t("ui.reuse.more_information"))}</span>`
             : "";
 
     return `

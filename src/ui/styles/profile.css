@@ -925,11 +925,10 @@
     padding: 4px 12px;
 }
 
-.profile-visibility-hint {
+.profile-visibility-tooltip {
     margin: 4px 0 0;
-    font-size: 0.82rem;
-    color: var(--text-muted);
-    font-style: italic;
+    display: inline-flex;
+    align-items: center;
 }
 
 .profile-social-links-section {

@@ -1,6 +1,0 @@
-{
-    "name": "@cognis/study-japanese",
-    "version": "1.0.0",
-    "description": "Japanese language study content for Cognis",
-    "main": "index.ts"
-}

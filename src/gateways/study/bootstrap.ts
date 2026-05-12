@@ -199,7 +199,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.2.1",
+        version: "1.2.2",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",
