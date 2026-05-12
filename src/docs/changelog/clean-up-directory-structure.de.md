@@ -16,14 +16,14 @@ die Sichtbarkeit von Beiträgen ersetzt.
 ## Geänderte Dateien/Komponenten
 
 - Study-Gateway:
-  - `src/gateways/study/gateway.ts`
-  - `src/gateways/study/bootstrap.ts`
-  - `src/gateways/study/manifest.json`
+    - `src/gateways/study/gateway.ts`
+    - `src/gateways/study/bootstrap.ts`
+    - `src/gateways/study/manifest.json`
 - Entfernte Legacy-Adapter:
-  - `src/adapters/study/japanese/` (entfernt)
+    - `src/adapters/study/japanese/` (entfernt)
 - Profil-UI:
-  - `src/ui/app/profile/index.js`
-  - `src/ui/styles/profile.css`
+    - `src/ui/app/profile/index.js`
+    - `src/ui/styles/profile.css`
 
 ## Commits
 

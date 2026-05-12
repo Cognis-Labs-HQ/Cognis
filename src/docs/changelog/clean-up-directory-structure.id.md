@@ -15,14 +15,14 @@ dengan info tooltip.
 ## Berkas/Komponen yang Diubah
 
 - Gateway Study:
-  - `src/gateways/study/gateway.ts`
-  - `src/gateways/study/bootstrap.ts`
-  - `src/gateways/study/manifest.json`
+    - `src/gateways/study/gateway.ts`
+    - `src/gateways/study/bootstrap.ts`
+    - `src/gateways/study/manifest.json`
 - Adapter legacy yang dihapus:
-  - `src/adapters/study/japanese/` (dihapus)
+    - `src/adapters/study/japanese/` (dihapus)
 - UI profil:
-  - `src/ui/app/profile/index.js`
-  - `src/ui/styles/profile.css`
+    - `src/ui/app/profile/index.js`
+    - `src/ui/styles/profile.css`
 
 ## Commit
 

@@ -14,14 +14,14 @@ Studyゲートウェイのアダプター探索/ブートストラップでは�
 ## 変更したファイル/コンポーネント
 
 - Studyゲートウェイ:
-  - `src/gateways/study/gateway.ts`
-  - `src/gateways/study/bootstrap.ts`
-  - `src/gateways/study/manifest.json`
+    - `src/gateways/study/gateway.ts`
+    - `src/gateways/study/bootstrap.ts`
+    - `src/gateways/study/manifest.json`
 - 削除したレガシーアダプター:
-  - `src/adapters/study/japanese/`（削除）
+    - `src/adapters/study/japanese/`（削除）
 - プロフィールUI:
-  - `src/ui/app/profile/index.js`
-  - `src/ui/styles/profile.css`
+    - `src/ui/app/profile/index.js`
+    - `src/ui/styles/profile.css`
 
 ## コミット
 

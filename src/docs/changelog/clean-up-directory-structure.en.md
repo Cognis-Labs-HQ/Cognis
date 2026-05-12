@@ -15,14 +15,14 @@ post visibility guidance.
 ## Changed Files/Components
 
 - Study gateway:
-  - `src/gateways/study/gateway.ts`
-  - `src/gateways/study/bootstrap.ts`
-  - `src/gateways/study/manifest.json`
+    - `src/gateways/study/gateway.ts`
+    - `src/gateways/study/bootstrap.ts`
+    - `src/gateways/study/manifest.json`
 - Removed legacy adapter:
-  - `src/adapters/study/japanese/` (removed)
+    - `src/adapters/study/japanese/` (removed)
 - Profile UI:
-  - `src/ui/app/profile/index.js`
-  - `src/ui/styles/profile.css`
+    - `src/ui/app/profile/index.js`
+    - `src/ui/styles/profile.css`
 
 ## Commits
 
