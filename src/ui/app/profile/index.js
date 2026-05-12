@@ -362,15 +362,15 @@ function renderHero() {
     <div class="profile-hero-stats">
       <div class="profile-stat-block">
         <span class="profile-stat-number">${posts.length}</span>
-        <span class="profile-stat-label">${i18n.t("ui.reuse.profile_preview_posts")}</span>
+        <span class="profile-stat-label">${i18n.t("ui.reuse.posts")}</span>
       </div>
       <div class="profile-stat-block">
         <span class="profile-stat-number">${following.length}</span>
-        <span class="profile-stat-label">${i18n.t("ui.reuse.profile_preview_following")}</span>
+        <span class="profile-stat-label">${i18n.t("ui.reuse.following")}</span>
       </div>
       <div class="profile-stat-block">
         <span class="profile-stat-number">${followers.length}</span>
-        <span class="profile-stat-label">${i18n.t("ui.reuse.profile_preview_followers")}</span>
+        <span class="profile-stat-label">${i18n.t("ui.reuse.followers")}</span>
       </div>
     </div>
   `;
@@ -895,7 +895,7 @@ async function doFollowUser(handle) {
             actions: [
                 {
                     id: "cancel",
-                    label: i18n.t("ui.reuse.popup_cancel"),
+                    label: i18n.t("ui.reuse.cancel"),
                     variant: "cancel",
                 },
                 {
@@ -984,7 +984,7 @@ async function doUnblockUser() {
         actions: [
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.popup_cancel"),
+                label: i18n.t("ui.reuse.cancel"),
                 variant: "cancel",
             },
             {

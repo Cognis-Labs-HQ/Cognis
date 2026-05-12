@@ -46,7 +46,7 @@ async function promptEmail() {
             },
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.popup_cancel"),
+                label: i18n.t("ui.reuse.cancel"),
                 variant: "cancel",
             },
         ],
@@ -154,15 +154,12 @@ function bindInviteInteractions() {
                             email = await promptEmail();
                             continue;
                         }
-                        showToast(
-                            i18n.t("ui.reuse.registration_invite_failed"),
-                            {
-                                variant: "error",
-                            },
-                        );
+                        showToast(i18n.t("ui.reuse.invite_failed"), {
+                            variant: "error",
+                        });
                         return;
                     }
-                    showToast(i18n.t("ui.reuse.registration_invite_sent"), {
+                    showToast(i18n.t("ui.reuse.invite_sent"), {
                         variant: "success",
                     });
                     tokens = await loadTokens();

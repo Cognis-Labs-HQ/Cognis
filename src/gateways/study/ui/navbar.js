@@ -13,7 +13,7 @@ function createStudyNavButton() {
     const studyBtn = document.createElement("a");
     studyBtn.href = "/study";
     studyBtn.dataset.studyBound = "false";
-    studyBtn.textContent = i18n.t("ui.reuse.nav_study");
+    studyBtn.textContent = i18n.t("ui.reuse.study");
     return studyBtn;
 }
 
@@ -55,7 +55,7 @@ async function handleStudyButtonClick() {
         actions: [
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.popup_cancel"),
+                label: i18n.t("ui.reuse.cancel"),
                 variant: "cancel",
             },
             {

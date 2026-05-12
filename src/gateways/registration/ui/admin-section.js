@@ -129,12 +129,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                                 statusCell.textContent = statusLabel("revoked");
                             }
                         } else {
-                            showToast(
-                                i18n.t("ui.reuse.registration_invite_failed"),
-                                {
-                                    variant: "error",
-                                },
-                            );
+                            showToast(i18n.t("ui.reuse.invite_failed"), {
+                                variant: "error",
+                            });
                         }
                     });
                 });

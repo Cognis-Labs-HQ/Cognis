@@ -228,7 +228,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         },
 
         renderContent() {
-            const tooltipAria = i18n.t("ui.reuse.info_tooltip_aria");
+            const tooltipAria = i18n.t("ui.reuse.more_information");
             return `
         <div class="security-settings-form">
           <div class="components-section">

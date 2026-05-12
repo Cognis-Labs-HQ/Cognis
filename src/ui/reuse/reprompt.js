@@ -13,8 +13,8 @@ import { apiFetch } from "./api-client.js";
  * Usage:
  *   const guard = createRepromptGuard({ i18n });
  *   await guard.runWithReprompt(async () => doSomething(), {
- *     title: i18n.t("ui.reuse.reprompt_title"),
- *     message: i18n.t("ui.reuse.reprompt_message"),
+ *     title: i18n.t("ui.reuse.reconfirm_action"),
+ *     message: i18n.t("ui.reuse.sensitive_action_prompt"),
  *   });
  *
  * @param {{ i18n: { t: (key: string) => string, [key: string]: unknown } }} options
@@ -35,8 +35,9 @@ export function createRepromptGuard({
     }
 
     async function runWithReprompt(action, config = {}) {
-        const title = config.title ?? i18n.t("ui.reuse.reprompt_title");
-        const message = config.message ?? i18n.t("ui.reuse.reprompt_message");
+        const title = config.title ?? i18n.t("ui.reuse.reconfirm_action");
+        const message =
+            config.message ?? i18n.t("ui.reuse.sensitive_action_prompt");
         let inputEl = null;
         let warningEl = null;
         let isVerifying = false;
@@ -54,7 +55,7 @@ export function createRepromptGuard({
             body: () => `
         <p>${escapeHtml(message)}</p>
         <label class="stack">
-          <span>${escapeHtml(i18n.t("ui.reuse.reprompt_input_label"))}</span>
+          <span>${escapeHtml(i18n.t("ui.reuse.enter_password_prompt"))}</span>
           <input id="reprompt-password" type="password" autocomplete="current-password" />
         </label>
         <p id="reprompt-warning" class="reprompt-warning" role="alert" aria-live="polite" hidden></p>
@@ -67,7 +68,7 @@ export function createRepromptGuard({
                 },
                 {
                     id: "cancel",
-                    label: i18n.t("ui.reuse.popup_cancel"),
+                    label: i18n.t("ui.reuse.cancel"),
                     variant: "cancel",
                 },
             ],
@@ -86,7 +87,7 @@ export function createRepromptGuard({
                 const warn = () => {
                     if (!(warningEl instanceof HTMLElement)) return;
                     warningEl.textContent = i18n.t(
-                        "ui.reuse.reprompt_invalid_password",
+                        "ui.reuse.incorrect_password",
                     );
                     warningEl.hidden = false;
                 };

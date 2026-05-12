@@ -469,12 +469,12 @@ function initSearchBar(i18n) {
         items: [
             {
                 id: "page-dashboard",
-                label: i18n.t("ui.reuse.nav_dashboard"),
+                label: i18n.t("ui.reuse.dashboard"),
                 url: "/dashboard",
             },
             {
                 id: "page-messages",
-                label: i18n.t("ui.reuse.nav_messages"),
+                label: i18n.t("ui.reuse.messages"),
                 url: "/messages",
             },
             {
@@ -491,7 +491,7 @@ function initSearchBar(i18n) {
                 ? [
                       {
                           id: "page-study",
-                          label: i18n.t("ui.reuse.nav_study"),
+                          label: i18n.t("ui.reuse.study"),
                           url: "/study",
                       },
                   ]

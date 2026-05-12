@@ -118,7 +118,7 @@ export function initStudyPrefs(root, { i18n, onDirtyChange }) {
             actions: [
                 {
                     id: "cancel",
-                    label: i18n.t("ui.reuse.popup_cancel"),
+                    label: i18n.t("ui.reuse.cancel"),
                     variant: "cancel",
                 },
                 {

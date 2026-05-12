@@ -1,8 +1,8 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
-  <string name="ui.reuse.nav_dashboard">Dashboard</string>
-  <string name="ui.reuse.nav_messages">Messages</string>
-  <string name="ui.reuse.nav_study">Study</string>
+  <string name="ui.reuse.dashboard">Dashboard</string>
+  <string name="ui.reuse.messages">Messages</string>
+  <string name="ui.reuse.study">Study</string>
   <string name="ui.reuse.profile">Profile</string>
   <string name="ui.reuse.settings">Settings</string>
   <string name="ui.reuse.docs">Docs</string>
@@ -17,10 +17,9 @@
   <string name="ui.reuse.appearance">Appearance</string>
   <string name="ui.reuse.language">Language</string>
   <string name="ui.reuse.unsaved_changes">Unsaved Changes</string>
-  <string name="ui.reuse.unsaved_changes_navigate_away_title">Unsaved Changes</string>
-  <string name="ui.reuse.unsaved_changes_navigate_away_body">You have unsaved changes. Leaving this page will discard them.</string>
-  <string name="ui.reuse.unsaved_changes_navigate_away_discard">Discard and Leave</string>
-  <string name="ui.reuse.unsaved_changes_navigate_away_stay">Stay</string>
+  <string name="ui.reuse.leave_page_warning">You have unsaved changes. Leaving this page will discard them.</string>
+  <string name="ui.reuse.discard_and_leave">Discard and Leave</string>
+  <string name="ui.reuse.stay">Stay</string>
 
   <string name="ui.reuse.enable">Enable</string>
   <string name="ui.reuse.disable">Disable</string>
@@ -32,10 +31,10 @@
   <string name="ui.reuse.class">Class</string>
   <string name="ui.reuse.reset">Reset</string>
   <string name="ui.reuse.refresh">Refresh</string>
-  <string name="ui.reuse.profile_preview_loading">Loading…</string>
-  <string name="ui.reuse.profile_preview_followers">followers</string>
-  <string name="ui.reuse.profile_preview_following">following</string>
-  <string name="ui.reuse.profile_preview_posts">posts</string>
+  <string name="ui.reuse.loading">Loading…</string>
+  <string name="ui.reuse.followers">followers</string>
+  <string name="ui.reuse.following">following</string>
+  <string name="ui.reuse.posts">posts</string>
   <string name="ui.reuse.save">Save</string>
   <string name="ui.reuse.discard">Discard</string>
   <string name="ui.reuse.done">Done</string>
@@ -46,7 +45,7 @@
   <string name="ui.reuse.error">Error</string>
   <string name="ui.reuse.coming_soon">Coming Soon</string>
   <string name="ui.reuse.save_failed">Save Failed</string>
-  <string name="ui.reuse.info_tooltip_aria">More information</string>
+  <string name="ui.reuse.more_information">More information</string>
 
   <string name="ui.layout.brand.aria">Cognis home</string>
   <string name="ui.layout.nav.primary">Primary navigation</string>
@@ -215,10 +214,10 @@
   <string name="ui.app.register.token_expires_in">Expires in: {countdown}</string>
   <string name="ui.app.register.token_expired">This invitation has expired.</string>
   <string name="ui.app.register.email_verify_notice">You must verify your email address within 5 minutes of registering, or your account will be automatically deleted.</string>
-  <string name="ui.reuse.reprompt_title">Re-Confirm Action</string>
-  <string name="ui.reuse.reprompt_message">Please confirm this sensitive action.</string>
-  <string name="ui.reuse.reprompt_input_label">Enter your password to continue.</string>
-  <string name="ui.reuse.reprompt_invalid_password">Incorrect password. Please try again.</string>
+  <string name="ui.reuse.reconfirm_action">Re-Confirm Action</string>
+  <string name="ui.reuse.sensitive_action_prompt">Please confirm this sensitive action.</string>
+  <string name="ui.reuse.enter_password_prompt">Enter your password to continue.</string>
+  <string name="ui.reuse.incorrect_password">Incorrect password. Please try again.</string>
   <string name="ui.app.users.page_title">Users</string>
   <string name="ui.app.users.page_subtitle">Manage accounts and issue invites.</string>
   <string name="ui.app.users.invite">Invite</string>
@@ -243,8 +242,8 @@
   <string name="ui.app.users.delete_user">Delete user</string>
   <string name="ui.app.users.delete_permanent_warning">This action is permanent and cannot be undone.</string>
   <string name="ui.app.users.invite_email">Email address</string>
-  <string name="ui.reuse.registration_invite_sent">Invitation sent.</string>
-  <string name="ui.reuse.registration_invite_failed">Failed to send invitation.</string>
+  <string name="ui.reuse.invite_sent">Invitation sent.</string>
+  <string name="ui.reuse.invite_failed">Failed to send invitation.</string>
   <string name="ui.app.users.invite_email_taken">This email address is already registered.</string>
   <string name="ui.app.users.no_unverified_email">No unverified email address found.</string>
   <string name="ui.app.users.role_updated">Role updated.</string>
@@ -268,12 +267,12 @@
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Available languages</string>
   <string name="ui.app.settings.preferred_languages">Preferred languages</string>
-  <string name="ui.reuse.page_composer_edit_layout">Edit Layout</string>
-  <string name="ui.reuse.page_composer_elements">Elements</string>
-  <string name="ui.reuse.page_composer_all_visible">All elements are visible.</string>
-  <string name="ui.reuse.page_composer_reset_layout">Reset Layout</string>
-  <string name="ui.reuse.popup_close">Close</string>
-  <string name="ui.reuse.popup_cancel">Cancel</string>
+  <string name="ui.reuse.edit_layout">Edit Layout</string>
+  <string name="ui.reuse.elements">Elements</string>
+  <string name="ui.reuse.all_elements_visible">All elements are visible.</string>
+  <string name="ui.reuse.reset_layout">Reset Layout</string>
+  <string name="ui.reuse.close">Close</string>
+  <string name="ui.reuse.cancel">Cancel</string>
 
   <string name="ui.app.profile.page_title">Profile</string>
   <string name="ui.app.profile.page_subtitle">Your profile and social activity.</string>

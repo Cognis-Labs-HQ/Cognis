@@ -119,7 +119,7 @@ async function promptInput({ title, label, type = "text" }) {
             },
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.popup_cancel"),
+                label: i18n.t("ui.reuse.cancel"),
                 variant: "cancel",
             },
         ],
@@ -265,7 +265,7 @@ async function runUserMenuAction(action, username) {
                 },
                 {
                     id: "cancel",
-                    label: i18n.t("ui.reuse.popup_cancel"),
+                    label: i18n.t("ui.reuse.cancel"),
                     variant: "cancel",
                 },
             ],
@@ -446,12 +446,12 @@ async function triggerInviteFlow() {
                 body: JSON.stringify({ email }),
             });
             if (response.ok) {
-                showToast(i18n.t("ui.reuse.registration_invite_sent"), {
+                showToast(i18n.t("ui.reuse.invite_sent"), {
                     variant: "success",
                 });
                 return;
             }
-            let errorMessage = i18n.t("ui.reuse.registration_invite_failed");
+            let errorMessage = i18n.t("ui.reuse.invite_failed");
             try {
                 const errorBody = await response.json();
                 if (errorBody?.error?.code === "email_taken") {
@@ -464,7 +464,7 @@ async function triggerInviteFlow() {
         },
         {
             title: i18n.t("ui.app.users.invite"),
-            message: i18n.t("ui.reuse.reprompt_message"),
+            message: i18n.t("ui.reuse.sensitive_action_prompt"),
         },
     );
 }

@@ -1,8 +1,8 @@
 <resources>
   <string name="ui.shared.brand.name">Cognis</string>
-  <string name="ui.reuse.nav_dashboard">Dashboard</string>
-  <string name="ui.reuse.nav_messages">Nachrichten</string>
-  <string name="ui.reuse.nav_study">Lernen</string>
+  <string name="ui.reuse.dashboard">Dashboard</string>
+  <string name="ui.reuse.messages">Nachrichten</string>
+  <string name="ui.reuse.study">Lernen</string>
   <string name="ui.reuse.profile">Profil</string>
   <string name="ui.reuse.settings">Einstellungen</string>
   <string name="ui.reuse.docs">Dokumente</string>
@@ -17,10 +17,9 @@
   <string name="ui.reuse.appearance">Darstellung</string>
   <string name="ui.reuse.language">Sprache</string>
   <string name="ui.reuse.unsaved_changes">Ungespeicherte Änderungen</string>
-  <string name="ui.reuse.unsaved_changes_navigate_away_title">Ungespeicherte Änderungen</string>
-  <string name="ui.reuse.unsaved_changes_navigate_away_body">Sie haben ungespeicherte Änderungen. Wenn Sie diese Seite verlassen, gehen die Änderungen verloren.</string>
-  <string name="ui.reuse.unsaved_changes_navigate_away_discard">Verwerfen und fortfahren</string>
-  <string name="ui.reuse.unsaved_changes_navigate_away_stay">Bleiben</string>
+  <string name="ui.reuse.leave_page_warning">Sie haben ungespeicherte Änderungen. Wenn Sie diese Seite verlassen, gehen die Änderungen verloren.</string>
+  <string name="ui.reuse.discard_and_leave">Verwerfen und fortfahren</string>
+  <string name="ui.reuse.stay">Bleiben</string>
 
   <string name="ui.reuse.enable">Aktivieren</string>
   <string name="ui.reuse.disable">Deaktivieren</string>
@@ -32,10 +31,10 @@
   <string name="ui.reuse.class">Klasse</string>
   <string name="ui.reuse.reset">Zurücksetzen</string>
   <string name="ui.reuse.refresh">Aktualisieren</string>
-  <string name="ui.reuse.profile_preview_loading">Wird geladen…</string>
-  <string name="ui.reuse.profile_preview_followers">Follower</string>
-  <string name="ui.reuse.profile_preview_following">folgt</string>
-  <string name="ui.reuse.profile_preview_posts">Beiträge</string>
+  <string name="ui.reuse.loading">Wird geladen…</string>
+  <string name="ui.reuse.followers">Follower</string>
+  <string name="ui.reuse.following">folgt</string>
+  <string name="ui.reuse.posts">Beiträge</string>
   <string name="ui.reuse.save">Speichern</string>
   <string name="ui.reuse.discard">Verwerfen</string>
   <string name="ui.reuse.done">Fertig</string>
@@ -46,7 +45,7 @@
   <string name="ui.reuse.error">Fehler</string>
   <string name="ui.reuse.coming_soon">Demnächst verfügbar</string>
   <string name="ui.reuse.save_failed">Speichern fehlgeschlagen</string>
-  <string name="ui.reuse.info_tooltip_aria">Weitere Informationen</string>
+  <string name="ui.reuse.more_information">Weitere Informationen</string>
 
   <string name="ui.layout.brand.aria">Cognis-Startseite</string>
   <string name="ui.layout.nav.primary">Hauptnavigation</string>
@@ -215,10 +214,10 @@
   <string name="ui.app.register.token_expires_in">Läuft ab in: {countdown}</string>
   <string name="ui.app.register.token_expired">Diese Einladung ist abgelaufen.</string>
   <string name="ui.app.register.email_verify_notice">Sie müssen Ihre E-Mail-Adresse innerhalb von 5 Minuten nach der Registrierung bestätigen, sonst wird Ihr Konto automatisch gelöscht.</string>
-  <string name="ui.reuse.reprompt_title">Aktion erneut bestätigen</string>
-  <string name="ui.reuse.reprompt_message">Bitte bestätigen Sie diese sensible Aktion.</string>
-  <string name="ui.reuse.reprompt_input_label">Geben Sie Ihr Passwort ein, um fortzufahren.</string>
-  <string name="ui.reuse.reprompt_invalid_password">Falsches Passwort. Bitte versuchen Sie es erneut.</string>
+  <string name="ui.reuse.reconfirm_action">Aktion erneut bestätigen</string>
+  <string name="ui.reuse.sensitive_action_prompt">Bitte bestätigen Sie diese sensible Aktion.</string>
+  <string name="ui.reuse.enter_password_prompt">Geben Sie Ihr Passwort ein, um fortzufahren.</string>
+  <string name="ui.reuse.incorrect_password">Falsches Passwort. Bitte versuchen Sie es erneut.</string>
   <string name="ui.app.users.page_title">Benutzer</string>
   <string name="ui.app.users.page_subtitle">Konten verwalten und Einladungen versenden.</string>
   <string name="ui.app.users.invite">Einladen</string>
@@ -243,8 +242,8 @@
   <string name="ui.app.users.delete_user">Benutzer löschen</string>
   <string name="ui.app.users.delete_permanent_warning">Diese Aktion ist dauerhaft und kann nicht rückgängig gemacht werden.</string>
   <string name="ui.app.users.invite_email">E-Mail-Adresse</string>
-  <string name="ui.reuse.registration_invite_sent">Einladung gesendet.</string>
-  <string name="ui.reuse.registration_invite_failed">Einladung konnte nicht gesendet werden.</string>
+  <string name="ui.reuse.invite_sent">Einladung gesendet.</string>
+  <string name="ui.reuse.invite_failed">Einladung konnte nicht gesendet werden.</string>
   <string name="ui.app.users.invite_email_taken">Diese E-Mail-Adresse ist bereits registriert.</string>
   <string name="ui.app.users.no_unverified_email">Keine unverifizierte E-Mail-Adresse gefunden.</string>
   <string name="ui.app.users.role_updated">Rolle aktualisiert.</string>
@@ -268,12 +267,12 @@
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Verfügbare Sprachen</string>
   <string name="ui.app.settings.preferred_languages">Bevorzugte Sprachen</string>
-  <string name="ui.reuse.page_composer_edit_layout">Layout bearbeiten</string>
-  <string name="ui.reuse.page_composer_elements">Elemente</string>
-  <string name="ui.reuse.page_composer_all_visible">Alle Elemente sind sichtbar.</string>
-  <string name="ui.reuse.page_composer_reset_layout">Layout zurücksetzen</string>
-  <string name="ui.reuse.popup_close">Schließen</string>
-  <string name="ui.reuse.popup_cancel">Abbrechen</string>
+  <string name="ui.reuse.edit_layout">Layout bearbeiten</string>
+  <string name="ui.reuse.elements">Elemente</string>
+  <string name="ui.reuse.all_elements_visible">Alle Elemente sind sichtbar.</string>
+  <string name="ui.reuse.reset_layout">Layout zurücksetzen</string>
+  <string name="ui.reuse.close">Schließen</string>
+  <string name="ui.reuse.cancel">Abbrechen</string>
 
   <string name="ui.app.profile.page_title">Profil</string>
   <string name="ui.app.profile.page_subtitle">Dein Profil und soziale Aktivitäten.</string>

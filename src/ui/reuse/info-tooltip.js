@@ -23,7 +23,7 @@
  * @param {string} text   — Plain text to show inside the tooltip panel.
  *                           Do not pass raw HTML; the value is escaped.
  * @param {string} [ariaLabel] — Accessible label for the icon button.
- *                               Pass `i18n.t('ui.reuse.info_tooltip_aria')`.
+ *                               Pass `i18n.t('ui.reuse.more_information')`.
  *                               Defaults to 'More information'.
  * @param {string} [id]   — Optional stable id prefix; generated when omitted.
  * @returns {string}

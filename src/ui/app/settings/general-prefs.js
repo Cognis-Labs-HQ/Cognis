@@ -183,7 +183,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
             actions: [
                 {
                     id: "cancel",
-                    label: i18n.t("ui.reuse.popup_cancel"),
+                    label: i18n.t("ui.reuse.cancel"),
                     variant: "cancel",
                 },
             ],
