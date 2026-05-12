@@ -1,4 +1,5 @@
 import path from "node:path";
+import { readFile } from "node:fs/promises";
 import {
     requireAuth,
     getAuthClaims,
@@ -58,6 +59,33 @@ interface NotificationPreferenceStoreCtor {
             category: string,
         ): Promise<string[]>;
     };
+}
+
+async function serveHtmlPage(
+    res: ServerResponse,
+    filePath: string,
+): Promise<void> {
+    try {
+        const file = await readFile(filePath);
+        res.writeHead(200, {
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": "no-store",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "no-referrer",
+        });
+        res.end(file);
+    } catch {
+        res.writeHead(404, { "content-type": "application/json" });
+        res.end(
+            JSON.stringify({
+                error: {
+                    code: "not_found",
+                    message: "Page not found.",
+                },
+            }),
+        );
+    }
 }
 
 async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
@@ -152,6 +180,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : undefined);
 
+    const uiDir = path.resolve(
+        process.cwd(),
+        "src",
+        "gateways",
+        "notify",
+        "ui",
+    );
+
     ctx.routeRegistry.register(
         createNotificationRoutes(gateway, notifStore),
         "notify",
@@ -164,6 +200,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             gateway,
             externalHost,
         ),
+        "notify",
+    );
+    ctx.routeRegistry.register(
+        async (
+            req: IncomingMessage,
+            res: ServerResponse,
+            url: URL,
+        ): Promise<boolean> => {
+            if (url.pathname !== "/verify-email" || req.method !== "GET")
+                return false;
+            await serveHtmlPage(res, path.join(uiDir, "verify-email.html"));
+            return true;
+        },
         "notify",
     );
     ctx.routeRegistry.register(
@@ -184,13 +233,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         hasAdapters: true,
     });
 
-    const uiDir = path.resolve(
-        process.cwd(),
-        "src",
-        "gateways",
-        "notify",
-        "ui",
-    );
     ctx.uiRegistry?.registerAdminSection({
         id: "notifications",
         label: "Notifications",
@@ -198,6 +240,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         stringsBaseUrl: "/static/gateways/notify/languages",
     });
     ctx.uiRegistry?.registerStaticDir("notify", uiDir);
+    ctx.uiRegistry?.registerSettingsSection({
+        id: "notifications",
+        label: "Notifications",
+        scriptUrl: "/static/gateways/notify/notification-prefs.js",
+    });
 
     // Expose the notification gateway itself + a thin dispatch helper as
     // capabilities so other adapters (e.g. the social/messages adapter) can

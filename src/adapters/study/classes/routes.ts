@@ -14,7 +14,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth } from "../../../api/auth/guard.js";
+import { requireAuth } from "../../../gateways/auth/guard.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import type { DbClassesStore, StudyLanguageRow } from "./store.js";
 

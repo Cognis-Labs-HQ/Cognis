@@ -1,13 +1,13 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { getAuthClaims, requireAuth } from "../../auth/guard.js";
+import { getAuthClaims, requireAuth } from "../../../../gateways/auth/guard.js";
 import type {
     ProfileStore,
     AccountProfile,
     AccountVisibility,
     AccountRole,
-} from "../../reuse/profile-store.js";
+} from "../profile-store.js";
 import type { BootstrapLog, FileStorageGateway } from "@cognis/core";
-import { readRawBody, readJson } from "../../reuse/read-json.js";
+import { readRawBody, readJson } from "../../../../api/reuse/read-json.js";
 
 const VALID_VISIBILITY = new Set<AccountVisibility>([
     "hidden",

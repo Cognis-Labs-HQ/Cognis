@@ -10,8 +10,8 @@ export type {
     FileSizeLimit,
     ProfileCreateStore,
     ProfileStore,
-} from "../../../api/reuse/profile-store.js";
-export { visibilityRank } from "../../../api/reuse/profile-store.js";
+} from "./profile-store.js";
+export { visibilityRank } from "./profile-store.js";
 import type {
     AccountRole,
     AccountVisibility,
@@ -20,7 +20,7 @@ import type {
     Post,
     FileSizeLimit,
     ProfileCreateStore,
-} from "../../../api/reuse/profile-store.js";
+} from "./profile-store.js";
 
 function rowToProfile(row: any): AccountProfile {
     return {

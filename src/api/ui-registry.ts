@@ -52,6 +52,26 @@ export interface AuthTypingMessage {
     isEnabled?: () => boolean;
 }
 
+/**
+ * A settings section contributed by a gateway or adapter. The settings page
+ * dynamically imports the module at `scriptUrl` and calls
+ * `createSettingsSection({ i18n, root, markDirty })` to build the section.
+ */
+export interface SettingsSection {
+    id: string;
+    label: string;
+    /** Browser-absolute URL of the ES module to dynamically import. */
+    scriptUrl: string;
+    /**
+     * Optional base URL for component-specific locale strings.
+     * The settings page will fetch `{stringsBaseUrl}/{locale}/strings.xml`
+     * and merge those strings into the i18n instance passed to this section.
+     */
+    stringsBaseUrl?: string;
+    /** Optional runtime predicate used to hide sections while their owner is disabled. */
+    isEnabled?: () => boolean;
+}
+
 export class UIRegistry {
     private readonly sections = new Map<string, AdminSection>();
     private readonly staticDirs = new Map<string, string>();
@@ -60,6 +80,7 @@ export class UIRegistry {
     private readonly pageExtensions = new Map<string, PageElement[]>();
     private readonly navbarPlugins: NavbarPlugin[] = [];
     private readonly authTypingMessages: AuthTypingMessage[] = [];
+    private readonly settingsSections: SettingsSection[] = [];
 
     registerAdminSection(section: AdminSection): void {
         this.sections.set(section.id, section);
@@ -112,6 +133,10 @@ export class UIRegistry {
 
     registerAuthTypingMessage(message: AuthTypingMessage): void {
         this.authTypingMessages.push(message);
+    }
+
+    registerSettingsSection(section: SettingsSection): void {
+        this.settingsSections.push(section);
     }
 
     listAdminSections(): AdminSection[] {
@@ -180,5 +205,9 @@ export class UIRegistry {
 
     listAuthTypingMessages(): AuthTypingMessage[] {
         return [...this.authTypingMessages];
+    }
+
+    listSettingsSections(): SettingsSection[] {
+        return [...this.settingsSections];
     }
 }

@@ -6,7 +6,7 @@
             name="viewport"
             content="width=device-width, initial-scale=1.0, viewport-fit=cover"
         />
-        <title>{{ui.reuse.messages}}</title>
+        <title>{{module.study.classes.page_title}}</title>
         <link
             rel="icon"
             href="/static/assets/icons/cognis-icon.png"
@@ -28,10 +28,16 @@
         />
         <link rel="stylesheet" href="/static/styles/page-builder.css" />
         <link rel="stylesheet" href="/static/styles/reuse/page-sections.css" />
-        <link rel="stylesheet" href="/static/styles/messages.css" />
+        <link
+            rel="stylesheet"
+            href="/static/adapters/study/classes/classes.css"
+        />
     </head>
     <body>
         <div id="app"></div>
-        <script type="module" src="/static/app/messages/index.js"></script>
+        <script
+            type="module"
+            src="/static/adapters/study/classes/app.js"
+        ></script>
     </body>
 </html>

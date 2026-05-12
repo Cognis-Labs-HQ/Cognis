@@ -50,16 +50,16 @@
 
 ### 主要なソースの場所
 
-| パス                            | 目的                                                     |
-| ------------------------------- | -------------------------------------------------------- |
-| `src/api/main.ts`               | サーバーエントリポイント                                 |
-| `src/api/server.ts`             | HTTP サーバーのセットアップとルートディスパッチ          |
-| `src/api/route-registry.ts`     | ゲートウェイが自己登録に使用するルートレジストリ         |
-| `src/api/gateway-bootstrap.ts`  | すべてのゲートウェイのロードとブートストラップ           |
-| `src/api/auth/guard.ts`         | `requireAuth`、`getAuthClaims` ミドルウェア              |
-| `src/api/auth/access-tokens.ts` | トークンの発行と検証                                     |
-| `src/api/bootstrap/db-init.ts`  | 起動時のスキーマ初期化                                   |
-| `src/api/reuse/`                | 共有ユーティリティ (暗号、JSON 読み取り、ストアヘルパー) |
+| パス                                 | 目的                                                     |
+| ------------------------------------ | -------------------------------------------------------- |
+| `src/api/main.ts`                    | サーバーエントリポイント                                 |
+| `src/api/server.ts`                  | HTTP サーバーのセットアップとルートディスパッチ          |
+| `src/api/route-registry.ts`          | ゲートウェイが自己登録に使用するルートレジストリ         |
+| `src/api/gateway-bootstrap.ts`       | すべてのゲートウェイのロードとブートストラップ           |
+| `src/gateways/auth/guard.ts`         | `requireAuth`、`getAuthClaims` ミドルウェア              |
+| `src/gateways/auth/access-tokens.ts` | トークンの発行と検証                                     |
+| `src/api/bootstrap/db-init.ts`       | 起動時のスキーマ初期化                                   |
+| `src/api/reuse/`                     | 共有ユーティリティ (暗号、JSON 読み取り、ストアヘルパー) |
 
 ## 設定
 

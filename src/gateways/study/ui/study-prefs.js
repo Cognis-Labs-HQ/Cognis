@@ -1,7 +1,7 @@
-import { apiFetch } from "../../reuse/api-client.js";
-import { escapeHtml } from "../../reuse/escape-html.js";
-import { openPopup } from "../../reuse/popup.js";
-import { showToast } from "../../reuse/toast.js";
+import { apiFetch } from "/static/reuse/api-client.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { showToast } from "/static/reuse/toast.js";
 
 function normalizeList(values) {
     return [...new Set((values ?? []).filter(Boolean).map(String))];
@@ -217,5 +217,35 @@ export function initStudyPrefs(root, { i18n, onDirtyChange }) {
             render();
             onDirtyChange?.(false);
         },
+    };
+}
+
+export function createSettingsSection({ i18n, root, markDirty }) {
+    let studyPrefs = null;
+
+    return {
+        id: "study",
+        label: i18n.t("ui.app.settings.study.title"),
+        heading: i18n.t("ui.app.settings.study.title"),
+        preferenceKey: "settings-study-layout",
+        renderContent: () => `<div id="study-prefs-container"></div>`,
+        onRender: () => {
+            studyPrefs = initStudyPrefs(root, {
+                i18n,
+                onDirtyChange: (dirty) => markDirty("study", dirty),
+            });
+            studyPrefs.init();
+        },
+        isDirty: () => studyPrefs?.isDirty() ?? false,
+        async save() {
+            if (!studyPrefs?.isDirty()) return;
+            await apiFetch("/api/v1/study/preferences", {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(studyPrefs.getPendingPrefs()),
+            });
+        },
+        commit: () => studyPrefs?.commit(),
+        discard: () => studyPrefs?.discard(),
     };
 }

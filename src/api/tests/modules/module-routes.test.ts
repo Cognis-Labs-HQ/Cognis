@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createModuleRoutes } from "../../routes/modules/index.js";
-import { issueAccessToken } from "../../auth/access-tokens.js";
+import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 
 test("module routes list modules", async () => {
     const route = createModuleRoutes({

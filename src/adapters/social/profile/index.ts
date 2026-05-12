@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { DbProfileStore } from "./store.js";
 import { DbUserPreferenceStore } from "./preference-store.js";
-import { createProfileRoutes } from "../../../api/routes/profile/index.js";
+import { createProfileRoutes } from "./routes/index.js";
 import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
 import { createFileRoutes } from "./routes/files.js";
@@ -13,7 +13,7 @@ import type { FileStorageGateway } from "@cognis/core";
 import {
     getCookieSession,
     setPageSecurityHeaders,
-} from "../../../api/auth/guard.js";
+} from "../../../gateways/auth/guard.js";
 import type { AccountRole } from "./store.js";
 import type {
     SocialAdapter,
@@ -21,7 +21,10 @@ import type {
 } from "../../../gateways/social/gateway.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 
-const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
+const ADAPTER_UI_ROOT = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "ui",
+);
 
 let adapterReady = false;
 
@@ -76,11 +79,7 @@ export function createProfilePageRoutes(isAdapterEnabled?: () => boolean) {
                 return true;
             }
             try {
-                const filePath = path.join(
-                    PUBLIC_ROOT,
-                    "pages",
-                    "profile.html",
-                );
+                const filePath = path.join(ADAPTER_UI_ROOT, "index.html");
                 const file = await readFile(filePath);
                 setPageSecurityHeaders(res);
                 res.writeHead(200, {

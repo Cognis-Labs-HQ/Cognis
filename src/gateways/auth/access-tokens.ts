@@ -7,7 +7,7 @@ import {
     writeFileSync,
 } from "node:fs";
 import path from "node:path";
-import { logAppEvent as log } from "../logger.js";
+import { logAppEvent as log } from "../../api/logger.js";
 
 export type AccessRole = "user" | "teacher" | "moderator" | "admin" | "owner";
 

@@ -2,8 +2,8 @@ import {
     applyDocumentTitle,
     applyStaticTranslations,
     createI18n,
-} from "../../reuse/i18n.js";
-import { registerServiceWorker } from "../../reuse/pwa.js";
+} from "/static/reuse/i18n.js";
+import { registerServiceWorker } from "/static/reuse/pwa.js";
 
 registerServiceWorker();
 

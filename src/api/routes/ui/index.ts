@@ -5,8 +5,8 @@ import {
     requireAuth,
     getCookieSession,
     setPageSecurityHeaders,
-} from "../../auth/guard.js";
-import { lookupAccessToken } from "../../auth/access-tokens.js";
+} from "../../../gateways/auth/guard.js";
+import { lookupAccessToken } from "../../../gateways/auth/access-tokens.js";
 import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
 import type { GatewayRegistry } from "@cognis/core";
 import type { UIRegistry } from "../../ui-registry.js";
@@ -96,6 +96,15 @@ async function serveFile(
             }),
         );
     }
+}
+
+async function serveHtmlPage(
+    res: ServerResponse,
+    filePath: string,
+    log?: BootstrapLog,
+    logMeta?: Record<string, unknown>,
+) {
+    await serveFile(res, filePath, "text/html; charset=utf-8", log, logMeta);
 }
 
 function getCookieAccessToken(req: IncomingMessage): string | null {
@@ -240,10 +249,9 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "index.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -251,21 +259,9 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/login") {
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "login.html"),
-                "text/html; charset=utf-8",
-                log,
-                { path: url.pathname, method: req.method ?? "GET" },
-            );
-            return true;
-        }
-
-        if (url.pathname === "/verify-email") {
-            await serveFile(
-                res,
-                path.join(PUBLIC_ROOT, "pages", "verify-email.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -284,10 +280,9 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "settings.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -312,10 +307,9 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "administration.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -369,10 +363,9 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "users.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -434,10 +427,9 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "invite.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -456,10 +448,9 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "docs.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -478,10 +469,9 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "license.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -513,17 +503,11 @@ export function createUiRoutes(
                             manifest.id,
                             manifest.entrypoints.ui,
                         );
-                        await serveFile(
-                            res,
-                            uiFile,
-                            "text/html; charset=utf-8",
-                            log,
-                            {
-                                path: url.pathname,
-                                method: req.method ?? "GET",
-                                moduleId: manifest.id,
-                            },
-                        );
+                        await serveHtmlPage(res, uiFile, log, {
+                            path: url.pathname,
+                            method: req.method ?? "GET",
+                            moduleId: manifest.id,
+                        });
                         return true;
                     }
                 } catch (error) {
@@ -613,6 +597,23 @@ export function createUiRoutes(
             res.end(
                 JSON.stringify({
                     data: [...gatewayMessages, ...moduleMessages],
+                }),
+            );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/ui/settings-sections" &&
+            req.method === "GET"
+        ) {
+            if (!requireAuth(req, res, "user")) return true;
+            const sections = (uiRegistry?.listSettingsSections() ?? []).filter(
+                (section) => !section.isEnabled || section.isEnabled(),
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: sections,
                 }),
             );
             return true;

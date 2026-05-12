@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { getAuthClaims } from "../../../api/auth/guard.js";
+import { getAuthClaims } from "../../../gateways/auth/guard.js";
 import type { IInternalNotificationStore } from "./store.js";
 
 /**

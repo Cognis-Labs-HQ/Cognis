@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth, getAuthClaims } from "../../../../api/auth/guard.js";
+import { requireAuth, getAuthClaims } from "../../../../gateways/auth/guard.js";
 import type {
     DbProfileStore,
     AccountProfile,

@@ -6,7 +6,7 @@ import {
     issueAccessToken,
     lookupAccessToken,
     revokeAccessTokensForSubject,
-} from "../../auth/access-tokens.js";
+} from "../../../gateways/auth/access-tokens.js";
 
 function createResponseRecorder() {
     let status = 0;
@@ -671,6 +671,94 @@ test("GET /api/v1/ui/navbar-plugins returns 401 for unauthenticated request", as
         { method: "GET", headers: {} } as any,
         recorder.res as any,
         new URL("http://localhost/api/v1/ui/navbar-plugins"),
+    );
+
+    assert.equal(recorder.status, 401);
+});
+
+test("GET /api/v1/ui/settings-sections returns registered sections for authenticated user", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    uiRegistry.registerSettingsSection({
+        id: "study",
+        label: "Study",
+        scriptUrl: "/static/gateways/study/study-prefs.js",
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const userToken = issueAccessToken("u1", "user", 60);
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        {
+            method: "GET",
+            headers: {
+                cookie: `cognis_access_token=${userToken}`,
+                authorization: `Bearer ${userToken}`,
+            },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/settings-sections"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    const payload = JSON.parse(recorder.body);
+    assert.equal(payload.data.length, 1);
+    assert.equal(payload.data[0].id, "study");
+});
+
+test("GET /api/v1/ui/settings-sections filters disabled settings sections", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    uiRegistry.registerSettingsSection({
+        id: "enabled-section",
+        label: "Enabled",
+        scriptUrl: "/static/gateways/enabled/prefs.js",
+        isEnabled: () => true,
+    });
+    uiRegistry.registerSettingsSection({
+        id: "disabled-section",
+        label: "Disabled",
+        scriptUrl: "/static/gateways/disabled/prefs.js",
+        isEnabled: () => false,
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const userToken = issueAccessToken("u1", "user", 60);
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        {
+            method: "GET",
+            headers: {
+                cookie: `cognis_access_token=${userToken}`,
+                authorization: `Bearer ${userToken}`,
+            },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/settings-sections"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    const payload = JSON.parse(recorder.body);
+    assert.deepEqual(
+        payload.data.map((section: { id: string }) => section.id),
+        ["enabled-section"],
+    );
+});
+
+test("GET /api/v1/ui/settings-sections returns 401 for unauthenticated request", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    uiRegistry.registerSettingsSection({
+        id: "study",
+        label: "Study",
+        scriptUrl: "/static/gateways/study/study-prefs.js",
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    await route(
+        { method: "GET", headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/settings-sections"),
     );
 
     assert.equal(recorder.status, 401);

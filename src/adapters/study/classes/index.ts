@@ -1,4 +1,5 @@
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type {
     StudyAdapter,
@@ -10,9 +11,12 @@ import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js
 import {
     getCookieSession,
     setPageSecurityHeaders,
-} from "../../../api/auth/guard.js";
+} from "../../../gateways/auth/guard.js";
 
-const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
+const ADAPTER_UI_ROOT = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "ui",
+);
 
 let adapterReady = false;
 
@@ -51,10 +55,7 @@ function createClassesPageRoute(isAdapterEnabled: () => boolean) {
         }
         setPageSecurityHeaders(res);
         const html = await import("node:fs/promises").then((fs) =>
-            fs.readFile(
-                path.join(PUBLIC_ROOT, "pages", "classes.html"),
-                "utf8",
-            ),
+            fs.readFile(path.join(ADAPTER_UI_ROOT, "index.html"), "utf8"),
         );
         res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
         res.end(html);
@@ -146,6 +147,8 @@ export async function bootstrapStudyAdapter(
         scriptUrl: "/static/gateways/study/classes-dashboard-element.js",
         isEnabled: () => ctx.isAdapterEnabled(),
     });
+
+    ctx.registerAdapterStaticDir?.("study", "classes", ADAPTER_UI_ROOT);
 
     ctx.log?.("info", "Study/classes adapter: bootstrapped.", {
         component: "study-classes",

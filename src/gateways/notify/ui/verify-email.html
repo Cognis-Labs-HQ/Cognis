@@ -6,7 +6,7 @@
             name="viewport"
             content="width=device-width, initial-scale=1.0, viewport-fit=cover"
         />
-        <title>{{ui.page.title.profile}}</title>
+        <title data-i18n="ui.page.title.verify_email">Verify Email</title>
         <link
             rel="icon"
             href="/static/assets/icons/cognis-icon.png"
@@ -26,13 +26,34 @@
             rel="apple-touch-icon"
             href="/static/assets/icons/cognis-apple-touch-180.png"
         />
-        <link rel="stylesheet" href="/static/styles/page-builder.css" />
-        <link rel="stylesheet" href="/static/styles/reuse/page-sections.css" />
-        <link rel="stylesheet" href="/static/styles/profile.css" />
-        <link rel="stylesheet" href="/static/styles/reuse/char-counter.css" />
+        <link
+            rel="stylesheet"
+            href="/static/gateways/notify/verify-email.css"
+        />
     </head>
     <body>
-        <div id="app"></div>
-        <script type="module" src="/static/app/profile/index.js"></script>
+        <div class="verify-card" id="verify-card">
+            <div class="verify-icon" id="verify-icon">⏳</div>
+            <h1
+                class="verify-title"
+                id="verify-title"
+                data-i18n="ui.app.verify_email.verifying"
+            >
+                Verifying…
+            </h1>
+            <p class="verify-body" id="verify-body"></p>
+            <a
+                href="/dashboard"
+                class="verify-link"
+                id="verify-link"
+                style="display: none"
+                data-i18n="ui.app.verify_email.return_link"
+                >Return to Cognis</a
+            >
+        </div>
+        <script
+            type="module"
+            src="/static/gateways/notify/verify-email.js"
+        ></script>
     </body>
 </html>

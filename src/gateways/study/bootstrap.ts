@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import { requireAuth } from "../../api/auth/guard.js";
+import { requireAuth } from "../auth/guard.js";
 import { readJson } from "../../api/reuse/read-json.js";
 import { CoreStudyGateway } from "./gateway.js";
 
@@ -151,6 +151,22 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.uiRegistry?.registerPageExtension(pageId, element),
         registerStaticDir: (prefix, dir) =>
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
+        registerAdapterStaticDir: (gatewayId, adapterId, dir) => {
+            if (!ctx.uiRegistry?.registerAdapterStaticDir) {
+                ctx.log?.(
+                    "warn",
+                    "Study adapter UI static directory registration skipped because the UI registry does not support adapter static dirs.",
+                    {
+                        component: "study-gateway",
+                        gatewayId,
+                        adapterId,
+                        dir,
+                    },
+                );
+                return;
+            }
+            ctx.uiRegistry.registerAdapterStaticDir(gatewayId, adapterId, dir);
+        },
         log: ctx.log,
         dbExecutor,
     });
@@ -187,8 +203,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.uiRegistry?.registerStaticDir("study", path.join(GATEWAY_ROOT, "ui"));
+    ctx.uiRegistry?.registerSettingsSection({
+        id: "study",
+        label: "Study",
+        scriptUrl: "/static/gateways/study/study-prefs.js",
+        isEnabled: () =>
+            ctx.gatewayRegistry.get("study")?.status !== "disabled",
+    });
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/study/navbar.js",
+        isEnabled: () =>
+            ctx.gatewayRegistry.get("study")?.status !== "disabled",
     });
 
     ctx.routeRegistry.register(
@@ -199,7 +224,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.2.1",
+        version: "1.2.2",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",

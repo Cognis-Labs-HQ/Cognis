@@ -4,7 +4,7 @@ import {
     createPreferencesRoutes,
     VolatileUserPreferenceStore,
 } from "../preferences.js";
-import { issueAccessToken } from "../../../../../api/auth/access-tokens.js";
+import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 
 test("preferences routes save and load layout preferences", async () => {
     const route = createPreferencesRoutes(new VolatileUserPreferenceStore());

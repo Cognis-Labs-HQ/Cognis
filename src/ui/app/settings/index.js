@@ -18,13 +18,12 @@ import {
 } from "../../reuse/font-prefs.js";
 import { initLanguagePrefs } from "./language-prefs.js";
 import { initGeneralPrefs } from "./general-prefs.js";
-import { initNotificationPrefs } from "./notification-prefs.js";
 import { initDateTimePrefs } from "./datetime-prefs.js";
-import { initStudyPrefs } from "./study-prefs.js";
 import { applyTimezoneToLocalStorage } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { showToast } from "../../reuse/toast.js";
+import { escapeHtml } from "../../reuse/escape-html.js";
 
 async function loadPrefs() {
     const account = localStorage.getItem("cognis_account");
@@ -51,12 +50,14 @@ async function savePrefs(prefs) {
     );
 }
 
-async function isStudyGatewayAvailable() {
+async function loadSettingsSections() {
     try {
-        const response = await apiFetch("/api/v1/study/languages");
-        return response.ok;
+        const res = await apiFetch("/api/v1/ui/settings-sections");
+        if (!res.ok) return [];
+        const payload = await res.json();
+        return payload.data ?? [];
     } catch {
-        return false;
+        return [];
     }
 }
 
@@ -87,7 +88,7 @@ export async function mount(root, { signal } = {}) {
         loadedPrefs?.timezone ?? null,
         loadedPrefs?.detectedTimezone ?? null,
     );
-    const studyGatewayAvailable = await isStudyGatewayAvailable();
+    const sectionDescriptors = await loadSettingsSections();
 
     let savedMode = getStoredTheme();
 
@@ -96,9 +97,46 @@ export async function mount(root, { signal } = {}) {
     let themePrefs;
     let changesBar;
     let generalPrefs;
-    let notifPrefs;
     let datetimePrefs;
-    let studyPrefs;
+    const pendingDirtyStates = new Map();
+
+    function markDirty(key, dirty) {
+        pendingDirtyStates.set(key, dirty);
+        changesBar?.markDirty(key, dirty);
+    }
+
+    let contributedSections = [];
+    try {
+        contributedSections = (
+            await Promise.all(
+                sectionDescriptors.map(async (descriptor) => {
+                    try {
+                        const mod = await import(descriptor.scriptUrl);
+                        if (typeof mod.createSettingsSection !== "function") {
+                            console.warn(
+                                `[settings] No createSettingsSection in ${descriptor.scriptUrl}`,
+                            );
+                            return null;
+                        }
+                        return mod.createSettingsSection({
+                            i18n,
+                            root,
+                            markDirty,
+                        });
+                    } catch (error) {
+                        console.warn(
+                            `[settings] Failed loading ${descriptor.scriptUrl}:`,
+                            error,
+                        );
+                        return null;
+                    }
+                }),
+            )
+        ).filter(Boolean);
+    } catch (error) {
+        console.warn(`[settings] sections-load-failed:`, error);
+        contributedSections = [];
+    }
 
     function initThemePrefs({ onDirtyChange }) {
         let currentMode = savedMode;
@@ -219,13 +257,11 @@ export async function mount(root, { signal } = {}) {
                     fontPrefs = initFontPrefs(root, {
                         existingPrefs: loadedPrefs,
                         i18n,
-                        onDirtyChange: (dirty) =>
-                            changesBar?.markDirty("font", dirty),
+                        onDirtyChange: (dirty) => markDirty("font", dirty),
                     });
                     fontPrefs.init();
                     themePrefs = initThemePrefs({
-                        onDirtyChange: (dirty) =>
-                            changesBar?.markDirty("theme", dirty),
+                        onDirtyChange: (dirty) => markDirty("theme", dirty),
                     });
                 },
             },
@@ -263,7 +299,7 @@ export async function mount(root, { signal } = {}) {
                             languagePriority,
                             {
                                 onDirtyChange: (dirty) =>
-                                    changesBar?.markDirty("language", dirty),
+                                    markDirty("language", dirty),
                             },
                         );
                         languagePrefs.init();
@@ -273,63 +309,23 @@ export async function mount(root, { signal } = {}) {
                 },
             },
         },
-        {
-            id: "notifications",
-            label: i18n.t("ui.reuse.notifications"),
+        ...contributedSections.map((section) => ({
+            id: section.id,
+            label: section.label,
             subComposerOptions: {
                 allowCustomization: false,
-                preferenceKey: "settings-notifications-layout",
-                heading: i18n.t("ui.reuse.notifications"),
+                preferenceKey: section.preferenceKey,
+                heading: section.heading,
                 elements: [
                     {
-                        id: "notif-matrix",
-                        label: i18n.t("ui.app.settings.notif_matrix_heading"),
-                        render: () => `<div id="notif-matrix-container"></div>`,
+                        id: `${section.id}-content`,
+                        label: section.label,
+                        render: () => section.renderContent(),
                     },
                 ],
-                onRender: () => {
-                    const account =
-                        localStorage.getItem("cognis_account") ?? "";
-                    notifPrefs = initNotificationPrefs(root, {
-                        i18n,
-                        username: account,
-                        onDirtyChange: (dirty) =>
-                            changesBar?.markDirty("notifications", dirty),
-                    });
-                    notifPrefs.init();
-                },
+                onRender: () => section.onRender(),
             },
-        },
-
-        ...(studyGatewayAvailable
-            ? [
-                  {
-                      id: "study",
-                      label: i18n.t("ui.app.settings.study.title"),
-                      subComposerOptions: {
-                          allowCustomization: false,
-                          preferenceKey: "settings-study-layout",
-                          heading: i18n.t("ui.app.settings.study.title"),
-                          elements: [
-                              {
-                                  id: "study-prefs",
-                                  label: i18n.t("ui.app.settings.study.title"),
-                                  render: () =>
-                                      `<div id="study-prefs-container"></div>`,
-                              },
-                          ],
-                          onRender: () => {
-                              studyPrefs = initStudyPrefs(root, {
-                                  i18n,
-                                  onDirtyChange: (dirty) =>
-                                      changesBar?.markDirty("study", dirty),
-                              });
-                              studyPrefs.init();
-                          },
-                      },
-                  },
-              ]
-            : []),
+        })),
         {
             id: "datetime",
             label: i18n.t("ui.app.settings.datetime"),
@@ -354,8 +350,7 @@ export async function mount(root, { signal } = {}) {
                     datetimePrefs = initDateTimePrefs(root, {
                         existingPrefs: loadedPrefs,
                         i18n,
-                        onDirtyChange: (dirty) =>
-                            changesBar?.markDirty("datetime", dirty),
+                        onDirtyChange: (dirty) => markDirty("datetime", dirty),
                     });
                     datetimePrefs.init();
                 },
@@ -415,8 +410,12 @@ export async function mount(root, { signal } = {}) {
         <li><button data-composer-scroll="general">${i18n.t("ui.app.settings.general")}</button></li>
         <li><button data-composer-scroll="appearance">${i18n.t("ui.reuse.appearance")}</button></li>
         <li><button data-composer-scroll="language">${i18n.t("ui.reuse.language")}</button></li>
-        <li><button data-composer-scroll="notifications">${i18n.t("ui.reuse.notifications")}</button></li>
-        ${studyGatewayAvailable ? `<li><button data-composer-scroll="study">${i18n.t("ui.app.settings.study.title")}</button></li>` : ""}
+        ${contributedSections
+            .map(
+                (section) =>
+                    `<li><button data-composer-scroll="${escapeHtml(section.id)}">${section.label}</button></li>`,
+            )
+            .join(" ")}
         <li><button data-composer-scroll="datetime">${i18n.t("ui.app.settings.datetime")}</button></li>
         <li><button data-composer-scroll="advanced">${i18n.t("ui.app.settings.advanced")}</button></li>
       </ul>
@@ -442,23 +441,10 @@ export async function mount(root, { signal } = {}) {
     changesBar = createUnsavedChangesBar(floatingSlot, {
         onSave: async () => {
             const mode = themePrefs?.getMode() ?? savedMode;
-            const account = localStorage.getItem("cognis_account") ?? "";
-            if (notifPrefs?.isDirty()) {
-                await apiFetch(
-                    `/api/v1/users/${encodeURIComponent(account)}/notification-prefs`,
-                    {
-                        method: "PUT",
-                        headers: { "content-type": "application/json" },
-                        body: JSON.stringify(notifPrefs.getPendingPrefs()),
-                    },
-                );
-            }
-            if (studyPrefs?.isDirty()) {
-                await apiFetch("/api/v1/study/preferences", {
-                    method: "PUT",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify(studyPrefs.getPendingPrefs()),
-                });
+            for (const section of contributedSections) {
+                if (section.isDirty()) {
+                    await section.save();
+                }
             }
             const prefs = {
                 appFont: fontPrefs
@@ -489,8 +475,9 @@ export async function mount(root, { signal } = {}) {
             themePrefs?.commit();
             datetimePrefs?.commit();
             languagePrefs?.commit();
-            notifPrefs?.commit();
-            studyPrefs?.commit();
+            for (const section of contributedSections) {
+                section.commit();
+            }
             showToast(i18n.t("ui.app.settings.saved_alert"), {
                 variant: "success",
             });
@@ -509,11 +496,15 @@ export async function mount(root, { signal } = {}) {
             fontPrefs?.discard();
             languagePrefs?.discard();
             themePrefs?.discard();
-            notifPrefs?.discard();
-            studyPrefs?.discard();
             datetimePrefs?.discard();
+            for (const section of contributedSections) {
+                section.discard();
+            }
         },
     });
+    for (const [key, dirty] of pendingDirtyStates.entries()) {
+        changesBar.markDirty(key, dirty);
+    }
 }
 
 if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));

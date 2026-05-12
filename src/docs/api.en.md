@@ -50,16 +50,16 @@ Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200
 
 ### Key source locations
 
-| Path                            | Purpose                                                |
-| ------------------------------- | ------------------------------------------------------ |
-| `src/api/main.ts`               | Server entry point                                     |
-| `src/api/server.ts`             | HTTP server setup and route dispatch                   |
-| `src/api/route-registry.ts`     | Route registry used by gateways to self-register       |
-| `src/api/gateway-bootstrap.ts`  | Loads and bootstraps all gateways                      |
-| `src/api/auth/guard.ts`         | `requireAuth`, `getAuthClaims` middleware              |
-| `src/api/auth/access-tokens.ts` | Token issuance and validation                          |
-| `src/api/bootstrap/db-init.ts`  | Schema initialization at startup                       |
-| `src/api/reuse/`                | Shared utilities (crypto, JSON reading, store helpers) |
+| Path                                 | Purpose                                                |
+| ------------------------------------ | ------------------------------------------------------ |
+| `src/api/main.ts`                    | Server entry point                                     |
+| `src/api/server.ts`                  | HTTP server setup and route dispatch                   |
+| `src/api/route-registry.ts`          | Route registry used by gateways to self-register       |
+| `src/api/gateway-bootstrap.ts`       | Loads and bootstraps all gateways                      |
+| `src/gateways/auth/guard.ts`         | `requireAuth`, `getAuthClaims` middleware              |
+| `src/gateways/auth/access-tokens.ts` | Token issuance and validation                          |
+| `src/api/bootstrap/db-init.ts`       | Schema initialization at startup                       |
+| `src/api/reuse/`                     | Shared utilities (crypto, JSON reading, store helpers) |
 
 ## Configuration
 

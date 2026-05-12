@@ -4,7 +4,7 @@ import { rmSync } from "node:fs";
 import { DbProfileStore } from "../../store.js";
 import { DbLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
 import { createFileRoutes } from "../files.js";
-import { issueAccessToken } from "../../../../../api/auth/access-tokens.js";
+import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 import { makeTempDb } from "./helpers.js";
 
 function fakeFileGateway() {

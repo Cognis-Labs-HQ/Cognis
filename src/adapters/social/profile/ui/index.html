@@ -6,7 +6,7 @@
             name="viewport"
             content="width=device-width, initial-scale=1.0, viewport-fit=cover"
         />
-        <title>{{module.study.classes.page_title}}</title>
+        <title>{{ui.page.title.profile}}</title>
         <link
             rel="icon"
             href="/static/assets/icons/cognis-icon.png"
@@ -28,10 +28,17 @@
         />
         <link rel="stylesheet" href="/static/styles/page-builder.css" />
         <link rel="stylesheet" href="/static/styles/reuse/page-sections.css" />
-        <link rel="stylesheet" href="/static/styles/classes.css" />
+        <link
+            rel="stylesheet"
+            href="/static/adapters/social/profile/profile.css"
+        />
+        <link rel="stylesheet" href="/static/styles/reuse/char-counter.css" />
     </head>
     <body>
         <div id="app"></div>
-        <script type="module" src="/static/app/classes/index.js"></script>
+        <script
+            type="module"
+            src="/static/adapters/social/profile/app.js"
+        ></script>
     </body>
 </html>

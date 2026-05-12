@@ -10,13 +10,13 @@
  * @module app/classes
  */
 
-import { apiFetch } from "../../reuse/api-client.js";
-import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
-import { createPageComposer } from "../../reuse/page-composer.js";
-import { showToast } from "../../reuse/toast.js";
-import { openPopup } from "../../reuse/popup.js";
-import { escapeHtml } from "../../reuse/escape-html.js";
-import { navigateTo } from "../../reuse/app-router.js";
+import { apiFetch } from "/static/reuse/api-client.js";
+import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
+import { createPageComposer } from "/static/reuse/page-composer.js";
+import { showToast } from "/static/reuse/toast.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();

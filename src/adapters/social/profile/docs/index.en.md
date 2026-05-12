@@ -47,16 +47,17 @@ The adapter bootstrap in `src/adapters/social/profile/index.ts`:
 
 ### Key source locations
 
-| Path                                                | Purpose                                                     |
-| --------------------------------------------------- | ----------------------------------------------------------- |
-| `src/adapters/social/profile/index.ts`              | Adapter bootstrap entry point                               |
-| `src/adapters/social/profile/routes/social.ts`      | Follow, unfollow, block, unblock, follower/following routes |
-| `src/adapters/social/profile/routes/posts.ts`       | Post creation, listing, and deletion                        |
-| `src/adapters/social/profile/routes/files.ts`       | File upload, download, and admin size-limit management      |
-| `src/adapters/social/profile/routes/preferences.ts` | User preference get/set                                     |
-| `src/adapters/db/reuse/profile-store.ts`            | `DbProfileStore` — all profile, social graph, and post SQL  |
-| `src/adapters/db/reuse/preference-store.ts`         | `DbUserPreferenceStore`                                     |
-| `src/api/routes/profile/index.ts`                   | Own profile and public profile route handlers               |
+| Path                                                | Purpose                                                                |
+| --------------------------------------------------- | ---------------------------------------------------------------------- |
+| `src/adapters/social/profile/index.ts`              | Adapter bootstrap entry point                                          |
+| `src/adapters/social/profile/routes/social.ts`      | Follow, unfollow, block, unblock, follower/following routes            |
+| `src/adapters/social/profile/routes/posts.ts`       | Post creation, listing, and deletion                                   |
+| `src/adapters/social/profile/routes/files.ts`       | File upload, download, and admin size-limit management                 |
+| `src/adapters/social/profile/routes/preferences.ts` | User preference get/set                                                |
+| `src/adapters/db/reuse/profile-store.ts`            | `DbProfileStore` — all profile, social graph, and post SQL             |
+| `src/adapters/db/reuse/preference-store.ts`         | `DbUserPreferenceStore`                                                |
+| `src/adapters/social/profile/profile-store.ts`      | Abstract `ProfileStore` interface and `VolatileProfileStore` for tests |
+| `src/adapters/social/profile/routes/index.ts`       | Own profile and public profile route handlers                          |
 
 ### Visibility model
 

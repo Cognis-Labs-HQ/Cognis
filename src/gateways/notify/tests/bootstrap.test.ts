@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../api/route-registry.js";
 import { bootstrap } from "../bootstrap.js";
-import { issueAccessToken } from "../../../api/auth/access-tokens.js";
+import { issueAccessToken } from "../../auth/access-tokens.js";
 
 function makeInMemoryDb() {
     return {

@@ -11,10 +11,13 @@ import { createMessagesRoutes } from "./routes.js";
 import {
     getCookieSession,
     setPageSecurityHeaders,
-} from "../../../api/auth/guard.js";
+} from "../../../gateways/auth/guard.js";
 import type { DbProfileStore } from "../profile/store.js";
 
-const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
+const ADAPTER_UI_ROOT = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "ui",
+);
 
 let adapterReady = false;
 
@@ -52,7 +55,7 @@ function createMessagesPageRoutes(isAdapterEnabled: () => boolean) {
         }
         try {
             const file = await readFile(
-                path.join(PUBLIC_ROOT, "pages", "messages.html"),
+                path.join(ADAPTER_UI_ROOT, "index.html"),
             );
             setPageSecurityHeaders(res);
             res.writeHead(200, {

@@ -3,7 +3,7 @@ import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { AccessRole } from "../../api/auth/access-tokens.js";
+import type { AccessRole } from "../auth/access-tokens.js";
 
 const ACCESS_ROLE_RANK: Record<AccessRole, number> = {
     user: 1,
@@ -111,6 +111,11 @@ export interface StudyAdapterBootstrapCtx {
         gatewayId?: string,
     ): void;
     registerStaticDir(urlPrefix: string, absoluteDir: string): void;
+    registerAdapterStaticDir?(
+        gatewayId: string,
+        adapterId: string,
+        absoluteDir: string,
+    ): void;
     registerNavbarPlugin(scriptUrl: string, isEnabled?: () => boolean): void;
     registerPageExtension(
         pageId: string,
@@ -220,9 +225,6 @@ export class CoreStudyGateway {
         }
 
         for (const entry of entries.sort()) {
-            // Legacy adapter is intentionally skipped because Japanese now ships
-            // as a Study language module (see src/modules/study/languages/ja/).
-            if (entry === "japanese") continue;
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
             try {
                 const raw = await readFile(pkgPath, "utf8");
@@ -254,9 +256,6 @@ export class CoreStudyGateway {
         }
 
         for (const entry of entries.sort()) {
-            // Legacy adapter is intentionally skipped because Japanese now ships
-            // as a Study language module (see src/modules/study/languages/ja/).
-            if (entry === "japanese") continue;
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
 
             let mod: Record<string, unknown>;

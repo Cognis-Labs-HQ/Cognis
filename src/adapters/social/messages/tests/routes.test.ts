@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { VolatileProfileStore } from "../../../../api/reuse/profile-store.js";
+import { VolatileProfileStore } from "../../profile/profile-store.js";
 import { canMessage } from "../routes.js";
 
 test("canMessage allows recipient community visibility", async () => {
