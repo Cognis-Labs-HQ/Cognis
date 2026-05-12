@@ -18,13 +18,7 @@
  * @param {string | null | undefined} role Role ID to localize.
  * @returns {string} Localized role label, or the raw role when unknown.
  */
-export const ACCESS_ROLES = [
-    "user",
-    "teacher",
-    "moderator",
-    "admin",
-    "owner",
-];
+export const ACCESS_ROLES = ["user", "teacher", "moderator", "admin", "owner"];
 
 export function getRoleLabel(i18n, role) {
     const normalizedRole = String(role ?? "").trim();

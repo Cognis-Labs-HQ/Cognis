@@ -62,12 +62,20 @@ Modules that supply `entrypoints.ui` must export their page at the declared path
 
 ```ts
 export function registerApiRoutes(router) {
-    router.get("/api/v1/modules/my-module/data", async (req, res) => {
-        // handler
-    }, { access: { minRole: "moderator" } });
-    router.post("/api/v1/modules/my-module/admin-audit", async (req, res) => {
-        // handler
-    }, { access: { onlyRole: "owner" } });
+    router.get(
+        "/api/v1/modules/my-module/data",
+        async (req, res) => {
+            // handler
+        },
+        { access: { minRole: "moderator" } },
+    );
+    router.post(
+        "/api/v1/modules/my-module/admin-audit",
+        async (req, res) => {
+            // handler
+        },
+        { access: { onlyRole: "owner" } },
+    );
 }
 ```
 
@@ -99,9 +107,9 @@ policy metadata for UI pages:
 
 ```json
 [
-  "/api/v1/modules/my-module/data",
-  { "path": "/my-module/page", "access": { "minRole": "admin" } },
-  { "path": "/my-module/owner-audit", "access": { "onlyRole": "owner" } }
+    "/api/v1/modules/my-module/data",
+    { "path": "/my-module/page", "access": { "minRole": "admin" } },
+    { "path": "/my-module/owner-audit", "access": { "onlyRole": "owner" } }
 ]
 ```
 

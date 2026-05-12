@@ -32,7 +32,9 @@ function parseRoleAccessPolicy(value: unknown): RoleAccessPolicy | undefined {
         return undefined;
     }
     const candidate = value as { minRole?: unknown; onlyRole?: unknown };
-    const minRole = isAccessRole(candidate.minRole) ? candidate.minRole : undefined;
+    const minRole = isAccessRole(candidate.minRole)
+        ? candidate.minRole
+        : undefined;
     const onlyRole = isAccessRole(candidate.onlyRole)
         ? candidate.onlyRole
         : undefined;
@@ -348,7 +350,10 @@ export function createUiRoutes(
                 return true;
             }
             const session = getCookieSession(req);
-            if (!session || !isRoleAllowed(session.role, { minRole: "admin" })) {
+            if (
+                !session ||
+                !isRoleAllowed(session.role, { minRole: "admin" })
+            ) {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
@@ -375,7 +380,10 @@ export function createUiRoutes(
                 return true;
             }
             const session = getCookieSession(req);
-            if (!session || !isRoleAllowed(session.role, { minRole: "admin" })) {
+            if (
+                !session ||
+                !isRoleAllowed(session.role, { minRole: "admin" })
+            ) {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;

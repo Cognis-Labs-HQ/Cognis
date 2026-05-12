@@ -178,7 +178,9 @@ function renderUsersTable() {
                   const roleCellHtml = isOwner
                       ? escapeHtml(getRoleLabel(i18n, "owner"))
                       : `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>
-                            ${ACCESS_ROLES.filter((roleId) => roleId !== "owner")
+                            ${ACCESS_ROLES.filter(
+                                (roleId) => roleId !== "owner",
+                            )
                                 .map(
                                     (roleId) =>
                                         `<option value="${escapeHtml(roleId)}"${userRole === roleId ? " selected" : ""}>${escapeHtml(getRoleLabel(i18n, roleId))}</option>`,

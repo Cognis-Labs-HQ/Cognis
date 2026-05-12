@@ -773,11 +773,10 @@ test("GET /api/v1/ui/navbar-plugins filters plugins by access policy", async () 
     );
     const adminPayload = JSON.parse(adminRecorder.body);
     assert.deepEqual(
-        adminPayload.data.map((plugin: { scriptUrl: string }) => plugin.scriptUrl),
-        [
-            "/static/gateways/user/navbar.js",
-            "/static/gateways/admin/navbar.js",
-        ],
+        adminPayload.data.map(
+            (plugin: { scriptUrl: string }) => plugin.scriptUrl,
+        ),
+        ["/static/gateways/user/navbar.js", "/static/gateways/admin/navbar.js"],
     );
 
     const ownerToken = issueAccessToken("u2", "owner", 60);
@@ -795,7 +794,9 @@ test("GET /api/v1/ui/navbar-plugins filters plugins by access policy", async () 
     );
     const ownerPayload = JSON.parse(ownerRecorder.body);
     assert.deepEqual(
-        ownerPayload.data.map((plugin: { scriptUrl: string }) => plugin.scriptUrl),
+        ownerPayload.data.map(
+            (plugin: { scriptUrl: string }) => plugin.scriptUrl,
+        ),
         [
             "/static/gateways/user/navbar.js",
             "/static/gateways/admin/navbar.js",

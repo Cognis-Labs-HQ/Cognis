@@ -1,9 +1,9 @@
 [
-  "/api/v1/modules/sample-analytics/metrics",
-  {
-    "path": "/analytics",
-    "access": {
-      "minRole": "admin"
+    "/api/v1/modules/sample-analytics/metrics",
+    {
+        "path": "/analytics",
+        "access": {
+            "minRole": "admin"
+        }
     }
-  }
 ]

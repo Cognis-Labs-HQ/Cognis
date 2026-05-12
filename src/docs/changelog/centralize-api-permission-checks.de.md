@@ -2,41 +2,50 @@
 
 ## Zusammenfassung
 
-Behoben: Ein Fehler, bei dem die Rolle `owner` auf benutzerbezogene
-API-Endpunkte keinen Zugriff hatte, da Route-Handler exakte
-`role === "admin"`-Zeichenkettenvergleiche verwendeten statt eines
-rangbasierten Vergleichs. Da `owner` in der Rollenhierarchie höher als
-`admin` eingestuft ist, erhielten Besitzer bei Endpunkten wie
-`GET /api/v1/users/:id/emails` fälschlicherweise den Fehler 403.
+Autorisierungslücken für die Rolle `owner` bei benutzerbezogenen API-Endpunkten
+wurden behoben und die Rollenprüfung zentralisiert.
 
-Eingeführt wurden zwei wiederverwendbare Hilfsfunktionen in
-`src/gateways/auth/guard.ts`:
+Zusätzlich wurde ein erweiterbares Rollenrichtlinien-System eingeführt:
 
-- `hasMinRole(role, minRole)` — gibt `true` zurück, wenn die angegebene Rolle
-  den Mindestrang erreicht oder überschreitet, gemäß der kanonischen
-  Hierarchie `user < teacher < moderator < admin < owner`.
-- `canAccessUserData(claims, targetUsername)` — gibt `true` zurück, wenn der
-  Aufrufer der Zielnutzer selbst ist oder mindestens Adminrang besitzt.
+- Von Modulen eingeführte API-Routen können jetzt `minRole` (hierarchisch)
+  oder `onlyRole` (exklusive Einzelrolle) deklarieren.
+- Von Modulen, Gateways und Adaptern eingeführte UI-Seiten/-Erweiterungen
+  können dieselben Regeln deklarieren und werden zentral gefiltert.
 
-Beide Hilfsfunktionen werden über `src/gateways/shared.ts` für
-Gateway-Autoren exportiert. Alle Route-Handler, die bisher Ad-hoc-
-Zeichenkettenvergleiche gegen `"admin"` oder `"owner"` vornahmen,
-verwenden nun diese Hilfsfunktionen.
+Außerdem wurde die Rollendarstellung in der UI verbessert, damit `owner` und
+`admin` klar unterscheidbar sind und `moderator` als vollständige Rolle geführt
+wird.
 
 ## Geänderte Komponenten und Dateien
 
-- Auth Guard (neue Hilfsfunktionen):
+- Rollenrichtlinien im Auth-Bereich:
     - `src/gateways/auth/guard.ts`
     - `src/gateways/shared.ts`
-- Notify-Gateway-Routen (Besitzer-Zugriff behoben):
-    - `src/gateways/notify/bootstrap.ts`
-    - `src/gateways/notify/routes/notifications.ts`
-- Benutzerrouten (Konsistenzaktualisierung):
-    - `src/api/routes/users/index.ts`
-- Profil-Adapter-Routen (Besitzer-Zugriff behoben und vereinheitlicht):
-    - `src/adapters/social/profile/routes/preferences.ts`
-    - `src/adapters/social/profile/routes/files.ts`
-    - `src/adapters/social/profile/routes/posts.ts`
-- Tests (neue Abdeckung für Besitzerzugriff):
-    - `src/gateways/notify/tests/email-routes.test.ts`
-    - `src/gateways/notify/routes/tests/notification-routes.test.ts`
+- Rollenrichtlinien für Modul-API-Routen:
+    - `src/modules/routes/module-extensions.ts`
+    - `src/modules/sample-analytics/api/index.js`
+    - `src/modules/routes/tests/module-extension-routes.test.ts`
+- Rollenrichtlinien für Modul-UI-Routen:
+    - `src/api/routes/ui/index.ts`
+    - `src/modules/sample-analytics/routes.json`
+    - `src/core/services/module-service.ts`
+- Rollenfilter für UI-Erweiterungen (Gateway/Adapter/Modul):
+    - `src/api/ui-registry.ts`
+    - `src/api/routes/gateways/index.ts`
+    - `src/api/tests/ui/ui-routes.test.ts`
+    - `src/api/tests/gateways/gateway-routes.test.ts`
+- Rollenlabels und UI-Ausgabe:
+    - `src/ui/reuse/access-role.js`
+    - `src/ui/app/users/index.js`
+    - `src/ui/app/dashboard/index.js`
+    - `src/ui/languages/en/strings.xml`
+    - `src/ui/languages/de/strings.xml`
+    - `src/ui/languages/id/strings.xml`
+    - `src/ui/languages/ja/strings.xml`
+- Modul-Framework-Dokumentation:
+    - `src/modules/docs/index.en.md`
+
+## Commits
+
+- [93e5f7f](https://github.com/le-firehawk/Cognis/commit/93e5f7f)
+- [411e267](https://github.com/le-firehawk/Cognis/commit/411e267)

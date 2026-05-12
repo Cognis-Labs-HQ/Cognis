@@ -2,39 +2,49 @@
 
 ## Summary
 
-Fixed a bug where the `owner` role was denied access to user-scoped API
-endpoints because route handlers used exact `role === "admin"` string matches
-instead of a rank-based comparison. Since `owner` ranks above `admin` in the
-role hierarchy, owners were incorrectly returning 403 on endpoints such as
-`GET /api/v1/users/:id/emails` and `GET /api/v1/users/:id/notification-prefs`.
+Fixed owner-role authorization gaps on user-scoped API endpoints and centralized
+role-access evaluation utilities.
 
-Introduced two reusable helpers in `src/gateways/auth/guard.ts`:
+Added a broader role-access policy system for extensibility:
 
-- `hasMinRole(role, minRole)` — returns true when the given role meets or
-  exceeds the minimum required rank, using the canonical hierarchy
-  `user < teacher < moderator < admin < owner`.
-- `canAccessUserData(claims, targetUsername)` — returns true when the caller
-  is the target user themselves, or holds at least admin rank.
+- API routes introduced by modules can now declare access rules with
+  `minRole` (hierarchy-based) or `onlyRole` (exclusive single-role access).
+- UI pages/extensions introduced by modules, gateways, and adapters can now
+  declare the same access rules and are filtered centrally before delivery.
 
-Both helpers are re-exported from `src/gateways/shared.ts` for gateway authors.
-All route handlers that previously performed ad-hoc string comparisons against
-`"admin"` or `"owner"` now use these helpers, making permission logic
-consistent and easier to audit across the codebase.
+Improved role presentation in the UI so owner/admin are clearly distinguished
+and moderator is treated as a first-class role in role-selection outputs.
 
-## Changed components and files
+## Changed Components and Files
 
-- Auth guard (new helpers):
+- Auth role-access primitives and policy checks:
     - `src/gateways/auth/guard.ts`
     - `src/gateways/shared.ts`
-- Notify gateway routes (owner access fix):
-    - `src/gateways/notify/bootstrap.ts`
-    - `src/gateways/notify/routes/notifications.ts`
-- User routes (consistency update):
-    - `src/api/routes/users/index.ts`
-- Profile adapter routes (owner access fix + consistency):
-    - `src/adapters/social/profile/routes/preferences.ts`
-    - `src/adapters/social/profile/routes/files.ts`
-    - `src/adapters/social/profile/routes/posts.ts`
-- Tests (new coverage for owner access):
-    - `src/gateways/notify/tests/email-routes.test.ts`
-    - `src/gateways/notify/routes/tests/notification-routes.test.ts`
+- Module API route access policy support:
+    - `src/modules/routes/module-extensions.ts`
+    - `src/modules/sample-analytics/api/index.js`
+    - `src/modules/routes/tests/module-extension-routes.test.ts`
+- Module UI route declaration access support:
+    - `src/api/routes/ui/index.ts`
+    - `src/modules/sample-analytics/routes.json`
+    - `src/core/services/module-service.ts`
+- Gateway/adapter/module UI extension filtering by role policy:
+    - `src/api/ui-registry.ts`
+    - `src/api/routes/gateways/index.ts`
+    - `src/api/tests/ui/ui-routes.test.ts`
+    - `src/api/tests/gateways/gateway-routes.test.ts`
+- Role labels and UI role output improvements:
+    - `src/ui/reuse/access-role.js`
+    - `src/ui/app/users/index.js`
+    - `src/ui/app/dashboard/index.js`
+    - `src/ui/languages/en/strings.xml`
+    - `src/ui/languages/de/strings.xml`
+    - `src/ui/languages/id/strings.xml`
+    - `src/ui/languages/ja/strings.xml`
+- Module framework docs:
+    - `src/modules/docs/index.en.md`
+
+## Commits
+
+- [93e5f7f](https://github.com/le-firehawk/Cognis/commit/93e5f7f)
+- [411e267](https://github.com/le-firehawk/Cognis/commit/411e267)

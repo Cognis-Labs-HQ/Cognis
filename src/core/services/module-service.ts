@@ -178,7 +178,7 @@ export class ModuleService {
         moduleId: string,
         activationPath: string,
     ): Promise<void> {
-            const routeFile = path.join(activationPath, "routes.json");
+        const routeFile = path.join(activationPath, "routes.json");
         try {
             const raw = await readFile(routeFile, "utf8");
             const declaredRoutes = JSON.parse(raw) as unknown;

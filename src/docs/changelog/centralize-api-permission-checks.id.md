@@ -2,42 +2,49 @@
 
 ## Ringkasan
 
-Memperbaiki bug di mana peran `owner` ditolak mengakses endpoint API berbasis
-pengguna karena penangan rute menggunakan pencocokan string tepat
-`role === "admin"` alih-alih perbandingan berbasis pangkat. Karena `owner`
-berada di atas `admin` dalam hierarki peran, pemilik secara keliru mendapatkan
-403 pada endpoint seperti `GET /api/v1/users/:id/emails` dan
-`GET /api/v1/users/:id/notification-prefs`.
+Celah otorisasi untuk peran `owner` pada endpoint API berbasis pengguna telah
+diperbaiki, dan evaluasi akses peran dipusatkan.
 
-Diperkenalkan dua fungsi pembantu yang dapat digunakan kembali di
-`src/gateways/auth/guard.ts`:
+Sistem kebijakan peran yang lebih luas juga ditambahkan:
 
-- `hasMinRole(role, minRole)` — mengembalikan `true` apabila peran yang
-  diberikan memenuhi atau melebihi pangkat minimum, menggunakan hierarki
-  `user < teacher < moderator < admin < owner`.
-- `canAccessUserData(claims, targetUsername)` — mengembalikan `true` apabila
-  pemanggil adalah pengguna target itu sendiri, atau memiliki setidaknya
-  pangkat admin.
+- Rute API dari modul kini dapat mendeklarasikan `minRole` (berbasis hirarki)
+  atau `onlyRole` (akses eksklusif satu peran).
+- Halaman/ekstensi UI dari modul, gateway, dan adaptor kini dapat
+  mendeklarasikan aturan yang sama, lalu difilter secara terpusat.
 
-Kedua fungsi pembantu diekspor ulang melalui `src/gateways/shared.ts` untuk
-pengembang gateway. Semua penangan rute yang sebelumnya melakukan perbandingan
-string ad-hoc terhadap `"admin"` atau `"owner"` kini menggunakan fungsi
-pembantu ini.
+Tampilan peran di UI juga diperjelas agar `owner` dan `admin` mudah dibedakan,
+serta `moderator` diperlakukan sebagai peran penuh.
 
-## Komponen dan berkas yang diubah
+## Komponen dan Berkas yang Diubah
 
-- Auth Guard (fungsi pembantu baru):
+- Primitive kebijakan peran di auth:
     - `src/gateways/auth/guard.ts`
     - `src/gateways/shared.ts`
-- Rute gateway notifikasi (perbaikan akses pemilik):
-    - `src/gateways/notify/bootstrap.ts`
-    - `src/gateways/notify/routes/notifications.ts`
-- Rute pengguna (pembaruan konsistensi):
-    - `src/api/routes/users/index.ts`
-- Rute adaptor profil (perbaikan akses pemilik dan konsistensi):
-    - `src/adapters/social/profile/routes/preferences.ts`
-    - `src/adapters/social/profile/routes/files.ts`
-    - `src/adapters/social/profile/routes/posts.ts`
-- Pengujian (cakupan baru untuk akses pemilik):
-    - `src/gateways/notify/tests/email-routes.test.ts`
-    - `src/gateways/notify/routes/tests/notification-routes.test.ts`
+- Dukungan kebijakan peran untuk rute API modul:
+    - `src/modules/routes/module-extensions.ts`
+    - `src/modules/sample-analytics/api/index.js`
+    - `src/modules/routes/tests/module-extension-routes.test.ts`
+- Dukungan kebijakan peran untuk deklarasi rute UI modul:
+    - `src/api/routes/ui/index.ts`
+    - `src/modules/sample-analytics/routes.json`
+    - `src/core/services/module-service.ts`
+- Pemfilteran kebijakan peran untuk ekstensi UI (gateway/adaptor/modul):
+    - `src/api/ui-registry.ts`
+    - `src/api/routes/gateways/index.ts`
+    - `src/api/tests/ui/ui-routes.test.ts`
+    - `src/api/tests/gateways/gateway-routes.test.ts`
+- Label peran dan keluaran UI:
+    - `src/ui/reuse/access-role.js`
+    - `src/ui/app/users/index.js`
+    - `src/ui/app/dashboard/index.js`
+    - `src/ui/languages/en/strings.xml`
+    - `src/ui/languages/de/strings.xml`
+    - `src/ui/languages/id/strings.xml`
+    - `src/ui/languages/ja/strings.xml`
+- Dokumentasi framework modul:
+    - `src/modules/docs/index.en.md`
+
+## Commits
+
+- [93e5f7f](https://github.com/le-firehawk/Cognis/commit/93e5f7f)
+- [411e267](https://github.com/le-firehawk/Cognis/commit/411e267)

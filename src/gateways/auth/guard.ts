@@ -29,8 +29,7 @@ export interface RoleAccessPolicy {
 
 export function isAccessRole(value: unknown): value is AccessRole {
     return (
-        typeof value === "string" &&
-        ACCESS_ROLES.includes(value as AccessRole)
+        typeof value === "string" && ACCESS_ROLES.includes(value as AccessRole)
     );
 }
 
@@ -38,10 +37,7 @@ export function isAccessRole(value: unknown): value is AccessRole {
  * Returns true when the given role meets or exceeds the minimum required role.
  * Uses the canonical role hierarchy: user < teacher < moderator < admin < owner.
  */
-export function hasMinRole(
-    role: AccessRole,
-    minRole: AccessRole,
-): boolean {
+export function hasMinRole(role: AccessRole, minRole: AccessRole): boolean {
     return roleRank[role] >= roleRank[minRole];
 }
 
