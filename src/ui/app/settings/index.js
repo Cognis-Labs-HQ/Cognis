@@ -405,17 +405,17 @@ export async function mount(root, { signal } = {}) {
                 render: () => `
       <h2>${i18n.t("ui.reuse.settings")}</h2>
       <ul>
-        <li><button data-composer-scroll="general">${escapeHtml(i18n.t("ui.app.settings.general"))}</button></li>
-        <li><button data-composer-scroll="appearance">${escapeHtml(i18n.t("ui.reuse.appearance"))}</button></li>
-        <li><button data-composer-scroll="language">${escapeHtml(i18n.t("ui.reuse.language"))}</button></li>
+        <li><button data-composer-scroll="general">${i18n.t("ui.app.settings.general")}</button></li>
+        <li><button data-composer-scroll="appearance">${i18n.t("ui.reuse.appearance")}</button></li>
+        <li><button data-composer-scroll="language">${i18n.t("ui.reuse.language")}</button></li>
         ${contributedSections
             .map(
                 (section) =>
-                    `<li><button data-composer-scroll="${escapeHtml(section.id)}">${escapeHtml(section.label)}</button></li>`,
+                    `<li><button data-composer-scroll="${escapeHtml(section.id)}">${section.label}</button></li>`,
             )
             .join(" ")}
-        <li><button data-composer-scroll="datetime">${escapeHtml(i18n.t("ui.app.settings.datetime"))}</button></li>
-        <li><button data-composer-scroll="advanced">${escapeHtml(i18n.t("ui.app.settings.advanced"))}</button></li>
+        <li><button data-composer-scroll="datetime">${i18n.t("ui.app.settings.datetime")}</button></li>
+        <li><button data-composer-scroll="advanced">${i18n.t("ui.app.settings.advanced")}</button></li>
       </ul>
     `,
             },

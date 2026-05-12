@@ -46,7 +46,7 @@ export function initStudyPrefs(root, { i18n, onDirtyChange }) {
         );
     }
 
-    function notifyDirtyState() {
+    function markDirty() {
         onDirtyChange?.(isDirty());
     }
 
@@ -159,7 +159,7 @@ export function initStudyPrefs(root, { i18n, onDirtyChange }) {
                     : pendingLearningLanguages.filter(
                           (value) => value !== code,
                       );
-                notifyDirtyState();
+                markDirty();
             });
         });
         root.querySelectorAll("[data-study-teach]").forEach((input) => {
@@ -171,7 +171,7 @@ export function initStudyPrefs(root, { i18n, onDirtyChange }) {
                           (value) => value !== code,
                       );
                 render();
-                notifyDirtyState();
+                markDirty();
             });
         });
         root.querySelectorAll("[data-study-teacher-apply]").forEach(
