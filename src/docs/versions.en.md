@@ -4,12 +4,12 @@
 
 This document tracks the current version of every gateway, adapter, and module in the Cognis codebase. It serves as a changelog index and a quick reference for determining whether a component has been updated since a previous release.
 
-Every gateway, adapter, and module carries a `package.json` with a `version` field. When you modify a component — including its internal logic, database schema, public API, or configuration format — you must increment the version in that `package.json` following Semantic Versioning. This document is updated at the same time.
+Every gateway, adapter, and module carries a `package.json` with a `version` field. When you modify a component — including its internal logic, database schema, public API, or configuration format — you must increment the version in that `package.json` following Semantic Versioning. This document is updated at the same time. Changelog entries are stored as per-PR files under `src/docs/changelog/`.
 
 ## Responsibilities
 
 - Record the current version of every versioned component in the codebase.
-- Serve as the changelog index: link to per-component docs and CHANGELOG.md for history.
+- Serve as the changelog index: link to per-component docs and `src/docs/changelog/` for history.
 - Make it straightforward to detect version drift between deployed components and the current codebase.
 
 Not responsible for: enforcing version bumps (that is a code review concern) or tracking dependency versions of external packages.
@@ -27,7 +27,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component             | Path                                | Version |
 | --------------------- | ----------------------------------- | ------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.1.0` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.1` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.2` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.2` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.2.1` |

@@ -49,10 +49,10 @@ export async function bootstrapStudyAdapter(
 ): Promise<void> {
     const isEnabled = () => ctx.isAdapterEnabled();
 
-    if (ctx.dbExecutor && ctx.dbType) {
+    if (ctx.dbExecutor) {
         try {
             const { DbClassesStore } = await import("../classes/store.js");
-            const store = new DbClassesStore(ctx.dbExecutor, ctx.dbType);
+            const store = new DbClassesStore(ctx.dbExecutor);
             await store.upsertStudyLanguage({
                 code: "ja",
                 name: "Japanese",

@@ -2,8 +2,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { DbProfileStore } from "../../db/reuse/profile-store.js";
-import { DbUserPreferenceStore } from "../../db/reuse/preference-store.js";
+import { DbProfileStore } from "./store.js";
+import { DbUserPreferenceStore } from "./preference-store.js";
 import { createProfileRoutes } from "../../../api/routes/profile/index.js";
 import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
@@ -14,13 +14,12 @@ import {
     getCookieSession,
     setPageSecurityHeaders,
 } from "../../../api/auth/guard.js";
-import type { AccountRole } from "../../db/reuse/profile-store.js";
+import type { AccountRole } from "./store.js";
 import type {
     SocialAdapter,
     SocialAdapterBootstrapCtx,
 } from "../../../gateways/social/gateway.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { SupportedDbType } from "../../../gateways/db/executor.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
 
@@ -132,10 +131,6 @@ export async function bootstrapSocialAdapter(
 ): Promise<void> {
     const dbExecutor =
         ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
-    const dbType =
-        ctx.capabilities.get<SupportedDbType>("db:type") ??
-        ctx.dbType ??
-        "postgresql";
 
     if (!dbExecutor) {
         ctx.log?.(
@@ -146,20 +141,18 @@ export async function bootstrapSocialAdapter(
         return;
     }
 
-    const profileStore = new DbProfileStore(dbExecutor, dbType);
+    const profileStore = new DbProfileStore(dbExecutor);
     await profileStore.ensureSchema();
     ctx.log?.("info", "Profile store schema ready.", {
         component: "social-profile-adapter",
-        dbType,
     });
 
-    const prefStore = new DbUserPreferenceStore(dbExecutor, dbType);
+    const prefStore = new DbUserPreferenceStore(dbExecutor);
     await prefStore.ensureSchema();
     ctx.capabilities.contribute("preferences:store", prefStore);
     ctx.capabilities.contribute("social:profileStore", profileStore);
     ctx.log?.("info", "Profile preference store schema ready.", {
         component: "social-profile-adapter",
-        dbType,
     });
 
     ctx.capabilities.contribute(

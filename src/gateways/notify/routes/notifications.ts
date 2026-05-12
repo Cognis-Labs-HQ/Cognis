@@ -2,11 +2,20 @@ import { requireAuth, getAuthClaims } from "../../../api/auth/guard.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../api/reuse/read-json.js";
 import type { CoreNotificationGateway } from "../gateway.js";
-import type { DbNotificationStore } from "../../../adapters/db/reuse/notification-store.js";
+
+export interface NotificationPreferenceRouteStore {
+    getUserNotifPrefs(
+        accountId: string,
+    ): Promise<Array<{ category: string; senderId: string }>>;
+    saveUserNotifPrefs(
+        accountId: string,
+        prefs: Array<{ category: string; senderId: string; enabled: boolean }>,
+    ): Promise<void>;
+}
 
 export function createNotificationRoutes(
     gateway: CoreNotificationGateway,
-    notifStore?: DbNotificationStore,
+    notifStore?: NotificationPreferenceRouteStore,
 ) {
     return async (
         req: IncomingMessage,

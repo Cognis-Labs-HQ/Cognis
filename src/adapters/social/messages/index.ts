@@ -12,7 +12,7 @@ import {
     getCookieSession,
     setPageSecurityHeaders,
 } from "../../../api/auth/guard.js";
-import type { DbProfileStore } from "../../db/reuse/profile-store.js";
+import type { DbProfileStore } from "../profile/store.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
 
@@ -110,12 +110,10 @@ export async function bootstrapSocialAdapter(
         return;
     }
 
-    const dbType = ctx.dbType ?? "sqlite";
-    const messagesStore = new DbMessagesStore(ctx.dbExecutor, dbType);
+    const messagesStore = new DbMessagesStore(ctx.dbExecutor);
     await messagesStore.ensureSchema();
     ctx.log?.("info", "Messages adapter: schema ready.", {
         component: "social-messages-adapter",
-        dbType,
     });
 
     const dispatch =

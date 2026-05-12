@@ -1,5 +1,4 @@
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
-import type { SupportedDbType } from "../gateways/db/executor.js";
 import type { RouteRegistry } from "./route-registry.js";
 import type { UIRegistry } from "./ui-registry.js";
 
@@ -19,18 +18,14 @@ import type { GatewayBootstrapBase } from "@cognis/core";
  * GatewayBootstrapBase with API-specific fields that gateways need to wire
  * themselves into the HTTP server (route registration, UI sections, etc.).
  *
- * Deprecation notice:
- *   dbExecutor and dbType are deprecated. The DB gateway contributes the
- *   executor via capabilities.get('db:executor') and the dialect string via
- *   capabilities.get('db:type'). New gateway code should read from the
- *   capability store instead of ctx.dbExecutor / ctx.dbType. These fields
- *   will be removed in a future release once all gateways have migrated.
+ * Note: dbExecutor is deprecated. The DB gateway contributes the executor via
+ * capabilities.get('db:executor'). New gateway code should read from the
+ * capability store instead of ctx.dbExecutor. This field will be removed in a
+ * future release once all gateways have migrated.
  */
 export interface GatewayBootstrapContext extends GatewayBootstrapBase {
     /** @deprecated Use capabilities.get('db:executor') instead. */
     dbExecutor?: DbExecutor;
-    /** @deprecated Use capabilities.get('db:type') instead. */
-    dbType?: SupportedDbType;
     adaptersRoot: string;
     routeRegistry: RouteRegistry;
     uiRegistry?: UIRegistry;

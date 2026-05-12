@@ -4,14 +4,14 @@
 
 Dokumen ini melacak versi terkini setiap gateway, adapter, dan modul dalam kodebase Cognis. Dokumen ini berfungsi sebagai indeks changelog dan referensi cepat.
 
-Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`. Saat Anda memodifikasi komponen, Anda harus menaikkan versi di `package.json` tersebut mengikuti Semantic Versioning.
+Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`. Saat Anda memodifikasi komponen, Anda harus menaikkan versi di `package.json` tersebut mengikuti Semantic Versioning. Entri changelog disimpan sebagai file per-PR di `src/docs/changelog/`.
 
 ## Adapter
 
 | Komponen               | Path                                | Versi   |
 | ---------------------- | ----------------------------------- | ------- |
 | Notifikasi SMTP        | `src/adapters/notify/smtp/`         | `0.1.0` |
-| Notifikasi Internal    | `src/adapters/notify/internal/`     | `0.5.0` |
+| Notifikasi Internal    | `src/adapters/notify/internal/`     | `0.5.2` |
 | Penyimpanan File Lokal | `src/adapters/file/local/`          | `0.1.0` |
 | Autentikasi Lokal      | `src/adapters/auth/local/`          | `0.2.2` |
 | Database PostgreSQL    | `src/adapters/db/postgres/`         | `0.1.0` |

@@ -12,13 +12,44 @@ import {
     recordTokenVerification,
     type AccessRole,
 } from "../../api/auth/access-tokens.js";
-import { DbLocalAccountStore } from "../../adapters/auth/local/store.js";
 import { CoreAuthGateway } from "./gateway.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthProviderAdapter } from "./gateway.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { SupportedDbType } from "../db/executor.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
+
+interface AuthAccountStore {
+    ensureSchema(): Promise<void>;
+    has(username: string): Promise<boolean>;
+    delete(username: string): Promise<void>;
+    isFounder(username: string): Promise<boolean>;
+    verify(username: string, password: string): Promise<boolean>;
+}
+
+async function loadLocalAccountStore(
+    dbExecutor: DbExecutor,
+    log?: GatewayBootstrapContext["log"],
+): Promise<AuthAccountStore> {
+    const localStorePath = path.resolve(
+        process.cwd(),
+        "src",
+        "adapters",
+        "auth",
+        "local",
+        "store.ts",
+    );
+    const localStoreModule = await import(`${localStorePath}?t=${Date.now()}`);
+    const LocalAccountStoreClass = localStoreModule.DbLocalAccountStore as
+        | (new (
+              dbExecutor: DbExecutor,
+              log?: GatewayBootstrapContext["log"],
+          ) => AuthAccountStore)
+        | undefined;
+    if (!LocalAccountStoreClass) {
+        throw new Error("local_account_store_missing");
+    }
+    return new LocalAccountStoreClass(dbExecutor, log);
+}
 
 function resolveRole(
     sessionRole: string | undefined,
@@ -39,23 +70,17 @@ function resolveRole(
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor = (ctx.capabilities.get<DbExecutor>("db:executor") ??
         ctx.dbExecutor)!;
-    const dbType =
-        ctx.capabilities.get<SupportedDbType>("db:type") ??
-        ctx.dbType ??
-        "postgresql";
 
-    const accountStore = new DbLocalAccountStore(dbExecutor, dbType, ctx.log);
+    const accountStore = await loadLocalAccountStore(dbExecutor, ctx.log);
     await accountStore.ensureSchema();
     ctx.log?.("info", "Auth gateway account schema ready.", {
         component: "auth-gateway",
-        dbType,
     });
 
-    const authGateway = new CoreAuthGateway(dbExecutor, dbType);
+    const authGateway = new CoreAuthGateway(dbExecutor);
     await authGateway.ensureSchema();
     ctx.log?.("info", "Auth gateway adapter schema ready.", {
         component: "auth-gateway",
-        dbType,
     });
 
     const localAdapterPath = path.resolve(
@@ -148,7 +173,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
 function createAuthGatewayRoutes(
     authGateway: CoreAuthGateway,
-    accountStore: InstanceType<typeof DbLocalAccountStore>,
+    accountStore: AuthAccountStore,
     capabilities: CapabilityStore,
     log?: GatewayBootstrapContext["log"],
 ) {

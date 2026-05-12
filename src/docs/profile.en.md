@@ -32,21 +32,21 @@ Not responsible for: file storage implementation (that is the files gateway), au
 | `posts`            | User-authored posts with per-post visibility                                                |
 | `file_size_limits` | Per-category upload size caps (`image`, `video`, `text`, `global`)                          |
 
-Schema SQL is in `src/adapters/db/{mariadb,postgres}/sql/init/002_profile.sql`.
+Schema ownership is implemented in `src/adapters/db/reuse/profile-store.ts` via structured DB table definitions (`ensureTable`) and structured commands (`executeCommand`).
 
 ### Key source locations
 
-| Path                                         | Purpose                                                          |
-| -------------------------------------------- | ---------------------------------------------------------------- |
-| `src/gateways/profile/bootstrap.ts`          | Gateway bootstrap; wires stores, routes, and capabilities        |
-| `src/gateways/profile/routes/social.ts`      | Follow, unfollow, block, unblock, follower/following list routes |
-| `src/gateways/profile/routes/posts.ts`       | Post creation, listing, and deletion routes                      |
-| `src/gateways/profile/routes/files.ts`       | File upload, download, and admin size-limit routes               |
-| `src/gateways/profile/routes/preferences.ts` | User preference get/set routes                                   |
-| `src/adapters/db/reuse/profile-store.ts`     | `DbProfileStore` — all profile SQL operations                    |
-| `src/adapters/db/reuse/preference-store.ts`  | `DbUserPreferenceStore`                                          |
-| `src/api/routes/profile/index.ts`            | Own profile and public profile route handlers                    |
-| `src/ui/app/profile/index.js`                | Profile page entry point                                         |
+| Path                                         | Purpose                                                           |
+| -------------------------------------------- | ----------------------------------------------------------------- |
+| `src/gateways/profile/bootstrap.ts`          | Gateway bootstrap; wires stores, routes, and capabilities         |
+| `src/gateways/profile/routes/social.ts`      | Follow, unfollow, block, unblock, follower/following list routes  |
+| `src/gateways/profile/routes/posts.ts`       | Post creation, listing, and deletion routes                       |
+| `src/gateways/profile/routes/files.ts`       | File upload, download, and admin size-limit routes                |
+| `src/gateways/profile/routes/preferences.ts` | User preference get/set routes                                    |
+| `src/adapters/db/reuse/profile-store.ts`     | `DbProfileStore` — profile persistence via structured DB commands |
+| `src/adapters/db/reuse/preference-store.ts`  | `DbUserPreferenceStore`                                           |
+| `src/api/routes/profile/index.ts`            | Own profile and public profile route handlers                     |
+| `src/ui/app/profile/index.js`                | Profile page entry point                                          |
 
 ### Visibility model
 

@@ -13,10 +13,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { requireAuth } from "../../../api/auth/guard.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import type { DbMessagesStore, MemberRow } from "./store.js";
-import type {
-    DbProfileStore,
-    AccountProfile,
-} from "../../db/reuse/profile-store.js";
+import type { DbProfileStore, AccountProfile } from "../profile/store.js";
 
 interface DispatchEnvelope {
     category: string;

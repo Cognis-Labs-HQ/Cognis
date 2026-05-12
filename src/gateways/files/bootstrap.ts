@@ -1,7 +1,62 @@
-import { LocalFileGateway } from "../../adapters/file/local/adapter.js";
 import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { GatewayBootstrapContext } from "../shared.js";
+
+interface FileGatewayLike {
+    store(
+        userId: string,
+        content: Uint8Array,
+        contentType?: string,
+    ): Promise<{
+        key: string;
+        size: number;
+        contentType?: string;
+        lastModified: Date;
+    }>;
+    put(
+        key: string,
+        content: Uint8Array,
+        contentType?: string,
+    ): Promise<{
+        key: string;
+        size: number;
+        contentType?: string;
+        lastModified: Date;
+    }>;
+    get(key: string): Promise<Uint8Array | null>;
+    delete(key: string): Promise<boolean>;
+    list(prefix?: string): Promise<
+        Array<{
+            key: string;
+            size: number;
+            contentType?: string;
+            lastModified: Date;
+        }>
+    >;
+}
+
+async function loadLocalFileGateway(
+    fileStorePath: string,
+): Promise<FileGatewayLike> {
+    const localAdapterPath = path.resolve(
+        process.cwd(),
+        "src",
+        "adapters",
+        "file",
+        "local",
+        "adapter.ts",
+    );
+    const localAdapterModule = await import(
+        `${localAdapterPath}?t=${Date.now()}`
+    );
+    const LocalAdapterGatewayClass = localAdapterModule.LocalFileGateway as
+        | (new (rootPath: string) => FileGatewayLike)
+        | undefined;
+    if (!LocalAdapterGatewayClass) {
+        throw new Error("local_file_adapter_missing_gateway_class");
+    }
+    return new LocalAdapterGatewayClass(fileStorePath);
+}
 
 /**
  * Standard gateway bootstrap entry point for local file storage. Reads the
@@ -22,7 +77,7 @@ import type { GatewayBootstrapContext } from "../shared.js";
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const mediaLocation = process.env.MEDIA_LOCATION ?? "/app/media";
     const fileStorePath = `${mediaLocation}/uploads`;
-    const fileGateway = new LocalFileGateway(fileStorePath);
+    const fileGateway = await loadLocalFileGateway(fileStorePath);
 
     ctx.capabilities.contribute("file:gateway", fileGateway);
 

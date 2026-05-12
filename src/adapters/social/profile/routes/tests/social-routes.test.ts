@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
-import { DbProfileStore } from "../../../../../adapters/db/reuse/profile-store.js";
+import { DbProfileStore } from "../../store.js";
 import { DbLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
 import { createSocialRoutes } from "../social.js";
 import { issueAccessToken } from "../../../../../api/auth/access-tokens.js";
@@ -16,9 +16,9 @@ function makeReq(method: string, token: string | null) {
 }
 
 async function setupUsers(executor: any, ...usernames: string[]) {
-    const accountStore = new DbLocalAccountStore(executor, "postgresql");
+    const accountStore = new DbLocalAccountStore(executor);
     await accountStore.ensureSchema();
-    const profileStore = new DbProfileStore(executor, "postgresql");
+    const profileStore = new DbProfileStore(executor);
     await profileStore.ensureSchema();
     for (const username of usernames) {
         await accountStore.register(username, "pw");

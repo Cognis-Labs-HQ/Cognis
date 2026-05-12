@@ -1,10 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { requireAuth } from "../../../../api/auth/guard.js";
-import type {
-    DbProfileStore,
-    AccountProfile,
-} from "../../../../adapters/db/reuse/profile-store.js";
-import { visibilityRank } from "../../../../adapters/db/reuse/profile-store.js";
+import type { DbProfileStore, AccountProfile } from "../store.js";
+import { visibilityRank } from "../store.js";
 
 const SEARCH_RESULTS_LIMIT = 10;
 

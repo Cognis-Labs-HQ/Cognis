@@ -7,18 +7,97 @@ import {
     type GatewayRegistry,
 } from "../shared.js";
 import { CoreNotificationGateway } from "./gateway.js";
-import {
-    DbNotificationStore,
-    DbNotificationPreferenceStore,
-} from "../../adapters/db/reuse/notification-store.js";
 import { TfaCodeService, InMemoryTfaStore } from "../../api/reuse/tfa-code.js";
 import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
 } from "../../api/reuse/verify-token.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { DbNotificationStore as IDbNotificationStore } from "../../adapters/db/reuse/notification-store.js";
 import { createNotificationRoutes } from "./routes/notifications.js";
+
+interface NotificationUserEmailStore {
+    getUserEmails(
+        accountId: string,
+    ): Promise<Array<{ email: string; primary: boolean; verified: boolean }>>;
+    addUserEmail(
+        accountId: string,
+        email: string,
+        isPrimary?: boolean,
+    ): Promise<void>;
+    removeUserEmail(accountId: string, email: string): Promise<void>;
+    removeUnverifiedEmail(accountId: string, email: string): Promise<void>;
+    isEmailRegisteredByOtherUser(
+        email: string,
+        excludeAccountId: string,
+    ): Promise<boolean>;
+    setPrimaryEmail(accountId: string, email: string): Promise<void>;
+    verifyUserEmail(accountId: string, email: string): Promise<void>;
+    upsertVerifiedPrimaryEmail(accountId: string, email: string): Promise<void>;
+    getPrimaryEmail(accountId: string): Promise<string | null>;
+    hasVerifiedEmail(accountId: string): Promise<boolean>;
+    isEmailRegistered(email: string): Promise<boolean>;
+}
+
+interface NotificationStoreWithSchema extends NotificationUserEmailStore {
+    ensureSchema(): Promise<void>;
+    getConfig(senderId: string): Promise<Record<string, unknown> | null>;
+    saveConfig(
+        senderId: string,
+        config: Record<string, unknown>,
+    ): Promise<void>;
+    getSenderIds(
+        recipientUsername: string,
+        category: string,
+    ): Promise<string[]>;
+}
+
+interface NotificationPreferenceStoreCtor {
+    new (store: NotificationStoreWithSchema): {
+        getSenderIds(
+            recipientUsername: string,
+            category: string,
+        ): Promise<string[]>;
+    };
+}
+
+async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
+    notifStore: NotificationStoreWithSchema;
+    notificationPrefStore: {
+        getSenderIds(
+            recipientUsername: string,
+            category: string,
+        ): Promise<string[]>;
+    };
+}> {
+    const notificationStoreModulePath = path.resolve(
+        process.cwd(),
+        "src",
+        "gateways",
+        "notify",
+        "notification-store.ts",
+    );
+    const notificationStoreModule = await import(
+        `${notificationStoreModulePath}?t=${Date.now()}`
+    );
+    const NotificationStoreClass =
+        notificationStoreModule.DbNotificationStore as
+            | (new (
+                  dbExecutor: GatewayBootstrapContext["dbExecutor"],
+              ) => NotificationStoreWithSchema)
+            | undefined;
+    const NotificationPreferenceStoreClass =
+        notificationStoreModule.DbNotificationPreferenceStore as
+            | NotificationPreferenceStoreCtor
+            | undefined;
+    if (!NotificationStoreClass || !NotificationPreferenceStoreClass) {
+        throw new Error("notification_store_gateway_exports_missing");
+    }
+    const notifStore = new NotificationStoreClass(ctx.dbExecutor);
+    const notificationPrefStore = new NotificationPreferenceStoreClass(
+        notifStore,
+    );
+    return { notifStore, notificationPrefStore };
+}
 
 /**
  * Standard gateway bootstrap entry point. Discovers notification adapters,
@@ -27,14 +106,13 @@ import { createNotificationRoutes } from "./routes/notifications.js";
  * inside this module directly.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const notifStore = new DbNotificationStore(ctx.dbExecutor, ctx.dbType);
+    const { notifStore, notificationPrefStore } =
+        await loadNotificationStores(ctx);
     await notifStore.ensureSchema();
     ctx.log?.("info", "Notification store schema ready.", {
         component: "notify-gateway",
-        dbType: ctx.dbType,
     });
 
-    const notificationPrefStore = new DbNotificationPreferenceStore(notifStore);
     const gateway = new CoreNotificationGateway(
         notificationPrefStore,
         notifStore,
@@ -61,7 +139,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
         log: ctx.log,
         dbExecutor: ctx.dbExecutor,
-        dbType: ctx.dbType,
     });
     ctx.log?.("info", "Notification adapter bootstrapping complete.", {
         component: "notify-gateway",
@@ -235,7 +312,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
  *   POST   /api/v1/verify-email
  */
 export function createUserEmailRoutes(
-    notifStore: IDbNotificationStore,
+    notifStore: NotificationUserEmailStore,
     tfaService: TfaCodeService,
     verifyTokenService: VerifyTokenService,
     gateway: CoreNotificationGateway,

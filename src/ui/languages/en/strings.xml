@@ -27,7 +27,6 @@
   <string name="ui.reuse.generic.disable">Disable</string>
   <string name="ui.reuse.generic.true">True</string>
   <string name="ui.reuse.generic.false">False</string>
-  <string name="ui.reuse.generic.configure">Configure</string>
   <string name="ui.reuse.generic.actions">Actions</string>
   <string name="ui.reuse.generic.id">ID</string>
   <string name="ui.reuse.generic.version">Version</string>
@@ -282,8 +281,8 @@
   <string name="ui.app.users.delete_user">Delete user</string>
   <string name="ui.app.users.delete_permanent_warning">This action is permanent and cannot be undone.</string>
   <string name="ui.app.users.invite_email">Email address</string>
-  <string name="ui.app.users.invite_sent">Invitation sent.</string>
-  <string name="ui.app.users.invite_failed">Failed to send invitation.</string>
+  <string name="ui.reuse.registration.invite_sent">Invitation sent.</string>
+  <string name="ui.reuse.registration.invite_failed">Failed to send invitation.</string>
   <string name="ui.app.users.invite_email_taken">This email address is already registered.</string>
   <string name="ui.app.users.no_unverified_email">No unverified email address found.</string>
   <string name="ui.app.users.role_updated">Role updated.</string>
@@ -302,8 +301,6 @@
   <string name="ui.app.invite.status_redeemed">Redeemed</string>
   <string name="ui.app.invite.status_revoked">Revoked</string>
   <string name="ui.app.invite.status_expired">Expired</string>
-  <string name="ui.app.invite.invite_sent">Invitation sent.</string>
-  <string name="ui.app.invite.invite_failed">Failed to send invitation.</string>
   <string name="ui.app.invite.email_domain_not_allowed">This email domain is not permitted. Please use an address from an allowed domain.</string>
   <string name="ui.app.invite.revoke_success">Invitation revoked.</string>
   <string name="ui.app.invite.revoke_failed">Failed to revoke invitation.</string>
@@ -320,7 +317,6 @@
   <string name="ui.reuse.page_composer.zone_floating">Floating menu</string>
   <string name="ui.reuse.page_composer.zone_main">Main</string>
   <string name="ui.reuse.popup.close">Close</string>
-  <string name="ui.reuse.popup.confirm">Confirm</string>
   <string name="ui.reuse.popup.cancel">Cancel</string>
 
   <string name="ui.app.profile.page_title">Profile</string>
@@ -370,7 +366,6 @@
   <string name="ui.app.profile.post_visibility_hint">Some post visibility options are locked based on your profile visibility.</string>
   <string name="ui.app.profile.edit_profile">Edit Profile</string>
   <string name="ui.app.profile.its_you">It&#x2019;s You</string>
-  <string name="ui.app.profile.close">Close</string>
   <string name="ui.app.profile.photo_set">Upload photo</string>
   <string name="ui.app.profile.photo_remove">Remove photo</string>
   <string name="ui.app.profile.followers_stat">followers</string>

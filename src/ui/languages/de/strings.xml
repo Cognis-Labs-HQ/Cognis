@@ -27,7 +27,6 @@
   <string name="ui.reuse.generic.disable">Deaktivieren</string>
   <string name="ui.reuse.generic.true">Wahr</string>
   <string name="ui.reuse.generic.false">Falsch</string>
-  <string name="ui.reuse.generic.configure">Konfigurieren</string>
   <string name="ui.reuse.generic.actions">Aktionen</string>
   <string name="ui.reuse.generic.id">ID</string>
   <string name="ui.reuse.generic.version">Version</string>
@@ -282,8 +281,8 @@
   <string name="ui.app.users.delete_user">Benutzer löschen</string>
   <string name="ui.app.users.delete_permanent_warning">Diese Aktion ist dauerhaft und kann nicht rückgängig gemacht werden.</string>
   <string name="ui.app.users.invite_email">E-Mail-Adresse</string>
-  <string name="ui.app.users.invite_sent">Einladung gesendet.</string>
-  <string name="ui.app.users.invite_failed">Einladung konnte nicht gesendet werden.</string>
+  <string name="ui.reuse.registration.invite_sent">Einladung gesendet.</string>
+  <string name="ui.reuse.registration.invite_failed">Einladung konnte nicht gesendet werden.</string>
   <string name="ui.app.users.invite_email_taken">Diese E-Mail-Adresse ist bereits registriert.</string>
   <string name="ui.app.users.no_unverified_email">Keine unverifizierte E-Mail-Adresse gefunden.</string>
   <string name="ui.app.users.role_updated">Rolle aktualisiert.</string>
@@ -302,8 +301,6 @@
   <string name="ui.app.invite.status_redeemed">Eingelöst</string>
   <string name="ui.app.invite.status_revoked">Widerrufen</string>
   <string name="ui.app.invite.status_expired">Abgelaufen</string>
-  <string name="ui.app.invite.invite_sent">Einladung gesendet.</string>
-  <string name="ui.app.invite.invite_failed">Einladung konnte nicht gesendet werden.</string>
   <string name="ui.app.invite.email_domain_not_allowed">Diese E-Mail-Domain ist nicht erlaubt. Bitte verwende eine Adresse einer erlaubten Domain.</string>
   <string name="ui.app.invite.revoke_success">Einladung widerrufen.</string>
   <string name="ui.app.invite.revoke_failed">Einladung konnte nicht widerrufen werden.</string>
@@ -320,7 +317,6 @@
   <string name="ui.reuse.page_composer.zone_floating">Schwebendes Menü</string>
   <string name="ui.reuse.page_composer.zone_main">Hauptbereich</string>
   <string name="ui.reuse.popup.close">Schließen</string>
-  <string name="ui.reuse.popup.confirm">Bestätigen</string>
   <string name="ui.reuse.popup.cancel">Abbrechen</string>
 
   <string name="ui.app.profile.page_title">Profil</string>
@@ -370,7 +366,6 @@
   <string name="ui.app.profile.post_visibility_hint">Einige Beitragssichtbarkeitsoptionen sind basierend auf deiner Profilsichtbarkeit gesperrt.</string>
   <string name="ui.app.profile.edit_profile">Profil bearbeiten</string>
   <string name="ui.app.profile.its_you">Das bist du</string>
-  <string name="ui.app.profile.close">Schließen</string>
   <string name="ui.app.profile.photo_set">Foto hochladen</string>
   <string name="ui.app.profile.photo_remove">Foto entfernen</string>
   <string name="ui.app.profile.followers_stat">Follower</string>

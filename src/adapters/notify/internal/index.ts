@@ -9,7 +9,7 @@ import {
     type IInternalNotificationStore,
     AsyncInternalNotificationStore,
 } from "./store.js";
-import { DbInternalNotificationStore } from "./reuse/db-store.js";
+import { DbInternalNotificationStore } from "./db-store.js";
 import { getDataEncryptionKey } from "../../../api/reuse/crypto.js";
 import { createInternalNotificationRoutes } from "./routes.js";
 
@@ -80,7 +80,7 @@ export async function bootstrapNotifyAdapter(
 ): Promise<void> {
     ctx.gateway.registerAlwaysOnSender(SENDER_ID);
 
-    if (ctx.dbExecutor && ctx.dbType) {
+    if (ctx.dbExecutor) {
         const secret = getDataEncryptionKey();
         if (!secret) {
             const baseMessage =
@@ -99,7 +99,6 @@ export async function bootstrapNotifyAdapter(
         }
         const dbStore = new DbInternalNotificationStore(
             ctx.dbExecutor,
-            ctx.dbType,
             secret,
             ctx.log,
         );
@@ -110,7 +109,6 @@ export async function bootstrapNotifyAdapter(
             "Internal notification adapter using database store.",
             {
                 component: "notify-internal",
-                dbType: ctx.dbType,
             },
         );
     } else {

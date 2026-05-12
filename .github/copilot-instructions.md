@@ -37,13 +37,16 @@ Use the `user:*` command namespace for account operations (`create`, `role`, `se
 Use `reuse/` as the name for any directory that holds cross-cutting utilities within a given layer or component family. Never name such a directory `shared/`, `utils/`, `helpers/`, or `common/` — these names are generic and do not express purpose. Each layer of the codebase that needs intra-layer sharing uses `reuse/` at its own root:
 
 - `src/api/reuse/` — shared utilities for the API layer (e.g. token helpers, JSON parsing)
-- `src/adapters/db/reuse/` — shared store abstractions used across all DB adapters
 - `src/ui/reuse/` — reusable UI logic and components
 - `src/ui/styles/reuse/` — shared CSS primitives
 
 Promote code reactively: when writing a new feature in area B, if you notice similar logic already exists in area A, move it to `reuse/`, update area A to import it, and use it in area B. The threshold for promotion is any parameterisable snippet of 5 or more lines that provides distinct enough functionality to be worth a named function.
 
 Files inside a `reuse/` directory must also be generically named for the reusable abstraction they provide. If a file name needs a feature- or adapter-specific prefix (for example `social-...`), it does not belong in `reuse/`; keep it beside that feature instead.
+
+Do not create `reuse/` directories inside `src/adapters/*`. Adapters are already niche capabilities and should keep their implementation files local to the adapter root (for example `store.ts`, `db-store.ts`) instead of introducing adapter-internal reuse layers.
+
+DB adapters and the DB gateway must not own feature stores for other gateways/adapters (for example auth/profile/notify-specific stores). Feature-specific persistence code belongs to the owning gateway or owning adapter and is consumed through capabilities.
 
 Every module in `src/ui/reuse/` must open with a JSDoc block that documents: what the module does, its public exports with a one-line description each, a concrete usage example, and `@param` / `@returns` annotations on non-trivial exported functions. See `unsaved-changes.js` for the canonical form.
 
@@ -101,13 +104,15 @@ Adapters live under `src/adapters/<gateway-id>/<adapter-id>/`. For example, the 
 
 ### Versioned manifests for gateways, adapters, and modules
 
-Every gateway, adapter, and module must carry a `package.json` (or equivalent manifest) with a `version` field. Any change to the code, schema, or API within that component's scope must be accompanied by a version bump. This prevents silent drift between components that depend on each other. A higher-level versioning document at `src/components/docs/versions.en.md` tracks the current version of each component and serves as a changelog index.
+Every gateway, adapter, and module must carry a `package.json` (or equivalent manifest) with a `version` field. Any change to the code, schema, or API within that component's scope must be accompanied by a version bump. This prevents silent drift between components that depend on each other. A higher-level versioning document at `src/docs/versions.en.md` tracks the current version of each component and serves as a changelog index.
 
-### CHANGELOG.md
+### Changelog entries
 
-Maintain a `CHANGELOG.md` at the repository root conforming to [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) standards and [Semantic Versioning](https://semver.org/). Every commit that changes behaviour, fixes a bug, or adds a feature must add an entry under the `[Unreleased]` section with: the commit short-SHA as a parenthetical link, the change type sub-heading (Added / Changed / Deprecated / Removed / Fixed / Security), and a one-line summary. Commit links follow the pattern `https://github.com/le-firehawk/Cognis/commit/<sha>`.
+Store changelog entries under `src/docs/changelog/` instead of a root `CHANGELOG.md`.
 
-When a pull request is created that targets an imminent release, compress the `[Unreleased]` section into a versioned release block listing each commit with its working URL since the previous release tag, then open a new empty `[Unreleased]` section above it.
+Every pull request must add changelog files for that PR in every supported app language (de, en, id, ja). Use the filename pattern `<branch-name-without-copilot-prefix>.<lang>.md` for each language (for example, branch `copilot/cleanup-strings-and-codebase` produces `cleanup-strings-and-codebase.en.md`, `cleanup-strings-and-codebase.de.md`, `cleanup-strings-and-codebase.id.md`, and `cleanup-strings-and-codebase.ja.md`). Each file must include: a short title, a summary section, a changed-files/components section, and commit links following `https://github.com/le-firehawk/Cognis/commit/<sha>`. Translate each file into the language it represents — do not copy English text into non-English files (the same exceptions listed under i18n apply: brand names, universal technical acronyms, and the Latin tagline are language-neutral).
+
+Do not append to or recreate a global monolithic changelog file. Existing changelog entry files in `src/docs/changelog/` are historical records and should remain immutable except for factual corrections.
 
 ### Component self-containment
 

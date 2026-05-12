@@ -9,7 +9,10 @@ import { bootstrapSocialAdapter } from "../index.js";
 
 function makeInMemoryDb() {
     return {
-        execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
+        executeCommand: async (_command: unknown) => ({ rows: [] }),
+        ensureTable: async (_def: unknown) => {},
+        transaction: async (cb: (db: unknown) => Promise<unknown>) =>
+            cb(makeInMemoryDb()),
     };
 }
 
@@ -59,7 +62,6 @@ function makeAdapterCtx(
                 m: Parameters<UIRegistry["registerAuthTypingMessage"]>[0],
             ) => uiRegistry?.registerAuthTypingMessage(m),
             dbExecutor: makeInMemoryDb() as never,
-            dbType: "sqlite" as const,
             isGatewayEnabled: () => true,
         },
         gateway,

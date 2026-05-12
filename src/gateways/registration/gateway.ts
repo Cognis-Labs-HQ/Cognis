@@ -1,7 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { SupportedDbType } from "../db/executor.js";
 
 export interface InviteRecord {
     id: string;
@@ -71,7 +70,6 @@ export interface RegistrationAdapterInfo {
 
 export interface RegistrationAdapterDeps {
     dbExecutor: DbExecutor;
-    dbType: SupportedDbType;
     [key: string]: unknown;
 }
 
@@ -81,21 +79,21 @@ export class CoreRegistrationGateway {
     private inviteAdapterId: string | null = null;
     private publicAdapterId: string | null = null;
 
-    constructor(
-        private readonly db: DbExecutor,
-        private readonly dbType: SupportedDbType,
-    ) {}
-
-    private placeholder(index: number): string {
-        return this.dbType === "postgresql" ? `$${index}` : "?";
-    }
+    constructor(private readonly db: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db
-            .execute(`CREATE TABLE IF NOT EXISTS registration_adapter_configs (
-      adapter_id ${this.dbType === "mariadb" ? "VARCHAR(191)" : "TEXT"} PRIMARY KEY,
-      enabled INTEGER NOT NULL DEFAULT 0
-    )`);
+        await this.db.ensureTable({
+            name: "registration_adapter_configs",
+            columns: [
+                {
+                    name: "adapter_id",
+                    type: "text",
+                    notNull: true,
+                    primaryKey: true,
+                },
+                { name: "enabled", type: "integer", notNull: true, default: 0 },
+            ],
+        });
     }
 
     private registerAdapter(adapter: RegistrationGatewayAdapter): void {
@@ -139,9 +137,11 @@ export class CoreRegistrationGateway {
     }
 
     async loadPersistedConfigs(): Promise<void> {
-        const result = await this.db.execute(
-            "SELECT adapter_id, enabled FROM registration_adapter_configs",
-        );
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "registration_adapter_configs",
+            columns: ["adapter_id", "enabled"],
+        });
         for (const row of result.rows ?? []) {
             const adapterId = String(row.adapter_id ?? "");
             if (!adapterId || !this.adapters.has(adapterId)) continue;
@@ -267,20 +267,20 @@ export class CoreRegistrationGateway {
         adapterId: string,
         enabled: boolean,
     ): Promise<void> {
-        if (this.dbType === "postgresql") {
-            await this.db.execute(
-                `INSERT INTO registration_adapter_configs (adapter_id, enabled)
-         VALUES (${this.placeholder(1)}, ${this.placeholder(2)})
-         ON CONFLICT(adapter_id) DO UPDATE SET enabled = EXCLUDED.enabled`,
-                [adapterId, enabled ? 1 : 0],
-            );
-            return;
-        }
-        await this.db.execute(
-            `INSERT INTO registration_adapter_configs (adapter_id, enabled)
-       VALUES (${this.placeholder(1)}, ${this.placeholder(2)})
-       ON DUPLICATE KEY UPDATE enabled = VALUES(enabled)`,
-            [adapterId, enabled ? 1 : 0],
-        );
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "registration_adapter_configs",
+            values: {
+                adapter_id: adapterId,
+                enabled: enabled ? 1 : 0,
+            },
+            conflict: {
+                action: "update",
+                target: ["adapter_id"],
+                update: {
+                    enabled: enabled ? 1 : 0,
+                },
+            },
+        });
     }
 }

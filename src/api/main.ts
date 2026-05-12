@@ -229,13 +229,13 @@ try {
 
 const dbExecutor = capabilities.get<DbExecutor>("db:executor")!;
 const dbDialect = capabilities.get<DbDialectHelper>("db:dialect")!;
-const dbType = capabilities.get<string>("db:type") ?? "postgresql";
-
-const adminStatePlaceholder = dbType === "postgresql" ? "$1" : "?";
-const adminStateResult = await dbExecutor.execute(
-    `SELECT state_value FROM bootstrap_state WHERE state_key = ${adminStatePlaceholder}`,
-    ["default_admin_initialized"],
-);
+const adminStateResult = await dbDialect.executeCommand({
+    option: "SELECT",
+    table: "bootstrap_state",
+    columns: ["state_value"],
+    where: [{ column: "state_key", value: "default_admin_initialized" }],
+    limit: 1,
+});
 const adminInitialized = adminStateResult.rows?.[0]?.state_value === "true";
 
 const createLocalAdmin = capabilities.get<
@@ -315,9 +315,11 @@ const server = buildServer({
           }
         : undefined,
     loadModuleStates: async () => {
-        const result = await dbExecutor.execute(
-            "SELECT module_id, enabled FROM modules",
-        );
+        const result = await dbExecutor.executeCommand({
+            option: "SELECT",
+            table: "modules",
+            columns: ["module_id", "enabled"],
+        });
         return (result.rows ?? []).map((row) => ({
             moduleId: row.module_id,
             enabled: Boolean(row.enabled),
@@ -327,9 +329,11 @@ const server = buildServer({
         await dbDialect.upsert("modules", "module_id", moduleId, { enabled });
     },
     loadGatewayStates: async () => {
-        const result = await dbExecutor.execute(
-            "SELECT gateway_id, enabled FROM gateways",
-        );
+        const result = await dbExecutor.executeCommand({
+            option: "SELECT",
+            table: "gateways",
+            columns: ["gateway_id", "enabled"],
+        });
         return (result.rows ?? []).map((row) => ({
             gatewayId: row.gateway_id,
             enabled: Boolean(row.enabled),

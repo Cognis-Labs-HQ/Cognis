@@ -154,12 +154,15 @@ function bindInviteInteractions() {
                             email = await promptEmail();
                             continue;
                         }
-                        showToast(i18n.t("ui.app.invite.invite_failed"), {
-                            variant: "error",
-                        });
+                        showToast(
+                            i18n.t("ui.reuse.registration.invite_failed"),
+                            {
+                                variant: "error",
+                            },
+                        );
                         return;
                     }
-                    showToast(i18n.t("ui.app.invite.invite_sent"), {
+                    showToast(i18n.t("ui.reuse.registration.invite_sent"), {
                         variant: "success",
                     });
                     tokens = await loadTokens();

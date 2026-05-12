@@ -1,20 +1,46 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PostgresExecutor } from "../executor.js";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { createDbExecutor } from "../executor.js";
 
-test("postgres executor captures log entries with summarized statements", () => {
-    const entries: Array<{
-        level: string;
-        message: string;
-        meta?: Record<string, unknown>;
-    }> = [];
-    const db = new PostgresExecutor(
-        "postgresql://localhost/test",
-        (level, message, meta) => {
-            entries.push({ level, message, meta });
-        },
+test("createDbExecutor loads the matching adapter factory on the fly", async () => {
+    const tempRoot = await mkdtemp(
+        path.join(os.tmpdir(), "cognis-db-adapter-"),
     );
+    try {
+        const adapterDir = path.join(tempRoot, "db", "custom");
+        await mkdir(adapterDir, { recursive: true });
+        await writeFile(
+            path.join(adapterDir, "adapter.ts"),
+            `export function canHandleDbProvider(providerId) {
+                return providerId === 'custom';
+            }
+            export function createDbExecutor() {
+                return {
+                    async execute() {
+                        return { rowCount: 1 };
+                    },
+                    async executeCommand() {
+                        return { rowCount: 2 };
+                    },
+                };
+            }`,
+        );
 
-    assert.ok(db, "PostgresExecutor should be instantiable");
-    assert.equal(entries.length, 0, "no log entries before any call");
+        process.env.DATABASE_URL = "custom://example";
+        const executor = await createDbExecutor("custom", undefined, tempRoot);
+
+        assert.deepEqual(await executor.execute("SELECT 1"), { rowCount: 1 });
+        assert.deepEqual(
+            await executor.executeCommand({
+                option: "DELETE",
+                table: "modules",
+            }),
+            { rowCount: 2 },
+        );
+    } finally {
+        await rm(tempRoot, { recursive: true, force: true });
+    }
 });

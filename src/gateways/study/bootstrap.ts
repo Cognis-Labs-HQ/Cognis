@@ -3,7 +3,6 @@ import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { SupportedDbType } from "../db/executor.js";
 import { requireAuth } from "../../api/auth/guard.js";
 import { readJson } from "../../api/reuse/read-json.js";
 import { CoreStudyGateway } from "./gateway.js";
@@ -129,8 +128,6 @@ function createStudyAdapterRoutes(
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor =
         ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
-    const dbType =
-        ctx.capabilities.get<SupportedDbType>("db:type") ?? ctx.dbType;
 
     const gateway = new CoreStudyGateway();
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
@@ -156,7 +153,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
         log: ctx.log,
         dbExecutor,
-        dbType,
     });
 
     ctx.log?.("info", "Study gateway: adapters bootstrapped.", {

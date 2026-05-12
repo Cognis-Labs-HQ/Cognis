@@ -5,8 +5,11 @@ import { createAdapter } from "../index.js";
 test("redeemInvite deletes created account when token cannot be marked redeemed", async () => {
     let deletedAccountId = "";
     const dbExecutor = {
-        async execute(sql: string) {
-            if (sql.includes("SELECT t.id, t.inviter_account_id")) {
+        async executeCommand(command: { option: string; table?: string }) {
+            if (
+                command.option === "SELECT" &&
+                command.table === "registration_tokens"
+            ) {
                 return {
                     rows: [
                         {
@@ -22,10 +25,18 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
                     rowCount: 1,
                 };
             }
-            if (sql.includes("UPDATE registration_tokens")) {
-                return { rowCount: 0 };
+            if (
+                command.option === "UPDATE" &&
+                command.table === "registration_tokens"
+            ) {
+                return { rows: [], rowCount: 0 };
             }
             return { rows: [], rowCount: 1 };
+        },
+        async transaction<T>(
+            callback: (executor: typeof dbExecutor) => Promise<T>,
+        ) {
+            return callback(dbExecutor);
         },
     };
     const accountStore = {
@@ -41,7 +52,6 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
     };
     const adapter = createAdapter({
         dbExecutor: dbExecutor as any,
-        dbType: "postgresql",
         accountStore: accountStore as any,
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {},

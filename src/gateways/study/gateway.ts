@@ -3,7 +3,6 @@ import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { SupportedDbType } from "../db/executor.js";
 import type { AccessRole } from "../../api/auth/access-tokens.js";
 
 const ACCESS_ROLE_RANK: Record<AccessRole, number> = {
@@ -129,7 +128,6 @@ export interface StudyAdapterBootstrapCtx {
         meta?: Record<string, unknown>,
     ): void | Promise<void>;
     dbExecutor?: DbExecutor;
-    dbType?: SupportedDbType;
 }
 
 type StudyBootstrapBaseCtx = Omit<

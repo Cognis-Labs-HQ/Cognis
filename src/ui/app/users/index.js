@@ -446,12 +446,12 @@ async function triggerInviteFlow() {
                 body: JSON.stringify({ email }),
             });
             if (response.ok) {
-                showToast(i18n.t("ui.app.users.invite_sent"), {
+                showToast(i18n.t("ui.reuse.registration.invite_sent"), {
                     variant: "success",
                 });
                 return;
             }
-            let errorMessage = i18n.t("ui.app.users.invite_failed");
+            let errorMessage = i18n.t("ui.reuse.registration.invite_failed");
             try {
                 const errorBody = await response.json();
                 if (errorBody?.error?.code === "email_taken") {

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserEmailRoutes } from "../bootstrap.js";
-import { DbNotificationStore } from "../../../adapters/db/reuse/notification-store.js";
+import { DbNotificationStore } from "../notification-store.js";
 import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
 import {
     TfaCodeService,
@@ -17,7 +17,7 @@ import { issueAccessToken } from "../../../api/auth/access-tokens.js";
 
 async function makeNotifStore(): Promise<DbNotificationStore> {
     const db = new InMemoryTestExecutor();
-    const store = new DbNotificationStore(db, "postgresql");
+    const store = new DbNotificationStore(db);
     await store.ensureSchema();
     return store;
 }
