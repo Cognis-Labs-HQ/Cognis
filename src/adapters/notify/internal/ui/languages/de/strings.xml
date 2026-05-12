@@ -1,0 +1,13 @@
+<resources>
+  <string name="adapter.notify.internal.mark_all_read">Alle als gelesen markieren</string>
+  <string name="adapter.notify.internal.empty">Keine neuen Benachrichtigungen</string>
+  <string name="adapter.notify.internal.sender_system">System</string>
+  <string name="adapter.notify.internal.error_mark_read">Benachrichtigung konnte nicht als gelesen markiert werden. Bitte erneut versuchen.</string>
+  <string name="adapter.notify.internal.error_dismiss">Benachrichtigung konnte nicht entfernt werden. Bitte erneut versuchen.</string>
+  <string name="adapter.notify.internal.error_mark_all_read">Es konnten nicht alle Benachrichtigungen als gelesen markiert werden. Bitte aktualisieren.</string>
+  <string name="adapter.notify.internal.clear_all">Alle Benachrichtigungen löschen</string>
+  <string name="adapter.notify.internal.clear_all_confirm_title">Alle Benachrichtigungen löschen</string>
+  <string name="adapter.notify.internal.clear_all_confirm_body">Hierdurch werden alle Ihre Benachrichtigungen dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.</string>
+  <string name="adapter.notify.internal.error_clear_all">Benachrichtigungen konnten nicht gelöscht werden. Bitte erneut versuchen.</string>
+  <string name="adapter.notify.internal.new_message">Neue Nachricht</string>
+</resources>

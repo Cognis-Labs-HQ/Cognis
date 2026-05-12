@@ -187,7 +187,7 @@ export async function mount(root, { signal } = {}) {
                         label: i18n.t("ui.reuse.appearance"),
                         render: () => `
             <div class="font-heading-row">
-              <h3>${i18n.t("ui.app.settings.font_heading")}</h3>
+              <h3>${i18n.t("ui.app.settings.font")}</h3>
               <button id="pref-font-reset" type="button" disabled>${i18n.t("ui.reuse.generic.reset")}</button>
             </div>
             <div class="font-picker-row">

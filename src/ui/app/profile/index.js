@@ -362,15 +362,15 @@ function renderHero() {
     <div class="profile-hero-stats">
       <div class="profile-stat-block">
         <span class="profile-stat-number">${posts.length}</span>
-        <span class="profile-stat-label">${i18n.t("ui.app.profile.posts_stat")}</span>
+        <span class="profile-stat-label">${i18n.t("ui.reuse.profile_preview.posts")}</span>
       </div>
       <div class="profile-stat-block">
         <span class="profile-stat-number">${following.length}</span>
-        <span class="profile-stat-label">${i18n.t("ui.app.profile.following_stat")}</span>
+        <span class="profile-stat-label">${i18n.t("ui.reuse.profile_preview.following")}</span>
       </div>
       <div class="profile-stat-block">
         <span class="profile-stat-number">${followers.length}</span>
-        <span class="profile-stat-label">${i18n.t("ui.app.profile.followers_stat")}</span>
+        <span class="profile-stat-label">${i18n.t("ui.reuse.profile_preview.followers")}</span>
       </div>
     </div>
   `;

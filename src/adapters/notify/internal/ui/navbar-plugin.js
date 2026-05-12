@@ -224,7 +224,7 @@ function renderNotificationItem(notif, i18n) {
         '<span class="notification-item-dot" aria-hidden="true"></span>' +
         '<span class="notification-item-body">' +
         `<span class="notification-item-subject">${escapeHtml(notif.subject)}</span>` +
-        `<span class="notification-item-sender">${escapeHtml(notif.senderName ?? i18n.t("ui.adapter.notify.internal.sender_system"))}</span>` +
+        `<span class="notification-item-sender">${escapeHtml(notif.senderName ?? i18n.t("adapter.notify.internal.sender_system"))}</span>` +
         `<span class="notification-item-preview">${escapeHtml(notif.body)}</span>` +
         "</span>" +
         `<span class="notification-item-time" data-relative-time="${notif.createdAt}">${escapeHtml(formatRelativeTime(notif.createdAt))}</span>` +
@@ -243,10 +243,9 @@ function renderNotificationItem(notif, i18n) {
                 notif.read = true;
                 await refreshCount();
             } catch {
-                showToast(
-                    i18n.t("ui.adapter.notify.internal.error_mark_read"),
-                    { variant: "error" },
-                );
+                showToast(i18n.t("adapter.notify.internal.error_mark_read"), {
+                    variant: "error",
+                });
             }
         }
         if (notif.actionUrl) {
@@ -269,7 +268,7 @@ function renderNotificationItem(notif, i18n) {
                 emptyEl.hidden = false;
             }
         } catch {
-            showToast(i18n.t("ui.adapter.notify.internal.error_dismiss"), {
+            showToast(i18n.t("adapter.notify.internal.error_dismiss"), {
                 variant: "error",
             });
         }
@@ -397,7 +396,7 @@ function buildButton(i18n) {
     markAllBtn = document.createElement("button");
     markAllBtn.className = "notification-mark-all-read";
     markAllBtn.type = "button";
-    markAllBtn.textContent = i18n.t("ui.adapter.notify.internal.mark_all_read");
+    markAllBtn.textContent = i18n.t("adapter.notify.internal.mark_all_read");
     markAllBtn.addEventListener("click", async () => {
         try {
             await markAllRead();
@@ -412,10 +411,9 @@ function buildButton(i18n) {
             });
             updateBadge(0);
         } catch {
-            showToast(
-                i18n.t("ui.adapter.notify.internal.error_mark_all_read"),
-                { variant: "error" },
-            );
+            showToast(i18n.t("adapter.notify.internal.error_mark_all_read"), {
+                variant: "error",
+            });
         }
     });
     header.appendChild(markAllBtn);
@@ -425,21 +423,21 @@ function buildButton(i18n) {
     clearAllBtn.type = "button";
     clearAllBtn.setAttribute(
         "aria-label",
-        i18n.t("ui.adapter.notify.internal.clear_all"),
+        i18n.t("adapter.notify.internal.clear_all"),
     );
-    clearAllBtn.title = i18n.t("ui.adapter.notify.internal.clear_all");
+    clearAllBtn.title = i18n.t("adapter.notify.internal.clear_all");
     clearAllBtn.innerHTML = "&#x1F5D1;";
     clearAllBtn.addEventListener("click", async () => {
         const result = await openPopup({
-            title: i18n.t("ui.adapter.notify.internal.clear_all_confirm_title"),
+            title: i18n.t("adapter.notify.internal.clear_all_confirm_title"),
             body: escapeHtml(
-                i18n.t("ui.adapter.notify.internal.clear_all_confirm_body"),
+                i18n.t("adapter.notify.internal.clear_all_confirm_body"),
             ),
             variant: "danger",
             actions: [
                 {
                     id: "confirm",
-                    label: i18n.t("ui.adapter.notify.internal.clear_all"),
+                    label: i18n.t("adapter.notify.internal.clear_all"),
                     variant: "confirm",
                 },
                 {
@@ -457,7 +455,7 @@ function buildButton(i18n) {
             seenIds?.clear();
             renderPanelContents(i18n);
         } catch {
-            showToast(i18n.t("ui.adapter.notify.internal.error_clear_all"), {
+            showToast(i18n.t("adapter.notify.internal.error_clear_all"), {
                 variant: "error",
             });
         }
@@ -474,7 +472,7 @@ function buildButton(i18n) {
 
     const empty = document.createElement("p");
     empty.className = "notification-empty";
-    empty.textContent = i18n.t("ui.adapter.notify.internal.empty");
+    empty.textContent = i18n.t("adapter.notify.internal.empty");
     empty.hidden = true;
     panel.appendChild(empty);
     emptyEl = empty;
@@ -641,7 +639,7 @@ async function showArrivalToast(notif, i18n) {
     let toastSubject = notif.subject;
     let toastPreview = notif.body;
     if (notif.category === "messages") {
-        const genericMessage = i18n.t("ui.adapter.notify.internal.new_message");
+        const genericMessage = i18n.t("adapter.notify.internal.new_message");
         toastSubject = genericMessage;
         toastPreview = genericMessage;
         const roomId = parseRoomId(notif.actionUrl);
@@ -659,7 +657,7 @@ async function showArrivalToast(notif, i18n) {
             : toastPreview;
 
     const sender =
-        notif.senderName ?? i18n.t("ui.adapter.notify.internal.sender_system");
+        notif.senderName ?? i18n.t("adapter.notify.internal.sender_system");
 
     toast.innerHTML =
         '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
@@ -708,7 +706,11 @@ async function showArrivalToast(notif, i18n) {
     try {
         injectStyles();
 
-        const i18n = await createI18n();
+        const i18n = await createI18n({
+            componentStringBaseUrls: [
+                "/static/gateways/notify-internal/languages",
+            ],
+        });
 
         const wrap = buildButton(i18n);
         insertButton(wrap);

@@ -1,0 +1,6 @@
+<resources>
+  <string name="gateway.auth.label">Authentication</string>
+  <string name="gateway.auth.providers">Adapters</string>
+  <string name="gateway.auth.no_providers">No authentication adapters configured.</string>
+  <string name="gateway.auth.configure">Configure</string>
+</resources>

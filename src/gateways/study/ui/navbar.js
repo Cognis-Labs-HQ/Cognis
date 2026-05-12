@@ -4,7 +4,9 @@ import { openPopup } from "/static/reuse/popup.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { createI18n } from "/static/reuse/i18n.js";
 
-const i18n = await createI18n();
+const i18n = await createI18n({
+    componentStringBaseUrls: ["/static/gateways/study/languages"],
+});
 globalThis.__studyGatewayAvailable = true;
 
 function createStudyNavButton() {
@@ -41,10 +43,10 @@ async function handleStudyButtonClick() {
         .join("");
 
     const action = await openPopup({
-        title: i18n.t("ui.study.picker.title"),
+        title: i18n.t("gateway.study.picker.title"),
         body: `
             <label class="stack">
-                ${i18n.t("ui.study.picker.select")}
+                ${i18n.t("gateway.study.picker.select")}
                 <select id="study-language-select" class="theme-select">
                     ${selectOptions}
                 </select>
@@ -58,7 +60,7 @@ async function handleStudyButtonClick() {
             },
             {
                 id: "study",
-                label: i18n.t("ui.study.picker.start"),
+                label: i18n.t("gateway.study.picker.start"),
                 variant: "confirm",
             },
         ],

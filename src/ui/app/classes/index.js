@@ -122,7 +122,7 @@ export async function mount(root, { signal } = {}) {
             <input
               type="text"
               class="classes-language-input"
-              placeholder="${escapeHtml(i18n.t("module.study.classes.language_label"))}"
+              placeholder="${escapeHtml(i18n.t("ui.reuse.language"))}"
               maxlength="32"
             />
             <button type="button" class="btn-confirm btn-animated classes-request-btn">

@@ -107,10 +107,10 @@ export function initStudyPrefs(root, { i18n, onDirtyChange }) {
     async function submitTeacherApplication(languageCode) {
         let reason = "";
         const action = await openPopup({
-            title: i18n.t("ui.app.settings.study.teacher_application_title"),
+            title: i18n.t("module.study.classes.teacher_application_title"),
             body: `
                 <label class="stack">
-                    ${escapeHtml(i18n.t("ui.app.settings.study.teacher_application_reason"))}
+                    ${escapeHtml(i18n.t("module.study.classes.teacher_application_reason"))}
                     <textarea id="study-teacher-reason" class="theme-select" rows="5"></textarea>
                 </label>
             `,
@@ -123,7 +123,7 @@ export function initStudyPrefs(root, { i18n, onDirtyChange }) {
                 },
                 {
                     id: "submit",
-                    label: i18n.t("ui.app.settings.study.submit_application"),
+                    label: i18n.t("module.study.classes.submit_application"),
                     variant: "confirm",
                 },
             ],

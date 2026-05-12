@@ -58,10 +58,10 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             .join("");
 
         const noUsers = !users.length
-            ? `<p class="notif-debug-empty">${i18n.t("ui.app.admin.notif.debug_no_users")}</p>`
+            ? `<p class="notif-debug-empty">${i18n.t("gateway.notify.admin.debug_no_users")}</p>`
             : "";
         const noCategories = !categories.length
-            ? `<p class="notif-debug-empty">${i18n.t("ui.app.admin.notif.debug_no_categories")}</p>`
+            ? `<p class="notif-debug-empty">${i18n.t("gateway.notify.admin.debug_no_categories")}</p>`
             : "";
 
         return `
@@ -70,24 +70,24 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
       ${noCategories}
       <div class="notif-debug-fields">
         <label class="notif-debug-field">
-          ${i18n.t("ui.app.admin.notif.debug_target_user")}
+          ${i18n.t("gateway.notify.admin.debug_target_user")}
           <select name="debugUser" class="theme-select">${userOptions}</select>
         </label>
         <label class="notif-debug-field">
-          ${i18n.t("ui.app.admin.notif.debug_category")}
+          ${i18n.t("gateway.notify.admin.debug_category")}
           <select name="debugCategory" class="theme-select">${categoryOptions}</select>
         </label>
         <label class="notif-debug-field notif-debug-field--full">
-          ${i18n.t("ui.app.admin.notif.debug_subject")}
-          <input name="debugSubject" type="text" placeholder="${i18n.t("ui.app.admin.notif.debug_subject_placeholder")}" />
+          ${i18n.t("gateway.notify.admin.debug_subject")}
+          <input name="debugSubject" type="text" placeholder="${i18n.t("gateway.notify.admin.debug_subject_placeholder")}" />
         </label>
         <label class="notif-debug-field notif-debug-field--full">
-          ${i18n.t("ui.app.admin.notif.debug_body")}
-          <textarea name="debugBody" rows="4" placeholder="${i18n.t("ui.app.admin.notif.debug_body_placeholder")}"></textarea>
+          ${i18n.t("gateway.notify.admin.debug_body")}
+          <textarea name="debugBody" rows="4" placeholder="${i18n.t("gateway.notify.admin.debug_body_placeholder")}"></textarea>
         </label>
       </div>
       <div class="notif-debug-actions">
-        <button class="btn-animated notif-debug-send" type="button">${i18n.t("ui.app.admin.notif.debug_send")}</button>
+        <button class="btn-animated notif-debug-send" type="button">${i18n.t("gateway.notify.admin.debug_send")}</button>
       </div>
     </div>
   `;
@@ -125,7 +125,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                     : "";
 
             if (!recipientUsername || !category || !subject || !body) {
-                showToast(i18n.t("ui.app.admin.notif.debug_missing_fields"), {
+                showToast(i18n.t("gateway.notify.admin.debug_missing_fields"), {
                     variant: "warning",
                 });
                 return;
@@ -144,8 +144,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
             showToast(
                 res.ok
-                    ? i18n.t("ui.app.admin.notif.debug_sent")
-                    : i18n.t("ui.app.admin.notif.debug_send_failed"),
+                    ? i18n.t("gateway.notify.admin.debug_sent")
+                    : i18n.t("gateway.notify.admin.debug_send_failed"),
                 { variant: res.ok ? "success" : "error" },
             );
         });
@@ -153,16 +153,16 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
     return {
         id: "notifications",
-        label: i18n.t("ui.app.admin.notifications"),
+        label: i18n.t("gateway.notify.admin.label"),
         dataReady,
         subComposerOptions: {
             allowCustomization: false,
             preferenceKey: "administration-notifications-layout",
-            heading: i18n.t("ui.app.admin.notifications"),
+            heading: i18n.t("gateway.notify.admin.label"),
             elements: [
                 {
                     id: "notifications-debug",
-                    label: i18n.t("ui.app.admin.notif.debug"),
+                    label: i18n.t("gateway.notify.admin.debug"),
                     pinned: true,
                     render: () => renderNotificationsDebugContent(),
                 },

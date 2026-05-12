@@ -1,0 +1,5 @@
+<resources>
+  <string name="gateway.study.picker.title">学習言語を選択</string>
+  <string name="gateway.study.picker.select">言語を選択してください：</string>
+  <string name="gateway.study.picker.start">学習開始</string>
+</resources>

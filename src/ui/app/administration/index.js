@@ -1,5 +1,9 @@
 import { apiFetch } from "../../reuse/api-client.js";
-import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
+import {
+    applyDocumentTitle,
+    createI18n,
+    extendI18n,
+} from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
@@ -855,8 +859,9 @@ async function loadGatewaySection(section) {
     try {
         const mod = await import(section.scriptUrl);
         if (typeof mod.createAdminSection !== "function") return null;
+        const sectionI18n = await extendI18n(i18n, section.stringsBaseUrl);
         const def = mod.createAdminSection({
-            i18n,
+            i18n: sectionI18n,
             apiFetch,
             escapeHtml,
             openPopup,

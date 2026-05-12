@@ -34,7 +34,7 @@ export function createAdminSection({
 
     function renderAdapters() {
         if (!adapters.length) {
-            return `<p class="auth-providers-empty">${i18n.t("ui.app.admin.security.no_providers")}</p>`;
+            return `<p class="auth-providers-empty">${i18n.t("gateway.auth.no_providers")}</p>`;
         }
         return adapters
             .map((adapter) => {
@@ -42,7 +42,7 @@ export function createAdminSection({
                 const configBtn = hasConfig
                     ? `<button class="btn-animated auth-provider-config-btn" type="button"
                 data-adapter-id="${escapeHtml(adapter.id)}">
-                ${i18n.t("ui.app.admin.security.configure")}
+                ${i18n.t("gateway.auth.configure")}
               </button>`
                     : "";
 
@@ -257,16 +257,16 @@ export function createAdminSection({
 
     return {
         id: "authentication",
-        label: i18n.t("ui.app.admin.authentication"),
+        label: i18n.t("gateway.auth.label"),
         dataReady,
         subComposerOptions: {
             allowCustomization: false,
             preferenceKey: "administration-auth-layout",
-            heading: i18n.t("ui.app.admin.authentication"),
+            heading: i18n.t("gateway.auth.label"),
             elements: [
                 {
                     id: "auth-providers",
-                    label: i18n.t("ui.app.admin.security.providers"),
+                    label: i18n.t("gateway.auth.providers"),
                     pinned: true,
                     render: () =>
                         `<div class="auth-providers-panel">${renderAdapters()}</div>`,

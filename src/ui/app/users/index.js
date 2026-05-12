@@ -222,7 +222,7 @@ async function runUserMenuAction(action, username) {
         showToast(
             res.ok
                 ? i18n.t("ui.app.users.password_reset_done")
-                : i18n.t("ui.app.admin.security.save_failed"),
+                : i18n.t("ui.reuse.generic.save_failed"),
             { variant: res.ok ? "success" : "error" },
         );
         return;
@@ -246,7 +246,7 @@ async function runUserMenuAction(action, username) {
         showToast(
             res.ok
                 ? i18n.t("ui.app.users.verification_resent")
-                : i18n.t("ui.app.admin.security.save_failed"),
+                : i18n.t("ui.reuse.generic.save_failed"),
             { variant: res.ok ? "success" : "error" },
         );
         return;
@@ -296,7 +296,7 @@ async function runUserMenuAction(action, username) {
                           ? "ui.app.users.founder_enabled"
                           : "ui.app.users.founder_disabled",
                   )
-                : i18n.t("ui.app.admin.security.save_failed"),
+                : i18n.t("ui.reuse.generic.save_failed"),
             { variant: res.ok ? "success" : "error" },
         );
         if (!res.ok) return;
@@ -338,7 +338,7 @@ function bindUsersInteractions() {
                 },
             );
             if (!res.ok) {
-                showToast(i18n.t("ui.app.admin.security.save_failed"), {
+                showToast(i18n.t("ui.reuse.generic.save_failed"), {
                     variant: "error",
                 });
                 return;
@@ -413,7 +413,7 @@ function bindUsersInteractions() {
                 const responseBody = await res.json().catch(() => null);
                 const responseMessage =
                     responseBody?.error?.message ??
-                    i18n.t("ui.app.admin.security.save_failed");
+                    i18n.t("ui.reuse.generic.save_failed");
                 showToast(responseMessage, {
                     variant: "error",
                 });

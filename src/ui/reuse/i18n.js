@@ -3,6 +3,10 @@
  *
  * - createI18n(options)              — loads locale strings for the user's preferred language(s)
  *                                      and returns a `{ t(key) }` resolver.
+ *                                      Pass `componentStringBaseUrls` to merge additional per-component
+ *                                      strings alongside the core locale file.
+ * - extendI18n(baseI18n, stringsBaseUrl) — returns a new resolver with core strings from
+ *                                          `baseI18n` merged with component strings from `stringsBaseUrl`.
  * - applyStaticTranslations(i18n)    — resolves data-i18n / data-i18n-placeholder /
  *                                      data-i18n-aria-label / data-i18n-alt attributes in the DOM.
  * - applyDocumentTitle(i18n, key)    — sets document.title from a locale key.
@@ -10,7 +14,7 @@
  * - setPreferredLanguages(languages) — persists a language-priority array to localStorage + cookie.
  *
  * Usage:
- *   const i18n = await createI18n({ preferredLanguages: ['es', 'en'] });
+ *   const i18n = await createI18n({ preferredLanguages: ['es', 'en'], componentStringBaseUrls: ['/static/my-component/languages'] });
  *   i18n.t('ui.reuse.generic.save');   // → 'Guardar'
  *   applyStaticTranslations(i18n);
  */
@@ -135,6 +139,32 @@ async function loadModuleStrings(activeLocale, moduleIds) {
     return collected;
 }
 
+async function loadComponentStrings(activeLocale, baseUrls) {
+    const collected = new Map();
+    if (!Array.isArray(baseUrls) || !baseUrls.length) return collected;
+
+    await Promise.all(
+        baseUrls.map(async (baseUrl) => {
+            try {
+                let response = await fetch(
+                    `${baseUrl}/${activeLocale}/strings.xml`,
+                );
+                if (!response.ok && activeLocale !== DEFAULT_LOCALE) {
+                    response = await fetch(
+                        `${baseUrl}/${DEFAULT_LOCALE}/strings.xml`,
+                    );
+                }
+                if (!response.ok) return;
+                parseStringsXml(await response.text()).forEach((value, key) => {
+                    collected.set(key, value);
+                });
+            } catch {}
+        }),
+    );
+
+    return collected;
+}
+
 export async function createI18n(options = {}) {
     const requested = detectLocale();
     const preferredLanguages = options.preferredLanguages || [
@@ -179,6 +209,12 @@ export async function createI18n(options = {}) {
         options.moduleIds || [],
     );
     moduleStrings.forEach((value, key) => strings.set(key, value));
+
+    const componentStrings = await loadComponentStrings(
+        activeLocale,
+        options.componentStringBaseUrls || [],
+    );
+    componentStrings.forEach((value, key) => strings.set(key, value));
 
     const persistedLocales = normalizedPriority.filter(
         (locale) => !unsupportedLocales.has(locale),
@@ -225,6 +261,32 @@ export function applyStaticTranslations(i18n, root = document) {
         const value = i18n.t(key);
         if (value) element.setAttribute("alt", value);
     });
+}
+
+/**
+ * Produces a new i18n resolver that has all core strings from `baseI18n`
+ * plus additional component-specific strings loaded from `stringsBaseUrl`.
+ * Falls back to the English file if the locale-specific file is missing.
+ *
+ * @param {{ locale: string, t: Function }} baseI18n
+ * @param {string|null|undefined} stringsBaseUrl - Base URL for component strings
+ * @returns {Promise<{ locale: string, t: Function }>}
+ */
+export async function extendI18n(baseI18n, stringsBaseUrl) {
+    if (!stringsBaseUrl) return baseI18n;
+
+    const extra = await loadComponentStrings(baseI18n.locale, [stringsBaseUrl]);
+    const merged = new Map();
+
+    extra.forEach((value, key) => merged.set(key, value));
+
+    return {
+        locale: baseI18n.locale,
+        t(key) {
+            if (merged.has(key)) return merged.get(key);
+            return baseI18n.t(key);
+        },
+    };
 }
 
 export function applyDocumentTitle(i18n, key) {

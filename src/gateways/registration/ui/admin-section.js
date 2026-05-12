@@ -55,7 +55,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     function renderContent() {
         const tableHtml =
             tokens.length === 0
-                ? `<p class="registration-no-tokens"><em>${escapeHtml(i18n.t("ui.app.admin.registration.no_tokens"))}</em></p>`
+                ? `<p class="registration-no-tokens"><em>${escapeHtml(i18n.t("gateway.registration.no_tokens"))}</em></p>`
                 : `
         <div class="users-table-wrap">
           <table class="users-table">
