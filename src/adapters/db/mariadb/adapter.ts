@@ -182,12 +182,19 @@ class MariaDbExecutor implements RawDbExecutor {
     }
 
     async ensureTable(def: StructuredDbTableDef): Promise<void> {
+        const compositePk = def.primaryKey ?? [];
+        const keyColumns = new Set<string>([
+            ...compositePk,
+            ...(def.uniqueKeys ?? []).flat(),
+        ]);
         const dbType = (
             col: StructuredDbTableDef["columns"][number],
         ): string => {
+            const isKeyColumn =
+                col.primaryKey || col.unique || keyColumns.has(col.name);
             switch (col.type) {
                 case "text":
-                    return "TEXT";
+                    return isKeyColumn ? "VARCHAR(255)" : "TEXT";
                 case "integer":
                     return "INT";
                 case "bigint":
@@ -210,7 +217,6 @@ class MariaDbExecutor implements RawDbExecutor {
             if (typeof value === "number") return String(value);
             return `'${String(value).replace(/'/g, "''")}'`;
         };
-        const compositePk = def.primaryKey ?? [];
         const columnDefs = def.columns.map((col) => {
             const parts: string[] = [`${col.name} ${dbType(col)}`];
             if (col.notNull || col.primaryKey) parts.push("NOT NULL");

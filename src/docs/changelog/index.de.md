@@ -8,9 +8,11 @@ modular und gut prüfbar bleibt.
 
 ## Eintragsformat
 
-- Dateiname: `<branch-name-without-copilot-prefix>.de.md` (z. B. Branch
-  `copilot/fix-auth-bug` wird zu `fix-auth-bug.de.md`)
-- Eine Datei pro PR
+- Dateiname: `<branch-name-without-copilot-prefix>.<sprache>.md` für jede
+  unterstützte Sprache (de, en, id, ja). Beispiel: Branch `copilot/fix-auth-bug`
+  ergibt `fix-auth-bug.en.md`, `fix-auth-bug.de.md`, `fix-auth-bug.id.md` und
+  `fix-auth-bug.ja.md`
+- Ein Dateisatz pro PR (eine Datei je Sprache)
 - Enthält:
     - PR-Titel
     - Zusammenfassung

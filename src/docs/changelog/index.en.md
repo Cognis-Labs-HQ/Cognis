@@ -8,9 +8,11 @@ easy to audit.
 
 ## Entry format
 
-- Filename: `<branch-name-without-copilot-prefix>.en.md` (e.g. branch
-  `copilot/fix-auth-bug` maps to `fix-auth-bug.en.md`)
-- One file per PR
+- Filename: `<branch-name-without-copilot-prefix>.<lang>.md` for each supported
+  language (de, en, id, ja). For example, branch `copilot/fix-auth-bug` produces
+  `fix-auth-bug.en.md`, `fix-auth-bug.de.md`, `fix-auth-bug.id.md`, and
+  `fix-auth-bug.ja.md`
+- One set of files per PR (one per language)
 - Include:
     - PR title
     - Summary
