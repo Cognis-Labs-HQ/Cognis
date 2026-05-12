@@ -149,7 +149,7 @@ export function createAdminSection({
                 },
                 {
                     id: "cancel",
-                    label: i18n.t("ui.reuse.popup.cancel"),
+                    label: i18n.t("ui.reuse.popup_cancel"),
                     variant: "cancel",
                 },
             ],

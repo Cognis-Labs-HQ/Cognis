@@ -130,7 +130,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                             }
                         } else {
                             showToast(
-                                i18n.t("ui.reuse.registration.invite_failed"),
+                                i18n.t("ui.reuse.registration_invite_failed"),
                                 {
                                     variant: "error",
                                 },

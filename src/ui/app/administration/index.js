@@ -354,7 +354,7 @@ function bindModuleToggles() {
                                 },
                                 {
                                     id: "cancel",
-                                    label: i18n.t("ui.reuse.popup.cancel"),
+                                    label: i18n.t("ui.reuse.popup_cancel"),
                                     variant: "cancel",
                                 },
                             ],
@@ -383,7 +383,7 @@ function bindModuleToggles() {
                             },
                             {
                                 id: "cancel",
-                                label: i18n.t("ui.reuse.popup.cancel"),
+                                label: i18n.t("ui.reuse.popup_cancel"),
                                 variant: "cancel",
                             },
                         ],
@@ -435,7 +435,7 @@ function bindGatewayToggles() {
                             },
                             {
                                 id: "cancel",
-                                label: i18n.t("ui.reuse.popup.cancel"),
+                                label: i18n.t("ui.reuse.popup_cancel"),
                                 variant: "cancel",
                             },
                         ],
@@ -485,7 +485,7 @@ function bindGatewayToggles() {
                             },
                             {
                                 id: "skip",
-                                label: i18n.t("ui.reuse.popup.cancel"),
+                                label: i18n.t("ui.reuse.popup_cancel"),
                                 variant: "cancel",
                             },
                         ],
@@ -529,7 +529,7 @@ function bindGatewayToggles() {
                         },
                         {
                             id: "cancel",
-                            label: i18n.t("ui.reuse.popup.cancel"),
+                            label: i18n.t("ui.reuse.popup_cancel"),
                             variant: "cancel",
                         },
                     ],
@@ -695,7 +695,7 @@ function bindAdapterToggles() {
                             },
                             {
                                 id: "cancel",
-                                label: i18n.t("ui.reuse.popup.cancel"),
+                                label: i18n.t("ui.reuse.popup_cancel"),
                                 variant: "cancel",
                             },
                         ],
@@ -744,7 +744,7 @@ function bindAdapterToggles() {
                         },
                         {
                             id: "cancel",
-                            label: i18n.t("ui.reuse.popup.cancel"),
+                            label: i18n.t("ui.reuse.popup_cancel"),
                             variant: "cancel",
                         },
                     ],
@@ -1137,7 +1137,7 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
             },
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.popup.cancel"),
+                label: i18n.t("ui.reuse.popup_cancel"),
                 variant: "cancel",
             },
         ],
@@ -1313,18 +1313,18 @@ async function loadAllAdapters(gatewayList) {
 async function guardSubPageSwitch() {
     if (!changesBar?.isAnyDirty()) return true;
     const result = await openPopup({
-        title: i18n.t("ui.reuse.unsaved_changes.navigate_away.title"),
-        body: `<p>${i18n.t("ui.reuse.unsaved_changes.navigate_away.body")}</p>`,
+        title: i18n.t("ui.reuse.unsaved_changes_navigate_away_title"),
+        body: `<p>${i18n.t("ui.reuse.unsaved_changes_navigate_away_body")}</p>`,
         variant: "warning",
         actions: [
             {
                 id: "discard",
-                label: i18n.t("ui.reuse.unsaved_changes.navigate_away.discard"),
+                label: i18n.t("ui.reuse.unsaved_changes_navigate_away_discard"),
                 variant: "confirm",
             },
             {
                 id: "stay",
-                label: i18n.t("ui.reuse.unsaved_changes.navigate_away.stay"),
+                label: i18n.t("ui.reuse.unsaved_changes_navigate_away_stay"),
                 variant: "cancel",
             },
         ],

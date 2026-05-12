@@ -442,7 +442,7 @@ function buildButton(i18n) {
                 },
                 {
                     id: "cancel",
-                    label: i18n.t("ui.reuse.popup.cancel"),
+                    label: i18n.t("ui.reuse.popup_cancel"),
                     variant: "cancel",
                 },
             ],
@@ -486,7 +486,7 @@ function buildButton(i18n) {
     mobileBackdrop.setAttribute("role", "button");
     mobileBackdrop.tabIndex = 0;
     mobileBackdrop.hidden = true;
-    mobileBackdrop.setAttribute("aria-label", i18n.t("ui.reuse.popup.close"));
+    mobileBackdrop.setAttribute("aria-label", i18n.t("ui.reuse.popup_close"));
     mobileBackdrop.addEventListener("click", () => closePanel());
     mobileBackdrop.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
