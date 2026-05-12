@@ -224,7 +224,7 @@ function renderNotificationItem(notif, i18n) {
         '<span class="notification-item-dot" aria-hidden="true"></span>' +
         '<span class="notification-item-body">' +
         `<span class="notification-item-subject">${escapeHtml(notif.subject)}</span>` +
-        `<span class="notification-item-sender">${escapeHtml(notif.senderName ?? i18n.t("adapter.notify.internal.sender_system"))}</span>` +
+        `<span class="notification-item-sender">${escapeHtml(notif.senderName ?? i18n.t("ui.reuse.system"))}</span>` +
         `<span class="notification-item-preview">${escapeHtml(notif.body)}</span>` +
         "</span>" +
         `<span class="notification-item-time" data-relative-time="${notif.createdAt}">${escapeHtml(formatRelativeTime(notif.createdAt))}</span>` +
@@ -429,7 +429,7 @@ function buildButton(i18n) {
     clearAllBtn.innerHTML = "&#x1F5D1;";
     clearAllBtn.addEventListener("click", async () => {
         const result = await openPopup({
-            title: i18n.t("adapter.notify.internal.clear_all_confirm_title"),
+            title: i18n.t("adapter.notify.internal.clear_all"),
             body: escapeHtml(
                 i18n.t("adapter.notify.internal.clear_all_confirm_body"),
             ),
@@ -656,8 +656,7 @@ async function showArrivalToast(notif, i18n) {
             ? toastPreview.slice(0, TOAST_BODY_PREVIEW_LENGTH) + "\u2026"
             : toastPreview;
 
-    const sender =
-        notif.senderName ?? i18n.t("adapter.notify.internal.sender_system");
+    const sender = notif.senderName ?? i18n.t("ui.reuse.system");
 
     toast.innerHTML =
         '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +

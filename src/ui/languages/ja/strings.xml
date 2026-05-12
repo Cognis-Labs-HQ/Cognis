@@ -46,6 +46,13 @@
   <string name="ui.reuse.coming_soon">近日公開</string>
   <string name="ui.reuse.save_failed">保存失敗</string>
   <string name="ui.reuse.more_information">詳細情報</string>
+  <string name="ui.reuse.system">システム</string>
+  <string name="ui.reuse.authentication">認証</string>
+  <string name="ui.reuse.adapters">アダプター</string>
+  <string name="ui.reuse.configure">設定</string>
+  <string name="ui.reuse.debug">デバッグ</string>
+  <string name="ui.reuse.subject">件名</string>
+  <string name="ui.reuse.message">メッセージ</string>
 
   <string name="ui.layout.brand.aria">Cognis ホーム</string>
   <string name="ui.layout.nav.primary">メインナビゲーション</string>

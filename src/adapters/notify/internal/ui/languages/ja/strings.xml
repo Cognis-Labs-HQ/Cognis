@@ -1,12 +1,10 @@
 <resources>
   <string name="adapter.notify.internal.mark_all_read">すべて既読にする</string>
   <string name="adapter.notify.internal.empty">新しい通知はありません</string>
-  <string name="adapter.notify.internal.sender_system">システム</string>
   <string name="adapter.notify.internal.error_mark_read">通知を既読にできませんでした。もう一度お試しください。</string>
   <string name="adapter.notify.internal.error_dismiss">通知を削除できませんでした。もう一度お試しください。</string>
   <string name="adapter.notify.internal.error_mark_all_read">すべての通知を既読にできませんでした。再読み込みしてください。</string>
   <string name="adapter.notify.internal.clear_all">すべての通知を削除</string>
-  <string name="adapter.notify.internal.clear_all_confirm_title">すべての通知を削除</string>
   <string name="adapter.notify.internal.clear_all_confirm_body">すべての通知が完全に削除されます。この操作は取り消せません。</string>
   <string name="adapter.notify.internal.error_clear_all">通知を削除できませんでした。もう一度お試しください。</string>
   <string name="adapter.notify.internal.new_message">新しいメッセージ</string>

@@ -1,11 +1,8 @@
 <resources>
   <string name="gateway.notify.admin.label">Benachrichtigungen</string>
-  <string name="gateway.notify.admin.debug">Debug</string>
   <string name="gateway.notify.admin.debug_target_user">Zielbenutzer</string>
   <string name="gateway.notify.admin.debug_category">Benachrichtigungstyp</string>
-  <string name="gateway.notify.admin.debug_subject">Betreff</string>
   <string name="gateway.notify.admin.debug_subject_placeholder">Benachrichtigungsbetreff</string>
-  <string name="gateway.notify.admin.debug_body">Nachricht</string>
   <string name="gateway.notify.admin.debug_body_placeholder">Benachrichtigungsinhalt</string>
   <string name="gateway.notify.admin.debug_send">Benachrichtigung senden</string>
   <string name="gateway.notify.admin.debug_sent">Benachrichtigung versendet.</string>

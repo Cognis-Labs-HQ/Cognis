@@ -46,6 +46,13 @@
   <string name="ui.reuse.coming_soon">Segera Hadir</string>
   <string name="ui.reuse.save_failed">Gagal Menyimpan</string>
   <string name="ui.reuse.more_information">Informasi lainnya</string>
+  <string name="ui.reuse.system">Sistem</string>
+  <string name="ui.reuse.authentication">Autentikasi</string>
+  <string name="ui.reuse.adapters">Adaptor</string>
+  <string name="ui.reuse.configure">Konfigurasikan</string>
+  <string name="ui.reuse.debug">Debug</string>
+  <string name="ui.reuse.subject">Subjek</string>
+  <string name="ui.reuse.message">Pesan</string>
 
   <string name="ui.layout.brand.aria">Beranda Cognis</string>
   <string name="ui.layout.nav.primary">Navigasi utama</string>

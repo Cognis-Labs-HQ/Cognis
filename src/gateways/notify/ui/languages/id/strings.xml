@@ -1,11 +1,8 @@
 <resources>
   <string name="gateway.notify.admin.label">Notifikasi</string>
-  <string name="gateway.notify.admin.debug">Debug</string>
   <string name="gateway.notify.admin.debug_target_user">Pengguna Target</string>
   <string name="gateway.notify.admin.debug_category">Jenis Notifikasi</string>
-  <string name="gateway.notify.admin.debug_subject">Subjek</string>
   <string name="gateway.notify.admin.debug_subject_placeholder">Subjek notifikasi</string>
-  <string name="gateway.notify.admin.debug_body">Pesan</string>
   <string name="gateway.notify.admin.debug_body_placeholder">Isi notifikasi</string>
   <string name="gateway.notify.admin.debug_send">Kirim Notifikasi</string>
   <string name="gateway.notify.admin.debug_sent">Notifikasi terkirim.</string>

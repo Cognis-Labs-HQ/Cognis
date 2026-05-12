@@ -78,11 +78,11 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
           <select name="debugCategory" class="theme-select">${categoryOptions}</select>
         </label>
         <label class="notif-debug-field notif-debug-field--full">
-          ${i18n.t("gateway.notify.admin.debug_subject")}
+          ${i18n.t("ui.reuse.subject")}
           <input name="debugSubject" type="text" placeholder="${i18n.t("gateway.notify.admin.debug_subject_placeholder")}" />
         </label>
         <label class="notif-debug-field notif-debug-field--full">
-          ${i18n.t("gateway.notify.admin.debug_body")}
+          ${i18n.t("ui.reuse.message")}
           <textarea name="debugBody" rows="4" placeholder="${i18n.t("gateway.notify.admin.debug_body_placeholder")}"></textarea>
         </label>
       </div>
@@ -162,7 +162,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             elements: [
                 {
                     id: "notifications-debug",
-                    label: i18n.t("gateway.notify.admin.debug"),
+                    label: i18n.t("ui.reuse.debug"),
                     pinned: true,
                     render: () => renderNotificationsDebugContent(),
                 },

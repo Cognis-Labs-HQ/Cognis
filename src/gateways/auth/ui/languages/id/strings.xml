@@ -1,6 +1,3 @@
 <resources>
-  <string name="gateway.auth.label">Autentikasi</string>
-  <string name="gateway.auth.providers">Adaptor</string>
   <string name="gateway.auth.no_providers">Tidak ada adaptor autentikasi yang dikonfigurasi.</string>
-  <string name="gateway.auth.configure">Konfigurasikan</string>
 </resources>

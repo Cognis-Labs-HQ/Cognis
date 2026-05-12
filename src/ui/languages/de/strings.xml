@@ -46,6 +46,13 @@
   <string name="ui.reuse.coming_soon">Demnächst verfügbar</string>
   <string name="ui.reuse.save_failed">Speichern fehlgeschlagen</string>
   <string name="ui.reuse.more_information">Weitere Informationen</string>
+  <string name="ui.reuse.system">System</string>
+  <string name="ui.reuse.authentication">Authentifizierung</string>
+  <string name="ui.reuse.adapters">Adapter</string>
+  <string name="ui.reuse.configure">Konfigurieren</string>
+  <string name="ui.reuse.debug">Debug</string>
+  <string name="ui.reuse.subject">Betreff</string>
+  <string name="ui.reuse.message">Nachricht</string>
 
   <string name="ui.layout.brand.aria">Cognis-Startseite</string>
   <string name="ui.layout.nav.primary">Hauptnavigation</string>

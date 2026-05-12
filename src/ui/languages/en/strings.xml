@@ -46,6 +46,13 @@
   <string name="ui.reuse.coming_soon">Coming Soon</string>
   <string name="ui.reuse.save_failed">Save Failed</string>
   <string name="ui.reuse.more_information">More information</string>
+  <string name="ui.reuse.system">System</string>
+  <string name="ui.reuse.authentication">Authentication</string>
+  <string name="ui.reuse.adapters">Adapters</string>
+  <string name="ui.reuse.configure">Configure</string>
+  <string name="ui.reuse.debug">Debug</string>
+  <string name="ui.reuse.subject">Subject</string>
+  <string name="ui.reuse.message">Message</string>
 
   <string name="ui.layout.brand.aria">Cognis home</string>
   <string name="ui.layout.nav.primary">Primary navigation</string>
