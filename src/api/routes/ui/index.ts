@@ -5,8 +5,8 @@ import {
     requireAuth,
     getCookieSession,
     setPageSecurityHeaders,
-} from "../../auth/guard.js";
-import { lookupAccessToken } from "../../auth/access-tokens.js";
+} from "../../gateways/auth/guard.js";
+import { lookupAccessToken } from "../../gateways/auth/access-tokens.js";
 import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
 import type { GatewayRegistry } from "@cognis/core";
 import type { UIRegistry } from "../../ui-registry.js";
@@ -254,17 +254,6 @@ export function createUiRoutes(
             await serveFile(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "login.html"),
-                "text/html; charset=utf-8",
-                log,
-                { path: url.pathname, method: req.method ?? "GET" },
-            );
-            return true;
-        }
-
-        if (url.pathname === "/verify-email") {
-            await serveFile(
-                res,
-                path.join(PUBLIC_ROOT, "pages", "verify-email.html"),
                 "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },

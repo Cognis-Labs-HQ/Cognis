@@ -7,8 +7,8 @@ import {
     issueAccessToken,
     revokeAccessTokensForSubject,
     verifyAccessToken,
-} from "../../auth/access-tokens.js";
-import { requireAuth } from "../../auth/guard.js";
+} from "../access-tokens.js";
+import { requireAuth } from "../guard.js";
 
 test("access tokens issue and verify", () => {
     const token = issueAccessToken("u1", "admin", 60);
@@ -37,7 +37,7 @@ test("token store persists tokens to disk across module reload", async () => {
     const tempDir = mkdtempSync(path.join(tmpdir(), "cognis-token-store-"));
     const tokenStorePath = path.join(tempDir, "access-tokens.json");
     const tokenModulePath = new URL(
-        "../../auth/access-tokens.ts",
+        "../access-tokens.ts",
         import.meta.url,
     ).href;
 

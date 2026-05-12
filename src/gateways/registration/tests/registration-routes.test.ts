@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { issueAccessToken } from "../../../api/auth/access-tokens.js";
+import { issueAccessToken } from "../../auth/access-tokens.js";
 import {
     createRegistrationRoutes,
     createRegistrationPageRoutes,

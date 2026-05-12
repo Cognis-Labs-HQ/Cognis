@@ -33,5 +33,5 @@ export {
     getAuthClaims,
     getCookieSession,
     setPageSecurityHeaders,
-} from "../api/auth/guard.js";
+} from "./auth/guard.js";
 export { readJson } from "../api/reuse/read-json.js";

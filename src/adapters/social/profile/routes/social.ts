@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth } from "../../../../api/auth/guard.js";
+import { requireAuth } from "../../../../gateways/auth/guard.js";
 import type { DbProfileStore, AccountProfile } from "../store.js";
 import { visibilityRank } from "../store.js";
 

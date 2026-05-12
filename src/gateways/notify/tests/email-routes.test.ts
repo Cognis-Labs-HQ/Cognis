@@ -13,7 +13,7 @@ import {
 } from "../../../api/reuse/verify-token.js";
 import { CoreNotificationGateway } from "../gateway.js";
 import { VolatileNotificationPreferenceStore } from "../gateway.js";
-import { issueAccessToken } from "../../../api/auth/access-tokens.js";
+import { issueAccessToken } from "../../auth/access-tokens.js";
 
 async function makeNotifStore(): Promise<DbNotificationStore> {
     const db = new InMemoryTestExecutor();

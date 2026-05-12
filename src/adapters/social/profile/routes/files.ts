@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth } from "../../../../api/auth/guard.js";
+import { requireAuth } from "../../../../gateways/auth/guard.js";
 import type { DbProfileStore } from "../store.js";
 import type { FileStorageGateway } from "@cognis/core";
 import { readRawBody, readJson } from "../../../../api/reuse/read-json.js";

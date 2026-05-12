@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import { requireAuth } from "../../api/auth/guard.js";
+import { requireAuth } from "../auth/guard.js";
 import { readJson } from "../../api/reuse/read-json.js";
 import { CoreStudyGateway } from "./gateway.js";
 

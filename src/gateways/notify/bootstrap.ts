@@ -1,4 +1,5 @@
 import path from "node:path";
+import { readFile } from "node:fs/promises";
 import {
     requireAuth,
     getAuthClaims,
@@ -198,6 +199,41 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         stringsBaseUrl: "/static/gateways/notify/languages",
     });
     ctx.uiRegistry?.registerStaticDir("notify", uiDir);
+    ctx.routeRegistry.register(
+        async (
+            req: IncomingMessage,
+            res: ServerResponse,
+            url: URL,
+        ): Promise<boolean> => {
+            if (url.pathname !== "/verify-email" || req.method !== "GET")
+                return false;
+            try {
+                const file = await readFile(
+                    path.join(uiDir, "verify-email.html"),
+                );
+                res.writeHead(200, {
+                    "content-type": "text/html; charset=utf-8",
+                    "cache-control": "no-store",
+                    "x-content-type-options": "nosniff",
+                    "x-frame-options": "DENY",
+                    "referrer-policy": "no-referrer",
+                });
+                res.end(file);
+            } catch {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Page not found.",
+                        },
+                    }),
+                );
+            }
+            return true;
+        },
+        "notify",
+    );
     ctx.uiRegistry?.registerSettingsSection({
         id: "notifications",
         label: "Notifications",

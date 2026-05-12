@@ -1,4 +1,4 @@
-import { requireAuth } from "../../../../api/auth/guard.js";
+import { requireAuth } from "../../../../gateways/auth/guard.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../../api/reuse/read-json.js";
 export type { UserPreferenceStore } from "../../../../api/reuse/preference-store.js";

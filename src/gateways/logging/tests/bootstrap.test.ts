@@ -7,7 +7,7 @@ import { EventEmitter } from "node:events";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../api/route-registry.js";
 import { UIRegistry } from "../../../api/ui-registry.js";
-import { issueAccessToken } from "../../../api/auth/access-tokens.js";
+import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
 
 class ResponseRecorder extends EventEmitter {

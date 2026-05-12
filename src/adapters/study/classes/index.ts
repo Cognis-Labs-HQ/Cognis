@@ -11,7 +11,7 @@ import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js
 import {
     getCookieSession,
     setPageSecurityHeaders,
-} from "../../../api/auth/guard.js";
+} from "../../../gateways/auth/guard.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),

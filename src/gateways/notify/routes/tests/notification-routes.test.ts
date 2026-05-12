@@ -5,7 +5,7 @@ import {
     CoreNotificationGateway,
     VolatileNotificationPreferenceStore,
 } from "../../gateway.js";
-import { issueAccessToken } from "../../../../api/auth/access-tokens.js";
+import { issueAccessToken } from "../../../auth/access-tokens.js";
 import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
 
 function requestWithBody(

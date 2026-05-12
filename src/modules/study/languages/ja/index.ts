@@ -10,7 +10,7 @@ import {
     getCookieSession,
     requireAuth,
     setPageSecurityHeaders,
-} from "../../../../api/auth/guard.js";
+} from "../../../../gateways/auth/guard.js";
 import { readJson } from "../../../../api/reuse/read-json.js";
 import { readFile } from "node:fs/promises";
 import {

@@ -6,7 +6,7 @@ import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../api/route-registry.js";
 import { UIRegistry } from "../../../api/ui-registry.js";
 import { bootstrap } from "../bootstrap.js";
-import { issueAccessToken } from "../../../api/auth/access-tokens.js";
+import { issueAccessToken } from "../access-tokens.js";
 import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
 
 type HttpIncomingMessage = import("node:http").IncomingMessage;

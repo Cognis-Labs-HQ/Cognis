@@ -11,7 +11,7 @@ import { createMessagesRoutes } from "./routes.js";
 import {
     getCookieSession,
     setPageSecurityHeaders,
-} from "../../../api/auth/guard.js";
+} from "../../../gateways/auth/guard.js";
 import type { DbProfileStore } from "../profile/store.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
