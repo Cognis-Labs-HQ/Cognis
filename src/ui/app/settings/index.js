@@ -107,6 +107,9 @@ export async function mount(root, { signal } = {}) {
                     try {
                         const mod = await import(descriptor.scriptUrl);
                         if (typeof mod.createSettingsSection !== "function") {
+                            console.warn(
+                                `[settings] No createSettingsSection in ${descriptor.scriptUrl}`,
+                            );
                             return null;
                         }
                         return mod.createSettingsSection({
@@ -115,13 +118,18 @@ export async function mount(root, { signal } = {}) {
                             markDirty: (key, dirty) =>
                                 changesBar?.markDirty(key, dirty),
                         });
-                    } catch {
+                    } catch (error) {
+                        console.warn(
+                            `[settings] Failed loading ${descriptor.scriptUrl}:`,
+                            error,
+                        );
                         return null;
                     }
                 }),
             )
         ).filter(Boolean);
-    } catch {
+    } catch (error) {
+        console.warn(`[settings] sections-load-failed:`, error);
         contributedSections = [];
     }
 
