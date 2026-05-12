@@ -152,7 +152,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
                     : `<button class="btn-animated" type="button" data-set-primary="${escaped}">${i18n.t("ui.app.settings.emails_set_primary")}</button>`;
                 const removeBtn = entry.primary
                     ? ""
-                    : `<button class="btn-animated" type="button" data-remove-email="${escaped}">${i18n.t("ui.app.settings.emails_remove")}</button>`;
+                    : `<button class="btn-animated" type="button" data-remove-email="${escaped}">${i18n.t("ui.reuse.remove")}</button>`;
                 return `<li class="email-list-item"><span class="email-address">${escaped}</span>${verifiedBadge}${primaryBadge}${removeBtn}</li>`;
             })
             .join("");
@@ -282,16 +282,11 @@ export function initGeneralPrefs(root, { i18n, username }) {
                     const code =
                         err instanceof Error ? err.message : "remove_failed";
                     if (code === "cannot_remove_primary_email") {
-                        showToast(
-                            i18n.t(
-                                "ui.app.settings.emails_remove_primary_body",
-                            ),
-                            { variant: "warning" },
-                        );
+                        showToast(i18n.t("ui.reuse.remove_primary_body"), {
+                            variant: "warning",
+                        });
                     } else {
-                        showStatus(
-                            i18n.t("ui.app.settings.emails_remove_failed"),
-                        );
+                        showStatus(i18n.t("ui.reuse.remove_failed"));
                     }
                 }
                 return;

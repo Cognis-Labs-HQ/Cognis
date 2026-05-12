@@ -369,7 +369,7 @@ function buildButton(i18n) {
     const btn = document.createElement("button");
     btn.id = "notification-toggle";
     btn.className = "notification-button";
-    btn.setAttribute("aria-label", i18n.t("ui.layout.notifications.aria"));
+    btn.setAttribute("aria-label", i18n.t("ui.reuse.notifications"));
     btn.setAttribute("type", "button");
     btn.innerHTML =
         '<span class="notification-badge-wrap">' +
@@ -383,7 +383,7 @@ function buildButton(i18n) {
     panel.className = "notification-panel";
     panel.hidden = true;
     panel.setAttribute("role", "dialog");
-    panel.setAttribute("aria-label", i18n.t("ui.layout.notifications.aria"));
+    panel.setAttribute("aria-label", i18n.t("ui.reuse.notifications"));
 
     const header = document.createElement("div");
     header.className = "notification-panel-header";

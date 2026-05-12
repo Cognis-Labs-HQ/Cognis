@@ -1,5 +1,4 @@
 <resources>
-  <string name="gateway.notify.admin.label">Notifications</string>
   <string name="gateway.notify.admin.debug_target_user">Target User</string>
   <string name="gateway.notify.admin.debug_category">Notification Type</string>
   <string name="gateway.notify.admin.debug_subject_placeholder">Notification subject</string>

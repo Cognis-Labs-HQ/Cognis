@@ -184,7 +184,7 @@ function renderRegisterShell() {
         const langSelectHtml =
             availableLanguages.length > 1
                 ? `<label>
-            <span>${escapeHtml(i18n.t("ui.app.register.language"))}</span>
+            <span>${escapeHtml(i18n.t("ui.reuse.language"))}</span>
             <select name="language" class="theme-select">${langOptionsHtml}</select>
           </label>`
                 : "";

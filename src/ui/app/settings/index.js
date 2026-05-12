@@ -399,7 +399,7 @@ export async function mount(root, { signal } = {}) {
         preferenceKey: "settings-layout",
         i18n,
         pageContext: {
-            title: i18n.t("ui.app.settings.page_title"),
+            title: i18n.t("ui.reuse.settings"),
             subtitle: i18n.t("ui.app.settings.page_subtitle"),
         },
         pageOverrides: {
@@ -408,9 +408,9 @@ export async function mount(root, { signal } = {}) {
         toolbar: [
             {
                 id: "settings-nav",
-                label: i18n.t("ui.app.settings.page_title"),
+                label: i18n.t("ui.reuse.settings"),
                 render: () => `
-      <h2>${i18n.t("ui.app.settings.page_title")}</h2>
+      <h2>${i18n.t("ui.reuse.settings")}</h2>
       <ul>
         <li><button data-composer-scroll="general">${i18n.t("ui.app.settings.general")}</button></li>
         <li><button data-composer-scroll="appearance">${i18n.t("ui.reuse.appearance")}</button></li>

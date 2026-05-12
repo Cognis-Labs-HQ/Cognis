@@ -153,12 +153,12 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
     return {
         id: "notifications",
-        label: i18n.t("gateway.notify.admin.label"),
+        label: i18n.t("ui.reuse.notifications"),
         dataReady,
         subComposerOptions: {
             allowCustomization: false,
             preferenceKey: "administration-notifications-layout",
-            heading: i18n.t("gateway.notify.admin.label"),
+            heading: i18n.t("ui.reuse.notifications"),
             elements: [
                 {
                     id: "notifications-debug",

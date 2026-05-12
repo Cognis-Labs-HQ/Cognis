@@ -1,5 +1,4 @@
 <resources>
-  <string name="gateway.notify.admin.label">通知</string>
   <string name="gateway.notify.admin.debug_target_user">対象ユーザー</string>
   <string name="gateway.notify.admin.debug_category">通知タイプ</string>
   <string name="gateway.notify.admin.debug_subject_placeholder">通知の件名</string>

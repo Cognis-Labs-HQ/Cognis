@@ -31,7 +31,7 @@ async function loadInviteState() {
 async function promptEmail() {
     let inputEl = null;
     const action = await openPopup({
-        title: i18n.t("ui.app.invite.invite"),
+        title: i18n.t("ui.reuse.invite"),
         body: () => `
       <label class="stack">
         <span>${escapeHtml(i18n.t("ui.app.invite.email"))}</span>
@@ -97,7 +97,7 @@ const elements = [
         <div class="controls">
           ${
               inviteState.inviteEnabled
-                  ? `<button id="invite-create-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.app.invite.invite"))}</button>`
+                  ? `<button id="invite-create-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</button>`
                   : `<em>${escapeHtml(i18n.t("ui.app.register.closed"))}</em>`
           }
         </div>
@@ -198,7 +198,7 @@ composer = createPageComposer(root, {
     i18n,
     preferenceKey: "invite-layout",
     pageContext: {
-        title: i18n.t("ui.app.invite.page_title"),
+        title: i18n.t("ui.reuse.invite"),
         subtitle: i18n.t("ui.app.invite.page_subtitle"),
     },
     toolbar: [],

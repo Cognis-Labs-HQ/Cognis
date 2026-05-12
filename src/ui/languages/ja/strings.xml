@@ -61,7 +61,6 @@
   <string name="ui.layout.toolbar.collapse">ツールバーを折りたたむ</string>
   <string name="ui.layout.toolbar.expand">ツールバーを展開する</string>
   <string name="ui.layout.greeting">こんにちは、</string>
-  <string name="ui.layout.notifications.aria">通知</string>
   <string name="ui.layout.search.aria">検索</string>
   <string name="ui.layout.search.placeholder">ユーザーを検索…</string>
   <string name="ui.layout.search.no_results">結果が見つかりません。</string>
@@ -83,7 +82,6 @@
   <string name="ui.app.login.typing.sample.5">交流の場です！</string>
   <string name="ui.app.login.typing.sample.6">FOSS により提供</string>
   <string name="ui.app.login.typing.sample.7">今すぐアカウントを登録しましょう</string>
-  <string name="ui.app.settings.page_title">設定</string>
   <string name="ui.app.settings.page_subtitle">ユーザー設定を管理します。</string>
   <string name="ui.app.settings.font">フォント</string>
   <string name="ui.app.settings.font_size">フォントサイズ</string>
@@ -96,7 +94,6 @@
   <string name="ui.app.settings.preferences">設定情報</string>
   <string name="ui.app.settings.prefs_loading">読み込み中...</string>
 
-  <string name="ui.app.docs.page_title">ドキュメント</string>
   <string name="ui.app.docs.page_subtitle">開発者ドキュメント。</string>
   <string name="ui.app.docs.group.platform">プラットフォーム</string>
   <string name="ui.app.docs.group.gateways">ゲートウェイ</string>
@@ -104,7 +101,6 @@
   <string name="ui.app.docs.group.adapters_db">データベースアダプター</string>
   <string name="ui.app.docs.group.adapters_file">ファイルアダプター</string>
   <string name="ui.app.docs.group.adapters_notify">通知アダプター</string>
-  <string name="ui.app.docs.group.modules">モジュール</string>
   <string name="ui.app.docs.group.tooling">ツール</string>
   <string name="ui.app.license.page_title">ライセンス</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3 のライセンス条項。</string>
@@ -123,7 +119,6 @@
   <string name="ui.app.admin.expected">期待値</string>
   <string name="ui.app.admin.got">実際値</string>
   <string name="ui.app.admin.missing">欠落</string>
-  <string name="ui.app.admin.page_title">管理</string>
   <string name="ui.app.admin.page_subtitle">管理者専用ツールとコントロール。</string>
   <string name="ui.app.admin.disable_confirm">モジュールを無効化</string>
   <string name="ui.app.admin.disable_confirm_gateway">ゲートウェイを無効化</string>
@@ -166,7 +161,6 @@
   <string name="ui.app.demo.removed">デモ: 最新のウィジェットを削除しました。</string>
   <string name="ui.app.demo.complete">デモ完了。</string>
 
-  <string name="ui.app.dashboard.page_title">ダッシュボード</string>
   <string name="ui.app.dashboard.page_subtitle">あなたの個人ワークスペース。</string>
   <string name="ui.app.dashboard.element.app_icon.label">アプリ</string>
   <string name="ui.app.dashboard.element.welcome.label">ようこそ</string>
@@ -206,7 +200,6 @@
   <string name="ui.app.register.display_name">表示名</string>
   <string name="ui.app.register.password">パスワード</string>
   <string name="ui.app.register.confirm_password">パスワードの確認</string>
-  <string name="ui.app.register.language">言語</string>
   <string name="ui.app.register.error.password_mismatch">パスワードが一致しません。</string>
   <string name="ui.app.register.submit">アカウントを作成</string>
   <string name="ui.app.register.closed">現在、一般登録は無効です。</string>
@@ -225,9 +218,7 @@
   <string name="ui.reuse.sensitive_action_prompt">この重要な操作を確認してください。</string>
   <string name="ui.reuse.enter_password_prompt">続行するにはパスワードを入力してください。</string>
   <string name="ui.reuse.incorrect_password">パスワードが正しくありません。もう一度お試しください。</string>
-  <string name="ui.app.users.page_title">ユーザー</string>
   <string name="ui.app.users.page_subtitle">アカウント管理と招待送信を行います。</string>
-  <string name="ui.app.users.invite">招待</string>
   <string name="ui.app.users.username">ユーザー名</string>
   <string name="ui.app.users.role">ロール</string>
   <string name="ui.app.users.status">状態</string>
@@ -254,9 +245,7 @@
   <string name="ui.app.users.invite_email_taken">このメールアドレスはすでに登録されています。</string>
   <string name="ui.app.users.no_unverified_email">未認証のメールアドレスが見つかりません。</string>
   <string name="ui.app.users.role_updated">ロールが更新されました。</string>
-  <string name="ui.app.invite.page_title">招待</string>
   <string name="ui.app.invite.page_subtitle">登録トークンの状態を確認・管理します。</string>
-  <string name="ui.app.invite.invite">招待</string>
   <string name="ui.app.invite.email">メールアドレス</string>
   <string name="ui.app.invite.status">状態</string>
   <string name="ui.app.invite.expires_at">有効期限</string>
@@ -281,7 +270,6 @@
   <string name="ui.reuse.close">閉じる</string>
   <string name="ui.reuse.cancel">キャンセル</string>
 
-  <string name="ui.app.profile.page_title">プロフィール</string>
   <string name="ui.app.profile.page_subtitle">あなたのプロフィールとソーシャル活動。</string>
   <string name="ui.app.profile.section.profile">マイプロフィール</string>
   <string name="ui.app.profile.section.social">ソーシャル</string>
@@ -362,7 +350,6 @@
   <string name="ui.app.settings.emails_add">メールを追加</string>
   <string name="ui.app.settings.emails_primary">プライマリ</string>
   <string name="ui.app.settings.emails_set_primary">プライマリに設定</string>
-  <string name="ui.app.settings.emails_remove">削除</string>
   <string name="ui.app.settings.emails_add_placeholder">you@example.com</string>
   <string name="ui.app.settings.emails_none">メールアドレスが追加されていません。</string>
   <string name="ui.app.settings.emails_remove_failed">メールアドレスを削除できませんでした。</string>
@@ -395,7 +382,6 @@
   <string name="ui.app.admin.logs.stream_failed">ログストリームが切断されました。再接続しています…</string>
   <string name="ui.app.admin.logs.snapshot_failed">初期ログスナップショットを読み込めませんでした。</string>
   <string name="ui.app.admin.logs.severity.all">すべての重大度</string>
-  <string name="ui.app.admin.logs.severity.debug">デバッグ</string>
   <string name="ui.app.admin.logs.severity.info">情報</string>
   <string name="ui.app.admin.logs.severity.warn">警告</string>
   <string name="ui.app.admin.logs.severity.error">エラー</string>
@@ -452,12 +438,10 @@
   <string name="ui.app.settings.datetime_tz_heading">タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_label">表示タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_auto">自動検出 ({tz})</string>
-  <string name="module.social.messages.page_title">メッセージ</string>
   <string name="module.social.messages.empty">まだ会話はありません。</string>
   <string name="module.social.messages.placeholder">メッセージを入力…</string>
   <string name="module.social.messages.send">送信</string>
   <string name="module.social.messages.new">新しい会話</string>
-  <string name="module.social.messages.icon_label">メッセージ</string>
   <string name="module.social.messages.load_earlier">以前を読み込む</string>
   <string name="module.social.messages.start_failed">会話を開始できませんでした。</string>
   <string name="module.social.messages.members">メンバー</string>

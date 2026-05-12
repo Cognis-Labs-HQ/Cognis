@@ -134,7 +134,7 @@ async function promptRequiredEmailAddress() {
         title: i18n.t("ui.app.settings.emails_add"),
         body: () => `
       <label class="stack">
-        <span>${i18n.t("ui.app.users.invite_email")}</span>
+        <span>${i18n.t("ui.reuse.invite_email")}</span>
         <input id="required-email-input" type="email" placeholder="${i18n.t("ui.app.settings.emails_add_placeholder")}" />
       </label>
     `,

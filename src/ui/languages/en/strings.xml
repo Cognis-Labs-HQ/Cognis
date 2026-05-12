@@ -61,7 +61,6 @@
   <string name="ui.layout.toolbar.collapse">Collapse toolbar</string>
   <string name="ui.layout.toolbar.expand">Expand toolbar</string>
   <string name="ui.layout.greeting">Hello,</string>
-  <string name="ui.layout.notifications.aria">Notifications</string>
   <string name="ui.layout.search.aria">Search</string>
   <string name="ui.layout.search.placeholder">Search users…</string>
   <string name="ui.layout.search.no_results">No results found.</string>
@@ -83,7 +82,6 @@
   <string name="ui.app.login.typing.sample.5">It's a social space!</string>
   <string name="ui.app.login.typing.sample.6">Powered by FOSS</string>
   <string name="ui.app.login.typing.sample.7">Register your account today</string>
-  <string name="ui.app.settings.page_title">Settings</string>
   <string name="ui.app.settings.page_subtitle">Manage your user preferences.</string>
   <string name="ui.app.settings.font">Font</string>
   <string name="ui.app.settings.font_size">Font size</string>
@@ -96,7 +94,6 @@
   <string name="ui.app.settings.preferences">Preferences</string>
   <string name="ui.app.settings.prefs_loading">Loading...</string>
 
-  <string name="ui.app.docs.page_title">Docs</string>
   <string name="ui.app.docs.page_subtitle">Developer documentation.</string>
   <string name="ui.app.docs.group.platform">Platform</string>
   <string name="ui.app.docs.group.gateways">Gateways</string>
@@ -104,7 +101,6 @@
   <string name="ui.app.docs.group.adapters_db">Database Adapters</string>
   <string name="ui.app.docs.group.adapters_file">File Adapters</string>
   <string name="ui.app.docs.group.adapters_notify">Notification Adapters</string>
-  <string name="ui.app.docs.group.modules">Modules</string>
   <string name="ui.app.docs.group.tooling">Tooling</string>
   <string name="ui.app.license.page_title">License</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3 license terms.</string>
@@ -123,7 +119,6 @@
   <string name="ui.app.admin.expected">expected</string>
   <string name="ui.app.admin.got">got</string>
   <string name="ui.app.admin.missing">missing</string>
-  <string name="ui.app.admin.page_title">Administration</string>
   <string name="ui.app.admin.page_subtitle">Admin-only tools and controls.</string>
   <string name="ui.app.admin.disable_confirm">Disable module</string>
   <string name="ui.app.admin.disable_confirm_gateway">Disable gateway</string>
@@ -166,7 +161,6 @@
   <string name="ui.app.demo.removed">Demo: removed the most recent widget.</string>
   <string name="ui.app.demo.complete">Demo complete.</string>
 
-  <string name="ui.app.dashboard.page_title">Dashboard</string>
   <string name="ui.app.dashboard.page_subtitle">Your personal workspace.</string>
   <string name="ui.app.dashboard.element.app_icon.label">App</string>
   <string name="ui.app.dashboard.element.welcome.label">Welcome</string>
@@ -206,7 +200,6 @@
   <string name="ui.app.register.display_name">Display name</string>
   <string name="ui.app.register.password">Password</string>
   <string name="ui.app.register.confirm_password">Confirm Password</string>
-  <string name="ui.app.register.language">Language</string>
   <string name="ui.app.register.error.password_mismatch">Passwords do not match.</string>
   <string name="ui.app.register.submit">Create account</string>
   <string name="ui.app.register.closed">Open registration is currently disabled.</string>
@@ -225,9 +218,7 @@
   <string name="ui.reuse.sensitive_action_prompt">Please confirm this sensitive action.</string>
   <string name="ui.reuse.enter_password_prompt">Enter your password to continue.</string>
   <string name="ui.reuse.incorrect_password">Incorrect password. Please try again.</string>
-  <string name="ui.app.users.page_title">Users</string>
   <string name="ui.app.users.page_subtitle">Manage accounts and issue invites.</string>
-  <string name="ui.app.users.invite">Invite</string>
   <string name="ui.app.users.username">Username</string>
   <string name="ui.app.users.role">Role</string>
   <string name="ui.app.users.status">Status</string>
@@ -254,9 +245,7 @@
   <string name="ui.app.users.invite_email_taken">This email address is already registered.</string>
   <string name="ui.app.users.no_unverified_email">No unverified email address found.</string>
   <string name="ui.app.users.role_updated">Role updated.</string>
-  <string name="ui.app.invite.page_title">Invite</string>
   <string name="ui.app.invite.page_subtitle">Review and manage registration tokens.</string>
-  <string name="ui.app.invite.invite">Invite</string>
   <string name="ui.app.invite.email">Email address</string>
   <string name="ui.app.invite.status">Status</string>
   <string name="ui.app.invite.expires_at">Expires at</string>
@@ -281,7 +270,6 @@
   <string name="ui.reuse.close">Close</string>
   <string name="ui.reuse.cancel">Cancel</string>
 
-  <string name="ui.app.profile.page_title">Profile</string>
   <string name="ui.app.profile.page_subtitle">Your profile and social activity.</string>
   <string name="ui.app.profile.section.profile">My Profile</string>
   <string name="ui.app.profile.section.social">Social</string>
@@ -362,7 +350,6 @@
   <string name="ui.app.settings.emails_add">Add email</string>
   <string name="ui.app.settings.emails_primary">Primary</string>
   <string name="ui.app.settings.emails_set_primary">Set as primary</string>
-  <string name="ui.app.settings.emails_remove">Remove</string>
   <string name="ui.app.settings.emails_add_placeholder">you@example.com</string>
   <string name="ui.app.settings.emails_none">No email addresses added.</string>
   <string name="ui.app.settings.emails_remove_failed">Could not remove email address.</string>
@@ -395,7 +382,6 @@
   <string name="ui.app.admin.logs.stream_failed">Log stream disconnected. Reconnecting…</string>
   <string name="ui.app.admin.logs.snapshot_failed">Unable to load initial log snapshot.</string>
   <string name="ui.app.admin.logs.severity.all">All severities</string>
-  <string name="ui.app.admin.logs.severity.debug">Debug</string>
   <string name="ui.app.admin.logs.severity.info">Info</string>
   <string name="ui.app.admin.logs.severity.warn">Warn</string>
   <string name="ui.app.admin.logs.severity.error">Error</string>
@@ -452,12 +438,10 @@
   <string name="ui.app.settings.datetime_tz_heading">Timezone</string>
   <string name="ui.app.settings.datetime_tz_label">Display Timezone</string>
   <string name="ui.app.settings.datetime_tz_auto">Auto-detect ({tz})</string>
-  <string name="module.social.messages.page_title">Messages</string>
   <string name="module.social.messages.empty">No conversations yet.</string>
   <string name="module.social.messages.placeholder">Type a message…</string>
   <string name="module.social.messages.send">Send</string>
   <string name="module.social.messages.new">New Conversation</string>
-  <string name="module.social.messages.icon_label">Message</string>
   <string name="module.social.messages.load_earlier">Load earlier</string>
   <string name="module.social.messages.start_failed">Failed to start conversation.</string>
   <string name="module.social.messages.members">members</string>

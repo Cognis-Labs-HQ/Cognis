@@ -61,7 +61,6 @@
   <string name="ui.layout.toolbar.collapse">Werkzeugleiste einklappen</string>
   <string name="ui.layout.toolbar.expand">Werkzeugleiste ausklappen</string>
   <string name="ui.layout.greeting">Hallo,</string>
-  <string name="ui.layout.notifications.aria">Benachrichtigungen</string>
   <string name="ui.layout.search.aria">Suche</string>
   <string name="ui.layout.search.placeholder">Nutzer suchen…</string>
   <string name="ui.layout.search.no_results">Keine Ergebnisse gefunden.</string>
@@ -83,7 +82,6 @@
   <string name="ui.app.login.typing.sample.5">Es ist ein sozialer Raum!</string>
   <string name="ui.app.login.typing.sample.6">Betrieben mit FOSS</string>
   <string name="ui.app.login.typing.sample.7">Registrieren Sie Ihr Konto noch heute</string>
-  <string name="ui.app.settings.page_title">Einstellungen</string>
   <string name="ui.app.settings.page_subtitle">Verwalte deine Benutzereinstellungen.</string>
   <string name="ui.app.settings.font">Schriftart</string>
   <string name="ui.app.settings.font_size">Schriftgröße</string>
@@ -96,7 +94,6 @@
   <string name="ui.app.settings.preferences">Einstellungen</string>
   <string name="ui.app.settings.prefs_loading">Wird geladen...</string>
 
-  <string name="ui.app.docs.page_title">Dokumente</string>
   <string name="ui.app.docs.page_subtitle">Entwicklerdokumentation.</string>
   <string name="ui.app.docs.group.platform">Plattform</string>
   <string name="ui.app.docs.group.gateways">Gateways</string>
@@ -104,7 +101,6 @@
   <string name="ui.app.docs.group.adapters_db">Datenbank-Adapter</string>
   <string name="ui.app.docs.group.adapters_file">Datei-Adapter</string>
   <string name="ui.app.docs.group.adapters_notify">Benachrichtigungs-Adapter</string>
-  <string name="ui.app.docs.group.modules">Module</string>
   <string name="ui.app.docs.group.tooling">Werkzeuge</string>
   <string name="ui.app.license.page_title">Lizenz</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3-Lizenzbedingungen.</string>
@@ -123,7 +119,6 @@
   <string name="ui.app.admin.expected">erwartet</string>
   <string name="ui.app.admin.got">erhalten</string>
   <string name="ui.app.admin.missing">fehlt</string>
-  <string name="ui.app.admin.page_title">Administration</string>
   <string name="ui.app.admin.page_subtitle">Werkzeuge und Steuerung nur für Admins.</string>
   <string name="ui.app.admin.disable_confirm">Modul deaktivieren</string>
   <string name="ui.app.admin.disable_confirm_gateway">Gateway deaktivieren</string>
@@ -166,7 +161,6 @@
   <string name="ui.app.demo.removed">Demo: das zuletzt hinzugefügte Widget entfernt.</string>
   <string name="ui.app.demo.complete">Demo abgeschlossen.</string>
 
-  <string name="ui.app.dashboard.page_title">Dashboard</string>
   <string name="ui.app.dashboard.page_subtitle">Dein persönlicher Arbeitsbereich.</string>
   <string name="ui.app.dashboard.element.app_icon.label">App</string>
   <string name="ui.app.dashboard.element.welcome.label">Willkommen</string>
@@ -206,7 +200,6 @@
   <string name="ui.app.register.display_name">Anzeigename</string>
   <string name="ui.app.register.password">Passwort</string>
   <string name="ui.app.register.confirm_password">Passwort bestätigen</string>
-  <string name="ui.app.register.language">Sprache</string>
   <string name="ui.app.register.error.password_mismatch">Die Passwörter stimmen nicht überein.</string>
   <string name="ui.app.register.submit">Konto erstellen</string>
   <string name="ui.app.register.closed">Die offene Registrierung ist derzeit deaktiviert.</string>
@@ -225,9 +218,7 @@
   <string name="ui.reuse.sensitive_action_prompt">Bitte bestätigen Sie diese sensible Aktion.</string>
   <string name="ui.reuse.enter_password_prompt">Geben Sie Ihr Passwort ein, um fortzufahren.</string>
   <string name="ui.reuse.incorrect_password">Falsches Passwort. Bitte versuchen Sie es erneut.</string>
-  <string name="ui.app.users.page_title">Benutzer</string>
   <string name="ui.app.users.page_subtitle">Konten verwalten und Einladungen versenden.</string>
-  <string name="ui.app.users.invite">Einladen</string>
   <string name="ui.app.users.username">Benutzername</string>
   <string name="ui.app.users.role">Rolle</string>
   <string name="ui.app.users.status">Status</string>
@@ -254,9 +245,7 @@
   <string name="ui.app.users.invite_email_taken">Diese E-Mail-Adresse ist bereits registriert.</string>
   <string name="ui.app.users.no_unverified_email">Keine unverifizierte E-Mail-Adresse gefunden.</string>
   <string name="ui.app.users.role_updated">Rolle aktualisiert.</string>
-  <string name="ui.app.invite.page_title">Einladen</string>
   <string name="ui.app.invite.page_subtitle">Registrierungstoken prüfen und verwalten.</string>
-  <string name="ui.app.invite.invite">Einladen</string>
   <string name="ui.app.invite.email">E-Mail-Adresse</string>
   <string name="ui.app.invite.status">Status</string>
   <string name="ui.app.invite.expires_at">Läuft ab am</string>
@@ -281,7 +270,6 @@
   <string name="ui.reuse.close">Schließen</string>
   <string name="ui.reuse.cancel">Abbrechen</string>
 
-  <string name="ui.app.profile.page_title">Profil</string>
   <string name="ui.app.profile.page_subtitle">Dein Profil und soziale Aktivitäten.</string>
   <string name="ui.app.profile.section.profile">Mein Profil</string>
   <string name="ui.app.profile.section.social">Sozial</string>
@@ -362,7 +350,6 @@
   <string name="ui.app.settings.emails_add">E-Mail hinzufügen</string>
   <string name="ui.app.settings.emails_primary">Primär</string>
   <string name="ui.app.settings.emails_set_primary">Als primär festlegen</string>
-  <string name="ui.app.settings.emails_remove">Entfernen</string>
   <string name="ui.app.settings.emails_add_placeholder">du@beispiel.de</string>
   <string name="ui.app.settings.emails_none">Keine E-Mail-Adressen hinzugefügt.</string>
   <string name="ui.app.settings.emails_remove_failed">E-Mail-Adresse konnte nicht entfernt werden.</string>
@@ -395,7 +382,6 @@
   <string name="ui.app.admin.logs.stream_failed">Protokollstream getrennt. Verbindung wird wiederhergestellt…</string>
   <string name="ui.app.admin.logs.snapshot_failed">Der initiale Protokoll-Snapshot konnte nicht geladen werden.</string>
   <string name="ui.app.admin.logs.severity.all">Alle Schweregrade</string>
-  <string name="ui.app.admin.logs.severity.debug">Debug</string>
   <string name="ui.app.admin.logs.severity.info">Info</string>
   <string name="ui.app.admin.logs.severity.warn">Warnung</string>
   <string name="ui.app.admin.logs.severity.error">Fehler</string>
@@ -452,12 +438,10 @@
   <string name="ui.app.settings.datetime_tz_heading">Zeitzone</string>
   <string name="ui.app.settings.datetime_tz_label">Anzeigezeitzone</string>
   <string name="ui.app.settings.datetime_tz_auto">Automatisch erkennen ({tz})</string>
-  <string name="module.social.messages.page_title">Nachrichten</string>
   <string name="module.social.messages.empty">Noch keine Unterhaltungen.</string>
   <string name="module.social.messages.placeholder">Nachricht eingeben…</string>
   <string name="module.social.messages.send">Senden</string>
   <string name="module.social.messages.new">Neue Unterhaltung</string>
-  <string name="module.social.messages.icon_label">Nachricht</string>
   <string name="module.social.messages.load_earlier">Frühere laden</string>
   <string name="module.social.messages.start_failed">Konversation konnte nicht gestartet werden.</string>
   <string name="module.social.messages.members">Mitglieder</string>

@@ -165,7 +165,7 @@ export async function mount(root) {
         preferenceKey: "dashboard-layout",
         i18n,
         pageContext: {
-            title: i18n.t("ui.app.dashboard.page_title"),
+            title: i18n.t("ui.reuse.dashboard"),
             subtitle: i18n.t("ui.app.dashboard.page_subtitle"),
         },
     });

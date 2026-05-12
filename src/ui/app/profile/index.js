@@ -335,8 +335,8 @@ function renderHero() {
                     class="profile-message-button"
                     type="button"
                     data-message-target="${escapeHtml(profile?.handle ?? "")}"
-                    aria-label="${escapeHtml(i18n.t("module.social.messages.icon_label"))}"
-                    title="${escapeHtml(i18n.t("module.social.messages.icon_label"))}"
+                    aria-label="${escapeHtml(i18n.t("ui.reuse.message"))}"
+                    title="${escapeHtml(i18n.t("ui.reuse.message"))}"
                   ><img src="/static/assets/icons/message-light.svg" alt="" class="profile-message-icon profile-message-icon--light" /><img src="/static/assets/icons/message-dark.svg" alt="" class="profile-message-icon profile-message-icon--dark" /></button>`
                 : ""
         }
@@ -1326,7 +1326,7 @@ export async function mount(rootEl, { signal } = {}) {
         preferenceKey: "profile-layout",
         i18n,
         pageContext: {
-            title: i18n.t("ui.app.profile.page_title"),
+            title: i18n.t("ui.reuse.profile"),
             subtitle: i18n.t("ui.app.profile.page_subtitle"),
         },
         onRender: bindPageEvents,

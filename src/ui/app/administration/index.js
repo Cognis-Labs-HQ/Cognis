@@ -1474,15 +1474,15 @@ export async function mount(rootEl, { signal } = {}) {
         i18n,
         onBeforeSubPageSwitch: guardSubPageSwitch,
         pageContext: {
-            title: i18n.t("ui.app.admin.page_title"),
+            title: i18n.t("ui.reuse.administration"),
             subtitle: i18n.t("ui.app.admin.page_subtitle"),
         },
         toolbar: [
             {
                 id: "admin-nav",
-                label: i18n.t("ui.app.admin.page_title"),
+                label: i18n.t("ui.reuse.administration"),
                 render: () => `
-        <h2>${i18n.t("ui.app.admin.page_title")}</h2>
+        <h2>${i18n.t("ui.reuse.administration")}</h2>
         <ul>
           ${navItems.join("\n")}
         </ul>

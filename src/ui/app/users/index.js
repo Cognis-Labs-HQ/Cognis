@@ -147,7 +147,7 @@ function renderUsersTable() {
     const viewerIsAdmin = currentRole === "admin";
     const inviteButtonHtml = registrationGatewayActive
         ? `<div class="controls">
-          <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.app.users.invite"))}</button>
+          <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</button>
         </div>`
         : "";
     return `
@@ -435,8 +435,8 @@ async function triggerInviteFlow() {
     await reprompt.runWithReprompt(
         async () => {
             const email = await promptInput({
-                title: i18n.t("ui.app.users.invite"),
-                label: i18n.t("ui.app.users.invite_email"),
+                title: i18n.t("ui.reuse.invite"),
+                label: i18n.t("ui.reuse.invite_email"),
                 type: "email",
             });
             if (!email) return;
@@ -455,7 +455,7 @@ async function triggerInviteFlow() {
             try {
                 const errorBody = await response.json();
                 if (errorBody?.error?.code === "email_taken") {
-                    errorMessage = i18n.t("ui.app.users.invite_email_taken");
+                    errorMessage = i18n.t("ui.reuse.invite_email_taken");
                 }
             } catch {
                 // fall through to the default invite_failed message in errorMessage
@@ -463,7 +463,7 @@ async function triggerInviteFlow() {
             showToast(errorMessage, { variant: "error" });
         },
         {
-            title: i18n.t("ui.app.users.invite"),
+            title: i18n.t("ui.reuse.invite"),
             message: i18n.t("ui.reuse.sensitive_action_prompt"),
         },
     );
@@ -485,7 +485,7 @@ export async function mount(rootEl, { signal } = {}) {
         i18n,
         preferenceKey: "users-layout",
         pageContext: {
-            title: i18n.t("ui.app.users.page_title"),
+            title: i18n.t("ui.reuse.users"),
             subtitle: i18n.t("ui.app.users.page_subtitle"),
         },
         toolbar: [],
