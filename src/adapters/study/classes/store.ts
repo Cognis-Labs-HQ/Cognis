@@ -2,13 +2,15 @@
  * DbClassesStore — persistence layer for the classes adapter.
  *
  * Responsibilities:
- *   - Schema initialisation for study_classes, teacher_requests, and
- *     teacher_assignments tables.
- *   - CRUD operations for class records, teacher requests, and assignments.
+ *   - Schema initialisation for study_classes, teacher_requests,
+ *     teacher_assignments, and class_memberships tables.
+ *   - CRUD operations for class records, teacher requests, assignments,
+ *     and student class memberships.
  *
  * Public exports:
  *   DbClassesStore — the store class.
  *   TeacherRequestStatus, ClassRow, TeacherRequestRow — types.
+ *   ClassMembershipStatus, ClassMembershipRow — membership types.
  *
  * @module adapters/study/classes/store
  */
@@ -50,6 +52,16 @@ export interface TeacherAssignmentRow {
     languageCode: string;
     classId: string;
     assignedAt: string;
+}
+
+export type ClassMembershipStatus = "pending" | "member" | "rejected" | "left";
+
+export interface ClassMembershipRow {
+    classId: string;
+    studentAccountId: string;
+    status: ClassMembershipStatus;
+    invitedBy: string | null;
+    joinedAt: string;
 }
 
 export interface StudyPreferencesRow {
@@ -147,6 +159,28 @@ export class DbClassesStore {
                     default: "now",
                 },
             ],
+        });
+
+        await this.db.ensureTable({
+            name: "class_memberships",
+            columns: [
+                { name: "class_id", type: "text", notNull: true },
+                { name: "student_account_id", type: "text", notNull: true },
+                {
+                    name: "status",
+                    type: "text",
+                    notNull: true,
+                    default: "pending",
+                },
+                { name: "invited_by", type: "text" },
+                {
+                    name: "joined_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            primaryKey: ["class_id", "student_account_id"],
         });
 
         await this.ensureStudyLanguagesSchema();
@@ -459,6 +493,364 @@ export class DbClassesStore {
             teacherAccountId: String(row.teacher_account_id),
             createdAt: String(row.created_at),
         }));
+    }
+
+    private rowToClassMembership(
+        row: Record<string, unknown>,
+    ): ClassMembershipRow {
+        return {
+            classId: String(row.class_id),
+            studentAccountId: String(row.student_account_id),
+            status: String(row.status) as ClassMembershipStatus,
+            invitedBy: row.invited_by != null ? String(row.invited_by) : null,
+            joinedAt: String(row.joined_at),
+        };
+    }
+
+    async getClassById(classId: string): Promise<ClassRow | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_classes",
+            columns: [
+                "id",
+                "language_code",
+                "teacher_account_id",
+                "created_at",
+            ],
+            where: [{ column: "id", value: classId }],
+        });
+        if (!result.rows?.length) return null;
+        const row = result.rows[0] as Record<string, unknown>;
+        return {
+            id: String(row.id),
+            languageCode: String(row.language_code),
+            teacherAccountId: String(row.teacher_account_id),
+            createdAt: String(row.created_at),
+        };
+    }
+
+    async getEnrolledClasses(studentAccountId: string): Promise<ClassRow[]> {
+        const membershipsResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "class_memberships",
+            columns: ["class_id"],
+            where: [
+                { column: "student_account_id", value: studentAccountId },
+                { column: "status", value: "member" },
+            ],
+        });
+        const classIds = (membershipsResult.rows ?? []).map((row) =>
+            String((row as Record<string, unknown>).class_id),
+        );
+        if (!classIds.length) return [];
+        const classes: ClassRow[] = [];
+        for (const classId of classIds) {
+            const classRow = await this.getClassById(classId);
+            if (classRow) classes.push(classRow);
+        }
+        return classes;
+    }
+
+    async getAvailableClasses(
+        languageCode?: string,
+        excludeAccountId?: string,
+    ): Promise<ClassRow[]> {
+        const whereClause: Array<{ column: string; value: unknown }> = [];
+        if (languageCode) {
+            whereClause.push({ column: "language_code", value: languageCode });
+        }
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_classes",
+            columns: [
+                "id",
+                "language_code",
+                "teacher_account_id",
+                "created_at",
+            ],
+            ...(whereClause.length ? { where: whereClause } : {}),
+            orderBy: [{ column: "language_code", direction: "ASC" }],
+        });
+        const allClasses = (result.rows ?? []).map((row) => ({
+            id: String((row as Record<string, unknown>).id),
+            languageCode: String(
+                (row as Record<string, unknown>).language_code,
+            ),
+            teacherAccountId: String(
+                (row as Record<string, unknown>).teacher_account_id,
+            ),
+            createdAt: String((row as Record<string, unknown>).created_at),
+        }));
+        if (!excludeAccountId) return allClasses;
+        const membershipResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "class_memberships",
+            columns: ["class_id"],
+            where: [{ column: "student_account_id", value: excludeAccountId }],
+        });
+        const excludedIds = new Set(
+            (membershipResult.rows ?? []).map((row) =>
+                String((row as Record<string, unknown>).class_id),
+            ),
+        );
+        return allClasses.filter((cls) => !excludedIds.has(cls.id));
+    }
+
+    async requestJoinClass(
+        classId: string,
+        studentAccountId: string,
+    ): Promise<ClassMembershipRow> {
+        const nowIso = new Date().toISOString();
+        const existing = await this.getMembership(classId, studentAccountId);
+        if (
+            existing &&
+            (existing.status === "pending" || existing.status === "member")
+        ) {
+            return existing;
+        }
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "class_memberships",
+            values: {
+                class_id: classId,
+                student_account_id: studentAccountId,
+                status: "pending",
+                joined_at: nowIso,
+            },
+            conflict: {
+                action: "update",
+                target: ["class_id", "student_account_id"],
+                update: { status: "pending", joined_at: nowIso },
+            },
+        });
+        return {
+            classId,
+            studentAccountId,
+            status: "pending",
+            invitedBy: null,
+            joinedAt: nowIso,
+        };
+    }
+
+    async leaveClass(classId: string, studentAccountId: string): Promise<void> {
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "class_memberships",
+            set: { status: "left" },
+            where: [
+                { column: "class_id", value: classId },
+                { column: "student_account_id", value: studentAccountId },
+                { column: "status", value: "member" },
+            ],
+        });
+    }
+
+    async inviteToClass(
+        classId: string,
+        studentAccountId: string,
+        teacherAccountId: string,
+    ): Promise<ClassMembershipRow> {
+        const classRow = await this.getClassById(classId);
+        if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
+            throw new Error("not_authorized");
+        }
+        const nowIso = new Date().toISOString();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "class_memberships",
+            values: {
+                class_id: classId,
+                student_account_id: studentAccountId,
+                status: "member",
+                invited_by: teacherAccountId,
+                joined_at: nowIso,
+            },
+            conflict: {
+                action: "update",
+                target: ["class_id", "student_account_id"],
+                update: {
+                    status: "member",
+                    invited_by: teacherAccountId,
+                },
+            },
+        });
+        const membership = await this.getMembership(classId, studentAccountId);
+        return (
+            membership ?? {
+                classId,
+                studentAccountId,
+                status: "member",
+                invitedBy: teacherAccountId,
+                joinedAt: nowIso,
+            }
+        );
+    }
+
+    async getClassMembers(
+        classId: string,
+        teacherAccountId: string,
+        search?: string,
+    ): Promise<ClassMembershipRow[]> {
+        const classRow = await this.getClassById(classId);
+        if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
+            throw new Error("not_authorized");
+        }
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "class_memberships",
+            columns: [
+                "class_id",
+                "student_account_id",
+                "status",
+                "invited_by",
+                "joined_at",
+            ],
+            where: [
+                { column: "class_id", value: classId },
+                { column: "status", value: "member" },
+            ],
+            orderBy: [{ column: "joined_at", direction: "ASC" }],
+        });
+        const members = (result.rows ?? []).map((row) =>
+            this.rowToClassMembership(row as Record<string, unknown>),
+        );
+        if (!search) return members;
+        const searchLower = search.toLowerCase();
+        return members.filter((member) =>
+            member.studentAccountId.toLowerCase().includes(searchLower),
+        );
+    }
+
+    async getPendingJoinRequests(
+        classId: string,
+        teacherAccountId: string,
+    ): Promise<ClassMembershipRow[]> {
+        const classRow = await this.getClassById(classId);
+        if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
+            throw new Error("not_authorized");
+        }
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "class_memberships",
+            columns: [
+                "class_id",
+                "student_account_id",
+                "status",
+                "invited_by",
+                "joined_at",
+            ],
+            where: [
+                { column: "class_id", value: classId },
+                { column: "status", value: "pending" },
+            ],
+            orderBy: [{ column: "joined_at", direction: "ASC" }],
+        });
+        return (result.rows ?? []).map((row) =>
+            this.rowToClassMembership(row as Record<string, unknown>),
+        );
+    }
+
+    async reviewJoinRequest(
+        classId: string,
+        studentAccountId: string,
+        teacherAccountId: string,
+        approve: boolean,
+    ): Promise<void> {
+        const classRow = await this.getClassById(classId);
+        if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
+            throw new Error("not_authorized");
+        }
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "class_memberships",
+            set: { status: approve ? "member" : "rejected" },
+            where: [
+                { column: "class_id", value: classId },
+                { column: "student_account_id", value: studentAccountId },
+                { column: "status", value: "pending" },
+            ],
+        });
+    }
+
+    async getClassesForTeacherWithFilter(
+        teacherAccountId: string,
+        languageCode?: string,
+    ): Promise<(ClassRow & { memberCount: number })[]> {
+        const whereClause: Array<{ column: string; value: unknown }> = [
+            { column: "teacher_account_id", value: teacherAccountId },
+        ];
+        if (languageCode) {
+            whereClause.push({ column: "language_code", value: languageCode });
+        }
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_classes",
+            columns: [
+                "id",
+                "language_code",
+                "teacher_account_id",
+                "created_at",
+            ],
+            where: whereClause,
+            orderBy: [{ column: "language_code", direction: "ASC" }],
+        });
+        const classes = (result.rows ?? []).map((row) => ({
+            id: String((row as Record<string, unknown>).id),
+            languageCode: String(
+                (row as Record<string, unknown>).language_code,
+            ),
+            teacherAccountId: String(
+                (row as Record<string, unknown>).teacher_account_id,
+            ),
+            createdAt: String((row as Record<string, unknown>).created_at),
+        }));
+        const withCounts = await Promise.all(
+            classes.map(async (cls) => {
+                const countResult = await this.db.executeCommand({
+                    option: "SELECT",
+                    table: "class_memberships",
+                    count: true,
+                    where: [
+                        { column: "class_id", value: cls.id },
+                        { column: "status", value: "member" },
+                    ],
+                });
+                const memberCount = Number(
+                    (
+                        countResult.rows?.[0] as
+                            | Record<string, unknown>
+                            | undefined
+                    )?.cnt ?? 0,
+                );
+                return { ...cls, memberCount };
+            }),
+        );
+        return withCounts;
+    }
+
+    private async getMembership(
+        classId: string,
+        studentAccountId: string,
+    ): Promise<ClassMembershipRow | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "class_memberships",
+            columns: [
+                "class_id",
+                "student_account_id",
+                "status",
+                "invited_by",
+                "joined_at",
+            ],
+            where: [
+                { column: "class_id", value: classId },
+                { column: "student_account_id", value: studentAccountId },
+            ],
+        });
+        if (!result.rows?.length) return null;
+        return this.rowToClassMembership(
+            result.rows[0] as Record<string, unknown>,
+        );
     }
 
     async getTeacherRequest(

@@ -63,6 +63,39 @@ function createClassesPageRoute(isAdapterEnabled: () => boolean) {
     };
 }
 
+/**
+ * Page-serving route for `/my-classes`. Serves the student classes SPA page.
+ */
+function createMyClassesPageRoute(isAdapterEnabled: () => boolean) {
+    return async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        if (req.method && req.method !== "GET") return false;
+        if (!isAdapterEnabled()) return false;
+        if (url.pathname !== "/my-classes") return false;
+        const session = getCookieSession(req);
+        if (!session) {
+            res.writeHead(302, { location: "/login" });
+            res.end();
+            return true;
+        }
+        if (session.role === "teacher") {
+            res.writeHead(302, { location: "/classes" });
+            res.end();
+            return true;
+        }
+        setPageSecurityHeaders(res);
+        const html = await import("node:fs/promises").then((fs) =>
+            fs.readFile(path.join(ADAPTER_UI_ROOT, "my-classes.html"), "utf8"),
+        );
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(html);
+        return true;
+    };
+}
+
 export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,
 ): Promise<void> {
@@ -114,12 +147,14 @@ export async function bootstrapStudyAdapter(
     };
     const accountStore = ctx.capabilities.get<{
         setRole(username: string, role: "teacher"): Promise<void>;
+        exists(username: string): Promise<boolean>;
     }>("auth:accountStore");
     const setProfileRole = ctx.capabilities.get<
         (handle: string, role: "teacher") => Promise<void>
     >("profile:setRoleByHandle");
 
     ctx.registerRoute(createClassesPageRoute(isEnabled), "study");
+    ctx.registerRoute(createMyClassesPageRoute(isEnabled), "study");
     ctx.registerRoute(
         createClassesRoutes(store, {
             requireTeacherManualApproval: readTeacherManualApproval,
@@ -127,6 +162,9 @@ export async function bootstrapStudyAdapter(
                 ? (username, role) => accountStore.setRole(username, role)
                 : undefined,
             setProfileRole,
+            accountExists: accountStore
+                ? (id) => accountStore.exists(id)
+                : undefined,
             dispatchToRole: (role, envelope) => {
                 const dispatch = ctx.capabilities.get<
                     (
