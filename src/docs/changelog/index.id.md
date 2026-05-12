@@ -1,4 +1,4 @@
-# Changelog
+# Catatan Perubahan
 
 ## Ringkasan
 

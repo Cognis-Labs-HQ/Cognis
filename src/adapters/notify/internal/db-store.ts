@@ -9,15 +9,15 @@
  * Eviction mirrors the in-memory store: at most MAX_PER_USER rows per user are
  * kept; the oldest are deleted when the cap is exceeded.
  *
- * @module notify-internal/db-store
+ * @module adapters/notify/internal/db-store
  */
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
-import type { NotificationEnvelope } from "../../../../gateways/notify/gateway.js";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { NotificationEnvelope } from "../../../gateways/notify/gateway.js";
 import type {
     InternalNotification,
     IInternalNotificationStore,
-} from "../store.js";
+} from "./store.js";
 import {
     deriveScopedKey,
     encryptPayload,

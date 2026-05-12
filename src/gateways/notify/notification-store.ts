@@ -1,5 +1,5 @@
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { NotificationPreferenceStore } from "../../../gateways/notify/gateway.js";
+import type { NotificationPreferenceStore } from "./gateway.js";
 
 export interface NotificationConfigStore {
     getConfig(senderId: string): Promise<Record<string, unknown> | null>;
