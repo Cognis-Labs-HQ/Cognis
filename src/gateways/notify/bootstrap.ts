@@ -198,6 +198,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         stringsBaseUrl: "/static/gateways/notify/languages",
     });
     ctx.uiRegistry?.registerStaticDir("notify", uiDir);
+    ctx.uiRegistry?.registerSettingsSection({
+        id: "notifications",
+        label: "Notifications",
+        scriptUrl: "/static/gateways/notify/notification-prefs.js",
+    });
 
     // Expose the notification gateway itself + a thin dispatch helper as
     // capabilities so other adapters (e.g. the social/messages adapter) can

@@ -69,37 +69,6 @@ const ROUTES = [
         load: () => import("../app/users/index.js"),
     },
     {
-        pattern: /^\/profile/,
-        base: "/profile",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/styles/profile.css",
-            "/static/styles/reuse/char-counter.css",
-        ],
-        load: () => import("../app/profile/index.js"),
-    },
-    {
-        pattern: /^\/messages/,
-        base: "/messages",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/styles/messages.css",
-        ],
-        load: () => import("../app/messages/index.js"),
-    },
-    {
-        pattern: /^\/classes/,
-        base: "/classes",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/styles/classes.css",
-        ],
-        load: () => import("../app/classes/index.js"),
-    },
-    {
         pattern: /^\/administration/,
         base: "/administration",
         stylesheets: [

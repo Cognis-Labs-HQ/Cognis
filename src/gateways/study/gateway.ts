@@ -111,6 +111,11 @@ export interface StudyAdapterBootstrapCtx {
         gatewayId?: string,
     ): void;
     registerStaticDir(urlPrefix: string, absoluteDir: string): void;
+    registerAdapterStaticDir?(
+        gatewayId: string,
+        adapterId: string,
+        absoluteDir: string,
+    ): void;
     registerNavbarPlugin(scriptUrl: string, isEnabled?: () => boolean): void;
     registerPageExtension(
         pageId: string,

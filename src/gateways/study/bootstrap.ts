@@ -151,6 +151,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.uiRegistry?.registerPageExtension(pageId, element),
         registerStaticDir: (prefix, dir) =>
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
+        registerAdapterStaticDir: (gatewayId, adapterId, dir) =>
+            ctx.uiRegistry?.registerAdapterStaticDir(gatewayId, adapterId, dir),
         log: ctx.log,
         dbExecutor,
     });
@@ -187,6 +189,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.uiRegistry?.registerStaticDir("study", path.join(GATEWAY_ROOT, "ui"));
+    ctx.uiRegistry?.registerSettingsSection({
+        id: "study",
+        label: "Study",
+        scriptUrl: "/static/gateways/study/study-prefs.js",
+    });
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/study/navbar.js",
     });

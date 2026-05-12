@@ -1,18 +1,18 @@
-import { apiFetch } from "../../reuse/api-client.js";
-import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
-import { createPageComposer } from "../../reuse/page-composer.js";
-import { openPopup } from "../../reuse/popup.js";
+import { apiFetch } from "/static/reuse/api-client.js";
+import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
+import { createPageComposer } from "/static/reuse/page-composer.js";
+import { openPopup } from "/static/reuse/popup.js";
 import {
     getInitialsText,
     pickInitialsColor,
-} from "../../reuse/avatar-utils.js";
-import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
-import { escapeHtml } from "../../reuse/escape-html.js";
-import { attachCharCounter } from "../../reuse/char-counter.js";
-import { showToast } from "../../reuse/toast.js";
-import { formatDate } from "../../reuse/timestamp.js";
-import { navigateTo } from "../../reuse/app-router.js";
-import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
+} from "/static/reuse/avatar-utils.js";
+import { updateNavbarAvatar } from "/static/layouts/dashboard-layout.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { attachCharCounter } from "/static/reuse/char-counter.js";
+import { showToast } from "/static/reuse/toast.js";
+import { formatDate } from "/static/reuse/timestamp.js";
+import { navigateTo } from "/static/reuse/app-router.js";
+import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 
 let root = null;
 let i18n = null;

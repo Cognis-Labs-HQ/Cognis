@@ -1,6 +1,6 @@
-import { escapeHtml } from "../../reuse/escape-html.js";
-import { apiFetch } from "../../reuse/api-client.js";
-import { showToast } from "../../reuse/toast.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { apiFetch } from "/static/reuse/api-client.js";
+import { showToast } from "/static/reuse/toast.js";
 
 /**
  * Notification preferences sub-module for the Settings page.
@@ -14,6 +14,7 @@ import { showToast } from "../../reuse/toast.js";
  *
  * Public exports:
  *   initNotificationPrefs(root, options) — initialises the notification preferences matrix.
+ *   createSettingsSection({ i18n, root, markDirty }) — returns a settings section descriptor.
  *
  * Usage:
  *   const notifPrefs = initNotificationPrefs(root, { i18n, username, onDirtyChange });
@@ -212,5 +213,41 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
         discard,
         isDirty,
         getPendingPrefs,
+    };
+}
+
+export function createSettingsSection({ i18n, root, markDirty }) {
+    let notifPrefs = null;
+
+    return {
+        id: "notifications",
+        label: i18n.t("ui.reuse.notifications"),
+        heading: i18n.t("ui.reuse.notifications"),
+        preferenceKey: "settings-notifications-layout",
+        renderContent: () => `<div id="notif-matrix-container"></div>`,
+        onRender: () => {
+            const account = localStorage.getItem("cognis_account") ?? "";
+            notifPrefs = initNotificationPrefs(root, {
+                i18n,
+                username: account,
+                onDirtyChange: (dirty) => markDirty("notifications", dirty),
+            });
+            notifPrefs.init();
+        },
+        isDirty: () => notifPrefs?.isDirty() ?? false,
+        async save() {
+            if (!notifPrefs?.isDirty()) return;
+            const account = localStorage.getItem("cognis_account") ?? "";
+            await apiFetch(
+                `/api/v1/users/${encodeURIComponent(account)}/notification-prefs`,
+                {
+                    method: "PUT",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify(notifPrefs.getPendingPrefs()),
+                },
+            );
+        },
+        commit: () => notifPrefs?.commit(),
+        discard: () => notifPrefs?.discard(),
     };
 }

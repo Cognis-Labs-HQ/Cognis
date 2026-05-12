@@ -619,6 +619,20 @@ export function createUiRoutes(
         }
 
         if (
+            url.pathname === "/api/v1/ui/settings-sections" &&
+            req.method === "GET"
+        ) {
+            if (!requireAuth(req, res, "user")) return true;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: uiRegistry?.listSettingsSections() ?? [],
+                }),
+            );
+            return true;
+        }
+
+        if (
             url.pathname === "/api/v1/ui/navbar-plugins" &&
             req.method === "GET"
         ) {

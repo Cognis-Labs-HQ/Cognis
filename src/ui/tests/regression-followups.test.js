@@ -8,7 +8,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
 test("messages new-conversation search uses messaging lookup endpoint", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/app/messages/index.js"),
+        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
         "utf8",
     );
     assert.match(source, /endpoint:\s*"\/api\/v1\/messages\/users\/lookup"/);
@@ -16,7 +16,7 @@ test("messages new-conversation search uses messaging lookup endpoint", () => {
 
 test("classes page redirects non-teachers back to dashboard", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/app/classes/index.js"),
+        resolve(ROOT, "src/adapters/study/classes/ui/app.js"),
         "utf8",
     );
     assert.match(
