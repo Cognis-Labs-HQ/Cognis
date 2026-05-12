@@ -98,6 +98,12 @@ export async function mount(root, { signal } = {}) {
     let changesBar;
     let generalPrefs;
     let datetimePrefs;
+    const pendingDirtyStates = new Map();
+
+    function markDirty(key, dirty) {
+        pendingDirtyStates.set(key, dirty);
+        changesBar?.markDirty(key, dirty);
+    }
 
     let contributedSections = [];
     try {
@@ -115,8 +121,7 @@ export async function mount(root, { signal } = {}) {
                         return mod.createSettingsSection({
                             i18n,
                             root,
-                            markDirty: (key, dirty) =>
-                                changesBar?.markDirty(key, dirty),
+                            markDirty,
                         });
                     } catch (error) {
                         console.warn(
@@ -252,13 +257,11 @@ export async function mount(root, { signal } = {}) {
                     fontPrefs = initFontPrefs(root, {
                         existingPrefs: loadedPrefs,
                         i18n,
-                        onDirtyChange: (dirty) =>
-                            changesBar?.markDirty("font", dirty),
+                        onDirtyChange: (dirty) => markDirty("font", dirty),
                     });
                     fontPrefs.init();
                     themePrefs = initThemePrefs({
-                        onDirtyChange: (dirty) =>
-                            changesBar?.markDirty("theme", dirty),
+                        onDirtyChange: (dirty) => markDirty("theme", dirty),
                     });
                 },
             },
@@ -296,7 +299,7 @@ export async function mount(root, { signal } = {}) {
                             languagePriority,
                             {
                                 onDirtyChange: (dirty) =>
-                                    changesBar?.markDirty("language", dirty),
+                                    markDirty("language", dirty),
                             },
                         );
                         languagePrefs.init();
@@ -347,8 +350,7 @@ export async function mount(root, { signal } = {}) {
                     datetimePrefs = initDateTimePrefs(root, {
                         existingPrefs: loadedPrefs,
                         i18n,
-                        onDirtyChange: (dirty) =>
-                            changesBar?.markDirty("datetime", dirty),
+                        onDirtyChange: (dirty) => markDirty("datetime", dirty),
                     });
                     datetimePrefs.init();
                 },
@@ -500,6 +502,9 @@ export async function mount(root, { signal } = {}) {
             }
         },
     });
+    for (const [key, dirty] of pendingDirtyStates.entries()) {
+        changesBar.markDirty(key, dirty);
+    }
 }
 
 if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));

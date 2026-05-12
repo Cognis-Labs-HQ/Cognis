@@ -151,8 +151,22 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.uiRegistry?.registerPageExtension(pageId, element),
         registerStaticDir: (prefix, dir) =>
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
-        registerAdapterStaticDir: (gatewayId, adapterId, dir) =>
-            ctx.uiRegistry?.registerAdapterStaticDir(gatewayId, adapterId, dir),
+        registerAdapterStaticDir: (gatewayId, adapterId, dir) => {
+            if (!ctx.uiRegistry?.registerAdapterStaticDir) {
+                ctx.log?.(
+                    "warn",
+                    "Study adapter UI static directory registration skipped because the UI registry does not support adapter static dirs.",
+                    {
+                        component: "study-gateway",
+                        gatewayId,
+                        adapterId,
+                        dir,
+                    },
+                );
+                return;
+            }
+            ctx.uiRegistry.registerAdapterStaticDir(gatewayId, adapterId, dir);
+        },
         log: ctx.log,
         dbExecutor,
     });

@@ -61,6 +61,33 @@ interface NotificationPreferenceStoreCtor {
     };
 }
 
+async function serveHtmlPage(
+    res: ServerResponse,
+    filePath: string,
+): Promise<void> {
+    try {
+        const file = await readFile(filePath);
+        res.writeHead(200, {
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": "no-store",
+            "x-content-type-options": "nosniff",
+            "x-frame-options": "DENY",
+            "referrer-policy": "no-referrer",
+        });
+        res.end(file);
+    } catch {
+        res.writeHead(404, { "content-type": "application/json" });
+        res.end(
+            JSON.stringify({
+                error: {
+                    code: "not_found",
+                    message: "Page not found.",
+                },
+            }),
+        );
+    }
+}
+
 async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
     notifStore: NotificationStoreWithSchema;
     notificationPrefStore: {
@@ -183,29 +210,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ): Promise<boolean> => {
             if (url.pathname !== "/verify-email" || req.method !== "GET")
                 return false;
-            try {
-                const file = await readFile(
-                    path.join(uiDir, "verify-email.html"),
-                );
-                res.writeHead(200, {
-                    "content-type": "text/html; charset=utf-8",
-                    "cache-control": "no-store",
-                    "x-content-type-options": "nosniff",
-                    "x-frame-options": "DENY",
-                    "referrer-policy": "no-referrer",
-                });
-                res.end(file);
-            } catch {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "not_found",
-                            message: "Page not found.",
-                        },
-                    }),
-                );
-            }
+            await serveHtmlPage(res, path.join(uiDir, "verify-email.html"));
             return true;
         },
         "notify",

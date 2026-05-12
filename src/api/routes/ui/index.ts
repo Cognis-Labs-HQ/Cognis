@@ -98,6 +98,15 @@ async function serveFile(
     }
 }
 
+async function serveHtmlPage(
+    res: ServerResponse,
+    filePath: string,
+    log?: BootstrapLog,
+    logMeta?: Record<string, unknown>,
+) {
+    await serveFile(res, filePath, "text/html; charset=utf-8", log, logMeta);
+}
+
 function getCookieAccessToken(req: IncomingMessage): string | null {
     const cookie = req.headers.cookie ?? "";
     const match = cookie.match(/(?:^|; )cognis_access_token=([^;]+)/);
@@ -240,10 +249,9 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "index.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -251,10 +259,9 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/login") {
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "login.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -273,10 +280,9 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "settings.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -301,10 +307,9 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "administration.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -358,10 +363,9 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "users.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -423,10 +427,9 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "invite.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -445,10 +448,9 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "docs.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -467,10 +469,9 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveFile(
+            await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "license.html"),
-                "text/html; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -502,17 +503,11 @@ export function createUiRoutes(
                             manifest.id,
                             manifest.entrypoints.ui,
                         );
-                        await serveFile(
-                            res,
-                            uiFile,
-                            "text/html; charset=utf-8",
-                            log,
-                            {
-                                path: url.pathname,
-                                method: req.method ?? "GET",
-                                moduleId: manifest.id,
-                            },
-                        );
+                        await serveHtmlPage(res, uiFile, log, {
+                            path: url.pathname,
+                            method: req.method ?? "GET",
+                            moduleId: manifest.id,
+                        });
                         return true;
                     }
                 } catch (error) {
