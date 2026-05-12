@@ -41,7 +41,7 @@ async function promptEmail() {
         actions: [
             {
                 id: "confirm",
-                label: i18n.t("ui.reuse.generic.confirm"),
+                label: i18n.t("ui.reuse.confirm"),
                 variant: "confirm",
             },
             {
@@ -90,7 +90,7 @@ let composer = null;
 const elements = [
     {
         id: "invite-tokens",
-        label: i18n.t("ui.reuse.menu.invite"),
+        label: i18n.t("ui.reuse.invite"),
         pinned: true,
         gridSize: { default: [12, 4], min: [6, 4], max: "full" },
         render: () => `
@@ -110,7 +110,7 @@ const elements = [
               <th>${escapeHtml(i18n.t("ui.app.invite.username"))}</th>
               <th>${escapeHtml(i18n.t("ui.app.invite.status"))}</th>
               <th>${escapeHtml(i18n.t("ui.app.invite.expires_at"))}</th>
-              <th>${escapeHtml(i18n.t("ui.reuse.generic.actions"))}</th>
+              <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
             </tr>
           </thead>
           <tbody>

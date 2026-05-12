@@ -231,7 +231,7 @@ function renderNotificationItem(notif, i18n) {
         (notif.actionUrl
             ? '<span class="notification-item-link-arrow" aria-hidden="true">&#8250;</span>'
             : "") +
-        `<button class="notification-dismiss" type="button" aria-label="${i18n.t("ui.reuse.generic.remove")}">&#215;</button>`;
+        `<button class="notification-dismiss" type="button" aria-label="${i18n.t("ui.reuse.remove")}">&#215;</button>`;
 
     listItem.addEventListener("click", async (e) => {
         if (e.target.closest(".notification-dismiss")) return;
@@ -666,7 +666,7 @@ async function showArrivalToast(notif, i18n) {
         `<span class="arrival-toast-sender">${escapeHtml(sender)}</span>` +
         `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
         "</div>" +
-        `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.generic.dismiss")}">&#215;</button>`;
+        `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.dismiss")}">&#215;</button>`;
 
     const dismiss = () => {
         toast.classList.add("arrival-toast--out");

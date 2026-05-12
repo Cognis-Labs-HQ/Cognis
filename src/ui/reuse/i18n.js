@@ -15,7 +15,7 @@
  *
  * Usage:
  *   const i18n = await createI18n({ preferredLanguages: ['es', 'en'], componentStringBaseUrls: ['/static/my-component/languages'] });
- *   i18n.t('ui.reuse.generic.save');   // → 'Guardar'
+ *   i18n.t('ui.reuse.save');   // → 'Guardar'
  *   applyStaticTranslations(i18n);
  */
 const DEFAULT_LOCALE = "en";

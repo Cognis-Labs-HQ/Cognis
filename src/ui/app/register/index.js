@@ -153,7 +153,7 @@ function renderRegisterShell() {
     if (isInvalid) {
         messageHtml = renderInPageCallout({
             variant: "danger",
-            title: i18n.t("ui.reuse.generic.error"),
+            title: i18n.t("ui.reuse.error"),
         });
     } else if (!canRenderForm) {
         const messageKey = "ui.app.register.closed";

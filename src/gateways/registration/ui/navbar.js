@@ -30,7 +30,7 @@ async function registerInviteMenuEntry() {
 
     const i18n = await createI18n().catch(() => null);
     if (!i18n) return;
-    const label = i18n.t("ui.reuse.menu.invite");
+    const label = i18n.t("ui.reuse.invite");
     const entry = document.createElement("li");
     const link = document.createElement("a");
     link.className = "dropdown-item";

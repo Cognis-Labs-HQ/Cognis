@@ -710,12 +710,12 @@ async function openEditPopup() {
         actions: [
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.generic.discard"),
+                label: i18n.t("ui.reuse.discard"),
                 variant: "cancel",
             },
             {
                 id: "save",
-                label: i18n.t("ui.reuse.generic.save"),
+                label: i18n.t("ui.reuse.save"),
                 variant: "confirm",
             },
         ],
@@ -864,7 +864,7 @@ async function doDeletePost(postId) {
         actions: [
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.generic.discard"),
+                label: i18n.t("ui.reuse.discard"),
                 variant: "cancel",
             },
             {
@@ -951,7 +951,7 @@ async function doBlockUser() {
         actions: [
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.generic.discard"),
+                label: i18n.t("ui.reuse.discard"),
                 variant: "cancel",
             },
             {

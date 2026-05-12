@@ -56,7 +56,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
           <thead>
             <tr>
               <th>${escapeHtml(i18n.t("ui.app.admin.adapters"))}</th>
-              <th>${escapeHtml(i18n.t("ui.reuse.generic.id"))}</th>
+              <th>${escapeHtml(i18n.t("ui.reuse.id"))}</th>
               <th>${escapeHtml(i18n.t("ui.app.admin.state.active"))}</th>
             </tr>
           </thead>

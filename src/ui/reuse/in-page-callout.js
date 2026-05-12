@@ -9,7 +9,7 @@
  *
  *   const html = renderInPageCallout({
  *     variant: 'danger',
- *     title: i18n.t('ui.reuse.generic.error'),
+ *     title: i18n.t('ui.reuse.error'),
  *   });
  *
  * @param {{

@@ -484,7 +484,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                             </select>
                           </label>
                           <button type="button" class="btn-confirm btn-animated logs-stream-apply">
-                            ${i18n.t("ui.reuse.generic.refresh")}
+                            ${i18n.t("ui.reuse.refresh")}
                           </button>
                         </div>
                         <p class="logs-stream-status" hidden aria-live="polite"></p>

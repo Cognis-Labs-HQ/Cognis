@@ -141,7 +141,7 @@ async function promptRequiredEmailAddress() {
         actions: [
             {
                 id: "confirm",
-                label: i18n.t("ui.reuse.generic.confirm"),
+                label: i18n.t("ui.reuse.confirm"),
                 variant: "confirm",
             },
         ],

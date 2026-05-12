@@ -479,12 +479,12 @@ function initSearchBar(i18n) {
             },
             {
                 id: "page-settings",
-                label: i18n.t("ui.reuse.menu.settings"),
+                label: i18n.t("ui.reuse.settings"),
                 url: "/settings",
             },
             {
                 id: "page-docs",
-                label: i18n.t("ui.reuse.menu.docs"),
+                label: i18n.t("ui.reuse.docs"),
                 url: "/docs",
             },
             ...(globalThis.__studyGatewayAvailable
@@ -500,7 +500,7 @@ function initSearchBar(i18n) {
                 ? [
                       {
                           id: "page-classes",
-                          label: i18n.t("ui.reuse.menu.classes"),
+                          label: i18n.t("ui.reuse.classes"),
                           url: "/classes",
                       },
                   ]
@@ -509,12 +509,12 @@ function initSearchBar(i18n) {
                 ? [
                       {
                           id: "page-administration",
-                          label: i18n.t("ui.reuse.menu.administration"),
+                          label: i18n.t("ui.reuse.administration"),
                           url: "/administration",
                       },
                       {
                           id: "page-users",
-                          label: i18n.t("ui.reuse.menu.users"),
+                          label: i18n.t("ui.reuse.users"),
                           url: "/users",
                       },
                       {
@@ -529,7 +529,7 @@ function initSearchBar(i18n) {
 
     const settingsLocalSearchGroup = {
         category:
-            i18n.t("ui.reuse.menu.administration") +
+            i18n.t("ui.reuse.administration") +
             " / " +
             i18n.t("ui.app.settings.preferences"),
         items: [

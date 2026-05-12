@@ -103,7 +103,7 @@ export async function mount(root, { signal } = {}) {
                   class="classes-meeting-btn"
                   data-class-id="${escapeHtml(cls.id)}"
                   disabled
-                  title="${escapeHtml(i18n.t("ui.reuse.generic.coming_soon"))}"
+                  title="${escapeHtml(i18n.t("ui.reuse.coming_soon"))}"
                 >${escapeHtml(i18n.t("module.study.classes.open_meeting"))}</button>
               </div>
             </li>

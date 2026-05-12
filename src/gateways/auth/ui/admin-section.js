@@ -68,7 +68,7 @@ export function createAdminSection({
           <button class="btn-animated auth-provider-toggle-btn" type="button"
             data-adapter-id="${escapeHtml(adapter.id)}"
             data-enabled="${adapter.enabled}">
-            ${adapter.enabled ? i18n.t("ui.reuse.generic.disable") : i18n.t("ui.reuse.generic.enable")}
+            ${adapter.enabled ? i18n.t("ui.reuse.disable") : i18n.t("ui.reuse.enable")}
           </button>
           ${configBtn}
         </div>
@@ -144,7 +144,7 @@ export function createAdminSection({
             actions: [
                 {
                     id: "save",
-                    label: i18n.t("ui.reuse.generic.save"),
+                    label: i18n.t("ui.reuse.save"),
                     variant: "confirm",
                 },
                 {

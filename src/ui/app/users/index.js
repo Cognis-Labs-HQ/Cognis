@@ -47,7 +47,7 @@ function buildElements() {
     elements = [
         {
             id: "users-table",
-            label: i18n.t("ui.reuse.menu.users"),
+            label: i18n.t("ui.reuse.users"),
             pinned: true,
             gridSize: {
                 default: [12, estimatedHeight],
@@ -114,7 +114,7 @@ async function promptInput({ title, label, type = "text" }) {
         actions: [
             {
                 id: "confirm",
-                label: i18n.t("ui.reuse.generic.confirm"),
+                label: i18n.t("ui.reuse.confirm"),
                 variant: "confirm",
             },
             {
@@ -159,7 +159,7 @@ function renderUsersTable() {
             <th>${escapeHtml(i18n.t("ui.app.users.username"))}</th>
             <th>${escapeHtml(i18n.t("ui.app.users.role"))}</th>
             <th>${escapeHtml(i18n.t("ui.app.users.status"))}</th>
-            <th>${escapeHtml(i18n.t("ui.reuse.generic.actions"))}</th>
+            <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
           </tr>
         </thead>
         <tbody>
@@ -185,7 +185,7 @@ function renderUsersTable() {
                       isProtected || isOwner || protectAdminFromAdmin
                           ? ""
                           : `
-                        <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.generic.disable")) : escapeHtml(i18n.t("ui.reuse.generic.enable"))}</button>
+                        <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.disable")) : escapeHtml(i18n.t("ui.reuse.enable"))}</button>
                         <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}">☰</button>`;
                   return `
               <tr class="users-row" data-username="${escapeHtml(user.username)}">
@@ -222,7 +222,7 @@ async function runUserMenuAction(action, username) {
         showToast(
             res.ok
                 ? i18n.t("ui.app.users.password_reset_done")
-                : i18n.t("ui.reuse.generic.save_failed"),
+                : i18n.t("ui.reuse.save_failed"),
             { variant: res.ok ? "success" : "error" },
         );
         return;
@@ -246,7 +246,7 @@ async function runUserMenuAction(action, username) {
         showToast(
             res.ok
                 ? i18n.t("ui.app.users.verification_resent")
-                : i18n.t("ui.reuse.generic.save_failed"),
+                : i18n.t("ui.reuse.save_failed"),
             { variant: res.ok ? "success" : "error" },
         );
         return;
@@ -260,7 +260,7 @@ async function runUserMenuAction(action, username) {
             actions: [
                 {
                     id: "confirm",
-                    label: i18n.t("ui.reuse.generic.confirm"),
+                    label: i18n.t("ui.reuse.confirm"),
                     variant: "confirm",
                 },
                 {
@@ -296,7 +296,7 @@ async function runUserMenuAction(action, username) {
                           ? "ui.app.users.founder_enabled"
                           : "ui.app.users.founder_disabled",
                   )
-                : i18n.t("ui.reuse.generic.save_failed"),
+                : i18n.t("ui.reuse.save_failed"),
             { variant: res.ok ? "success" : "error" },
         );
         if (!res.ok) return;
@@ -338,7 +338,7 @@ function bindUsersInteractions() {
                 },
             );
             if (!res.ok) {
-                showToast(i18n.t("ui.reuse.generic.save_failed"), {
+                showToast(i18n.t("ui.reuse.save_failed"), {
                     variant: "error",
                 });
                 return;
@@ -413,7 +413,7 @@ function bindUsersInteractions() {
                 const responseBody = await res.json().catch(() => null);
                 const responseMessage =
                     responseBody?.error?.message ??
-                    i18n.t("ui.reuse.generic.save_failed");
+                    i18n.t("ui.reuse.save_failed");
                 showToast(responseMessage, {
                     variant: "error",
                 });

@@ -188,7 +188,7 @@ export async function mount(root, { signal } = {}) {
                         render: () => `
             <div class="font-heading-row">
               <h3>${i18n.t("ui.app.settings.font")}</h3>
-              <button id="pref-font-reset" type="button" disabled>${i18n.t("ui.reuse.generic.reset")}</button>
+              <button id="pref-font-reset" type="button" disabled>${i18n.t("ui.reuse.reset")}</button>
             </div>
             <div class="font-picker-row">
               <label class="font-picker-label">
@@ -429,8 +429,8 @@ export async function mount(root, { signal } = {}) {
                 label: i18n.t("ui.reuse.unsaved_changes"),
                 render: () => `
       <span>${i18n.t("ui.reuse.unsaved_changes")}</span>
-      <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t("ui.reuse.generic.discard")}</button>
-      <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t("ui.reuse.generic.save")}</button>
+      <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t("ui.reuse.discard")}</button>
+      <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t("ui.reuse.save")}</button>
     `,
             },
         ],
