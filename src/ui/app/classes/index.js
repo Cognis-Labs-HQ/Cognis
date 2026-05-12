@@ -103,7 +103,7 @@ export async function mount(root, { signal } = {}) {
                   class="classes-meeting-btn"
                   data-class-id="${escapeHtml(cls.id)}"
                   disabled
-                  title="${escapeHtml(i18n.t("ui.reuse.generic.coming_soon"))}"
+                  title="${escapeHtml(i18n.t("ui.reuse.coming_soon"))}"
                 >${escapeHtml(i18n.t("module.study.classes.open_meeting"))}</button>
               </div>
             </li>
@@ -122,7 +122,7 @@ export async function mount(root, { signal } = {}) {
             <input
               type="text"
               class="classes-language-input"
-              placeholder="${escapeHtml(i18n.t("module.study.classes.language_label"))}"
+              placeholder="${escapeHtml(i18n.t("ui.reuse.language"))}"
               maxlength="32"
             />
             <button type="button" class="btn-confirm btn-animated classes-request-btn">
@@ -173,7 +173,7 @@ export async function mount(root, { signal } = {}) {
             actions: [
                 {
                     id: "cancel",
-                    label: i18n.t("ui.reuse.popup.cancel"),
+                    label: i18n.t("ui.reuse.cancel"),
                     variant: "cancel",
                 },
                 {

@@ -195,6 +195,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         id: "notifications",
         label: "Notifications",
         scriptUrl: "/static/gateways/notify/admin-section.js",
+        stringsBaseUrl: "/static/gateways/notify/languages",
     });
     ctx.uiRegistry?.registerStaticDir("notify", uiDir);
 

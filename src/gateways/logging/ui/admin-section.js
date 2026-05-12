@@ -458,7 +458,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                             ${i18n.t("ui.app.admin.logs.filter_severity")}
                             <select name="logsSeverity" class="theme-select">
                               <option value="all">${i18n.t("ui.app.admin.logs.severity.all")}</option>
-                              <option value="debug">${i18n.t("ui.app.admin.logs.severity.debug")}</option>
+                              <option value="debug">${i18n.t("ui.reuse.debug")}</option>
                               <option value="info">${i18n.t("ui.app.admin.logs.severity.info")}</option>
                               <option value="warn">${i18n.t("ui.app.admin.logs.severity.warn")}</option>
                               <option value="error">${i18n.t("ui.app.admin.logs.severity.error")}</option>
@@ -484,7 +484,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                             </select>
                           </label>
                           <button type="button" class="btn-confirm btn-animated logs-stream-apply">
-                            ${i18n.t("ui.reuse.generic.refresh")}
+                            ${i18n.t("ui.reuse.refresh")}
                           </button>
                         </div>
                         <p class="logs-stream-status" hidden aria-live="polite"></p>

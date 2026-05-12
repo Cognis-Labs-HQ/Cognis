@@ -1,0 +1,12 @@
+<resources>
+  <string name="gateway.notify.admin.debug_target_user">対象ユーザー</string>
+  <string name="gateway.notify.admin.debug_category">通知タイプ</string>
+  <string name="gateway.notify.admin.debug_subject_placeholder">通知の件名</string>
+  <string name="gateway.notify.admin.debug_body_placeholder">通知の本文</string>
+  <string name="gateway.notify.admin.debug_send">通知を送信</string>
+  <string name="gateway.notify.admin.debug_sent">通知が送信されました。</string>
+  <string name="gateway.notify.admin.debug_send_failed">通知の送信に失敗しました。</string>
+  <string name="gateway.notify.admin.debug_missing_fields">送信前にすべての項目を入力してください。</string>
+  <string name="gateway.notify.admin.debug_no_users">ユーザーが見つかりません。</string>
+  <string name="gateway.notify.admin.debug_no_categories">通知カテゴリが登録されていません。</string>
+</resources>

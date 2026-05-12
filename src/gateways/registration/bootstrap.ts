@@ -165,6 +165,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         id: "registration",
         label: "Registration",
         scriptUrl: "/static/gateways/registration/admin-section.js",
+        stringsBaseUrl: "/static/gateways/registration/languages",
     });
     ctx.uiRegistry?.registerStaticDir("registration", uiDir);
     ctx.uiRegistry?.registerNavbarPlugin({

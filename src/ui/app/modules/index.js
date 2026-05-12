@@ -31,8 +31,8 @@ function renderModulesTable(rows) {
           <td>${mod.version}</td>
           <td>${mod.class}</td>
           <td>
-            <button data-module="${mod.id}" data-action="enable">${i18n.t("ui.reuse.generic.enable")}</button>
-            <button data-module="${mod.id}" data-action="disable">${i18n.t("ui.reuse.generic.disable")}</button>
+            <button data-module="${mod.id}" data-action="enable">${i18n.t("ui.reuse.enable")}</button>
+            <button data-module="${mod.id}" data-action="disable">${i18n.t("ui.reuse.disable")}</button>
           </td>
         </tr>`,
         )
@@ -41,10 +41,10 @@ function renderModulesTable(rows) {
     <table>
       <thead>
         <tr>
-          <th>${i18n.t("ui.reuse.generic.id")}</th>
-          <th>${i18n.t("ui.reuse.generic.version")}</th>
-          <th>${i18n.t("ui.reuse.generic.class")}</th>
-          <th>${i18n.t("ui.reuse.generic.actions")}</th>
+          <th>${i18n.t("ui.reuse.id")}</th>
+          <th>${i18n.t("ui.reuse.version")}</th>
+          <th>${i18n.t("ui.reuse.class")}</th>
+          <th>${i18n.t("ui.reuse.actions")}</th>
         </tr>
       </thead>
       <tbody>${rowsHtml}</tbody>

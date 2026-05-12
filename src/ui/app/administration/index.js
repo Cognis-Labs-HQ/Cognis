@@ -1,5 +1,9 @@
 import { apiFetch } from "../../reuse/api-client.js";
-import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
+import {
+    applyDocumentTitle,
+    createI18n,
+    extendI18n,
+} from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
@@ -85,13 +89,13 @@ function getStatePill(status) {
 
 function renderDetailsList(mod) {
     const details = [
-        [i18n.t("ui.reuse.generic.id"), mod.id],
-        [i18n.t("ui.reuse.generic.version"), mod.version],
+        [i18n.t("ui.reuse.id"), mod.id],
+        [i18n.t("ui.reuse.version"), mod.version],
         [
             i18n.t("ui.app.admin.publisher"),
             mod.publisher || i18n.t("ui.app.admin.unknown"),
         ],
-        [i18n.t("ui.reuse.generic.class"), mod.class],
+        [i18n.t("ui.reuse.class"), mod.class],
         [
             i18n.t("ui.app.admin.capabilities"),
             (mod.capabilities || []).join(", ") || i18n.t("ui.app.admin.none"),
@@ -163,12 +167,12 @@ function renderDependencyLinks(ids, scrollPrefix, gateways = []) {
 
 function renderGatewayDetailsList(gw, gateways) {
     const requiredLabel = gw.required
-        ? i18n.t("ui.reuse.generic.true")
-        : i18n.t("ui.reuse.generic.false");
+        ? i18n.t("ui.reuse.true")
+        : i18n.t("ui.reuse.false");
 
     const details = [
-        [i18n.t("ui.reuse.generic.id"), escapeHtml(gw.id)],
-        [i18n.t("ui.reuse.generic.version"), escapeHtml(gw.version ?? "")],
+        [i18n.t("ui.reuse.id"), escapeHtml(gw.id)],
+        [i18n.t("ui.reuse.version"), escapeHtml(gw.version ?? "")],
         [
             i18n.t("ui.app.admin.publisher"),
             escapeHtml(gw.publisher || i18n.t("ui.app.admin.unknown")),
@@ -345,12 +349,12 @@ function bindModuleToggles() {
                             actions: [
                                 {
                                     id: "confirm",
-                                    label: i18n.t("ui.reuse.generic.enable"),
+                                    label: i18n.t("ui.reuse.enable"),
                                     variant: "confirm",
                                 },
                                 {
                                     id: "cancel",
-                                    label: i18n.t("ui.reuse.popup.cancel"),
+                                    label: i18n.t("ui.reuse.cancel"),
                                     variant: "cancel",
                                 },
                             ],
@@ -374,12 +378,12 @@ function bindModuleToggles() {
                         actions: [
                             {
                                 id: "confirm",
-                                label: i18n.t("ui.reuse.generic.disable"),
+                                label: i18n.t("ui.reuse.disable"),
                                 variant: "confirm",
                             },
                             {
                                 id: "cancel",
-                                label: i18n.t("ui.reuse.popup.cancel"),
+                                label: i18n.t("ui.reuse.cancel"),
                                 variant: "cancel",
                             },
                         ],
@@ -426,12 +430,12 @@ function bindGatewayToggles() {
                         actions: [
                             {
                                 id: "confirm",
-                                label: i18n.t("ui.reuse.generic.enable"),
+                                label: i18n.t("ui.reuse.enable"),
                                 variant: "confirm",
                             },
                             {
                                 id: "cancel",
-                                label: i18n.t("ui.reuse.popup.cancel"),
+                                label: i18n.t("ui.reuse.cancel"),
                                 variant: "cancel",
                             },
                         ],
@@ -476,12 +480,12 @@ function bindGatewayToggles() {
                         actions: [
                             {
                                 id: "confirm",
-                                label: i18n.t("ui.reuse.generic.enable"),
+                                label: i18n.t("ui.reuse.enable"),
                                 variant: "confirm",
                             },
                             {
                                 id: "skip",
-                                label: i18n.t("ui.reuse.popup.cancel"),
+                                label: i18n.t("ui.reuse.cancel"),
                                 variant: "cancel",
                             },
                         ],
@@ -520,12 +524,12 @@ function bindGatewayToggles() {
                     actions: [
                         {
                             id: "confirm",
-                            label: i18n.t("ui.reuse.generic.disable"),
+                            label: i18n.t("ui.reuse.disable"),
                             variant: "confirm",
                         },
                         {
                             id: "cancel",
-                            label: i18n.t("ui.reuse.popup.cancel"),
+                            label: i18n.t("ui.reuse.cancel"),
                             variant: "cancel",
                         },
                     ],
@@ -686,12 +690,12 @@ function bindAdapterToggles() {
                         actions: [
                             {
                                 id: "confirm",
-                                label: i18n.t("ui.reuse.generic.enable"),
+                                label: i18n.t("ui.reuse.enable"),
                                 variant: "confirm",
                             },
                             {
                                 id: "cancel",
-                                label: i18n.t("ui.reuse.popup.cancel"),
+                                label: i18n.t("ui.reuse.cancel"),
                                 variant: "cancel",
                             },
                         ],
@@ -735,12 +739,12 @@ function bindAdapterToggles() {
                     actions: [
                         {
                             id: "confirm",
-                            label: i18n.t("ui.reuse.generic.disable"),
+                            label: i18n.t("ui.reuse.disable"),
                             variant: "confirm",
                         },
                         {
                             id: "cancel",
-                            label: i18n.t("ui.reuse.popup.cancel"),
+                            label: i18n.t("ui.reuse.cancel"),
                             variant: "cancel",
                         },
                     ],
@@ -855,8 +859,9 @@ async function loadGatewaySection(section) {
     try {
         const mod = await import(section.scriptUrl);
         if (typeof mod.createAdminSection !== "function") return null;
+        const sectionI18n = await extendI18n(i18n, section.stringsBaseUrl);
         const def = mod.createAdminSection({
-            i18n,
+            i18n: sectionI18n,
             apiFetch,
             escapeHtml,
             openPopup,
@@ -1132,7 +1137,7 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
             },
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.popup.cancel"),
+                label: i18n.t("ui.reuse.cancel"),
                 variant: "cancel",
             },
         ],
@@ -1308,18 +1313,18 @@ async function loadAllAdapters(gatewayList) {
 async function guardSubPageSwitch() {
     if (!changesBar?.isAnyDirty()) return true;
     const result = await openPopup({
-        title: i18n.t("ui.reuse.unsaved_changes.navigate_away.title"),
-        body: `<p>${i18n.t("ui.reuse.unsaved_changes.navigate_away.body")}</p>`,
+        title: i18n.t("ui.reuse.unsaved_changes"),
+        body: `<p>${i18n.t("ui.reuse.leave_page_warning")}</p>`,
         variant: "warning",
         actions: [
             {
                 id: "discard",
-                label: i18n.t("ui.reuse.unsaved_changes.navigate_away.discard"),
+                label: i18n.t("ui.reuse.discard_and_leave"),
                 variant: "confirm",
             },
             {
                 id: "stay",
-                label: i18n.t("ui.reuse.unsaved_changes.navigate_away.stay"),
+                label: i18n.t("ui.reuse.stay"),
                 variant: "cancel",
             },
         ],
@@ -1406,7 +1411,7 @@ export async function mount(rootEl, { signal } = {}) {
                         pinned: true,
                         render: () => `
             <div class="integrity-header">
-              <button id="rerun-integrity" class="btn-confirm btn-animated" type="button">${i18n.t("ui.reuse.generic.refresh")}</button>
+              <button id="rerun-integrity" class="btn-confirm btn-animated" type="button">${i18n.t("ui.reuse.refresh")}</button>
             </div>
             ${renderIntegrityContent(integrityRows)}
           `,
@@ -1469,15 +1474,15 @@ export async function mount(rootEl, { signal } = {}) {
         i18n,
         onBeforeSubPageSwitch: guardSubPageSwitch,
         pageContext: {
-            title: i18n.t("ui.app.admin.page_title"),
+            title: i18n.t("ui.reuse.administration"),
             subtitle: i18n.t("ui.app.admin.page_subtitle"),
         },
         toolbar: [
             {
                 id: "admin-nav",
-                label: i18n.t("ui.app.admin.page_title"),
+                label: i18n.t("ui.reuse.administration"),
                 render: () => `
-        <h2>${i18n.t("ui.app.admin.page_title")}</h2>
+        <h2>${i18n.t("ui.reuse.administration")}</h2>
         <ul>
           ${navItems.join("\n")}
         </ul>
@@ -1490,8 +1495,8 @@ export async function mount(rootEl, { signal } = {}) {
                 label: i18n.t("ui.reuse.unsaved_changes"),
                 render: () => `
         <span>${i18n.t("ui.reuse.unsaved_changes")}</span>
-        <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t("ui.reuse.generic.discard")}</button>
-        <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t("ui.reuse.generic.save")}</button>
+        <button class="btn-cancel btn-animated" type="button" data-action="discard">${i18n.t("ui.reuse.discard")}</button>
+        <button class="btn-confirm btn-animated" type="button" data-action="save">${i18n.t("ui.reuse.save")}</button>
       `,
             },
         ],

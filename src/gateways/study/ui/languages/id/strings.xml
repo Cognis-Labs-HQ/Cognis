@@ -1,0 +1,5 @@
+<resources>
+  <string name="gateway.study.picker.title">Pilih Bahasa yang Dipelajari</string>
+  <string name="gateway.study.picker.select">Pilih bahasa:</string>
+  <string name="gateway.study.picker.start">Mulai Belajar</string>
+</resources>

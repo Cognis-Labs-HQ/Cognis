@@ -94,7 +94,7 @@ async function showPreview(link) {
     activeLink = link;
     const preview = ensurePreview();
     preview.hidden = false;
-    preview.innerHTML = `<div class="profile-mini-preview__loading">${escapeHtml(previewI18n?.t("ui.reuse.profile_preview.loading") ?? "…")}</div>`;
+    preview.innerHTML = `<div class="profile-mini-preview__loading">${escapeHtml(previewI18n?.t("ui.reuse.loading") ?? "…")}</div>`;
     positionPreview(link, preview);
 
     const profile = await loadProfilePreview(handle);
@@ -111,13 +111,13 @@ async function showPreview(link) {
     const handleText = profile.handle || handle;
     const stats = [
         profile.followerCount != null
-            ? `${profile.followerCount} ${previewI18n?.t("ui.reuse.profile_preview.followers") ?? ""}`
+            ? `${profile.followerCount} ${previewI18n?.t("ui.reuse.followers") ?? ""}`
             : null,
         profile.followingCount != null
-            ? `${profile.followingCount} ${previewI18n?.t("ui.reuse.profile_preview.following") ?? ""}`
+            ? `${profile.followingCount} ${previewI18n?.t("ui.reuse.following") ?? ""}`
             : null,
         profile.postCount != null
-            ? `${profile.postCount} ${previewI18n?.t("ui.reuse.profile_preview.posts") ?? ""}`
+            ? `${profile.postCount} ${previewI18n?.t("ui.reuse.posts") ?? ""}`
             : null,
     ]
         .filter(Boolean)

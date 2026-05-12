@@ -335,8 +335,8 @@ function renderHero() {
                     class="profile-message-button"
                     type="button"
                     data-message-target="${escapeHtml(profile?.handle ?? "")}"
-                    aria-label="${escapeHtml(i18n.t("module.social.messages.icon_label"))}"
-                    title="${escapeHtml(i18n.t("module.social.messages.icon_label"))}"
+                    aria-label="${escapeHtml(i18n.t("ui.reuse.message"))}"
+                    title="${escapeHtml(i18n.t("ui.reuse.message"))}"
                   ><img src="/static/assets/icons/message-light.svg" alt="" class="profile-message-icon profile-message-icon--light" /><img src="/static/assets/icons/message-dark.svg" alt="" class="profile-message-icon profile-message-icon--dark" /></button>`
                 : ""
         }
@@ -362,15 +362,15 @@ function renderHero() {
     <div class="profile-hero-stats">
       <div class="profile-stat-block">
         <span class="profile-stat-number">${posts.length}</span>
-        <span class="profile-stat-label">${i18n.t("ui.app.profile.posts_stat")}</span>
+        <span class="profile-stat-label">${i18n.t("ui.reuse.posts")}</span>
       </div>
       <div class="profile-stat-block">
         <span class="profile-stat-number">${following.length}</span>
-        <span class="profile-stat-label">${i18n.t("ui.app.profile.following_stat")}</span>
+        <span class="profile-stat-label">${i18n.t("ui.reuse.following")}</span>
       </div>
       <div class="profile-stat-block">
         <span class="profile-stat-number">${followers.length}</span>
-        <span class="profile-stat-label">${i18n.t("ui.app.profile.followers_stat")}</span>
+        <span class="profile-stat-label">${i18n.t("ui.reuse.followers")}</span>
       </div>
     </div>
   `;
@@ -710,12 +710,12 @@ async function openEditPopup() {
         actions: [
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.generic.discard"),
+                label: i18n.t("ui.reuse.discard"),
                 variant: "cancel",
             },
             {
                 id: "save",
-                label: i18n.t("ui.reuse.generic.save"),
+                label: i18n.t("ui.reuse.save"),
                 variant: "confirm",
             },
         ],
@@ -864,7 +864,7 @@ async function doDeletePost(postId) {
         actions: [
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.generic.discard"),
+                label: i18n.t("ui.reuse.discard"),
                 variant: "cancel",
             },
             {
@@ -895,7 +895,7 @@ async function doFollowUser(handle) {
             actions: [
                 {
                     id: "cancel",
-                    label: i18n.t("ui.reuse.popup.cancel"),
+                    label: i18n.t("ui.reuse.cancel"),
                     variant: "cancel",
                 },
                 {
@@ -951,7 +951,7 @@ async function doBlockUser() {
         actions: [
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.generic.discard"),
+                label: i18n.t("ui.reuse.discard"),
                 variant: "cancel",
             },
             {
@@ -984,7 +984,7 @@ async function doUnblockUser() {
         actions: [
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.popup.cancel"),
+                label: i18n.t("ui.reuse.cancel"),
                 variant: "cancel",
             },
             {
@@ -1326,7 +1326,7 @@ export async function mount(rootEl, { signal } = {}) {
         preferenceKey: "profile-layout",
         i18n,
         pageContext: {
-            title: i18n.t("ui.app.profile.page_title"),
+            title: i18n.t("ui.reuse.profile"),
             subtitle: i18n.t("ui.app.profile.page_subtitle"),
         },
         onRender: bindPageEvents,

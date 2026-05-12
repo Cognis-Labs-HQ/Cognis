@@ -905,10 +905,7 @@ export function createPageComposer(
                 closeBtn.className = "composer-close-btn";
                 closeBtn.type = "button";
                 closeBtn.textContent = "×";
-                closeBtn.setAttribute(
-                    "aria-label",
-                    i18n.t("ui.reuse.generic.remove"),
-                );
+                closeBtn.setAttribute("aria-label", i18n.t("ui.reuse.remove"));
                 closeBtn.addEventListener("pointerdown", (e) =>
                     e.stopPropagation(),
                 );
@@ -1293,7 +1290,7 @@ export function createPageComposer(
 
         let listHtml;
         if (hiddenElements.length === 0) {
-            listHtml = `<li class="composer-library-empty">${i18n.t("ui.reuse.page_composer.all_visible")}</li>`;
+            listHtml = `<li class="composer-library-empty">${i18n.t("ui.reuse.all_elements_visible")}</li>`;
         } else {
             listHtml = hiddenElements
                 .map(
@@ -1305,16 +1302,16 @@ export function createPageComposer(
 
         panel.innerHTML = `
       <div id="composer-panel-drag-handle" class="composer-panel-header">
-        <span class="composer-panel-title">${i18n.t("ui.reuse.page_composer.elements")}</span>
+        <span class="composer-panel-title">${i18n.t("ui.reuse.elements")}</span>
         <button class="composer-panel-minimize-btn" type="button">−</button>
       </div>
       <div class="composer-panel-body">
         <ul class="composer-library-list">${listHtml}</ul>
       </div>
       <div class="composer-panel-actions">
-        <button class="composer-discard-btn" type="button">${i18n.t("ui.reuse.generic.discard")}</button>
-        <button class="composer-done-btn" type="button">${i18n.t("ui.reuse.generic.done")}</button>
-        <button class="composer-reset-btn" type="button">↺ ${i18n.t("ui.reuse.page_composer.reset_layout")}</button>
+        <button class="composer-discard-btn" type="button">${i18n.t("ui.reuse.discard")}</button>
+        <button class="composer-done-btn" type="button">${i18n.t("ui.reuse.done")}</button>
+        <button class="composer-reset-btn" type="button">↺ ${i18n.t("ui.reuse.reset_layout")}</button>
       </div>
     `;
 
@@ -1929,10 +1926,7 @@ export function createPageComposer(
                 closeBtn.className = "composer-close-btn";
                 closeBtn.type = "button";
                 closeBtn.textContent = "×";
-                closeBtn.setAttribute(
-                    "aria-label",
-                    i18n.t("ui.reuse.generic.remove"),
-                );
+                closeBtn.setAttribute("aria-label", i18n.t("ui.reuse.remove"));
                 closeBtn.addEventListener("pointerdown", (e) =>
                     e.stopPropagation(),
                 );
@@ -2089,7 +2083,7 @@ export function createPageComposer(
 
         let listHtml;
         if (hiddenElements.length === 0) {
-            listHtml = `<li class="composer-library-empty">${i18n.t("ui.reuse.page_composer.all_visible")}</li>`;
+            listHtml = `<li class="composer-library-empty">${i18n.t("ui.reuse.all_elements_visible")}</li>`;
         } else {
             listHtml = hiddenElements
                 .map(
@@ -2101,16 +2095,16 @@ export function createPageComposer(
 
         panel.innerHTML = `
       <div id="${panelId}-drag-handle" class="composer-panel-header">
-        <span class="composer-panel-title">${i18n.t("ui.reuse.page_composer.elements")}</span>
+        <span class="composer-panel-title">${i18n.t("ui.reuse.elements")}</span>
         <button class="composer-panel-minimize-btn" type="button">−</button>
       </div>
       <div class="composer-panel-body">
         <ul class="composer-library-list">${listHtml}</ul>
       </div>
       <div class="composer-panel-actions">
-        <button class="composer-discard-btn" type="button">${i18n.t("ui.reuse.generic.discard")}</button>
-        <button class="composer-done-btn" type="button">${i18n.t("ui.reuse.generic.done")}</button>
-        <button class="composer-reset-btn" type="button">↺ ${i18n.t("ui.reuse.page_composer.reset_layout")}</button>
+        <button class="composer-discard-btn" type="button">${i18n.t("ui.reuse.discard")}</button>
+        <button class="composer-done-btn" type="button">${i18n.t("ui.reuse.done")}</button>
+        <button class="composer-reset-btn" type="button">↺ ${i18n.t("ui.reuse.reset_layout")}</button>
       </div>
     `;
 
@@ -2403,7 +2397,7 @@ export function createPageComposer(
         if (!state.editing) {
             editBtn.innerHTML =
                 '<span class="composer-edit-icon" aria-hidden="true"></span>';
-            editBtn.title = i18n.t("ui.reuse.page_composer.edit_layout");
+            editBtn.title = i18n.t("ui.reuse.edit_layout");
             editBtn.addEventListener(
                 "click",
                 () => {
@@ -2419,7 +2413,7 @@ export function createPageComposer(
             );
         } else {
             editBtn.textContent = "✓";
-            editBtn.title = i18n.t("ui.reuse.generic.done");
+            editBtn.title = i18n.t("ui.reuse.done");
             editBtn.addEventListener(
                 "click",
                 async () => {
@@ -2453,7 +2447,7 @@ export function createPageComposer(
         if (!editing) {
             editBtn.innerHTML =
                 '<span class="composer-edit-icon" aria-hidden="true"></span>';
-            editBtn.title = i18n.t("ui.reuse.page_composer.edit_layout");
+            editBtn.title = i18n.t("ui.reuse.edit_layout");
             editBtn.addEventListener(
                 "click",
                 () => {
@@ -2467,7 +2461,7 @@ export function createPageComposer(
             );
         } else {
             editBtn.textContent = "✓";
-            editBtn.title = i18n.t("ui.reuse.generic.done");
+            editBtn.title = i18n.t("ui.reuse.done");
             editBtn.addEventListener(
                 "click",
                 async () => {
@@ -2767,7 +2761,7 @@ export function createPageComposer(
                     ? `<div class="composer-drag-handle" aria-hidden="true">
                <span class="composer-drag-icon">⠿</span>
                <span class="composer-drag-label">${element.label}</span>
-               ${!element.pinned ? `<button class="composer-remove-btn" data-composer-remove="${element.id}" type="button">${i18n.t("ui.reuse.generic.remove")}</button>` : ""}
+               ${!element.pinned ? `<button class="composer-remove-btn" data-composer-remove="${element.id}" type="button">${i18n.t("ui.reuse.remove")}</button>` : ""}
              </div>`
                     : "";
                 const editingClass = editing ? " composer-editing" : "";
@@ -2795,17 +2789,17 @@ export function createPageComposer(
             .map(
                 (el) => `<li class="composer-library-item">
            <span>${el.label}</span>
-           <button class="composer-add-btn" data-composer-add="${el.id}" type="button">${i18n.t("ui.reuse.generic.add")}</button>
+           <button class="composer-add-btn" data-composer-add="${el.id}" type="button">${i18n.t("ui.reuse.add")}</button>
          </li>`,
             )
             .join("");
         const emptyMsg = !hiddenElements.length
-            ? `<li class="composer-library-empty">${i18n.t("ui.reuse.page_composer.all_visible")}</li>`
+            ? `<li class="composer-library-empty">${i18n.t("ui.reuse.all_elements_visible")}</li>`
             : "";
         return `
       <aside class="composer-library">
         <div class="composer-library-header">
-          <h3>${i18n.t("ui.reuse.page_composer.elements")}</h3>
+          <h3>${i18n.t("ui.reuse.elements")}</h3>
         </div>
         <ul class="composer-library-list">${listItems}${emptyMsg}</ul>
       </aside>
@@ -2992,7 +2986,7 @@ export function createPageComposer(
     }
 
     async function init() {
-        configureToastDismissLabel(i18n.t("ui.reuse.generic.dismiss"));
+        configureToastDismissLabel(i18n.t("ui.reuse.dismiss"));
 
         const pageContextHtml = pageContext
             ? `<h1>${pageContext.title}</h1><p>${pageContext.subtitle}</p>`

@@ -9,6 +9,12 @@ export interface AdminSection {
     label: string;
     /** Browser-absolute URL of the ES module to dynamically import. */
     scriptUrl: string;
+    /**
+     * Optional base URL for component-specific locale strings.
+     * The admin page will fetch `{stringsBaseUrl}/{locale}/strings.xml`
+     * and merge those strings into the i18n instance passed to this section.
+     */
+    stringsBaseUrl?: string;
 }
 
 /**

@@ -275,7 +275,7 @@ async function loadRooms() {
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
-    applyDocumentTitle(i18n, "module.social.messages.page_title");
+    applyDocumentTitle(i18n, "ui.reuse.messages");
 
     root.classList.add("messages-page");
     signal?.addEventListener(
@@ -414,7 +414,7 @@ export async function mount(root, { signal } = {}) {
     const elements = [
         {
             id: "messages-thread",
-            label: i18n.t("module.social.messages.page_title"),
+            label: i18n.t("ui.reuse.messages"),
             gridSize: { default: [12, 8], min: [4, 4], max: "full" },
             render: () =>
                 `<section class="messages-thread">
@@ -558,12 +558,12 @@ export async function mount(root, { signal } = {}) {
         toolbar: [
             {
                 id: "messages-sidebar",
-                label: i18n.t("module.social.messages.page_title"),
+                label: i18n.t("ui.reuse.messages"),
                 render: () => sidebarHtml,
             },
         ],
         pageContext: {
-            title: i18n.t("module.social.messages.page_title"),
+            title: i18n.t("ui.reuse.messages"),
         },
         onRender: bindSidebarEvents,
     });

@@ -55,7 +55,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     function renderContent() {
         const tableHtml =
             tokens.length === 0
-                ? `<p class="registration-no-tokens"><em>${escapeHtml(i18n.t("ui.app.admin.registration.no_tokens"))}</em></p>`
+                ? `<p class="registration-no-tokens"><em>${escapeHtml(i18n.t("gateway.registration.no_tokens"))}</em></p>`
                 : `
         <div class="users-table-wrap">
           <table class="users-table">
@@ -66,7 +66,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 <th>${escapeHtml(i18n.t("ui.app.invite.username"))}</th>
                 <th>${escapeHtml(i18n.t("ui.app.invite.status"))}</th>
                 <th>${escapeHtml(i18n.t("ui.app.invite.expires_at"))}</th>
-                <th>${escapeHtml(i18n.t("ui.reuse.generic.actions"))}</th>
+                <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
               </tr>
             </thead>
             <tbody>
@@ -79,7 +79,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
       <div class="security-settings-form">
         <p class="security-field-hint">${escapeHtml(i18n.t("ui.app.invite.page_subtitle"))}</p>
         <div class="security-field-row">
-          <a class="btn-confirm btn-animated" href="/users?action=invite">${escapeHtml(i18n.t("ui.reuse.menu.invite"))}</a>
+          <a class="btn-confirm btn-animated" href="/users?action=invite">${escapeHtml(i18n.t("ui.reuse.invite"))}</a>
         </div>
       </div>
       ${tableHtml}
@@ -88,16 +88,16 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
     return {
         id: "registration",
-        label: i18n.t("ui.reuse.menu.registration"),
+        label: i18n.t("ui.reuse.registration"),
         dataReady,
         subComposerOptions: {
             allowCustomization: false,
             preferenceKey: "administration-registration-layout",
-            heading: i18n.t("ui.reuse.menu.registration"),
+            heading: i18n.t("ui.reuse.registration"),
             elements: [
                 {
                     id: "registration-settings",
-                    label: i18n.t("ui.reuse.menu.registration"),
+                    label: i18n.t("ui.reuse.registration"),
                     pinned: true,
                     render: () => renderContent(),
                 },
@@ -129,12 +129,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                                 statusCell.textContent = statusLabel("revoked");
                             }
                         } else {
-                            showToast(
-                                i18n.t("ui.reuse.registration.invite_failed"),
-                                {
-                                    variant: "error",
-                                },
-                            );
+                            showToast(i18n.t("ui.reuse.invite_failed"), {
+                                variant: "error",
+                            });
                         }
                     });
                 });

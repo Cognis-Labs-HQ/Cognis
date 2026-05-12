@@ -31,7 +31,7 @@ async function loadInviteState() {
 async function promptEmail() {
     let inputEl = null;
     const action = await openPopup({
-        title: i18n.t("ui.app.invite.invite"),
+        title: i18n.t("ui.reuse.invite"),
         body: () => `
       <label class="stack">
         <span>${escapeHtml(i18n.t("ui.app.invite.email"))}</span>
@@ -41,12 +41,12 @@ async function promptEmail() {
         actions: [
             {
                 id: "confirm",
-                label: i18n.t("ui.reuse.generic.confirm"),
+                label: i18n.t("ui.reuse.confirm"),
                 variant: "confirm",
             },
             {
                 id: "cancel",
-                label: i18n.t("ui.reuse.popup.cancel"),
+                label: i18n.t("ui.reuse.cancel"),
                 variant: "cancel",
             },
         ],
@@ -90,14 +90,14 @@ let composer = null;
 const elements = [
     {
         id: "invite-tokens",
-        label: i18n.t("ui.reuse.menu.invite"),
+        label: i18n.t("ui.reuse.invite"),
         pinned: true,
         gridSize: { default: [12, 4], min: [6, 4], max: "full" },
         render: () => `
         <div class="controls">
           ${
               inviteState.inviteEnabled
-                  ? `<button id="invite-create-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.app.invite.invite"))}</button>`
+                  ? `<button id="invite-create-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</button>`
                   : `<em>${escapeHtml(i18n.t("ui.app.register.closed"))}</em>`
           }
         </div>
@@ -110,7 +110,7 @@ const elements = [
               <th>${escapeHtml(i18n.t("ui.app.invite.username"))}</th>
               <th>${escapeHtml(i18n.t("ui.app.invite.status"))}</th>
               <th>${escapeHtml(i18n.t("ui.app.invite.expires_at"))}</th>
-              <th>${escapeHtml(i18n.t("ui.reuse.generic.actions"))}</th>
+              <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
             </tr>
           </thead>
           <tbody>
@@ -154,15 +154,12 @@ function bindInviteInteractions() {
                             email = await promptEmail();
                             continue;
                         }
-                        showToast(
-                            i18n.t("ui.reuse.registration.invite_failed"),
-                            {
-                                variant: "error",
-                            },
-                        );
+                        showToast(i18n.t("ui.reuse.invite_failed"), {
+                            variant: "error",
+                        });
                         return;
                     }
-                    showToast(i18n.t("ui.reuse.registration.invite_sent"), {
+                    showToast(i18n.t("ui.reuse.invite_sent"), {
                         variant: "success",
                     });
                     tokens = await loadTokens();
@@ -201,7 +198,7 @@ composer = createPageComposer(root, {
     i18n,
     preferenceKey: "invite-layout",
     pageContext: {
-        title: i18n.t("ui.app.invite.page_title"),
+        title: i18n.t("ui.reuse.invite"),
         subtitle: i18n.t("ui.app.invite.page_subtitle"),
     },
     toolbar: [],

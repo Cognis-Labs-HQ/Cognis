@@ -14,7 +14,7 @@ const GROUP_KEYS = {
     "adapters/db": "ui.app.docs.group.adapters_db",
     "adapters/file": "ui.app.docs.group.adapters_file",
     "adapters/notify": "ui.app.docs.group.adapters_notify",
-    modules: "ui.app.docs.group.modules",
+    modules: "ui.reuse.modules",
     tooling: "ui.app.docs.group.tooling",
 };
 
@@ -139,7 +139,7 @@ export async function mount(root, { signal } = {}) {
     const elements = [
         {
             id: "doc-reader",
-            label: i18n.t("ui.app.docs.page_title"),
+            label: i18n.t("ui.reuse.docs"),
             gridSize: { default: [4, 8], min: [2, 4], max: "full" },
             render: () => `<article id="doc" class="content-panel"></article>`,
         },
@@ -152,7 +152,7 @@ export async function mount(root, { signal } = {}) {
         i18n,
         onRender: renderActiveDoc,
         pageContext: {
-            title: i18n.t("ui.app.docs.page_title"),
+            title: i18n.t("ui.reuse.docs"),
             subtitle: i18n.t("ui.app.docs.page_subtitle"),
         },
         toolbar: [

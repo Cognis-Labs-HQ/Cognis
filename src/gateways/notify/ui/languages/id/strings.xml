@@ -1,0 +1,12 @@
+<resources>
+  <string name="gateway.notify.admin.debug_target_user">Pengguna Target</string>
+  <string name="gateway.notify.admin.debug_category">Jenis Notifikasi</string>
+  <string name="gateway.notify.admin.debug_subject_placeholder">Subjek notifikasi</string>
+  <string name="gateway.notify.admin.debug_body_placeholder">Isi notifikasi</string>
+  <string name="gateway.notify.admin.debug_send">Kirim Notifikasi</string>
+  <string name="gateway.notify.admin.debug_sent">Notifikasi terkirim.</string>
+  <string name="gateway.notify.admin.debug_send_failed">Gagal mengirim notifikasi.</string>
+  <string name="gateway.notify.admin.debug_missing_fields">Harap isi semua kolom sebelum mengirim.</string>
+  <string name="gateway.notify.admin.debug_no_users">Tidak ada pengguna ditemukan.</string>
+  <string name="gateway.notify.admin.debug_no_categories">Tidak ada kategori notifikasi terdaftar.</string>
+</resources>

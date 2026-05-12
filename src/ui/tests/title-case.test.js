@@ -29,7 +29,6 @@ function isTitleCase(text) {
 const TITLE_CASE_PATTERNS = [
     (key) => key.endsWith(".title") && !key.endsWith("page_title"),
     (key) => key.endsWith("page_title"),
-    (key) => key.startsWith("ui.reuse.menu."),
 ];
 
 test("English headings and titles use Title Case", () => {
