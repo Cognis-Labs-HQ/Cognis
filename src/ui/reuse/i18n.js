@@ -264,9 +264,11 @@ export function applyStaticTranslations(i18n, root = document) {
 }
 
 /**
- * Produces a new i18n resolver that has all core strings from `baseI18n`
- * plus additional component-specific strings loaded from `stringsBaseUrl`.
- * Falls back to the English file if the locale-specific file is missing.
+ * Returns a new i18n resolver backed by `baseI18n` for core strings, with
+ * component-specific strings loaded from `stringsBaseUrl` taking precedence.
+ * Component strings are kept in a separate map; base strings are accessed via
+ * `baseI18n.t()` at lookup time. Falls back to the English file when the
+ * locale-specific component file is missing.
  *
  * @param {{ locale: string, t: Function }} baseI18n
  * @param {string|null|undefined} stringsBaseUrl - Base URL for component strings
