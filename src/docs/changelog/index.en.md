@@ -8,7 +8,8 @@ easy to audit.
 
 ## Entry format
 
-- Filename: `<branch-name-without-copilot-prefix>.en.md`
+- Filename: `<branch-name-without-copilot-prefix>.en.md` (e.g. branch
+  `copilot/fix-auth-bug` maps to `fix-auth-bug.en.md`)
 - One file per PR
 - Include:
     - PR title

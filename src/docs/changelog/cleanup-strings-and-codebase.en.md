@@ -2,12 +2,11 @@
 
 ## Summary
 
-Performed a final pass for provider-related references and confirmed remaining
-matches are expected within DB adapters/gateway implementations,
-provider-specific tests, and provider documentation.
+Updated changelog filename policy to use the branch name without the
+`copilot/` prefix and renamed this changelog entry accordingly.
 
-Migrated changelog policy from a monolithic root `CHANGELOG.md` to per-PR
-entries under `src/docs/changelog/`.
+Aligned changelog documentation links and guidance with the branch-name-based
+entry filename convention.
 
 ## Changed components and files
 
