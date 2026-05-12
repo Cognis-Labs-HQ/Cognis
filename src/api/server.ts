@@ -6,6 +6,7 @@ import {
     type GatewayRegistry,
     type BootstrapLog,
     type ModuleRuntimeGateway,
+    type CapabilityStore,
 } from "@cognis/core";
 import { createModuleRoutes } from "./routes/modules/index.js";
 import { createSystemRoutes } from "./routes/system/index.js";
@@ -26,6 +27,7 @@ export interface ApiDependencies {
     routeRegistry?: RouteRegistry;
     gatewayRegistry?: GatewayRegistry;
     uiRegistry?: UIRegistry;
+    capabilities?: CapabilityStore;
     log?: BootstrapLog;
     moduleIntegrityChecker?: () => Promise<
         Array<{
@@ -78,6 +80,9 @@ export function buildServer(deps: ApiDependencies) {
         deps.moduleRuntimeGateway,
         (moduleId) => enabledModules.has(moduleId),
         log,
+        {
+            capabilities: deps.capabilities,
+        },
     );
 
     const moduleRoutes = createModuleRoutes(moduleService, {

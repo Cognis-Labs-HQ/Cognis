@@ -483,6 +483,7 @@ export function createUiRoutes(
 
             for (const manifest of manifests) {
                 if (!manifest.entrypoints?.ui) continue;
+                if (isModuleEnabled && !isModuleEnabled(manifest.id)) continue;
 
                 try {
                     const routeFile = path.resolve(
@@ -624,11 +625,24 @@ export function createUiRoutes(
             req.method === "GET"
         ) {
             if (!requireAuth(req, res, "user")) return true;
-            const plugins = (uiRegistry?.listNavbarPlugins() ?? []).filter(
+            const gatewayPlugins = (uiRegistry?.listNavbarPlugins() ?? []).filter(
                 (plugin) => !plugin.isEnabled || plugin.isEnabled(),
             );
+            const modulePlugins = runtime
+                ? (await runtime.listManifests())
+                      .filter((manifest) =>
+                          isModuleEnabled ? isModuleEnabled(manifest.id) : true,
+                      )
+                      .flatMap((manifest) =>
+                          (manifest.ui?.navbarPlugins ?? [])
+                              .filter((entry) => typeof entry === "string")
+                              .map((entry) => ({
+                                  scriptUrl: `/static/modules/${manifest.id}/${entry.replace(/^\.?\//, "")}`,
+                              })),
+                      )
+                : [];
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: plugins }));
+            res.end(JSON.stringify({ data: [...gatewayPlugins, ...modulePlugins] }));
             return true;
         }
 
@@ -728,6 +742,32 @@ export function createUiRoutes(
                     resolveContentType(resolved.relPath),
                 );
                 return true;
+            }
+            const slashIndex = urlPath.indexOf("/");
+            if (slashIndex > 0) {
+                const moduleId = urlPath.slice(0, slashIndex);
+                const relPath = urlPath.slice(slashIndex + 1);
+                if (
+                    (!isModuleEnabled || isModuleEnabled(moduleId)) &&
+                    /^[a-zA-Z0-9_./-]+$/.test(relPath) &&
+                    !relPath.includes("..") &&
+                    !relPath.includes("//") &&
+                    !relPath.split("/").some((segment) => segment.startsWith("."))
+                ) {
+                    const filePath = path.join(MODULES_ROOT, moduleId, relPath);
+                    await serveFile(
+                        res,
+                        filePath,
+                        resolveContentType(relPath),
+                        log,
+                        {
+                            path: url.pathname,
+                            method: req.method ?? "GET",
+                            moduleId,
+                        },
+                    );
+                    return true;
+                }
             }
             res.writeHead(404, { "content-type": "application/json" });
             res.end(

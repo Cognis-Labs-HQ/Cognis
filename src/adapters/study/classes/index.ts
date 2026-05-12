@@ -93,6 +93,15 @@ export async function bootstrapStudyAdapter(
 
     adapterReady = true;
 
+    ctx.capabilities.contribute("study:classrooms", {
+        getClassroom: (classroomId: string) => store.getClassroom(classroomId),
+        listClassroomMembers: (classroomId: string) =>
+            store.listClassroomMembers(classroomId),
+        listClassroomsForTeacher: (teacherAccountId: string) =>
+            store.listClassroomsForTeacher(teacherAccountId),
+        listClassrooms: () => store.listClassrooms(),
+    });
+
     const isEnabled = () => ctx.isAdapterEnabled();
     const preferenceStore =
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");

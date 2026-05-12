@@ -1,0 +1,23 @@
+<resources>
+  <string name="module.jitsi_meet.page_title">Meetings</string>
+  <string name="module.jitsi_meet.page_subtitle">Create private or classroom meetings and launch Jitsi securely.</string>
+  <string name="module.jitsi_meet.meeting_panel">Meeting</string>
+  <string name="module.jitsi_meet.participants_panel">Participants</string>
+  <string name="module.jitsi_meet.chat_panel">Chat</string>
+  <string name="module.jitsi_meet.refresh_session">Refresh Session</string>
+  <string name="module.jitsi_meet.open_new_tab">Open in New Tab</string>
+  <string name="module.jitsi_meet.restart_meeting">Restart Meeting</string>
+  <string name="module.jitsi_meet.search_users">Search users</string>
+  <string name="module.jitsi_meet.classroom_id">Classroom ID (optional)</string>
+  <string name="module.jitsi_meet.start_meeting">Start Meeting</string>
+  <string name="module.jitsi_meet.available_users">Eligible Users</string>
+  <string name="module.jitsi_meet.selected_users">Meeting Participants</string>
+  <string name="module.jitsi_meet.drag_hint">Drag users between lists to include or remove them.</string>
+  <string name="module.jitsi_meet.chat_ready">Linked chat room is ready.</string>
+  <string name="module.jitsi_meet.chat_open">Open Chat Room</string>
+  <string name="module.jitsi_meet.chat_unavailable">Messages adapter is unavailable or no chat room is linked yet.</string>
+  <string name="module.jitsi_meet.password_title">Moderator Password Required</string>
+  <string name="module.jitsi_meet.password_label">Enter the moderator password required by this Jitsi instance.</string>
+  <string name="module.jitsi_meet.password_submit">Submit</string>
+  <string name="module.jitsi_meet.no_session">No active meeting session. Create a meeting to begin.</string>
+</resources>

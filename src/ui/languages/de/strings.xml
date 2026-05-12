@@ -2,6 +2,7 @@
   <string name="ui.shared.brand.name">Cognis</string>
   <string name="ui.reuse.dashboard">Dashboard</string>
   <string name="ui.reuse.messages">Nachrichten</string>
+  <string name="ui.reuse.meetings">Besprechungen</string>
   <string name="ui.reuse.study">Lernen</string>
   <string name="ui.reuse.profile">Profil</string>
   <string name="ui.reuse.settings">Einstellungen</string>

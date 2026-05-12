@@ -1,0 +1,23 @@
+<resources>
+  <string name="module.jitsi_meet.page_title">Rapat</string>
+  <string name="module.jitsi_meet.page_subtitle">Buat rapat privat atau kelas dan jalankan Jitsi dengan aman.</string>
+  <string name="module.jitsi_meet.meeting_panel">Rapat</string>
+  <string name="module.jitsi_meet.participants_panel">Peserta</string>
+  <string name="module.jitsi_meet.chat_panel">Obrolan</string>
+  <string name="module.jitsi_meet.refresh_session">Segarkan Sesi</string>
+  <string name="module.jitsi_meet.open_new_tab">Buka di Tab Baru</string>
+  <string name="module.jitsi_meet.restart_meeting">Mulai Ulang Rapat</string>
+  <string name="module.jitsi_meet.search_users">Cari pengguna</string>
+  <string name="module.jitsi_meet.classroom_id">ID kelas (opsional)</string>
+  <string name="module.jitsi_meet.start_meeting">Mulai Rapat</string>
+  <string name="module.jitsi_meet.available_users">Pengguna yang Memenuhi Syarat</string>
+  <string name="module.jitsi_meet.selected_users">Peserta Rapat</string>
+  <string name="module.jitsi_meet.drag_hint">Seret pengguna antar daftar untuk menambahkan atau menghapus mereka.</string>
+  <string name="module.jitsi_meet.chat_ready">Ruang obrolan tertaut sudah siap.</string>
+  <string name="module.jitsi_meet.chat_open">Buka Ruang Obrolan</string>
+  <string name="module.jitsi_meet.chat_unavailable">Adapter pesan tidak tersedia atau belum ada ruang obrolan yang tertaut.</string>
+  <string name="module.jitsi_meet.password_title">Kata Sandi Moderator Diperlukan</string>
+  <string name="module.jitsi_meet.password_label">Masukkan kata sandi moderator yang diminta oleh instance Jitsi ini.</string>
+  <string name="module.jitsi_meet.password_submit">Kirim</string>
+  <string name="module.jitsi_meet.no_session">Tidak ada sesi rapat aktif. Buat rapat untuk memulai.</string>
+</resources>

@@ -477,6 +477,17 @@ function initSearchBar(i18n) {
                 label: i18n.t("ui.reuse.messages"),
                 url: "/messages",
             },
+            ...(document
+                .querySelector("[data-meetings-link]")
+                ?.hasAttribute("hidden")
+                ? []
+                : [
+                      {
+                          id: "page-meetings",
+                          label: i18n.t("ui.reuse.meetings"),
+                          url: "/meetings",
+                      },
+                  ]),
             {
                 id: "page-settings",
                 label: i18n.t("ui.reuse.settings"),

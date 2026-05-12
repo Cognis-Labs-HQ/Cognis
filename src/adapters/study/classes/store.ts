@@ -59,6 +59,21 @@ export interface StudyPreferencesRow {
     updatedAt: string;
 }
 
+export interface ClassroomRow {
+    id: string;
+    title: string;
+    teacherAccountId: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ClassroomMemberRow {
+    classroomId: string;
+    accountId: string;
+    role: "teacher" | "student";
+    joinedAt: string;
+}
+
 export class DbClassesStore {
     constructor(private readonly db: DbExecutor) {}
 
@@ -150,6 +165,60 @@ export class DbClassesStore {
         });
 
         await this.ensureStudyLanguagesSchema();
+
+        await this.db.ensureTable({
+            name: "study_classrooms",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                { name: "title", type: "text", notNull: true },
+                { name: "teacher_account_id", type: "text", notNull: true },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+                {
+                    name: "updated_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            indexes: [
+                {
+                    columns: ["teacher_account_id"],
+                    name: "idx_study_classrooms_teacher",
+                },
+            ],
+        });
+
+        await this.db.ensureTable({
+            name: "study_classroom_members",
+            columns: [
+                { name: "classroom_id", type: "text", notNull: true },
+                { name: "account_id", type: "text", notNull: true },
+                {
+                    name: "role",
+                    type: "text",
+                    notNull: true,
+                    default: "student",
+                },
+                {
+                    name: "joined_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            primaryKey: ["classroom_id", "account_id"],
+            indexes: [
+                {
+                    columns: ["account_id"],
+                    name: "idx_study_classroom_members_account",
+                },
+            ],
+        });
     }
 
     async ensureStudyLanguagesSchema(): Promise<void> {
@@ -625,5 +694,72 @@ export class DbClassesStore {
                 { column: "status", value: "pending" },
             ],
         });
+    }
+
+    private rowToClassroom(row: Record<string, unknown>): ClassroomRow {
+        return {
+            id: String(row.id),
+            title: String(row.title),
+            teacherAccountId: String(row.teacher_account_id),
+            createdAt: String(row.created_at),
+            updatedAt: String(row.updated_at),
+        };
+    }
+
+    async getClassroom(classroomId: string): Promise<ClassroomRow | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_classrooms",
+            columns: ["id", "title", "teacher_account_id", "created_at", "updated_at"],
+            where: [{ column: "id", value: classroomId }],
+            limit: 1,
+        });
+        const row = result.rows?.[0];
+        if (!row) return null;
+        return this.rowToClassroom(row as Record<string, unknown>);
+    }
+
+    async listClassroomMembers(classroomId: string): Promise<ClassroomMemberRow[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_classroom_members",
+            columns: ["classroom_id", "account_id", "role", "joined_at"],
+            where: [{ column: "classroom_id", value: classroomId }],
+            orderBy: [{ column: "joined_at", direction: "ASC" }],
+        });
+        return (result.rows ?? []).map((row) => ({
+            classroomId: String(row.classroom_id),
+            accountId: String(row.account_id),
+            role:
+                String(row.role) === "teacher" || String(row.role) === "student"
+                    ? (String(row.role) as "teacher" | "student")
+                    : "student",
+            joinedAt: String(row.joined_at),
+        }));
+    }
+
+    async listClassroomsForTeacher(teacherAccountId: string): Promise<ClassroomRow[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_classrooms",
+            columns: ["id", "title", "teacher_account_id", "created_at", "updated_at"],
+            where: [{ column: "teacher_account_id", value: teacherAccountId }],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+        });
+        return (result.rows ?? []).map((row) =>
+            this.rowToClassroom(row as Record<string, unknown>),
+        );
+    }
+
+    async listClassrooms(): Promise<ClassroomRow[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "study_classrooms",
+            columns: ["id", "title", "teacher_account_id", "created_at", "updated_at"],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+        });
+        return (result.rows ?? []).map((row) =>
+            this.rowToClassroom(row as Record<string, unknown>),
+        );
     }
 }

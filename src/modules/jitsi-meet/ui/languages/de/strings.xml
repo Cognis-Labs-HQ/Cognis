@@ -1,0 +1,23 @@
+<resources>
+  <string name="module.jitsi_meet.page_title">Besprechungen</string>
+  <string name="module.jitsi_meet.page_subtitle">Erstellen Sie private oder Klassen-Besprechungen und starten Sie Jitsi sicher.</string>
+  <string name="module.jitsi_meet.meeting_panel">Besprechung</string>
+  <string name="module.jitsi_meet.participants_panel">Teilnehmende</string>
+  <string name="module.jitsi_meet.chat_panel">Chat</string>
+  <string name="module.jitsi_meet.refresh_session">Sitzung Aktualisieren</string>
+  <string name="module.jitsi_meet.open_new_tab">In Neuem Tab Öffnen</string>
+  <string name="module.jitsi_meet.restart_meeting">Besprechung Neu Starten</string>
+  <string name="module.jitsi_meet.search_users">Benutzer suchen</string>
+  <string name="module.jitsi_meet.classroom_id">Klassenraum-ID (optional)</string>
+  <string name="module.jitsi_meet.start_meeting">Besprechung Starten</string>
+  <string name="module.jitsi_meet.available_users">Berechtigte Benutzer</string>
+  <string name="module.jitsi_meet.selected_users">Besprechungsteilnehmende</string>
+  <string name="module.jitsi_meet.drag_hint">Ziehen Sie Benutzer zwischen den Listen, um sie hinzuzufügen oder zu entfernen.</string>
+  <string name="module.jitsi_meet.chat_ready">Verknüpfter Chatraum ist bereit.</string>
+  <string name="module.jitsi_meet.chat_open">Chatraum Öffnen</string>
+  <string name="module.jitsi_meet.chat_unavailable">Nachrichten-Adapter ist nicht verfügbar oder noch kein Chatraum verknüpft.</string>
+  <string name="module.jitsi_meet.password_title">Moderator-Passwort Erforderlich</string>
+  <string name="module.jitsi_meet.password_label">Geben Sie das von dieser Jitsi-Instanz geforderte Moderator-Passwort ein.</string>
+  <string name="module.jitsi_meet.password_submit">Senden</string>
+  <string name="module.jitsi_meet.no_session">Keine aktive Besprechungssitzung. Erstellen Sie eine Besprechung, um zu beginnen.</string>
+</resources>

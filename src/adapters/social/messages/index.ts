@@ -119,6 +119,34 @@ export async function bootstrapSocialAdapter(
         component: "social-messages-adapter",
     });
 
+    ctx.capabilities.contribute("messages:createRoom", {
+        createRoom: async ({
+            kind,
+            title,
+            createdBy,
+            memberAccountIds,
+        }: {
+            kind: "dm" | "group" | "classroom";
+            title: string | null;
+            createdBy: string;
+            memberAccountIds: string[];
+        }) => {
+            const room = await messagesStore.createRoom(kind, title, createdBy);
+            const uniqueMembers = Array.from(
+                new Set([createdBy, ...memberAccountIds]),
+            );
+            for (const memberAccountId of uniqueMembers) {
+                await messagesStore.addMember(
+                    room.id,
+                    memberAccountId,
+                    memberAccountId === createdBy ? "owner" : "member",
+                );
+            }
+            await messagesStore.generateAndStoreRoomKey(room.id);
+            return room;
+        },
+    });
+
     const dispatch =
         ctx.capabilities.get<
             (e: {

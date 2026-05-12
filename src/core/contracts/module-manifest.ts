@@ -22,6 +22,7 @@ export interface ModuleManifest {
     };
     ui?: {
         authTypingMessages?: string[];
+        navbarPlugins?: string[];
     };
     files?: Array<{
         path: string;

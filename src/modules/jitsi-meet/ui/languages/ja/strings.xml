@@ -1,0 +1,23 @@
+<resources>
+  <string name="module.jitsi_meet.page_title">ミーティング</string>
+  <string name="module.jitsi_meet.page_subtitle">プライベートまたは教室ミーティングを作成し、安全に Jitsi を開始します。</string>
+  <string name="module.jitsi_meet.meeting_panel">ミーティング</string>
+  <string name="module.jitsi_meet.participants_panel">参加者</string>
+  <string name="module.jitsi_meet.chat_panel">チャット</string>
+  <string name="module.jitsi_meet.refresh_session">セッションを更新</string>
+  <string name="module.jitsi_meet.open_new_tab">新しいタブで開く</string>
+  <string name="module.jitsi_meet.restart_meeting">ミーティングを再開</string>
+  <string name="module.jitsi_meet.search_users">ユーザーを検索</string>
+  <string name="module.jitsi_meet.classroom_id">教室 ID（任意）</string>
+  <string name="module.jitsi_meet.start_meeting">ミーティングを開始</string>
+  <string name="module.jitsi_meet.available_users">対象ユーザー</string>
+  <string name="module.jitsi_meet.selected_users">ミーティング参加者</string>
+  <string name="module.jitsi_meet.drag_hint">ユーザーをリスト間でドラッグして追加または削除します。</string>
+  <string name="module.jitsi_meet.chat_ready">連携チャットルームの準備が完了しました。</string>
+  <string name="module.jitsi_meet.chat_open">チャットルームを開く</string>
+  <string name="module.jitsi_meet.chat_unavailable">メッセージアダプターが利用できないか、まだチャットルームが連携されていません。</string>
+  <string name="module.jitsi_meet.password_title">モデレーターパスワードが必要です</string>
+  <string name="module.jitsi_meet.password_label">この Jitsi インスタンスで要求されるモデレーターパスワードを入力してください。</string>
+  <string name="module.jitsi_meet.password_submit">送信</string>
+  <string name="module.jitsi_meet.no_session">アクティブなミーティングセッションがありません。開始するにはミーティングを作成してください。</string>
+</resources>

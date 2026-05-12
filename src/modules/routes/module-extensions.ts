@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
+import type { CapabilityStore } from "@cognis/core";
 import path from "node:path";
 
 interface RouteHandler {
@@ -21,10 +22,17 @@ export interface ModuleExtensionRoutes {
     refresh(): Promise<void>;
 }
 
+export interface ModuleApiRouteContext {
+    capabilities?: CapabilityStore;
+    isModuleEnabled?: (moduleId: string) => boolean;
+    log?: BootstrapLog;
+}
+
 export function createModuleExtensionRoutes(
     runtime: ModuleRuntimeGateway,
     isModuleEnabled: (moduleId: string) => boolean,
     log?: BootstrapLog,
+    context: ModuleApiRouteContext = {},
 ): ModuleExtensionRoutes {
     let handlers: RouteHandler[] = [];
     const modulesRoot =
@@ -44,6 +52,11 @@ export function createModuleExtensionRoutes(
             try {
                 const plugin = await import(`${pluginPath}?t=${Date.now()}`);
                 if (typeof plugin.registerApiRoutes === "function") {
+                    const moduleContext: ModuleApiRouteContext = {
+                        ...context,
+                        isModuleEnabled,
+                        log,
+                    };
                     plugin.registerApiRoutes({
                         get(
                             routePath: string,
@@ -67,7 +80,7 @@ export function createModuleExtensionRoutes(
                                 handler,
                             });
                         },
-                    });
+                    }, moduleContext);
                 }
             } catch (error) {
                 log?.("error", "Failed to load module API route plugin.", {
