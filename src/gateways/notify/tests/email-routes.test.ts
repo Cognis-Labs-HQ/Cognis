@@ -477,6 +477,38 @@ test("verify-tokens/status returns pending:false after token is consumed", async
     assert.equal(data.data.pending, false);
 });
 
+test("owner can list another user's emails", async () => {
+    const notifStore = await makeNotifStore();
+    await notifStore.addUserEmail("alice", "alice@example.com");
+
+    const tfaService = new TfaCodeService(new InMemoryTfaStore());
+    const verifyTokenService = new VerifyTokenService(
+        new InMemoryVerifyTokenStore(),
+    );
+    const gateway = makeGateway();
+    const ownerToken = issueAccessToken("owner-account", "owner", 60);
+
+    const route = createUserEmailRoutes(
+        notifStore,
+        tfaService,
+        verifyTokenService,
+        gateway,
+    );
+    const res = makeResponse();
+
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${ownerToken}` },
+        } as any,
+        res,
+        new URL("http://localhost/api/v1/users/alice/emails"),
+    );
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
+    assert.equal(data.data.length, 1);
+});
+
 test("verify-tokens/status returns pending:false for an unknown token", async () => {
     const notifStore = await makeNotifStore();
     const tfaService = new TfaCodeService(new InMemoryTfaStore());

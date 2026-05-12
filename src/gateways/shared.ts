@@ -13,6 +13,8 @@
  *   - getAuthClaims            Extracts validated claims from an authenticated request.
  *   - getCookieSession         Reads the access token from the request cookie.
  *   - setPageSecurityHeaders   Writes security headers on HTML page responses.
+ *   - hasMinRole               Returns true when a role meets or exceeds the minimum required rank.
+ *   - canAccessUserData        Returns true when the caller may access a target user's data.
  *   - readJson                 Parses the request body as JSON.
  *
  * @example
@@ -33,5 +35,7 @@ export {
     getAuthClaims,
     getCookieSession,
     setPageSecurityHeaders,
+    hasMinRole,
+    canAccessUserData,
 } from "./auth/guard.js";
 export { readJson } from "../api/reuse/read-json.js";

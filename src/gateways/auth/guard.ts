@@ -8,6 +8,29 @@ interface AuthClaims {
 
 const roleRank = { user: 1, teacher: 2, moderator: 3, admin: 4, owner: 5 };
 
+/**
+ * Returns true when the given role meets or exceeds the minimum required role.
+ * Uses the canonical role hierarchy: user < teacher < moderator < admin < owner.
+ */
+export function hasMinRole(
+    role: AccessRole,
+    minRole: keyof typeof roleRank,
+): boolean {
+    return roleRank[role] >= roleRank[minRole];
+}
+
+/**
+ * Returns true when the caller may read or write another user's data.
+ * Access is granted if the caller is the target user themselves, or if the
+ * caller holds at least admin rank (which includes owner).
+ */
+export function canAccessUserData(
+    claims: { sub: string; role: AccessRole },
+    targetUsername: string,
+): boolean {
+    return claims.sub === targetUsername || hasMinRole(claims.role, "admin");
+}
+
 export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
     const raw = req.headers.authorization;
     if (!raw?.startsWith("Bearer ")) return null;

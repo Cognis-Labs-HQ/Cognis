@@ -575,3 +575,25 @@ test("GET /api/v1/notifications/providers/:id/config returns empty requiredField
     const body = JSON.parse(res.payload);
     assert.deepEqual(body.requiredFields, []);
 });
+
+test("GET /api/v1/users/:username/notification-prefs returns 200 for owner accessing another user", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    const route = createNotificationRoutes(gateway);
+    const ownerToken = issueAccessToken("owner-account", "owner", 60);
+    const res = makeResponse();
+
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${ownerToken}` },
+            [Symbol.asyncIterator]: async function* () {},
+        } as any,
+        res,
+        new URL("http://localhost/api/v1/users/alice/notification-prefs"),
+    );
+
+    assert.equal(res.status, 200);
+    const data = JSON.parse(res.payload);
+    assert.deepEqual(data.data, []);
+});

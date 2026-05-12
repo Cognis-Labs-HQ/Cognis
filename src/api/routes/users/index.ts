@@ -1,7 +1,11 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog } from "@cognis/core";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
-import { getAuthClaims, requireAuth } from "../../../gateways/auth/guard.js";
+import {
+    getAuthClaims,
+    requireAuth,
+    canAccessUserData,
+} from "../../../gateways/auth/guard.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 import { readJson } from "../../reuse/read-json.js";
 import { revokeAccessTokensForSubject } from "../../../gateways/auth/access-tokens.js";
@@ -63,11 +67,7 @@ export function createUserRoutes(
                 return true;
             }
             const target = decodeURIComponent(infoMatch[1]);
-            if (
-                claims.sub !== target &&
-                claims.role !== "admin" &&
-                claims.role !== "owner"
-            ) {
+            if (!canAccessUserData(claims, target)) {
                 log?.("warn", "Blocked unauthorized user info lookup.", {
                     ...logMeta,
                     accountId: claims.sub,

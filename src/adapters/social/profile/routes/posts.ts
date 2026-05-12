@@ -1,5 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth, getAuthClaims } from "../../../../gateways/auth/guard.js";
+import {
+    requireAuth,
+    getAuthClaims,
+    hasMinRole,
+} from "../../../../gateways/auth/guard.js";
 import type {
     DbProfileStore,
     AccountProfile,
@@ -163,8 +167,7 @@ export function createPostRoutes(profileStore: DbProfileStore) {
             }
             if (
                 post.accountId !== claims.sub &&
-                claims.role !== "admin" &&
-                claims.role !== "moderator"
+                !hasMinRole(claims.role, "moderator")
             ) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
