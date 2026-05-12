@@ -78,3 +78,28 @@ File-file inti yang salah lokasi dipindahkan ke lokasi pemilik kanoniknya. Utili
 - [34fc21c](https://github.com/le-firehawk/Cognis/commit/34fc21c)
 - [47a2c1a](https://github.com/le-firehawk/Cognis/commit/47a2c1a)
 - [7916873](https://github.com/le-firehawk/Cognis/commit/7916873)
+
+---
+
+## Pass 3 — Perlindungan Nonaktif Gateway, Perbaikan Modul Jepang, Instruksi AI
+
+### Ringkasan
+
+Memperbaiki regresi di mana bagian pengaturan dan plugin navbar Study gateway tetap terlihat di UI setelah gateway dinonaktifkan. `isEnabled` ditambahkan ke antarmuka `SettingsSection` sesuai dengan predikat yang sudah ada pada `NavbarPlugin`, dan endpoint `GET /api/v1/ui/settings-sections` kini memfilter bagian saat merespons.
+
+Mengembalikan modul bahasa Jepang dalam daftar modul administrasi. Sesi sebelumnya menghapus stub `src/modules/study-language-ja/` tanpa memperluas pemindai bootstrap ke jalur manifest asli di `src/modules/study/languages/ja/`; pemindai kini juga membaca jalur tersebut.
+
+Instruksi kontributor AI diperkuat: bagian baru "Kebersihan codebase adalah hal utama" menegaskan bahwa kode yang tidak sesuai tidak pernah dapat diterima dan semua umpan balik yang menunjuk pelanggaran harus ditindaklanjuti.
+
+### File yang Diubah
+
+- `.github/copilot-instructions.md` — Mandat kebersihan codebase ditambahkan.
+- `src/api/ui-registry.ts` — `isEnabled` ditambahkan ke `SettingsSection`.
+- `src/api/routes/ui/index.ts` — Respons bagian pengaturan difilter berdasarkan `isEnabled`.
+- `src/gateways/study/bootstrap.ts` — Bagian pengaturan dan plugin navbar dikontrol melalui predikat `isEnabled`.
+- `src/api/main.ts` — Bootstrap juga memindai `study/languages/` untuk manifest modul bahasa.
+- `src/api/tests/ui/ui-routes.test.ts` — Tiga pengujian baru untuk endpoint bagian pengaturan.
+
+### Commit Pass 3
+
+- [f4aa63b](https://github.com/le-firehawk/Cognis/commit/f4aa63b)

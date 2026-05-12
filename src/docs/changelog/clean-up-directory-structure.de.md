@@ -81,3 +81,28 @@ Weitere fehlerplatzierte Core-Dateien wurden an ihren kanonischen Eigentümerort
 - [34fc21c](https://github.com/le-firehawk/Cognis/commit/34fc21c)
 - [47a2c1a](https://github.com/le-firehawk/Cognis/commit/47a2c1a)
 - [7916873](https://github.com/le-firehawk/Cognis/commit/7916873)
+
+---
+
+## Pass 3 — Gateway-Deaktivierungsschutz, Japan-Modul-Fix, KI-Anweisungen
+
+### Zusammenfassung
+
+Eine Regression wurde behoben, bei der der Einstellungsbereich und das Navbar-Plugin des Study-Gateways auch nach der Deaktivierung des Gateways noch sichtbar blieben. Das Interface `SettingsSection` wurde um `isEnabled` ergänzt — analog zum bestehenden Prädikat bei `NavbarPlugin`. Der Endpunkt `GET /api/v1/ui/settings-sections` filtert Bereiche nun bei der Antwort.
+
+Das japanische Sprachmodul erscheint wieder in der Modulliste der Administration. Die vorherige Sitzung entfernte den Stub `src/modules/study-language-ja/`, ohne den Bootstrap-Scanner auf den echten Manifest-Pfad `src/modules/study/languages/ja/` auszuweiten; der Scanner liest diesen Pfad nun ebenfalls.
+
+Die KI-Beitragsinstruktionen wurden gestärkt: Ein neuer Abschnitt „Sauberkeit des Codebases ist oberstes Gebot" stellt klar, dass nicht-konformer Code nie akzeptabel ist und jedes Feedback, das auf Verstöße hinweist, umzusetzen ist.
+
+### Geänderte Dateien
+
+- `.github/copilot-instructions.md` — Neues Gebot zur Codebase-Sauberkeit.
+- `src/api/ui-registry.ts` — `isEnabled` zu `SettingsSection` hinzugefügt.
+- `src/api/routes/ui/index.ts` — Einstellungsbereiche werden nach `isEnabled` gefiltert.
+- `src/gateways/study/bootstrap.ts` — Einstellungsbereich und Navbar-Plugin über `isEnabled`-Prädikat gesteuert.
+- `src/api/main.ts` — Bootstrap scannt auch `study/languages/` nach Sprachmodul-Manifesten.
+- `src/api/tests/ui/ui-routes.test.ts` — Drei neue Tests für den Einstellungsbereiche-Endpunkt.
+
+### Pass-3-Commits
+
+- [f4aa63b](https://github.com/le-firehawk/Cognis/commit/f4aa63b)

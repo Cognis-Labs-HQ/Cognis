@@ -55,13 +55,29 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
         const modulesRoot =
             process.env.COGNIS_MODULES_ROOT ??
             path.resolve(process.cwd(), "src", "modules");
-        try {
-            const dirEntries = await readdir(modulesRoot, {
-                withFileTypes: true,
-            });
+
+        async function scanManifestDir(dir: string): Promise<void> {
+            let dirEntries: Awaited<ReturnType<typeof readdir>>;
+            try {
+                dirEntries = await readdir(dir, { withFileTypes: true });
+            } catch (error) {
+                writeConsoleLog(
+                    "error",
+                    "Failed to scan modules directory during bootstrap.",
+                    {
+                        component: "api-bootstrap",
+                        dir,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    },
+                );
+                return;
+            }
             for (const dirEntry of dirEntries.filter((e) => e.isDirectory())) {
                 const manifestPath = path.join(
-                    modulesRoot,
+                    dir,
                     dirEntry.name,
                     "manifest.json",
                 );
@@ -90,18 +106,14 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                     );
                 }
             }
-        } catch (error) {
-            writeConsoleLog(
-                "error",
-                "Failed to scan modules directory during bootstrap.",
-                {
-                    component: "api-bootstrap",
-                    modulesRoot,
-                    error:
-                        error instanceof Error ? error.message : String(error),
-                },
-            );
         }
+
+        await scanManifestDir(modulesRoot);
+        // Study language modules live under study/languages/<code>/ and each
+        // carries its own manifest — scan that nested path so they appear in
+        // the modules list alongside top-level modules.
+        await scanManifestDir(path.join(modulesRoot, "study", "languages"));
+
         return new InMemoryModuleRuntimeGateway(manifests);
     }
 

@@ -159,6 +159,14 @@ When a comment introduces an alternative or fallback code path (e.g. a catch blo
 
 ## Code quality
 
+### Codebase cleanliness is paramount
+
+The cleanliness, consistency, and structural integrity of the codebase are non-negotiable. Every contribution must leave the codebase in at least as clean a state as it found it. Introducing non-conformant code — even as a temporary measure, even under time pressure, even when it "works" — is unacceptable.
+
+Any feedback that identifies non-conformant code, naming violations, structural inconsistencies, or deviations from these instructions must be acted on. Deferring or discarding such feedback is a quality failure, not a scope decision.
+
+When you discover that a change you are making would introduce non-conformant code, stop and fix the design before proceeding. If an existing file you are editing already contains violations, fix those too while you are in that file.
+
 ### Mission and review feedback
 
 Your mission is to make Cognis the best it can possibly be within the user's request and these instructions. Treat review suggestions as a serious part of that mission, not as noise to be waved away.

@@ -78,3 +78,28 @@ CSSスタイルシートを `src/ui/` から各アダプター・ゲートウェ
 - [34fc21c](https://github.com/le-firehawk/Cognis/commit/34fc21c)
 - [47a2c1a](https://github.com/le-firehawk/Cognis/commit/47a2c1a)
 - [7916873](https://github.com/le-firehawk/Cognis/commit/7916873)
+
+---
+
+## パス3 — ゲートウェイ無効化ガード・日本語モジュール修正・AI指示
+
+### 概要
+
+Study ゲートウェイを無効化した後も、設定セクションとナビバープラグインがUI上に表示されたままになる回帰を修正しました。`NavbarPlugin` に既存のプレディケートに合わせて `isEnabled` を `SettingsSection` インターフェースに追加し、`GET /api/v1/ui/settings-sections` エンドポイントがレスポンス時にセクションをフィルタリングするようにしました。
+
+管理画面のモジュール一覧に日本語言語モジュールを復元しました。前回のセッションで `src/modules/study-language-ja/` スタブを削除した際、実際のマニフェストパス `src/modules/study/languages/ja/` へのスキャンを拡張しなかったため、スキャナーがそのパスも読み込むよう修正しました。
+
+AIコントリビューター向け指示を強化しました。新設した「コードベースの清潔さは最優先事項」セクションで、非適合コードの導入は一切許容されず、違反を指摘するすべてのフィードバックへの対応が必須であることを明記しました。
+
+### 変更ファイル
+
+- `.github/copilot-instructions.md` — コードベース清潔性の義務を追加。
+- `src/api/ui-registry.ts` — `SettingsSection` に `isEnabled` を追加。
+- `src/api/routes/ui/index.ts` — 設定セクションのレスポンスを `isEnabled` でフィルタリング。
+- `src/gateways/study/bootstrap.ts` — 設定セクションとナビバープラグインを `isEnabled` プレディケートで制御。
+- `src/api/main.ts` — Bootstrap が `study/languages/` も言語モジュールマニフェストとしてスキャン。
+- `src/api/tests/ui/ui-routes.test.ts` — 設定セクションエンドポイントの新テスト3件追加。
+
+### パス3コミット
+
+- [f4aa63b](https://github.com/le-firehawk/Cognis/commit/f4aa63b)

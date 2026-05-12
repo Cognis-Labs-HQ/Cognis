@@ -607,10 +607,13 @@ export function createUiRoutes(
             req.method === "GET"
         ) {
             if (!requireAuth(req, res, "user")) return true;
+            const sections = (uiRegistry?.listSettingsSections() ?? []).filter(
+                (section) => !section.isEnabled || section.isEnabled(),
+            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
-                    data: uiRegistry?.listSettingsSections() ?? [],
+                    data: sections,
                 }),
             );
             return true;

@@ -207,9 +207,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         id: "study",
         label: "Study",
         scriptUrl: "/static/gateways/study/study-prefs.js",
+        isEnabled: () =>
+            ctx.gatewayRegistry.get("study")?.status !== "disabled",
     });
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/study/navbar.js",
+        isEnabled: () =>
+            ctx.gatewayRegistry.get("study")?.status !== "disabled",
     });
 
     ctx.routeRegistry.register(

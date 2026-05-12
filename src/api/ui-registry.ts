@@ -68,6 +68,8 @@ export interface SettingsSection {
      * and merge those strings into the i18n instance passed to this section.
      */
     stringsBaseUrl?: string;
+    /** Optional runtime predicate used to hide sections while their owner is disabled. */
+    isEnabled?: () => boolean;
 }
 
 export class UIRegistry {

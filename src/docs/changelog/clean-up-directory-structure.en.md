@@ -95,3 +95,28 @@ Continued co-location of misplaced core files. Auth token utilities (`access-tok
 - [34fc21c](https://github.com/le-firehawk/Cognis/commit/34fc21c)
 - [47a2c1a](https://github.com/le-firehawk/Cognis/commit/47a2c1a)
 - [7916873](https://github.com/le-firehawk/Cognis/commit/7916873)
+
+---
+
+## Pass 3 — Gateway Disable Guard, Japanese Module Fix, AI Instructions
+
+### Summary
+
+Fixed a regression where the Study gateway's settings section and navbar plugin remained visible in the UI after the gateway was disabled. Added `isEnabled` support to the `SettingsSection` interface, mirroring the existing predicate on `NavbarPlugin`, and updated the `GET /api/v1/ui/settings-sections` route to filter sections at response time.
+
+Restored the Japanese language module in the administration modules list. The previous session removed the `src/modules/study-language-ja/` stub without extending the bootstrap scanner to find the real module manifest at `src/modules/study/languages/ja/`; the scanner now also reads that path.
+
+Strengthened the AI contributor instructions: a new "Codebase cleanliness is paramount" section makes explicit that introducing non-conformant code is never acceptable and that all review feedback pointing to violations must be acted on.
+
+### Changed Files
+
+- `.github/copilot-instructions.md` — Added codebase cleanliness mandate.
+- `src/api/ui-registry.ts` — `isEnabled` added to `SettingsSection`.
+- `src/api/routes/ui/index.ts` — Settings-sections response filtered by `isEnabled`.
+- `src/gateways/study/bootstrap.ts` — Settings section and navbar plugin gated by `isEnabled` predicate.
+- `src/api/main.ts` — Bootstrap also scans `study/languages/` for language module manifests.
+- `src/api/tests/ui/ui-routes.test.ts` — Three new tests for the settings-sections endpoint.
+
+### Pass 3 Commits
+
+- [f4aa63b](https://github.com/le-firehawk/Cognis/commit/f4aa63b)
