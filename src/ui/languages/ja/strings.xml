@@ -474,6 +474,7 @@
   <string name="module.study.classes.no_enrolled_classes">まだクラスに参加していません。</string>
   <string name="module.study.classes.available_classes">参加可能なクラス</string>
   <string name="module.study.classes.no_available_classes">参加できるクラスがありません。</string>
+  <string name="module.study.classes.load_failed">クラスの読み込みに失敗しました。もう一度お試しください。</string>
   <string name="module.study.classes.all_languages">すべての言語</string>
   <string name="module.study.classes.join_request">参加申請</string>
   <string name="module.study.classes.join_pending">申請中</string>

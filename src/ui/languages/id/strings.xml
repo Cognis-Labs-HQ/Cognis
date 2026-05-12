@@ -474,6 +474,7 @@
   <string name="module.study.classes.no_enrolled_classes">Anda belum terdaftar di kelas mana pun.</string>
   <string name="module.study.classes.available_classes">Kelas Tersedia</string>
   <string name="module.study.classes.no_available_classes">Tidak ada kelas yang tersedia untuk diikuti.</string>
+  <string name="module.study.classes.load_failed">Gagal memuat kelas. Silakan coba lagi.</string>
   <string name="module.study.classes.all_languages">Semua Bahasa</string>
   <string name="module.study.classes.join_request">Minta Bergabung</string>
   <string name="module.study.classes.join_pending">Permintaan Tertunda</string>

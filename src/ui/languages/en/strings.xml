@@ -474,6 +474,7 @@
   <string name="module.study.classes.no_enrolled_classes">You are not enrolled in any classes yet.</string>
   <string name="module.study.classes.available_classes">Available Classes</string>
   <string name="module.study.classes.no_available_classes">No classes available to join.</string>
+  <string name="module.study.classes.load_failed">Failed to load classes. Please try again.</string>
   <string name="module.study.classes.all_languages">All Languages</string>
   <string name="module.study.classes.join_request">Request to Join</string>
   <string name="module.study.classes.join_pending">Request Pending</string>

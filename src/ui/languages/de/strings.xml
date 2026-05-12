@@ -474,6 +474,7 @@
   <string name="module.study.classes.no_enrolled_classes">Sie sind noch in keiner Klasse eingeschrieben.</string>
   <string name="module.study.classes.available_classes">Verfügbare Klassen</string>
   <string name="module.study.classes.no_available_classes">Keine Klassen zum Beitreten verfügbar.</string>
+  <string name="module.study.classes.load_failed">Klassen konnten nicht geladen werden. Bitte versuche es erneut.</string>
   <string name="module.study.classes.all_languages">Alle Sprachen</string>
   <string name="module.study.classes.join_request">Beitritt beantragen</string>
   <string name="module.study.classes.join_pending">Antrag ausstehend</string>

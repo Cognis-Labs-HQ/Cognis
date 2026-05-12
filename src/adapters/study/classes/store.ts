@@ -543,10 +543,16 @@ export class DbClassesStore {
             String((row as Record<string, unknown>).class_id),
         );
         if (!classIds.length) return [];
-        const classRows = await Promise.all(
+        const classRows = await Promise.allSettled(
             classIds.map((id) => this.getClassById(id)),
         );
-        return classRows.filter((row): row is ClassRow => row !== null);
+        return classRows
+            .filter(
+                (result): result is PromiseFulfilledResult<ClassRow | null> =>
+                    result.status === "fulfilled",
+            )
+            .map((result) => result.value)
+            .filter((row): row is ClassRow => row !== null);
     }
 
     async getAvailableClasses(
@@ -802,7 +808,7 @@ export class DbClassesStore {
             ),
             createdAt: String((row as Record<string, unknown>).created_at),
         }));
-        const withCounts = await Promise.all(
+        const countResults = await Promise.allSettled(
             classes.map(async (cls) => {
                 const countResult = await this.db.executeCommand({
                     option: "SELECT",
@@ -823,7 +829,11 @@ export class DbClassesStore {
                 return { ...cls, memberCount };
             }),
         );
-        return withCounts;
+        return countResults.map((result) =>
+            result.status === "fulfilled"
+                ? result.value
+                : { ...classes[countResults.indexOf(result)], memberCount: 0 },
+        );
     }
 
     private async getMembership(

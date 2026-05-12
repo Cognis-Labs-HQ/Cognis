@@ -411,7 +411,7 @@ export async function mount(root, { signal } = {}) {
                             { variant: response.ok ? "success" : "error" },
                         );
                         if (response.ok) {
-                            await Promise.all([
+                            await Promise.allSettled([
                                 loadClasses(),
                                 loadManagePanel(classId),
                             ]);
@@ -507,7 +507,7 @@ export async function mount(root, { signal } = {}) {
                                 i18n.t("module.study.classes.invite_success"),
                                 { variant: "success" },
                             );
-                            await Promise.all([
+                            await Promise.allSettled([
                                 loadClasses(),
                                 loadManagePanel(classId),
                             ]);
