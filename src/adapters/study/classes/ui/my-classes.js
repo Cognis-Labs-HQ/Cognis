@@ -22,12 +22,6 @@ export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "module.study.classes.my_classes_page_title");
 
-    const storedRole = (localStorage.getItem("cognis_role") ?? "").trim();
-    if (storedRole === "teacher") {
-        navigateTo("/classes");
-        return;
-    }
-
     let enrolledClasses = [];
     let availableClasses = [];
     let selectedLanguageFilter = "";

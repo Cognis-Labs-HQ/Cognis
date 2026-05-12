@@ -24,7 +24,7 @@ export function createPageElement({ i18n, role }) {
             gridSize: { default: [6, 3], min: [3, 2] },
             render: () => `
       <h3>${escapeHtml(i18n.t("ui.app.dashboard.element.student_classes.label"))}</h3>
-      <p class="dashboard-teacher-classes-placeholder">
+      <p class="dashboard-classes-placeholder">
         ${escapeHtml(i18n.t("ui.app.dashboard.element.student_classes.cta"))}
       </p>
       <a href="/my-classes" class="btn-confirm btn-animated">${escapeHtml(i18n.t("ui.app.dashboard.element.student_classes.go"))}</a>

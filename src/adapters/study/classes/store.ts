@@ -543,12 +543,10 @@ export class DbClassesStore {
             String((row as Record<string, unknown>).class_id),
         );
         if (!classIds.length) return [];
-        const classes: ClassRow[] = [];
-        for (const classId of classIds) {
-            const classRow = await this.getClassById(classId);
-            if (classRow) classes.push(classRow);
-        }
-        return classes;
+        const classRows = await Promise.all(
+            classIds.map((id) => this.getClassById(id)),
+        );
+        return classRows.filter((row): row is ClassRow => row !== null);
     }
 
     async getAvailableClasses(

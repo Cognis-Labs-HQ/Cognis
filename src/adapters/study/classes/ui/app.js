@@ -219,9 +219,9 @@ export async function mount(root, { signal } = {}) {
         const items = classes
             .map(
                 (cls) => `
-          <li class="classes-item" style="flex-wrap: wrap;">
+          <li class="classes-item">
             <span class="classes-language">${escapeHtml(cls.languageCode)}</span>
-            <span class="classes-member-count">(${escapeHtml(String(cls.memberCount ?? 0))} ${escapeHtml(i18n.t("module.study.classes.members_section").toLowerCase())})</span>
+            <span class="classes-member-count">(${escapeHtml(String(cls.memberCount ?? 0))} ${escapeHtml(i18n.t("module.study.classes.members_section"))})</span>
             <div class="classes-actions">
               <button
                 type="button"

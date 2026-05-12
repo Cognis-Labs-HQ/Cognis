@@ -536,7 +536,7 @@ export function createClassesRoutes(
             const claims = requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(inviteMatch[1]);
-            const body = (await readJson(req)) as { accountId?: unknown };
+            const body = (await readJson(req)) as Record<string, unknown>;
             const accountId =
                 typeof body?.accountId === "string"
                     ? body.accountId.trim()
