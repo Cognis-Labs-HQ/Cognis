@@ -226,6 +226,7 @@ export async function createI18n(options = {}) {
 
     return {
         locale: activeLocale,
+        _strings: strings,
         t(key) {
             const value = strings.get(key);
             return typeof value === "string" && value.trim() ? value : "";
@@ -268,7 +269,7 @@ export function applyStaticTranslations(i18n, root = document) {
  * plus additional component-specific strings loaded from `stringsBaseUrl`.
  * Falls back to the English file if the locale-specific file is missing.
  *
- * @param {{ locale: string, t: Function }} baseI18n
+ * @param {{ locale: string, t: Function, _strings?: Map<string,string> }} baseI18n
  * @param {string|null|undefined} stringsBaseUrl - Base URL for component strings
  * @returns {Promise<{ locale: string, t: Function }>}
  */
@@ -276,15 +277,16 @@ export async function extendI18n(baseI18n, stringsBaseUrl) {
     if (!stringsBaseUrl) return baseI18n;
 
     const extra = await loadComponentStrings(baseI18n.locale, [stringsBaseUrl]);
-    const merged = new Map();
+    const merged = new Map(baseI18n._strings || []);
 
     extra.forEach((value, key) => merged.set(key, value));
 
     return {
         locale: baseI18n.locale,
+        _strings: merged,
         t(key) {
-            if (merged.has(key)) return merged.get(key);
-            return baseI18n.t(key);
+            const value = merged.get(key);
+            return typeof value === "string" && value.trim() ? value : "";
         },
     };
 }
