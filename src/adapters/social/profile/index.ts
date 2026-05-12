@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { DbProfileStore } from "./store.js";
 import { DbUserPreferenceStore } from "./preference-store.js";
-import { createProfileRoutes } from "../../../api/routes/profile/index.js";
+import { createProfileRoutes } from "./routes/index.js";
 import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
 import { createFileRoutes } from "./routes/files.js";
@@ -13,7 +13,7 @@ import type { FileStorageGateway } from "@cognis/core";
 import {
     getCookieSession,
     setPageSecurityHeaders,
-} from "../../../api/auth/guard.js";
+} from "../../../gateways/auth/guard.js";
 import type { AccountRole } from "./store.js";
 import type {
     SocialAdapter,

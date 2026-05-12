@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { VolatileProfileStore } from "../../reuse/profile-store.js";
-import { createProfileRoutes } from "../../routes/profile/index.js";
-import { issueAccessToken } from "../../auth/access-tokens.js";
+import { VolatileProfileStore } from "../../profile-store.js";
+import { createProfileRoutes } from "../index.js";
+import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 
 function fakeFileGateway() {
     const store = new Map<string, Buffer>();

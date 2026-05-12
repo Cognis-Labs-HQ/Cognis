@@ -4,12 +4,12 @@ import {
     recordTokenVerification,
     revokeAccessToken,
     type AccessRole,
-} from "../../auth/access-tokens.js";
+} from "../access-tokens.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthGateway } from "@cognis/core";
-import type { LocalAccountStore } from "../../reuse/account-store.js";
-import { readJson } from "../../reuse/read-json.js";
-import { getAuthClaims } from "../../auth/guard.js";
+import type { LocalAccountStore } from "../../../api/reuse/account-store.js";
+import { readJson } from "../../../api/reuse/read-json.js";
+import { getAuthClaims } from "../guard.js";
 
 function shouldSetSecureCookie(req: IncomingMessage): boolean {
     const forced = process.env.COGNIS_SECURE_COOKIES;
