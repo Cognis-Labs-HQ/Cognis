@@ -142,6 +142,12 @@
     padding: 18px;
 }
 
+.study-hub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+}
+
 .study-hub-card-header {
     display: flex;
     align-items: center;
@@ -188,33 +194,41 @@
     color: var(--text-muted);
 }
 
-.study-nav-settings-row {
-    margin-top: auto;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
+.study-page-subnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
 }
 
-.study-settings-cog-btn {
+.study-subnav-languages,
+.study-subnav-modules {
     display: flex;
     align-items: center;
     gap: 8px;
-    width: 100%;
-    padding: 8px 12px;
-    background: none;
-    border: none;
-    border-radius: 6px;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition:
-        background 0.15s,
-        color 0.15s;
 }
 
-.study-settings-cog-btn:hover,
-.study-settings-cog-btn.active {
-    background: var(--surface-2);
+.study-subnav-language-link,
+.study-subnav-module-link,
+.study-subnav-settings-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.study-subnav-settings-link {
+    justify-content: center;
+    min-width: 40px;
+    padding: 8px;
+}
+
+.study-subnav-language-link.active,
+.study-subnav-settings-link.active {
+    border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
     color: var(--text);
+    background: color-mix(in srgb, var(--accent-2) 22%, transparent);
 }
 
 .study-lang-settings-wrap {
@@ -252,4 +266,11 @@
 
 .study-lang-settings-action {
     text-align: right;
+}
+
+@media (max-width: 900px) {
+    .study-page-subnav {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }

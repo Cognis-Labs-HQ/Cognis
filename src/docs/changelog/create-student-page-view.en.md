@@ -4,7 +4,7 @@
 
 Adds a student-facing My Classes page at `/my-classes` for viewing enrolled classes, requesting to join available classes, and leaving classes. Enhances the teacher's Classes page with language filtering, per-class student management, student search, and the ability to invite students and approve or reject join requests.
 
-Replaces the Study section in User Settings with a dedicated study hub at `/study`. A one-time welcome screen at `/study/welcome` lets new users pick languages from those registered by language modules (e.g. Japanese). After completing the introduction, users land on the hub with a per-language sub-navigation toolbar, language-specific module links, and a settings cog that opens an inline language management table. The language list comes from the study gateway directly (registered modules), not from a separate database table.
+Replaces the Study section in User Settings with a dedicated study hub at `/study`. A one-time welcome screen at `/study/welcome` lets new users pick languages from those registered by language modules (e.g. Japanese). After completing the introduction, users land on the hub with a new composer-managed sub-navigation row directly below the global navigation. This row is distinct from the aside toolbar, is populated dynamically from language-module child UIs, and uses `/study/settings` for language settings. The language list comes from the study gateway directly (registered modules), not from a separate database table.
 
 Additionally, role labels in the Users page and Dashboard are now fully localised.
 
@@ -18,15 +18,19 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/adapters/study/classes/ui/app.js` — Enhanced teacher view with language filter and student management
 - `src/adapters/study/classes/ui/classes.css` — Added styles for new UI elements
 - `src/gateways/study/gateway.ts` — Added `listRegisteredLanguages()` to expose modules as language descriptors
-- `src/gateways/study/bootstrap.ts` — Added `/study/welcome` + `/study` page routes (shared HTML); added `GET /api/v1/study/registered-languages` endpoint; version bumped to 1.3.0
-- `src/gateways/study/manifest.json` — Version bumped to 1.3.0
+- `src/gateways/study/bootstrap.ts` — Added `/study/welcome`, `/study`, and `/study/settings` page routes (shared HTML); added `GET /api/v1/study/registered-languages` endpoint; version bumped to 1.4.0
+- `src/gateways/study/manifest.json` — Version bumped to 1.4.0
 - `src/gateways/study/ui/classes-dashboard-element.js` — Added student dashboard element
 - `src/gateways/study/ui/navbar.js` — Simplified to a plain nav link; popup handler removed
 - `src/gateways/study/ui/study.html` — HTML shell for `/study` and `/study/welcome`
-- `src/gateways/study/ui/study.js` — Rewritten: welcome onboarding (full-width, `/study/welcome`), sub-nav hub (`/study`) with settings cog and language management table
-- `src/gateways/study/ui/study.css` — Updated styles: full-height welcome, settings cog button, language settings table
+- `src/gateways/study/ui/study.js` — Rewritten: one-time onboarding (`/study/welcome`), dashboard (`/study`), settings (`/study/settings`), module-driven sub-navigation, and language-label resolution (`ja` -> `Japanese`)
+- `src/gateways/study/ui/study.css` — Updated styles: full-height welcome, new sub-navigation row visuals, and language settings table
 - `src/gateways/study/ui/languages/*/strings.xml` — Added `gateway.study.language_settings` and `gateway.study.language` keys (all 4 languages)
-- `src/ui/reuse/app-router.js` — Routes `/study/*` to the study hub
+- `src/ui/reuse/app-router.js` — Routes only `/study`, `/study/welcome`, and `/study/settings` to the study hub; module pages keep their own handlers
+- `src/ui/reuse/page-composer.js` — Added a new composer sub-navigation slot rendered separately from the aside toolbar
+- `src/ui/layouts/dashboard-layout.js` — Added `subNavigation` layout slot wiring
+- `src/ui/public/templates/dashboard-layout.html` — Added the sub-navigation row placeholder below the global nav
+- `src/ui/styles/reuse/layout.css` — Added global styling for the new composer sub-navigation row
 - `src/ui/layouts/dashboard-layout.js` — Study shortcut points to `/study`
 - `src/ui/styles/settings.css` — Removed dead study CSS classes
 - `src/ui/languages/*/strings.xml` — Added `ui.reuse.role_*` keys; restored `ui.app.settings.study.*` (all 4 languages)

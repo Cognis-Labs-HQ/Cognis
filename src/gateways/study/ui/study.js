@@ -1,20 +1,12 @@
 /**
- * Study hub — welcome onboarding and per-language sub-navigation dashboard.
+ * Study hub — welcome onboarding, dashboard, and settings.
  *
- * Serves two URL paths using a single HTML shell:
- *   /study/welcome — first-time language picker, full-width layout.
- *                    Redirects to /study if the user already has languages set.
- *   /study         — language hub with sub-page navigation.
- *                    Redirects to /study/welcome if no languages are saved.
+ * Routes:
+ *   /study/welcome  — one-time onboarding language picker.
+ *   /study          — study dashboard.
+ *   /study/settings — study language settings.
  *
- * Public exports:
- *   mount(root, options) — mount the study page into the given root element.
- *
- * Usage:
- *   import { mount } from '/static/gateways/study/study.js';
- *   await mount(document.querySelector('#app'));
- *
- * @param {HTMLElement} root — the #app element.
+ * @param {HTMLElement} root
  * @param {{ signal?: AbortSignal }} [options]
  * @returns {Promise<void>}
  */
@@ -31,15 +23,44 @@ const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" he
   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
 </svg>`;
 
+function resolveLanguageLabel(languageCode, fallbackName = "") {
+    try {
+        const displayName = new Intl.DisplayNames(["en"], {
+            type: "language",
+        }).of(languageCode);
+        if (typeof displayName === "string" && displayName.trim()) {
+            return displayName;
+        }
+    } catch {
+        return fallbackName || languageCode;
+    }
+    return fallbackName || languageCode;
+}
+
+function toLanguageRecord(rawLanguage) {
+    const languageCode = String(rawLanguage?.code ?? "").trim();
+    if (!languageCode) return null;
+    return {
+        code: languageCode,
+        flag: String(rawLanguage?.flag ?? "").trim(),
+        name: resolveLanguageLabel(
+            languageCode,
+            String(rawLanguage?.name ?? "").trim(),
+        ),
+    };
+}
+
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/study/languages"],
     });
     applyDocumentTitle(i18n, "gateway.study.page_title");
 
-    const isWelcomePath = window.location.pathname === "/study/welcome";
+    const currentPath = window.location.pathname;
+    const isWelcomePath = currentPath === "/study/welcome";
+    const isSettingsPath = currentPath === "/study/settings";
 
-    const [langResult, prefsResult] = await Promise.allSettled([
+    const [languagesResult, prefsResult] = await Promise.allSettled([
         apiFetch("/api/v1/study/registered-languages").then((response) =>
             response.ok ? response.json() : null,
         ),
@@ -49,15 +70,17 @@ export async function mount(root, { signal } = {}) {
     ]);
 
     const registeredLanguages =
-        langResult.status === "fulfilled" &&
-        Array.isArray(langResult.value?.data)
-            ? langResult.value.data
+        languagesResult.status === "fulfilled" &&
+        Array.isArray(languagesResult.value?.data)
+            ? languagesResult.value.data
+                  .map((language) => toLanguageRecord(language))
+                  .filter(Boolean)
             : [];
 
     const learningLanguages =
         prefsResult.status === "fulfilled" &&
         Array.isArray(prefsResult.value?.data?.learningLanguages)
-            ? prefsResult.value.data.learningLanguages
+            ? [...new Set(prefsResult.value.data.learningLanguages)]
             : [];
 
     if (isWelcomePath) {
@@ -66,22 +89,25 @@ export async function mount(root, { signal } = {}) {
             return;
         }
         await mountWelcome(root, { i18n, registeredLanguages, signal });
-    } else {
-        if (learningLanguages.length === 0) {
-            navigateTo("/study/welcome");
-            return;
-        }
-        await mountHub(root, {
-            i18n,
-            registeredLanguages,
-            learningLanguages,
-            signal,
-        });
+        return;
     }
+
+    if (learningLanguages.length === 0) {
+        navigateTo("/study/welcome");
+        return;
+    }
+
+    await mountHub(root, {
+        i18n,
+        registeredLanguages,
+        learningLanguages,
+        isSettingsPath,
+        signal,
+    });
 }
 
 async function mountWelcome(root, { i18n, registeredLanguages }) {
-    const selectedForPicker = new Set();
+    const selectedLanguages = new Set();
 
     function renderWelcomeContent() {
         const cards =
@@ -89,17 +115,17 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
                 ? `<p class="study-empty">${escapeHtml(i18n.t("gateway.study.no_languages"))}</p>`
                 : registeredLanguages
                       .map(
-                          (lang, index) => `
-                    <button
-                        type="button"
-                        class="study-lang-card${selectedForPicker.has(lang.code) ? " selected" : ""}"
-                        data-lang-code="${escapeHtml(lang.code)}"
-                        style="animation-delay: ${(0.55 + index * 0.06).toFixed(2)}s"
-                    >
-                        <span class="study-lang-flag">${escapeHtml(lang.flag || "")}</span>
-                        <span class="study-lang-name">${escapeHtml(lang.name || lang.code)}</span>
-                    </button>
-                `,
+                          (language, index) => `
+                        <button
+                            type="button"
+                            class="study-lang-card${selectedLanguages.has(language.code) ? " selected" : ""}"
+                            data-lang-code="${escapeHtml(language.code)}"
+                            style="animation-delay: ${(0.55 + index * 0.06).toFixed(2)}s"
+                        >
+                            <span class="study-lang-flag">${escapeHtml(language.flag)}</span>
+                            <span class="study-lang-name">${escapeHtml(language.name)}</span>
+                        </button>
+                    `,
                       )
                       .join("");
 
@@ -125,7 +151,7 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
                         type="button"
                         id="study-start-btn"
                         class="btn-confirm btn-animated study-start-btn"
-                        ${selectedForPicker.size === 0 ? "disabled" : ""}
+                        ${selectedLanguages.size === 0 ? "disabled" : ""}
                     >
                         ${escapeHtml(i18n.t("gateway.study.start"))}
                     </button>
@@ -148,7 +174,9 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
         ],
         preferenceKey: "study-welcome-layout",
         i18n,
-        pageContext: { title: i18n.t("gateway.study.page_title") },
+        pageContext: {
+            title: i18n.t("gateway.study.page_title"),
+        },
         toolbar: [],
     });
     await composer.init();
@@ -156,17 +184,18 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
     function bindWelcomeEvents() {
         root.querySelectorAll(".study-lang-card").forEach((card) => {
             card.addEventListener("click", () => {
-                const code = card.dataset.langCode;
-                if (selectedForPicker.has(code)) {
-                    selectedForPicker.delete(code);
+                const languageCode = String(card.dataset.langCode ?? "");
+                if (!languageCode) return;
+                if (selectedLanguages.has(languageCode)) {
+                    selectedLanguages.delete(languageCode);
                     card.classList.remove("selected");
                 } else {
-                    selectedForPicker.add(code);
+                    selectedLanguages.add(languageCode);
                     card.classList.add("selected");
                 }
-                const startBtn = root.querySelector("#study-start-btn");
-                if (startBtn) {
-                    startBtn.disabled = selectedForPicker.size === 0;
+                const startButton = root.querySelector("#study-start-btn");
+                if (startButton) {
+                    startButton.disabled = selectedLanguages.size === 0;
                 }
             });
         });
@@ -174,7 +203,7 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
         root.querySelector("#study-start-btn")?.addEventListener(
             "click",
             async () => {
-                const learningList = [...selectedForPicker];
+                const selectedList = [...selectedLanguages];
                 try {
                     const response = await apiFetch(
                         "/api/v1/study/preferences",
@@ -182,7 +211,7 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
                             method: "PUT",
                             headers: { "content-type": "application/json" },
                             body: JSON.stringify({
-                                learningLanguages: learningList,
+                                learningLanguages: selectedList,
                                 teachingLanguages: [],
                             }),
                         },
@@ -201,86 +230,197 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
 
 async function mountHub(
     root,
-    { i18n, registeredLanguages, learningLanguages },
+    { i18n, registeredLanguages, learningLanguages, isSettingsPath },
 ) {
-    const languageModulesMap = new Map();
+    const query = new URLSearchParams(window.location.search);
+    const requestedLanguage = query.get("language") ?? "";
+    const selectedLanguageCode = learningLanguages.includes(requestedLanguage)
+        ? requestedLanguage
+        : learningLanguages[0];
 
-    async function loadModulesForLanguage(code) {
+    const languageModulesMap = new Map();
+    const discoveredLanguageCodes = new Set();
+
+    async function loadModulesForLanguage(languageCode) {
         try {
             const response = await apiFetch(
-                `/api/v1/study/languages/${encodeURIComponent(code)}/modules`,
+                `/api/v1/study/languages/${encodeURIComponent(languageCode)}/modules`,
             );
-            if (response.ok) {
-                const payload = await response.json();
-                languageModulesMap.set(
-                    code,
-                    Array.isArray(payload?.data) ? payload.data : [],
-                );
-            } else {
-                languageModulesMap.set(code, []);
+            if (!response.ok) {
+                languageModulesMap.set(languageCode, []);
+                return;
             }
+            const payload = await response.json();
+            const childComponents = Array.isArray(payload?.data)
+                ? payload.data
+                : [];
+            languageModulesMap.set(languageCode, childComponents);
+            discoveredLanguageCodes.add(languageCode);
         } catch {
-            languageModulesMap.set(code, []);
+            languageModulesMap.set(languageCode, []);
         }
     }
 
     await Promise.allSettled(
-        learningLanguages.map((code) => loadModulesForLanguage(code)),
+        learningLanguages.map((languageCode) =>
+            loadModulesForLanguage(languageCode),
+        ),
     );
 
-    function findLang(code) {
-        return registeredLanguages.find((lang) => lang.code === code);
+    const languageByCode = new Map();
+    for (const language of registeredLanguages) {
+        languageByCode.set(language.code, language);
+    }
+    for (const languageCode of discoveredLanguageCodes) {
+        if (!languageByCode.has(languageCode)) {
+            languageByCode.set(languageCode, {
+                code: languageCode,
+                flag: "",
+                name: resolveLanguageLabel(languageCode),
+            });
+        }
     }
 
-    function renderLangHub(code) {
-        const lang = findLang(code);
-        const modules = languageModulesMap.get(code) ?? [];
-        const moduleLinks =
-            modules.length === 0
-                ? `<span class="study-hub-no-modules">${escapeHtml(i18n.t("gateway.study.no_modules"))}</span>`
-                : modules
-                      .map(
-                          (mod) => `
-                    <a href="${escapeHtml(mod.pageUrl)}" class="study-hub-module-link">
-                        ${escapeHtml(mod.label)}
-                    </a>
-                `,
-                      )
-                      .join("");
+    const languageCatalog = Array.from(languageByCode.values()).sort((a, b) =>
+        a.name.localeCompare(b.name),
+    );
+
+    const selectedLanguageModules =
+        languageModulesMap.get(selectedLanguageCode) ?? [];
+
+    function getLanguage(languageCode) {
+        return (
+            languageByCode.get(languageCode) ?? {
+                code: languageCode,
+                flag: "",
+                name: resolveLanguageLabel(languageCode),
+            }
+        );
+    }
+
+    function buildHubUrl(languageCode) {
+        return `/study?language=${encodeURIComponent(languageCode)}`;
+    }
+
+    function buildSettingsUrl(languageCode) {
+        return `/study/settings?language=${encodeURIComponent(languageCode)}`;
+    }
+
+    function renderSubNavigation() {
+        const languageLinks = learningLanguages
+            .map((languageCode) => {
+                const language = getLanguage(languageCode);
+                const activeClass =
+                    languageCode === selectedLanguageCode ? " active" : "";
+                const href = isSettingsPath
+                    ? buildSettingsUrl(languageCode)
+                    : buildHubUrl(languageCode);
+                return `
+                    <li>
+                        <a class="study-subnav-language-link${activeClass}" href="${escapeHtml(href)}">
+                            ${escapeHtml(language.flag)}
+                            <span>${escapeHtml(language.name)}</span>
+                        </a>
+                    </li>
+                `;
+            })
+            .join("");
+
+        const moduleLinks = selectedLanguageModules
+            .map((component) => {
+                const pageUrl = String(component.pageUrl ?? "").trim();
+                if (!pageUrl) return "";
+                return `
+                    <li>
+                        <a class="study-subnav-module-link" href="${escapeHtml(pageUrl)}">
+                            ${escapeHtml(String(component.label ?? pageUrl))}
+                        </a>
+                    </li>
+                `;
+            })
+            .join("");
+
+        const settingsActiveClass = isSettingsPath ? " active" : "";
+        const settingsUrl = buildSettingsUrl(selectedLanguageCode);
 
         return `
-            <div class="study-hub-card-standalone">
-                <div class="study-hub-card-header">
-                    <span class="study-hub-card-flag">${escapeHtml(lang?.flag || "")}</span>
-                    <span class="study-hub-card-name">${escapeHtml(lang?.name || code)}</span>
-                </div>
-                <div class="study-hub-modules">${moduleLinks}</div>
+            <div class="study-page-subnav">
+                <ul class="page-subnav-list study-subnav-languages">${languageLinks}</ul>
+                <ul class="page-subnav-list study-subnav-modules">
+                    ${moduleLinks}
+                    <li>
+                        <a
+                            class="study-subnav-settings-link${settingsActiveClass}"
+                            href="${escapeHtml(settingsUrl)}"
+                            aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                            title="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                        >
+                            ${SETTINGS_GEAR_SVG}
+                        </a>
+                    </li>
+                </ul>
             </div>
         `;
     }
 
-    function renderLangSettings() {
-        const rows = registeredLanguages
-            .map((lang) => {
-                const isLearning = learningLanguages.includes(lang.code);
-                const actionButton = isLearning
-                    ? `<button
-                            type="button"
-                            class="study-lang-action-btn btn-cancel btn-animated"
-                            data-action="remove"
-                            data-code="${escapeHtml(lang.code)}"
-                        >${escapeHtml(i18n.t("ui.reuse.remove"))}</button>`
-                    : `<button
-                            type="button"
-                            class="study-lang-action-btn btn-confirm btn-animated"
-                            data-action="add"
-                            data-code="${escapeHtml(lang.code)}"
-                        >${escapeHtml(i18n.t("ui.reuse.add"))}</button>`;
+    function renderDashboardContent() {
+        const cards = learningLanguages
+            .map((languageCode) => {
+                const language = getLanguage(languageCode);
+                const modules = languageModulesMap.get(languageCode) ?? [];
+                const moduleList =
+                    modules.length === 0
+                        ? `<span class="study-hub-no-modules">${escapeHtml(i18n.t("gateway.study.no_modules"))}</span>`
+                        : modules
+                              .map(
+                                  (component) => `
+                                    <a href="${escapeHtml(component.pageUrl)}" class="study-hub-module-link">
+                                        ${escapeHtml(component.label)}
+                                    </a>
+                                `,
+                              )
+                              .join("");
+                return `
+                    <div class="study-hub-card-standalone">
+                        <div class="study-hub-card-header">
+                            <span class="study-hub-card-flag">${escapeHtml(language.flag)}</span>
+                            <span class="study-hub-card-name">${escapeHtml(language.name)}</span>
+                        </div>
+                        <div class="study-hub-modules">${moduleList}</div>
+                    </div>
+                `;
+            })
+            .join("");
+
+        return `
+            <div class="study-hub-grid">${cards}</div>
+        `;
+    }
+
+    function renderSettingsContent() {
+        const rows = languageCatalog
+            .map((language) => {
+                const isLearning = learningLanguages.includes(language.code);
+                const action = isLearning ? "remove" : "add";
+                const actionClass = isLearning ? "btn-cancel" : "btn-confirm";
+                const actionLabel = isLearning
+                    ? i18n.t("ui.reuse.remove")
+                    : i18n.t("ui.reuse.add");
+
                 return `
                     <tr>
-                        <td class="study-lang-settings-flag">${escapeHtml(lang.flag || "")}</td>
-                        <td class="study-lang-settings-name">${escapeHtml(lang.name || lang.code)}</td>
-                        <td class="study-lang-settings-action">${actionButton}</td>
+                        <td class="study-lang-settings-flag">${escapeHtml(language.flag)}</td>
+                        <td class="study-lang-settings-name">${escapeHtml(language.name)}</td>
+                        <td class="study-lang-settings-action">
+                            <button
+                                type="button"
+                                class="study-lang-action-btn ${actionClass} btn-animated"
+                                data-action="${escapeHtml(action)}"
+                                data-code="${escapeHtml(language.code)}"
+                            >
+                                ${escapeHtml(actionLabel)}
+                            </button>
+                        </td>
                     </tr>
                 `;
             })
@@ -303,98 +443,65 @@ async function mountHub(
         `;
     }
 
-    function buildElements() {
-        return [
-            ...learningLanguages.map((code) => {
-                const lang = findLang(code);
-                return {
-                    id: `lang-${code}`,
-                    label: lang?.name || code,
-                    pinned: true,
-                    gridSize: { default: [6, 4], min: [2, 2], max: "full" },
-                    render: () => renderLangHub(code),
-                    onRender: bindLangHubEvents,
-                };
-            }),
-            {
-                id: "lang-settings",
-                label: i18n.t("gateway.study.language_settings"),
-                pinned: true,
-                gridSize: { default: [6, 4], min: [3, 2], max: "full" },
-                render: renderLangSettings,
-                onRender: bindLangSettingsEvents,
-            },
-        ];
-    }
-
-    function buildToolbarItems() {
-        const langButtons = learningLanguages
-            .map((code) => {
-                const lang = findLang(code);
-                return `<li><button data-composer-scroll="lang-${escapeHtml(code)}">${escapeHtml(lang?.flag || "")} ${escapeHtml(lang?.name || code)}</button></li>`;
-            })
-            .join("");
-
-        return [
-            {
-                id: "study-nav",
-                label: i18n.t("gateway.study.page_title"),
-                render: () => `
-                    <h2>${escapeHtml(i18n.t("gateway.study.page_title"))}</h2>
-                    <ul>${langButtons}</ul>
-                    <div class="study-nav-settings-row">
-                        <button
-                            type="button"
-                            data-composer-scroll="lang-settings"
-                            class="study-settings-cog-btn"
-                            aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                        >
-                            ${SETTINGS_GEAR_SVG}
-                            <span>${escapeHtml(i18n.t("gateway.study.language_settings"))}</span>
-                        </button>
-                    </div>
-                `,
-            },
-        ];
-    }
+    const viewElement = isSettingsPath
+        ? {
+              id: "study-settings",
+              label: i18n.t("gateway.study.language_settings"),
+              pinned: true,
+              gridSize: { default: [12, 8], min: [4, 4], max: "full" },
+              render: renderSettingsContent,
+              onRender: bindSettingsEvents,
+          }
+        : {
+              id: "study-hub",
+              label: i18n.t("gateway.study.page_title"),
+              pinned: true,
+              gridSize: { default: [12, 8], min: [4, 4], max: "full" },
+              render: renderDashboardContent,
+          };
 
     const composer = createPageComposer(root, {
         allowCustomization: false,
-        subPageNavigation: true,
-        elements: buildElements(),
-        preferenceKey: "study-hub-layout",
+        elements: [viewElement],
+        preferenceKey: isSettingsPath
+            ? "study-settings-layout"
+            : "study-hub-layout",
         i18n,
-        pageContext: { title: i18n.t("gateway.study.page_title") },
-        toolbar: buildToolbarItems(),
+        pageContext: {
+            title: i18n.t("gateway.study.page_title"),
+        },
+        toolbar: [],
+        subNavigation: [
+            {
+                id: "study-subnav",
+                label: i18n.t("gateway.study.page_title"),
+                render: renderSubNavigation,
+            },
+        ],
     });
+
     await composer.init();
 
-    function bindLangHubEvents() {
-        root.querySelectorAll(".study-hub-module-link").forEach((link) => {
-            link.addEventListener("click", (event) => {
-                const href = link.getAttribute("href");
-                if (href) {
-                    event.preventDefault();
-                    navigateTo(href);
-                }
-            });
-        });
-    }
+    function bindSettingsEvents() {
+        root.querySelectorAll(".study-lang-action-btn").forEach((button) => {
+            button.addEventListener("click", async () => {
+                const languageCode = String(button.dataset.code ?? "");
+                const action = String(button.dataset.action ?? "");
+                if (!languageCode) return;
 
-    function bindLangSettingsEvents() {
-        root.querySelectorAll(".study-lang-action-btn").forEach((btn) => {
-            btn.addEventListener("click", async () => {
-                const code = btn.dataset.code;
-                const action = btn.dataset.action;
-                if (!code) return;
-
-                btn.disabled = true;
-
-                const updatedLearning =
+                const updatedLearningLanguages =
                     action === "add"
-                        ? [...learningLanguages, code]
-                        : learningLanguages.filter((c) => c !== code);
+                        ? [...new Set([...learningLanguages, languageCode])]
+                        : learningLanguages.filter(
+                              (code) => code !== languageCode,
+                          );
 
+                if (updatedLearningLanguages.length === 0) {
+                    navigateTo("/study/welcome");
+                    return;
+                }
+
+                button.disabled = true;
                 try {
                     const response = await apiFetch(
                         "/api/v1/study/preferences",
@@ -402,18 +509,23 @@ async function mountHub(
                             method: "PUT",
                             headers: { "content-type": "application/json" },
                             body: JSON.stringify({
-                                learningLanguages: updatedLearning,
+                                learningLanguages: updatedLearningLanguages,
                                 teachingLanguages: [],
                             }),
                         },
                     );
                     if (!response.ok) throw new Error("save_failed");
-                    navigateTo("/study");
+                    const targetLanguage = updatedLearningLanguages.includes(
+                        selectedLanguageCode,
+                    )
+                        ? selectedLanguageCode
+                        : updatedLearningLanguages[0];
+                    navigateTo(buildSettingsUrl(targetLanguage));
                 } catch {
                     showToast(i18n.t("ui.reuse.save_failed"), {
                         variant: "error",
                     });
-                    btn.disabled = false;
+                    button.disabled = false;
                 }
             });
         });

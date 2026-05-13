@@ -215,7 +215,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         url: URL,
     ): Promise<boolean> => {
         if (req.method !== "GET") return false;
-        if (url.pathname !== "/study" && url.pathname !== "/study/welcome")
+        if (
+            url.pathname !== "/study" &&
+            url.pathname !== "/study/welcome" &&
+            url.pathname !== "/study/settings"
+        )
             return false;
         if (!getCookieSession(req)) {
             res.writeHead(302, { location: "/login" });
@@ -266,7 +270,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.3.0",
+        version: "1.4.0",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",

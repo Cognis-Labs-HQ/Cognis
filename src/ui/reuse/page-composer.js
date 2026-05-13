@@ -85,6 +85,7 @@
  *   onRender?: () => void,
  *   pageContext?: { title: string, subtitle: string },
  *   toolbar?: Array<{ id: string, label: string, render: () => string }>,
+ *   subNavigation?: Array<{ id: string, label: string, render: () => string }>,
  *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
  *   subPageNavigation?: boolean,
  *   columns?: number,
@@ -120,6 +121,7 @@ export function createPageComposer(
         onRender,
         pageContext,
         toolbar = [],
+        subNavigation = [],
         floatingMenu = [],
         subPageNavigation = false,
         columns = 1,
@@ -2996,6 +2998,10 @@ export function createPageComposer(
             Array.isArray(toolbar) && toolbar.length > 0
                 ? toolbar.map((t) => t.render()).join("")
                 : undefined;
+        const subNavigationHtml =
+            Array.isArray(subNavigation) && subNavigation.length > 0
+                ? subNavigation.map((item) => item.render()).join("")
+                : undefined;
 
         const floatingHtml =
             Array.isArray(floatingMenu) && floatingMenu.length > 0
@@ -3006,6 +3012,7 @@ export function createPageComposer(
             i18n,
             pageContext: pageContextHtml,
             toolbar: toolbarHtml,
+            subNavigation: subNavigationHtml,
             floatingToolbar: floatingHtml,
             content: "",
             showTopbar,

@@ -77,6 +77,60 @@
     z-index: 1200;
 }
 
+.page-subnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 30px;
+    border: 1px solid var(--border);
+    border-top: 0;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    background: color-mix(in srgb, var(--nav-bg) 65%, var(--surface-2) 35%);
+}
+
+.page-subnav-list {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.page-subnav-list a,
+.page-subnav-list button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: var(--text-muted);
+    background: transparent;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.page-subnav-list a:hover,
+.page-subnav-list button:hover {
+    border-color: var(--border);
+    color: var(--text);
+    background: var(--surface-soft);
+}
+
+.page-subnav-list a.active,
+.page-subnav-list button.active {
+    border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+    color: var(--text);
+    background: color-mix(in srgb, var(--accent-2) 22%, transparent);
+}
+
 .nav-compact-toggle {
     display: none;
     align-items: center;
@@ -459,6 +513,10 @@ button.dropdown-item {
         padding-right: 18px;
         top: 78px;
     }
+    .page-subnav {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
     .page-context {
         align-items: flex-start;
     }
@@ -485,6 +543,10 @@ button.dropdown-item {
     .global-navrow {
         padding: 8px 14px;
         top: 60px;
+        border-radius: 0;
+    }
+    .page-subnav {
+        padding: 8px 14px;
         border-radius: 0;
     }
     .workspace {

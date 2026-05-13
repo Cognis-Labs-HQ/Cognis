@@ -365,6 +365,7 @@ export async function renderDashboardLayout(root, slots = {}) {
 
     const existingShell = root.querySelector(".app-shell");
     const hasToolbar = Boolean(slots.toolbar);
+    const hasSubNavigation = Boolean(slots.subNavigation);
     const hasFloatingToolbar = Boolean(slots.floatingToolbar);
 
     if (
@@ -373,6 +374,11 @@ export async function renderDashboardLayout(root, slots = {}) {
     ) {
         const pageCtxEl = existingShell.querySelector(".page-context");
         if (pageCtxEl) pageCtxEl.innerHTML = slots.pageContext || "";
+        const subNavEl = existingShell.querySelector(".page-subnav");
+        if (subNavEl) {
+            subNavEl.innerHTML = slots.subNavigation || "";
+            subNavEl.hidden = !hasSubNavigation;
+        }
 
         const mainWindow = existingShell.querySelector(".main-window");
         if (mainWindow) {
@@ -411,6 +417,10 @@ export async function renderDashboardLayout(root, slots = {}) {
         .replace("{{pageContext}}", slots.pageContext || "")
         .replace("{{topbar}}", slots.topbar)
         .replace(
+            "{{subNavigation}}",
+            hasSubNavigation ? slots.subNavigation : "",
+        )
+        .replace(
             "{{workspaceClass}}",
             hasToolbar
                 ? "main-window--with-toolbar"
@@ -430,6 +440,10 @@ export async function renderDashboardLayout(root, slots = {}) {
 
     if (!showTopbar) root.querySelector(".global-topbar")?.remove();
     if (!showNavbar) root.querySelector(".global-navrow")?.remove();
+    const subNavEl = root.querySelector(".page-subnav");
+    if (subNavEl) {
+        subNavEl.hidden = !hasSubNavigation;
+    }
     if (!showThemeToggle) root.querySelector("#theme-toggle")?.remove();
     if (!showFooter) root.querySelector(".global-footer")?.remove();
 

@@ -97,7 +97,7 @@ const ROUTES = [
         load: () => import("../app/license/index.js"),
     },
     {
-        pattern: /^\/study/,
+        pattern: /^\/study(?:\/welcome|\/settings)?$/,
         base: "/study",
         stylesheets: [
             "/static/styles/page-builder.css",
@@ -109,7 +109,8 @@ const ROUTES = [
 ];
 
 function findRoute(path) {
-    return ROUTES.find((r) => r.pattern.test(path));
+    const pathWithoutQuery = String(path).split("?")[0].split("#")[0];
+    return ROUTES.find((r) => r.pattern.test(pathWithoutQuery));
 }
 
 let _root = null;
