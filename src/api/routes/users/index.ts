@@ -12,6 +12,27 @@ import { revokeAccessTokensForSubject } from "../../../gateways/auth/access-toke
 
 const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin", "owner"]);
 
+function resolveEffectiveRole(
+    role: unknown,
+    isAdmin: boolean,
+    isFounder: boolean,
+): "user" | "teacher" | "moderator" | "admin" | "owner" {
+    const normalizedRole = String(role ?? "").trim();
+    if (isFounder && (normalizedRole === "owner" || isAdmin)) {
+        return "owner";
+    }
+    if (
+        normalizedRole === "user" ||
+        normalizedRole === "teacher" ||
+        normalizedRole === "moderator" ||
+        normalizedRole === "admin" ||
+        normalizedRole === "owner"
+    ) {
+        return normalizedRole;
+    }
+    return isAdmin ? "admin" : "user";
+}
+
 export function createUserRoutes(
     accountStore: LocalAccountStore,
     preferenceStore: UserPreferenceStore | undefined,
@@ -38,7 +59,14 @@ export function createUserRoutes(
         if (url.pathname === "/api/v1/users" && req.method === "GET") {
             const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
-            const users = await accountStore.list();
+            const users = (await accountStore.list()).map((user) => ({
+                ...user,
+                role: resolveEffectiveRole(
+                    user.role,
+                    Boolean(user.isAdmin),
+                    Boolean(user.isFounder),
+                ),
+            }));
             log?.("debug", "Listed users.", {
                 ...logMeta,
                 accountId: claims.sub,
@@ -105,8 +133,16 @@ export function createUserRoutes(
                 accountId: claims.sub,
                 targetAccountId: target,
             });
+            const normalizedInfo = {
+                ...info,
+                role: resolveEffectiveRole(
+                    info.role,
+                    Boolean(info.isAdmin),
+                    Boolean(info.isFounder),
+                ),
+            };
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: info }));
+            res.end(JSON.stringify({ data: normalizedInfo }));
             return true;
         }
 
@@ -144,8 +180,11 @@ export function createUserRoutes(
             callerClaims.sub !== username
         ) {
             const targetInfo = await getTargetInfo();
-            const targetRole =
-                targetInfo?.role ?? (targetInfo?.isAdmin ? "admin" : "user");
+            const targetRole = resolveEffectiveRole(
+                targetInfo?.role,
+                Boolean(targetInfo?.isAdmin),
+                Boolean(targetInfo?.isFounder),
+            );
             const targetIsAdminOrOwner =
                 targetRole === "admin" || targetRole === "owner";
             if (targetIsAdminOrOwner) {

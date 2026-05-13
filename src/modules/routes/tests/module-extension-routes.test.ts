@@ -80,3 +80,44 @@ test("module extension routes enforce declared minimum role policies", async () 
     assert.equal(status, 403);
     assert.match(body, /Requires admin scope/);
 });
+
+test("module extension routes fail closed on invalid role access policies", async () => {
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "sample-analytics",
+                    entrypoints: { api: "./api/invalid-access.js" },
+                },
+            ],
+        } as any,
+        () => true,
+    );
+    await extensions.refresh();
+
+    let status = 0;
+    let body = "";
+
+    const ownerToken = issueAccessToken("owner", "owner", 60);
+    const handled = await extensions.handle(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${ownerToken}` },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL(
+            "http://localhost/api/v1/modules/sample-analytics-invalid/metrics",
+        ),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(status, 403);
+    assert.match(body, /invalid access policy/i);
+});

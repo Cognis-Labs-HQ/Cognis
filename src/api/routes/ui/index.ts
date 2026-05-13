@@ -28,21 +28,39 @@ const MODULES_ROOT =
 interface ModuleUiRouteRule {
     path: string;
     access?: RoleAccessPolicy;
+    invalidAccessPolicy?: boolean;
 }
 
-function parseRoleAccessPolicy(value: unknown): RoleAccessPolicy | undefined {
+function parseRoleAccessPolicy(value: unknown): {
+    access?: RoleAccessPolicy;
+    invalid: boolean;
+} {
+    if (value === undefined) {
+        return { access: undefined, invalid: false };
+    }
     if (!value || typeof value !== "object" || Array.isArray(value)) {
-        return undefined;
+        return { access: undefined, invalid: true };
     }
     const candidate = value as { minRole?: unknown; onlyRole?: unknown };
-    const minRole = isAccessRole(candidate.minRole)
-        ? candidate.minRole
-        : undefined;
-    const onlyRole = isAccessRole(candidate.onlyRole)
-        ? candidate.onlyRole
-        : undefined;
-    if (!minRole && !onlyRole) return undefined;
-    return { minRole, onlyRole };
+    const hasMinRole = "minRole" in candidate;
+    const hasOnlyRole = "onlyRole" in candidate;
+    if (hasMinRole && !isAccessRole(candidate.minRole)) {
+        return { access: undefined, invalid: true };
+    }
+    if (hasOnlyRole && !isAccessRole(candidate.onlyRole)) {
+        return { access: undefined, invalid: true };
+    }
+    const access: RoleAccessPolicy = {};
+    if (isAccessRole(candidate.minRole)) {
+        access.minRole = candidate.minRole;
+    }
+    if (isAccessRole(candidate.onlyRole)) {
+        access.onlyRole = candidate.onlyRole;
+    }
+    if (!access.minRole && !access.onlyRole) {
+        return { access: undefined, invalid: true };
+    }
+    return { access, invalid: false };
 }
 
 function parseModuleUiRoutes(raw: string): ModuleUiRouteRule[] {
@@ -61,11 +79,17 @@ function parseModuleUiRoutes(raw: string): ModuleUiRouteRule[] {
             ) {
                 return null;
             }
+            const hasAccessField = Object.prototype.hasOwnProperty.call(
+                entry,
+                "access",
+            );
+            const parsedAccess = parseRoleAccessPolicy(
+                (entry as { access?: unknown }).access,
+            );
             return {
                 path: (entry as { path: string }).path,
-                access: parseRoleAccessPolicy(
-                    (entry as { access?: unknown }).access,
-                ),
+                access: parsedAccess.access,
+                invalidAccessPolicy: hasAccessField && parsedAccess.invalid,
             } as ModuleUiRouteRule;
         })
         .filter((entry): entry is ModuleUiRouteRule => Boolean(entry));
@@ -558,6 +582,20 @@ export function createUiRoutes(
                     );
                     if (!matchingRoute || url.pathname.startsWith("/api/")) {
                         continue;
+                    }
+                    if (matchingRoute.invalidAccessPolicy) {
+                        log?.(
+                            "warn",
+                            "Blocked module UI route due to invalid access policy declaration.",
+                            {
+                                component: "api-ui",
+                                moduleId: manifest.id,
+                                path: url.pathname,
+                            },
+                        );
+                        res.writeHead(302, { location: "/dashboard" });
+                        res.end();
+                        return true;
                     }
                     if (
                         matchingRoute.access &&

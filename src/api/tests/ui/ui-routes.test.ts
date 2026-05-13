@@ -286,6 +286,26 @@ test("module ui routes honor role access policies declared in routes.json", asyn
     assert.match(ownerRecorder.body, /Sample Analytics Module/);
 });
 
+test("module ui routes fail closed on invalid role access policies in routes.json", async () => {
+    const route = createUiRoutes({
+        listManifests: async () => [
+            {
+                id: "sample-analytics-invalid-policy",
+                entrypoints: { ui: "./ui/pages/analytics.html" },
+            },
+        ],
+    } as any);
+    const ownerToken = issueAccessToken("u1", "owner", 60);
+    const ownerRecorder = createResponseRecorder();
+    await route(
+        { headers: { cookie: `cognis_access_token=${ownerToken}` } } as any,
+        ownerRecorder.res as any,
+        new URL("http://localhost/analytics-invalid-policy"),
+    );
+    assert.equal(ownerRecorder.status, 302);
+    assert.equal(ownerRecorder.headers.location, "/dashboard");
+});
+
 test("administration page is visible to admins only", async () => {
     const route = createUiRoutes();
 
