@@ -1,9 +1,14 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import { requireAuth } from "../auth/guard.js";
+import {
+    requireAuth,
+    getCookieSession,
+    setPageSecurityHeaders,
+} from "../auth/guard.js";
 import { readJson } from "../../api/reuse/read-json.js";
 import { CoreStudyGateway } from "./gateway.js";
 
@@ -203,13 +208,30 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.uiRegistry?.registerStaticDir("study", path.join(GATEWAY_ROOT, "ui"));
-    ctx.uiRegistry?.registerSettingsSection({
-        id: "study",
-        label: "Study",
-        scriptUrl: "/static/gateways/study/study-prefs.js",
-        isEnabled: () =>
-            ctx.gatewayRegistry.get("study")?.status !== "disabled",
-    });
+
+    const studyPageRoute = async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        if (req.method !== "GET") return false;
+        if (url.pathname !== "/study") return false;
+        if (!getCookieSession(req)) {
+            res.writeHead(302, { location: "/login" });
+            res.end();
+            return true;
+        }
+        setPageSecurityHeaders(res);
+        const html = await readFile(
+            path.join(GATEWAY_ROOT, "ui", "study.html"),
+            "utf8",
+        );
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(html);
+        return true;
+    };
+    ctx.routeRegistry.register(studyPageRoute, "study");
+
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/study/navbar.js",
         isEnabled: () =>
@@ -224,7 +246,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.2.2",
+        version: "1.3.0",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",

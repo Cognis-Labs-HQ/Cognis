@@ -96,6 +96,16 @@ const ROUTES = [
         ],
         load: () => import("../app/license/index.js"),
     },
+    {
+        pattern: /^\/study/,
+        base: "/study",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/gateways/study/study.css",
+        ],
+        load: () => import("/static/gateways/study/study.js"),
+    },
 ];
 
 function findRoute(path) {

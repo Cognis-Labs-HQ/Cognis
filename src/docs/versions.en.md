@@ -52,7 +52,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
 | Registration          | `src/gateways/registration/` | `1.1.3` |
 | Logging               | `src/gateways/logging/`      | `1.4.0` |
-| Study                 | `src/gateways/study/`        | `1.2.1` |
+| Study                 | `src/gateways/study/`        | `1.3.0` |
 
 ## Core contracts
 

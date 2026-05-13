@@ -547,8 +547,8 @@ function initSearchBar(i18n) {
                 ? [
                       {
                           id: "settings-study",
-                          label: i18n.t("ui.app.settings.study.title"),
-                          url: "/settings#study",
+                          label: i18n.t("ui.reuse.study"),
+                          url: "/study",
                       },
                   ]
                 : []),
