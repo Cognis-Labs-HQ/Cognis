@@ -9,7 +9,6 @@ import {
 import { lookupAccessToken } from "../../../gateways/auth/access-tokens.js";
 import {
     isRoleAllowed,
-    isAccessRole,
     type BootstrapLog,
     type ModuleRuntimeGateway,
     type RoleAccessPolicy,
@@ -17,6 +16,7 @@ import {
 } from "@cognis/core";
 import type { UIRegistry } from "../../ui-registry.js";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
+import { parseRoleAccessPolicy } from "../../reuse/parse-role-access-policy.js";
 
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
@@ -29,36 +29,6 @@ interface ModuleUiRouteRule {
     path: string;
     access?: RoleAccessPolicy;
     invalidAccessPolicy?: boolean;
-}
-
-function parseRoleAccessPolicy(value: unknown): {
-    access?: RoleAccessPolicy;
-    invalid: boolean;
-} {
-    if (value === undefined) {
-        return { access: undefined, invalid: false };
-    }
-    if (!value || typeof value !== "object" || Array.isArray(value)) {
-        return { access: undefined, invalid: true };
-    }
-    const candidate = value as { minRole?: unknown; onlyRole?: unknown };
-    if (candidate.minRole !== undefined && !isAccessRole(candidate.minRole)) {
-        return { access: undefined, invalid: true };
-    }
-    if (candidate.onlyRole !== undefined && !isAccessRole(candidate.onlyRole)) {
-        return { access: undefined, invalid: true };
-    }
-    const access: RoleAccessPolicy = {};
-    if (isAccessRole(candidate.minRole)) {
-        access.minRole = candidate.minRole;
-    }
-    if (isAccessRole(candidate.onlyRole)) {
-        access.onlyRole = candidate.onlyRole;
-    }
-    if (!access.minRole && !access.onlyRole) {
-        return { access: undefined, invalid: true };
-    }
-    return { access, invalid: false };
 }
 
 function parseModuleUiRoutes(raw: string): ModuleUiRouteRule[] {
