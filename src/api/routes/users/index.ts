@@ -1,12 +1,41 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog } from "@cognis/core";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
-import { getAuthClaims, requireAuth } from "../../../gateways/auth/guard.js";
+import {
+    getAuthClaims,
+    requireAuth,
+    canAccessUserData,
+} from "../../../gateways/auth/guard.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 import { readJson } from "../../reuse/read-json.js";
 import { revokeAccessTokensForSubject } from "../../../gateways/auth/access-tokens.js";
 
 const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin", "owner"]);
+
+/**
+ * Normalizes persisted account role data into the effective role seen by API consumers.
+ * Founder admins are elevated to owner for response consistency across UI surfaces.
+ */
+function resolveEffectiveRole(
+    role: unknown,
+    isAdmin: boolean,
+    isFounder: boolean,
+): "user" | "teacher" | "moderator" | "admin" | "owner" {
+    const normalizedRole = String(role ?? "").trim();
+    if (isFounder && (normalizedRole === "owner" || isAdmin)) {
+        return "owner";
+    }
+    if (
+        normalizedRole === "user" ||
+        normalizedRole === "teacher" ||
+        normalizedRole === "moderator" ||
+        normalizedRole === "admin" ||
+        normalizedRole === "owner"
+    ) {
+        return normalizedRole;
+    }
+    return isAdmin ? "admin" : "user";
+}
 
 export function createUserRoutes(
     accountStore: LocalAccountStore,
@@ -34,7 +63,14 @@ export function createUserRoutes(
         if (url.pathname === "/api/v1/users" && req.method === "GET") {
             const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
-            const users = await accountStore.list();
+            const users = (await accountStore.list()).map((user) => ({
+                ...user,
+                role: resolveEffectiveRole(
+                    user.role,
+                    Boolean(user.isAdmin),
+                    Boolean(user.isFounder),
+                ),
+            }));
             log?.("debug", "Listed users.", {
                 ...logMeta,
                 accountId: claims.sub,
@@ -63,11 +99,7 @@ export function createUserRoutes(
                 return true;
             }
             const target = decodeURIComponent(infoMatch[1]);
-            if (
-                claims.sub !== target &&
-                claims.role !== "admin" &&
-                claims.role !== "owner"
-            ) {
+            if (!canAccessUserData(claims, target)) {
                 log?.("warn", "Blocked unauthorized user info lookup.", {
                     ...logMeta,
                     accountId: claims.sub,
@@ -105,8 +137,16 @@ export function createUserRoutes(
                 accountId: claims.sub,
                 targetAccountId: target,
             });
+            const normalizedInfo = {
+                ...info,
+                role: resolveEffectiveRole(
+                    info.role,
+                    Boolean(info.isAdmin),
+                    Boolean(info.isFounder),
+                ),
+            };
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: info }));
+            res.end(JSON.stringify({ data: normalizedInfo }));
             return true;
         }
 
@@ -144,8 +184,11 @@ export function createUserRoutes(
             callerClaims.sub !== username
         ) {
             const targetInfo = await getTargetInfo();
-            const targetRole =
-                targetInfo?.role ?? (targetInfo?.isAdmin ? "admin" : "user");
+            const targetRole = resolveEffectiveRole(
+                targetInfo?.role,
+                Boolean(targetInfo?.isAdmin),
+                Boolean(targetInfo?.isFounder),
+            );
             const targetIsAdminOrOwner =
                 targetRole === "admin" || targetRole === "owner";
             if (targetIsAdminOrOwner) {

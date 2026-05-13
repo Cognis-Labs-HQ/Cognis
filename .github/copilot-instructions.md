@@ -24,6 +24,15 @@ A gateway is the only component that may interact directly with its adapters. No
 
 This applies across every subsystem: the notification gateway owns its notification adapters, the database gateway owns its DB adapters, the auth gateway owns its auth adapters, and so on. Any component needing a capability must go through the gateway, never the adapter.
 
+### Avoid hardcoded core-to-gateway coupling
+
+Core/shared registries and contracts must not import concrete internals from a
+named gateway (for example importing directly from `src/gateways/auth/guard.ts`
+inside `src/api/*` contracts). If behavior or metadata is cross-cutting, define
+it in a neutral contract location and let gateways consume or re-export it.
+When a capability is truly gateway-specific, depend on that gateway's declared
+surface instead of duplicating gateway knowledge in core code.
+
 ### Module CLI controls
 
 For module-specific operational controls, add pluggable CLI subcommands at `modules/<id>/cli/index.js`. Use `cognisctl` as the primary operational control surface.

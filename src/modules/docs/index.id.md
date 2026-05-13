@@ -12,7 +12,7 @@ Kerangka modul Cognis memungkinkan pengembang pihak ketiga dan komunitas untuk m
 - Memblokir rute modul agar tidak menimpa prefiks sistem yang dilindungi.
 - Memperbarui rute modul yang terdaftar saat modul diaktifkan atau dinonaktifkan.
 
-Tidak bertanggung jawab untuk: mengautentikasi panggilan API modul (lapisan autentikasi platform yang menangani itu), menyediakan persistensi data tingkat modul (modul menggunakan kapabilitas `db:executor`), atau merender halaman UI modul (modul menyediakan titik masuk HTML mereka sendiri melalui `entrypoints.ui`).
+Tidak bertanggung jawab untuk: menyediakan persistensi data tingkat modul (modul menggunakan kapabilitas `db:executor`) atau merender halaman UI modul (modul menyediakan titik masuk HTML mereka sendiri melalui `entrypoints.ui`).
 
 ## Arsitektur
 
@@ -62,13 +62,31 @@ Modul yang menyediakan `entrypoints.ui` harus mengekspor halaman mereka di jalur
 
 ```ts
 export function registerApiRoutes(router) {
-    router.get("/api/v1/modules/my-module/data", async (req, res) => {
-        // handler
-    });
+    router.get(
+        "/api/v1/modules/my-module/data",
+        async (req, res) => {
+            // handler
+        },
+        { access: { minRole: "moderator" } },
+    );
+    router.post(
+        "/api/v1/modules/my-module/admin-audit",
+        async (req, res) => {
+            // handler
+        },
+        { access: { onlyRole: "owner" } },
+    );
 }
 ```
 
 `createModuleExtensionRoutes` di `src/modules/routes/module-extensions.ts` memanggil `registerApiRoutes` untuk setiap modul aktif yang mendeklarasikan `entrypoints.api`. Rute dimuat ulang pada setiap siklus aktifkan/nonaktifkan melalui `refresh()`.
+
+Setiap rute modul dapat mendeklarasikan metadata kebijakan akses opsional melalui
+argumen router ketiga:
+
+- `access.minRole` — mengizinkan peran target dan semua peran yang lebih tinggi
+  (`user < teacher < moderator < admin < owner`)
+- `access.onlyRole` — mengizinkan tepat satu grup peran
 
 ### Prefiks rute yang dilindungi
 
@@ -82,7 +100,18 @@ Rute modul tidak boleh dimulai dengan prefiks berikut:
 | `/public`        | Aset statis platform    |
 | `/ui`            | Aset UI platform        |
 
-Upaya untuk mendaftarkan rute di bawah prefiks yang dilindungi akan diabaikan secara diam-diam dan sebuah peringatan akan dicatat.
+Upaya untuk mendaftarkan rute di bawah prefiks yang dilindungi akan memblokir aktivasi modul.
+
+`routes.json` mendukung string rute biasa maupun objek rute dengan metadata
+kebijakan akses untuk halaman UI:
+
+```json
+[
+    "/api/v1/modules/my-module/data",
+    { "path": "/my-module/page", "access": { "minRole": "admin" } },
+    { "path": "/my-module/owner-audit", "access": { "onlyRole": "owner" } }
+]
+```
 
 ## Konfigurasi
 

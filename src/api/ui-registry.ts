@@ -4,11 +4,15 @@
  * never reads gateway-specific content — it only knows the section IDs,
  * labels, and script URLs returned here.
  */
+import type { RoleAccessPolicy } from "@cognis/core";
+
 export interface AdminSection {
     id: string;
     label: string;
     /** Browser-absolute URL of the ES module to dynamically import. */
     scriptUrl: string;
+    /** Optional role access policy for this section. */
+    access?: RoleAccessPolicy;
     /**
      * Optional base URL for component-specific locale strings.
      * The admin page will fetch `{stringsBaseUrl}/{locale}/strings.xml`
@@ -27,6 +31,8 @@ export interface PageElement {
     label: string;
     /** Browser-absolute URL of the ES module to dynamically import. */
     scriptUrl: string;
+    /** Optional role access policy for this extension. */
+    access?: RoleAccessPolicy;
     /** Optional runtime predicate used to hide extensions while their owner is disabled. */
     isEnabled?: () => boolean;
 }
@@ -40,6 +46,8 @@ export interface PageElement {
 export interface NavbarPlugin {
     /** Browser-absolute URL of the ES module to dynamically import. */
     scriptUrl: string;
+    /** Optional role access policy for this plugin. */
+    access?: RoleAccessPolicy;
     /** Optional runtime predicate used to hide plugins while their owner is disabled. */
     isEnabled?: () => boolean;
 }
@@ -49,6 +57,7 @@ export interface AuthTypingMessage {
     textKey: string;
     ownerType?: "gateway" | "adapter" | "module" | "core";
     ownerId?: string;
+    access?: RoleAccessPolicy;
     isEnabled?: () => boolean;
 }
 
@@ -62,6 +71,8 @@ export interface SettingsSection {
     label: string;
     /** Browser-absolute URL of the ES module to dynamically import. */
     scriptUrl: string;
+    /** Optional role access policy for this section. */
+    access?: RoleAccessPolicy;
     /**
      * Optional base URL for component-specific locale strings.
      * The settings page will fetch `{stringsBaseUrl}/{locale}/strings.xml`

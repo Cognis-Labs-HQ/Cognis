@@ -452,6 +452,33 @@ test("admin cannot demote disable or delete other admins", async () => {
     assert.equal(status, 200);
 });
 
+test("users list reports founder admins as owner role", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "pw", true);
+    await accounts.setFounder("admin", true);
+    const prefs = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, prefs);
+    let status = 0;
+    let body = "";
+
+    await route(
+        { method: "GET", headers } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/users"),
+    );
+
+    assert.equal(status, 200);
+    const payload = JSON.parse(body);
+    assert.equal(payload.data[0].role, "owner");
+});
+
 test("teacher role change normalizes hidden/private visibility to friends", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "pw", true);

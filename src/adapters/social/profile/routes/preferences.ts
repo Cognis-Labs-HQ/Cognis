@@ -1,4 +1,7 @@
-import { requireAuth } from "../../../../gateways/auth/guard.js";
+import {
+    requireAuth,
+    canAccessUserData,
+} from "../../../../gateways/auth/guard.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../../api/reuse/read-json.js";
 export type { UserPreferenceStore } from "../../../../api/reuse/preference-store.js";
@@ -18,11 +21,7 @@ export function createPreferencesRoutes(store: UserPreferenceStore) {
         const claims = requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = decodeURIComponent(match[1]);
-        if (
-            claims.sub !== accountId &&
-            claims.role !== "admin" &&
-            claims.role !== "owner"
-        ) {
+        if (!canAccessUserData(claims, accountId)) {
             res.writeHead(403, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({

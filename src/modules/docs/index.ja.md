@@ -12,7 +12,7 @@ Cognis モジュールフレームワークにより、サードパーティお�
 - モジュールルートが保護されたシステムプレフィックスを上書きしないようにブロックする。
 - モジュールが有効化または無効化されたときに登録済みモジュールルートを更新する。
 
-責務外: モジュール API 呼び出しの認証 (プラットフォーム認証層が処理します)、モジュールレベルのデータ永続化の提供 (モジュールは `db:executor` 機能を使用します)、モジュール UI ページのレンダリング (モジュールは `entrypoints.ui` を通じて独自の HTML エントリポイントを提供します)。
+責務外: モジュールレベルのデータ永続化の提供 (モジュールは `db:executor` 機能を使用します)、モジュール UI ページのレンダリング (モジュールは `entrypoints.ui` を通じて独自の HTML エントリポイントを提供します)。
 
 ## アーキテクチャ
 
@@ -62,13 +62,31 @@ export interface ModuleManifest {
 
 ```ts
 export function registerApiRoutes(router) {
-    router.get("/api/v1/modules/my-module/data", async (req, res) => {
-        // handler
-    });
+    router.get(
+        "/api/v1/modules/my-module/data",
+        async (req, res) => {
+            // handler
+        },
+        { access: { minRole: "moderator" } },
+    );
+    router.post(
+        "/api/v1/modules/my-module/admin-audit",
+        async (req, res) => {
+            // handler
+        },
+        { access: { onlyRole: "owner" } },
+    );
 }
 ```
 
 `src/modules/routes/module-extensions.ts` の `createModuleExtensionRoutes` は、`entrypoints.api` を宣言するすべての有効なモジュールの `registerApiRoutes` を呼び出します。ルートは `refresh()` を通じてすべての有効化/無効化サイクルで再ロードされます。
+
+各モジュールルートは、3 番目の router 引数で任意のアクセス
+ポリシーメタデータを宣言できます:
+
+- `access.minRole` — 対象ロールとそれより上位のロールを許可
+  (`user < teacher < moderator < admin < owner`)
+- `access.onlyRole` — 単一のロールグループのみ許可
 
 ### 保護されたルートプレフィックス
 
@@ -82,7 +100,18 @@ export function registerApiRoutes(router) {
 | `/public`        | プラットフォーム静的アセット |
 | `/ui`            | プラットフォーム UI アセット |
 
-保護されたプレフィックスの下にルートを登録しようとすると、警告がログに記録されて無視されます。
+保護されたプレフィックスの下にルートを登録しようとすると、モジュール有効化がブロックされます。
+
+`routes.json` は、通常のルート文字列と、UI ページ向けアクセス
+ポリシーメタデータ付きルートオブジェクトの両方をサポートします:
+
+```json
+[
+    "/api/v1/modules/my-module/data",
+    { "path": "/my-module/page", "access": { "minRole": "admin" } },
+    { "path": "/my-module/owner-audit", "access": { "onlyRole": "owner" } }
+]
+```
 
 ## 設定
 

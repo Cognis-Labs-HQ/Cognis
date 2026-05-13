@@ -7,10 +7,16 @@ import {
     setPageSecurityHeaders,
 } from "../../../gateways/auth/guard.js";
 import { lookupAccessToken } from "../../../gateways/auth/access-tokens.js";
-import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
-import type { GatewayRegistry } from "@cognis/core";
+import {
+    isRoleAllowed,
+    type BootstrapLog,
+    type ModuleRuntimeGateway,
+    type RoleAccessPolicy,
+    type GatewayRegistry,
+} from "@cognis/core";
 import type { UIRegistry } from "../../ui-registry.js";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
+import { parseRoleAccessPolicy } from "../../reuse/parse-role-access-policy.js";
 
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
@@ -18,6 +24,40 @@ const PUBLIC_ROOT = path.join(UI_ROOT, "public");
 const MODULES_ROOT =
     process.env.COGNIS_MODULES_ROOT ??
     path.resolve(process.cwd(), "src", "modules");
+
+interface ModuleUiRouteRule {
+    path: string;
+    access?: RoleAccessPolicy;
+    invalidAccessPolicy?: boolean;
+}
+
+function parseModuleUiRoutes(raw: string): ModuleUiRouteRule[] {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+        .map((entry) => {
+            if (typeof entry === "string") {
+                return { path: entry } as ModuleUiRouteRule;
+            }
+            if (
+                !entry ||
+                typeof entry !== "object" ||
+                Array.isArray(entry) ||
+                typeof (entry as { path?: unknown }).path !== "string"
+            ) {
+                return null;
+            }
+            const parsedAccess = parseRoleAccessPolicy(
+                (entry as { access?: unknown }).access,
+            );
+            return {
+                path: (entry as { path: string }).path,
+                access: parsedAccess.access,
+                invalidAccessPolicy: parsedAccess.invalid,
+            } as ModuleUiRouteRule;
+        })
+        .filter((entry): entry is ModuleUiRouteRule => Boolean(entry));
+}
 
 function resolveContentType(filePath: string) {
     const ext = path.extname(filePath);
@@ -301,7 +341,10 @@ export function createUiRoutes(
                 return true;
             }
             const session = getCookieSession(req);
-            if (session?.role !== "admin" && session?.role !== "owner") {
+            if (
+                !session ||
+                !isRoleAllowed(session.role, { minRole: "admin" })
+            ) {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
@@ -328,7 +371,10 @@ export function createUiRoutes(
                 return true;
             }
             const session = getCookieSession(req);
-            if (session?.role !== "admin" && session?.role !== "owner") {
+            if (
+                !session ||
+                !isRoleAllowed(session.role, { minRole: "admin" })
+            ) {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
@@ -358,7 +404,7 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            if (session.role !== "admin" && session.role !== "owner") {
+            if (!isRoleAllowed(session.role, { minRole: "admin" })) {
                 res.writeHead(302, { location: "/dashboard" });
                 res.end();
                 return true;
@@ -391,7 +437,7 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            if (session.role === "admin") {
+            if (isRoleAllowed(session.role, { onlyRole: "admin" })) {
                 res.writeHead(302, { location: "/users" });
                 res.end();
                 return true;
@@ -478,7 +524,8 @@ export function createUiRoutes(
             return true;
         }
 
-        if (runtime && getCookieSession(req)) {
+        const session = getCookieSession(req);
+        if (runtime && session) {
             const manifests = await runtime.listManifests();
 
             for (const manifest of manifests) {
@@ -490,14 +537,39 @@ export function createUiRoutes(
                         manifest.id,
                         "routes.json",
                     );
-                    const routes = JSON.parse(
+                    const routes = parseModuleUiRoutes(
                         await readFile(routeFile, "utf8"),
-                    ) as string[];
+                    );
 
+                    const matchingRoute = routes.find(
+                        (routeRule) => routeRule.path === url.pathname,
+                    );
+                    if (!matchingRoute || url.pathname.startsWith("/api/")) {
+                        continue;
+                    }
+                    if (matchingRoute.invalidAccessPolicy) {
+                        log?.(
+                            "warn",
+                            "Blocked module UI route due to invalid access policy declaration.",
+                            {
+                                component: "api-ui",
+                                moduleId: manifest.id,
+                                path: url.pathname,
+                            },
+                        );
+                        res.writeHead(302, { location: "/dashboard" });
+                        res.end();
+                        return true;
+                    }
                     if (
-                        routes.includes(url.pathname) &&
-                        !url.pathname.startsWith("/api/")
+                        matchingRoute.access &&
+                        !isRoleAllowed(session.role, matchingRoute.access)
                     ) {
+                        res.writeHead(302, { location: "/dashboard" });
+                        res.end();
+                        return true;
+                    }
+                    if (matchingRoute) {
                         const uiFile = path.resolve(
                             MODULES_ROOT,
                             manifest.id,
@@ -532,12 +604,15 @@ export function createUiRoutes(
             /^\/api\/v1\/ui\/page-extensions\/([^/]+)$/,
         );
         if (pageExtMatch && req.method === "GET") {
-            if (!requireAuth(req, res, "user")) return true;
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
             const pageId = decodeURIComponent(pageExtMatch[1]);
             const extensions = (
                 uiRegistry?.listPageExtensions(pageId) ?? []
             ).filter(
-                (extension) => !extension.isEnabled || extension.isEnabled(),
+                (extension) =>
+                    (!extension.isEnabled || extension.isEnabled()) &&
+                    isRoleAllowed(claims.role, extension.access),
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: extensions }));
@@ -548,9 +623,17 @@ export function createUiRoutes(
             url.pathname === "/api/v1/ui/auth-typing-messages" &&
             req.method === "GET"
         ) {
+            const viewerSession = getCookieSession(req);
             const gatewayMessages = (uiRegistry?.listAuthTypingMessages() ?? [])
                 .filter((message) => {
                     if (message.isEnabled && !message.isEnabled()) {
+                        return false;
+                    }
+                    if (
+                        message.access &&
+                        (!viewerSession ||
+                            !isRoleAllowed(viewerSession.role, message.access))
+                    ) {
                         return false;
                     }
                     if (
@@ -606,9 +689,12 @@ export function createUiRoutes(
             url.pathname === "/api/v1/ui/settings-sections" &&
             req.method === "GET"
         ) {
-            if (!requireAuth(req, res, "user")) return true;
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
             const sections = (uiRegistry?.listSettingsSections() ?? []).filter(
-                (section) => !section.isEnabled || section.isEnabled(),
+                (section) =>
+                    (!section.isEnabled || section.isEnabled()) &&
+                    isRoleAllowed(claims.role, section.access),
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
@@ -623,9 +709,12 @@ export function createUiRoutes(
             url.pathname === "/api/v1/ui/navbar-plugins" &&
             req.method === "GET"
         ) {
-            if (!requireAuth(req, res, "user")) return true;
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
             const plugins = (uiRegistry?.listNavbarPlugins() ?? []).filter(
-                (plugin) => !plugin.isEnabled || plugin.isEnabled(),
+                (plugin) =>
+                    (!plugin.isEnabled || plugin.isEnabled()) &&
+                    isRoleAllowed(claims.role, plugin.access),
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: plugins }));

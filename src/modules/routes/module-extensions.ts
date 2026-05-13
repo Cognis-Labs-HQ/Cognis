@@ -1,15 +1,27 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
+import type {
+    BootstrapLog,
+    ModuleRuntimeGateway,
+    RoleAccessPolicy,
+} from "@cognis/core";
 import path from "node:path";
+import { requireRoleAccess } from "../../gateways/auth/guard.js";
+import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
 
 interface RouteHandler {
     method: string;
     routePath: string;
     moduleId: string;
+    access?: RoleAccessPolicy;
+    invalidAccessPolicy: boolean;
     handler: (
         req: IncomingMessage,
         res: ServerResponse,
     ) => Promise<void> | void;
+}
+
+interface ModuleRouteOptions {
+    access?: unknown;
 }
 
 export interface ModuleExtensionRoutes {
@@ -31,6 +43,28 @@ export function createModuleExtensionRoutes(
         process.env.COGNIS_MODULES_ROOT ??
         path.resolve(process.cwd(), "src", "modules");
 
+    /**
+     * Writes a standardized warning when a module declares an invalid access policy.
+     */
+    function logInvalidAccessPolicy(
+        method: "GET" | "POST",
+        moduleId: string,
+        routePath: string,
+        access: unknown,
+    ): void {
+        log?.(
+            "warn",
+            "Rejected module API route due to invalid access policy.",
+            {
+                component: "module-extension-routes",
+                moduleId,
+                method,
+                routePath,
+                access,
+            },
+        );
+    }
+
     async function refresh() {
         const nextHandlers: RouteHandler[] = [];
         const manifests = await runtime.listManifests();
@@ -48,22 +82,50 @@ export function createModuleExtensionRoutes(
                         get(
                             routePath: string,
                             handler: RouteHandler["handler"],
+                            options?: ModuleRouteOptions,
                         ) {
+                            const parsedAccess = parseRoleAccessPolicy(
+                                options?.access,
+                            );
+                            if (parsedAccess.invalid) {
+                                logInvalidAccessPolicy(
+                                    "GET",
+                                    manifest.id,
+                                    routePath,
+                                    options?.access,
+                                );
+                            }
                             nextHandlers.push({
                                 method: "GET",
                                 routePath,
                                 moduleId: manifest.id,
+                                access: parsedAccess.access,
+                                invalidAccessPolicy: parsedAccess.invalid,
                                 handler,
                             });
                         },
                         post(
                             routePath: string,
                             handler: RouteHandler["handler"],
+                            options?: ModuleRouteOptions,
                         ) {
+                            const parsedAccess = parseRoleAccessPolicy(
+                                options?.access,
+                            );
+                            if (parsedAccess.invalid) {
+                                logInvalidAccessPolicy(
+                                    "POST",
+                                    manifest.id,
+                                    routePath,
+                                    options?.access,
+                                );
+                            }
                             nextHandlers.push({
                                 method: "POST",
                                 routePath,
                                 moduleId: manifest.id,
+                                access: parsedAccess.access,
+                                invalidAccessPolicy: parsedAccess.invalid,
                                 handler,
                             });
                         },
@@ -91,6 +153,23 @@ export function createModuleExtensionRoutes(
                     entry.method === method && entry.routePath === url.pathname,
             );
             if (!match) return false;
+            if (match.invalidAccessPolicy) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message:
+                                "Route denied due to invalid access policy configuration",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (match.access) {
+                const claims = requireRoleAccess(req, res, match.access);
+                if (!claims) return true;
+            }
             await match.handler(req, res);
             return true;
         },

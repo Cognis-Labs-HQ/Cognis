@@ -1,4 +1,8 @@
-import { requireAuth, getAuthClaims } from "../../auth/guard.js";
+import {
+    requireAuth,
+    getAuthClaims,
+    canAccessUserData,
+} from "../../auth/guard.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../api/reuse/read-json.js";
 import type { CoreNotificationGateway } from "../gateway.js";
@@ -198,7 +202,7 @@ export function createNotificationRoutes(
                 );
                 return true;
             }
-            if (claims.sub !== username && claims.role !== "admin") {
+            if (!canAccessUserData(claims, username)) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({

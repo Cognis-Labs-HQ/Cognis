@@ -181,7 +181,25 @@ export class ModuleService {
         const routeFile = path.join(activationPath, "routes.json");
         try {
             const raw = await readFile(routeFile, "utf8");
-            const routes = JSON.parse(raw) as string[];
+            const declaredRoutes = JSON.parse(raw) as unknown;
+            const routes = Array.isArray(declaredRoutes)
+                ? declaredRoutes
+                      .map((entry) => {
+                          if (typeof entry === "string") return entry;
+                          if (
+                              !entry ||
+                              typeof entry !== "object" ||
+                              Array.isArray(entry)
+                          ) {
+                              return null;
+                          }
+                          const pathValue = (entry as { path?: unknown }).path;
+                          return typeof pathValue === "string"
+                              ? pathValue
+                              : null;
+                      })
+                      .filter((route): route is string => Boolean(route))
+                : [];
             const blockedPrefixes = [
                 "/api/v1/system",
                 "/api/v1/auth",

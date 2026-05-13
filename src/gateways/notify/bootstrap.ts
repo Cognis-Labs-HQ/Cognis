@@ -4,6 +4,7 @@ import {
     requireAuth,
     getAuthClaims,
     readJson,
+    canAccessUserData,
     type GatewayBootstrapContext,
     type GatewayRegistry,
 } from "../shared.js";
@@ -449,7 +450,7 @@ export function createUserEmailRoutes(
                 );
                 return true;
             }
-            if (claims.sub !== username && claims.role !== "admin") {
+            if (!canAccessUserData(claims, username)) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -635,7 +636,7 @@ export function createUserEmailRoutes(
                 );
                 return true;
             }
-            if (claims.sub !== username && claims.role !== "admin") {
+            if (!canAccessUserData(claims, username)) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({

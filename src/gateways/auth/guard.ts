@@ -1,12 +1,31 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { verifyAccessToken, type AccessRole } from "./access-tokens.js";
+import {
+    hasMinRole,
+    isRoleAllowed,
+    isAccessRole,
+    type RoleAccessPolicy,
+} from "../../core/contracts/access-policy.js";
+
+export { hasMinRole, isRoleAllowed, isAccessRole };
+export type { RoleAccessPolicy };
 
 interface AuthClaims {
     sub: string;
     role: AccessRole;
 }
 
-const roleRank = { user: 1, teacher: 2, moderator: 3, admin: 4, owner: 5 };
+/**
+ * Returns true when the caller may read or write another user's data.
+ * Access is granted if the caller is the target user themselves, or if the
+ * caller holds at least admin rank (which includes owner).
+ */
+export function canAccessUserData(
+    claims: { sub: string; role: AccessRole },
+    targetUsername: string,
+): boolean {
+    return claims.sub === targetUsername || hasMinRole(claims.role, "admin");
+}
 
 export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
     const raw = req.headers.authorization;
@@ -20,7 +39,7 @@ export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
 export function requireAuth(
     req: IncomingMessage,
     res: ServerResponse,
-    minRole: keyof typeof roleRank = "user",
+    minRole: AccessRole = "user",
 ) {
     const claims = getAuthClaims(req);
     if (!claims) {
@@ -32,7 +51,7 @@ export function requireAuth(
         );
         return null;
     }
-    if (roleRank[claims.role] < roleRank[minRole]) {
+    if (!hasMinRole(claims.role, minRole)) {
         res.writeHead(403, { "content-type": "application/json" });
         res.end(
             JSON.stringify({
@@ -45,6 +64,28 @@ export function requireAuth(
         return null;
     }
     return claims;
+}
+
+export function requireRoleAccess(
+    req: IncomingMessage,
+    res: ServerResponse,
+    policy: RoleAccessPolicy,
+): AuthClaims | null {
+    const claims = requireAuth(req, res, policy.minRole ?? "user");
+    if (!claims) return null;
+    if (!policy.onlyRole || claims.role === policy.onlyRole) {
+        return claims;
+    }
+    res.writeHead(403, { "content-type": "application/json" });
+    res.end(
+        JSON.stringify({
+            error: {
+                code: "forbidden",
+                message: `Requires ${policy.onlyRole} role`,
+            },
+        }),
+    );
+    return null;
 }
 
 /**

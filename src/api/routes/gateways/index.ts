@@ -1,5 +1,9 @@
-import { getAuthClaims, requireAuth } from "../../../gateways/auth/guard.js";
-import type { BootstrapLog, GatewayRegistry } from "@cognis/core";
+import { requireAuth } from "../../../gateways/auth/guard.js";
+import {
+    isRoleAllowed,
+    type BootstrapLog,
+    type GatewayRegistry,
+} from "@cognis/core";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { UIRegistry } from "../../ui-registry.js";
 
@@ -47,15 +51,16 @@ export function createGatewayRoutes(
         if (url.pathname === "/api/v1/admin/sections" && req.method === "GET") {
             const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
+            const sections = (uiRegistry?.listAdminSections() ?? []).filter(
+                (section) => isRoleAllowed(claims.role, section.access),
+            );
             log?.("debug", "Listed admin sections.", {
                 ...logMeta,
                 accountId: claims.sub,
-                count: uiRegistry?.listAdminSections().length ?? 0,
+                count: sections.length,
             });
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(
-                JSON.stringify({ data: uiRegistry?.listAdminSections() ?? [] }),
-            );
+            res.end(JSON.stringify({ data: sections }));
             return true;
         }
 

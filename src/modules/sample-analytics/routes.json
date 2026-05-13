@@ -1,1 +1,9 @@
-["/api/v1/modules/sample-analytics/metrics", "/analytics"]
+[
+    "/api/v1/modules/sample-analytics/metrics",
+    {
+        "path": "/analytics",
+        "access": {
+            "minRole": "admin"
+        }
+    }
+]

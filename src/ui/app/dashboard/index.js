@@ -7,6 +7,7 @@ import {
     createDateTimeFormatters,
     mountLiveClock,
 } from "../../reuse/clock-display.js";
+import { getRoleLabel } from "../../reuse/access-role.js";
 
 async function loadAccountInfo(account) {
     if (!account) return null;
@@ -97,7 +98,7 @@ export async function mount(root) {
       <h3>${i18n.t("ui.app.dashboard.element.account.label")}</h3>
       <dl class="dashboard-info-list">
         <dt>${i18n.t("ui.app.dashboard.role")}</dt>
-        <dd>${role}</dd>
+        <dd>${getRoleLabel(i18n, role)}</dd>
         <dt>${i18n.t("ui.app.dashboard.member_since")}</dt>
         <dd>${formatDateValue(info?.createdAt ?? null)}</dd>
       </dl>

@@ -1,0 +1,8 @@
+[
+    {
+        "path": "/analytics-invalid-policy",
+        "access": {
+            "minRole": "admn"
+        }
+    }
+]

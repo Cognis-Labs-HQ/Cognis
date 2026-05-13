@@ -54,6 +54,11 @@
   <string name="ui.reuse.subject">Subjek</string>
   <string name="ui.reuse.message">Pesan</string>
 
+  <string name="ui.reuse.role_user">Pengguna</string>
+  <string name="ui.reuse.role_teacher">Pengajar</string>
+  <string name="ui.reuse.role_moderator">Moderator</string>
+  <string name="ui.reuse.role_admin">Admin</string>
+  <string name="ui.reuse.role_owner">Pemilik</string>
   <string name="ui.layout.brand.aria">Beranda Cognis</string>
   <string name="ui.layout.nav.primary">Navigasi utama</string>
   <string name="ui.layout.nav.open_menu">Buka menu navigasi</string>

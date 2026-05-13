@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth } from "../../../../gateways/auth/guard.js";
+import { requireAuth, hasMinRole } from "../../../../gateways/auth/guard.js";
 import type { DbProfileStore } from "../store.js";
 import type { FileStorageGateway } from "@cognis/core";
 import { readRawBody, readJson } from "../../../../api/reuse/read-json.js";
@@ -104,7 +104,7 @@ export function createFileRoutes(
             }
 
             if (req.method === "DELETE") {
-                if (claims.role !== "admin") {
+                if (!hasMinRole(claims.role, "admin")) {
                     res.writeHead(403, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
