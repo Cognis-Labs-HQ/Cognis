@@ -12,7 +12,7 @@ Das Cognis-Modul-Framework ermöglicht es Drittanbieter- und Community-Entwickle
 - Blockieren, dass Modulrouten geschützte Systempräfixe überschreiben.
 - Registrierte Modulrouten aktualisieren, wenn Module aktiviert oder deaktiviert werden.
 
-Nicht verantwortlich für: die Authentifizierung von Modul-API-Aufrufen (das erledigt die Plattform-Authentifizierungsschicht), die Bereitstellung modulspezifischer Datenpersistenz (Module nutzen die `db:executor`-Fähigkeit) oder das Rendern von Modul-UI-Seiten (Module liefern ihre eigenen HTML-Einstiegspunkte über `entrypoints.ui`).
+Nicht verantwortlich für: die Bereitstellung modulspezifischer Datenpersistenz (Module nutzen die `db:executor`-Fähigkeit) oder das Rendern von Modul-UI-Seiten (Module liefern ihre eigenen HTML-Einstiegspunkte über `entrypoints.ui`).
 
 ## Architektur
 
@@ -62,13 +62,31 @@ Module mit `entrypoints.ui` müssen ihre Seite unter dem deklarierten Pfad relat
 
 ```ts
 export function registerApiRoutes(router) {
-    router.get("/api/v1/modules/my-module/data", async (req, res) => {
-        // handler
-    });
+    router.get(
+        "/api/v1/modules/my-module/data",
+        async (req, res) => {
+            // handler
+        },
+        { access: { minRole: "moderator" } },
+    );
+    router.post(
+        "/api/v1/modules/my-module/admin-audit",
+        async (req, res) => {
+            // handler
+        },
+        { access: { onlyRole: "owner" } },
+    );
 }
 ```
 
 `createModuleExtensionRoutes` in `src/modules/routes/module-extensions.ts` ruft `registerApiRoutes` für jedes aktivierte Modul auf, das `entrypoints.api` deklariert. Routen werden bei jedem Aktivierungs-/Deaktivierungszyklus über `refresh()` neu geladen.
+
+Jede Modulroute kann optionale Zugriffsrichtlinien über das dritte
+Router-Argument deklarieren:
+
+- `access.minRole` — erlaubt die Zielrolle und alle höheren Rollen
+  (`user < teacher < moderator < admin < owner`)
+- `access.onlyRole` — erlaubt genau eine einzelne Rollengruppe
 
 ### Geschützte Routenpräfixe
 
@@ -82,7 +100,18 @@ Modulrouten dürfen nicht mit einem der folgenden Präfixe beginnen:
 | `/public`        | Plattform-Static-Assets |
 | `/ui`            | Plattform-UI-Assets     |
 
-Der Versuch, eine Route unter einem geschützten Präfix zu registrieren, wird still ignoriert und eine Warnung protokolliert.
+Der Versuch, eine Route unter einem geschützten Präfix zu registrieren, blockiert die Modulaktivierung.
+
+`routes.json` unterstützt sowohl reine Routen-Strings als auch Routenobjekte
+mit Zugriffsrichtlinien für UI-Seiten:
+
+```json
+[
+    "/api/v1/modules/my-module/data",
+    { "path": "/my-module/page", "access": { "minRole": "admin" } },
+    { "path": "/my-module/owner-audit", "access": { "onlyRole": "owner" } }
+]
+```
 
 ## Konfiguration
 

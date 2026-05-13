@@ -4,7 +4,7 @@
  * never reads gateway-specific content — it only knows the section IDs,
  * labels, and script URLs returned here.
  */
-import type { RoleAccessPolicy } from "../gateways/auth/guard.js";
+import type { RoleAccessPolicy } from "@cognis/core";
 
 export interface AdminSection {
     id: string;

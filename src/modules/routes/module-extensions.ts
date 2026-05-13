@@ -1,10 +1,11 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
+import type {
+    BootstrapLog,
+    ModuleRuntimeGateway,
+    RoleAccessPolicy,
+} from "@cognis/core";
 import path from "node:path";
-import {
-    requireRoleAccess,
-    type RoleAccessPolicy,
-} from "../../gateways/auth/guard.js";
+import { requireRoleAccess } from "../../gateways/auth/guard.js";
 
 interface RouteHandler {
     method: string;

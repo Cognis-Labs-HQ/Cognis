@@ -5,13 +5,16 @@ import {
     requireAuth,
     getCookieSession,
     setPageSecurityHeaders,
-    isRoleAllowed,
-    isAccessRole,
-    type RoleAccessPolicy,
 } from "../../../gateways/auth/guard.js";
 import { lookupAccessToken } from "../../../gateways/auth/access-tokens.js";
-import type { BootstrapLog, ModuleRuntimeGateway } from "@cognis/core";
-import type { GatewayRegistry } from "@cognis/core";
+import {
+    isRoleAllowed,
+    isAccessRole,
+    type BootstrapLog,
+    type ModuleRuntimeGateway,
+    type RoleAccessPolicy,
+    type GatewayRegistry,
+} from "@cognis/core";
 import type { UIRegistry } from "../../ui-registry.js";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
 

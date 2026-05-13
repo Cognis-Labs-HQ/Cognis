@@ -1,5 +1,9 @@
-import { requireAuth, isRoleAllowed } from "../../../gateways/auth/guard.js";
-import type { BootstrapLog, GatewayRegistry } from "@cognis/core";
+import { requireAuth } from "../../../gateways/auth/guard.js";
+import {
+    isRoleAllowed,
+    type BootstrapLog,
+    type GatewayRegistry,
+} from "@cognis/core";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { UIRegistry } from "../../ui-registry.js";
 

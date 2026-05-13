@@ -1,4 +1,5 @@
 export * from "./contracts/auth-account.js";
+export * from "./contracts/access-policy.js";
 export * from "./contracts/module-manifest.js";
 export type { AuthContext, AuthGateway } from "../gateways/auth/gateway.js";
 export type { QueryResult, DatabaseGateway } from "../gateways/db/gateway.js";
