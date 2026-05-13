@@ -28,7 +28,7 @@ export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/study/languages"],
     });
-    applyDocumentTitle(i18n, "ui.app.study.page_title");
+    applyDocumentTitle(i18n, "gateway.study.page_title");
 
     let availableLanguages = [];
     let learningLanguages = [];
@@ -89,7 +89,7 @@ export async function mount(root, { signal } = {}) {
     function renderPickerContent() {
         const cards =
             availableLanguages.length === 0
-                ? `<p class="study-empty">${escapeHtml(i18n.t("ui.app.study.no_languages"))}</p>`
+                ? `<p class="study-empty">${escapeHtml(i18n.t("gateway.study.no_languages"))}</p>`
                 : availableLanguages
                       .map(
                           (lang, index) => `
@@ -110,13 +110,13 @@ export async function mount(root, { signal } = {}) {
                 <div class="study-welcome-hero">
                     <span class="study-welcome-icon study-bounce-in">🎓</span>
                     <h1 class="study-welcome-heading study-fade-in-up" style="animation-delay: 0.1s">
-                        ${escapeHtml(i18n.t("ui.app.study.welcome_heading"))}
+                        ${escapeHtml(i18n.t("gateway.study.welcome_heading"))}
                     </h1>
                     <p class="study-welcome-tagline study-fade-in-up" style="animation-delay: 0.25s">
-                        ${escapeHtml(i18n.t("ui.app.study.welcome_tagline"))}
+                        ${escapeHtml(i18n.t("gateway.study.welcome_tagline"))}
                     </p>
                     <p class="study-welcome-prompt study-fade-in-up" style="animation-delay: 0.4s">
-                        ${escapeHtml(i18n.t("ui.app.study.welcome_prompt"))}
+                        ${escapeHtml(i18n.t("gateway.study.welcome_prompt"))}
                     </p>
                 </div>
                 <div class="study-language-grid study-fade-in-up" style="animation-delay: 0.55s">
@@ -129,7 +129,7 @@ export async function mount(root, { signal } = {}) {
                         class="btn-confirm btn-animated study-start-btn"
                         ${selectedForPicker.size === 0 ? "disabled" : ""}
                     >
-                        ${escapeHtml(i18n.t("ui.app.study.start"))}
+                        ${escapeHtml(i18n.t("gateway.study.start"))}
                     </button>
                 </div>
             </div>
@@ -147,7 +147,7 @@ export async function mount(root, { signal } = {}) {
                 const nameText = escapeHtml(lang?.name || code);
                 const moduleLinks =
                     modules.length === 0
-                        ? `<span class="study-hub-no-modules">${escapeHtml(i18n.t("ui.app.study.no_modules"))}</span>`
+                        ? `<span class="study-hub-no-modules">${escapeHtml(i18n.t("gateway.study.no_modules"))}</span>`
                         : modules
                               .map(
                                   (mod) =>
@@ -167,9 +167,9 @@ export async function mount(root, { signal } = {}) {
             .join("");
         return `
             <div class="study-hub-header">
-                <h2 class="study-hub-heading">${escapeHtml(i18n.t("ui.app.study.your_languages"))}</h2>
+                <h2 class="study-hub-heading">${escapeHtml(i18n.t("gateway.study.your_languages"))}</h2>
                 <button type="button" id="study-change-languages" class="btn-cancel btn-animated">
-                    ${escapeHtml(i18n.t("ui.app.study.change_languages"))}
+                    ${escapeHtml(i18n.t("gateway.study.change_languages"))}
                 </button>
             </div>
             <div class="study-hub-grid">${cards}</div>
@@ -181,7 +181,7 @@ export async function mount(root, { signal } = {}) {
             return [
                 {
                     id: "study-picker",
-                    label: i18n.t("ui.app.study.page_title"),
+                    label: i18n.t("gateway.study.page_title"),
                     pinned: true,
                     render: renderPickerContent,
                     onRender: bindPickerEvents,
@@ -191,7 +191,7 @@ export async function mount(root, { signal } = {}) {
         return [
             {
                 id: "study-hub",
-                label: i18n.t("ui.app.study.your_languages"),
+                label: i18n.t("gateway.study.your_languages"),
                 pinned: true,
                 render: renderHubContent,
                 onRender: bindHubEvents,
@@ -205,7 +205,7 @@ export async function mount(root, { signal } = {}) {
         preferenceKey: "study-layout",
         i18n,
         pageContext: {
-            title: i18n.t("ui.app.study.page_title"),
+            title: i18n.t("gateway.study.page_title"),
         },
         toolbar: [],
     });

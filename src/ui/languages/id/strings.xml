@@ -53,6 +53,11 @@
   <string name="ui.reuse.debug">Debug</string>
   <string name="ui.reuse.subject">Subjek</string>
   <string name="ui.reuse.message">Pesan</string>
+  <string name="ui.reuse.role_user">Pengguna</string>
+  <string name="ui.reuse.role_teacher">Pengajar</string>
+  <string name="ui.reuse.role_moderator">Moderator</string>
+  <string name="ui.reuse.role_admin">Admin</string>
+  <string name="ui.reuse.role_owner">Pemilik</string>
 
   <string name="ui.reuse.role_user">Pengguna</string>
   <string name="ui.reuse.role_teacher">Pengajar</string>
@@ -192,7 +197,6 @@
   <string name="ui.page.title.register">Cognis - Undangan Registrasi</string>
   <string name="ui.page.title.users">Cognis - Pengguna</string>
   <string name="ui.page.title.invite">Cognis - Undang</string>
-  <string name="ui.page.title.study">Cognis - Belajar</string>
   <string name="ui.app.verify_email.verifying">Memverifikasi…</string>
   <string name="ui.app.verify_email.success_title">Email Terverifikasi</string>
   <string name="ui.app.verify_email.success_body">Alamat email Anda telah berhasil diverifikasi.</string>
@@ -433,15 +437,13 @@
   <string name="ui.app.admin.security.save_failed">Gagal menyimpan pengaturan keamanan.</string>
   <string name="ui.app.settings.emails_domain_blocked_body">Alamat email ini berasal dari domain yang tidak ada dalam daftar domain tepercaya. Hubungi administrator Anda untuk memperbarui pengaturan keamanan.</string>
   <string name="ui.app.settings.emails_verify_unavailable">Verifikasi email tidak tersedia. Hubungi administrator Anda.</string>
-  <string name="ui.app.study.page_title">Belajar</string>
-  <string name="ui.app.study.welcome_heading">Selamat Datang di Cognis</string>
-  <string name="ui.app.study.welcome_tagline">Siap untuk mulai belajar?</string>
-  <string name="ui.app.study.welcome_prompt">Pilih bahasa yang ingin kamu pelajari</string>
-  <string name="ui.app.study.start">Ayo Mulai!</string>
-  <string name="ui.app.study.no_languages">Belum ada bahasa belajar yang tersedia.</string>
-  <string name="ui.app.study.your_languages">Bahasa Saya</string>
-  <string name="ui.app.study.change_languages">Ubah Bahasa</string>
-  <string name="ui.app.study.no_modules">Tidak ada modul belajar yang tersedia.</string>
+  <string name="ui.app.settings.study.title">Studi</string>
+  <string name="ui.app.settings.study.no_languages">Tidak ada bahasa yang tersedia.</string>
+  <string name="ui.app.settings.study.learn">Belajar</string>
+  <string name="ui.app.settings.study.teach">Mengajar</string>
+  <string name="ui.app.settings.study.apply_to_teach">Ajukan untuk Mengajar</string>
+  <string name="ui.app.settings.study.application_sent">Aplikasi pengajar dikirim.</string>
+  <string name="ui.app.settings.study.application_failed">Gagal mengirim aplikasi pengajar.</string>
   <string name="ui.app.settings.datetime">Tanggal &amp; Waktu</string>
   <string name="ui.app.settings.datetime_tz_heading">Zona Waktu</string>
   <string name="ui.app.settings.datetime_tz_label">Zona Waktu Tampilan</string>

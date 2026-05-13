@@ -53,6 +53,11 @@
   <string name="ui.reuse.debug">Debug</string>
   <string name="ui.reuse.subject">Betreff</string>
   <string name="ui.reuse.message">Nachricht</string>
+  <string name="ui.reuse.role_user">Benutzer</string>
+  <string name="ui.reuse.role_teacher">Lehrer/in</string>
+  <string name="ui.reuse.role_moderator">Moderator/in</string>
+  <string name="ui.reuse.role_admin">Administrator</string>
+  <string name="ui.reuse.role_owner">Inhaber/in</string>
 
   <string name="ui.reuse.role_user">Benutzer</string>
   <string name="ui.reuse.role_teacher">Lehrkraft</string>
@@ -192,7 +197,6 @@
   <string name="ui.page.title.register">Cognis - Registrierungseinladung</string>
   <string name="ui.page.title.users">Cognis - Benutzer</string>
   <string name="ui.page.title.invite">Cognis - Einladungen</string>
-  <string name="ui.page.title.study">Cognis - Lernen</string>
   <string name="ui.app.verify_email.verifying">Wird verifiziert…</string>
   <string name="ui.app.verify_email.success_title">E-Mail verifiziert</string>
   <string name="ui.app.verify_email.success_body">Ihre E-Mail-Adresse wurde erfolgreich verifiziert.</string>
@@ -433,15 +437,13 @@
   <string name="ui.app.admin.security.save_failed">Fehler beim Speichern der Sicherheitseinstellungen.</string>
   <string name="ui.app.settings.emails_domain_blocked_body">Diese E-Mail-Adresse gehört zu einer Domain, die nicht in der Liste der vertrauenswürdigen Domains steht. Bitten Sie Ihren Administrator, die Sicherheitseinstellungen zu aktualisieren.</string>
   <string name="ui.app.settings.emails_verify_unavailable">E-Mail-Verifizierung ist nicht verfügbar. Bitte wenden Sie sich an Ihren Administrator.</string>
-  <string name="ui.app.study.page_title">Lernen</string>
-  <string name="ui.app.study.welcome_heading">Willkommen bei Cognis</string>
-  <string name="ui.app.study.welcome_tagline">Bereit zu lernen?</string>
-  <string name="ui.app.study.welcome_prompt">Wähle die Sprachen, die du lernen möchtest</string>
-  <string name="ui.app.study.start">Los geht's!</string>
-  <string name="ui.app.study.no_languages">Derzeit sind keine Lernsprachen verfügbar.</string>
-  <string name="ui.app.study.your_languages">Meine Sprachen</string>
-  <string name="ui.app.study.change_languages">Sprachen ändern</string>
-  <string name="ui.app.study.no_modules">Keine Lernmodule verfügbar.</string>
+  <string name="ui.app.settings.study.title">Lernen</string>
+  <string name="ui.app.settings.study.no_languages">Es sind keine Sprachen verfügbar.</string>
+  <string name="ui.app.settings.study.learn">Lernen</string>
+  <string name="ui.app.settings.study.teach">Unterrichten</string>
+  <string name="ui.app.settings.study.apply_to_teach">Zum Unterrichten bewerben</string>
+  <string name="ui.app.settings.study.application_sent">Lehrerantrag wurde eingereicht.</string>
+  <string name="ui.app.settings.study.application_failed">Lehrerantrag konnte nicht eingereicht werden.</string>
   <string name="ui.app.settings.datetime">Datum &amp; Uhrzeit</string>
   <string name="ui.app.settings.datetime_tz_heading">Zeitzone</string>
   <string name="ui.app.settings.datetime_tz_label">Anzeigezeitzone</string>

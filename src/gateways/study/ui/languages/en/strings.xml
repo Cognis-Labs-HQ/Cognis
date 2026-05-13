@@ -2,4 +2,13 @@
   <string name="gateway.study.picker.title">Choose A Language To Study</string>
   <string name="gateway.study.picker.select">Select a language:</string>
   <string name="gateway.study.picker.start">Study</string>
+  <string name="gateway.study.page_title">Study</string>
+  <string name="gateway.study.welcome_heading">Welcome to Cognis</string>
+  <string name="gateway.study.welcome_tagline">Ready to start learning?</string>
+  <string name="gateway.study.welcome_prompt">Choose the languages you want to study</string>
+  <string name="gateway.study.start">Let's Go!</string>
+  <string name="gateway.study.no_languages">No study languages are available yet.</string>
+  <string name="gateway.study.your_languages">Your Languages</string>
+  <string name="gateway.study.change_languages">Change Languages</string>
+  <string name="gateway.study.no_modules">No learning modules available.</string>
 </resources>

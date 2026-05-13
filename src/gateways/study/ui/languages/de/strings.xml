@@ -2,4 +2,13 @@
   <string name="gateway.study.picker.title">Lernsprache wählen</string>
   <string name="gateway.study.picker.select">Sprache auswählen:</string>
   <string name="gateway.study.picker.start">Lernen</string>
+  <string name="gateway.study.page_title">Lernen</string>
+  <string name="gateway.study.welcome_heading">Willkommen bei Cognis</string>
+  <string name="gateway.study.welcome_tagline">Bereit zu lernen?</string>
+  <string name="gateway.study.welcome_prompt">Wähle die Sprachen, die du lernen möchtest</string>
+  <string name="gateway.study.start">Los geht's!</string>
+  <string name="gateway.study.no_languages">Derzeit sind keine Lernsprachen verfügbar.</string>
+  <string name="gateway.study.your_languages">Meine Sprachen</string>
+  <string name="gateway.study.change_languages">Sprachen ändern</string>
+  <string name="gateway.study.no_modules">Keine Lernmodule verfügbar.</string>
 </resources>

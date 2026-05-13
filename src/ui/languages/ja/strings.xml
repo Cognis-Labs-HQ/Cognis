@@ -53,6 +53,11 @@
   <string name="ui.reuse.debug">デバッグ</string>
   <string name="ui.reuse.subject">件名</string>
   <string name="ui.reuse.message">メッセージ</string>
+  <string name="ui.reuse.role_user">ユーザー</string>
+  <string name="ui.reuse.role_teacher">教師</string>
+  <string name="ui.reuse.role_moderator">モデレーター</string>
+  <string name="ui.reuse.role_admin">管理者</string>
+  <string name="ui.reuse.role_owner">オーナー</string>
 
   <string name="ui.reuse.role_user">ユーザー</string>
   <string name="ui.reuse.role_teacher">教師</string>
@@ -192,7 +197,6 @@
   <string name="ui.page.title.register">Cognis - 登録招待</string>
   <string name="ui.page.title.users">Cognis - ユーザー</string>
   <string name="ui.page.title.invite">Cognis - 招待</string>
-  <string name="ui.page.title.study">Cognis - 学習</string>
   <string name="ui.app.verify_email.verifying">認証中…</string>
   <string name="ui.app.verify_email.success_title">メール認証完了</string>
   <string name="ui.app.verify_email.success_body">メールアドレスが正常に認証されました。</string>
@@ -433,15 +437,13 @@
   <string name="ui.app.admin.security.save_failed">セキュリティ設定の保存に失敗しました。</string>
   <string name="ui.app.settings.emails_domain_blocked_body">このメールアドレスは、信頼済みドメインリストに登録されていないドメインのものです。管理者にセキュリティ設定の更新を依頼してください。</string>
   <string name="ui.app.settings.emails_verify_unavailable">メール認証は利用できません。管理者にお問い合わせください。</string>
-  <string name="ui.app.study.page_title">学習</string>
-  <string name="ui.app.study.welcome_heading">Cognisへようこそ</string>
-  <string name="ui.app.study.welcome_tagline">学習を始める準備はできましたか？</string>
-  <string name="ui.app.study.welcome_prompt">学びたい言語を選んでください</string>
-  <string name="ui.app.study.start">始めましょう！</string>
-  <string name="ui.app.study.no_languages">まだ学習言語が登録されていません。</string>
-  <string name="ui.app.study.your_languages">学習中の言語</string>
-  <string name="ui.app.study.change_languages">言語を変更する</string>
-  <string name="ui.app.study.no_modules">学習モジュールがありません。</string>
+  <string name="ui.app.settings.study.title">学習</string>
+  <string name="ui.app.settings.study.no_languages">利用できる言語はありません。</string>
+  <string name="ui.app.settings.study.learn">学ぶ</string>
+  <string name="ui.app.settings.study.teach">教える</string>
+  <string name="ui.app.settings.study.apply_to_teach">教える申請</string>
+  <string name="ui.app.settings.study.application_sent">教師申請を送信しました。</string>
+  <string name="ui.app.settings.study.application_failed">教師申請の送信に失敗しました。</string>
   <string name="ui.app.settings.datetime">日付と時刻</string>
   <string name="ui.app.settings.datetime_tz_heading">タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_label">表示タイムゾーン</string>

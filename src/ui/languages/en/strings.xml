@@ -53,6 +53,11 @@
   <string name="ui.reuse.debug">Debug</string>
   <string name="ui.reuse.subject">Subject</string>
   <string name="ui.reuse.message">Message</string>
+  <string name="ui.reuse.role_user">User</string>
+  <string name="ui.reuse.role_teacher">Teacher</string>
+  <string name="ui.reuse.role_moderator">Moderator</string>
+  <string name="ui.reuse.role_admin">Admin</string>
+  <string name="ui.reuse.role_owner">Owner</string>
 
   <string name="ui.reuse.role_user">User</string>
   <string name="ui.reuse.role_teacher">Teacher</string>
@@ -192,7 +197,6 @@
   <string name="ui.page.title.register">Cognis - Registration Invite</string>
   <string name="ui.page.title.users">Cognis - Users</string>
   <string name="ui.page.title.invite">Cognis - Invite</string>
-  <string name="ui.page.title.study">Cognis - Study</string>
   <string name="ui.app.verify_email.verifying">Verifying…</string>
   <string name="ui.app.verify_email.success_title">Email Verified</string>
   <string name="ui.app.verify_email.success_body">Your email address has been successfully verified.</string>
@@ -433,15 +437,13 @@
   <string name="ui.app.admin.security.save_failed">Failed to save security settings.</string>
   <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
   <string name="ui.app.settings.emails_verify_unavailable">Email verification is not available. Contact your administrator.</string>
-  <string name="ui.app.study.page_title">Study</string>
-  <string name="ui.app.study.welcome_heading">Welcome to Cognis</string>
-  <string name="ui.app.study.welcome_tagline">Ready to start learning?</string>
-  <string name="ui.app.study.welcome_prompt">Choose the languages you want to study</string>
-  <string name="ui.app.study.start">Let's Go!</string>
-  <string name="ui.app.study.no_languages">No study languages are available yet.</string>
-  <string name="ui.app.study.your_languages">Your Languages</string>
-  <string name="ui.app.study.change_languages">Change Languages</string>
-  <string name="ui.app.study.no_modules">No learning modules available.</string>
+  <string name="ui.app.settings.study.title">Study</string>
+  <string name="ui.app.settings.study.no_languages">No languages are available.</string>
+  <string name="ui.app.settings.study.learn">Learn</string>
+  <string name="ui.app.settings.study.teach">Teach</string>
+  <string name="ui.app.settings.study.apply_to_teach">Apply to Teach</string>
+  <string name="ui.app.settings.study.application_sent">Teacher application submitted.</string>
+  <string name="ui.app.settings.study.application_failed">Failed to submit teacher application.</string>
   <string name="ui.app.settings.datetime">Date &amp; Time</string>
   <string name="ui.app.settings.datetime_tz_heading">Timezone</string>
   <string name="ui.app.settings.datetime_tz_label">Display Timezone</string>

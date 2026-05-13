@@ -176,16 +176,11 @@ function renderUsersTable() {
                   const roleDisabled =
                       isProtected || isOwner || isSelf || protectAdminFromAdmin;
                   const roleCellHtml = isOwner
-                      ? escapeHtml(getRoleLabel(i18n, "owner"))
+                      ? escapeHtml(i18n.t("ui.reuse.role_owner"))
                       : `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>
-                            ${ACCESS_ROLES.filter(
-                                (roleId) => roleId !== "owner",
-                            )
-                                .map(
-                                    (roleId) =>
-                                        `<option value="${escapeHtml(roleId)}"${userRole === roleId ? " selected" : ""}>${escapeHtml(getRoleLabel(i18n, roleId))}</option>`,
-                                )
-                                .join("")}
+                            <option value="user"${userRole === "user" ? " selected" : ""}>${escapeHtml(i18n.t("ui.reuse.role_user"))}</option>
+                            <option value="teacher"${userRole === "teacher" ? " selected" : ""}>${escapeHtml(i18n.t("ui.reuse.role_teacher"))}</option>
+                            <option value="admin"${userRole === "admin" ? " selected" : ""}>${escapeHtml(i18n.t("ui.reuse.role_admin"))}</option>
                          </select>`;
                   const actionsHtml =
                       isProtected || isOwner || protectAdminFromAdmin
