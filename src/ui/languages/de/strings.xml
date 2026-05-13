@@ -54,12 +54,6 @@
   <string name="ui.reuse.subject">Betreff</string>
   <string name="ui.reuse.message">Nachricht</string>
   <string name="ui.reuse.role_user">Benutzer</string>
-  <string name="ui.reuse.role_teacher">Lehrer/in</string>
-  <string name="ui.reuse.role_moderator">Moderator/in</string>
-  <string name="ui.reuse.role_admin">Administrator</string>
-  <string name="ui.reuse.role_owner">Inhaber/in</string>
-
-  <string name="ui.reuse.role_user">Benutzer</string>
   <string name="ui.reuse.role_teacher">Lehrkraft</string>
   <string name="ui.reuse.role_moderator">Moderator</string>
   <string name="ui.reuse.role_admin">Administrator</string>
