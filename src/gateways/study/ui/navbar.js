@@ -1,3 +1,4 @@
+import { apiFetch } from "/static/reuse/api-client.js";
 import { createI18n } from "/static/reuse/i18n.js";
 
 const i18n = await createI18n({
@@ -5,10 +6,25 @@ const i18n = await createI18n({
 });
 globalThis.__studyGatewayAvailable = true;
 
-function createStudyNavButton() {
+async function hasRegisteredLanguages() {
+    try {
+        const response = await apiFetch("/api/v1/study/registered-languages");
+        if (!response.ok) return false;
+        const payload = await response.json();
+        return Array.isArray(payload?.data) && payload.data.length > 0;
+    } catch {
+        return false;
+    }
+}
+
+function createStudyNavButton(hasLanguages) {
     const studyBtn = document.createElement("a");
     studyBtn.href = "/study";
     studyBtn.textContent = i18n.t("ui.reuse.study");
+    if (!hasLanguages) {
+        studyBtn.setAttribute("aria-disabled", "true");
+        studyBtn.removeAttribute("href");
+    }
     return studyBtn;
 }
 
@@ -18,5 +34,6 @@ function insertStudyButton(studyBtn) {
     topnav.appendChild(studyBtn);
 }
 
-const studyBtn = createStudyNavButton();
+const languagesAvailable = await hasRegisteredLanguages();
+const studyBtn = createStudyNavButton(languagesAvailable);
 insertStudyButton(studyBtn);

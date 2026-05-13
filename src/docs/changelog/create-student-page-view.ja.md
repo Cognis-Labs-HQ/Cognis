@@ -21,7 +21,8 @@
 - `src/gateways/study/bootstrap.ts` — `/study/welcome`、`/study`、`/study/settings` ルート（共有HTML）；`GET /api/v1/study/registered-languages` エンドポイントを追加；バージョンを 1.4.0 に更新
 - `src/gateways/study/manifest.json` — バージョンを 1.4.0 に更新
 - `src/gateways/study/ui/classes-dashboard-element.js` — 生徒向けダッシュボード要素を追加
-- `src/gateways/study/ui/navbar.js` — 通常のナビリンクに簡略化；ポップアップハンドラーを削除
+- `src/gateways/study/ui/navbar.js` — 通常のナビリンクに簡略化；ポップアップハンドラーを削除；ロード時に登録済み言語を取得し、利用可能な言語がない場合はリンクを無効化
+- `src/ui/styles/reuse/layout.css` — `.topnav a[aria-disabled="true"]` ルールを追加し、無効化されたナビ項目を視覚的に薄く表示してクリックを無効化
 - `src/gateways/study/ui/study.html` — `/study` と `/study/welcome` 用の HTML シェル
 - `src/gateways/study/ui/study.js` — 書き直し：一度限りのオンボーディング（`/study/welcome`）、ダッシュボード（`/study`）、設定（`/study/settings`）、モジュール提供サブ項目ナビゲーション、サブナビ上の有効言語ドロップダウン
 - `src/gateways/study/ui/study.css` — スタイル更新：モジュールサブナビ構成、有効言語ドロップダウン、50/50 言語設定パネル

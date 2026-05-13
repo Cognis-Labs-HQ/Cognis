@@ -21,7 +21,7 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/gateways/study/bootstrap.ts` — Added `/study/welcome`, `/study`, and `/study/settings` page routes (shared HTML); added `GET /api/v1/study/registered-languages` endpoint; version bumped to 1.4.0
 - `src/gateways/study/manifest.json` — Version bumped to 1.4.0
 - `src/gateways/study/ui/classes-dashboard-element.js` — Added student dashboard element
-- `src/gateways/study/ui/navbar.js` — Simplified to a plain nav link; popup handler removed
+- `src/gateways/study/ui/navbar.js` — Simplified to a plain nav link; popup handler removed; now fetches registered languages and greys out the link when none are available
 - `src/gateways/study/ui/study.html` — HTML shell for `/study` and `/study/welcome`
 - `src/gateways/study/ui/study.js` — Rewritten: one-time onboarding (`/study/welcome`), dashboard (`/study`), settings (`/study/settings`), module-driven sub-item navigation, and active-language dropdown in sub-navigation
 - `src/gateways/study/ui/study.css` — Updated styles: module sub-navigation layout, active-language dropdown, and 50/50 split language settings panels
@@ -30,7 +30,8 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/ui/reuse/page-composer.js` — Added a new composer sub-navigation slot rendered separately from the aside toolbar
 - `src/ui/layouts/dashboard-layout.js` — Added `subNavigation` layout slot wiring
 - `src/ui/public/templates/dashboard-layout.html` — Added the sub-navigation row placeholder below the global nav
-- `src/ui/styles/reuse/layout.css` — Added global styling for the new composer sub-navigation row
+- `src/gateways/study/ui/navbar.js` — Fetches registered languages on load; greys out the Study nav link (sets `aria-disabled`, removes `href`) when no language modules are registered on the instance
+- `src/ui/styles/reuse/layout.css` — Added `.topnav a[aria-disabled="true"]` rule to visually dim and disable clicks on greyed-out nav items
 - `src/ui/layouts/dashboard-layout.js` — Study shortcut points to `/study`
 - `src/ui/styles/settings.css` — Removed dead study CSS classes
 - `src/ui/languages/*/strings.xml` — Added `ui.reuse.role_*` keys; restored `ui.app.settings.study.*` (all 4 languages)

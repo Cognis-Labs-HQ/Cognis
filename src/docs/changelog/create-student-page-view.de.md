@@ -21,7 +21,8 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 - `src/gateways/study/bootstrap.ts` — Routen `/study/welcome`, `/study` und `/study/settings` (gemeinsames HTML); Endpunkt `GET /api/v1/study/registered-languages` hinzugefügt; Version auf 1.4.0 erhöht
 - `src/gateways/study/manifest.json` — Version auf 1.4.0 erhöht
 - `src/gateways/study/ui/classes-dashboard-element.js` — Dashboard-Element für Schüler hinzugefügt
-- `src/gateways/study/ui/navbar.js` — Vereinfacht zu einem einfachen Navigationslink; Popup-Handler entfernt
+- `src/gateways/study/ui/navbar.js` — Vereinfacht zu einem einfachen Navigationslink; Popup-Handler entfernt; ruft registrierte Sprachen ab und blendet den Link aus, wenn keine verfügbar sind
+- `src/ui/styles/reuse/layout.css` — Regel `.topnav a[aria-disabled="true"]` hinzugefügt, um ausgegrautе Nav-Einträge visuell zu dimmen und Klicks zu unterbinden
 - `src/gateways/study/ui/study.html` — HTML-Vorlage für `/study` und `/study/welcome`
 - `src/gateways/study/ui/study.js` — Überarbeitet: einmaliges Onboarding (`/study/welcome`), Dashboard (`/study`), Einstellungen (`/study/settings`), modulgetriebene Sub-Navigationspunkte und Dropdown für aktive Sprachen
 - `src/gateways/study/ui/study.css` — Aktualisierte Stile: Modul-Subnavigation, Dropdown für aktive Sprachen und 50/50-Spracheinstellungspanels

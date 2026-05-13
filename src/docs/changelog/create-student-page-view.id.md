@@ -21,7 +21,8 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 - `src/gateways/study/bootstrap.ts` — Rute `/study/welcome`, `/study`, dan `/study/settings` (HTML bersama); endpoint `GET /api/v1/study/registered-languages` ditambahkan; versi dinaikkan ke 1.4.0
 - `src/gateways/study/manifest.json` — Versi dinaikkan ke 1.4.0
 - `src/gateways/study/ui/classes-dashboard-element.js` — Elemen dashboard siswa ditambahkan
-- `src/gateways/study/ui/navbar.js` — Disederhanakan menjadi tautan navigasi biasa; handler popup dihapus
+- `src/gateways/study/ui/navbar.js` — Disederhanakan menjadi tautan navigasi biasa; handler popup dihapus; mengambil bahasa terdaftar saat dimuat dan menonaktifkan tautan jika tidak ada bahasa yang tersedia
+- `src/ui/styles/reuse/layout.css` — Menambahkan aturan `.topnav a[aria-disabled="true"]` untuk meredup dan menonaktifkan klik pada item navigasi yang dinonaktifkan
 - `src/gateways/study/ui/study.html` — Shell HTML untuk `/study` dan `/study/welcome`
 - `src/gateways/study/ui/study.js` — Ditulis ulang: onboarding satu kali (`/study/welcome`), dashboard (`/study`), pengaturan (`/study/settings`), sub-item navigasi berbasis modul, dan dropdown bahasa aktif di sub-navigasi
 - `src/gateways/study/ui/study.css` — Gaya diperbarui: tata letak sub-navigasi modul, dropdown bahasa aktif, dan panel pengaturan bahasa 50/50
