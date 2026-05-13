@@ -307,17 +307,33 @@ async function mountHub(
     }
 
     function renderSubNavigation() {
-        const languageLinks = learningLanguages
+        const moduleLinks = selectedLanguageModules
+            .map((component) => {
+                const pageUrl = String(component.pageUrl ?? "").trim();
+                if (!pageUrl) return "";
+                const activeClass =
+                    window.location.pathname === pageUrl ? " active" : "";
+                return `
+                    <li>
+                        <a class="study-subnav-module-link${activeClass}" href="${escapeHtml(pageUrl)}">
+                            ${escapeHtml(String(component.label ?? pageUrl))}
+                        </a>
+                    </li>
+                `;
+            })
+            .join("");
+
+        const activeLanguageLinks = learningLanguages
             .map((languageCode) => {
                 const language = getLanguage(languageCode);
-                const activeClass =
-                    languageCode === selectedLanguageCode ? " active" : "";
                 const href = isSettingsPath
                     ? buildSettingsUrl(languageCode)
                     : buildHubUrl(languageCode);
+                const activeClass =
+                    languageCode === selectedLanguageCode ? " active" : "";
                 return `
                     <li>
-                        <a class="study-subnav-language-link${activeClass}" href="${escapeHtml(href)}">
+                        <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(href)}">
                             ${escapeHtml(language.flag)}
                             <span>${escapeHtml(language.name)}</span>
                         </a>
@@ -326,26 +342,12 @@ async function mountHub(
             })
             .join("");
 
-        const moduleLinks = selectedLanguageModules
-            .map((component) => {
-                const pageUrl = String(component.pageUrl ?? "").trim();
-                if (!pageUrl) return "";
-                return `
-                    <li>
-                        <a class="study-subnav-module-link" href="${escapeHtml(pageUrl)}">
-                            ${escapeHtml(String(component.label ?? pageUrl))}
-                        </a>
-                    </li>
-                `;
-            })
-            .join("");
-
+        const selectedLanguage = getLanguage(selectedLanguageCode);
         const settingsActiveClass = isSettingsPath ? " active" : "";
         const settingsUrl = buildSettingsUrl(selectedLanguageCode);
 
         return `
             <div class="study-page-subnav">
-                <ul class="page-subnav-list study-subnav-languages">${languageLinks}</ul>
                 <ul class="page-subnav-list study-subnav-modules">
                     ${moduleLinks}
                     <li>
@@ -359,6 +361,19 @@ async function mountHub(
                         </a>
                     </li>
                 </ul>
+                <details class="study-subnav-language-dropdown">
+                    <summary
+                        class="study-subnav-language-current"
+                        aria-label="${escapeHtml(i18n.t("gateway.study.active_languages"))}"
+                    >
+                        <span class="study-subnav-language-current-label">${escapeHtml(i18n.t("gateway.study.active_languages"))}:</span>
+                        <span class="study-subnav-language-current-value">
+                            ${escapeHtml(selectedLanguage.flag)}
+                            <span>${escapeHtml(selectedLanguage.name)}</span>
+                        </span>
+                    </summary>
+                    <ul class="study-subnav-language-options">${activeLanguageLinks}</ul>
+                </details>
             </div>
         `;
     }
@@ -397,16 +412,15 @@ async function mountHub(
         `;
     }
 
-    function renderSettingsContent() {
-        const rows = languageCatalog
-            .map((language) => {
-                const isLearning = learningLanguages.includes(language.code);
-                const action = isLearning ? "remove" : "add";
-                const actionClass = isLearning ? "btn-cancel" : "btn-confirm";
-                const actionLabel = isLearning
-                    ? i18n.t("ui.reuse.remove")
-                    : i18n.t("ui.reuse.add");
+    function renderLanguageSettingRows(languageList, actionType) {
+        const actionClass = actionType === "add" ? "btn-confirm" : "btn-cancel";
+        const actionLabel =
+            actionType === "add"
+                ? i18n.t("ui.reuse.add")
+                : i18n.t("ui.reuse.remove");
 
+        return languageList
+            .map((language) => {
                 return `
                     <tr>
                         <td class="study-lang-settings-flag">${escapeHtml(language.flag)}</td>
@@ -415,7 +429,7 @@ async function mountHub(
                             <button
                                 type="button"
                                 class="study-lang-action-btn ${actionClass} btn-animated"
-                                data-action="${escapeHtml(action)}"
+                                data-action="${escapeHtml(actionType)}"
                                 data-code="${escapeHtml(language.code)}"
                             >
                                 ${escapeHtml(actionLabel)}
@@ -425,20 +439,58 @@ async function mountHub(
                 `;
             })
             .join("");
+    }
+
+    function renderSettingsContent() {
+        const availableLanguages = languageCatalog.filter(
+            (language) => !learningLanguages.includes(language.code),
+        );
+        const activeLanguages = languageCatalog.filter((language) =>
+            learningLanguages.includes(language.code),
+        );
+        const availableRows = renderLanguageSettingRows(
+            availableLanguages,
+            "add",
+        );
+        const activeRows = renderLanguageSettingRows(activeLanguages, "remove");
+        const availableEmptyState =
+            availableRows ||
+            `<tr><td colspan="3" class="study-lang-settings-empty">${escapeHtml(i18n.t("gateway.study.no_languages"))}</td></tr>`;
+        const activeEmptyState =
+            activeRows ||
+            `<tr><td colspan="3" class="study-lang-settings-empty">${escapeHtml(i18n.t("gateway.study.no_languages"))}</td></tr>`;
 
         return `
             <h3>${escapeHtml(i18n.t("gateway.study.language_settings"))}</h3>
             <div class="study-lang-settings-wrap">
-                <table class="study-lang-settings-table">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>${escapeHtml(i18n.t("gateway.study.language"))}</th>
-                            <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
+                <div class="study-lang-settings-table">
+                    <section class="study-lang-settings-column">
+                        <h4>${escapeHtml(i18n.t("gateway.study.available_languages"))}</h4>
+                        <table class="study-lang-settings-list">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>${escapeHtml(i18n.t("gateway.study.language"))}</th>
+                                    <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
+                                </tr>
+                            </thead>
+                            <tbody>${availableEmptyState}</tbody>
+                        </table>
+                    </section>
+                    <section class="study-lang-settings-column">
+                        <h4>${escapeHtml(i18n.t("gateway.study.active_languages"))}</h4>
+                        <table class="study-lang-settings-list">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>${escapeHtml(i18n.t("gateway.study.language"))}</th>
+                                    <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
+                                </tr>
+                            </thead>
+                            <tbody>${activeEmptyState}</tbody>
+                        </table>
+                    </section>
+                </div>
             </div>
         `;
     }

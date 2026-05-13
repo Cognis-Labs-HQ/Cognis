@@ -23,9 +23,9 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 - `src/gateways/study/ui/classes-dashboard-element.js` — Dashboard-Element für Schüler hinzugefügt
 - `src/gateways/study/ui/navbar.js` — Vereinfacht zu einem einfachen Navigationslink; Popup-Handler entfernt
 - `src/gateways/study/ui/study.html` — HTML-Vorlage für `/study` und `/study/welcome`
-- `src/gateways/study/ui/study.js` — Überarbeitet: einmaliges Onboarding (`/study/welcome`), Dashboard (`/study`), Einstellungen (`/study/settings`), modulgetriebene Sub-Navigation und Sprachauflösung (`ja` -> `Japanisch`)
-- `src/gateways/study/ui/study.css` — Aktualisierte Stile: vollständiger Willkommensbildschirm, neue Sub-Navigationszeile und Spracheinstellungstabelle
-- `src/gateways/study/ui/languages/*/strings.xml` — Schlüssel `gateway.study.language_settings` und `gateway.study.language` hinzugefügt (alle 4 Sprachen)
+- `src/gateways/study/ui/study.js` — Überarbeitet: einmaliges Onboarding (`/study/welcome`), Dashboard (`/study`), Einstellungen (`/study/settings`), modulgetriebene Sub-Navigationspunkte und Dropdown für aktive Sprachen
+- `src/gateways/study/ui/study.css` — Aktualisierte Stile: Modul-Subnavigation, Dropdown für aktive Sprachen und 50/50-Spracheinstellungspanels
+- `src/gateways/study/ui/languages/*/strings.xml` — Schlüssel `gateway.study.available_languages` und `gateway.study.active_languages` hinzugefügt (alle 4 Sprachen)
 - `src/ui/reuse/app-router.js` — Nur `/study`, `/study/welcome` und `/study/settings` werden dem Studiehub zugeordnet; Modulseiten behalten ihre eigenen Handler
 - `src/ui/reuse/page-composer.js` — Neuer Composer-Slot für eine Sub-Navigation, getrennt von der seitlichen Toolbar
 - `src/ui/layouts/dashboard-layout.js` — `subNavigation`-Slot in das Layout verdrahtet

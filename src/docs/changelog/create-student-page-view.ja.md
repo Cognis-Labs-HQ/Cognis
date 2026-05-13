@@ -23,9 +23,9 @@
 - `src/gateways/study/ui/classes-dashboard-element.js` — 生徒向けダッシュボード要素を追加
 - `src/gateways/study/ui/navbar.js` — 通常のナビリンクに簡略化；ポップアップハンドラーを削除
 - `src/gateways/study/ui/study.html` — `/study` と `/study/welcome` 用の HTML シェル
-- `src/gateways/study/ui/study.js` — 書き直し：一度限りのオンボーディング（`/study/welcome`）、ダッシュボード（`/study`）、設定（`/study/settings`）、モジュール駆動サブナビゲーション、言語ラベル解決（`ja` -> `日本語`）
-- `src/gateways/study/ui/study.css` — スタイル更新：全高ウェルカム、新しいサブナビゲーション行の見た目、言語設定テーブル
-- `src/gateways/study/ui/languages/*/strings.xml` — `gateway.study.language_settings` と `gateway.study.language` キーを追加（全4言語）
+- `src/gateways/study/ui/study.js` — 書き直し：一度限りのオンボーディング（`/study/welcome`）、ダッシュボード（`/study`）、設定（`/study/settings`）、モジュール提供サブ項目ナビゲーション、サブナビ上の有効言語ドロップダウン
+- `src/gateways/study/ui/study.css` — スタイル更新：モジュールサブナビ構成、有効言語ドロップダウン、50/50 言語設定パネル
+- `src/gateways/study/ui/languages/*/strings.xml` — `gateway.study.available_languages` と `gateway.study.active_languages` キーを追加（全4言語）
 - `src/ui/reuse/app-router.js` — `/study`、`/study/welcome`、`/study/settings` のみを学習ハブにルーティングし、モジュールページは専用ハンドラーを使用
 - `src/ui/reuse/page-composer.js` — サイドツールバーと分離した Composer の新規サブナビゲーションスロットを追加
 - `src/ui/layouts/dashboard-layout.js` — レイアウトの `subNavigation` スロット配線を追加

@@ -23,9 +23,9 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 - `src/gateways/study/ui/classes-dashboard-element.js` — Elemen dashboard siswa ditambahkan
 - `src/gateways/study/ui/navbar.js` — Disederhanakan menjadi tautan navigasi biasa; handler popup dihapus
 - `src/gateways/study/ui/study.html` — Shell HTML untuk `/study` dan `/study/welcome`
-- `src/gateways/study/ui/study.js` — Ditulis ulang: onboarding satu kali (`/study/welcome`), dashboard (`/study`), pengaturan (`/study/settings`), sub-navigasi berbasis modul, dan resolusi label bahasa (`ja` -> `Jepang`)
-- `src/gateways/study/ui/study.css` — Gaya diperbarui: layar sambutan penuh, visual baris sub-navigasi baru, dan tabel pengaturan bahasa
-- `src/gateways/study/ui/languages/*/strings.xml` — Kunci `gateway.study.language_settings` dan `gateway.study.language` ditambahkan (semua 4 bahasa)
+- `src/gateways/study/ui/study.js` — Ditulis ulang: onboarding satu kali (`/study/welcome`), dashboard (`/study`), pengaturan (`/study/settings`), sub-item navigasi berbasis modul, dan dropdown bahasa aktif di sub-navigasi
+- `src/gateways/study/ui/study.css` — Gaya diperbarui: tata letak sub-navigasi modul, dropdown bahasa aktif, dan panel pengaturan bahasa 50/50
+- `src/gateways/study/ui/languages/*/strings.xml` — Kunci `gateway.study.available_languages` dan `gateway.study.active_languages` ditambahkan (semua 4 bahasa)
 - `src/ui/reuse/app-router.js` — Hanya `/study`, `/study/welcome`, dan `/study/settings` diarahkan ke hub belajar; halaman modul tetap memakai handler sendiri
 - `src/ui/reuse/page-composer.js` — Menambahkan slot sub-navigasi composer yang terpisah dari toolbar samping
 - `src/ui/layouts/dashboard-layout.js` — Menambahkan wiring slot layout `subNavigation`

@@ -23,9 +23,9 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/gateways/study/ui/classes-dashboard-element.js` — Added student dashboard element
 - `src/gateways/study/ui/navbar.js` — Simplified to a plain nav link; popup handler removed
 - `src/gateways/study/ui/study.html` — HTML shell for `/study` and `/study/welcome`
-- `src/gateways/study/ui/study.js` — Rewritten: one-time onboarding (`/study/welcome`), dashboard (`/study`), settings (`/study/settings`), module-driven sub-navigation, and language-label resolution (`ja` -> `Japanese`)
-- `src/gateways/study/ui/study.css` — Updated styles: full-height welcome, new sub-navigation row visuals, and language settings table
-- `src/gateways/study/ui/languages/*/strings.xml` — Added `gateway.study.language_settings` and `gateway.study.language` keys (all 4 languages)
+- `src/gateways/study/ui/study.js` — Rewritten: one-time onboarding (`/study/welcome`), dashboard (`/study`), settings (`/study/settings`), module-driven sub-item navigation, and active-language dropdown in sub-navigation
+- `src/gateways/study/ui/study.css` — Updated styles: module sub-navigation layout, active-language dropdown, and 50/50 split language settings panels
+- `src/gateways/study/ui/languages/*/strings.xml` — Added `gateway.study.available_languages` and `gateway.study.active_languages` keys (all 4 languages)
 - `src/ui/reuse/app-router.js` — Routes only `/study`, `/study/welcome`, and `/study/settings` to the study hub; module pages keep their own handlers
 - `src/ui/reuse/page-composer.js` — Added a new composer sub-navigation slot rendered separately from the aside toolbar
 - `src/ui/layouts/dashboard-layout.js` — Added `subNavigation` layout slot wiring

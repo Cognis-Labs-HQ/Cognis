@@ -13,4 +13,6 @@
   <string name="gateway.study.no_modules">Tidak ada modul belajar yang tersedia.</string>
   <string name="gateway.study.language_settings">Pengaturan Bahasa</string>
   <string name="gateway.study.language">Bahasa</string>
+  <string name="gateway.study.available_languages">Bahasa Tersedia</string>
+  <string name="gateway.study.active_languages">Bahasa Aktif</string>
 </resources>
