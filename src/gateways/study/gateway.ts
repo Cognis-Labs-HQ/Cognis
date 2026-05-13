@@ -156,6 +156,20 @@ export class CoreStudyGateway {
         this.registeredLanguageModules.set(module.languageCode, module);
     }
 
+    listRegisteredLanguages(): Array<{
+        code: string;
+        name: string;
+        flag: string;
+    }> {
+        return Array.from(this.registeredLanguageModules.values()).map(
+            (module) => ({
+                code: module.languageCode,
+                name: module.languageName,
+                flag: module.languageFlag,
+            }),
+        );
+    }
+
     listChildComponents(
         languageCode: string,
         viewerRole: AccessRole = "user",

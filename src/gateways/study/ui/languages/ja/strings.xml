@@ -11,4 +11,6 @@
   <string name="gateway.study.your_languages">学習中の言語</string>
   <string name="gateway.study.change_languages">言語を変更する</string>
   <string name="gateway.study.no_modules">学習モジュールがありません。</string>
+  <string name="gateway.study.language_settings">言語設定</string>
+  <string name="gateway.study.language">言語</string>
 </resources>

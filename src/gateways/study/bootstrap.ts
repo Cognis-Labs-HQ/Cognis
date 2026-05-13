@@ -209,13 +209,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     ctx.uiRegistry?.registerStaticDir("study", path.join(GATEWAY_ROOT, "ui"));
 
-    const studyPageRoute = async (
+    const serveStudyHtml = async (
         req: IncomingMessage,
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (req.method !== "GET") return false;
-        if (url.pathname !== "/study") return false;
+        if (url.pathname !== "/study" && url.pathname !== "/study/welcome")
+            return false;
         if (!getCookieSession(req)) {
             res.writeHead(302, { location: "/login" });
             res.end();
@@ -230,7 +231,26 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         res.end(html);
         return true;
     };
-    ctx.routeRegistry.register(studyPageRoute, "study");
+    ctx.routeRegistry.register(serveStudyHtml, "study");
+
+    const registeredLanguagesRoute = async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        if (
+            url.pathname !== "/api/v1/study/registered-languages" ||
+            req.method !== "GET"
+        )
+            return false;
+        const claims = requireAuth(req, res);
+        if (!claims) return true;
+        const languages = gateway.listRegisteredLanguages();
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ data: languages }));
+        return true;
+    };
+    ctx.routeRegistry.register(registeredLanguagesRoute, "study");
 
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/study/navbar.js",

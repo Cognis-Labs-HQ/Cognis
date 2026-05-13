@@ -32,9 +32,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-height: 55vh;
-    padding: 40px 16px 32px;
-    gap: 28px;
+    min-height: 70vh;
+    padding: 48px 24px 40px;
+    gap: 32px;
     text-align: center;
 }
 
@@ -135,41 +135,18 @@
     font-size: 0.9rem;
 }
 
-.study-hub-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 18px;
-}
-
-.study-hub-heading {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0;
-}
-
-.study-hub-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-}
-
-.study-hub-card {
+.study-hub-card-standalone {
     display: flex;
     flex-direction: column;
     gap: 12px;
     padding: 18px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
 }
 
 .study-hub-card-header {
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-bottom: 4px;
 }
 
 .study-hub-card-flag {
@@ -209,4 +186,70 @@
 .study-hub-no-modules {
     font-size: 0.85rem;
     color: var(--text-muted);
+}
+
+.study-nav-settings-row {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.study-settings-cog-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition:
+        background 0.15s,
+        color 0.15s;
+}
+
+.study-settings-cog-btn:hover,
+.study-settings-cog-btn.active {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+.study-lang-settings-wrap {
+    overflow-x: auto;
+}
+
+.study-lang-settings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.study-lang-settings-table th {
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    color: var(--text-muted);
+}
+
+.study-lang-settings-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.study-lang-settings-flag {
+    font-size: 1.4rem;
+    width: 40px;
+}
+
+.study-lang-settings-name {
+    font-weight: 500;
+}
+
+.study-lang-settings-action {
+    text-align: right;
 }

@@ -11,4 +11,6 @@
   <string name="gateway.study.your_languages">Your Languages</string>
   <string name="gateway.study.change_languages">Change Languages</string>
   <string name="gateway.study.no_modules">No learning modules available.</string>
+  <string name="gateway.study.language_settings">Language Settings</string>
+  <string name="gateway.study.language">Language</string>
 </resources>
