@@ -283,7 +283,6 @@
 .topnav a[aria-disabled="true"] {
     opacity: 0.38;
     pointer-events: none;
-    cursor: default;
 }
 
 .account-cluster {
