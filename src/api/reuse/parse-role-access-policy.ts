@@ -1,5 +1,11 @@
 import { isAccessRole, type RoleAccessPolicy } from "@cognis/core";
 
+/**
+ * Parses role access metadata from untyped runtime input and validates role IDs.
+ *
+ * @param value Unknown access policy input from JSON/runtime modules.
+ * @returns Parsed access policy plus invalid-state flag for fail-closed handling.
+ */
 export function parseRoleAccessPolicy(value: unknown): {
     access?: RoleAccessPolicy;
     invalid: boolean;

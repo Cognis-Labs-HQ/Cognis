@@ -43,6 +43,9 @@ export function createModuleExtensionRoutes(
         process.env.COGNIS_MODULES_ROOT ??
         path.resolve(process.cwd(), "src", "modules");
 
+    /**
+     * Writes a standardized warning when a module declares an invalid access policy.
+     */
     function logInvalidAccessPolicy(
         method: "GET" | "POST",
         moduleId: string,

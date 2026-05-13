@@ -12,6 +12,10 @@ import { revokeAccessTokensForSubject } from "../../../gateways/auth/access-toke
 
 const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin", "owner"]);
 
+/**
+ * Normalizes persisted account role data into the effective role seen by API consumers.
+ * Founder admins are elevated to owner for response consistency across UI surfaces.
+ */
 function resolveEffectiveRole(
     role: unknown,
     isAdmin: boolean,
