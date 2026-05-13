@@ -42,12 +42,10 @@ function parseRoleAccessPolicy(value: unknown): {
         return { access: undefined, invalid: true };
     }
     const candidate = value as { minRole?: unknown; onlyRole?: unknown };
-    const hasMinRole = "minRole" in candidate;
-    const hasOnlyRole = "onlyRole" in candidate;
-    if (hasMinRole && !isAccessRole(candidate.minRole)) {
+    if (candidate.minRole !== undefined && !isAccessRole(candidate.minRole)) {
         return { access: undefined, invalid: true };
     }
-    if (hasOnlyRole && !isAccessRole(candidate.onlyRole)) {
+    if (candidate.onlyRole !== undefined && !isAccessRole(candidate.onlyRole)) {
         return { access: undefined, invalid: true };
     }
     const access: RoleAccessPolicy = {};
@@ -79,17 +77,13 @@ function parseModuleUiRoutes(raw: string): ModuleUiRouteRule[] {
             ) {
                 return null;
             }
-            const hasAccessField = Object.prototype.hasOwnProperty.call(
-                entry,
-                "access",
-            );
             const parsedAccess = parseRoleAccessPolicy(
                 (entry as { access?: unknown }).access,
             );
             return {
                 path: (entry as { path: string }).path,
                 access: parsedAccess.access,
-                invalidAccessPolicy: hasAccessField && parsedAccess.invalid,
+                invalidAccessPolicy: parsedAccess.invalid,
             } as ModuleUiRouteRule;
         })
         .filter((entry): entry is ModuleUiRouteRule => Boolean(entry));

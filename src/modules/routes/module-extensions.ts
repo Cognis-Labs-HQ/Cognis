@@ -54,12 +54,16 @@ export function createModuleExtensionRoutes(
             return { access: undefined, invalid: true };
         }
         const candidate = value as { minRole?: unknown; onlyRole?: unknown };
-        const hasMinRole = "minRole" in candidate;
-        const hasOnlyRole = "onlyRole" in candidate;
-        if (hasMinRole && !isAccessRole(candidate.minRole)) {
+        if (
+            candidate.minRole !== undefined &&
+            !isAccessRole(candidate.minRole)
+        ) {
             return { access: undefined, invalid: true };
         }
-        if (hasOnlyRole && !isAccessRole(candidate.onlyRole)) {
+        if (
+            candidate.onlyRole !== undefined &&
+            !isAccessRole(candidate.onlyRole)
+        ) {
             return { access: undefined, invalid: true };
         }
         const access: RoleAccessPolicy = {};
