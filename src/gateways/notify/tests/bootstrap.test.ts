@@ -211,3 +211,43 @@ test("notify gateway bootstrap registers admin section scriptUrl that resolves w
         `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,
     );
 });
+
+test("notify gateway bootstrap registers broadcasts admin section scriptUrl that resolves within static dir", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, db } =
+        await makeCtx();
+    const uiRegistry = new UIRegistry();
+
+    await bootstrap({
+        dbExecutor: db as any,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+    });
+
+    const sections = uiRegistry.listAdminSections();
+    const broadcastsSection = sections.find(
+        (section) => section.id === "broadcasts",
+    );
+    assert.ok(
+        broadcastsSection,
+        "notify gateway must register a 'broadcasts' admin section",
+    );
+
+    const staticDir = uiRegistry.getStaticDir("notify");
+    assert.ok(staticDir, "notify gateway must register a static dir");
+
+    const urlPrefix = "/static/gateways/notify/";
+    assert.ok(
+        broadcastsSection.scriptUrl.startsWith(urlPrefix),
+        `scriptUrl must start with ${urlPrefix}, got: ${broadcastsSection.scriptUrl}`,
+    );
+
+    const filePart = broadcastsSection.scriptUrl.slice(urlPrefix.length);
+    const resolvedPath = path.join(staticDir, filePart);
+    await assert.doesNotReject(
+        access(resolvedPath),
+        `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,
+    );
+});

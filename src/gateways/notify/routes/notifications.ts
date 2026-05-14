@@ -2,10 +2,15 @@ import {
     requireAuth,
     getAuthClaims,
     canAccessUserData,
+    isAccessRole,
 } from "../../auth/guard.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../api/reuse/read-json.js";
 import type { CoreNotificationGateway } from "../gateway.js";
+import type {
+    NotificationBroadcastDisplayMode,
+    NotificationBroadcastRole,
+} from "../notification-store.js";
 
 export interface NotificationPreferenceRouteStore {
     getUserNotifPrefs(
@@ -15,6 +20,181 @@ export interface NotificationPreferenceRouteStore {
         accountId: string,
         prefs: Array<{ category: string; senderId: string; enabled: boolean }>,
     ): Promise<void>;
+    createBroadcast?(input: {
+        title: string;
+        message: string;
+        displayMode: NotificationBroadcastDisplayMode;
+        targetRoles: NotificationBroadcastRole[];
+        startAt: number | null;
+        endAt: number | null;
+        requireAcknowledgement: boolean;
+        redirectUrl: string | null;
+        enabled: boolean;
+        createdBy: string;
+    }): Promise<unknown>;
+    listBroadcasts?(): Promise<unknown[]>;
+    setBroadcastEnabled?(id: string, enabled: boolean): Promise<void>;
+    getActiveBroadcastsForRole?(
+        accountId: string,
+        role: NotificationBroadcastRole,
+    ): Promise<unknown[]>;
+    markBroadcastDismissed?(
+        accountId: string,
+        broadcastId: string,
+    ): Promise<void>;
+    markBroadcastAcknowledged?(
+        accountId: string,
+        broadcastId: string,
+    ): Promise<void>;
+    listBroadcastStates?(broadcastId: string): Promise<unknown[]>;
+}
+
+const VALID_BROADCAST_MODES = new Set<NotificationBroadcastDisplayMode>([
+    "bar",
+    "popup",
+]);
+
+function parseTimestampInput(value: unknown): number | null | undefined {
+    if (value == null || value === "") return null;
+    if (typeof value === "number" && Number.isFinite(value)) {
+        return value;
+    }
+    if (typeof value === "string") {
+        const parsedDate = Date.parse(value);
+        if (Number.isFinite(parsedDate)) return parsedDate;
+    }
+    return undefined;
+}
+
+function normalizeTargetRoles(
+    value: unknown,
+): NotificationBroadcastRole[] | undefined {
+    if (!Array.isArray(value)) return undefined;
+    const normalizedRoles = value.reduce<NotificationBroadcastRole[]>(
+        (roleList, roleValue) => {
+            const normalizedRole = String(roleValue ?? "").trim();
+            if (isAccessRole(normalizedRole)) {
+                roleList.push(normalizedRole as NotificationBroadcastRole);
+            }
+            return roleList;
+        },
+        [],
+    );
+    return Array.from(new Set(normalizedRoles));
+}
+
+function resolveTrustedOrigin(requestOrigin: string): string {
+    return (
+        process.env.EXTERNAL_HOST ??
+        (process.env.HOST ? `http://${process.env.HOST}` : requestOrigin)
+    );
+}
+
+function isSafeRedirectUrl(urlValue: string, trustedOrigin: string): boolean {
+    if (!urlValue) return true;
+    try {
+        const parsedUrl = new URL(urlValue, trustedOrigin);
+        const hasSafeProtocol =
+            parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+        return hasSafeProtocol && parsedUrl.origin === trustedOrigin;
+    } catch {
+        return false;
+    }
+}
+
+function validateBroadcastSchedule(
+    startAt: number | null | undefined,
+    endAt: number | null | undefined,
+): string | null {
+    if (startAt === undefined || endAt === undefined) {
+        return "invalid_broadcast_timestamp";
+    }
+    const hasStartAt = startAt !== null;
+    const hasEndAt = endAt !== null;
+    if (hasStartAt !== hasEndAt) {
+        return "partial_broadcast_window";
+    }
+    if (
+        startAt !== null &&
+        endAt !== null &&
+        Number(startAt) >= Number(endAt)
+    ) {
+        return "invalid_broadcast_window_range";
+    }
+    return null;
+}
+
+function getBroadcastCreateValidationError(input: {
+    title: string;
+    message: string;
+    displayMode: string;
+    targetRoles: NotificationBroadcastRole[] | undefined;
+    startAt: number | null | undefined;
+    endAt: number | null | undefined;
+    redirectUrl: string | null;
+    trustedOrigin: string;
+}): { code: string; message: string } | null {
+    if (!input.title) {
+        return {
+            code: "missing_broadcast_title",
+            message: "Broadcast title is required",
+        };
+    }
+    if (!input.message) {
+        return {
+            code: "missing_broadcast_message",
+            message: "Broadcast message is required",
+        };
+    }
+    if (
+        !VALID_BROADCAST_MODES.has(
+            input.displayMode as NotificationBroadcastDisplayMode,
+        )
+    ) {
+        return {
+            code: "invalid_broadcast_display_mode",
+            message: "Broadcast displayMode must be either 'bar' or 'popup'",
+        };
+    }
+    if (!input.targetRoles || input.targetRoles.length === 0) {
+        return {
+            code: "missing_broadcast_roles",
+            message: "At least one target role is required",
+        };
+    }
+
+    const scheduleValidationError = validateBroadcastSchedule(
+        input.startAt,
+        input.endAt,
+    );
+    if (scheduleValidationError === "invalid_broadcast_timestamp") {
+        return {
+            code: "invalid_broadcast_timestamp",
+            message: "Broadcast startAt and endAt must be valid timestamps",
+        };
+    }
+    if (scheduleValidationError === "partial_broadcast_window") {
+        return {
+            code: "partial_broadcast_window",
+            message: "Broadcast startAt and endAt must both be provided",
+        };
+    }
+    if (scheduleValidationError === "invalid_broadcast_window_range") {
+        return {
+            code: "invalid_broadcast_window_range",
+            message: "Broadcast startAt must be earlier than endAt",
+        };
+    }
+    if (
+        input.redirectUrl !== null &&
+        !isSafeRedirectUrl(input.redirectUrl, input.trustedOrigin)
+    ) {
+        return {
+            code: "invalid_broadcast_redirect",
+            message: "Broadcast redirectUrl must stay on the current origin",
+        };
+    }
+    return null;
 }
 
 export function createNotificationRoutes(
@@ -99,6 +279,245 @@ export function createNotificationRoutes(
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: gateway.listCategories() }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/notifications/broadcasts" &&
+            req.method === "GET"
+        ) {
+            if (!requireAuth(req, res, "admin")) return true;
+            if (!notifStore?.listBroadcasts) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: [] }));
+                return true;
+            }
+            const broadcasts = await notifStore.listBroadcasts();
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: broadcasts }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/notifications/broadcasts" &&
+            req.method === "POST"
+        ) {
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
+            if (!notifStore?.createBroadcast) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_supported",
+                            message: "Broadcast store unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const body = await readJson(req);
+            const title = String(body.title ?? "").trim();
+            const message = String(body.message ?? "").trim();
+            // This endpoint existed before the current admin UI rewrite, so we
+            // still accept legacy snake_case payload keys from older clients.
+            const displayMode = String(
+                body.displayMode ?? body.display_mode ?? "",
+            ).trim() as NotificationBroadcastDisplayMode;
+            const targetRoles = normalizeTargetRoles(body.targetRoles);
+            const startAt = parseTimestampInput(body.startAt ?? body.start_at);
+            const endAt = parseTimestampInput(body.endAt ?? body.end_at);
+            const requireAcknowledgement = Boolean(
+                body.requireAcknowledgement ?? body.require_acknowledgement,
+            );
+            const redirectUrlRaw = String(
+                body.redirectUrl ?? body.redirect_url ?? "",
+            ).trim();
+            const redirectUrl = redirectUrlRaw || null;
+            const enabled = body.enabled == null ? true : Boolean(body.enabled);
+            const validationError = getBroadcastCreateValidationError({
+                title,
+                message,
+                displayMode,
+                targetRoles,
+                startAt,
+                endAt,
+                redirectUrl,
+                trustedOrigin: resolveTrustedOrigin(url.origin),
+            });
+
+            if (validationError !== null) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: validationError,
+                    }),
+                );
+                return true;
+            }
+
+            const createdBroadcast = await notifStore.createBroadcast({
+                title,
+                message,
+                displayMode,
+                targetRoles,
+                startAt,
+                endAt,
+                requireAcknowledgement,
+                redirectUrl,
+                enabled,
+                createdBy: claims.sub,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: createdBroadcast }));
+            return true;
+        }
+
+        const setBroadcastEnabledMatch = url.pathname.match(
+            /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/(enable|disable)$/,
+        );
+        if (setBroadcastEnabledMatch && req.method === "POST") {
+            if (!requireAuth(req, res, "admin")) return true;
+            if (!notifStore?.setBroadcastEnabled) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_supported",
+                            message: "Broadcast store unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const broadcastId = decodeURIComponent(setBroadcastEnabledMatch[1]);
+            const action = setBroadcastEnabledMatch[2];
+            await notifStore.setBroadcastEnabled(
+                broadcastId,
+                action === "enable",
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        saved: true,
+                        id: broadcastId,
+                        enabled: action === "enable",
+                    },
+                }),
+            );
+            return true;
+        }
+
+        const broadcastStatesMatch = url.pathname.match(
+            /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/states$/,
+        );
+        if (broadcastStatesMatch && req.method === "GET") {
+            if (!requireAuth(req, res, "admin")) return true;
+            if (!notifStore?.listBroadcastStates) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: [] }));
+                return true;
+            }
+            const broadcastStates = await notifStore.listBroadcastStates(
+                decodeURIComponent(broadcastStatesMatch[1]),
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: broadcastStates }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/notifications/broadcasts/active" &&
+            req.method === "GET"
+        ) {
+            const claims = getAuthClaims(req);
+            if (!claims) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "unauthorized",
+                            message: "Login required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (!notifStore?.getActiveBroadcastsForRole) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: [] }));
+                return true;
+            }
+            const activeBroadcasts =
+                await notifStore.getActiveBroadcastsForRole(
+                    claims.sub,
+                    claims.role as NotificationBroadcastRole,
+                );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: activeBroadcasts }));
+            return true;
+        }
+
+        const acknowledgeBroadcastMatch = url.pathname.match(
+            /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/acknowledge$/,
+        );
+        if (acknowledgeBroadcastMatch && req.method === "POST") {
+            const claims = getAuthClaims(req);
+            if (!claims) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "unauthorized",
+                            message: "Login required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (!notifStore?.markBroadcastAcknowledged) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { saved: true } }));
+                return true;
+            }
+            await notifStore.markBroadcastAcknowledged(
+                claims.sub,
+                decodeURIComponent(acknowledgeBroadcastMatch[1]),
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
+            return true;
+        }
+
+        const dismissBroadcastMatch = url.pathname.match(
+            /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/dismiss$/,
+        );
+        if (dismissBroadcastMatch && req.method === "POST") {
+            const claims = getAuthClaims(req);
+            if (!claims) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "unauthorized",
+                            message: "Login required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (!notifStore?.markBroadcastDismissed) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { saved: true } }));
+                return true;
+            }
+            await notifStore.markBroadcastDismissed(
+                claims.sub,
+                decodeURIComponent(dismissBroadcastMatch[1]),
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 

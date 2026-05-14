@@ -1,34 +1,34 @@
 /**
- * Notification gateway admin section.
+ * Notification gateway admin debug section.
  *
- * Contributes the Notifications debug panel to the Administration page.
+ * Contributes debug send controls to the Administration page.
  * Exported as a browser ES module; the admin page dynamically imports it
  * via the UIRegistry mechanism.
  *
  * Public exports:
- *   createAdminSection({ i18n, apiFetch, escapeHtml, openPopup, showToast }) — returns a
+ *   createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) — returns a
  *     page-composer-compatible element definition with a dataReady promise.
  *
  * Usage:
- *   const mod = await import("/static/gateways/notify/admin-section.js");
- *   const def = mod.createAdminSection({ i18n, apiFetch, escapeHtml, openPopup, showToast });
+ *   const mod = await import('/static/gateways/notify/admin-section.js');
+ *   const def = mod.createAdminSection({ i18n, apiFetch, escapeHtml, showToast });
  *   await def.dataReady;
  *
- * @param {{ i18n: object, apiFetch: Function, escapeHtml: Function, openPopup: Function, showToast: Function }} deps
+ * @param {{ i18n: object, apiFetch: Function, escapeHtml: Function, showToast: Function }} deps
  * @returns {{ id: string, label: string, dataReady: Promise<void>, subComposerOptions: object }}
  */
 export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     async function loadCategories() {
-        const res = await apiFetch("/api/v1/notifications/categories");
-        if (!res.ok) return [];
-        const payload = await res.json();
+        const response = await apiFetch("/api/v1/notifications/categories");
+        if (!response.ok) return [];
+        const payload = await response.json();
         return payload.data ?? [];
     }
 
     async function loadUsers() {
-        const res = await apiFetch("/api/v1/users");
-        if (!res.ok) return [];
-        const payload = await res.json();
+        const response = await apiFetch("/api/v1/users");
+        if (!response.ok) return [];
+        const payload = await response.json();
         return payload.data ?? [];
     }
 
@@ -36,24 +36,24 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     let categories = [];
 
     const dataReady = Promise.all([loadUsers(), loadCategories()]).then(
-        ([u, c]) => {
-            users = u;
-            categories = c;
+        ([userRows, categoryRows]) => {
+            users = userRows;
+            categories = categoryRows;
         },
     );
 
     function renderNotificationsDebugContent() {
         const userOptions = users
-            .map(
-                (u) =>
-                    `<option value="${escapeHtml(u.username)}">${escapeHtml(u.username)}</option>`,
-            )
+            .map((userRow) => {
+                const escapedUsername = escapeHtml(userRow.username);
+                return `<option value="${escapedUsername}">${escapedUsername}</option>`;
+            })
             .join("");
 
         const categoryOptions = categories
             .map(
-                (c) =>
-                    `<option value="${escapeHtml(c.id)}">${escapeHtml(c.label)}</option>`,
+                (categoryRow) =>
+                    `<option value="${escapeHtml(categoryRow.id)}">${escapeHtml(categoryRow.label)}</option>`,
             )
             .join("");
 
@@ -97,11 +97,10 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         const panel = root.querySelector(".notif-debug-panel");
         if (!panel) return;
 
-        const sendBtn = panel.querySelector(".notif-debug-send");
+        const sendButton = panel.querySelector(".notif-debug-send");
+        if (!(sendButton instanceof HTMLButtonElement)) return;
 
-        if (!sendBtn) return;
-
-        sendBtn.addEventListener("click", async () => {
+        sendButton.addEventListener("click", async () => {
             const userSelect = panel.querySelector('[name="debugUser"]');
             const categorySelect = panel.querySelector(
                 '[name="debugCategory"]',
@@ -131,7 +130,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 return;
             }
 
-            const res = await apiFetch("/api/v1/notifications/send", {
+            const response = await apiFetch("/api/v1/notifications/send", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({
@@ -143,10 +142,10 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             });
 
             showToast(
-                res.ok
+                response.ok
                     ? i18n.t("gateway.notify.admin.debug_sent")
                     : i18n.t("gateway.notify.admin.debug_send_failed"),
-                { variant: res.ok ? "success" : "error" },
+                { variant: response.ok ? "success" : "error" },
             );
         });
     }
@@ -167,8 +166,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                     render: () => renderNotificationsDebugContent(),
                 },
             ],
-            onRender: (root) => {
-                bindNotificationsDebug(root);
+            onRender: (rootElement) => {
+                bindNotificationsDebug(rootElement);
             },
         },
     };
