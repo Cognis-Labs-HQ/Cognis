@@ -160,6 +160,8 @@ Every language module owns a **library** — a layered, deep-linked register of 
 4. **Words** — one or more characters or alt_characters forming a meaningful unit, mapped to one or more definitions ranked by commonality.
 5. **Sentences** — ordered sequences of words with an optional explicit definition reference; if no explicit definition, meaning is derived from each word's primary definition.
 
+**The library is the single canonical source of truth for all language data.** Never hardcode language data (characters, words, definitions, sentences) in a child component's UI or server code. All such data lives in the module's `data/` directory, is loaded by the `LanguageLibraryStore` at bootstrap, and is served through the language library API (`/api/v1/study/languages/:code/library/:layer`). Child components consume the library API to display data. Adding new language content means adding or editing data files under `data/`, not modifying UI or server logic.
+
 A language module also advertises **child components** — independently deliverable study features (e.g. "Hiragana Alphabet", "Kanji Explorer"). Each child component:
 
 - Registers its own route via `ctx.registerChildRoute()` during `bootstrapLanguageModule`.
@@ -173,7 +175,7 @@ The Study gateway exposes `GET /api/v1/study/languages/:code/modules` to list al
 For Study sub-navigation behavior:
 
 - Show the **Library** entry to admin/owner users even when the currently selected language does not register a native Library child component.
-- Carry the currently selected language as a filter when navigating to Library so it opens in that language context by default.
+- The Library page derives its active language from the user's current sub-navigation selection; do not add a separate language selector on the Library page itself.
 - Treat Library records as holistic data with language as a field on records, rather than splitting behavior by hardcoded language-specific routes.
 - Register a **Classroom** child component for every language module so teachers and students can access language-scoped classroom views.
 

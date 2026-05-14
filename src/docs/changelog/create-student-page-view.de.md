@@ -70,3 +70,5 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 ## Commits
 
 Siehe Branch `copilot/create-student-page-view` für den Commit-Verlauf.
+
+- Alle englischen Sprachdaten wurden aus dem fest codierten UI in die Bibliothek migriert: `data/characters/latin.json` mit den 26 lateinischen Buchstaben (A–Z) wurde hinzugefügt. Die Alphabet-Seite lädt die Zeichen nun aus der Bibliotheks-API statt sie fest zu kodieren. Das generische `LanguageLibraryStore`-Muster wurde in `reuse/library-store.ts` verschoben; beide Sprachmodule (Englisch und Japanisch) nutzen diese gemeinsame Implementierung. Die gemeinsame Funktion `mountStudyLibraryPage` in `reuse/library-page.js` ersetzt duplizierte Bibliotheks-CRUD-UI-Logik. Duplizierte CSS-Klassen aus komponentenspezifischen Stylesheets wurden entfernt. Die KI-Anweisungen und die Dokumentation wurden aktualisiert, um klar zu machen, dass die Bibliothek der einzige kanonische Datenspeicher für alle Sprachmodulinhalt ist.

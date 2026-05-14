@@ -3,7 +3,7 @@ import { mountStudyLibraryPage } from "/static/modules/study/languages/reuse/lib
 export async function mount(root, { signal } = {}) {
     await mountStudyLibraryPage(root, {
         signal,
-        languageCode: "ja",
+        languageCode: "en",
     });
 }
 
@@ -11,6 +11,6 @@ if (!globalThis.__spaRouter) {
     try {
         await mount(document.querySelector("#app"));
     } catch (error) {
-        console.error("[study-ja] library mount failed", error);
+        console.error("[study-en] library mount failed", error);
     }
 }

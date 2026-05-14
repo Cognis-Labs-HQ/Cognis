@@ -1,7 +1,7 @@
 {
     "id": "study-language-en",
     "name": "Cognis English",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": ["study:language", "ui:page"],

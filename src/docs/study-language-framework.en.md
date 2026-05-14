@@ -148,26 +148,38 @@ Language modules live under `src/modules/study/languages/<code>/`. Each language
 src/modules/study/languages/ja/
   package.json          ← version + main field
   index.ts              ← exports createLanguageModule + bootstrapLanguageModule
-  library/
-    characters.ts       ← Layer 1 data
-    alt-characters.ts   ← Layer 2 data (Kanji, optional)
-    definitions.ts      ← Layer 3 data
-    words.ts            ← Layer 4 data
-    sentences.ts        ← Layer 5 data
+  data/
+    characters/
+      hiragana.json     ← Layer 1 character records (one file per character class)
+      katakana.json
+    alt-characters/
+      kanji.json        ← Layer 2 alt-character records (optional)
+    definitions/
+      common.json       ← Layer 3 definition records
+    words/
+      common.json       ← Layer 4 word records
+    sentences/
+      common.json       ← Layer 5 sentence records
+  library/              ← TypeScript type documentation for this language's layers
+    characters.ts
+    alt-characters.ts
+    definitions.ts
+    words.ts
+    sentences.ts
   components/           ← one sub-directory per child component
     hiragana-alphabet/
-      index.ts          ← registers route + child component metadata
       ui/
         index.html
         app.js
-    kanji-explorer/
-      index.ts
+    library/
       ui/
         index.html
-        app.js
+        app.js          ← calls mountStudyLibraryPage from reuse/library-page.js
   docs/
     standard.en.md      ← language-specific contributor guide
 ```
+
+The `data/` directory is the canonical source for all language content. The `LanguageLibraryStore` (from `src/modules/study/languages/reuse/library-store.ts`) loads these files at bootstrap and exposes them via the library API. **Do not store language data anywhere other than `data/`.** Child component UI files must fetch data from the library API; they must never embed language data directly.
 
 Child components may themselves contain sub-components for deeply nested functionality (e.g. a Kanji explorer with separate stroke-order and vocabulary sub-sections). The `pageUrl` for such sub-components would include an additional path segment, and the child component's own UI handles any internal sub-navigation.
 
@@ -205,7 +217,9 @@ If a child component itself requires sub-sections (e.g. stroke order and vocabul
 ## Library and Classroom UI Conventions
 
 - The Study sub-navigation must show a **Library** entry for admin/owner users even when the currently selected learning language does not natively register a Library child component.
-- Navigating to Library from Study sub-navigation must carry the currently selected language as a filter so Library opens in that language context by default.
+- The Library page derives its active language context from the user's current sub-navigation selection (via `loadStudySubNavigationModel`). Do not add a separate language selector on the Library page itself.
 - Library data is holistic and language-aware: language is modeled as a record field (for example `language`) rather than a hard route split per language.
 - Every language module should register a **Classroom** child component route so both teachers and students can access language-scoped class views.
 - Classroom pages must include a class selector, seat-capacity visualization, and role-based behavior (teacher management controls vs. student read-mostly + leave flow).
+- The shared `mountStudyLibraryPage` function from `src/modules/study/languages/reuse/library-page.js` provides the standard Library CRUD UI. Language modules must use this shared function for their Library child component rather than duplicating the UI logic.
+- The shared `mountStudyClassroomPage` function from `src/modules/study/languages/reuse/classroom-page.js` provides the standard Classroom UI. Language modules must use this shared function for their Classroom child component rather than duplicating the UI logic.

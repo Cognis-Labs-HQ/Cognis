@@ -1,4 +1,5 @@
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
+import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createPageComposer } from "/static/reuse/page-composer.js";
 import {
@@ -6,14 +7,36 @@ import {
     renderStudySubNavigation,
 } from "/static/modules/study/languages/reuse/study-sub-navigation.js";
 
-const ENGLISH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+async function loadAlphabetCharacters() {
+    try {
+        const response = await apiFetch(
+            "/api/v1/study/languages/en/library/characters?characterClass=latin",
+        );
+        if (!response.ok) return [];
+        const payload = await response.json();
+        const rows = Array.isArray(payload?.data) ? payload.data : [];
+        return rows
+            .map((row) => ({
+                id: row.id,
+                symbol: row.symbol,
+                romanization: row.romanization,
+            }))
+            .sort((leftRow, rightRow) => leftRow.id.localeCompare(rightRow.id));
+    } catch {
+        return [];
+    }
+}
 
-function renderAlphabetGrid() {
-    return ENGLISH_ALPHABET.map(
-        (letter) => `
-        <div class="alphabet-cell">${escapeHtml(letter)}</div>
+function renderAlphabetGrid(characters) {
+    return characters
+        .map(
+            (character) => `
+        <div class="alphabet-cell" data-character-id="${escapeHtml(character.id)}">
+            ${escapeHtml(character.symbol)}
+        </div>
     `,
-    ).join("");
+        )
+        .join("");
 }
 
 export async function mount(root) {
@@ -21,9 +44,12 @@ export async function mount(root) {
     applyDocumentTitle(i18n, "ui.shared.brand.name");
 
     const currentPath = window.location.pathname;
-    const subNavigationModel = await loadStudySubNavigationModel({
-        fallbackLanguageCode: "en",
-    });
+    const [subNavigationModel, alphabetCharacters] = await Promise.all([
+        loadStudySubNavigationModel({
+            fallbackLanguageCode: "en",
+        }),
+        loadAlphabetCharacters(),
+    ]);
 
     function renderSubNavigation() {
         return renderStudySubNavigation({
@@ -44,9 +70,9 @@ export async function mount(root) {
                 render: () => `
                     <section class="english-alphabet-section">
                         <h2>English Alphabet</h2>
-                        <p>A simple page for testing Study language switching between modules.</p>
+                        <p>The 26 Latin letters of the English alphabet. Data is sourced from the language library's characters layer.</p>
                         <div class="alphabet-grid">
-                            ${renderAlphabetGrid()}
+                            ${renderAlphabetGrid(alphabetCharacters)}
                         </div>
                     </section>
                 `,

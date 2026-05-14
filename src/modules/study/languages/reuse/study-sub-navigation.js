@@ -78,12 +78,8 @@ function isAdminScope() {
     return roleValue === "admin" || roleValue === "owner";
 }
 
-function buildLibraryUrl(languageCode) {
-    const normalizedLanguageCode = String(languageCode ?? "").trim();
-    if (!normalizedLanguageCode) {
-        return "/study/library";
-    }
-    return `/study/library?language=${encodeURIComponent(normalizedLanguageCode)}`;
+function buildLibraryUrl() {
+    return "/study/library";
 }
 
 /**
@@ -218,7 +214,7 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
  */
 export function renderStudySubNavigation({ model, currentPath, i18n }) {
     const selectedLanguageCode = model.selectedLanguageCode ?? "";
-    const adminLibraryUrl = buildLibraryUrl(selectedLanguageCode);
+    const adminLibraryUrl = buildLibraryUrl();
     const hasLibraryModule = (model.modules ?? []).some(
         (component) =>
             String(component?.pageUrl ?? "").trim() === "/study/library",

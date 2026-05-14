@@ -14,9 +14,9 @@ import {
 import { readJson } from "../../../../api/reuse/read-json.js";
 import { readFile } from "node:fs/promises";
 import {
-    JapaneseLibraryStore,
+    LanguageLibraryStore,
     type LibraryLayerName,
-} from "./library/reuse/library-store.js";
+} from "../reuse/library-store.js";
 
 const MODULE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
@@ -60,7 +60,7 @@ const CHILD_COMPONENTS: LanguageChildComponent[] = [
     },
 ];
 
-let libraryStore: JapaneseLibraryStore | null = null;
+let libraryStore: LanguageLibraryStore | null = null;
 
 class JapaneseLanguageModule implements LanguageModule {
     readonly languageCode = "ja";
@@ -351,8 +351,10 @@ export function createLanguageModule(): LanguageModule {
 export async function bootstrapLanguageModule(
     ctx: LanguageModuleBootstrapCtx,
 ): Promise<void> {
-    libraryStore = new JapaneseLibraryStore({
+    libraryStore = new LanguageLibraryStore({
         moduleRoot: MODULE_ROOT,
+        languageCode: "ja",
+        altCharactersFileName: "kanji",
         log: ctx.log,
     });
     await libraryStore.initialise();
