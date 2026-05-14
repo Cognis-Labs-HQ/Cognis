@@ -40,7 +40,10 @@ const STUDY_BASE_STYLESHEETS = [
 ];
 
 const STUDY_CHILD_ROUTE_PATTERN = /^\/study\/[^/]+$/;
-const STUDY_CHILD_EXCLUDED_PATHS = new Set(["/study/welcome", "/study/settings"]);
+const STUDY_CHILD_EXCLUDED_PATHS = new Set([
+    "/study/welcome",
+    "/study/settings",
+]);
 
 let _studyChildComponentsPromise = null;
 
