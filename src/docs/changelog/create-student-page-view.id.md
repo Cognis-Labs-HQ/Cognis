@@ -60,6 +60,7 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 - `src/modules/study/languages/ja/{package.json,manifest.json}` dan `src/docs/versions.en.md` — Versi modul Cognis Japanese dinaikkan ke `1.1.2`
 
 - `src/ui/styles/reuse/layout.css` — Menghapus `flex: 1 0 auto` dari `.workspace` agar ukurannya menyesuaikan konten dan tidak memenuhi viewport; `.global-footer` diberi `margin: auto auto 0` agar footer terdorong ke dasar viewport melalui margin atas otomatis dalam kolom flex; latar belakang `.page-subnav` kini menggunakan `var(--nav-bg)` secara langsung (sama seperti `.global-navrow`) dan ditambahkan `backdrop-filter: blur(8px)` agar bilah tetap sepenuhnya buram saat konten di bawahnya digulir
+- `src/ui/styles/reuse/layout.css` dan `src/ui/layouts/dashboard-layout.js` — Mengurangi padding vertikal subnavigasi, mengembalikan sudut membulat di semua sisi, dan menambahkan status gulir untuk halaman yang memiliki subnavigasi sehingga bar navigasi utama melipat setelah pengguna mulai menggulir dan subnavigasi tersambung langsung ke topbar global
 
 ## Commit
 

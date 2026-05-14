@@ -60,6 +60,7 @@
 - `src/modules/study/languages/ja/{package.json,manifest.json}` と `src/docs/versions.en.md` — Cognis Japanese モジュールのバージョンを `1.1.2` に更新
 
 - `src/ui/styles/reuse/layout.css` — `.workspace` から `flex: 1 0 auto` を削除してコンテンツのサイズに合わせるようにし、`.global-footer` に `margin: auto auto 0` を適用して flex カラム内の自動上マージンによりフッターをビューポート下端へ押し下げる；`.page-subnav` の背景を直接 `var(--nav-bg)`（`.global-navrow` と同じ）に変更し `backdrop-filter: blur(8px)` を追加して、下にコンテンツがスクロールされても常に完全不透明に保つ
+- `src/ui/styles/reuse/layout.css` と `src/ui/layouts/dashboard-layout.js` — サブナビゲーションの縦方向パディングを少し縮め、四辺すべての角丸を復元し、サブナビゲーションを持つページではスクロール開始後にメインナビ行をたたんでサブナビゲーションがグローバルトップバーへ直接つながるスクロール状態を追加
 
 ## コミット
 
