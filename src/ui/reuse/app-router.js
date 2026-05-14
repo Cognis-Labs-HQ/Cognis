@@ -39,13 +39,12 @@ const STUDY_BASE_STYLESHEETS = [
     "/static/gateways/study/study.css",
 ];
 
-const STUDY_CHILD_ROUTE_PATTERN = /^\/study\/[^/]+$/;
-const STUDY_CHILD_EXCLUDED_PATHS = new Set([
-    "/study/welcome",
-    "/study/settings",
-]);
+const STUDY_CHILD_ROUTE_PATTERN = /^\/study\/(?!welcome$|settings$)[^/]+$/;
+const STUDY_CHILD_COMPONENT_CACHE_TTL_MS = 30_000;
 
 let _studyChildComponentsPromise = null;
+let _studyChildComponentsCache = null;
+let _studyChildComponentsCacheExpiresAt = 0;
 
 function normalizePath(path) {
     return String(path).split("?")[0].split("#")[0];
@@ -53,10 +52,7 @@ function normalizePath(path) {
 
 function isPotentialStudyChildPath(path) {
     const normalizedPath = normalizePath(path);
-    return (
-        STUDY_CHILD_ROUTE_PATTERN.test(normalizedPath) &&
-        !STUDY_CHILD_EXCLUDED_PATHS.has(normalizedPath)
-    );
+    return STUDY_CHILD_ROUTE_PATTERN.test(normalizedPath);
 }
 
 async function fetchJson(urlPath) {
@@ -68,26 +64,42 @@ async function fetchJson(urlPath) {
 }
 
 async function loadStudyChildComponents() {
+    if (
+        _studyChildComponentsCache &&
+        Date.now() < _studyChildComponentsCacheExpiresAt
+    ) {
+        return _studyChildComponentsCache;
+    }
     if (_studyChildComponentsPromise) {
         return _studyChildComponentsPromise;
     }
     _studyChildComponentsPromise = (async () => {
-        const registeredLanguagesResponse = await fetchJson(
-            "/api/v1/study/registered-languages",
-        );
-        const languages = Array.isArray(registeredLanguagesResponse?.data)
-            ? registeredLanguagesResponse.data
-            : [];
-        const moduleResponses = await Promise.all(
-            languages.map((language) =>
-                fetchJson(
-                    `/api/v1/study/languages/${encodeURIComponent(String(language.code ?? ""))}/modules`,
-                ).catch(() => ({ data: [] })),
-            ),
-        );
-        return moduleResponses.flatMap((modulesResponse) =>
-            Array.isArray(modulesResponse?.data) ? modulesResponse.data : [],
-        );
+        try {
+            const registeredLanguagesResponse = await fetchJson(
+                "/api/v1/study/registered-languages",
+            );
+            const languages = Array.isArray(registeredLanguagesResponse?.data)
+                ? registeredLanguagesResponse.data
+                : [];
+            const moduleResponses = await Promise.all(
+                languages.map((language) =>
+                    fetchJson(
+                        `/api/v1/study/languages/${encodeURIComponent(String(language.code ?? ""))}/modules`,
+                    ).catch(() => ({ data: [] })),
+                ),
+            );
+            const components = moduleResponses.flatMap((modulesResponse) =>
+                Array.isArray(modulesResponse?.data)
+                    ? modulesResponse.data
+                    : [],
+            );
+            _studyChildComponentsCache = components;
+            _studyChildComponentsCacheExpiresAt =
+                Date.now() + STUDY_CHILD_COMPONENT_CACHE_TTL_MS;
+            return components;
+        } finally {
+            _studyChildComponentsPromise = null;
+        }
     })();
     return _studyChildComponentsPromise;
 }
@@ -127,7 +139,15 @@ async function loadStudyChildRouteModule(path) {
     if (component.stylesheets.length) {
         await Promise.all(component.stylesheets.map(ensurePageStylesheet));
     }
-    return import(component.scriptUrl);
+    try {
+        return await import(component.scriptUrl);
+    } catch (error) {
+        const errorMessage =
+            error instanceof Error ? error.message : String(error);
+        throw new Error(
+            `Failed to load Study child module "${path}" from "${component.scriptUrl}": ${errorMessage}`,
+        );
+    }
 }
 
 const ROUTES = [
@@ -266,10 +286,7 @@ export async function navigateTo(path) {
         if (!component) return;
     }
     history.pushState({ routerPage: path }, "", path);
-    const loaded = await loadRoute(path);
-    if (loaded && path === "/study/settings") {
-        _studyChildComponentsPromise = null;
-    }
+    await loadRoute(path);
 }
 
 export function getCurrentBase() {
