@@ -44,11 +44,24 @@ function getDisplayName() {
 function applyActiveNavigation() {
     const currentPath = window.location.pathname;
     document.querySelectorAll(".topnav a").forEach((link) => {
-        const isActive = link.getAttribute("href") === currentPath;
+        const isActive = isNavigationLinkActive(
+            currentPath,
+            link.getAttribute("href"),
+        );
         link.classList.toggle("active", isActive);
         if (isActive) link.setAttribute("aria-current", "page");
         else link.removeAttribute("aria-current");
     });
+}
+
+function isNavigationLinkActive(currentPath, href) {
+    const normalizedHref = String(href ?? "").trim();
+    if (!normalizedHref || normalizedHref === "#") return false;
+    if (normalizedHref === "/") return currentPath === "/";
+    return (
+        currentPath === normalizedHref ||
+        currentPath.startsWith(`${normalizedHref}/`)
+    );
 }
 
 async function bindThemeToggle({ usePreferenceApi = true } = {}) {
@@ -290,8 +303,10 @@ function applyCompactNav(root) {
         if (drawerNav) {
             drawerNav.innerHTML = topnav.innerHTML;
             drawerNav.querySelectorAll("a").forEach((link) => {
-                const isActive =
-                    link.getAttribute("href") === window.location.pathname;
+                const isActive = isNavigationLinkActive(
+                    window.location.pathname,
+                    link.getAttribute("href"),
+                );
                 link.classList.toggle("active", isActive);
                 if (isActive) link.setAttribute("aria-current", "page");
                 else link.removeAttribute("aria-current");
@@ -337,6 +352,36 @@ function applyCompactNav(root) {
     syncCompactState();
 }
 
+function syncHeaderScrollState(root) {
+    const shell = root.querySelector(".app-shell");
+    if (!shell) return;
+
+    const hasSubNavigation = Boolean(shell.querySelector(".page-subnav"));
+    const hasPrimaryNavigation = Boolean(shell.querySelector(".global-navrow"));
+    const shouldPrioritizeSubnav =
+        hasSubNavigation && hasPrimaryNavigation && window.scrollY > 12;
+
+    shell.classList.toggle("app-shell--has-subnav", hasSubNavigation);
+    shell.classList.toggle(
+        "app-shell--subnav-priority",
+        shouldPrioritizeSubnav,
+    );
+}
+
+function bindHeaderScrollState(root) {
+    if (root.dataset.headerScrollStateBound === "true") {
+        syncHeaderScrollState(root);
+        return;
+    }
+
+    root.dataset.headerScrollStateBound = "true";
+    const syncState = () => syncHeaderScrollState(root);
+
+    window.addEventListener("scroll", syncState, { passive: true });
+    window.addEventListener("resize", syncState);
+    syncState();
+}
+
 function shellMatchesConfig(root, showTopbar, showNavbar, showFooter) {
     const hasTopbar = Boolean(root.querySelector(".global-topbar"));
     const hasNavrow = Boolean(root.querySelector(".global-navrow"));
@@ -365,6 +410,7 @@ export async function renderDashboardLayout(root, slots = {}) {
 
     const existingShell = root.querySelector(".app-shell");
     const hasToolbar = Boolean(slots.toolbar);
+    const hasSubNavigation = Boolean(slots.subNavigation);
     const hasFloatingToolbar = Boolean(slots.floatingToolbar);
 
     if (
@@ -373,6 +419,24 @@ export async function renderDashboardLayout(root, slots = {}) {
     ) {
         const pageCtxEl = existingShell.querySelector(".page-context");
         if (pageCtxEl) pageCtxEl.innerHTML = slots.pageContext || "";
+        const existingSubNavEl = existingShell.querySelector(".page-subnav");
+        if (hasSubNavigation) {
+            if (existingSubNavEl) {
+                existingSubNavEl.innerHTML = slots.subNavigation;
+            } else {
+                const navRow = existingShell.querySelector(".global-navrow");
+                const newSubNavEl = document.createElement("section");
+                newSubNavEl.className = "page-subnav";
+                newSubNavEl.innerHTML = slots.subNavigation;
+                navRow
+                    ? navRow.after(newSubNavEl)
+                    : existingShell
+                          .querySelector(".site-header")
+                          ?.append(newSubNavEl);
+            }
+        } else if (existingSubNavEl) {
+            existingSubNavEl.remove();
+        }
 
         const mainWindow = existingShell.querySelector(".main-window");
         if (mainWindow) {
@@ -403,6 +467,7 @@ export async function renderDashboardLayout(root, slots = {}) {
             initSearchBar(i18n);
             bindProfilePreviews(i18n);
         }
+        bindHeaderScrollState(root);
         return;
     }
 
@@ -410,6 +475,12 @@ export async function renderDashboardLayout(root, slots = {}) {
     root.innerHTML = template
         .replace("{{pageContext}}", slots.pageContext || "")
         .replace("{{topbar}}", slots.topbar)
+        .replace(
+            "{{subNavigation}}",
+            hasSubNavigation
+                ? `<section class="page-subnav">${slots.subNavigation}</section>`
+                : "",
+        )
         .replace(
             "{{workspaceClass}}",
             hasToolbar
@@ -444,6 +515,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         initSearchBar(i18n);
         bindProfilePreviews(i18n);
     }
+    bindHeaderScrollState(root);
     bindThemeToggle({ usePreferenceApi });
     registerServiceWorker();
 }
@@ -547,8 +619,8 @@ function initSearchBar(i18n) {
                 ? [
                       {
                           id: "settings-study",
-                          label: i18n.t("ui.app.settings.study.title"),
-                          url: "/settings#study",
+                          label: i18n.t("ui.reuse.study"),
+                          url: "/study",
                       },
                   ]
                 : []),

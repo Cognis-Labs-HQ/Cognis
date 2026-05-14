@@ -1168,7 +1168,8 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     color: var(--text-muted);
 }
 
-.dashboard-teacher-classes-placeholder {
+.dashboard-teacher-classes-placeholder,
+.dashboard-classes-placeholder {
     font-size: 0.9rem;
     color: var(--text-muted);
     font-style: italic;

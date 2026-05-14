@@ -326,6 +326,9 @@ const server = buildServer({
               await profileStore.updateProfile(accountId, { visibility });
           }
         : undefined,
+    onModuleStateChanged: capabilities.get<
+        (moduleId: string, enabled: boolean) => Promise<void> | void
+    >("modules:onStateChanged"),
     loadModuleStates: async () => {
         const result = await dbExecutor.executeCommand({
             option: "SELECT",

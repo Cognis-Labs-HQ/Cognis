@@ -42,6 +42,8 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 
 ## Modul
 
-| Komponen         | Path                            | Versi   |
-| ---------------- | ------------------------------- | ------- |
-| Sample Analytics | `src/modules/sample-analytics/` | `0.1.0` |
+| Komponen         | Path                              | Versi   |
+| ---------------- | --------------------------------- | ------- |
+| Sample Analytics | `src/modules/sample-analytics/`   | `0.1.0` |
+| Cognis Jepang    | `src/modules/study/languages/ja/` | `1.2.2` |
+| Cognis Inggris   | `src/modules/study/languages/en/` | `1.2.0` |

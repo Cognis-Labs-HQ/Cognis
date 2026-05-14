@@ -24,6 +24,10 @@ export interface LanguageChildComponent {
     readonly label: string;
     /** URL the router navigates to, e.g. '/study/ja/hiragana'. */
     readonly pageUrl: string;
+    /** Optional SPA script URL for router-side module mounting. */
+    readonly scriptUrl?: string;
+    /** Optional SPA stylesheet URLs loaded before mount. */
+    readonly stylesheets?: readonly string[];
     /** Lower numbers appear first. Defaults to 0. */
     readonly order?: number;
     /** Optional minimum role required to see this child component in sub-nav. */
@@ -145,24 +149,97 @@ export class CoreStudyGateway {
     private readonly disabledAdapters = new Set<string>();
     private readonly registeredLanguageModules = new Map<
         string,
-        LanguageModule
+        {
+            module: LanguageModule;
+            moduleId: string;
+            moduleClass: string;
+        }
     >();
+    private readonly languageModuleAvailability = new Map<string, boolean>();
 
     registerAdapter(adapter: StudyAdapter): void {
         this.registeredAdapters.set(adapter.adapterId, adapter);
     }
 
-    registerLanguageModule(module: LanguageModule): void {
-        this.registeredLanguageModules.set(module.languageCode, module);
+    /**
+     * Registers a language module and optional module-runtime metadata.
+     *
+     * moduleId/moduleClass are used by Study bootstrap to map language entries
+     * to module enablement state; defaults map to extension-style language
+     * modules when metadata is not provided.
+     */
+    registerLanguageModule(
+        module: LanguageModule,
+        options?: { moduleId?: string; moduleClass?: string },
+    ): void {
+        const moduleId =
+            options?.moduleId ?? `study-language-${module.languageCode}`;
+        const moduleClass = options?.moduleClass ?? "extension";
+        this.registeredLanguageModules.set(module.languageCode, {
+            module,
+            moduleId,
+            moduleClass,
+        });
+        this.languageModuleAvailability.set(
+            moduleId,
+            moduleClass.trim().toLowerCase() === "core",
+        );
+    }
+
+    setLanguageModuleEnabled(moduleId: string, enabled: boolean): void {
+        const hasLanguageModule = Array.from(
+            this.registeredLanguageModules.values(),
+        ).some((languageModule) => languageModule.moduleId === moduleId);
+        if (!hasLanguageModule) return;
+        this.languageModuleAvailability.set(moduleId, enabled);
+    }
+
+    isLanguageModuleEnabled(moduleId: string): boolean {
+        const enabled = this.languageModuleAvailability.get(moduleId);
+        return enabled === true;
+    }
+
+    listRegisteredLanguages(): Array<{
+        code: string;
+        name: string;
+        flag: string;
+    }> {
+        return Array.from(this.registeredLanguageModules.values()).map(
+            ({ module }) => ({
+                code: module.languageCode,
+                name: module.languageName,
+                flag: module.languageFlag,
+            }),
+        );
+    }
+
+    listRegisteredLanguageModules(): Array<{
+        code: string;
+        name: string;
+        flag: string;
+        moduleId: string;
+        moduleClass: string;
+        enabled: boolean;
+    }> {
+        return Array.from(this.registeredLanguageModules.values()).map(
+            ({ module, moduleId, moduleClass }) => ({
+                code: module.languageCode,
+                name: module.languageName,
+                flag: module.languageFlag,
+                moduleId,
+                moduleClass,
+                enabled: this.isLanguageModuleEnabled(moduleId),
+            }),
+        );
     }
 
     listChildComponents(
         languageCode: string,
         viewerRole: AccessRole = "user",
     ): LanguageChildComponent[] {
-        const module = this.registeredLanguageModules.get(languageCode);
-        if (!module) return [];
-        return module
+        const registered = this.registeredLanguageModules.get(languageCode);
+        if (!registered) return [];
+        return registered.module
             .listChildComponents()
             .filter((childComponent) => {
                 if (!childComponent.minRole) return true;
@@ -325,8 +402,33 @@ export class CoreStudyGateway {
                     const factory =
                         mod.createLanguageModule as () => LanguageModule | null;
                     const languageModule = factory();
-                    if (languageModule)
-                        this.registerLanguageModule(languageModule);
+                    if (languageModule) {
+                        let moduleId = `study-language-${languageModule.languageCode}`;
+                        let moduleClass = "extension";
+                        try {
+                            const manifestPath = path.join(
+                                modulesRoot,
+                                entry,
+                                "manifest.json",
+                            );
+                            const manifestRaw = await readFile(
+                                manifestPath,
+                                "utf8",
+                            );
+                            const manifest = JSON.parse(manifestRaw) as {
+                                id?: string;
+                                class?: string;
+                            };
+                            moduleId = manifest.id?.trim() || moduleId;
+                            moduleClass = manifest.class?.trim() || moduleClass;
+                        } catch {
+                            // Missing or unreadable manifest — keep defaults.
+                        }
+                        this.registerLanguageModule(languageModule, {
+                            moduleId,
+                            moduleClass,
+                        });
+                    }
                 }
             } catch {
                 // Language module could not be loaded — skip silently.
@@ -373,6 +475,21 @@ export class CoreStudyGateway {
                 gateway: this,
                 languageCode: entry,
                 moduleRoot: path.join(modulesRoot, entry),
+                registerChildRoute: (handler) => {
+                    baseCtx.registerChildRoute(async (req, res, url) => {
+                        const languageMeta =
+                            this.registeredLanguageModules.get(entry);
+                        if (languageMeta) {
+                            const isEnabled = this.isLanguageModuleEnabled(
+                                languageMeta.moduleId,
+                            );
+                            if (!isEnabled) {
+                                return false;
+                            }
+                        }
+                        return handler(req, res, url);
+                    });
+                },
             };
 
             try {

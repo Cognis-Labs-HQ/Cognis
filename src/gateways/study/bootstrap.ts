@@ -1,17 +1,21 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
-import { requireAuth } from "../auth/guard.js";
+import {
+    requireAuth,
+    getCookieSession,
+    setPageSecurityHeaders,
+} from "../auth/guard.js";
 import { readJson } from "../../api/reuse/read-json.js";
 import { CoreStudyGateway } from "./gateway.js";
 
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
-const LANGUAGE_MODULES_ROOT = path.resolve(
-    GATEWAY_ROOT,
-    "../../../modules/study/languages",
-);
+const MODULES_ROOT =
+    process.env.COGNIS_MODULES_ROOT ??
+    path.resolve(GATEWAY_ROOT, "../../modules");
+const LANGUAGE_MODULES_ROOT = path.resolve(MODULES_ROOT, "study", "languages");
 
 export type {
     StudyAdapterBootstrapCtx,
@@ -28,6 +32,7 @@ export type {
 function createStudyAdapterRoutes(
     gatewayId: string,
     gateway: CoreStudyGateway,
+    isLanguageEnabled: (languageCode: string) => Promise<boolean>,
 ) {
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
 
@@ -50,6 +55,12 @@ function createStudyAdapterRoutes(
             const claims = requireAuth(req, res);
             if (!claims) return true;
             const languageCode = decodeURIComponent(modulesMatch[1]);
+            const languageIsEnabled = await isLanguageEnabled(languageCode);
+            if (!languageIsEnabled) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: [] }));
+                return true;
+            }
             const components = gateway.listChildComponents(
                 languageCode,
                 claims.role,
@@ -126,9 +137,6 @@ function createStudyAdapterRoutes(
  * Standard gateway bootstrap entry point for the Study Gateway.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const dbExecutor =
-        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
-
     const gateway = new CoreStudyGateway();
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
 
@@ -168,7 +176,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.uiRegistry.registerAdapterStaticDir(gatewayId, adapterId, dir);
         },
         log: ctx.log,
-        dbExecutor,
+        dbExecutor: ctx.capabilities.get("db:executor") ?? ctx.dbExecutor,
     });
 
     ctx.log?.("info", "Study gateway: adapters bootstrapped.", {
@@ -181,6 +189,31 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         component: "study-gateway",
         modulesRoot: LANGUAGE_MODULES_ROOT,
     });
+
+    const syncModuleEnabledState = (
+        moduleId: string,
+        enabled: boolean,
+    ): void => {
+        gateway.setLanguageModuleEnabled(moduleId, enabled);
+    };
+    ctx.capabilities.contribute(
+        "modules:onStateChanged",
+        syncModuleEnabledState,
+    );
+
+    /**
+     * Resolves a language code to module metadata, then evaluates enablement
+     * through the module-state-aware checker.
+     */
+    const isLanguageEnabled = async (
+        languageCode: string,
+    ): Promise<boolean> => {
+        const languageModule = gateway
+            .listRegisteredLanguageModules()
+            .find((candidate) => candidate.code === languageCode);
+        if (!languageModule) return false;
+        return gateway.isLanguageModuleEnabled(languageModule.moduleId);
+    };
 
     await gateway.bootstrapLanguageModules(LANGUAGE_MODULES_ROOT, {
         registerChildRoute: (handler) =>
@@ -203,13 +236,61 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.uiRegistry?.registerStaticDir("study", path.join(GATEWAY_ROOT, "ui"));
-    ctx.uiRegistry?.registerSettingsSection({
-        id: "study",
-        label: "Study",
-        scriptUrl: "/static/gateways/study/study-prefs.js",
-        isEnabled: () =>
-            ctx.gatewayRegistry.get("study")?.status !== "disabled",
-    });
+
+    const serveStudyHtml = async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        if (req.method !== "GET") return false;
+        if (
+            url.pathname !== "/study" &&
+            url.pathname !== "/study/welcome" &&
+            url.pathname !== "/study/settings"
+        )
+            return false;
+        if (!getCookieSession(req)) {
+            res.writeHead(302, { location: "/login" });
+            res.end();
+            return true;
+        }
+        setPageSecurityHeaders(res);
+        const html = await readFile(
+            path.join(GATEWAY_ROOT, "ui", "study.html"),
+            "utf8",
+        );
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(html);
+        return true;
+    };
+    ctx.routeRegistry.register(serveStudyHtml, "study");
+
+    const registeredLanguagesRoute = async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        if (
+            url.pathname !== "/api/v1/study/registered-languages" ||
+            req.method !== "GET"
+        )
+            return false;
+        const claims = requireAuth(req, res);
+        if (!claims) return true;
+        const languages = gateway
+            .listRegisteredLanguageModules()
+            .filter((language) => language.enabled)
+            .map((language) => ({
+                code: language.code,
+                name: language.name,
+                flag: language.flag,
+            }));
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ data: languages }));
+        return true;
+    };
+    ctx.routeRegistry.register(registeredLanguagesRoute, "study");
+
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/study/navbar.js",
         isEnabled: () =>
@@ -217,14 +298,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.routeRegistry.register(
-        createStudyAdapterRoutes("study", gateway),
+        createStudyAdapterRoutes("study", gateway, isLanguageEnabled),
         "study",
     );
 
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.2.2",
+        version: "1.5.0",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",

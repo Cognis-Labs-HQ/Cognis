@@ -1,6 +1,7 @@
 import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
+import { escapeHtml } from "../../reuse/escape-html.js";
 import {
     buildAnalogueClockMarkup,
     buildDigitalClockMarkup,
@@ -98,7 +99,7 @@ export async function mount(root) {
       <h3>${i18n.t("ui.app.dashboard.element.account.label")}</h3>
       <dl class="dashboard-info-list">
         <dt>${i18n.t("ui.app.dashboard.role")}</dt>
-        <dd>${getRoleLabel(i18n, role)}</dd>
+        <dd>${escapeHtml(i18n.t(`ui.reuse.role_${role}`) || role)}</dd>
         <dt>${i18n.t("ui.app.dashboard.member_since")}</dt>
         <dd>${formatDateValue(info?.createdAt ?? null)}</dd>
       </dl>

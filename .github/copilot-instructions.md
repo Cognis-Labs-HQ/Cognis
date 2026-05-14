@@ -85,6 +85,8 @@ Every UI page must be assembled exclusively through `createPageComposer` from `s
 
 Bypassing the composer is always wrong, even when the page appears to work. Doing so silently breaks theming, accessibility, user layout preferences, and any future infrastructure built into the composer. All of these are non-negotiable requirements for every page in the application.
 
+Every page must pass a `pageContext` object to `createPageComposer` with both a `title` and a `subtitle`. The title is the page name; the subtitle is a concise description of the page's purpose that appears in the global topbar below the title. Both fields must be resolved through i18n keys — never hardcode user-facing text. A page without a subtitle is non-compliant.
+
 ### UI page navigation must use the app router
 
 All navigation between dashboard-shell pages uses the client-side router in `src/ui/reuse/app-router.js`. The router intercepts clicks on internal navigation links, uses `history.pushState()` to update the URL, and mounts the new page's content in place via each page's `mount()` function — no full browser reload.
@@ -142,6 +144,16 @@ Prefer scanning the filesystem to discover gateways, adapters, and modules over 
 
 Study language modules are **not** gateways or adapters. They are content modules that live under `src/modules/study/languages/<bcp47-code>/` and register themselves with the Study gateway at bootstrap time via `createLanguageModule()` and `bootstrapLanguageModule(ctx)`. The Study gateway discovers them automatically by scanning that directory.
 
+### Study routing authority flow
+
+Study routing authority is strictly one-directional:
+
+- Language modules inform the Study gateway by registering child routes and returning `LanguageChildComponent` descriptors.
+- The Study gateway informs the UI/app router through its declared contract and API surfaces.
+- The app router must not hardcode Study or language-module internals (language IDs, component IDs, module asset paths, or module-specific route assumptions).
+
+It is fine to rely on sane URI shape conventions (for example `/study/<segment>`), but canonical Study child-route data and load metadata must come from the Study gateway, not directly from language-module implementation details.
+
 Every language module owns a **library** — a layered, deep-linked register of the language's written elements:
 
 1. **Characters** — the atomic writing units (e.g. hiragana, katakana). For CJK languages, compound symbols such as Kanji are NOT characters; they belong in alt_characters.
@@ -149,6 +161,8 @@ Every language module owns a **library** — a layered, deep-linked register of 
 3. **Definitions** — language-scoped meaning records. A definition is a short phrase in the learner's UI language that describes a concept. Definitions are referenced by words and sentences rather than embedded.
 4. **Words** — one or more characters or alt_characters forming a meaningful unit, mapped to one or more definitions ranked by commonality.
 5. **Sentences** — ordered sequences of words with an optional explicit definition reference; if no explicit definition, meaning is derived from each word's primary definition.
+
+**The library is the single canonical source of truth for all language data.** Never hardcode language data (characters, words, definitions, sentences) in a child component's UI or server code. All such data lives in the module's `data/` directory, is loaded by the `LanguageLibraryStore` at bootstrap, and is served through the language library API (`/api/v1/study/languages/:code/library/:layer`). Child components consume the library API to display data. Adding new language content means adding or editing data files under `data/`, not modifying UI or server logic.
 
 A language module also advertises **child components** — independently deliverable study features (e.g. "Hiragana Alphabet", "Kanji Explorer"). Each child component:
 
@@ -159,6 +173,13 @@ A language module also advertises **child components** — independently deliver
 Child components may themselves contain sub-components for deeply nested functionality (e.g. stroke order and vocabulary within a Kanji explorer). Internal sub-navigation within a component is handled client-side; only the top-level `pageUrl` is registered with the gateway.
 
 The Study gateway exposes `GET /api/v1/study/languages/:code/modules` to list all registered child components for a language. The study UI uses this endpoint to build the sub-navigation menu under the selected language. See `src/docs/study-language-framework.en.md` for the complete contract, data model, and directory layout.
+
+For Study sub-navigation behavior:
+
+- Show the **Library** entry to admin/owner users even when the currently selected language does not register a native Library child component.
+- The Library page derives its active language from the user's current sub-navigation selection; do not add a separate language selector on the Library page itself.
+- Treat Library records as holistic data with language as a field on records, rather than splitting behavior by hardcoded language-specific routes.
+- Register a **Classroom** child component for every language module so teachers and students can access language-scoped classroom views.
 
 ### Comment references for alternate control flow
 

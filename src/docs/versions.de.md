@@ -48,6 +48,8 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 
 ## Module
 
-| Komponente       | Pfad                            | Version |
-| ---------------- | ------------------------------- | ------- |
-| Sample Analytics | `src/modules/sample-analytics/` | `0.1.0` |
+| Komponente       | Pfad                              | Version |
+| ---------------- | --------------------------------- | ------- |
+| Sample Analytics | `src/modules/sample-analytics/`   | `0.1.0` |
+| Cognis Japanisch | `src/modules/study/languages/ja/` | `1.2.2` |
+| Cognis Englisch  | `src/modules/study/languages/en/` | `1.2.0` |
