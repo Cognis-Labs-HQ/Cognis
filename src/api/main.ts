@@ -326,9 +326,9 @@ const server = buildServer({
               await profileStore.updateProfile(accountId, { visibility });
           }
         : undefined,
-    setStudyLanguageModuleEnabled: capabilities.get<
+    onModuleStateChanged: capabilities.get<
         (moduleId: string, enabled: boolean) => Promise<void> | void
-    >("study:setLanguageModuleEnabled"),
+    >("modules:onStateChanged"),
     loadModuleStates: async () => {
         const result = await dbExecutor.executeCommand({
             option: "SELECT",

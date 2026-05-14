@@ -10,6 +10,7 @@ import { createClassesRoutes } from "./routes.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import {
     getCookieSession,
+    hasMinRole,
     setPageSecurityHeaders,
 } from "../../../gateways/auth/guard.js";
 
@@ -48,7 +49,7 @@ function createClassesPageRoute(isAdapterEnabled: () => boolean) {
             res.end();
             return true;
         }
-        if (session.role !== "teacher") {
+        if (!hasMinRole(session.role, "teacher")) {
             res.writeHead(302, { location: "/dashboard" });
             res.end();
             return true;

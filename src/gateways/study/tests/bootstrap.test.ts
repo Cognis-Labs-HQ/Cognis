@@ -89,7 +89,7 @@ async function bootstrapStudyGateway() {
         routeRegistry,
         setLanguageModuleEnabled: capabilities.get<
             (moduleId: string, enabled: boolean) => void
-        >("study:setLanguageModuleEnabled"),
+        >("modules:onStateChanged"),
     };
 }
 

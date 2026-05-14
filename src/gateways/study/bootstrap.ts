@@ -190,15 +190,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         modulesRoot: LANGUAGE_MODULES_ROOT,
     });
 
-    const setLanguageModuleEnabled = (
+    const syncModuleEnabledState = (
         moduleId: string,
         enabled: boolean,
     ): void => {
         gateway.setLanguageModuleEnabled(moduleId, enabled);
     };
     ctx.capabilities.contribute(
-        "study:setLanguageModuleEnabled",
-        setLanguageModuleEnabled,
+        "modules:onStateChanged",
+        syncModuleEnabledState,
     );
 
     /**

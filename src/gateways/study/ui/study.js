@@ -331,8 +331,7 @@ async function mountHub(
 
     function renderSubNavigation() {
         const hasLibraryModule = selectedLanguageModules.some(
-            (component) =>
-                String(component?.pageUrl ?? "").trim() === "/study/library",
+            (component) => String(component?.id ?? "").trim() === "library",
         );
         const moduleLinks = selectedLanguageModules
             .map((component) => {
