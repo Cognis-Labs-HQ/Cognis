@@ -112,6 +112,75 @@ function validateBroadcastSchedule(
     return null;
 }
 
+function getBroadcastCreateValidationError(input: {
+    title: string;
+    message: string;
+    displayMode: string;
+    targetRoles: NotificationBroadcastRole[] | undefined;
+    startAt: number | null | undefined;
+    endAt: number | null | undefined;
+    redirectUrl: string | null;
+}): { code: string; message: string } | null {
+    if (!input.title) {
+        return {
+            code: "missing_broadcast_title",
+            message: "Broadcast title is required",
+        };
+    }
+    if (!input.message) {
+        return {
+            code: "missing_broadcast_message",
+            message: "Broadcast message is required",
+        };
+    }
+    if (
+        !VALID_BROADCAST_MODES.has(
+            input.displayMode as NotificationBroadcastDisplayMode,
+        )
+    ) {
+        return {
+            code: "invalid_broadcast_display_mode",
+            message: "Broadcast displayMode must be either 'bar' or 'popup'",
+        };
+    }
+    if (!input.targetRoles || input.targetRoles.length === 0) {
+        return {
+            code: "missing_broadcast_roles",
+            message: "At least one target role is required",
+        };
+    }
+
+    const scheduleValidationError = validateBroadcastSchedule(
+        input.startAt,
+        input.endAt,
+    );
+    if (scheduleValidationError === "invalid_timestamp") {
+        return {
+            code: "invalid_broadcast_timestamp",
+            message: "Broadcast startAt and endAt must be valid timestamps",
+        };
+    }
+    if (scheduleValidationError === "partial_window_not_allowed") {
+        return {
+            code: "partial_broadcast_window",
+            message: "Broadcast startAt and endAt must both be provided",
+        };
+    }
+    if (scheduleValidationError === "invalid_window_range") {
+        return {
+            code: "invalid_broadcast_window_range",
+            message: "Broadcast startAt must be earlier than endAt",
+        };
+    }
+    if (input.redirectUrl !== null && !isSafeRedirectUrl(input.redirectUrl)) {
+        return {
+            code: "invalid_broadcast_redirect",
+            message: "Broadcast redirectUrl must stay on the current origin",
+        };
+    }
+    return null;
+}
+
 export function createNotificationRoutes(
     gateway: CoreNotificationGateway,
     notifStore?: NotificationPreferenceRouteStore,
@@ -250,28 +319,21 @@ export function createNotificationRoutes(
             ).trim();
             const redirectUrl = redirectUrlRaw || null;
             const enabled = body.enabled == null ? true : Boolean(body.enabled);
-            const scheduleValidationError = validateBroadcastSchedule(
+            const validationError = getBroadcastCreateValidationError({
+                title,
+                message,
+                displayMode,
+                targetRoles,
                 startAt,
                 endAt,
-            );
+                redirectUrl,
+            });
 
-            if (
-                !title ||
-                !message ||
-                !VALID_BROADCAST_MODES.has(displayMode) ||
-                !targetRoles ||
-                targetRoles.length === 0 ||
-                scheduleValidationError !== null ||
-                (redirectUrl !== null && !isSafeRedirectUrl(redirectUrl))
-            ) {
+            if (validationError !== null) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
-                        error: {
-                            code: "invalid_broadcast_payload",
-                            message:
-                                "title, message, displayMode, targetRoles, and valid schedule/redirect fields are required",
-                        },
+                        error: validationError,
                     }),
                 );
                 return true;

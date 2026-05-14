@@ -673,7 +673,77 @@ test("POST /api/v1/notifications/broadcasts returns 400 for invalid payload", as
     );
 
     assert.equal(response.status, 400);
-    assert.match(response.payload, /invalid_broadcast_payload/);
+    assert.match(response.payload, /missing_broadcast_title/);
+});
+
+test("POST /api/v1/notifications/broadcasts returns 400 when no target roles are selected", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    const route = createNotificationRoutes(gateway, {
+        async getUserNotifPrefs() {
+            return [];
+        },
+        async saveUserNotifPrefs() {},
+        async createBroadcast() {
+            return {};
+        },
+    });
+    const adminToken = issueAccessToken("admin-user", "admin", 60);
+    const response = makeResponse();
+
+    await route(
+        requestWithBody(
+            "POST",
+            {
+                title: "Maintenance Window",
+                message: "body",
+                displayMode: "bar",
+                targetRoles: [],
+            },
+            adminToken,
+        ),
+        response,
+        new URL("http://localhost/api/v1/notifications/broadcasts"),
+    );
+
+    assert.equal(response.status, 400);
+    assert.match(response.payload, /missing_broadcast_roles/);
+});
+
+test("POST /api/v1/notifications/broadcasts returns 400 for invalid date ranges", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    const route = createNotificationRoutes(gateway, {
+        async getUserNotifPrefs() {
+            return [];
+        },
+        async saveUserNotifPrefs() {},
+        async createBroadcast() {
+            return {};
+        },
+    });
+    const adminToken = issueAccessToken("admin-user", "admin", 60);
+    const response = makeResponse();
+
+    await route(
+        requestWithBody(
+            "POST",
+            {
+                title: "Maintenance Window",
+                message: "body",
+                displayMode: "bar",
+                targetRoles: ["user"],
+                startAt: 1_700_000_360_000,
+                endAt: 1_700_000_000_000,
+            },
+            adminToken,
+        ),
+        response,
+        new URL("http://localhost/api/v1/notifications/broadcasts"),
+    );
+
+    assert.equal(response.status, 400);
+    assert.match(response.payload, /invalid_broadcast_window_range/);
 });
 
 test("POST /api/v1/notifications/broadcasts rejects external redirect URLs", async () => {
@@ -708,7 +778,7 @@ test("POST /api/v1/notifications/broadcasts rejects external redirect URLs", asy
     );
 
     assert.equal(response.status, 400);
-    assert.match(response.payload, /invalid_broadcast_payload/);
+    assert.match(response.payload, /invalid_broadcast_redirect/);
 });
 
 test("GET /api/v1/notifications/broadcasts/active returns role-targeted broadcasts", async () => {

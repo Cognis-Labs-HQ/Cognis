@@ -50,6 +50,19 @@
     margin-top: 0;
 }
 
+.notif-broadcast-datetime-input {
+    color-scheme: dark;
+}
+
+body[data-theme="light"] .notif-broadcast-datetime-input {
+    color-scheme: light;
+}
+
+body[data-theme="dark"]
+    .notif-broadcast-datetime-input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
 .notif-broadcast-table-wrap {
     width: 100%;
     overflow-x: auto;
@@ -75,6 +88,35 @@
 .notif-broadcast-table th {
     background: color-mix(in srgb, var(--surface) 82%, transparent);
     font-weight: 700;
+}
+
+.notif-broadcast-row--expandable {
+    cursor: pointer;
+}
+
+.notif-broadcast-row--expandable:hover td,
+.notif-broadcast-row--expanded td {
+    background: color-mix(in srgb, var(--surface) 84%, transparent);
+}
+
+.notif-broadcast-row--expandable:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.notif-broadcast-row-details {
+    white-space: nowrap;
+    text-align: center;
+}
+
+.notif-broadcast-row-indicator {
+    display: inline-block;
+    font-size: 1rem;
+    transition: transform 160ms ease;
+}
+
+.notif-broadcast-row--expanded .notif-broadcast-row-indicator {
+    transform: rotate(90deg);
 }
 
 .notif-broadcast-empty-cell {

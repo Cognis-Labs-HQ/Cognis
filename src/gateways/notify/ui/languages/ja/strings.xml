@@ -25,6 +25,13 @@
   <string name="gateway.notify.admin.broadcast_created">一斉通知を作成しました。</string>
   <string name="gateway.notify.admin.broadcast_invalid">有効なタイトル、メッセージ、対象ロール、スケジュールを入力してください。</string>
   <string name="gateway.notify.admin.broadcast_create_failed">一斉通知の作成に失敗しました。</string>
+  <string name="gateway.notify.admin.broadcast_error_missing_title">タイトルを入力してください。</string>
+  <string name="gateway.notify.admin.broadcast_error_missing_message">メッセージを入力してください。</string>
+  <string name="gateway.notify.admin.broadcast_error_missing_roles">対象ロールを少なくとも1つ選択してください。</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_timestamp">有効な開始日時と終了日時を入力してください。</string>
+  <string name="gateway.notify.admin.broadcast_error_partial_window">開始日と終了日の両方を入力するか、両方とも空のままにしてください。</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_range">開始日時は終了日時より前である必要があります。</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_redirect">リダイレクトURLはこのサイト内である必要があります。</string>
   <string name="gateway.notify.admin.broadcast_toggle_failed">一斉通知の状態更新に失敗しました。</string>
   <string name="gateway.notify.admin.broadcast_none">一斉通知は設定されていません。</string>
   <string name="gateway.notify.admin.broadcast_expand_details">詳細を表示</string>

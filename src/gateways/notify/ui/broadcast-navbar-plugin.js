@@ -11,7 +11,8 @@ const POLL_INTERVAL_VISIBLE_MS = 20_000;
 const POLL_INTERVAL_HIDDEN_MS = 45_000;
 const BAR_CONTAINER_ID = "notify-broadcast-bar";
 
-let currentBroadcastId = null;
+let currentBarBroadcastId = null;
+let currentPopupBroadcastId = null;
 let isPopupOpen = false;
 let pollTimer = null;
 let stopPollingForAuthFailure = false;
@@ -72,7 +73,7 @@ function getBarContainer() {
     if (barContainer) return barContainer;
     barContainer = document.createElement("div");
     barContainer.id = BAR_CONTAINER_ID;
-    document.body.appendChild(barContainer);
+    document.body.prepend(barContainer);
     return barContainer;
 }
 
@@ -192,22 +193,34 @@ async function refreshBroadcast(i18n) {
         removeBroadcastBar();
         return;
     }
-    const activeBroadcast = broadcasts[0];
-    if (!activeBroadcast) {
-        currentBroadcastId = null;
+    const activeBarBroadcast = broadcasts.find(
+        (broadcast) => broadcast.displayMode === "bar",
+    );
+    const activePopupBroadcast = broadcasts.find(
+        (broadcast) => broadcast.displayMode === "popup",
+    );
+
+    if (!activeBarBroadcast) {
+        currentBarBroadcastId = null;
         removeBroadcastBar();
+    } else {
+        if (activeBarBroadcast.id !== currentBarBroadcastId) {
+            currentBarBroadcastId = activeBarBroadcast.id;
+            removeBroadcastBar();
+        }
+        renderBroadcastBar(activeBarBroadcast, i18n);
+    }
+
+    if (!activePopupBroadcast) {
+        currentPopupBroadcastId = null;
         return;
     }
-    if (activeBroadcast.id !== currentBroadcastId) {
-        currentBroadcastId = activeBroadcast.id;
-        removeBroadcastBar();
+
+    if (isPopupOpen || activePopupBroadcast.id === currentPopupBroadcastId) {
+        return;
     }
-    if (activeBroadcast.displayMode === "bar") {
-        renderBroadcastBar(activeBroadcast, i18n);
-    } else {
-        removeBroadcastBar();
-        await openBroadcastPopup(activeBroadcast, i18n);
-    }
+    currentPopupBroadcastId = activePopupBroadcast.id;
+    await openBroadcastPopup(activePopupBroadcast, i18n);
 }
 
 async function startPolling(i18n) {

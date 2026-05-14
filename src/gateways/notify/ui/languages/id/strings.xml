@@ -25,6 +25,13 @@
   <string name="gateway.notify.admin.broadcast_created">Siaran dibuat.</string>
   <string name="gateway.notify.admin.broadcast_invalid">Masukkan judul, pesan, peran target, dan jadwal yang valid.</string>
   <string name="gateway.notify.admin.broadcast_create_failed">Gagal membuat siaran.</string>
+  <string name="gateway.notify.admin.broadcast_error_missing_title">Masukkan judul.</string>
+  <string name="gateway.notify.admin.broadcast_error_missing_message">Masukkan pesan.</string>
+  <string name="gateway.notify.admin.broadcast_error_missing_roles">Pilih setidaknya satu peran target.</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_timestamp">Masukkan nilai tanggal/waktu mulai dan selesai yang valid.</string>
+  <string name="gateway.notify.admin.broadcast_error_partial_window">Masukkan tanggal mulai dan selesai sekaligus, atau kosongkan keduanya.</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_range">Tanggal/waktu mulai harus lebih awal daripada tanggal/waktu selesai.</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_redirect">URL pengalihan harus tetap berada di situs ini.</string>
   <string name="gateway.notify.admin.broadcast_toggle_failed">Gagal memperbarui status siaran.</string>
   <string name="gateway.notify.admin.broadcast_none">Belum ada siaran yang dikonfigurasi.</string>
   <string name="gateway.notify.admin.broadcast_expand_details">Tampilkan Detail</string>

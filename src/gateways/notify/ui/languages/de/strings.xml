@@ -25,6 +25,13 @@
   <string name="gateway.notify.admin.broadcast_created">Rundsendung erstellt.</string>
   <string name="gateway.notify.admin.broadcast_invalid">Bitte gültigen Titel, Nachricht, Zielrollen und Zeitplan angeben.</string>
   <string name="gateway.notify.admin.broadcast_create_failed">Rundsendung konnte nicht erstellt werden.</string>
+  <string name="gateway.notify.admin.broadcast_error_missing_title">Bitte einen Titel eingeben.</string>
+  <string name="gateway.notify.admin.broadcast_error_missing_message">Bitte eine Nachricht eingeben.</string>
+  <string name="gateway.notify.admin.broadcast_error_missing_roles">Bitte mindestens eine Zielrolle auswählen.</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_timestamp">Bitte gültige Start- und Endzeitwerte eingeben.</string>
+  <string name="gateway.notify.admin.broadcast_error_partial_window">Bitte Start- und Enddatum beide angeben oder beide leer lassen.</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_range">Das Startdatum bzw. die Startzeit muss vor dem Enddatum bzw. der Endzeit liegen.</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_redirect">Die Weiterleitungs-URL muss auf dieser Website bleiben.</string>
   <string name="gateway.notify.admin.broadcast_toggle_failed">Status der Rundsendung konnte nicht aktualisiert werden.</string>
   <string name="gateway.notify.admin.broadcast_none">Keine Rundsendungen konfiguriert.</string>
   <string name="gateway.notify.admin.broadcast_expand_details">Details Einblenden</string>

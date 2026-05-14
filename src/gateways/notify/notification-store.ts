@@ -251,9 +251,14 @@ export class DbNotificationStore implements NotificationConfigStore {
             ],
             orderBy: [{ column: "created_at", direction: "DESC" }],
         });
-        return (result.rows ?? []).map((row) =>
-            this.parseBroadcastRow(row as Record<string, unknown>),
-        );
+        return (result.rows ?? [])
+            .map((row) =>
+                this.parseBroadcastRow(row as Record<string, unknown>),
+            )
+            .sort(
+                (leftBroadcast, rightBroadcast) =>
+                    rightBroadcast.createdAt - leftBroadcast.createdAt,
+            );
     }
 
     async listBroadcastStates(
@@ -347,13 +352,26 @@ export class DbNotificationStore implements NotificationConfigStore {
                         : Number(typedRow.acknowledged_at),
             });
         }
-        return visibleBroadcasts.filter((broadcast) => {
+        const eligibleBroadcasts = visibleBroadcasts.filter((broadcast) => {
             const state = stateByBroadcastId.get(broadcast.id);
             if (broadcast.requireAcknowledgement) {
                 return !state?.acknowledgedAt;
             }
             return !state?.dismissedAt;
         });
+        const newestBroadcastByMode = new Map<
+            NotificationBroadcastDisplayMode,
+            NotificationBroadcast
+        >();
+        for (const broadcast of eligibleBroadcasts) {
+            if (!newestBroadcastByMode.has(broadcast.displayMode)) {
+                newestBroadcastByMode.set(broadcast.displayMode, broadcast);
+            }
+        }
+        return Array.from(newestBroadcastByMode.values()).sort(
+            (leftBroadcast, rightBroadcast) =>
+                rightBroadcast.createdAt - leftBroadcast.createdAt,
+        );
     }
 
     async markBroadcastDismissed(

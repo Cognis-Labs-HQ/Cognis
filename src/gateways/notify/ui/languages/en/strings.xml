@@ -25,6 +25,13 @@
   <string name="gateway.notify.admin.broadcast_created">Broadcast created.</string>
   <string name="gateway.notify.admin.broadcast_invalid">Please provide a valid title, message, role targets, and schedule.</string>
   <string name="gateway.notify.admin.broadcast_create_failed">Failed to create broadcast.</string>
+  <string name="gateway.notify.admin.broadcast_error_missing_title">Please enter a title.</string>
+  <string name="gateway.notify.admin.broadcast_error_missing_message">Please enter a message.</string>
+  <string name="gateway.notify.admin.broadcast_error_missing_roles">Please select at least one target role.</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_timestamp">Please enter valid start and end date/time values.</string>
+  <string name="gateway.notify.admin.broadcast_error_partial_window">Please provide both start and end dates, or leave both blank.</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_range">The start date/time must be earlier than the end date/time.</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_redirect">The redirect URL must stay on this site.</string>
   <string name="gateway.notify.admin.broadcast_toggle_failed">Failed to update broadcast status.</string>
   <string name="gateway.notify.admin.broadcast_none">No broadcasts configured.</string>
   <string name="gateway.notify.admin.broadcast_expand_details">Expand Details</string>
