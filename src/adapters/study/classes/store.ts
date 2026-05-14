@@ -36,6 +36,13 @@ export interface ClassRow {
     createdAt: string;
 }
 
+export interface ClassroomStateRow {
+    classId: string;
+    studentLimit: number;
+    seatAssignments: Record<string, number>;
+    updatedAt: string;
+}
+
 export interface TeacherRequestRow {
     id: string;
     accountId: string;
@@ -73,6 +80,8 @@ export interface StudyPreferencesRow {
 
 export class DbClassesStore {
     constructor(private readonly db: DbExecutor) {}
+
+    private static readonly DEFAULT_STUDENT_LIMIT = 30;
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
@@ -181,6 +190,31 @@ export class DbClassesStore {
                 },
             ],
             primaryKey: ["class_id", "student_account_id"],
+        });
+
+        await this.db.ensureTable({
+            name: "classroom_state",
+            columns: [
+                { name: "class_id", type: "text", primaryKey: true },
+                {
+                    name: "student_limit",
+                    type: "integer",
+                    notNull: true,
+                    default: DbClassesStore.DEFAULT_STUDENT_LIMIT,
+                },
+                {
+                    name: "seat_assignments",
+                    type: "text",
+                    notNull: true,
+                    default: "{}",
+                },
+                {
+                    name: "updated_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
         });
 
         await this.ensureStudyLanguagesSchema();
@@ -421,6 +455,33 @@ export class DbClassesStore {
         }
     }
 
+    private parseSeatAssignments(value: unknown): Record<string, number> {
+        try {
+            const parsedValue = JSON.parse(String(value ?? "{}"));
+            if (
+                !parsedValue ||
+                typeof parsedValue !== "object" ||
+                Array.isArray(parsedValue)
+            ) {
+                return {};
+            }
+            const seatAssignments: Record<string, number> = {};
+            for (const [accountId, seatNumber] of Object.entries(parsedValue)) {
+                const normalizedSeatNumber = Number(seatNumber);
+                if (
+                    !Number.isInteger(normalizedSeatNumber) ||
+                    normalizedSeatNumber < 0
+                ) {
+                    continue;
+                }
+                seatAssignments[String(accountId)] = normalizedSeatNumber;
+            }
+            return seatAssignments;
+        } catch {
+            return {};
+        }
+    }
+
     async getStudyPreferences(accountId: string): Promise<StudyPreferencesRow> {
         const result = await this.db.executeCommand({
             option: "SELECT",
@@ -527,6 +588,84 @@ export class DbClassesStore {
             teacherAccountId: String(row.teacher_account_id),
             createdAt: String(row.created_at),
         };
+    }
+
+    async getClassroomState(classId: string): Promise<ClassroomStateRow> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "classroom_state",
+            columns: ["class_id", "student_limit", "seat_assignments", "updated_at"],
+            where: [{ column: "class_id", value: classId }],
+        });
+        const row = result.rows?.[0] as Record<string, unknown> | undefined;
+        if (!row) {
+            return {
+                classId,
+                studentLimit: DbClassesStore.DEFAULT_STUDENT_LIMIT,
+                seatAssignments: {},
+                updatedAt: new Date().toISOString(),
+            };
+        }
+        const normalizedStudentLimit = Number(
+            row.student_limit ?? DbClassesStore.DEFAULT_STUDENT_LIMIT,
+        );
+        return {
+            classId: String(row.class_id),
+            studentLimit:
+                Number.isInteger(normalizedStudentLimit) &&
+                normalizedStudentLimit > 0
+                    ? normalizedStudentLimit
+                    : DbClassesStore.DEFAULT_STUDENT_LIMIT,
+            seatAssignments: this.parseSeatAssignments(row.seat_assignments),
+            updatedAt: String(row.updated_at),
+        };
+    }
+
+    async updateClassroomStateForTeacher(
+        classId: string,
+        teacherAccountId: string,
+        options: {
+            studentLimit?: number;
+            seatAssignments?: Record<string, number>;
+        },
+    ): Promise<ClassroomStateRow> {
+        const classRow = await this.getClassById(classId);
+        if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
+            throw new Error("not_authorized");
+        }
+        const currentState = await this.getClassroomState(classId);
+        const hasStudentLimit = Number.isInteger(options.studentLimit);
+        const normalizedStudentLimit = hasStudentLimit
+            ? Number(options.studentLimit)
+            : currentState.studentLimit;
+        if (normalizedStudentLimit < 1 || normalizedStudentLimit > 300) {
+            throw new Error("invalid_student_limit");
+        }
+        const normalizedSeatAssignments =
+            options.seatAssignments != null
+                ? this.parseSeatAssignments(JSON.stringify(options.seatAssignments))
+                : currentState.seatAssignments;
+        const updatedAt = new Date().toISOString();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "classroom_state",
+            values: {
+                class_id: classId,
+                student_limit: normalizedStudentLimit,
+                seat_assignments: JSON.stringify(normalizedSeatAssignments),
+                updated_at: updatedAt,
+            },
+            conflict: {
+                action: "update",
+                target: ["class_id"],
+                update: {
+                    student_limit: normalizedStudentLimit,
+                    seat_assignments: JSON.stringify(normalizedSeatAssignments),
+                    updated_at: updatedAt,
+                },
+            },
+        });
+        return this.getClassroomState(classId);
     }
 
     async getEnrolledClasses(studentAccountId: string): Promise<ClassRow[]> {
@@ -723,6 +862,76 @@ export class DbClassesStore {
         return members.filter((member) =>
             member.studentAccountId.toLowerCase().includes(searchLower),
         );
+    }
+
+    async getClassMembersForViewer(
+        classId: string,
+        viewerAccountId: string,
+    ): Promise<ClassMembershipRow[]> {
+        const classRow = await this.getClassById(classId);
+        if (!classRow) {
+            throw new Error("not_authorized");
+        }
+        const isTeacher = classRow.teacherAccountId === viewerAccountId;
+        if (!isTeacher) {
+            const viewerMembership = await this.getMembership(
+                classId,
+                viewerAccountId,
+            );
+            if (!viewerMembership || viewerMembership.status !== "member") {
+                throw new Error("not_authorized");
+            }
+        }
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "class_memberships",
+            columns: [
+                "class_id",
+                "student_account_id",
+                "status",
+                "invited_by",
+                "joined_at",
+            ],
+            where: [
+                { column: "class_id", value: classId },
+                { column: "status", value: "member" },
+            ],
+            orderBy: [{ column: "joined_at", direction: "ASC" }],
+        });
+        return (result.rows ?? []).map((row) =>
+            this.rowToClassMembership(row as Record<string, unknown>),
+        );
+    }
+
+    async removeClassMemberByTeacher(
+        classId: string,
+        teacherAccountId: string,
+        studentAccountId: string,
+    ): Promise<void> {
+        const classRow = await this.getClassById(classId);
+        if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
+            throw new Error("not_authorized");
+        }
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "class_memberships",
+            set: { status: "left" },
+            where: [
+                { column: "class_id", value: classId },
+                { column: "student_account_id", value: studentAccountId },
+                { column: "status", value: "member" },
+            ],
+        });
+        const classroomState = await this.getClassroomState(classId);
+        if (!(studentAccountId in classroomState.seatAssignments)) {
+            return;
+        }
+        const nextSeatAssignments = { ...classroomState.seatAssignments };
+        delete nextSeatAssignments[studentAccountId];
+        await this.updateClassroomStateForTeacher(classId, teacherAccountId, {
+            seatAssignments: nextSeatAssignments,
+            studentLimit: classroomState.studentLimit,
+        });
     }
 
     async getPendingJoinRequests(

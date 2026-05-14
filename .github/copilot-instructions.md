@@ -170,6 +170,13 @@ Child components may themselves contain sub-components for deeply nested functio
 
 The Study gateway exposes `GET /api/v1/study/languages/:code/modules` to list all registered child components for a language. The study UI uses this endpoint to build the sub-navigation menu under the selected language. See `src/docs/study-language-framework.en.md` for the complete contract, data model, and directory layout.
 
+For Study sub-navigation behavior:
+
+- Show the **Library** entry to admin/owner users even when the currently selected language does not register a native Library child component.
+- Carry the currently selected language as a filter when navigating to Library so it opens in that language context by default.
+- Treat Library records as holistic data with language as a field on records, rather than splitting behavior by hardcoded language-specific routes.
+- Register a **Classroom** child component for every language module so teachers and students can access language-scoped classroom views.
+
 ### Comment references for alternate control flow
 
 When a comment introduces an alternative or fallback code path (e.g. a catch block that intentionally falls through, or a condition that skips the normal path), it must explicitly reference the line numbers or label of the alternate block — for example: `// fall through to initials fallback (lines 141-146 below)` or `// handled by the block starting at line 82`. This helps reviewers trace non-obvious flow.

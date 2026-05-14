@@ -13,6 +13,9 @@
  *   POST   /api/v1/study/teacher-requests/:id/reject                          — reject a pending request (admin)
  *   POST   /api/v1/study/classes/:classId/join                                — request to join a class (student)
  *   DELETE /api/v1/study/classes/:classId/membership                          — leave a class (student)
+ *   GET    /api/v1/study/classrooms                                            — list classroom snapshots for caller (supports ?language=)
+ *   PATCH  /api/v1/study/classrooms/:classId/layout                            — update classroom layout and student limit (teacher)
+ *   DELETE /api/v1/study/classrooms/:classId/students/:studentId               — remove student from class (teacher)
  *   GET    /api/v1/study/classes/:classId/members                             — list class members (teacher, supports ?search=)
  *   GET    /api/v1/study/classes/:classId/join-requests                       — list pending join requests (teacher)
  *   POST   /api/v1/study/classes/:classId/invite                              — invite a student directly (teacher)
@@ -387,6 +390,208 @@ export function createClassesRoutes(
                 code: language.code,
             });
             jsonOk(res, language);
+            return true;
+        }
+
+        if (url.pathname === "/api/v1/study/classrooms" && req.method === "GET") {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const languageFilter =
+                url.searchParams.get("language") || undefined;
+            try {
+                const classroomClasses =
+                    claims.role === "teacher"
+                        ? await store.getClassesForTeacherWithFilter(
+                              claims.sub,
+                              languageFilter,
+                          )
+                        : (
+                              await store.getEnrolledClasses(claims.sub)
+                          )
+                              .filter(
+                                  (classRow) =>
+                                      !languageFilter ||
+                                      classRow.languageCode === languageFilter,
+                              )
+                              .map((classRow) => ({
+                                  ...classRow,
+                                  memberCount: 0,
+                              }));
+                const snapshots = await Promise.all(
+                    classroomClasses.map(async (classRow) => {
+                        const [classroomState, members] = await Promise.all([
+                            store.getClassroomState(classRow.id),
+                            store.getClassMembersForViewer(
+                                classRow.id,
+                                claims.sub,
+                            ),
+                        ]);
+                        return {
+                            ...classRow,
+                            classroom: classroomState,
+                            members,
+                        };
+                    }),
+                );
+                jsonOk(res, snapshots);
+            } catch (err) {
+                options.log?.("error", "Failed to load classroom snapshots.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    error: err instanceof Error ? err.message : String(err),
+                });
+                jsonError(
+                    res,
+                    500,
+                    "internal_error",
+                    "Failed to load classroom data.",
+                );
+            }
+            return true;
+        }
+
+        const classroomLayoutMatch = url.pathname.match(
+            /^\/api\/v1\/study\/classrooms\/([^/]+)\/layout$/,
+        );
+        if (classroomLayoutMatch && req.method === "PATCH") {
+            const claims = requireAuth(req, res, "teacher");
+            if (!claims) return true;
+            const classId = decodeURIComponent(classroomLayoutMatch[1]);
+            const body = (await readJson(req)) as {
+                studentLimit?: unknown;
+                seatAssignments?: unknown;
+            };
+            const studentLimitRaw = body.studentLimit;
+            const seatAssignmentsRaw = body.seatAssignments;
+            const studentLimit =
+                studentLimitRaw == null
+                    ? undefined
+                    : Number(studentLimitRaw);
+            if (
+                studentLimit != null &&
+                (!Number.isInteger(studentLimit) ||
+                    studentLimit < 1 ||
+                    studentLimit > 300)
+            ) {
+                jsonError(
+                    res,
+                    400,
+                    "bad_request",
+                    "studentLimit must be an integer between 1 and 300.",
+                );
+                return true;
+            }
+            if (
+                seatAssignmentsRaw != null &&
+                (typeof seatAssignmentsRaw !== "object" ||
+                    Array.isArray(seatAssignmentsRaw))
+            ) {
+                jsonError(
+                    res,
+                    400,
+                    "bad_request",
+                    "seatAssignments must be an object.",
+                );
+                return true;
+            }
+            const seatAssignments: Record<string, number> | undefined =
+                seatAssignmentsRaw == null
+                    ? undefined
+                    : Object.fromEntries(
+                          Object.entries(
+                              seatAssignmentsRaw as Record<string, unknown>,
+                          ).map(([accountId, seatNumber]) => [
+                              accountId,
+                              Number(seatNumber),
+                          ]),
+                      );
+            try {
+                const classroomState = await store.updateClassroomStateForTeacher(
+                    classId,
+                    claims.sub,
+                    {
+                        studentLimit,
+                        seatAssignments,
+                    },
+                );
+                jsonOk(res, classroomState);
+            } catch (err) {
+                if (err instanceof Error && err.message === "not_authorized") {
+                    jsonError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Class not found or access denied.",
+                    );
+                    return true;
+                }
+                if (
+                    err instanceof Error &&
+                    err.message === "invalid_student_limit"
+                ) {
+                    jsonError(
+                        res,
+                        400,
+                        "bad_request",
+                        "studentLimit must be between 1 and 300.",
+                    );
+                    return true;
+                }
+                options.log?.("error", "Failed to update classroom layout.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    classId,
+                    error: err instanceof Error ? err.message : String(err),
+                });
+                jsonError(
+                    res,
+                    500,
+                    "internal_error",
+                    "Failed to update classroom.",
+                );
+            }
+            return true;
+        }
+
+        const classroomStudentMatch = url.pathname.match(
+            /^\/api\/v1\/study\/classrooms\/([^/]+)\/students\/([^/]+)$/,
+        );
+        if (classroomStudentMatch && req.method === "DELETE") {
+            const claims = requireAuth(req, res, "teacher");
+            if (!claims) return true;
+            const classId = decodeURIComponent(classroomStudentMatch[1]);
+            const studentAccountId = decodeURIComponent(classroomStudentMatch[2]);
+            try {
+                await store.removeClassMemberByTeacher(
+                    classId,
+                    claims.sub,
+                    studentAccountId,
+                );
+                jsonOk(res, { removed: true });
+            } catch (err) {
+                if (err instanceof Error && err.message === "not_authorized") {
+                    jsonError(
+                        res,
+                        403,
+                        "forbidden",
+                        "Class not found or access denied.",
+                    );
+                    return true;
+                }
+                options.log?.("error", "Failed to remove class member.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    classId,
+                    studentAccountId,
+                    error: err instanceof Error ? err.message : String(err),
+                });
+                jsonError(
+                    res,
+                    500,
+                    "internal_error",
+                    "Failed to remove class member.",
+                );
+            }
             return true;
         }
 

@@ -45,3 +45,12 @@ Modul bahasa berada di `src/modules/study/languages/<code>/`. Komponen anak bera
 | ------ | --------------------------------------- | ------------------------------------------------------ | -------- |
 | GET    | `/api/v1/study/languages`               | Daftar semua bahasa studi yang tersedia                | Required |
 | GET    | `/api/v1/study/languages/:code/modules` | Daftar komponen anak yang terdaftar untuk suatu bahasa | Required |
+
+## Konvensi UI Library dan Classroom
+
+- Subnavigasi Study harus menampilkan entri **Library** untuk admin/owner meskipun bahasa belajar yang sedang dipilih tidak mendaftarkan komponen Library secara native.
+- Saat berpindah ke Library dari subnavigasi Study, bahasa yang sedang dipilih harus dikirim sebagai filter agar Library terbuka dengan konteks bahasa itu secara default.
+- Data Library bersifat holistik dan sadar bahasa: bahasa dimodelkan sebagai field data pada record (misalnya `language`), bukan pemisahan rute kaku per bahasa.
+- Setiap modul bahasa sebaiknya mendaftarkan rute child component **Classroom** agar guru dan siswa bisa mengakses tampilan kelas per bahasa.
+- Halaman Classroom harus menyertakan pemilih kelas, visualisasi kapasitas kursi, dan perilaku berbasis peran (kontrol manajemen guru vs tampilan siswa yang mostly-read dengan fitur keluar kelas).
+

@@ -71,6 +71,21 @@ function resolveDefaultChildPageUrl(modules) {
     return firstModulePageUrl || "/study";
 }
 
+function isAdminScope() {
+    const roleValue = String(localStorage.getItem("cognis_role") ?? "")
+        .trim()
+        .toLowerCase();
+    return roleValue === "admin" || roleValue === "owner";
+}
+
+function buildLibraryUrl(languageCode) {
+    const normalizedLanguageCode = String(languageCode ?? "").trim();
+    if (!normalizedLanguageCode) {
+        return "/study/library";
+    }
+    return `/study/library?language=${encodeURIComponent(normalizedLanguageCode)}`;
+}
+
 /**
  * Loads the shared Study child-page sub-navigation model for a language module
  * page.
@@ -202,6 +217,11 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
  * @returns {string} HTML string for the Study child-page sub-navigation.
  */
 export function renderStudySubNavigation({ model, currentPath, i18n }) {
+    const selectedLanguageCode = model.selectedLanguageCode ?? "";
+    const adminLibraryUrl = buildLibraryUrl(selectedLanguageCode);
+    const hasLibraryModule = (model.modules ?? []).some(
+        (component) => String(component?.pageUrl ?? "").trim() === "/study/library",
+    );
     const moduleLinks = (model.modules ?? [])
         .map((component) => {
             const pageUrl = String(component?.pageUrl ?? "").trim();
@@ -216,6 +236,15 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             `;
         })
         .join("");
+    const libraryLink = isAdminScope() && !hasLibraryModule
+        ? `
+            <li>
+                <a class="study-subnav-link study-subnav-module-link${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(adminLibraryUrl)}">
+                    ${escapeHtml(i18n.t("gateway.study.library_label"))}
+                </a>
+            </li>
+        `
+        : "";
 
     const languageOptions = (model.learningLanguages ?? [])
         .map((languageCode) => {
@@ -246,7 +275,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
     return `
         <div class="study-page-subnav">
             <ul class="page-subnav-list study-subnav-modules">
-                ${moduleLinks}
+                ${moduleLinks}${libraryLink}
             </ul>
             <ul class="page-subnav-list study-subnav-language-options">
                 ${languageOptions}

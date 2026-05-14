@@ -1,0 +1,137 @@
+.study-classroom-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.study-classroom-topbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.study-classroom-topbar label,
+.study-classroom-controls label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 0.84rem;
+}
+
+.study-classroom-topbar select,
+.study-classroom-controls input {
+    min-width: 240px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--text);
+    padding: 8px;
+}
+
+.study-classroom-board-area {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.study-classroom-board {
+    border: 2px solid #161616;
+    background: #1b3b1b;
+    color: #f6f6f6;
+    border-radius: 8px;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.study-classroom-teacher {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    font-size: 0.86rem;
+}
+
+.study-classroom-door {
+    justify-self: end;
+    cursor: default;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text-muted);
+    font-size: 0.86rem;
+}
+
+.study-classroom-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.study-classroom-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
+    gap: 8px;
+}
+
+.study-classroom-seat {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+    min-height: 86px;
+    padding: 8px;
+}
+
+.study-classroom-seat.occupied {
+    border-color: var(--accent);
+}
+
+.study-classroom-seat.selected {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.study-classroom-seat-icon {
+    font-size: 1.12rem;
+}
+
+.study-classroom-seat-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.study-classroom-seat-bag {
+    font-size: 0.88rem;
+}
+
+.study-classroom-seat-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 25%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+    color: var(--text);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.study-classroom-seat-empty {
+    min-height: 16px;
+}
+
+.study-classroom-empty {
+    color: var(--text-muted);
+}

@@ -45,3 +45,12 @@ Sprachmodule leben unter `src/modules/study/languages/<code>/`. Kindkomponenten 
 | ------- | --------------------------------------- | --------------------------------------- | -------- |
 | GET     | `/api/v1/study/languages`               | Alle verfügbaren Lernsprachen auflisten | Required |
 | GET     | `/api/v1/study/languages/:code/modules` | Kindkomponenten einer Sprache auflisten | Required |
+
+## UI-Konventionen für Bibliothek und Klassenzimmer
+
+- Die Study-Subnavigation muss für Admin/Owner einen **Bibliothek**-Eintrag anzeigen, auch wenn die aktuell gewählte Lernsprache selbst keine Bibliothek-Komponente registriert.
+- Beim Wechsel in die Bibliothek aus der Study-Subnavigation muss die aktuell gewählte Sprache als Filter übergeben werden, damit die Ansicht standardmäßig in diesem Sprachkontext startet.
+- Bibliotheksdaten sind ganzheitlich und sprachbewusst: Die Sprache ist ein Datenfeld am Datensatz (z. B. `language`) und keine harte Routenaufteilung pro Sprache.
+- Jedes Sprachmodul sollte eine **Klassenzimmer**-Child-Component-Route registrieren, damit Lehrkräfte und Lernende sprachbezogene Klassenansichten nutzen können.
+- Klassenzimmerseiten müssen eine Klassenauswahl, eine Visualisierung der Sitzplatzkapazität und rollenbasiertes Verhalten enthalten (Lehrkraft-Verwaltung vs. schülerseitige Leseansicht mit Verlassen-Funktion).
+

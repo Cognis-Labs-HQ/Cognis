@@ -201,3 +201,11 @@ If a child component itself requires sub-sections (e.g. stroke order and vocabul
 | ------ | --------------------------------------- | ---------------------------------------------------- | -------- |
 | GET    | `/api/v1/study/languages`               | List all available study languages                   | Required |
 | GET    | `/api/v1/study/languages/:code/modules` | List child components registered for a language code | Required |
+
+## Library and Classroom UI Conventions
+
+- The Study sub-navigation must show a **Library** entry for admin/owner users even when the currently selected learning language does not natively register a Library child component.
+- Navigating to Library from Study sub-navigation must carry the currently selected language as a filter so Library opens in that language context by default.
+- Library data is holistic and language-aware: language is modeled as a record field (for example `language`) rather than a hard route split per language.
+- Every language module should register a **Classroom** child component route so both teachers and students can access language-scoped class views.
+- Classroom pages must include a class selector, seat-capacity visualization, and role-based behavior (teacher management controls vs. student read-mostly + leave flow).

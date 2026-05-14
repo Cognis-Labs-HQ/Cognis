@@ -38,7 +38,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.0.0` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `1.0.0` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.2.0` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.0` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
 ## Gateways
@@ -71,5 +71,5 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component        | Path                              | Version |
 | ---------------- | --------------------------------- | ------- |
 | Sample Analytics | `src/modules/sample-analytics/`   | `0.1.0` |
-| Cognis Japanese  | `src/modules/study/languages/ja/` | `1.1.7` |
-| Cognis English   | `src/modules/study/languages/en/` | `1.0.3` |
+| Cognis Japanese  | `src/modules/study/languages/ja/` | `1.2.0` |
+| Cognis English   | `src/modules/study/languages/en/` | `1.1.0` |

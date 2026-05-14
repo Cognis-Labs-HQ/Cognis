@@ -146,6 +146,15 @@ export class JapaneseLibraryStore {
                         actualValue.includes(value),
                     );
                 }
+                if (fieldName === "language") {
+                    const normalizedExpectedLanguage = String(
+                        expectedValue ?? "",
+                    ).trim();
+                    const normalizedActualLanguage = String(
+                        actualValue ?? "ja",
+                    ).trim();
+                    return normalizedActualLanguage === normalizedExpectedLanguage;
+                }
                 return actualValue === expectedValue;
             }),
         );

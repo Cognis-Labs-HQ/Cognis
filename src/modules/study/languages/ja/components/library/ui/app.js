@@ -39,9 +39,25 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "ui.shared.brand.name");
 
     const currentPath = window.location.pathname;
+    const languageFromUrl = String(
+        new URLSearchParams(window.location.search).get("language") ?? "",
+    ).trim();
     const subNavigationModel = await loadStudySubNavigationModel({
-        fallbackLanguageCode: "ja",
+        fallbackLanguageCode: languageFromUrl || "ja",
     });
+    const availableLanguageCodes = Array.from(
+        new Set([
+            ...(subNavigationModel.learningLanguages ?? []),
+            ...(subNavigationModel.selectedLanguageCode
+                ? [subNavigationModel.selectedLanguageCode]
+                : []),
+        ]),
+    );
+    let selectedLanguageCode =
+        languageFromUrl ||
+        subNavigationModel.selectedLanguageCode ||
+        availableLanguageCodes[0] ||
+        "ja";
 
     function renderSubNavigation() {
         return renderStudySubNavigation({
@@ -63,6 +79,25 @@ export async function mount(root, { signal } = {}) {
                     <section class="study-library-page">
                         <p class="study-library-status" id="study-library-status"></p>
                         <div class="study-library-controls">
+                            <label>
+                                ${escapeHtml(i18n.t("gateway.study.library_language_filter"))}
+                                <select id="study-library-language">
+                                    ${availableLanguageCodes.map((languageCode) => {
+                                        const languageEntry =
+                                            subNavigationModel.languageCatalogByCode?.get(
+                                                languageCode,
+                                            );
+                                        const selectedAttribute =
+                                            languageCode === selectedLanguageCode
+                                                ? " selected"
+                                                : "";
+                                        const label = languageEntry
+                                            ? `${languageEntry.flag ? `${languageEntry.flag} ` : ""}${languageEntry.name}`
+                                            : languageCode;
+                                        return `<option value="${escapeHtml(languageCode)}"${selectedAttribute}>${escapeHtml(label)}</option>`;
+                                    }).join("")}
+                                </select>
+                            </label>
                             <label>
                                 Layer
                                 <select id="study-library-layer">
@@ -108,6 +143,9 @@ export async function mount(root, { signal } = {}) {
                     const layerSelectEl = root.querySelector(
                         "#study-library-layer",
                     );
+                    const languageSelectEl = root.querySelector(
+                        "#study-library-language",
+                    );
                     const recordIdInputEl = root.querySelector(
                         "#study-library-record-id",
                     );
@@ -121,6 +159,7 @@ export async function mount(root, { signal } = {}) {
                     if (
                         !statusEl ||
                         !layerSelectEl ||
+                        !languageSelectEl ||
                         !recordIdInputEl ||
                         !recordJsonTextareaEl ||
                         !tableBodyEl
@@ -151,8 +190,11 @@ export async function mount(root, { signal } = {}) {
 
                     async function fetchLayerRows() {
                         const layerName = selectedLayer();
+                        const languageQuery = selectedLanguageCode
+                            ? `?language=${encodeURIComponent(selectedLanguageCode)}`
+                            : "";
                         const response = await apiFetch(
-                            `/api/v1/study/languages/ja/library/${encodeURIComponent(layerName)}`,
+                            `/api/v1/study/languages/ja/library/${encodeURIComponent(layerName)}${languageQuery}`,
                         );
                         if (!response.ok) {
                             throw new Error(`Load failed (${response.status})`);
@@ -174,6 +216,9 @@ export async function mount(root, { signal } = {}) {
                             throw new Error(
                                 "Record JSON is required for create.",
                             );
+                        }
+                        if (!record.language) {
+                            record.language = selectedLanguageCode;
                         }
                         const response = await apiFetch(
                             `/api/v1/study/languages/ja/library/${encodeURIComponent(layerName)}`,
@@ -208,6 +253,9 @@ export async function mount(root, { signal } = {}) {
                             throw new Error(
                                 "Patch JSON is required for update.",
                             );
+                        }
+                        if (!patch.language) {
+                            patch.language = selectedLanguageCode;
                         }
                         const response = await apiFetch(
                             `/api/v1/study/languages/ja/library/${encodeURIComponent(layerName)}/${encodeURIComponent(recordId)}`,
@@ -302,6 +350,33 @@ export async function mount(root, { signal } = {}) {
                     layerSelectEl.addEventListener(
                         "change",
                         () => {
+                            fetchLayerRows().catch((error) =>
+                                setStatus(error.message, true),
+                            );
+                        },
+                        { signal },
+                    );
+
+                    languageSelectEl.addEventListener(
+                        "change",
+                        () => {
+                            selectedLanguageCode = String(
+                                languageSelectEl.value ?? "",
+                            ).trim();
+                            const currentUrl = new URL(window.location.href);
+                            if (selectedLanguageCode) {
+                                currentUrl.searchParams.set(
+                                    "language",
+                                    selectedLanguageCode,
+                                );
+                            } else {
+                                currentUrl.searchParams.delete("language");
+                            }
+                            window.history.replaceState(
+                                {},
+                                "",
+                                `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`,
+                            );
                             fetchLayerRows().catch((error) =>
                                 setStatus(error.message, true),
                             );

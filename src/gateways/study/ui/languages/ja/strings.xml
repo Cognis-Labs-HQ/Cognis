@@ -17,4 +17,20 @@
   <string name="gateway.study.active_languages">有効な言語</string>
   <string name="gateway.study.remove_last_language_title">最後の有効な言語を削除</string>
   <string name="gateway.study.remove_last_language_body">最後の有効な言語を削除すると、言語を再選択するためにウェルカム画面へ戻ります。</string>
-</resources>
+  <string name="gateway.study.library_label">ライブラリ</string>
+  <string name="gateway.study.library_language_filter">言語フィルター</string>
+  <string name="gateway.study.classroom_page_title">教室</string>
+  <string name="gateway.study.classroom_select_class">クラス</string>
+  <string name="gateway.study.classroom_no_classes">この言語で利用できるクラスはありません。</string>
+  <string name="gateway.study.classroom_student_limit">受講者上限</string>
+  <string name="gateway.study.classroom_seat">席</string>
+  <string name="gateway.study.classroom_blackboard">黒板</string>
+  <string name="gateway.study.classroom_door">ドア</string>
+  <string name="gateway.study.classroom_move_first_empty">最初の空席へ移動</string>
+  <string name="gateway.study.classroom_remove_student">受講者を退室させる</string>
+  <string name="gateway.study.classroom_remove_success">受講者をクラスから外しました。</string>
+  <string name="gateway.study.classroom_remove_failed">受講者をクラスから外せませんでした。</string>
+  <string name="gateway.study.classroom_load_failed">教室データを読み込めませんでした。</string>
+  <string name="gateway.study.classroom_save_success">教室の変更を保存しました。</string>
+  <string name="gateway.study.classroom_save_failed">教室の変更を保存できませんでした。</string>
+  </resources>

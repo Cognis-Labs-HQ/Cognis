@@ -63,6 +63,8 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 - `src/ui/styles/reuse/layout.css` und `src/ui/layouts/dashboard-layout.js` — Vertikales Padding der Subnavigation reduziert, Rundungen an allen Kanten wiederhergestellt und einen Scroll-Zustand für Seiten mit Subnavigation ergänzt, bei dem sich die primäre Navigationszeile nach dem Scrollbeginn einklappt, sodass die Subnavigation direkt an die globale Topbar anschließt
 - `src/ui/layouts/dashboard-layout.js`, `src/ui/styles/reuse/layout.css`, `src/gateways/study/ui/study.css` und die Study-Unterdateien für die Kindseiten-Navigation — Das globale Study-Navigationselement bleibt jetzt auch auf Study-Unterseiten aktiv, die Lücke beziehungsweise Radius-Trennung zwischen primärer Navbar und Study-Subnavigation im Ausgangszustand wurde entfernt, und die Study-Modul-Links wurden an die Darstellung der globalen Navbar angepasst, während die Sprachumschalter unverändert bleiben
 
+- `src/adapters/study/classes/{store.ts,routes.ts,package.json}`, `src/modules/study/languages/{en,ja}/index.ts`, neue Sprach-Klassenzimmer-UI-Dateien, Study-Reuse-Assets, Study-Library-UI/Store-Dateien, Study-Gateway-Sprachdateien, Dokumentation und Copilot-Anweisungen — Sprachspezifische Klassenzimmerseiten mit Sitzvisualisierung und rollenbasiertem Verhalten für Lehrkraft/Lernende ergänzt, Classroom-Layout-/Mitglieder-APIs hinzugefügt, den Library-Zugriff für Admins in der Study-Subnavigation unabhängig von der ausgewählten Sprache sichtbar gemacht (inkl. Sprachfilter-Übergabe) und Library-/Classroom-Dokumentation erweitert
+
 ## Commits
 
 Siehe Branch `copilot/create-student-page-view` für den Commit-Verlauf.

@@ -17,4 +17,20 @@
   <string name="gateway.study.active_languages">Aktive Sprachen</string>
   <string name="gateway.study.remove_last_language_title">Letzte aktive Sprache entfernen</string>
   <string name="gateway.study.remove_last_language_body">Wenn du deine letzte aktive Sprache entfernst, wirst du zum Willkommensbildschirm zurückgeführt, damit du deine Sprachen erneut auswählen kannst.</string>
-</resources>
+  <string name="gateway.study.library_label">Bibliothek</string>
+  <string name="gateway.study.library_language_filter">Sprachfilter</string>
+  <string name="gateway.study.classroom_page_title">Klassenzimmer</string>
+  <string name="gateway.study.classroom_select_class">Klasse</string>
+  <string name="gateway.study.classroom_no_classes">Für diese Sprache sind keine Klassen verfügbar.</string>
+  <string name="gateway.study.classroom_student_limit">Schülerlimit</string>
+  <string name="gateway.study.classroom_seat">Sitz</string>
+  <string name="gateway.study.classroom_blackboard">Tafel</string>
+  <string name="gateway.study.classroom_door">Tür</string>
+  <string name="gateway.study.classroom_move_first_empty">Zum ersten freien Platz verschieben</string>
+  <string name="gateway.study.classroom_remove_student">Schüler entfernen</string>
+  <string name="gateway.study.classroom_remove_success">Schüler wurde aus der Klasse entfernt.</string>
+  <string name="gateway.study.classroom_remove_failed">Schüler konnte nicht entfernt werden.</string>
+  <string name="gateway.study.classroom_load_failed">Klassenzimmerdaten konnten nicht geladen werden.</string>
+  <string name="gateway.study.classroom_save_success">Klassenzimmeränderungen wurden gespeichert.</string>
+  <string name="gateway.study.classroom_save_failed">Klassenzimmeränderungen konnten nicht gespeichert werden.</string>
+  </resources>

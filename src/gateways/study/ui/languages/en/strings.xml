@@ -17,4 +17,20 @@
   <string name="gateway.study.active_languages">Active Languages</string>
   <string name="gateway.study.remove_last_language_title">Remove Last Active Language</string>
   <string name="gateway.study.remove_last_language_body">Removing your last active language will return you to the welcome screen so you can choose your languages again.</string>
+  <string name="gateway.study.library_label">Library</string>
+  <string name="gateway.study.library_language_filter">Language Filter</string>
+  <string name="gateway.study.classroom_page_title">Classroom</string>
+  <string name="gateway.study.classroom_select_class">Class</string>
+  <string name="gateway.study.classroom_no_classes">No classes are available for this language.</string>
+  <string name="gateway.study.classroom_student_limit">Student Limit</string>
+  <string name="gateway.study.classroom_seat">Seat</string>
+  <string name="gateway.study.classroom_blackboard">Blackboard</string>
+  <string name="gateway.study.classroom_door">Door</string>
+  <string name="gateway.study.classroom_move_first_empty">Move to First Empty Seat</string>
+  <string name="gateway.study.classroom_remove_student">Remove Student</string>
+  <string name="gateway.study.classroom_remove_success">Student removed from class.</string>
+  <string name="gateway.study.classroom_remove_failed">Failed to remove student from class.</string>
+  <string name="gateway.study.classroom_load_failed">Failed to load classroom data.</string>
+  <string name="gateway.study.classroom_save_success">Classroom changes saved.</string>
+  <string name="gateway.study.classroom_save_failed">Failed to save classroom changes.</string>
 </resources>

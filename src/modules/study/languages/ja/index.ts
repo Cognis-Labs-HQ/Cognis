@@ -22,10 +22,13 @@ const MODULE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
 const HIRAGANA_PAGE_URL = "/study/hiragana";
 const LIBRARY_PAGE_URL = "/study/library";
+const CLASSROOM_PAGE_URL = "/study/ja-classroom";
 const HIRAGANA_COMPONENT_STATIC_BASE =
     "/static/modules/study/languages/ja/components/hiragana-alphabet/ui";
 const LIBRARY_COMPONENT_STATIC_BASE =
     "/static/modules/study/languages/ja/components/library/ui";
+const CLASSROOM_COMPONENT_STATIC_BASE =
+    "/static/modules/study/languages/ja/components/classroom/ui";
 
 const CHILD_COMPONENTS: LanguageChildComponent[] = [
     {
@@ -45,6 +48,14 @@ const CHILD_COMPONENTS: LanguageChildComponent[] = [
         minRole: "admin",
         order: 100,
     },
+    {
+        id: "classroom",
+        label: "Classroom",
+        pageUrl: CLASSROOM_PAGE_URL,
+        scriptUrl: `${CLASSROOM_COMPONENT_STATIC_BASE}/app.js`,
+        stylesheets: ["/static/modules/study/languages/reuse/classroom-page.css"],
+        order: 90,
+    },
 ];
 
 let libraryStore: JapaneseLibraryStore | null = null;
@@ -53,7 +64,7 @@ class JapaneseLanguageModule implements LanguageModule {
     readonly languageCode = "ja";
     readonly languageName = "日本語";
     readonly languageFlag = "🇯🇵";
-    readonly version = "1.1.7";
+    readonly version = "1.2.0";
 
     listChildComponents(): LanguageChildComponent[] {
         return CHILD_COMPONENTS;
@@ -139,6 +150,34 @@ function createLibraryPageRoute() {
             MODULE_ROOT,
             "components",
             "library",
+            "ui",
+            "index.html",
+        );
+        const html = await readFile(htmlPath, "utf8");
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(html);
+        return true;
+    };
+}
+
+function createClassroomPageRoute() {
+    return async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        if (req.method && req.method !== "GET") return false;
+        if (url.pathname !== CLASSROOM_PAGE_URL) return false;
+        if (!getCookieSession(req)) {
+            res.writeHead(302, { location: "/login" });
+            res.end();
+            return true;
+        }
+        setPageSecurityHeaders(res);
+        const htmlPath = path.join(
+            MODULE_ROOT,
+            "components",
+            "classroom",
             "ui",
             "index.html",
         );
@@ -317,6 +356,7 @@ export async function bootstrapLanguageModule(
     await libraryStore.initialise();
 
     ctx.registerChildRoute(createHiraganaPageRoute());
+    ctx.registerChildRoute(createClassroomPageRoute());
     ctx.registerChildRoute(createLibraryPageRoute());
     ctx.registerChildRoute(createLibraryApiRoute());
 
@@ -331,6 +371,10 @@ export async function bootstrapLanguageModule(
     ctx.registerStaticDir(
         "modules/study/languages/ja/components/library/ui",
         path.join(MODULE_ROOT, "components", "library", "ui"),
+    );
+    ctx.registerStaticDir(
+        "modules/study/languages/ja/components/classroom/ui",
+        path.join(MODULE_ROOT, "components", "classroom", "ui"),
     );
 
     ctx.log?.("info", "Japanese language module: bootstrapped.", {

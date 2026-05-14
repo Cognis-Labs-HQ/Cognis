@@ -51,6 +51,21 @@ function toLanguageRecord(rawLanguage) {
     };
 }
 
+function isAdminScope() {
+    const roleValue = String(localStorage.getItem("cognis_role") ?? "")
+        .trim()
+        .toLowerCase();
+    return roleValue === "admin" || roleValue === "owner";
+}
+
+function buildLibraryUrl(languageCode) {
+    const normalizedLanguageCode = String(languageCode ?? "").trim();
+    if (!normalizedLanguageCode) {
+        return "/study/library";
+    }
+    return `/study/library?language=${encodeURIComponent(normalizedLanguageCode)}`;
+}
+
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/study/languages"],
@@ -308,6 +323,10 @@ async function mountHub(
     }
 
     function renderSubNavigation() {
+        const hasLibraryModule = selectedLanguageModules.some(
+            (component) =>
+                String(component?.pageUrl ?? "").trim() === "/study/library",
+        );
         const moduleLinks = selectedLanguageModules
             .map((component) => {
                 const pageUrl = String(component.pageUrl ?? "").trim();
@@ -323,6 +342,15 @@ async function mountHub(
                 `;
             })
             .join("");
+        const libraryLink = isAdminScope() && !hasLibraryModule
+            ? `
+                <li>
+                    <a class="study-subnav-module-link${window.location.pathname === "/study/library" ? " active" : ""}" href="${escapeHtml(buildLibraryUrl(selectedLanguageCode))}">
+                        ${escapeHtml(i18n.t("gateway.study.library_label"))}
+                    </a>
+                </li>
+            `
+            : "";
 
         const activeLanguageLinks = learningLanguages
             .map((languageCode) => {
@@ -347,7 +375,7 @@ async function mountHub(
         return `
             <div class="study-page-subnav">
                 <ul class="page-subnav-list study-subnav-modules">
-                    ${moduleLinks}
+                    ${moduleLinks}${libraryLink}
                 </ul>
                 <ul class="page-subnav-list study-subnav-language-options">
                     ${activeLanguageLinks}

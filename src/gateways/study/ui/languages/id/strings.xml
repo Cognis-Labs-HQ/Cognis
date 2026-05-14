@@ -17,4 +17,20 @@
   <string name="gateway.study.active_languages">Bahasa Aktif</string>
   <string name="gateway.study.remove_last_language_title">Hapus Bahasa Aktif Terakhir</string>
   <string name="gateway.study.remove_last_language_body">Menghapus bahasa aktif terakhir akan mengembalikanmu ke layar sambutan agar kamu bisa memilih bahasa lagi.</string>
-</resources>
+  <string name="gateway.study.library_label">Perpustakaan</string>
+  <string name="gateway.study.library_language_filter">Filter Bahasa</string>
+  <string name="gateway.study.classroom_page_title">Kelas</string>
+  <string name="gateway.study.classroom_select_class">Kelas</string>
+  <string name="gateway.study.classroom_no_classes">Tidak ada kelas untuk bahasa ini.</string>
+  <string name="gateway.study.classroom_student_limit">Batas Siswa</string>
+  <string name="gateway.study.classroom_seat">Kursi</string>
+  <string name="gateway.study.classroom_blackboard">Papan Tulis</string>
+  <string name="gateway.study.classroom_door">Pintu</string>
+  <string name="gateway.study.classroom_move_first_empty">Pindahkan ke Kursi Kosong Pertama</string>
+  <string name="gateway.study.classroom_remove_student">Keluarkan Siswa</string>
+  <string name="gateway.study.classroom_remove_success">Siswa telah dikeluarkan dari kelas.</string>
+  <string name="gateway.study.classroom_remove_failed">Gagal mengeluarkan siswa dari kelas.</string>
+  <string name="gateway.study.classroom_load_failed">Gagal memuat data kelas.</string>
+  <string name="gateway.study.classroom_save_success">Perubahan kelas berhasil disimpan.</string>
+  <string name="gateway.study.classroom_save_failed">Gagal menyimpan perubahan kelas.</string>
+  </resources>
