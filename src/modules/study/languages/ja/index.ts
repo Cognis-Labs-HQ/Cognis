@@ -21,9 +21,9 @@ import {
 const MODULE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
 const HIRAGANA_COMPONENT_STATIC_BASE =
-    "/static/modules/study/languages/ja/components/hiragana-alphabet";
+    "/static/modules/study/languages/ja/components/hiragana-alphabet/ui";
 const LIBRARY_COMPONENT_STATIC_BASE =
-    "/static/modules/study/languages/ja/components/library";
+    "/static/modules/study/languages/ja/components/library/ui";
 
 const CHILD_COMPONENTS: LanguageChildComponent[] = [
     {
@@ -51,7 +51,7 @@ class JapaneseLanguageModule implements LanguageModule {
     readonly languageCode = "ja";
     readonly languageName = "日本語";
     readonly languageFlag = "🇯🇵";
-    readonly version = "1.1.2";
+    readonly version = "1.1.3";
 
     listChildComponents(): LanguageChildComponent[] {
         return CHILD_COMPONENTS;

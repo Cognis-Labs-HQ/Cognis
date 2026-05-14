@@ -324,21 +324,19 @@ async function mountHub(
             })
             .join("");
 
-        const activeLanguageLinks = learningLanguages
+        const languageDropdownOptions = learningLanguages
             .map((languageCode) => {
                 const language = getLanguage(languageCode);
                 const href = isSettingsPath
                     ? buildSettingsUrl(languageCode)
                     : buildHubUrl(languageCode);
-                const activeClass =
-                    languageCode === selectedLanguageCode ? " active" : "";
                 return `
-                    <li>
-                        <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(href)}">
-                            ${escapeHtml(language.flag)}
-                            <span>${escapeHtml(language.name)}</span>
-                        </a>
-                    </li>
+                    <option
+                        value="${escapeHtml(href)}"
+                        ${languageCode === selectedLanguageCode ? "selected" : ""}
+                    >
+                        ${escapeHtml(language.flag)} ${escapeHtml(language.name)}
+                    </option>
                 `;
             })
             .join("");
@@ -351,9 +349,12 @@ async function mountHub(
                 <ul class="page-subnav-list study-subnav-modules">
                     ${moduleLinks}
                 </ul>
-                <ul class="page-subnav-list study-subnav-language-options">
-                    ${activeLanguageLinks}
-                </ul>
+                <label class="study-subnav-language-dropdown">
+                    <span>${escapeHtml(i18n.t("gateway.study.language"))}</span>
+                    <select id="study-language-selector">
+                        ${languageDropdownOptions}
+                    </select>
+                </label>
                 <a
                     class="study-subnav-settings-link${settingsActiveClass}"
                     href="${escapeHtml(settingsUrl)}"
@@ -521,6 +522,7 @@ async function mountHub(
     });
 
     await composer.init();
+    bindSubNavigationEvents();
 
     function bindSettingsEvents() {
         root.querySelectorAll(".study-lang-action-btn").forEach((button) => {
@@ -588,6 +590,19 @@ async function mountHub(
                     button.disabled = false;
                 }
             });
+        });
+    }
+
+    function bindSubNavigationEvents() {
+        const languageSelector = root.querySelector("#study-language-selector");
+        if (!languageSelector) return;
+        languageSelector.addEventListener("change", (event) => {
+            const targetUrl = String(event.target?.value ?? "").trim();
+            const currentUrl = `${window.location.pathname}${window.location.search}`;
+            if (!targetUrl || targetUrl === currentUrl) {
+                return;
+            }
+            navigateTo(targetUrl);
         });
     }
 }
