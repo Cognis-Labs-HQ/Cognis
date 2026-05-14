@@ -154,7 +154,7 @@ test("study Japanese child routes are only active while module is enabled", asyn
         routeRegistry,
         new RequestRecorder({ method: "GET", cookieToken: userCookieToken }),
         disabledPageResponse,
-        new URL("http://localhost/study/ja/hiragana"),
+        new URL("http://localhost/study/hiragana"),
     );
 
     assert.equal(disabledPageHandled, false);
@@ -189,7 +189,7 @@ test("study Japanese child routes are only active while module is enabled", asyn
         routeRegistry,
         new RequestRecorder({ method: "GET", cookieToken: userCookieToken }),
         enabledPageResponse,
-        new URL("http://localhost/study/ja/hiragana"),
+        new URL("http://localhost/study/hiragana"),
     );
 
     assert.equal(enabledPageHandled, true);

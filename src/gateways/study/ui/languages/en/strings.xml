@@ -15,4 +15,6 @@
   <string name="gateway.study.language">Language</string>
   <string name="gateway.study.available_languages">Available Languages</string>
   <string name="gateway.study.active_languages">Active Languages</string>
+  <string name="gateway.study.remove_last_language_title">Remove Last Active Language</string>
+  <string name="gateway.study.remove_last_language_body">Removing your last active language will return you to the welcome screen so you can choose your languages again.</string>
 </resources>

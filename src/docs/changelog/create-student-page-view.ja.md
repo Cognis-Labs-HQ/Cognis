@@ -50,6 +50,13 @@
 - `src/adapters/study/classes/ui/my-classes.js` — 直接読み込み時のトップレベル mount 呼び出しを try/catch で保護し、SPA import の耐障害性を向上
 - `src/ui/reuse/app-router.js` — ルート照合ロジック内のクリーン済みパス変数名を明確化
 
+- `src/gateways/study/ui/study.js` と `src/gateways/study/ui/study.css` — Study サブナビの「有効な言語」ラベルを削除し、言語オプションを直接表示、設定ギアを言語オプションの右側へ移動
+- `src/gateways/study/ui/study.js` と `src/gateways/study/ui/languages/*/strings.xml` — 最後の有効な学習言語を削除する前に確認用の警告ポップアップを追加し、確認後に `/study/welcome` へ遷移
+- `src/modules/study/languages/ja/index.ts` — 日本語モジュールの子ルートをゲートウェイ前段の汎用 URL（`/study/hiragana`, `/study/library`）へ変更
+- `src/modules/study/languages/ja/components/*/ui/app.js` — 日本語モジュールページを `createPageComposer` を使う SPA `mount()` エントリへ移行し、共通ページ構造を適用
+- `src/ui/reuse/app-router.js` — `/study/hiragana` と `/study/library` の SPA ルーティングを追加
+- `src/modules/study/languages/ja/{package.json,manifest.json}` と `src/docs/versions.en.md` — Cognis Japanese モジュールのバージョンを `1.1.2` に更新
+
 ## コミット
 
 コミット履歴はブランチ `copilot/create-student-page-view` を参照してください。

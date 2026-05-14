@@ -15,4 +15,6 @@
   <string name="gateway.study.language">Sprache</string>
   <string name="gateway.study.available_languages">Verfügbare Sprachen</string>
   <string name="gateway.study.active_languages">Aktive Sprachen</string>
+  <string name="gateway.study.remove_last_language_title">Letzte aktive Sprache entfernen</string>
+  <string name="gateway.study.remove_last_language_body">Wenn du deine letzte aktive Sprache entfernst, wirst du zum Willkommensbildschirm zurückgeführt, damit du deine Sprachen erneut auswählen kannst.</string>
 </resources>

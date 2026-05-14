@@ -15,4 +15,6 @@
   <string name="gateway.study.language">Bahasa</string>
   <string name="gateway.study.available_languages">Bahasa Tersedia</string>
   <string name="gateway.study.active_languages">Bahasa Aktif</string>
+  <string name="gateway.study.remove_last_language_title">Hapus Bahasa Aktif Terakhir</string>
+  <string name="gateway.study.remove_last_language_body">Menghapus bahasa aktif terakhir akan mengembalikanmu ke layar sambutan agar kamu bisa memilih bahasa lagi.</string>
 </resources>

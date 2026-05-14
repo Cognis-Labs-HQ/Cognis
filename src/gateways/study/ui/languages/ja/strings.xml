@@ -15,4 +15,6 @@
   <string name="gateway.study.language">言語</string>
   <string name="gateway.study.available_languages">利用可能な言語</string>
   <string name="gateway.study.active_languages">有効な言語</string>
+  <string name="gateway.study.remove_last_language_title">最後の有効な言語を削除</string>
+  <string name="gateway.study.remove_last_language_body">最後の有効な言語を削除すると、言語を再選択するためにウェルカム画面へ戻ります。</string>
 </resources>

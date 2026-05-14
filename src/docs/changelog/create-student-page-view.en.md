@@ -50,6 +50,13 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/adapters/study/classes/ui/my-classes.js` — Wrapped direct-load top-level mount call in try/catch for resilient SPA imports
 - `src/ui/reuse/app-router.js` — Clarified cleaned-path variable naming in route matching logic
 
+- `src/gateways/study/ui/study.js` and `src/gateways/study/ui/study.css` — Removed the "Active Languages" label in study sub-navigation, render language options directly, and moved the settings cog to the right of language options
+- `src/gateways/study/ui/study.js` and `src/gateways/study/ui/languages/*/strings.xml` — Added a warning confirmation popup before removing the final active learning language, then route to `/study/welcome` after confirmation
+- `src/modules/study/languages/ja/index.ts` — Fronted Japanese module child routes at gateway-visible generic URLs (`/study/hiragana`, `/study/library`)
+- `src/modules/study/languages/ja/components/*/ui/app.js` — Converted Japanese language module pages to exported SPA `mount()` entry points using `createPageComposer` and shared page structure
+- `src/ui/reuse/app-router.js` — Added SPA route handling for `/study/hiragana` and `/study/library`
+- `src/modules/study/languages/ja/{package.json,manifest.json}` and `src/docs/versions.en.md` — Bumped Cognis Japanese module version to `1.1.2`
+
 ## Commits
 
 See branch `copilot/create-student-page-view` for commit history.

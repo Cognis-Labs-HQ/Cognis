@@ -106,6 +106,28 @@ const ROUTES = [
         ],
         load: () => import("/static/gateways/study/study.js"),
     },
+    {
+        pattern: /^\/study\/hiragana$/,
+        base: "/study",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/modules/study/languages/ja/components/hiragana-alphabet/hiragana.css",
+        ],
+        load: () =>
+            import("/static/modules/study/languages/ja/components/hiragana-alphabet/app.js"),
+    },
+    {
+        pattern: /^\/study\/library$/,
+        base: "/study",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/modules/study/languages/ja/components/library/library.css",
+        ],
+        load: () =>
+            import("/static/modules/study/languages/ja/components/library/app.js"),
+    },
 ];
 
 function findRoute(path) {

@@ -24,13 +24,13 @@ const CHILD_COMPONENTS: LanguageChildComponent[] = [
     {
         id: "hiragana-alphabet",
         label: "Hiragana Alphabet",
-        pageUrl: "/study/ja/hiragana",
+        pageUrl: "/study/hiragana",
         order: 0,
     },
     {
         id: "library",
         label: "Library",
-        pageUrl: "/study/ja/library",
+        pageUrl: "/study/library",
         minRole: "admin",
         order: 100,
     },
@@ -42,7 +42,7 @@ class JapaneseLanguageModule implements LanguageModule {
     readonly languageCode = "ja";
     readonly languageName = "日本語";
     readonly languageFlag = "🇯🇵";
-    readonly version = "1.1.0";
+    readonly version = "1.1.2";
 
     listChildComponents(): LanguageChildComponent[] {
         return CHILD_COMPONENTS;
@@ -83,7 +83,7 @@ function createHiraganaPageRoute() {
         url: URL,
     ): Promise<boolean> => {
         if (req.method && req.method !== "GET") return false;
-        if (url.pathname !== "/study/ja/hiragana") return false;
+        if (url.pathname !== "/study/hiragana") return false;
         if (!getCookieSession(req)) {
             res.writeHead(302, { location: "/login" });
             res.end();
@@ -111,7 +111,7 @@ function createLibraryPageRoute() {
         url: URL,
     ): Promise<boolean> => {
         if (req.method && req.method !== "GET") return false;
-        if (url.pathname !== "/study/ja/library") return false;
+        if (url.pathname !== "/study/library") return false;
         const session = getCookieSession(req);
         if (!session) {
             res.writeHead(302, { location: "/login" });

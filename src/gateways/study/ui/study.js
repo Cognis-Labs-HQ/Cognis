@@ -17,6 +17,7 @@ import { createPageComposer } from "/static/reuse/page-composer.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+import { openPopup } from "/static/reuse/popup.js";
 
 const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
   <circle cx="12" cy="12" r="3"/>
@@ -342,7 +343,6 @@ async function mountHub(
             })
             .join("");
 
-        const selectedLanguage = getLanguage(selectedLanguageCode);
         const settingsActiveClass = isSettingsPath ? " active" : "";
         const settingsUrl = buildSettingsUrl(selectedLanguageCode);
 
@@ -350,30 +350,18 @@ async function mountHub(
             <div class="study-page-subnav">
                 <ul class="page-subnav-list study-subnav-modules">
                     ${moduleLinks}
-                    <li>
-                        <a
-                            class="study-subnav-settings-link${settingsActiveClass}"
-                            href="${escapeHtml(settingsUrl)}"
-                            aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                            title="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
-                        >
-                            ${SETTINGS_GEAR_SVG}
-                        </a>
-                    </li>
                 </ul>
-                <details class="study-subnav-language-dropdown">
-                    <summary
-                        class="study-subnav-language-current"
-                        aria-label="${escapeHtml(i18n.t("gateway.study.active_languages"))}"
-                    >
-                        <span class="study-subnav-language-current-label">${escapeHtml(i18n.t("gateway.study.active_languages"))}:</span>
-                        <span class="study-subnav-language-current-value">
-                            ${escapeHtml(selectedLanguage.flag)}
-                            <span>${escapeHtml(selectedLanguage.name)}</span>
-                        </span>
-                    </summary>
-                    <ul class="study-subnav-language-options">${activeLanguageLinks}</ul>
-                </details>
+                <ul class="page-subnav-list study-subnav-language-options">
+                    ${activeLanguageLinks}
+                </ul>
+                <a
+                    class="study-subnav-settings-link${settingsActiveClass}"
+                    href="${escapeHtml(settingsUrl)}"
+                    aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                    title="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                >
+                    ${SETTINGS_GEAR_SVG}
+                </a>
             </div>
         `;
     }
@@ -549,8 +537,28 @@ async function mountHub(
                           );
 
                 if (updatedLearningLanguages.length === 0) {
-                    navigateTo("/study/welcome");
-                    return;
+                    const confirmationAction = await openPopup({
+                        title: i18n.t(
+                            "gateway.study.remove_last_language_title",
+                        ),
+                        body: `<p>${escapeHtml(i18n.t("gateway.study.remove_last_language_body"))}</p>`,
+                        variant: "warning",
+                        actions: [
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.cancel"),
+                                variant: "cancel",
+                            },
+                            {
+                                id: "confirm",
+                                label: i18n.t("ui.reuse.confirm"),
+                                variant: "confirm",
+                            },
+                        ],
+                    });
+                    if (confirmationAction !== "confirm") {
+                        return;
+                    }
                 }
 
                 button.disabled = true;

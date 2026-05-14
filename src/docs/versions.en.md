@@ -71,4 +71,4 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component        | Path                              | Version |
 | ---------------- | --------------------------------- | ------- |
 | Sample Analytics | `src/modules/sample-analytics/`   | `0.1.0` |
-| Cognis Japanese  | `src/modules/study/languages/ja/` | `1.1.1` |
+| Cognis Japanese  | `src/modules/study/languages/ja/` | `1.1.2` |

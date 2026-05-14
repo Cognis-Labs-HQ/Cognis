@@ -50,6 +50,13 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 - `src/adapters/study/classes/ui/my-classes.js` — Pemanggilan mount top-level untuk direct-load kini dibungkus try/catch agar impor SPA lebih tangguh
 - `src/ui/reuse/app-router.js` — Penamaan variabel path yang sudah dibersihkan diperjelas pada logika pencocokan route
 
+- `src/gateways/study/ui/study.js` dan `src/gateways/study/ui/study.css` — Teks "Bahasa Aktif" di subnavigasi Study dihapus, opsi bahasa ditampilkan langsung, dan ikon pengaturan dipindah ke kanan opsi bahasa
+- `src/gateways/study/ui/study.js` dan `src/gateways/study/ui/languages/*/strings.xml` — Menambahkan popup peringatan konfirmasi sebelum menghapus bahasa belajar aktif terakhir, lalu diarahkan ke `/study/welcome` setelah konfirmasi
+- `src/modules/study/languages/ja/index.ts` — Route child modul Jepang kini difront oleh gateway pada URL generik (`/study/hiragana`, `/study/library`)
+- `src/modules/study/languages/ja/components/*/ui/app.js` — Halaman modul bahasa Jepang diubah ke entry SPA `mount()` yang diekspor dengan `createPageComposer` dan struktur halaman bersama
+- `src/ui/reuse/app-router.js` — Menambahkan routing SPA untuk `/study/hiragana` dan `/study/library`
+- `src/modules/study/languages/ja/{package.json,manifest.json}` dan `src/docs/versions.en.md` — Versi modul Cognis Japanese dinaikkan ke `1.1.2`
+
 ## Commit
 
 Lihat branch `copilot/create-student-page-view` untuk riwayat commit.

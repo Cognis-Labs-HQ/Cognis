@@ -50,6 +50,13 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 - `src/adapters/study/classes/ui/my-classes.js` — Top-Level-Mount für Direktaufruf in try/catch gekapselt, um SPA-Importe robuster zu machen
 - `src/ui/reuse/app-router.js` — Variablenname für bereinigten Pfad in der Routenprüfung präzisiert
 
+- `src/gateways/study/ui/study.js` und `src/gateways/study/ui/study.css` — Das Label "Aktive Sprachen" aus der Study-Subnavigation entfernt, Sprachoptionen direkt dargestellt und das Einstellungen-Zahnrad rechts neben den Sprachoptionen positioniert
+- `src/gateways/study/ui/study.js` und `src/gateways/study/ui/languages/*/strings.xml` — Warn-Bestätigungs-Popup vor dem Entfernen der letzten aktiven Lernsprache ergänzt; erst danach Weiterleitung zu `/study/welcome`
+- `src/modules/study/languages/ja/index.ts` — Japanische Child-Routen auf gateway-seitige generische URLs umgestellt (`/study/hiragana`, `/study/library`)
+- `src/modules/study/languages/ja/components/*/ui/app.js` — Japanische Sprachmodulseiten auf exportierte SPA-`mount()`-Einstiege mit `createPageComposer` und gemeinsamer Seitenstruktur umgestellt
+- `src/ui/reuse/app-router.js` — SPA-Routing für `/study/hiragana` und `/study/library` hinzugefügt
+- `src/modules/study/languages/ja/{package.json,manifest.json}` und `src/docs/versions.en.md` — Version des Cognis-Japanisch-Moduls auf `1.1.2` erhöht
+
 ## Commits
 
 Siehe Branch `copilot/create-student-page-view` für den Commit-Verlauf.
