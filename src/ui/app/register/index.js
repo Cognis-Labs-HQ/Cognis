@@ -34,6 +34,12 @@ async function resetAuthSessionForRegister() {
     return hadStoredSession;
 }
 
+/**
+ * Mounts the registration page into the provided root element.
+ *
+ * @param {HTMLElement} root - Target app container.
+ * @returns {Promise<void>} Resolves when the page has finished initialising.
+ */
 export async function mount(root) {
     const hadStoredSession = await resetAuthSessionForRegister();
 

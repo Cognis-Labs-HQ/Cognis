@@ -79,6 +79,13 @@ function renderTokenRow(row, i18n) {
     `;
 }
 
+/**
+ * Mounts the invite management page into the provided root element.
+ *
+ * @param {HTMLElement} root - Target app container.
+ * @param {{ signal?: AbortSignal }} [options] - Optional lifecycle controls.
+ * @returns {Promise<void>} Resolves when the page has finished initialising.
+ */
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.invite");
@@ -135,6 +142,11 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
+
+    const pageInteractionController = new AbortController();
+    signal?.addEventListener("abort", () => pageInteractionController.abort(), {
+        once: true,
+    });
 
     root.addEventListener(
         "click",
@@ -209,7 +221,7 @@ export async function mount(root, { signal } = {}) {
             tokens = await loadTokens();
             composer.refresh(elements);
         },
-        { signal },
+        { signal: pageInteractionController.signal },
     );
 }
 

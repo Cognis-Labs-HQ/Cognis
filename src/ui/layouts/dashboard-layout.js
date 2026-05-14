@@ -289,11 +289,21 @@ function scheduleNavbarEnhancements() {
     const runEnhancements = () => {
         loadNavbarPlugins()
             .then(() => {
-                updateNavbarAvatar().catch(() => {});
+                updateNavbarAvatar().catch((error) => {
+                    console.warn(
+                        "[dashboard-layout]:navbar-avatar-refresh-failed",
+                        error,
+                    );
+                });
                 applyActiveNavigation();
                 window.dispatchEvent(new Event("cognis:navbar-refresh"));
             })
-            .catch(() => {});
+            .catch((error) => {
+                console.warn(
+                    "[dashboard-layout]:navbar-plugin-refresh-failed",
+                    error,
+                );
+            });
     };
     if (typeof window.requestAnimationFrame === "function") {
         window.requestAnimationFrame(runEnhancements);
@@ -491,7 +501,12 @@ export async function renderDashboardLayout(root, slots = {}) {
         );
         applyActiveNavigation();
         if (showTopbar || showNavbar) {
-            updateNavbarAvatar().catch(() => {});
+            updateNavbarAvatar().catch((error) => {
+                console.warn(
+                    "[dashboard-layout]:initial-navbar-avatar-render-failed",
+                    error,
+                );
+            });
             scheduleNavbarEnhancements();
             initSearchBar(i18n);
             bindProfilePreviews(i18n);
@@ -536,7 +551,12 @@ export async function renderDashboardLayout(root, slots = {}) {
     applyStaticTranslations(i18n, root);
     if (showTopbar || showNavbar) {
         bindTopbarActions();
-        updateNavbarAvatar().catch(() => {});
+        updateNavbarAvatar().catch((error) => {
+            console.warn(
+                "[dashboard-layout]:initial-navbar-avatar-render-failed",
+                error,
+            );
+        });
         scheduleNavbarEnhancements();
         applyActiveNavigation();
         applyCompactNav(root);

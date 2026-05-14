@@ -3240,13 +3240,26 @@ export function createPageComposer(
         if (persistLayoutPreferences) {
             loadLayout()
                 .then((loadedLayout) => {
-                    if (!contentGrid || !document.contains(contentGrid)) return;
-                    if (editing) return;
-                    if (!loadedLayout && !hasStoredLayoutProfiles()) return;
+                    // Skip applying async-loaded layout data when the grid has
+                    // been unmounted, the user has already started editing, or
+                    // there is no stored layout/profile data to apply.
+                    if (
+                        !contentGrid ||
+                        !document.contains(contentGrid) ||
+                        editing ||
+                        (!loadedLayout && !hasStoredLayoutProfiles())
+                    ) {
+                        return;
+                    }
                     layout = loadedLayout;
                     render();
                 })
-                .catch(() => {});
+                .catch((error) => {
+                    console.warn(
+                        "[page-composer] failed to load saved layout preferences:",
+                        error,
+                    );
+                });
         }
     }
 

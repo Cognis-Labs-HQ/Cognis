@@ -15,6 +15,12 @@ import {
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 
+/**
+ * Mounts the login page into the provided root element.
+ *
+ * @param {HTMLElement} root - Target app container.
+ * @returns {Promise<void>} Resolves when the page has finished initialising.
+ */
 export async function mount(root) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.login");
