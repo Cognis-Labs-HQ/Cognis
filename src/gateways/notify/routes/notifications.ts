@@ -95,19 +95,19 @@ function validateBroadcastSchedule(
     endAt: number | null | undefined,
 ): string | null {
     if (startAt === undefined || endAt === undefined) {
-        return "invalid_timestamp";
+        return "invalid_broadcast_timestamp";
     }
     const hasStartAt = startAt !== null;
     const hasEndAt = endAt !== null;
     if (hasStartAt !== hasEndAt) {
-        return "partial_window_not_allowed";
+        return "partial_broadcast_window";
     }
     if (
         startAt !== null &&
         endAt !== null &&
         Number(startAt) >= Number(endAt)
     ) {
-        return "invalid_window_range";
+        return "invalid_broadcast_window_range";
     }
     return null;
 }
@@ -154,19 +154,19 @@ function getBroadcastCreateValidationError(input: {
         input.startAt,
         input.endAt,
     );
-    if (scheduleValidationError === "invalid_timestamp") {
+    if (scheduleValidationError === "invalid_broadcast_timestamp") {
         return {
             code: "invalid_broadcast_timestamp",
             message: "Broadcast startAt and endAt must be valid timestamps",
         };
     }
-    if (scheduleValidationError === "partial_window_not_allowed") {
+    if (scheduleValidationError === "partial_broadcast_window") {
         return {
             code: "partial_broadcast_window",
             message: "Broadcast startAt and endAt must both be provided",
         };
     }
-    if (scheduleValidationError === "invalid_window_range") {
+    if (scheduleValidationError === "invalid_broadcast_window_range") {
         return {
             code: "invalid_broadcast_window_range",
             message: "Broadcast startAt must be earlier than endAt",
