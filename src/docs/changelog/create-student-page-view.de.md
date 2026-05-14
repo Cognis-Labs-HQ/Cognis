@@ -59,6 +59,8 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 - `src/ui/reuse/app-router.js` — SPA-Routing für `/study/hiragana` und `/study/library` hinzugefügt
 - `src/modules/study/languages/ja/{package.json,manifest.json}` und `src/docs/versions.en.md` — Version des Cognis-Japanisch-Moduls auf `1.1.2` erhöht
 
+- `src/ui/styles/reuse/layout.css` — `flex: 1 0 auto` aus `.workspace` entfernt, damit der Bereich nur so groß wie sein Inhalt ist und nicht den Viewport auffüllt; `.global-footer` erhält `margin: auto auto 0`, um den Footer durch automatischen Oberseitenabstand im Flex-Column an den unteren Rand des Viewports zu schieben; Hintergrund von `.page-subnav` verwendet jetzt direkt `var(--nav-bg)` (wie `.global-navrow`) und erhält `backdrop-filter: blur(8px)`, damit die Leiste vollständig undurchsichtig bleibt, wenn Inhalte darunter durchscrollen
+
 ## Commits
 
 Siehe Branch `copilot/create-student-page-view` für den Commit-Verlauf.

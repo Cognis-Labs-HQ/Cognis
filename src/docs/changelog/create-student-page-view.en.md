@@ -60,6 +60,8 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/ui/reuse/app-router.js` — Added SPA route handling for `/study/hiragana` and `/study/library`
 - `src/modules/study/languages/ja/{package.json,manifest.json}` and `src/docs/versions.en.md` — Bumped Cognis Japanese module version to `1.1.2`
 
+- `src/ui/styles/reuse/layout.css` — Removed `flex: 1 0 auto` from `.workspace` so it sizes to its content rather than inflating to fill the viewport; applied `margin: auto auto 0` to `.global-footer` so the footer is pushed to the viewport bottom via auto top-margin in the flex column; updated `.page-subnav` background to use `var(--nav-bg)` directly (matching `.global-navrow`) and added `backdrop-filter: blur(8px)` so the bar remains fully opaque when content scrolls beneath it
+
 ## Commits
 
 See branch `copilot/create-student-page-view` for commit history.

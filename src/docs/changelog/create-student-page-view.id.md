@@ -59,6 +59,8 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 - `src/ui/reuse/app-router.js` — Menambahkan routing SPA untuk `/study/hiragana` dan `/study/library`
 - `src/modules/study/languages/ja/{package.json,manifest.json}` dan `src/docs/versions.en.md` — Versi modul Cognis Japanese dinaikkan ke `1.1.2`
 
+- `src/ui/styles/reuse/layout.css` — Menghapus `flex: 1 0 auto` dari `.workspace` agar ukurannya menyesuaikan konten dan tidak memenuhi viewport; `.global-footer` diberi `margin: auto auto 0` agar footer terdorong ke dasar viewport melalui margin atas otomatis dalam kolom flex; latar belakang `.page-subnav` kini menggunakan `var(--nav-bg)` secara langsung (sama seperti `.global-navrow`) dan ditambahkan `backdrop-filter: blur(8px)` agar bilah tetap sepenuhnya buram saat konten di bawahnya digulir
+
 ## Commit
 
 Lihat branch `copilot/create-student-page-view` untuk riwayat commit.

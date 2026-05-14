@@ -87,7 +87,8 @@
     border-top: 0;
     border-bottom-left-radius: 14px;
     border-bottom-right-radius: 14px;
-    background: color-mix(in srgb, var(--nav-bg) 65%, var(--surface-2) 35%);
+    background: var(--nav-bg);
+    backdrop-filter: blur(8px);
 }
 
 .page-subnav-list {
@@ -410,12 +411,11 @@
     border-radius: 16px;
     border: 1px solid rgba(148, 163, 184, 0.08);
     backdrop-filter: blur(2px);
-    flex: 1 0 auto;
 }
 
 .global-footer {
     width: var(--shell-content-width);
-    margin: 8px auto 0;
+    margin: auto auto 0;
     padding: 6px 14px;
     border: 1px solid rgba(148, 163, 184, 0.12);
     border-radius: 12px;
