@@ -20,6 +20,7 @@
   <string name="gateway.notify.admin.broadcast_end">End Date</string>
   <string name="gateway.notify.admin.broadcast_redirect">Redirect URL on Close</string>
   <string name="gateway.notify.admin.broadcast_require_ack">Require Acknowledgement</string>
+  <string name="gateway.notify.admin.broadcast_enable_immediately">Enable Immediately</string>
   <string name="gateway.notify.admin.broadcast_create">Create Broadcast</string>
   <string name="gateway.notify.admin.broadcast_created">Broadcast created.</string>
   <string name="gateway.notify.admin.broadcast_invalid">Please provide a valid title, message, role targets, and schedule.</string>

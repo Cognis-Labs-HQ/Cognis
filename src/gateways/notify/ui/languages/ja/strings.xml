@@ -20,6 +20,7 @@
   <string name="gateway.notify.admin.broadcast_end">終了日時</string>
   <string name="gateway.notify.admin.broadcast_redirect">閉じる時のリダイレクトURL</string>
   <string name="gateway.notify.admin.broadcast_require_ack">確認を必須にする</string>
+  <string name="gateway.notify.admin.broadcast_enable_immediately">すぐに有効化</string>
   <string name="gateway.notify.admin.broadcast_create">一斉通知を作成</string>
   <string name="gateway.notify.admin.broadcast_created">一斉通知を作成しました。</string>
   <string name="gateway.notify.admin.broadcast_invalid">有効なタイトル、メッセージ、対象ロール、スケジュールを入力してください。</string>

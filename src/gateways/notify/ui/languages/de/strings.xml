@@ -20,6 +20,7 @@
   <string name="gateway.notify.admin.broadcast_end">Enddatum</string>
   <string name="gateway.notify.admin.broadcast_redirect">Weiterleitungs-URL beim Schließen</string>
   <string name="gateway.notify.admin.broadcast_require_ack">Bestätigung erforderlich</string>
+  <string name="gateway.notify.admin.broadcast_enable_immediately">Sofort Aktivieren</string>
   <string name="gateway.notify.admin.broadcast_create">Rundsendung erstellen</string>
   <string name="gateway.notify.admin.broadcast_created">Rundsendung erstellt.</string>
   <string name="gateway.notify.admin.broadcast_invalid">Bitte gültigen Titel, Nachricht, Zielrollen und Zeitplan angeben.</string>

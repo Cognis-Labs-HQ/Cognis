@@ -187,17 +187,19 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             <p class="notif-broadcast-subheading">${i18n.t("gateway.notify.admin.broadcast_roles")}</p>
             <div class="notif-broadcast-role-options">${roleCheckboxes}</div>
           </div>
-          <div class="notif-debug-field notif-debug-field--full notif-broadcast-toggle-row">
-            <span class="notif-broadcast-toggle-label">${i18n.t("gateway.notify.admin.broadcast_require_ack")}</span>
-            <label class="switch switch--inline">
-              <input name="broadcastRequireAck" type="checkbox" />
-              <span class="slider"></span>
+          <div class="notif-debug-field notif-debug-field--full">
+            <label class="notif-broadcast-switch-field">
+              <span class="notif-broadcast-toggle-label">${i18n.t("gateway.notify.admin.broadcast_require_ack")}</span>
+              <span class="switch switch--inline">
+                <input name="broadcastRequireAck" type="checkbox" />
+                <span class="slider"></span>
+              </span>
             </label>
           </div>
           <div class="notif-debug-field notif-debug-field--full">
             <label class="notif-checkbox-option notif-checkbox-option--inline">
               <input name="broadcastEnabled" type="checkbox" checked />
-              <span>${i18n.t("ui.reuse.enabled")}</span>
+              <span>${i18n.t("gateway.notify.admin.broadcast_enable_immediately")}</span>
             </label>
           </div>
         </div>

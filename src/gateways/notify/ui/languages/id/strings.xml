@@ -20,6 +20,7 @@
   <string name="gateway.notify.admin.broadcast_end">Tanggal Selesai</string>
   <string name="gateway.notify.admin.broadcast_redirect">URL Pengalihan Saat Ditutup</string>
   <string name="gateway.notify.admin.broadcast_require_ack">Wajib Konfirmasi</string>
+  <string name="gateway.notify.admin.broadcast_enable_immediately">Aktifkan Segera</string>
   <string name="gateway.notify.admin.broadcast_create">Buat Siaran</string>
   <string name="gateway.notify.admin.broadcast_created">Siaran dibuat.</string>
   <string name="gateway.notify.admin.broadcast_invalid">Masukkan judul, pesan, peran target, dan jadwal yang valid.</string>
