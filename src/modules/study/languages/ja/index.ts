@@ -51,7 +51,7 @@ class JapaneseLanguageModule implements LanguageModule {
     readonly languageCode = "ja";
     readonly languageName = "日本語";
     readonly languageFlag = "🇯🇵";
-    readonly version = "1.1.4";
+    readonly version = "1.1.5";
 
     listChildComponents(): LanguageChildComponent[] {
         return CHILD_COMPONENTS;

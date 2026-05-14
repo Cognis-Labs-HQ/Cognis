@@ -13,6 +13,34 @@
     border-bottom: 1px solid var(--border);
 }
 
+.study-page-subnav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.study-subnav-modules {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex: 1;
+}
+
+.study-subnav-language-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
 .study-subnav-link {
     font-size: 0.9rem;
     font-weight: 600;
@@ -35,6 +63,40 @@
     background: var(--accent, #4a90e2);
     border-color: var(--accent, #4a90e2);
     color: #fff;
+}
+
+.study-subnav-language-option,
+.study-subnav-settings-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    transition: background 0.12s ease;
+    white-space: nowrap;
+}
+
+.study-subnav-settings-link {
+    padding: 6px 10px;
+}
+
+.study-subnav-language-option.active,
+.study-subnav-settings-link.active {
+    background: var(--accent, #4a90e2);
+    border-color: var(--accent, #4a90e2);
+    color: #fff;
+}
+
+.study-subnav-language-option:hover,
+.study-subnav-settings-link:hover {
+    background: var(--surface-soft);
+    color: var(--text);
 }
 
 .hiragana-alphabet-section {

@@ -32,7 +32,7 @@ class EnglishLanguageModule implements LanguageModule {
     readonly languageCode = "en";
     readonly languageName = "English";
     readonly languageFlag = "🇬🇧";
-    readonly version = "1.0.0";
+    readonly version = "1.0.1";
 
     listChildComponents(): LanguageChildComponent[] {
         return CHILD_COMPONENTS;

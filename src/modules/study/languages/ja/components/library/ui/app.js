@@ -2,6 +2,10 @@ import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createPageComposer } from "/static/reuse/page-composer.js";
+import {
+    loadStudySubNavigationModel,
+    renderStudySubNavigation,
+} from "../../../reuse/study-sub-navigation.js";
 
 const LAYERS = [
     "characters",
@@ -10,19 +14,6 @@ const LAYERS = [
     "words",
     "sentences",
 ];
-
-async function loadSubNav(languageCode) {
-    try {
-        const response = await apiFetch(
-            `/api/v1/study/languages/${encodeURIComponent(languageCode)}/modules`,
-        );
-        if (!response.ok) return [];
-        const payload = await response.json();
-        return Array.isArray(payload?.data) ? payload.data : [];
-    } catch {
-        return [];
-    }
-}
 
 function renderRows(tableBodyEl, rows) {
     if (!Array.isArray(rows) || rows.length === 0) {
@@ -47,25 +38,17 @@ export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.shared.brand.name");
 
-    const subNavComponents = await loadSubNav("ja");
+    const currentPath = window.location.pathname;
+    const subNavigationModel = await loadStudySubNavigationModel({
+        fallbackLanguageCode: "ja",
+    });
 
     function renderSubNavigation() {
-        return `
-            <ul class="page-subnav-list study-subnav">
-                ${subNavComponents
-                    .map(
-                        (component) => `
-                    <li>
-                        <a
-                            class="study-subnav-link${component.pageUrl === "/study/library" ? " active" : ""}"
-                            href="${escapeHtml(component.pageUrl)}"
-                        >${escapeHtml(component.label)}</a>
-                    </li>
-                `,
-                    )
-                    .join("")}
-            </ul>
-        `;
+        return renderStudySubNavigation({
+            model: subNavigationModel,
+            currentPath,
+            i18n,
+        });
     }
 
     const composer = createPageComposer(root, {
