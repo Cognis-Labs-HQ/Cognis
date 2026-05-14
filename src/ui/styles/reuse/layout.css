@@ -13,6 +13,9 @@
     border-bottom-left-radius: 9px;
     border-bottom-right-radius: 9px;
     overflow: visible;
+    position: sticky;
+    top: 0;
+    z-index: 1200;
 }
 
 .global-topbar {
@@ -72,9 +75,6 @@
     border-bottom-left-radius: 22px;
     border-bottom-right-radius: 22px;
     background: var(--nav-bg);
-    position: sticky;
-    top: 78px;
-    z-index: 1200;
 }
 
 .page-subnav {
@@ -515,7 +515,6 @@ button.dropdown-item {
         gap: 10px;
         padding-left: 18px;
         padding-right: 18px;
-        top: 78px;
     }
     .page-subnav {
         padding-left: 18px;
@@ -546,7 +545,6 @@ button.dropdown-item {
     }
     .global-navrow {
         padding: 8px 14px;
-        top: 60px;
         border-radius: 0;
     }
     .page-subnav {

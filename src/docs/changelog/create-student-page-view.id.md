@@ -31,9 +31,9 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 - `src/ui/reuse/page-composer.js` — Menambahkan slot sub-navigasi composer yang terpisah dari toolbar samping
 - `src/ui/layouts/dashboard-layout.js` — Menambahkan wiring slot layout `subNavigation`
 - `src/ui/public/templates/dashboard-layout.html` — Menambahkan placeholder baris sub-navigasi di bawah navigasi global
-- `src/ui/styles/reuse/layout.css` — Menambahkan gaya global untuk baris sub-navigasi composer baru
-- `src/ui/layouts/dashboard-layout.js` — Pintasan studi diperbarui ke `/study`
-- `src/ui/styles/settings.css` — Kelas CSS studi yang tidak terpakai dihapus
+- `src/ui/public/templates/dashboard-layout.html` — Placeholder sub-navigasi kini tidak menghasilkan elemen DOM saat tidak ada konten; `<section class="page-subnav">` hanya disisipkan ketika halaman menyediakan konten sub-navigasi
+- `src/ui/layouts/dashboard-layout.js` — Render pertama dan reuse shell kini menambahkan atau menghapus elemen `.page-subnav` alih-alih mengubah atribut `hidden`, mengikuti pola yang sama dengan toolbar, footer, dan header
+- `src/ui/styles/reuse/layout.css` — `.site-header` sekarang menggunakan `position: sticky; top: 0; z-index: 1200` sehingga seluruh header (topbar + navrow + sub-navigasi) langsung menempel di atas saat digulir; deklarasi `position: sticky`, `top`, dan `z-index` yang berlebihan dihapus dari `.global-navrow` dan breakpoint responsif
 - `src/ui/languages/*/strings.xml` — Kunci `ui.reuse.role_*` ditambahkan; `ui.app.settings.study.*` dipulihkan (semua 4 bahasa)
 - `src/ui/app/users/index.js` — Label peran kini menggunakan kunci i18n
 - `src/ui/app/dashboard/index.js` — Tampilan peran kini menggunakan kunci i18n

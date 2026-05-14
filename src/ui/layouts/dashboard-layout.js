@@ -374,10 +374,23 @@ export async function renderDashboardLayout(root, slots = {}) {
     ) {
         const pageCtxEl = existingShell.querySelector(".page-context");
         if (pageCtxEl) pageCtxEl.innerHTML = slots.pageContext || "";
-        const subNavEl = existingShell.querySelector(".page-subnav");
-        if (subNavEl) {
-            subNavEl.innerHTML = slots.subNavigation || "";
-            subNavEl.hidden = !hasSubNavigation;
+        const existingSubNavEl = existingShell.querySelector(".page-subnav");
+        if (hasSubNavigation) {
+            if (existingSubNavEl) {
+                existingSubNavEl.innerHTML = slots.subNavigation;
+            } else {
+                const navRow = existingShell.querySelector(".global-navrow");
+                const newSubNavEl = document.createElement("section");
+                newSubNavEl.className = "page-subnav";
+                newSubNavEl.innerHTML = slots.subNavigation;
+                navRow
+                    ? navRow.after(newSubNavEl)
+                    : existingShell
+                          .querySelector(".site-header")
+                          ?.append(newSubNavEl);
+            }
+        } else if (existingSubNavEl) {
+            existingSubNavEl.remove();
         }
 
         const mainWindow = existingShell.querySelector(".main-window");
@@ -418,7 +431,9 @@ export async function renderDashboardLayout(root, slots = {}) {
         .replace("{{topbar}}", slots.topbar)
         .replace(
             "{{subNavigation}}",
-            hasSubNavigation ? slots.subNavigation : "",
+            hasSubNavigation
+                ? `<section class="page-subnav">${slots.subNavigation}</section>`
+                : "",
         )
         .replace(
             "{{workspaceClass}}",
@@ -440,10 +455,6 @@ export async function renderDashboardLayout(root, slots = {}) {
 
     if (!showTopbar) root.querySelector(".global-topbar")?.remove();
     if (!showNavbar) root.querySelector(".global-navrow")?.remove();
-    const subNavEl = root.querySelector(".page-subnav");
-    if (subNavEl) {
-        subNavEl.hidden = !hasSubNavigation;
-    }
     if (!showThemeToggle) root.querySelector("#theme-toggle")?.remove();
     if (!showFooter) root.querySelector(".global-footer")?.remove();
 

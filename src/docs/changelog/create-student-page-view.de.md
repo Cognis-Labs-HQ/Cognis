@@ -31,9 +31,9 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 - `src/ui/reuse/page-composer.js` — Neuer Composer-Slot für eine Sub-Navigation, getrennt von der seitlichen Toolbar
 - `src/ui/layouts/dashboard-layout.js` — `subNavigation`-Slot in das Layout verdrahtet
 - `src/ui/public/templates/dashboard-layout.html` — Platzhalter für die Sub-Navigationszeile unter der globalen Navigation ergänzt
-- `src/ui/styles/reuse/layout.css` — Globale Stile für die neue Composer-Sub-Navigationszeile ergänzt
-- `src/ui/layouts/dashboard-layout.js` — Studieverknüpfung auf `/study` aktualisiert
-- `src/ui/styles/settings.css` — Veraltete Studien-CSS-Klassen entfernt
+- `src/ui/public/templates/dashboard-layout.html` — Der Platzhalter für die Unternavigation erzeugt kein DOM-Element mehr, wenn kein Inhalt vorhanden ist; `<section class="page-subnav">` wird nur eingefügt, wenn eine Seite Unternavigationsinhalte bereitstellt
+- `src/ui/layouts/dashboard-layout.js` — Frische Darstellung und Shell-Wiederverwendung fügen das `.page-subnav`-Element jetzt hinzu oder entfernen es, anstatt ein `hidden`-Attribut umzuschalten – entsprechend dem Muster von Toolbar, Footer und Header
+- `src/ui/styles/reuse/layout.css` — `.site-header` ist jetzt `position: sticky; top: 0; z-index: 1200`, sodass der gesamte Header (Topbar + Navrow + Unternavigation) beim Scrollen sofort oben fixiert wird; überflüssige `position: sticky`-, `top`- und `z-index`-Deklarationen in `.global-navrow` und responsiven Breakpoints entfernt
 - `src/ui/languages/*/strings.xml` — `ui.reuse.role_*`-Schlüssel hinzugefügt; `ui.app.settings.study.*` wiederhergestellt (alle 4 Sprachen)
 - `src/ui/app/users/index.js` — Rollenbezeichnungen verwenden jetzt i18n-Schlüssel
 - `src/ui/app/dashboard/index.js` — Rollenanzeige verwendet jetzt i18n-Schlüssel

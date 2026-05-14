@@ -32,8 +32,9 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/ui/public/templates/dashboard-layout.html` — Added the sub-navigation row placeholder below the global nav
 - `src/gateways/study/ui/navbar.js` — Fetches registered languages on load; greys out the Study nav link (sets `aria-disabled`, removes `href`) when no language modules are registered on the instance
 - `src/ui/styles/reuse/layout.css` — Added `.topnav a[aria-disabled="true"]` rule to visually dim and disable clicks on greyed-out nav items
-- `src/ui/layouts/dashboard-layout.js` — Study shortcut points to `/study`
-- `src/ui/styles/settings.css` — Removed dead study CSS classes
+- `src/ui/public/templates/dashboard-layout.html` — Sub-navigation placeholder now produces no DOM element when content is absent; the `<section class="page-subnav">` is injected only when a page supplies sub-navigation content
+- `src/ui/layouts/dashboard-layout.js` — Fresh-render and shell-reuse paths both add/remove the `.page-subnav` element rather than toggling a `hidden` attribute, matching the pattern used by the toolbar, footer, and header slots
+- `src/ui/styles/reuse/layout.css` — `.site-header` is now `position: sticky; top: 0; z-index: 1200`, so the whole header (topbar + navrow + subnav) locks to the top of the viewport immediately on scroll; removed redundant `position: sticky`, `top`, and `z-index` declarations from `.global-navrow` and responsive overrides
 - `src/ui/languages/*/strings.xml` — Added `ui.reuse.role_*` keys; restored `ui.app.settings.study.*` (all 4 languages)
 - `src/ui/app/users/index.js` — Role labels now use i18n keys
 - `src/ui/app/dashboard/index.js` — Role display now uses i18n key
