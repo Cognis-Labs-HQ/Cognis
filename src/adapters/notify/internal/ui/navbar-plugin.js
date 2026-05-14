@@ -19,6 +19,7 @@ import { formatRelativeTime } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
+import { hexToBytes, importRoomKey } from "/static/reuse/crypto-utils.js";
 
 const POLL_INTERVAL_VISIBLE_MS = 10_000;
 const POLL_INTERVAL_HIDDEN_MS = 30_000;
@@ -50,24 +51,6 @@ function navigateNotif(actionUrl) {
     }
 }
 
-function hexToBytes(hex) {
-    const bytes = new Uint8Array(hex.length / 2);
-    for (let i = 0; i < bytes.length; i += 1) {
-        bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-    }
-    return bytes;
-}
-
-async function importRoomKey(hex) {
-    return crypto.subtle.importKey(
-        "raw",
-        hexToBytes(hex),
-        { name: "AES-GCM" },
-        false,
-        ["decrypt"],
-    );
-}
-
 async function getRoomKey(roomId) {
     if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
     const response = await apiFetch(
@@ -77,7 +60,7 @@ async function getRoomKey(roomId) {
     const payload = await response.json().catch(() => null);
     const roomKeyHex = payload?.data?.key;
     if (typeof roomKeyHex !== "string" || roomKeyHex.length === 0) return null;
-    const roomKey = await importRoomKey(roomKeyHex);
+    const roomKey = await importRoomKey(roomKeyHex, ["decrypt"]);
     roomKeyCache.set(roomId, roomKey);
     return roomKey;
 }

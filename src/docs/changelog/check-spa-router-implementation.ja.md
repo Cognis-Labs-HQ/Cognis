@@ -72,6 +72,22 @@ I/O 処理を並列化し、Node.js がブラウザリクエストを処理で�
     - `src/ui/languages/de/strings.xml`
     - `src/ui/languages/id/strings.xml`
     - `src/ui/languages/ja/strings.xml`
+- 新しい共有サーバーレスポンスヘルパー:
+    - `src/api/reuse/json-responses.ts` (新規)
+    - `src/adapters/study/classes/routes.ts`
+    - `src/modules/study/languages/en/index.ts`
+    - `src/modules/study/languages/ja/index.ts`
+- 新しい共有クライアントサイド暗号化ユーティリティ:
+    - `src/ui/reuse/crypto-utils.js` (新規)
+    - `src/adapters/social/messages/ui/app.js`
+    - `src/adapters/notify/internal/ui/navbar-plugin.js`
+- 新しい共有Study言語ユーティリティ:
+    - `src/modules/study/languages/reuse/language-utils.js` (新規)
+    - `src/gateways/study/ui/study.js`
+    - `src/modules/study/languages/reuse/study-sub-navigation.js`
+- CSS変数の修正:
+    - `src/adapters/notify/internal/ui/notifications.css`
+    - `src/gateways/notify/ui/verify-email.css`
 
 ## コミット
 

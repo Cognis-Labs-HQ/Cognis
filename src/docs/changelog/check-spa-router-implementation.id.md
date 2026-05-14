@@ -70,6 +70,22 @@ bersama dan tidak diimpor dari mana pun.
     - `src/ui/languages/de/strings.xml`
     - `src/ui/languages/id/strings.xml`
     - `src/ui/languages/ja/strings.xml`
+- Pembantu respons server bersama yang baru:
+    - `src/api/reuse/json-responses.ts` (baru)
+    - `src/adapters/study/classes/routes.ts`
+    - `src/modules/study/languages/en/index.ts`
+    - `src/modules/study/languages/ja/index.ts`
+- Utilitas kriptografi sisi klien bersama yang baru:
+    - `src/ui/reuse/crypto-utils.js` (baru)
+    - `src/adapters/social/messages/ui/app.js`
+    - `src/adapters/notify/internal/ui/navbar-plugin.js`
+- Utilitas bahasa studi bersama yang baru:
+    - `src/modules/study/languages/reuse/language-utils.js` (baru)
+    - `src/gateways/study/ui/study.js`
+    - `src/modules/study/languages/reuse/study-sub-navigation.js`
+- Perbaikan variabel CSS:
+    - `src/adapters/notify/internal/ui/notifications.css`
+    - `src/gateways/notify/ui/verify-email.css`
 
 ## Commit
 

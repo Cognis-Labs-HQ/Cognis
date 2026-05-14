@@ -21,26 +21,17 @@ import {
     invalidateStudyChildComponentCache,
 } from "/static/reuse/app-router.js";
 import { clearStudySubNavCache } from "/static/modules/study/languages/reuse/study-sub-navigation.js";
+import {
+    resolveLanguageLabel,
+    isAdminScope,
+    buildLibraryUrl,
+} from "/static/modules/study/languages/reuse/language-utils.js";
 import { openPopup } from "/static/reuse/popup.js";
 
 const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
   <circle cx="12" cy="12" r="3"/>
   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
 </svg>`;
-
-function resolveLanguageLabel(languageCode, fallbackName = "") {
-    try {
-        const displayName = new Intl.DisplayNames(["en"], {
-            type: "language",
-        }).of(languageCode);
-        if (typeof displayName === "string" && displayName.trim()) {
-            return displayName;
-        }
-    } catch {
-        return fallbackName || languageCode;
-    }
-    return fallbackName || languageCode;
-}
 
 function toLanguageRecord(rawLanguage) {
     const languageCode = String(rawLanguage?.code ?? "").trim();
@@ -53,21 +44,6 @@ function toLanguageRecord(rawLanguage) {
             String(rawLanguage?.name ?? "").trim(),
         ),
     };
-}
-
-function isAdminScope() {
-    const roleValue = String(localStorage.getItem("cognis_role") ?? "")
-        .trim()
-        .toLowerCase();
-    return roleValue === "admin" || roleValue === "owner";
-}
-
-function buildLibraryUrl(languageCode) {
-    const normalizedLanguageCode = String(languageCode ?? "").trim();
-    if (!normalizedLanguageCode) {
-        return "/study/library";
-    }
-    return `/study/library?language=${encodeURIComponent(normalizedLanguageCode)}`;
 }
 
 export async function mount(root, { signal } = {}) {

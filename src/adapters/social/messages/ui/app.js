@@ -23,33 +23,13 @@ import {
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
+import {
+    hexToBytes,
+    bytesToHex,
+    importRoomKey,
+} from "/static/reuse/crypto-utils.js";
 
 const TEXT_ENCODER = new TextEncoder();
-const TEXT_DECODER = new TextDecoder();
-
-function hexToBytes(hex) {
-    const out = new Uint8Array(hex.length / 2);
-    for (let i = 0; i < out.length; i += 1) {
-        out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-    }
-    return out;
-}
-
-function bytesToHex(bytes) {
-    return Array.from(bytes)
-        .map((byte) => byte.toString(16).padStart(2, "0"))
-        .join("");
-}
-
-async function importRoomKey(hex) {
-    return crypto.subtle.importKey(
-        "raw",
-        hexToBytes(hex),
-        { name: "AES-GCM" },
-        false,
-        ["encrypt", "decrypt"],
-    );
-}
 
 async function encryptMessage(key, plaintext) {
     const initVector = crypto.getRandomValues(new Uint8Array(12));

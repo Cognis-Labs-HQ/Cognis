@@ -194,7 +194,7 @@
 
 .notification-item-preview {
     font-size: 0.8rem;
-    color: var(--muted);
+    color: var(--text-muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -203,7 +203,7 @@
 .notification-item-time {
     flex-shrink: 0;
     font-size: 0.7rem;
-    color: var(--muted);
+    color: var(--text-muted);
     white-space: nowrap;
     align-self: flex-start;
     padding-top: 3px;
@@ -228,7 +228,7 @@
     flex-shrink: 0;
     background: transparent;
     border: 0;
-    color: var(--muted);
+    color: var(--text-muted);
     cursor: pointer;
     padding: 2px 4px;
     font-size: 1rem;
@@ -251,7 +251,7 @@
 .notification-empty {
     padding: 28px 16px;
     text-align: center;
-    color: var(--muted);
+    color: var(--text-muted);
     font-size: 0.88rem;
 }
 

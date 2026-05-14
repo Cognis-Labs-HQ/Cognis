@@ -1,5 +1,10 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import {
+    resolveLanguageLabel,
+    isAdminScope,
+    buildLibraryUrl,
+} from "/static/modules/study/languages/reuse/language-utils.js";
 
 const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
   <circle cx="12" cy="12" r="3"/>
@@ -17,20 +22,6 @@ async function loadLanguageModules(languageCode) {
     } catch {
         return [];
     }
-}
-
-function resolveLanguageLabel(languageCode, fallbackName = "") {
-    try {
-        const displayName = new Intl.DisplayNames(["en"], {
-            type: "language",
-        }).of(languageCode);
-        if (typeof displayName === "string" && displayName.trim()) {
-            return displayName;
-        }
-    } catch {
-        return fallbackName || languageCode;
-    }
-    return fallbackName || languageCode;
 }
 
 async function loadRegisteredLanguages() {
@@ -82,17 +73,6 @@ function resolveDefaultChildPageUrl(modules) {
         .map((component) => String(component?.pageUrl ?? "").trim())
         .find(Boolean);
     return firstModulePageUrl || "/study";
-}
-
-function isAdminScope() {
-    const roleValue = String(localStorage.getItem("cognis_role") ?? "")
-        .trim()
-        .toLowerCase();
-    return roleValue === "admin" || roleValue === "owner";
-}
-
-function buildLibraryUrl() {
-    return "/study/library";
 }
 
 /**
