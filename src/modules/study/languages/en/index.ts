@@ -21,7 +21,7 @@ const CHILD_COMPONENTS: LanguageChildComponent[] = [
     {
         id: "alphabet",
         label: "Alphabet",
-        pageUrl: "/study/english-alphabet",
+        pageUrl: "/study/alphabet",
         scriptUrl: `${ALPHABET_COMPONENT_STATIC_BASE}/app.js`,
         stylesheets: [`${ALPHABET_COMPONENT_STATIC_BASE}/alphabet.css`],
         order: 0,
@@ -32,7 +32,7 @@ class EnglishLanguageModule implements LanguageModule {
     readonly languageCode = "en";
     readonly languageName = "English";
     readonly languageFlag = "🇬🇧";
-    readonly version = "1.0.1";
+    readonly version = "1.0.2";
 
     listChildComponents(): LanguageChildComponent[] {
         return CHILD_COMPONENTS;
@@ -46,7 +46,7 @@ function createAlphabetPageRoute() {
         url: URL,
     ): Promise<boolean> => {
         if (req.method && req.method !== "GET") return false;
-        if (url.pathname !== "/study/english-alphabet") return false;
+        if (url.pathname !== "/study/alphabet") return false;
         if (!getCookieSession(req)) {
             res.writeHead(302, { location: "/login" });
             res.end();

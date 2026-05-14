@@ -1,7 +1,7 @@
 {
     "id": "study-language-ja",
     "name": "Cognis Japanese",
-    "version": "1.1.5",
+    "version": "1.1.6",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": ["study:language", "ui:page"],
