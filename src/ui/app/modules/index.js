@@ -25,18 +25,18 @@ async function toggleModule(moduleId, action) {
 
 function renderModulesTable(rows) {
     const rowsHtml = rows
-        .map(
-            (mod) =>
-                `<tr>
-          <td>${escapeHtml(String(mod.id ?? ""))}</td>
+        .map((mod) => {
+            const escapedModuleId = escapeHtml(String(mod.id ?? ""));
+            return `<tr>
+          <td>${escapedModuleId}</td>
           <td>${escapeHtml(String(mod.version ?? ""))}</td>
           <td>${escapeHtml(String(mod.class ?? ""))}</td>
           <td>
-            <button class="btn-confirm btn-animated" data-module="${escapeHtml(String(mod.id ?? ""))}" data-action="enable">${i18n.t("ui.reuse.enable")}</button>
-            <button class="btn-cancel btn-animated" data-module="${escapeHtml(String(mod.id ?? ""))}" data-action="disable">${i18n.t("ui.reuse.disable")}</button>
+            <button class="btn-confirm btn-animated" data-module="${escapedModuleId}" data-action="enable">${i18n.t("ui.reuse.enable")}</button>
+            <button class="btn-cancel btn-animated" data-module="${escapedModuleId}" data-action="disable">${i18n.t("ui.reuse.disable")}</button>
           </td>
-        </tr>`,
-        )
+        </tr>`;
+        })
         .join("");
     return `
     <div class="users-table-wrap">
