@@ -597,3 +597,179 @@ test("GET /api/v1/users/:username/notification-prefs returns 200 for owner acces
     const data = JSON.parse(res.payload);
     assert.deepEqual(data.data, []);
 });
+
+test("POST /api/v1/notifications/broadcasts creates a broadcast for admin users", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    let createdPayload: Record<string, unknown> | null = null;
+    const route = createNotificationRoutes(gateway, {
+        async getUserNotifPrefs() {
+            return [];
+        },
+        async saveUserNotifPrefs() {},
+        async createBroadcast(input) {
+            createdPayload = input as Record<string, unknown>;
+            return { id: "broadcast-1", ...input };
+        },
+    });
+    const adminToken = issueAccessToken("admin-user", "admin", 60);
+    const response = makeResponse();
+
+    await route(
+        requestWithBody(
+            "POST",
+            {
+                title: "Maintenance Window",
+                message: "Planned outage at 22:00 UTC.",
+                displayMode: "bar",
+                targetRoles: ["user", "teacher"],
+                startAt: 1_700_000_000_000,
+                endAt: 1_700_000_360_000,
+                requireAcknowledgement: true,
+                redirectUrl: "/docs",
+                enabled: true,
+            },
+            adminToken,
+        ),
+        response,
+        new URL("http://localhost/api/v1/notifications/broadcasts"),
+    );
+
+    assert.equal(response.status, 200);
+    assert.ok(createdPayload);
+    assert.equal(createdPayload?.createdBy, "admin-user");
+    const body = JSON.parse(response.payload);
+    assert.equal(body.data.id, "broadcast-1");
+});
+
+test("POST /api/v1/notifications/broadcasts returns 400 for invalid payload", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    const route = createNotificationRoutes(gateway, {
+        async getUserNotifPrefs() {
+            return [];
+        },
+        async saveUserNotifPrefs() {},
+        async createBroadcast() {
+            return {};
+        },
+    });
+    const adminToken = issueAccessToken("admin-user", "admin", 60);
+    const response = makeResponse();
+
+    await route(
+        requestWithBody(
+            "POST",
+            {
+                title: "",
+                message: "body",
+                displayMode: "bar",
+                targetRoles: ["user"],
+            },
+            adminToken,
+        ),
+        response,
+        new URL("http://localhost/api/v1/notifications/broadcasts"),
+    );
+
+    assert.equal(response.status, 400);
+    assert.match(response.payload, /invalid_broadcast_payload/);
+});
+
+test("GET /api/v1/notifications/broadcasts/active returns role-targeted broadcasts", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    let receivedRole = "";
+    let receivedAccountId = "";
+    const route = createNotificationRoutes(gateway, {
+        async getUserNotifPrefs() {
+            return [];
+        },
+        async saveUserNotifPrefs() {},
+        async getActiveBroadcastsForRole(accountId, role) {
+            receivedAccountId = accountId;
+            receivedRole = role;
+            return [{ id: "broadcast-1", title: "A", message: "B" }];
+        },
+    });
+    const userToken = issueAccessToken("alice", "teacher", 60);
+    const response = makeResponse();
+
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${userToken}` },
+            [Symbol.asyncIterator]: async function* () {},
+        } as any,
+        response,
+        new URL("http://localhost/api/v1/notifications/broadcasts/active"),
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(receivedAccountId, "alice");
+    assert.equal(receivedRole, "teacher");
+    const body = JSON.parse(response.payload);
+    assert.equal(body.data[0].id, "broadcast-1");
+});
+
+test("POST /api/v1/notifications/broadcasts/:id/acknowledge marks broadcast state", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    let acknowledgedBy = "";
+    let acknowledgedId = "";
+    const route = createNotificationRoutes(gateway, {
+        async getUserNotifPrefs() {
+            return [];
+        },
+        async saveUserNotifPrefs() {},
+        async markBroadcastAcknowledged(accountId, broadcastId) {
+            acknowledgedBy = accountId;
+            acknowledgedId = broadcastId;
+        },
+    });
+    const userToken = issueAccessToken("alice", "user", 60);
+    const response = makeResponse();
+
+    await route(
+        requestWithBody("POST", {}, userToken),
+        response,
+        new URL(
+            "http://localhost/api/v1/notifications/broadcasts/broadcast-9/acknowledge",
+        ),
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(acknowledgedBy, "alice");
+    assert.equal(acknowledgedId, "broadcast-9");
+});
+
+test("POST /api/v1/notifications/broadcasts/:id/dismiss marks broadcast state", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    let dismissedBy = "";
+    let dismissedId = "";
+    const route = createNotificationRoutes(gateway, {
+        async getUserNotifPrefs() {
+            return [];
+        },
+        async saveUserNotifPrefs() {},
+        async markBroadcastDismissed(accountId, broadcastId) {
+            dismissedBy = accountId;
+            dismissedId = broadcastId;
+        },
+    });
+    const userToken = issueAccessToken("alice", "user", 60);
+    const response = makeResponse();
+
+    await route(
+        requestWithBody("POST", {}, userToken),
+        response,
+        new URL(
+            "http://localhost/api/v1/notifications/broadcasts/broadcast-9/dismiss",
+        ),
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(dismissedBy, "alice");
+    assert.equal(dismissedId, "broadcast-9");
+});

@@ -227,7 +227,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.3.0",
+        version: "1.4.0",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
         required: true,
@@ -239,6 +239,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         label: "Notifications",
         scriptUrl: "/static/gateways/notify/admin-section.js",
         stringsBaseUrl: "/static/gateways/notify/languages",
+    });
+    ctx.uiRegistry?.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/notify/broadcast-navbar-plugin.js",
     });
     ctx.uiRegistry?.registerStaticDir("notify", uiDir);
     ctx.uiRegistry?.registerSettingsSection({

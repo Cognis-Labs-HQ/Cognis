@@ -9,4 +9,24 @@
   <string name="gateway.notify.admin.debug_missing_fields">Harap isi semua kolom sebelum mengirim.</string>
   <string name="gateway.notify.admin.debug_no_users">Tidak ada pengguna ditemukan.</string>
   <string name="gateway.notify.admin.debug_no_categories">Tidak ada kategori notifikasi terdaftar.</string>
+  <string name="gateway.notify.admin.broadcast_label">Siaran</string>
+  <string name="gateway.notify.admin.broadcast_title">Judul</string>
+  <string name="gateway.notify.admin.broadcast_message">Pesan</string>
+  <string name="gateway.notify.admin.broadcast_mode">Mode Tampilan</string>
+  <string name="gateway.notify.admin.broadcast_mode_bar">Bilah Atas</string>
+  <string name="gateway.notify.admin.broadcast_mode_popup">Popup</string>
+  <string name="gateway.notify.admin.broadcast_roles">Peran Target</string>
+  <string name="gateway.notify.admin.broadcast_start">Tanggal Mulai</string>
+  <string name="gateway.notify.admin.broadcast_end">Tanggal Selesai</string>
+  <string name="gateway.notify.admin.broadcast_redirect">URL Pengalihan Saat Ditutup</string>
+  <string name="gateway.notify.admin.broadcast_require_ack">Wajib Konfirmasi</string>
+  <string name="gateway.notify.admin.broadcast_create">Buat Siaran</string>
+  <string name="gateway.notify.admin.broadcast_created">Siaran dibuat.</string>
+  <string name="gateway.notify.admin.broadcast_invalid">Masukkan judul, pesan, peran target, dan jadwal yang valid.</string>
+  <string name="gateway.notify.admin.broadcast_create_failed">Gagal membuat siaran.</string>
+  <string name="gateway.notify.admin.broadcast_toggle_failed">Gagal memperbarui status siaran.</string>
+  <string name="gateway.notify.admin.broadcast_none">Belum ada siaran yang dikonfigurasi.</string>
+  <string name="gateway.notify.broadcast.acknowledge">Konfirmasi</string>
+  <string name="gateway.notify.broadcast.action_failed">Gagal memperbarui status siaran.</string>
+  <string name="gateway.notify.broadcast.invalid_redirect">URL pengalihan tidak valid.</string>
 </resources>

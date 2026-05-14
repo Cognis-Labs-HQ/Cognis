@@ -9,4 +9,24 @@
   <string name="gateway.notify.admin.debug_missing_fields">Bitte alle Felder ausfüllen.</string>
   <string name="gateway.notify.admin.debug_no_users">Keine Benutzer gefunden.</string>
   <string name="gateway.notify.admin.debug_no_categories">Keine Benachrichtigungskategorien registriert.</string>
+  <string name="gateway.notify.admin.broadcast_label">Rundsendungen</string>
+  <string name="gateway.notify.admin.broadcast_title">Titel</string>
+  <string name="gateway.notify.admin.broadcast_message">Nachricht</string>
+  <string name="gateway.notify.admin.broadcast_mode">Anzeigemodus</string>
+  <string name="gateway.notify.admin.broadcast_mode_bar">Leiste oben</string>
+  <string name="gateway.notify.admin.broadcast_mode_popup">Popup</string>
+  <string name="gateway.notify.admin.broadcast_roles">Zielrollen</string>
+  <string name="gateway.notify.admin.broadcast_start">Startdatum</string>
+  <string name="gateway.notify.admin.broadcast_end">Enddatum</string>
+  <string name="gateway.notify.admin.broadcast_redirect">Weiterleitungs-URL beim Schließen</string>
+  <string name="gateway.notify.admin.broadcast_require_ack">Bestätigung erforderlich</string>
+  <string name="gateway.notify.admin.broadcast_create">Rundsendung erstellen</string>
+  <string name="gateway.notify.admin.broadcast_created">Rundsendung erstellt.</string>
+  <string name="gateway.notify.admin.broadcast_invalid">Bitte gültigen Titel, Nachricht, Zielrollen und Zeitplan angeben.</string>
+  <string name="gateway.notify.admin.broadcast_create_failed">Rundsendung konnte nicht erstellt werden.</string>
+  <string name="gateway.notify.admin.broadcast_toggle_failed">Status der Rundsendung konnte nicht aktualisiert werden.</string>
+  <string name="gateway.notify.admin.broadcast_none">Keine Rundsendungen konfiguriert.</string>
+  <string name="gateway.notify.broadcast.acknowledge">Bestätigen</string>
+  <string name="gateway.notify.broadcast.action_failed">Rundsendungsstatus konnte nicht aktualisiert werden.</string>
+  <string name="gateway.notify.broadcast.invalid_redirect">Die Weiterleitungs-URL ist ungültig.</string>
 </resources>

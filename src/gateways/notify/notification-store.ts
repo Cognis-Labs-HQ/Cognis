@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { NotificationPreferenceStore } from "./gateway.js";
 
@@ -7,6 +8,43 @@ export interface NotificationConfigStore {
         senderId: string,
         config: Record<string, unknown>,
     ): Promise<void>;
+}
+
+export type NotificationBroadcastDisplayMode = "bar" | "popup";
+export type NotificationBroadcastRole =
+    | "user"
+    | "teacher"
+    | "moderator"
+    | "admin"
+    | "owner";
+
+export interface NotificationBroadcast {
+    id: string;
+    title: string;
+    message: string;
+    displayMode: NotificationBroadcastDisplayMode;
+    targetRoles: NotificationBroadcastRole[];
+    startAt: number | null;
+    endAt: number | null;
+    requireAcknowledgement: boolean;
+    redirectUrl: string | null;
+    enabled: boolean;
+    createdBy: string;
+    createdAt: number;
+    updatedAt: number;
+}
+
+export interface NotificationBroadcastInput {
+    title: string;
+    message: string;
+    displayMode: NotificationBroadcastDisplayMode;
+    targetRoles: NotificationBroadcastRole[];
+    startAt: number | null;
+    endAt: number | null;
+    requireAcknowledgement: boolean;
+    redirectUrl: string | null;
+    enabled: boolean;
+    createdBy: string;
 }
 
 export class DbNotificationStore implements NotificationConfigStore {
@@ -23,6 +61,61 @@ export class DbNotificationStore implements NotificationConfigStore {
                     primaryKey: true,
                 },
                 { name: "config_json", type: "text", notNull: true },
+            ],
+        });
+        await this.db.ensureTable({
+            name: "notification_broadcasts",
+            columns: [
+                {
+                    name: "id",
+                    type: "text",
+                    notNull: true,
+                    primaryKey: true,
+                },
+                { name: "title", type: "text", notNull: true },
+                { name: "message", type: "text", notNull: true },
+                { name: "display_mode", type: "text", notNull: true },
+                { name: "target_roles_json", type: "text", notNull: true },
+                { name: "start_at", type: "bigint" },
+                { name: "end_at", type: "bigint" },
+                {
+                    name: "require_acknowledgement",
+                    type: "boolean",
+                    notNull: true,
+                    default: "false",
+                },
+                { name: "redirect_url", type: "text" },
+                {
+                    name: "enabled",
+                    type: "boolean",
+                    notNull: true,
+                    default: "true",
+                },
+                { name: "created_by", type: "text", notNull: true },
+                { name: "created_at", type: "bigint", notNull: true },
+                { name: "updated_at", type: "bigint", notNull: true },
+            ],
+            indexes: [
+                {
+                    name: "idx_notification_broadcasts_enabled",
+                    columns: ["enabled", "created_at"],
+                },
+            ],
+        });
+        await this.db.ensureTable({
+            name: "user_notification_broadcast_states",
+            columns: [
+                { name: "account_id", type: "text", notNull: true },
+                { name: "broadcast_id", type: "text", notNull: true },
+                { name: "dismissed_at", type: "bigint" },
+                { name: "acknowledged_at", type: "bigint" },
+            ],
+            primaryKey: ["account_id", "broadcast_id"],
+            indexes: [
+                {
+                    name: "idx_user_notification_broadcast_states_account",
+                    columns: ["account_id", "broadcast_id"],
+                },
             ],
         });
         await this.db.ensureTable({
@@ -54,6 +147,217 @@ export class DbNotificationStore implements NotificationConfigStore {
             ],
             primaryKey: ["account_id", "email"],
             uniqueKeys: [["email"]],
+        });
+    }
+
+    private parseBroadcastRow(row: Record<string, unknown>): NotificationBroadcast {
+        const parsedRoles = JSON.parse(
+            String(row.target_roles_json ?? "[]"),
+        ) as NotificationBroadcastRole[];
+        const targetRoles = Array.isArray(parsedRoles)
+            ? parsedRoles.filter((role) =>
+                  ["user", "teacher", "moderator", "admin", "owner"].includes(
+                      String(role),
+                  ),
+              )
+            : [];
+        return {
+            id: String(row.id),
+            title: String(row.title ?? ""),
+            message: String(row.message ?? ""),
+            displayMode:
+                row.display_mode === "popup" ? "popup" : "bar",
+            targetRoles,
+            startAt:
+                row.start_at == null ? null : Number(row.start_at),
+            endAt: row.end_at == null ? null : Number(row.end_at),
+            requireAcknowledgement: Boolean(row.require_acknowledgement),
+            redirectUrl:
+                row.redirect_url == null ? null : String(row.redirect_url),
+            enabled: Boolean(row.enabled),
+            createdBy: String(row.created_by ?? ""),
+            createdAt: Number(row.created_at ?? 0),
+            updatedAt: Number(row.updated_at ?? 0),
+        };
+    }
+
+    async createBroadcast(
+        input: NotificationBroadcastInput,
+    ): Promise<NotificationBroadcast> {
+        const id = randomUUID();
+        const now = Date.now();
+        const targetRolesJson = JSON.stringify(input.targetRoles);
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "notification_broadcasts",
+            values: {
+                id,
+                title: input.title,
+                message: input.message,
+                display_mode: input.displayMode,
+                target_roles_json: targetRolesJson,
+                start_at: input.startAt,
+                end_at: input.endAt,
+                require_acknowledgement: input.requireAcknowledgement,
+                redirect_url: input.redirectUrl,
+                enabled: input.enabled,
+                created_by: input.createdBy,
+                created_at: now,
+                updated_at: now,
+            },
+        });
+        return {
+            id,
+            title: input.title,
+            message: input.message,
+            displayMode: input.displayMode,
+            targetRoles: [...input.targetRoles],
+            startAt: input.startAt,
+            endAt: input.endAt,
+            requireAcknowledgement: input.requireAcknowledgement,
+            redirectUrl: input.redirectUrl,
+            enabled: input.enabled,
+            createdBy: input.createdBy,
+            createdAt: now,
+            updatedAt: now,
+        };
+    }
+
+    async listBroadcasts(): Promise<NotificationBroadcast[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "notification_broadcasts",
+            columns: [
+                "id",
+                "title",
+                "message",
+                "display_mode",
+                "target_roles_json",
+                "start_at",
+                "end_at",
+                "require_acknowledgement",
+                "redirect_url",
+                "enabled",
+                "created_by",
+                "created_at",
+                "updated_at",
+            ],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+        });
+        return (result.rows ?? []).map((row) =>
+            this.parseBroadcastRow(row as Record<string, unknown>),
+        );
+    }
+
+    async setBroadcastEnabled(id: string, enabled: boolean): Promise<void> {
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "notification_broadcasts",
+            set: {
+                enabled,
+                updated_at: Date.now(),
+            },
+            where: [{ column: "id", value: id }],
+        });
+    }
+
+    async getActiveBroadcastsForRole(
+        accountId: string,
+        role: NotificationBroadcastRole,
+        now = Date.now(),
+    ): Promise<NotificationBroadcast[]> {
+        const allBroadcasts = await this.listBroadcasts();
+        const visibleBroadcasts = allBroadcasts.filter((broadcast) => {
+            if (!broadcast.enabled) return false;
+            if (
+                broadcast.targetRoles.length > 0 &&
+                !broadcast.targetRoles.includes(role)
+            ) {
+                return false;
+            }
+            if (broadcast.startAt !== null && now < broadcast.startAt) {
+                return false;
+            }
+            if (broadcast.endAt !== null && now > broadcast.endAt) {
+                return false;
+            }
+            return true;
+        });
+        if (visibleBroadcasts.length === 0) return [];
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "user_notification_broadcast_states",
+            columns: ["broadcast_id", "dismissed_at", "acknowledged_at"],
+            where: [{ column: "account_id", value: accountId }],
+        });
+        const stateByBroadcastId = new Map<
+            string,
+            { dismissedAt: number | null; acknowledgedAt: number | null }
+        >();
+        for (const row of result.rows ?? []) {
+            const typedRow = row as Record<string, unknown>;
+            const stateBroadcastId = String(typedRow.broadcast_id ?? "");
+            stateByBroadcastId.set(stateBroadcastId, {
+                dismissedAt:
+                    typedRow.dismissed_at == null
+                        ? null
+                        : Number(typedRow.dismissed_at),
+                acknowledgedAt:
+                    typedRow.acknowledged_at == null
+                        ? null
+                        : Number(typedRow.acknowledged_at),
+            });
+        }
+        return visibleBroadcasts.filter((broadcast) => {
+            const state = stateByBroadcastId.get(broadcast.id);
+            if (broadcast.requireAcknowledgement) {
+                return !state?.acknowledgedAt;
+            }
+            return !state?.dismissedAt;
+        });
+    }
+
+    async markBroadcastDismissed(
+        accountId: string,
+        broadcastId: string,
+    ): Promise<void> {
+        const dismissedAt = Date.now();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "user_notification_broadcast_states",
+            values: {
+                account_id: accountId,
+                broadcast_id: broadcastId,
+                dismissed_at: dismissedAt,
+                acknowledged_at: null,
+            },
+            conflict: {
+                action: "update",
+                target: ["account_id", "broadcast_id"],
+                update: { dismissed_at: dismissedAt },
+            },
+        });
+    }
+
+    async markBroadcastAcknowledged(
+        accountId: string,
+        broadcastId: string,
+    ): Promise<void> {
+        const acknowledgedAt = Date.now();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "user_notification_broadcast_states",
+            values: {
+                account_id: accountId,
+                broadcast_id: broadcastId,
+                dismissed_at: null,
+                acknowledged_at: acknowledgedAt,
+            },
+            conflict: {
+                action: "update",
+                target: ["account_id", "broadcast_id"],
+                update: { acknowledged_at: acknowledgedAt },
+            },
         });
     }
 
