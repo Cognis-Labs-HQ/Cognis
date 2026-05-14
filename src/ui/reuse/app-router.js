@@ -33,6 +33,100 @@
 
 import { ensurePageStylesheet } from "./page-styles.js";
 
+const STUDY_BASE_STYLESHEETS = [
+    "/static/styles/page-builder.css",
+    "/static/styles/reuse/page-sections.css",
+    "/static/gateways/study/study.css",
+];
+
+const STUDY_CHILD_ROUTE_PATTERN = /^\/study\/[^/]+$/;
+const STUDY_CHILD_EXCLUDED_PATHS = new Set(["/study/welcome", "/study/settings"]);
+
+let _studyChildComponentsPromise = null;
+
+function normalizePath(path) {
+    return String(path).split("?")[0].split("#")[0];
+}
+
+function isPotentialStudyChildPath(path) {
+    const normalizedPath = normalizePath(path);
+    return (
+        STUDY_CHILD_ROUTE_PATTERN.test(normalizedPath) &&
+        !STUDY_CHILD_EXCLUDED_PATHS.has(normalizedPath)
+    );
+}
+
+async function fetchJson(urlPath) {
+    const response = await fetch(urlPath, { credentials: "include" });
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status} while loading "${urlPath}"`);
+    }
+    return response.json();
+}
+
+async function loadStudyChildComponents() {
+    if (_studyChildComponentsPromise) {
+        return _studyChildComponentsPromise;
+    }
+    _studyChildComponentsPromise = (async () => {
+        const registeredLanguagesResponse = await fetchJson(
+            "/api/v1/study/registered-languages",
+        );
+        const languages = Array.isArray(registeredLanguagesResponse?.data)
+            ? registeredLanguagesResponse.data
+            : [];
+        const moduleResponses = await Promise.all(
+            languages.map((language) =>
+                fetchJson(
+                    `/api/v1/study/languages/${encodeURIComponent(String(language.code ?? ""))}/modules`,
+                ).catch(() => ({ data: [] })),
+            ),
+        );
+        return moduleResponses.flatMap((modulesResponse) =>
+            Array.isArray(modulesResponse?.data) ? modulesResponse.data : [],
+        );
+    })();
+    return _studyChildComponentsPromise;
+}
+
+async function resolveStudyChildComponent(path) {
+    if (!isPotentialStudyChildPath(path)) {
+        return null;
+    }
+    const normalizedPath = normalizePath(path);
+    const components = await loadStudyChildComponents();
+    const component = components.find(
+        (candidate) => String(candidate?.pageUrl ?? "") === normalizedPath,
+    );
+    if (!component) {
+        return null;
+    }
+    const scriptUrl = String(component.scriptUrl ?? "").trim();
+    if (!scriptUrl) {
+        return null;
+    }
+    const stylesheets = Array.isArray(component.stylesheets)
+        ? component.stylesheets
+              .map((stylesheetUrl) => String(stylesheetUrl ?? "").trim())
+              .filter(Boolean)
+        : [];
+    return {
+        scriptUrl,
+        stylesheets,
+    };
+}
+
+async function loadStudyChildRouteModule(path) {
+    const component = await resolveStudyChildComponent(path);
+    if (!component) {
+        throw new Error(`No dynamic Study child module found for "${path}"`);
+    }
+    if (component.stylesheets.length) {
+        await Promise.all(component.stylesheets.map(ensurePageStylesheet));
+    }
+    return import(component.scriptUrl);
+}
+
 const ROUTES = [
     {
         pattern: /^\/dashboard$/,
@@ -99,39 +193,19 @@ const ROUTES = [
     {
         pattern: /^\/study(?:\/welcome|\/settings)?$/,
         base: "/study",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/gateways/study/study.css",
-        ],
+        stylesheets: STUDY_BASE_STYLESHEETS,
         load: () => import("/static/gateways/study/study.js"),
     },
     {
-        pattern: /^\/study\/hiragana$/,
+        pattern: STUDY_CHILD_ROUTE_PATTERN,
         base: "/study",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/modules/study/languages/ja/components/hiragana-alphabet/hiragana.css",
-        ],
-        load: () =>
-            import("/static/modules/study/languages/ja/components/hiragana-alphabet/app.js"),
-    },
-    {
-        pattern: /^\/study\/library$/,
-        base: "/study",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/modules/study/languages/ja/components/library/library.css",
-        ],
-        load: () =>
-            import("/static/modules/study/languages/ja/components/library/app.js"),
+        stylesheets: STUDY_BASE_STYLESHEETS,
+        load: (path) => loadStudyChildRouteModule(path),
     },
 ];
 
 function findRoute(path) {
-    const pathWithoutQueryOrFragment = String(path).split("?")[0].split("#")[0];
+    const pathWithoutQueryOrFragment = normalizePath(path);
     return ROUTES.find((r) => r.pattern.test(pathWithoutQueryOrFragment));
 }
 
@@ -162,7 +236,7 @@ async function loadRoute(path) {
     globalThis.__spaRouter = true;
     let mod;
     try {
-        mod = await route.load();
+        mod = await route.load(path);
     } finally {
         globalThis.__spaRouterCount--;
         if (globalThis.__spaRouterCount === 0) {
@@ -184,8 +258,15 @@ async function loadRoute(path) {
 
 export async function navigateTo(path) {
     if (!findRoute(path)) return;
+    if (isPotentialStudyChildPath(path)) {
+        const component = await resolveStudyChildComponent(path);
+        if (!component) return;
+    }
     history.pushState({ routerPage: path }, "", path);
-    await loadRoute(path);
+    const loaded = await loadRoute(path);
+    if (loaded && path === "/study/settings") {
+        _studyChildComponentsPromise = null;
+    }
 }
 
 export function getCurrentBase() {
@@ -220,6 +301,10 @@ export function initRouter(root) {
         const path = window.location.pathname;
         const route = findRoute(path);
         if (!route) return;
+        if (isPotentialStudyChildPath(path)) {
+            const component = await resolveStudyChildComponent(path);
+            if (!component) return;
+        }
         // If navigating within the same page section (e.g. docs internal
         // pushState) and this wasn't a router-level push, let the page's
         // own popstate handler deal with it (handled by AbortSignal cleanup).

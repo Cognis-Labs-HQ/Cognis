@@ -24,6 +24,10 @@ export interface LanguageChildComponent {
     readonly label: string;
     /** URL the router navigates to, e.g. '/study/ja/hiragana'. */
     readonly pageUrl: string;
+    /** Optional SPA script URL for router-side module mounting. */
+    readonly scriptUrl?: string;
+    /** Optional SPA stylesheet URLs loaded before mount. */
+    readonly stylesheets?: readonly string[];
     /** Lower numbers appear first. Defaults to 0. */
     readonly order?: number;
     /** Optional minimum role required to see this child component in sub-nav. */

@@ -20,17 +20,26 @@ import {
 
 const MODULE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
+const HIRAGANA_COMPONENT_STATIC_BASE =
+    "/static/modules/study/languages/ja/components/hiragana-alphabet";
+const LIBRARY_COMPONENT_STATIC_BASE =
+    "/static/modules/study/languages/ja/components/library";
+
 const CHILD_COMPONENTS: LanguageChildComponent[] = [
     {
         id: "hiragana-alphabet",
         label: "Hiragana Alphabet",
         pageUrl: "/study/hiragana",
+        scriptUrl: `${HIRAGANA_COMPONENT_STATIC_BASE}/app.js`,
+        stylesheets: [`${HIRAGANA_COMPONENT_STATIC_BASE}/hiragana.css`],
         order: 0,
     },
     {
         id: "library",
         label: "Library",
         pageUrl: "/study/library",
+        scriptUrl: `${LIBRARY_COMPONENT_STATIC_BASE}/app.js`,
+        stylesheets: [`${LIBRARY_COMPONENT_STATIC_BASE}/library.css`],
         minRole: "admin",
         order: 100,
     },
