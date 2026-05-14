@@ -41,6 +41,11 @@
 - `src/docs/versions.en.md` — コンポーネントバージョンを更新
 - `src/gateways/study/tests/bootstrap.test.ts` — 日本語モジュールの無効/有効状態での取り込みを検証するゲートウェイテストを追加
 
+- `src/gateways/study/bootstrap.ts` — modules テーブルへの直接照会を廃止し、`study:setLanguageModuleEnabled` Capability による Study 所有の可用性取り込みへ変更
+- `src/gateways/study/gateway.ts` — 言語モジュール可用性のゲートウェイ内状態 API を追加し、言語一覧と子ルートの公開を制御
+- `src/api/server.ts` と `src/api/main.ts` — モジュール有効化/無効化と起動時状態復元から Study Gateway へ言語可用性をプッシュする配線を追加
+- `src/gateways/study/manifest.json` と `src/docs/versions.en.md` — Study Gateway のバージョンを 1.5.0 に更新
+
 ## コミット
 
 コミット履歴はブランチ `copilot/create-student-page-view` を参照してください。

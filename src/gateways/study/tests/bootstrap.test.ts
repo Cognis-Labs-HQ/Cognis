@@ -7,7 +7,6 @@ import { RouteRegistry } from "../../../api/route-registry.js";
 import { UIRegistry } from "../../../api/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
-import type { StructuredDbCommand } from "../../db/reuse/db-command.js";
 
 class ResponseRecorder extends EventEmitter {
     statusCode = 0;
@@ -57,41 +56,6 @@ class RequestRecorder extends EventEmitter {
     }
 }
 
-function createDbExecutor(moduleStates: Map<string, boolean>) {
-    return {
-        async executeCommand(command: StructuredDbCommand) {
-            if (
-                command.option === "SELECT" &&
-                command.table === "modules" &&
-                Array.isArray(command.where)
-            ) {
-                const moduleIdFilter = command.where.find(
-                    (clause) => clause.column === "module_id",
-                );
-                const moduleId =
-                    typeof moduleIdFilter?.value === "string"
-                        ? moduleIdFilter.value
-                        : null;
-                if (!moduleId) {
-                    return { rows: [], rowCount: 0 };
-                }
-                if (!moduleStates.has(moduleId)) {
-                    return { rows: [], rowCount: 0 };
-                }
-                return {
-                    rows: [{ enabled: moduleStates.get(moduleId) ? 1 : 0 }],
-                    rowCount: 1,
-                };
-            }
-            return { rows: [], rowCount: 0 };
-        },
-        async ensureTable() {},
-        async transaction<T>(callback: (executor: any) => Promise<T>) {
-            return callback(this);
-        },
-    };
-}
-
 async function dispatchRoute(
     routeRegistry: RouteRegistry,
     request: RequestRecorder,
@@ -109,10 +73,9 @@ async function dispatchRoute(
     return false;
 }
 
-async function bootstrapStudyGateway(moduleStates: Map<string, boolean>) {
+async function bootstrapStudyGateway() {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    capabilities.contribute("db:executor", createDbExecutor(moduleStates));
 
     await bootstrap({
         capabilities,
@@ -122,12 +85,17 @@ async function bootstrapStudyGateway(moduleStates: Map<string, boolean>) {
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
     } as any);
 
-    return { routeRegistry };
+    return {
+        routeRegistry,
+        setLanguageModuleEnabled: capabilities.get<
+            (moduleId: string, enabled: boolean) => void
+        >("study:setLanguageModuleEnabled"),
+    };
 }
 
 test("study registered languages reflect Japanese module enablement state", async () => {
-    const moduleStates = new Map<string, boolean>();
-    const { routeRegistry } = await bootstrapStudyGateway(moduleStates);
+    const { routeRegistry, setLanguageModuleEnabled } =
+        await bootstrapStudyGateway();
     const userToken = issueAccessToken("learner", "user", 60);
 
     const disabledResponse = new ResponseRecorder();
@@ -142,7 +110,7 @@ test("study registered languages reflect Japanese module enablement state", asyn
     assert.equal(disabledResponse.statusCode, 200);
     assert.deepEqual(JSON.parse(disabledResponse.payload), { data: [] });
 
-    moduleStates.set("study-language-ja", true);
+    setLanguageModuleEnabled?.("study-language-ja", true);
 
     const enabledResponse = new ResponseRecorder();
     const enabledHandled = await dispatchRoute(
@@ -164,8 +132,8 @@ test("study registered languages reflect Japanese module enablement state", asyn
 });
 
 test("study Japanese child routes are only active while module is enabled", async () => {
-    const moduleStates = new Map<string, boolean>();
-    const { routeRegistry } = await bootstrapStudyGateway(moduleStates);
+    const { routeRegistry, setLanguageModuleEnabled } =
+        await bootstrapStudyGateway();
     const userBearerToken = issueAccessToken("learner", "user", 60);
     const userCookieToken = issueAccessToken("learner", "user", 60);
 
@@ -191,7 +159,7 @@ test("study Japanese child routes are only active while module is enabled", asyn
 
     assert.equal(disabledPageHandled, false);
 
-    moduleStates.set("study-language-ja", true);
+    setLanguageModuleEnabled?.("study-language-ja", true);
 
     const enabledModulesResponse = new ResponseRecorder();
     const enabledModulesHandled = await dispatchRoute(

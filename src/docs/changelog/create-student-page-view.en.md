@@ -41,6 +41,11 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/docs/versions.en.md` — Updated component versions
 - `src/gateways/study/tests/bootstrap.test.ts` — Added gateway tests covering Japanese module enable/disable ingestion for registered languages and child routes
 
+- `src/gateways/study/bootstrap.ts` — Replaced direct modules-table checks with Study-owned availability ingestion via `study:setLanguageModuleEnabled` capability
+- `src/gateways/study/gateway.ts` — Added in-gateway language module availability state APIs used to gate nav language listings and child routes
+- `src/api/server.ts` and `src/api/main.ts` — Wired module enable/disable lifecycle and startup state restore to push language-module availability into Study gateway
+- `src/gateways/study/manifest.json` and `src/docs/versions.en.md` — Bumped Study gateway version to 1.5.0
+
 ## Commits
 
 See branch `copilot/create-student-page-view` for commit history.

@@ -41,6 +41,11 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 - `src/docs/versions.en.md` — Versi komponen diperbarui
 - `src/gateways/study/tests/bootstrap.test.ts` — Menambahkan tes gateway untuk ingest modul Jepang saat dinonaktifkan/diaktifkan
 
+- `src/gateways/study/bootstrap.ts` — Pemeriksaan langsung tabel modul diganti dengan ingest status ketersediaan milik Study melalui capability `study:setLanguageModuleEnabled`
+- `src/gateways/study/gateway.ts` — Menambahkan state ketersediaan modul bahasa di dalam gateway untuk memfilter daftar bahasa dan route child
+- `src/api/server.ts` dan `src/api/main.ts` — Siklus enable/disable modul dan pemulihan state saat startup kini mendorong status modul bahasa ke Study gateway
+- `src/gateways/study/manifest.json` dan `src/docs/versions.en.md` — Versi Study gateway dinaikkan ke 1.5.0
+
 ## Commit
 
 Lihat branch `copilot/create-student-page-view` untuk riwayat commit.

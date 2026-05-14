@@ -41,6 +41,11 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 - `src/docs/versions.en.md` — Komponentenversionen aktualisiert
 - `src/gateways/study/tests/bootstrap.test.ts` — Gateway-Tests für die Aufnahme des japanischen Moduls bei Deaktivierung/Aktivierung hinzugefügt
 
+- `src/gateways/study/bootstrap.ts` — Direkte Abfragen der Modultabelle entfernt und durch Study-eigene Verfügbarkeitsaufnahme über die Capability `study:setLanguageModuleEnabled` ersetzt
+- `src/gateways/study/gateway.ts` — In-Gateway-Status für Sprachmodul-Verfügbarkeit ergänzt, der Sprachliste und Child-Routen steuert
+- `src/api/server.ts` und `src/api/main.ts` — Modul-Aktivierungszyklus und Startzustands-Wiederherstellung so verdrahtet, dass Sprachverfügbarkeit in das Study-Gateway gepusht wird
+- `src/gateways/study/manifest.json` und `src/docs/versions.en.md` — Study-Gateway-Version auf 1.5.0 erhöht
+
 ## Commits
 
 Siehe Branch `copilot/create-student-page-view` für den Commit-Verlauf.

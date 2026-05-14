@@ -3,8 +3,6 @@ import { fileURLToPath } from "node:url";
 import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
-import type { StructuredDbCommandResult } from "../db/reuse/db-command.js";
 import {
     requireAuth,
     getCookieSession,
@@ -18,26 +16,6 @@ const MODULES_ROOT =
     process.env.COGNIS_MODULES_ROOT ??
     path.resolve(process.cwd(), "src", "modules");
 const LANGUAGE_MODULES_ROOT = path.resolve(MODULES_ROOT, "study", "languages");
-
-/**
- * Resolves module enabled state from DB values with class-aware fallback.
- *
- * When no explicit persisted state exists, core modules default to enabled,
- * while extension modules default to disabled.
- */
-function parseModuleEnabledValue(
-    enabledValue: unknown,
-    moduleClass: string,
-): boolean {
-    if (enabledValue === true || enabledValue === 1 || enabledValue === "1") {
-        return true;
-    }
-    if (enabledValue === false || enabledValue === 0 || enabledValue === "0") {
-        return false;
-    }
-    const normalizedClass = moduleClass.trim().toLowerCase();
-    return normalizedClass === "core";
-}
 
 export type {
     StudyAdapterBootstrapCtx,
@@ -159,9 +137,6 @@ function createStudyAdapterRoutes(
  * Standard gateway bootstrap entry point for the Study Gateway.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const dbExecutor =
-        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
-
     const gateway = new CoreStudyGateway();
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
 
@@ -201,7 +176,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.uiRegistry.registerAdapterStaticDir(gatewayId, adapterId, dir);
         },
         log: ctx.log,
-        dbExecutor,
+        dbExecutor: ctx.capabilities.get("db:executor") ?? ctx.dbExecutor,
     });
 
     ctx.log?.("info", "Study gateway: adapters bootstrapped.", {
@@ -215,38 +190,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         modulesRoot: LANGUAGE_MODULES_ROOT,
     });
 
-    const isLanguageModuleEnabled = async (
+    const setLanguageModuleEnabled = (
         moduleId: string,
-        moduleClass: string,
-    ): Promise<boolean> => {
-        if (!dbExecutor) {
-            return parseModuleEnabledValue(undefined, moduleClass);
-        }
-        try {
-            const queryResult = (await dbExecutor.executeCommand({
-                option: "SELECT",
-                table: "modules",
-                columns: ["enabled"],
-                where: [{ column: "module_id", value: moduleId }],
-                limit: 1,
-            })) as StructuredDbCommandResult<{ enabled?: unknown }>;
-            const enabledValue = queryResult.rows?.[0]?.enabled;
-            return parseModuleEnabledValue(enabledValue, moduleClass);
-        } catch (error) {
-            ctx.log?.(
-                "error",
-                "Study gateway: language module enablement lookup failed.",
-                {
-                    component: "study-gateway",
-                    moduleId,
-                    moduleClass,
-                    error:
-                        error instanceof Error ? error.message : String(error),
-                },
-            );
-            return parseModuleEnabledValue(undefined, moduleClass);
-        }
+        enabled: boolean,
+    ): void => {
+        gateway.setLanguageModuleEnabled(moduleId, enabled);
     };
+    ctx.capabilities.contribute(
+        "study:setLanguageModuleEnabled",
+        setLanguageModuleEnabled,
+    );
 
     /**
      * Resolves a language code to module metadata, then evaluates enablement
@@ -259,33 +212,27 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             .listRegisteredLanguageModules()
             .find((candidate) => candidate.code === languageCode);
         if (!languageModule) return false;
-        return isLanguageModuleEnabled(
+        return gateway.isLanguageModuleEnabled(
             languageModule.moduleId,
             languageModule.moduleClass,
         );
     };
 
-    await gateway.bootstrapLanguageModules(
-        LANGUAGE_MODULES_ROOT,
-        {
-            registerChildRoute: (handler) =>
-                ctx.routeRegistry.register(handler, "study"),
-            registerStaticDir: (prefix, dir) => {
-                if (prefix.startsWith("modules/")) {
-                    ctx.uiRegistry?.registerModuleStaticDir(
-                        prefix.slice("modules/".length),
-                        dir,
-                    );
-                } else {
-                    ctx.uiRegistry?.registerStaticDir(prefix, dir);
-                }
-            },
-            log: ctx.log,
+    await gateway.bootstrapLanguageModules(LANGUAGE_MODULES_ROOT, {
+        registerChildRoute: (handler) =>
+            ctx.routeRegistry.register(handler, "study"),
+        registerStaticDir: (prefix, dir) => {
+            if (prefix.startsWith("modules/")) {
+                ctx.uiRegistry?.registerModuleStaticDir(
+                    prefix.slice("modules/".length),
+                    dir,
+                );
+            } else {
+                ctx.uiRegistry?.registerStaticDir(prefix, dir);
+            }
         },
-        {
-            isLanguageModuleEnabled,
-        },
-    );
+        log: ctx.log,
+    });
 
     ctx.log?.("info", "Study gateway: language modules bootstrapped.", {
         component: "study-gateway",
@@ -333,19 +280,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             return false;
         const claims = requireAuth(req, res);
         if (!claims) return true;
-        const languageCandidates = gateway.listRegisteredLanguageModules();
-        const languageFlags = await Promise.all(
-            languageCandidates.map(async (language) => ({
-                language,
-                enabled: await isLanguageModuleEnabled(
-                    language.moduleId,
-                    language.moduleClass,
-                ),
-            })),
-        );
-        const languages = languageFlags
-            .filter((entry) => entry.enabled)
-            .map(({ language }) => ({
+        const languages = gateway
+            .listRegisteredLanguageModules()
+            .filter((language) => language.enabled)
+            .map((language) => ({
                 code: language.code,
                 name: language.name,
                 flag: language.flag,
@@ -370,7 +308,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.4.0",
+        version: "1.5.0",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",

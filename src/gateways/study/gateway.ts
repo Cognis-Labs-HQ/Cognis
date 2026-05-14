@@ -151,6 +151,7 @@ export class CoreStudyGateway {
             moduleClass: string;
         }
     >();
+    private readonly languageModuleAvailability = new Map<string, boolean>();
 
     registerAdapter(adapter: StudyAdapter): void {
         this.registeredAdapters.set(adapter.adapterId, adapter);
@@ -167,12 +168,32 @@ export class CoreStudyGateway {
         module: LanguageModule,
         options?: { moduleId?: string; moduleClass?: string },
     ): void {
+        const moduleId =
+            options?.moduleId ?? `study-language-${module.languageCode}`;
+        const moduleClass = options?.moduleClass ?? "extension";
         this.registeredLanguageModules.set(module.languageCode, {
             module,
-            moduleId:
-                options?.moduleId ?? `study-language-${module.languageCode}`,
-            moduleClass: options?.moduleClass ?? "extension",
+            moduleId,
+            moduleClass,
         });
+        this.languageModuleAvailability.set(
+            moduleId,
+            moduleClass.trim().toLowerCase() === "core",
+        );
+    }
+
+    setLanguageModuleEnabled(moduleId: string, enabled: boolean): void {
+        const hasLanguageModule = Array.from(
+            this.registeredLanguageModules.values(),
+        ).some((languageModule) => languageModule.moduleId === moduleId);
+        if (!hasLanguageModule) return;
+        this.languageModuleAvailability.set(moduleId, enabled);
+    }
+
+    isLanguageModuleEnabled(moduleId: string, moduleClass: string): boolean {
+        const enabled = this.languageModuleAvailability.get(moduleId);
+        if (typeof enabled === "boolean") return enabled;
+        return moduleClass.trim().toLowerCase() === "core";
     }
 
     listRegisteredLanguages(): Array<{
@@ -195,6 +216,7 @@ export class CoreStudyGateway {
         flag: string;
         moduleId: string;
         moduleClass: string;
+        enabled: boolean;
     }> {
         return Array.from(this.registeredLanguageModules.values()).map(
             ({ module, moduleId, moduleClass }) => ({
@@ -203,6 +225,7 @@ export class CoreStudyGateway {
                 flag: module.languageFlag,
                 moduleId,
                 moduleClass,
+                enabled: this.isLanguageModuleEnabled(moduleId, moduleClass),
             }),
         );
     }
@@ -416,12 +439,6 @@ export class CoreStudyGateway {
             LanguageModuleBootstrapCtx,
             "languageCode" | "moduleRoot" | "gateway"
         >,
-        options?: {
-            isLanguageModuleEnabled?: (
-                moduleId: string,
-                moduleClass: string,
-            ) => Promise<boolean> | boolean;
-        },
     ): Promise<void> {
         let entries: string[];
         try {
@@ -459,13 +476,14 @@ export class CoreStudyGateway {
                     baseCtx.registerChildRoute(async (req, res, url) => {
                         const languageMeta =
                             this.registeredLanguageModules.get(entry);
-                        if (languageMeta && options?.isLanguageModuleEnabled) {
-                            const isEnabled =
-                                await options.isLanguageModuleEnabled(
-                                    languageMeta.moduleId,
-                                    languageMeta.moduleClass,
-                                );
-                            if (!isEnabled) return false;
+                        if (languageMeta) {
+                            const isEnabled = this.isLanguageModuleEnabled(
+                                languageMeta.moduleId,
+                                languageMeta.moduleClass,
+                            );
+                            if (!isEnabled) {
+                                return false;
+                            }
                         }
                         return handler(req, res, url);
                     });

@@ -66,6 +66,10 @@ export interface ApiDependencies {
         accountId: string,
         visibility: "friends",
     ) => Promise<void>;
+    setStudyLanguageModuleEnabled?: (
+        moduleId: string,
+        enabled: boolean,
+    ) => Promise<void> | void;
 }
 
 export function buildServer(deps: ApiDependencies) {
@@ -83,11 +87,13 @@ export function buildServer(deps: ApiDependencies) {
     const moduleRoutes = createModuleRoutes(moduleService, {
         onEnabled: async (moduleId) => {
             enabledModules.add(moduleId);
+            await deps.setStudyLanguageModuleEnabled?.(moduleId, true);
             await deps.persistModuleState?.(moduleId, true);
             await moduleExtensionRoutes.refresh();
         },
         onDisabled: async (moduleId) => {
             enabledModules.delete(moduleId);
+            await deps.setStudyLanguageModuleEnabled?.(moduleId, false);
             await deps.persistModuleState?.(moduleId, false);
             await moduleExtensionRoutes.refresh();
         },
@@ -143,6 +149,10 @@ export function buildServer(deps: ApiDependencies) {
                 const persisted = saved.get(manifest.id);
                 if (manifest.class === "core" || persisted === true)
                     enabledModules.add(manifest.id);
+                deps.setStudyLanguageModuleEnabled?.(
+                    manifest.id,
+                    manifest.class === "core" || persisted === true,
+                );
             }
             const savedGateways = new Map(
                 savedGatewayStates.map((row) => [row.gatewayId, row.enabled]),
