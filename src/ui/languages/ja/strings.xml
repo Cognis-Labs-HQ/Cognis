@@ -454,8 +454,10 @@
   <string name="module.social.messages.members">メンバー</string>
   <string name="module.social.messages.set_avatar">アバターを設定</string>
   <string name="module.social.messages.key_unavailable">暗号化キーを利用できません。</string>
+  <string name="module.social.messages.page_subtitle">会話とダイレクトメッセージ。</string>
   <string name="ui.reuse.classes">マイクラス</string>
   <string name="module.study.classes.page_title">クラス</string>
+  <string name="module.study.classes.page_subtitle">担当する語学クラスを管理します。</string>
   <string name="module.study.classes.empty">まだクラスが割り当てられていません。</string>
   <string name="module.study.classes.request_teacher">教師ステータスをリクエスト</string>
   <string name="module.study.classes.request_sent">申請が管理者のレビューに送信されました。</string>
@@ -472,6 +474,7 @@
   <string name="module.study.classes.teacher_application_reason">この言語を教えることを許可されるべき理由を管理者に伝えてください。</string>
   <string name="module.study.classes.submit_application">申請を送信</string>
   <string name="module.study.classes.my_classes_page_title">マイクラス</string>
+  <string name="module.study.classes.my_classes_page_subtitle">登録クラスを確認・管理します。</string>
   <string name="module.study.classes.enrolled_classes">参加中のクラス</string>
   <string name="module.study.classes.no_enrolled_classes">まだクラスに参加していません。</string>
   <string name="module.study.classes.available_classes">参加可能なクラス</string>

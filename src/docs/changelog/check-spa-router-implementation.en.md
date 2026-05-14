@@ -15,9 +15,22 @@ the dashboard template is now prewarmed, navbar plugin loading is deferred, and
 page content no longer waits for saved layout preferences to round-trip before
 first paint.
 
-Expanded SPA routing coverage for remaining internal shell pages served by
-adapters (`/profile`, `/messages`, `/classes`, `/my-classes`) so navigating to
-them no longer falls back to full page reloads.
+Added missing `subtitle` fields to the `pageContext` of the Messages, Classes,
+and My Classes adapter pages, bringing them into full compliance with the AI
+instructions requirement that every page context carries both a title and a
+subtitle resolved through i18n keys.
+
+Fixed the Hiragana Alphabet study component, which had no `componentStringBaseUrls`
+in its `createI18n` call (so gateway strings were never loaded), a hardcoded
+English page title, no subtitle, and hardcoded English strings in the element
+label and render content. All of these are now resolved through the
+`gateway.study.*` i18n namespace.
+
+Fixed the English Alphabet study component's hardcoded page title in the same way.
+
+Added all corresponding i18n keys across the four supported languages (de, en,
+id, ja): three new subtitle keys per language in the global `strings.xml` files,
+and five new keys per language in the gateway study `strings.xml` files.
 
 ## Changed components and files
 

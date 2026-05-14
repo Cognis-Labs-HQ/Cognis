@@ -58,7 +58,9 @@ function renderCharacterGrid(characters) {
 }
 
 export async function mount(root) {
-    const i18n = await createI18n();
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/gateways/study/languages"],
+    });
     applyDocumentTitle(i18n, "ui.shared.brand.name");
 
     const currentPath = window.location.pathname;
@@ -82,13 +84,13 @@ export async function mount(root) {
         elements: [
             {
                 id: "study-ja-hiragana",
-                label: "Hiragana Alphabet",
+                label: i18n.t("gateway.study.hiragana_page_title"),
                 pinned: true,
                 gridSize: { default: [12, 8], min: [4, 4], max: "full" },
                 render: () => `
                     <section class="hiragana-alphabet-section">
-                        <h2>ひらがな — Hiragana</h2>
-                        <p>The basic phonetic syllabary of Japanese. Data is sourced from the language library's characters layer.</p>
+                        <h2>${i18n.t("gateway.study.hiragana_section_heading")}</h2>
+                        <p>${i18n.t("gateway.study.hiragana_description")}</p>
                         <div class="hiragana-grid">
                             ${renderCharacterGrid(hiraganaCharacters)}
                         </div>
@@ -99,7 +101,8 @@ export async function mount(root) {
         preferenceKey: "study-ja-hiragana-layout",
         i18n,
         pageContext: {
-            title: "Hiragana Alphabet",
+            title: i18n.t("gateway.study.hiragana_page_title"),
+            subtitle: i18n.t("gateway.study.hiragana_subtitle"),
         },
         toolbar: [],
         subNavigation: [

@@ -15,9 +15,23 @@ template dashboard kini dipanaskan lebih awal, pemuatan plugin navbar ditunda,
 dan konten halaman tidak lagi menunggu preferensi layout tersimpan selesai
 dimuat sebelum paint pertama.
 
-Cakupan router SPA juga diperluas untuk halaman shell internal lain milik
-adapter (`/profile`, `/messages`, `/classes`, `/my-classes`) sehingga navigasi
-ke sana tidak lagi jatuh kembali ke muat ulang halaman penuh.
+Kolom `subtitle` yang hilang pada `pageContext` halaman adapter Pesan, Kelas,
+dan Kelas Saya ditambahkan sehingga sepenuhnya mematuhi instruksi AI yang
+mengharuskan setiap konteks halaman memiliki judul dan subjudul yang diselesaikan
+melalui kunci i18n.
+
+Komponen studi Alfabet Hiragana diperbaiki: tidak ada `componentStringBaseUrls`
+dalam panggilan `createI18n` (string gateway tidak pernah dimuat), judul halaman
+berbahasa Inggris yang dikodekan secara langsung, tidak ada subjudul, serta
+string Inggris yang dikodekan langsung pada label elemen dan konten render.
+Semua masalah ini kini diselesaikan melalui namespace i18n `gateway.study.*`.
+
+Judul halaman yang dikodekan langsung pada komponen Alfabet Bahasa Inggris juga
+diperbaiki dengan cara yang sama.
+
+Semua kunci i18n yang sesuai ditambahkan untuk empat bahasa yang didukung
+(de, en, id, ja): tiga kunci subjudul baru per bahasa pada file `strings.xml`
+global, dan lima kunci baru per bahasa pada file `strings.xml` gateway study.
 
 ## Komponen dan berkas yang diubah
 

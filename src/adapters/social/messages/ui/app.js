@@ -564,6 +564,7 @@ export async function mount(root, { signal } = {}) {
         ],
         pageContext: {
             title: i18n.t("ui.reuse.messages"),
+            subtitle: i18n.t("module.social.messages.page_subtitle"),
         },
         onRender: bindSidebarEvents,
     });

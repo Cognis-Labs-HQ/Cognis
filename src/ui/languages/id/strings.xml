@@ -454,8 +454,10 @@
   <string name="module.social.messages.members">anggota</string>
   <string name="module.social.messages.set_avatar">Atur avatar</string>
   <string name="module.social.messages.key_unavailable">Kunci enkripsi tidak tersedia.</string>
+  <string name="module.social.messages.page_subtitle">Percakapan dan pesan langsung Anda.</string>
   <string name="ui.reuse.classes">Kelas Saya</string>
   <string name="module.study.classes.page_title">Kelas</string>
+  <string name="module.study.classes.page_subtitle">Kelola kelas bahasa yang ditetapkan untuk Anda.</string>
   <string name="module.study.classes.empty">Belum ada kelas yang ditetapkan.</string>
   <string name="module.study.classes.request_teacher">Minta Status Pengajar</string>
   <string name="module.study.classes.request_sent">Permintaan Anda telah dikirim untuk ditinjau admin.</string>
@@ -472,6 +474,7 @@
   <string name="module.study.classes.teacher_application_reason">Beri tahu admin mengapa Anda seharusnya diizinkan mengajar bahasa ini.</string>
   <string name="module.study.classes.submit_application">Kirim Aplikasi</string>
   <string name="module.study.classes.my_classes_page_title">Kelas Saya</string>
+  <string name="module.study.classes.my_classes_page_subtitle">Lihat dan kelola kelas yang Anda ikuti.</string>
   <string name="module.study.classes.enrolled_classes">Kelas yang Diikuti</string>
   <string name="module.study.classes.no_enrolled_classes">Anda belum terdaftar di kelas mana pun.</string>
   <string name="module.study.classes.available_classes">Kelas Tersedia</string>

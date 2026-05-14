@@ -454,8 +454,10 @@
   <string name="module.social.messages.members">Mitglieder</string>
   <string name="module.social.messages.set_avatar">Avatar festlegen</string>
   <string name="module.social.messages.key_unavailable">Verschlüsselungsschlüssel nicht verfügbar.</string>
+  <string name="module.social.messages.page_subtitle">Ihre Unterhaltungen und Direktnachrichten.</string>
   <string name="ui.reuse.classes">Meine Klassen</string>
   <string name="module.study.classes.page_title">Klassen</string>
+  <string name="module.study.classes.page_subtitle">Verwalten Sie Ihre zugewiesenen Sprachklassen.</string>
   <string name="module.study.classes.empty">Noch keine Klassen zugewiesen.</string>
   <string name="module.study.classes.request_teacher">Lehrerstatus beantragen</string>
   <string name="module.study.classes.request_sent">Ihr Antrag wurde zur Überprüfung durch einen Administrator eingereicht.</string>
@@ -472,6 +474,7 @@
   <string name="module.study.classes.teacher_application_reason">Erklären Sie den Administratoren, warum Sie diese Sprache unterrichten dürfen sollten.</string>
   <string name="module.study.classes.submit_application">Antrag senden</string>
   <string name="module.study.classes.my_classes_page_title">Meine Klassen</string>
+  <string name="module.study.classes.my_classes_page_subtitle">Sehen und verwalten Sie Ihre eingeschriebenen Kurse.</string>
   <string name="module.study.classes.enrolled_classes">Eingeschriebene Klassen</string>
   <string name="module.study.classes.no_enrolled_classes">Sie sind noch in keiner Klasse eingeschrieben.</string>
   <string name="module.study.classes.available_classes">Verfügbare Klassen</string>

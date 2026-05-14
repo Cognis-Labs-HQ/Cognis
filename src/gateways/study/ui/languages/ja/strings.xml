@@ -6,6 +6,11 @@
   <string name="gateway.study.page_subtitle">言語学習ダッシュボード</string>
   <string name="gateway.study.settings_subtitle">学習中の言語を管理する</string>
   <string name="gateway.study.alphabet_subtitle">英語アルファベットの文字を閲覧する</string>
+  <string name="gateway.study.alphabet_page_title">英語アルファベット</string>
+  <string name="gateway.study.hiragana_page_title">ひらがな一覧</string>
+  <string name="gateway.study.hiragana_subtitle">日本語の基本的な音節文字（かな）を学びましょう。</string>
+  <string name="gateway.study.hiragana_section_heading">ひらがな</string>
+  <string name="gateway.study.hiragana_description">日本語の基本的な音節文字です。データは言語ライブラリの文字レイヤーから取得されます。</string>
   <string name="gateway.study.library_subtitle">言語ライブラリの記録を管理する</string>
   <string name="gateway.study.classroom_subtitle">教室を表示・管理する</string>
   <string name="gateway.study.welcome_heading">Cognisへようこそ</string>

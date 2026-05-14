@@ -15,10 +15,24 @@ Shell-Render entfernt: Das Dashboard-Template wird nun vorgewärmt,
 Navbar-Plugins werden verzögert geladen, und Seiteninhalte warten beim ersten
 Render nicht mehr auf das Laden gespeicherter Layout-Einstellungen.
 
-Zusätzlich wurde die SPA-Router-Abdeckung für weitere interne Shell-Seiten aus
-Adaptern erweitert (`/profile`, `/messages`, `/classes`, `/my-classes`), damit
-die Navigation dorthin nicht mehr auf vollständige Seiten-Neuladungen
-zurückfällt.
+Den Adapter-Seiten für Nachrichten, Klassen und Meine Klassen wurde das
+fehlende `subtitle`-Feld im `pageContext` hinzugefügt, sodass diese vollständig
+den KI-Anweisungen entsprechen (jeder Seitenkontext muss Titel und Untertitel
+als i18n-Schlüssel enthalten).
+
+Die Hiragana-Alphabet-Studienkomponente wurde korrigiert: Sie hatte keine
+`componentStringBaseUrls` im `createI18n`-Aufruf (Gateway-Strings wurden
+nie geladen), einen fest kodierten englischen Seitentitel, keinen Untertitel
+sowie fest kodierte englische Strings im Element-Label und im Render-Inhalt.
+Alle diese Probleme wurden durch den `gateway.study.*`-i18n-Namensraum behoben.
+
+Der fest kodierte Seitentitel der Englisch-Alphabet-Komponente wurde auf
+dieselbe Weise korrigiert.
+
+In allen vier unterstützten Sprachen (de, en, id, ja) wurden alle zugehörigen
+i18n-Schlüssel ergänzt: drei neue Untertitel-Schlüssel pro Sprache in den
+globalen `strings.xml`-Dateien sowie fünf neue Schlüssel pro Sprache in den
+Study-Gateway-`strings.xml`-Dateien.
 
 ## Geänderte Komponenten und Dateien
 
