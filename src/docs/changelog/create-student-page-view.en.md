@@ -17,8 +17,8 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/adapters/study/classes/ui/my-classes.js` — New student page JavaScript
 - `src/adapters/study/classes/ui/app.js` — Enhanced teacher view with language filter and student management
 - `src/adapters/study/classes/ui/classes.css` — Added styles for new UI elements
-- `src/gateways/study/gateway.ts` — Added `listRegisteredLanguages()` to expose modules as language descriptors
-- `src/gateways/study/bootstrap.ts` — Added `/study/welcome`, `/study`, and `/study/settings` page routes (shared HTML); added `GET /api/v1/study/registered-languages` endpoint; version bumped to 1.4.0
+- `src/gateways/study/gateway.ts` — Added language-module metadata tracking and enablement-aware registration metadata for Study language modules
+- `src/gateways/study/bootstrap.ts` — Added `/study/welcome`, `/study`, and `/study/settings` page routes (shared HTML); added `GET /api/v1/study/registered-languages` endpoint; now filters languages and child routes by module enablement state
 - `src/gateways/study/manifest.json` — Version bumped to 1.4.0
 - `src/gateways/study/ui/classes-dashboard-element.js` — Added student dashboard element
 - `src/gateways/study/ui/navbar.js` — Simplified to a plain nav link; popup handler removed; now fetches registered languages and greys out the link when none are available
@@ -39,6 +39,7 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/ui/app/dashboard/index.js` — Role display now uses i18n key
 - `src/adapters/study/classes/package.json` — Bumped to 1.2.0
 - `src/docs/versions.en.md` — Updated component versions
+- `src/gateways/study/tests/bootstrap.test.ts` — Added gateway tests covering Japanese module enable/disable ingestion for registered languages and child routes
 
 ## Commits
 

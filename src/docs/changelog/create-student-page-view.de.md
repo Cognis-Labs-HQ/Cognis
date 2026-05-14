@@ -17,8 +17,8 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 - `src/adapters/study/classes/ui/my-classes.js` — Neues JavaScript für die Schülerseite
 - `src/adapters/study/classes/ui/app.js` — Erweiterte Lehreransicht mit Sprachfilter und Schülerverwaltung
 - `src/adapters/study/classes/ui/classes.css` — Stile für neue UI-Elemente ergänzt
-- `src/gateways/study/gateway.ts` — Methode `listRegisteredLanguages()` hinzugefügt
-- `src/gateways/study/bootstrap.ts` — Routen `/study/welcome`, `/study` und `/study/settings` (gemeinsames HTML); Endpunkt `GET /api/v1/study/registered-languages` hinzugefügt; Version auf 1.4.0 erhöht
+- `src/gateways/study/gateway.ts` — Metadaten für Sprachmodule ergänzt und registrierte Sprachmodule um Aktivierungsinformationen erweitert
+- `src/gateways/study/bootstrap.ts` — Routen `/study/welcome`, `/study` und `/study/settings` (gemeinsames HTML); Endpunkt `GET /api/v1/study/registered-languages` hinzugefügt; Sprachliste und Child-Routen nun nach Modul-Aktivierungsstatus gefiltert
 - `src/gateways/study/manifest.json` — Version auf 1.4.0 erhöht
 - `src/gateways/study/ui/classes-dashboard-element.js` — Dashboard-Element für Schüler hinzugefügt
 - `src/gateways/study/ui/navbar.js` — Vereinfacht zu einem einfachen Navigationslink; Popup-Handler entfernt; ruft registrierte Sprachen ab und blendet den Link aus, wenn keine verfügbar sind
@@ -39,6 +39,7 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 - `src/ui/app/dashboard/index.js` — Rollenanzeige verwendet jetzt i18n-Schlüssel
 - `src/adapters/study/classes/package.json` — Version auf 1.2.0 erhöht
 - `src/docs/versions.en.md` — Komponentenversionen aktualisiert
+- `src/gateways/study/tests/bootstrap.test.ts` — Gateway-Tests für die Aufnahme des japanischen Moduls bei Deaktivierung/Aktivierung hinzugefügt
 
 ## Commits
 

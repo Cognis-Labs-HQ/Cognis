@@ -17,8 +17,8 @@
 - `src/adapters/study/classes/ui/my-classes.js` — 生徒向け新規JavaScriptページ
 - `src/adapters/study/classes/ui/app.js` — 言語フィルターと生徒管理機能を備えた教師ビューの拡張
 - `src/adapters/study/classes/ui/classes.css` — 新UIエレメント用スタイルを追加
-- `src/gateways/study/gateway.ts` — `listRegisteredLanguages()` メソッドを追加
-- `src/gateways/study/bootstrap.ts` — `/study/welcome`、`/study`、`/study/settings` ルート（共有HTML）；`GET /api/v1/study/registered-languages` エンドポイントを追加；バージョンを 1.4.0 に更新
+- `src/gateways/study/gateway.ts` — 言語モジュールのメタデータ追跡を追加し、登録言語に有効化情報を保持
+- `src/gateways/study/bootstrap.ts` — `/study/welcome`、`/study`、`/study/settings` ルート（共有HTML）；`GET /api/v1/study/registered-languages` エンドポイントを追加；言語一覧と子ルートをモジュール有効化状態でフィルタリング
 - `src/gateways/study/manifest.json` — バージョンを 1.4.0 に更新
 - `src/gateways/study/ui/classes-dashboard-element.js` — 生徒向けダッシュボード要素を追加
 - `src/gateways/study/ui/navbar.js` — 通常のナビリンクに簡略化；ポップアップハンドラーを削除；ロード時に登録済み言語を取得し、利用可能な言語がない場合はリンクを無効化
@@ -39,6 +39,7 @@
 - `src/ui/app/dashboard/index.js` — ロール表示が i18n キーを使用するように変更
 - `src/adapters/study/classes/package.json` — バージョンを1.2.0に更新
 - `src/docs/versions.en.md` — コンポーネントバージョンを更新
+- `src/gateways/study/tests/bootstrap.test.ts` — 日本語モジュールの無効/有効状態での取り込みを検証するゲートウェイテストを追加
 
 ## コミット
 

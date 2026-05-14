@@ -17,8 +17,8 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 - `src/adapters/study/classes/ui/my-classes.js` — JavaScript halaman siswa baru
 - `src/adapters/study/classes/ui/app.js` — Tampilan pengajar ditingkatkan dengan filter bahasa dan manajemen siswa
 - `src/adapters/study/classes/ui/classes.css` — Gaya ditambahkan untuk elemen UI baru
-- `src/gateways/study/gateway.ts` — Metode `listRegisteredLanguages()` ditambahkan
-- `src/gateways/study/bootstrap.ts` — Rute `/study/welcome`, `/study`, dan `/study/settings` (HTML bersama); endpoint `GET /api/v1/study/registered-languages` ditambahkan; versi dinaikkan ke 1.4.0
+- `src/gateways/study/gateway.ts` — Menambahkan metadata modul bahasa dan informasi status aktif pada registrasi modul bahasa
+- `src/gateways/study/bootstrap.ts` — Rute `/study/welcome`, `/study`, dan `/study/settings` (HTML bersama); endpoint `GET /api/v1/study/registered-languages` ditambahkan; daftar bahasa dan route child kini difilter berdasarkan status aktif modul
 - `src/gateways/study/manifest.json` — Versi dinaikkan ke 1.4.0
 - `src/gateways/study/ui/classes-dashboard-element.js` — Elemen dashboard siswa ditambahkan
 - `src/gateways/study/ui/navbar.js` — Disederhanakan menjadi tautan navigasi biasa; handler popup dihapus; mengambil bahasa terdaftar saat dimuat dan menonaktifkan tautan jika tidak ada bahasa yang tersedia
@@ -39,6 +39,7 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 - `src/ui/app/dashboard/index.js` — Tampilan peran kini menggunakan kunci i18n
 - `src/adapters/study/classes/package.json` — Versi ditingkatkan ke 1.2.0
 - `src/docs/versions.en.md` — Versi komponen diperbarui
+- `src/gateways/study/tests/bootstrap.test.ts` — Menambahkan tes gateway untuk ingest modul Jepang saat dinonaktifkan/diaktifkan
 
 ## Commit
 

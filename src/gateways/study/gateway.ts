@@ -145,15 +145,27 @@ export class CoreStudyGateway {
     private readonly disabledAdapters = new Set<string>();
     private readonly registeredLanguageModules = new Map<
         string,
-        LanguageModule
+        {
+            module: LanguageModule;
+            moduleId: string;
+            moduleClass: string;
+        }
     >();
 
     registerAdapter(adapter: StudyAdapter): void {
         this.registeredAdapters.set(adapter.adapterId, adapter);
     }
 
-    registerLanguageModule(module: LanguageModule): void {
-        this.registeredLanguageModules.set(module.languageCode, module);
+    registerLanguageModule(
+        module: LanguageModule,
+        options?: { moduleId?: string; moduleClass?: string },
+    ): void {
+        this.registeredLanguageModules.set(module.languageCode, {
+            module,
+            moduleId:
+                options?.moduleId ?? `study-language-${module.languageCode}`,
+            moduleClass: options?.moduleClass ?? "extension",
+        });
     }
 
     listRegisteredLanguages(): Array<{
@@ -162,10 +174,28 @@ export class CoreStudyGateway {
         flag: string;
     }> {
         return Array.from(this.registeredLanguageModules.values()).map(
-            (module) => ({
+            ({ module }) => ({
                 code: module.languageCode,
                 name: module.languageName,
                 flag: module.languageFlag,
+            }),
+        );
+    }
+
+    listRegisteredLanguageModules(): Array<{
+        code: string;
+        name: string;
+        flag: string;
+        moduleId: string;
+        moduleClass: string;
+    }> {
+        return Array.from(this.registeredLanguageModules.values()).map(
+            ({ module, moduleId, moduleClass }) => ({
+                code: module.languageCode,
+                name: module.languageName,
+                flag: module.languageFlag,
+                moduleId,
+                moduleClass,
             }),
         );
     }
@@ -174,9 +204,9 @@ export class CoreStudyGateway {
         languageCode: string,
         viewerRole: AccessRole = "user",
     ): LanguageChildComponent[] {
-        const module = this.registeredLanguageModules.get(languageCode);
-        if (!module) return [];
-        return module
+        const registered = this.registeredLanguageModules.get(languageCode);
+        if (!registered) return [];
+        return registered.module
             .listChildComponents()
             .filter((childComponent) => {
                 if (!childComponent.minRole) return true;
@@ -339,8 +369,33 @@ export class CoreStudyGateway {
                     const factory =
                         mod.createLanguageModule as () => LanguageModule | null;
                     const languageModule = factory();
-                    if (languageModule)
-                        this.registerLanguageModule(languageModule);
+                    if (languageModule) {
+                        let moduleId = `study-language-${languageModule.languageCode}`;
+                        let moduleClass = "extension";
+                        try {
+                            const manifestPath = path.join(
+                                modulesRoot,
+                                entry,
+                                "manifest.json",
+                            );
+                            const manifestRaw = await readFile(
+                                manifestPath,
+                                "utf8",
+                            );
+                            const manifest = JSON.parse(manifestRaw) as {
+                                id?: string;
+                                class?: string;
+                            };
+                            moduleId = manifest.id?.trim() || moduleId;
+                            moduleClass = manifest.class?.trim() || moduleClass;
+                        } catch {
+                            // Missing or unreadable manifest — keep defaults.
+                        }
+                        this.registerLanguageModule(languageModule, {
+                            moduleId,
+                            moduleClass,
+                        });
+                    }
                 }
             } catch {
                 // Language module could not be loaded — skip silently.
@@ -354,6 +409,12 @@ export class CoreStudyGateway {
             LanguageModuleBootstrapCtx,
             "languageCode" | "moduleRoot" | "gateway"
         >,
+        options?: {
+            isLanguageModuleEnabled?: (
+                moduleId: string,
+                moduleClass: string,
+            ) => Promise<boolean> | boolean;
+        },
     ): Promise<void> {
         let entries: string[];
         try {
@@ -387,6 +448,21 @@ export class CoreStudyGateway {
                 gateway: this,
                 languageCode: entry,
                 moduleRoot: path.join(modulesRoot, entry),
+                registerChildRoute: (handler) => {
+                    baseCtx.registerChildRoute(async (req, res, url) => {
+                        const languageMeta =
+                            this.registeredLanguageModules.get(entry);
+                        if (languageMeta && options?.isLanguageModuleEnabled) {
+                            const isEnabled =
+                                await options.isLanguageModuleEnabled(
+                                    languageMeta.moduleId,
+                                    languageMeta.moduleClass,
+                                );
+                            if (!isEnabled) return false;
+                        }
+                        return handler(req, res, url);
+                    });
+                },
             };
 
             try {
