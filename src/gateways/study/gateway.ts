@@ -301,24 +301,30 @@ export class CoreStudyGateway {
             return;
         }
 
-        for (const entry of entries.sort()) {
-            const pkgPath = path.join(adaptersRoot, entry, "package.json");
-            try {
-                const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as { main?: string };
-                if (!pkg.main) continue;
-                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
-                const mod = await import(entryPath);
-                if (typeof mod.createStudyAdapter === "function") {
-                    const factory =
-                        mod.createStudyAdapter as () => StudyAdapter | null;
-                    const adapter = factory();
-                    if (adapter) this.registerAdapter(adapter);
+        await Promise.all(
+            entries.sort().map(async (entry) => {
+                const pkgPath = path.join(adaptersRoot, entry, "package.json");
+                try {
+                    const raw = await readFile(pkgPath, "utf8");
+                    const pkg = JSON.parse(raw) as { main?: string };
+                    if (!pkg.main) return;
+                    const entryPath = path.resolve(
+                        adaptersRoot,
+                        entry,
+                        pkg.main,
+                    );
+                    const mod = await import(entryPath);
+                    if (typeof mod.createStudyAdapter === "function") {
+                        const factory =
+                            mod.createStudyAdapter as () => StudyAdapter | null;
+                        const adapter = factory();
+                        if (adapter) this.registerAdapter(adapter);
+                    }
+                } catch {
+                    // Adapter could not be loaded — skip silently.
                 }
-            } catch {
-                // Adapter could not be loaded — skip silently.
-            }
-        }
+            }),
+        );
     }
 
     async bootstrapAdapters(
@@ -332,54 +338,63 @@ export class CoreStudyGateway {
             return;
         }
 
-        for (const entry of entries.sort()) {
-            const pkgPath = path.join(adaptersRoot, entry, "package.json");
+        await Promise.all(
+            entries.sort().map(async (entry) => {
+                const pkgPath = path.join(adaptersRoot, entry, "package.json");
 
-            let mod: Record<string, unknown>;
-            try {
-                const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as { main?: string };
-                if (!pkg.main) continue;
-                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
-                mod = await import(entryPath);
-            } catch {
-                continue;
-            }
+                let mod: Record<string, unknown>;
+                try {
+                    const raw = await readFile(pkgPath, "utf8");
+                    const pkg = JSON.parse(raw) as { main?: string };
+                    if (!pkg.main) return;
+                    const entryPath = path.resolve(
+                        adaptersRoot,
+                        entry,
+                        pkg.main,
+                    );
+                    mod = await import(entryPath);
+                } catch {
+                    return;
+                }
 
-            if (typeof mod.bootstrapStudyAdapter !== "function") continue;
+                if (typeof mod.bootstrapStudyAdapter !== "function") return;
 
-            const bootstrapFn = mod.bootstrapStudyAdapter as (
-                ctx: StudyAdapterBootstrapCtx,
-            ) => Promise<void> | void;
+                const bootstrapFn = mod.bootstrapStudyAdapter as (
+                    ctx: StudyAdapterBootstrapCtx,
+                ) => Promise<void> | void;
 
-            const adapterCtx: StudyAdapterBootstrapCtx = {
-                ...baseCtx,
-                adapterId: entry,
-                adapterRoot: path.join(adaptersRoot, entry),
-                isAdapterEnabled: (adapterId = entry) =>
-                    this.isAdapterEnabled(adapterId),
-                registerRoute: (handler, gatewayId) => {
-                    baseCtx.registerRoute(async (req, res, url) => {
-                        if (!this.isAdapterEnabled(entry)) return false;
-                        return handler(req, res, url);
-                    }, gatewayId);
-                },
-            };
-
-            try {
-                await bootstrapFn(adapterCtx);
-            } catch (err) {
-                baseCtx.log?.(
-                    "error",
-                    `Study gateway: adapter "${entry}" bootstrap failed — skipping.`,
-                    {
-                        component: "study-gateway",
-                        adapter: entry,
-                        error: err instanceof Error ? err.message : String(err),
+                const adapterCtx: StudyAdapterBootstrapCtx = {
+                    ...baseCtx,
+                    adapterId: entry,
+                    adapterRoot: path.join(adaptersRoot, entry),
+                    isAdapterEnabled: (adapterId = entry) =>
+                        this.isAdapterEnabled(adapterId),
+                    registerRoute: (handler, gatewayId) => {
+                        baseCtx.registerRoute(async (req, res, url) => {
+                            if (!this.isAdapterEnabled(entry)) return false;
+                            return handler(req, res, url);
+                        }, gatewayId);
                     },
-                );
-            }
-        }
+                };
+
+                try {
+                    await bootstrapFn(adapterCtx);
+                } catch (err) {
+                    baseCtx.log?.(
+                        "error",
+                        `Study gateway: adapter "${entry}" bootstrap failed — skipping.`,
+                        {
+                            component: "study-gateway",
+                            adapter: entry,
+                            error:
+                                err instanceof Error
+                                    ? err.message
+                                    : String(err),
+                        },
+                    );
+                }
+            }),
+        );
     }
 
     async discoverLanguageModules(modulesRoot: string): Promise<void> {
@@ -390,50 +405,57 @@ export class CoreStudyGateway {
             return;
         }
 
-        for (const entry of entries.sort()) {
-            const pkgPath = path.join(modulesRoot, entry, "package.json");
-            try {
-                const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as { main?: string };
-                if (!pkg.main) continue;
-                const entryPath = path.resolve(modulesRoot, entry, pkg.main);
-                const mod = await import(entryPath);
-                if (typeof mod.createLanguageModule === "function") {
-                    const factory =
-                        mod.createLanguageModule as () => LanguageModule | null;
-                    const languageModule = factory();
-                    if (languageModule) {
-                        let moduleId = `study-language-${languageModule.languageCode}`;
-                        let moduleClass = "extension";
-                        try {
-                            const manifestPath = path.join(
-                                modulesRoot,
-                                entry,
-                                "manifest.json",
-                            );
-                            const manifestRaw = await readFile(
-                                manifestPath,
-                                "utf8",
-                            );
-                            const manifest = JSON.parse(manifestRaw) as {
-                                id?: string;
-                                class?: string;
-                            };
-                            moduleId = manifest.id?.trim() || moduleId;
-                            moduleClass = manifest.class?.trim() || moduleClass;
-                        } catch {
-                            // Missing or unreadable manifest — keep defaults.
+        await Promise.all(
+            entries.sort().map(async (entry) => {
+                const pkgPath = path.join(modulesRoot, entry, "package.json");
+                try {
+                    const raw = await readFile(pkgPath, "utf8");
+                    const pkg = JSON.parse(raw) as { main?: string };
+                    if (!pkg.main) return;
+                    const entryPath = path.resolve(
+                        modulesRoot,
+                        entry,
+                        pkg.main,
+                    );
+                    const mod = await import(entryPath);
+                    if (typeof mod.createLanguageModule === "function") {
+                        const factory =
+                            mod.createLanguageModule as () => LanguageModule | null;
+                        const languageModule = factory();
+                        if (languageModule) {
+                            let moduleId = `study-language-${languageModule.languageCode}`;
+                            let moduleClass = "extension";
+                            try {
+                                const manifestPath = path.join(
+                                    modulesRoot,
+                                    entry,
+                                    "manifest.json",
+                                );
+                                const manifestRaw = await readFile(
+                                    manifestPath,
+                                    "utf8",
+                                );
+                                const manifest = JSON.parse(manifestRaw) as {
+                                    id?: string;
+                                    class?: string;
+                                };
+                                moduleId = manifest.id?.trim() || moduleId;
+                                moduleClass =
+                                    manifest.class?.trim() || moduleClass;
+                            } catch {
+                                // Missing or unreadable manifest — keep defaults.
+                            }
+                            this.registerLanguageModule(languageModule, {
+                                moduleId,
+                                moduleClass,
+                            });
                         }
-                        this.registerLanguageModule(languageModule, {
-                            moduleId,
-                            moduleClass,
-                        });
                     }
+                } catch {
+                    // Language module could not be loaded — skip silently.
                 }
-            } catch {
-                // Language module could not be loaded — skip silently.
-            }
-        }
+            }),
+        );
     }
 
     async bootstrapLanguageModules(
@@ -450,61 +472,70 @@ export class CoreStudyGateway {
             return;
         }
 
-        for (const entry of entries.sort()) {
-            const pkgPath = path.join(modulesRoot, entry, "package.json");
+        await Promise.all(
+            entries.sort().map(async (entry) => {
+                const pkgPath = path.join(modulesRoot, entry, "package.json");
 
-            let mod: Record<string, unknown>;
-            try {
-                const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as { main?: string };
-                if (!pkg.main) continue;
-                const entryPath = path.resolve(modulesRoot, entry, pkg.main);
-                mod = await import(entryPath);
-            } catch {
-                continue;
-            }
+                let mod: Record<string, unknown>;
+                try {
+                    const raw = await readFile(pkgPath, "utf8");
+                    const pkg = JSON.parse(raw) as { main?: string };
+                    if (!pkg.main) return;
+                    const entryPath = path.resolve(
+                        modulesRoot,
+                        entry,
+                        pkg.main,
+                    );
+                    mod = await import(entryPath);
+                } catch {
+                    return;
+                }
 
-            if (typeof mod.bootstrapLanguageModule !== "function") continue;
+                if (typeof mod.bootstrapLanguageModule !== "function") return;
 
-            const bootstrapFn = mod.bootstrapLanguageModule as (
-                ctx: LanguageModuleBootstrapCtx,
-            ) => Promise<void> | void;
+                const bootstrapFn = mod.bootstrapLanguageModule as (
+                    ctx: LanguageModuleBootstrapCtx,
+                ) => Promise<void> | void;
 
-            const moduleCtx: LanguageModuleBootstrapCtx = {
-                ...baseCtx,
-                gateway: this,
-                languageCode: entry,
-                moduleRoot: path.join(modulesRoot, entry),
-                registerChildRoute: (handler) => {
-                    baseCtx.registerChildRoute(async (req, res, url) => {
-                        const languageMeta =
-                            this.registeredLanguageModules.get(entry);
-                        if (languageMeta) {
-                            const isEnabled = this.isLanguageModuleEnabled(
-                                languageMeta.moduleId,
-                            );
-                            if (!isEnabled) {
-                                return false;
+                const moduleCtx: LanguageModuleBootstrapCtx = {
+                    ...baseCtx,
+                    gateway: this,
+                    languageCode: entry,
+                    moduleRoot: path.join(modulesRoot, entry),
+                    registerChildRoute: (handler) => {
+                        baseCtx.registerChildRoute(async (req, res, url) => {
+                            const languageMeta =
+                                this.registeredLanguageModules.get(entry);
+                            if (languageMeta) {
+                                const isEnabled = this.isLanguageModuleEnabled(
+                                    languageMeta.moduleId,
+                                );
+                                if (!isEnabled) {
+                                    return false;
+                                }
                             }
-                        }
-                        return handler(req, res, url);
-                    });
-                },
-            };
-
-            try {
-                await bootstrapFn(moduleCtx);
-            } catch (err) {
-                baseCtx.log?.(
-                    "error",
-                    `Study gateway: language module "${entry}" bootstrap failed — skipping.`,
-                    {
-                        component: "study-gateway",
-                        languageModule: entry,
-                        error: err instanceof Error ? err.message : String(err),
+                            return handler(req, res, url);
+                        });
                     },
-                );
-            }
-        }
+                };
+
+                try {
+                    await bootstrapFn(moduleCtx);
+                } catch (err) {
+                    baseCtx.log?.(
+                        "error",
+                        `Study gateway: language module "${entry}" bootstrap failed — skipping.`,
+                        {
+                            component: "study-gateway",
+                            languageModule: entry,
+                            error:
+                                err instanceof Error
+                                    ? err.message
+                                    : String(err),
+                        },
+                    );
+                }
+            }),
+        );
     }
 }

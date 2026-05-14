@@ -250,14 +250,14 @@ export async function updateNavbarAvatar() {
     avatarBtn.replaceChildren(initialsEl);
 }
 
-let _navbarPluginsLoaded = false;
-let _navbarPluginsPromise = null;
+let navbarPluginsLoaded = false;
+let navbarPluginsLoadPromise = null;
 
 async function loadNavbarPlugins() {
-    if (_navbarPluginsLoaded) return;
-    if (_navbarPluginsPromise) return _navbarPluginsPromise;
+    if (navbarPluginsLoaded) return;
+    if (navbarPluginsLoadPromise) return navbarPluginsLoadPromise;
     if (!localStorage.getItem("cognis_access_token")) return;
-    _navbarPluginsPromise = (async () => {
+    navbarPluginsLoadPromise = (async () => {
         try {
             const res = await apiFetch("/api/v1/ui/navbar-plugins");
             if (!res.ok) return;
@@ -270,18 +270,18 @@ async function loadNavbarPlugins() {
                         : null,
                 ),
             );
-            _navbarPluginsLoaded = true;
+            navbarPluginsLoaded = true;
         } catch {
             // navbar plugin loading is best-effort; layout continues without them
         } finally {
-            _navbarPluginsPromise = null;
+            navbarPluginsLoadPromise = null;
         }
     })();
-    return _navbarPluginsPromise;
+    return navbarPluginsLoadPromise;
 }
 
 window.addEventListener("cognis:navbar-plugins-refresh", () => {
-    _navbarPluginsLoaded = false;
+    navbarPluginsLoaded = false;
     loadNavbarPlugins().catch(() => {});
 });
 

@@ -33,6 +33,24 @@ Semua kunci i18n yang sesuai ditambahkan untuk empat bahasa yang didukung
 (de, en, id, ja): tiga kunci subjudul baru per bahasa pada file `strings.xml`
 global, dan lima kunci baru per bahasa pada file `strings.xml` gateway study.
 
+Semua operasi I/O sisi server yang berjalan secara berurutan dalam bootstrap
+Study Gateway diparalelkan untuk menghilangkan keterlambatan startup 2–5 detik
+yang memblokir Node.js dari menangani permintaan browser. Keempat fase
+penemuan dan bootstrap kini menjalankan pekerjaan per-entri secara bersamaan
+menggunakan `Promise.all`; dua fase independen (bootstrap adapter dan bootstrap
+modul bahasa) kini berjalan secara paralel satu sama lain.
+
+Semua pembacaan berkas dalam `LanguageLibraryStore.#loadDataFiles()`
+diparalelkan: semua berkas kelas karakter dibaca secara bersamaan, dan empat
+berkas lapisan data (alt-characters, definitions, words, sentences) dimuat
+dalam satu panggilan `Promise.all` alih-alih secara berurutan.
+
+Dua panggilan `scanManifestDir` saat startup server di `main.ts` diparalelkan.
+
+Direktori kode mati yang tidak digunakan `ja/library/` telah dihapus, yang
+definisi tipe dan re-ekspornya telah digantikan oleh `reuse/library-store.ts`
+bersama dan tidak diimpor dari mana pun.
+
 ## Komponen dan berkas yang diubah
 
 - Router dan pengujian SPA:

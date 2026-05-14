@@ -34,6 +34,25 @@ i18n-Schlüssel ergänzt: drei neue Untertitel-Schlüssel pro Sprache in den
 globalen `strings.xml`-Dateien sowie fünf neue Schlüssel pro Sprache in den
 Study-Gateway-`strings.xml`-Dateien.
 
+Alle sequenziellen server-seitigen E/A-Vorgänge im Study-Gateway-Bootstrap
+wurden parallelisiert, um eine 2–5 Sekunden dauernde Startverzögerung zu
+beseitigen, die Node.js daran hinderte, Browser-Anfragen zu verarbeiten.
+Die vier Entdeckungs- und Bootstrap-Phasen führen ihre Einzel-Aufgaben nun
+gleichzeitig mit `Promise.all` aus; die beiden unabhängigen Phasen (Adapter-
+Bootstrap und Sprachmodul-Bootstrap) laufen jetzt parallel zueinander.
+
+Alle Datei-Lesevorgänge in `LanguageLibraryStore.#loadDataFiles()` wurden
+parallelisiert: Alle Zeichenklassen-Dateien werden nun gleichzeitig gelesen,
+und die vier Daten-Layer-Dateien (alt-characters, definitions, words, sentences)
+werden in einem kombinierten `Promise.all`-Aufruf statt sequenziell geladen.
+
+Die beiden `scanManifestDir`-Aufrufe beim Server-Start in `main.ts` wurden
+parallelisiert.
+
+Das ungenutzte tote Codeverzeichnis `ja/library/` wurde entfernt, dessen
+Typdefinitionen und Re-Exporte durch das gemeinsame `reuse/library-store.ts`
+ersetzt wurden und von nirgendwo importiert wurden.
+
 ## Geänderte Komponenten und Dateien
 
 - Router und SPA-Tests:

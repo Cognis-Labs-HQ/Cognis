@@ -285,13 +285,51 @@ export class LanguageLibraryStore {
         const allCharacters: CharacterRecord[] = [];
         const allCharacterClasses: CharacterClassRecord[] = [];
 
-        for (const fileName of characterFiles) {
+        const loadJsonArray = async (filePath: string) => {
+            try {
+                const rawContent = await readFile(filePath, "utf8");
+                const parsedValue = JSON.parse(rawContent);
+                if (!Array.isArray(parsedValue)) {
+                    throw new Error(`Expected array in ${filePath}`);
+                }
+                return parsedValue;
+            } catch {
+                return [];
+            }
+        };
+
+        const [
+            characterFileContents,
+            altCharacters,
+            definitions,
+            words,
+            sentences,
+        ] = await Promise.all([
+            Promise.all(
+                characterFiles.map((fileName) =>
+                    readFile(path.join(characterDir, fileName), "utf8"),
+                ),
+            ),
+            loadJsonArray(
+                path.join(
+                    dataRoot,
+                    "alt-characters",
+                    `${this.#altCharactersFileName}.json`,
+                ),
+            ),
+            loadJsonArray(path.join(dataRoot, "definitions", "common.json")),
+            loadJsonArray(path.join(dataRoot, "words", "common.json")),
+            loadJsonArray(path.join(dataRoot, "sentences", "common.json")),
+        ]);
+
+        for (
+            let fileIndex = 0;
+            fileIndex < characterFiles.length;
+            fileIndex++
+        ) {
+            const fileName = characterFiles[fileIndex];
             const classId = fileName.replace(/\.json$/, "");
-            const rawContent = await readFile(
-                path.join(characterDir, fileName),
-                "utf8",
-            );
-            const fileRows = JSON.parse(rawContent);
+            const fileRows = JSON.parse(characterFileContents[fileIndex]);
             if (!Array.isArray(fileRows)) {
                 throw new Error(
                     `Invalid character file format for ${fileName}.`,
@@ -318,36 +356,6 @@ export class LanguageLibraryStore {
                 characterIds: classCharacterIds,
             });
         }
-
-        const loadJsonArray = async (filePath: string) => {
-            try {
-                const rawContent = await readFile(filePath, "utf8");
-                const parsedValue = JSON.parse(rawContent);
-                if (!Array.isArray(parsedValue)) {
-                    throw new Error(`Expected array in ${filePath}`);
-                }
-                return parsedValue;
-            } catch {
-                return [];
-            }
-        };
-
-        const altCharacters = await loadJsonArray(
-            path.join(
-                dataRoot,
-                "alt-characters",
-                `${this.#altCharactersFileName}.json`,
-            ),
-        );
-        const definitions = await loadJsonArray(
-            path.join(dataRoot, "definitions", "common.json"),
-        );
-        const words = await loadJsonArray(
-            path.join(dataRoot, "words", "common.json"),
-        );
-        const sentences = await loadJsonArray(
-            path.join(dataRoot, "sentences", "common.json"),
-        );
 
         return {
             characters: allCharacters,

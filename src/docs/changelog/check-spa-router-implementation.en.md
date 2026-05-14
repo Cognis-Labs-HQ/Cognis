@@ -28,9 +28,23 @@ label and render content. All of these are now resolved through the
 
 Fixed the English Alphabet study component's hardcoded page title in the same way.
 
-Added all corresponding i18n keys across the four supported languages (de, en,
-id, ja): three new subtitle keys per language in the global `strings.xml` files,
-and five new keys per language in the gateway study `strings.xml` files.
+Parallelized all sequential server-side I/O in the Study gateway bootstrap to
+eliminate a 2–5 second startup delay that was blocking Node.js from handling
+any browser requests until the full initialization completed. The four
+discovery and bootstrap phases now run their per-entry work concurrently using
+`Promise.all`, and the two independent phases (adapter bootstrap and language
+module bootstrap) now run in parallel with each other.
+
+Parallelized all file reads in `LanguageLibraryStore.#loadDataFiles()`: all
+character class files are now read simultaneously, and the four data layer files
+(alt-characters, definitions, words, sentences) are loaded in one combined
+`Promise.all` call instead of sequentially.
+
+Parallelized the two `scanManifestDir` calls at server startup in `main.ts`.
+
+Removed the unused dead-code `ja/library/` subtree whose type definitions and
+re-exports were superseded by the shared `reuse/library-store.ts` and not
+imported from anywhere.
 
 ## Changed components and files
 
