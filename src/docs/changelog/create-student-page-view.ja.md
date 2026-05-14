@@ -61,6 +61,7 @@
 
 - `src/ui/styles/reuse/layout.css` — `.workspace` から `flex: 1 0 auto` を削除してコンテンツのサイズに合わせるようにし、`.global-footer` に `margin: auto auto 0` を適用して flex カラム内の自動上マージンによりフッターをビューポート下端へ押し下げる；`.page-subnav` の背景を直接 `var(--nav-bg)`（`.global-navrow` と同じ）に変更し `backdrop-filter: blur(8px)` を追加して、下にコンテンツがスクロールされても常に完全不透明に保つ
 - `src/ui/styles/reuse/layout.css` と `src/ui/layouts/dashboard-layout.js` — サブナビゲーションの縦方向パディングを少し縮め、四辺すべての角丸を復元し、サブナビゲーションを持つページではスクロール開始後にメインナビ行をたたんでサブナビゲーションがグローバルトップバーへ直接つながるスクロール状態を追加
+- `src/ui/layouts/dashboard-layout.js`、`src/ui/styles/reuse/layout.css`、`src/gateways/study/ui/study.css`、および Study 子ページ用サブナビゲーション関連ファイル — Study のサブページでもグローバル navbar の Study 項目がアクティブのままになるようにし、ページ上部での primary navbar と Study サブナビゲーションの隙間や角丸の分断を解消し、言語切替ボタンはそのままに Study モジュールリンクだけをグローバル navbar と同じ見た目へ合わせた
 
 ## コミット
 

@@ -209,7 +209,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             const activeClass = pageUrl === currentPath ? " active" : "";
             return `
                 <li>
-                    <a class="study-subnav-link${activeClass}" href="${escapeHtml(pageUrl)}">
+                    <a class="study-subnav-link study-subnav-module-link${activeClass}" href="${escapeHtml(pageUrl)}">
                         ${escapeHtml(String(component?.label ?? pageUrl))}
                     </a>
                 </li>

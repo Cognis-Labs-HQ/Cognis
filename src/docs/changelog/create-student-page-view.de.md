@@ -61,6 +61,7 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 
 - `src/ui/styles/reuse/layout.css` — `flex: 1 0 auto` aus `.workspace` entfernt, damit der Bereich nur so groß wie sein Inhalt ist und nicht den Viewport auffüllt; `.global-footer` erhält `margin: auto auto 0`, um den Footer durch automatischen Oberseitenabstand im Flex-Column an den unteren Rand des Viewports zu schieben; Hintergrund von `.page-subnav` verwendet jetzt direkt `var(--nav-bg)` (wie `.global-navrow`) und erhält `backdrop-filter: blur(8px)`, damit die Leiste vollständig undurchsichtig bleibt, wenn Inhalte darunter durchscrollen
 - `src/ui/styles/reuse/layout.css` und `src/ui/layouts/dashboard-layout.js` — Vertikales Padding der Subnavigation reduziert, Rundungen an allen Kanten wiederhergestellt und einen Scroll-Zustand für Seiten mit Subnavigation ergänzt, bei dem sich die primäre Navigationszeile nach dem Scrollbeginn einklappt, sodass die Subnavigation direkt an die globale Topbar anschließt
+- `src/ui/layouts/dashboard-layout.js`, `src/ui/styles/reuse/layout.css`, `src/gateways/study/ui/study.css` und die Study-Unterdateien für die Kindseiten-Navigation — Das globale Study-Navigationselement bleibt jetzt auch auf Study-Unterseiten aktiv, die Lücke beziehungsweise Radius-Trennung zwischen primärer Navbar und Study-Subnavigation im Ausgangszustand wurde entfernt, und die Study-Modul-Links wurden an die Darstellung der globalen Navbar angepasst, während die Sprachumschalter unverändert bleiben
 
 ## Commits
 

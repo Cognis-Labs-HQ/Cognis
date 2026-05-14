@@ -41,28 +41,33 @@
     list-style: none;
 }
 
-.study-subnav-link {
+.study-subnav-link,
+.study-subnav-module-link {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--text-muted);
+    color: var(--text);
     text-decoration: none;
-    padding: 6px 14px;
-    border-radius: 20px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    transition: background 0.12s ease;
+    opacity: 0.92;
+    padding: 6px 2px;
+    border-bottom: 2px solid transparent;
+    transition:
+        opacity 0.12s ease,
+        border-color 0.12s ease;
     white-space: nowrap;
 }
 
-.study-subnav-link:hover {
-    background: var(--surface-soft);
+.study-subnav-link:hover,
+.study-subnav-module-link:hover {
     color: var(--text);
+    opacity: 1;
+    border-bottom-color: var(--accent-2);
 }
 
-.study-subnav-link.active {
-    background: var(--accent, #4a90e2);
-    border-color: var(--accent, #4a90e2);
-    color: #fff;
+.study-subnav-link.active,
+.study-subnav-module-link.active {
+    color: var(--text);
+    opacity: 1;
+    border-bottom-color: var(--accent-2);
 }
 
 .study-subnav-language-option,

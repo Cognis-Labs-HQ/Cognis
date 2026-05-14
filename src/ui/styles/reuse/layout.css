@@ -104,6 +104,18 @@
         border-width 0.2s ease;
 }
 
+.app-shell--has-subnav .global-navrow {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.app-shell--has-subnav .page-subnav {
+    margin-top: 0;
+    border-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
 .app-shell--subnav-priority .global-navrow {
     max-height: 0;
     padding-top: 0;
@@ -115,10 +127,8 @@
 }
 
 .app-shell--subnav-priority .page-subnav {
-    margin-top: 0;
-    border-top: 0;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
 }
 
 .page-subnav-list {

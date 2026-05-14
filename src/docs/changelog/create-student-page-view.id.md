@@ -61,6 +61,7 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 
 - `src/ui/styles/reuse/layout.css` — Menghapus `flex: 1 0 auto` dari `.workspace` agar ukurannya menyesuaikan konten dan tidak memenuhi viewport; `.global-footer` diberi `margin: auto auto 0` agar footer terdorong ke dasar viewport melalui margin atas otomatis dalam kolom flex; latar belakang `.page-subnav` kini menggunakan `var(--nav-bg)` secara langsung (sama seperti `.global-navrow`) dan ditambahkan `backdrop-filter: blur(8px)` agar bilah tetap sepenuhnya buram saat konten di bawahnya digulir
 - `src/ui/styles/reuse/layout.css` dan `src/ui/layouts/dashboard-layout.js` — Mengurangi padding vertikal subnavigasi, mengembalikan sudut membulat di semua sisi, dan menambahkan status gulir untuk halaman yang memiliki subnavigasi sehingga bar navigasi utama melipat setelah pengguna mulai menggulir dan subnavigasi tersambung langsung ke topbar global
+- `src/ui/layouts/dashboard-layout.js`, `src/ui/styles/reuse/layout.css`, `src/gateways/study/ui/study.css`, dan berkas subnavigasi halaman anak Study — Menjaga item navbar global Study tetap aktif pada subhalaman Study, menghapus celah serta pemisahan radius antara navbar utama dan subnavigasi Study saat berada di bagian atas halaman, dan menyamakan gaya tautan modul Study dengan navbar global sambil membiarkan tombol pemilih bahasa tetap seperti semula
 
 ## Commit
 

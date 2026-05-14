@@ -211,6 +211,15 @@
     gap: 6px;
 }
 
+.study-subnav-module-link {
+    color: var(--text);
+    text-decoration: none;
+    opacity: 0.92;
+    padding: 6px 2px;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+}
+
 .study-subnav-modules {
     display: flex;
     align-items: center;
@@ -232,7 +241,13 @@
     padding: 8px;
 }
 
-.study-subnav-module-link.active,
+.study-subnav-module-link:hover,
+.study-subnav-module-link.active {
+    color: var(--text);
+    opacity: 1;
+    border-bottom-color: var(--accent-2);
+}
+
 .study-subnav-language-option.active,
 .study-subnav-settings-link.active {
     border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);

@@ -44,11 +44,24 @@ function getDisplayName() {
 function applyActiveNavigation() {
     const currentPath = window.location.pathname;
     document.querySelectorAll(".topnav a").forEach((link) => {
-        const isActive = link.getAttribute("href") === currentPath;
+        const isActive = isNavigationLinkActive(
+            currentPath,
+            link.getAttribute("href"),
+        );
         link.classList.toggle("active", isActive);
         if (isActive) link.setAttribute("aria-current", "page");
         else link.removeAttribute("aria-current");
     });
+}
+
+function isNavigationLinkActive(currentPath, href) {
+    const normalizedHref = String(href ?? "").trim();
+    if (!normalizedHref || normalizedHref === "#") return false;
+    if (normalizedHref === "/") return currentPath === "/";
+    return (
+        currentPath === normalizedHref ||
+        currentPath.startsWith(`${normalizedHref}/`)
+    );
 }
 
 async function bindThemeToggle({ usePreferenceApi = true } = {}) {
@@ -290,8 +303,10 @@ function applyCompactNav(root) {
         if (drawerNav) {
             drawerNav.innerHTML = topnav.innerHTML;
             drawerNav.querySelectorAll("a").forEach((link) => {
-                const isActive =
-                    link.getAttribute("href") === window.location.pathname;
+                const isActive = isNavigationLinkActive(
+                    window.location.pathname,
+                    link.getAttribute("href"),
+                );
                 link.classList.toggle("active", isActive);
                 if (isActive) link.setAttribute("aria-current", "page");
                 else link.removeAttribute("aria-current");
@@ -346,6 +361,7 @@ function syncHeaderScrollState(root) {
     const shouldPrioritizeSubnav =
         hasSubNavigation && hasPrimaryNavigation && window.scrollY > 12;
 
+    shell.classList.toggle("app-shell--has-subnav", hasSubNavigation);
     shell.classList.toggle(
         "app-shell--subnav-priority",
         shouldPrioritizeSubnav,
