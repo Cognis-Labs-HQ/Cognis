@@ -712,6 +712,48 @@ test("GET /api/v1/notifications/broadcasts/active returns role-targeted broadcas
     assert.equal(body.data[0].id, "broadcast-1");
 });
 
+test("GET /api/v1/notifications/broadcasts/:id/states returns broadcast acknowledgement state rows for admin", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    let requestedBroadcastId = "";
+    const route = createNotificationRoutes(gateway, {
+        async getUserNotifPrefs() {
+            return [];
+        },
+        async saveUserNotifPrefs() {},
+        async listBroadcastStates(broadcastId) {
+            requestedBroadcastId = broadcastId;
+            return [
+                {
+                    accountId: "alice",
+                    broadcastId,
+                    acknowledgedAt: 1_700_000_000_000,
+                    dismissedAt: null,
+                },
+            ];
+        },
+    });
+    const adminToken = issueAccessToken("admin-user", "admin", 60);
+    const response = makeResponse();
+
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${adminToken}` },
+            [Symbol.asyncIterator]: async function* () {},
+        } as any,
+        response,
+        new URL(
+            "http://localhost/api/v1/notifications/broadcasts/broadcast-9/states",
+        ),
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(requestedBroadcastId, "broadcast-9");
+    const body = JSON.parse(response.payload);
+    assert.equal(body.data[0].accountId, "alice");
+});
+
 test("POST /api/v1/notifications/broadcasts/:id/acknowledge marks broadcast state", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);

@@ -46,6 +46,7 @@ export interface NotificationPreferenceRouteStore {
         accountId: string,
         broadcastId: string,
     ): Promise<void>;
+    listBroadcastStates?(broadcastId: string): Promise<unknown[]>;
 }
 
 const VALID_BROADCAST_MODES = new Set<NotificationBroadcastDisplayMode>([
@@ -323,6 +324,24 @@ export function createNotificationRoutes(
                     },
                 }),
             );
+            return true;
+        }
+
+        const broadcastStatesMatch = url.pathname.match(
+            /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/states$/,
+        );
+        if (broadcastStatesMatch && req.method === "GET") {
+            if (!requireAuth(req, res, "admin")) return true;
+            if (!notifStore?.listBroadcastStates) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: [] }));
+                return true;
+            }
+            const broadcastStates = await notifStore.listBroadcastStates(
+                decodeURIComponent(broadcastStatesMatch[1]),
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: broadcastStates }));
             return true;
         }
 

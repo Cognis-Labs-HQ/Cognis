@@ -47,6 +47,13 @@ export interface NotificationBroadcastInput {
     createdBy: string;
 }
 
+export interface NotificationBroadcastState {
+    accountId: string;
+    broadcastId: string;
+    dismissedAt: number | null;
+    acknowledgedAt: number | null;
+}
+
 export class DbNotificationStore implements NotificationConfigStore {
     constructor(private readonly db: DbExecutor) {}
 
@@ -247,6 +254,38 @@ export class DbNotificationStore implements NotificationConfigStore {
         return (result.rows ?? []).map((row) =>
             this.parseBroadcastRow(row as Record<string, unknown>),
         );
+    }
+
+    async listBroadcastStates(
+        broadcastId: string,
+    ): Promise<NotificationBroadcastState[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "user_notification_broadcast_states",
+            columns: [
+                "account_id",
+                "broadcast_id",
+                "dismissed_at",
+                "acknowledged_at",
+            ],
+            where: [{ column: "broadcast_id", value: broadcastId }],
+            orderBy: [{ column: "account_id", direction: "ASC" }],
+        });
+        return (result.rows ?? []).map((row) => {
+            const typedRow = row as Record<string, unknown>;
+            return {
+                accountId: String(typedRow.account_id ?? ""),
+                broadcastId: String(typedRow.broadcast_id ?? ""),
+                dismissedAt:
+                    typedRow.dismissed_at == null
+                        ? null
+                        : Number(typedRow.dismissed_at),
+                acknowledgedAt:
+                    typedRow.acknowledged_at == null
+                        ? null
+                        : Number(typedRow.acknowledged_at),
+            };
+        });
     }
 
     async setBroadcastEnabled(id: string, enabled: boolean): Promise<void> {

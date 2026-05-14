@@ -240,6 +240,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/notify/admin-section.js",
         stringsBaseUrl: "/static/gateways/notify/languages",
     });
+    ctx.uiRegistry?.registerAdminSection({
+        id: "broadcasts",
+        label: "Broadcasts",
+        scriptUrl: "/static/gateways/notify/broadcast-admin-section.js",
+        stringsBaseUrl: "/static/gateways/notify/languages",
+    });
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/notify/broadcast-navbar-plugin.js",
     });
