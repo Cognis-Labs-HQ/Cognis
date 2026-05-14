@@ -31,7 +31,9 @@
 - `src/ui/reuse/page-composer.js` — サイドツールバーと分離した Composer の新規サブナビゲーションスロットを追加
 - `src/ui/layouts/dashboard-layout.js` — レイアウトの `subNavigation` スロット配線を追加
 - `src/ui/public/templates/dashboard-layout.html` — グローバルナビゲーション直下にサブナビゲーション行プレースホルダーを追加
-- `src/ui/public/templates/dashboard-layout.html` — サブナビゲーションのプレースホルダーは、コンテンツがない場合に DOM 要素を生成しなくなった。`<section class="page-subnav">` はページがサブナビゲーションを提供するときのみ挿入される
+- `src/modules/study/languages/ja/components/hiragana-alphabet/ui/index.html` — グローバルスタイルシート（`page-builder.css`、`reuse/page-sections.css`、`study.css`）と完全な PWA メタタグを追加し、ハードリロード時にも正しく表示されるようにした
+- `src/modules/study/languages/ja/components/library/ui/index.html` — 同上：グローバルスタイルシートと PWA ボイラープレートを追加；`lang` 属性を `en` から `ja` に修正
+- `src/modules/study/languages/en/components/alphabet/ui/index.html` — 同上：グローバルスタイルシートと PWA ボイラープレートを追加
 - `src/ui/layouts/dashboard-layout.js` — 新規描画とシェル再利用の両パスで `hidden` 属性の切り替えではなく `.page-subnav` 要素の追加・削除を行うよう変更。ツールバー・フッター・ヘッダーと同じパターンに統一
 - `src/ui/styles/reuse/layout.css` — `.site-header` を `position: sticky; top: 0; z-index: 1200` に変更し、ヘッダー全体（トップバー・ナブロー・サブナビゲーション）がスクロール時に即座に上部に固定されるようにした。`.global-navrow` とレスポンシブブレークポイントから冗長な `position: sticky`、`top`、`z-index` の宣言を削除
 - `src/ui/languages/*/strings.xml` — `ui.reuse.role_*` キーを追加；`ui.app.settings.study.*` を復元（全4言語）

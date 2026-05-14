@@ -31,7 +31,9 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 - `src/ui/reuse/page-composer.js` — Neuer Composer-Slot für eine Sub-Navigation, getrennt von der seitlichen Toolbar
 - `src/ui/layouts/dashboard-layout.js` — `subNavigation`-Slot in das Layout verdrahtet
 - `src/ui/public/templates/dashboard-layout.html` — Platzhalter für die Sub-Navigationszeile unter der globalen Navigation ergänzt
-- `src/ui/public/templates/dashboard-layout.html` — Der Platzhalter für die Unternavigation erzeugt kein DOM-Element mehr, wenn kein Inhalt vorhanden ist; `<section class="page-subnav">` wird nur eingefügt, wenn eine Seite Unternavigationsinhalte bereitstellt
+- `src/modules/study/languages/ja/components/hiragana-alphabet/ui/index.html` — Globale Stylesheets (`page-builder.css`, `reuse/page-sections.css`, `study.css`) und vollständige PWA-Meta-Elemente ergänzt, damit die Seite auch bei Hartneulade korrekt dargestellt wird
+- `src/modules/study/languages/ja/components/library/ui/index.html` — Dasselbe: globale Stylesheets und PWA-Boilerplate hinzugefügt; `lang`-Attribut von `en` auf `ja` korrigiert
+- `src/modules/study/languages/en/components/alphabet/ui/index.html` — Dasselbe: globale Stylesheets und PWA-Boilerplate hinzugefügt
 - `src/ui/layouts/dashboard-layout.js` — Frische Darstellung und Shell-Wiederverwendung fügen das `.page-subnav`-Element jetzt hinzu oder entfernen es, anstatt ein `hidden`-Attribut umzuschalten – entsprechend dem Muster von Toolbar, Footer und Header
 - `src/ui/styles/reuse/layout.css` — `.site-header` ist jetzt `position: sticky; top: 0; z-index: 1200`, sodass der gesamte Header (Topbar + Navrow + Unternavigation) beim Scrollen sofort oben fixiert wird; überflüssige `position: sticky`-, `top`- und `z-index`-Deklarationen in `.global-navrow` und responsiven Breakpoints entfernt
 - `src/ui/languages/*/strings.xml` — `ui.reuse.role_*`-Schlüssel hinzugefügt; `ui.app.settings.study.*` wiederhergestellt (alle 4 Sprachen)

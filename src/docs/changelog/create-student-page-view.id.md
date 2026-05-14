@@ -31,7 +31,9 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 - `src/ui/reuse/page-composer.js` — Menambahkan slot sub-navigasi composer yang terpisah dari toolbar samping
 - `src/ui/layouts/dashboard-layout.js` — Menambahkan wiring slot layout `subNavigation`
 - `src/ui/public/templates/dashboard-layout.html` — Menambahkan placeholder baris sub-navigasi di bawah navigasi global
-- `src/ui/public/templates/dashboard-layout.html` — Placeholder sub-navigasi kini tidak menghasilkan elemen DOM saat tidak ada konten; `<section class="page-subnav">` hanya disisipkan ketika halaman menyediakan konten sub-navigasi
+- `src/modules/study/languages/ja/components/hiragana-alphabet/ui/index.html` — Menambahkan stylesheet global (`page-builder.css`, `reuse/page-sections.css`, `study.css`) dan boilerplate meta PWA lengkap agar halaman tampil benar saat hard refresh
+- `src/modules/study/languages/ja/components/library/ui/index.html` — Sama: stylesheet global dan boilerplate PWA ditambahkan; atribut `lang` dikoreksi dari `en` ke `ja`
+- `src/modules/study/languages/en/components/alphabet/ui/index.html` — Sama: stylesheet global dan boilerplate PWA ditambahkan
 - `src/ui/layouts/dashboard-layout.js` — Render pertama dan reuse shell kini menambahkan atau menghapus elemen `.page-subnav` alih-alih mengubah atribut `hidden`, mengikuti pola yang sama dengan toolbar, footer, dan header
 - `src/ui/styles/reuse/layout.css` — `.site-header` sekarang menggunakan `position: sticky; top: 0; z-index: 1200` sehingga seluruh header (topbar + navrow + sub-navigasi) langsung menempel di atas saat digulir; deklarasi `position: sticky`, `top`, dan `z-index` yang berlebihan dihapus dari `.global-navrow` dan breakpoint responsif
 - `src/ui/languages/*/strings.xml` — Kunci `ui.reuse.role_*` ditambahkan; `ui.app.settings.study.*` dipulihkan (semua 4 bahasa)
