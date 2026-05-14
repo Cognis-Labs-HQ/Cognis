@@ -234,8 +234,8 @@ export function createNotificationRoutes(
             const body = await readJson(req);
             const title = String(body.title ?? "").trim();
             const message = String(body.message ?? "").trim();
-            // Keep accepting legacy snake_case payload keys for backwards
-            // compatibility with older admin clients that still submit them.
+            // This endpoint existed before the current admin UI rewrite, so we
+            // still accept legacy snake_case payload keys from older clients.
             const displayMode = String(
                 body.displayMode ?? body.display_mode ?? "",
             ).trim() as NotificationBroadcastDisplayMode;

@@ -45,8 +45,10 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     function renderNotificationsDebugContent() {
         const userOptions = users
             .map(
-                (userRow) =>
-                    `<option value="${escapeHtml(userRow.username)}">${escapeHtml(userRow.username)}</option>`,
+                (userRow) => {
+                    const escapedUsername = escapeHtml(userRow.username);
+                    return `<option value="${escapedUsername}">${escapedUsername}</option>`;
+                },
             )
             .join("");
 

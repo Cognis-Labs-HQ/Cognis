@@ -261,9 +261,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         }
 
         const stateByAccountId = new Map(
-            stateRows.map((stateRow) => [
-                String(stateRow.accountId ?? ""),
-                stateRow,
+            stateRows.map((stateRecord) => [
+                String(stateRecord.accountId ?? ""),
+                stateRecord,
             ]),
         );
 

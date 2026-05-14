@@ -37,7 +37,7 @@
   <string name="gateway.notify.admin.broadcast_table_roles">Roles</string>
   <string name="gateway.notify.admin.broadcast_table_schedule">Schedule</string>
   <string name="gateway.notify.admin.broadcast_table_mode">Mode</string>
-  <string name="gateway.notify.admin.broadcast_table_ack">Ack Required</string>
+  <string name="gateway.notify.admin.broadcast_table_ack">Acknowledgement Required</string>
   <string name="gateway.notify.admin.broadcast_table_status">Status</string>
   <string name="gateway.notify.admin.broadcast_table_details">Details</string>
   <string name="gateway.notify.admin.broadcast_ack_no_targets">No matching users for the selected roles.</string>
