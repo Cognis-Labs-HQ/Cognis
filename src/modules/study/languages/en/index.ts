@@ -14,6 +14,7 @@ import {
 
 const MODULE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
+const ALPHABET_PAGE_URL = "/study/alphabet";
 const ALPHABET_COMPONENT_STATIC_BASE =
     "/static/modules/study/languages/en/components/alphabet/ui";
 
@@ -21,7 +22,7 @@ const CHILD_COMPONENTS: LanguageChildComponent[] = [
     {
         id: "alphabet",
         label: "Alphabet",
-        pageUrl: "/study/alphabet",
+        pageUrl: ALPHABET_PAGE_URL,
         scriptUrl: `${ALPHABET_COMPONENT_STATIC_BASE}/app.js`,
         stylesheets: [`${ALPHABET_COMPONENT_STATIC_BASE}/alphabet.css`],
         order: 0,
@@ -32,7 +33,7 @@ class EnglishLanguageModule implements LanguageModule {
     readonly languageCode = "en";
     readonly languageName = "English";
     readonly languageFlag = "🇬🇧";
-    readonly version = "1.0.2";
+    readonly version = "1.0.3";
 
     listChildComponents(): LanguageChildComponent[] {
         return CHILD_COMPONENTS;
@@ -46,7 +47,7 @@ function createAlphabetPageRoute() {
         url: URL,
     ): Promise<boolean> => {
         if (req.method && req.method !== "GET") return false;
-        if (url.pathname !== "/study/alphabet") return false;
+        if (url.pathname !== ALPHABET_PAGE_URL) return false;
         if (!getCookieSession(req)) {
             res.writeHead(302, { location: "/login" });
             res.end();
@@ -75,6 +76,10 @@ export async function bootstrapLanguageModule(
     ctx: LanguageModuleBootstrapCtx,
 ): Promise<void> {
     ctx.registerChildRoute(createAlphabetPageRoute());
+    ctx.registerStaticDir(
+        "modules/study/languages/reuse",
+        path.join(MODULE_ROOT, "..", "reuse"),
+    );
     ctx.registerStaticDir(
         "modules/study/languages/en/components/alphabet/ui",
         path.join(MODULE_ROOT, "components", "alphabet", "ui"),

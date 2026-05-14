@@ -45,5 +45,5 @@
 | コンポーネント | パス                              | バージョン |
 | -------------- | --------------------------------- | ---------- |
 | サンプル分析   | `src/modules/sample-analytics/`   | `0.1.0`    |
-| Cognis 日本語  | `src/modules/study/languages/ja/` | `1.1.6`    |
-| Cognis 英語    | `src/modules/study/languages/en/` | `1.0.2`    |
+| Cognis 日本語  | `src/modules/study/languages/ja/` | `1.1.7`    |
+| Cognis 英語    | `src/modules/study/languages/en/` | `1.0.3`    |

@@ -4,7 +4,7 @@ import { createPageComposer } from "/static/reuse/page-composer.js";
 import {
     loadStudySubNavigationModel,
     renderStudySubNavigation,
-} from "../../../../reuse/study-sub-navigation.js";
+} from "/static/modules/study/languages/reuse/study-sub-navigation.js";
 
 const ENGLISH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 

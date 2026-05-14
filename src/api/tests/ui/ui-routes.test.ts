@@ -628,6 +628,39 @@ test("GET /static/modules/study/languages/ja/components/hiragana-alphabet/ui/app
     );
 });
 
+test("GET /static/modules/study/languages/reuse/study-sub-navigation.js serves shared Study language assets", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    const studyLanguageReuseDir = path.resolve(
+        process.cwd(),
+        "src",
+        "modules",
+        "study",
+        "languages",
+        "reuse",
+    );
+    uiRegistry.registerModuleStaticDir(
+        "study/languages/reuse",
+        studyLanguageReuseDir,
+    );
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL(
+            "http://localhost/static/modules/study/languages/reuse/study-sub-navigation.js",
+        ),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    assert.equal(
+        recorder.headers["content-type"],
+        "text/javascript; charset=utf-8",
+    );
+});
+
 test("GET /static/modules/unknown/file.js returns 404 for unregistered module prefix", async () => {
     const uiRegistry = new StaticUIRegistry();
     const route = createUiRoutes(undefined, uiRegistry);

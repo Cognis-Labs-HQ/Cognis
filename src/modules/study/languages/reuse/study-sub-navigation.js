@@ -64,6 +64,40 @@ const SUB_NAV_CACHE = {
     modulesByLanguage: new Map(),
 };
 
+function resolveDefaultChildPageUrl(modules) {
+    const firstModulePageUrl = (modules ?? [])
+        .map((component) => String(component?.pageUrl ?? "").trim())
+        .find(Boolean);
+    return firstModulePageUrl || "/study";
+}
+
+/**
+ * Loads the shared Study child-page sub-navigation model for a language module
+ * page.
+ *
+ * Public exports:
+ *   loadStudySubNavigationModel — loads the active learning languages,
+ *   resolves display labels, selects the active language, and fetches child
+ *   component links for the active and switchable Study languages.
+ *   renderStudySubNavigation — renders the shared Study child-page
+ *   sub-navigation HTML string from the loaded model.
+ *
+ * Usage:
+ *   const model = await loadStudySubNavigationModel({
+ *     fallbackLanguageCode: 'ja',
+ *   });
+ *
+ * @param {{ fallbackLanguageCode?: string }} options - Fallback language code
+ * used when the current user has no saved Study language preferences and to
+ * mark the current child page's language as active.
+ * @returns {Promise<{
+ *   selectedLanguageCode: string | undefined,
+ *   modules: Array<object>,
+ *   learningLanguages: string[],
+ *   languageCatalogByCode: Map<string, { code: string, flag: string, name: string }>,
+ *   languagePageUrlsByCode: Map<string, string>
+ * }>} Model data for shared Study child-page sub-navigation rendering.
+ */
 export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
     const [registeredLanguagesRaw, learningLanguagesRaw] = await Promise.all([
         SUB_NAV_CACHE.registeredLanguages ?? loadRegisteredLanguages(),
@@ -110,23 +144,63 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
         activeLanguageCodes[0] ||
         fallbackLanguageCode;
 
-    const modulesForSelectedLanguagePromise =
-        SUB_NAV_CACHE.modulesByLanguage.get(selectedLanguageCode) ??
-        loadLanguageModules(selectedLanguageCode);
-    SUB_NAV_CACHE.modulesByLanguage.set(
-        selectedLanguageCode,
-        modulesForSelectedLanguagePromise,
+    const modulesByLanguage = new Map();
+    await Promise.all(
+        activeLanguageCodes.map(async (languageCode) => {
+            const modulesForLanguagePromise =
+                SUB_NAV_CACHE.modulesByLanguage.get(languageCode) ??
+                loadLanguageModules(languageCode);
+            SUB_NAV_CACHE.modulesByLanguage.set(
+                languageCode,
+                modulesForLanguagePromise,
+            );
+            modulesByLanguage.set(
+                languageCode,
+                await modulesForLanguagePromise,
+            );
+        }),
     );
-    const modules = await modulesForSelectedLanguagePromise;
+
+    const modules = modulesByLanguage.get(selectedLanguageCode) ?? [];
+    const languagePageUrlsByCode = new Map(
+        activeLanguageCodes.map((languageCode) => [
+            languageCode,
+            resolveDefaultChildPageUrl(modulesByLanguage.get(languageCode)),
+        ]),
+    );
 
     return {
         selectedLanguageCode,
         modules,
         learningLanguages: activeLanguageCodes,
         languageCatalogByCode,
+        languagePageUrlsByCode,
     };
 }
 
+/**
+ * Renders the shared Study child-page sub-navigation HTML.
+ *
+ * Usage:
+ *   const subNavigationHtml = renderStudySubNavigation({
+ *     model,
+ *     currentPath: window.location.pathname,
+ *     i18n,
+ *   });
+ *
+ * @param {{
+ *   model: {
+ *     selectedLanguageCode: string | undefined,
+ *     modules: Array<object>,
+ *     learningLanguages: string[],
+ *     languageCatalogByCode: Map<string, { code: string, flag: string, name: string }>,
+ *     languagePageUrlsByCode: Map<string, string>
+ *   },
+ *   currentPath: string,
+ *   i18n: { t: (key: string) => string }
+ * }} options - Render context for the shared Study child-page sub-navigation.
+ * @returns {string} HTML string for the Study child-page sub-navigation.
+ */
 export function renderStudySubNavigation({ model, currentPath, i18n }) {
     const moduleLinks = (model.modules ?? [])
         .map((component) => {
@@ -152,7 +226,8 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             };
             const activeClass =
                 languageCode === model.selectedLanguageCode ? " active" : "";
-            const languageHubUrl = "/study";
+            const languageHubUrl =
+                model.languagePageUrlsByCode?.get(languageCode) || "/study";
             return `
                 <li>
                     <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(languageHubUrl)}">

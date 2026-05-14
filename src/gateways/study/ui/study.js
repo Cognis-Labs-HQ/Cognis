@@ -296,12 +296,14 @@ async function mountHub(
     }
 
     function buildHubUrl(languageCode) {
-        void languageCode;
-        return "/study";
+        const modules = languageModulesMap.get(languageCode) ?? [];
+        const firstModulePageUrl = modules
+            .map((component) => String(component?.pageUrl ?? "").trim())
+            .find(Boolean);
+        return firstModulePageUrl || "/study";
     }
 
-    function buildSettingsUrl(languageCode) {
-        void languageCode;
+    function buildSettingsUrl() {
         return "/study/settings";
     }
 
@@ -325,9 +327,7 @@ async function mountHub(
         const activeLanguageLinks = learningLanguages
             .map((languageCode) => {
                 const language = getLanguage(languageCode);
-                const href = isSettingsPath
-                    ? buildSettingsUrl(languageCode)
-                    : buildHubUrl(languageCode);
+                const href = buildHubUrl(languageCode);
                 const activeClass =
                     languageCode === selectedLanguageCode ? " active" : "";
                 return `
@@ -342,7 +342,7 @@ async function mountHub(
             .join("");
 
         const settingsActiveClass = isSettingsPath ? " active" : "";
-        const settingsUrl = buildSettingsUrl(selectedLanguageCode);
+        const settingsUrl = buildSettingsUrl();
 
         return `
             <div class="study-page-subnav">
@@ -573,12 +573,7 @@ async function mountHub(
                         },
                     );
                     if (!response.ok) throw new Error("save_failed");
-                    const targetLanguage = updatedLearningLanguages.includes(
-                        selectedLanguageCode,
-                    )
-                        ? selectedLanguageCode
-                        : updatedLearningLanguages[0];
-                    navigateTo(buildSettingsUrl(targetLanguage));
+                    navigateTo(buildSettingsUrl());
                 } catch {
                     showToast(i18n.t("ui.reuse.save_failed"), {
                         variant: "error",

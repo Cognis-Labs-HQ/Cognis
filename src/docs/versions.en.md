@@ -52,7 +52,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
 | Registration          | `src/gateways/registration/` | `1.1.3` |
 | Logging               | `src/gateways/logging/`      | `1.4.0` |
-| Study                 | `src/gateways/study/`        | `1.5.1` |
+| Study                 | `src/gateways/study/`        | `1.5.2` |
 
 ## Core contracts
 
@@ -71,5 +71,5 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component        | Path                              | Version |
 | ---------------- | --------------------------------- | ------- |
 | Sample Analytics | `src/modules/sample-analytics/`   | `0.1.0` |
-| Cognis Japanese  | `src/modules/study/languages/ja/` | `1.1.6` |
-| Cognis English   | `src/modules/study/languages/en/` | `1.0.2` |
+| Cognis Japanese  | `src/modules/study/languages/ja/` | `1.1.7` |
+| Cognis English   | `src/modules/study/languages/en/` | `1.0.3` |

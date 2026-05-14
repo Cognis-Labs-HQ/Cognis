@@ -20,6 +20,8 @@ import {
 
 const MODULE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
+const HIRAGANA_PAGE_URL = "/study/hiragana";
+const LIBRARY_PAGE_URL = "/study/library";
 const HIRAGANA_COMPONENT_STATIC_BASE =
     "/static/modules/study/languages/ja/components/hiragana-alphabet/ui";
 const LIBRARY_COMPONENT_STATIC_BASE =
@@ -29,7 +31,7 @@ const CHILD_COMPONENTS: LanguageChildComponent[] = [
     {
         id: "hiragana-alphabet",
         label: "Hiragana Alphabet",
-        pageUrl: "/study/hiragana",
+        pageUrl: HIRAGANA_PAGE_URL,
         scriptUrl: `${HIRAGANA_COMPONENT_STATIC_BASE}/app.js`,
         stylesheets: [`${HIRAGANA_COMPONENT_STATIC_BASE}/hiragana.css`],
         order: 0,
@@ -37,7 +39,7 @@ const CHILD_COMPONENTS: LanguageChildComponent[] = [
     {
         id: "library",
         label: "Library",
-        pageUrl: "/study/library",
+        pageUrl: LIBRARY_PAGE_URL,
         scriptUrl: `${LIBRARY_COMPONENT_STATIC_BASE}/app.js`,
         stylesheets: [`${LIBRARY_COMPONENT_STATIC_BASE}/library.css`],
         minRole: "admin",
@@ -51,7 +53,7 @@ class JapaneseLanguageModule implements LanguageModule {
     readonly languageCode = "ja";
     readonly languageName = "日本語";
     readonly languageFlag = "🇯🇵";
-    readonly version = "1.1.6";
+    readonly version = "1.1.7";
 
     listChildComponents(): LanguageChildComponent[] {
         return CHILD_COMPONENTS;
@@ -92,7 +94,7 @@ function createHiraganaPageRoute() {
         url: URL,
     ): Promise<boolean> => {
         if (req.method && req.method !== "GET") return false;
-        if (url.pathname !== "/study/hiragana") return false;
+        if (url.pathname !== HIRAGANA_PAGE_URL) return false;
         if (!getCookieSession(req)) {
             res.writeHead(302, { location: "/login" });
             res.end();
@@ -120,7 +122,7 @@ function createLibraryPageRoute() {
         url: URL,
     ): Promise<boolean> => {
         if (req.method && req.method !== "GET") return false;
-        if (url.pathname !== "/study/library") return false;
+        if (url.pathname !== LIBRARY_PAGE_URL) return false;
         const session = getCookieSession(req);
         if (!session) {
             res.writeHead(302, { location: "/login" });
@@ -318,6 +320,10 @@ export async function bootstrapLanguageModule(
     ctx.registerChildRoute(createLibraryPageRoute());
     ctx.registerChildRoute(createLibraryApiRoute());
 
+    ctx.registerStaticDir(
+        "modules/study/languages/reuse",
+        path.join(MODULE_ROOT, "..", "reuse"),
+    );
     ctx.registerStaticDir(
         "modules/study/languages/ja/components/hiragana-alphabet/ui",
         path.join(MODULE_ROOT, "components", "hiragana-alphabet", "ui"),
