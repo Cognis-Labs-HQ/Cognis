@@ -83,7 +83,7 @@ export async function mount(root) {
                         (component) => `
                     <li>
                         <a
-                            class="study-subnav-link${component.pageUrl === "/study/hiragana" ? " study-subnav-link--active" : ""}"
+                            class="study-subnav-link${component.pageUrl === "/study/hiragana" ? " active" : ""}"
                             href="${escapeHtml(component.pageUrl)}"
                         >${escapeHtml(component.label)}</a>
                     </li>

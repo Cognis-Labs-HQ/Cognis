@@ -25,7 +25,7 @@
     white-space: nowrap;
 }
 
-.study-subnav-link--active {
+.study-subnav-link.active {
     background: var(--accent, #4a90e2);
     border-color: var(--accent, #4a90e2);
     color: #fff;

@@ -57,7 +57,7 @@ export async function mount(root, { signal } = {}) {
                         (component) => `
                     <li>
                         <a
-                            class="study-subnav-link${component.pageUrl === "/study/library" ? " study-subnav-link--active" : ""}"
+                            class="study-subnav-link${component.pageUrl === "/study/library" ? " active" : ""}"
                             href="${escapeHtml(component.pageUrl)}"
                         >${escapeHtml(component.label)}</a>
                     </li>
