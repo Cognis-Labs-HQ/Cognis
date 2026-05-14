@@ -176,9 +176,17 @@ export async function mountStudyLibraryPage(root, { signal, languageCode }) {
 
                     async function fetchLayerRows() {
                         const layerName = selectedLayer();
-                        const languageQuery = selectedLanguageCode
-                            ? `?language=${encodeURIComponent(selectedLanguageCode)}`
-                            : "";
+                        // Apply a language filter only for the definitions layer,
+                        // where records carry an explicit `language` field
+                        // describing the language they are written in. Other
+                        // layers (characters, words, etc.) do not need this
+                        // filter. `selectedLanguageCode` comes from the
+                        // sub-navigation model loaded at page init — not from
+                        // any URL parameter.
+                        const languageQuery =
+                            layerName === "definitions" && selectedLanguageCode
+                                ? `?language=${encodeURIComponent(selectedLanguageCode)}`
+                                : "";
                         const response = await apiFetch(
                             `/api/v1/study/languages/${encodeURIComponent(languageCode)}/library/${encodeURIComponent(layerName)}${languageQuery}`,
                         );

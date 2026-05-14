@@ -156,6 +156,11 @@ export class LanguageLibraryStore {
                     const normalizedExpectedLanguage = String(
                         expectedValue ?? "",
                     ).trim();
+                    // Records that do not carry an explicit `language` field
+                    // (e.g. characters, words) are treated as belonging to this
+                    // module's own language code rather than unfiltered, so
+                    // callers that send ?language=<code> only see records that
+                    // belong to the requested language.
                     const normalizedActualLanguage = String(
                         actualValue ?? this.#languageCode,
                     ).trim();
