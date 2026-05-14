@@ -16,7 +16,11 @@ import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { navigateTo } from "/static/reuse/app-router.js";
+import {
+    navigateTo,
+    invalidateStudyChildComponentCache,
+} from "/static/reuse/app-router.js";
+import { clearStudySubNavCache } from "/static/modules/study/languages/reuse/study-sub-navigation.js";
 import { openPopup } from "/static/reuse/popup.js";
 
 const SETTINGS_GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -192,6 +196,7 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
         i18n,
         pageContext: {
             title: i18n.t("gateway.study.page_title"),
+            subtitle: i18n.t("gateway.study.page_subtitle"),
         },
         toolbar: [],
     });
@@ -233,6 +238,8 @@ async function mountWelcome(root, { i18n, registeredLanguages }) {
                         },
                     );
                     if (!response.ok) throw new Error("save_failed");
+                    clearStudySubNavCache();
+                    invalidateStudyChildComponentCache();
                     navigateTo("/study");
                 } catch {
                     showToast(i18n.t("ui.reuse.save_failed"), {
@@ -536,6 +543,9 @@ async function mountHub(
         i18n,
         pageContext: {
             title: i18n.t("gateway.study.page_title"),
+            subtitle: isSettingsPath
+                ? i18n.t("gateway.study.settings_subtitle")
+                : i18n.t("gateway.study.page_subtitle"),
         },
         toolbar: [],
         subNavigation: [
@@ -602,6 +612,8 @@ async function mountHub(
                         },
                     );
                     if (!response.ok) throw new Error("save_failed");
+                    clearStudySubNavCache();
+                    invalidateStudyChildComponentCache();
                     navigateTo(buildSettingsUrl());
                 } catch {
                     showToast(i18n.t("ui.reuse.save_failed"), {

@@ -40,7 +40,9 @@ function renderAlphabetGrid(characters) {
 }
 
 export async function mount(root) {
-    const i18n = await createI18n();
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/gateways/study/languages"],
+    });
     applyDocumentTitle(i18n, "ui.shared.brand.name");
 
     const currentPath = window.location.pathname;
@@ -82,6 +84,7 @@ export async function mount(root) {
         i18n,
         pageContext: {
             title: "English Alphabet",
+            subtitle: i18n.t("gateway.study.alphabet_subtitle"),
         },
         toolbar: [],
         subNavigation: [

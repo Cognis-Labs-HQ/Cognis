@@ -10,6 +10,8 @@
  *                         Call once after the dashboard shell is rendered.
  *   navigateTo(path)    — navigate to an in-app route programmatically.
  *   getCurrentBase()    — returns the base path of the currently mounted page.
+ *   invalidateStudyChildComponentCache() — clears the cached Study child
+ *                         component list; call after learning-language changes.
  *
  * Usage:
  *   import { initRouter } from '../reuse/app-router.js';
@@ -322,6 +324,18 @@ export async function navigateTo(path) {
     }
     history.pushState({ routerPage: path }, "", path);
     await loadRoute(path);
+}
+
+/**
+ * Invalidates the in-memory Study child component cache so the next navigation
+ * to a Study child route fetches a fresh list from the API. Call this after
+ * the user changes their learning-language preferences.
+ *
+ * @returns {void}
+ */
+export function invalidateStudyChildComponentCache() {
+    _studyChildComponentsCache = null;
+    _studyChildComponentsCacheExpiresAt = 0;
 }
 
 export function getCurrentBase() {

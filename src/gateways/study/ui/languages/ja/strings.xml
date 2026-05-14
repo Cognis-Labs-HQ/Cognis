@@ -3,6 +3,11 @@
   <string name="gateway.study.picker.select">言語を選択してください：</string>
   <string name="gateway.study.picker.start">学習開始</string>
   <string name="gateway.study.page_title">学習</string>
+  <string name="gateway.study.page_subtitle">言語学習ダッシュボード</string>
+  <string name="gateway.study.settings_subtitle">学習中の言語を管理する</string>
+  <string name="gateway.study.alphabet_subtitle">英語アルファベットの文字を閲覧する</string>
+  <string name="gateway.study.library_subtitle">言語ライブラリの記録を管理する</string>
+  <string name="gateway.study.classroom_subtitle">教室を表示・管理する</string>
   <string name="gateway.study.welcome_heading">Cognisへようこそ</string>
   <string name="gateway.study.welcome_tagline">学習を始める準備はできましたか？</string>
   <string name="gateway.study.welcome_prompt">学びたい言語を選んでください</string>

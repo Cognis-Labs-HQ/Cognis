@@ -3,6 +3,11 @@
   <string name="gateway.study.picker.select">Select a language:</string>
   <string name="gateway.study.picker.start">Study</string>
   <string name="gateway.study.page_title">Study</string>
+  <string name="gateway.study.page_subtitle">Your language learning dashboard</string>
+  <string name="gateway.study.settings_subtitle">Manage your active study languages</string>
+  <string name="gateway.study.alphabet_subtitle">Browse the letters of the English alphabet</string>
+  <string name="gateway.study.library_subtitle">Manage language library records</string>
+  <string name="gateway.study.classroom_subtitle">View and manage your classroom</string>
   <string name="gateway.study.welcome_heading">Welcome to Cognis</string>
   <string name="gateway.study.welcome_tagline">Ready to start learning?</string>
   <string name="gateway.study.welcome_prompt">Choose the languages you want to study</string>

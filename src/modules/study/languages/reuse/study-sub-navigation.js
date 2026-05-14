@@ -64,6 +64,19 @@ const SUB_NAV_CACHE = {
     modulesByLanguage: new Map(),
 };
 
+/**
+ * Clears the in-memory sub-navigation cache. Call this after any operation
+ * that changes the user's learning language preferences so that the next
+ * sub-navigation render fetches fresh data.
+ *
+ * @returns {void}
+ */
+export function clearStudySubNavCache() {
+    SUB_NAV_CACHE.registeredLanguages = null;
+    SUB_NAV_CACHE.learningLanguages = null;
+    SUB_NAV_CACHE.modulesByLanguage = new Map();
+}
+
 function resolveDefaultChildPageUrl(modules) {
     const firstModulePageUrl = (modules ?? [])
         .map((component) => String(component?.pageUrl ?? "").trim())
@@ -92,6 +105,8 @@ function buildLibraryUrl() {
  *   component links for the active and switchable Study languages.
  *   renderStudySubNavigation — renders the shared Study child-page
  *   sub-navigation HTML string from the loaded model.
+ *   clearStudySubNavCache — clears the in-memory cache; call after the user
+ *   changes their learning-language preferences so the next render is fresh.
  *
  * Usage:
  *   const model = await loadStudySubNavigationModel({
@@ -216,8 +231,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
     const selectedLanguageCode = model.selectedLanguageCode ?? "";
     const adminLibraryUrl = buildLibraryUrl();
     const hasLibraryModule = (model.modules ?? []).some(
-        (component) =>
-            String(component?.pageUrl ?? "").trim() === "/study/library",
+        (component) => String(component?.id ?? "").trim() === "library",
     );
     const moduleLinks = (model.modules ?? [])
         .map((component) => {

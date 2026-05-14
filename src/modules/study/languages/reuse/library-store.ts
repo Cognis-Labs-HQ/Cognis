@@ -1,3 +1,33 @@
+/**
+ * LanguageLibraryStore — server-side in-memory store for a language module's
+ * library data. Loads layered JSON data files from the module's `data/`
+ * directory and exposes typed query, add, update, and remove operations.
+ *
+ * Exports:
+ *   LanguageLibraryStore — class that owns the full lifecycle of one language
+ *     module's library: load, validate, query, and mutate records.
+ *   LibraryLayerName — union type of the five supported layer names.
+ *   CharacterRecord, AltCharacterRecord, DefinitionRecord, WordRecord,
+ *   SentenceRecord — typed record shapes for each layer.
+ *   CharacterClassRecord — typed shape for character-class index records.
+ *   LanguageLibrarySnapshot — the full immutable snapshot shape.
+ *   LanguageLibraryStoreOptions — constructor options interface.
+ *
+ * Usage:
+ *   const store = new LanguageLibraryStore({
+ *     moduleRoot: '/path/to/languages/en',
+ *     languageCode: 'en',
+ *   });
+ *   await store.initialise();
+ *   const chars = store.queryLayer('characters', { characterClass: 'latin' });
+ *
+ * @remarks
+ * Each layer is stored in `data/<layer>.json` (or `data/alt-characters/<file>.json`
+ * for alt_characters). The store validates that all record IDs are unique within
+ * their layer and checks referential integrity (word → definition, sentence → word).
+ * Mutations are written back to the corresponding JSON file immediately.
+ */
+
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 

@@ -85,6 +85,8 @@ Every UI page must be assembled exclusively through `createPageComposer` from `s
 
 Bypassing the composer is always wrong, even when the page appears to work. Doing so silently breaks theming, accessibility, user layout preferences, and any future infrastructure built into the composer. All of these are non-negotiable requirements for every page in the application.
 
+Every page must pass a `pageContext` object to `createPageComposer` with both a `title` and a `subtitle`. The title is the page name; the subtitle is a concise description of the page's purpose that appears in the global topbar below the title. Both fields must be resolved through i18n keys — never hardcode user-facing text. A page without a subtitle is non-compliant.
+
 ### UI page navigation must use the app router
 
 All navigation between dashboard-shell pages uses the client-side router in `src/ui/reuse/app-router.js`. The router intercepts clicks on internal navigation links, uses `history.pushState()` to update the URL, and mounts the new page's content in place via each page's `mount()` function — no full browser reload.

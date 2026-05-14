@@ -1,3 +1,26 @@
+/**
+ * Shared Study Classroom page renderer for language module child components.
+ *
+ * Public exports:
+ *   mountStudyClassroomPage — mounts the classroom view for a specific
+ *   language module, loading classroom snapshots and wiring up seat
+ *   assignment, student removal, and leave-classroom interactions.
+ *
+ * Usage:
+ *   import { mountStudyClassroomPage } from
+ *     '/static/modules/study/languages/reuse/classroom-page.js';
+ *
+ *   export async function mount(root, { signal } = {}) {
+ *     await mountStudyClassroomPage(root, { signal, languageCode: 'en' });
+ *   }
+ *
+ * @param {HTMLElement} root - The root element passed to the page mount function.
+ * @param {{ signal?: AbortSignal, languageCode: string }} options
+ *   languageCode: BCP 47 code of the language whose classroom this page shows.
+ *   signal: optional AbortSignal from the SPA router for event cleanup.
+ * @returns {Promise<void>}
+ */
+
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -49,7 +72,9 @@ function getRoleFlags() {
 }
 
 export async function mountStudyClassroomPage(root, { signal, languageCode }) {
-    const i18n = await createI18n();
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/gateways/study/languages"],
+    });
     applyDocumentTitle(i18n, "gateway.study.classroom_page_title");
 
     const currentPath = window.location.pathname;
@@ -635,6 +660,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
         i18n,
         pageContext: {
             title: i18n.t("gateway.study.classroom_page_title"),
+            subtitle: i18n.t("gateway.study.classroom_subtitle"),
         },
         toolbar: [],
         subNavigation: [

@@ -58,7 +58,9 @@ function renderRows(tableBodyEl, rows) {
 }
 
 export async function mountStudyLibraryPage(root, { signal, languageCode }) {
-    const i18n = await createI18n();
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/gateways/study/languages"],
+    });
     applyDocumentTitle(i18n, "ui.shared.brand.name");
 
     const currentPath = window.location.pathname;
@@ -360,7 +362,8 @@ export async function mountStudyLibraryPage(root, { signal, languageCode }) {
         preferenceKey: `study-${languageCode}-library-layout`,
         i18n,
         pageContext: {
-            title: "Study Library",
+            title: i18n.t("gateway.study.library_label"),
+            subtitle: i18n.t("gateway.study.library_subtitle"),
         },
         toolbar: [],
         subNavigation: [
