@@ -152,13 +152,11 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
 
     const languageOptions = (model.learningLanguages ?? [])
         .map((languageCode) => {
-            const language =
-                model.languageCatalogByCode.get(languageCode) ??
-                ({
-                    code: languageCode,
-                    flag: "",
-                    name: resolveLanguageLabel(languageCode),
-                });
+            const language = model.languageCatalogByCode.get(languageCode) ?? {
+                code: languageCode,
+                flag: "",
+                name: resolveLanguageLabel(languageCode),
+            };
             const activeClass =
                 languageCode === model.selectedLanguageCode ? " active" : "";
             const languageHubUrl = `/study?language=${encodeURIComponent(languageCode)}`;
@@ -174,7 +172,8 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         .join("");
 
     const settingsUrl = `/study/settings?language=${encodeURIComponent(model.selectedLanguageCode)}`;
-    const settingsActiveClass = currentPath === "/study/settings" ? " active" : "";
+    const settingsActiveClass =
+        currentPath === "/study/settings" ? " active" : "";
 
     return `
         <div class="study-page-subnav">
