@@ -19,6 +19,12 @@ const MODULES_ROOT =
     path.resolve(process.cwd(), "src", "modules");
 const LANGUAGE_MODULES_ROOT = path.resolve(MODULES_ROOT, "study", "languages");
 
+/**
+ * Resolves module enabled state from DB values with class-aware fallback.
+ *
+ * When no explicit persisted state exists, core modules default to enabled,
+ * while extension modules default to disabled.
+ */
 function parseModuleEnabledValue(
     enabledValue: unknown,
     moduleClass: string,
@@ -242,6 +248,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         }
     };
 
+    /**
+     * Resolves a language code to module metadata, then evaluates enablement
+     * through the module-state-aware checker.
+     */
     const isLanguageEnabled = async (
         languageCode: string,
     ): Promise<boolean> => {

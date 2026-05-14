@@ -156,6 +156,13 @@ export class CoreStudyGateway {
         this.registeredAdapters.set(adapter.adapterId, adapter);
     }
 
+    /**
+     * Registers a language module and optional module-runtime metadata.
+     *
+     * moduleId/moduleClass are used by Study bootstrap to map language entries
+     * to module enablement state; defaults map to extension-style language
+     * modules when metadata is not provided.
+     */
     registerLanguageModule(
         module: LanguageModule,
         options?: { moduleId?: string; moduleClass?: string },
