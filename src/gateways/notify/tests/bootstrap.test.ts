@@ -227,7 +227,9 @@ test("notify gateway bootstrap registers broadcasts admin section scriptUrl that
     });
 
     const sections = uiRegistry.listAdminSections();
-    const broadcastsSection = sections.find((section) => section.id === "broadcasts");
+    const broadcastsSection = sections.find(
+        (section) => section.id === "broadcasts",
+    );
     assert.ok(
         broadcastsSection,
         "notify gateway must register a 'broadcasts' admin section",
