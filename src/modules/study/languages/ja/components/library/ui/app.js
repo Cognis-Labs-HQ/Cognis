@@ -82,20 +82,23 @@ export async function mount(root, { signal } = {}) {
                             <label>
                                 ${escapeHtml(i18n.t("gateway.study.library_language_filter"))}
                                 <select id="study-library-language">
-                                    ${availableLanguageCodes.map((languageCode) => {
-                                        const languageEntry =
-                                            subNavigationModel.languageCatalogByCode?.get(
-                                                languageCode,
-                                            );
-                                        const selectedAttribute =
-                                            languageCode === selectedLanguageCode
-                                                ? " selected"
-                                                : "";
-                                        const label = languageEntry
-                                            ? `${languageEntry.flag ? `${languageEntry.flag} ` : ""}${languageEntry.name}`
-                                            : languageCode;
-                                        return `<option value="${escapeHtml(languageCode)}"${selectedAttribute}>${escapeHtml(label)}</option>`;
-                                    }).join("")}
+                                    ${availableLanguageCodes
+                                        .map((languageCode) => {
+                                            const languageEntry =
+                                                subNavigationModel.languageCatalogByCode?.get(
+                                                    languageCode,
+                                                );
+                                            const selectedAttribute =
+                                                languageCode ===
+                                                selectedLanguageCode
+                                                    ? " selected"
+                                                    : "";
+                                            const label = languageEntry
+                                                ? `${languageEntry.flag ? `${languageEntry.flag} ` : ""}${languageEntry.name}`
+                                                : languageCode;
+                                            return `<option value="${escapeHtml(languageCode)}"${selectedAttribute}>${escapeHtml(label)}</option>`;
+                                        })
+                                        .join("")}
                                 </select>
                             </label>
                             <label>

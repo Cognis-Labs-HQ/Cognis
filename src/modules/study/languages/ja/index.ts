@@ -53,7 +53,9 @@ const CHILD_COMPONENTS: LanguageChildComponent[] = [
         label: "Classroom",
         pageUrl: CLASSROOM_PAGE_URL,
         scriptUrl: `${CLASSROOM_COMPONENT_STATIC_BASE}/app.js`,
-        stylesheets: ["/static/modules/study/languages/reuse/classroom-page.css"],
+        stylesheets: [
+            "/static/modules/study/languages/reuse/classroom-page.css",
+        ],
         order: 90,
     },
 ];

@@ -393,7 +393,10 @@ export function createClassesRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/study/classrooms" && req.method === "GET") {
+        if (
+            url.pathname === "/api/v1/study/classrooms" &&
+            req.method === "GET"
+        ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const languageFilter =
@@ -405,9 +408,7 @@ export function createClassesRoutes(
                               claims.sub,
                               languageFilter,
                           )
-                        : (
-                              await store.getEnrolledClasses(claims.sub)
-                          )
+                        : (await store.getEnrolledClasses(claims.sub))
                               .filter(
                                   (classRow) =>
                                       !languageFilter ||
@@ -464,9 +465,7 @@ export function createClassesRoutes(
             const studentLimitRaw = body.studentLimit;
             const seatAssignmentsRaw = body.seatAssignments;
             const studentLimit =
-                studentLimitRaw == null
-                    ? undefined
-                    : Number(studentLimitRaw);
+                studentLimitRaw == null ? undefined : Number(studentLimitRaw);
             if (
                 studentLimit != null &&
                 (!Number.isInteger(studentLimit) ||
@@ -506,14 +505,15 @@ export function createClassesRoutes(
                           ]),
                       );
             try {
-                const classroomState = await store.updateClassroomStateForTeacher(
-                    classId,
-                    claims.sub,
-                    {
-                        studentLimit,
-                        seatAssignments,
-                    },
-                );
+                const classroomState =
+                    await store.updateClassroomStateForTeacher(
+                        classId,
+                        claims.sub,
+                        {
+                            studentLimit,
+                            seatAssignments,
+                        },
+                    );
                 jsonOk(res, classroomState);
             } catch (err) {
                 if (err instanceof Error && err.message === "not_authorized") {
@@ -560,7 +560,9 @@ export function createClassesRoutes(
             const claims = requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(classroomStudentMatch[1]);
-            const studentAccountId = decodeURIComponent(classroomStudentMatch[2]);
+            const studentAccountId = decodeURIComponent(
+                classroomStudentMatch[2],
+            );
             try {
                 await store.removeClassMemberByTeacher(
                     classId,

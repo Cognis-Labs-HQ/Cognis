@@ -342,15 +342,16 @@ async function mountHub(
                 `;
             })
             .join("");
-        const libraryLink = isAdminScope() && !hasLibraryModule
-            ? `
+        const libraryLink =
+            isAdminScope() && !hasLibraryModule
+                ? `
                 <li>
                     <a class="study-subnav-module-link${window.location.pathname === "/study/library" ? " active" : ""}" href="${escapeHtml(buildLibraryUrl(selectedLanguageCode))}">
                         ${escapeHtml(i18n.t("gateway.study.library_label"))}
                     </a>
                 </li>
             `
-            : "";
+                : "";
 
         const activeLanguageLinks = learningLanguages
             .map((languageCode) => {

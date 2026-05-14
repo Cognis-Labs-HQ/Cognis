@@ -153,7 +153,9 @@ export class JapaneseLibraryStore {
                     const normalizedActualLanguage = String(
                         actualValue ?? "ja",
                     ).trim();
-                    return normalizedActualLanguage === normalizedExpectedLanguage;
+                    return (
+                        normalizedActualLanguage === normalizedExpectedLanguage
+                    );
                 }
                 return actualValue === expectedValue;
             }),

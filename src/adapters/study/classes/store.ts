@@ -594,7 +594,12 @@ export class DbClassesStore {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "classroom_state",
-            columns: ["class_id", "student_limit", "seat_assignments", "updated_at"],
+            columns: [
+                "class_id",
+                "student_limit",
+                "seat_assignments",
+                "updated_at",
+            ],
             where: [{ column: "class_id", value: classId }],
         });
         const row = result.rows?.[0] as Record<string, unknown> | undefined;
@@ -643,7 +648,9 @@ export class DbClassesStore {
         }
         const normalizedSeatAssignments =
             options.seatAssignments != null
-                ? this.parseSeatAssignments(JSON.stringify(options.seatAssignments))
+                ? this.parseSeatAssignments(
+                      JSON.stringify(options.seatAssignments),
+                  )
                 : currentState.seatAssignments;
         const updatedAt = new Date().toISOString();
         await this.db.executeCommand({

@@ -53,4 +53,3 @@ Modul bahasa berada di `src/modules/study/languages/<code>/`. Komponen anak bera
 - Data Library bersifat holistik dan sadar bahasa: bahasa dimodelkan sebagai field data pada record (misalnya `language`), bukan pemisahan rute kaku per bahasa.
 - Setiap modul bahasa sebaiknya mendaftarkan rute child component **Classroom** agar guru dan siswa bisa mengakses tampilan kelas per bahasa.
 - Halaman Classroom harus menyertakan pemilih kelas, visualisasi kapasitas kursi, dan perilaku berbasis peran (kontrol manajemen guru vs tampilan siswa yang mostly-read dengan fitur keluar kelas).
-

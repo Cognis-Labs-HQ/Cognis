@@ -220,7 +220,8 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
     const selectedLanguageCode = model.selectedLanguageCode ?? "";
     const adminLibraryUrl = buildLibraryUrl(selectedLanguageCode);
     const hasLibraryModule = (model.modules ?? []).some(
-        (component) => String(component?.pageUrl ?? "").trim() === "/study/library",
+        (component) =>
+            String(component?.pageUrl ?? "").trim() === "/study/library",
     );
     const moduleLinks = (model.modules ?? [])
         .map((component) => {
@@ -236,15 +237,16 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             `;
         })
         .join("");
-    const libraryLink = isAdminScope() && !hasLibraryModule
-        ? `
+    const libraryLink =
+        isAdminScope() && !hasLibraryModule
+            ? `
             <li>
                 <a class="study-subnav-link study-subnav-module-link${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(adminLibraryUrl)}">
                     ${escapeHtml(i18n.t("gateway.study.library_label"))}
                 </a>
             </li>
         `
-        : "";
+            : "";
 
     const languageOptions = (model.learningLanguages ?? [])
         .map((languageCode) => {

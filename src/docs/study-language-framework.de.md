@@ -53,4 +53,3 @@ Sprachmodule leben unter `src/modules/study/languages/<code>/`. Kindkomponenten 
 - Bibliotheksdaten sind ganzheitlich und sprachbewusst: Die Sprache ist ein Datenfeld am Datensatz (z. B. `language`) und keine harte Routenaufteilung pro Sprache.
 - Jedes Sprachmodul sollte eine **Klassenzimmer**-Child-Component-Route registrieren, damit Lehrkräfte und Lernende sprachbezogene Klassenansichten nutzen können.
 - Klassenzimmerseiten müssen eine Klassenauswahl, eine Visualisierung der Sitzplatzkapazität und rollenbasiertes Verhalten enthalten (Lehrkraft-Verwaltung vs. schülerseitige Leseansicht mit Verlassen-Funktion).
-
