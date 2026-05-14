@@ -68,3 +68,5 @@
 コミット履歴はブランチ `copilot/create-student-page-view` を参照してください。
 
 - `src/adapters/study/classes/{store.ts,routes.ts,package.json}`、`src/modules/study/languages/{en,ja}/index.ts`、各言語の新しい classroom UI、Study の reuse アセット、Study Library の UI/store、Study gateway の言語文字列、ドキュメント、Copilot 指示 — 言語ごとの classroom ページ（座席可視化と教師/学習者の役割差分）を追加し、classroom レイアウト/メンバー管理 API を追加、選択言語に依存せず admin へ Library を Study サブナビに表示して言語フィルターを引き継ぐよう改善し、Library/Classroom のドキュメントと指針を拡張
+
+- 追加調整: Library の追加言語セレクターを削除し（現在選択中の Study 言語コンテキストを使用）、Study 子ページの言語ナビで English が消える問題を修正し、Classroom を Study サブナビ末尾へ移動し、"No classes available" の陰付き空状態を追加し、グローバルナビ下でプロフィールドロップダウンが切れる問題を修正しました。

@@ -134,4 +134,9 @@
 
 .study-classroom-empty {
     color: var(--text-muted);
+    margin: 0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface-2) 85%, var(--accent) 15%);
 }

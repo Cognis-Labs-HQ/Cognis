@@ -65,6 +65,8 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/ui/layouts/dashboard-layout.js`, `src/ui/styles/reuse/layout.css`, `src/gateways/study/ui/study.css`, and Study child-page sub-navigation files — Kept the global Study navbar item active on Study subpages, removed the resting gap/radius break between the primary navbar and Study sub-navigation, and restyled Study module links to match the global navbar while leaving the language-switcher buttons unchanged
 - `src/adapters/study/classes/{store.ts,routes.ts,package.json}`, `src/modules/study/languages/{en,ja}/index.ts`, new language classroom UI files, Study language reuse assets, Study Library UI/store files, Study gateway language string files, docs, and Copilot instructions — Added per-language classroom pages with classroom seat visualization and teacher/student role behavior, introduced classroom layout/member management APIs, made admin Library access visible from Study sub-navigation regardless of selected language with language filter propagation, and expanded Study Library/Classroom documentation and guidance
 
+- Follow-up polish: removed the extra Library language selector (Library now uses the currently selected Study language context), fixed missing English in Study child-page language options, moved Classroom to the end of Study sub-navigation ordering, added a shaded "No classes available" classroom empty state, and fixed profile dropdown clipping below the global navbar.
+
 ## Commits
 
 See branch `copilot/create-student-page-view` for commit history.

@@ -65,6 +65,8 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 
 - `src/adapters/study/classes/{store.ts,routes.ts,package.json}`, `src/modules/study/languages/{en,ja}/index.ts`, neue Sprach-Klassenzimmer-UI-Dateien, Study-Reuse-Assets, Study-Library-UI/Store-Dateien, Study-Gateway-Sprachdateien, Dokumentation und Copilot-Anweisungen — Sprachspezifische Klassenzimmerseiten mit Sitzvisualisierung und rollenbasiertem Verhalten für Lehrkraft/Lernende ergänzt, Classroom-Layout-/Mitglieder-APIs hinzugefügt, den Library-Zugriff für Admins in der Study-Subnavigation unabhängig von der ausgewählten Sprache sichtbar gemacht (inkl. Sprachfilter-Übergabe) und Library-/Classroom-Dokumentation erweitert
 
+- Nachbesserung: zusätzlichen Sprachselektor in der Bibliothek entfernt (Library nutzt jetzt den aktuell gewählten Study-Sprachkontext), fehlende Englisch-Option in der Study-Sprachnavigation korrigiert, Classroom ans Ende der Study-Subnavigation verschoben, schattierten "Keine Klassen verfügbar"-Leerzustand ergänzt und Abschneiden des Profil-Dropdowns unter der globalen Navbar behoben.
+
 ## Commits
 
 Siehe Branch `copilot/create-student-page-view` für den Commit-Verlauf.

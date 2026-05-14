@@ -138,10 +138,12 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
     const learningLanguages = learningLanguagesRaw.filter((languageCode) =>
         Boolean(String(languageCode ?? "").trim()),
     );
-    const activeLanguageCodes =
-        learningLanguages.length > 0
-            ? learningLanguages
-            : [fallbackLanguageCode].filter(Boolean);
+    const activeLanguageCodes = Array.from(
+        new Set([
+            ...learningLanguages,
+            ...[fallbackLanguageCode].filter(Boolean),
+        ]),
+    );
     for (const languageCode of activeLanguageCodes) {
         if (!languageCatalogByCode.has(languageCode)) {
             languageCatalogByCode.set(languageCode, {
@@ -153,9 +155,7 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
     }
 
     const selectedLanguageCode =
-        (fallbackLanguageCode &&
-            activeLanguageCodes.includes(fallbackLanguageCode) &&
-            fallbackLanguageCode) ||
+        (fallbackLanguageCode && String(fallbackLanguageCode).trim()) ||
         activeLanguageCodes[0] ||
         fallbackLanguageCode;
 

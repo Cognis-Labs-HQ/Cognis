@@ -76,7 +76,7 @@
     border-bottom-right-radius: 22px;
     background: var(--nav-bg);
     max-height: 120px;
-    overflow: hidden;
+    overflow: visible;
     transform-origin: top center;
     transition:
         max-height 0.2s ease,

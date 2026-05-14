@@ -68,3 +68,5 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 Lihat branch `copilot/create-student-page-view` untuk riwayat commit.
 
 - `src/adapters/study/classes/{store.ts,routes.ts,package.json}`, `src/modules/study/languages/{en,ja}/index.ts`, berkas UI classroom bahasa baru, aset reuse Study, berkas UI/store Library Study, berkas bahasa gateway Study, dokumentasi, dan instruksi Copilot — Menambahkan halaman classroom per bahasa dengan visualisasi kursi dan perilaku berbasis peran guru/siswa, menambahkan API pengelolaan layout/anggota classroom, menampilkan akses Library admin pada subnavigasi Study tanpa tergantung bahasa terpilih (dengan propagasi filter bahasa), serta memperluas dokumentasi dan panduan Library/Classroom
+
+- Penyempurnaan lanjutan: menghapus selector bahasa tambahan di Library (Library kini mengikuti konteks bahasa Study yang sedang dipilih), memperbaiki opsi English yang hilang di navigasi bahasa halaman child Study, memindahkan Classroom ke urutan paling akhir subnavigasi Study, menambahkan empty state "No classes available" dengan latar berbayang, dan memperbaiki dropdown profil yang terpotong di bawah global navbar.

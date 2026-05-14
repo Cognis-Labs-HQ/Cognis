@@ -56,7 +56,7 @@ const CHILD_COMPONENTS: LanguageChildComponent[] = [
         stylesheets: [
             "/static/modules/study/languages/reuse/classroom-page.css",
         ],
-        order: 90,
+        order: 999,
     },
 ];
 
@@ -66,7 +66,7 @@ class JapaneseLanguageModule implements LanguageModule {
     readonly languageCode = "ja";
     readonly languageName = "日本語";
     readonly languageFlag = "🇯🇵";
-    readonly version = "1.2.0";
+    readonly version = "1.2.1";
 
     listChildComponents(): LanguageChildComponent[] {
         return CHILD_COMPONENTS;
