@@ -13,6 +13,7 @@ const BAR_CONTAINER_ID = "notify-broadcast-bar";
 let currentBroadcastId = null;
 let isPopupOpen = false;
 let pollTimer = null;
+let stopPollingForAuthFailure = false;
 
 function injectStyles() {
     if (document.querySelector(`link[href="${CSS_HREF}"]`)) return;
@@ -40,12 +41,20 @@ function navigateAfterClose(redirectUrl, i18n) {
 
 async function fetchActiveBroadcasts() {
     try {
-        const response = await apiFetch("/api/v1/notifications/broadcasts/active");
-        if (!response.ok) return [];
+        const response = await apiFetch(
+            "/api/v1/notifications/broadcasts/active",
+        );
+        if (response.status === 401) {
+            return { broadcasts: [], unauthorized: true };
+        }
+        if (!response.ok) return { broadcasts: [], unauthorized: false };
         const payload = await response.json().catch(() => null);
-        return Array.isArray(payload?.data) ? payload.data : [];
+        return {
+            broadcasts: Array.isArray(payload?.data) ? payload.data : [],
+            unauthorized: false,
+        };
     } catch {
-        return [];
+        return { broadcasts: [], unauthorized: false };
     }
 }
 
@@ -88,21 +97,27 @@ function renderBroadcastBar(broadcast, i18n) {
           <button type="button" class="notify-broadcast-ack btn-animated">${
               broadcast.requireAcknowledgement
                   ? i18n.t("gateway.notify.broadcast.acknowledge")
-                  : i18n.t("ui.reuse.close")
+                  : i18n.t("ui.reuse.dismiss")
           }</button>
           ${
               broadcast.requireAcknowledgement
-                  ? ""
-                  : `<button type="button" class="notify-broadcast-dismiss">${i18n.t("ui.reuse.dismiss")}</button>`
+                  ? `<button type="button" class="notify-broadcast-close">${i18n.t("ui.reuse.close")}</button>`
+                  : ""
           }
         </div>
       </section>
     `;
 
-    const acknowledgeButton = barContainer.querySelector(".notify-broadcast-ack");
+    const acknowledgeButton = barContainer.querySelector(
+        ".notify-broadcast-ack",
+    );
     acknowledgeButton?.addEventListener("click", async () => {
         try {
-            await acknowledgeBroadcast(broadcast.id);
+            if (broadcast.requireAcknowledgement) {
+                await acknowledgeBroadcast(broadcast.id);
+            } else {
+                await dismissBroadcast(broadcast.id);
+            }
             removeBroadcastBar();
             navigateAfterClose(broadcast.redirectUrl, i18n);
         } catch {
@@ -112,16 +127,11 @@ function renderBroadcastBar(broadcast, i18n) {
         }
     });
 
-    const dismissButton = barContainer.querySelector(".notify-broadcast-dismiss");
-    dismissButton?.addEventListener("click", async () => {
-        try {
-            await dismissBroadcast(broadcast.id);
-            removeBroadcastBar();
+    const closeButton = barContainer.querySelector(".notify-broadcast-close");
+    closeButton?.addEventListener("click", () => {
+        removeBroadcastBar();
+        if (broadcast.redirectUrl) {
             navigateAfterClose(broadcast.redirectUrl, i18n);
-        } catch {
-            showToast(i18n.t("gateway.notify.broadcast.action_failed"), {
-                variant: "error",
-            });
         }
     });
 }
@@ -155,15 +165,22 @@ async function openBroadcastPopup(broadcast, i18n) {
             body: escapeHtml(broadcast.message),
             actions: popupActions,
         });
-        if (popupResult === "acknowledge") {
+        const didAcknowledge = popupResult === "acknowledge";
+        if (didAcknowledge) {
             await acknowledgeBroadcast(broadcast.id);
             navigateAfterClose(broadcast.redirectUrl, i18n);
-        } else if (!broadcast.requireAcknowledgement) {
-            await dismissBroadcast(broadcast.id);
-            navigateAfterClose(broadcast.redirectUrl, i18n);
-        } else if (broadcast.redirectUrl) {
-            navigateAfterClose(broadcast.redirectUrl, i18n);
+            return;
         }
+
+        if (broadcast.requireAcknowledgement) {
+            if (broadcast.redirectUrl) {
+                navigateAfterClose(broadcast.redirectUrl, i18n);
+            }
+            return;
+        }
+
+        await dismissBroadcast(broadcast.id);
+        navigateAfterClose(broadcast.redirectUrl, i18n);
     } catch {
         showToast(i18n.t("gateway.notify.broadcast.action_failed"), {
             variant: "error",
@@ -174,7 +191,12 @@ async function openBroadcastPopup(broadcast, i18n) {
 }
 
 async function refreshBroadcast(i18n) {
-    const broadcasts = await fetchActiveBroadcasts();
+    const { broadcasts, unauthorized } = await fetchActiveBroadcasts();
+    if (unauthorized) {
+        stopPollingForAuthFailure = true;
+        removeBroadcastBar();
+        return;
+    }
     const activeBroadcast = broadcasts[0];
     if (!activeBroadcast) {
         currentBroadcastId = null;
@@ -197,6 +219,10 @@ async function startPolling(i18n) {
     await refreshBroadcast(i18n);
 
     const runTick = async () => {
+        if (stopPollingForAuthFailure) {
+            pollTimer = null;
+            return;
+        }
         await refreshBroadcast(i18n);
         const pollDelay =
             document.visibilityState === "visible"
@@ -215,6 +241,7 @@ async function startPolling(i18n) {
 (async function initBroadcastPlugin() {
     if (!localStorage.getItem("cognis_access_token")) return;
     if (pollTimer) clearTimeout(pollTimer);
+    stopPollingForAuthFailure = false;
     try {
         injectStyles();
         const i18n = await createI18n({

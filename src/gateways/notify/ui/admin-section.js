@@ -1,3 +1,5 @@
+import { ACCESS_ROLES, getRoleLabel } from "/static/reuse/access-role.js";
+import { formatDateTime } from "/static/reuse/timestamp.js";
 /**
  * Notification gateway admin section.
  *
@@ -17,8 +19,6 @@
  * @param {{ i18n: object, apiFetch: Function, escapeHtml: Function, openPopup: Function, showToast: Function }} deps
  * @returns {{ id: string, label: string, dataReady: Promise<void>, subComposerOptions: object }}
  */
-import { ACCESS_ROLES, getRoleLabel } from "/static/reuse/access-role.js";
-
 export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     async function loadCategories() {
         const res = await apiFetch("/api/v1/notifications/categories");
@@ -50,11 +50,10 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         loadCategories(),
         loadBroadcasts(),
     ]).then(([userRows, categoryRows, broadcastRows]) => {
-            users = userRows;
-            categories = categoryRows;
-            broadcasts = broadcastRows;
-        },
-    );
+        users = userRows;
+        categories = categoryRows;
+        broadcasts = broadcastRows;
+    });
 
     function renderNotificationsDebugContent() {
         const userOptions = users
@@ -115,10 +114,10 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             .map((broadcast) => {
                 const scheduleText = [
                     broadcast.startAt
-                        ? `${i18n.t("gateway.notify.admin.broadcast_start")}: ${new Date(broadcast.startAt).toLocaleString()}`
+                        ? `${i18n.t("gateway.notify.admin.broadcast_start")}: ${formatDateTime(broadcast.startAt)}`
                         : "",
                     broadcast.endAt
-                        ? `${i18n.t("gateway.notify.admin.broadcast_end")}: ${new Date(broadcast.endAt).toLocaleString()}`
+                        ? `${i18n.t("gateway.notify.admin.broadcast_end")}: ${formatDateTime(broadcast.endAt)}`
                         : "",
                 ]
                     .filter(Boolean)
@@ -143,11 +142,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             </header>
             <p>${escapeHtml(broadcast.message ?? "")}</p>
             <p>${escapeHtml(roleText)}</p>
-            ${
-                scheduleText
-                    ? `<p>${escapeHtml(scheduleText)}</p>`
-                    : ""
-            }
+            ${scheduleText ? `<p>${escapeHtml(scheduleText)}</p>` : ""}
             <p>${escapeHtml(broadcast.displayMode === "popup" ? i18n.t("gateway.notify.admin.broadcast_mode_popup") : i18n.t("gateway.notify.admin.broadcast_mode_bar"))}</p>
             <button type="button" class="btn-animated notif-broadcast-toggle" data-toggle="${escapeHtml(toggleAction)}">${escapeHtml(toggleLabel)}</button>
           </article>
@@ -299,7 +294,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         const createButton = panel.querySelector(".notif-broadcast-create");
         createButton?.addEventListener("click", async () => {
             const titleInput = panel.querySelector('[name="broadcastTitle"]');
-            const messageInput = panel.querySelector('[name="broadcastMessage"]');
+            const messageInput = panel.querySelector(
+                '[name="broadcastMessage"]',
+            );
             const modeSelect = panel.querySelector('[name="broadcastMode"]');
             const startInput = panel.querySelector('[name="broadcastStartAt"]');
             const endInput = panel.querySelector('[name="broadcastEndAt"]');
@@ -309,7 +306,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             const requireAckInput = panel.querySelector(
                 '[name="broadcastRequireAck"]',
             );
-            const enabledInput = panel.querySelector('[name="broadcastEnabled"]');
+            const enabledInput = panel.querySelector(
+                '[name="broadcastEnabled"]',
+            );
             const selectedRoleInputs = Array.from(
                 panel.querySelectorAll('[name="broadcastRoles"]:checked'),
             );
@@ -327,9 +326,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                     ? modeSelect.value
                     : "bar";
             const startAtValue = parseDateTimeLocal(
-                startInput instanceof HTMLInputElement
-                    ? startInput.value
-                    : "",
+                startInput instanceof HTMLInputElement ? startInput.value : "",
             );
             const endAtValue = parseDateTimeLocal(
                 endInput instanceof HTMLInputElement ? endInput.value : "",
@@ -367,25 +364,31 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 return;
             }
 
-            const response = await apiFetch("/api/v1/notifications/broadcasts", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({
-                    title: titleValue,
-                    message: messageValue,
-                    displayMode: modeValue,
-                    targetRoles,
-                    startAt: startAtValue,
-                    endAt: endAtValue,
-                    requireAcknowledgement: requireAcknowledgementValue,
-                    redirectUrl: redirectUrlValue || null,
-                    enabled: enabledValue,
-                }),
-            });
+            const response = await apiFetch(
+                "/api/v1/notifications/broadcasts",
+                {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                        title: titleValue,
+                        message: messageValue,
+                        displayMode: modeValue,
+                        targetRoles,
+                        startAt: startAtValue,
+                        endAt: endAtValue,
+                        requireAcknowledgement: requireAcknowledgementValue,
+                        redirectUrl: redirectUrlValue || null,
+                        enabled: enabledValue,
+                    }),
+                },
+            );
             if (!response.ok) {
-                showToast(i18n.t("gateway.notify.admin.broadcast_create_failed"), {
-                    variant: "error",
-                });
+                showToast(
+                    i18n.t("gateway.notify.admin.broadcast_create_failed"),
+                    {
+                        variant: "error",
+                    },
+                );
                 return;
             }
             showToast(i18n.t("gateway.notify.admin.broadcast_created"), {
@@ -395,7 +398,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         });
 
         panel.addEventListener("click", async (event) => {
-            const toggleButton = event.target.closest(".notif-broadcast-toggle");
+            const toggleButton = event.target.closest(
+                ".notif-broadcast-toggle",
+            );
             if (!(toggleButton instanceof HTMLButtonElement)) return;
             const broadcastRow = toggleButton.closest("[data-broadcast-id]");
             if (!(broadcastRow instanceof HTMLElement)) return;
@@ -411,9 +416,12 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 { method: "POST" },
             );
             if (!response.ok) {
-                showToast(i18n.t("gateway.notify.admin.broadcast_toggle_failed"), {
-                    variant: "error",
-                });
+                showToast(
+                    i18n.t("gateway.notify.admin.broadcast_toggle_failed"),
+                    {
+                        variant: "error",
+                    },
+                );
                 return;
             }
             await refreshBroadcastPanel(root);

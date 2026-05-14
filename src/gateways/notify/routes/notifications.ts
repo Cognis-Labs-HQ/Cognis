@@ -38,7 +38,10 @@ export interface NotificationPreferenceRouteStore {
         accountId: string,
         role: NotificationBroadcastRole,
     ): Promise<unknown[]>;
-    markBroadcastDismissed?(accountId: string, broadcastId: string): Promise<void>;
+    markBroadcastDismissed?(
+        accountId: string,
+        broadcastId: string,
+    ): Promise<void>;
     markBroadcastAcknowledged?(
         accountId: string,
         broadcastId: string,
@@ -78,8 +81,7 @@ function isSafeRedirectUrl(urlValue: string): boolean {
     try {
         const parsedUrl = new URL(urlValue, "http://localhost");
         return (
-            parsedUrl.protocol === "http:" ||
-            parsedUrl.protocol === "https:"
+            parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:"
         );
     } catch {
         return false;
@@ -221,8 +223,9 @@ export function createNotificationRoutes(
                 body.redirectUrl ?? body.redirect_url ?? "",
             ).trim();
             const redirectUrl = redirectUrlRaw || null;
-            const enabled =
-                body.enabled == null ? true : Boolean(body.enabled);
+            const enabled = body.enabled == null ? true : Boolean(body.enabled);
+            const hasStartAt = startAt !== null;
+            const hasEndAt = endAt !== null;
 
             if (
                 !title ||
@@ -232,9 +235,10 @@ export function createNotificationRoutes(
                 targetRoles.length === 0 ||
                 startAt === undefined ||
                 endAt === undefined ||
+                hasStartAt !== hasEndAt ||
                 (startAt !== null &&
                     endAt !== null &&
-                    Number(startAt) > Number(endAt)) ||
+                    Number(startAt) >= Number(endAt)) ||
                 (redirectUrl !== null && !isSafeRedirectUrl(redirectUrl))
             ) {
                 res.writeHead(400, { "content-type": "application/json" });
@@ -325,10 +329,11 @@ export function createNotificationRoutes(
                 res.end(JSON.stringify({ data: [] }));
                 return true;
             }
-            const activeBroadcasts = await notifStore.getActiveBroadcastsForRole(
-                claims.sub,
-                claims.role as NotificationBroadcastRole,
-            );
+            const activeBroadcasts =
+                await notifStore.getActiveBroadcastsForRole(
+                    claims.sub,
+                    claims.role as NotificationBroadcastRole,
+                );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: activeBroadcasts }));
             return true;

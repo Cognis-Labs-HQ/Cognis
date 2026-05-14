@@ -150,7 +150,9 @@ export class DbNotificationStore implements NotificationConfigStore {
         });
     }
 
-    private parseBroadcastRow(row: Record<string, unknown>): NotificationBroadcast {
+    private parseBroadcastRow(
+        row: Record<string, unknown>,
+    ): NotificationBroadcast {
         const parsedRoles = JSON.parse(
             String(row.target_roles_json ?? "[]"),
         ) as NotificationBroadcastRole[];
@@ -165,11 +167,9 @@ export class DbNotificationStore implements NotificationConfigStore {
             id: String(row.id),
             title: String(row.title ?? ""),
             message: String(row.message ?? ""),
-            displayMode:
-                row.display_mode === "popup" ? "popup" : "bar",
+            displayMode: row.display_mode === "popup" ? "popup" : "bar",
             targetRoles,
-            startAt:
-                row.start_at == null ? null : Number(row.start_at),
+            startAt: row.start_at == null ? null : Number(row.start_at),
             endAt: row.end_at == null ? null : Number(row.end_at),
             requireAcknowledgement: Boolean(row.require_acknowledgement),
             redirectUrl:
