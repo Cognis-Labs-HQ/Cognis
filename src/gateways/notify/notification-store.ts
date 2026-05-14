@@ -160,9 +160,14 @@ export class DbNotificationStore implements NotificationConfigStore {
     private parseBroadcastRow(
         row: Record<string, unknown>,
     ): NotificationBroadcast {
-        const parsedRoles = JSON.parse(
-            String(row.target_roles_json ?? "[]"),
-        ) as NotificationBroadcastRole[];
+        let parsedRoles = [];
+        try {
+            parsedRoles = JSON.parse(
+                String(row.target_roles_json ?? "[]"),
+            ) as NotificationBroadcastRole[];
+        } catch {
+            parsedRoles = [];
+        }
         const targetRoles = Array.isArray(parsedRoles)
             ? parsedRoles.filter((role) =>
                   ["user", "teacher", "moderator", "admin", "owner"].includes(

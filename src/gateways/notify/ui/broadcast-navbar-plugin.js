@@ -7,8 +7,8 @@ import { showToast } from "/static/reuse/toast.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 
 const CSS_HREF = "/static/gateways/notify/broadcast.css";
-const POLL_INTERVAL_VISIBLE_MS = 20_000;
-const POLL_INTERVAL_HIDDEN_MS = 45_000;
+const POLL_INTERVAL_VISIBLE_MILLISECONDS = 20_000;
+const POLL_INTERVAL_HIDDEN_MILLISECONDS = 45_000;
 const BAR_CONTAINER_ID = "notify-broadcast-bar";
 
 let currentBarBroadcastId = null;
@@ -234,15 +234,15 @@ async function startPolling(i18n) {
         await refreshBroadcast(i18n);
         const pollDelay =
             document.visibilityState === "visible"
-                ? POLL_INTERVAL_VISIBLE_MS
-                : POLL_INTERVAL_HIDDEN_MS;
+                ? POLL_INTERVAL_VISIBLE_MILLISECONDS
+                : POLL_INTERVAL_HIDDEN_MILLISECONDS;
         pollTimer = setTimeout(runTick, pollDelay);
     };
 
     const initialPollDelay =
         document.visibilityState === "visible"
-            ? POLL_INTERVAL_VISIBLE_MS
-            : POLL_INTERVAL_HIDDEN_MS;
+            ? POLL_INTERVAL_VISIBLE_MILLISECONDS
+            : POLL_INTERVAL_HIDDEN_MILLISECONDS;
     pollTimer = setTimeout(runTick, initialPollDelay);
 }
 

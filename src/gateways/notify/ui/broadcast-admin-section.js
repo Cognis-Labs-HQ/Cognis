@@ -375,7 +375,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         );
     }
 
-    function resolveBroadcastCreateValidationMessage({
+    function getBroadcastCreateValidationError({
         titleValue,
         messageValue,
         targetRoles,
@@ -578,7 +578,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 )
                 .filter(Boolean);
 
-            const validationMessage = resolveBroadcastCreateValidationMessage({
+            const validationMessage = getBroadcastCreateValidationError({
                 titleValue,
                 messageValue,
                 targetRoles,

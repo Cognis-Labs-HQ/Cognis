@@ -77,10 +77,9 @@ function normalizeTargetRoles(
     return Array.from(new Set(normalizedRoles));
 }
 
-function isSafeRedirectUrl(urlValue: string): boolean {
+function isSafeRedirectUrl(urlValue: string, trustedOrigin: string): boolean {
     if (!urlValue) return true;
     try {
-        const trustedOrigin = "https://cognis.local";
         const parsedUrl = new URL(urlValue, trustedOrigin);
         const hasSafeProtocol =
             parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
@@ -120,6 +119,7 @@ function getBroadcastCreateValidationError(input: {
     startAt: number | null | undefined;
     endAt: number | null | undefined;
     redirectUrl: string | null;
+    trustedOrigin: string;
 }): { code: string; message: string } | null {
     if (!input.title) {
         return {
@@ -172,7 +172,10 @@ function getBroadcastCreateValidationError(input: {
             message: "Broadcast startAt must be earlier than endAt",
         };
     }
-    if (input.redirectUrl !== null && !isSafeRedirectUrl(input.redirectUrl)) {
+    if (
+        input.redirectUrl !== null &&
+        !isSafeRedirectUrl(input.redirectUrl, input.trustedOrigin)
+    ) {
         return {
             code: "invalid_broadcast_redirect",
             message: "Broadcast redirectUrl must stay on the current origin",
@@ -327,6 +330,7 @@ export function createNotificationRoutes(
                 startAt,
                 endAt,
                 redirectUrl,
+                trustedOrigin: url.origin,
             });
 
             if (validationError !== null) {
