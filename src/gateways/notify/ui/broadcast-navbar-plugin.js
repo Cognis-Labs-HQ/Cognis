@@ -24,7 +24,9 @@ function navigateAfterClose(redirectUrl, i18n) {
             navigateTo(parsedUrl.pathname + parsedUrl.search + parsedUrl.hash);
             return;
         }
-        window.open(parsedUrl.toString(), "_blank", "noopener,noreferrer");
+        showToast(i18n.t("gateway.notify.broadcast.invalid_redirect"), {
+            variant: "warning",
+        });
     } catch {
         showToast(i18n.t("gateway.notify.broadcast.invalid_redirect"), {
             variant: "warning",

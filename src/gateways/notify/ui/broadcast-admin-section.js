@@ -43,12 +43,16 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         return Array.isArray(payload?.data) ? payload.data : [];
     }
 
-    function parseDateTimeLocal(inputValue) {
+    function parseDateTimeLocalInput(inputValue) {
         const normalizedValue = String(inputValue ?? "").trim();
-        if (!normalizedValue) return null;
+        if (!normalizedValue) {
+            return { isInvalid: false, value: null };
+        }
         const parsedDate = Date.parse(normalizedValue);
-        if (!Number.isFinite(parsedDate)) return undefined;
-        return parsedDate;
+        if (!Number.isFinite(parsedDate)) {
+            return { isInvalid: true, value: null };
+        }
+        return { isInvalid: false, value: parsedDate };
     }
 
     function resolveUserRole(userRecord) {
@@ -381,10 +385,10 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 modeSelect instanceof HTMLSelectElement
                     ? modeSelect.value
                     : "bar";
-            const startAtValue = parseDateTimeLocal(
+            const startAtInput = parseDateTimeLocalInput(
                 startInput instanceof HTMLInputElement ? startInput.value : "",
             );
-            const endAtValue = parseDateTimeLocal(
+            const endAtInput = parseDateTimeLocalInput(
                 endInput instanceof HTMLInputElement ? endInput.value : "",
             );
             const redirectUrlValue =
@@ -411,8 +415,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 !titleValue ||
                 !messageValue ||
                 !targetRoles.length ||
-                startAtValue === undefined ||
-                endAtValue === undefined
+                startAtInput.isInvalid ||
+                endAtInput.isInvalid
             ) {
                 showToast(i18n.t("gateway.notify.admin.broadcast_invalid"), {
                     variant: "warning",
@@ -430,8 +434,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                         message: messageValue,
                         displayMode: modeValue,
                         targetRoles,
-                        startAt: startAtValue,
-                        endAt: endAtValue,
+                        startAt: startAtInput.value,
+                        endAt: endAtInput.value,
                         requireAcknowledgement: requireAcknowledgementValue,
                         redirectUrl: redirectUrlValue || null,
                         enabled: enabledValue,

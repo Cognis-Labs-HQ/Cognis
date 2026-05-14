@@ -80,10 +80,11 @@ function normalizeTargetRoles(
 function isSafeRedirectUrl(urlValue: string): boolean {
     if (!urlValue) return true;
     try {
-        const parsedUrl = new URL(urlValue, "http://localhost");
-        return (
-            parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:"
-        );
+        const trustedOrigin = "https://cognis.local";
+        const parsedUrl = new URL(urlValue, trustedOrigin);
+        const hasSafeProtocol =
+            parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+        return hasSafeProtocol && parsedUrl.origin === trustedOrigin;
     } catch {
         return false;
     }
@@ -233,6 +234,8 @@ export function createNotificationRoutes(
             const body = await readJson(req);
             const title = String(body.title ?? "").trim();
             const message = String(body.message ?? "").trim();
+            // Keep accepting legacy snake_case payload keys for backwards
+            // compatibility with older admin clients that still submit them.
             const displayMode = String(
                 body.displayMode ?? body.display_mode ?? "",
             ).trim() as NotificationBroadcastDisplayMode;
