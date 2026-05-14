@@ -142,6 +142,16 @@ Prefer scanning the filesystem to discover gateways, adapters, and modules over 
 
 Study language modules are **not** gateways or adapters. They are content modules that live under `src/modules/study/languages/<bcp47-code>/` and register themselves with the Study gateway at bootstrap time via `createLanguageModule()` and `bootstrapLanguageModule(ctx)`. The Study gateway discovers them automatically by scanning that directory.
 
+### Study routing authority flow
+
+Study routing authority is strictly one-directional:
+
+- Language modules inform the Study gateway by registering child routes and returning `LanguageChildComponent` descriptors.
+- The Study gateway informs the UI/app router through its declared contract and API surfaces.
+- The app router must not hardcode Study or language-module internals (language IDs, component IDs, module asset paths, or module-specific route assumptions).
+
+It is fine to rely on sane URI shape conventions (for example `/study/<segment>`), but canonical Study child-route data and load metadata must come from the Study gateway, not directly from language-module implementation details.
+
 Every language module owns a **library** — a layered, deep-linked register of the language's written elements:
 
 1. **Characters** — the atomic writing units (e.g. hiragana, katakana). For CJK languages, compound symbols such as Kanji are NOT characters; they belong in alt_characters.
