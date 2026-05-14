@@ -233,11 +233,7 @@ async function mountHub(
     root,
     { i18n, registeredLanguages, learningLanguages, isSettingsPath },
 ) {
-    const query = new URLSearchParams(window.location.search);
-    const requestedLanguage = query.get("language") ?? "";
-    const selectedLanguageCode = learningLanguages.includes(requestedLanguage)
-        ? requestedLanguage
-        : learningLanguages[0];
+    const selectedLanguageCode = learningLanguages[0];
 
     const languageModulesMap = new Map();
     const discoveredLanguageCodes = new Set();
@@ -300,11 +296,13 @@ async function mountHub(
     }
 
     function buildHubUrl(languageCode) {
-        return `/study?language=${encodeURIComponent(languageCode)}`;
+        void languageCode;
+        return "/study";
     }
 
     function buildSettingsUrl(languageCode) {
-        return `/study/settings?language=${encodeURIComponent(languageCode)}`;
+        void languageCode;
+        return "/study/settings";
     }
 
     function renderSubNavigation() {

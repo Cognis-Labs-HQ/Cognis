@@ -89,10 +89,6 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
     const learningLanguages = learningLanguagesRaw.filter((languageCode) =>
         Boolean(String(languageCode ?? "").trim()),
     );
-    const preferredLanguageCode = String(
-        new URLSearchParams(window.location.search).get("language") ?? "",
-    ).trim();
-
     const activeLanguageCodes =
         learningLanguages.length > 0
             ? learningLanguages
@@ -108,9 +104,6 @@ export async function loadStudySubNavigationModel({ fallbackLanguageCode }) {
     }
 
     const selectedLanguageCode =
-        (preferredLanguageCode &&
-            activeLanguageCodes.includes(preferredLanguageCode) &&
-            preferredLanguageCode) ||
         (fallbackLanguageCode &&
             activeLanguageCodes.includes(fallbackLanguageCode) &&
             fallbackLanguageCode) ||
@@ -159,7 +152,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             };
             const activeClass =
                 languageCode === model.selectedLanguageCode ? " active" : "";
-            const languageHubUrl = `/study?language=${encodeURIComponent(languageCode)}`;
+            const languageHubUrl = "/study";
             return `
                 <li>
                     <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(languageHubUrl)}">
@@ -171,7 +164,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         })
         .join("");
 
-    const settingsUrl = `/study/settings?language=${encodeURIComponent(model.selectedLanguageCode)}`;
+    const settingsUrl = "/study/settings";
     const settingsActiveClass =
         currentPath === "/study/settings" ? " active" : "";
 

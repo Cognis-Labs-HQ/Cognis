@@ -1,7 +1,7 @@
 {
     "id": "study",
     "name": "Study Gateway",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "required": false,
     "requires": ["db"],
     "description": "Thin gateway for study features. Concrete capabilities (classes, teacher assignments) are provided by adapters under src/adapters/study/. Language learning content is provided by language modules under src/modules/study/languages/.",
