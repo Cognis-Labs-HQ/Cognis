@@ -56,6 +56,13 @@ function isPotentialStudyChildPath(path) {
     return STUDY_CHILD_ROUTE_PATTERN.test(normalizedPath);
 }
 
+/**
+ * Fetches a URL using the authenticated API client and parses the response as
+ * JSON. Throws if the HTTP response is not ok.
+ *
+ * @param {string} urlPath - Absolute API path to fetch.
+ * @returns {Promise<unknown>} Parsed JSON body.
+ */
 async function fetchJson(urlPath) {
     const response = await apiFetch(urlPath);
     if (!response.ok) {
@@ -64,6 +71,15 @@ async function fetchJson(urlPath) {
     return response.json();
 }
 
+/**
+ * Loads the list of Study child component descriptors by querying the
+ * registered-languages and per-language modules API endpoints. Results are
+ * cached in memory for `STUDY_CHILD_COMPONENT_CACHE_TTL_MS` milliseconds so
+ * rapid successive SPA navigations do not each trigger a fresh network round-
+ * trip.
+ *
+ * @returns {Promise<Array<object>>} Array of child component descriptors.
+ */
 async function loadStudyChildComponents() {
     if (
         _studyChildComponentsCache &&
@@ -105,6 +121,15 @@ async function loadStudyChildComponents() {
     return _studyChildComponentsPromise;
 }
 
+/**
+ * Resolves a URL path to a Study child component descriptor (scriptUrl and
+ * stylesheets) if the path matches a dynamically-registered Study child route.
+ * Returns null for non-Study paths and for Study paths that have no matching
+ * registered component.
+ *
+ * @param {string} path - URL path to resolve (e.g. '/study/hiragana').
+ * @returns {Promise<{scriptUrl: string, stylesheets: string[]} | null>}
+ */
 async function resolveStudyChildComponent(path) {
     if (!isPotentialStudyChildPath(path)) {
         return null;
@@ -132,6 +157,15 @@ async function resolveStudyChildComponent(path) {
     };
 }
 
+/**
+ * Dynamically loads the ES module for a Study child route. Ensures all
+ * module-declared stylesheets are injected into the document before the
+ * module script executes. Throws if no component is registered for the path
+ * or if the dynamic import fails.
+ *
+ * @param {string} path - URL path to load (e.g. '/study/hiragana').
+ * @returns {Promise<object>} The imported ES module namespace.
+ */
 async function loadStudyChildRouteModule(path) {
     const component = await resolveStudyChildComponent(path);
     if (!component) {
