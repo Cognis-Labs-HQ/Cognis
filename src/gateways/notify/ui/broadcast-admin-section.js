@@ -1,4 +1,5 @@
 import { ACCESS_ROLES, getRoleLabel } from "/static/reuse/access-role.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 
 /**
@@ -20,6 +21,10 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
  * @returns {{ id: string, label: string, dataReady: Promise<void>, subComposerOptions: object }}
  */
 export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
+    const stylesheetReady = ensurePageStylesheet(
+        "/static/gateways/notify/broadcast-admin.css",
+    );
+
     async function loadUsers() {
         const response = await apiFetch("/api/v1/users");
         if (!response.ok) return [];
@@ -230,25 +235,27 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     `;
     }
 
-    let users = [];
-    let broadcasts = [];
+    let userRows = [];
+    let broadcastRows = [];
     const acknowledgementCache = new Map();
 
-    const dataReady = Promise.all([loadUsers(), loadBroadcasts()]).then(
-        ([userRows, broadcastRows]) => {
-            users = userRows;
-            broadcasts = broadcastRows;
-        },
-    );
+    const dataReady = Promise.all([
+        stylesheetReady,
+        loadUsers(),
+        loadBroadcasts(),
+    ]).then(([, loadedUserRows, loadedBroadcastRows]) => {
+        userRows = loadedUserRows;
+        broadcastRows = loadedBroadcastRows;
+    });
 
     function findBroadcastById(broadcastId) {
-        return broadcasts.find(
+        return broadcastRows.find(
             (broadcast) => String(broadcast.id) === String(broadcastId),
         );
     }
 
     function renderAcknowledgementStatusDetails(broadcast, stateRows) {
-        const targetUsers = getTargetedUsersForBroadcast(broadcast, users);
+        const targetUsers = getTargetedUsersForBroadcast(broadcast, userRows);
         if (!targetUsers.length) {
             return `<p class="notif-broadcast-ack-empty">${escapeHtml(i18n.t("gateway.notify.admin.broadcast_ack_no_targets"))}</p>`;
         }
@@ -260,7 +267,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             ]),
         );
 
-        const userRows = targetUsers
+        const targetUserRows = targetUsers
             .map((targetUser) => {
                 const stateRow = stateByAccountId.get(targetUser.accountId);
                 const acknowledgedAt =
@@ -312,7 +319,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             </tr>
           </thead>
           <tbody>
-            ${userRows}
+            ${targetUserRows}
           </tbody>
         </table>
       `;
@@ -335,10 +342,10 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     }
 
     async function refreshBroadcastTable(root) {
-        broadcasts = await loadBroadcasts();
+        broadcastRows = await loadBroadcasts();
         const tableBody = root.querySelector(".notif-broadcast-table-body");
         if (!(tableBody instanceof HTMLElement)) return;
-        tableBody.innerHTML = renderBroadcastRows(broadcasts);
+        tableBody.innerHTML = renderBroadcastRows(broadcastRows);
     }
 
     async function ensureAcknowledgementStateRows(broadcastId) {
@@ -569,7 +576,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                     id: "notifications-broadcast",
                     label: i18n.t("gateway.notify.admin.broadcast_label"),
                     pinned: true,
-                    render: () => renderBroadcastContent(broadcasts),
+                    render: () => renderBroadcastContent(broadcastRows),
                 },
             ],
             onRender: (rootElement) => {

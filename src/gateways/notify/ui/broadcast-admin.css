@@ -1,0 +1,109 @@
+.notif-broadcast-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 8px;
+}
+
+.notif-broadcast-subheading {
+    margin: 0;
+    font-weight: 600;
+}
+
+.notif-broadcast-role-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+}
+
+.notif-checkbox-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    font-size: 0.9em;
+}
+
+.notif-checkbox-option input {
+    margin: 0;
+}
+
+.notif-checkbox-option--inline {
+    width: fit-content;
+}
+
+.notif-broadcast-toggle-label {
+    font-weight: 600;
+}
+
+.notif-broadcast-switch-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+}
+
+.notif-broadcast-switch-field .switch {
+    margin-top: 0;
+}
+
+.notif-broadcast-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.notif-broadcast-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 980px;
+}
+
+.notif-broadcast-table th,
+.notif-broadcast-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+    font-size: 0.9em;
+}
+
+.notif-broadcast-table th {
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    font-weight: 700;
+}
+
+.notif-broadcast-empty-cell {
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.notif-broadcast-static-indicator {
+    color: var(--text-muted);
+}
+
+.notif-broadcast-ack-row td {
+    background: color-mix(in srgb, var(--surface) 90%, transparent);
+}
+
+.notif-broadcast-ack-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.notif-broadcast-ack-table th,
+.notif-broadcast-ack-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.notif-broadcast-ack-empty {
+    margin: 0;
+    color: var(--text-muted);
+}
