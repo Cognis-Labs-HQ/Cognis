@@ -318,4 +318,10 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
 }
 
-if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
+if (!globalThis.__spaRouter) {
+    try {
+        await mount(document.querySelector("#app"));
+    } catch (error) {
+        console.error("[study-classes] my-classes mount failed", error);
+    }
+}

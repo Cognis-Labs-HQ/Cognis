@@ -14,7 +14,7 @@ import { CoreStudyGateway } from "./gateway.js";
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
 const MODULES_ROOT =
     process.env.COGNIS_MODULES_ROOT ??
-    path.resolve(process.cwd(), "src", "modules");
+    path.resolve(GATEWAY_ROOT, "../../modules");
 const LANGUAGE_MODULES_ROOT = path.resolve(MODULES_ROOT, "study", "languages");
 
 export type {
@@ -212,10 +212,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             .listRegisteredLanguageModules()
             .find((candidate) => candidate.code === languageCode);
         if (!languageModule) return false;
-        return gateway.isLanguageModuleEnabled(
-            languageModule.moduleId,
-            languageModule.moduleClass,
-        );
+        return gateway.isLanguageModuleEnabled(languageModule.moduleId);
     };
 
     await gateway.bootstrapLanguageModules(LANGUAGE_MODULES_ROOT, {

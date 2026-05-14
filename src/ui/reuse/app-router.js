@@ -109,8 +109,8 @@ const ROUTES = [
 ];
 
 function findRoute(path) {
-    const pathWithoutQuery = String(path).split("?")[0].split("#")[0];
-    return ROUTES.find((r) => r.pattern.test(pathWithoutQuery));
+    const pathWithoutQueryOrFragment = String(path).split("?")[0].split("#")[0];
+    return ROUTES.find((r) => r.pattern.test(pathWithoutQueryOrFragment));
 }
 
 let _root = null;

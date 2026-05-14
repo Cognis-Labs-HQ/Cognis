@@ -190,10 +190,9 @@ export class CoreStudyGateway {
         this.languageModuleAvailability.set(moduleId, enabled);
     }
 
-    isLanguageModuleEnabled(moduleId: string, moduleClass: string): boolean {
+    isLanguageModuleEnabled(moduleId: string): boolean {
         const enabled = this.languageModuleAvailability.get(moduleId);
-        if (typeof enabled === "boolean") return enabled;
-        return moduleClass.trim().toLowerCase() === "core";
+        return enabled === true;
     }
 
     listRegisteredLanguages(): Array<{
@@ -225,7 +224,7 @@ export class CoreStudyGateway {
                 flag: module.languageFlag,
                 moduleId,
                 moduleClass,
-                enabled: this.isLanguageModuleEnabled(moduleId, moduleClass),
+                enabled: this.isLanguageModuleEnabled(moduleId),
             }),
         );
     }
@@ -479,7 +478,6 @@ export class CoreStudyGateway {
                         if (languageMeta) {
                             const isEnabled = this.isLanguageModuleEnabled(
                                 languageMeta.moduleId,
-                                languageMeta.moduleClass,
                             );
                             if (!isEnabled) {
                                 return false;

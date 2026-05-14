@@ -46,6 +46,10 @@
 - `src/api/server.ts` と `src/api/main.ts` — モジュール有効化/無効化と起動時状態復元から Study Gateway へ言語可用性をプッシュする配線を追加
 - `src/gateways/study/manifest.json` と `src/docs/versions.en.md` — Study Gateway のバージョンを 1.5.0 に更新
 
+- `src/gateways/study/ui/study.js` — 直接読み込み時のトップレベル mount 呼び出しを try/catch で保護し、Study SPA の import 失敗を安全に記録
+- `src/adapters/study/classes/ui/my-classes.js` — 直接読み込み時のトップレベル mount 呼び出しを try/catch で保護し、SPA import の耐障害性を向上
+- `src/ui/reuse/app-router.js` — ルート照合ロジック内のクリーン済みパス変数名を明確化
+
 ## コミット
 
 コミット履歴はブランチ `copilot/create-student-page-view` を参照してください。

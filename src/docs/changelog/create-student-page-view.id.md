@@ -46,6 +46,10 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 - `src/api/server.ts` dan `src/api/main.ts` — Siklus enable/disable modul dan pemulihan state saat startup kini mendorong status modul bahasa ke Study gateway
 - `src/gateways/study/manifest.json` dan `src/docs/versions.en.md` — Versi Study gateway dinaikkan ke 1.5.0
 
+- `src/gateways/study/ui/study.js` — Pemanggilan mount top-level untuk direct-load kini dibungkus try/catch agar kegagalan impor SPA Study tercatat dengan aman
+- `src/adapters/study/classes/ui/my-classes.js` — Pemanggilan mount top-level untuk direct-load kini dibungkus try/catch agar impor SPA lebih tangguh
+- `src/ui/reuse/app-router.js` — Penamaan variabel path yang sudah dibersihkan diperjelas pada logika pencocokan route
+
 ## Commit
 
 Lihat branch `copilot/create-student-page-view` untuk riwayat commit.

@@ -586,5 +586,11 @@ async function mountHub(
 
 if (!globalThis.__spaRouter) {
     const appRoot = document.querySelector("#app");
-    if (appRoot) await mount(appRoot);
+    if (appRoot) {
+        try {
+            await mount(appRoot);
+        } catch (error) {
+            console.error("[study] mount failed", error);
+        }
+    }
 }

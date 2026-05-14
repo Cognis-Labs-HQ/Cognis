@@ -46,6 +46,10 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 - `src/api/server.ts` und `src/api/main.ts` — Modul-Aktivierungszyklus und Startzustands-Wiederherstellung so verdrahtet, dass Sprachverfügbarkeit in das Study-Gateway gepusht wird
 - `src/gateways/study/manifest.json` und `src/docs/versions.en.md` — Study-Gateway-Version auf 1.5.0 erhöht
 
+- `src/gateways/study/ui/study.js` — Top-Level-Mount für Direktaufruf in try/catch gekapselt, damit Study-SPA-Importfehler sauber protokolliert werden
+- `src/adapters/study/classes/ui/my-classes.js` — Top-Level-Mount für Direktaufruf in try/catch gekapselt, um SPA-Importe robuster zu machen
+- `src/ui/reuse/app-router.js` — Variablenname für bereinigten Pfad in der Routenprüfung präzisiert
+
 ## Commits
 
 Siehe Branch `copilot/create-student-page-view` für den Commit-Verlauf.

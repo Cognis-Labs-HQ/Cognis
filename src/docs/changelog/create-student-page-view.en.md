@@ -46,6 +46,10 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/api/server.ts` and `src/api/main.ts` — Wired module enable/disable lifecycle and startup state restore to push language-module availability into Study gateway
 - `src/gateways/study/manifest.json` and `src/docs/versions.en.md` — Bumped Study gateway version to 1.5.0
 
+- `src/gateways/study/ui/study.js` — Wrapped direct-load top-level mount call in try/catch so Study SPA import failures are logged gracefully
+- `src/adapters/study/classes/ui/my-classes.js` — Wrapped direct-load top-level mount call in try/catch for resilient SPA imports
+- `src/ui/reuse/app-router.js` — Clarified cleaned-path variable naming in route matching logic
+
 ## Commits
 
 See branch `copilot/create-student-page-view` for commit history.
