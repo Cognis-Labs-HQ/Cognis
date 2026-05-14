@@ -32,6 +32,7 @@
  */
 
 import { ensurePageStylesheet } from "./page-styles.js";
+import { apiFetch } from "./api-client.js";
 
 const STUDY_BASE_STYLESHEETS = [
     "/static/styles/page-builder.css",
@@ -56,7 +57,7 @@ function isPotentialStudyChildPath(path) {
 }
 
 async function fetchJson(urlPath) {
-    const response = await fetch(urlPath, { credentials: "include" });
+    const response = await apiFetch(urlPath);
     if (!response.ok) {
         throw new Error(`HTTP ${response.status} while loading "${urlPath}"`);
     }
