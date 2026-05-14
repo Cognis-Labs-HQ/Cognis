@@ -4,6 +4,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { showToast } from "/static/reuse/toast.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 
 const CSS_HREF = "/static/gateways/notify/broadcast.css";
 const POLL_INTERVAL_VISIBLE_MS = 20_000;
@@ -14,14 +15,6 @@ let currentBroadcastId = null;
 let isPopupOpen = false;
 let pollTimer = null;
 let stopPollingForAuthFailure = false;
-
-function injectStyles() {
-    if (document.querySelector(`link[href="${CSS_HREF}"]`)) return;
-    const styleLink = document.createElement("link");
-    styleLink.rel = "stylesheet";
-    styleLink.href = CSS_HREF;
-    document.head.appendChild(styleLink);
-}
 
 function navigateAfterClose(redirectUrl, i18n) {
     if (!redirectUrl) return;
@@ -243,7 +236,7 @@ async function startPolling(i18n) {
     if (pollTimer) clearTimeout(pollTimer);
     stopPollingForAuthFailure = false;
     try {
-        injectStyles();
+        await ensurePageStylesheet(CSS_HREF);
         const i18n = await createI18n({
             componentStringBaseUrls: ["/static/gateways/notify/languages"],
         });

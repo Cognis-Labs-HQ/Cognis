@@ -4,6 +4,16 @@ These instructions guide AI-assisted contributions to the Cognis codebase. Human
 
 ---
 
+## Session startup requirements
+
+As soon as you begin work in a session, you MUST run:
+
+`pip install ripgrep && npm install`
+
+Do this before exploration, implementation, linting, or testing so the required tooling and dependencies are available.
+
+---
+
 ## Architecture
 
 ### Route handlers must be thin and provider-agnostic

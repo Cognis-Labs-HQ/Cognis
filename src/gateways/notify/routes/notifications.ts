@@ -88,6 +88,28 @@ function isSafeRedirectUrl(urlValue: string): boolean {
     }
 }
 
+function validateBroadcastSchedule(
+    startAt: number | null | undefined,
+    endAt: number | null | undefined,
+): string | null {
+    if (startAt === undefined || endAt === undefined) {
+        return "invalid_timestamp";
+    }
+    const hasStartAt = startAt !== null;
+    const hasEndAt = endAt !== null;
+    if (hasStartAt !== hasEndAt) {
+        return "partial_window_not_allowed";
+    }
+    if (
+        startAt !== null &&
+        endAt !== null &&
+        Number(startAt) >= Number(endAt)
+    ) {
+        return "invalid_window_range";
+    }
+    return null;
+}
+
 export function createNotificationRoutes(
     gateway: CoreNotificationGateway,
     notifStore?: NotificationPreferenceRouteStore,
@@ -224,8 +246,10 @@ export function createNotificationRoutes(
             ).trim();
             const redirectUrl = redirectUrlRaw || null;
             const enabled = body.enabled == null ? true : Boolean(body.enabled);
-            const hasStartAt = startAt !== null;
-            const hasEndAt = endAt !== null;
+            const scheduleValidationError = validateBroadcastSchedule(
+                startAt,
+                endAt,
+            );
 
             if (
                 !title ||
@@ -233,12 +257,7 @@ export function createNotificationRoutes(
                 !VALID_BROADCAST_MODES.has(displayMode) ||
                 !targetRoles ||
                 targetRoles.length === 0 ||
-                startAt === undefined ||
-                endAt === undefined ||
-                hasStartAt !== hasEndAt ||
-                (startAt !== null &&
-                    endAt !== null &&
-                    Number(startAt) >= Number(endAt)) ||
+                scheduleValidationError !== null ||
                 (redirectUrl !== null && !isSafeRedirectUrl(redirectUrl))
             ) {
                 res.writeHead(400, { "content-type": "application/json" });
