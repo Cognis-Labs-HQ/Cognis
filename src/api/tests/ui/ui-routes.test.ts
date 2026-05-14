@@ -592,7 +592,7 @@ test("GET /static/adapters/social/profile/navbar.js serves profile adapter navba
     assert.match(recorder.body, /registerAvatarProvider/);
 });
 
-test("GET /static/modules/study/languages/ja/components/hiragana-alphabet/app.js serves module assets", async () => {
+test("GET /static/modules/study/languages/ja/components/hiragana-alphabet/ui/app.js serves module assets", async () => {
     const uiRegistry = new StaticUIRegistry();
     const hiraganaUiDir = path.resolve(
         process.cwd(),
@@ -606,7 +606,7 @@ test("GET /static/modules/study/languages/ja/components/hiragana-alphabet/app.js
         "ui",
     );
     uiRegistry.registerModuleStaticDir(
-        "study/languages/ja/components/hiragana-alphabet",
+        "study/languages/ja/components/hiragana-alphabet/ui",
         hiraganaUiDir,
     );
     const route = createUiRoutes(undefined, uiRegistry);
@@ -616,7 +616,7 @@ test("GET /static/modules/study/languages/ja/components/hiragana-alphabet/app.js
         { headers: {} } as any,
         recorder.res as any,
         new URL(
-            "http://localhost/static/modules/study/languages/ja/components/hiragana-alphabet/app.js",
+            "http://localhost/static/modules/study/languages/ja/components/hiragana-alphabet/ui/app.js",
         ),
     );
 

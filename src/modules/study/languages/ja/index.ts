@@ -51,7 +51,7 @@ class JapaneseLanguageModule implements LanguageModule {
     readonly languageCode = "ja";
     readonly languageName = "日本語";
     readonly languageFlag = "🇯🇵";
-    readonly version = "1.1.3";
+    readonly version = "1.1.4";
 
     listChildComponents(): LanguageChildComponent[] {
         return CHILD_COMPONENTS;
@@ -319,11 +319,11 @@ export async function bootstrapLanguageModule(
     ctx.registerChildRoute(createLibraryApiRoute());
 
     ctx.registerStaticDir(
-        "modules/study/languages/ja/components/hiragana-alphabet",
+        "modules/study/languages/ja/components/hiragana-alphabet/ui",
         path.join(MODULE_ROOT, "components", "hiragana-alphabet", "ui"),
     );
     ctx.registerStaticDir(
-        "modules/study/languages/ja/components/library",
+        "modules/study/languages/ja/components/library/ui",
         path.join(MODULE_ROOT, "components", "library", "ui"),
     );
 
