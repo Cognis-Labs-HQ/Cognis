@@ -11,6 +11,7 @@ const DASHBOARD_PAGES = [
     "settings",
     "modules",
     "users",
+    "invite",
     "administration",
     "docs",
     "license",

@@ -77,6 +77,7 @@
   <string name="ui.app.login.intro.aria">Cognis-Einführung</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>
   <string name="ui.app.login.hero.subtitle">Lerne auf neue Weise</string>
+  <string name="ui.app.login.page_subtitle">Authentifizieren Sie sich, um zu Ihrem Arbeitsbereich zu gelangen.</string>
   <string name="ui.app.login.form.username">Benutzername</string>
   <string name="ui.app.login.form.password">Passwort</string>
   <string name="ui.app.login.form.submit">Login</string>
@@ -199,6 +200,7 @@
   <string name="ui.app.verify_email.invalid_body">Dieser Verifizierungslink ist ungültig oder wurde bereits verwendet. Bitte fordern Sie eine neue Verifizierungs-E-Mail in Ihren Kontoeinstellungen an.</string>
   <string name="ui.app.verify_email.return_link">Zurück zu Cognis</string>
   <string name="ui.app.register.form_title">Konto erstellen</string>
+  <string name="ui.app.register.page_subtitle">Erstellen Sie ein neues Konto, um auf Cognis zuzugreifen.</string>
   <string name="ui.app.register.invited_you">🎁 {inviter} möchte, dass Sie Cognis beitreten.</string>
   <string name="ui.app.register.email">E-Mail</string>
   <string name="ui.app.register.username">Benutzername</string>

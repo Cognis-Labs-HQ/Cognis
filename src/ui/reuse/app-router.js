@@ -223,6 +223,15 @@ const ROUTES = [
         load: () => import("../app/users/index.js"),
     },
     {
+        pattern: /^\/invite$/,
+        base: "/invite",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+        ],
+        load: () => import("../app/invite/index.js"),
+    },
+    {
         pattern: /^\/administration/,
         base: "/administration",
         stylesheets: [
