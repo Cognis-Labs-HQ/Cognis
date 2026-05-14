@@ -223,6 +223,47 @@ const ROUTES = [
         load: () => import("../app/users/index.js"),
     },
     {
+        pattern: /^\/messages(?:\/[^/]+)?$/,
+        base: "/messages",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/adapters/social/messages/messages.css",
+        ],
+        load: () => import("/static/adapters/social/messages/app.js"),
+    },
+    {
+        pattern: /^\/profile(?:\/[^/]+)?$/,
+        base: "/profile",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/adapters/social/profile/profile.css",
+            "/static/styles/reuse/char-counter.css",
+        ],
+        load: () => import("/static/adapters/social/profile/app.js"),
+    },
+    {
+        pattern: /^\/classes$/,
+        base: "/classes",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/adapters/study/classes/classes.css",
+        ],
+        load: () => import("/static/adapters/study/classes/app.js"),
+    },
+    {
+        pattern: /^\/my-classes$/,
+        base: "/my-classes",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/adapters/study/classes/classes.css",
+        ],
+        load: () => import("/static/adapters/study/classes/my-classes.js"),
+    },
+    {
         pattern: /^\/invite$/,
         base: "/invite",
         stylesheets: [

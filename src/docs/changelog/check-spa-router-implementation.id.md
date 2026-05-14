@@ -10,11 +10,24 @@ Metadata komposer login/registrasi juga disesuaikan agar memenuhi kebutuhan
 `pageContext` (judul + subjudul), dan render daftar modul diperbaiki untuk
 layar kecil dengan container tabel responsif.
 
+Tindak lanjutnya juga menghapus pekerjaan shell yang memblokir render awal:
+template dashboard kini dipanaskan lebih awal, pemuatan plugin navbar ditunda,
+dan konten halaman tidak lagi menunggu preferensi layout tersimpan selesai
+dimuat sebelum paint pertama.
+
+Cakupan router SPA juga diperluas untuk halaman shell internal lain milik
+adapter (`/profile`, `/messages`, `/classes`, `/my-classes`) sehingga navigasi
+ke sana tidak lagi jatuh kembali ke muat ulang halaman penuh.
+
 ## Komponen dan berkas yang diubah
 
 - Router dan pengujian SPA:
     - `src/ui/reuse/app-router.js`
     - `src/ui/tests/app-router.test.js`
+- Performa shell/layout:
+    - `src/ui/layouts/dashboard-layout.js`
+    - `src/ui/reuse/page-composer.js`
+    - `src/ui/tests/page-composer-refresh.test.js`
 - Entrypoint halaman:
     - `src/ui/app/invite/index.js`
     - `src/ui/app/login/index.js`

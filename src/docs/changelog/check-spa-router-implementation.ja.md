@@ -10,11 +10,24 @@
 `pageContext`（タイトル + サブタイトル）に合わせ、モジュール一覧を
 小画面でも扱いやすいレスポンシブ表コンテナへ改善しました。
 
+その後の追補として、初期シェル描画をブロックしていた処理も削減し
+ました。ダッシュボードテンプレートは事前ウォームされ、ナビバー
+プラグインの読み込みは遅延実行され、ページ内容は保存済みレイアウト
+設定の取得完了を待たずに初回描画されます。
+
+さらに、アダプターが提供する内部シェルページ（`/profile`、
+`/messages`、`/classes`、`/my-classes`）もSPAルーター対象へ追加し、
+遷移時にフルリロードへ戻らないようにしました。
+
 ## 変更コンポーネントとファイル
 
 - ルーターとSPAテスト:
     - `src/ui/reuse/app-router.js`
     - `src/ui/tests/app-router.test.js`
+- シェル/レイアウト性能:
+    - `src/ui/layouts/dashboard-layout.js`
+    - `src/ui/reuse/page-composer.js`
+    - `src/ui/tests/page-composer-refresh.test.js`
 - ページエントリーポイント:
     - `src/ui/app/invite/index.js`
     - `src/ui/app/login/index.js`

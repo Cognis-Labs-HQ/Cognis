@@ -10,11 +10,24 @@ Aligned login/register composer metadata with required `pageContext` title and
 subtitle fields, and improved module list rendering for small screens by using
 responsive table container styles.
 
+Followed up by removing blocking shell work from the initial dashboard render:
+the dashboard template is now prewarmed, navbar plugin loading is deferred, and
+page content no longer waits for saved layout preferences to round-trip before
+first paint.
+
+Expanded SPA routing coverage for remaining internal shell pages served by
+adapters (`/profile`, `/messages`, `/classes`, `/my-classes`) so navigating to
+them no longer falls back to full page reloads.
+
 ## Changed components and files
 
 - Router and SPA tests:
     - `src/ui/reuse/app-router.js`
     - `src/ui/tests/app-router.test.js`
+- Shell/layout performance:
+    - `src/ui/layouts/dashboard-layout.js`
+    - `src/ui/reuse/page-composer.js`
+    - `src/ui/tests/page-composer-refresh.test.js`
 - Page entrypoints:
     - `src/ui/app/invite/index.js`
     - `src/ui/app/login/index.js`

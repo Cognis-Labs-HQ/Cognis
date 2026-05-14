@@ -22,6 +22,7 @@ import { createSearchBar } from "../reuse/search-bar.js";
 import { bindProfilePreviews } from "../reuse/profile-preview.js";
 
 capturePwaInstallPrompt();
+const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
 
 function isAdminRole() {
     const role = localStorage.getItem("cognis_role");
@@ -250,30 +251,56 @@ export async function updateNavbarAvatar() {
 }
 
 let _navbarPluginsLoaded = false;
+let _navbarPluginsPromise = null;
 
 async function loadNavbarPlugins() {
     if (_navbarPluginsLoaded) return;
+    if (_navbarPluginsPromise) return _navbarPluginsPromise;
     if (!localStorage.getItem("cognis_access_token")) return;
-    try {
-        const res = await apiFetch("/api/v1/ui/navbar-plugins");
-        if (!res.ok) return;
-        const payload = await res.json();
-        const plugins = Array.isArray(payload.data) ? payload.data : [];
-        await Promise.all(
-            plugins.map((p) =>
-                p?.scriptUrl ? import(p.scriptUrl).catch(() => {}) : null,
-            ),
-        );
-        _navbarPluginsLoaded = true;
-    } catch {
-        // navbar plugin loading is best-effort; layout continues without them
-    }
+    _navbarPluginsPromise = (async () => {
+        try {
+            const res = await apiFetch("/api/v1/ui/navbar-plugins");
+            if (!res.ok) return;
+            const payload = await res.json();
+            const plugins = Array.isArray(payload.data) ? payload.data : [];
+            await Promise.all(
+                plugins.map((plugin) =>
+                    plugin?.scriptUrl
+                        ? import(plugin.scriptUrl).catch(() => {})
+                        : null,
+                ),
+            );
+            _navbarPluginsLoaded = true;
+        } catch {
+            // navbar plugin loading is best-effort; layout continues without them
+        } finally {
+            _navbarPluginsPromise = null;
+        }
+    })();
+    return _navbarPluginsPromise;
 }
 
 window.addEventListener("cognis:navbar-plugins-refresh", () => {
     _navbarPluginsLoaded = false;
     loadNavbarPlugins().catch(() => {});
 });
+
+function scheduleNavbarEnhancements() {
+    const runEnhancements = () => {
+        loadNavbarPlugins()
+            .then(() => {
+                updateNavbarAvatar().catch(() => {});
+                applyActiveNavigation();
+                window.dispatchEvent(new Event("cognis:navbar-refresh"));
+            })
+            .catch(() => {});
+    };
+    if (typeof window.requestAnimationFrame === "function") {
+        window.requestAnimationFrame(runEnhancements);
+        return;
+    }
+    setTimeout(runEnhancements, 0);
+}
 
 function applyCompactNav(root) {
     const navrow = root.querySelector(".global-navrow");
@@ -464,6 +491,8 @@ export async function renderDashboardLayout(root, slots = {}) {
         );
         applyActiveNavigation();
         if (showTopbar || showNavbar) {
+            updateNavbarAvatar().catch(() => {});
+            scheduleNavbarEnhancements();
             initSearchBar(i18n);
             bindProfilePreviews(i18n);
         }
@@ -471,7 +500,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         return;
     }
 
-    const template = await loadTemplate("dashboard-layout");
+    const template = await DASHBOARD_LAYOUT_TEMPLATE_PROMISE;
     root.innerHTML = template
         .replace("{{pageContext}}", slots.pageContext || "")
         .replace("{{topbar}}", slots.topbar)
@@ -507,8 +536,8 @@ export async function renderDashboardLayout(root, slots = {}) {
     applyStaticTranslations(i18n, root);
     if (showTopbar || showNavbar) {
         bindTopbarActions();
-        await loadNavbarPlugins();
         updateNavbarAvatar().catch(() => {});
+        scheduleNavbarEnhancements();
         applyActiveNavigation();
         applyCompactNav(root);
         initRouter(root);

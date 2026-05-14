@@ -17,6 +17,25 @@ const DASHBOARD_PAGES = [
     "license",
 ];
 
+const ADAPTER_BACKED_SPA_ROUTES = [
+    {
+        path: "/messages",
+        scriptUrl: "/static/adapters/social/messages/app.js",
+    },
+    {
+        path: "/profile",
+        scriptUrl: "/static/adapters/social/profile/app.js",
+    },
+    {
+        path: "/classes",
+        scriptUrl: "/static/adapters/study/classes/app.js",
+    },
+    {
+        path: "/my-classes",
+        scriptUrl: "/static/adapters/study/classes/my-classes.js",
+    },
+];
+
 test("all dashboard pages export an async mount function", () => {
     for (const page of DASHBOARD_PAGES) {
         const src = readFileSync(
@@ -80,6 +99,23 @@ test("router registers routes for all dashboard pages", () => {
     }
 });
 
+test("router registers adapter-backed SPA routes for internal shell pages", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    for (const route of ADAPTER_BACKED_SPA_ROUTES) {
+        assert.ok(
+            src.includes(route.path),
+            `app-router.js must register a route pattern for ${route.path}`,
+        );
+        assert.ok(
+            src.includes(route.scriptUrl),
+            `app-router.js must load ${route.scriptUrl} for ${route.path}`,
+        );
+    }
+});
+
 test("router uses history.pushState for navigation", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
@@ -118,6 +154,16 @@ test("dashboard-layout initialises the router after shell setup", () => {
         src,
         /initRouter\(root\)/,
         "dashboard-layout.js must call initRouter(root)",
+    );
+    assert.doesNotMatch(
+        src,
+        /await loadNavbarPlugins\(\)/,
+        "dashboard-layout.js must not block initial shell render on navbar plugin loading",
+    );
+    assert.match(
+        src,
+        /scheduleNavbarEnhancements\(\)/,
+        "dashboard-layout.js must defer navbar enhancements until after the shell renders",
     );
 });
 

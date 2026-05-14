@@ -366,6 +366,10 @@ export function createPageComposer(
         return cloneLayoutData(loaded.layout);
     }
 
+    function hasStoredLayoutProfiles() {
+        return Object.keys(layoutProfiles?.layoutsByGrid ?? {}).length > 0;
+    }
+
     async function saveLayout() {
         layoutProfiles = await saveLayoutByKey(
             preferenceKey,
@@ -3213,7 +3217,7 @@ export function createPageComposer(
         gridCols = getPreferredGridColumnCount();
         lastObservedCols = gridCols;
 
-        layout = persistLayoutPreferences ? await loadLayout() : null;
+        layout = null;
 
         if (!subPageNavigation && contentGrid) {
             resizeObserver = new ResizeObserver(() => {
@@ -3232,6 +3236,18 @@ export function createPageComposer(
         }
 
         render();
+
+        if (persistLayoutPreferences) {
+            loadLayout()
+                .then((loadedLayout) => {
+                    if (!contentGrid || !document.contains(contentGrid)) return;
+                    if (editing) return;
+                    if (!loadedLayout && !hasStoredLayoutProfiles()) return;
+                    layout = loadedLayout;
+                    render();
+                })
+                .catch(() => {});
+        }
     }
 
     function getFloatingSlot(id) {
