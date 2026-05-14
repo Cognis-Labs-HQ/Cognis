@@ -122,11 +122,14 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 const toggleLabel = broadcast.enabled
                     ? i18n.t("ui.reuse.disable")
                     : i18n.t("ui.reuse.enable");
+                const detailToggleLabel = i18n.t(
+                    "gateway.notify.admin.broadcast_expand_details",
+                );
                 const detailsCell = broadcast.requireAcknowledgement
-                    ? `<span class="notif-broadcast-row-indicator" title="${escapeHtml(i18n.t("gateway.notify.admin.broadcast_expand_details"))}" aria-hidden="true">▸</span>`
+                    ? '<span class="notif-broadcast-row-indicator" aria-hidden="true">▸</span>'
                     : `<span class="notif-broadcast-static-indicator">${escapeHtml(i18n.t("gateway.notify.admin.broadcast_details_static"))}</span>`;
                 const expandableAttributes = broadcast.requireAcknowledgement
-                    ? ' data-expandable="true" tabindex="0"'
+                    ? ` data-expandable="true" tabindex="0" role="button" aria-expanded="false" aria-label="${escapeHtml(detailToggleLabel)}"`
                     : "";
 
                 return `
@@ -259,8 +262,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         );
     }
 
-    function renderAcknowledgementStatusDetails(broadcast, stateRows) {
-        const targetUsers = getTargetedUsersForBroadcast(broadcast, userRows);
+    function renderAcknowledgementStatusDetails(targetUsers, stateRows) {
         if (!targetUsers.length) {
             return `<p class="notif-broadcast-ack-empty">${escapeHtml(i18n.t("gateway.notify.admin.broadcast_ack_no_targets"))}</p>`;
         }
@@ -351,12 +353,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             "notif-broadcast-row--expanded",
             isExpanded,
         );
-        const detailIndicator = broadcastRow.querySelector(
-            ".notif-broadcast-row-indicator",
-        );
-        if (detailIndicator instanceof HTMLElement) {
-            detailIndicator.title = detailRowLabel(isExpanded);
-        }
+        broadcastRow.setAttribute("aria-expanded", String(isExpanded));
+        broadcastRow.setAttribute("aria-label", detailRowLabel(isExpanded));
     }
 
     function collapseExpandedBroadcastRows(root, exceptBroadcastId = null) {
@@ -487,6 +485,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
         const broadcast = findBroadcastById(broadcastId);
         if (!broadcast) return;
+        const targetUsers = getTargetedUsersForBroadcast(broadcast, userRows);
 
         collapseExpandedBroadcastRows(root, broadcastId);
         setBroadcastRowExpandedState(broadcastRow, true);
@@ -501,7 +500,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                   broadcastId,
               )}">
                 <td colspan="9">
-                  ${renderAcknowledgementStatusDetails(broadcast, stateRows)}
+                  ${renderAcknowledgementStatusDetails(targetUsers, stateRows)}
                 </td>
               </tr>
             `,

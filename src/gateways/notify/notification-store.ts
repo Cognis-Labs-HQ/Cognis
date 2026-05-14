@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
+import { isAccessRole } from "../../core/contracts/access-policy.js";
 import type { NotificationPreferenceStore } from "./gateway.js";
 
 export interface NotificationConfigStore {
@@ -169,11 +170,7 @@ export class DbNotificationStore implements NotificationConfigStore {
             parsedRoles = [];
         }
         const targetRoles = Array.isArray(parsedRoles)
-            ? parsedRoles.filter((role) =>
-                  ["user", "teacher", "moderator", "admin", "owner"].includes(
-                      String(role),
-                  ),
-              )
+            ? parsedRoles.filter((role) => isAccessRole(role))
             : [];
         return {
             id: String(row.id),

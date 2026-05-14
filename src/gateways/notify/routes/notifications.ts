@@ -70,11 +70,24 @@ function normalizeTargetRoles(
     value: unknown,
 ): NotificationBroadcastRole[] | undefined {
     if (!Array.isArray(value)) return undefined;
-    const normalizedRoles = value
-        .map((roleValue) => String(roleValue ?? "").trim())
-        .filter((roleValue) => isAccessRole(roleValue))
-        .map((roleValue) => roleValue as NotificationBroadcastRole);
+    const normalizedRoles = value.reduce<NotificationBroadcastRole[]>(
+        (roleList, roleValue) => {
+            const normalizedRole = String(roleValue ?? "").trim();
+            if (isAccessRole(normalizedRole)) {
+                roleList.push(normalizedRole as NotificationBroadcastRole);
+            }
+            return roleList;
+        },
+        [],
+    );
     return Array.from(new Set(normalizedRoles));
+}
+
+function resolveTrustedOrigin(requestOrigin: string): string {
+    return (
+        process.env.EXTERNAL_HOST ??
+        (process.env.HOST ? `http://${process.env.HOST}` : requestOrigin)
+    );
 }
 
 function isSafeRedirectUrl(urlValue: string, trustedOrigin: string): boolean {
@@ -330,7 +343,7 @@ export function createNotificationRoutes(
                 startAt,
                 endAt,
                 redirectUrl,
-                trustedOrigin: url.origin,
+                trustedOrigin: resolveTrustedOrigin(url.origin),
             });
 
             if (validationError !== null) {

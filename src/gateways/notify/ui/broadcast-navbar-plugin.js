@@ -204,11 +204,12 @@ async function refreshBroadcast(i18n) {
         currentBarBroadcastId = null;
         removeBroadcastBar();
     } else {
-        if (activeBarBroadcast.id !== currentBarBroadcastId) {
+        const barIsMissing = document.getElementById(BAR_CONTAINER_ID) === null;
+        if (activeBarBroadcast.id !== currentBarBroadcastId || barIsMissing) {
             currentBarBroadcastId = activeBarBroadcast.id;
             removeBroadcastBar();
+            renderBroadcastBar(activeBarBroadcast, i18n);
         }
-        renderBroadcastBar(activeBarBroadcast, i18n);
     }
 
     if (!activePopupBroadcast) {
