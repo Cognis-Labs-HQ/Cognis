@@ -52,6 +52,40 @@ async function loadLocalAccountStore(
     return new LocalAccountStoreClass(dbExecutor, log);
 }
 
+function shouldSetSecureCookie(req: IncomingMessage): boolean {
+    const forced = process.env.COGNIS_SECURE_COOKIES;
+    if (forced === "1" || forced === "true") return true;
+    if (forced === "0" || forced === "false") return false;
+    const forwardedProto = req.headers["x-forwarded-proto"];
+    if (typeof forwardedProto !== "string") return false;
+    return forwardedProto
+        .split(",")
+        .some((value) => value.trim().toLowerCase() === "https");
+}
+
+function buildAccessTokenCookie(
+    token: string,
+    ttlSeconds: number,
+    useSecure: boolean,
+): string {
+    const securePart = useSecure ? "; Secure" : "";
+    return `cognis_access_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ttlSeconds}${securePart}`;
+}
+
+function extractCookieToken(req: IncomingMessage): string | null {
+    const cookieHeader = req.headers.cookie ?? "";
+    const match = cookieHeader.match(/(?:^|; )cognis_access_token=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
+function extractBearerToken(req: IncomingMessage): string | null {
+    const authHeader = req.headers.authorization;
+    if (typeof authHeader !== "string" || !authHeader.startsWith("Bearer ")) {
+        return null;
+    }
+    return authHeader.slice("Bearer ".length);
+}
+
 function resolveRole(
     sessionRole: string | undefined,
     isAdmin: boolean | undefined,
@@ -534,7 +568,11 @@ function createAuthGatewayRoutes(
             });
             res.writeHead(200, {
                 "content-type": "application/json",
-                "set-cookie": `cognis_access_token=${apiToken}; Path=/; HttpOnly; SameSite=Lax`,
+                "set-cookie": buildAccessTokenCookie(
+                    apiToken,
+                    accessTokenTtlSeconds,
+                    shouldSetSecureCookie(req),
+                ),
             });
             res.end(
                 JSON.stringify({
@@ -556,12 +594,7 @@ function createAuthGatewayRoutes(
         if (url.pathname === "/api/v1/auth/verify" && req.method === "POST") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const authHeader = req.headers.authorization;
-            const rawToken =
-                typeof authHeader === "string" &&
-                authHeader.startsWith("Bearer ")
-                    ? authHeader.slice("Bearer ".length)
-                    : "";
+            const rawToken = extractBearerToken(req) ?? "";
             const oneHourMs = 60 * 60 * 1000;
             if (rawToken && isTokenVerificationFresh(rawToken, oneHourMs)) {
                 log?.(
@@ -640,38 +673,15 @@ function createAuthGatewayRoutes(
         }
 
         if (url.pathname === "/api/v1/auth/logout" && req.method === "POST") {
-            const cookieHeader = req.headers.cookie ?? "";
-            const cookieMatch = cookieHeader.match(
-                /(?:^|; )cognis_access_token=([^;]+)/,
-            );
-            const cookieToken = cookieMatch
-                ? decodeURIComponent(cookieMatch[1])
-                : null;
+            const cookieToken = extractCookieToken(req);
             if (cookieToken) {
                 revokeAccessToken(cookieToken);
             }
-            const authHeader = req.headers.authorization;
-            const bearerToken =
-                typeof authHeader === "string" &&
-                authHeader.startsWith("Bearer ")
-                    ? authHeader.slice("Bearer ".length)
-                    : null;
+            const bearerToken = extractBearerToken(req);
             if (bearerToken && bearerToken !== cookieToken) {
                 revokeAccessToken(bearerToken);
             }
-            const forcedSecure = process.env.COGNIS_SECURE_COOKIES;
-            const forwardedProto = req.headers["x-forwarded-proto"];
-            const useSecure =
-                forcedSecure === "1" ||
-                forcedSecure === "true" ||
-                (forcedSecure !== "0" &&
-                    forcedSecure !== "false" &&
-                    typeof forwardedProto === "string" &&
-                    forwardedProto
-                        .split(",")
-                        .some(
-                            (value) => value.trim().toLowerCase() === "https",
-                        ));
+            const useSecure = shouldSetSecureCookie(req);
             const securePart = useSecure ? "; Secure" : "";
             log?.("info", "User logged out.", {
                 ...logMeta,
