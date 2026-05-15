@@ -470,6 +470,10 @@
   <string name="module.social.messages.page_subtitle">会話とダイレクトメッセージ。</string>
   <string name="module.social.messages.request_sent">メッセージリクエストを送信しました。</string>
   <string name="module.social.messages.read_by">既読</string>
+  <string name="module.social.messages.receipt_sent">送信済み</string>
+  <string name="module.social.messages.receipt_delivered">配信済み</string>
+  <string name="module.social.messages.receipt_read_single">既読: {day} {time}</string>
+  <string name="module.social.messages.receipt_read_by_count">既読: {count} 人</string>
   <string name="module.social.messages.typing">入力中…</string>
   <string name="module.social.messages.requests">メッセージリクエスト</string>
   <string name="module.social.messages.requests_empty">保留中のメッセージリクエストはありません。</string>

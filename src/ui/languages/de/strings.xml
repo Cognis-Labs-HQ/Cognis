@@ -470,6 +470,10 @@
   <string name="module.social.messages.page_subtitle">Ihre Unterhaltungen und Direktnachrichten.</string>
   <string name="module.social.messages.request_sent">Nachrichtenanfrage gesendet.</string>
   <string name="module.social.messages.read_by">Gelesen von</string>
+  <string name="module.social.messages.receipt_sent">Gesendet</string>
+  <string name="module.social.messages.receipt_delivered">Zugestellt</string>
+  <string name="module.social.messages.receipt_read_single">Gelesen: {day} {time}</string>
+  <string name="module.social.messages.receipt_read_by_count">Gelesen von: {count} Nutzern</string>
   <string name="module.social.messages.typing">schreibt…</string>
   <string name="module.social.messages.requests">Nachrichtenanfragen</string>
   <string name="module.social.messages.requests_empty">Keine ausstehenden Nachrichtenanfragen.</string>

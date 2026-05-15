@@ -470,6 +470,10 @@
   <string name="module.social.messages.page_subtitle">Percakapan dan pesan langsung Anda.</string>
   <string name="module.social.messages.request_sent">Permintaan pesan telah dikirim.</string>
   <string name="module.social.messages.read_by">Dibaca oleh</string>
+  <string name="module.social.messages.receipt_sent">Terkirim</string>
+  <string name="module.social.messages.receipt_delivered">Tersampaikan</string>
+  <string name="module.social.messages.receipt_read_single">Dibaca: {day} {time}</string>
+  <string name="module.social.messages.receipt_read_by_count">Dibaca oleh: {count} pengguna</string>
   <string name="module.social.messages.typing">sedang mengetik…</string>
   <string name="module.social.messages.requests">Permintaan pesan</string>
   <string name="module.social.messages.requests_empty">Tidak ada permintaan pesan yang tertunda.</string>

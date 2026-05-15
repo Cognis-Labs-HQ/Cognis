@@ -274,8 +274,8 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
                     : "";
                 const pendingActions = canRespondInSidebar
                     ? `<span class="messages-room-request-actions" data-request-id="${escapeHtml(pendingRequest.id)}">
-                    <button type="button" class="messages-room-request-approve" aria-label="${escapeHtml(i18n.t("module.social.messages.approve_request"))}">✅</button>
-                    <button type="button" class="messages-room-request-reject" aria-label="${escapeHtml(i18n.t("module.social.messages.reject_request"))}">❌</button>
+                    <button type="button" class="messages-room-request-approve" aria-label="${escapeHtml(i18n.t("module.social.messages.approve_request"))}">${escapeHtml(i18n.t("module.social.messages.approve_request"))}</button>
+                    <button type="button" class="messages-room-request-reject" aria-label="${escapeHtml(i18n.t("module.social.messages.reject_request"))}">${escapeHtml(i18n.t("module.social.messages.reject_request"))}</button>
                 </span>`
                     : "";
                 const archivedHint = room.isArchived
@@ -326,13 +326,42 @@ function buildLastReadMap(decodedMessages) {
     return readersAtMessage;
 }
 
+function formatReadReceiptEntry(reader) {
+    const readerLabel = reader.displayName || reader.handle || reader.accountId;
+    const readDay = formatDate(reader.readAt, "");
+    const readTime = formatMessageTime(reader.readAt);
+    return `${readerLabel} ${readDay} ${readTime}`.trim();
+}
+
+function buildReadReceiptHoverText(i18n, isDelivered, readersHere) {
+    if (!isDelivered) return i18n.t("module.social.messages.receipt_sent");
+    if (!readersHere.length)
+        return i18n.t("module.social.messages.receipt_delivered");
+    if (readersHere.length === 1) {
+        const readDay = formatDate(readersHere[0].readAt, "");
+        const readTime = formatMessageTime(readersHere[0].readAt);
+        return i18n
+            .t("module.social.messages.receipt_read_single")
+            .replace("{day}", readDay)
+            .replace("{time}", readTime);
+    }
+    const heading = i18n
+        .t("module.social.messages.receipt_read_by_count")
+        .replace("{count}", String(readersHere.length));
+    const lines = readersHere.map((reader) => formatReadReceiptEntry(reader));
+    return `${heading}\n${lines.join("\n")}`;
+}
+
 function renderMessageStatus(
     message,
     currentAccountId,
     isDelivered,
     readersHere,
+    i18n,
 ) {
     if (message.senderId !== currentAccountId) return "";
+    const hoverText = buildReadReceiptHoverText(i18n, isDelivered, readersHere);
+    const titleAttr = escapeHtml(hoverText);
     if (readersHere.length > 0) {
         const avatarMarkup = readersHere
             .map((reader) => {
@@ -350,10 +379,10 @@ function renderMessageStatus(
                 });
             })
             .join("");
-        return `<div class="messages-message-status">${avatarMarkup}</div>`;
+        return `<div class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}">${avatarMarkup}</div>`;
     }
     const circleClass = isDelivered ? " messages-status-circle--delivered" : "";
-    return `<div class="messages-message-status"><span class="messages-status-circle${circleClass}" aria-hidden="true"></span></div>`;
+    return `<div class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}"><span class="messages-status-circle${circleClass}" aria-hidden="true"></span></div>`;
 }
 
 function formatRoomEventText(message, i18n) {
@@ -617,17 +646,20 @@ async function renderThread(
                 currentAccountId,
                 isDelivered,
                 readersHere,
+                i18n,
             );
             const metadataRow = timeLabel
-                ? `<div class="messages-message-meta">${timeLabel}</div>`
+                ? `<span class="messages-message-meta">${timeLabel}</span>`
                 : "";
             const ownRowClass = isOwn ? " messages-message-row--own" : "";
             return `${showDateDivider}<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(msg.id)}">
             ${isOwn ? "" : formatMessageAvatar(msg)}
             <div class="messages-message${ownClass}">
                 ${senderLabel}
-                <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
-                ${metadataRow}
+                <span class="messages-message-content">
+                    <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
+                    ${metadataRow}
+                </span>
                 ${renderReactionRow(msg)}
             </div>
             ${statusBlock}
@@ -1032,13 +1064,13 @@ export async function mount(root, { signal } = {}) {
         );
         if (!typingStatusEl) return;
         if (!res.ok) {
-            typingStatusEl.textContent = "";
+            typingStatusEl.innerHTML = "";
             return;
         }
         const payload = await res.json();
         const typers = payload?.data ?? [];
         if (!typers.length) {
-            typingStatusEl.textContent = "";
+            typingStatusEl.innerHTML = "";
             return;
         }
         const names = typers
@@ -1047,7 +1079,8 @@ export async function mount(root, { signal } = {}) {
                 (typer) => typer.displayName || typer.handle || typer.accountId,
             )
             .join(", ");
-        typingStatusEl.textContent = `${names} ${i18n.t("module.social.messages.typing")}`;
+        const typingLabel = `${names} ${i18n.t("module.social.messages.typing")}`;
+        typingStatusEl.innerHTML = `<span class="messages-typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="messages-typing-label">${escapeHtml(typingLabel)}</span>`;
     }
 
     function extensionFromType(type) {
