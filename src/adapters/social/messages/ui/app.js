@@ -751,7 +751,9 @@ async function loadRooms(i18n) {
 }
 
 export async function mount(root, { signal } = {}) {
-    const i18n = await createI18n();
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/adapters/social/messages/languages"],
+    });
     applyDocumentTitle(i18n, "ui.reuse.messages");
 
     root.classList.add("messages-page");

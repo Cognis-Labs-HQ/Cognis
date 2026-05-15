@@ -101,6 +101,12 @@ export async function canDirectMessageNowOrByApprovedRequest(
     fromId: string,
     toId: string,
 ): Promise<boolean> {
+    const requestAllowed = await canSendMessageRequest(
+        profileStore,
+        fromId,
+        toId,
+    );
+    if (!requestAllowed) return false;
     const directAllowed = await canMessage(profileStore, fromId, toId);
     if (directAllowed) return true;
     return messagesStore.hasApprovedMessageRequestBetween(fromId, toId);
@@ -581,6 +587,10 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     "rejected",
                 );
                 if (request.roomId) {
+                    await messagesStore.removeMember(
+                        request.roomId,
+                        request.toAccountId,
+                    );
                     const recipientProfile = await profileStore.getProfile(
                         request.toAccountId,
                     );

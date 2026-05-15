@@ -22,7 +22,7 @@ probe used by the UI to detect whether the adapter is loaded.
 | POST   | `/messages/rooms`                                   | Create a DM or group; body lists handles. DM may open in pending-request mode.          |
 | GET    | `/messages/requests`                                | List pending incoming message requests for current user.                                |
 | POST   | `/messages/requests/:id/approve`                    | Approve request and create/open the DM room.                                            |
-| POST   | `/messages/requests/:id/reject`                     | Reject a pending message request.                                                       |
+| POST   | `/messages/requests/:id/reject`                     | Reject a pending message request and remove the recipient from the pending DM room.     |
 | GET    | `/messages/rooms/:id`                               | Room metadata + members.                                                                |
 | GET    | `/messages/rooms/:id/key`                           | Fetch unwrapped per-room AES-GCM key (members only).                                    |
 | GET    | `/messages/rooms/:id/messages?before&limit`         | Paginated history (incoming pending-request recipients see no messages until approval). |
@@ -49,7 +49,8 @@ in the room and cannot view pending messages until approving.
 
 Message requests are pair-scoped (user-to-user), not room-scoped: once a pair
 has an approved request history, future direct chats between the same two
-accounts can be created directly without requesting again.
+accounts can be created directly without requesting again, as long as neither
+account is blocked and both profiles remain visible.
 
 If a two-member chat is left by one participant, the remaining participant keeps
 the room in an archived state (shown in a dedicated archived sidebar section)
