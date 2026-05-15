@@ -24,6 +24,10 @@ import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { showToast } from "../../reuse/toast.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import {
+    isValidMessageStyle,
+    normalizeMessageStyle,
+} from "../../reuse/message-style-options.js";
 
 async function loadPrefs() {
     const account = localStorage.getItem("cognis_account");
@@ -177,10 +181,9 @@ export async function mount(root, { signal } = {}) {
     }
 
     function initMessageStylePrefs({ onDirtyChange }) {
-        const options = new Set(["default", "speech_bubbles", "irc"]);
-        let savedMessageStyle = options.has(loadedPrefs?.messageStyle)
-            ? loadedPrefs.messageStyle
-            : "default";
+        let savedMessageStyle = normalizeMessageStyle(
+            loadedPrefs?.messageStyle,
+        );
         let currentMessageStyle = savedMessageStyle;
 
         function updateSelector() {
@@ -195,7 +198,7 @@ export async function mount(root, { signal } = {}) {
         root.querySelectorAll(".message-style-btn").forEach((button) => {
             button.addEventListener("click", () => {
                 const nextStyle = button.dataset.messageStyleValue;
-                if (!options.has(nextStyle)) return;
+                if (!isValidMessageStyle(nextStyle)) return;
                 currentMessageStyle = nextStyle;
                 updateSelector();
                 onDirtyChange?.(currentMessageStyle !== savedMessageStyle);
@@ -515,8 +518,7 @@ export async function mount(root, { signal } = {}) {
                     "auto",
                 messageStyle:
                     messageStylePrefs?.getMessageStyle() ??
-                    loadedPrefs?.messageStyle ??
-                    "default",
+                    normalizeMessageStyle(loadedPrefs?.messageStyle),
             };
             await savePrefs(prefs);
             loadedPrefs = { ...loadedPrefs, ...prefs };

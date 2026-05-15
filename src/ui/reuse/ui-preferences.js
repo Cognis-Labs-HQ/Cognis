@@ -11,12 +11,7 @@
  *   applyUiPreferences(prefs);
  */
 import { apiFetch } from "./api-client.js";
-
-const MESSAGE_STYLE_OPTIONS = new Set(["default", "speech_bubbles", "irc"]);
-
-function normalizeMessageStyle(value) {
-    return MESSAGE_STYLE_OPTIONS.has(value) ? value : "default";
-}
+import { normalizeMessageStyle } from "./message-style-options.js";
 
 function hasPreferenceApiContext() {
     return Boolean(

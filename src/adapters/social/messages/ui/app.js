@@ -23,33 +23,31 @@ import {
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
+import { normalizeMessageStyle } from "/static/reuse/message-style-options.js";
 import {
     hexToBytes,
     bytesToHex,
     importRoomKey,
 } from "/static/reuse/crypto-utils.js";
 
-const TEXT_ENCODER = new TextEncoder();
-const TEXT_DECODER = new TextDecoder();
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
 const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉"];
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
-const MESSAGE_STYLE_OPTIONS = new Set(["default", "speech_bubbles", "irc"]);
 
 function resolveMessageStyle() {
     const rootStyle = document.documentElement.dataset.messageStyle;
-    if (MESSAGE_STYLE_OPTIONS.has(rootStyle)) return rootStyle;
+    if (rootStyle) return normalizeMessageStyle(rootStyle);
     try {
         const raw = localStorage.getItem("cognis_ui_preferences");
-        if (!raw) return "default";
+        if (!raw) return normalizeMessageStyle(null);
         const parsed = JSON.parse(raw);
-        return MESSAGE_STYLE_OPTIONS.has(parsed?.messageStyle)
-            ? parsed.messageStyle
-            : "default";
+        return normalizeMessageStyle(parsed?.messageStyle);
     } catch {
-        return "default";
+        return normalizeMessageStyle(null);
     }
 }
 
@@ -58,7 +56,7 @@ async function encryptMessage(key, plaintext) {
     const ciphertext = await crypto.subtle.encrypt(
         { name: "AES-GCM", iv: initVector },
         key,
-        TEXT_ENCODER.encode(plaintext),
+        textEncoder.encode(plaintext),
     );
     return {
         iv: bytesToHex(initVector),
@@ -66,7 +64,7 @@ async function encryptMessage(key, plaintext) {
     };
 }
 
-async function decodeMessageText(key, message) {
+async function decryptMessageOrReturnPlaintext(key, message) {
     try {
         if (message.contentType === "application/vnd.cognis.room-event+json") {
             return message.ciphertext;
@@ -81,7 +79,7 @@ async function decodeMessageText(key, message) {
             key,
             hexToBytes(cipherHex),
         );
-        return TEXT_DECODER.decode(decrypted);
+        return textDecoder.decode(decrypted);
     } catch {
         return null;
     }
@@ -332,7 +330,9 @@ async function renderThread(
     const ordered = messageList.slice().reverse();
     const decoded = await Promise.all(
         ordered.map(async (msg) => {
-            const text = key ? await decodeMessageText(key, msg) : null;
+            const text = key
+                ? await decryptMessageOrReturnPlaintext(key, msg)
+                : null;
             return { ...msg, text };
         }),
     );
@@ -415,7 +415,7 @@ async function loadRooms(i18n) {
             }
             const roomKey = await getRoomKey(room.id);
             const previewText = roomKey
-                ? await decodeMessageText(roomKey, lastMessage)
+                ? await decryptMessageOrReturnPlaintext(roomKey, lastMessage)
                 : null;
             return {
                 ...room,
@@ -851,6 +851,15 @@ export async function mount(root, { signal } = {}) {
                 );
                 const form = document.getElementById("messages-composer");
 
+                function closeReadTooltips() {
+                    threadList
+                        ?.querySelectorAll(".messages-read-tooltip")
+                        .forEach((node) => node.setAttribute("hidden", ""));
+                    threadList?.classList.remove(
+                        "messages-thread-list--receipt-open",
+                    );
+                }
+
                 threadList?.addEventListener("click", async (clickEvent) => {
                     const statusGroup =
                         clickEvent.target.closest("[data-status-for]");
@@ -860,10 +869,13 @@ export async function mount(root, { signal } = {}) {
                         );
                         if (!tooltip) return;
                         const isHidden = tooltip.hasAttribute("hidden");
-                        threadList
-                            .querySelectorAll(".messages-read-tooltip")
-                            .forEach((node) => node.setAttribute("hidden", ""));
-                        if (isHidden) tooltip.removeAttribute("hidden");
+                        closeReadTooltips();
+                        if (isHidden) {
+                            tooltip.removeAttribute("hidden");
+                            threadList.classList.add(
+                                "messages-thread-list--receipt-open",
+                            );
+                        }
                         return;
                     }
                     if (
@@ -871,9 +883,7 @@ export async function mount(root, { signal } = {}) {
                             ".messages-read-tooltip:not([hidden])",
                         )
                     ) {
-                        threadList
-                            .querySelectorAll(".messages-read-tooltip")
-                            .forEach((node) => node.setAttribute("hidden", ""));
+                        closeReadTooltips();
                     }
                     const reactionButton = clickEvent.target.closest(
                         "[data-message-id][data-emoji]",
@@ -994,10 +1004,13 @@ export async function mount(root, { signal } = {}) {
                     );
                     if (!tooltip) return;
                     const isHidden = tooltip.hasAttribute("hidden");
-                    threadList
-                        .querySelectorAll(".messages-read-tooltip")
-                        .forEach((node) => node.setAttribute("hidden", ""));
-                    if (isHidden) tooltip.removeAttribute("hidden");
+                    closeReadTooltips();
+                    if (isHidden) {
+                        tooltip.removeAttribute("hidden");
+                        threadList.classList.add(
+                            "messages-thread-list--receipt-open",
+                        );
+                    }
                 });
 
                 if (selectedRoomId) {
@@ -1050,6 +1063,13 @@ export async function mount(root, { signal } = {}) {
             document
                 .querySelectorAll(".messages-read-tooltip:not([hidden])")
                 .forEach((tooltip) => tooltip.setAttribute("hidden", ""));
+            document
+                .querySelectorAll(".messages-thread-list--receipt-open")
+                .forEach((thread) =>
+                    thread.classList.remove(
+                        "messages-thread-list--receipt-open",
+                    ),
+                );
         },
         { signal },
     );
