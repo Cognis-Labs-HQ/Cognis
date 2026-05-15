@@ -159,15 +159,18 @@ export class Logger {
     ): Promise<void> {
         const entry = createLogEntry(level, message, meta);
         const line = `${serializeLogEntry(entry)}\n`;
+        if (priorities[level] >= priorities[this.level]) {
+            writeConsoleLog(level, message, meta, this.consoleFormat);
+        }
         const run = async () => {
             await this.rotateIfNeeded(Buffer.byteLength(line, "utf8"));
             await this.fileAppend(this.filePath, line);
-            if (priorities[level] >= priorities[this.level]) {
-                writeConsoleLog(level, message, meta, this.consoleFormat);
-            }
         };
-        const pending = this.writeQueue.then(run);
-        this.writeQueue = pending.catch(() => undefined);
+        const pending = this.writeQueue.then(run, run);
+        this.writeQueue = pending.then(
+            () => undefined,
+            () => undefined,
+        );
         await pending;
     }
 
@@ -213,14 +216,13 @@ export class Logger {
         const dirPath = path.dirname(this.filePath);
         const baseName = path.basename(this.filePath);
         const entries = await readdir(dirPath);
+        const rotatedSuffixPattern =
+            /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z-[a-z0-9]+(?:\.gz)?$/;
         const rotatedCandidates = entries
             .filter(
                 (entry) =>
                     entry.startsWith(`${baseName}.`) &&
-                    (entry.endsWith(".gz") ||
-                        /^\d{4}-\d{2}-\d{2}T/.test(
-                            entry.slice(baseName.length + 1),
-                        )),
+                    rotatedSuffixPattern.test(entry.slice(baseName.length + 1)),
             )
             .map((entry) => path.join(dirPath, entry));
         const resolved = await Promise.all(

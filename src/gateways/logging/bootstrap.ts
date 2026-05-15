@@ -26,22 +26,10 @@ const LEVEL_PRIORITY: Record<LogLevel, number> = {
 
 function parseSeverityThreshold(value: string | null): LogLevel | null {
     if (!value || value === "all") return null;
-    const levels = value
-        .split(",")
-        .map((part) => part.trim().toLowerCase())
-        .filter((part): part is LogLevel =>
-            ALLOWED_LEVELS.has(part as LogLevel),
-        );
-    if (!levels.length) return null;
-    const [firstLevel, ...remainingLevels] = levels;
-    // When multiple severity values are provided, use the lowest-priority level
-    // as the threshold.
-    return remainingLevels.reduce((lowestLevel, candidateLevel) => {
-        if (LEVEL_PRIORITY[candidateLevel] < LEVEL_PRIORITY[lowestLevel]) {
-            return candidateLevel;
-        }
-        return lowestLevel;
-    }, firstLevel);
+    const normalizedValue = value.trim().toLowerCase();
+    if (normalizedValue.includes(",")) return null;
+    if (!ALLOWED_LEVELS.has(normalizedValue as LogLevel)) return null;
+    return normalizedValue as LogLevel;
 }
 
 function parseKeywordFilter(value: string | null): string {

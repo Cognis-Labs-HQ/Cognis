@@ -164,3 +164,63 @@ test("Logger rotates and compresses old log files", async () => {
         await rm(tempRoot, { recursive: true, force: true });
     }
 });
+
+test("Logger writes to console before queued file writes complete", async () => {
+    const stderrWrites: string[] = [];
+    const originalStderrWrite = process.stderr.write.bind(process.stderr);
+    let releaseQueuedWrite: (() => void) | null = null;
+    const queuedWriteRelease = new Promise<void>((resolve) => {
+        releaseQueuedWrite = resolve;
+    });
+
+    process.stderr.write = ((chunk: string | Uint8Array) => {
+        stderrWrites.push(String(chunk));
+        return true;
+    }) as typeof process.stderr.write;
+
+    try {
+        const logger = new Logger(
+            "debug",
+            "/tmp/cognis-logger-console-order-test.log",
+            async () => {
+                await queuedWriteRelease;
+            },
+            "pretty",
+        );
+        const pendingLog = logger.error("Console should be immediate.");
+        assert.match(stderrWrites.join(""), /Console should be immediate\./);
+        if (!releaseQueuedWrite) {
+            throw new Error("Expected queued write release callback.");
+        }
+        releaseQueuedWrite();
+        await pendingLog;
+    } finally {
+        process.stderr.write = originalStderrWrite;
+    }
+});
+
+test("Logger queue continues processing writes after a failed append", async () => {
+    let writeAttemptCount = 0;
+    const persistedWrites: string[] = [];
+    const logger = new Logger(
+        "debug",
+        "/tmp/cognis-logger-queue-failure-test.log",
+        async (_filePath, content) => {
+            writeAttemptCount += 1;
+            if (writeAttemptCount === 1) {
+                throw new Error("append failed");
+            }
+            persistedWrites.push(content);
+        },
+        "pretty",
+    );
+
+    await assert.rejects(
+        logger.info("First write should fail."),
+        /append failed/,
+    );
+    await assert.doesNotReject(logger.info("Second write should succeed."));
+    assert.equal(persistedWrites.length, 1);
+    const secondWrite = JSON.parse(persistedWrites[0]);
+    assert.equal(secondWrite.message, "Second write should succeed.");
+});
