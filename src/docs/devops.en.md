@@ -68,25 +68,25 @@ npm ci && npm run ci:test
 
 Environment variables needed to run the application:
 
-| Variable                          | Default                        | Description                                                 |
-| --------------------------------- | ------------------------------ | ----------------------------------------------------------- |
-| `DB_TYPE`                         | `postgresql`                   | Database backend: `postgresql` or `mariadb`                 |
-| `DATABASE_URL`                    | —                              | Connection string for PostgreSQL or MariaDB                 |
-| `MEDIA_LOCATION`                  | `/app/media`                   | Root directory for file uploads                             |
+| Variable                          | Default                        | Description                                                                             |
+| --------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------- |
+| `DB_TYPE`                         | `postgresql`                   | Database backend: `postgresql` or `mariadb`                                             |
+| `DATABASE_URL`                    | —                              | Connection string for PostgreSQL or MariaDB                                             |
+| `MEDIA_LOCATION`                  | `/app/media`                   | Root directory for file uploads                                                         |
 | `LOG_LEVEL`                       | `info`                         | Baseline severity filter for `/api/v1/logging/stream`: `debug`, `info`, `warn`, `error` |
-| `LOG_FILE`                        | `/app/logs/app.log`            | Log file path inside the container                          |
-| `LOG_ROTATE_MAX_BYTES`            | `10485760`                     | Rotate active log file when size reaches this many bytes    |
-| `LOG_ROTATE_MAX_FILES`            | `10`                           | Number of rotated log archives to keep (`0` keeps none)     |
-| `LOG_ROTATE_COMPRESS`             | `true`                         | Compress rotated logs with gzip (`.gz`) when enabled        |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer token lifetime in seconds                            |
-| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Path for the CLI bootstrap token                            |
-| `COGNIS_MODULES_ROOT`             | `/app/src/modules`             | Root directory for module discovery                         |
-| `COGNIS_GATEWAYS_ROOT`            | `/app/src/gateways`            | Root directory for gateway discovery                        |
-| `COGNIS_ADAPTERS_ROOT`            | `/app/src/adapters`            | Root directory for adapter discovery                        |
-| `PORT`                            | `3000`                         | HTTP port                                                   |
-| `HOST`                            | `cognis`                       | Internal service hostname                                   |
-| `EXTERNAL_HOST`                   | —                              | Publicly reachable URL for email links                      |
-| `COGNIS_SMTP_HOST`                | —                              | SMTP server hostname; enables the SMTP notification adapter |
-| `COGNIS_UI_DEMO_MODE`             | `0`                            | Set to `1` to enable pre-populated example data             |
+| `LOG_FILE`                        | `/app/logs/app.log`            | Log file path inside the container                                                      |
+| `LOG_ROTATE_MAX_BYTES`            | `10485760`                     | Rotate active log file when size reaches this many bytes                                |
+| `LOG_ROTATE_MAX_FILES`            | `10`                           | Number of rotated log archives to keep (`0` keeps none)                                 |
+| `LOG_ROTATE_COMPRESS`             | `true`                         | Compress rotated logs with gzip (`.gz`) when enabled                                    |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer token lifetime in seconds                                                        |
+| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Path for the CLI bootstrap token                                                        |
+| `COGNIS_MODULES_ROOT`             | `/app/src/modules`             | Root directory for module discovery                                                     |
+| `COGNIS_GATEWAYS_ROOT`            | `/app/src/gateways`            | Root directory for gateway discovery                                                    |
+| `COGNIS_ADAPTERS_ROOT`            | `/app/src/adapters`            | Root directory for adapter discovery                                                    |
+| `PORT`                            | `3000`                         | HTTP port                                                                               |
+| `HOST`                            | `cognis`                       | Internal service hostname                                                               |
+| `EXTERNAL_HOST`                   | —                              | Publicly reachable URL for email links                                                  |
+| `COGNIS_SMTP_HOST`                | —                              | SMTP server hostname; enables the SMTP notification adapter                             |
+| `COGNIS_UI_DEMO_MODE`             | `0`                            | Set to `1` to enable pre-populated example data                                         |
 
 A full reference with comments is in `env.example` at the repository root.

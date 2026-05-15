@@ -58,11 +58,11 @@ Jede persistente Protokollzeile ist ein JSON-Objekt:
 
 Die DB-Gateway-Ereignisse verwenden ebenfalls den gemeinsamen Logger, protokollieren jedoch nur zusammengefasste Metadaten (`provider`, SQL-Anweisungstyp, Parameteranzahl, Fehlername/-code). Rohmeldungen der Datenbank werden nicht wörtlich weitergereicht, da der Datenbank-Container sie bereits selbst protokolliert.
 
-| Variable               | Standard            | Beschreibung                                                                          |
-| ---------------------- | ------------------- | ------------------------------------------------------------------------------------- |
+| Variable               | Standard            | Beschreibung                                                                           |
+| ---------------------- | ------------------- | -------------------------------------------------------------------------------------- |
 | `LOG_LEVEL`            | `info`              | Basis-Schweregradfilter für `/api/v1/logging/stream`: `debug`, `info`, `warn`, `error` |
-| `LOG_FILE`             | `/app/logs/app.log` | Absoluter Pfad für die persistente Protokolldatei                                     |
-| `LOG_FORMAT`           | `pretty`            | Konsolenformat: `pretty` für lesbare Logs oder `json` für Roh-JSON                    |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`          | Rotiert die aktive Logdatei bei Erreichen dieser Größe (Bytes)                        |
-| `LOG_ROTATE_MAX_FILES` | `10`                | Anzahl aufbewahrter rotierter Logarchive (`0` = keine)                                |
-| `LOG_ROTATE_COMPRESS`  | `true`              | Wenn `true`, werden rotierte Logs als gzip (`.gz`) komprimiert                        |
+| `LOG_FILE`             | `/app/logs/app.log` | Absoluter Pfad für die persistente Protokolldatei                                      |
+| `LOG_FORMAT`           | `pretty`            | Konsolenformat: `pretty` für lesbare Logs oder `json` für Roh-JSON                     |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`          | Rotiert die aktive Logdatei bei Erreichen dieser Größe (Bytes)                         |
+| `LOG_ROTATE_MAX_FILES` | `10`                | Anzahl aufbewahrter rotierter Logarchive (`0` = keine)                                 |
+| `LOG_ROTATE_COMPRESS`  | `true`              | Wenn `true`, werden rotierte Logs als gzip (`.gz`) komprimiert                         |

@@ -108,7 +108,9 @@ test("Logger writes console and file entries regardless of configured LOG_LEVEL"
             "pretty",
         );
 
-        await logger.info("User listing completed.", { component: "api-users" });
+        await logger.info("User listing completed.", {
+            component: "api-users",
+        });
     } finally {
         process.stdout.write = originalStdoutWrite;
         process.stderr.write = originalStderrWrite;
@@ -126,25 +128,19 @@ test("Logger rotates and compresses old log files", async () => {
     const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logger-"));
     const logPath = path.join(tempRoot, "app.log");
     try {
-        const logger = new Logger(
-            "debug",
-            logPath,
-            undefined,
-            "pretty",
-            {
-                maxBytes: 1,
-                maxFiles: 2,
-                compressRotated: true,
-            },
-        );
+        const logger = new Logger("debug", logPath, undefined, "pretty", {
+            maxBytes: 1,
+            maxFiles: 2,
+            compressRotated: true,
+        });
 
         await logger.info("first entry");
         await logger.info("second entry");
         await logger.info("third entry");
 
         const entries = await readdir(tempRoot);
-        const compressed = entries.filter((entry) =>
-            entry.startsWith("app.log.") && entry.endsWith(".gz"),
+        const compressed = entries.filter(
+            (entry) => entry.startsWith("app.log.") && entry.endsWith(".gz"),
         );
         assert.ok(compressed.length >= 1);
         assert.ok(compressed.length <= 2);

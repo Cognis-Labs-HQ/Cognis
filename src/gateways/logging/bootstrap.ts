@@ -384,7 +384,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             void logger.log(logLevel, message, meta);
         },
     );
-    ctx.routeRegistry.register(createLoggingRoutes(filePath, level, log), "logging");
+    ctx.routeRegistry.register(
+        createLoggingRoutes(filePath, level, log),
+        "logging",
+    );
 
     const uiDir = path.resolve(
         process.cwd(),

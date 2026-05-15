@@ -88,11 +88,11 @@ The DB gateway uses the shared logger for its own events but records only summar
 
 ## Configuration
 
-| Variable             | Default             | Description                                                                               |
-| -------------------- | ------------------- | ----------------------------------------------------------------------------------------- |
-| `LOG_LEVEL`          | `info`              | Baseline severity filter for `/api/v1/logging/stream`: `debug`, `info`, `warn`, `error` |
-| `LOG_FILE`           | `/app/logs/app.log` | Absolute path for the persistent log file                                                 |
-| `LOG_FORMAT`         | `pretty`            | Console output format: `pretty` for readable logs or `json` for raw JSON                 |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`        | Rotate the active log file when it reaches this size (bytes)                              |
-| `LOG_ROTATE_MAX_FILES` | `10`              | Number of rotated log archives to keep (`0` keeps none)                                   |
-| `LOG_ROTATE_COMPRESS`  | `true`            | When `true`, rotated logs are gzip-compressed (`.gz`)                                     |
+| Variable               | Default             | Description                                                                             |
+| ---------------------- | ------------------- | --------------------------------------------------------------------------------------- |
+| `LOG_LEVEL`            | `info`              | Baseline severity filter for `/api/v1/logging/stream`: `debug`, `info`, `warn`, `error` |
+| `LOG_FILE`             | `/app/logs/app.log` | Absolute path for the persistent log file                                               |
+| `LOG_FORMAT`           | `pretty`            | Console output format: `pretty` for readable logs or `json` for raw JSON                |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`          | Rotate the active log file when it reaches this size (bytes)                            |
+| `LOG_ROTATE_MAX_FILES` | `10`                | Number of rotated log archives to keep (`0` keeps none)                                 |
+| `LOG_ROTATE_COMPRESS`  | `true`              | When `true`, rotated logs are gzip-compressed (`.gz`)                                   |
