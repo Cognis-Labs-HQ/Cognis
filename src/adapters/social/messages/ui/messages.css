@@ -45,6 +45,7 @@
 .messages-room {
     display: flex;
     align-items: center;
+    position: relative;
     gap: 0.6rem;
     padding: 0.75rem 1rem;
     cursor: pointer;
@@ -108,6 +109,40 @@
     color: var(--color-accent-contrast);
     font-size: 0.75rem;
     text-align: center;
+}
+
+.messages-room-request-actions {
+    position: absolute;
+    right: 0.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    gap: 0.25rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease-in-out;
+}
+
+.messages-room-request-actions button {
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    font-size: 0.72rem;
+    line-height: 1;
+    padding: 0.22rem 0.4rem;
+}
+
+.messages-room--pending:hover .messages-room-request-actions,
+.messages-room--pending:focus-within .messages-room-request-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.messages-room--pending:hover .messages-unread-badge,
+.messages-room--pending:focus-within .messages-unread-badge {
+    opacity: 0;
 }
 
 .messages-empty {
@@ -474,59 +509,6 @@
     background: var(--color-surface);
     cursor: pointer;
     padding: 0.15rem 0.45rem;
-}
-
-.messages-requests-section {
-    border-top: 1px solid var(--color-border);
-    padding: 0.5rem 0.75rem;
-}
-
-.messages-requests-title {
-    margin: 0 0 0.4rem;
-    font-size: 0.85rem;
-}
-
-.messages-requests-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    max-height: 10rem;
-    overflow-y: auto;
-}
-
-.messages-request-item {
-    border: 1px solid var(--color-border);
-    border-radius: 0.5rem;
-    padding: 0.45rem 0.5rem;
-}
-
-.messages-request-label {
-    display: block;
-    font-size: 0.82rem;
-    margin-bottom: 0.3rem;
-}
-
-.messages-request-actions {
-    display: flex;
-    gap: 0.35rem;
-}
-
-.messages-request-actions button {
-    border: 1px solid var(--color-border);
-    border-radius: 0.35rem;
-    background: var(--color-surface);
-    color: var(--color-text);
-    cursor: pointer;
-    font-size: 0.75rem;
-    padding: 0.2rem 0.45rem;
-}
-
-.messages-requests-empty {
-    color: var(--color-text-muted);
-    font-size: 0.8rem;
 }
 
 .messages-room-event {

@@ -208,8 +208,23 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
                     ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
                     : "";
             const isActive = room.id === selectedRoomId;
+            const pendingRequest = room.pendingRequest ?? null;
+            const canRespondInSidebar =
+                pendingRequest &&
+                pendingRequest.direction === "incoming" &&
+                pendingRequest.canRespond &&
+                pendingRequest.id;
+            const pendingClass = canRespondInSidebar
+                ? " messages-room--pending"
+                : "";
+            const pendingActions = canRespondInSidebar
+                ? `<span class="messages-room-request-actions" data-request-id="${escapeHtml(pendingRequest.id)}">
+                    <button type="button" class="messages-room-request-approve" aria-label="${escapeHtml(i18n.t("module.social.messages.approve_request"))}">✅</button>
+                    <button type="button" class="messages-room-request-reject" aria-label="${escapeHtml(i18n.t("module.social.messages.reject_request"))}">❌</button>
+                </span>`
+                : "";
             return `
-      <li class="messages-room ${isActive ? "messages-room--active" : ""}"
+      <li class="messages-room ${isActive ? "messages-room--active" : ""}${pendingClass}"
           data-room-id="${escapeHtml(room.id)}">
         <span class="messages-room-avatar">${avatar}</span>
         <span class="messages-room-meta">
@@ -217,6 +232,7 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
             <span class="messages-room-preview">${escapeHtml(preview)}</span>
         </span>
         ${unreadBadge}
+        ${pendingActions}
       </li>
     `;
         })
@@ -454,7 +470,6 @@ export async function mount(root, { signal } = {}) {
     let typingPollIntervalId = null;
     let typingActive = false;
     let lastTypingSentAt = 0;
-    let pendingIncomingRequests = [];
 
     let rooms = await loadRooms(i18n);
     if (signal?.aborted) return;
@@ -479,34 +494,6 @@ export async function mount(root, { signal } = {}) {
         );
         if (!res.ok) return null;
         return (await res.json()).data ?? null;
-    }
-
-    async function loadIncomingRequests() {
-        const res = await apiFetch("/api/v1/messages/requests");
-        if (!res.ok) return [];
-        const payload = await res.json();
-        return payload?.data ?? [];
-    }
-
-    function renderIncomingRequests() {
-        if (!pendingIncomingRequests.length) {
-            return `<div class="messages-requests-empty">${escapeHtml(i18n.t("module.social.messages.requests_empty"))}</div>`;
-        }
-        return pendingIncomingRequests
-            .map((request) => {
-                const requesterLabel =
-                    request?.requester?.displayName ||
-                    request?.requester?.handle ||
-                    request?.fromAccountId;
-                return `<li class="messages-request-item" data-request-id="${escapeHtml(request.id)}">
-                    <span class="messages-request-label">${escapeHtml(requesterLabel)}</span>
-                    <div class="messages-request-actions">
-                        <button type="button" class="messages-request-approve">${escapeHtml(i18n.t("module.social.messages.approve_request"))}</button>
-                        <button type="button" class="messages-request-reject">${escapeHtml(i18n.t("module.social.messages.reject_request"))}</button>
-                    </div>
-                </li>`;
-            })
-            .join("");
     }
 
     function renderPendingRequestBanner(pendingRequest) {
@@ -549,6 +536,13 @@ export async function mount(root, { signal } = {}) {
         if (!threadList) return;
         localStorage.setItem(LAST_OPENED_ROOM_KEY, roomId);
         const room = await loadRoom(roomId);
+        if (room) {
+            rooms = rooms.map((entry) =>
+                String(entry.id) === String(room.id)
+                    ? { ...entry, ...room }
+                    : entry,
+            );
+        }
         if (headerSlot && room) {
             headerSlot.innerHTML = renderThreadHeader(
                 room,
@@ -585,6 +579,42 @@ export async function mount(root, { signal } = {}) {
         bindPendingRequestBannerEvents();
     }
 
+    async function respondToPendingRequest(
+        requestId,
+        action,
+        roomIdHint = null,
+    ) {
+        if (!requestId || !["approve", "reject"].includes(action)) return;
+        const res = await apiFetch(
+            `/api/v1/messages/requests/${encodeURIComponent(requestId)}/${action}`,
+            { method: "POST" },
+        );
+        if (!res.ok) return;
+        const payload = await res.json().catch(() => null);
+        await reloadRoomsList();
+        if (action === "approve") {
+            const nextRoomId =
+                payload?.data?.id || roomIdHint || selectedRoomId;
+            if (nextRoomId) {
+                selectedRoomId = nextRoomId;
+                history.pushState(
+                    {},
+                    "",
+                    `/messages/${encodeURIComponent(nextRoomId)}`,
+                );
+                await openRoom(nextRoomId);
+            }
+            return;
+        }
+        if (roomIdHint) {
+            await openRoom(roomIdHint);
+            return;
+        }
+        if (selectedRoomId) {
+            await openRoom(selectedRoomId);
+        }
+    }
+
     function bindPendingRequestBannerEvents() {
         const banner = document.querySelector(
             "#messages-request-banner-slot [data-request-id]",
@@ -595,27 +625,20 @@ export async function mount(root, { signal } = {}) {
         banner
             .querySelector(".messages-request-banner-approve")
             ?.addEventListener("click", async () => {
-                const res = await apiFetch(
-                    `/api/v1/messages/requests/${encodeURIComponent(requestId)}/approve`,
-                    { method: "POST" },
+                await respondToPendingRequest(
+                    requestId,
+                    "approve",
+                    selectedRoomId,
                 );
-                if (!res.ok) return;
-                await openRoom(selectedRoomId);
-                await reloadRoomsList();
             });
         banner
             .querySelector(".messages-request-banner-reject")
             ?.addEventListener("click", async () => {
-                const res = await apiFetch(
-                    `/api/v1/messages/requests/${encodeURIComponent(requestId)}/reject`,
-                    { method: "POST" },
+                await respondToPendingRequest(
+                    requestId,
+                    "reject",
+                    selectedRoomId,
                 );
-                if (!res.ok) return;
-                await reloadRoomsList();
-                const bannerSlot = document.getElementById(
-                    "messages-request-banner-slot",
-                );
-                if (bannerSlot) bannerSlot.innerHTML = "";
             });
     }
 
@@ -788,11 +811,7 @@ export async function mount(root, { signal } = {}) {
             showToast(i18n.t("module.social.messages.request_sent"), {
                 variant: "info",
             });
-            pendingIncomingRequests = await loadIncomingRequests();
-            const requestList = document.getElementById(
-                "messages-requests-list",
-            );
-            if (requestList) requestList.innerHTML = renderIncomingRequests();
+            await reloadRoomsList();
             return;
         }
         if (!newRoomId) return;
@@ -801,8 +820,6 @@ export async function mount(root, { signal } = {}) {
         await openRoom(newRoomId);
         await reloadRoomsList();
     }
-
-    pendingIncomingRequests = await loadIncomingRequests();
 
     const sidebarHtml = `<div class="messages-sidebar-content">
         <header class="messages-rooms-header">
@@ -813,12 +830,6 @@ export async function mount(root, { signal } = {}) {
         <ul class="messages-rooms-list" id="messages-rooms-list">
             ${renderRoomList(rooms, currentAccountId, selectedRoomId, i18n)}
         </ul>
-        <section class="messages-requests-section">
-            <h3 class="messages-requests-title">${escapeHtml(i18n.t("module.social.messages.requests"))}</h3>
-            <ul class="messages-requests-list" id="messages-requests-list">
-                ${renderIncomingRequests()}
-            </ul>
-        </section>
     </div>`;
 
     const elements = [
@@ -1086,6 +1097,29 @@ export async function mount(root, { signal } = {}) {
     function bindSidebarEvents() {
         const roomsList = document.getElementById("messages-rooms-list");
         roomsList?.addEventListener("click", async (clickEvent) => {
+            const requestActionButton = clickEvent.target.closest(
+                ".messages-room-request-approve, .messages-room-request-reject",
+            );
+            if (requestActionButton) {
+                clickEvent.preventDefault();
+                clickEvent.stopPropagation();
+                const roomItem = clickEvent.target.closest("[data-room-id]");
+                const roomId = roomItem?.getAttribute("data-room-id");
+                const requestId = clickEvent.target
+                    .closest("[data-request-id]")
+                    ?.getAttribute("data-request-id");
+                if (!requestId || !roomId) return;
+                if (
+                    requestActionButton.classList.contains(
+                        "messages-room-request-approve",
+                    )
+                ) {
+                    await respondToPendingRequest(requestId, "approve", roomId);
+                    return;
+                }
+                await respondToPendingRequest(requestId, "reject", roomId);
+                return;
+            }
             const item = clickEvent.target.closest("[data-room-id]");
             if (!item) return;
             const id = item.getAttribute("data-room-id");
@@ -1115,44 +1149,6 @@ export async function mount(root, { signal } = {}) {
                     await createConversationFromHandle(result.handle);
                 },
             });
-        });
-
-        const requestList = document.getElementById("messages-requests-list");
-        requestList?.addEventListener("click", async (clickEvent) => {
-            const requestItem = clickEvent.target.closest("[data-request-id]");
-            if (!requestItem) return;
-            const requestId = requestItem.getAttribute("data-request-id");
-            if (!requestId) return;
-            if (clickEvent.target.closest(".messages-request-approve")) {
-                const res = await apiFetch(
-                    `/api/v1/messages/requests/${encodeURIComponent(requestId)}/approve`,
-                    { method: "POST" },
-                );
-                if (!res.ok) return;
-                const payload = await res.json();
-                const roomId = payload?.data?.id;
-                pendingIncomingRequests = await loadIncomingRequests();
-                requestList.innerHTML = renderIncomingRequests();
-                if (!roomId) return;
-                selectedRoomId = roomId;
-                history.pushState(
-                    {},
-                    "",
-                    `/messages/${encodeURIComponent(roomId)}`,
-                );
-                await openRoom(roomId);
-                await reloadRoomsList();
-                return;
-            }
-            if (clickEvent.target.closest(".messages-request-reject")) {
-                const res = await apiFetch(
-                    `/api/v1/messages/requests/${encodeURIComponent(requestId)}/reject`,
-                    { method: "POST" },
-                );
-                if (!res.ok) return;
-                pendingIncomingRequests = await loadIncomingRequests();
-                requestList.innerHTML = renderIncomingRequests();
-            }
         });
     }
 
