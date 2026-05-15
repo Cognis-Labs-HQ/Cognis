@@ -465,7 +465,7 @@
   <string name="module.social.messages.reject_request">Reject</string>
   <string name="module.social.messages.preview_encrypted">Encrypted message</string>
   <string name="module.social.messages.preview_event">Room event</string>
-  <string name="module.social.messages.read_details">Open Read Details</string>
+  <string name="module.social.messages.read_details">View Read Status</string>
   <string name="module.social.messages.request_banner_incoming">{name} wants to message you. Accept to reveal messages.</string>
   <string name="module.social.messages.request_banner_outgoing">Waiting for {name} to accept your message request.</string>
   <string name="module.social.messages.event_member_joined">{name} joined the room.</string>

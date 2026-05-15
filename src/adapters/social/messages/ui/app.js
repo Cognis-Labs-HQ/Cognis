@@ -50,7 +50,7 @@ async function encryptMessage(key, plaintext) {
     };
 }
 
-async function decryptMessage(key, message) {
+async function decodeMessageText(key, message) {
     try {
         if (message.contentType === "application/vnd.cognis.room-event+json") {
             return message.ciphertext;
@@ -214,17 +214,11 @@ function renderStatusIndicator(message, currentAccountId, i18n) {
     const readers = Array.isArray(message.readBy) ? message.readBy : [];
     const readCount = readers.length;
     const deliveredCount = Number(message.deliveredToCount ?? 0);
-    const status =
-        readCount > 0 ? "read" : deliveredCount > 0 ? "delivered" : "sent";
-    const statusClass = `messages-message-status--${status}`;
-    const statusSymbol = status === "sent" ? "✓" : "✓✓";
-    return `<button type="button" class="messages-message-status ${statusClass}" data-read-toggle-for="${escapeHtml(message.id)}" aria-label="${escapeHtml(i18n.t("module.social.messages.read_details"))}">${escapeHtml(statusSymbol)}</button>`;
-}
+    const hasDelivered = readCount > 0 || deliveredCount > 0;
+    const isRead = readCount > 0;
+    const solidClass = isRead ? " messages-status-tick--solid" : "";
 
-function renderReadDetailsPanel(message, i18n) {
-    const readers = Array.isArray(message.readBy) ? message.readBy : [];
-    if (!readers.length) return "";
-    const rows = readers
+    const tooltipRows = readers
         .map((reader) => {
             const readerName =
                 reader.displayName || reader.handle || reader.accountId;
@@ -234,23 +228,13 @@ function renderReadDetailsPanel(message, i18n) {
             return `<li>${escapeHtml(readerName)} — ${escapeHtml(readTime)}</li>`;
         })
         .join("");
-    return `<div class="messages-read-details" data-read-details-for="${escapeHtml(message.id)}" hidden>
-        <ul>${rows}</ul>
-    </div>`;
-}
+    const tooltip = readers.length
+        ? `<div class="messages-read-tooltip" hidden role="tooltip"><ul>${tooltipRows}</ul></div>`
+        : "";
 
-function renderReadReceipt(message, currentAccountId, i18n) {
-    if (message.senderId !== currentAccountId) return "";
-    const readers = Array.isArray(message.readBy) ? message.readBy : [];
-    if (!readers.length) return "";
-    const names = readers
-        .slice(0, 3)
-        .map(
-            (reader) => reader.displayName || reader.handle || reader.accountId,
-        )
-        .join(", ");
-    const extraCount = readers.length > 3 ? ` +${readers.length - 3}` : "";
-    return `<span class="messages-message-read">${escapeHtml(i18n.t("module.social.messages.read_by"))}: ${escapeHtml(names)}${escapeHtml(extraCount)}</span>`;
+    return `<div class="messages-status-group" data-status-for="${escapeHtml(message.id)}" role="button" tabindex="0" aria-label="${escapeHtml(i18n.t("module.social.messages.read_details"))}">
+        <span class="messages-status-tick${solidClass}" aria-hidden="true">✓</span>${hasDelivered ? `<span class="messages-status-tick${solidClass}" aria-hidden="true">✓</span>` : ""}${tooltip}
+    </div>`;
 }
 
 function renderRoomEvent(message, i18n) {
@@ -331,7 +315,7 @@ async function renderThread(
     const ordered = messageList.slice().reverse();
     const decoded = await Promise.all(
         ordered.map(async (msg) => {
-            const text = key ? await decryptMessage(key, msg) : null;
+            const text = key ? await decodeMessageText(key, msg) : null;
             return { ...msg, text };
         }),
     );
@@ -354,8 +338,6 @@ async function renderThread(
             <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
             ${timeLabel}
             ${renderStatusIndicator(msg, currentAccountId, i18n)}
-            ${renderReadReceipt(msg, currentAccountId, i18n)}
-            ${renderReadDetailsPanel(msg, i18n)}
             ${renderReactionRow(msg)}
         </div>`;
         })
@@ -408,7 +390,7 @@ async function loadRooms(i18n) {
             }
             const roomKey = await getRoomKey(room.id);
             const previewText = roomKey
-                ? await decryptMessage(roomKey, lastMessage)
+                ? await decodeMessageText(roomKey, lastMessage)
                 : null;
             return {
                 ...room,
@@ -665,7 +647,10 @@ export async function mount(root, { signal } = {}) {
             `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/typing`,
             {
                 method: "POST",
-                body: JSON.stringify({ typing }),
+                body: JSON.stringify({
+                    typing,
+                    ttlSeconds: TYPING_TTL_SECONDS,
+                }),
             },
         ).catch(() => undefined);
         if (typing) {
@@ -838,24 +823,28 @@ export async function mount(root, { signal } = {}) {
                 const form = document.getElementById("messages-composer");
 
                 threadList?.addEventListener("click", async (clickEvent) => {
-                    const readToggle = clickEvent.target.closest(
-                        "[data-read-toggle-for]",
-                    );
-                    if (readToggle) {
-                        const messageId = readToggle.getAttribute(
-                            "data-read-toggle-for",
+                    const statusGroup =
+                        clickEvent.target.closest("[data-status-for]");
+                    if (statusGroup) {
+                        const tooltip = statusGroup.querySelector(
+                            ".messages-read-tooltip",
                         );
-                        if (!messageId) return;
-                        const panel = threadList.querySelector(
-                            `[data-read-details-for="${messageId}"]`,
-                        );
-                        if (!panel) return;
-                        const hidden = panel.hasAttribute("hidden");
+                        if (!tooltip) return;
+                        const isHidden = tooltip.hasAttribute("hidden");
                         threadList
-                            .querySelectorAll("[data-read-details-for]")
+                            .querySelectorAll(".messages-read-tooltip")
                             .forEach((node) => node.setAttribute("hidden", ""));
-                        if (hidden) panel.removeAttribute("hidden");
+                        if (isHidden) tooltip.removeAttribute("hidden");
                         return;
+                    }
+                    if (
+                        threadList.querySelector(
+                            ".messages-read-tooltip:not([hidden])",
+                        )
+                    ) {
+                        threadList
+                            .querySelectorAll(".messages-read-tooltip")
+                            .forEach((node) => node.setAttribute("hidden", ""));
                     }
                     const reactionButton = clickEvent.target.closest(
                         "[data-message-id][data-emoji]",
@@ -960,6 +949,28 @@ export async function mount(root, { signal } = {}) {
                     }
                 });
 
+                threadList?.addEventListener("keydown", (keyboardEvent) => {
+                    if (
+                        keyboardEvent.key !== "Enter" &&
+                        keyboardEvent.key !== " "
+                    ) {
+                        return;
+                    }
+                    const statusGroup =
+                        keyboardEvent.target.closest("[data-status-for]");
+                    if (!statusGroup) return;
+                    keyboardEvent.preventDefault();
+                    const tooltip = statusGroup.querySelector(
+                        ".messages-read-tooltip",
+                    );
+                    if (!tooltip) return;
+                    const isHidden = tooltip.hasAttribute("hidden");
+                    threadList
+                        .querySelectorAll(".messages-read-tooltip")
+                        .forEach((node) => node.setAttribute("hidden", ""));
+                    if (isHidden) tooltip.removeAttribute("hidden");
+                });
+
                 if (selectedRoomId) {
                     void openRoom(selectedRoomId);
                     void refreshTypingIndicator();
@@ -994,6 +1005,22 @@ export async function mount(root, { signal } = {}) {
             if (document.visibilityState === "visible") {
                 void refreshTypingIndicator();
             }
+        },
+        { signal },
+    );
+
+    document.addEventListener(
+        "click",
+        (clickEvent) => {
+            if (
+                !(clickEvent.target instanceof Element) ||
+                clickEvent.target.closest("[data-status-for]")
+            ) {
+                return;
+            }
+            document
+                .querySelectorAll(".messages-read-tooltip:not([hidden])")
+                .forEach((tooltip) => tooltip.setAttribute("hidden", ""));
         },
         { signal },
     );

@@ -793,10 +793,17 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 const roomMembers = await messagesStore.listMembers(roomId);
                 const profilesByAccountId = new Map(
                     await Promise.all(
-                        roomMembers.map(async (roomMember) => [
-                            roomMember.accountId,
-                            await profileStore.getProfile(roomMember.accountId),
-                        ]),
+                        roomMembers.map((roomMember) =>
+                            profileStore
+                                .getProfile(roomMember.accountId)
+                                .then(
+                                    (profile) =>
+                                        [
+                                            roomMember.accountId,
+                                            profile,
+                                        ] as const,
+                                ),
+                        ),
                     ),
                 );
                 const reactionsByMessage = new Map<
@@ -856,8 +863,8 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                             (roomMember) =>
                                 roomMember.accountId !== message.senderId &&
                                 Boolean(roomMember.lastReadAt) &&
-                                String(roomMember.lastReadAt) >=
-                                    message.createdAt,
+                                new Date(roomMember.lastReadAt as string) >=
+                                    new Date(message.createdAt),
                         )
                         .map((roomMember) => {
                             const readerProfile = profilesByAccountId.get(
@@ -1000,11 +1007,19 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     res.end(JSON.stringify({ data: { ok: true } }));
                     return true;
                 }
-                const body = (await readJson(req)) as { typing?: unknown };
+                const body = (await readJson(req)) as {
+                    typing?: unknown;
+                    ttlSeconds?: unknown;
+                };
+                const ttlSeconds = Math.min(
+                    30,
+                    Math.max(1, Number(body.ttlSeconds) || 8),
+                );
                 await messagesStore.setTyping(
                     roomId,
                     accountId,
                     Boolean(body.typing),
+                    ttlSeconds,
                 );
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { ok: true } }));
