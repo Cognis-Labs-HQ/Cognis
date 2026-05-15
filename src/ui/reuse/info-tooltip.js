@@ -8,7 +8,7 @@
  *
  * Public exports:
  *   renderInfoTooltip(text, ariaLabel?, id?) — Returns an HTML string: a positioned
- *     wrapper containing the icon button and the tooltip panel.
+ *     wrapper containing the icon button.
  *
  * Usage:
  *   import { renderInfoTooltip } from '../../reuse/info-tooltip.js';
@@ -20,7 +20,7 @@
  *     </h3>
  *   `;
  *
- * @param {string} text   — Plain text to show inside the tooltip panel.
+ * @param {string} text   — Plain text to show inside the tooltip.
  *                           Do not pass raw HTML; the value is escaped.
  * @param {string} [ariaLabel] — Accessible label for the icon button.
  *                               Pass `i18n.t('ui.reuse.more_information')`.
@@ -34,6 +34,7 @@ import { escapeHtml } from "./escape-html.js";
 let tooltipSequence = 0;
 let activeTooltipButton = null;
 let tooltipOverlayElement = null;
+const tooltipTextById = new Map();
 
 function ensureTooltipOverlayElement() {
     if (typeof document === "undefined") return null;
@@ -105,9 +106,10 @@ function hideInfoTooltip() {
 }
 
 function showInfoTooltip(tooltipButtonElement) {
-    const tooltipText = String(
-        tooltipButtonElement.getAttribute("data-info-tooltip-text") ?? "",
+    const tooltipId = String(
+        tooltipButtonElement.getAttribute("data-info-tooltip-id") ?? "",
     ).trim();
+    const tooltipText = String(tooltipTextById.get(tooltipId) ?? "").trim();
     if (!tooltipText) {
         hideInfoTooltip();
         return;
@@ -200,15 +202,15 @@ function initInfoTooltipRuntime() {
 
 export function renderInfoTooltip(text, ariaLabel = "More information", id) {
     const uid = id ?? `info-tooltip-${++tooltipSequence}`;
+    tooltipTextById.set(uid, String(text ?? ""));
     return `<span class="info-tooltip" data-info-tooltip="${uid}">
       <button
         class="info-tooltip__btn"
         type="button"
         aria-label="${escapeHtml(ariaLabel)}"
-        data-info-tooltip-text="${escapeHtml(text)}"
+        data-info-tooltip-id="${uid}"
         tabindex="0"
       >ℹ</button>
-      <span class="info-tooltip__panel" id="${uid}" role="tooltip">${escapeHtml(text)}</span>
     </span>`;
 }
 

@@ -33,10 +33,6 @@
     outline: none;
 }
 
-.info-tooltip__panel {
-    display: none;
-}
-
 .info-tooltip-overlay {
     position: fixed;
     left: 0;
