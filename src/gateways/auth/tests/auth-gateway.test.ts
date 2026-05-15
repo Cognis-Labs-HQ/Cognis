@@ -171,6 +171,54 @@ test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
     assert.ok(Array.isArray(body.data));
 });
 
+test("LINE adapter exposes managed callback metadata and registers its callback route", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const configRequest = {
+        method: "GET",
+        headers: { authorization: `Bearer ${adminToken}` },
+    } as unknown as HttpIncomingMessage;
+    const configResult = await dispatchRoute(
+        routeRegistry,
+        configRequest,
+        "/api/v1/gateways/auth/adapters/line/config",
+    );
+    assert.equal(configResult.handled, true);
+    assert.equal(configResult.res.status, 200);
+    const configPayload = JSON.parse(configResult.res.payload) as {
+        managedRedirectPath: string | null;
+    };
+    assert.equal(configPayload.managedRedirectPath, "/auth/line/callback");
+
+    const callbackRequest = {
+        method: "GET",
+        headers: {},
+    } as unknown as HttpIncomingMessage;
+    const callbackResult = await dispatchRoute(
+        routeRegistry,
+        callbackRequest,
+        "/auth/line/callback",
+    );
+    assert.equal(callbackResult.handled, true);
+    assert.equal(callbackResult.res.status, 204);
+    assert.equal(callbackResult.res.payload, "");
+});
+
 test("GET /api/v1/auth/registration-config returns open-registration state", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();

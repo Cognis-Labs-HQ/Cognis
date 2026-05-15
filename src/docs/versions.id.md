@@ -14,7 +14,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Notifikasi Internal        | `src/adapters/notify/internal/`       | `0.5.2` |
 | Penyimpanan File Lokal     | `src/adapters/file/local/`            | `0.1.0` |
 | Autentikasi Lokal          | `src/adapters/auth/local/`            | `0.2.2` |
-| Autentikasi LINE Messenger | `src/adapters/auth/line/`             | `0.2.0` |
+| Autentikasi LINE Messenger | `src/adapters/auth/line/`             | `0.3.0` |
 | Database PostgreSQL        | `src/adapters/db/postgres/`           | `0.1.0` |
 | Database MariaDB           | `src/adapters/db/mariadb/`            | `0.1.0` |
 | Undangan Registrasi        | `src/adapters/registration/invite/`   | `0.1.1` |
@@ -29,7 +29,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Komponen                 | Path                         | Versi   |
 | ------------------------ | ---------------------------- | ------- |
 | Database (db)            | `src/gateways/db/`           | `1.1.2` |
-| Autentikasi (auth)       | `src/gateways/auth/`         | `1.5.0` |
+| Autentikasi (auth)       | `src/gateways/auth/`         | `1.6.0` |
 | Notifikasi (notify)      | `src/gateways/notify/`       | `1.1.1` |
 | Sosial                   | `src/gateways/social/`       | `1.2.0` |
 | Penyimpanan File (files) | `src/gateways/files/`        | `1.1.0` |

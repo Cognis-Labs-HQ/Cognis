@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
 import type { LocalAccountStore } from "./reuse/local-account-store.js";
 
@@ -29,6 +30,16 @@ export interface AuthConfigField {
     envVar?: string;
 }
 
+export type AuthAdapterRouteHandler = (
+    req: IncomingMessage,
+    res: ServerResponse,
+    url: URL,
+) => Promise<boolean>;
+
+export interface AuthAdapterRouteContext {
+    registerRoute(handler: AuthAdapterRouteHandler): void;
+}
+
 export interface AuthProviderAdapter {
     readonly id: string;
     readonly name: string;
@@ -37,6 +48,8 @@ export interface AuthProviderAdapter {
     ): Promise<AuthContext | null>;
     getConfigSchema(): AuthConfigField[];
     configure(config: Record<string, unknown>): void;
+    getManagedRedirectPath?(): string | null;
+    registerRoutes?(context: AuthAdapterRouteContext): void;
 }
 
 export interface AdapterInfo {
@@ -47,6 +60,7 @@ export interface AdapterInfo {
     config: Record<string, unknown>;
     schema: AuthConfigField[];
     requires?: string[];
+    managedRedirectPath?: string;
 }
 
 export class CoreAuthGateway {
@@ -313,6 +327,8 @@ export class CoreAuthGateway {
                 locked: adapter.id === "local" || undefined,
                 config: {},
                 schema: adapter.getConfigSchema(),
+                managedRedirectPath:
+                    adapter.getManagedRedirectPath?.() ?? undefined,
                 ...(requires && requires.length > 0 ? { requires } : {}),
             };
         });

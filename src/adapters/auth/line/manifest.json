@@ -1,6 +1,6 @@
 {
     "id": "line",
     "name": "LINE Messenger SSO Authentication",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "requires": ["registration"]
 }

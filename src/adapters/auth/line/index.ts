@@ -1,5 +1,6 @@
 import type { AuthContext } from "@cognis/core";
 import type {
+    AuthAdapterRouteContext,
     AuthConfigField,
     AuthProviderAdapter,
 } from "../../../gateways/auth/gateway.js";
@@ -132,6 +133,7 @@ class LineHttpClient implements LineAuthClient {
 class LineAuthAdapter implements AuthProviderAdapter {
     readonly id = "line";
     readonly name = "LINE Messenger SSO";
+    private readonly managedRedirectPath = "/auth/line/callback";
 
     private providerName = "line";
     private channelId = "";
@@ -251,7 +253,7 @@ class LineAuthAdapter implements AuthProviderAdapter {
             {
                 key: "redirectUri",
                 label: "LINE Redirect URI",
-                hint: "The callback URL registered in your LINE Login channel's Callback URL settings. Must exactly match the URI entered in the LINE Developers Console.",
+                hint: "Use the Cognis-managed LINE callback URL shown in the adapter popup unless you need a different public URL. The saved value must exactly match the Callback URL entered in the LINE Developers Console.",
                 type: "text",
                 required: true,
                 envVar: "LINE_REDIRECT_URI",
@@ -333,6 +335,28 @@ class LineAuthAdapter implements AuthProviderAdapter {
 
     setClient(client: LineAuthClient): void {
         this.client = client;
+    }
+
+    getManagedRedirectPath(): string {
+        return this.managedRedirectPath;
+    }
+
+    registerRoutes(context: AuthAdapterRouteContext): void {
+        context.registerRoute(async (req, res, url) => {
+            if (url.pathname !== this.managedRedirectPath) {
+                return false;
+            }
+            if (req.method !== "GET" && req.method !== "HEAD") {
+                res.writeHead(405, {
+                    allow: "GET, HEAD",
+                });
+                res.end("");
+                return true;
+            }
+            res.writeHead(204);
+            res.end("");
+            return true;
+        });
     }
 }
 

@@ -1,3 +1,5 @@
 <resources>
   <string name="gateway.auth.no_providers">Keine Authentifizierungsadapter konfiguriert.</string>
+  <string name="gateway.auth.managed_callback.title">Verwaltete Callback-URL</string>
+  <string name="gateway.auth.managed_callback.body">Nutze diese von Cognis verwaltete Callback-URL in der Provider-Konsole und speichere dieselbe URL als `redirectUri`, sofern du keine andere öffentliche Callback-URL brauchst.</string>
 </resources>

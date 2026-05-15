@@ -62,6 +62,7 @@ export class CoreAuthGateway {
 | `POST`   | `/api/v1/auth/register`                      | 新しいローカルアカウントを自己登録 | 不要     |
 | `POST`   | `/api/v1/auth/login`                         | 認証してBearerトークンを返す       | 不要     |
 | `POST`   | `/api/v1/auth/verify`                        | 現在のユーザーのパスワードを検証   | ユーザー |
+| `GET`    | `/auth/line/callback`                        | Cognis 管理の LINE コールバック     | 不要     |
 | `GET`    | `/api/v1/gateways/auth/adapters`             | 登録済み認証アダプターを一覧表示   | 管理者   |
 | `GET`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定スキーマを取得     | 管理者   |
 | `PUT`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定を更新             | 管理者   |

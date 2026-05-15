@@ -30,7 +30,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.2` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.2` |
-| LINE Messenger Auth   | `src/adapters/auth/line/`           | `0.2.0` |
+| LINE Messenger Auth   | `src/adapters/auth/line/`           | `0.3.0` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.2.1` |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.2.1` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.2.1` |
@@ -47,7 +47,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component             | Path                         | Version |
 | --------------------- | ---------------------------- | ------- |
 | Database (db)         | `src/gateways/db/`           | `1.1.2` |
-| Authentication (auth) | `src/gateways/auth/`         | `1.5.0` |
+| Authentication (auth) | `src/gateways/auth/`         | `1.6.0` |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.1` |
 | Social                | `src/gateways/social/`       | `1.2.1` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |

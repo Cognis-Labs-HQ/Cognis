@@ -62,6 +62,7 @@ Capabilities contributed:
 | `POST` | `/api/v1/auth/register`                      | Self-register a new local account     | None  |
 | `POST` | `/api/v1/auth/login`                         | Authenticate; returns bearer token    | None  |
 | `POST` | `/api/v1/auth/verify`                        | Verify current user's password        | User  |
+| `GET`  | `/auth/line/callback`                        | Cognis-managed LINE callback endpoint | None  |
 | `GET`  | `/api/v1/gateways/auth/adapters`             | List all registered auth adapters     | Admin |
 | `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Get config schema for an adapter      | Admin |
 | `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Update config for an adapter          | Admin |

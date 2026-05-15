@@ -39,9 +39,12 @@ Authorization Code + PKCE フローに対応しているため、LINE アプリ�
 3. **Callback URL** に、この環境（本番 / ステージング / ローカル）で使う
    Cognis のリダイレクト先エンドポイントを設定して保存します。
 4. チャネル値を Cognis に設定します。
-    - `channelId` = LINE **Channel ID**
-    - `channelSecret` = LINE **Channel secret**（PKCE のみのフローでは任意）
-    - `redirectUri` = LINE の **Callback URL** と完全に同一の URL
+   - `channelId` = LINE **Channel ID**
+   - `channelSecret` = LINE **Channel secret**（PKCE のみのフローでは任意）
+   - `redirectUri` = LINE の **Callback URL** と完全に同一の URL
+5. Cognis の Administration → Authentication → LINE Messenger SSO →
+   Configure で表示される Cognis 管理の Callback URL をコピーし、別の公開
+   コールバックが必要でない限り `redirectUri` として保存してください。
 
 ## `redirectUri` について（共通の固定値ですか？）
 

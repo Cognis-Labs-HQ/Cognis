@@ -364,6 +364,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterCount: authGateway.listAdapters().length,
     });
 
+    for (const adapterInfo of authGateway.listAdapters()) {
+        const adapter = authGateway.getAdapter(adapterInfo.id);
+        adapter?.registerRoutes?.({
+            registerRoute: (handler) => {
+                ctx.routeRegistry.register(handler, "auth");
+            },
+        });
+    }
+
     ctx.routeRegistry.register(
         createAuthGatewayRoutes(
             authGateway,
@@ -385,7 +394,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.5.0",
+        version: "1.6.0",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -1213,6 +1222,8 @@ function createAdapterAdminRoutes(
                         data: storedConfig,
                         schema,
                         requiredFields,
+                        managedRedirectPath:
+                            adapter.getManagedRedirectPath?.() ?? null,
                     }),
                 );
                 return true;

@@ -27,6 +27,55 @@ test("line adapter schema provides hints for channelId and redirectUri", () => {
     );
 });
 
+test("line adapter exposes a Cognis-managed redirect path and registers its callback route", async () => {
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
+        getManagedRedirectPath(): string;
+        registerRoutes(context: {
+            registerRoute(handler: (
+                req: { method?: string },
+                res: {
+                    writeHead(code: number, headers?: Record<string, string>): void;
+                    end(payload?: string): void;
+                },
+                url: URL,
+            ) => Promise<boolean>): void;
+        }): void;
+    };
+    assert.equal(adapter.getManagedRedirectPath(), "/auth/line/callback");
+
+    let registeredHandler:
+        | ((req: { method?: string }, res: any, url: URL) => Promise<boolean>)
+        | null = null;
+    adapter.registerRoutes({
+        registerRoute(handler) {
+            registeredHandler = handler;
+        },
+    });
+
+    assert.ok(registeredHandler, "line adapter should register a callback route");
+
+    let statusCode = 0;
+    let allowHeader = "";
+    let payload = "unset";
+    const handled = await registeredHandler!(
+        { method: "GET" },
+        {
+            writeHead(code: number, headers?: Record<string, string>) {
+                statusCode = code;
+                allowHeader = headers?.allow ?? "";
+            },
+            end(nextPayload = "") {
+                payload = nextPayload;
+            },
+        },
+        new URL("http://localhost/auth/line/callback"),
+    );
+    assert.equal(handled, true);
+    assert.equal(statusCode, 204);
+    assert.equal(payload, "");
+    assert.equal(allowHeader, "");
+});
+
 test("line adapter authenticates via authorization code and syncs profile fields", async () => {
     const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
         setClient(client: {
