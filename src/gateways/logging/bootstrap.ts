@@ -17,8 +17,14 @@ const MAX_KEYWORD_LENGTH = 120;
 const MAX_SNAPSHOT_ENTRIES = 300;
 const STREAM_POLL_INTERVAL_MS = 1500;
 const STREAM_HEARTBEAT_INTERVAL_MS = 15000;
+const LEVEL_PRIORITY: Record<LogLevel, number> = {
+    debug: 10,
+    info: 20,
+    warn: 30,
+    error: 40,
+};
 
-function parseLevelFilter(value: string | null): Set<LogLevel> | null {
+function parseLevelFilter(value: string | null): LogLevel | null {
     if (!value || value === "all") return null;
     const levels = value
         .split(",")
@@ -27,7 +33,12 @@ function parseLevelFilter(value: string | null): Set<LogLevel> | null {
             ALLOWED_LEVELS.has(part as LogLevel),
         );
     if (!levels.length) return null;
-    return new Set(levels);
+    return levels.reduce((lowestLevel, candidateLevel) => {
+        if (LEVEL_PRIORITY[candidateLevel] < LEVEL_PRIORITY[lowestLevel]) {
+            return candidateLevel;
+        }
+        return lowestLevel;
+    });
 }
 
 function parseKeywordFilter(value: string | null): string {
@@ -77,7 +88,7 @@ function normalizeLogEntry(rawLine: string): Record<string, unknown> {
 
 function matchesFilters(
     entry: Record<string, unknown>,
-    severities: Set<LogLevel> | null,
+    severityThreshold: LogLevel | null,
     keyword: string,
     timeRangeMs: number | null,
 ): boolean {
@@ -85,7 +96,10 @@ function matchesFilters(
     if (!ALLOWED_LEVELS.has(level)) {
         return false;
     }
-    if (severities && !severities.has(level)) {
+    if (
+        severityThreshold &&
+        LEVEL_PRIORITY[level] < LEVEL_PRIORITY[severityThreshold]
+    ) {
         return false;
     }
     if (timeRangeMs !== null) {
@@ -138,7 +152,9 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
         const claims = requireAuth(req, res, "admin");
         if (!claims) return true;
 
-        const severities = parseLevelFilter(url.searchParams.get("severity"));
+        const severityThreshold = parseLevelFilter(
+            url.searchParams.get("severity"),
+        );
         const keyword = parseKeywordFilter(url.searchParams.get("keyword"));
         const timeRangeMs = parseTimeRangeFilter(
             url.searchParams.get("timeRange"),
@@ -149,7 +165,7 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
         let closed = false;
 
         const pushEntry = (entry: Record<string, unknown>) => {
-            if (!matchesFilters(entry, severities, keyword, timeRangeMs))
+            if (!matchesFilters(entry, severityThreshold, keyword, timeRangeMs))
                 return;
             writeSseEvent(res, "log", { id: seq++, ...entry });
         };
@@ -173,7 +189,12 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
                     .filter((line) => line.length > 0)
                     .map((line) => normalizeLogEntry(line))
                     .filter((entry) =>
-                        matchesFilters(entry, severities, keyword, timeRangeMs),
+                        matchesFilters(
+                            entry,
+                            severityThreshold,
+                            keyword,
+                            timeRangeMs,
+                        ),
                     );
                 for (const entry of entries.slice(-MAX_SNAPSHOT_ENTRIES)) {
                     writeSseEvent(res, "log", { id: seq++, ...entry });
@@ -278,7 +299,7 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
             component: "logging-gateway",
             operation: "stream_open",
             accountId: claims.sub,
-            severityFilter: severities ? Array.from(severities) : "all",
+            severityThreshold: severityThreshold ?? "all",
             keyword: keyword || undefined,
             timeRangeMs: timeRangeMs ?? "all",
         });

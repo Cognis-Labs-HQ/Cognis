@@ -393,7 +393,6 @@
   <string name="ui.app.admin.logs.severity.info">Info</string>
   <string name="ui.app.admin.logs.severity.warn">Peringatan</string>
   <string name="ui.app.admin.logs.severity.error">Galat</string>
-  <string name="ui.app.admin.logs.severity.warn_error">Peringatan + Galat</string>
   <string name="ui.app.admin.logs.time_range.all">Semua waktu</string>
   <string name="ui.app.admin.logs.time_range.5m">5 menit terakhir</string>
   <string name="ui.app.admin.logs.time_range.15m">15 menit terakhir</string>

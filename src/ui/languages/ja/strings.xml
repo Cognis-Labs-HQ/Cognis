@@ -393,7 +393,6 @@
   <string name="ui.app.admin.logs.severity.info">情報</string>
   <string name="ui.app.admin.logs.severity.warn">警告</string>
   <string name="ui.app.admin.logs.severity.error">エラー</string>
-  <string name="ui.app.admin.logs.severity.warn_error">警告 + エラー</string>
   <string name="ui.app.admin.logs.time_range.all">全期間</string>
   <string name="ui.app.admin.logs.time_range.5m">過去5分</string>
   <string name="ui.app.admin.logs.time_range.15m">過去15分</string>

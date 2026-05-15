@@ -113,7 +113,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     let reconnectAttempts = 0;
     let activeSession = 0;
     let activeFilters = {
-        severity: "warn,error",
+        severity: "warn",
         keyword: "",
         timeRange: "all",
     };
@@ -460,7 +460,6 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                               <option value="all">${i18n.t("ui.app.admin.logs.severity.all")}</option>
                               <option value="debug">${i18n.t("ui.reuse.debug")}</option>
                               <option value="info">${i18n.t("ui.app.admin.logs.severity.info")}</option>
-                              <option value="warn,error">${i18n.t("ui.app.admin.logs.severity.warn_error")}</option>
                               <option value="warn">${i18n.t("ui.app.admin.logs.severity.warn")}</option>
                               <option value="error">${i18n.t("ui.app.admin.logs.severity.error")}</option>
                             </select>
