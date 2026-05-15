@@ -419,8 +419,8 @@
   <string name="ui.app.admin.notif.smtp_auth_disabled">Disable Authentication</string>
   <string name="ui.app.admin.notif.smtp_sender_name">Sender Name</string>
   <string name="ui.app.admin.security.title">Security</string>
-  <string name="ui.app.admin.security.trusted_domains_label">Trusted Email Domains</string>
-  <string name="ui.app.admin.security.trusted_domains_hint">Comma-separated list of allowed domains. Leave empty to allow all domains.</string>
+  <string name="ui.app.admin.security.trusted_domains_label">Trusted Domains</string>
+  <string name="ui.app.admin.security.trusted_domains_hint">Comma-separated list of trusted domains. Leave empty to allow all email domains while external links remain limited to this site. Matching subdomains are also allowed.</string>
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">Public Registration</string>
   <string name="ui.app.admin.security.enable_registrations_hint">Allow anyone to sign up without an invitation token.</string>

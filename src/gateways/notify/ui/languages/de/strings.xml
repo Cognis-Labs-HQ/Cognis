@@ -31,7 +31,7 @@
   <string name="gateway.notify.admin.broadcast_error_invalid_timestamp">Bitte gültige Start- und Endzeitwerte eingeben.</string>
   <string name="gateway.notify.admin.broadcast_error_partial_window">Bitte Start- und Enddatum beide angeben oder beide leer lassen.</string>
   <string name="gateway.notify.admin.broadcast_error_invalid_range">Das Startdatum bzw. die Startzeit muss vor dem Enddatum bzw. der Endzeit liegen.</string>
-  <string name="gateway.notify.admin.broadcast_error_invalid_redirect">Die Weiterleitungs-URL muss auf dieser Website bleiben.</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_redirect">Die Weiterleitungs-URL muss auf dieser Website bleiben oder eine vertrauenswürdige Domain verwenden.</string>
   <string name="gateway.notify.admin.broadcast_toggle_failed">Status der Rundsendung konnte nicht aktualisiert werden.</string>
   <string name="gateway.notify.admin.broadcast_none">Keine Rundsendungen konfiguriert.</string>
   <string name="gateway.notify.admin.broadcast_expand_details">Details Einblenden</string>
@@ -56,5 +56,5 @@
   <string name="gateway.notify.admin.broadcast_ack_state_dismissed">Verworfen</string>
   <string name="gateway.notify.broadcast.acknowledge">Bestätigen</string>
   <string name="gateway.notify.broadcast.action_failed">Rundsendungsstatus konnte nicht aktualisiert werden.</string>
-  <string name="gateway.notify.broadcast.invalid_redirect">Die Weiterleitungs-URL ist ungültig.</string>
+  <string name="gateway.notify.broadcast.invalid_redirect">Die Weiterleitungs-URL ist ungültig oder nicht vertrauenswürdig.</string>
 </resources>

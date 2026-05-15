@@ -419,8 +419,8 @@
   <string name="ui.app.admin.notif.smtp_auth_disabled">Authentifizierung deaktivieren</string>
   <string name="ui.app.admin.notif.smtp_sender_name">Absendername</string>
   <string name="ui.app.admin.security.title">Sicherheit</string>
-  <string name="ui.app.admin.security.trusted_domains_label">Vertrauenswürdige E-Mail-Domains</string>
-  <string name="ui.app.admin.security.trusted_domains_hint">Kommagetrennte Liste erlaubter Domains. Leer lassen, um alle Domains zuzulassen.</string>
+  <string name="ui.app.admin.security.trusted_domains_label">Vertrauenswürdige Domains</string>
+  <string name="ui.app.admin.security.trusted_domains_hint">Kommagetrennte Liste vertrauenswürdiger Domains. Leer lassen, um alle E-Mail-Domains zuzulassen, während externe Links auf diese Website beschränkt bleiben. Passende Subdomains sind ebenfalls erlaubt.</string>
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">Öffentliche Registrierung</string>
   <string name="ui.app.admin.security.enable_registrations_hint">Erlaubt jedem, sich ohne Einladungstoken zu registrieren.</string>

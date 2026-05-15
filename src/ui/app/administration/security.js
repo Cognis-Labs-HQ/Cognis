@@ -1,14 +1,18 @@
 import { apiFetch } from "../../reuse/api-client.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
+import {
+    clearTrustedDomainsCache,
+    normalizeTrustedDomains,
+} from "../../reuse/trusted-domains.js";
 
 /**
  * Security sub-module for the Administration page.
  *
- * Manages system-level security settings including trusted email domains.
- * When trusted domains are configured, users may only trigger the email
- * verification flow for addresses whose domain appears in the list.
- * An empty list permits all domains.
+ * Manages system-level security settings including trusted domains for email
+ * validation and approved external HTTP(S) links such as broadcast redirects.
+ * An empty list permits all email domains while external trusted-link checks
+ * continue to require the current site origin.
  *
  * Public exports:
  *   initSecuritySection(root, options) — initialises the security section.
@@ -73,10 +77,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     }
 
     function parseDomains(raw) {
-        return raw
-            .split(",")
-            .map((d) => d.trim().toLowerCase())
-            .filter(Boolean);
+        return normalizeTrustedDomains(raw.split(","));
     }
 
     function getInputValue() {
@@ -188,6 +189,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 validationMode,
                 requireTeacherManualApproval,
             );
+            clearTrustedDomainsCache();
             if (registrationsEnabled !== currentPublicRegistrationEnabled) {
                 await apiFetch(
                     `/api/v1/gateways/registration/adapters/public/${registrationsEnabled ? "enable" : "disable"}`,

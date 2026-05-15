@@ -419,8 +419,8 @@
   <string name="ui.app.admin.notif.smtp_auth_disabled">Nonaktifkan Autentikasi</string>
   <string name="ui.app.admin.notif.smtp_sender_name">Nama Pengirim</string>
   <string name="ui.app.admin.security.title">Keamanan</string>
-  <string name="ui.app.admin.security.trusted_domains_label">Domain Email Tepercaya</string>
-  <string name="ui.app.admin.security.trusted_domains_hint">Daftar domain yang diizinkan, dipisahkan koma. Biarkan kosong untuk mengizinkan semua domain.</string>
+  <string name="ui.app.admin.security.trusted_domains_label">Domain Tepercaya</string>
+  <string name="ui.app.admin.security.trusted_domains_hint">Daftar domain tepercaya yang dipisahkan koma. Biarkan kosong untuk mengizinkan semua domain email, sementara tautan eksternal tetap dibatasi ke situs ini. Subdomain yang cocok juga diizinkan.</string>
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">Registrasi Publik</string>
   <string name="ui.app.admin.security.enable_registrations_hint">Izinkan siapa pun mendaftar tanpa token undangan.</string>

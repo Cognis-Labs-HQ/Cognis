@@ -5,6 +5,12 @@ import type { BootstrapLog, HealthService } from "@cognis/core";
 import { requireAuth } from "../../../gateways/auth/guard.js";
 import { readJson } from "../../reuse/read-json.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
+import {
+    defaultSecuritySettings,
+    normalizeTrustedDomains,
+    parseSecuritySettings,
+    SECURITY_SETTINGS_KEY,
+} from "../../reuse/security-settings.js";
 
 async function listLanguages(log?: BootstrapLog) {
     const root = join(process.cwd(), "src", "ui", "languages");
@@ -42,57 +48,6 @@ function parseDemoModeFromEnv() {
     return raw === "1" || raw === "true";
 }
 
-const SECURITY_SETTINGS_KEY = "security-settings";
-
-function parseSecuritySettings(raw: string | null): {
-    trustedDomains: string[];
-    registrationsEnabled: boolean;
-    userValidationMode: "none" | "smtp";
-    requireTeacherManualApproval: boolean;
-} | null {
-    if (!raw) {
-        return {
-            trustedDomains: [],
-            registrationsEnabled: false,
-            userValidationMode: "none",
-            requireTeacherManualApproval: true,
-        };
-    }
-    try {
-        const parsed = JSON.parse(raw) as { trustedDomains?: unknown };
-        const trustedDomains = Array.isArray(parsed.trustedDomains)
-            ? parsed.trustedDomains
-                  .filter((entry: unknown) => typeof entry === "string")
-                  .map((entry: string) => entry.trim().toLowerCase())
-                  .filter(Boolean)
-            : [];
-        const registrationsEnabled =
-            typeof (parsed as Record<string, unknown>).registrationsEnabled ===
-            "boolean"
-                ? Boolean(
-                      (parsed as Record<string, unknown>).registrationsEnabled,
-                  )
-                : false;
-        const userValidationMode =
-            (parsed as Record<string, unknown>).userValidationMode === "smtp"
-                ? "smtp"
-                : "none";
-        const requireTeacherManualApproval =
-            (parsed as Record<string, unknown>).requireTeacherManualApproval ===
-            false
-                ? false
-                : true;
-        return {
-            trustedDomains,
-            registrationsEnabled,
-            userValidationMode,
-            requireTeacherManualApproval,
-        };
-    } catch {
-        return null;
-    }
-}
-
 function serializeSecuritySettings(input: {
     trustedDomains: string[];
     registrationsEnabled: boolean;
@@ -105,14 +60,6 @@ function serializeSecuritySettings(input: {
         userValidationMode: input.userValidationMode,
         requireTeacherManualApproval: input.requireTeacherManualApproval,
     });
-}
-
-function parseTrustedDomainsInput(rawDomains: unknown): string[] {
-    const list = Array.isArray(rawDomains) ? rawDomains : [];
-    return list
-        .filter((entry: unknown) => typeof entry === "string")
-        .map((entry: string) => entry.trim().toLowerCase())
-        .filter(Boolean);
 }
 
 export function createSystemRoutes(
@@ -203,12 +150,7 @@ export function createSystemRoutes(
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
-                    data: data ?? {
-                        trustedDomains: [],
-                        registrationsEnabled: false,
-                        userValidationMode: "none",
-                        requireTeacherManualApproval: true,
-                    },
+                    data: data ?? defaultSecuritySettings(),
                 }),
             );
             return true;
@@ -221,9 +163,7 @@ export function createSystemRoutes(
             const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
             const body = await readJson(req);
-            const trustedDomains = parseTrustedDomainsInput(
-                body.trustedDomains,
-            );
+            const trustedDomains = normalizeTrustedDomains(body.trustedDomains);
             const registrationsEnabled =
                 typeof body.registrationsEnabled === "boolean"
                     ? body.registrationsEnabled

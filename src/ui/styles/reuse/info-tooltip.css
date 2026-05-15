@@ -33,13 +33,12 @@
     outline: none;
 }
 
-.info-tooltip__panel {
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 50%;
-    transform: translateX(-50%);
+.info-tooltip-overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
     min-width: 220px;
-    max-width: 320px;
+    max-width: min(320px, calc(100vw - 16px));
     background: var(--surface-raised, var(--surface));
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -50,17 +49,9 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
     white-space: normal;
     pointer-events: none;
-    opacity: 0;
-    visibility: hidden;
-    transition:
-        opacity 0.15s,
-        visibility 0.15s;
-    z-index: 200;
+    z-index: 20000;
 }
 
-.info-tooltip__btn:hover + .info-tooltip__panel,
-.info-tooltip__btn:focus-visible + .info-tooltip__panel {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
+.info-tooltip-overlay[hidden] {
+    display: none;
 }

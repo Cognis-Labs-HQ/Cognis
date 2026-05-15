@@ -419,8 +419,8 @@
   <string name="ui.app.admin.notif.smtp_auth_disabled">認証を無効にする</string>
   <string name="ui.app.admin.notif.smtp_sender_name">送信者名</string>
   <string name="ui.app.admin.security.title">セキュリティ</string>
-  <string name="ui.app.admin.security.trusted_domains_label">信頼済みメールドメイン</string>
-  <string name="ui.app.admin.security.trusted_domains_hint">許可するドメインのカンマ区切りリスト。すべてのドメインを許可するには空のままにしてください。</string>
+  <string name="ui.app.admin.security.trusted_domains_label">信頼済みドメイン</string>
+  <string name="ui.app.admin.security.trusted_domains_hint">信頼するドメインのカンマ区切りリスト。空のままにすると、すべてのメールドメインを許可し、外部リンクはこのサイト内に限定されます。一致するサブドメインも許可されます。</string>
   <string name="ui.app.admin.security.trusted_domains_placeholder">example.com, company.org</string>
   <string name="ui.app.admin.security.enable_registrations_label">公開登録</string>
   <string name="ui.app.admin.security.enable_registrations_hint">招待トークンなしで誰でも登録できるようにします。</string>

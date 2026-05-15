@@ -31,7 +31,7 @@
   <string name="gateway.notify.admin.broadcast_error_invalid_timestamp">Please enter valid start and end date/time values.</string>
   <string name="gateway.notify.admin.broadcast_error_partial_window">Please provide both start and end dates, or leave both blank.</string>
   <string name="gateway.notify.admin.broadcast_error_invalid_range">The start date/time must be earlier than the end date/time.</string>
-  <string name="gateway.notify.admin.broadcast_error_invalid_redirect">The redirect URL must stay on this site.</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_redirect">The redirect URL must stay on this site or use a trusted domain.</string>
   <string name="gateway.notify.admin.broadcast_toggle_failed">Failed to update broadcast status.</string>
   <string name="gateway.notify.admin.broadcast_none">No broadcasts configured.</string>
   <string name="gateway.notify.admin.broadcast_expand_details">Expand Details</string>
@@ -56,5 +56,5 @@
   <string name="gateway.notify.admin.broadcast_ack_state_dismissed">Dismissed</string>
   <string name="gateway.notify.broadcast.acknowledge">Acknowledge</string>
   <string name="gateway.notify.broadcast.action_failed">Failed to update broadcast state.</string>
-  <string name="gateway.notify.broadcast.invalid_redirect">The redirect URL is invalid.</string>
+  <string name="gateway.notify.broadcast.invalid_redirect">The redirect URL is invalid or not trusted.</string>
 </resources>

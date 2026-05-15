@@ -3,6 +3,10 @@ import { apiFetch } from "../../reuse/api-client.js";
 import { openPopup } from "../../reuse/popup.js";
 import { watchToken } from "../../reuse/validation-url.js";
 import { showToast } from "../../reuse/toast.js";
+import {
+    loadTrustedDomains,
+    matchesTrustedDomain,
+} from "../../reuse/trusted-domains.js";
 
 /**
  * General preferences sub-module for the Settings page.
@@ -27,7 +31,6 @@ import { showToast } from "../../reuse/toast.js";
  */
 export function initGeneralPrefs(root, { i18n, username }) {
     let emails = [];
-    let trustedDomains = null;
 
     async function loadEmails() {
         const res = await apiFetch(
@@ -38,28 +41,12 @@ export function initGeneralPrefs(root, { i18n, username }) {
         emails = payload.data ?? [];
     }
 
-    async function loadTrustedDomains() {
-        if (trustedDomains !== null) return trustedDomains;
-        try {
-            const res = await apiFetch("/api/v1/system/security");
-            if (!res.ok) {
-                trustedDomains = [];
-                return trustedDomains;
-            }
-            const payload = await res.json();
-            trustedDomains = payload.data?.trustedDomains ?? [];
-        } catch {
-            trustedDomains = [];
-        }
-        return trustedDomains;
-    }
-
-    function isDomainAllowed(address) {
-        if (!trustedDomains || trustedDomains.length === 0) return true;
+    async function isDomainAllowed(address) {
+        const trustedDomains = await loadTrustedDomains(apiFetch);
+        if (trustedDomains.length === 0) return true;
         const parts = address.split("@");
         if (parts.length !== 2) return false;
-        const domain = parts[1].toLowerCase();
-        return trustedDomains.includes(domain);
+        return matchesTrustedDomain(parts[1], trustedDomains);
     }
 
     async function addEmail(address) {
@@ -257,8 +244,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
     }
 
     async function checkDomainAndNotify(address) {
-        await loadTrustedDomains();
-        if (!isDomainAllowed(address)) {
+        if (!(await isDomainAllowed(address))) {
             showToast(i18n.t("ui.app.settings.emails_domain_blocked_body"), {
                 variant: "warning",
             });

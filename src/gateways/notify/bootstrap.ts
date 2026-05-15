@@ -14,6 +14,11 @@ import {
     VerifyTokenService,
     InMemoryVerifyTokenStore,
 } from "../../api/reuse/verify-token.js";
+import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
+import {
+    parseSecuritySettings,
+    SECURITY_SETTINGS_KEY,
+} from "../../api/reuse/security-settings.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createNotificationRoutes } from "./routes/notifications.js";
 
@@ -180,6 +185,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : undefined);
+    const preferenceStore =
+        ctx.capabilities.get<UserPreferenceStore>("preferences:store");
+    const getTrustedDomains = async (): Promise<string[]> => {
+        if (!preferenceStore) return [];
+        const raw = await preferenceStore
+            .get("__system__", SECURITY_SETTINGS_KEY)
+            .catch(() => null);
+        return parseSecuritySettings(raw)?.trustedDomains ?? [];
+    };
 
     const uiDir = path.resolve(
         process.cwd(),
@@ -190,7 +204,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
 
     ctx.routeRegistry.register(
-        createNotificationRoutes(gateway, notifStore),
+        createNotificationRoutes(gateway, notifStore, {
+            getTrustedDomains,
+        }),
         "notify",
     );
     ctx.routeRegistry.register(
@@ -227,7 +243,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.4.0",
+        version: "1.4.1",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
         required: true,

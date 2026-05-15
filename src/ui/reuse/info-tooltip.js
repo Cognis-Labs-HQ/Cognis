@@ -8,7 +8,7 @@
  *
  * Public exports:
  *   renderInfoTooltip(text, ariaLabel?, id?) — Returns an HTML string: a positioned
- *     wrapper containing the icon button and the tooltip panel.
+ *     wrapper containing the icon button.
  *
  * Usage:
  *   import { renderInfoTooltip } from '../../reuse/info-tooltip.js';
@@ -20,7 +20,7 @@
  *     </h3>
  *   `;
  *
- * @param {string} text   — Plain text to show inside the tooltip panel.
+ * @param {string} text   — Plain text to show inside the tooltip.
  *                           Do not pass raw HTML; the value is escaped.
  * @param {string} [ariaLabel] — Accessible label for the icon button.
  *                               Pass `i18n.t('ui.reuse.more_information')`.
@@ -31,18 +31,216 @@
 
 import { escapeHtml } from "./escape-html.js";
 
-let _seq = 0;
+let tooltipSequence = 0;
+let activeTooltipButton = null;
+let tooltipOverlayElement = null;
+let runtimeEventAbortController = null;
+const tooltipTextById = new Map();
+
+function getOrCreateTooltipOverlay() {
+    if (typeof document === "undefined") return null;
+    if (tooltipOverlayElement instanceof HTMLElement) {
+        return tooltipOverlayElement;
+    }
+    const existingTooltipOverlay = document.getElementById(
+        "info-tooltip-overlay",
+    );
+    if (existingTooltipOverlay instanceof HTMLElement) {
+        tooltipOverlayElement = existingTooltipOverlay;
+        return tooltipOverlayElement;
+    }
+    tooltipOverlayElement = document.createElement("div");
+    tooltipOverlayElement.id = "info-tooltip-overlay";
+    tooltipOverlayElement.className = "info-tooltip-overlay";
+    tooltipOverlayElement.setAttribute("role", "tooltip");
+    tooltipOverlayElement.hidden = true;
+    document.body.appendChild(tooltipOverlayElement);
+    return tooltipOverlayElement;
+}
+
+function positionTooltipOverlay(tooltipButtonElement, tooltipOverlay) {
+    const buttonBounds = tooltipButtonElement.getBoundingClientRect();
+    tooltipOverlay.style.left = "0";
+    tooltipOverlay.style.top = "0";
+    tooltipOverlay.hidden = false;
+    const overlayWidth = tooltipOverlay.offsetWidth;
+    const overlayHeight = tooltipOverlay.offsetHeight;
+    const viewportPadding = 8;
+    const tooltipGap = 8;
+    let leftPosition =
+        buttonBounds.left + buttonBounds.width / 2 - overlayWidth / 2;
+    leftPosition = Math.max(
+        viewportPadding,
+        Math.min(
+            leftPosition,
+            window.innerWidth - overlayWidth - viewportPadding,
+        ),
+    );
+    let topPosition = buttonBounds.top - overlayHeight - tooltipGap;
+    let placement = "top";
+    if (topPosition < viewportPadding) {
+        topPosition = buttonBounds.bottom + tooltipGap;
+        placement = "bottom";
+    }
+    if (topPosition + overlayHeight > window.innerHeight - viewportPadding) {
+        topPosition = Math.max(
+            viewportPadding,
+            buttonBounds.top - overlayHeight - tooltipGap,
+        );
+        placement = "top";
+    }
+    tooltipOverlay.style.left = `${Math.round(leftPosition)}px`;
+    tooltipOverlay.style.top = `${Math.round(topPosition)}px`;
+    tooltipOverlay.dataset.placement = placement;
+}
+
+function hideInfoTooltip() {
+    if (!(activeTooltipButton instanceof HTMLElement)) return;
+    const tooltipOverlay = getOrCreateTooltipOverlay();
+    if (tooltipOverlay instanceof HTMLElement) {
+        tooltipOverlay.hidden = true;
+        tooltipOverlay.textContent = "";
+        delete tooltipOverlay.dataset.placement;
+    }
+    activeTooltipButton.removeAttribute("aria-describedby");
+    activeTooltipButton = null;
+}
+
+function showInfoTooltip(tooltipButtonElement) {
+    const tooltipId = String(
+        tooltipButtonElement.getAttribute("data-info-tooltip-id") ?? "",
+    ).trim();
+    const tooltipText = String(tooltipTextById.get(tooltipId) ?? "").trim();
+    if (!tooltipText) {
+        hideInfoTooltip();
+        return;
+    }
+    const tooltipOverlay = getOrCreateTooltipOverlay();
+    if (!(tooltipOverlay instanceof HTMLElement)) return;
+    if (
+        activeTooltipButton instanceof HTMLElement &&
+        activeTooltipButton !== tooltipButtonElement
+    ) {
+        activeTooltipButton.removeAttribute("aria-describedby");
+    }
+    activeTooltipButton = tooltipButtonElement;
+    tooltipOverlay.textContent = tooltipText;
+    tooltipOverlay.hidden = false;
+    tooltipButtonElement.setAttribute("aria-describedby", tooltipOverlay.id);
+    positionTooltipOverlay(tooltipButtonElement, tooltipOverlay);
+}
+
+function initInfoTooltipRuntime() {
+    if (typeof document === "undefined") return;
+    if (document.body?.dataset.infoTooltipRuntimeReady === "true") return;
+    runtimeEventAbortController?.abort();
+    runtimeEventAbortController = new AbortController();
+    const runtimeEventSignal = runtimeEventAbortController.signal;
+    if (document.body) {
+        document.body.dataset.infoTooltipRuntimeReady = "true";
+    } else {
+        document.addEventListener(
+            "DOMContentLoaded",
+            () => {
+                document.body.dataset.infoTooltipRuntimeReady = "true";
+            },
+            { once: true },
+        );
+    }
+    document.addEventListener(
+        "mouseover",
+        (event) => {
+            const hoveredElement = event.target;
+            if (!(hoveredElement instanceof Element)) return;
+            const tooltipButtonElement =
+                hoveredElement.closest(".info-tooltip__btn");
+            if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
+            showInfoTooltip(tooltipButtonElement);
+        },
+        { signal: runtimeEventSignal },
+    );
+    document.addEventListener(
+        "mouseout",
+        (event) => {
+            const originElement = event.target;
+            if (!(originElement instanceof Element)) return;
+            const tooltipButtonElement =
+                originElement.closest(".info-tooltip__btn");
+            if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
+            const relatedElement = event.relatedTarget;
+            if (
+                relatedElement instanceof Element &&
+                relatedElement.closest(".info-tooltip__btn") ===
+                    tooltipButtonElement
+            ) {
+                return;
+            }
+            hideInfoTooltip();
+        },
+        { signal: runtimeEventSignal },
+    );
+    document.addEventListener(
+        "focusin",
+        (event) => {
+            const focusedElement = event.target;
+            if (!(focusedElement instanceof Element)) return;
+            const tooltipButtonElement =
+                focusedElement.closest(".info-tooltip__btn");
+            if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
+            showInfoTooltip(tooltipButtonElement);
+        },
+        { signal: runtimeEventSignal },
+    );
+    document.addEventListener(
+        "focusout",
+        (event) => {
+            const blurredElement = event.target;
+            if (!(blurredElement instanceof Element)) return;
+            const tooltipButtonElement =
+                blurredElement.closest(".info-tooltip__btn");
+            if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
+            const nextFocusedElement = event.relatedTarget;
+            if (
+                nextFocusedElement instanceof Element &&
+                nextFocusedElement.closest(".info-tooltip__btn") ===
+                    tooltipButtonElement
+            ) {
+                return;
+            }
+            hideInfoTooltip();
+        },
+        { signal: runtimeEventSignal },
+    );
+    window.addEventListener("scroll", hideInfoTooltip, {
+        capture: true,
+        signal: runtimeEventSignal,
+    });
+    window.addEventListener("resize", hideInfoTooltip, {
+        signal: runtimeEventSignal,
+    });
+    document.addEventListener(
+        "keydown",
+        (event) => {
+            if (event.key === "Escape") {
+                hideInfoTooltip();
+            }
+        },
+        { signal: runtimeEventSignal },
+    );
+}
 
 export function renderInfoTooltip(text, ariaLabel = "More information", id) {
-    const uid = id ?? `info-tooltip-${++_seq}`;
-    return `<span class="info-tooltip" data-info-tooltip="${uid}">
+    initInfoTooltipRuntime();
+    const baseTooltipId = id ?? "info-tooltip";
+    const tooltipId = `${baseTooltipId}-${++tooltipSequence}`;
+    tooltipTextById.set(tooltipId, String(text ?? ""));
+    return `<span class="info-tooltip" data-info-tooltip="${tooltipId}">
       <button
         class="info-tooltip__btn"
         type="button"
         aria-label="${escapeHtml(ariaLabel)}"
-        aria-describedby="${uid}"
+        data-info-tooltip-id="${tooltipId}"
         tabindex="0"
       >ℹ</button>
-      <span class="info-tooltip__panel" id="${uid}" role="tooltip">${escapeHtml(text)}</span>
     </span>`;
 }
