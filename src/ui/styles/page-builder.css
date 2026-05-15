@@ -764,6 +764,7 @@ body[data-theme="light"] .slider::before {
 }
 
 .floating-toolbar {
+    --floating-toolbar-viewport-padding: 24px;
     position: fixed;
     left: 50%;
     bottom: 52px;
@@ -773,7 +774,10 @@ body[data-theme="light"] .slider::before {
     align-items: center;
     gap: 12px;
     width: fit-content;
-    max-width: min(var(--shell-content-width), calc(100vw - 24px));
+    max-width: min(
+        var(--shell-content-width),
+        calc(100vw - var(--floating-toolbar-viewport-padding))
+    );
     margin: 0;
     padding: 12px 24px;
     background: var(--toolbar-bg);
