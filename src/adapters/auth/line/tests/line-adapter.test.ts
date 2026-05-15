@@ -10,6 +10,23 @@ test("line adapter config schema includes PKCE/mobile fields", () => {
     assert.ok(keys.includes("usePkce"));
 });
 
+test("line adapter schema provides hints for channelId and redirectUri", () => {
+    const adapter = createAdapter();
+    const schema = adapter.getConfigSchema();
+    const channelIdField = schema.find((field) => field.key === "channelId");
+    const redirectUriField = schema.find(
+        (field) => field.key === "redirectUri",
+    );
+    assert.ok(
+        channelIdField?.hint,
+        "channelId schema field should carry a hint",
+    );
+    assert.ok(
+        redirectUriField?.hint,
+        "redirectUri schema field should carry a hint",
+    );
+});
+
 test("line adapter authenticates via authorization code and syncs profile fields", async () => {
     const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
         setClient(client: {

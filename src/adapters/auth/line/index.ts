@@ -236,6 +236,7 @@ class LineAuthAdapter implements AuthProviderAdapter {
             {
                 key: "channelId",
                 label: "LINE Channel ID",
+                hint: "Your LINE Login channel ID, found in the LINE Developers Console under your channel's Basic settings.",
                 type: "text",
                 required: true,
                 envVar: "LINE_CHANNEL_ID",
@@ -250,6 +251,7 @@ class LineAuthAdapter implements AuthProviderAdapter {
             {
                 key: "redirectUri",
                 label: "LINE Redirect URI",
+                hint: "The callback URL registered in your LINE Login channel's Callback URL settings. Must exactly match the URI entered in the LINE Developers Console.",
                 type: "text",
                 required: true,
                 envVar: "LINE_REDIRECT_URI",

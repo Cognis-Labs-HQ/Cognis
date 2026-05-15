@@ -23,6 +23,7 @@ export interface AuthGateway {
 export interface AuthConfigField {
     key: string;
     label: string;
+    hint?: string;
     type: "text" | "password" | "number" | "boolean";
     required: boolean;
     envVar?: string;
