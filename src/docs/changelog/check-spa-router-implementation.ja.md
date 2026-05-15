@@ -109,3 +109,4 @@ I/O 処理を並列化し、Node.js がブラウザリクエストを処理で�
 - [ad0f87b](https://github.com/le-firehawk/Cognis/commit/ad0f87b)
 - [903e3f3](https://github.com/le-firehawk/Cognis/commit/903e3f3)
 - [1f2451b](https://github.com/le-firehawk/Cognis/commit/1f2451b)
+- [18e5b71](https://github.com/le-firehawk/Cognis/commit/18e5b71)
