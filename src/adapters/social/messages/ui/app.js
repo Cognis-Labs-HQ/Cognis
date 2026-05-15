@@ -30,8 +30,8 @@ import {
     importRoomKey,
 } from "/static/reuse/crypto-utils.js";
 
-const textEncoder = new TextEncoder();
-const textDecoder = new TextDecoder();
+const TEXT_ENCODER = new TextEncoder();
+const TEXT_DECODER = new TextDecoder();
 const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉"];
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
@@ -64,7 +64,7 @@ async function encryptMessage(key, plaintext) {
     const ciphertext = await crypto.subtle.encrypt(
         { name: "AES-GCM", iv: initVector },
         key,
-        textEncoder.encode(plaintext),
+        TEXT_ENCODER.encode(plaintext),
     );
     return {
         iv: bytesToHex(initVector),
@@ -87,7 +87,7 @@ async function decryptMessageOrReturnPlaintext(key, message) {
             key,
             hexToBytes(cipherHex),
         );
-        return textDecoder.decode(decrypted);
+        return TEXT_DECODER.decode(decrypted);
     } catch {
         return null;
     }
@@ -322,12 +322,28 @@ function renderReactionRow(message) {
         if (existing) {
             existing.count += Number(reaction.count ?? 0);
             existing.reactedByMe = existing.reactedByMe || reaction.reactedByMe;
+            const reactedByRows = Array.isArray(reaction.reactedBy)
+                ? reaction.reactedBy
+                : [];
+            for (const reactor of reactedByRows) {
+                if (
+                    existing.reactedBy.some(
+                        (entry) => entry.accountId === reactor.accountId,
+                    )
+                ) {
+                    continue;
+                }
+                existing.reactedBy.push(reactor);
+            }
             continue;
         }
         mergedByEmoji.set(normalizedEmoji, {
             emoji: normalizedEmoji,
             count: Number(reaction.count ?? 0),
             reactedByMe: Boolean(reaction.reactedByMe),
+            reactedBy: Array.isArray(reaction.reactedBy)
+                ? reaction.reactedBy
+                : [],
         });
     }
     const chips = Array.from(mergedByEmoji.values())
@@ -335,13 +351,29 @@ function renderReactionRow(message) {
             const ownClass = reaction.reactedByMe
                 ? " messages-reaction-chip--active"
                 : "";
-            return `<button type="button" class="messages-reaction-chip${ownClass}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
+            const reactedByLabel = reaction.reactedBy
+                .map(
+                    (reactor) =>
+                        reactor.displayName ||
+                        reactor.handle ||
+                        reactor.accountId,
+                )
+                .join(", ");
+            const titleLabel = reactedByLabel || reaction.emoji;
+            return `<button type="button" class="messages-reaction-chip${ownClass}" title="${escapeHtml(titleLabel)}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
         })
         .join("");
-    const quick = QUICK_REACTION_EMOJIS.map(
-        (emoji) =>
-            `<button type="button" class="messages-reaction-add-btn" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
-    ).join("");
+    const quick = Array.from(
+        new Set(
+            QUICK_REACTION_EMOJIS.map((emoji) => normalizeReactionEmoji(emoji)),
+        ),
+    )
+        .filter(Boolean)
+        .map(
+            (emoji) =>
+                `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emoji)}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
+        )
+        .join("");
     return `<div class="messages-reactions-row">${chips}<span class="messages-reaction-add-wrap">${quick}</span></div>`;
 }
 
@@ -352,6 +384,18 @@ function closeReadTooltips(threadList) {
     threadList?.classList.remove("messages-thread-list--receipt-open");
 }
 
+/**
+ * Builds avatar markup with image-first rendering and initials fallback.
+ *
+ * @param {object} options - Avatar rendering options.
+ * @param {string | null} options.avatarKey - File key for avatar image.
+ * @param {string} options.label - Fallback label used for initials.
+ * @param {string} options.colorSeed - Value used for deterministic color pick.
+ * @param {string} options.avatarClass - Wrapper class for avatar element.
+ * @param {string} options.imageClass - Image class for avatar `<img>`.
+ * @param {string} options.fallbackClass - Fallback initials class name.
+ * @returns {string}
+ */
 function formatAvatarMarkup({
     avatarKey,
     label,
@@ -395,6 +439,18 @@ function formatMessageAvatar(message) {
         imageClass: "messages-message-avatar-img",
         fallbackClass: "messages-message-avatar-fallback",
     });
+}
+
+function syncLatestMessageTimestamp(container) {
+    const timeNodes = Array.from(
+        container.querySelectorAll(".messages-message-time"),
+    );
+    timeNodes.forEach((node) =>
+        node.classList.remove("messages-message-time--latest"),
+    );
+    const latestTimeNode = timeNodes.at(-1);
+    if (!latestTimeNode) return;
+    latestTimeNode.classList.add("messages-message-time--latest");
 }
 
 async function renderThread(
@@ -493,6 +549,8 @@ async function renderThread(
             </button>`,
         );
     }
+
+    syncLatestMessageTimestamp(container);
 
     return { oldestCreatedAt, pendingRequest };
 }

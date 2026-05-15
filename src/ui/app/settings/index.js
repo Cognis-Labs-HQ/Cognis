@@ -79,6 +79,7 @@ function hasLanguagePriorityChanged(prev, next) {
 }
 
 const LANGUAGE_RELOAD_DELAY_MS = 400;
+const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
 export async function mount(root, { signal } = {}) {
     let loadedPrefs = await loadPrefs().catch(() => null);
@@ -318,7 +319,7 @@ export async function mount(root, { signal } = {}) {
                     });
                     messageStylePrefs = initMessageStylePrefs({
                         onDirtyChange: (dirty) =>
-                            markDirty("message-style", dirty),
+                            markDirty(DIRTY_KEY_MESSAGE_STYLE, dirty),
                     });
                 },
             },
