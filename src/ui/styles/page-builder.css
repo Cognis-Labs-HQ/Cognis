@@ -278,6 +278,13 @@ code {
     overflow-wrap: anywhere;
     word-break: break-word;
 }
+.main-window--with-toolbar .toolbar--scrollable {
+    position: sticky;
+    top: var(--toolbar-sticky-top, 0px);
+    max-height: var(--toolbar-max-height, 80dvh);
+    overflow-y: auto;
+    align-self: start;
+}
 .main-window--with-toolbar .content-grid {
     width: 100%;
 }
@@ -764,19 +771,28 @@ body[data-theme="light"] .slider::before {
 }
 
 .floating-toolbar {
+    --floating-toolbar-viewport-padding: 24px;
     position: fixed;
-    bottom: 0;
     left: 50%;
+    bottom: calc(
+        var(--footer-floating-height, 38px) +
+            var(--floating-toolbar-footer-gap, 14px)
+    );
     transform: translateX(-50%);
     z-index: 900;
     display: flex;
     align-items: center;
     gap: 12px;
+    width: fit-content;
+    max-width: min(
+        var(--shell-content-width),
+        calc(100vw - var(--floating-toolbar-viewport-padding))
+    );
+    margin: 0;
     padding: 12px 24px;
     background: var(--toolbar-bg);
     border: 1px solid var(--border);
-    border-bottom: 0;
-    border-radius: 12px 12px 0 0;
+    border-radius: 12px;
     backdrop-filter: blur(10px);
     box-shadow: var(--shadow-floating);
 }

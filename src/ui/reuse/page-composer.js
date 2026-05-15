@@ -85,6 +85,7 @@
  *   onRender?: () => void,
  *   pageContext?: { title: string, subtitle: string },
  *   toolbar?: Array<{ id: string, label: string, render: () => string }>,
+ *   toolbarScrollable?: boolean,
  *   subNavigation?: Array<{ id: string, label: string, render: () => string }>,
  *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
  *   subPageNavigation?: boolean,
@@ -121,6 +122,7 @@ export function createPageComposer(
         onRender,
         pageContext,
         toolbar = [],
+        toolbarScrollable = false,
         subNavigation = [],
         floatingMenu = [],
         subPageNavigation = false,
@@ -3171,6 +3173,40 @@ export function createPageComposer(
                         setMobileDrawerOpen(false, { restoreFocus: false });
                     }
                 });
+
+                if (toolbarScrollable) {
+                    toolbarEl.classList.add("toolbar--scrollable");
+                    toolbarEl.tabIndex = 0;
+                    const headerEl = root.querySelector(".site-header");
+                    const footerEl = root.querySelector(".global-footer");
+                    let layoutObserver;
+                    function syncToolbarPosition() {
+                        if (!toolbarEl.isConnected) {
+                            layoutObserver?.disconnect();
+                            return;
+                        }
+                        const headerHeight = headerEl
+                            ? headerEl.getBoundingClientRect().height
+                            : 0;
+                        const footerHeight = footerEl
+                            ? footerEl.getBoundingClientRect().height
+                            : 0;
+                        toolbarEl.style.setProperty(
+                            "--toolbar-sticky-top",
+                            `${headerHeight}px`,
+                        );
+                        // 24px accounts for the workspace's top margin gap.
+                        toolbarEl.style.setProperty(
+                            "--toolbar-max-height",
+                            `calc(100dvh - ${headerHeight}px - ${footerHeight}px - 24px)`,
+                        );
+                    }
+                    syncToolbarPosition();
+                    layoutObserver = new ResizeObserver(syncToolbarPosition);
+                    if (headerEl) layoutObserver.observe(headerEl);
+                    if (footerEl) layoutObserver.observe(footerEl);
+                    layoutObserver.observe(document.documentElement);
+                }
             }
         }
 

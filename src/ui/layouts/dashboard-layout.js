@@ -490,10 +490,32 @@ export async function renderDashboardLayout(root, slots = {}) {
                 (hasToolbar
                     ? `<aside class="toolbar">${slots.toolbar}</aside>`
                     : "") +
-                `<section class="content-grid">${slots.content || ""}</section>` +
-                (hasFloatingToolbar
-                    ? `<div class="floating-toolbar" hidden>${slots.floatingToolbar}</div>`
-                    : "");
+                `<section class="content-grid">${slots.content || ""}</section>`;
+        }
+
+        if (hasFloatingToolbar) {
+            const footerElement = existingShell.querySelector(".global-footer");
+            const existingToolbar =
+                existingShell.querySelector(".floating-toolbar");
+            const toolbarElement =
+                existingToolbar ?? document.createElement("div");
+            if (!existingToolbar) {
+                toolbarElement.className = "floating-toolbar";
+            }
+            toolbarElement.hidden = true;
+            toolbarElement.innerHTML = slots.floatingToolbar;
+            if (footerElement) {
+                const needsPlacementBeforeFooter =
+                    toolbarElement.parentElement !== existingShell ||
+                    toolbarElement.nextElementSibling !== footerElement;
+                if (needsPlacementBeforeFooter) {
+                    footerElement.before(toolbarElement);
+                }
+            } else if (toolbarElement.parentElement !== existingShell) {
+                existingShell.append(toolbarElement);
+            }
+        } else {
+            existingShell.querySelector(".floating-toolbar")?.remove();
         }
 
         if (!showThemeToggle) {
