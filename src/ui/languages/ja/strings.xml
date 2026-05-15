@@ -254,6 +254,7 @@
   <string name="ui.app.users.role_updated">ロールが更新されました。</string>
   <string name="ui.app.invite.page_subtitle">登録トークンの状態を確認・管理します。</string>
   <string name="ui.app.invite.email">メールアドレス</string>
+  <string name="ui.app.invite.email_placeholder">user@example.com</string>
   <string name="ui.app.invite.status">状態</string>
   <string name="ui.app.invite.expires_at">有効期限</string>
   <string name="ui.app.invite.issuer">発行者</string>

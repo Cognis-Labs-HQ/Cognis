@@ -254,6 +254,7 @@
   <string name="ui.app.users.role_updated">Rolle aktualisiert.</string>
   <string name="ui.app.invite.page_subtitle">Registrierungstoken prüfen und verwalten.</string>
   <string name="ui.app.invite.email">E-Mail-Adresse</string>
+  <string name="ui.app.invite.email_placeholder">user@example.com</string>
   <string name="ui.app.invite.status">Status</string>
   <string name="ui.app.invite.expires_at">Läuft ab am</string>
   <string name="ui.app.invite.issuer">Aussteller</string>

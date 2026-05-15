@@ -254,6 +254,7 @@
   <string name="ui.app.users.role_updated">Peran diperbarui.</string>
   <string name="ui.app.invite.page_subtitle">Tinjau dan kelola status token registrasi.</string>
   <string name="ui.app.invite.email">Alamat email</string>
+  <string name="ui.app.invite.email_placeholder">user@example.com</string>
   <string name="ui.app.invite.status">Status</string>
   <string name="ui.app.invite.expires_at">Berakhir pada</string>
   <string name="ui.app.invite.issuer">Penerbit</string>
