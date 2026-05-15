@@ -3176,9 +3176,15 @@ export function createPageComposer(
 
                 if (toolbarScrollable) {
                     toolbarEl.classList.add("toolbar--scrollable");
+                    toolbarEl.tabIndex = 0;
                     const headerEl = root.querySelector(".site-header");
                     const footerEl = root.querySelector(".global-footer");
+                    let scrollObserver;
                     function applyToolbarDimensions() {
+                        if (!toolbarEl.isConnected) {
+                            scrollObserver?.disconnect();
+                            return;
+                        }
                         const headerHeight = headerEl
                             ? headerEl.getBoundingClientRect().height
                             : 0;
@@ -3189,18 +3195,17 @@ export function createPageComposer(
                             "--toolbar-sticky-top",
                             `${headerHeight}px`,
                         );
+                        // 24px accounts for the workspace's top margin gap.
                         toolbarEl.style.setProperty(
                             "--toolbar-max-height",
                             `calc(100dvh - ${headerHeight}px - ${footerHeight}px - 24px)`,
                         );
                     }
                     applyToolbarDimensions();
-                    const toolbarScrollObserver = new ResizeObserver(
-                        applyToolbarDimensions,
-                    );
-                    if (headerEl) toolbarScrollObserver.observe(headerEl);
-                    if (footerEl) toolbarScrollObserver.observe(footerEl);
-                    toolbarScrollObserver.observe(document.documentElement);
+                    scrollObserver = new ResizeObserver(applyToolbarDimensions);
+                    if (headerEl) scrollObserver.observe(headerEl);
+                    if (footerEl) scrollObserver.observe(footerEl);
+                    scrollObserver.observe(document.documentElement);
                 }
             }
         }

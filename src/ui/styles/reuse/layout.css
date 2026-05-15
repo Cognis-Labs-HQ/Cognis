@@ -2,7 +2,9 @@
     --footer-floating-height: 38px;
     --floating-toolbar-footer-gap: 14px;
     min-height: 100vh;
-    padding-bottom: 56px;
+    padding-bottom: calc(
+        var(--footer-floating-height) + var(--floating-toolbar-footer-gap) + 4px
+    );
     background: transparent;
     color: var(--text);
     --shell-content-width: 96%;
