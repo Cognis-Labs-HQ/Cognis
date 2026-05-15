@@ -40,3 +40,4 @@ UIに追加しました。
 ## コミット
 
 - [d4f7f6d](https://github.com/le-firehawk/Cognis/commit/d4f7f6d)
+- [fc3febe](https://github.com/le-firehawk/Cognis/commit/fc3febe)

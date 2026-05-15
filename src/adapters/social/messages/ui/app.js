@@ -31,6 +31,9 @@ import {
 
 const TEXT_ENCODER = new TextEncoder();
 const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉"];
+const TYPING_TTL_SECONDS = 8;
+const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
+const TYPING_SEND_DEBOUNCE_MS = 1200;
 
 async function encryptMessage(key, plaintext) {
     const initVector = crypto.getRandomValues(new Uint8Array(12));
@@ -307,6 +310,8 @@ export async function mount(root, { signal } = {}) {
         : null;
     let typingSendTimeoutId = null;
     let typingPollIntervalId = null;
+    let typingActive = false;
+    let lastTypingSentAt = 0;
     let pendingIncomingRequests = [];
 
     let rooms = await loadRooms();
@@ -393,12 +398,37 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
+    function startTypingPolling() {
+        if (typingPollIntervalId) {
+            clearInterval(typingPollIntervalId);
+            typingPollIntervalId = null;
+        }
+        if (!selectedRoomId || document.visibilityState !== "visible") return;
+        typingPollIntervalId = setInterval(() => {
+            void refreshTypingIndicator();
+        }, 3000);
+    }
+
     function queueTypingUpdate(typing) {
         if (!selectedRoomId) return;
+        const now = Date.now();
         if (typingSendTimeoutId) {
             clearTimeout(typingSendTimeoutId);
             typingSendTimeoutId = null;
         }
+        if (
+            typing &&
+            typingActive &&
+            now - lastTypingSentAt < TYPING_SEND_DEBOUNCE_MS
+        ) {
+            typingSendTimeoutId = setTimeout(() => {
+                queueTypingUpdate(false);
+            }, TYPING_IDLE_RESET_MS);
+            return;
+        }
+        if (!typing && !typingActive) return;
+        typingActive = typing;
+        lastTypingSentAt = now;
         void apiFetch(
             `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/typing`,
             {
@@ -409,7 +439,7 @@ export async function mount(root, { signal } = {}) {
         if (typing) {
             typingSendTimeoutId = setTimeout(() => {
                 queueTypingUpdate(false);
-            }, 5000);
+            }, TYPING_IDLE_RESET_MS);
         }
     }
 
@@ -671,6 +701,7 @@ export async function mount(root, { signal } = {}) {
                 if (selectedRoomId) {
                     void openRoom(selectedRoomId);
                     void refreshTypingIndicator();
+                    startTypingPolling();
                 }
             },
         },
@@ -684,8 +715,21 @@ export async function mount(root, { signal } = {}) {
             );
             const id = match ? decodeURIComponent(match[1]) : null;
             if (id) {
+                queueTypingUpdate(false);
                 selectedRoomId = id;
                 void openRoom(id);
+                void refreshTypingIndicator();
+                startTypingPolling();
+            }
+        },
+        { signal },
+    );
+
+    document.addEventListener(
+        "visibilitychange",
+        () => {
+            startTypingPolling();
+            if (document.visibilityState === "visible") {
                 void refreshTypingIndicator();
             }
         },
@@ -707,6 +751,7 @@ export async function mount(root, { signal } = {}) {
             const item = clickEvent.target.closest("[data-room-id]");
             if (!item) return;
             const id = item.getAttribute("data-room-id");
+            queueTypingUpdate(false);
             selectedRoomId = id;
             roomsList
                 .querySelectorAll(".messages-room--active")
@@ -717,6 +762,7 @@ export async function mount(root, { signal } = {}) {
             history.pushState({}, "", `/messages/${encodeURIComponent(id)}`);
             await openRoom(id);
             await refreshTypingIndicator();
+            startTypingPolling();
         });
 
         const newBtn = document.getElementById("messages-new-btn");
@@ -792,9 +838,7 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
-    typingPollIntervalId = setInterval(() => {
-        void refreshTypingIndicator();
-    }, 3000);
+    startTypingPolling();
 }
 
 if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
