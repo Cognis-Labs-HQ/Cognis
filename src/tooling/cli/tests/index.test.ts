@@ -186,7 +186,11 @@ test("all existing-user mutations fail fast on missing users", async () => {
                 }),
                 /User "ghost" not found\./,
             );
-            assert.equal(requests.length, 1, command.name);
+            assert.equal(
+                requests.length,
+                1,
+                `Expected one request for ${command.name}`,
+            );
             assert.ok(requests[0].endsWith("/api/v1/users/ghost/info"));
         }
     } finally {

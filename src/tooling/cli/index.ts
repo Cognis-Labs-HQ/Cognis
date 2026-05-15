@@ -9,6 +9,11 @@ interface CommandContext {
     getApiToken: () => Promise<string>;
 }
 
+interface CommandExecutionOptions {
+    apiBaseUrl: string;
+    getApiToken: () => Promise<string>;
+}
+
 type CommandHandler = (ctx: CommandContext) => Promise<unknown>;
 type CommandRenderer = (payload: unknown) => string;
 
@@ -565,7 +570,7 @@ export function formatCommandOutput(
 export async function executeRegisteredCommand(
     command: string,
     args: string[],
-    options: { apiBaseUrl: string; getApiToken: () => Promise<string> },
+    options: CommandExecutionOptions,
 ): Promise<unknown> {
     const spec = registry.get(command);
     if (!spec) {
