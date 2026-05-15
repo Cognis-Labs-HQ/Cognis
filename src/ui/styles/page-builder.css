@@ -278,6 +278,13 @@ code {
     overflow-wrap: anywhere;
     word-break: break-word;
 }
+.main-window--with-toolbar .toolbar--scrollable {
+    position: sticky;
+    top: var(--toolbar-sticky-top, 0px);
+    max-height: var(--toolbar-max-height, 80dvh);
+    overflow-y: auto;
+    align-self: start;
+}
 .main-window--with-toolbar .content-grid {
     width: 100%;
 }

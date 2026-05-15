@@ -163,6 +163,7 @@ export async function mount(root, { signal } = {}) {
                     `<h3>${i18n.t("ui.reuse.navigation")}</h3><nav class="docs-nav">${buildGroupedNav(i18n, docs)}</nav>`,
             },
         ],
+        toolbarScrollable: true,
     });
     await composer.init();
 

@@ -85,6 +85,7 @@
  *   onRender?: () => void,
  *   pageContext?: { title: string, subtitle: string },
  *   toolbar?: Array<{ id: string, label: string, render: () => string }>,
+ *   toolbarScrollable?: boolean,
  *   subNavigation?: Array<{ id: string, label: string, render: () => string }>,
  *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
  *   subPageNavigation?: boolean,
@@ -121,6 +122,7 @@ export function createPageComposer(
         onRender,
         pageContext,
         toolbar = [],
+        toolbarScrollable = false,
         subNavigation = [],
         floatingMenu = [],
         subPageNavigation = false,
@@ -3171,6 +3173,35 @@ export function createPageComposer(
                         setMobileDrawerOpen(false, { restoreFocus: false });
                     }
                 });
+
+                if (toolbarScrollable) {
+                    toolbarEl.classList.add("toolbar--scrollable");
+                    const headerEl = root.querySelector(".site-header");
+                    const footerEl = root.querySelector(".global-footer");
+                    function applyToolbarDimensions() {
+                        const headerHeight = headerEl
+                            ? headerEl.getBoundingClientRect().height
+                            : 0;
+                        const footerHeight = footerEl
+                            ? footerEl.getBoundingClientRect().height
+                            : 0;
+                        toolbarEl.style.setProperty(
+                            "--toolbar-sticky-top",
+                            `${headerHeight}px`,
+                        );
+                        toolbarEl.style.setProperty(
+                            "--toolbar-max-height",
+                            `calc(100dvh - ${headerHeight}px - ${footerHeight}px - 24px)`,
+                        );
+                    }
+                    applyToolbarDimensions();
+                    const toolbarScrollObserver = new ResizeObserver(
+                        applyToolbarDimensions,
+                    );
+                    if (headerEl) toolbarScrollObserver.observe(headerEl);
+                    if (footerEl) toolbarScrollObserver.observe(footerEl);
+                    toolbarScrollObserver.observe(document.documentElement);
+                }
             }
         }
 
