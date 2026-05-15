@@ -102,14 +102,18 @@ async function fetchUserEmails(username) {
     return payload?.data ?? [];
 }
 
-async function promptInput({ title, label, type = "text" }) {
+async function promptInput({ title, label, type = "text", placeholder = "" }) {
     let inputEl = null;
     const result = await openPopup({
         title,
         body: () => `
       <label class="stack">
         <span>${escapeHtml(label)}</span>
-        <input id="users-input" type="${escapeHtml(type)}" />
+        <input
+          id="users-input"
+          type="${escapeHtml(type)}"
+          ${placeholder ? `placeholder="${escapeHtml(placeholder)}"` : ""}
+        />
       </label>
     `,
         actions: [
@@ -439,6 +443,7 @@ async function triggerInviteFlow() {
                 title: i18n.t("ui.reuse.invite"),
                 label: i18n.t("ui.reuse.invite_email"),
                 type: "email",
+                placeholder: i18n.t("ui.reuse.email_placeholder"),
             });
             if (!email) return;
             const response = await apiFetch("/api/v1/registration/tokens", {
