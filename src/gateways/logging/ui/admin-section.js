@@ -113,7 +113,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     let reconnectAttempts = 0;
     let activeSession = 0;
     let activeFilters = {
-        severity: "all",
+        severity: "warn",
         keyword: "",
         timeRange: "all",
     };

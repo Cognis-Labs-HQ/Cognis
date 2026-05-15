@@ -44,6 +44,9 @@ CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 | ------------------ | ------------ | --------------------------------------------------- |
 | `DB_TYPE`          | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`      |
 | `DATABASE_URL`     | —            | Verbindungszeichenkette für PostgreSQL oder MariaDB |
-| `LOG_LEVEL`        | `info`       | Log-Ausführlichkeit                                 |
+| `LOG_LEVEL`        | `info`       | Basis-Schweregradfilter für `/api/v1/logging/stream` |
+| `LOG_ROTATE_MAX_BYTES` | `10485760` | Rotiert die aktive Logdatei ab dieser Größe (Bytes) |
+| `LOG_ROTATE_MAX_FILES` | `10`       | Anzahl der aufzubewahrenden rotierten Logarchive     |
+| `LOG_ROTATE_COMPRESS`  | `true`     | Komprimiert rotierte Logs als gzip (`.gz`)           |
 | `PORT`             | `3000`       | HTTP-Port                                           |
 | `COGNIS_SMTP_HOST` | —            | SMTP-Server-Hostname                                |

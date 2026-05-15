@@ -37,6 +37,9 @@ CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 | ------------------ | ------------ | ------------------------------------------------------- |
 | `DB_TYPE`          | `postgresql` | データベースバックエンド: `postgresql` または `mariadb` |
 | `DATABASE_URL`     | —            | PostgreSQLまたはMariaDBの接続文字列                     |
-| `LOG_LEVEL`        | `info`       | ログの詳細度                                            |
+| `LOG_LEVEL`        | `info`       | `/api/v1/logging/stream` の基準重大度フィルター         |
+| `LOG_ROTATE_MAX_BYTES` | `10485760` | このサイズ（バイト）でアクティブログをローテーション     |
+| `LOG_ROTATE_MAX_FILES` | `10`       | 保持するローテーション済みログアーカイブ数               |
+| `LOG_ROTATE_COMPRESS`  | `true`     | ローテーション済みログを gzip（`.gz`）圧縮               |
 | `PORT`             | `3000`       | HTTPポート                                              |
 | `COGNIS_SMTP_HOST` | —            | SMTPサーバーのホスト名                                  |
