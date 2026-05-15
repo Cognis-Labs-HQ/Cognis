@@ -14,8 +14,6 @@
  *
  *   const style = normalizeMessageStyle(rawValue);
  *
- * @param {string} value
- * @returns {boolean}
  */
 export const MESSAGE_STYLE_OPTIONS = Object.freeze([
     "default",
@@ -25,6 +23,10 @@ export const MESSAGE_STYLE_OPTIONS = Object.freeze([
 
 const messageStyleSet = new Set(MESSAGE_STYLE_OPTIONS);
 
+/**
+ * @param {string} value
+ * @returns {boolean}
+ */
 export function isValidMessageStyle(value) {
     return messageStyleSet.has(value);
 }

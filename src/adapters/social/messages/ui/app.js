@@ -32,7 +32,7 @@ import {
 } from "/static/reuse/crypto-utils.js";
 
 const TEXT_ENCODER = new TextEncoder();
-const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉"];
+const QUICK_REACTION_EMOJIS = ["👍", "❤", "😂", "🎉"];
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
 const EMOJI_NAMES = {
     "👍": "Like",
