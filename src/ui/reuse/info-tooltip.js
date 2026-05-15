@@ -34,9 +34,10 @@ import { escapeHtml } from "./escape-html.js";
 let tooltipSequence = 0;
 let activeTooltipButton = null;
 let tooltipOverlayElement = null;
+let runtimeEventAbortController = null;
 const tooltipTextById = new Map();
 
-function ensureTooltipOverlayElement() {
+function getOrCreateTooltipOverlay() {
     if (typeof document === "undefined") return null;
     if (tooltipOverlayElement instanceof HTMLElement) {
         return tooltipOverlayElement;
@@ -95,7 +96,7 @@ function positionTooltipOverlay(tooltipButtonElement, tooltipOverlay) {
 
 function hideInfoTooltip() {
     if (!(activeTooltipButton instanceof HTMLElement)) return;
-    const tooltipOverlay = ensureTooltipOverlayElement();
+    const tooltipOverlay = getOrCreateTooltipOverlay();
     if (tooltipOverlay instanceof HTMLElement) {
         tooltipOverlay.hidden = true;
         tooltipOverlay.textContent = "";
@@ -114,7 +115,7 @@ function showInfoTooltip(tooltipButtonElement) {
         hideInfoTooltip();
         return;
     }
-    const tooltipOverlay = ensureTooltipOverlayElement();
+    const tooltipOverlay = getOrCreateTooltipOverlay();
     if (!(tooltipOverlay instanceof HTMLElement)) return;
     if (
         activeTooltipButton instanceof HTMLElement &&
@@ -132,6 +133,9 @@ function showInfoTooltip(tooltipButtonElement) {
 function initInfoTooltipRuntime() {
     if (typeof document === "undefined") return;
     if (document.body?.dataset.infoTooltipRuntimeReady === "true") return;
+    runtimeEventAbortController?.abort();
+    runtimeEventAbortController = new AbortController();
+    const runtimeEventSignal = runtimeEventAbortController.signal;
     if (document.body) {
         document.body.dataset.infoTooltipRuntimeReady = "true";
     } else {
@@ -143,61 +147,86 @@ function initInfoTooltipRuntime() {
             { once: true },
         );
     }
-    document.addEventListener("mouseover", (event) => {
-        const hoveredElement = event.target;
-        if (!(hoveredElement instanceof Element)) return;
-        const tooltipButtonElement =
-            hoveredElement.closest(".info-tooltip__btn");
-        if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
-        showInfoTooltip(tooltipButtonElement);
-    });
-    document.addEventListener("mouseout", (event) => {
-        const originElement = event.target;
-        if (!(originElement instanceof Element)) return;
-        const tooltipButtonElement =
-            originElement.closest(".info-tooltip__btn");
-        if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
-        const relatedElement = event.relatedTarget;
-        if (
-            relatedElement instanceof Element &&
-            relatedElement.closest(".info-tooltip__btn") ===
-                tooltipButtonElement
-        ) {
-            return;
-        }
-        hideInfoTooltip();
-    });
-    document.addEventListener("focusin", (event) => {
-        const focusedElement = event.target;
-        if (!(focusedElement instanceof Element)) return;
-        const tooltipButtonElement =
-            focusedElement.closest(".info-tooltip__btn");
-        if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
-        showInfoTooltip(tooltipButtonElement);
-    });
-    document.addEventListener("focusout", (event) => {
-        const blurredElement = event.target;
-        if (!(blurredElement instanceof Element)) return;
-        const tooltipButtonElement =
-            blurredElement.closest(".info-tooltip__btn");
-        if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
-        const nextFocusedElement = event.relatedTarget;
-        if (
-            nextFocusedElement instanceof Element &&
-            nextFocusedElement.closest(".info-tooltip__btn") ===
-                tooltipButtonElement
-        ) {
-            return;
-        }
-        hideInfoTooltip();
-    });
-    window.addEventListener("scroll", hideInfoTooltip, true);
-    window.addEventListener("resize", hideInfoTooltip);
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
+    document.addEventListener(
+        "mouseover",
+        (event) => {
+            const hoveredElement = event.target;
+            if (!(hoveredElement instanceof Element)) return;
+            const tooltipButtonElement =
+                hoveredElement.closest(".info-tooltip__btn");
+            if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
+            showInfoTooltip(tooltipButtonElement);
+        },
+        { signal: runtimeEventSignal },
+    );
+    document.addEventListener(
+        "mouseout",
+        (event) => {
+            const originElement = event.target;
+            if (!(originElement instanceof Element)) return;
+            const tooltipButtonElement =
+                originElement.closest(".info-tooltip__btn");
+            if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
+            const relatedElement = event.relatedTarget;
+            if (
+                relatedElement instanceof Element &&
+                relatedElement.closest(".info-tooltip__btn") ===
+                    tooltipButtonElement
+            ) {
+                return;
+            }
             hideInfoTooltip();
-        }
+        },
+        { signal: runtimeEventSignal },
+    );
+    document.addEventListener(
+        "focusin",
+        (event) => {
+            const focusedElement = event.target;
+            if (!(focusedElement instanceof Element)) return;
+            const tooltipButtonElement =
+                focusedElement.closest(".info-tooltip__btn");
+            if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
+            showInfoTooltip(tooltipButtonElement);
+        },
+        { signal: runtimeEventSignal },
+    );
+    document.addEventListener(
+        "focusout",
+        (event) => {
+            const blurredElement = event.target;
+            if (!(blurredElement instanceof Element)) return;
+            const tooltipButtonElement =
+                blurredElement.closest(".info-tooltip__btn");
+            if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
+            const nextFocusedElement = event.relatedTarget;
+            if (
+                nextFocusedElement instanceof Element &&
+                nextFocusedElement.closest(".info-tooltip__btn") ===
+                    tooltipButtonElement
+            ) {
+                return;
+            }
+            hideInfoTooltip();
+        },
+        { signal: runtimeEventSignal },
+    );
+    window.addEventListener("scroll", hideInfoTooltip, {
+        capture: true,
+        signal: runtimeEventSignal,
     });
+    window.addEventListener("resize", hideInfoTooltip, {
+        signal: runtimeEventSignal,
+    });
+    document.addEventListener(
+        "keydown",
+        (event) => {
+            if (event.key === "Escape") {
+                hideInfoTooltip();
+            }
+        },
+        { signal: runtimeEventSignal },
+    );
 }
 
 export function renderInfoTooltip(text, ariaLabel = "More information", id) {
