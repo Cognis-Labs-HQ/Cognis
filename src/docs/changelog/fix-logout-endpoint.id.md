@@ -21,6 +21,9 @@ agar token aktif benar-benar dicabut di sisi server pada alur pengguna normal.
 - `src/gateways/auth/bootstrap.ts` — menambahkan rute `POST /api/v1/auth/logout`
   ke `createAuthGatewayRoutes`; mengimpor `revokeAccessToken` dari
   `access-tokens.js`
+- `src/api/reuse/access-token-http.ts` — helper bersama untuk deteksi cookie
+  Secure, pembentukan cookie access token, ekstraksi token dari cookie, dan
+  ekstraksi token Bearer untuk rute autentikasi
 - `src/ui/layouts/dashboard-layout.js` — mengirim permintaan logout sebelum
   penghapusan token lokal dan menambahkan `Authorization: Bearer ...` saat
   token lokal tersedia

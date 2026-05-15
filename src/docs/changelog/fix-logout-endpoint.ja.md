@@ -22,6 +22,9 @@
 - `src/gateways/auth/bootstrap.ts` — `createAuthGatewayRoutes` に
   `POST /api/v1/auth/logout` ルートを追加。`access-tokens.js` から
   `revokeAccessToken` をインポート
+- `src/api/reuse/access-token-http.ts` — Secure クッキー判定、アクセス
+  トークンクッキー生成、クッキートークン抽出、Bearer トークン抽出の
+  共通ヘルパーを追加し、認証ルートで再利用
 - `src/ui/layouts/dashboard-layout.js` — ローカルトークン削除前にログアウト要求を送信し、
   ローカルトークンが存在する場合は `Authorization: Bearer ...` を付与
 - `src/ui/tests/dashboard-layout-menu.test.js` — ログアウト要求の順序と

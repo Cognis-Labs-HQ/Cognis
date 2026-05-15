@@ -23,6 +23,9 @@ zuverlässig widerrufen werden.
 - `src/gateways/auth/bootstrap.ts` — Route `POST /api/v1/auth/logout` zu
   `createAuthGatewayRoutes` hinzugefügt; `revokeAccessToken` aus
   `access-tokens.js` importiert
+- `src/api/reuse/access-token-http.ts` — gemeinsame Hilfsfunktionen für
+  Secure-Cookie-Erkennung, Access-Token-Cookie-Erzeugung, Cookie-Token-Extraktion
+  und Bearer-Token-Extraktion für Auth-Routen
 - `src/ui/layouts/dashboard-layout.js` — Logout-Anfrage wird vor dem lokalen
   Token-Löschen gesendet; `Authorization: Bearer ...` wird bei vorhandenem
   lokalem Token angehängt

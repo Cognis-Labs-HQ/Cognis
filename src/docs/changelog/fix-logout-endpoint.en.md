@@ -20,6 +20,9 @@ properly revoked on the server in the normal user path.
 
 - `src/gateways/auth/bootstrap.ts` — added `POST /api/v1/auth/logout` route to
   `createAuthGatewayRoutes`; imported `revokeAccessToken` from `access-tokens.js`
+- `src/api/reuse/access-token-http.ts` — shared helpers for secure cookie
+  detection, access-token cookie construction, cookie token extraction, and
+  Bearer token extraction used by auth routes
 - `src/ui/layouts/dashboard-layout.js` — send logout request before local token
   clearing and attach `Authorization: Bearer ...` when local token exists
 - `src/ui/tests/dashboard-layout-menu.test.js` — add regression assertion for
