@@ -458,6 +458,8 @@
   <string name="module.social.messages.start_failed">Failed to start conversation.</string>
   <string name="module.social.messages.members">members</string>
   <string name="module.social.messages.set_avatar">Set avatar</string>
+  <string name="module.social.messages.leave_conversation">Leave Conversation</string>
+  <string name="module.social.messages.leave_failed">Failed to leave conversation.</string>
   <string name="module.social.messages.key_unavailable">Encryption key unavailable.</string>
   <string name="module.social.messages.page_subtitle">Your conversations and direct messages.</string>
   <string name="module.social.messages.request_sent">Message request sent.</string>

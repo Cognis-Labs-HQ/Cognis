@@ -458,6 +458,8 @@
   <string name="module.social.messages.start_failed">Gagal memulai percakapan.</string>
   <string name="module.social.messages.members">anggota</string>
   <string name="module.social.messages.set_avatar">Atur avatar</string>
+  <string name="module.social.messages.leave_conversation">Tinggalkan Percakapan</string>
+  <string name="module.social.messages.leave_failed">Gagal meninggalkan percakapan.</string>
   <string name="module.social.messages.key_unavailable">Kunci enkripsi tidak tersedia.</string>
   <string name="module.social.messages.page_subtitle">Percakapan dan pesan langsung Anda.</string>
   <string name="module.social.messages.request_sent">Permintaan pesan telah dikirim.</string>

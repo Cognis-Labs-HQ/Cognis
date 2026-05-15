@@ -458,6 +458,8 @@
   <string name="module.social.messages.start_failed">会話を開始できませんでした。</string>
   <string name="module.social.messages.members">メンバー</string>
   <string name="module.social.messages.set_avatar">アバターを設定</string>
+  <string name="module.social.messages.leave_conversation">会話から退出</string>
+  <string name="module.social.messages.leave_failed">会話から退出できませんでした。</string>
   <string name="module.social.messages.key_unavailable">暗号化キーを利用できません。</string>
   <string name="module.social.messages.page_subtitle">会話とダイレクトメッセージ。</string>
   <string name="module.social.messages.request_sent">メッセージリクエストを送信しました。</string>

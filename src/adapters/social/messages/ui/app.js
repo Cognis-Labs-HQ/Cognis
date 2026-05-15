@@ -22,7 +22,11 @@ import {
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
-import { formatDateTime } from "/static/reuse/timestamp.js";
+import {
+    formatDate,
+    formatDateTime,
+    getEffectiveTimezone,
+} from "/static/reuse/timestamp.js";
 import { normalizeMessageStyle } from "/static/reuse/message-style-options.js";
 import {
     hexToBytes,
@@ -171,6 +175,10 @@ function renderRoomAvatar(room, currentAccountId) {
 function renderThreadHeader(room, currentAccountId, i18n) {
     if (!room) return "";
     const members = room.members ?? [];
+    const currentMember = members.find(
+        (member) => member.accountId === currentAccountId,
+    );
+    const leaveHandle = currentMember?.handle || "";
     const canSetAvatar =
         room.kind === "classroom" &&
         ["teacher", "admin", "owner"].includes(
@@ -183,7 +191,19 @@ function renderThreadHeader(room, currentAccountId, i18n) {
                 <h2 class="messages-thread-title">${escapeHtml(selectedRoomTitle(room, currentAccountId))}</h2>
                 <span class="messages-thread-subtitle">${escapeHtml(String(members.length))} ${escapeHtml(i18n.t("module.social.messages.members"))}</span>
             </div>
-            ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}
+            <div class="messages-thread-actions">
+                ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}
+                ${
+                    leaveHandle
+                        ? `<button id="messages-room-leave-btn" class="messages-room-leave-btn" type="button" data-leave-handle="${escapeHtml(leaveHandle)}" aria-label="${escapeHtml(i18n.t("module.social.messages.leave_conversation"))}" title="${escapeHtml(i18n.t("module.social.messages.leave_conversation"))}">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M10 3V6H4L4 10H10L10 13L11 13L16 8L11 3L10 3Z" fill="currentColor" />
+                        <path d="M0 2L1.38281e-06 14H2L2 2L0 2Z" fill="currentColor" />
+                    </svg>
+                </button>`
+                        : ""
+                }
+            </div>
         </header>
     `;
 }
@@ -368,7 +388,10 @@ function renderReactionRow(message) {
             QUICK_REACTION_EMOJIS.map((emoji) => normalizeReactionEmoji(emoji)),
         ),
     )
-        .filter(Boolean)
+        .filter(
+            (emoji) =>
+                emoji && !mergedByEmoji.has(normalizeReactionEmoji(emoji)),
+        )
         .map(
             (emoji) =>
                 `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emoji)}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
@@ -441,16 +464,18 @@ function formatMessageAvatar(message) {
     });
 }
 
-function syncLatestMessageTimestamp(container) {
-    const timeNodes = Array.from(
-        container.querySelectorAll(".messages-message-time"),
-    );
-    timeNodes.forEach((node) =>
-        node.classList.remove("messages-message-time--latest"),
-    );
-    const latestTimeNode = timeNodes.at(-1);
-    if (!latestTimeNode) return;
-    latestTimeNode.classList.add("messages-message-time--latest");
+function formatMessageTime(iso) {
+    if (!iso) return "";
+    try {
+        return new Intl.DateTimeFormat(undefined, {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: getEffectiveTimezone(),
+        }).format(new Date(iso));
+    } catch {
+        return "";
+    }
 }
 
 async function renderThread(
@@ -482,11 +507,20 @@ async function renderThread(
             return { ...msg, text };
         }),
     );
+    let previousDateLabel = "";
     const html = decoded
         .map((msg) => {
+            const dateLabel = formatDate(msg.createdAt, "");
+            const showDateDivider =
+                dateLabel && dateLabel !== previousDateLabel
+                    ? `<div class="messages-date-divider"><span>${escapeHtml(dateLabel)}</span></div>`
+                    : "";
+            if (dateLabel) {
+                previousDateLabel = dateLabel;
+            }
             const roomEventLabel = formatRoomEventText(msg, i18n);
             if (roomEventLabel) {
-                return `<div class="messages-room-event">${escapeHtml(roomEventLabel)}</div>`;
+                return `${showDateDivider}<div class="messages-room-event">${escapeHtml(roomEventLabel)}</div>`;
             }
             const isOwn = msg.senderId === currentAccountId;
             const ownClass = isOwn ? " messages-message--own" : "";
@@ -494,7 +528,7 @@ async function renderThread(
                 ? ""
                 : `<span class="messages-message-sender">${escapeHtml(msg.senderDisplayName || msg.senderHandle || msg.senderId)}</span>`;
             const timeLabel = msg.createdAt
-                ? `<time class="messages-message-time" datetime="${escapeHtml(msg.createdAt)}">${escapeHtml(formatDateTime(msg.createdAt))}</time>`
+                ? `<time class="messages-message-time" datetime="${escapeHtml(msg.createdAt)}">${escapeHtml(formatMessageTime(msg.createdAt))}</time>`
                 : "";
             const statusIndicator = renderStatusIndicator(
                 msg,
@@ -506,7 +540,7 @@ async function renderThread(
                     ? `<div class="messages-message-meta">${timeLabel}${statusIndicator}</div>`
                     : "";
             const ownRowClass = isOwn ? " messages-message-row--own" : "";
-            return `<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(msg.id)}">
+            return `${showDateDivider}<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(msg.id)}">
             ${formatMessageAvatar(msg)}
             <div class="messages-message${ownClass}">
                 ${senderLabel}
@@ -549,8 +583,6 @@ async function renderThread(
             </button>`,
         );
     }
-
-    syncLatestMessageTimestamp(container);
 
     return { oldestCreatedAt, pendingRequest };
 }
@@ -948,6 +980,11 @@ export async function mount(root, { signal } = {}) {
             );
             if (update.ok) await openRoom(selectedRoomId);
         });
+        const leaveButton = document.getElementById("messages-room-leave-btn");
+        leaveButton?.addEventListener("click", async () => {
+            const leaveHandle = leaveButton.getAttribute("data-leave-handle");
+            await leaveSelectedRoom(leaveHandle);
+        });
     }
 
     async function reloadRoomsList() {
@@ -961,6 +998,54 @@ export async function mount(root, { signal } = {}) {
                 i18n,
             );
         }
+    }
+
+    async function leaveSelectedRoom(handle) {
+        if (!selectedRoomId || !handle) return;
+        const roomIdToLeave = selectedRoomId;
+        const response = await apiFetch(
+            `/api/v1/messages/rooms/${encodeURIComponent(roomIdToLeave)}/members/${encodeURIComponent(handle)}`,
+            { method: "DELETE" },
+        );
+        if (!response.ok) {
+            showToast(i18n.t("module.social.messages.leave_failed"), {
+                variant: "error",
+            });
+            return;
+        }
+        await reloadRoomsList();
+        if (!rooms.length) {
+            selectedRoomId = null;
+            history.replaceState({}, "", "/messages");
+            const headerSlot = document.getElementById(
+                "messages-thread-header-slot",
+            );
+            const bannerSlot = document.getElementById(
+                "messages-request-banner-slot",
+            );
+            const typingStatus = document.getElementById(
+                "messages-typing-status",
+            );
+            const threadList = document.getElementById("messages-thread-list");
+            if (headerSlot) headerSlot.innerHTML = "";
+            if (bannerSlot) bannerSlot.innerHTML = "";
+            if (typingStatus) typingStatus.textContent = "";
+            if (threadList) threadList.innerHTML = "";
+            return;
+        }
+        const fallbackRoomId =
+            rooms.find((room) => String(room.id) !== String(roomIdToLeave))
+                ?.id ?? rooms[0].id;
+        selectedRoomId = fallbackRoomId;
+        history.replaceState(
+            {},
+            "",
+            `/messages/${encodeURIComponent(fallbackRoomId)}`,
+        );
+        await openRoom(fallbackRoomId);
+        await refreshTypingIndicator();
+        startTypingPolling();
+        startLiveRefreshPolling();
     }
 
     /**

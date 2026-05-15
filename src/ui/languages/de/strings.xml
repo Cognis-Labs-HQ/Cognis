@@ -458,6 +458,8 @@
   <string name="module.social.messages.start_failed">Konversation konnte nicht gestartet werden.</string>
   <string name="module.social.messages.members">Mitglieder</string>
   <string name="module.social.messages.set_avatar">Avatar festlegen</string>
+  <string name="module.social.messages.leave_conversation">Konversation Verlassen</string>
+  <string name="module.social.messages.leave_failed">Konversation konnte nicht verlassen werden.</string>
   <string name="module.social.messages.key_unavailable">Verschlüsselungsschlüssel nicht verfügbar.</string>
   <string name="module.social.messages.page_subtitle">Ihre Unterhaltungen und Direktnachrichten.</string>
   <string name="module.social.messages.request_sent">Nachrichtenanfrage gesendet.</string>
