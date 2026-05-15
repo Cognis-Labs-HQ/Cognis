@@ -10,6 +10,7 @@ import {
     issueAccessToken,
     isTokenVerificationFresh,
     recordTokenVerification,
+    revokeAccessToken,
     type AccessRole,
 } from "./access-tokens.js";
 import { CoreAuthGateway } from "./gateway.js";
@@ -635,6 +636,53 @@ function createAuthGatewayRoutes(
                     },
                 }),
             );
+            return true;
+        }
+
+        if (url.pathname === "/api/v1/auth/logout" && req.method === "POST") {
+            const cookieHeader = req.headers.cookie ?? "";
+            const cookieMatch = cookieHeader.match(
+                /(?:^|; )cognis_access_token=([^;]+)/,
+            );
+            const cookieToken = cookieMatch
+                ? decodeURIComponent(cookieMatch[1])
+                : null;
+            if (cookieToken) {
+                revokeAccessToken(cookieToken);
+            }
+            const authHeader = req.headers.authorization;
+            const bearerToken =
+                typeof authHeader === "string" &&
+                authHeader.startsWith("Bearer ")
+                    ? authHeader.slice("Bearer ".length)
+                    : null;
+            if (bearerToken && bearerToken !== cookieToken) {
+                revokeAccessToken(bearerToken);
+            }
+            const forcedSecure = process.env.COGNIS_SECURE_COOKIES;
+            const forwardedProto = req.headers["x-forwarded-proto"];
+            const useSecure =
+                forcedSecure === "1" ||
+                forcedSecure === "true" ||
+                (forcedSecure !== "0" &&
+                    forcedSecure !== "false" &&
+                    typeof forwardedProto === "string" &&
+                    forwardedProto
+                        .split(",")
+                        .some(
+                            (value) => value.trim().toLowerCase() === "https",
+                        ));
+            const securePart = useSecure ? "; Secure" : "";
+            log?.("info", "User logged out.", {
+                ...logMeta,
+                hadCookieToken: Boolean(cookieToken),
+                hadBearerToken: Boolean(bearerToken),
+            });
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "set-cookie": `cognis_access_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${securePart}`,
+            });
+            res.end(JSON.stringify({ data: { success: true } }));
             return true;
         }
 
