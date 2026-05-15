@@ -144,7 +144,7 @@ test("user:set-password updates password after existence check succeeds", async 
     }
 });
 
-test("all existing-user mutations fail fast on missing users", async () => {
+test("all user mutation commands fail fast when target user is missing", async () => {
     const originalFetch = globalThis.fetch;
     const commands: Array<{ name: string; args: string[] }> = [
         { name: "user:role", args: ["ghost", "user"] },

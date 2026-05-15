@@ -307,24 +307,24 @@ function mergePayloadFields(
     return { ...fields, ...base };
 }
 
-function asRecord(value: unknown): Record<string, unknown> | null {
+function toRecordOrNull(value: unknown): Record<string, unknown> | null {
     if (typeof value !== "object" || value === null) return null;
     return value as Record<string, unknown>;
 }
 
-function readMessageFromPayload(payload: unknown): string | null {
-    const response = asRecord(normalizeResponse(payload));
+function findMessageInPayload(payload: unknown): string | null {
+    const response = toRecordOrNull(normalizeResponse(payload));
     if (!response) return null;
     const responseMessage = response.message;
     if (typeof responseMessage === "string" && responseMessage.trim()) {
         return responseMessage;
     }
-    const data = asRecord(response.data);
+    const data = toRecordOrNull(response.data);
     const dataMessage = data?.message;
     if (typeof dataMessage === "string" && dataMessage.trim()) {
         return dataMessage;
     }
-    const error = asRecord(response.error);
+    const error = toRecordOrNull(response.error);
     const errorMessage = error?.message;
     if (typeof errorMessage === "string" && errorMessage.trim()) {
         return errorMessage;
@@ -332,17 +332,29 @@ function readMessageFromPayload(payload: unknown): string | null {
     return null;
 }
 
+/**
+ * Validates a boolean acknowledgement field in an API response payload.
+ *
+ * When the field is present and does not match the expected value, this throws
+ * an error with the given failure prefix and any discoverable API message.
+ *
+ * @param payload - API response payload returned by a command request.
+ * @param key - Boolean data field to inspect (for example, "updated").
+ * @param expectedValue - Expected boolean acknowledgement value.
+ * @param failurePrefix - Prefix used in the thrown error message on mismatch.
+ * @throws {Error} When the acknowledgement field exists and mismatches.
+ */
 function ensureBooleanAcknowledgement(
     payload: unknown,
     key: string,
     expectedValue: boolean,
     failurePrefix: string,
 ) {
-    const response = asRecord(normalizeResponse(payload));
-    const data = asRecord(response?.data);
+    const response = toRecordOrNull(normalizeResponse(payload));
+    const data = toRecordOrNull(response?.data);
     if (!data || !(key in data)) return;
     if (data[key] === expectedValue) return;
-    const message = readMessageFromPayload(payload);
+    const message = findMessageInPayload(payload);
     if (message) throw new Error(`${failurePrefix}: ${message}`);
     throw new Error(failurePrefix);
 }
