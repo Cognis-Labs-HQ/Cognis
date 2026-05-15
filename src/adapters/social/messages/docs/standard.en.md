@@ -14,25 +14,25 @@ All endpoints are prefixed with `/api/v1/messages`. Authentication is
 required for everything except `GET /messages/ping`, which is a lightweight
 probe used by the UI to detect whether the adapter is loaded.
 
-| Method | Path                                        | Description                                                                             |
-| ------ | ------------------------------------------- | --------------------------------------------------------------------------------------- |
-| GET    | `/messages/ping`                            | Adapter availability probe (returns `{ ready: true }`).                                 |
-| GET    | `/messages/users/lookup?q=…`                | Search profiles for messaging recipients (handle match).                                |
-| GET    | `/messages/rooms`                           | List rooms for current user (with last message preview and unread count).               |
-| POST   | `/messages/rooms`                           | Create a DM or group; body lists handles. DM returns existing room or creates a request. |
-| GET    | `/messages/requests`                        | List pending incoming message requests for current user.                                  |
-| POST   | `/messages/requests/:id/approve`            | Approve request and create/open the DM room.                                              |
-| POST   | `/messages/requests/:id/reject`             | Reject a pending message request.                                                         |
-| GET    | `/messages/rooms/:id`                       | Room metadata + members.                                                                |
-| GET    | `/messages/rooms/:id/key`                   | Fetch unwrapped per-room AES-GCM key (members only).                                    |
-| GET    | `/messages/rooms/:id/messages?before&limit` | Paginated message history.                                                              |
-| POST   | `/messages/rooms/:id/messages`              | Append message (`ciphertext`, `iv`, optional `authTag`).                                |
-| POST   | `/messages/rooms/:id/messages/:messageId/reactions` | Toggle an emoji reaction for the message.                                         |
-| POST   | `/messages/rooms/:id/read`                  | Mark room read up to now.                                                               |
-| GET    | `/messages/rooms/:id/typing`                | List active typers in the room (excluding requester).                                    |
-| POST   | `/messages/rooms/:id/typing`                | Update typing state for the current member.                                              |
-| POST   | `/messages/rooms/:id/members`               | Add a member (owner/admin only).                                                        |
-| DELETE | `/messages/rooms/:id/members/:handle`       | Remove a member (self-leave or owner kick).                                             |
+| Method | Path                                                | Description                                                                              |
+| ------ | --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| GET    | `/messages/ping`                                    | Adapter availability probe (returns `{ ready: true }`).                                  |
+| GET    | `/messages/users/lookup?q=…`                        | Search profiles for messaging recipients (handle match).                                 |
+| GET    | `/messages/rooms`                                   | List rooms for current user (with last message preview and unread count).                |
+| POST   | `/messages/rooms`                                   | Create a DM or group; body lists handles. DM returns existing room or creates a request. |
+| GET    | `/messages/requests`                                | List pending incoming message requests for current user.                                 |
+| POST   | `/messages/requests/:id/approve`                    | Approve request and create/open the DM room.                                             |
+| POST   | `/messages/requests/:id/reject`                     | Reject a pending message request.                                                        |
+| GET    | `/messages/rooms/:id`                               | Room metadata + members.                                                                 |
+| GET    | `/messages/rooms/:id/key`                           | Fetch unwrapped per-room AES-GCM key (members only).                                     |
+| GET    | `/messages/rooms/:id/messages?before&limit`         | Paginated message history.                                                               |
+| POST   | `/messages/rooms/:id/messages`                      | Append message (`ciphertext`, `iv`, optional `authTag`).                                 |
+| POST   | `/messages/rooms/:id/messages/:messageId/reactions` | Toggle an emoji reaction for the message.                                                |
+| POST   | `/messages/rooms/:id/read`                          | Mark room read up to now.                                                                |
+| GET    | `/messages/rooms/:id/typing`                        | List active typers in the room (excluding requester).                                    |
+| POST   | `/messages/rooms/:id/typing`                        | Update typing state for the current member.                                              |
+| POST   | `/messages/rooms/:id/members`                       | Add a member (owner/admin only).                                                         |
+| DELETE | `/messages/rooms/:id/members/:handle`               | Remove a member (self-leave or owner kick).                                              |
 
 ## Eligibility
 

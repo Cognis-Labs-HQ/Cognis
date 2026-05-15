@@ -182,7 +182,9 @@ function renderReadReceipt(message, currentAccountId, i18n) {
     if (!readers.length) return "";
     const names = readers
         .slice(0, 3)
-        .map((reader) => reader.displayName || reader.handle || reader.accountId)
+        .map(
+            (reader) => reader.displayName || reader.handle || reader.accountId,
+        )
         .join(", ");
     const extraCount = readers.length > 3 ? ` +${readers.length - 3}` : "";
     return `<span class="messages-message-read">${escapeHtml(i18n.t("module.social.messages.read_by"))}: ${escapeHtml(names)}${escapeHtml(extraCount)}</span>`;
@@ -382,7 +384,13 @@ export async function mount(root, { signal } = {}) {
         const threadList = document.getElementById("messages-thread-list");
         if (!threadList) return;
         const key = await getRoomKey(selectedRoomId);
-        await renderThread(selectedRoomId, key, threadList, i18n, currentAccountId);
+        await renderThread(
+            selectedRoomId,
+            key,
+            threadList,
+            i18n,
+            currentAccountId,
+        );
     }
 
     function queueTypingUpdate(typing) {
@@ -410,7 +418,9 @@ export async function mount(root, { signal } = {}) {
         const res = await apiFetch(
             `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/typing`,
         );
-        const typingStatusEl = document.getElementById("messages-typing-status");
+        const typingStatusEl = document.getElementById(
+            "messages-typing-status",
+        );
         if (!typingStatusEl) return;
         if (!res.ok) {
             typingStatusEl.textContent = "";
@@ -424,7 +434,9 @@ export async function mount(root, { signal } = {}) {
         }
         const names = typers
             .slice(0, 2)
-            .map((typer) => typer.displayName || typer.handle || typer.accountId)
+            .map(
+                (typer) => typer.displayName || typer.handle || typer.accountId,
+            )
             .join(", ");
         typingStatusEl.textContent = `${names} ${i18n.t("module.social.messages.typing")}`;
     }
@@ -501,7 +513,9 @@ export async function mount(root, { signal } = {}) {
                 variant: "info",
             });
             pendingIncomingRequests = await loadIncomingRequests();
-            const requestList = document.getElementById("messages-requests-list");
+            const requestList = document.getElementById(
+                "messages-requests-list",
+            );
             if (requestList) requestList.innerHTML = renderIncomingRequests();
             return;
         }
@@ -566,7 +580,9 @@ export async function mount(root, { signal } = {}) {
                     );
                     if (
                         reactionButton &&
-                        reactionButton.classList.contains("messages-reaction-chip")
+                        reactionButton.classList.contains(
+                            "messages-reaction-chip",
+                        )
                     ) {
                         await toggleReaction(
                             reactionButton.getAttribute("data-message-id"),
@@ -576,7 +592,9 @@ export async function mount(root, { signal } = {}) {
                     }
                     if (
                         reactionButton &&
-                        reactionButton.classList.contains("messages-reaction-add-btn")
+                        reactionButton.classList.contains(
+                            "messages-reaction-add-btn",
+                        )
                     ) {
                         await toggleReaction(
                             reactionButton.getAttribute("data-message-id"),
@@ -733,7 +751,11 @@ export async function mount(root, { signal } = {}) {
                 requestList.innerHTML = renderIncomingRequests();
                 if (!roomId) return;
                 selectedRoomId = roomId;
-                history.pushState({}, "", `/messages/${encodeURIComponent(roomId)}`);
+                history.pushState(
+                    {},
+                    "",
+                    `/messages/${encodeURIComponent(roomId)}`,
+                );
                 await openRoom(roomId);
                 await reloadRoomsList();
                 return;

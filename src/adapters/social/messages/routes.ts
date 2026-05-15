@@ -320,10 +320,11 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     targetId,
                 );
                 if (!canDirectMessage) {
-                    const pending = await messagesStore.findPendingMessageRequest(
-                        accountId,
-                        targetId,
-                    );
+                    const pending =
+                        await messagesStore.findPendingMessageRequest(
+                            accountId,
+                            targetId,
+                        );
                     const request =
                         pending ??
                         (await messagesStore.createMessageRequest({
@@ -370,10 +371,12 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         }
 
         // GET /messages/requests
-        if (url.pathname === "/api/v1/messages/requests" && req.method === "GET") {
-            const incoming = await messagesStore.listIncomingMessageRequests(
-                accountId,
-            );
+        if (
+            url.pathname === "/api/v1/messages/requests" &&
+            req.method === "GET"
+        ) {
+            const incoming =
+                await messagesStore.listIncomingMessageRequests(accountId);
             const enriched = await Promise.all(
                 incoming.map(async (request) => {
                     const requester = await profileStore.getProfile(
@@ -638,9 +641,12 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                         }
                     >
                 >();
-                const reactionRows = await messagesStore.listMessageReactions(roomId);
+                const reactionRows =
+                    await messagesStore.listMessageReactions(roomId);
                 for (const reactionRow of reactionRows) {
-                    let emojiMap = reactionsByMessage.get(reactionRow.messageId);
+                    let emojiMap = reactionsByMessage.get(
+                        reactionRow.messageId,
+                    );
                     if (!emojiMap) {
                         emojiMap = new Map();
                         reactionsByMessage.set(reactionRow.messageId, emojiMap);
@@ -656,7 +662,8 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                         emojiMap.set(reactionRow.emoji, entry);
                     }
                     entry.count += 1;
-                    if (reactionRow.accountId === accountId) entry.reactedByMe = true;
+                    if (reactionRow.accountId === accountId)
+                        entry.reactedByMe = true;
                     const reactorProfile = profilesByAccountId.get(
                         reactionRow.accountId,
                     );
@@ -667,13 +674,16 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     });
                 }
                 const enrichedMessages = messages.map((message) => {
-                    const senderProfile = profilesByAccountId.get(message.senderId);
+                    const senderProfile = profilesByAccountId.get(
+                        message.senderId,
+                    );
                     const readBy = roomMembers
                         .filter(
                             (roomMember) =>
                                 roomMember.accountId !== message.senderId &&
                                 Boolean(roomMember.lastReadAt) &&
-                                String(roomMember.lastReadAt) >= message.createdAt,
+                                String(roomMember.lastReadAt) >=
+                                    message.createdAt,
                         )
                         .map((roomMember) => {
                             const readerProfile = profilesByAccountId.get(
@@ -784,7 +794,11 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         if (sub === "typing" && !subArg) {
             if (req.method === "POST") {
                 const body = (await readJson(req)) as { typing?: unknown };
-                await messagesStore.setTyping(roomId, accountId, Boolean(body.typing));
+                await messagesStore.setTyping(
+                    roomId,
+                    accountId,
+                    Boolean(body.typing),
+                );
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { ok: true } }));
                 return true;
@@ -793,7 +807,9 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 const typingRows = await messagesStore.listActiveTypers(roomId);
                 const enriched = await Promise.all(
                     typingRows
-                        .filter((typingRow) => typingRow.accountId !== accountId)
+                        .filter(
+                            (typingRow) => typingRow.accountId !== accountId,
+                        )
                         .map(async (typingRow) => {
                             const profile = await profileStore.getProfile(
                                 typingRow.accountId,
