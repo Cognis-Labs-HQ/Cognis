@@ -409,6 +409,13 @@ export function initRouter(root) {
     void loadAllRoutes();
     const initialRoute = findRoute(window.location.pathname);
     _currentBase = initialRoute ? initialRoute.base : null;
+    if (!_currentBase) {
+        void resolveRoute(window.location.pathname).then((resolvedRoute) => {
+            if (resolvedRoute) {
+                _currentBase = resolvedRoute.base;
+            }
+        });
+    }
 
     document.addEventListener("click", async (event) => {
         const link = event.target.closest("a[href]");
@@ -418,11 +425,16 @@ export function initRouter(root) {
             !href ||
             href.startsWith("http") ||
             href.startsWith("//") ||
-            href.startsWith("#")
+            href.startsWith("#") ||
+            !href.startsWith("/")
         )
             return;
-        if (!findRoute(href)) return;
         event.preventDefault();
+        const route = await resolveRoute(href);
+        if (!route) {
+            window.location.assign(href);
+            return;
+        }
         await navigateTo(href);
     });
 

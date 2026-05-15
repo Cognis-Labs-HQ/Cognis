@@ -39,7 +39,18 @@ function normalizeRoute(rawRoute) {
             stylesheets,
             load: async () => import(scriptUrl),
         };
-    } catch {
+    } catch (error) {
+        const errorMessage =
+            error instanceof Error ? error.message : String(error);
+        console.warn(
+            "[spa-route-registry] Ignoring invalid SPA route descriptor.",
+            {
+                routeId: rawRoute?.id,
+                pattern: patternSource,
+                scriptUrl,
+                error: errorMessage,
+            },
+        );
         return null;
     }
 }
