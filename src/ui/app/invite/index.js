@@ -33,7 +33,7 @@ async function promptEmail(i18n) {
         <input
           id="invite-email"
           type="email"
-          placeholder="${escapeHtml(i18n.t("ui.app.invite.email_placeholder"))}"
+          placeholder="${escapeHtml(i18n.t("ui.reuse.email_placeholder"))}"
         />
       </label>
     `,
