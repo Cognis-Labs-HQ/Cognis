@@ -24,6 +24,13 @@ interface CommandSpec {
 const registry = new Map<string, CommandSpec>();
 const FIELD_EMPTY_PLACEHOLDER = "—";
 
+/**
+ * Represents a failed API request with structured HTTP context.
+ *
+ * @param status - HTTP response status code from the failed request.
+ * @param statusText - HTTP response status text from the failed request.
+ * @param payload - Parsed response payload (JSON or text) returned by the API.
+ */
 class ApiRequestError extends Error {
     constructor(
         readonly status: number,
@@ -295,6 +302,17 @@ function mergePayloadFields(
     return { ...fields, ...base };
 }
 
+/**
+ * Ensures a target user exists before executing user-mutation commands.
+ *
+ * Throws a user-friendly not-found error for missing users (404) and rethrows
+ * all other request failures unchanged.
+ *
+ * @param apiBaseUrl - Base API URL for command requests.
+ * @param getApiToken - Lazy API-token resolver for authenticated calls.
+ * @param username - Username to validate.
+ * @throws {Error} When the user is missing or another API request error occurs.
+ */
 async function ensureUserExists(
     apiBaseUrl: string,
     getApiToken: () => Promise<string>,
@@ -532,6 +550,18 @@ export function formatCommandOutput(
     return formatStructured(payload);
 }
 
+/**
+ * Executes a registered CLI command by name.
+ *
+ * This export supports test coverage for command handlers without invoking the
+ * full process-level CLI entrypoint.
+ *
+ * @param command - Registered CLI command name.
+ * @param args - Positional command arguments.
+ * @param options - Command execution dependencies.
+ * @returns The command handler result payload.
+ * @throws {Error} When the command is not registered.
+ */
 export async function executeRegisteredCommand(
     command: string,
     args: string[],
