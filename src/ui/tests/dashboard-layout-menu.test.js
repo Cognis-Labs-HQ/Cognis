@@ -43,3 +43,28 @@ test("layout CSS restores [hidden] visibility inside .dropdown", () => {
         "layout.css must override .dropdown li display for [hidden] items",
     );
 });
+
+test("dashboard logout requests server revocation before clearing local token", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    const logoutFetchIndex = layoutSource.indexOf(
+        'await fetch("/api/v1/auth/logout"',
+    );
+    const clearTokenIndex = layoutSource.indexOf(
+        'localStorage.removeItem("cognis_access_token")',
+    );
+    assert.ok(
+        logoutFetchIndex !== -1 && clearTokenIndex !== -1,
+        "expected logout fetch and local token clear calls in dashboard-layout.js",
+    );
+    assert.ok(
+        logoutFetchIndex < clearTokenIndex,
+        "logout fetch should occur before local token removal so revocation can use current auth state",
+    );
+    assert.ok(
+        layoutSource.includes("Authorization: `Bearer ${accessToken}`"),
+        "logout request should send Bearer token when available",
+    );
+});

@@ -13,11 +13,21 @@ hinzu. Beim Abmelden wird das Cookie-Token sowie ein im
 `Authorization`-Header übermitteltes Bearer-Token widerrufen, das Cookie
 `cognis_access_token` geleert und der Vorgang auf `info`-Ebene protokolliert.
 
+Der Dashboard-Logout-Ablauf sendet jetzt `POST /api/v1/auth/logout` vor dem
+lokalen Token-Cleanup und übermittelt bei vorhandenem lokalem Token ein
+Bearer-Token, damit aktive Tokens im normalen Benutzerpfad serverseitig
+zuverlässig widerrufen werden.
+
 ## Geänderte Dateien / Komponenten
 
 - `src/gateways/auth/bootstrap.ts` — Route `POST /api/v1/auth/logout` zu
   `createAuthGatewayRoutes` hinzugefügt; `revokeAccessToken` aus
   `access-tokens.js` importiert
+- `src/ui/layouts/dashboard-layout.js` — Logout-Anfrage wird vor dem lokalen
+  Token-Löschen gesendet; `Authorization: Bearer ...` wird bei vorhandenem
+  lokalem Token angehängt
+- `src/ui/tests/dashboard-layout-menu.test.js` — Regressionstest für die
+  Reihenfolge der Logout-Anfrage und das Bearer-Header-Verhalten ergänzt
 
 ## Commit-Links
 
