@@ -7,9 +7,16 @@ import {
     type GatewayBootstrapContext,
 } from "../shared.js";
 import {
+    buildAccessTokenCookie,
+    extractBearerToken,
+    extractCookieToken,
+    shouldSetSecureCookie,
+} from "../../api/reuse/access-token-http.js";
+import {
     issueAccessToken,
     isTokenVerificationFresh,
     recordTokenVerification,
+    revokeAccessToken,
     type AccessRole,
 } from "./access-tokens.js";
 import { CoreAuthGateway } from "./gateway.js";
@@ -533,7 +540,11 @@ function createAuthGatewayRoutes(
             });
             res.writeHead(200, {
                 "content-type": "application/json",
-                "set-cookie": `cognis_access_token=${apiToken}; Path=/; HttpOnly; SameSite=Lax`,
+                "set-cookie": buildAccessTokenCookie(
+                    apiToken,
+                    accessTokenTtlSeconds,
+                    shouldSetSecureCookie(req),
+                ),
             });
             res.end(
                 JSON.stringify({
@@ -555,12 +566,7 @@ function createAuthGatewayRoutes(
         if (url.pathname === "/api/v1/auth/verify" && req.method === "POST") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const authHeader = req.headers.authorization;
-            const rawToken =
-                typeof authHeader === "string" &&
-                authHeader.startsWith("Bearer ")
-                    ? authHeader.slice("Bearer ".length)
-                    : "";
+            const rawToken = extractBearerToken(req) ?? "";
             const oneHourMs = 60 * 60 * 1000;
             if (rawToken && isTokenVerificationFresh(rawToken, oneHourMs)) {
                 log?.(
@@ -635,6 +641,32 @@ function createAuthGatewayRoutes(
                     },
                 }),
             );
+            return true;
+        }
+
+        if (url.pathname === "/api/v1/auth/logout" && req.method === "POST") {
+            const cookieToken = extractCookieToken(req);
+            if (cookieToken) {
+                revokeAccessToken(cookieToken);
+            }
+            const bearerToken = extractBearerToken(req);
+            if (bearerToken && bearerToken !== cookieToken) {
+                revokeAccessToken(bearerToken);
+            }
+            log?.("info", "User logged out.", {
+                ...logMeta,
+                hadCookieToken: Boolean(cookieToken),
+                hadBearerToken: Boolean(bearerToken),
+            });
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "set-cookie": buildAccessTokenCookie(
+                    "",
+                    0,
+                    shouldSetSecureCookie(req),
+                ),
+            });
+            res.end(JSON.stringify({ data: { success: true } }));
             return true;
         }
 
