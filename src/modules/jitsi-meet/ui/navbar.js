@@ -21,7 +21,13 @@ async function ensureMeetingsLink() {
     topNav.appendChild(meetingsLink);
 }
 
-void ensureMeetingsLink();
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+        void ensureMeetingsLink();
+    });
+} else {
+    void ensureMeetingsLink();
+}
 window.addEventListener("cognis:navbar-refresh", () => {
     void ensureMeetingsLink();
 });

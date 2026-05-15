@@ -81,9 +81,22 @@ export function registerApiRoutes(router) {
                   process.env.COGNIS_SESSION_SECRET,
           )
         : null;
+    const schemaReady = store
+        ? store.ensureSchema().catch((error) => {
+              console.error(
+                  "[jitsi-meet]:schema-init-failed",
+                  error instanceof Error ? error.message : String(error),
+              );
+              throw error;
+          })
+        : Promise.resolve();
 
-    if (store) {
-        void store.ensureSchema();
+    async function ensureStoreReady() {
+        if (!store) {
+            return false;
+        }
+        await schemaReady;
+        return true;
     }
 
     router.get(
@@ -100,7 +113,7 @@ export function registerApiRoutes(router) {
     router.get(
         `/api/v1/modules/${MODULE_ID}/config`,
         async (_req, res) => {
-            if (!store) {
+            if (!(await ensureStoreReady())) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -129,7 +142,7 @@ export function registerApiRoutes(router) {
     router.get(
         `/api/v1/modules/${MODULE_ID}/admin/settings`,
         async (_req, res) => {
-            if (!store) {
+            if (!(await ensureStoreReady())) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -151,7 +164,7 @@ export function registerApiRoutes(router) {
     router.post(
         `/api/v1/modules/${MODULE_ID}/admin/settings`,
         async (req, res) => {
-            if (!store) {
+            if (!(await ensureStoreReady())) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -187,7 +200,7 @@ export function registerApiRoutes(router) {
     router.post(
         `/api/v1/modules/${MODULE_ID}/session`,
         async (req, res) => {
-            if (!store || !profileStore) {
+            if (!(await ensureStoreReady()) || !profileStore) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -277,7 +290,7 @@ export function registerApiRoutes(router) {
     router.get(
         `/api/v1/modules/${MODULE_ID}/meeting`,
         async (req, res) => {
-            if (!store) {
+            if (!(await ensureStoreReady())) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({

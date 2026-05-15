@@ -9,8 +9,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
     function render() {
         return `
-      <div class="jitsi-module-admin-panel">
-        <label class="jitsi-module-admin-field">
+      <div>
+        <label>
           <span>${escapeHtml(i18n.t("module.jitsi_meet.admin.base_url_label"))}</span>
           <input
             type="url"
@@ -19,7 +19,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             value="${escapeHtml(currentBaseUrl)}"
           />
         </label>
-        <div class="jitsi-module-admin-actions">
+        <div>
           <button type="button" class="btn-animated" data-jitsi-save>
             ${escapeHtml(i18n.t("ui.reuse.save"))}
           </button>

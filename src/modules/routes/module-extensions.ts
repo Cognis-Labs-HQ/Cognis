@@ -21,7 +21,7 @@ interface RouteHandler {
     ) => Promise<void> | void;
 }
 
-interface ModuleRouteOptions {
+interface RouteOptions {
     access?: unknown;
 }
 
@@ -59,6 +59,13 @@ export function createModuleExtensionRoutes(
     log?: BootstrapLog,
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
+    const capabilityProvider =
+        options?.capabilities ??
+        ({
+            get() {
+                return undefined;
+            },
+        } satisfies ModuleCapabilityProvider);
     let handlers: RouteHandler[] = [];
     const modulesRoot =
         process.env.COGNIS_MODULES_ROOT ??
@@ -159,11 +166,11 @@ export function createModuleExtensionRoutes(
                 const plugin = await import(`${pluginPath}?t=${Date.now()}`);
                 if (typeof plugin.registerApiRoutes === "function") {
                     plugin.registerApiRoutes({
-                        capabilities: options?.capabilities ?? null,
+                        capabilities: capabilityProvider,
                         get(
                             routePath: string,
                             handler: RouteHandler["handler"],
-                            routeOptions?: ModuleRouteOptions,
+                            routeOptions?: RouteOptions,
                         ) {
                             const parsedAccess = parseRoleAccessPolicy(
                                 routeOptions?.access,
@@ -188,7 +195,7 @@ export function createModuleExtensionRoutes(
                         post(
                             routePath: string,
                             handler: RouteHandler["handler"],
-                            routeOptions?: ModuleRouteOptions,
+                            routeOptions?: RouteOptions,
                         ) {
                             const parsedAccess = parseRoleAccessPolicy(
                                 routeOptions?.access,

@@ -72,7 +72,7 @@ export class JitsiMeetStore {
     constructor(dbExecutor, roomSecret) {
         this.dbExecutor = dbExecutor;
         this.roomSecret =
-            String(roomSecret ?? "cognis-jitsi").trim() || "cognis-jitsi";
+            String(roomSecret ?? "").trim() || randomUUID().replaceAll("-", "");
     }
 
     async ensureSchema() {

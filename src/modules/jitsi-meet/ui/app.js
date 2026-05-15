@@ -305,7 +305,7 @@ async function bindEvents(containerRoot) {
 const elements = [
     {
         id: "jitsi-meet-main",
-        label: "Jitsi Meet",
+        label: "module.jitsi_meet.page_title",
         pinned: true,
         render: buildMainContent,
         onRender(rootElement) {
@@ -322,6 +322,7 @@ export async function mount(targetRoot) {
     });
 
     applyDocumentTitle(i18n, "module.jitsi_meet.page_title");
+    elements[0].label = i18n.t("module.jitsi_meet.page_title");
 
     contacts = await loadContacts("");
 
