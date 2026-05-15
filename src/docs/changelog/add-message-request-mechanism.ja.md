@@ -2,6 +2,8 @@
 
 ## 概要
 
+あわせて、メンバーシップを考慮したダイレクトチャット挙動を追加しました。2人チャットで一方が退出すると、残った側ではそのルームがアーカイブ扱いとなり、専用のアーカイブ欄に表示され、送信は不可になります。再度連絡を開始した場合は新しいDMルームが作成されます。さらに Messages 内のアバターをプロフィールリンク化し、ホバー時の標準プロフィールプレビューとクリック遷移を統一しました。
+
 プロフィールのメッセージボタンの挙動を修正し、クリック時に必ず
 アクションが実行されるようにしました。既存のダイレクトルームを開く、
 新しいダイレクトルームを作成する、またはダイレクト開始条件を満たさ
@@ -51,3 +53,4 @@ UIに追加しました。
 - [11eebfa](https://github.com/le-firehawk/Cognis/commit/11eebfa)
 - [2db27c2](https://github.com/le-firehawk/Cognis/commit/2db27c2)
 - [f08f248](https://github.com/le-firehawk/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)
+- [5d28d03](https://github.com/le-firehawk/Cognis/commit/5d28d03)

@@ -2,6 +2,8 @@
 
 ## Zusammenfassung
 
+Zusätzlich wurde ein mitgliedschaftsbewusstes Direktchat-Verhalten ergänzt: Verlässt ein Nutzer einen Zwei-Personen-Chat, wird dieser für den verbleibenden Nutzer archiviert, in einem eigenen Archivbereich angezeigt und das Senden darin gesperrt. Beim erneuten Kontakt wird ein neuer Direktchat erstellt. Außerdem wurden Avatare in Messages einheitlich auf Profilseiten verlinkt, sodass Hover-Profilvorschau und Klick-Navigation überall gleich funktionieren.
+
 Der Nachrichten-Button im Profil wurde korrigiert, sodass ein Klick jetzt
 immer eine Aktion ausführt: bestehenden Direkt-Chat öffnen, neuen Direkt-Chat
 erstellen oder eine Nachrichtenanfrage senden, wenn Direktnachrichten noch
@@ -51,3 +53,4 @@ beschreibendes Wort („Like", „Heart", „Haha", „Celebrate").
 - [11eebfa](https://github.com/le-firehawk/Cognis/commit/11eebfa)
 - [2db27c2](https://github.com/le-firehawk/Cognis/commit/2db27c2)
 - [f08f248](https://github.com/le-firehawk/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)
+- [5d28d03](https://github.com/le-firehawk/Cognis/commit/5d28d03)
