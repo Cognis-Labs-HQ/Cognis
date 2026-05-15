@@ -423,7 +423,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 trustedDomains,
             })
         ) {
-            return i18n.t("gateway.notify.admin.broadcast_error_invalid_redirect");
+            return i18n.t(
+                "gateway.notify.admin.broadcast_error_invalid_redirect",
+            );
         }
         return null;
     }

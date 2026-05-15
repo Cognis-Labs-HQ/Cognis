@@ -47,10 +47,10 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ---------------------------- | ------- |
 | Database (db)         | `src/gateways/db/`           | `1.1.2` |
 | Authentication (auth) | `src/gateways/auth/`         | `1.3.2` |
-| Notification (notify) | `src/gateways/notify/`       | `1.4.0` |
+| Notification (notify) | `src/gateways/notify/`       | `1.4.1` |
 | Social                | `src/gateways/social/`       | `1.2.1` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
-| Registration          | `src/gateways/registration/` | `1.1.3` |
+| Registration          | `src/gateways/registration/` | `1.1.4` |
 | Logging               | `src/gateways/logging/`      | `1.4.0` |
 | Study                 | `src/gateways/study/`        | `1.5.2` |
 
@@ -64,7 +64,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component  | Path       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.1.4` |
+| API Server | `src/api/` | `0.1.5` |
 
 ## Modules
 

@@ -30,7 +30,10 @@ export function normalizeTrustedDomains(entries) {
             entries
                 .filter((entry) => typeof entry === "string")
                 .map((entry) =>
-                    entry.trim().toLowerCase().replace(/^\.+|\.+$/g, ""),
+                    entry
+                        .trim()
+                        .toLowerCase()
+                        .replace(/^\.+|\.+$/g, ""),
                 )
                 .filter(Boolean),
         ),
@@ -92,7 +95,10 @@ export function isTrustedHttpUrl(
  * @param {{ forceReload?: boolean }} [options]
  * @returns {Promise<string[]>}
  */
-export async function loadTrustedDomains(apiFetch, { forceReload = false } = {}) {
+export async function loadTrustedDomains(
+    apiFetch,
+    { forceReload = false } = {},
+) {
     if (forceReload || trustedDomainsPromise === null) {
         trustedDomainsPromise = (async () => {
             try {

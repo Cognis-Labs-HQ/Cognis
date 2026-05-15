@@ -8,8 +8,14 @@ import {
 } from "../reuse/trusted-domains.js";
 
 test("UI trusted-domain matching accepts subdomains", () => {
-    assert.equal(matchesTrustedDomain("docs.example.com", ["example.com"]), true);
-    assert.equal(matchesTrustedDomain("docs.example.net", ["example.com"]), false);
+    assert.equal(
+        matchesTrustedDomain("docs.example.com", ["example.com"]),
+        true,
+    );
+    assert.equal(
+        matchesTrustedDomain("docs.example.net", ["example.com"]),
+        false,
+    );
 });
 
 test("UI trusted URL validation allows same-origin and trusted external URLs", () => {

@@ -23,14 +23,19 @@ export function normalizeTrustedDomains(rawDomains: unknown): string[] {
             rawDomains
                 .filter((entry: unknown) => typeof entry === "string")
                 .map((entry: string) =>
-                    entry.trim().toLowerCase().replace(/^\.+|\.+$/g, ""),
+                    entry
+                        .trim()
+                        .toLowerCase()
+                        .replace(/^\.+|\.+$/g, ""),
                 )
                 .filter(Boolean),
         ),
     );
 }
 
-export function parseSecuritySettings(raw: string | null): SecuritySettings | null {
+export function parseSecuritySettings(
+    raw: string | null,
+): SecuritySettings | null {
     if (!raw) return defaultSecuritySettings();
     try {
         const parsed = JSON.parse(raw) as Record<string, unknown>;

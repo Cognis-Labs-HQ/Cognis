@@ -201,7 +201,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.1.3",
+        version: "1.1.4",
         description:
             "Registration workflows via pluggable invite/public adapters.",
         publisher: "Cognis Labs",
