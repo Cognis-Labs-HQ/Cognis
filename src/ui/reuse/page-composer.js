@@ -3179,10 +3179,10 @@ export function createPageComposer(
                     toolbarEl.tabIndex = 0;
                     const headerEl = root.querySelector(".site-header");
                     const footerEl = root.querySelector(".global-footer");
-                    let scrollObserver;
-                    function applyToolbarDimensions() {
+                    let layoutObserver;
+                    function syncToolbarPosition() {
                         if (!toolbarEl.isConnected) {
-                            scrollObserver?.disconnect();
+                            layoutObserver?.disconnect();
                             return;
                         }
                         const headerHeight = headerEl
@@ -3201,11 +3201,11 @@ export function createPageComposer(
                             `calc(100dvh - ${headerHeight}px - ${footerHeight}px - 24px)`,
                         );
                     }
-                    applyToolbarDimensions();
-                    scrollObserver = new ResizeObserver(applyToolbarDimensions);
-                    if (headerEl) scrollObserver.observe(headerEl);
-                    if (footerEl) scrollObserver.observe(footerEl);
-                    scrollObserver.observe(document.documentElement);
+                    syncToolbarPosition();
+                    layoutObserver = new ResizeObserver(syncToolbarPosition);
+                    if (headerEl) layoutObserver.observe(headerEl);
+                    if (footerEl) layoutObserver.observe(footerEl);
+                    layoutObserver.observe(document.documentElement);
                 }
             }
         }
