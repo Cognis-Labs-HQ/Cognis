@@ -94,6 +94,16 @@ ersetzt wurden und von nirgendwo importiert wurden.
     - `src/modules/study/languages/reuse/classroom-page.js` — `getRoleFlags()` entfernt
     - `src/adapters/study/classes/ui/app.js` — lokale Rollenverschlüsse entfernt; `renderMemberItems()` als Hilfsfunktion extrahiert
 
+- Dynamische SPA-Routen-Erkennung für adaptereigene Seiten:
+    - `src/api/ui-registry.ts` — neue `SpaRoute`-Registrierung (`registerSpaRoute` / `listSpaRoutes`)
+    - `src/api/routes/ui/index.ts` — neuer authentifizierter Endpunkt `GET /api/v1/ui/app-routes`
+    - `src/ui/reuse/spa-route-registry.js` (neu) — Client-Lader/Cache für App-Routen
+    - `src/ui/reuse/app-router.js` — Adapter-Routen aus statischer Tabelle entfernt; Auflösung jetzt über statische + registrierte Routen
+    - `src/gateways/social/bootstrap.ts` und `src/gateways/study/bootstrap.ts` — SPA-Routen-Registrierung in Adapter-Bootstrap-Kontexte durchgereicht
+    - `src/adapters/social/messages/index.ts`, `src/adapters/social/profile/index.ts`, `src/adapters/study/classes/index.ts` — Adapter registrieren ihre SPA-Routen selbst
+    - `src/api/tests/ui/ui-registry.test.ts`, `src/api/tests/ui/ui-routes.test.ts`, `src/ui/tests/app-router.test.js` — Testabdeckung für modulare Routenregistrierung aktualisiert
+
 ## Commits
 
 - [5028bb9](https://github.com/le-firehawk/Cognis/commit/5028bb9)
+- [ad0f87b](https://github.com/le-firehawk/Cognis/commit/ad0f87b)

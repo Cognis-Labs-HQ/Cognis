@@ -94,6 +94,16 @@ I/O 処理を並列化し、Node.js がブラウザリクエストを処理で�
     - `src/modules/study/languages/reuse/classroom-page.js` — `getRoleFlags()` を削除
     - `src/adapters/study/classes/ui/app.js` — ローカルロールクロージャを削除、`renderMemberItems()` ヘルパーを抽出
 
+- アダプター所有ページ向けの動的SPAルート検出:
+    - `src/api/ui-registry.ts` — `SpaRoute` レジストリを追加（`registerSpaRoute` / `listSpaRoutes`）
+    - `src/api/routes/ui/index.ts` — 認証付き `GET /api/v1/ui/app-routes` エンドポイントを追加
+    - `src/ui/reuse/spa-route-registry.js`（新規）— クライアント側ルートローダー/キャッシュ
+    - `src/ui/reuse/app-router.js` — アダプタールートを静的テーブルから削除し、静的 + 登録済みルートで解決
+    - `src/gateways/social/bootstrap.ts` と `src/gateways/study/bootstrap.ts` — SPAルート登録をアダプターブートストラップ文脈へ受け渡し
+    - `src/adapters/social/messages/index.ts`, `src/adapters/social/profile/index.ts`, `src/adapters/study/classes/index.ts` — アダプター自身がSPAルートを登録
+    - `src/api/tests/ui/ui-registry.test.ts`, `src/api/tests/ui/ui-routes.test.ts`, `src/ui/tests/app-router.test.js` — モジュラーなルート登録向けにテストを更新
+
 ## コミット
 
 - [5028bb9](https://github.com/le-firehawk/Cognis/commit/5028bb9)
+- [ad0f87b](https://github.com/le-firehawk/Cognis/commit/ad0f87b)

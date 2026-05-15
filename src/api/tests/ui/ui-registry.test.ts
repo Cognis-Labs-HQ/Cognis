@@ -121,7 +121,10 @@ test("UIRegistry registers and lists SPA routes", () => {
     assert.equal(routes.length, 1);
     assert.equal(routes[0].id, "messages-page");
     assert.equal(routes[0].base, "/messages");
-    assert.equal(routes[0].scriptUrl, "/static/adapters/social/messages/app.js");
+    assert.equal(
+        routes[0].scriptUrl,
+        "/static/adapters/social/messages/app.js",
+    );
 });
 
 test("UIRegistry registers and lists auth typing messages", () => {

@@ -36,10 +36,7 @@
 
 import { ensurePageStylesheet } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
-import {
-    clearSpaRouteCache,
-    loadSpaRoutes,
-} from "./spa-route-registry.js";
+import { clearSpaRouteCache, loadSpaRoutes } from "./spa-route-registry.js";
 
 const STUDY_BASE_STYLESHEETS = [
     "/static/styles/page-builder.css",
@@ -283,7 +280,9 @@ let _allRoutesPromise = null;
 
 function findMatchingRoute(routes, path) {
     const pathWithoutQueryOrFragment = normalizePath(path);
-    return routes.find((route) => route.pattern.test(pathWithoutQueryOrFragment));
+    return routes.find((route) =>
+        route.pattern.test(pathWithoutQueryOrFragment),
+    );
 }
 
 async function loadAllRoutes() {

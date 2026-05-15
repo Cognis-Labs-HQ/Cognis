@@ -92,6 +92,16 @@ bersama dan tidak diimpor dari mana pun.
     - `src/modules/study/languages/reuse/classroom-page.js` — `getRoleFlags()` dihapus
     - `src/adapters/study/classes/ui/app.js` — closure peran lokal dihapus; `renderMemberItems()` diekstrak
 
+- Penemuan rute SPA dinamis untuk halaman milik adapter:
+    - `src/api/ui-registry.ts` — registri `SpaRoute` baru (`registerSpaRoute` / `listSpaRoutes`)
+    - `src/api/routes/ui/index.ts` — endpoint terautentikasi baru `GET /api/v1/ui/app-routes`
+    - `src/ui/reuse/spa-route-registry.js` (baru) — pemuat/cache rute sisi klien
+    - `src/ui/reuse/app-router.js` — rute adapter dihapus dari tabel statis; resolusi kini memakai gabungan rute statis + rute terdaftar
+    - `src/gateways/social/bootstrap.ts` dan `src/gateways/study/bootstrap.ts` — registrasi rute SPA diteruskan ke konteks bootstrap adapter
+    - `src/adapters/social/messages/index.ts`, `src/adapters/social/profile/index.ts`, `src/adapters/study/classes/index.ts` — adapter mendaftarkan rute SPA miliknya sendiri
+    - `src/api/tests/ui/ui-registry.test.ts`, `src/api/tests/ui/ui-routes.test.ts`, `src/ui/tests/app-router.test.js` — cakupan pengujian diperbarui untuk registrasi rute modular
+
 ## Commit
 
 - [5028bb9](https://github.com/le-firehawk/Cognis/commit/5028bb9)
+- [ad0f87b](https://github.com/le-firehawk/Cognis/commit/ad0f87b)

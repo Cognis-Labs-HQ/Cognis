@@ -87,6 +87,16 @@ imported from anywhere.
     - `src/modules/study/languages/reuse/classroom-page.js` — removed `getRoleFlags()`, imports `isTeacherScope` from access-role.js
     - `src/adapters/study/classes/ui/app.js` — removed local `isAdminRole`/`isTeacherRole` closures, imports from access-role.js; extracted `renderMemberItems()` local helper to remove intra-file duplicate member rendering
 
+- Dynamic SPA route discovery for adapter-owned pages:
+    - `src/api/ui-registry.ts` — new `SpaRoute` registry (`registerSpaRoute` / `listSpaRoutes`)
+    - `src/api/routes/ui/index.ts` — new authenticated `GET /api/v1/ui/app-routes` endpoint
+    - `src/ui/reuse/spa-route-registry.js` (new) — client route loader/cache for app-router
+    - `src/ui/reuse/app-router.js` — adapter routes removed from static table; routes now resolve via static + registry-provided sets
+    - `src/gateways/social/bootstrap.ts` and `src/gateways/study/bootstrap.ts` — pass SPA route registration through adapter bootstrap contexts
+    - `src/adapters/social/messages/index.ts`, `src/adapters/social/profile/index.ts`, `src/adapters/study/classes/index.ts` — adapters self-register their own SPA routes
+    - `src/api/tests/ui/ui-registry.test.ts`, `src/api/tests/ui/ui-routes.test.ts`, `src/ui/tests/app-router.test.js` — coverage updated for modular route registration
+
 ## Commits
 
 - [5028bb9](https://github.com/le-firehawk/Cognis/commit/5028bb9)
+- [ad0f87b](https://github.com/le-firehawk/Cognis/commit/ad0f87b)
