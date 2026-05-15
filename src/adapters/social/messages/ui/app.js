@@ -59,6 +59,13 @@ function resolveMessageStyle() {
     }
 }
 
+/**
+ * Normalizes an emoji token by trimming whitespace, removing variation
+ * selector suffixes, and applying NFC normalization for stable comparisons.
+ *
+ * @param {string} emoji
+ * @returns {string}
+ */
 function normalizeReactionEmoji(emoji) {
     return String(emoji ?? "")
         .trim()
@@ -66,6 +73,13 @@ function normalizeReactionEmoji(emoji) {
         .normalize("NFC");
 }
 
+/**
+ * Returns a readable emoji label for known reactions, falling back to the
+ * emoji token itself when no mapping exists.
+ *
+ * @param {string} emoji
+ * @returns {string}
+ */
 function emojiDisplayName(emoji) {
     const normalized = normalizeReactionEmoji(emoji);
     return EMOJI_NAMES[normalized] ?? emoji;

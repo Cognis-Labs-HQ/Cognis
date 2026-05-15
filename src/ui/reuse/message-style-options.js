@@ -33,7 +33,7 @@ export function isValidMessageStyle(value) {
 
 /**
  * @param {string} value
- * @param {string} fallback
+ * @param {string} [fallback="default"] - Fallback style when value is invalid.
  * @returns {string}
  */
 export function normalizeMessageStyle(value, fallback = "default") {
