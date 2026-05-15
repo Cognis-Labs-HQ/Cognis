@@ -13,7 +13,10 @@ test("auth admin section surfaces managed callback URL metadata and prefills red
     );
 
     assert.match(source, /configPayload\.managedRedirectPath/);
-    assert.match(source, /new URL\(managedRedirectPath,\s*window\.location\.origin\)/);
+    assert.match(
+        source,
+        /new URL\(managedRedirectPath,\s*window\.location\.origin\)/,
+    );
     assert.match(source, /gateway\.auth\.managed_callback\.title/);
     assert.match(source, /gateway\.auth\.managed_callback\.body/);
     assert.match(source, /field\.key === "redirectUri"/);

@@ -26,12 +26,29 @@ Admin dapat meninjau permintaan ini di Administration → Registration untuk
 menyetujui atau menolak. UI login sekarang menampilkan toast terlokalisasi
 untuk status pending, rejected, dan registration request unavailable.
 
+Gateway autentikasi sekarang memungkinkan adapter auth mengekspos route callback
+yang dikelola Cognis. Adapter LINE mendaftarkan `/auth/line/callback`,
+menyediakan path tersebut melalui API konfigurasi admin, dan popup
+Authentication kini menampilkan URL callback yang dihasilkan serta mengisi
+`redirectUri` secara otomatis saat belum ada nilai tersimpan.
+
 ## Komponen/berkas yang diubah
 
 - Gateway autentikasi:
     - `src/gateways/auth/gateway.ts`
     - `src/gateways/auth/bootstrap.ts`
     - `src/gateways/auth/manifest.json`
+    - `src/gateways/auth/ui/admin-section.js`
+    - `src/gateways/auth/ui/languages/en/strings.xml`
+    - `src/gateways/auth/ui/languages/de/strings.xml`
+    - `src/gateways/auth/ui/languages/id/strings.xml`
+    - `src/gateways/auth/ui/languages/ja/strings.xml`
+    - `src/gateways/auth/tests/auth-gateway.test.ts`
+    - `src/gateways/auth/tests/admin-section.test.js`
+    - `src/gateways/auth/docs/index.en.md`
+    - `src/gateways/auth/docs/index.de.md`
+    - `src/gateways/auth/docs/index.id.md`
+    - `src/gateways/auth/docs/index.ja.md`
 - Adapter auth LINE baru:
     - `src/adapters/auth/line/index.ts`
     - `src/adapters/auth/line/tests/line-adapter.test.ts`
@@ -70,7 +87,6 @@ untuk status pending, rejected, dan registration request unavailable.
 
 ## Commit
 
-- [2cafed8](https://github.com/le-firehawk/Cognis/commit/2cafed8)
-- [28ffdd6](https://github.com/le-firehawk/Cognis/commit/28ffdd6)
-- [0a51d61](https://github.com/le-firehawk/Cognis/commit/0a51d61)
-- [9144ee3](https://github.com/le-firehawk/Cognis/commit/9144ee3)
+- [0ad1215](https://github.com/le-firehawk/Cognis/commit/0ad1215)
+- [dcc34fc](https://github.com/le-firehawk/Cognis/commit/dcc34fc)
+- [562d0ed](https://github.com/le-firehawk/Cognis/commit/562d0ed)

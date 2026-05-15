@@ -24,12 +24,29 @@ ID を `unlinked` として記録し、アカウントを無効化し、トー�
 管理者は Administration → Registration でリクエストを承認/却下でき、
 ログイン UI は保留・却下・登録不可の状態をローカライズ済みトーストで表示します。
 
+認証ゲートウェイは、Auth アダプターが Cognis 管理のコールバックルートを
+公開できるようになりました。LINE アダプターは `/auth/line/callback` を
+登録し、そのパスを管理画面の設定 API 経由で公開します。さらに Authentication
+ポップアップは生成された Callback URL を表示し、保存済みの値がない場合は
+`redirectUri` を自動入力します。
+
 ## 変更されたコンポーネント/ファイル
 
 - 認証ゲートウェイ:
     - `src/gateways/auth/gateway.ts`
     - `src/gateways/auth/bootstrap.ts`
     - `src/gateways/auth/manifest.json`
+    - `src/gateways/auth/ui/admin-section.js`
+    - `src/gateways/auth/ui/languages/en/strings.xml`
+    - `src/gateways/auth/ui/languages/de/strings.xml`
+    - `src/gateways/auth/ui/languages/id/strings.xml`
+    - `src/gateways/auth/ui/languages/ja/strings.xml`
+    - `src/gateways/auth/tests/auth-gateway.test.ts`
+    - `src/gateways/auth/tests/admin-section.test.js`
+    - `src/gateways/auth/docs/index.en.md`
+    - `src/gateways/auth/docs/index.de.md`
+    - `src/gateways/auth/docs/index.id.md`
+    - `src/gateways/auth/docs/index.ja.md`
 - 新しい LINE 認証アダプター:
     - `src/adapters/auth/line/index.ts`
     - `src/adapters/auth/line/tests/line-adapter.test.ts`
@@ -68,7 +85,6 @@ ID を `unlinked` として記録し、アカウントを無効化し、トー�
 
 ## コミット
 
-- [2cafed8](https://github.com/le-firehawk/Cognis/commit/2cafed8)
-- [28ffdd6](https://github.com/le-firehawk/Cognis/commit/28ffdd6)
-- [0a51d61](https://github.com/le-firehawk/Cognis/commit/0a51d61)
-- [9144ee3](https://github.com/le-firehawk/Cognis/commit/9144ee3)
+- [0ad1215](https://github.com/le-firehawk/Cognis/commit/0ad1215)
+- [dcc34fc](https://github.com/le-firehawk/Cognis/commit/dcc34fc)
+- [562d0ed](https://github.com/le-firehawk/Cognis/commit/562d0ed)

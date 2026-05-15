@@ -31,14 +31,19 @@ test("line adapter exposes a Cognis-managed redirect path and registers its call
     const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
         getManagedRedirectPath(): string;
         registerRoutes(context: {
-            registerRoute(handler: (
-                req: { method?: string },
-                res: {
-                    writeHead(code: number, headers?: Record<string, string>): void;
-                    end(payload?: string): void;
-                },
-                url: URL,
-            ) => Promise<boolean>): void;
+            registerRoute(
+                handler: (
+                    req: { method?: string },
+                    res: {
+                        writeHead(
+                            code: number,
+                            headers?: Record<string, string>,
+                        ): void;
+                        end(payload?: string): void;
+                    },
+                    url: URL,
+                ) => Promise<boolean>,
+            ): void;
         }): void;
     };
     assert.equal(adapter.getManagedRedirectPath(), "/auth/line/callback");
@@ -52,7 +57,10 @@ test("line adapter exposes a Cognis-managed redirect path and registers its call
         },
     });
 
-    assert.ok(registeredHandler, "line adapter should register a callback route");
+    assert.ok(
+        registeredHandler,
+        "line adapter should register a callback route",
+    );
 
     let statusCode = 0;
     let allowHeader = "";

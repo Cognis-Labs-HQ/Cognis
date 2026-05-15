@@ -27,12 +27,29 @@ Admins können diese Anfragen unter Administration → Registration prüfen und
 genehmigen oder ablehnen. Die Login-Oberfläche zeigt für ausstehende, abgelehnte
 oder nicht verfügbare Registrierungsanfragen lokalisierte Toast-Meldungen an.
 
+Das Authentifizierungs-Gateway ermöglicht Auth-Adaptern jetzt, von Cognis
+verwaltete Callback-Routen bereitzustellen. Der LINE-Adapter registriert
+`/auth/line/callback`, liefert diesen Pfad über die Admin-Konfig-API aus und
+das Authentifizierungs-Popup zeigt nun die generierte Callback-URL an und füllt
+`redirectUri` vor, wenn noch kein gespeicherter Wert vorhanden ist.
+
 ## Geänderte Dateien/Komponenten
 
 - Authentifizierungs-Gateway:
     - `src/gateways/auth/gateway.ts`
     - `src/gateways/auth/bootstrap.ts`
     - `src/gateways/auth/manifest.json`
+    - `src/gateways/auth/ui/admin-section.js`
+    - `src/gateways/auth/ui/languages/en/strings.xml`
+    - `src/gateways/auth/ui/languages/de/strings.xml`
+    - `src/gateways/auth/ui/languages/id/strings.xml`
+    - `src/gateways/auth/ui/languages/ja/strings.xml`
+    - `src/gateways/auth/tests/auth-gateway.test.ts`
+    - `src/gateways/auth/tests/admin-section.test.js`
+    - `src/gateways/auth/docs/index.en.md`
+    - `src/gateways/auth/docs/index.de.md`
+    - `src/gateways/auth/docs/index.id.md`
+    - `src/gateways/auth/docs/index.ja.md`
 - Neuer LINE-Auth-Adapter:
     - `src/adapters/auth/line/index.ts`
     - `src/adapters/auth/line/tests/line-adapter.test.ts`
@@ -71,7 +88,6 @@ oder nicht verfügbare Registrierungsanfragen lokalisierte Toast-Meldungen an.
 
 ## Commits
 
-- [2cafed8](https://github.com/le-firehawk/Cognis/commit/2cafed8)
-- [28ffdd6](https://github.com/le-firehawk/Cognis/commit/28ffdd6)
-- [0a51d61](https://github.com/le-firehawk/Cognis/commit/0a51d61)
-- [9144ee3](https://github.com/le-firehawk/Cognis/commit/9144ee3)
+- [0ad1215](https://github.com/le-firehawk/Cognis/commit/0ad1215)
+- [dcc34fc](https://github.com/le-firehawk/Cognis/commit/dcc34fc)
+- [562d0ed](https://github.com/le-firehawk/Cognis/commit/562d0ed)

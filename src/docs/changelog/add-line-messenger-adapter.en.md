@@ -28,12 +28,29 @@ new registration-request APIs and approve/reject actions.
 Login now maps pending/rejected/unavailable registration request outcomes to
 localized toast messages.
 
+The Authentication gateway now lets auth adapters expose Cognis-managed callback
+routes. The LINE adapter registers `/auth/line/callback`, exposes that managed
+path through the admin config API, and the Authentication admin popup now shows
+the generated callback URL and pre-fills `redirectUri` when no saved value is
+present.
+
 ## Changed files/components
 
 - Authentication gateway:
     - `src/gateways/auth/gateway.ts`
     - `src/gateways/auth/bootstrap.ts`
     - `src/gateways/auth/manifest.json`
+    - `src/gateways/auth/ui/admin-section.js`
+    - `src/gateways/auth/ui/languages/en/strings.xml`
+    - `src/gateways/auth/ui/languages/de/strings.xml`
+    - `src/gateways/auth/ui/languages/id/strings.xml`
+    - `src/gateways/auth/ui/languages/ja/strings.xml`
+    - `src/gateways/auth/tests/auth-gateway.test.ts`
+    - `src/gateways/auth/tests/admin-section.test.js`
+    - `src/gateways/auth/docs/index.en.md`
+    - `src/gateways/auth/docs/index.de.md`
+    - `src/gateways/auth/docs/index.id.md`
+    - `src/gateways/auth/docs/index.ja.md`
 - New LINE auth adapter:
     - `src/adapters/auth/line/index.ts`
     - `src/adapters/auth/line/tests/line-adapter.test.ts`
@@ -72,7 +89,6 @@ localized toast messages.
 
 ## Commits
 
-- [2cafed8](https://github.com/le-firehawk/Cognis/commit/2cafed8)
-- [28ffdd6](https://github.com/le-firehawk/Cognis/commit/28ffdd6)
-- [0a51d61](https://github.com/le-firehawk/Cognis/commit/0a51d61)
-- [9144ee3](https://github.com/le-firehawk/Cognis/commit/9144ee3)
+- [0ad1215](https://github.com/le-firehawk/Cognis/commit/0ad1215)
+- [dcc34fc](https://github.com/le-firehawk/Cognis/commit/dcc34fc)
+- [562d0ed](https://github.com/le-firehawk/Cognis/commit/562d0ed)

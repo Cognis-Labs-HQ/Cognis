@@ -40,9 +40,9 @@ Optional:
 3. Set **Callback URL** to the Cognis redirect endpoint you will use for this
    environment (production/staging/local), then save.
 4. Copy the channel values into Cognis:
-   - `channelId` = LINE **Channel ID**
-   - `channelSecret` = LINE **Channel secret** (optional if your flow is PKCE-only)
-   - `redirectUri` = the exact same URL used in LINE **Callback URL**
+    - `channelId` = LINE **Channel ID**
+    - `channelSecret` = LINE **Channel secret** (optional if your flow is PKCE-only)
+    - `redirectUri` = the exact same URL used in LINE **Callback URL**
 5. In Cognis Administration → Authentication → LINE Messenger SSO → Configure,
    copy the Cognis-managed callback URL shown in the popup and use it as the
    `redirectUri` value unless you need a different public callback URL.
