@@ -9,6 +9,11 @@ interface CommandContext {
     getApiToken: () => Promise<string>;
 }
 
+interface CommandExecutionOptions {
+    apiBaseUrl: string;
+    getApiToken: () => Promise<string>;
+}
+
 type CommandHandler = (ctx: CommandContext) => Promise<unknown>;
 type CommandRenderer = (payload: unknown) => string;
 
@@ -23,6 +28,25 @@ interface CommandSpec {
 
 const registry = new Map<string, CommandSpec>();
 const FIELD_EMPTY_PLACEHOLDER = "—";
+
+/**
+ * Represents a failed API request with structured HTTP context.
+ *
+ * @param status - HTTP response status code from the failed request.
+ * @param statusText - HTTP response status text from the failed request.
+ * @param payload - Parsed response payload (JSON or text) returned by the API.
+ */
+class ApiRequestError extends Error {
+    constructor(
+        readonly status: number,
+        readonly statusText: string,
+        readonly payload: unknown,
+    ) {
+        super(
+            `API request failed (${status} ${statusText}): ${typeof payload === "string" ? payload : JSON.stringify(payload)}`,
+        );
+    }
+}
 
 function inferSection(name: string): string {
     if (name.startsWith("user:")) return "User";
@@ -90,11 +114,12 @@ async function apiRequest(
         ? await response.json()
         : await response.text();
 
-    if (!response.ok) {
-        throw new Error(
-            `API request failed (${response.status} ${response.statusText}): ${typeof payload === "string" ? payload : JSON.stringify(payload)}`,
+    if (!response.ok)
+        throw new ApiRequestError(
+            response.status,
+            response.statusText,
+            payload,
         );
-    }
 
     return payload;
 }
@@ -280,6 +305,88 @@ function mergePayloadFields(
             ? (payload as Record<string, unknown>)
             : {};
     return { ...fields, ...base };
+}
+
+function toRecordOrNull(value: unknown): Record<string, unknown> | null {
+    if (typeof value !== "object" || value === null) return null;
+    return value as Record<string, unknown>;
+}
+
+function findMessageInPayload(payload: unknown): string | null {
+    const response = toRecordOrNull(normalizeResponse(payload));
+    if (!response) return null;
+    const responseMessage = response.message;
+    if (typeof responseMessage === "string" && responseMessage.trim()) {
+        return responseMessage;
+    }
+    const data = toRecordOrNull(response.data);
+    const dataMessage = data?.message;
+    if (typeof dataMessage === "string" && dataMessage.trim()) {
+        return dataMessage;
+    }
+    const error = toRecordOrNull(response.error);
+    const errorMessage = error?.message;
+    if (typeof errorMessage === "string" && errorMessage.trim()) {
+        return errorMessage;
+    }
+    return null;
+}
+
+/**
+ * Validates a boolean acknowledgement field in an API response payload.
+ *
+ * When the field is present and does not match the expected value, this throws
+ * an error with the given failure prefix and any discoverable API message.
+ *
+ * @param payload - API response payload returned by a command request.
+ * @param key - Boolean data field to inspect (for example, "updated").
+ * @param expectedValue - Expected boolean acknowledgement value.
+ * @param failurePrefix - Prefix used in the thrown error message on mismatch.
+ * @throws {Error} When the acknowledgement field exists and mismatches.
+ */
+function ensureBooleanAcknowledgement(
+    payload: unknown,
+    key: string,
+    expectedValue: boolean,
+    failurePrefix: string,
+) {
+    const response = toRecordOrNull(normalizeResponse(payload));
+    const data = toRecordOrNull(response?.data);
+    if (!data || !(key in data)) return;
+    if (data[key] === expectedValue) return;
+    const message = findMessageInPayload(payload);
+    if (message) throw new Error(`${failurePrefix}: ${message}`);
+    throw new Error(failurePrefix);
+}
+
+/**
+ * Ensures a target user exists before executing user-mutation commands.
+ *
+ * Throws a user-friendly not-found error for missing users (404) and rethrows
+ * all other request failures unchanged.
+ *
+ * @param apiBaseUrl - Base API URL for command requests.
+ * @param getApiToken - Lazy API-token resolver for authenticated calls.
+ * @param username - Username to validate.
+ * @throws {Error} When the user is missing or another API request error occurs.
+ */
+async function ensureUserExists(
+    apiBaseUrl: string,
+    getApiToken: () => Promise<string>,
+    username: string,
+) {
+    try {
+        await apiGet(
+            apiBaseUrl,
+            `/api/v1/users/${encodeURIComponent(username)}/info`,
+            await getApiToken(),
+        );
+    } catch (error) {
+        if (error instanceof ApiRequestError && error.status === 404) {
+            throw new Error(`User "${username}" not found.`);
+        }
+        throw error;
+    }
 }
 
 function normalizeResponse(payload: unknown) {
@@ -500,6 +607,34 @@ export function formatCommandOutput(
     return formatStructured(payload);
 }
 
+/**
+ * Executes a registered CLI command by name.
+ *
+ * This export supports test coverage for command handlers without invoking the
+ * full process-level CLI entrypoint.
+ *
+ * @param command - Registered CLI command name.
+ * @param args - Positional command arguments.
+ * @param options - Command execution dependencies.
+ * @returns The command handler result payload.
+ * @throws {Error} When the command is not registered.
+ */
+export async function executeRegisteredCommand(
+    command: string,
+    args: string[],
+    options: CommandExecutionOptions,
+): Promise<unknown> {
+    const spec = registry.get(command);
+    if (!spec) {
+        throw new Error(`Unknown command: ${command}`);
+    }
+    return spec.handler({
+        args,
+        apiBaseUrl: options.apiBaseUrl,
+        getApiToken: options.getApiToken,
+    });
+}
+
 function printCommandGroupHelp(commandGroupName: string): boolean {
     const normalized = commandGroupName.endsWith(":")
         ? commandGroupName.slice(0, -1)
@@ -679,7 +814,19 @@ register(
         requireArgs(args, ["moduleId"], "cognisctl modules:enable <moduleId>");
         const acknowledge = args.includes("--ack-external-disclaimer");
         const route = `/api/v1/modules/${encodeURIComponent(moduleId)}/enable${acknowledge ? "?acknowledgeExternalDisclaimer=true" : ""}`;
-        return apiPost(apiBaseUrl, route, undefined, await getApiToken());
+        const payload = await apiPost(
+            apiBaseUrl,
+            route,
+            undefined,
+            await getApiToken(),
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "enabled",
+            true,
+            `Module "${moduleId}" was not enabled`,
+        );
+        return payload;
     },
     {
         usage: "cognisctl modules:enable <moduleId> [--ack-external-disclaimer]",
@@ -693,12 +840,19 @@ register(
     async ({ args, apiBaseUrl, getApiToken }) => {
         const [moduleId] = args;
         requireArgs(args, ["moduleId"], "cognisctl modules:disable <moduleId>");
-        return apiPost(
+        const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/modules/${encodeURIComponent(moduleId)}/disable`,
             undefined,
             await getApiToken(),
         );
+        ensureBooleanAcknowledgement(
+            payload,
+            "enabled",
+            false,
+            `Module "${moduleId}" was not disabled`,
+        );
+        return payload;
     },
     {
         usage: "cognisctl modules:disable <moduleId>",
@@ -811,11 +965,18 @@ register(
             ["username", "role"],
             "cognisctl user:role <username> <role>",
         );
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}/role`,
             { role },
             await getApiToken(),
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "updated",
+            true,
+            `User "${username}" role update failed`,
         );
         return mergePayloadFields(payload, { username, role });
     },
@@ -838,11 +999,18 @@ register(
             ["username", "password"],
             "cognisctl user:set-password <username> <password>",
         );
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}/password`,
             { password },
             await getApiToken(),
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "updated",
+            true,
+            `User "${username}" password update failed`,
         );
         return mergePayloadFields(payload, { username });
     },
@@ -859,11 +1027,18 @@ register(
     async ({ args, apiBaseUrl, getApiToken }) => {
         const [username] = args;
         requireArgs(args, ["username"], "cognisctl user:disable <username>");
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}/disable`,
             undefined,
             await getApiToken(),
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "updated",
+            true,
+            `User "${username}" disable failed`,
         );
         return mergePayloadFields(payload, { username });
     },
@@ -882,11 +1057,18 @@ register(
     async ({ args, apiBaseUrl, getApiToken }) => {
         const [username] = args;
         requireArgs(args, ["username"], "cognisctl user:enable <username>");
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}/enable`,
             undefined,
             await getApiToken(),
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "updated",
+            true,
+            `User "${username}" enable failed`,
         );
         return mergePayloadFields(payload, { username });
     },
@@ -912,11 +1094,18 @@ register(
         if (value !== "true" && value !== "false") {
             throw new Error("isFounder must be true or false");
         }
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}/isfounder`,
             { isFounder: value === "true" },
             await getApiToken(),
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "updated",
+            true,
+            `User "${username}" founder update failed`,
         );
         return mergePayloadFields(payload, {
             username,
@@ -949,10 +1138,17 @@ register(
     async ({ args, apiBaseUrl, getApiToken }) => {
         const [username] = args;
         requireArgs(args, ["username"], "cognisctl user:delete <username>");
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiRequest(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}`,
             { method: "DELETE", apiToken: await getApiToken() },
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "deleted",
+            true,
+            `User "${username}" deletion failed`,
         );
         return mergePayloadFields(payload, { username });
     },
@@ -972,11 +1168,18 @@ register(
             ["username"],
             "cognisctl user:preferences:clear <username>",
         );
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}/preferences/clear`,
             undefined,
             await getApiToken(),
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "cleared",
+            true,
+            `User "${username}" preferences clear failed`,
         );
         return mergePayloadFields(payload, { username });
     },
@@ -1059,7 +1262,10 @@ async function main() {
         process.exit(1);
     }
 
-    const result = await spec.handler({ args, apiBaseUrl, getApiToken });
+    const result = await executeRegisteredCommand(command, args, {
+        apiBaseUrl,
+        getApiToken,
+    });
     if (result !== undefined) {
         printOutput(formatCommandOutput(command, result));
     }
