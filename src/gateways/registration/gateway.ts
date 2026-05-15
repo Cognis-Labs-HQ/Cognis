@@ -239,8 +239,8 @@ export class CoreRegistrationGateway {
     isRequestEnabled(): boolean {
         return Boolean(
             this.requestAdapterId &&
-                this.enabledAdapters.has(this.requestAdapterId) &&
-                this.adapters.get(this.requestAdapterId)?.request,
+            this.enabledAdapters.has(this.requestAdapterId) &&
+            this.adapters.get(this.requestAdapterId)?.request,
         );
     }
 

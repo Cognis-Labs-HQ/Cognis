@@ -927,7 +927,9 @@ test("login userValidation exempts founder admin even when SMTP is available", a
 });
 
 test("external SSO login creates pending request when public registration is disabled", async () => {
-    const adaptersRoot = await mkdtemp(path.join(os.tmpdir(), "auth-adapters-"));
+    const adaptersRoot = await mkdtemp(
+        path.join(os.tmpdir(), "auth-adapters-"),
+    );
     try {
         const authAdaptersRoot = path.join(adaptersRoot, "auth");
         const mockAdapterRoot = path.join(authAdaptersRoot, "mock-sso");

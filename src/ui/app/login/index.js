@@ -139,6 +139,23 @@ export async function mount(root) {
         return Array.isArray(payload?.data) ? payload.data : [];
     }
 
+    function resolveLoginErrorMessage(errorPayload) {
+        const errorCode = String(errorPayload?.code ?? "");
+        const errorKeyByCode = {
+            registration_pending_approval:
+                "ui.app.login.error.registration_pending_approval",
+            registration_request_rejected:
+                "ui.app.login.error.registration_request_rejected",
+            registration_unavailable:
+                "ui.app.login.error.registration_unavailable",
+        };
+        const mappedKey = errorKeyByCode[errorCode];
+        if (mappedKey) {
+            return i18n.t(mappedKey);
+        }
+        return errorPayload?.message || i18n.t("ui.app.login.error.generic");
+    }
+
     async function promptRequiredEmailAddress() {
         let inputEl = null;
         const action = await openPopup({
@@ -426,24 +443,9 @@ export async function mount(root) {
                                 window.location.href = "/dashboard";
                                 return;
                             }
-                            const errorMsg =
-                                body?.error?.code ===
-                                "registration_pending_approval"
-                                    ? i18n.t(
-                                          "ui.app.login.error.registration_pending_approval",
-                                      )
-                                    : body?.error?.code ===
-                                        "registration_request_rejected"
-                                      ? i18n.t(
-                                            "ui.app.login.error.registration_request_rejected",
-                                        )
-                                      : body?.error?.code ===
-                                          "registration_unavailable"
-                                        ? i18n.t(
-                                              "ui.app.login.error.registration_unavailable",
-                                          )
-                                        : body?.error?.message ||
-                                          i18n.t("ui.app.login.error.generic");
+                            const errorMsg = resolveLoginErrorMessage(
+                                body?.error,
+                            );
                             showToast(errorMsg, { variant: "error" });
                         });
                 },

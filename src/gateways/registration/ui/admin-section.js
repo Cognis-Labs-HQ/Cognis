@@ -97,7 +97,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
           <td>${accountCell}</td>
           <td>${escapeHtml(request.requestedDisplayName ?? "")}</td>
           <td>${escapeHtml(request.requestedEmail ?? "—")}</td>
-          <td>${reviewStatusLabel(request.status)}</td>
+          <td><span class="registration-request-status">${reviewStatusLabel(request.status)}</span></td>
           <td>${requestedAt}</td>
           <td class="users-actions-cell">${reviewButtons}</td>
         </tr>`;
@@ -213,7 +213,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                         }
                     });
                 });
-                root.querySelectorAll(".registration-request-review-btn").forEach((btn) => {
+                root.querySelectorAll(
+                    ".registration-request-review-btn",
+                ).forEach((btn) => {
                     btn.addEventListener("click", async () => {
                         const requestId = btn.dataset.requestId;
                         const status = btn.dataset.nextStatus;
@@ -228,14 +230,18 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                         );
                         if (!res.ok) {
                             showToast(
-                                i18n.t("gateway.registration.request.review_failed"),
+                                i18n.t(
+                                    "gateway.registration.request.review_failed",
+                                ),
                                 {
                                     variant: "error",
                                 },
                             );
                             return;
                         }
-                        const idx = requests.findIndex((r) => r.id === requestId);
+                        const idx = requests.findIndex(
+                            (r) => r.id === requestId,
+                        );
                         if (idx >= 0) {
                             requests[idx] = {
                                 ...requests[idx],
@@ -243,11 +249,15 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                             };
                         }
                         const row = btn.closest("tr");
-                        const statusCell = row?.cells[5];
-                        if (statusCell) {
-                            statusCell.textContent = reviewStatusLabel(status);
+                        const statusEl = row?.querySelector(
+                            ".registration-request-status",
+                        );
+                        if (statusEl) {
+                            statusEl.textContent = reviewStatusLabel(status);
                         }
-                        row?.querySelectorAll(".registration-request-review-btn").forEach((actionBtn) => actionBtn.remove());
+                        row?.querySelectorAll(
+                            ".registration-request-review-btn",
+                        ).forEach((actionBtn) => actionBtn.remove());
                         showToast(
                             i18n.t("gateway.registration.request.review_saved"),
                             {

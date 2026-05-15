@@ -8,21 +8,21 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 
 ## Adapter
 
-| Komponen                   | Path                                | Versi   |
-| -------------------------- | ----------------------------------- | ------- |
-| Notifikasi SMTP            | `src/adapters/notify/smtp/`         | `0.1.0` |
-| Notifikasi Internal        | `src/adapters/notify/internal/`     | `0.5.2` |
-| Penyimpanan File Lokal     | `src/adapters/file/local/`          | `0.1.0` |
-| Autentikasi Lokal          | `src/adapters/auth/local/`          | `0.2.2` |
-| Autentikasi LINE Messenger | `src/adapters/auth/line/`           | `0.2.0` |
-| Database PostgreSQL        | `src/adapters/db/postgres/`         | `0.1.0` |
-| Database MariaDB           | `src/adapters/db/mariadb/`          | `0.1.0` |
-| Undangan Registrasi        | `src/adapters/registration/invite/` | `0.1.1` |
-| Token Registrasi           | `src/adapters/registration/token/`  | `0.1.1` |
-| Registrasi Publik          | `src/adapters/registration/public/` | `0.1.0` |
+| Komponen                   | Path                                  | Versi   |
+| -------------------------- | ------------------------------------- | ------- |
+| Notifikasi SMTP            | `src/adapters/notify/smtp/`           | `0.1.0` |
+| Notifikasi Internal        | `src/adapters/notify/internal/`       | `0.5.2` |
+| Penyimpanan File Lokal     | `src/adapters/file/local/`            | `0.1.0` |
+| Autentikasi Lokal          | `src/adapters/auth/local/`            | `0.2.2` |
+| Autentikasi LINE Messenger | `src/adapters/auth/line/`             | `0.2.0` |
+| Database PostgreSQL        | `src/adapters/db/postgres/`           | `0.1.0` |
+| Database MariaDB           | `src/adapters/db/mariadb/`            | `0.1.0` |
+| Undangan Registrasi        | `src/adapters/registration/invite/`   | `0.1.1` |
+| Token Registrasi           | `src/adapters/registration/token/`    | `0.1.1` |
+| Registrasi Publik          | `src/adapters/registration/public/`   | `0.1.0` |
 | Permintaan Registrasi      | `src/adapters/registration/requests/` | `0.1.0` |
-| Profil (Sosial)            | `src/adapters/social/profile/`      | `1.0.0` |
-| Pesan (Sosial)             | `src/adapters/social/messages/`     | `1.0.0` |
+| Profil (Sosial)            | `src/adapters/social/profile/`        | `1.0.0` |
+| Pesan (Sosial)             | `src/adapters/social/messages/`       | `1.0.0` |
 
 ## Gateway
 

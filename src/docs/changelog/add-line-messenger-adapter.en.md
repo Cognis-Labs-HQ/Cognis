@@ -17,6 +17,17 @@ Added a user route to unlink provider identities:
 `POST /api/v1/auth/providers/:provider/unlink`, which marks the identity as
 unlinked, disables the account, and revokes tokens.
 
+Added a new `requests` adapter to the Registration gateway for manual approval
+workflows. When public registration is disabled or unavailable, first-time
+external SSO login (including LINE) now creates a pending registration request
+instead of immediately creating an account.
+
+Registration admins can review requests under Administration → Registration via
+new registration-request APIs and approve/reject actions.
+
+Login now maps pending/rejected/unavailable registration request outcomes to
+localized toast messages.
+
 ## Changed files/components
 
 - Authentication gateway:
@@ -33,6 +44,26 @@ unlinked, disables the account, and revokes tokens.
     - `src/adapters/auth/line/docs/index.de.md`
     - `src/adapters/auth/line/docs/index.id.md`
     - `src/adapters/auth/line/docs/index.ja.md`
+- New Registration requests adapter:
+    - `src/adapters/registration/requests/index.ts`
+    - `src/adapters/registration/requests/package.json`
+    - `src/adapters/registration/requests/manifest.json`
+    - `src/adapters/registration/requests/tests/requests-adapter.test.ts`
+- Registration gateway:
+    - `src/gateways/registration/gateway.ts`
+    - `src/gateways/registration/bootstrap.ts`
+    - `src/gateways/registration/manifest.json`
+    - `src/gateways/registration/ui/admin-section.js`
+    - `src/gateways/registration/ui/languages/en/strings.xml`
+    - `src/gateways/registration/ui/languages/de/strings.xml`
+    - `src/gateways/registration/ui/languages/id/strings.xml`
+    - `src/gateways/registration/ui/languages/ja/strings.xml`
+- Login UI + i18n:
+    - `src/ui/app/login/index.js`
+    - `src/ui/languages/en/strings.xml`
+    - `src/ui/languages/de/strings.xml`
+    - `src/ui/languages/id/strings.xml`
+    - `src/ui/languages/ja/strings.xml`
 - Version index updates:
     - `src/docs/versions.en.md`
     - `src/docs/versions.de.md`
@@ -42,3 +73,6 @@ unlinked, disables the account, and revokes tokens.
 ## Commits
 
 - [2cafed8](https://github.com/le-firehawk/Cognis/commit/2cafed8)
+- [28ffdd6](https://github.com/le-firehawk/Cognis/commit/28ffdd6)
+- [0a51d61](https://github.com/le-firehawk/Cognis/commit/0a51d61)
+- [9144ee3](https://github.com/le-firehawk/Cognis/commit/9144ee3)

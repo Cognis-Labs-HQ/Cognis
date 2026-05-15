@@ -262,11 +262,13 @@ async function unlinkExternalIdentity(
     const currentLifecycleState = normalizeLifecycleState(
         existing.rows?.[0]?.lifecycle_state,
     );
-    const nextLifecycleState =
+    let nextLifecycleState: ExternalLifecycleState = "unlinked";
+    if (
         currentLifecycleState === "deleted" ||
         currentLifecycleState === "deactivated"
-            ? currentLifecycleState
-            : "unlinked";
+    ) {
+        nextLifecycleState = currentLifecycleState;
+    }
     await dbExecutor.executeCommand({
         option: "UPDATE",
         table: "auth_identities",
@@ -715,7 +717,9 @@ function createAuthGatewayRoutes(
                     (input: {
                         provider: string;
                         externalUserId: string;
-                    }) => Promise<{ status: "pending" | "approved" | "rejected" } | null>
+                    }) => Promise<{
+                        status: "pending" | "approved" | "rejected";
+                    } | null>
                 >("registration:requests:getByIdentity");
                 const existingRequest = await registrationRequestByIdentity?.({
                     provider: session.provider,
@@ -763,7 +767,9 @@ function createAuthGatewayRoutes(
                         }) => Promise<{ id: string }>
                     >("registration:requests:submit");
                     if (!submitRegistrationRequest) {
-                        res.writeHead(503, { "content-type": "application/json" });
+                        res.writeHead(503, {
+                            "content-type": "application/json",
+                        });
                         res.end(
                             JSON.stringify({
                                 error: {

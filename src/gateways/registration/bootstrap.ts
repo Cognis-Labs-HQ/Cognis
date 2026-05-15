@@ -188,8 +188,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             return gateway.registerPublic(input);
         },
     );
-    ctx.capabilities.contribute("registration:requests:isEnabled", () =>
-        isGatewayEnabled() && gateway.isRequestEnabled(),
+    ctx.capabilities.contribute(
+        "registration:requests:isEnabled",
+        () => isGatewayEnabled() && gateway.isRequestEnabled(),
     );
     ctx.capabilities.contribute(
         "registration:requests:submit",
@@ -392,10 +393,13 @@ export function createRegistrationRoutes(
                 return true;
             }
             const body = await readJson(req);
-            const provider = String(body.provider ?? "").trim().toLowerCase();
+            const provider = String(body.provider ?? "")
+                .trim()
+                .toLowerCase();
             const externalUserId = String(body.externalUserId ?? "").trim();
-            const requestedAccountId = String(body.requestedAccountId ?? "")
-                .trim();
+            const requestedAccountId = String(
+                body.requestedAccountId ?? "",
+            ).trim();
             const requestedDisplayName = String(
                 body.requestedDisplayName ?? "",
             ).trim();
@@ -427,8 +431,7 @@ export function createRegistrationRoutes(
                 requestedAccountId,
                 requestedDisplayName,
                 requestedEmail: requestedEmail || undefined,
-                requestedProfileImageUrl:
-                    requestedProfileImageUrl || undefined,
+                requestedProfileImageUrl: requestedProfileImageUrl || undefined,
             });
             log?.("info", "Submitted registration request.", {
                 ...logMeta,
@@ -461,7 +464,9 @@ export function createRegistrationRoutes(
             if (!claims) return true;
             const requestId = decodeURIComponent(reviewRequestMatch[1]);
             const body = await readJson(req);
-            const status = String(body.status ?? "").trim().toLowerCase();
+            const status = String(body.status ?? "")
+                .trim()
+                .toLowerCase();
             if (status !== "approved" && status !== "rejected") {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(

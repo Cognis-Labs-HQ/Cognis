@@ -22,11 +22,24 @@ export function createAdapter(deps: {
             schemaInitialized = dbExecutor.ensureTable({
                 name: "registration_requests",
                 columns: [
-                    { name: "id", type: "text", notNull: true, primaryKey: true },
+                    {
+                        name: "id",
+                        type: "text",
+                        notNull: true,
+                        primaryKey: true,
+                    },
                     { name: "provider", type: "text", notNull: true },
                     { name: "external_user_id", type: "text", notNull: true },
-                    { name: "requested_account_id", type: "text", notNull: true },
-                    { name: "requested_display_name", type: "text", notNull: true },
+                    {
+                        name: "requested_account_id",
+                        type: "text",
+                        notNull: true,
+                    },
+                    {
+                        name: "requested_display_name",
+                        type: "text",
+                        notNull: true,
+                    },
                     { name: "requested_email", type: "text" },
                     { name: "requested_profile_image_url", type: "text" },
                     {
@@ -54,10 +67,7 @@ export function createAdapter(deps: {
                     },
                 ],
                 uniqueKeys: [["provider", "external_user_id"]],
-                indexes: [
-                    { columns: ["status"] },
-                    { columns: ["created_at"] },
-                ],
+                indexes: [{ columns: ["status"] }, { columns: ["created_at"] }],
             });
         }
         return schemaInitialized;
@@ -160,12 +170,9 @@ export function createAdapter(deps: {
 
             async listRequests(filter) {
                 await ensureReady();
-                const where =
-                    filter?.status && filter.status !== "pending"
-                        ? [{ column: "status", value: filter.status }]
-                        : filter?.status === "pending"
-                          ? [{ column: "status", value: "pending" }]
-                          : undefined;
+                const where = filter?.status
+                    ? [{ column: "status", value: filter.status }]
+                    : undefined;
                 const result = await dbExecutor.executeCommand({
                     option: "SELECT",
                     table: "registration_requests",
