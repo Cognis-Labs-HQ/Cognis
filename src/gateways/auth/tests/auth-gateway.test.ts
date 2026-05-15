@@ -191,7 +191,10 @@ test("LINE adapter exposes managed callback metadata and registers its callback 
 
     const configRequest = {
         method: "GET",
-        headers: { authorization: `Bearer ${adminToken}` },
+        headers: {
+            authorization: `Bearer ${adminToken}`,
+            host: "localhost:3000",
+        },
     } as unknown as HttpIncomingMessage;
     const configResult = await dispatchRoute(
         routeRegistry,
@@ -202,8 +205,13 @@ test("LINE adapter exposes managed callback metadata and registers its callback 
     assert.equal(configResult.res.status, 200);
     const configPayload = JSON.parse(configResult.res.payload) as {
         managedRedirectPath: string | null;
+        managedRedirectUrl: string | null;
     };
     assert.equal(configPayload.managedRedirectPath, "/auth/line/callback");
+    assert.equal(
+        configPayload.managedRedirectUrl,
+        "http://localhost:3000/auth/line/callback",
+    );
 
     const callbackRequest = {
         method: "GET",

@@ -7,17 +7,33 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
 
     const dataReady = Promise.all([
         apiFetch("/api/v1/registration/tokens?includeClosed=true"),
-        apiFetch("/api/v1/registration/requests"),
+        Promise.all([
+            apiFetch("/api/v1/registration/requests?status=pending"),
+            apiFetch("/api/v1/registration/requests?status=approved"),
+            apiFetch("/api/v1/registration/requests?status=rejected"),
+        ]),
         apiFetch("/api/v1/gateways/social"),
-    ]).then(async ([tokensRes, requestsRes, profileRes]) => {
+    ]).then(async ([tokensRes, requestResponses, profileRes]) => {
         if (tokensRes.ok) {
             const payload = await tokensRes.json();
             tokens = payload.data ?? [];
         }
-        if (requestsRes.ok) {
-            const payload = await requestsRes.json();
-            requests = payload.data ?? [];
-        }
+        const requestPayloads = await Promise.all(
+            requestResponses.map(async (requestsRes) =>
+                requestsRes.ok ? await requestsRes.json() : { data: [] },
+            ),
+        );
+        requests = requestPayloads
+            .flatMap((payload) =>
+                Array.isArray(payload.data) ? payload.data : [],
+            )
+            .sort((firstRequest, secondRequest) => {
+                const firstTimestamp = Date.parse(firstRequest.createdAt ?? "");
+                const secondTimestamp = Date.parse(
+                    secondRequest.createdAt ?? "",
+                );
+                return secondTimestamp - firstTimestamp;
+            });
         if (profileRes.ok) {
             const payload = await profileRes.json();
             socialGatewayEnabled = payload?.data?.status !== "disabled";

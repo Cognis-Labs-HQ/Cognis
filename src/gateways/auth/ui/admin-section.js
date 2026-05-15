@@ -87,9 +87,15 @@ export function createAdminSection({
             typeof configPayload.managedRedirectPath === "string"
                 ? configPayload.managedRedirectPath.trim()
                 : "";
-        const managedRedirectUrl = managedRedirectPath
-            ? new URL(managedRedirectPath, window.location.origin).toString()
-            : "";
+        const managedRedirectUrlFromApi =
+            typeof configPayload.managedRedirectUrl === "string"
+                ? configPayload.managedRedirectUrl.trim()
+                : "";
+        const managedRedirectUrl = managedRedirectUrlFromApi
+            ? managedRedirectUrlFromApi
+            : managedRedirectPath
+              ? new URL(managedRedirectPath, window.location.origin).toString()
+              : "";
 
         function renderConfigForm() {
             const managedRedirectNoticeHtml = managedRedirectUrl

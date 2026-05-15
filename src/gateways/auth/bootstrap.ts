@@ -1151,6 +1151,28 @@ function createAdapterAdminRoutes(
     authGateway: CoreAuthGateway,
     log?: GatewayBootstrapContext["log"],
 ) {
+    function resolveRequestOrigin(req: IncomingMessage): string {
+        const forwardedProto = String(
+            req.headers?.["x-forwarded-proto"] ?? "",
+        ).trim();
+        const requestProtocol = forwardedProto.split(",")[0]?.trim();
+        const protocol =
+            requestProtocol ||
+            (req.socket && "encrypted" in req.socket && req.socket.encrypted
+                ? "https"
+                : "http");
+        const forwardedHost = String(req.headers?.["x-forwarded-host"] ?? "")
+            .trim()
+            .split(",")[0]
+            ?.trim();
+        const host =
+            forwardedHost || String(req.headers?.host ?? "").trim() || "";
+        if (!host) {
+            return "";
+        }
+        return `${protocol}://${host}`;
+    }
+
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
 
     return async (
@@ -1224,6 +1246,18 @@ function createAdapterAdminRoutes(
                         requiredFields,
                         managedRedirectPath:
                             adapter.getManagedRedirectPath?.() ?? null,
+                        managedRedirectUrl: (() => {
+                            const managedRedirectPath =
+                                adapter.getManagedRedirectPath?.() ?? "";
+                            const requestOrigin = resolveRequestOrigin(req);
+                            if (!managedRedirectPath || !requestOrigin) {
+                                return null;
+                            }
+                            return new URL(
+                                managedRedirectPath,
+                                requestOrigin,
+                            ).toString();
+                        })(),
                     }),
                 );
                 return true;

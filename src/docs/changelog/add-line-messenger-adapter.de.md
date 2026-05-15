@@ -107,4 +107,3 @@ Ein neuer API-Endpunkt `/api/v1/auth/line/init` stellt Kanal-ID, PKCE-Einstellun
 Sowohl die Login- als auch die Registrierungsseite erhalten über das SSO-Anbietersystem eine „Mit LINE anmelden"-Schaltfläche. Ein Klick zeigt das LINE-Datenschutz-Popup; nach Bestätigung wird die PKCE-Einrichtung durchgeführt und der Nutzer zur LINE-Autorisierungsseite weitergeleitet.
 
 Das neue Modul `src/ui/reuse/oauth-pkce.js` stellt generische, wiederverwendbare PKCE-Hilfsfunktionen (`generateRandomString`, `generateCodeChallenge`, `buildAuthorizationUrl`) bereit, die von beiden Authentifizierungsseiten genutzt werden.
-

@@ -19,4 +19,5 @@ test("auth admin section surfaces managed callback URL metadata", () => {
     );
     assert.match(source, /gateway\.auth\.managed_callback\.title/);
     assert.match(source, /gateway\.auth\.managed_callback\.body/);
+    assert.match(source, /configPayload\.managedRedirectUrl/);
 });

@@ -79,10 +79,12 @@ export async function mount(root) {
             }
             const initPayload = await initResponse.json();
             const lineInitData = initPayload.data;
-            const redirectUri = new URL(
-                lineInitData.managedRedirectPath,
-                window.location.origin,
-            ).toString();
+            const redirectUri =
+                String(lineInitData.callbackUrl ?? "").trim() ||
+                new URL(
+                    lineInitData.managedRedirectPath,
+                    window.location.origin,
+                ).toString();
             const state = generateRandomString(32);
             sessionStorage.setItem("line_oauth_state", state);
             let codeChallenge = "";

@@ -353,12 +353,36 @@ class LineAuthAdapter implements AuthProviderAdapter {
                 );
                 return true;
             }
+            const forwardedProto = String(
+                req.headers?.["x-forwarded-proto"] ?? "",
+            ).trim();
+            const requestProtocol = forwardedProto.split(",")[0]?.trim();
+            const protocol =
+                requestProtocol ||
+                (req.socket && "encrypted" in req.socket && req.socket.encrypted
+                    ? "https"
+                    : "http");
+            const forwardedHost = String(
+                req.headers?.["x-forwarded-host"] ?? "",
+            )
+                .trim()
+                .split(",")[0]
+                ?.trim();
+            const host =
+                forwardedHost || String(req.headers?.host ?? "").trim() || "";
+            const callbackUrl = host
+                ? new URL(
+                      this.managedRedirectPath,
+                      `${protocol}://${host}`,
+                  ).toString()
+                : this.managedRedirectPath;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
                         channelId: this.channelId,
                         managedRedirectPath: this.managedRedirectPath,
+                        callbackUrl,
                         usePkce: this.usePkce,
                         authorizationEndpoint:
                             "https://access.line.me/oauth2/v2.1/authorize",

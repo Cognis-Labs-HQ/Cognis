@@ -65,7 +65,12 @@ test("line adapter init route returns 503 when channelId is not configured", asy
     let statusCode = 0;
     let responseBody = "";
     const handled = await initHandler(
-        { method: "GET" },
+        {
+            method: "GET",
+            headers: {
+                host: "localhost:3000",
+            },
+        } as any,
         {
             writeHead(code: number) {
                 statusCode = code;
@@ -115,7 +120,12 @@ test("line adapter init route returns channel metadata when configured", async (
     let statusCode = 0;
     let responseBody = "";
     const handled = await initHandler(
-        { method: "GET" },
+        {
+            method: "GET",
+            headers: {
+                host: "localhost:3000",
+            },
+        } as any,
         {
             writeHead(code: number) {
                 statusCode = code;
@@ -131,6 +141,10 @@ test("line adapter init route returns channel metadata when configured", async (
     const parsed = JSON.parse(responseBody);
     assert.equal(parsed.data.channelId, "test-channel");
     assert.equal(parsed.data.managedRedirectPath, "/auth/line/callback");
+    assert.equal(
+        parsed.data.callbackUrl,
+        "http://localhost:3000/auth/line/callback",
+    );
     assert.equal(typeof parsed.data.authorizationEndpoint, "string");
     assert.ok(parsed.data.authorizationEndpoint.length > 0);
     assert.equal(parsed.data.usePkce, true);

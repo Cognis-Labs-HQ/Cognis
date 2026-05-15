@@ -104,4 +104,3 @@ LINE アダプターは、組み込みのコールバックルートを通じて
 ログインページと登録ページの両方に、SSO プロバイダーシステムを通じて「LINE でログイン」ボタンが追加されました。クリックすると LINE のデータ開示ポップアップが表示され、確認後に PKCE のセットアップが行われ、LINE の認可ページにリダイレクトされます。
 
 新しいモジュール `src/ui/reuse/oauth-pkce.js` は、汎用的で再利用可能な PKCE ヘルパー関数（`generateRandomString`、`generateCodeChallenge`、`buildAuthorizationUrl`）を提供し、両方の認証ページで使用されます。
-

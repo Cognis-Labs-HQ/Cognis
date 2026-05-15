@@ -106,4 +106,3 @@ Endpoint API baru `/api/v1/auth/line/init` mengekspos ID saluran, pengaturan PKC
 Baik halaman login maupun register kini menyertakan tombol "Masuk dengan LINE" melalui sistem penyedia SSO. Mengkliknya menampilkan popup pengungkapan data LINE; setelah konfirmasi, pengaturan PKCE dilakukan dan pengguna diarahkan ke halaman otorisasi LINE.
 
 Modul baru `src/ui/reuse/oauth-pkce.js` menyediakan fungsi pembantu PKCE generik dan dapat digunakan kembali (`generateRandomString`, `generateCodeChallenge`, `buildAuthorizationUrl`) yang digunakan oleh kedua halaman autentikasi.
-
