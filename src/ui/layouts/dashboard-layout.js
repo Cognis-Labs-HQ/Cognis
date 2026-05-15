@@ -494,10 +494,10 @@ export async function renderDashboardLayout(root, slots = {}) {
         }
 
         const footer = existingShell.querySelector(".global-footer");
-        const floatingToolbar = existingShell.querySelector(".floating-toolbar");
+        const floatingToolbar =
+            existingShell.querySelector(".floating-toolbar");
         if (hasFloatingToolbar) {
-            const toolbar =
-                floatingToolbar ?? document.createElement("div");
+            const toolbar = floatingToolbar ?? document.createElement("div");
             toolbar.className = "floating-toolbar";
             toolbar.hidden = true;
             toolbar.innerHTML = slots.floatingToolbar;
