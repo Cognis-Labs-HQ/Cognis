@@ -901,6 +901,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                         ...message,
                         senderHandle: senderProfile?.handle ?? null,
                         senderDisplayName: senderProfile?.displayName ?? null,
+                        senderAvatarKey: senderProfile?.avatarKey ?? null,
                         deliveredToCount,
                         readBy,
                         reactions: Array.from(

@@ -354,6 +354,18 @@ function closeReadTooltips(threadList) {
     threadList?.classList.remove("messages-thread-list--receipt-open");
 }
 
+function renderMessageAvatar(message) {
+    const senderLabel =
+        message.senderDisplayName || message.senderHandle || message.senderId;
+    if (message.senderAvatarKey) {
+        return `<span class="messages-message-avatar"><img class="messages-message-avatar-img" src="/api/v1/files/${escapeHtml(message.senderAvatarKey)}" alt="" /></span>`;
+    }
+    const color = pickInitialsColor(
+        message.senderHandle || message.senderId || senderLabel,
+    );
+    return `<span class="messages-message-avatar"><span class="messages-message-avatar-fallback" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(senderLabel))}</span></span>`;
+}
+
 async function renderThread(
     roomId,
     key,
@@ -406,11 +418,15 @@ async function renderThread(
                 timeLabel || statusIndicator
                     ? `<div class="messages-message-meta">${timeLabel}${statusIndicator}</div>`
                     : "";
-            return `<div class="messages-message${ownClass}" data-message-id="${escapeHtml(msg.id)}">
-            ${senderLabel}
-            <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
-            ${metadataRow}
-            ${renderReactionRow(msg)}
+            const ownRowClass = isOwn ? " messages-message-row--own" : "";
+            return `<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(msg.id)}">
+            ${renderMessageAvatar(msg)}
+            <div class="messages-message${ownClass}">
+                ${senderLabel}
+                <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
+                ${metadataRow}
+                ${renderReactionRow(msg)}
+            </div>
         </div>`;
         })
         .join("");
