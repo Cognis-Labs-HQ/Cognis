@@ -120,6 +120,13 @@ export function createProfileRoutes(
     fileGateway?: FileStorageGateway,
     isGatewayEnabled?: () => boolean,
     log?: BootstrapLog,
+    onProfileChanged?: (input: {
+        accountId: string;
+        handle?: string | null;
+        displayName?: string | null;
+        displayNameChanged?: boolean;
+        avatarChanged?: boolean;
+    }) => Promise<void>,
 ) {
     return async (
         req: IncomingMessage,
@@ -272,6 +279,17 @@ export function createProfileRoutes(
                 claims!.sub,
                 updates,
             );
+            if (updated) {
+                await onProfileChanged?.({
+                    accountId: updated.accountId,
+                    handle: updated.handle,
+                    displayName: updated.displayName,
+                    displayNameChanged: Object.prototype.hasOwnProperty.call(
+                        updates,
+                        "displayName",
+                    ),
+                });
+            }
             log?.("info", "Updated profile.", {
                 ...logMeta,
                 changedFields: Object.keys(updates),
@@ -355,6 +373,14 @@ export function createProfileRoutes(
             const updated = await profileStore.updateProfile(claims!.sub, {
                 avatarKey: stored.key,
             });
+            if (updated) {
+                await onProfileChanged?.({
+                    accountId: updated.accountId,
+                    handle: updated.handle,
+                    displayName: updated.displayName,
+                    avatarChanged: true,
+                });
+            }
             log?.("info", "Uploaded avatar.", {
                 ...logMeta,
                 mime,
@@ -394,7 +420,17 @@ export function createProfileRoutes(
             }
             const profile = await profileStore.getProfile(claims!.sub);
             if (profile?.avatarKey) await fileGateway.delete(profile.avatarKey);
-            await profileStore.updateProfile(claims!.sub, { avatarKey: null });
+            const updated = await profileStore.updateProfile(claims!.sub, {
+                avatarKey: null,
+            });
+            if (updated) {
+                await onProfileChanged?.({
+                    accountId: updated.accountId,
+                    handle: updated.handle,
+                    displayName: updated.displayName,
+                    avatarChanged: true,
+                });
+            }
             log?.("info", "Removed avatar.", {
                 ...logMeta,
                 avatarKey: profile?.avatarKey ?? null,

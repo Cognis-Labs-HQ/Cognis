@@ -97,6 +97,10 @@
   <string name="ui.app.settings.theme">テーマ</string>
   <string name="ui.app.settings.theme_dark">ダーク</string>
   <string name="ui.app.settings.theme_light">ライト</string>
+  <string name="ui.app.settings.message_style">メッセージスタイル</string>
+  <string name="ui.app.settings.message_style_default">デフォルト</string>
+  <string name="ui.app.settings.message_style_speech_bubbles">吹き出し</string>
+  <string name="ui.app.settings.message_style_irc">IRCスタイル</string>
   <string name="ui.app.settings.advanced">詳細設定</string>
   <string name="ui.app.settings.preferences">設定情報</string>
   <string name="ui.app.settings.prefs_loading">読み込み中...</string>
@@ -446,16 +450,6 @@
   <string name="ui.app.settings.datetime_tz_heading">タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_label">表示タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_auto">自動検出 ({tz})</string>
-  <string name="module.social.messages.empty">まだ会話はありません。</string>
-  <string name="module.social.messages.placeholder">メッセージを入力…</string>
-  <string name="module.social.messages.send">送信</string>
-  <string name="module.social.messages.new">新しい会話</string>
-  <string name="module.social.messages.load_earlier">以前を読み込む</string>
-  <string name="module.social.messages.start_failed">会話を開始できませんでした。</string>
-  <string name="module.social.messages.members">メンバー</string>
-  <string name="module.social.messages.set_avatar">アバターを設定</string>
-  <string name="module.social.messages.key_unavailable">暗号化キーを利用できません。</string>
-  <string name="module.social.messages.page_subtitle">会話とダイレクトメッセージ。</string>
   <string name="ui.reuse.classes">マイクラス</string>
   <string name="module.study.classes.page_title">クラス</string>
   <string name="module.study.classes.page_subtitle">担当する語学クラスを管理します。</string>

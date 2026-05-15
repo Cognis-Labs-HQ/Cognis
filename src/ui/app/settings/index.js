@@ -24,6 +24,10 @@ import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { showToast } from "../../reuse/toast.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import {
+    isValidMessageStyle,
+    normalizeMessageStyle,
+} from "../../reuse/message-style-options.js";
 
 async function loadPrefs() {
     const account = localStorage.getItem("cognis_account");
@@ -75,6 +79,7 @@ function hasLanguagePriorityChanged(prev, next) {
 }
 
 const LANGUAGE_RELOAD_DELAY_MS = 400;
+const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
 export async function mount(root, { signal } = {}) {
     let loadedPrefs = await loadPrefs().catch(() => null);
@@ -95,6 +100,7 @@ export async function mount(root, { signal } = {}) {
     let fontPrefs;
     let languagePrefs;
     let themePrefs;
+    let messageStylePrefs;
     let changesBar;
     let generalPrefs;
     let datetimePrefs;
@@ -169,6 +175,46 @@ export async function mount(root, { signal } = {}) {
             },
             discard: () => {
                 currentMode = savedMode;
+                updateSelector();
+                onDirtyChange?.(false);
+            },
+        };
+    }
+
+    function initMessageStylePrefs({ onDirtyChange }) {
+        let savedMessageStyle = normalizeMessageStyle(
+            loadedPrefs?.messageStyle,
+        );
+        let currentMessageStyle = savedMessageStyle;
+
+        function updateSelector() {
+            root.querySelectorAll(".message-style-btn").forEach((button) => {
+                button.classList.toggle(
+                    "active",
+                    button.dataset.messageStyleValue === currentMessageStyle,
+                );
+            });
+        }
+
+        root.querySelectorAll(".message-style-btn").forEach((button) => {
+            button.addEventListener("click", () => {
+                const nextStyle = button.dataset.messageStyleValue;
+                if (!isValidMessageStyle(nextStyle)) return;
+                currentMessageStyle = nextStyle;
+                updateSelector();
+                onDirtyChange?.(currentMessageStyle !== savedMessageStyle);
+            });
+        });
+
+        updateSelector();
+
+        return {
+            getMessageStyle: () => currentMessageStyle,
+            commit: () => {
+                savedMessageStyle = currentMessageStyle;
+            },
+            discard: () => {
+                currentMessageStyle = savedMessageStyle;
                 updateSelector();
                 onDirtyChange?.(false);
             },
@@ -250,6 +296,14 @@ export async function mount(root, { signal } = {}) {
                 <button type="button" class="theme-btn" data-theme-value="light">${i18n.t("ui.app.settings.theme_light")}</button>
               </div>
             </div>
+            <div class="message-style-subsection">
+              <h3>${i18n.t("ui.app.settings.message_style")}</h3>
+              <div class="message-style-selector" id="pref-message-style-selector">
+                <button type="button" class="message-style-btn" data-message-style-value="default">${i18n.t("ui.app.settings.message_style_default")}</button>
+                <button type="button" class="message-style-btn" data-message-style-value="speech_bubbles">${i18n.t("ui.app.settings.message_style_speech_bubbles")}</button>
+                <button type="button" class="message-style-btn" data-message-style-value="irc">${i18n.t("ui.app.settings.message_style_irc")}</button>
+              </div>
+            </div>
           `,
                     },
                 ],
@@ -262,6 +316,10 @@ export async function mount(root, { signal } = {}) {
                     fontPrefs.init();
                     themePrefs = initThemePrefs({
                         onDirtyChange: (dirty) => markDirty("theme", dirty),
+                    });
+                    messageStylePrefs = initMessageStylePrefs({
+                        onDirtyChange: (dirty) =>
+                            markDirty(DIRTY_KEY_MESSAGE_STYLE, dirty),
                     });
                 },
             },
@@ -459,6 +517,9 @@ export async function mount(root, { signal } = {}) {
                     datetimePrefs?.getTimezone() ??
                     loadedPrefs?.timezone ??
                     "auto",
+                messageStyle:
+                    messageStylePrefs?.getMessageStyle() ??
+                    normalizeMessageStyle(loadedPrefs?.messageStyle),
             };
             await savePrefs(prefs);
             loadedPrefs = { ...loadedPrefs, ...prefs };
@@ -473,6 +534,7 @@ export async function mount(root, { signal } = {}) {
             applyUiPreferences(prefs); // apply font/theme/timezone to live page without reload
             fontPrefs?.commit();
             themePrefs?.commit();
+            messageStylePrefs?.commit();
             datetimePrefs?.commit();
             languagePrefs?.commit();
             for (const section of contributedSections) {
@@ -496,6 +558,7 @@ export async function mount(root, { signal } = {}) {
             fontPrefs?.discard();
             languagePrefs?.discard();
             themePrefs?.discard();
+            messageStylePrefs?.discard();
             datetimePrefs?.discard();
             for (const section of contributedSections) {
                 section.discard();

@@ -108,6 +108,46 @@
     border-color: transparent;
 }
 
+.message-style-subsection {
+    margin: 18px 0 0;
+}
+
+.message-style-subsection h3 {
+    margin: 0 0 8px;
+}
+
+.message-style-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.message-style-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--control-border);
+    background: var(--control-bg);
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.message-style-btn:hover {
+    background: var(--control-hover-bg);
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+}
+
+.message-style-btn.active {
+    background: var(--accent-2);
+    color: #fff;
+    border-color: transparent;
+}
+
 .prefs-dump {
     background: rgba(10, 22, 42, 0.9);
     border: 1px solid var(--border);
