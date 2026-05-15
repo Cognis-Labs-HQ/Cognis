@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { access } from "node:fs/promises";
+import { access, mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../api/route-registry.js";
@@ -168,6 +169,62 @@ test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
     assert.equal(res.status, 200);
     const body = JSON.parse(res.payload) as { data: unknown[] };
     assert.ok(Array.isArray(body.data));
+});
+
+test("LINE adapter exposes managed callback metadata and registers its callback route", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const configRequest = {
+        method: "GET",
+        headers: {
+            authorization: `Bearer ${adminToken}`,
+            host: "localhost:3000",
+        },
+    } as unknown as HttpIncomingMessage;
+    const configResult = await dispatchRoute(
+        routeRegistry,
+        configRequest,
+        "/api/v1/gateways/auth/adapters/line/config",
+    );
+    assert.equal(configResult.handled, true);
+    assert.equal(configResult.res.status, 200);
+    const configPayload = JSON.parse(configResult.res.payload) as {
+        managedRedirectPath: string | null;
+        managedRedirectUrl: string | null;
+    };
+    assert.equal(configPayload.managedRedirectPath, "/auth/line/callback");
+    assert.equal(
+        configPayload.managedRedirectUrl,
+        "http://localhost:3000/auth/line/callback",
+    );
+
+    const callbackRequest = {
+        method: "GET",
+        headers: {},
+    } as unknown as HttpIncomingMessage;
+    const callbackResult = await dispatchRoute(
+        routeRegistry,
+        callbackRequest,
+        "/auth/line/callback",
+    );
+    assert.equal(callbackResult.handled, true);
+    assert.equal(callbackResult.res.status, 204);
+    assert.equal(callbackResult.res.payload, "");
 });
 
 test("GET /api/v1/auth/registration-config returns open-registration state", async () => {
@@ -923,4 +980,118 @@ test("login userValidation exempts founder admin even when SMTP is available", a
     assert.equal(payload.data.isFounder, true);
     assert.equal(payload.data.userValidationMode, "smtp");
     assert.equal(payload.data.requiredUserValidation, false);
+});
+
+test("external SSO login creates pending request when public registration is disabled", async () => {
+    const adaptersRoot = await mkdtemp(
+        path.join(os.tmpdir(), "auth-adapters-"),
+    );
+    try {
+        const authAdaptersRoot = path.join(adaptersRoot, "auth");
+        const mockAdapterRoot = path.join(authAdaptersRoot, "mock-sso");
+        await mkdir(mockAdapterRoot, { recursive: true });
+        await writeFile(
+            path.join(mockAdapterRoot, "package.json"),
+            JSON.stringify(
+                {
+                    name: "@cognis/adapter-auth-mock-sso",
+                    version: "0.1.0",
+                    private: true,
+                    type: "module",
+                    main: "index.ts",
+                },
+                null,
+                2,
+            ),
+        );
+        await writeFile(
+            path.join(mockAdapterRoot, "index.ts"),
+            `export function createAdapter() {
+  return {
+    id: "mock-sso",
+    name: "Mock SSO",
+    getConfigSchema() { return []; },
+    configure() {},
+    async authenticate(credentials) {
+      return {
+        accountId: "mock:external-123",
+        provider: "mock-sso",
+        externalUserId: "external-123",
+        email: "external@example.com",
+        displayName: "External User",
+        profileImageUrl: "https://example.com/p.png",
+        role: "user",
+      };
+    },
+  };
+}`,
+        );
+
+        const dbExecutor = new InMemoryTestExecutor();
+        await dbExecutor.ensureTable({
+            name: "auth_adapter_configs",
+            columns: [
+                {
+                    name: "adapter_id",
+                    type: "text",
+                    notNull: true,
+                    primaryKey: true,
+                },
+                { name: "enabled", type: "integer", notNull: true, default: 0 },
+                {
+                    name: "config_json",
+                    type: "text",
+                    notNull: true,
+                    default: "{}",
+                },
+            ],
+        });
+        await dbExecutor.executeCommand({
+            option: "INSERT",
+            table: "auth_adapter_configs",
+            values: {
+                adapter_id: "mock-sso",
+                enabled: 1,
+                config_json: "{}",
+            },
+        });
+
+        const capabilities = new CapabilityStore();
+        capabilities.contribute("registration:public:isEnabled", () => false);
+        let submittedProvider = "";
+        capabilities.contribute(
+            "registration:requests:submit",
+            async (input: { provider: string }) => {
+                submittedProvider = input.provider;
+                return { id: "req-1" };
+            },
+        );
+        capabilities.contribute(
+            "registration:requests:getByIdentity",
+            async () => null,
+        );
+
+        const routeRegistry = new RouteRegistry();
+        const gatewayRegistry = new GatewayRegistry();
+        await bootstrap({
+            dbExecutor,
+            adaptersRoot,
+            routeRegistry,
+            gatewayRegistry,
+            capabilities,
+        } as any);
+
+        const result = await dispatchRoute(
+            routeRegistry,
+            makeJsonRequest("POST", { provider: "mock-sso" }),
+            "/api/v1/auth/login",
+        );
+
+        assert.ok(result.handled);
+        assert.equal(result.res.status, 403);
+        assert.match(result.res.payload, /registration_pending_approval/);
+        assert.equal(submittedProvider, "mock-sso");
+    } finally {
+        await rm(adaptersRoot, { recursive: true, force: true });
+    }
 });

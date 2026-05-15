@@ -6,6 +6,9 @@
             "path": "./src/adapters/auth/ldap"
         },
         {
+            "path": "./src/adapters/auth/line"
+        },
+        {
             "path": "./src/adapters/auth/local"
         },
         {

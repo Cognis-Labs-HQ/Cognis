@@ -7,6 +7,7 @@ import {
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import { initSecuritySection } from "./security.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
@@ -905,10 +906,12 @@ function renderGenericAdapterForm(
     descriptors,
     requiredFields,
     showTestControls,
+    fieldHints,
 ) {
     const requiredSet = new Set(requiredFields);
     const requiredTooltip = i18n.t("ui.app.admin.notif.required_field");
     const conflictTitle = i18n.t("ui.app.admin.notif.field_env_conflict");
+    const moreInformationLabel = i18n.t("ui.reuse.more_information");
 
     function fieldLabel(name, labelText, inputHtml) {
         const descriptor = descriptors[name];
@@ -924,7 +927,11 @@ function renderGenericAdapterForm(
         const conflictWarning = hasConflict
             ? `<span class="provider-field-env-warning" title="${conflictTitle}">⚠</span>`
             : "";
-        return `<label class="provider-popup-field${requiredClass}"${labelTitle}>${escapeHtml(labelText)}${inputHtml}${conflictWarning}</label>`;
+        const hintHtml = fieldHints?.[name]
+            ? renderInfoTooltip(fieldHints[name], moreInformationLabel)
+            : "";
+        const labelSpanHtml = `<span class="provider-popup-field__label">${escapeHtml(labelText)}${hintHtml}</span>`;
+        return `<label class="provider-popup-field${requiredClass}"${labelTitle}>${labelSpanHtml}${inputHtml}${conflictWarning}</label>`;
     }
 
     const fieldKeys = Object.keys(descriptors).filter(
@@ -1081,6 +1088,13 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
         : [];
     const supportsTest = payload.supportsTest === true;
 
+    const schemaArray = Array.isArray(payload.schema) ? payload.schema : [];
+    const fieldHints = Object.fromEntries(
+        schemaArray
+            .filter((field) => field.hint)
+            .map((field) => [field.key, field.hint]),
+    );
+
     const fieldNames = new Set([
         ...Object.keys(dbData),
         ...Object.keys(envData),
@@ -1127,6 +1141,7 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
             descriptors,
             requiredFields,
             supportsTest,
+            fieldHints,
         ),
         maxWidth: "640px",
         actions: [

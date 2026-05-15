@@ -12,16 +12,18 @@ import {
     extractCookieToken,
     shouldSetSecureCookie,
 } from "../../api/reuse/access-token-http.js";
+import { resolveAbsoluteUrl } from "../../api/reuse/request-origin.js";
 import {
     issueAccessToken,
     isTokenVerificationFresh,
     recordTokenVerification,
     revokeAccessToken,
+    revokeAccessTokensForSubject,
     type AccessRole,
 } from "./access-tokens.js";
 import { CoreAuthGateway } from "./gateway.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { AuthProviderAdapter } from "./gateway.js";
+import type { AuthContext, AuthProviderAdapter } from "./gateway.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 
@@ -72,6 +74,244 @@ function resolveRole(
         return sessionRole;
     }
     return isAdmin ? "admin" : "user";
+}
+
+type ExternalLifecycleState = "active" | "unlinked" | "deactivated" | "deleted";
+
+function normalizeLifecycleState(value: unknown): ExternalLifecycleState {
+    if (value === "unlinked") return "unlinked";
+    if (value === "deactivated") return "deactivated";
+    if (value === "deleted") return "deleted";
+    return "active";
+}
+
+async function syncExternalIdentity(
+    dbExecutor: DbExecutor,
+    session: AuthContext,
+    log?: GatewayBootstrapContext["log"],
+): Promise<{
+    accountId: string;
+    displayName: string;
+    lifecycleState: ExternalLifecycleState;
+}> {
+    const lifecycleState = normalizeLifecycleState(session.lifecycleState);
+    if (session.provider === "local") {
+        return {
+            accountId: session.accountId,
+            displayName: session.displayName ?? session.accountId,
+            lifecycleState,
+        };
+    }
+    const now = new Date().toISOString();
+    const existingIdentityResult = await dbExecutor.executeCommand({
+        option: "SELECT",
+        table: "auth_identities",
+        columns: ["account_id"],
+        where: [
+            { column: "provider", value: session.provider },
+            { column: "external_user_id", value: session.externalUserId },
+        ],
+        limit: 1,
+    });
+    const persistedAccountId = String(
+        existingIdentityResult.rows?.[0]?.account_id ?? "",
+    ).trim();
+    const accountId = persistedAccountId || session.accountId;
+    const displayName = session.displayName ?? accountId;
+    const accountResult = await dbExecutor.executeCommand({
+        option: "SELECT",
+        table: "accounts",
+        columns: ["id"],
+        where: [{ column: "id", value: accountId }],
+        limit: 1,
+    });
+    const accountExists = Boolean(accountResult.rows?.[0]?.id);
+    const role = resolveRole(session.role, session.isAdmin);
+    const shouldEnableAccount = lifecycleState === "active";
+
+    if (!accountExists) {
+        await dbExecutor.executeCommand({
+            option: "INSERT",
+            table: "accounts",
+            values: {
+                id: accountId,
+                email: session.email ?? null,
+                display_name: displayName,
+                is_admin: role === "admin" || role === "owner",
+                role,
+                enabled: shouldEnableAccount,
+                is_founder: false,
+                created_at: now,
+                updated_at: now,
+            },
+        });
+        log?.("info", "Created external-auth account.", {
+            component: "auth-gateway",
+            accountId,
+            provider: session.provider,
+            externalUserId: session.externalUserId,
+        });
+    } else {
+        await dbExecutor.executeCommand({
+            option: "UPDATE",
+            table: "accounts",
+            set: {
+                email: session.email ?? null,
+                display_name: displayName,
+                is_admin: role === "admin" || role === "owner",
+                role,
+                enabled: shouldEnableAccount,
+                updated_at: now,
+            },
+            where: [{ column: "id", value: accountId }],
+        });
+    }
+
+    await dbExecutor.executeCommand({
+        option: "INSERT",
+        table: "auth_identities",
+        values: {
+            id: `${session.provider}:${session.externalUserId}`,
+            account_id: accountId,
+            provider: session.provider,
+            external_user_id: session.externalUserId,
+            display_name: displayName,
+            profile_image_url: session.profileImageUrl ?? null,
+            lifecycle_state: lifecycleState,
+            created_at: now,
+            updated_at: now,
+            unlinked_at: lifecycleState === "unlinked" ? now : null,
+            deactivated_at: lifecycleState === "deactivated" ? now : null,
+            deleted_at: lifecycleState === "deleted" ? now : null,
+        },
+        conflict: {
+            action: "update",
+            target: ["provider", "external_user_id"],
+            update: {
+                account_id: accountId,
+                display_name: displayName,
+                profile_image_url: session.profileImageUrl ?? null,
+                lifecycle_state: lifecycleState,
+                updated_at: now,
+                unlinked_at: lifecycleState === "unlinked" ? now : null,
+                deactivated_at: lifecycleState === "deactivated" ? now : null,
+                deleted_at: lifecycleState === "deleted" ? now : null,
+            },
+        },
+    });
+
+    return { accountId, displayName, lifecycleState };
+}
+
+async function readIdentityAccountId(
+    dbExecutor: DbExecutor,
+    provider: string,
+    externalUserId: string,
+): Promise<string | null> {
+    const result = await dbExecutor.executeCommand({
+        option: "SELECT",
+        table: "auth_identities",
+        columns: ["account_id"],
+        where: [
+            { column: "provider", value: provider },
+            { column: "external_user_id", value: externalUserId },
+        ],
+        limit: 1,
+    });
+    const accountId = String(result.rows?.[0]?.account_id ?? "").trim();
+    return accountId || null;
+}
+
+async function touchExternalAccountLastLogin(
+    dbExecutor: DbExecutor,
+    accountId: string,
+): Promise<void> {
+    const now = new Date().toISOString();
+    await dbExecutor.executeCommand({
+        option: "UPDATE",
+        table: "accounts",
+        set: {
+            last_login: now,
+            updated_at: now,
+        },
+        where: [{ column: "id", value: accountId }],
+    });
+}
+
+async function unlinkExternalIdentity(
+    dbExecutor: DbExecutor,
+    accountId: string,
+    provider: string,
+): Promise<{ unlinked: boolean; accountDisabled: boolean }> {
+    const now = new Date().toISOString();
+    const existing = await dbExecutor.executeCommand({
+        option: "SELECT",
+        table: "auth_identities",
+        columns: ["id", "lifecycle_state", "unlinked_at"],
+        where: [
+            { column: "account_id", value: accountId },
+            { column: "provider", value: provider },
+        ],
+        limit: 1,
+    });
+    if (!existing.rows?.[0]?.id) {
+        return {
+            unlinked: false,
+            accountDisabled: false,
+        };
+    }
+    const currentLifecycleState = normalizeLifecycleState(
+        existing.rows?.[0]?.lifecycle_state,
+    );
+    let nextLifecycleState: ExternalLifecycleState = "unlinked";
+    if (
+        currentLifecycleState === "deleted" ||
+        currentLifecycleState === "deactivated"
+    ) {
+        nextLifecycleState = currentLifecycleState;
+    }
+    await dbExecutor.executeCommand({
+        option: "UPDATE",
+        table: "auth_identities",
+        set: {
+            lifecycle_state: nextLifecycleState,
+            unlinked_at:
+                nextLifecycleState === "unlinked"
+                    ? now
+                    : (existing.rows?.[0]?.unlinked_at ?? null),
+            updated_at: now,
+        },
+        where: [
+            { column: "account_id", value: accountId },
+            { column: "provider", value: provider },
+        ],
+    });
+    const identityRows = await dbExecutor.executeCommand({
+        option: "SELECT",
+        table: "auth_identities",
+        columns: ["provider", "lifecycle_state"],
+        where: [{ column: "account_id", value: accountId }],
+    });
+    const hasOtherActiveIdentity = (identityRows.rows ?? []).some((row) => {
+        const rowProvider = String(row.provider ?? "");
+        const rowLifecycleState = normalizeLifecycleState(row.lifecycle_state);
+        return rowProvider !== provider && rowLifecycleState === "active";
+    });
+    if (!hasOtherActiveIdentity) {
+        await dbExecutor.executeCommand({
+            option: "UPDATE",
+            table: "accounts",
+            set: {
+                enabled: false,
+                updated_at: now,
+            },
+            where: [{ column: "id", value: accountId }],
+        });
+    }
+    return {
+        unlinked: true,
+        accountDisabled: !hasOtherActiveIdentity,
+    };
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
@@ -125,10 +365,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterCount: authGateway.listAdapters().length,
     });
 
+    for (const adapterInfo of authGateway.listAdapters()) {
+        const adapter = authGateway.getAdapter(adapterInfo.id);
+        adapter?.registerRoutes?.({
+            registerRoute: (handler) => {
+                ctx.routeRegistry.register(handler, "auth");
+            },
+        });
+    }
+
     ctx.routeRegistry.register(
         createAuthGatewayRoutes(
             authGateway,
             accountStore,
+            dbExecutor,
             ctx.capabilities,
             ctx.log,
         ),
@@ -145,7 +395,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.3.2",
+        version: "1.6.0",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -187,6 +437,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 function createAuthGatewayRoutes(
     authGateway: CoreAuthGateway,
     accountStore: AuthAccountStore,
+    dbExecutor: DbExecutor,
     capabilities: CapabilityStore,
     log?: GatewayBootstrapContext["log"],
 ) {
@@ -460,6 +711,137 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
+            if (session.provider !== "local") {
+                const linkedAccountId = await readIdentityAccountId(
+                    dbExecutor,
+                    session.provider,
+                    session.externalUserId,
+                );
+                const getPublicRegistrationEnabled = capabilities.get<
+                    () => boolean
+                >("registration:public:isEnabled");
+                const publicRegistrationEnabled = Boolean(
+                    getPublicRegistrationEnabled?.(),
+                );
+                const registrationRequestByIdentity = capabilities.get<
+                    (input: {
+                        provider: string;
+                        externalUserId: string;
+                    }) => Promise<{
+                        status: "pending" | "approved" | "rejected";
+                    } | null>
+                >("registration:requests:getByIdentity");
+                const existingRequest = await registrationRequestByIdentity?.({
+                    provider: session.provider,
+                    externalUserId: session.externalUserId,
+                });
+                if (existingRequest?.status === "pending") {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "registration_pending_approval",
+                                message:
+                                    "Your registration request is pending admin approval",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                if (existingRequest?.status === "rejected") {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "registration_request_rejected",
+                                message:
+                                    "Your registration request was rejected by an admin",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                if (
+                    !linkedAccountId &&
+                    !publicRegistrationEnabled &&
+                    existingRequest?.status !== "approved"
+                ) {
+                    const submitRegistrationRequest = capabilities.get<
+                        (input: {
+                            provider: string;
+                            externalUserId: string;
+                            requestedAccountId: string;
+                            requestedDisplayName: string;
+                            requestedEmail?: string;
+                            requestedProfileImageUrl?: string;
+                        }) => Promise<{ id: string }>
+                    >("registration:requests:submit");
+                    if (!submitRegistrationRequest) {
+                        res.writeHead(503, {
+                            "content-type": "application/json",
+                        });
+                        res.end(
+                            JSON.stringify({
+                                error: {
+                                    code: "registration_unavailable",
+                                    message:
+                                        "Registration requests are unavailable",
+                                },
+                            }),
+                        );
+                        return true;
+                    }
+                    await submitRegistrationRequest({
+                        provider: session.provider,
+                        externalUserId: session.externalUserId,
+                        requestedAccountId: session.accountId,
+                        requestedDisplayName:
+                            session.displayName ?? session.accountId,
+                        requestedEmail: session.email,
+                        requestedProfileImageUrl: session.profileImageUrl,
+                    });
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "registration_pending_approval",
+                                message:
+                                    "Your registration request is pending admin approval",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+            }
+            const syncedSession = await syncExternalIdentity(
+                dbExecutor,
+                session,
+                log,
+            );
+            if (syncedSession.lifecycleState !== "active") {
+                revokeAccessTokensForSubject(syncedSession.accountId);
+                log?.(
+                    "warn",
+                    "Blocked login for non-active external identity.",
+                    {
+                        ...logMeta,
+                        accountId: syncedSession.accountId,
+                        provider: session.provider,
+                        lifecycleState: syncedSession.lifecycleState,
+                    },
+                );
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "account_inactive",
+                            message:
+                                "This account is unavailable due to provider lifecycle state",
+                        },
+                    }),
+                );
+                return true;
+            }
             let role = resolveRole(session.role, session.isAdmin);
             const profileStore = capabilities.get<{
                 getProfile(
@@ -468,7 +850,7 @@ function createAuthGatewayRoutes(
             }>("social:profileStore");
             if (profileStore) {
                 const existingProfile = await profileStore
-                    .getProfile(session.accountId)
+                    .getProfile(syncedSession.accountId)
                     .catch(() => null);
                 if (existingProfile?.role === "owner") {
                     role = "owner";
@@ -483,33 +865,46 @@ function createAuthGatewayRoutes(
                     ? parsedTtlSeconds
                     : 43200;
             const apiToken = issueAccessToken(
-                session.accountId,
+                syncedSession.accountId,
                 role,
                 accessTokenTtlSeconds,
             );
             const localAdapter = authGateway.getLocalAdapter();
-            if (localAdapter) {
-                await localAdapter
-                    .updateLastLogin(session.accountId)
-                    .catch(() => undefined);
+            if (session.provider === "local") {
+                if (localAdapter) {
+                    await localAdapter
+                        .updateLastLogin(syncedSession.accountId)
+                        .catch(() => undefined);
+                }
+            } else {
+                await touchExternalAccountLastLogin(
+                    dbExecutor,
+                    syncedSession.accountId,
+                ).catch(() => undefined);
             }
             const createProfile = capabilities.get<
                 (
                     accountId: string,
                     handle: string,
                     role?: string,
+                    displayName?: string,
                 ) => Promise<void>
             >("profile:createProfile");
-            await createProfile?.(session.accountId, session.accountId, role);
+            await createProfile?.(
+                syncedSession.accountId,
+                syncedSession.accountId,
+                role,
+                syncedSession.displayName,
+            );
             const isFounder = await accountStore
-                .isFounder(session.accountId)
+                .isFounder(syncedSession.accountId)
                 .catch((error) => {
                     ctx.log?.(
                         "warn",
                         "Failed to resolve founder status during login.",
                         {
                             component: "auth-gateway",
-                            accountId: session.accountId,
+                            accountId: syncedSession.accountId,
                             error:
                                 error instanceof Error
                                     ? error.message
@@ -533,7 +928,7 @@ function createAuthGatewayRoutes(
                 : false;
             log?.("info", "Login succeeded.", {
                 ...logMeta,
-                accountId: session.accountId,
+                accountId: syncedSession.accountId,
                 provider: session.provider,
                 role,
                 requiresUserValidation,
@@ -549,14 +944,92 @@ function createAuthGatewayRoutes(
             res.end(
                 JSON.stringify({
                     data: {
-                        accountId: session.accountId,
-                        displayName: session.accountId,
+                        accountId: syncedSession.accountId,
+                        displayName: syncedSession.displayName,
                         provider: session.provider,
                         role,
                         isFounder,
+                        profileImageUrl: session.profileImageUrl ?? null,
                         token: apiToken,
                         userValidationMode: securitySettings.userValidationMode,
                         requiredUserValidation: requiresUserValidation,
+                    },
+                }),
+            );
+            return true;
+        }
+
+        const unlinkMatch = url.pathname.match(
+            /^\/api\/v1\/auth\/providers\/([^/]+)\/unlink$/,
+        );
+        if (unlinkMatch && req.method === "POST") {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const provider = decodeURIComponent(unlinkMatch[1]);
+            if (provider === "local") {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "unsupported_provider",
+                            message:
+                                "Local authentication cannot be unlinked; use password reset or account deletion instead",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const unlinkResult = await unlinkExternalIdentity(
+                dbExecutor,
+                claims.sub,
+                provider,
+            );
+            if (!unlinkResult.unlinked) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Linked provider identity not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const cookieToken = extractCookieToken(req);
+            if (cookieToken) {
+                revokeAccessToken(cookieToken);
+            }
+            const bearerToken = extractBearerToken(req);
+            if (bearerToken && bearerToken !== cookieToken) {
+                revokeAccessToken(bearerToken);
+            }
+            const revokedTokenCount = revokeAccessTokensForSubject(claims.sub);
+            log?.(
+                "info",
+                "Unlinked external auth provider identity and disabled account.",
+                {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    provider,
+                    revokedTokenCount,
+                    accountDisabled: unlinkResult.accountDisabled,
+                },
+            );
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "set-cookie": buildAccessTokenCookie(
+                    "",
+                    0,
+                    shouldSetSecureCookie(req),
+                ),
+            });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        unlinked: true,
+                        provider,
+                        accountDisabled: unlinkResult.accountDisabled,
                     },
                 }),
             );
@@ -750,6 +1223,16 @@ function createAdapterAdminRoutes(
                         data: storedConfig,
                         schema,
                         requiredFields,
+                        managedRedirectPath:
+                            adapter.getManagedRedirectPath?.() ?? null,
+                        managedRedirectUrl: (() => {
+                            const managedRedirectPath =
+                                adapter.getManagedRedirectPath?.() ?? "";
+                            if (!managedRedirectPath) {
+                                return null;
+                            }
+                            return resolveAbsoluteUrl(req, managedRedirectPath);
+                        })(),
                     }),
                 );
                 return true;

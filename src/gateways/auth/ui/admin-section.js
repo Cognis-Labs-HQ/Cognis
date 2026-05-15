@@ -83,8 +83,31 @@ export function createAdminSection({
         );
         const configPayload = configRes.ok ? await configRes.json() : {};
         const storedConfig = configPayload.data ?? {};
+        const managedRedirectPath =
+            typeof configPayload.managedRedirectPath === "string"
+                ? configPayload.managedRedirectPath.trim()
+                : "";
+        const managedRedirectUrlFromApi =
+            typeof configPayload.managedRedirectUrl === "string"
+                ? configPayload.managedRedirectUrl.trim()
+                : "";
+        const managedRedirectUrl = managedRedirectUrlFromApi
+            ? managedRedirectUrlFromApi
+            : managedRedirectPath
+              ? new URL(managedRedirectPath, window.location.origin).toString()
+              : "";
 
         function renderConfigForm() {
+            const managedRedirectNoticeHtml = managedRedirectUrl
+                ? `
+            <div class="auth-config-field-row">
+              <span class="auth-config-label">${escapeHtml(i18n.t("gateway.auth.managed_callback.title"))}</span>
+              <div>
+                <p>${escapeHtml(i18n.t("gateway.auth.managed_callback.body"))}</p>
+                <code>${escapeHtml(managedRedirectUrl)}</code>
+              </div>
+            </div>`
+                : "";
             const fields = schema
                 .map((field) => {
                     const currentVal = storedConfig[field.key] ?? "";
@@ -133,7 +156,7 @@ export function createAdminSection({
                 })
                 .join("");
 
-            return `<form class="auth-config-form" autocomplete="off">${fields}</form>`;
+            return `<form class="auth-config-form" autocomplete="off">${managedRedirectNoticeHtml}${fields}</form>`;
         }
 
         let formEl = null;

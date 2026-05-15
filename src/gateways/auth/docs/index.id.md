@@ -62,6 +62,7 @@ Capability yang disediakan:
 | `POST` | `/api/v1/auth/register`                      | Mendaftar akun lokal baru secara mandiri    | Tidak diperlukan |
 | `POST` | `/api/v1/auth/login`                         | Autentikasi; mengembalikan token Bearer     | Tidak diperlukan |
 | `POST` | `/api/v1/auth/verify`                        | Verifikasi kata sandi pengguna saat ini     | Pengguna         |
+| `GET`  | `/auth/line/callback`                        | Endpoint callback LINE yang dikelola Cognis | Tidak diperlukan |
 | `GET`  | `/api/v1/gateways/auth/adapters`             | Daftar semua adapter autentikasi terdaftar  | Admin            |
 | `GET`  | `/api/v1/gateways/auth/adapters/:id/config`  | Mendapatkan skema konfigurasi untuk adapter | Admin            |
 | `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Memperbarui konfigurasi untuk adapter       | Admin            |

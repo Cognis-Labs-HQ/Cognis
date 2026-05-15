@@ -54,12 +54,50 @@ export interface RegistrationPublicAdapter {
     }>;
 }
 
+export interface RegistrationRequestRecord {
+    id: string;
+    provider: string;
+    externalUserId: string;
+    requestedAccountId: string;
+    requestedDisplayName: string;
+    requestedEmail?: string;
+    requestedProfileImageUrl?: string;
+    status: "pending" | "approved" | "rejected";
+    createdAt: string;
+    reviewedAt?: string | null;
+    reviewedByAccountId?: string | null;
+}
+
+export interface RegistrationRequestAdapter {
+    submitRequest(input: {
+        provider: string;
+        externalUserId: string;
+        requestedAccountId: string;
+        requestedDisplayName: string;
+        requestedEmail?: string;
+        requestedProfileImageUrl?: string;
+    }): Promise<RegistrationRequestRecord>;
+    listRequests(filter?: {
+        status?: "pending" | "approved" | "rejected";
+    }): Promise<RegistrationRequestRecord[]>;
+    reviewRequest(input: {
+        requestId: string;
+        status: "approved" | "rejected";
+        reviewedByAccountId: string;
+    }): Promise<RegistrationRequestRecord | null>;
+    getRequestByIdentity(input: {
+        provider: string;
+        externalUserId: string;
+    }): Promise<RegistrationRequestRecord | null>;
+}
+
 export interface RegistrationGatewayAdapter {
     id: string;
     name: string;
     defaultEnabled?: boolean;
     invite?: RegistrationInviteAdapter;
     public?: RegistrationPublicAdapter;
+    request?: RegistrationRequestAdapter;
 }
 
 export interface RegistrationAdapterInfo {
@@ -78,6 +116,7 @@ export class CoreRegistrationGateway {
     private readonly enabledAdapters = new Set<string>();
     private inviteAdapterId: string | null = null;
     private publicAdapterId: string | null = null;
+    private requestAdapterId: string | null = null;
 
     constructor(private readonly db: DbExecutor) {}
 
@@ -103,6 +142,7 @@ export class CoreRegistrationGateway {
         }
         if (adapter.invite) this.inviteAdapterId = adapter.id;
         if (adapter.public) this.publicAdapterId = adapter.id;
+        if (adapter.request) this.requestAdapterId = adapter.id;
     }
 
     async discoverAdapters(
@@ -196,6 +236,14 @@ export class CoreRegistrationGateway {
         );
     }
 
+    isRequestEnabled(): boolean {
+        return Boolean(
+            this.requestAdapterId &&
+            this.enabledAdapters.has(this.requestAdapterId) &&
+            this.adapters.get(this.requestAdapterId)?.request,
+        );
+    }
+
     async issueInvite(input: {
         inviterAccountId: string;
         inviterDisplayName: string;
@@ -251,6 +299,46 @@ export class CoreRegistrationGateway {
         return adapter.register(input);
     }
 
+    async submitRequest(input: {
+        provider: string;
+        externalUserId: string;
+        requestedAccountId: string;
+        requestedDisplayName: string;
+        requestedEmail?: string;
+        requestedProfileImageUrl?: string;
+    }) {
+        const adapter = this.getRequestAdapter();
+        if (!adapter) throw new Error("request_disabled");
+        return adapter.submitRequest(input);
+    }
+
+    async listRequests(filter?: {
+        status?: "pending" | "approved" | "rejected";
+    }) {
+        const adapter = this.getRequestAdapter();
+        if (!adapter) return [];
+        return adapter.listRequests(filter);
+    }
+
+    async reviewRequest(input: {
+        requestId: string;
+        status: "approved" | "rejected";
+        reviewedByAccountId: string;
+    }) {
+        const adapter = this.getRequestAdapter();
+        if (!adapter) throw new Error("request_disabled");
+        return adapter.reviewRequest(input);
+    }
+
+    async getRequestByIdentity(input: {
+        provider: string;
+        externalUserId: string;
+    }) {
+        const adapter = this.getRequestAdapter();
+        if (!adapter) return null;
+        return adapter.getRequestByIdentity(input);
+    }
+
     private getInviteAdapter(): RegistrationInviteAdapter | null {
         if (!this.inviteAdapterId) return null;
         if (!this.enabledAdapters.has(this.inviteAdapterId)) return null;
@@ -261,6 +349,12 @@ export class CoreRegistrationGateway {
         if (!this.publicAdapterId) return null;
         if (!this.enabledAdapters.has(this.publicAdapterId)) return null;
         return this.adapters.get(this.publicAdapterId)?.public ?? null;
+    }
+
+    private getRequestAdapter(): RegistrationRequestAdapter | null {
+        if (!this.requestAdapterId) return null;
+        if (!this.enabledAdapters.has(this.requestAdapterId)) return null;
+        return this.adapters.get(this.requestAdapterId)?.request ?? null;
     }
 
     private async saveAdapterEnabled(

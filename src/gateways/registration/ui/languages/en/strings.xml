@@ -1,3 +1,17 @@
 <resources>
   <string name="gateway.registration.no_tokens">No registration tokens have been issued.</string>
+  <string name="gateway.registration.no_requests">No registration requests have been submitted.</string>
+  <string name="gateway.registration.request.page_subtitle">Review external and manual registration requests before account activation.</string>
+  <string name="gateway.registration.request.provider">Provider</string>
+  <string name="gateway.registration.request.external_user_id">External User ID</string>
+  <string name="gateway.registration.request.account_id">Account ID</string>
+  <string name="gateway.registration.request.display_name">Display Name</string>
+  <string name="gateway.registration.request.created_at">Requested At</string>
+  <string name="gateway.registration.request.status.pending">Pending</string>
+  <string name="gateway.registration.request.status.approved">Approved</string>
+  <string name="gateway.registration.request.status.rejected">Rejected</string>
+  <string name="gateway.registration.request.approve">Approve</string>
+  <string name="gateway.registration.request.reject">Reject</string>
+  <string name="gateway.registration.request.review_saved">Registration request reviewed.</string>
+  <string name="gateway.registration.request.review_failed">Failed to review registration request.</string>
 </resources>

@@ -1,3 +1,5 @@
 <resources>
   <string name="gateway.auth.no_providers">認証アダプターが設定されていません。</string>
+  <string name="gateway.auth.managed_callback.title">管理された Callback URL</string>
+  <string name="gateway.auth.managed_callback.body">この Cognis 管理の Callback URL をプロバイダーコンソールで使用し、別の公開コールバックが必要でない限り、同じ URL を `redirectUri` として保存してください。</string>
 </resources>

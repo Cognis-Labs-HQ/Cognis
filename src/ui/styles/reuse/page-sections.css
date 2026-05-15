@@ -40,6 +40,11 @@
     gap: 4px;
 }
 
+.provider-popup-field__label {
+    display: inline-flex;
+    align-items: center;
+}
+
 .provider-popup-field input,
 .provider-popup-field select {
     width: 100%;

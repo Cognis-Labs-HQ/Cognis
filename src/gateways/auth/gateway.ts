@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
 import type { LocalAccountStore } from "./reuse/local-account-store.js";
 
@@ -8,6 +9,9 @@ export interface AuthContext {
     provider: string;
     externalUserId: string;
     email?: string;
+    displayName?: string;
+    profileImageUrl?: string;
+    lifecycleState?: "active" | "unlinked" | "deactivated" | "deleted";
     isAdmin?: boolean;
     role?: string;
 }
@@ -20,9 +24,20 @@ export interface AuthGateway {
 export interface AuthConfigField {
     key: string;
     label: string;
+    hint?: string;
     type: "text" | "password" | "number" | "boolean";
     required: boolean;
     envVar?: string;
+}
+
+export type AuthAdapterRouteHandler = (
+    req: IncomingMessage,
+    res: ServerResponse,
+    url: URL,
+) => Promise<boolean>;
+
+export interface AuthAdapterRouteContext {
+    registerRoute(handler: AuthAdapterRouteHandler): void;
 }
 
 export interface AuthProviderAdapter {
@@ -33,6 +48,8 @@ export interface AuthProviderAdapter {
     ): Promise<AuthContext | null>;
     getConfigSchema(): AuthConfigField[];
     configure(config: Record<string, unknown>): void;
+    getManagedRedirectPath?(): string | null;
+    registerRoutes?(context: AuthAdapterRouteContext): void;
 }
 
 export interface AdapterInfo {
@@ -43,6 +60,7 @@ export interface AdapterInfo {
     config: Record<string, unknown>;
     schema: AuthConfigField[];
     requires?: string[];
+    managedRedirectPath?: string;
 }
 
 export class CoreAuthGateway {
@@ -84,6 +102,48 @@ export class CoreAuthGateway {
                     notNull: true,
                     default: "{}",
                 },
+            ],
+        });
+        await this.db.ensureTable({
+            name: "auth_identities",
+            columns: [
+                {
+                    name: "id",
+                    type: "text",
+                    notNull: true,
+                    primaryKey: true,
+                },
+                { name: "account_id", type: "text", notNull: true },
+                { name: "provider", type: "text", notNull: true },
+                { name: "external_user_id", type: "text", notNull: true },
+                { name: "display_name", type: "text" },
+                { name: "profile_image_url", type: "text" },
+                {
+                    name: "lifecycle_state",
+                    type: "text",
+                    notNull: true,
+                    default: "active",
+                },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+                {
+                    name: "updated_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+                { name: "unlinked_at", type: "timestamp" },
+                { name: "deactivated_at", type: "timestamp" },
+                { name: "deleted_at", type: "timestamp" },
+            ],
+            uniqueKeys: [["provider", "external_user_id"]],
+            indexes: [
+                { columns: ["account_id"] },
+                { columns: ["account_id", "provider"] },
             ],
         });
     }
@@ -267,6 +327,8 @@ export class CoreAuthGateway {
                 locked: adapter.id === "local" || undefined,
                 config: {},
                 schema: adapter.getConfigSchema(),
+                managedRedirectPath:
+                    adapter.getManagedRedirectPath?.() ?? undefined,
                 ...(requires && requires.length > 0 ? { requires } : {}),
             };
         });

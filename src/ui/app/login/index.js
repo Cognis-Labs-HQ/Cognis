@@ -14,6 +14,10 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
+import {
+    initiateLineOAuthRedirect,
+    openLineEmailDisclosurePopup,
+} from "../../reuse/line-oauth.js";
 
 /**
  * Mounts the login page into the provided root element.
@@ -49,6 +53,10 @@ export async function mount(root) {
             session_expired: "ui.app.login.reason.session_expired",
             account_disabled: "ui.app.login.reason.account_disabled",
             account_deleted: "ui.app.login.reason.account_deleted",
+            line_cancelled: "ui.app.login.reason.line_cancelled",
+            line_error: "ui.app.login.reason.line_error",
+            line_pending_approval: "ui.app.login.reason.line_pending_approval",
+            line_rejected: "ui.app.login.reason.line_rejected",
         };
         const reasonKey = keyByReason[loginReason];
         if (!reasonKey) return;
@@ -119,6 +127,22 @@ export async function mount(root) {
                         .t("ui.app.login.sso.login_with")
                         .replace("{provider}", method.name);
                     btn.addEventListener("click", async () => {
+                        if (method.id === "line") {
+                            const lineDisclosureAction =
+                                await openLineEmailDisclosurePopup({
+                                    i18n,
+                                    openPopup,
+                                    escapeHtml,
+                                });
+                            if (lineDisclosureAction !== "confirm") {
+                                return;
+                            }
+                            await initiateLineOAuthRedirect({
+                                i18n,
+                                showToast,
+                            });
+                            return;
+                        }
                         if (providerInput) providerInput.value = method.id;
                         document.querySelector("#login-form")?.requestSubmit();
                     });
@@ -137,6 +161,23 @@ export async function mount(root) {
         if (!response.ok) return [];
         const payload = await response.json();
         return Array.isArray(payload?.data) ? payload.data : [];
+    }
+
+    function resolveLoginErrorMessage(errorPayload) {
+        const errorCode = String(errorPayload?.code ?? "");
+        const errorKeyByCode = {
+            registration_pending_approval:
+                "ui.app.login.error.registration_pending_approval",
+            registration_request_rejected:
+                "ui.app.login.error.registration_request_rejected",
+            registration_unavailable:
+                "ui.app.login.error.registration_unavailable",
+        };
+        const mappedKey = errorKeyByCode[errorCode];
+        if (mappedKey) {
+            return i18n.t(mappedKey);
+        }
+        return errorPayload?.message || i18n.t("ui.app.login.error.generic");
     }
 
     async function promptRequiredEmailAddress() {
@@ -426,9 +467,9 @@ export async function mount(root) {
                                 window.location.href = "/dashboard";
                                 return;
                             }
-                            const errorMsg =
-                                body?.error?.message ||
-                                i18n.t("ui.app.login.error.generic");
+                            const errorMsg = resolveLoginErrorMessage(
+                                body?.error,
+                            );
                             showToast(errorMsg, { variant: "error" });
                         });
                 },

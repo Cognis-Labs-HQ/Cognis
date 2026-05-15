@@ -1,3 +1,17 @@
 <resources>
   <string name="gateway.registration.no_tokens">Belum ada token registrasi yang diterbitkan.</string>
+  <string name="gateway.registration.no_requests">Belum ada permintaan registrasi yang diajukan.</string>
+  <string name="gateway.registration.request.page_subtitle">Tinjau permintaan registrasi eksternal dan manual sebelum aktivasi akun.</string>
+  <string name="gateway.registration.request.provider">Penyedia</string>
+  <string name="gateway.registration.request.external_user_id">ID Pengguna Eksternal</string>
+  <string name="gateway.registration.request.account_id">ID Akun</string>
+  <string name="gateway.registration.request.display_name">Nama Tampilan</string>
+  <string name="gateway.registration.request.created_at">Diajukan Pada</string>
+  <string name="gateway.registration.request.status.pending">Menunggu</string>
+  <string name="gateway.registration.request.status.approved">Disetujui</string>
+  <string name="gateway.registration.request.status.rejected">Ditolak</string>
+  <string name="gateway.registration.request.approve">Setujui</string>
+  <string name="gateway.registration.request.reject">Tolak</string>
+  <string name="gateway.registration.request.review_saved">Permintaan registrasi telah ditinjau.</string>
+  <string name="gateway.registration.request.review_failed">Gagal meninjau permintaan registrasi.</string>
 </resources>

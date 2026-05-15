@@ -1,3 +1,5 @@
 <resources>
   <string name="gateway.auth.no_providers">Tidak ada adaptor autentikasi yang dikonfigurasi.</string>
+  <string name="gateway.auth.managed_callback.title">URL Callback Terkelola</string>
+  <string name="gateway.auth.managed_callback.body">Gunakan URL callback yang dikelola Cognis ini di konsol provider Anda dan simpan URL yang sama sebagai `redirectUri`, kecuali Anda memerlukan callback publik yang berbeda.</string>
 </resources>

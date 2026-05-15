@@ -116,3 +116,41 @@ test("typing showcase keeps each full message visible for one minute before dele
         /for \(\s*let charIndex = 0;[\s\S]*?window\.setTimeout\(resolve,\s*85\),[\s\S]*?window\.setTimeout\(resolve,\s*60000\),[\s\S]*?for \(\s*let charIndex = sample\.length;/m,
     );
 });
+
+test("login page maps pending registration outcomes to localized toast keys", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/login/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /registration_pending_approval[\s\S]*ui\.app\.login\.error\.registration_pending_approval/m,
+    );
+    assert.match(
+        source,
+        /registration_request_rejected[\s\S]*ui\.app\.login\.error\.registration_request_rejected/m,
+    );
+    assert.match(
+        source,
+        /registration_unavailable[\s\S]*ui\.app\.login\.error\.registration_unavailable/m,
+    );
+});
+
+test("login page shows LINE disclosure popup before LINE SSO submit", () => {
+    const loginSource = readFileSync(
+        resolve(ROOT, "src/ui/app/login/index.js"),
+        "utf8",
+    );
+    const lineOauthSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/line-oauth.js"),
+        "utf8",
+    );
+
+    assert.match(loginSource, /method\.id === "line"/);
+    assert.match(loginSource, /openLineEmailDisclosurePopup/);
+    assert.match(lineOauthSource, /ui\.app\.login\.line_disclosure\.title/);
+    assert.match(lineOauthSource, /ui\.app\.login\.line_disclosure\.body/);
+    assert.match(lineOauthSource, /ui\.app\.login\.line_disclosure\.confirm/);
+    assert.match(lineOauthSource, /ui\.app\.login\.line_disclosure\.cancel/);
+});
