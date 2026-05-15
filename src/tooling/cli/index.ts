@@ -24,6 +24,18 @@ interface CommandSpec {
 const registry = new Map<string, CommandSpec>();
 const FIELD_EMPTY_PLACEHOLDER = "—";
 
+class ApiRequestError extends Error {
+    constructor(
+        readonly status: number,
+        readonly statusText: string,
+        readonly payload: unknown,
+    ) {
+        super(
+            `API request failed (${status} ${statusText}): ${typeof payload === "string" ? payload : JSON.stringify(payload)}`,
+        );
+    }
+}
+
 function inferSection(name: string): string {
     if (name.startsWith("user:")) return "User";
     if (name.startsWith("system:")) return "System";
@@ -90,11 +102,8 @@ async function apiRequest(
         ? await response.json()
         : await response.text();
 
-    if (!response.ok) {
-        throw new Error(
-            `API request failed (${response.status} ${response.statusText}): ${typeof payload === "string" ? payload : JSON.stringify(payload)}`,
-        );
-    }
+    if (!response.ok)
+        throw new ApiRequestError(response.status, response.statusText, payload);
 
     return payload;
 }
@@ -280,6 +289,25 @@ function mergePayloadFields(
             ? (payload as Record<string, unknown>)
             : {};
     return { ...fields, ...base };
+}
+
+async function ensureUserExists(
+    apiBaseUrl: string,
+    getApiToken: () => Promise<string>,
+    username: string,
+) {
+    try {
+        await apiGet(
+            apiBaseUrl,
+            `/api/v1/users/${encodeURIComponent(username)}/info`,
+            await getApiToken(),
+        );
+    } catch (error) {
+        if (error instanceof ApiRequestError && error.status === 404) {
+            throw new Error(`User "${username}" not found.`);
+        }
+        throw error;
+    }
 }
 
 function normalizeResponse(payload: unknown) {
@@ -498,6 +526,22 @@ export function formatCommandOutput(
     const spec = registry.get(commandName);
     if (spec?.render) return spec.render(payload);
     return formatStructured(payload);
+}
+
+export async function executeRegisteredCommand(
+    command: string,
+    args: string[],
+    options: { apiBaseUrl: string; getApiToken: () => Promise<string> },
+): Promise<unknown> {
+    const spec = registry.get(command);
+    if (!spec) {
+        throw new Error(`Unknown command: ${command}`);
+    }
+    return spec.handler({
+        args,
+        apiBaseUrl: options.apiBaseUrl,
+        getApiToken: options.getApiToken,
+    });
 }
 
 function printCommandGroupHelp(commandGroupName: string): boolean {
@@ -811,6 +855,7 @@ register(
             ["username", "role"],
             "cognisctl user:role <username> <role>",
         );
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}/role`,
@@ -838,6 +883,7 @@ register(
             ["username", "password"],
             "cognisctl user:set-password <username> <password>",
         );
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}/password`,
@@ -859,6 +905,7 @@ register(
     async ({ args, apiBaseUrl, getApiToken }) => {
         const [username] = args;
         requireArgs(args, ["username"], "cognisctl user:disable <username>");
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}/disable`,
@@ -882,6 +929,7 @@ register(
     async ({ args, apiBaseUrl, getApiToken }) => {
         const [username] = args;
         requireArgs(args, ["username"], "cognisctl user:enable <username>");
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}/enable`,
@@ -912,6 +960,7 @@ register(
         if (value !== "true" && value !== "false") {
             throw new Error("isFounder must be true or false");
         }
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}/isfounder`,
@@ -949,6 +998,7 @@ register(
     async ({ args, apiBaseUrl, getApiToken }) => {
         const [username] = args;
         requireArgs(args, ["username"], "cognisctl user:delete <username>");
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiRequest(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}`,
@@ -972,6 +1022,7 @@ register(
             ["username"],
             "cognisctl user:preferences:clear <username>",
         );
+        await ensureUserExists(apiBaseUrl, getApiToken, username);
         const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/users/${encodeURIComponent(username)}/preferences/clear`,
@@ -1059,7 +1110,10 @@ async function main() {
         process.exit(1);
     }
 
-    const result = await spec.handler({ args, apiBaseUrl, getApiToken });
+    const result = await executeRegisteredCommand(command, args, {
+        apiBaseUrl,
+        getApiToken,
+    });
     if (result !== undefined) {
         printOutput(formatCommandOutput(command, result));
     }
