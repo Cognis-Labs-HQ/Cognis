@@ -100,6 +100,10 @@ export function createModuleExtensionRoutes(
         );
     }
 
+    function normalizeModuleRelativePath(relativePath: string): string {
+        return relativePath.replace(/^\.\//, "");
+    }
+
     async function refresh() {
         const nextHandlers: RouteHandler[] = [];
         const manifests = await runtime.listManifests();
@@ -129,7 +133,7 @@ export function createModuleExtensionRoutes(
                 }
 
                 if (manifest.ui?.navbarPlugin) {
-                    const scriptUrl = `/static/modules/${manifest.id}/${manifest.ui.navbarPlugin.replace(/^\.\//, "")}`;
+                    const scriptUrl = `/static/modules/${manifest.id}/${normalizeModuleRelativePath(manifest.ui.navbarPlugin)}`;
                     const moduleIdCapture = manifest.id;
                     options.uiRegistry.registerNavbarPlugin({
                         scriptUrl,
@@ -143,7 +147,7 @@ export function createModuleExtensionRoutes(
                 }
 
                 if (manifest.ui?.adminSection) {
-                    const scriptUrl = `/static/modules/${manifest.id}/${manifest.ui.adminSection.replace(/^\.\//, "")}`;
+                    const scriptUrl = `/static/modules/${manifest.id}/${normalizeModuleRelativePath(manifest.ui.adminSection)}`;
                     const stringsBaseUrl = `/static/modules/${manifest.id}/languages`;
                     options.uiRegistry.registerAdminSection({
                         id: `module:${manifest.id}`,

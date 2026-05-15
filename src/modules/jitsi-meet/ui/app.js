@@ -8,8 +8,7 @@ import { createPageComposer } from "/static/reuse/page-composer.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { navigateTo } from "/static/reuse/app-router.js";
-
-const MODULE_STRING_BASE_URL = "/static/modules/jitsi-meet/languages";
+import { MODULE_STRING_BASE_URL } from "/static/modules/jitsi-meet/reuse/paths.js";
 
 let i18n = null;
 let root = null;

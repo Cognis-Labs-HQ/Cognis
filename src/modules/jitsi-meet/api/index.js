@@ -81,15 +81,7 @@ export function registerApiRoutes(router) {
                   process.env.COGNIS_SESSION_SECRET,
           )
         : null;
-    const schemaReady = store
-        ? store.ensureSchema().catch((error) => {
-              console.error(
-                  "[jitsi-meet]:schema-init-failed",
-                  error instanceof Error ? error.message : String(error),
-              );
-              throw error;
-          })
-        : Promise.resolve();
+    const schemaReady = store ? store.ensureSchema() : Promise.resolve();
 
     async function ensureStoreReady() {
         if (!store) {

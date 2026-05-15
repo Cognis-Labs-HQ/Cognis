@@ -1,4 +1,5 @@
 import { createI18n, readPreferredLanguages } from "/static/reuse/i18n.js";
+import { MODULE_STRING_BASE_URL } from "/static/modules/jitsi-meet/reuse/paths.js";
 
 const LINK_ATTR = "data-jitsi-meet-link";
 
@@ -11,7 +12,7 @@ async function ensureMeetingsLink() {
 
     const i18n = await createI18n({
         preferredLanguages: readPreferredLanguages(),
-        componentStringBaseUrls: ["/static/modules/jitsi-meet/languages"],
+        componentStringBaseUrls: [MODULE_STRING_BASE_URL],
     });
 
     const meetingsLink = document.createElement("a");
