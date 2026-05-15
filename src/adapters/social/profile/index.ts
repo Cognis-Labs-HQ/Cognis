@@ -180,6 +180,15 @@ export async function bootstrapSocialAdapter(
 
     const fileGateway =
         ctx.capabilities.get<FileStorageGateway>("file:gateway");
+    const onMessagesProfileChanged = ctx.capabilities.get<
+        (input: {
+            accountId: string;
+            handle?: string | null;
+            displayName?: string | null;
+            displayNameChanged?: boolean;
+            avatarChanged?: boolean;
+        }) => Promise<void>
+    >("social:messages:onProfileChanged");
 
     ctx.registerRoute(
         createProfileRoutes(
@@ -187,6 +196,7 @@ export async function bootstrapSocialAdapter(
             fileGateway ?? undefined,
             () => ctx.isGatewayEnabled(),
             ctx.log as never,
+            onMessagesProfileChanged ?? undefined,
         ),
         "social",
     );

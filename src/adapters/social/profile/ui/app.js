@@ -30,6 +30,7 @@ let composer = null;
 let elements = [];
 let bannerMenuCloseHandler = null;
 let canMessageTarget = false;
+let canRequestMessageTarget = false;
 let relationship = null;
 
 function toAbsoluteUrl(url) {
@@ -331,7 +332,7 @@ function renderHero() {
                 : ""
         }
         ${
-            !isBlocked && canMessageTarget
+            !isBlocked && (canMessageTarget || canRequestMessageTarget)
                 ? `<button
                     class="profile-message-button"
                     type="button"
@@ -970,6 +971,7 @@ async function doBlockUser() {
     if (!res.ok) return;
     relationship = { ...(relationship ?? {}), blocked: true, following: false };
     canMessageTarget = false;
+    canRequestMessageTarget = false;
     [followers, following] = await Promise.all([
         loadFollowers(profile?.handle),
         loadFollowing(profile?.handle),
@@ -1002,6 +1004,7 @@ async function doUnblockUser() {
     );
     if (!res.ok) return;
     relationship = { ...(relationship ?? {}), blocked: false };
+    canRequestMessageTarget = Boolean(relationship?.canSendMessageRequest);
     composer.refresh(elements);
 }
 
@@ -1020,6 +1023,12 @@ async function doOpenMessageRoom() {
         }
         const payload = await res.json();
         const roomId = payload?.data?.id;
+        if (!roomId && payload?.data?.requiresApproval) {
+            showToast(i18n.t("module.social.messages.request_sent"), {
+                variant: "info",
+            });
+            return;
+        }
         if (!roomId) return;
         await navigateTo(`/messages/${encodeURIComponent(roomId)}`);
     } catch {
@@ -1161,7 +1170,9 @@ export async function mount(rootEl, { signal } = {}) {
     }
 
     root = rootEl;
-    i18n = await createI18n();
+    i18n = await createI18n({
+        componentStringBaseUrls: ["/static/adapters/social/messages/languages"],
+    });
     applyDocumentTitle(i18n, "ui.page.title.profile");
 
     urlHandle = decodeURIComponent(
@@ -1200,6 +1211,7 @@ export async function mount(rootEl, { signal } = {}) {
     ]);
 
     canMessageTarget = false;
+    canRequestMessageTarget = false;
     relationship = null;
     if (!isOwnProfile && profile?.handle) {
         try {
@@ -1210,9 +1222,13 @@ export async function mount(rootEl, { signal } = {}) {
                 const payload = await res.json();
                 relationship = payload?.data ?? null;
                 canMessageTarget = Boolean(relationship?.canMessage);
+                canRequestMessageTarget = Boolean(
+                    relationship?.canSendMessageRequest,
+                );
             }
         } catch {
             canMessageTarget = false;
+            canRequestMessageTarget = false;
             relationship = null;
         }
     }

@@ -24,24 +24,23 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 ## Adapters
 
-| Component             | Path                                  | Version |
-| --------------------- | ------------------------------------- | ------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`           | `0.1.0` |
-| Internal Notification | `src/adapters/notify/internal/`       | `0.5.2` |
-| Local File Storage    | `src/adapters/file/local/`            | `0.1.0` |
-| Local Auth            | `src/adapters/auth/local/`            | `0.2.2` |
-| LINE Messenger Auth   | `src/adapters/auth/line/`             | `0.2.0` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`           | `0.2.1` |
-| MariaDB Database      | `src/adapters/db/mariadb/`            | `0.2.1` |
-| SQLite Database       | `src/adapters/db/sqlite/`             | `0.2.1` |
-| Registration Invite   | `src/adapters/registration/invite/`   | `0.1.1` |
-| Registration Token    | `src/adapters/registration/token/`    | `0.1.1` |
-| Public Registration   | `src/adapters/registration/public/`   | `0.1.0` |
-| Registration Requests | `src/adapters/registration/requests/` | `0.1.0` |
-| Profile (Social)      | `src/adapters/social/profile/`        | `1.0.1` |
-| Messages (Social)     | `src/adapters/social/messages/`       | `1.0.2` |
-| Classes (Study)       | `src/adapters/study/classes/`         | `1.3.1` |
-| Japanese (Study)      | `src/adapters/study/japanese/`        | `1.0.0` |
+| Component             | Path                                | Version |
+| --------------------- | ----------------------------------- | ------- |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.1.0` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.2` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.2.2` |
+| LINE Messenger Auth   | `src/adapters/auth/line/`           | `0.2.0` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.2.1` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.2.1` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.2.1` |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.1` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.3` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.2.0` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.1` |
+| Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
 ## Gateways
 

@@ -48,6 +48,7 @@ export interface MemberRow {
     joinedAt: string;
     lastReadAt: string | null;
     muted: boolean;
+    archived: boolean;
 }
 
 export interface MessageRow {
@@ -61,6 +62,37 @@ export interface MessageRow {
     /** Client GCM auth tag (hex). May be empty when included in ciphertext. */
     authTag: string;
     contentType: string;
+    createdAt: string;
+}
+
+export type MessageRequestStatus =
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "cancelled";
+
+export interface MessageRequestRow {
+    id: string;
+    fromAccountId: string;
+    toAccountId: string;
+    note: string | null;
+    status: MessageRequestStatus;
+    roomId: string | null;
+    createdAt: string;
+    respondedAt: string | null;
+}
+
+export interface TypingRow {
+    chatroomId: string;
+    accountId: string;
+    typingUntil: string;
+}
+
+export interface MessageReactionRow {
+    chatroomId: string;
+    messageId: string;
+    accountId: string;
+    emoji: string;
     createdAt: string;
 }
 
@@ -105,6 +137,12 @@ export class DbMessagesStore {
                 },
                 { name: "last_read_at", type: "timestamp" },
                 { name: "muted", type: "integer", notNull: true, default: 0 },
+                {
+                    name: "archived",
+                    type: "integer",
+                    notNull: true,
+                    default: 0,
+                },
             ],
             primaryKey: ["chatroom_id", "account_id"],
             indexes: [
@@ -159,6 +197,79 @@ export class DbMessagesStore {
                 },
             ],
         });
+
+        await this.db.ensureTable({
+            name: "chat_message_requests",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                { name: "from_account_id", type: "text", notNull: true },
+                { name: "to_account_id", type: "text", notNull: true },
+                { name: "note", type: "text" },
+                {
+                    name: "status",
+                    type: "text",
+                    notNull: true,
+                    default: "pending",
+                },
+                { name: "room_id", type: "text" },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+                { name: "responded_at", type: "timestamp" },
+            ],
+            indexes: [
+                {
+                    columns: ["from_account_id", "to_account_id", "status"],
+                    name: "idx_msg_requests_pair_status",
+                },
+                {
+                    columns: ["to_account_id", "status", "created_at"],
+                    name: "idx_msg_requests_incoming",
+                },
+            ],
+        });
+
+        await this.db.ensureTable({
+            name: "chatroom_typing",
+            columns: [
+                { name: "chatroom_id", type: "text", notNull: true },
+                { name: "account_id", type: "text", notNull: true },
+                { name: "typing_until", type: "timestamp", notNull: true },
+            ],
+            primaryKey: ["chatroom_id", "account_id"],
+            indexes: [
+                {
+                    columns: ["chatroom_id", "typing_until"],
+                    name: "idx_chatroom_typing_room_until",
+                },
+            ],
+        });
+
+        await this.db.ensureTable({
+            name: "chat_message_reactions",
+            columns: [
+                { name: "chatroom_id", type: "text", notNull: true },
+                { name: "message_id", type: "text", notNull: true },
+                { name: "account_id", type: "text", notNull: true },
+                { name: "emoji", type: "text", notNull: true },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            primaryKey: ["message_id", "account_id", "emoji"],
+            indexes: [
+                {
+                    columns: ["chatroom_id", "message_id"],
+                    name: "idx_message_reactions_room_message",
+                },
+            ],
+        });
     }
 
     private rowToRoom(row: Record<string, unknown>): RoomRow {
@@ -181,6 +292,7 @@ export class DbMessagesStore {
             joinedAt: String(row.joined_at),
             lastReadAt: (row.last_read_at as string | null) ?? null,
             muted: Boolean(row.muted),
+            archived: Boolean(row.archived),
         };
     }
 
@@ -193,6 +305,39 @@ export class DbMessagesStore {
             iv: String(row.iv),
             authTag: String(row.auth_tag ?? ""),
             contentType: String(row.content_type ?? "text/plain"),
+            createdAt: String(row.created_at),
+        };
+    }
+
+    private rowToMessageRequest(
+        row: Record<string, unknown>,
+    ): MessageRequestRow {
+        return {
+            id: String(row.id),
+            fromAccountId: String(row.from_account_id),
+            toAccountId: String(row.to_account_id),
+            note: (row.note as string | null) ?? null,
+            status: row.status as MessageRequestStatus,
+            roomId: (row.room_id as string | null) ?? null,
+            createdAt: String(row.created_at),
+            respondedAt: (row.responded_at as string | null) ?? null,
+        };
+    }
+
+    private rowToTyping(row: Record<string, unknown>): TypingRow {
+        return {
+            chatroomId: String(row.chatroom_id),
+            accountId: String(row.account_id),
+            typingUntil: String(row.typing_until),
+        };
+    }
+
+    private rowToReaction(row: Record<string, unknown>): MessageReactionRow {
+        return {
+            chatroomId: String(row.chatroom_id),
+            messageId: String(row.message_id),
+            accountId: String(row.account_id),
+            emoji: String(row.emoji),
             createdAt: String(row.created_at),
         };
     }
@@ -387,6 +532,34 @@ export class DbMessagesStore {
         });
     }
 
+    async appendRoomEvent(input: {
+        roomId: string;
+        actorId: string;
+        eventType:
+            | "member_joined"
+            | "member_left"
+            | "profile_display_name_changed"
+            | "profile_avatar_changed";
+        subjectAccountId: string;
+        subjectHandle?: string | null;
+        subjectDisplayName?: string | null;
+    }): Promise<MessageRow> {
+        const payload = JSON.stringify({
+            eventType: input.eventType,
+            subjectAccountId: input.subjectAccountId,
+            subjectHandle: input.subjectHandle ?? null,
+            subjectDisplayName: input.subjectDisplayName ?? null,
+        });
+        return this.appendMessage({
+            roomId: input.roomId,
+            senderId: input.actorId,
+            ciphertext: payload,
+            iv: "",
+            authTag: "",
+            contentType: "application/vnd.cognis.room-event+json",
+        });
+    }
+
     async listMessages(
         roomId: string,
         limit: number,
@@ -411,6 +584,16 @@ export class DbMessagesStore {
             limit,
         });
         return (result.rows ?? []).map((row) => this.rowToMessage(row));
+    }
+
+    async getMessage(messageId: string): Promise<MessageRow | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_messages",
+            where: [{ column: "id", value: messageId }],
+            limit: 1,
+        });
+        return result.rows?.[0] ? this.rowToMessage(result.rows[0]) : null;
     }
 
     async markRead(roomId: string, accountId: string): Promise<void> {
@@ -467,6 +650,316 @@ export class DbMessagesStore {
                 { column: "account_id", value: accountId },
             ],
         });
+    }
+
+    async setArchived(
+        roomId: string,
+        accountId: string,
+        archived: boolean,
+    ): Promise<void> {
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "chatroom_members",
+            set: { archived: archived ? 1 : 0 },
+            where: [
+                { column: "chatroom_id", value: roomId },
+                { column: "account_id", value: accountId },
+            ],
+        });
+    }
+
+    async findPendingMessageRequest(
+        fromAccountId: string,
+        toAccountId: string,
+    ): Promise<MessageRequestRow | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_message_requests",
+            where: [
+                { column: "from_account_id", value: fromAccountId },
+                { column: "to_account_id", value: toAccountId },
+                { column: "status", value: "pending" },
+            ],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+            limit: 1,
+        });
+        return result.rows?.[0]
+            ? this.rowToMessageRequest(result.rows[0])
+            : null;
+    }
+
+    async createMessageRequest(input: {
+        fromAccountId: string;
+        toAccountId: string;
+        note?: string | null;
+        roomId?: string | null;
+    }): Promise<MessageRequestRow> {
+        const id = randomUUID();
+        const nowIso = new Date().toISOString();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "chat_message_requests",
+            values: {
+                id,
+                from_account_id: input.fromAccountId,
+                to_account_id: input.toAccountId,
+                note: input.note ?? null,
+                status: "pending",
+                room_id: input.roomId ?? null,
+                created_at: nowIso,
+            },
+        });
+        const created = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_message_requests",
+            where: [{ column: "id", value: id }],
+            limit: 1,
+        });
+        return this.rowToMessageRequest(created.rows![0]);
+    }
+
+    async getMessageRequest(id: string): Promise<MessageRequestRow | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_message_requests",
+            where: [{ column: "id", value: id }],
+            limit: 1,
+        });
+        return result.rows?.[0]
+            ? this.rowToMessageRequest(result.rows[0])
+            : null;
+    }
+
+    async getPendingRoomMessageRequest(
+        roomId: string,
+    ): Promise<MessageRequestRow | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_message_requests",
+            where: [
+                { column: "room_id", value: roomId },
+                { column: "status", value: "pending" },
+            ],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+            limit: 1,
+        });
+        return result.rows?.[0]
+            ? this.rowToMessageRequest(result.rows[0])
+            : null;
+    }
+
+    async getPendingIncomingRoomMessageRequest(
+        roomId: string,
+        toAccountId: string,
+    ): Promise<MessageRequestRow | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_message_requests",
+            where: [
+                { column: "room_id", value: roomId },
+                { column: "to_account_id", value: toAccountId },
+                { column: "status", value: "pending" },
+            ],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+            limit: 1,
+        });
+        return result.rows?.[0]
+            ? this.rowToMessageRequest(result.rows[0])
+            : null;
+    }
+
+    async listIncomingMessageRequests(
+        accountId: string,
+    ): Promise<MessageRequestRow[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_message_requests",
+            where: [
+                { column: "to_account_id", value: accountId },
+                { column: "status", value: "pending" },
+            ],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+        });
+        return (result.rows ?? []).map((row) => this.rowToMessageRequest(row));
+    }
+
+    async updateMessageRequestStatus(
+        id: string,
+        status: MessageRequestStatus,
+        roomId: string | null = null,
+    ): Promise<void> {
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "chat_message_requests",
+            set: {
+                status,
+                room_id: roomId,
+                responded_at: new Date().toISOString(),
+            },
+            where: [{ column: "id", value: id }],
+        });
+    }
+
+    async approvePendingRequestsBetween(
+        accountA: string,
+        accountB: string,
+        roomId: string,
+    ): Promise<void> {
+        const nowIso = new Date().toISOString();
+        for (const [fromAccountId, toAccountId] of [
+            [accountA, accountB],
+            [accountB, accountA],
+        ]) {
+            await this.db.executeCommand({
+                option: "UPDATE",
+                table: "chat_message_requests",
+                set: {
+                    status: "approved",
+                    room_id: roomId,
+                    responded_at: nowIso,
+                },
+                where: [
+                    { column: "from_account_id", value: fromAccountId },
+                    { column: "to_account_id", value: toAccountId },
+                    { column: "status", value: "pending" },
+                ],
+            });
+        }
+    }
+
+    async hasApprovedMessageRequestBetween(
+        accountA: string,
+        accountB: string,
+    ): Promise<boolean> {
+        for (const [fromAccountId, toAccountId] of [
+            [accountA, accountB],
+            [accountB, accountA],
+        ]) {
+            const result = await this.db.executeCommand({
+                option: "SELECT",
+                table: "chat_message_requests",
+                where: [
+                    { column: "from_account_id", value: fromAccountId },
+                    { column: "to_account_id", value: toAccountId },
+                    { column: "status", value: "approved" },
+                ],
+                orderBy: [{ column: "created_at", direction: "DESC" }],
+                limit: 1,
+            });
+            if (result.rows?.[0]) return true;
+        }
+        return false;
+    }
+
+    async setTyping(
+        roomId: string,
+        accountId: string,
+        typing: boolean,
+        ttlSeconds = 8,
+    ): Promise<void> {
+        if (!typing) {
+            await this.db.executeCommand({
+                option: "DELETE",
+                table: "chatroom_typing",
+                where: [
+                    { column: "chatroom_id", value: roomId },
+                    { column: "account_id", value: accountId },
+                ],
+            });
+            return;
+        }
+        const untilIso = new Date(Date.now() + ttlSeconds * 1000).toISOString();
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "chatroom_typing",
+            values: {
+                chatroom_id: roomId,
+                account_id: accountId,
+                typing_until: untilIso,
+            },
+            conflict: {
+                action: "update",
+                target: ["chatroom_id", "account_id"],
+            },
+        });
+    }
+
+    async listActiveTypers(roomId: string): Promise<TypingRow[]> {
+        const nowIso = new Date().toISOString();
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chatroom_typing",
+            where: [
+                { column: "chatroom_id", value: roomId },
+                { column: "typing_until", operator: ">", value: nowIso },
+            ],
+            orderBy: [{ column: "typing_until", direction: "DESC" }],
+        });
+        return (result.rows ?? []).map((row) => this.rowToTyping(row));
+    }
+
+    async setMessageReaction(
+        roomId: string,
+        messageId: string,
+        accountId: string,
+        emoji: string,
+        active: boolean,
+    ): Promise<void> {
+        if (!active) {
+            await this.db.executeCommand({
+                option: "DELETE",
+                table: "chat_message_reactions",
+                where: [
+                    { column: "chatroom_id", value: roomId },
+                    { column: "message_id", value: messageId },
+                    { column: "account_id", value: accountId },
+                    { column: "emoji", value: emoji },
+                ],
+            });
+            return;
+        }
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "chat_message_reactions",
+            values: {
+                chatroom_id: roomId,
+                message_id: messageId,
+                account_id: accountId,
+                emoji,
+                created_at: new Date().toISOString(),
+            },
+            conflict: { action: "ignore" },
+        });
+    }
+
+    async hasMessageReaction(
+        roomId: string,
+        messageId: string,
+        accountId: string,
+        emoji: string,
+    ): Promise<boolean> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_message_reactions",
+            where: [
+                { column: "chatroom_id", value: roomId },
+                { column: "message_id", value: messageId },
+                { column: "account_id", value: accountId },
+                { column: "emoji", value: emoji },
+            ],
+            limit: 1,
+        });
+        return Boolean(result.rows?.[0]);
+    }
+
+    async listMessageReactions(roomId: string): Promise<MessageReactionRow[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_message_reactions",
+            where: [{ column: "chatroom_id", value: roomId }],
+            orderBy: [{ column: "created_at", direction: "ASC" }],
+        });
+        return (result.rows ?? []).map((row) => this.rowToReaction(row));
     }
 
     async storeWrappedRoomKey(

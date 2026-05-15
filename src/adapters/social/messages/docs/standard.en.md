@@ -14,30 +14,53 @@ All endpoints are prefixed with `/api/v1/messages`. Authentication is
 required for everything except `GET /messages/ping`, which is a lightweight
 probe used by the UI to detect whether the adapter is loaded.
 
-| Method | Path                                        | Description                                                                             |
-| ------ | ------------------------------------------- | --------------------------------------------------------------------------------------- |
-| GET    | `/messages/ping`                            | Adapter availability probe (returns `{ ready: true }`).                                 |
-| GET    | `/messages/users/lookup?q=…`                | Search profiles for messaging recipients (handle match).                                |
-| GET    | `/messages/rooms`                           | List rooms for current user (with last message preview and unread count).               |
-| POST   | `/messages/rooms`                           | Create a DM or group; body lists handles. Auto-returns the existing DM when one exists. |
-| GET    | `/messages/rooms/:id`                       | Room metadata + members.                                                                |
-| GET    | `/messages/rooms/:id/key`                   | Fetch unwrapped per-room AES-GCM key (members only).                                    |
-| GET    | `/messages/rooms/:id/messages?before&limit` | Paginated message history.                                                              |
-| POST   | `/messages/rooms/:id/messages`              | Append message (`ciphertext`, `iv`, optional `authTag`).                                |
-| POST   | `/messages/rooms/:id/read`                  | Mark room read up to now.                                                               |
-| POST   | `/messages/rooms/:id/members`               | Add a member (owner/admin only).                                                        |
-| DELETE | `/messages/rooms/:id/members/:handle`       | Remove a member (self-leave or owner kick).                                             |
+| Method | Path                                                | Description                                                                             |
+| ------ | --------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| GET    | `/messages/ping`                                    | Adapter availability probe (returns `{ ready: true }`).                                 |
+| GET    | `/messages/users/lookup?q=…`                        | Search profiles for messaging recipients (handle match).                                |
+| GET    | `/messages/rooms`                                   | List rooms for current user (with last message preview and unread count).               |
+| POST   | `/messages/rooms`                                   | Create a DM or group; body lists handles. DM may open in pending-request mode.          |
+| GET    | `/messages/requests`                                | List pending incoming message requests for current user.                                |
+| POST   | `/messages/requests/:id/approve`                    | Approve request and create/open the DM room.                                            |
+| POST   | `/messages/requests/:id/reject`                     | Reject a pending message request and remove the recipient from the pending DM room.     |
+| GET    | `/messages/rooms/:id`                               | Room metadata + members.                                                                |
+| GET    | `/messages/rooms/:id/key`                           | Fetch unwrapped per-room AES-GCM key (members only).                                    |
+| GET    | `/messages/rooms/:id/messages?before&limit`         | Paginated history (incoming pending-request recipients see no messages until approval). |
+| POST   | `/messages/rooms/:id/messages`                      | Append message (`ciphertext`, `iv`, optional `authTag`).                                |
+| POST   | `/messages/rooms/:id/messages/:messageId/reactions` | Toggle an emoji reaction for the message.                                               |
+| POST   | `/messages/rooms/:id/read`                          | Mark room read up to now.                                                               |
+| GET    | `/messages/rooms/:id/typing`                        | List active typers in the room (excluding requester).                                   |
+| POST   | `/messages/rooms/:id/typing`                        | Update typing state for the current member.                                             |
+| POST   | `/messages/rooms/:id/members`                       | Add a member (owner/admin only).                                                        |
+| DELETE | `/messages/rooms/:id/members/:handle`               | Remove a member (self-leave or owner kick).                                             |
 
 ## Eligibility
 
-A user **A** can message user **B** if and only if:
+A user **A** can open a direct room with user **B** when:
 
 1. Neither has blocked the other, AND
-2. (B follows A, OR B's `visibility >= community`, OR they share an existing chatroom).
+2. Both users are visible (not hidden), AND
+3. A follows B and B follows A.
+
+When the users are visible and unblocked but do not mutually follow each other,
+`POST /messages/rooms` returns `202` with room + request metadata, so the
+requester can enter the chat immediately. The recipient sees an approval banner
+in the room and cannot view pending messages until approving.
+
+Message requests are pair-scoped (user-to-user), not room-scoped: once a pair
+has an approved request history, future direct chats between the same two
+accounts can be created directly without requesting again, as long as neither
+account is blocked and both profiles remain visible.
+
+If a two-member chat is left by one participant, the remaining participant keeps
+the room in an archived state (shown in a dedicated archived sidebar section)
+and cannot send new messages from that archived room. Messaging the same user
+again creates a fresh direct room.
 
 The same predicate is exposed via the social gateway's
-`GET /api/v1/users/:handle/relationship` endpoint as the `canMessage` field,
-so the UI can show or hide the message icon on profile pages.
+`GET /api/v1/users/:handle/relationship` endpoint (`canMessage`,
+`canSendMessageRequest`, `requiresMessageRequest`) so the profile UI can decide
+whether to open a room immediately or send a message request.
 
 Block enforcement covers every entry point that touches another user:
 profile fetch, posts fetch, follow/followers, relationship endpoint, the
