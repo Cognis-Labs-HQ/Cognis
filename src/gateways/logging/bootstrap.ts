@@ -24,7 +24,7 @@ const LEVEL_PRIORITY: Record<LogLevel, number> = {
     error: 40,
 };
 
-function parseLevelFilter(value: string | null): LogLevel | null {
+function parseSeverityThreshold(value: string | null): LogLevel | null {
     if (!value || value === "all") return null;
     const levels = value
         .split(",")
@@ -33,12 +33,15 @@ function parseLevelFilter(value: string | null): LogLevel | null {
             ALLOWED_LEVELS.has(part as LogLevel),
         );
     if (!levels.length) return null;
-    return levels.reduce((lowestLevel, candidateLevel) => {
+    const [firstLevel, ...remainingLevels] = levels;
+    // When multiple severity values are provided, use the lowest-priority level
+    // as the threshold.
+    return remainingLevels.reduce((lowestLevel, candidateLevel) => {
         if (LEVEL_PRIORITY[candidateLevel] < LEVEL_PRIORITY[lowestLevel]) {
             return candidateLevel;
         }
         return lowestLevel;
-    });
+    }, firstLevel);
 }
 
 function parseKeywordFilter(value: string | null): string {
@@ -152,7 +155,7 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
         const claims = requireAuth(req, res, "admin");
         if (!claims) return true;
 
-        const severityThreshold = parseLevelFilter(
+        const severityThreshold = parseSeverityThreshold(
             url.searchParams.get("severity"),
         );
         const keyword = parseKeywordFilter(url.searchParams.get("keyword"));
