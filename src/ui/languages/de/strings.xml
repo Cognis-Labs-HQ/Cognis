@@ -169,6 +169,11 @@
   <string name="ui.app.login.not_registered.title">Noch nicht registriert?</string>
   <string name="ui.app.login.not_registered.body">Erstelle ein kostenloses Konto und leg noch heute los.</string>
   <string name="ui.app.login.not_registered.link">Jetzt anmelden!</string>
+  <string name="ui.app.login.line_disclosure.title">Hinweis zur Datenweitergabe bei LINE</string>
+  <string name="ui.app.login.line_disclosure.body">LINE verlangt, dass Cognis während der Anmeldung Ihre E-Mail-Adresse von LINE anfordert.</string>
+  <string name="ui.app.login.line_disclosure.body_followup">Wenn Sie fortfahren, stimmen Sie zu, dass LINE Ihre E-Mail-Adresse für die Kontoauthentifizierung und Registrierungsabläufe an Cognis weitergeben darf.</string>
+  <string name="ui.app.login.line_disclosure.confirm">Mit LINE fortfahren</string>
+  <string name="ui.app.login.line_disclosure.cancel">Abbrechen</string>
   <string name="ui.app.demo.switched">Demo: zur Sandbox-Seite gewechselt.</string>
   <string name="ui.app.demo.added">Demo: ein Lernfortschritts-Widget hinzugefügt.</string>
   <string name="ui.app.demo.tweaked">Demo: die erste Widget-Konfiguration angepasst.</string>

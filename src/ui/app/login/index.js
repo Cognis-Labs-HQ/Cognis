@@ -119,6 +119,13 @@ export async function mount(root) {
                         .t("ui.app.login.sso.login_with")
                         .replace("{provider}", method.name);
                     btn.addEventListener("click", async () => {
+                        if (method.id === "line") {
+                            const lineDisclosureAction =
+                                await openLineEmailDisclosurePopup();
+                            if (lineDisclosureAction !== "confirm") {
+                                return;
+                            }
+                        }
                         if (providerInput) providerInput.value = method.id;
                         document.querySelector("#login-form")?.requestSubmit();
                     });
@@ -128,6 +135,30 @@ export async function mount(root) {
         } catch {
             // Login methods unavailable — form works with local auth by default
         }
+    }
+
+    async function openLineEmailDisclosurePopup() {
+        return openPopup({
+            title: i18n.t("ui.app.login.line_disclosure.title"),
+            body: `
+      <p>${escapeHtml(i18n.t("ui.app.login.line_disclosure.body"))}</p>
+      <p>${escapeHtml(i18n.t("ui.app.login.line_disclosure.body_followup"))}</p>
+    `,
+            actions: [
+                {
+                    id: "confirm",
+                    label: i18n.t("ui.app.login.line_disclosure.confirm"),
+                    variant: "confirm",
+                },
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.app.login.line_disclosure.cancel"),
+                    variant: "cancel",
+                },
+            ],
+            variant: "warning",
+            maxWidth: "560px",
+        });
     }
 
     async function loadUserEmails(accountId) {

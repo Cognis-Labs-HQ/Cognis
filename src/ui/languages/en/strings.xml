@@ -169,6 +169,11 @@
   <string name="ui.app.login.not_registered.title">Not Registered?</string>
   <string name="ui.app.login.not_registered.body">Create a free account and get started today.</string>
   <string name="ui.app.login.not_registered.link">Sign Up!</string>
+  <string name="ui.app.login.line_disclosure.title">LINE Data Disclosure Notice</string>
+  <string name="ui.app.login.line_disclosure.body">LINE requires Cognis to request your email address from LINE during sign-in.</string>
+  <string name="ui.app.login.line_disclosure.body_followup">By continuing, you agree that your email address may be disclosed by LINE to Cognis for account authentication and registration workflows.</string>
+  <string name="ui.app.login.line_disclosure.confirm">Continue with LINE</string>
+  <string name="ui.app.login.line_disclosure.cancel">Cancel</string>
   <string name="ui.app.demo.switched">Demo: switched to sandbox page.</string>
   <string name="ui.app.demo.added">Demo: added a learning progress widget.</string>
   <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>

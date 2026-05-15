@@ -169,6 +169,11 @@
   <string name="ui.app.login.not_registered.title">まだ登録していませんか？</string>
   <string name="ui.app.login.not_registered.body">無料アカウントを作成して今日から始めましょう。</string>
   <string name="ui.app.login.not_registered.link">サインアップ！</string>
+  <string name="ui.app.login.line_disclosure.title">LINE データ開示のお知らせ</string>
+  <string name="ui.app.login.line_disclosure.body">LINE では、サインイン時に Cognis が LINE からメールアドレスを取得することが求められます。</string>
+  <string name="ui.app.login.line_disclosure.body_followup">続行すると、アカウント認証と登録フローのために、LINE から Cognis へメールアドレスが開示されることに同意したものとみなされます。</string>
+  <string name="ui.app.login.line_disclosure.confirm">LINE で続行</string>
+  <string name="ui.app.login.line_disclosure.cancel">キャンセル</string>
   <string name="ui.app.demo.switched">デモ: サンドボックスページに切り替えました。</string>
   <string name="ui.app.demo.added">デモ: 学習進捗ウィジェットを追加しました。</string>
   <string name="ui.app.demo.tweaked">デモ: 最初のウィジェット設定を調整しました。</string>

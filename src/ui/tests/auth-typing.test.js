@@ -136,3 +136,17 @@ test("login page maps pending registration outcomes to localized toast keys", ()
         /registration_unavailable[\s\S]*ui\.app\.login\.error\.registration_unavailable/m,
     );
 });
+
+test("login page shows LINE disclosure popup before LINE SSO submit", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/login/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /method\.id === "line"/);
+    assert.match(source, /openLineEmailDisclosurePopup/);
+    assert.match(source, /ui\.app\.login\.line_disclosure\.title/);
+    assert.match(source, /ui\.app\.login\.line_disclosure\.body/);
+    assert.match(source, /ui\.app\.login\.line_disclosure\.confirm/);
+    assert.match(source, /ui\.app\.login\.line_disclosure\.cancel/);
+});
