@@ -85,6 +85,8 @@ export async function initiateLineOAuthRedirect({
         }
         const initPayload = await initResponse.json();
         const lineInitData = initPayload.data;
+        // Prefer backend-resolved callbackUrl for reverse-proxy/public-host deployments.
+        // Fallback to managedRedirectPath + browser origin for backward compatibility.
         const redirectUri =
             String(lineInitData.callbackUrl ?? "").trim() ||
             new URL(

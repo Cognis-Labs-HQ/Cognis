@@ -14,7 +14,7 @@
 | 内部通知                   | `src/adapters/notify/internal/`       | `0.5.2`    |
 | ローカルファイルストレージ | `src/adapters/file/local/`            | `0.1.0`    |
 | ローカル認証               | `src/adapters/auth/local/`            | `0.2.2`    |
-| LINE Messenger 認証        | `src/adapters/auth/line/`             | `0.3.0`    |
+| LINE Messenger 認証        | `src/adapters/auth/line/`             | `0.4.0`    |
 | PostgreSQLデータベース     | `src/adapters/db/postgres/`           | `0.1.0`    |
 | MariaDBデータベース        | `src/adapters/db/mariadb/`            | `0.1.0`    |
 | 登録招待                   | `src/adapters/registration/invite/`   | `0.1.1`    |
