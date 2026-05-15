@@ -393,6 +393,7 @@
   <string name="ui.app.admin.logs.severity.info">Info</string>
   <string name="ui.app.admin.logs.severity.warn">Warnung</string>
   <string name="ui.app.admin.logs.severity.error">Fehler</string>
+  <string name="ui.app.admin.logs.severity.warn_error">Warnung + Fehler</string>
   <string name="ui.app.admin.logs.time_range.all">Gesamte Zeit</string>
   <string name="ui.app.admin.logs.time_range.5m">Letzte 5 Minuten</string>
   <string name="ui.app.admin.logs.time_range.15m">Letzte 15 Minuten</string>
