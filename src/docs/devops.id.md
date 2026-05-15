@@ -33,13 +33,13 @@ CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 
 ## Konfigurasi
 
-| Variabel               | Default      | Keterangan                                                    |
-| ---------------------- | ------------ | ------------------------------------------------------------- |
-| `DB_TYPE`              | `postgresql` | Backend database: `postgresql` atau `mariadb`                 |
-| `DATABASE_URL`         | —            | String koneksi untuk PostgreSQL atau MariaDB                  |
-| `LOG_LEVEL`            | `info`       | Filter tingkat keparahan dasar untuk `/api/v1/logging/stream` |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotasi file log aktif saat ukuran ini tercapai (byte)         |
-| `LOG_ROTATE_MAX_FILES` | `10`         | Jumlah arsip log hasil rotasi yang disimpan                   |
-| `LOG_ROTATE_COMPRESS`  | `true`       | Kompres log hasil rotasi dengan gzip (`.gz`)                  |
-| `PORT`                 | `3000`       | Port HTTP                                                     |
-| `COGNIS_SMTP_HOST`     | —            | Hostname server SMTP                                          |
+| Variabel               | Default      | Keterangan                                            |
+| ---------------------- | ------------ | ----------------------------------------------------- |
+| `DB_TYPE`              | `postgresql` | Backend database: `postgresql` atau `mariadb`         |
+| `DATABASE_URL`         | —            | String koneksi untuk PostgreSQL atau MariaDB          |
+| `LOG_LEVEL`            | `info`       | Verbositas stream log runtime                         |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotasi file log aktif saat ukuran ini tercapai (byte) |
+| `LOG_ROTATE_MAX_FILES` | `10`         | Jumlah arsip log hasil rotasi yang disimpan           |
+| `LOG_ROTATE_COMPRESS`  | `true`       | Kompres log hasil rotasi dengan gzip (`.gz`)          |
+| `PORT`                 | `3000`       | Port HTTP                                             |
+| `COGNIS_SMTP_HOST`     | —            | Hostname server SMTP                                  |

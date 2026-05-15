@@ -161,8 +161,10 @@ export class Logger {
         const line = `${serializeLogEntry(entry)}\n`;
         const run = async () => {
             await this.rotateIfNeeded(Buffer.byteLength(line, "utf8"));
-            writeConsoleLog(level, message, meta, this.consoleFormat);
             await this.fileAppend(this.filePath, line);
+            if (priorities[level] >= priorities[this.level]) {
+                writeConsoleLog(level, message, meta, this.consoleFormat);
+            }
         };
         const pending = this.writeQueue.then(run);
         this.writeQueue = pending.catch(() => undefined);
@@ -190,7 +192,8 @@ export class Logger {
             .toISOString()
             .replaceAll(":", "-")
             .replaceAll(".", "-");
-        const rotatedPath = `${this.filePath}.${timestamp}`;
+        const uniqueSuffix = process.hrtime.bigint().toString(36);
+        const rotatedPath = `${this.filePath}.${timestamp}-${uniqueSuffix}`;
         await mkdir(path.dirname(this.filePath), { recursive: true });
         await rename(this.filePath, rotatedPath);
         if (this.rotationOptions.compressRotated) {

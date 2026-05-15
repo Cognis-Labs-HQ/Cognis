@@ -4,7 +4,7 @@
 
 - Raised failed-login and noteworthy user account mutation logs to warning level.
 - Changed logging so all log levels are persisted to the log file.
-- Applied `LOG_LEVEL` as a baseline filter for the admin log stream.
+- Applied `LOG_LEVEL` as a filter for runtime log-stream output while persisting all levels to file.
 - Added backend log rotation with gzip compression for rotated archives.
 - Set the Administration logs priority filter default to warning.
 

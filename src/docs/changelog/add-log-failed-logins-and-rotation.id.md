@@ -4,7 +4,7 @@
 
 - Login gagal dan perubahan akun pengguna penting kini dicatat sebagai peringatan.
 - File log kini menyimpan semua level log.
-- `LOG_LEVEL` sekarang diterapkan sebagai filter dasar pada stream log admin.
+- `LOG_LEVEL` sekarang diterapkan sebagai filter pada stream log runtime sambil tetap menyimpan semua level ke file log.
 - Menambahkan rotasi log backend dengan kompresi gzip untuk arsip hasil rotasi.
 - Filter prioritas default pada UI log Administrasi diubah menjadi peringatan.
 

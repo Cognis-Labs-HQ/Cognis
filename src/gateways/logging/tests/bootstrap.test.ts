@@ -162,7 +162,7 @@ test("logging stream route returns filtered event stream logs", async () => {
     }
 });
 
-test("logging stream route applies LOG_LEVEL baseline filtering", async () => {
+test("logging stream route is not constrained by LOG_LEVEL", async () => {
     const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
     const logPath = path.join(tempRoot, "app.log");
     const previousLogFile = process.env.LOG_FILE;
@@ -205,7 +205,7 @@ test("logging stream route applies LOG_LEVEL baseline filtering", async () => {
 
         assert.equal(handled, true);
         assert.match(res.payload, /Error entry/);
-        assert.doesNotMatch(res.payload, /Informational entry/);
+        assert.match(res.payload, /Informational entry/);
 
         req.emit("close");
         res.emit("close");

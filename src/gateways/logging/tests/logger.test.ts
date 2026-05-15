@@ -82,7 +82,7 @@ test("Logger writes pretty console output and JSON file output", async () => {
     );
 });
 
-test("Logger writes console and file entries regardless of configured LOG_LEVEL", async () => {
+test("Logger filters console by LOG_LEVEL while persisting all levels to file", async () => {
     const stdoutWrites: string[] = [];
     const stderrWrites: string[] = [];
     const fileWrites: string[] = [];
@@ -111,17 +111,27 @@ test("Logger writes console and file entries regardless of configured LOG_LEVEL"
         await logger.info("User listing completed.", {
             component: "api-users",
         });
+        await logger.debug("Background detail.", {
+            component: "api-users",
+        });
     } finally {
         process.stdout.write = originalStdoutWrite;
         process.stderr.write = originalStderrWrite;
     }
 
-    assert.match(stdoutWrites.join(""), /INFO\s+User listing completed\./);
+    assert.doesNotMatch(
+        stdoutWrites.join(""),
+        /INFO\s+User listing completed\./,
+    );
+    assert.doesNotMatch(stdoutWrites.join(""), /DEBUG\s+Background detail\./);
     assert.equal(stderrWrites.length, 0);
-    assert.equal(fileWrites.length, 1);
-    const parsed = JSON.parse(fileWrites[0]);
-    assert.equal(parsed.level, "info");
-    assert.equal(parsed.message, "User listing completed.");
+    assert.equal(fileWrites.length, 2);
+    const infoEntry = JSON.parse(fileWrites[0]);
+    const debugEntry = JSON.parse(fileWrites[1]);
+    assert.equal(infoEntry.level, "info");
+    assert.equal(infoEntry.message, "User listing completed.");
+    assert.equal(debugEntry.level, "debug");
+    assert.equal(debugEntry.message, "Background detail.");
 });
 
 test("Logger rotates and compresses old log files", async () => {
@@ -142,8 +152,7 @@ test("Logger rotates and compresses old log files", async () => {
         const compressed = entries.filter(
             (entry) => entry.startsWith("app.log.") && entry.endsWith(".gz"),
         );
-        assert.ok(compressed.length >= 1);
-        assert.ok(compressed.length <= 2);
+        assert.equal(compressed.length, 2);
         const latestLog = await readFile(logPath, "utf8");
         assert.match(latestLog, /third entry/);
         for (const archiveName of compressed) {

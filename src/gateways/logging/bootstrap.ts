@@ -11,12 +11,8 @@ import {
 type LogLevel = "debug" | "info" | "warn" | "error";
 
 const ALLOWED_LEVELS = new Set<LogLevel>(["debug", "info", "warn", "error"]);
-const LEVEL_PRIORITIES: Record<LogLevel, number> = {
-    debug: 10,
-    info: 20,
-    warn: 30,
-    error: 40,
-};
+const DEFAULT_ROTATE_MAX_BYTES = 10 * 1024 * 1024;
+const DEFAULT_ROTATE_MAX_FILES = 10;
 const MAX_KEYWORD_LENGTH = 120;
 const MAX_SNAPSHOT_ENTRIES = 300;
 const STREAM_POLL_INTERVAL_MS = 1500;
@@ -81,16 +77,12 @@ function normalizeLogEntry(rawLine: string): Record<string, unknown> {
 
 function matchesFilters(
     entry: Record<string, unknown>,
-    minimumLevel: LogLevel,
     severities: Set<LogLevel> | null,
     keyword: string,
     timeRangeMs: number | null,
 ): boolean {
     const level = String(entry.level ?? "").toLowerCase() as LogLevel;
-    if (
-        !ALLOWED_LEVELS.has(level) ||
-        LEVEL_PRIORITIES[level] < LEVEL_PRIORITIES[minimumLevel]
-    ) {
+    if (!ALLOWED_LEVELS.has(level)) {
         return false;
     }
     if (severities && !severities.has(level)) {
@@ -133,11 +125,7 @@ async function readFileChunk(
     }
 }
 
-function createLoggingRoutes(
-    filePath: string,
-    minimumLevel: LogLevel,
-    log?: BootstrapLog,
-) {
+function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -161,15 +149,7 @@ function createLoggingRoutes(
         let closed = false;
 
         const pushEntry = (entry: Record<string, unknown>) => {
-            if (
-                !matchesFilters(
-                    entry,
-                    minimumLevel,
-                    severities,
-                    keyword,
-                    timeRangeMs,
-                )
-            )
+            if (!matchesFilters(entry, severities, keyword, timeRangeMs))
                 return;
             writeSseEvent(res, "log", { id: seq++, ...entry });
         };
@@ -193,13 +173,7 @@ function createLoggingRoutes(
                     .filter((line) => line.length > 0)
                     .map((line) => normalizeLogEntry(line))
                     .filter((entry) =>
-                        matchesFilters(
-                            entry,
-                            minimumLevel,
-                            severities,
-                            keyword,
-                            timeRangeMs,
-                        ),
+                        matchesFilters(entry, severities, keyword, timeRangeMs),
                     );
                 for (const entry of entries.slice(-MAX_SNAPSHOT_ENTRIES)) {
                     writeSseEvent(res, "log", { id: seq++, ...entry });
@@ -343,21 +317,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const filePath = process.env.LOG_FILE ?? "/app/logs/app.log";
     const consoleFormat = process.env.LOG_FORMAT === "json" ? "json" : "pretty";
     const parsedRotateMaxBytes = Number.parseInt(
-        process.env.LOG_ROTATE_MAX_BYTES ?? "10485760",
+        process.env.LOG_ROTATE_MAX_BYTES ?? String(DEFAULT_ROTATE_MAX_BYTES),
         10,
     );
     const rotateMaxBytes =
         Number.isFinite(parsedRotateMaxBytes) && parsedRotateMaxBytes > 0
             ? parsedRotateMaxBytes
-            : 10485760;
+            : DEFAULT_ROTATE_MAX_BYTES;
     const parsedRotateMaxFiles = Number.parseInt(
-        process.env.LOG_ROTATE_MAX_FILES ?? "10",
+        process.env.LOG_ROTATE_MAX_FILES ?? String(DEFAULT_ROTATE_MAX_FILES),
         10,
     );
     const rotateMaxFiles =
         Number.isFinite(parsedRotateMaxFiles) && parsedRotateMaxFiles >= 0
             ? parsedRotateMaxFiles
-            : 10;
+            : DEFAULT_ROTATE_MAX_FILES;
     const rotateCompress =
         process.env.LOG_ROTATE_COMPRESS !== "0" &&
         process.env.LOG_ROTATE_COMPRESS !== "false";
@@ -384,10 +358,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             void logger.log(logLevel, message, meta);
         },
     );
-    ctx.routeRegistry.register(
-        createLoggingRoutes(filePath, level, log),
-        "logging",
-    );
+    ctx.routeRegistry.register(createLoggingRoutes(filePath, log), "logging");
 
     const uiDir = path.resolve(
         process.cwd(),
