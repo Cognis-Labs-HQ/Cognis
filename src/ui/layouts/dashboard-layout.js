@@ -501,12 +501,14 @@ export async function renderDashboardLayout(root, slots = {}) {
             toolbar.className = "floating-toolbar";
             toolbar.hidden = true;
             toolbar.innerHTML = slots.floatingToolbar;
-            if (footer && toolbar.parentElement !== existingShell) {
+            if (
+                footer &&
+                (toolbar.parentElement !== existingShell ||
+                    toolbar.nextElementSibling !== footer)
+            ) {
                 footer.before(toolbar);
             } else if (!footer && toolbar.parentElement !== existingShell) {
                 existingShell.append(toolbar);
-            } else if (footer && toolbar.nextElementSibling !== footer) {
-                footer.before(toolbar);
             }
         } else {
             floatingToolbar?.remove();
