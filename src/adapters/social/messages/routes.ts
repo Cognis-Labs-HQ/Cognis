@@ -29,8 +29,8 @@ type Dispatch = (e: DispatchEnvelope) => Promise<{ dispatched: string[] }>;
 
 /**
  * Messaging eligibility predicate: A may DM B iff
- *   not blocked in either direction, AND
- *   B has community visibility or B already follows A.
+ *   not blocked in either direction, both users are visible, AND
+ *   both users follow each other.
  */
 export async function canMessage(
     profileStore: DbProfileStore,
@@ -55,8 +55,37 @@ export async function canMessage(
     ) {
         return false;
     }
-    if (targetProfile.visibility === "community") return true;
-    return profileStore.isFollowing(toId, fromId);
+    const [aFollowsB, bFollowsA] = await Promise.all([
+        profileStore.isFollowing(fromId, toId),
+        profileStore.isFollowing(toId, fromId),
+    ]);
+    return aFollowsB && bFollowsA;
+}
+
+export async function canSendMessageRequest(
+    profileStore: DbProfileStore,
+    fromId: string,
+    toId: string,
+): Promise<boolean> {
+    if (fromId === toId) return false;
+    const [aBlockedB, bBlockedA] = await Promise.all([
+        profileStore.isBlocked(fromId, toId),
+        profileStore.isBlocked(toId, fromId),
+    ]);
+    if (aBlockedB || bBlockedA) return false;
+    const [requesterProfile, targetProfile] = await Promise.all([
+        profileStore.getProfile(fromId),
+        profileStore.getProfile(toId),
+    ]);
+    if (
+        !requesterProfile ||
+        !targetProfile ||
+        requesterProfile.visibility === "hidden" ||
+        targetProfile.visibility === "hidden"
+    ) {
+        return false;
+    }
+    return true;
 }
 
 function publicProfileSummary(profile: AccountProfile) {
@@ -144,16 +173,31 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 return true;
             }
             const candidates = await profileStore.searchProfiles(query, 10);
-            const results: ReturnType<typeof publicProfileSummary>[] = [];
+            const results: Array<
+                ReturnType<typeof publicProfileSummary> & {
+                    canDirectMessage: boolean;
+                    requiresApproval: boolean;
+                }
+            > = [];
             for (const profile of candidates) {
                 if (profile.accountId === accountId) continue;
                 if (profile.visibility === "hidden") continue;
-                const allowed = await canMessage(
+                const canDirectMessage = await canMessage(
                     profileStore,
                     accountId,
                     profile.accountId,
                 );
-                if (allowed) results.push(publicProfileSummary(profile));
+                const canRequestMessage = await canSendMessageRequest(
+                    profileStore,
+                    accountId,
+                    profile.accountId,
+                );
+                if (!canDirectMessage && !canRequestMessage) continue;
+                results.push({
+                    ...publicProfileSummary(profile),
+                    canDirectMessage,
+                    requiresApproval: !canDirectMessage,
+                });
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: results }));
@@ -217,12 +261,20 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             for (const handle of handles) {
                 const candidate = await profileStore.getProfileByHandle(handle);
                 if (!candidate || candidate.accountId === accountId) continue;
-                const allowed = await canMessage(
+                const canDirectMessage = await canMessage(
                     profileStore,
                     accountId,
                     candidate.accountId,
                 );
-                if (!allowed) {
+                const canRequestMessage = await canSendMessageRequest(
+                    profileStore,
+                    accountId,
+                    candidate.accountId,
+                );
+                if (
+                    !canDirectMessage &&
+                    (!canRequestMessage || handles.length > 1)
+                ) {
                     res.writeHead(403, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
@@ -250,15 +302,44 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             }
             const isDm = targets.length === 1 && body.kind !== "group";
             if (isDm) {
+                const targetId = targets[0].accountId;
                 const existing = await messagesStore.findDmBetween(
                     accountId,
-                    targets[0].accountId,
+                    targetId,
                 );
                 if (existing) {
                     res.writeHead(200, {
                         "content-type": "application/json",
                     });
                     res.end(JSON.stringify({ data: existing }));
+                    return true;
+                }
+                const canDirectMessage = await canMessage(
+                    profileStore,
+                    accountId,
+                    targetId,
+                );
+                if (!canDirectMessage) {
+                    const pending = await messagesStore.findPendingMessageRequest(
+                        accountId,
+                        targetId,
+                    );
+                    const request =
+                        pending ??
+                        (await messagesStore.createMessageRequest({
+                            fromAccountId: accountId,
+                            toAccountId: targetId,
+                        }));
+                    res.writeHead(202, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            data: {
+                                requiresApproval: true,
+                                requestId: request.id,
+                                status: request.status,
+                            },
+                        }),
+                    );
                     return true;
                 }
             }
@@ -276,19 +357,147 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 );
             }
             await messagesStore.generateAndStoreRoomKey(room.id);
+            if (isDm) {
+                await messagesStore.approvePendingRequestsBetween(
+                    accountId,
+                    targets[0].accountId,
+                    room.id,
+                );
+            }
             res.writeHead(201, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: room }));
+            return true;
+        }
+
+        // GET /messages/requests
+        if (url.pathname === "/api/v1/messages/requests" && req.method === "GET") {
+            const incoming = await messagesStore.listIncomingMessageRequests(
+                accountId,
+            );
+            const enriched = await Promise.all(
+                incoming.map(async (request) => {
+                    const requester = await profileStore.getProfile(
+                        request.fromAccountId,
+                    );
+                    return {
+                        ...request,
+                        requester: requester
+                            ? publicProfileSummary(requester)
+                            : null,
+                    };
+                }),
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: enriched }));
+            return true;
+        }
+
+        // POST /messages/requests/:id/(approve|reject)
+        const requestMatch = url.pathname.match(
+            /^\/api\/v1\/messages\/requests\/([^/]+)\/(approve|reject)$/,
+        );
+        if (requestMatch && req.method === "POST") {
+            const requestId = decodeURIComponent(requestMatch[1]);
+            const action = requestMatch[2];
+            const request = await messagesStore.getMessageRequest(requestId);
+            if (!request || request.toAccountId !== accountId) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Message request not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (request.status !== "pending") {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_state",
+                            message: "Message request already handled.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (action === "reject") {
+                await messagesStore.updateMessageRequestStatus(
+                    request.id,
+                    "rejected",
+                );
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { status: "rejected" } }));
+                return true;
+            }
+            const requestAllowed = await canSendMessageRequest(
+                profileStore,
+                request.fromAccountId,
+                request.toAccountId,
+            );
+            if (!requestAllowed) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message: "Cannot approve this request right now.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const existingRoom = await messagesStore.findDmBetween(
+                request.fromAccountId,
+                request.toAccountId,
+            );
+            const room =
+                existingRoom ??
+                (await messagesStore.createRoom(
+                    "dm",
+                    null,
+                    request.fromAccountId,
+                ));
+            if (!existingRoom) {
+                await messagesStore.addMember(
+                    room.id,
+                    request.fromAccountId,
+                    "owner",
+                );
+                await messagesStore.addMember(
+                    room.id,
+                    request.toAccountId,
+                    "member",
+                );
+                await messagesStore.generateAndStoreRoomKey(room.id);
+            }
+            await messagesStore.updateMessageRequestStatus(
+                request.id,
+                "approved",
+                room.id,
+            );
+            await messagesStore.approvePendingRequestsBetween(
+                request.fromAccountId,
+                request.toAccountId,
+                room.id,
+            );
+            res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: room }));
             return true;
         }
 
         // Match per-room paths.
         const roomMatch = url.pathname.match(
-            /^\/api\/v1\/messages\/rooms\/([^/]+)(?:\/([^/]+))?(?:\/([^/]+))?$/,
+            /^\/api\/v1\/messages\/rooms\/([^/]+)(?:\/([^/]+))?(?:\/([^/]+))?(?:\/([^/]+))?$/,
         );
         if (!roomMatch) return false;
         const roomId = roomMatch[1];
         const sub = roomMatch[2];
         const subArg = roomMatch[3];
+        const subArg2 = roomMatch[4];
 
         const room = await messagesStore.getRoom(roomId);
         if (!room) {
@@ -404,19 +613,89 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     limit,
                     before,
                 );
-                const enrichedMessages = await Promise.all(
-                    messages.map(async (message) => {
-                        const senderProfile = await profileStore.getProfile(
-                            message.senderId,
-                        );
-                        return {
-                            ...message,
-                            senderHandle: senderProfile?.handle ?? null,
-                            senderDisplayName:
-                                senderProfile?.displayName ?? null,
-                        };
-                    }),
+                const roomMembers = await messagesStore.listMembers(roomId);
+                const profilesByAccountId = new Map(
+                    await Promise.all(
+                        roomMembers.map(async (roomMember) => [
+                            roomMember.accountId,
+                            await profileStore.getProfile(roomMember.accountId),
+                        ]),
+                    ),
                 );
+                const reactionsByMessage = new Map<
+                    string,
+                    Map<
+                        string,
+                        {
+                            emoji: string;
+                            count: number;
+                            reactedByMe: boolean;
+                            reactedBy: Array<{
+                                accountId: string;
+                                handle: string | null;
+                                displayName: string | null;
+                            }>;
+                        }
+                    >
+                >();
+                const reactionRows = await messagesStore.listMessageReactions(roomId);
+                for (const reactionRow of reactionRows) {
+                    let emojiMap = reactionsByMessage.get(reactionRow.messageId);
+                    if (!emojiMap) {
+                        emojiMap = new Map();
+                        reactionsByMessage.set(reactionRow.messageId, emojiMap);
+                    }
+                    let entry = emojiMap.get(reactionRow.emoji);
+                    if (!entry) {
+                        entry = {
+                            emoji: reactionRow.emoji,
+                            count: 0,
+                            reactedByMe: false,
+                            reactedBy: [],
+                        };
+                        emojiMap.set(reactionRow.emoji, entry);
+                    }
+                    entry.count += 1;
+                    if (reactionRow.accountId === accountId) entry.reactedByMe = true;
+                    const reactorProfile = profilesByAccountId.get(
+                        reactionRow.accountId,
+                    );
+                    entry.reactedBy.push({
+                        accountId: reactionRow.accountId,
+                        handle: reactorProfile?.handle ?? null,
+                        displayName: reactorProfile?.displayName ?? null,
+                    });
+                }
+                const enrichedMessages = messages.map((message) => {
+                    const senderProfile = profilesByAccountId.get(message.senderId);
+                    const readBy = roomMembers
+                        .filter(
+                            (roomMember) =>
+                                roomMember.accountId !== message.senderId &&
+                                Boolean(roomMember.lastReadAt) &&
+                                String(roomMember.lastReadAt) >= message.createdAt,
+                        )
+                        .map((roomMember) => {
+                            const readerProfile = profilesByAccountId.get(
+                                roomMember.accountId,
+                            );
+                            return {
+                                accountId: roomMember.accountId,
+                                handle: readerProfile?.handle ?? null,
+                                displayName: readerProfile?.displayName ?? null,
+                                readAt: roomMember.lastReadAt,
+                            };
+                        });
+                    return {
+                        ...message,
+                        senderHandle: senderProfile?.handle ?? null,
+                        senderDisplayName: senderProfile?.displayName ?? null,
+                        readBy,
+                        reactions: Array.from(
+                            reactionsByMessage.get(message.id)?.values() ?? [],
+                        ),
+                    };
+                });
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: enrichedMessages }));
                 return true;
@@ -457,6 +736,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                             ? body.contentType
                             : "text/plain",
                 });
+                await messagesStore.setTyping(roomId, accountId, false);
                 // Notify other members (subject to per-member mute and category prefs).
                 if (dispatch) {
                     const sender = await profileStore.getProfile(accountId);
@@ -498,6 +778,38 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
             return true;
+        }
+
+        // GET/POST /messages/rooms/:id/typing
+        if (sub === "typing" && !subArg) {
+            if (req.method === "POST") {
+                const body = (await readJson(req)) as { typing?: unknown };
+                await messagesStore.setTyping(roomId, accountId, Boolean(body.typing));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { ok: true } }));
+                return true;
+            }
+            if (req.method === "GET") {
+                const typingRows = await messagesStore.listActiveTypers(roomId);
+                const enriched = await Promise.all(
+                    typingRows
+                        .filter((typingRow) => typingRow.accountId !== accountId)
+                        .map(async (typingRow) => {
+                            const profile = await profileStore.getProfile(
+                                typingRow.accountId,
+                            );
+                            return {
+                                accountId: typingRow.accountId,
+                                handle: profile?.handle ?? null,
+                                displayName: profile?.displayName ?? null,
+                                typingUntil: typingRow.typingUntil,
+                            };
+                        }),
+                );
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: enriched }));
+                return true;
+            }
         }
 
         // POST /messages/rooms/:id/members  (add)
@@ -596,6 +908,59 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             await messagesStore.removeMember(roomId, target.accountId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
+            return true;
+        }
+
+        // POST /messages/rooms/:id/messages/:messageId/reactions
+        if (
+            sub === "messages" &&
+            subArg &&
+            subArg2 === "reactions" &&
+            req.method === "POST"
+        ) {
+            const message = await messagesStore.getMessage(subArg);
+            if (!message || message.chatroomId !== roomId) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Message not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const body = (await readJson(req)) as { emoji?: unknown };
+            const emoji =
+                typeof body.emoji === "string" ? body.emoji.trim() : "";
+            if (!emoji || emoji.length > 16) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "emoji required.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const hasReaction = await messagesStore.hasMessageReaction(
+                roomId,
+                subArg,
+                accountId,
+                emoji,
+            );
+            await messagesStore.setMessageReaction(
+                roomId,
+                subArg,
+                accountId,
+                emoji,
+                !hasReaction,
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { active: !hasReaction } }));
             return true;
         }
 

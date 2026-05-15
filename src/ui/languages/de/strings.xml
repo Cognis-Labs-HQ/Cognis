@@ -456,6 +456,13 @@
   <string name="module.social.messages.set_avatar">Avatar festlegen</string>
   <string name="module.social.messages.key_unavailable">Verschlüsselungsschlüssel nicht verfügbar.</string>
   <string name="module.social.messages.page_subtitle">Ihre Unterhaltungen und Direktnachrichten.</string>
+  <string name="module.social.messages.request_sent">Nachrichtenanfrage gesendet.</string>
+  <string name="module.social.messages.read_by">Gelesen von</string>
+  <string name="module.social.messages.typing">schreibt…</string>
+  <string name="module.social.messages.requests">Nachrichtenanfragen</string>
+  <string name="module.social.messages.requests_empty">Keine ausstehenden Nachrichtenanfragen.</string>
+  <string name="module.social.messages.approve_request">Genehmigen</string>
+  <string name="module.social.messages.reject_request">Ablehnen</string>
   <string name="ui.reuse.classes">Meine Klassen</string>
   <string name="module.study.classes.page_title">Klassen</string>
   <string name="module.study.classes.page_subtitle">Verwalten Sie Ihre zugewiesenen Sprachklassen.</string>

@@ -136,15 +136,19 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                         : profileStore.isBlocked(claims.sub, target.accountId),
                     profileStore.getProfile(claims.sub),
                 ]);
-            // Messaging eligibility: neither user is hidden, neither side has
-            // blocked the other, and the target accepts community messages.
-            // The same predicate gates the message icon in the profile UI.
-            const canMessage =
+            // Messaging eligibility: direct DM requires mutual follow; when not
+            // mutual but otherwise eligible, users can send a message request.
+            const followsTarget = await profileStore.isFollowing(
+                claims.sub,
+                target.accountId,
+            );
+            const canSendMessageRequest =
                 !isSelf &&
                 !blocked &&
                 requester?.visibility !== "hidden" &&
-                target.visibility !== "hidden" &&
-                (target.visibility === "community" || followedBy);
+                target.visibility !== "hidden";
+            const canMessage =
+                canSendMessageRequest && followsTarget && followedBy;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -157,6 +161,9 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                         blocked,
                         blockedBy: false,
                         canMessage,
+                        canSendMessageRequest,
+                        requiresMessageRequest:
+                            canSendMessageRequest && !canMessage,
                     },
                 }),
             );

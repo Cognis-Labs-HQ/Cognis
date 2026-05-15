@@ -30,6 +30,7 @@ import {
 } from "/static/reuse/crypto-utils.js";
 
 const TEXT_ENCODER = new TextEncoder();
+const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉"];
 
 async function encryptMessage(key, plaintext) {
     const initVector = crypto.getRandomValues(new Uint8Array(12));
@@ -175,6 +176,35 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
         .join("");
 }
 
+function renderReadReceipt(message, currentAccountId, i18n) {
+    if (message.senderId !== currentAccountId) return "";
+    const readers = Array.isArray(message.readBy) ? message.readBy : [];
+    if (!readers.length) return "";
+    const names = readers
+        .slice(0, 3)
+        .map((reader) => reader.displayName || reader.handle || reader.accountId)
+        .join(", ");
+    const extraCount = readers.length > 3 ? ` +${readers.length - 3}` : "";
+    return `<span class="messages-message-read">${escapeHtml(i18n.t("module.social.messages.read_by"))}: ${escapeHtml(names)}${escapeHtml(extraCount)}</span>`;
+}
+
+function renderReactionRow(message) {
+    const reactions = Array.isArray(message.reactions) ? message.reactions : [];
+    const chips = reactions
+        .map((reaction) => {
+            const ownClass = reaction.reactedByMe
+                ? " messages-reaction-chip--active"
+                : "";
+            return `<button type="button" class="messages-reaction-chip${ownClass}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
+        })
+        .join("");
+    const quick = QUICK_REACTION_EMOJIS.map(
+        (emoji) =>
+            `<button type="button" class="messages-reaction-add-btn" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
+    ).join("");
+    return `<div class="messages-reactions-row">${chips}<span class="messages-reaction-add-wrap">${quick}</span></div>`;
+}
+
 async function renderThread(
     roomId,
     key,
@@ -217,6 +247,8 @@ async function renderThread(
             ${senderLabel}
             <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
             ${timeLabel}
+            ${renderReadReceipt(msg, currentAccountId, i18n)}
+            ${renderReactionRow(msg)}
         </div>`;
         })
         .join("");
@@ -271,6 +303,9 @@ export async function mount(root, { signal } = {}) {
     let selectedRoomId = initialRoomMatch
         ? decodeURIComponent(initialRoomMatch[1])
         : null;
+    let typingSendTimeoutId = null;
+    let typingPollIntervalId = null;
+    let pendingIncomingRequests = [];
 
     let rooms = await loadRooms();
     if (signal?.aborted) return;
@@ -281,6 +316,34 @@ export async function mount(root, { signal } = {}) {
         );
         if (!res.ok) return null;
         return (await res.json()).data ?? null;
+    }
+
+    async function loadIncomingRequests() {
+        const res = await apiFetch("/api/v1/messages/requests");
+        if (!res.ok) return [];
+        const payload = await res.json();
+        return payload?.data ?? [];
+    }
+
+    function renderIncomingRequests() {
+        if (!pendingIncomingRequests.length) {
+            return `<div class="messages-requests-empty">${escapeHtml(i18n.t("module.social.messages.requests_empty"))}</div>`;
+        }
+        return pendingIncomingRequests
+            .map((request) => {
+                const requesterLabel =
+                    request?.requester?.displayName ||
+                    request?.requester?.handle ||
+                    request?.fromAccountId;
+                return `<li class="messages-request-item" data-request-id="${escapeHtml(request.id)}">
+                    <span class="messages-request-label">${escapeHtml(requesterLabel)}</span>
+                    <div class="messages-request-actions">
+                        <button type="button" class="messages-request-approve">${escapeHtml(i18n.t("module.social.messages.approve_request"))}</button>
+                        <button type="button" class="messages-request-reject">${escapeHtml(i18n.t("module.social.messages.reject_request"))}</button>
+                    </div>
+                </li>`;
+            })
+            .join("");
     }
 
     async function openRoom(roomId) {
@@ -304,6 +367,66 @@ export async function mount(root, { signal } = {}) {
             `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/read`,
             { method: "POST" },
         ).catch(() => undefined);
+    }
+
+    async function toggleReaction(messageId, emoji) {
+        if (!selectedRoomId || !messageId || !emoji) return;
+        const res = await apiFetch(
+            `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/messages/${encodeURIComponent(messageId)}/reactions`,
+            {
+                method: "POST",
+                body: JSON.stringify({ emoji }),
+            },
+        );
+        if (!res.ok) return;
+        const threadList = document.getElementById("messages-thread-list");
+        if (!threadList) return;
+        const key = await getRoomKey(selectedRoomId);
+        await renderThread(selectedRoomId, key, threadList, i18n, currentAccountId);
+    }
+
+    function queueTypingUpdate(typing) {
+        if (!selectedRoomId) return;
+        if (typingSendTimeoutId) {
+            clearTimeout(typingSendTimeoutId);
+            typingSendTimeoutId = null;
+        }
+        void apiFetch(
+            `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/typing`,
+            {
+                method: "POST",
+                body: JSON.stringify({ typing }),
+            },
+        ).catch(() => undefined);
+        if (typing) {
+            typingSendTimeoutId = setTimeout(() => {
+                queueTypingUpdate(false);
+            }, 5000);
+        }
+    }
+
+    async function refreshTypingIndicator() {
+        if (!selectedRoomId) return;
+        const res = await apiFetch(
+            `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/typing`,
+        );
+        const typingStatusEl = document.getElementById("messages-typing-status");
+        if (!typingStatusEl) return;
+        if (!res.ok) {
+            typingStatusEl.textContent = "";
+            return;
+        }
+        const payload = await res.json();
+        const typers = payload?.data ?? [];
+        if (!typers.length) {
+            typingStatusEl.textContent = "";
+            return;
+        }
+        const names = typers
+            .slice(0, 2)
+            .map((typer) => typer.displayName || typer.handle || typer.accountId)
+            .join(", ");
+        typingStatusEl.textContent = `${names} ${i18n.t("module.social.messages.typing")}`;
     }
 
     function extensionFromType(type) {
@@ -373,12 +496,23 @@ export async function mount(root, { signal } = {}) {
         }
         const createPayload = await createRes.json();
         const newRoomId = createPayload?.data?.id;
+        if (!newRoomId && createPayload?.data?.requiresApproval) {
+            showToast(i18n.t("module.social.messages.request_sent"), {
+                variant: "info",
+            });
+            pendingIncomingRequests = await loadIncomingRequests();
+            const requestList = document.getElementById("messages-requests-list");
+            if (requestList) requestList.innerHTML = renderIncomingRequests();
+            return;
+        }
         if (!newRoomId) return;
         selectedRoomId = newRoomId;
         history.pushState({}, "", `/messages/${encodeURIComponent(newRoomId)}`);
         await openRoom(newRoomId);
         await reloadRoomsList();
     }
+
+    pendingIncomingRequests = await loadIncomingRequests();
 
     const sidebarHtml = `<div class="messages-sidebar-content">
         <header class="messages-rooms-header">
@@ -389,6 +523,12 @@ export async function mount(root, { signal } = {}) {
         <ul class="messages-rooms-list" id="messages-rooms-list">
             ${renderRoomList(rooms, currentAccountId, selectedRoomId, i18n)}
         </ul>
+        <section class="messages-requests-section">
+            <h3 class="messages-requests-title">${escapeHtml(i18n.t("module.social.messages.requests"))}</h3>
+            <ul class="messages-requests-list" id="messages-requests-list">
+                ${renderIncomingRequests()}
+            </ul>
+        </section>
     </div>`;
 
     const elements = [
@@ -399,6 +539,7 @@ export async function mount(root, { signal } = {}) {
             render: () =>
                 `<section class="messages-thread">
                     <div id="messages-thread-header-slot"></div>
+                    <div class="messages-typing-status" id="messages-typing-status"></div>
                     <div class="messages-thread-list" id="messages-thread-list"></div>
                     <form class="messages-composer" id="messages-composer">
                         <textarea
@@ -420,6 +561,29 @@ export async function mount(root, { signal } = {}) {
                 const form = document.getElementById("messages-composer");
 
                 threadList?.addEventListener("click", async (clickEvent) => {
+                    const reactionButton = clickEvent.target.closest(
+                        "[data-message-id][data-emoji]",
+                    );
+                    if (
+                        reactionButton &&
+                        reactionButton.classList.contains("messages-reaction-chip")
+                    ) {
+                        await toggleReaction(
+                            reactionButton.getAttribute("data-message-id"),
+                            reactionButton.getAttribute("data-emoji"),
+                        );
+                        return;
+                    }
+                    if (
+                        reactionButton &&
+                        reactionButton.classList.contains("messages-reaction-add-btn")
+                    ) {
+                        await toggleReaction(
+                            reactionButton.getAttribute("data-message-id"),
+                            reactionButton.getAttribute("data-emoji"),
+                        );
+                        return;
+                    }
                     const button = clickEvent.target.closest(
                         ".messages-load-earlier-btn",
                     );
@@ -445,6 +609,7 @@ export async function mount(root, { signal } = {}) {
                     );
                     const text = (input?.value ?? "").trim();
                     if (!text) return;
+                    queueTypingUpdate(false);
                     const key = await getRoomKey(selectedRoomId);
                     if (!key) {
                         showToast(
@@ -474,10 +639,20 @@ export async function mount(root, { signal } = {}) {
                             currentAccountId,
                         );
                     }
+                    await refreshTypingIndicator();
+                });
+
+                const composerInput = document.getElementById(
+                    "messages-composer-input",
+                );
+                composerInput?.addEventListener("input", () => {
+                    const hasText = Boolean((composerInput.value ?? "").trim());
+                    queueTypingUpdate(hasText);
                 });
 
                 if (selectedRoomId) {
                     void openRoom(selectedRoomId);
+                    void refreshTypingIndicator();
                 }
             },
         },
@@ -493,9 +668,19 @@ export async function mount(root, { signal } = {}) {
             if (id) {
                 selectedRoomId = id;
                 void openRoom(id);
+                void refreshTypingIndicator();
             }
         },
         { signal },
+    );
+
+    signal?.addEventListener(
+        "abort",
+        () => {
+            if (typingSendTimeoutId) clearTimeout(typingSendTimeoutId);
+            if (typingPollIntervalId) clearInterval(typingPollIntervalId);
+        },
+        { once: true },
     );
 
     function bindSidebarEvents() {
@@ -513,6 +698,7 @@ export async function mount(root, { signal } = {}) {
             item.classList.add("messages-room--active");
             history.pushState({}, "", `/messages/${encodeURIComponent(id)}`);
             await openRoom(id);
+            await refreshTypingIndicator();
         });
 
         const newBtn = document.getElementById("messages-new-btn");
@@ -527,6 +713,40 @@ export async function mount(root, { signal } = {}) {
                     await createConversationFromHandle(result.handle);
                 },
             });
+        });
+
+        const requestList = document.getElementById("messages-requests-list");
+        requestList?.addEventListener("click", async (clickEvent) => {
+            const requestItem = clickEvent.target.closest("[data-request-id]");
+            if (!requestItem) return;
+            const requestId = requestItem.getAttribute("data-request-id");
+            if (!requestId) return;
+            if (clickEvent.target.closest(".messages-request-approve")) {
+                const res = await apiFetch(
+                    `/api/v1/messages/requests/${encodeURIComponent(requestId)}/approve`,
+                    { method: "POST" },
+                );
+                if (!res.ok) return;
+                const payload = await res.json();
+                const roomId = payload?.data?.id;
+                pendingIncomingRequests = await loadIncomingRequests();
+                requestList.innerHTML = renderIncomingRequests();
+                if (!roomId) return;
+                selectedRoomId = roomId;
+                history.pushState({}, "", `/messages/${encodeURIComponent(roomId)}`);
+                await openRoom(roomId);
+                await reloadRoomsList();
+                return;
+            }
+            if (clickEvent.target.closest(".messages-request-reject")) {
+                const res = await apiFetch(
+                    `/api/v1/messages/requests/${encodeURIComponent(requestId)}/reject`,
+                    { method: "POST" },
+                );
+                if (!res.ok) return;
+                pendingIncomingRequests = await loadIncomingRequests();
+                requestList.innerHTML = renderIncomingRequests();
+            }
         });
     }
 
@@ -550,6 +770,9 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
+    typingPollIntervalId = setInterval(() => {
+        void refreshTypingIndicator();
+    }, 3000);
 }
 
 if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));

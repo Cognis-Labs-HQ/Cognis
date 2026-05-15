@@ -19,25 +19,38 @@ probe used by the UI to detect whether the adapter is loaded.
 | GET    | `/messages/ping`                            | Adapter availability probe (returns `{ ready: true }`).                                 |
 | GET    | `/messages/users/lookup?q=…`                | Search profiles for messaging recipients (handle match).                                |
 | GET    | `/messages/rooms`                           | List rooms for current user (with last message preview and unread count).               |
-| POST   | `/messages/rooms`                           | Create a DM or group; body lists handles. Auto-returns the existing DM when one exists. |
+| POST   | `/messages/rooms`                           | Create a DM or group; body lists handles. DM returns existing room or creates a request. |
+| GET    | `/messages/requests`                        | List pending incoming message requests for current user.                                  |
+| POST   | `/messages/requests/:id/approve`            | Approve request and create/open the DM room.                                              |
+| POST   | `/messages/requests/:id/reject`             | Reject a pending message request.                                                         |
 | GET    | `/messages/rooms/:id`                       | Room metadata + members.                                                                |
 | GET    | `/messages/rooms/:id/key`                   | Fetch unwrapped per-room AES-GCM key (members only).                                    |
 | GET    | `/messages/rooms/:id/messages?before&limit` | Paginated message history.                                                              |
 | POST   | `/messages/rooms/:id/messages`              | Append message (`ciphertext`, `iv`, optional `authTag`).                                |
+| POST   | `/messages/rooms/:id/messages/:messageId/reactions` | Toggle an emoji reaction for the message.                                         |
 | POST   | `/messages/rooms/:id/read`                  | Mark room read up to now.                                                               |
+| GET    | `/messages/rooms/:id/typing`                | List active typers in the room (excluding requester).                                    |
+| POST   | `/messages/rooms/:id/typing`                | Update typing state for the current member.                                              |
 | POST   | `/messages/rooms/:id/members`               | Add a member (owner/admin only).                                                        |
 | DELETE | `/messages/rooms/:id/members/:handle`       | Remove a member (self-leave or owner kick).                                             |
 
 ## Eligibility
 
-A user **A** can message user **B** if and only if:
+A user **A** can open a direct room with user **B** when:
 
 1. Neither has blocked the other, AND
-2. (B follows A, OR B's `visibility >= community`, OR they share an existing chatroom).
+2. Both users are visible (not hidden), AND
+3. A follows B and B follows A.
+
+When the users are visible and unblocked but do not mutually follow each other,
+`POST /messages/rooms` returns `202` with a message-request payload instead of
+creating a DM. The recipient can approve or reject that request from the
+messages UI.
 
 The same predicate is exposed via the social gateway's
-`GET /api/v1/users/:handle/relationship` endpoint as the `canMessage` field,
-so the UI can show or hide the message icon on profile pages.
+`GET /api/v1/users/:handle/relationship` endpoint (`canMessage`,
+`canSendMessageRequest`, `requiresMessageRequest`) so the profile UI can decide
+whether to open a room immediately or send a message request.
 
 Block enforcement covers every entry point that touches another user:
 profile fetch, posts fetch, follow/followers, relationship endpoint, the

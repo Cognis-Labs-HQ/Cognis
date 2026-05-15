@@ -53,6 +53,17 @@ test("messages schema uses portable integer default for muted flag", async () =>
     );
 });
 
+test("messages schema includes request typing and reaction tables", async () => {
+    const { db, tableDefs } = createRecordingExecutor();
+    const store = new DbMessagesStore(db);
+
+    await store.ensureSchema();
+
+    assert.ok(tableDefs.find((def) => def.name === "chat_message_requests"));
+    assert.ok(tableDefs.find((def) => def.name === "chatroom_typing"));
+    assert.ok(tableDefs.find((def) => def.name === "chat_message_reactions"));
+});
+
 test("messages setMuted uses executeCommand with integer muted value", async () => {
     const { db, commandCalls } = createRecordingExecutor();
     const store = new DbMessagesStore(db);

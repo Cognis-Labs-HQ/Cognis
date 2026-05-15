@@ -456,6 +456,13 @@
   <string name="module.social.messages.set_avatar">Set avatar</string>
   <string name="module.social.messages.key_unavailable">Encryption key unavailable.</string>
   <string name="module.social.messages.page_subtitle">Your conversations and direct messages.</string>
+  <string name="module.social.messages.request_sent">Message request sent.</string>
+  <string name="module.social.messages.read_by">Read by</string>
+  <string name="module.social.messages.typing">is typing…</string>
+  <string name="module.social.messages.requests">Message requests</string>
+  <string name="module.social.messages.requests_empty">No pending message requests.</string>
+  <string name="module.social.messages.approve_request">Approve</string>
+  <string name="module.social.messages.reject_request">Reject</string>
   <string name="ui.reuse.classes">My Classes</string>
   <string name="module.study.classes.page_title">Classes</string>
   <string name="module.study.classes.page_subtitle">Manage your assigned language classes.</string>
