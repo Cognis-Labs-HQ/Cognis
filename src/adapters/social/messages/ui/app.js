@@ -321,6 +321,13 @@ function renderReactionRow(message) {
     return `<div class="messages-reactions-row">${chips}<span class="messages-reaction-add-wrap">${quick}</span></div>`;
 }
 
+function closeReadTooltips(threadList) {
+    threadList
+        ?.querySelectorAll(".messages-read-tooltip")
+        .forEach((node) => node.setAttribute("hidden", ""));
+    threadList?.classList.remove("messages-thread-list--receipt-open");
+}
+
 async function renderThread(
     roomId,
     key,
@@ -860,15 +867,6 @@ export async function mount(root, { signal } = {}) {
                 );
                 const form = document.getElementById("messages-composer");
 
-                function closeReadTooltips() {
-                    threadList
-                        ?.querySelectorAll(".messages-read-tooltip")
-                        .forEach((node) => node.setAttribute("hidden", ""));
-                    threadList?.classList.remove(
-                        "messages-thread-list--receipt-open",
-                    );
-                }
-
                 threadList?.addEventListener("click", async (clickEvent) => {
                     const statusGroup =
                         clickEvent.target.closest("[data-status-for]");
@@ -878,7 +876,7 @@ export async function mount(root, { signal } = {}) {
                         );
                         if (!tooltip) return;
                         const isHidden = tooltip.hasAttribute("hidden");
-                        closeReadTooltips();
+                        closeReadTooltips(threadList);
                         if (isHidden) {
                             tooltip.removeAttribute("hidden");
                             threadList.classList.add(
@@ -892,7 +890,7 @@ export async function mount(root, { signal } = {}) {
                             ".messages-read-tooltip:not([hidden])",
                         )
                     ) {
-                        closeReadTooltips();
+                        closeReadTooltips(threadList);
                     }
                     const reactionButton = clickEvent.target.closest(
                         "[data-message-id][data-emoji]",
@@ -1013,7 +1011,7 @@ export async function mount(root, { signal } = {}) {
                     );
                     if (!tooltip) return;
                     const isHidden = tooltip.hasAttribute("hidden");
-                    closeReadTooltips();
+                    closeReadTooltips(threadList);
                     if (isHidden) {
                         tooltip.removeAttribute("hidden");
                         threadList.classList.add(
