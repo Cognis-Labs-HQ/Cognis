@@ -86,6 +86,11 @@ bersama dan tidak diimpor dari mana pun.
 - Perbaikan variabel CSS:
     - `src/adapters/notify/internal/ui/notifications.css`
     - `src/gateways/notify/ui/verify-email.css`
+- Predikat peran dipindahkan ke `src/ui/reuse/access-role.js`:
+    - `src/ui/reuse/access-role.js` — ditambahkan `isAdminScope`, `isTeacherScope`, `isStudentScope`
+    - `src/modules/study/languages/reuse/language-utils.js` — sekarang mengekspor ulang dari access-role.js
+    - `src/modules/study/languages/reuse/classroom-page.js` — `getRoleFlags()` dihapus
+    - `src/adapters/study/classes/ui/app.js` — closure peran lokal dihapus; `renderMemberItems()` diekstrak
 
 ## Commit
 

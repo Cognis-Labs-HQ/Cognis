@@ -4,6 +4,8 @@
  * Public exports:
  * - `resolveLanguageLabel(languageCode, fallbackName)` Returns a human-readable display name for a BCP-47 language code.
  * - `isAdminScope()` Returns true when the local session has admin or owner privilege.
+ * - `isTeacherScope()` Returns true when the local session role is teacher.
+ * - `isStudentScope()` Returns true when the local session role allows student enrolment.
  * - `buildLibraryUrl(languageCode)` Builds the canonical library URL, optionally scoped to a language.
  *
  * @example
@@ -18,6 +20,12 @@
  * @returns {string} Human-readable language label, or `fallbackName` / `languageCode` as fallback.
  */
 
+export {
+    isAdminScope,
+    isTeacherScope,
+    isStudentScope,
+} from "/static/reuse/access-role.js";
+
 export function resolveLanguageLabel(languageCode, fallbackName = "") {
     try {
         const displayName = new Intl.DisplayNames(["en"], {
@@ -30,16 +38,6 @@ export function resolveLanguageLabel(languageCode, fallbackName = "") {
         return fallbackName || languageCode;
     }
     return fallbackName || languageCode;
-}
-
-/**
- * @returns {boolean} True when the active session role is admin or owner.
- */
-export function isAdminScope() {
-    const roleValue = String(localStorage.getItem("cognis_role") ?? "")
-        .trim()
-        .toLowerCase();
-    return roleValue === "admin" || roleValue === "owner";
 }
 
 /**

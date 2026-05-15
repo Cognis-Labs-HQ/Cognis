@@ -88,6 +88,11 @@ ersetzt wurden und von nirgendwo importiert wurden.
 - CSS-Variablen-Korrekturen:
     - `src/adapters/notify/internal/ui/notifications.css`
     - `src/gateways/notify/ui/verify-email.css`
+- Rollenprädikat-Funktionen nach `src/ui/reuse/access-role.js` verschoben:
+    - `src/ui/reuse/access-role.js` — `isAdminScope`, `isTeacherScope`, `isStudentScope` hinzugefügt
+    - `src/modules/study/languages/reuse/language-utils.js` — exportiert jetzt aus access-role.js weiter
+    - `src/modules/study/languages/reuse/classroom-page.js` — `getRoleFlags()` entfernt
+    - `src/adapters/study/classes/ui/app.js` — lokale Rollenverschlüsse entfernt; `renderMemberItems()` als Hilfsfunktion extrahiert
 
 ## Commits
 

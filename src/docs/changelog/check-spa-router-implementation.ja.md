@@ -88,6 +88,11 @@ I/O 処理を並列化し、Node.js がブラウザリクエストを処理で�
 - CSS変数の修正:
     - `src/adapters/notify/internal/ui/notifications.css`
     - `src/gateways/notify/ui/verify-email.css`
+- ロール述語を `src/ui/reuse/access-role.js` に集約:
+    - `src/ui/reuse/access-role.js` — `isAdminScope`、`isTeacherScope`、`isStudentScope` を追加
+    - `src/modules/study/languages/reuse/language-utils.js` — access-role.js から再エクスポートに変更
+    - `src/modules/study/languages/reuse/classroom-page.js` — `getRoleFlags()` を削除
+    - `src/adapters/study/classes/ui/app.js` — ローカルロールクロージャを削除、`renderMemberItems()` ヘルパーを抽出
 
 ## コミット
 

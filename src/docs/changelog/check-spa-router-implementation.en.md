@@ -81,6 +81,11 @@ imported from anywhere.
 - CSS variable fixes:
     - `src/adapters/notify/internal/ui/notifications.css`
     - `src/gateways/notify/ui/verify-email.css`
+- Role scope predicates promoted to `src/ui/reuse/access-role.js`:
+    - `src/ui/reuse/access-role.js` — added `isAdminScope`, `isTeacherScope`, `isStudentScope`
+    - `src/modules/study/languages/reuse/language-utils.js` — re-exports `isAdminScope`/`isTeacherScope`/`isStudentScope` from access-role.js
+    - `src/modules/study/languages/reuse/classroom-page.js` — removed `getRoleFlags()`, imports `isTeacherScope` from access-role.js
+    - `src/adapters/study/classes/ui/app.js` — removed local `isAdminRole`/`isTeacherRole` closures, imports from access-role.js; extracted `renderMemberItems()` local helper to remove intra-file duplicate member rendering
 
 ## Commits
 

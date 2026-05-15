@@ -26,6 +26,7 @@ import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createPageComposer } from "/static/reuse/page-composer.js";
 import { showToast } from "/static/reuse/toast.js";
+import { isTeacherScope } from "/static/reuse/access-role.js";
 import {
     loadStudySubNavigationModel,
     renderStudySubNavigation,
@@ -57,20 +58,6 @@ function buildAccountInitials(accountId) {
     return normalizedAccountId.slice(0, 2).toUpperCase();
 }
 
-function getRoleFlags() {
-    const roleValue = String(localStorage.getItem("cognis_role") ?? "")
-        .trim()
-        .toLowerCase();
-    const isTeacher = roleValue === "teacher";
-    const isStudent =
-        roleValue === "user" || roleValue === "admin" || roleValue === "owner";
-    return {
-        roleValue,
-        isTeacher,
-        isStudent,
-    };
-}
-
 export async function mountStudyClassroomPage(root, { signal, languageCode }) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/study/languages"],
@@ -86,7 +73,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
     let selectedClassId = "";
     let selectedSeatNumber = null;
 
-    const roleFlags = getRoleFlags();
+    const isTeacher = isTeacherScope();
     const viewerAccountId = String(
         localStorage.getItem("cognis_account") ?? "",
     ).trim();
@@ -249,9 +236,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                 const occupiedClass = studentAccountId ? " occupied" : "";
                 const selectedClass = isSelected ? " selected" : "";
                 const draggableAttribute =
-                    roleFlags.isTeacher && studentAccountId
-                        ? ' draggable="true"'
-                        : "";
+                    isTeacher && studentAccountId ? ' draggable="true"' : "";
                 return `
                     <button
                         type="button"
@@ -272,7 +257,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                 ? studentBySeatNumber.get(selectedSeatNumber)
                 : "";
 
-        const teacherControls = roleFlags.isTeacher
+        const teacherControls = isTeacher
             ? `
                 <div class="study-classroom-controls">
                     <label>
@@ -542,7 +527,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                     classroomContentElement.addEventListener(
                         "dragstart",
                         (event) => {
-                            if (!roleFlags.isTeacher) return;
+                            if (!isTeacher) return;
                             if (!(event.target instanceof HTMLElement)) return;
                             const seatButtonElement = event.target.closest(
                                 ".study-classroom-seat",
@@ -576,7 +561,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                     classroomContentElement.addEventListener(
                         "dragover",
                         (event) => {
-                            if (!roleFlags.isTeacher) return;
+                            if (!isTeacher) return;
                             if (!(event.target instanceof Element)) return;
                             const dropTarget = event.target.closest(
                                 ".study-classroom-seat, #study-classroom-door",
@@ -590,7 +575,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                     classroomContentElement.addEventListener(
                         "drop",
                         async (event) => {
-                            if (!roleFlags.isTeacher) return;
+                            if (!isTeacher) return;
                             if (!(event.target instanceof Element)) return;
                             const dropTarget = event.target.closest(
                                 ".study-classroom-seat, #study-classroom-door",
