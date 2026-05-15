@@ -21,7 +21,7 @@ interface RouteHandler {
     ) => Promise<void> | void;
 }
 
-interface RouteOptions {
+interface ModuleRouteOptions {
     access?: unknown;
 }
 
@@ -191,7 +191,7 @@ export function createModuleExtensionRoutes(
                         get(
                             routePath: string,
                             handler: RouteHandler["handler"],
-                            routeOptions?: RouteOptions,
+                            routeOptions?: ModuleRouteOptions,
                         ) {
                             const parsedAccess = parseRoleAccessPolicy(
                                 routeOptions?.access,
@@ -216,7 +216,7 @@ export function createModuleExtensionRoutes(
                         post(
                             routePath: string,
                             handler: RouteHandler["handler"],
-                            routeOptions?: RouteOptions,
+                            routeOptions?: ModuleRouteOptions,
                         ) {
                             const parsedAccess = parseRoleAccessPolicy(
                                 routeOptions?.access,

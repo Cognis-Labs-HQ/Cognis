@@ -1,25 +1,57 @@
 <resources>
   <string name="module.jitsi_meet.page_title">Jitsi Meet</string>
-  <string name="module.jitsi_meet.page_subtitle">ユーザー同士の1対1ビデオセッションを開始します。</string>
+  <string name="module.jitsi_meet.page_subtitle">Cognis管理の参加者で安全な会議を作成します。</string>
   <string name="module.jitsi_meet.nav_label">ミーティング</string>
-  <string name="module.jitsi_meet.search_label">連絡先を検索</string>
-  <string name="module.jitsi_meet.search_placeholder">ハンドルで検索</string>
-  <string name="module.jitsi_meet.search_button">検索</string>
-  <string name="module.jitsi_meet.start_button">ミーティング開始</string>
-  <string name="module.jitsi_meet.contacts_empty">連絡先が見つかりません。</string>
-  <string name="module.jitsi_meet.select_contact_warning">先に連絡先を選択してください。</string>
-  <string name="module.jitsi_meet.session_failed">ミーティングセッションを開始できませんでした。</string>
-  <string name="module.jitsi_meet.no_active_session">まだアクティブなミーティングセッションはありません。</string>
-  <string name="module.jitsi_meet.room_label">ルーム</string>
-  <string name="module.jitsi_meet.participant_label">参加者</string>
-  <string name="module.jitsi_meet.native_chat_label">ネイティブチャット</string>
-  <string name="module.jitsi_meet.native_chat_found">リンク済みルームが見つかりました。</string>
-  <string name="module.jitsi_meet.native_chat_missing">リンク済みルームはまだ見つかっていません。</string>
-  <string name="module.jitsi_meet.open_native_chat">ネイティブチャットを開く</string>
-  <string name="module.jitsi_meet.refresh_native_chat">ネイティブチャットを再取得</string>
+
+  <string name="module.jitsi_meet.meeting_heading">会議ウィンドウ</string>
+  <string name="module.jitsi_meet.participants_heading">参加者コントロール</string>
+  <string name="module.jitsi_meet.chat_heading">チャットウィンドウ</string>
+
+  <string name="module.jitsi_meet.filter_label">参加者フィルター</string>
+  <string name="module.jitsi_meet.search_placeholder">ユーザーを検索</string>
+  <string name="module.jitsi_meet.available_users">利用可能ユーザー</string>
+  <string name="module.jitsi_meet.selected_users">選択済み参加者</string>
+  <string name="module.jitsi_meet.no_selected_users">参加者が選択されていません。</string>
+  <string name="module.jitsi_meet.contacts_empty">ユーザーが見つかりません。</string>
+
+  <string name="module.jitsi_meet.entity_type_label">会議スコープ</string>
+  <string name="module.jitsi_meet.entity_type_pair">ユーザーペア</string>
+  <string name="module.jitsi_meet.entity_type_classroom">教室</string>
+  <string name="module.jitsi_meet.entity_type_manual">手動グループ</string>
+  <string name="module.jitsi_meet.entity_id_label">スコープ識別子</string>
+  <string name="module.jitsi_meet.entity_id_placeholder">classroom-42</string>
+  <string name="module.jitsi_meet.meeting_title_label">会議タイトル</string>
+  <string name="module.jitsi_meet.default_meeting_title">Cognis Meeting</string>
+
+  <string name="module.jitsi_meet.start_button">会議を開始または再利用</string>
+  <string name="module.jitsi_meet.select_contact_warning">まず少なくとも1人の参加者を選択してください。</string>
+  <string name="module.jitsi_meet.session_failed">この会議を作成または参加できませんでした。</string>
+  <string name="module.jitsi_meet.participant_sync_failed">参加者メンバーシップを更新できませんでした。</string>
+
+  <string name="module.jitsi_meet.overlay_toggle">会議ツール</string>
+  <string name="module.jitsi_meet.open_auth_popup">モデレーター認証ポップアップを開く</string>
   <string name="module.jitsi_meet.open_pip">PiPを開く</string>
   <string name="module.jitsi_meet.open_new_tab">新しいタブで開く</string>
+  <string name="module.jitsi_meet.reconnect_button">会議に再接続</string>
+  <string name="module.jitsi_meet.url_hidden_notice">悪用リスク低減のため会議URLの詳細は表示しません。</string>
+
+  <string name="module.jitsi_meet.auth_popup_title">会議認証が必要です</string>
+  <string name="module.jitsi_meet.auth_popup_message">参加を続けるにはモデレーション用パスワードを入力してください。</string>
+  <string name="module.jitsi_meet.auth_popup_password_label">会議パスワード</string>
+  <string name="module.jitsi_meet.password_required_warning">続行するには会議パスワードが必要です。</string>
+  <string name="module.jitsi_meet.auth_popup_blocked">認証ポップアップがブラウザにブロックされました。</string>
+  <string name="module.jitsi_meet.auth_popup_opened">ポップアップウィンドウで認証を完了してください。</string>
+
+  <string name="module.jitsi_meet.meeting_joined">会議に参加しました。</string>
+  <string name="module.jitsi_meet.meeting_left">会議から退出しました。</string>
+
+  <string name="module.jitsi_meet.no_active_session">まだアクティブな会議セッションはありません。</string>
+  <string name="module.jitsi_meet.refresh_native_chat">ネイティブチャットを再取得</string>
+  <string name="module.jitsi_meet.open_native_chat">ネイティブチャットを開く</string>
+  <string name="module.jitsi_meet.native_chat_missing">リンク済みネイティブチャットルームはありません。</string>
+
   <string name="module.jitsi_meet.pip_not_supported">このブラウザではピクチャーインピクチャーを使用できません。</string>
+
   <string name="module.jitsi_meet.admin.section_title">Jitsi Meet設定</string>
   <string name="module.jitsi_meet.admin.base_url_label">JitsiベースURL</string>
   <string name="module.jitsi_meet.admin.base_url_placeholder">https://meet.jit.si</string>

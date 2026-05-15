@@ -2,16 +2,18 @@
 
 ## Ikhtisar
 
-Modul Jitsi Meet menambahkan ruang video langsung antar dua pengguna di Cognis. Modul ini sepenuhnya berada di `src/modules/jitsi-meet` dan membawa rute API, halaman UI, kontribusi navbar, bagian admin, berkas bahasa, dan dokumentasinya sendiri.
+Modul Jitsi Meet adalah modul mandiri (`src/modules/jitsi-meet`) yang menyediakan orkestrasi meeting yang dikendalikan Cognis untuk pasangan pengguna serta entitas kelas/manual.
 
-Admin hanya mengatur URL dasar Jitsi. Pengguna memulai atau melanjutkan sesi dengan satu peserta lain.
+Fitur utama:
 
-## Tanggung Jawab
+- entri global **Pertemuan** di navbar,
+- halaman Meetings berbasis Page Composer dengan panel terpisah yang bisa dikustomisasi (jendela meeting, kontrol peserta, jendela chat),
+- pengaturan instance Jitsi dari Administration,
+- entitas meeting reusable berbasis DB dengan penegakan keanggotaan peserta.
 
-- Menyimpan pengaturan modul (`baseUrl`) di `jitsi_meet_settings`.
-- Menyimpan entitas meeting di `jitsi_meetings` dengan FK peserta ke `accounts(id)`.
-- Menjalankan pemeriksaan pre-flight peserta sebelum data meeting dikirim.
-- Membuat slug ruang deterministik per pasangan peserta.
-- Menyediakan UI meetings yang menautkan chat native Cognis dengan pencarian runtime DM room.
+## Model Keamanan
 
-Tidak bertanggung jawab untuk: orkestrasi classroom, provisioning Jitsi di level adapter, atau memaksa persetujuan pengguna.
+- URL meeting dibuat di server dari slug ruang deterministik dan tidak ditampilkan sebagai metadata URL yang dapat disalahgunakan.
+- Chat bawaan Jitsi dinonaktifkan; modul memakai tautan chat native Cognis.
+- Keanggotaan peserta ditegakkan oleh Cognis melalui pemeriksaan DB modul.
+- Hanya pemilik meeting yang dapat mengubah anggota peserta.

@@ -1,25 +1,57 @@
 <resources>
   <string name="module.jitsi_meet.page_title">Jitsi Meet</string>
-  <string name="module.jitsi_meet.page_subtitle">Start direct user-to-user video sessions.</string>
+  <string name="module.jitsi_meet.page_subtitle">Create secure meetings with Cognis-managed participants.</string>
   <string name="module.jitsi_meet.nav_label">Meetings</string>
-  <string name="module.jitsi_meet.search_label">Find a Contact</string>
-  <string name="module.jitsi_meet.search_placeholder">Search by handle</string>
-  <string name="module.jitsi_meet.search_button">Search</string>
-  <string name="module.jitsi_meet.start_button">Start Meeting</string>
-  <string name="module.jitsi_meet.contacts_empty">No contacts found.</string>
-  <string name="module.jitsi_meet.select_contact_warning">Select a contact first.</string>
-  <string name="module.jitsi_meet.session_failed">Could not start the meeting session.</string>
-  <string name="module.jitsi_meet.no_active_session">No active meeting session yet.</string>
-  <string name="module.jitsi_meet.room_label">Room</string>
-  <string name="module.jitsi_meet.participant_label">Participant</string>
-  <string name="module.jitsi_meet.native_chat_label">Native Chat</string>
-  <string name="module.jitsi_meet.native_chat_found">Linked room found.</string>
-  <string name="module.jitsi_meet.native_chat_missing">No linked room found yet.</string>
-  <string name="module.jitsi_meet.open_native_chat">Open Native Chat</string>
-  <string name="module.jitsi_meet.refresh_native_chat">Refresh Native Chat</string>
+
+  <string name="module.jitsi_meet.meeting_heading">Meeting Window</string>
+  <string name="module.jitsi_meet.participants_heading">Participant Controls</string>
+  <string name="module.jitsi_meet.chat_heading">Chat Window</string>
+
+  <string name="module.jitsi_meet.filter_label">Participant Filter</string>
+  <string name="module.jitsi_meet.search_placeholder">Search users</string>
+  <string name="module.jitsi_meet.available_users">Available Users</string>
+  <string name="module.jitsi_meet.selected_users">Selected Participants</string>
+  <string name="module.jitsi_meet.no_selected_users">No participants selected.</string>
+  <string name="module.jitsi_meet.contacts_empty">No users found.</string>
+
+  <string name="module.jitsi_meet.entity_type_label">Meeting Scope</string>
+  <string name="module.jitsi_meet.entity_type_pair">User Pair</string>
+  <string name="module.jitsi_meet.entity_type_classroom">Classroom</string>
+  <string name="module.jitsi_meet.entity_type_manual">Manual Group</string>
+  <string name="module.jitsi_meet.entity_id_label">Scope Identifier</string>
+  <string name="module.jitsi_meet.entity_id_placeholder">classroom-42</string>
+  <string name="module.jitsi_meet.meeting_title_label">Meeting Title</string>
+  <string name="module.jitsi_meet.default_meeting_title">Cognis Meeting</string>
+
+  <string name="module.jitsi_meet.start_button">Start or Reuse Meeting</string>
+  <string name="module.jitsi_meet.select_contact_warning">Select at least one participant first.</string>
+  <string name="module.jitsi_meet.session_failed">Could not create or join this meeting.</string>
+  <string name="module.jitsi_meet.participant_sync_failed">Could not update participant membership.</string>
+
+  <string name="module.jitsi_meet.overlay_toggle">Meeting Tools</string>
+  <string name="module.jitsi_meet.open_auth_popup">Open Moderator Auth Popup</string>
   <string name="module.jitsi_meet.open_pip">Open PiP</string>
   <string name="module.jitsi_meet.open_new_tab">Open in New Tab</string>
+  <string name="module.jitsi_meet.reconnect_button">Reconnect Meeting</string>
+  <string name="module.jitsi_meet.url_hidden_notice">Meeting URL details are hidden to reduce abuse risk.</string>
+
+  <string name="module.jitsi_meet.auth_popup_title">Meeting Authentication Required</string>
+  <string name="module.jitsi_meet.auth_popup_message">Enter the moderation password to continue joining.</string>
+  <string name="module.jitsi_meet.auth_popup_password_label">Meeting Password</string>
+  <string name="module.jitsi_meet.password_required_warning">Meeting password is required to continue.</string>
+  <string name="module.jitsi_meet.auth_popup_blocked">Authentication popup was blocked by the browser.</string>
+  <string name="module.jitsi_meet.auth_popup_opened">Complete authentication in the popup window.</string>
+
+  <string name="module.jitsi_meet.meeting_joined">You joined the meeting.</string>
+  <string name="module.jitsi_meet.meeting_left">You left the meeting.</string>
+
+  <string name="module.jitsi_meet.no_active_session">No active meeting session yet.</string>
+  <string name="module.jitsi_meet.refresh_native_chat">Refresh Native Chat</string>
+  <string name="module.jitsi_meet.open_native_chat">Open Native Chat</string>
+  <string name="module.jitsi_meet.native_chat_missing">No linked native chat room is available.</string>
+
   <string name="module.jitsi_meet.pip_not_supported">Picture-in-Picture is not supported in this browser.</string>
+
   <string name="module.jitsi_meet.admin.section_title">Jitsi Meet Settings</string>
   <string name="module.jitsi_meet.admin.base_url_label">Jitsi Base URL</string>
   <string name="module.jitsi_meet.admin.base_url_placeholder">https://meet.jit.si</string>

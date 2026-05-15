@@ -1,25 +1,57 @@
 <resources>
   <string name="module.jitsi_meet.page_title">Jitsi Meet</string>
-  <string name="module.jitsi_meet.page_subtitle">Mulai sesi video langsung antar pengguna.</string>
+  <string name="module.jitsi_meet.page_subtitle">Buat meeting aman dengan peserta yang dikelola Cognis.</string>
   <string name="module.jitsi_meet.nav_label">Pertemuan</string>
-  <string name="module.jitsi_meet.search_label">Cari Kontak</string>
-  <string name="module.jitsi_meet.search_placeholder">Cari berdasarkan handle</string>
-  <string name="module.jitsi_meet.search_button">Cari</string>
-  <string name="module.jitsi_meet.start_button">Mulai Pertemuan</string>
-  <string name="module.jitsi_meet.contacts_empty">Tidak ada kontak ditemukan.</string>
-  <string name="module.jitsi_meet.select_contact_warning">Pilih kontak terlebih dahulu.</string>
-  <string name="module.jitsi_meet.session_failed">Sesi pertemuan tidak dapat dimulai.</string>
-  <string name="module.jitsi_meet.no_active_session">Belum ada sesi pertemuan aktif.</string>
-  <string name="module.jitsi_meet.room_label">Ruang</string>
-  <string name="module.jitsi_meet.participant_label">Peserta</string>
-  <string name="module.jitsi_meet.native_chat_label">Chat Native</string>
-  <string name="module.jitsi_meet.native_chat_found">Ruang tertaut ditemukan.</string>
-  <string name="module.jitsi_meet.native_chat_missing">Belum ada ruang tertaut.</string>
-  <string name="module.jitsi_meet.open_native_chat">Buka Chat Native</string>
-  <string name="module.jitsi_meet.refresh_native_chat">Muat Ulang Chat Native</string>
+
+  <string name="module.jitsi_meet.meeting_heading">Jendela Meeting</string>
+  <string name="module.jitsi_meet.participants_heading">Kontrol Peserta</string>
+  <string name="module.jitsi_meet.chat_heading">Jendela Chat</string>
+
+  <string name="module.jitsi_meet.filter_label">Filter Peserta</string>
+  <string name="module.jitsi_meet.search_placeholder">Cari pengguna</string>
+  <string name="module.jitsi_meet.available_users">Pengguna Tersedia</string>
+  <string name="module.jitsi_meet.selected_users">Peserta Terpilih</string>
+  <string name="module.jitsi_meet.no_selected_users">Belum ada peserta dipilih.</string>
+  <string name="module.jitsi_meet.contacts_empty">Tidak ada pengguna ditemukan.</string>
+
+  <string name="module.jitsi_meet.entity_type_label">Ruang Lingkup Meeting</string>
+  <string name="module.jitsi_meet.entity_type_pair">Pasangan Pengguna</string>
+  <string name="module.jitsi_meet.entity_type_classroom">Kelas</string>
+  <string name="module.jitsi_meet.entity_type_manual">Grup Manual</string>
+  <string name="module.jitsi_meet.entity_id_label">Identitas Lingkup</string>
+  <string name="module.jitsi_meet.entity_id_placeholder">classroom-42</string>
+  <string name="module.jitsi_meet.meeting_title_label">Judul Meeting</string>
+  <string name="module.jitsi_meet.default_meeting_title">Cognis Meeting</string>
+
+  <string name="module.jitsi_meet.start_button">Mulai atau Gunakan Ulang Meeting</string>
+  <string name="module.jitsi_meet.select_contact_warning">Pilih setidaknya satu peserta terlebih dahulu.</string>
+  <string name="module.jitsi_meet.session_failed">Meeting tidak dapat dibuat atau dimasuki.</string>
+  <string name="module.jitsi_meet.participant_sync_failed">Keanggotaan peserta tidak dapat diperbarui.</string>
+
+  <string name="module.jitsi_meet.overlay_toggle">Alat Meeting</string>
+  <string name="module.jitsi_meet.open_auth_popup">Buka Popup Auth Moderator</string>
   <string name="module.jitsi_meet.open_pip">Buka PiP</string>
   <string name="module.jitsi_meet.open_new_tab">Buka di Tab Baru</string>
+  <string name="module.jitsi_meet.reconnect_button">Hubungkan Ulang Meeting</string>
+  <string name="module.jitsi_meet.url_hidden_notice">Detail URL meeting disembunyikan untuk mengurangi risiko penyalahgunaan.</string>
+
+  <string name="module.jitsi_meet.auth_popup_title">Autentikasi Meeting Diperlukan</string>
+  <string name="module.jitsi_meet.auth_popup_message">Masukkan kata sandi moderasi untuk melanjutkan.</string>
+  <string name="module.jitsi_meet.auth_popup_password_label">Kata Sandi Meeting</string>
+  <string name="module.jitsi_meet.password_required_warning">Kata sandi meeting diperlukan untuk melanjutkan.</string>
+  <string name="module.jitsi_meet.auth_popup_blocked">Popup autentikasi diblokir browser.</string>
+  <string name="module.jitsi_meet.auth_popup_opened">Selesaikan autentikasi pada jendela popup.</string>
+
+  <string name="module.jitsi_meet.meeting_joined">Anda telah bergabung ke meeting.</string>
+  <string name="module.jitsi_meet.meeting_left">Anda telah keluar dari meeting.</string>
+
+  <string name="module.jitsi_meet.no_active_session">Belum ada sesi meeting aktif.</string>
+  <string name="module.jitsi_meet.refresh_native_chat">Muat Ulang Chat Native</string>
+  <string name="module.jitsi_meet.open_native_chat">Buka Chat Native</string>
+  <string name="module.jitsi_meet.native_chat_missing">Belum ada ruang chat native yang tertaut.</string>
+
   <string name="module.jitsi_meet.pip_not_supported">Picture-in-Picture tidak didukung di browser ini.</string>
+
   <string name="module.jitsi_meet.admin.section_title">Pengaturan Jitsi Meet</string>
   <string name="module.jitsi_meet.admin.base_url_label">URL Dasar Jitsi</string>
   <string name="module.jitsi_meet.admin.base_url_placeholder">https://meet.jit.si</string>

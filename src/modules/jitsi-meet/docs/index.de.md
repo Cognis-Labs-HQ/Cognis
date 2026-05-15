@@ -2,16 +2,18 @@
 
 ## Überblick
 
-Das Jitsi-Meet-Modul ergänzt direkte 1:1-Video-Räume zwischen Nutzern in Cognis. Es liegt vollständig unter `src/modules/jitsi-meet` und enthält eigene API-Routen, UI-Seite, Navbar-Beitrag, Admin-Bereich, Sprachdateien und Dokumentation.
+Das Jitsi-Meet-Modul ist ein eigenständiges Modul (`src/modules/jitsi-meet`) mit Cognis-gesteuerter Meeting-Orchestrierung für Benutzerpaare sowie Klassen-/manuelle Entitäten.
 
-Admins konfigurieren nur die Jitsi-Basis-URL. Nutzer starten oder öffnen Sitzungen mit genau einem anderen Teilnehmer.
+Es bietet:
 
-## Verantwortlichkeiten
+- einen globalen **Meetings**-Eintrag in der Navbar,
+- eine auf dem Page Composer basierende Meetings-Seite mit getrennten bearbeitbaren Bereichen (Meeting-Fenster, Teilnehmersteuerung, Chat-Fenster),
+- administrativ verwaltete Jitsi-Instanz-Konfiguration,
+- datenbankgestützte wiederverwendbare Meeting-Entitäten mit Teilnehmerdurchsetzung.
 
-- Persistieren der Moduleinstellungen (`baseUrl`) in `jitsi_meet_settings`.
-- Persistieren von Meeting-Entitäten in `jitsi_meetings` mit FK-Teilnehmerfeldern auf `accounts(id)`.
-- Erzwingen von Teilnehmer-Preflight-Prüfungen vor der Ausgabe von Meetingdaten.
-- Erzeugen deterministischer Raum-Slugs pro Teilnehmerpaar.
-- Bereitstellen einer Meetings-UI mit nativer Chat-Verknüpfung über Laufzeit-Suche in DM-Räumen.
+## Sicherheitsmodell
 
-Nicht verantwortlich für: Classroom-Orchestrierung, adapterseitige Jitsi-Provisionierung oder das Überschreiben von Nutzerzustimmung.
+- Meeting-URLs werden serverseitig aus deterministischen Raum-Slugs erzeugt und nicht als kopierbare UI-Metadaten angezeigt.
+- Der native Jitsi-Chat ist deaktiviert; stattdessen wird Cognis-Chat verknüpft.
+- Teilnehmermitgliedschaft wird durch Cognis über Modul-DB-Prüfungen erzwungen.
+- Nur der Meeting-Eigentümer darf Teilnehmermitgliedschaften ändern.
