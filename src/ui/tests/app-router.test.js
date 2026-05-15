@@ -19,19 +19,23 @@ const DASHBOARD_PAGES = [
 
 const ADAPTER_BACKED_SPA_ROUTES = [
     {
-        path: "/messages",
+        id: "social-messages-page",
+        sourceFile: "src/adapters/social/messages/index.ts",
         scriptUrl: "/static/adapters/social/messages/app.js",
     },
     {
-        path: "/profile",
+        id: "social-profile-page",
+        sourceFile: "src/adapters/social/profile/index.ts",
         scriptUrl: "/static/adapters/social/profile/app.js",
     },
     {
-        path: "/classes",
+        id: "study-classes-teacher-page",
+        sourceFile: "src/adapters/study/classes/index.ts",
         scriptUrl: "/static/adapters/study/classes/app.js",
     },
     {
-        path: "/my-classes",
+        id: "study-classes-student-page",
+        sourceFile: "src/adapters/study/classes/index.ts",
         scriptUrl: "/static/adapters/study/classes/my-classes.js",
     },
 ];
@@ -99,19 +103,40 @@ test("router registers routes for all dashboard pages", () => {
     }
 });
 
-test("router registers adapter-backed SPA routes for internal shell pages", () => {
+test("router loads adapter-backed SPA routes from the UI app-routes API", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
+    assert.match(
+        src,
+        /loadSpaRoutes/,
+        "app-router.js must load dynamic SPA routes from the route registry",
+    );
+    assert.ok(
+        src.includes("/api/v1/ui/app-routes") ||
+            readFileSync(
+                resolve(ROOT, "src/ui/reuse/spa-route-registry.js"),
+                "utf8",
+            ).includes("/api/v1/ui/app-routes"),
+        "router stack must fetch SPA route metadata from /api/v1/ui/app-routes",
+    );
+});
+
+test("adapters self-register SPA route metadata for the app router", () => {
     for (const route of ADAPTER_BACKED_SPA_ROUTES) {
+        const src = readFileSync(resolve(ROOT, route.sourceFile), "utf8");
         assert.ok(
-            src.includes(route.path),
-            `app-router.js must register a route pattern for ${route.path}`,
+            src.includes("registerSpaRoute"),
+            `${route.sourceFile} must self-register SPA routes`,
+        );
+        assert.ok(
+            src.includes(route.id),
+            `${route.sourceFile} must register SPA route id ${route.id}`,
         );
         assert.ok(
             src.includes(route.scriptUrl),
-            `app-router.js must load ${route.scriptUrl} for ${route.path}`,
+            `${route.sourceFile} must reference ${route.scriptUrl}`,
         );
     }
 });

@@ -10,6 +10,7 @@
  *                         Call once after the dashboard shell is rendered.
  *   navigateTo(path)    — navigate to an in-app route programmatically.
  *   getCurrentBase()    — returns the base path of the currently mounted page.
+ *   invalidateSpaRouteCache() — clears cached dynamic SPA route descriptors.
  *   invalidateStudyChildComponentCache() — clears the cached Study child
  *                         component list; call after learning-language changes.
  *
@@ -35,6 +36,10 @@
 
 import { ensurePageStylesheet } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
+import {
+    clearSpaRouteCache,
+    loadSpaRoutes,
+} from "./spa-route-registry.js";
 
 const STUDY_BASE_STYLESHEETS = [
     "/static/styles/page-builder.css",
@@ -187,7 +192,7 @@ async function loadStudyChildRouteModule(path) {
     }
 }
 
-const ROUTES = [
+const STATIC_ROUTES = [
     {
         pattern: /^\/dashboard$/,
         base: "/dashboard",
@@ -221,47 +226,6 @@ const ROUTES = [
             "/static/styles/reuse/page-sections.css",
         ],
         load: () => import("../app/users/index.js"),
-    },
-    {
-        pattern: /^\/messages(?:\/[^/]+)?$/,
-        base: "/messages",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/adapters/social/messages/messages.css",
-        ],
-        load: () => import("/static/adapters/social/messages/app.js"),
-    },
-    {
-        pattern: /^\/profile(?:\/[^/]+)?$/,
-        base: "/profile",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/adapters/social/profile/profile.css",
-            "/static/styles/reuse/char-counter.css",
-        ],
-        load: () => import("/static/adapters/social/profile/app.js"),
-    },
-    {
-        pattern: /^\/classes$/,
-        base: "/classes",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/adapters/study/classes/classes.css",
-        ],
-        load: () => import("/static/adapters/study/classes/app.js"),
-    },
-    {
-        pattern: /^\/my-classes$/,
-        base: "/my-classes",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/adapters/study/classes/classes.css",
-        ],
-        load: () => import("/static/adapters/study/classes/my-classes.js"),
     },
     {
         pattern: /^\/invite$/,
@@ -314,9 +278,43 @@ const ROUTES = [
     },
 ];
 
-function findRoute(path) {
+let _allRoutes = null;
+let _allRoutesPromise = null;
+
+function findMatchingRoute(routes, path) {
     const pathWithoutQueryOrFragment = normalizePath(path);
-    return ROUTES.find((r) => r.pattern.test(pathWithoutQueryOrFragment));
+    return routes.find((route) => route.pattern.test(pathWithoutQueryOrFragment));
+}
+
+async function loadAllRoutes() {
+    if (_allRoutes) return _allRoutes;
+    if (_allRoutesPromise) return _allRoutesPromise;
+    _allRoutesPromise = (async () => {
+        const dynamicRoutes = await loadSpaRoutes();
+        _allRoutes = [...STATIC_ROUTES, ...dynamicRoutes];
+        return _allRoutes;
+    })();
+    try {
+        return await _allRoutesPromise;
+    } finally {
+        _allRoutesPromise = null;
+    }
+}
+
+function findRoute(path) {
+    if (_allRoutes) {
+        return findMatchingRoute(_allRoutes, path);
+    }
+    return findMatchingRoute(STATIC_ROUTES, path);
+}
+
+async function resolveRoute(path) {
+    const staticRoute = findMatchingRoute(STATIC_ROUTES, path);
+    if (staticRoute) {
+        return staticRoute;
+    }
+    const allRoutes = await loadAllRoutes();
+    return findMatchingRoute(allRoutes, path);
 }
 
 let _root = null;
@@ -325,7 +323,7 @@ let _mountController = null;
 let _initialized = false;
 
 async function loadRoute(path) {
-    const route = findRoute(path);
+    const route = await resolveRoute(path);
     if (!route) return false;
 
     if (_mountController) {
@@ -367,7 +365,8 @@ async function loadRoute(path) {
 }
 
 export async function navigateTo(path) {
-    if (!findRoute(path)) return;
+    const route = await resolveRoute(path);
+    if (!route) return;
     if (isPotentialStudyChildPath(path)) {
         const component = await resolveStudyChildComponent(path);
         if (!component) return;
@@ -388,6 +387,17 @@ export function invalidateStudyChildComponentCache() {
     _studyChildComponentsCacheExpiresAt = 0;
 }
 
+/**
+ * Invalidates the in-memory dynamic SPA route cache so the next navigation can
+ * re-fetch route descriptors contributed by gateways/adapters.
+ *
+ * @returns {void}
+ */
+export function invalidateSpaRouteCache() {
+    clearSpaRouteCache();
+    _allRoutes = null;
+}
+
 export function getCurrentBase() {
     return _currentBase;
 }
@@ -397,6 +407,7 @@ export function initRouter(root) {
     _initialized = true;
     _root = root;
 
+    void loadAllRoutes();
     const initialRoute = findRoute(window.location.pathname);
     _currentBase = initialRoute ? initialRoute.base : null;
 
@@ -418,7 +429,7 @@ export function initRouter(root) {
 
     window.addEventListener("popstate", async (event) => {
         const path = window.location.pathname;
-        const route = findRoute(path);
+        const route = await resolveRoute(path);
         if (!route) return;
         if (isPotentialStudyChildPath(path)) {
             const component = await resolveStudyChildComponent(path);

@@ -159,6 +159,18 @@ export async function bootstrapSocialAdapter(
         "ui",
     );
     ctx.registerAdapterStaticDir?.("social", "messages", uiDir);
+    ctx.registerSpaRoute?.({
+        id: "social-messages-page",
+        pattern: "^/messages(?:/[^/]+)?$",
+        base: "/messages",
+        scriptUrl: "/static/adapters/social/messages/app.js",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/adapters/social/messages/messages.css",
+        ],
+        isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
+    });
     ctx.registerNavbarPlugin(
         "/static/adapters/social/messages/navbar.js",
         () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),

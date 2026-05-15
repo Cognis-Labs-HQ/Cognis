@@ -52,6 +52,28 @@ export interface NavbarPlugin {
     isEnabled?: () => boolean;
 }
 
+/**
+ * A client-side SPA route contributed by a gateway or adapter. The app router
+ * fetches these routes at runtime and dynamically imports `scriptUrl` when a
+ * matching path is navigated to.
+ */
+export interface SpaRoute {
+    /** Stable route identifier for diagnostics and test assertions. */
+    id: string;
+    /** Regex source string, e.g. "^/messages(?:/[^/]+)?$". */
+    pattern: string;
+    /** Base route used by the app router to track section transitions. */
+    base: string;
+    /** Browser-absolute URL of the ES module to dynamically import. */
+    scriptUrl: string;
+    /** Optional stylesheet URLs to ensure before mount. */
+    stylesheets?: string[];
+    /** Optional role access policy for this route. */
+    access?: RoleAccessPolicy;
+    /** Optional runtime predicate used to hide routes while owner is disabled. */
+    isEnabled?: () => boolean;
+}
+
 export interface AuthTypingMessage {
     id: string;
     textKey: string;
@@ -90,6 +112,7 @@ export class UIRegistry {
     private readonly moduleStaticDirs = new Map<string, string>();
     private readonly pageExtensions = new Map<string, PageElement[]>();
     private readonly navbarPlugins: NavbarPlugin[] = [];
+    private readonly spaRoutes: SpaRoute[] = [];
     private readonly authTypingMessages: AuthTypingMessage[] = [];
     private readonly settingsSections: SettingsSection[] = [];
 
@@ -140,6 +163,10 @@ export class UIRegistry {
      */
     registerNavbarPlugin(plugin: NavbarPlugin): void {
         this.navbarPlugins.push(plugin);
+    }
+
+    registerSpaRoute(route: SpaRoute): void {
+        this.spaRoutes.push(route);
     }
 
     registerAuthTypingMessage(message: AuthTypingMessage): void {
@@ -212,6 +239,10 @@ export class UIRegistry {
 
     listNavbarPlugins(): NavbarPlugin[] {
         return [...this.navbarPlugins];
+    }
+
+    listSpaRoutes(): SpaRoute[] {
+        return [...this.spaRoutes];
     }
 
     listAuthTypingMessages(): AuthTypingMessage[] {
