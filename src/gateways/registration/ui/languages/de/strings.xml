@@ -1,3 +1,17 @@
 <resources>
   <string name="gateway.registration.no_tokens">Es wurden noch keine Registrierungstoken ausgestellt.</string>
+  <string name="gateway.registration.no_requests">Es wurden noch keine Registrierungsanfragen eingereicht.</string>
+  <string name="gateway.registration.request.page_subtitle">Prüfen Sie externe und manuelle Registrierungsanfragen vor der Kontoaktivierung.</string>
+  <string name="gateway.registration.request.provider">Anbieter</string>
+  <string name="gateway.registration.request.external_user_id">Externe Benutzer-ID</string>
+  <string name="gateway.registration.request.account_id">Konto-ID</string>
+  <string name="gateway.registration.request.display_name">Anzeigename</string>
+  <string name="gateway.registration.request.created_at">Angefragt am</string>
+  <string name="gateway.registration.request.status.pending">Ausstehend</string>
+  <string name="gateway.registration.request.status.approved">Genehmigt</string>
+  <string name="gateway.registration.request.status.rejected">Abgelehnt</string>
+  <string name="gateway.registration.request.approve">Genehmigen</string>
+  <string name="gateway.registration.request.reject">Ablehnen</string>
+  <string name="gateway.registration.request.review_saved">Registrierungsanfrage geprüft.</string>
+  <string name="gateway.registration.request.review_failed">Registrierungsanfrage konnte nicht geprüft werden.</string>
 </resources>

@@ -156,6 +156,9 @@
   <string name="ui.app.login.provider.toggle.aria">認証プロバイダーを選択</string>
   <string name="ui.app.login.sso.login_with">{provider} でログイン</string>
   <string name="ui.app.login.error.generic">ログインに失敗しました。もう一度お試しください。</string>
+  <string name="ui.app.login.error.registration_pending_approval">登録リクエストは管理者の承認待ちです。</string>
+  <string name="ui.app.login.error.registration_request_rejected">登録リクエストは管理者に却下されました。</string>
+  <string name="ui.app.login.error.registration_unavailable">登録リクエストは現在利用できません。</string>
   <string name="ui.app.login.reason.session_expired">セッションの有効期限が切れました。再度ログインしてください。</string>
   <string name="ui.app.login.reason.account_disabled">あなたのアカウントは無効化されました。</string>
   <string name="ui.app.login.reason.account_deleted">あなたのアカウントは削除されました。</string>

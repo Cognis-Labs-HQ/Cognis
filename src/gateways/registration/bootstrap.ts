@@ -188,6 +188,30 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             return gateway.registerPublic(input);
         },
     );
+    ctx.capabilities.contribute("registration:requests:isEnabled", () =>
+        isGatewayEnabled() && gateway.isRequestEnabled(),
+    );
+    ctx.capabilities.contribute(
+        "registration:requests:submit",
+        async (input: {
+            provider: string;
+            externalUserId: string;
+            requestedAccountId: string;
+            requestedDisplayName: string;
+            requestedEmail?: string;
+            requestedProfileImageUrl?: string;
+        }) => {
+            if (!isGatewayEnabled()) throw new Error("gateway_disabled");
+            return gateway.submitRequest(input);
+        },
+    );
+    ctx.capabilities.contribute(
+        "registration:requests:getByIdentity",
+        async (input: { provider: string; externalUserId: string }) => {
+            if (!isGatewayEnabled()) return null;
+            return gateway.getRequestByIdentity(input);
+        },
+    );
 
     ctx.routeRegistry.register(
         createGatewayAdapterRoutes(
@@ -201,9 +225,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.1.4",
+        version: "1.2.0",
         description:
-            "Registration workflows via pluggable invite/public adapters.",
+            "Registration workflows via pluggable invite/public/request adapters.",
         publisher: "Cognis Labs",
         hasAdapters: true,
     });
@@ -294,6 +318,7 @@ export function createRegistrationRoutes(
                 gatewayEnabled: isGatewayEnabled(),
                 inviteEnabled: gateway.isInviteEnabled(),
                 publicEnabled: gateway.isPublicEnabled(),
+                requestEnabled: gateway.isRequestEnabled(),
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
@@ -302,9 +327,178 @@ export function createRegistrationRoutes(
                         gatewayEnabled: isGatewayEnabled(),
                         inviteEnabled: gateway.isInviteEnabled(),
                         publicEnabled: gateway.isPublicEnabled(),
+                        requestEnabled: gateway.isRequestEnabled(),
                     },
                 }),
             );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/registration/requests" &&
+            req.method === "GET"
+        ) {
+            if (!gateway.isRequestEnabled()) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Route not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const statusFilter = String(url.searchParams.get("status") ?? "")
+                .trim()
+                .toLowerCase();
+            const status =
+                statusFilter === "approved" || statusFilter === "rejected"
+                    ? statusFilter
+                    : statusFilter === "pending"
+                      ? "pending"
+                      : undefined;
+            const requests = await gateway.listRequests(
+                status ? { status } : undefined,
+            );
+            log?.("debug", "Listed registration requests.", {
+                ...logMeta,
+                accountId: claims.sub,
+                count: requests.length,
+                status: status ?? "all",
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: requests }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/registration/requests" &&
+            req.method === "POST"
+        ) {
+            if (!gateway.isRequestEnabled()) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Route not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const body = await readJson(req);
+            const provider = String(body.provider ?? "").trim().toLowerCase();
+            const externalUserId = String(body.externalUserId ?? "").trim();
+            const requestedAccountId = String(body.requestedAccountId ?? "")
+                .trim();
+            const requestedDisplayName = String(
+                body.requestedDisplayName ?? "",
+            ).trim();
+            const requestedEmail = String(body.requestedEmail ?? "").trim();
+            const requestedProfileImageUrl = String(
+                body.requestedProfileImageUrl ?? "",
+            ).trim();
+            if (
+                !provider ||
+                !externalUserId ||
+                !requestedAccountId ||
+                !requestedDisplayName
+            ) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message:
+                                "provider, externalUserId, requestedAccountId, and requestedDisplayName are required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const requestRecord = await gateway.submitRequest({
+                provider,
+                externalUserId,
+                requestedAccountId,
+                requestedDisplayName,
+                requestedEmail: requestedEmail || undefined,
+                requestedProfileImageUrl:
+                    requestedProfileImageUrl || undefined,
+            });
+            log?.("info", "Submitted registration request.", {
+                ...logMeta,
+                provider,
+                externalUserId,
+                requestId: requestRecord.id,
+            });
+            res.writeHead(201, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: requestRecord }));
+            return true;
+        }
+
+        const reviewRequestMatch = url.pathname.match(
+            /^\/api\/v1\/registration\/requests\/([^/]+)\/review$/,
+        );
+        if (reviewRequestMatch && req.method === "POST") {
+            if (!gateway.isRequestEnabled()) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Route not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const requestId = decodeURIComponent(reviewRequestMatch[1]);
+            const body = await readJson(req);
+            const status = String(body.status ?? "").trim().toLowerCase();
+            if (status !== "approved" && status !== "rejected") {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "status must be approved or rejected",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const reviewed = await gateway.reviewRequest({
+                requestId,
+                status,
+                reviewedByAccountId: claims.sub,
+            });
+            if (!reviewed) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Request not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            log?.("info", "Reviewed registration request.", {
+                ...logMeta,
+                accountId: claims.sub,
+                requestId,
+                status,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: reviewed }));
             return true;
         }
 

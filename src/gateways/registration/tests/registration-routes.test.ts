@@ -280,6 +280,129 @@ test("issue invite returns 409 when email is already registered", async () => {
     assert.match(res.payload, /email_taken/);
 });
 
+test("registration requests can be submitted without auth when request adapter is enabled", async () => {
+    let submitCalled = false;
+    const route = createRegistrationRoutes(
+        {
+            isInviteEnabled() {
+                return false;
+            },
+            isRequestEnabled() {
+                return true;
+            },
+            async submitRequest() {
+                submitCalled = true;
+                return {
+                    id: "req-1",
+                    provider: "line",
+                    externalUserId: "U-request",
+                    requestedAccountId: "line:U-request",
+                    requestedDisplayName: "Request User",
+                    status: "pending",
+                    createdAt: new Date().toISOString(),
+                };
+            },
+        } as any,
+        accountStore,
+    );
+
+    const res = makeResponse();
+    const handled = await route(
+        {
+            method: "POST",
+            headers: {},
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from(
+                    JSON.stringify({
+                        provider: "line",
+                        externalUserId: "U-request",
+                        requestedAccountId: "line:U-request",
+                        requestedDisplayName: "Request User",
+                    }),
+                );
+            },
+        } as any,
+        res,
+        new URL("http://localhost/api/v1/registration/requests"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 201);
+    assert.equal(submitCalled, true);
+    assert.match(res.payload, /req-1/);
+});
+
+test("registration requests listing requires admin auth", async () => {
+    const route = createRegistrationRoutes(
+        {
+            isInviteEnabled() {
+                return false;
+            },
+            isRequestEnabled() {
+                return true;
+            },
+            async listRequests() {
+                return [];
+            },
+        } as any,
+        accountStore,
+    );
+
+    const res = makeResponse();
+    const handled = await route(
+        { method: "GET", headers: {} } as any,
+        res,
+        new URL("http://localhost/api/v1/registration/requests"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 401);
+});
+
+test("admin can review registration request status", async () => {
+    const route = createRegistrationRoutes(
+        {
+            isInviteEnabled() {
+                return false;
+            },
+            isRequestEnabled() {
+                return true;
+            },
+            async reviewRequest() {
+                return {
+                    id: "req-2",
+                    provider: "line",
+                    externalUserId: "U2",
+                    requestedAccountId: "line:U2",
+                    requestedDisplayName: "User Two",
+                    status: "approved",
+                    createdAt: new Date().toISOString(),
+                    reviewedAt: new Date().toISOString(),
+                    reviewedByAccountId: "admin-user",
+                };
+            },
+        } as any,
+        accountStore,
+    );
+
+    const res = makeResponse();
+    const handled = await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${adminToken}` },
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"status":"approved"}');
+            },
+        } as any,
+        res,
+        new URL("http://localhost/api/v1/registration/requests/req-2/review"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 200);
+    assert.match(res.payload, /approved/);
+});
+
 test("GET /register does not redirect authenticated users to dashboard", async () => {
     const route = createRegistrationPageRoutes();
     const token = issueAccessToken("reg-authed-user", "user", 60);

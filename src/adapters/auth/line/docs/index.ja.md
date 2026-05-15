@@ -13,6 +13,8 @@ Authorization Code + PKCE フローに対応しているため、LINE アプリ�
 - 初回ログイン成功時の LINE ID からのアカウント自動作成。
 - ログイン時の表示名とプロフィール画像 URL メタデータのライブ同期。
 - `active`、`unlinked`、`deactivated`、`deleted` 状態の反映。
+- 公開登録が無効な場合は Registration Gateway へフォールバックし、
+  管理者承認待ちの登録リクエストを作成してからアカウント利用を許可。
 
 ## 必須設定
 

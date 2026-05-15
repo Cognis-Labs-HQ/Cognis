@@ -156,6 +156,9 @@
   <string name="ui.app.login.provider.toggle.aria">Pilih penyedia autentikasi</string>
   <string name="ui.app.login.sso.login_with">Masuk dengan {provider}</string>
   <string name="ui.app.login.error.generic">Login gagal. Silakan coba lagi.</string>
+  <string name="ui.app.login.error.registration_pending_approval">Permintaan registrasi Anda sedang menunggu persetujuan admin.</string>
+  <string name="ui.app.login.error.registration_request_rejected">Permintaan registrasi Anda ditolak oleh admin.</string>
+  <string name="ui.app.login.error.registration_unavailable">Permintaan registrasi saat ini tidak tersedia.</string>
   <string name="ui.app.login.reason.session_expired">Sesi berakhir, silakan login kembali.</string>
   <string name="ui.app.login.reason.account_disabled">Akun Anda telah dinonaktifkan.</string>
   <string name="ui.app.login.reason.account_deleted">Akun Anda telah dihapus.</string>

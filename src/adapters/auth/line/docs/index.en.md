@@ -14,6 +14,8 @@ the configured redirect URI.
 - Live sync of profile display name and profile image URL metadata on login.
 - Lifecycle-state propagation for `active`, `unlinked`, `deactivated`, and
   `deleted` identities.
+- Registration-gateway fallback when public registration is disabled: submit a
+  pending registration request for admin approval before first account use.
 
 ## Required configuration
 

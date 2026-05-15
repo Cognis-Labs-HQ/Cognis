@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { access } from "node:fs/promises";
+import { access, mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../api/route-registry.js";
@@ -923,4 +924,116 @@ test("login userValidation exempts founder admin even when SMTP is available", a
     assert.equal(payload.data.isFounder, true);
     assert.equal(payload.data.userValidationMode, "smtp");
     assert.equal(payload.data.requiredUserValidation, false);
+});
+
+test("external SSO login creates pending request when public registration is disabled", async () => {
+    const adaptersRoot = await mkdtemp(path.join(os.tmpdir(), "auth-adapters-"));
+    try {
+        const authAdaptersRoot = path.join(adaptersRoot, "auth");
+        const mockAdapterRoot = path.join(authAdaptersRoot, "mock-sso");
+        await mkdir(mockAdapterRoot, { recursive: true });
+        await writeFile(
+            path.join(mockAdapterRoot, "package.json"),
+            JSON.stringify(
+                {
+                    name: "@cognis/adapter-auth-mock-sso",
+                    version: "0.1.0",
+                    private: true,
+                    type: "module",
+                    main: "index.ts",
+                },
+                null,
+                2,
+            ),
+        );
+        await writeFile(
+            path.join(mockAdapterRoot, "index.ts"),
+            `export function createAdapter() {
+  return {
+    id: "mock-sso",
+    name: "Mock SSO",
+    getConfigSchema() { return []; },
+    configure() {},
+    async authenticate(credentials) {
+      return {
+        accountId: "mock:external-123",
+        provider: "mock-sso",
+        externalUserId: "external-123",
+        email: "external@example.com",
+        displayName: "External User",
+        profileImageUrl: "https://example.com/p.png",
+        role: "user",
+      };
+    },
+  };
+}`,
+        );
+
+        const dbExecutor = new InMemoryTestExecutor();
+        await dbExecutor.ensureTable({
+            name: "auth_adapter_configs",
+            columns: [
+                {
+                    name: "adapter_id",
+                    type: "text",
+                    notNull: true,
+                    primaryKey: true,
+                },
+                { name: "enabled", type: "integer", notNull: true, default: 0 },
+                {
+                    name: "config_json",
+                    type: "text",
+                    notNull: true,
+                    default: "{}",
+                },
+            ],
+        });
+        await dbExecutor.executeCommand({
+            option: "INSERT",
+            table: "auth_adapter_configs",
+            values: {
+                adapter_id: "mock-sso",
+                enabled: 1,
+                config_json: "{}",
+            },
+        });
+
+        const capabilities = new CapabilityStore();
+        capabilities.contribute("registration:public:isEnabled", () => false);
+        let submittedProvider = "";
+        capabilities.contribute(
+            "registration:requests:submit",
+            async (input: { provider: string }) => {
+                submittedProvider = input.provider;
+                return { id: "req-1" };
+            },
+        );
+        capabilities.contribute(
+            "registration:requests:getByIdentity",
+            async () => null,
+        );
+
+        const routeRegistry = new RouteRegistry();
+        const gatewayRegistry = new GatewayRegistry();
+        await bootstrap({
+            dbExecutor,
+            adaptersRoot,
+            routeRegistry,
+            gatewayRegistry,
+            capabilities,
+        } as any);
+
+        const result = await dispatchRoute(
+            routeRegistry,
+            makeJsonRequest("POST", { provider: "mock-sso" }),
+            "/api/v1/auth/login",
+        );
+
+        assert.ok(result.handled);
+        assert.equal(result.res.status, 403);
+        assert.match(result.res.payload, /registration_pending_approval/);
+        assert.equal(submittedProvider, "mock-sso");
+    } finally {
+        await rm(adaptersRoot, { recursive: true, force: true });
+    }
 });

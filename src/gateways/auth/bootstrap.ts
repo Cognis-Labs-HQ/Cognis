@@ -202,6 +202,25 @@ async function syncExternalIdentity(
     return { accountId, displayName, lifecycleState };
 }
 
+async function readIdentityAccountId(
+    dbExecutor: DbExecutor,
+    provider: string,
+    externalUserId: string,
+): Promise<string | null> {
+    const result = await dbExecutor.executeCommand({
+        option: "SELECT",
+        table: "auth_identities",
+        columns: ["account_id"],
+        where: [
+            { column: "provider", value: provider },
+            { column: "external_user_id", value: externalUserId },
+        ],
+        limit: 1,
+    });
+    const accountId = String(result.rows?.[0]?.account_id ?? "").trim();
+    return accountId || null;
+}
+
 async function touchExternalAccountLastLogin(
     dbExecutor: DbExecutor,
     accountId: string,
@@ -364,7 +383,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.4.0",
+        version: "1.5.0",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -679,6 +698,104 @@ function createAuthGatewayRoutes(
                     }),
                 );
                 return true;
+            }
+            if (session.provider !== "local") {
+                const linkedAccountId = await readIdentityAccountId(
+                    dbExecutor,
+                    session.provider,
+                    session.externalUserId,
+                );
+                const getPublicRegistrationEnabled = capabilities.get<
+                    () => boolean
+                >("registration:public:isEnabled");
+                const publicRegistrationEnabled = Boolean(
+                    getPublicRegistrationEnabled?.(),
+                );
+                const registrationRequestByIdentity = capabilities.get<
+                    (input: {
+                        provider: string;
+                        externalUserId: string;
+                    }) => Promise<{ status: "pending" | "approved" | "rejected" } | null>
+                >("registration:requests:getByIdentity");
+                const existingRequest = await registrationRequestByIdentity?.({
+                    provider: session.provider,
+                    externalUserId: session.externalUserId,
+                });
+                if (existingRequest?.status === "pending") {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "registration_pending_approval",
+                                message:
+                                    "Your registration request is pending admin approval",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                if (existingRequest?.status === "rejected") {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "registration_request_rejected",
+                                message:
+                                    "Your registration request was rejected by an admin",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                if (
+                    !linkedAccountId &&
+                    !publicRegistrationEnabled &&
+                    existingRequest?.status !== "approved"
+                ) {
+                    const submitRegistrationRequest = capabilities.get<
+                        (input: {
+                            provider: string;
+                            externalUserId: string;
+                            requestedAccountId: string;
+                            requestedDisplayName: string;
+                            requestedEmail?: string;
+                            requestedProfileImageUrl?: string;
+                        }) => Promise<{ id: string }>
+                    >("registration:requests:submit");
+                    if (!submitRegistrationRequest) {
+                        res.writeHead(503, { "content-type": "application/json" });
+                        res.end(
+                            JSON.stringify({
+                                error: {
+                                    code: "registration_unavailable",
+                                    message:
+                                        "Registration requests are unavailable",
+                                },
+                            }),
+                        );
+                        return true;
+                    }
+                    await submitRegistrationRequest({
+                        provider: session.provider,
+                        externalUserId: session.externalUserId,
+                        requestedAccountId: session.accountId,
+                        requestedDisplayName:
+                            session.displayName ?? session.accountId,
+                        requestedEmail: session.email,
+                        requestedProfileImageUrl: session.profileImageUrl,
+                    });
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "registration_pending_approval",
+                                message:
+                                    "Your registration request is pending admin approval",
+                            },
+                        }),
+                    );
+                    return true;
+                }
             }
             const syncedSession = await syncExternalIdentity(
                 dbExecutor,

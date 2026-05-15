@@ -427,8 +427,23 @@ export async function mount(root) {
                                 return;
                             }
                             const errorMsg =
-                                body?.error?.message ||
-                                i18n.t("ui.app.login.error.generic");
+                                body?.error?.code ===
+                                "registration_pending_approval"
+                                    ? i18n.t(
+                                          "ui.app.login.error.registration_pending_approval",
+                                      )
+                                    : body?.error?.code ===
+                                        "registration_request_rejected"
+                                      ? i18n.t(
+                                            "ui.app.login.error.registration_request_rejected",
+                                        )
+                                      : body?.error?.code ===
+                                          "registration_unavailable"
+                                        ? i18n.t(
+                                              "ui.app.login.error.registration_unavailable",
+                                          )
+                                        : body?.error?.message ||
+                                          i18n.t("ui.app.login.error.generic");
                             showToast(errorMsg, { variant: "error" });
                         });
                 },

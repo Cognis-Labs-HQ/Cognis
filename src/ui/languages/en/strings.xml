@@ -156,6 +156,9 @@
   <string name="ui.app.login.provider.toggle.aria">Select authentication provider</string>
   <string name="ui.app.login.sso.login_with">Login with {provider}</string>
   <string name="ui.app.login.error.generic">Login failed. Please try again.</string>
+  <string name="ui.app.login.error.registration_pending_approval">Your registration request is pending admin approval.</string>
+  <string name="ui.app.login.error.registration_request_rejected">Your registration request was rejected by an admin.</string>
+  <string name="ui.app.login.error.registration_unavailable">Registration requests are currently unavailable.</string>
   <string name="ui.app.login.reason.session_expired">Session expired, please login again.</string>
   <string name="ui.app.login.reason.account_disabled">Your account was disabled.</string>
   <string name="ui.app.login.reason.account_deleted">Your account was deleted.</string>

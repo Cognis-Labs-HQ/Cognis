@@ -1,6 +1,6 @@
 {
-    "name": "@cognis/adapter-auth-line",
-    "version": "0.2.0",
+    "name": "@cognis/adapter-registration-requests",
+    "version": "0.1.0",
     "private": true,
     "type": "module",
     "main": "index.ts",

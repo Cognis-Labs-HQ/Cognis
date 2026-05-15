@@ -13,6 +13,9 @@ konfigurierten Redirect-URI zurückkehren können.
 - Erstmalige Kontoerstellung aus der LINE-Identität beim ersten erfolgreichen Login.
 - Live-Synchronisierung von Anzeigename und Profilbild-URL-Metadaten beim Login.
 - Übernahme der Zustände `active`, `unlinked`, `deactivated` und `deleted`.
+- Fallback über das Registration-Gateway bei deaktivierter öffentlicher
+  Registrierung: Es wird eine ausstehende Registrierungsanfrage für die
+  Admin-Freigabe erstellt, bevor das Konto nutzbar ist.
 
 ## Erforderliche Konfiguration
 

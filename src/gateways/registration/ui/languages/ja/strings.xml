@@ -1,3 +1,17 @@
 <resources>
   <string name="gateway.registration.no_tokens">登録トークンはまだ発行されていません。</string>
+  <string name="gateway.registration.no_requests">登録リクエストはまだ送信されていません。</string>
+  <string name="gateway.registration.request.page_subtitle">アカウント有効化前に外部・手動の登録リクエストを確認してください。</string>
+  <string name="gateway.registration.request.provider">プロバイダー</string>
+  <string name="gateway.registration.request.external_user_id">外部ユーザーID</string>
+  <string name="gateway.registration.request.account_id">アカウントID</string>
+  <string name="gateway.registration.request.display_name">表示名</string>
+  <string name="gateway.registration.request.created_at">申請日時</string>
+  <string name="gateway.registration.request.status.pending">保留中</string>
+  <string name="gateway.registration.request.status.approved">承認済み</string>
+  <string name="gateway.registration.request.status.rejected">却下済み</string>
+  <string name="gateway.registration.request.approve">承認</string>
+  <string name="gateway.registration.request.reject">却下</string>
+  <string name="gateway.registration.request.review_saved">登録リクエストを確認しました。</string>
+  <string name="gateway.registration.request.review_failed">登録リクエストの確認に失敗しました。</string>
 </resources>

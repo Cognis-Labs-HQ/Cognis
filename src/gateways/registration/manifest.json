@@ -1,9 +1,9 @@
 {
     "id": "registration",
     "name": "Registration Gateway",
-    "version": "1.1.4",
+    "version": "1.2.0",
     "required": false,
     "requires": ["db", "auth", "notify"],
-    "description": "Registration workflows via pluggable invite/public adapters.",
+    "description": "Registration workflows via pluggable invite/public/request adapters.",
     "publisher": "Cognis Labs"
 }

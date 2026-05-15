@@ -116,3 +116,23 @@ test("typing showcase keeps each full message visible for one minute before dele
         /for \(\s*let charIndex = 0;[\s\S]*?window\.setTimeout\(resolve,\s*85\),[\s\S]*?window\.setTimeout\(resolve,\s*60000\),[\s\S]*?for \(\s*let charIndex = sample\.length;/m,
     );
 });
+
+test("login page maps pending registration outcomes to localized toast keys", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/login/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /registration_pending_approval[\s\S]*ui\.app\.login\.error\.registration_pending_approval/m,
+    );
+    assert.match(
+        source,
+        /registration_request_rejected[\s\S]*ui\.app\.login\.error\.registration_request_rejected/m,
+    );
+    assert.match(
+        source,
+        /registration_unavailable[\s\S]*ui\.app\.login\.error\.registration_unavailable/m,
+    );
+});

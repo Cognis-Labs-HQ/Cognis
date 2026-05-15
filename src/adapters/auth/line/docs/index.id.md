@@ -13,6 +13,9 @@ aplikasi LINE dan kembali ke redirect URI yang dikonfigurasi.
 - Pembuatan akun awal dari identitas LINE saat login pertama berhasil.
 - Sinkronisasi langsung display name dan metadata URL foto profil saat login.
 - Propagasi status identitas `active`, `unlinked`, `deactivated`, dan `deleted`.
+- Fallback lewat Registration Gateway saat registrasi publik dinonaktifkan:
+  sistem membuat permintaan registrasi berstatus menunggu persetujuan admin
+  sebelum akun dapat digunakan.
 
 ## Konfigurasi wajib
 

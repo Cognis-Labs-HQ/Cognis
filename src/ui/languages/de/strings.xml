@@ -156,6 +156,9 @@
   <string name="ui.app.login.provider.toggle.aria">Authentifizierungsanbieter auswählen</string>
   <string name="ui.app.login.sso.login_with">Anmelden mit {provider}</string>
   <string name="ui.app.login.error.generic">Anmeldung fehlgeschlagen. Bitte erneut versuchen.</string>
+  <string name="ui.app.login.error.registration_pending_approval">Deine Registrierungsanfrage wartet auf die Freigabe durch einen Admin.</string>
+  <string name="ui.app.login.error.registration_request_rejected">Deine Registrierungsanfrage wurde von einem Admin abgelehnt.</string>
+  <string name="ui.app.login.error.registration_unavailable">Registrierungsanfragen sind derzeit nicht verfügbar.</string>
   <string name="ui.app.login.reason.session_expired">Sitzung abgelaufen, bitte melde dich erneut an.</string>
   <string name="ui.app.login.reason.account_disabled">Dein Konto wurde deaktiviert.</string>
   <string name="ui.app.login.reason.account_deleted">Dein Konto wurde gelöscht.</string>
