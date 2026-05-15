@@ -100,3 +100,5 @@ imported from anywhere.
 
 - [5028bb9](https://github.com/le-firehawk/Cognis/commit/5028bb9)
 - [ad0f87b](https://github.com/le-firehawk/Cognis/commit/ad0f87b)
+- [903e3f3](https://github.com/le-firehawk/Cognis/commit/903e3f3)
+- [1f2451b](https://github.com/le-firehawk/Cognis/commit/1f2451b)
