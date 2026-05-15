@@ -624,7 +624,9 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             return true;
         }
 
-        // Match per-room paths.
+        // Match per-room paths. Capture groups:
+        //   1: roomId  2: sub-resource (messages|members|key|read|typing|reactions)
+        //   3: sub-resource argument (e.g. messageId)  4: nested resource (e.g. reactions)
         const roomMatch = url.pathname.match(
             /^\/api\/v1\/messages\/rooms\/([^/]+)(?:\/([^/]+))?(?:\/([^/]+))?(?:\/([^/]+))?$/,
         );
@@ -858,13 +860,16 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     const senderProfile = profilesByAccountId.get(
                         message.senderId,
                     );
+                    // Pre-parse to Date once per message to avoid redundant
+                    // construction inside the roomMembers filter.
+                    const messageCreatedDate = new Date(message.createdAt);
                     const readBy = roomMembers
                         .filter(
                             (roomMember) =>
                                 roomMember.accountId !== message.senderId &&
                                 Boolean(roomMember.lastReadAt) &&
                                 new Date(roomMember.lastReadAt as string) >=
-                                    new Date(message.createdAt),
+                                    messageCreatedDate,
                         )
                         .map((roomMember) => {
                             const readerProfile = profilesByAccountId.get(

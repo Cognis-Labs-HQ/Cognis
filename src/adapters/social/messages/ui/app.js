@@ -174,15 +174,15 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
         .map((room) => {
             const titleSource = selectedRoomTitle(room, currentAccountId);
             const members = Array.isArray(room.members) ? room.members : [];
-            const otherMember =
+            const displayedMember =
                 members.find(
                     (member) => member.accountId !== currentAccountId,
                 ) ||
                 members[0] ||
                 null;
-            const avatar = otherMember?.avatarKey
-                ? `<img class="messages-room-avatar-img" src="/api/v1/files/${escapeHtml(otherMember.avatarKey)}" alt="" />`
-                : `<span class="messages-room-avatar-fallback" style="--initials-bg: ${escapeHtml(pickInitialsColor(otherMember?.handle || otherMember?.accountId || titleSource))};">${escapeHtml(getInitialsText(otherMember ? memberDisplayName(otherMember) : titleSource))}</span>`;
+            const avatar = displayedMember?.avatarKey
+                ? `<img class="messages-room-avatar-img" src="/api/v1/files/${escapeHtml(displayedMember.avatarKey)}" alt="" />`
+                : `<span class="messages-room-avatar-fallback" style="--initials-bg: ${escapeHtml(pickInitialsColor(displayedMember?.handle || displayedMember?.accountId || titleSource))};">${escapeHtml(getInitialsText(displayedMember ? memberDisplayName(displayedMember) : titleSource))}</span>`;
             const previewSource =
                 room.lastMessagePreview ||
                 room.lastMessage?.senderDisplayName ||
@@ -237,7 +237,7 @@ function renderStatusIndicator(message, currentAccountId, i18n) {
     </div>`;
 }
 
-function renderRoomEvent(message, i18n) {
+function formatRoomEventText(message, i18n) {
     if (message.contentType !== "application/vnd.cognis.room-event+json") {
         return null;
     }
@@ -276,6 +276,7 @@ function renderRoomEvent(message, i18n) {
 }
 
 function renderReactionRow(message) {
+    if (!message?.id) return "";
     const reactions = Array.isArray(message.reactions) ? message.reactions : [];
     const chips = reactions
         .map((reaction) => {
@@ -321,7 +322,7 @@ async function renderThread(
     );
     const html = decoded
         .map((msg) => {
-            const roomEventLabel = renderRoomEvent(msg, i18n);
+            const roomEventLabel = formatRoomEventText(msg, i18n);
             if (roomEventLabel) {
                 return `<div class="messages-room-event">${escapeHtml(roomEventLabel)}</div>`;
             }
