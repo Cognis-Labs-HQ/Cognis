@@ -6,6 +6,7 @@ import {
 } from "../../auth/guard.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../api/reuse/read-json.js";
+import { isTrustedHttpUrl } from "../../../api/reuse/security-settings.js";
 import type { CoreNotificationGateway } from "../gateway.js";
 import type {
     NotificationBroadcastDisplayMode,
@@ -90,18 +91,6 @@ function resolveTrustedOrigin(requestOrigin: string): string {
     );
 }
 
-function isSafeRedirectUrl(urlValue: string, trustedOrigin: string): boolean {
-    if (!urlValue) return true;
-    try {
-        const parsedUrl = new URL(urlValue, trustedOrigin);
-        const hasSafeProtocol =
-            parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
-        return hasSafeProtocol && parsedUrl.origin === trustedOrigin;
-    } catch {
-        return false;
-    }
-}
-
 function validateBroadcastSchedule(
     startAt: number | null | undefined,
     endAt: number | null | undefined,
@@ -132,7 +121,8 @@ function getBroadcastCreateValidationError(input: {
     startAt: number | null | undefined;
     endAt: number | null | undefined;
     redirectUrl: string | null;
-    trustedOrigin: string;
+    trustedBaseUrl: string;
+    trustedDomains: string[];
 }): { code: string; message: string } | null {
     if (!input.title) {
         return {
@@ -187,11 +177,15 @@ function getBroadcastCreateValidationError(input: {
     }
     if (
         input.redirectUrl !== null &&
-        !isSafeRedirectUrl(input.redirectUrl, input.trustedOrigin)
+        !isTrustedHttpUrl(input.redirectUrl, {
+            baseUrl: input.trustedBaseUrl,
+            trustedDomains: input.trustedDomains,
+        })
     ) {
         return {
             code: "invalid_broadcast_redirect",
-            message: "Broadcast redirectUrl must stay on the current origin",
+            message:
+                "Broadcast redirectUrl must stay on the current origin or trusted domains",
         };
     }
     return null;
@@ -200,6 +194,9 @@ function getBroadcastCreateValidationError(input: {
 export function createNotificationRoutes(
     gateway: CoreNotificationGateway,
     notifStore?: NotificationPreferenceRouteStore,
+    options?: {
+        getTrustedDomains?: () => Promise<string[]>;
+    },
 ) {
     return async (
         req: IncomingMessage,
@@ -335,6 +332,9 @@ export function createNotificationRoutes(
             ).trim();
             const redirectUrl = redirectUrlRaw || null;
             const enabled = body.enabled == null ? true : Boolean(body.enabled);
+            const trustedDomains = options?.getTrustedDomains
+                ? await options.getTrustedDomains().catch(() => [])
+                : [];
             const validationError = getBroadcastCreateValidationError({
                 title,
                 message,
@@ -343,7 +343,8 @@ export function createNotificationRoutes(
                 startAt,
                 endAt,
                 redirectUrl,
-                trustedOrigin: resolveTrustedOrigin(url.origin),
+                trustedBaseUrl: resolveTrustedOrigin(url.origin),
+                trustedDomains,
             });
 
             if (validationError !== null) {

@@ -13,6 +13,11 @@ import {
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { LocalAccountStore } from "../../api/reuse/account-store.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
+import {
+    matchesTrustedDomain,
+    parseSecuritySettings,
+    SECURITY_SETTINGS_KEY,
+} from "../../api/reuse/security-settings.js";
 import { CoreRegistrationGateway } from "./gateway.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
@@ -116,24 +121,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const preferenceStore =
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
 
-    const SECURITY_SETTINGS_KEY = "security-settings";
-
     async function getTrustedDomains(): Promise<string[]> {
         if (!preferenceStore) return [];
         const raw = await preferenceStore
             .get("__system__", SECURITY_SETTINGS_KEY)
             .catch(() => null);
-        if (!raw) return [];
-        try {
-            const parsed = JSON.parse(raw) as { trustedDomains?: unknown };
-            if (!Array.isArray(parsed.trustedDomains)) return [];
-            return parsed.trustedDomains
-                .filter((d: unknown) => typeof d === "string")
-                .map((d: string) => d.trim().toLowerCase())
-                .filter(Boolean);
-        } catch {
-            return [];
-        }
+        return parseSecuritySettings(raw)?.trustedDomains ?? [];
     }
 
     function isGatewayEnabled(): boolean {
@@ -535,8 +528,9 @@ export function createRegistrationRoutes(
             const trustedDomains = await getTrustedDomains();
             if (trustedDomains.length > 0) {
                 const emailDomain = inviteeEmail.split("@")[1] ?? "";
-                const allowed = trustedDomains.some(
-                    (d) => d === emailDomain || emailDomain.endsWith(`.${d}`),
+                const allowed = matchesTrustedDomain(
+                    emailDomain,
+                    trustedDomains,
                 );
                 if (!allowed) {
                     res.writeHead(422, {

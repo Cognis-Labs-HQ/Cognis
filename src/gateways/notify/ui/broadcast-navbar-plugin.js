@@ -5,6 +5,10 @@ import { openPopup } from "/static/reuse/popup.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { showToast } from "/static/reuse/toast.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import {
+    isTrustedHttpUrl,
+    loadTrustedDomains,
+} from "/static/reuse/trusted-domains.js";
 
 const CSS_HREF = "/static/gateways/notify/broadcast.css";
 const POLL_INTERVAL_VISIBLE_MILLISECONDS = 20_000;
@@ -17,17 +21,24 @@ let isPopupOpen = false;
 let pollTimer = null;
 let stopPollingForAuthFailure = false;
 
-function navigateAfterClose(redirectUrl, i18n) {
+async function navigateAfterClose(redirectUrl, i18n) {
     if (!redirectUrl) return;
     try {
+        const trustedDomains = await loadTrustedDomains(apiFetch);
+        if (
+            !isTrustedHttpUrl(redirectUrl, {
+                baseUrl: window.location.origin,
+                trustedDomains,
+            })
+        ) {
+            throw new Error("invalid_redirect");
+        }
         const parsedUrl = new URL(redirectUrl, window.location.origin);
         if (parsedUrl.origin === window.location.origin) {
             navigateTo(parsedUrl.pathname + parsedUrl.search + parsedUrl.hash);
             return;
         }
-        showToast(i18n.t("gateway.notify.broadcast.invalid_redirect"), {
-            variant: "warning",
-        });
+        window.location.assign(parsedUrl.toString());
     } catch {
         showToast(i18n.t("gateway.notify.broadcast.invalid_redirect"), {
             variant: "warning",
@@ -115,7 +126,7 @@ function renderBroadcastBar(broadcast, i18n) {
                 await dismissBroadcast(broadcast.id);
             }
             removeBroadcastBar();
-            navigateAfterClose(broadcast.redirectUrl, i18n);
+            await navigateAfterClose(broadcast.redirectUrl, i18n);
         } catch {
             showToast(i18n.t("gateway.notify.broadcast.action_failed"), {
                 variant: "error",
@@ -124,10 +135,10 @@ function renderBroadcastBar(broadcast, i18n) {
     });
 
     const closeButton = barContainer.querySelector(".notify-broadcast-close");
-    closeButton?.addEventListener("click", () => {
+    closeButton?.addEventListener("click", async () => {
         removeBroadcastBar();
         if (broadcast.redirectUrl) {
-            navigateAfterClose(broadcast.redirectUrl, i18n);
+            await navigateAfterClose(broadcast.redirectUrl, i18n);
         }
     });
 }
@@ -164,19 +175,19 @@ async function openBroadcastPopup(broadcast, i18n) {
         const didAcknowledge = popupResult === "acknowledge";
         if (didAcknowledge) {
             await acknowledgeBroadcast(broadcast.id);
-            navigateAfterClose(broadcast.redirectUrl, i18n);
+            await navigateAfterClose(broadcast.redirectUrl, i18n);
             return;
         }
 
         if (broadcast.requireAcknowledgement) {
             if (broadcast.redirectUrl) {
-                navigateAfterClose(broadcast.redirectUrl, i18n);
+                await navigateAfterClose(broadcast.redirectUrl, i18n);
             }
             return;
         }
 
         await dismissBroadcast(broadcast.id);
-        navigateAfterClose(broadcast.redirectUrl, i18n);
+        await navigateAfterClose(broadcast.redirectUrl, i18n);
     } catch {
         showToast(i18n.t("gateway.notify.broadcast.action_failed"), {
             variant: "error",

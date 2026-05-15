@@ -1,6 +1,10 @@
 import { ACCESS_ROLES, getRoleLabel } from "/static/reuse/access-role.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
+import {
+    isTrustedHttpUrl,
+    loadTrustedDomains,
+} from "/static/reuse/trusted-domains.js";
 
 /**
  * Broadcast administration section for the notification gateway.
@@ -380,6 +384,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         startAtInput,
         endAtInput,
         redirectUrlValue,
+        trustedDomains,
     }) {
         if (!titleValue) {
             return i18n.t("gateway.notify.admin.broadcast_error_missing_title");
@@ -411,22 +416,14 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         ) {
             return i18n.t("gateway.notify.admin.broadcast_error_invalid_range");
         }
-        if (redirectUrlValue) {
-            try {
-                const parsedUrl = new URL(
-                    redirectUrlValue,
-                    window.location.origin,
-                );
-                if (parsedUrl.origin !== window.location.origin) {
-                    return i18n.t(
-                        "gateway.notify.admin.broadcast_error_invalid_redirect",
-                    );
-                }
-            } catch {
-                return i18n.t(
-                    "gateway.notify.admin.broadcast_error_invalid_redirect",
-                );
-            }
+        if (
+            redirectUrlValue &&
+            !isTrustedHttpUrl(redirectUrlValue, {
+                baseUrl: window.location.origin,
+                trustedDomains,
+            })
+        ) {
+            return i18n.t("gateway.notify.admin.broadcast_error_invalid_redirect");
         }
         return null;
     }
@@ -576,6 +573,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                         : "",
                 )
                 .filter(Boolean);
+            const trustedDomains = await loadTrustedDomains(apiFetch);
 
             const validationMessage = getBroadcastCreateValidationError({
                 titleValue,
@@ -584,6 +582,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 startAtInput,
                 endAtInput,
                 redirectUrlValue,
+                trustedDomains,
             });
             if (validationMessage) {
                 showToast(validationMessage, {

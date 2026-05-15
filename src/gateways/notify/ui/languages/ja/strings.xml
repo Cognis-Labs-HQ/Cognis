@@ -31,7 +31,7 @@
   <string name="gateway.notify.admin.broadcast_error_invalid_timestamp">有効な開始日時と終了日時を入力してください。</string>
   <string name="gateway.notify.admin.broadcast_error_partial_window">開始日と終了日の両方を入力するか、両方とも空のままにしてください。</string>
   <string name="gateway.notify.admin.broadcast_error_invalid_range">開始日時は終了日時より前である必要があります。</string>
-  <string name="gateway.notify.admin.broadcast_error_invalid_redirect">リダイレクトURLはこのサイト内である必要があります。</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_redirect">リダイレクトURLはこのサイト内であるか、信頼済みドメインを使用する必要があります。</string>
   <string name="gateway.notify.admin.broadcast_toggle_failed">一斉通知の状態更新に失敗しました。</string>
   <string name="gateway.notify.admin.broadcast_none">一斉通知は設定されていません。</string>
   <string name="gateway.notify.admin.broadcast_expand_details">詳細を表示</string>
@@ -56,5 +56,5 @@
   <string name="gateway.notify.admin.broadcast_ack_state_dismissed">閉じた</string>
   <string name="gateway.notify.broadcast.acknowledge">確認</string>
   <string name="gateway.notify.broadcast.action_failed">一斉通知の状態更新に失敗しました。</string>
-  <string name="gateway.notify.broadcast.invalid_redirect">リダイレクトURLが無効です。</string>
+  <string name="gateway.notify.broadcast.invalid_redirect">リダイレクトURLが無効か、信頼されていません。</string>
 </resources>

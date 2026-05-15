@@ -31,7 +31,7 @@
   <string name="gateway.notify.admin.broadcast_error_invalid_timestamp">Masukkan nilai tanggal/waktu mulai dan selesai yang valid.</string>
   <string name="gateway.notify.admin.broadcast_error_partial_window">Masukkan tanggal mulai dan selesai sekaligus, atau kosongkan keduanya.</string>
   <string name="gateway.notify.admin.broadcast_error_invalid_range">Tanggal/waktu mulai harus lebih awal daripada tanggal/waktu selesai.</string>
-  <string name="gateway.notify.admin.broadcast_error_invalid_redirect">URL pengalihan harus tetap berada di situs ini.</string>
+  <string name="gateway.notify.admin.broadcast_error_invalid_redirect">URL pengalihan harus tetap berada di situs ini atau menggunakan domain tepercaya.</string>
   <string name="gateway.notify.admin.broadcast_toggle_failed">Gagal memperbarui status siaran.</string>
   <string name="gateway.notify.admin.broadcast_none">Belum ada siaran yang dikonfigurasi.</string>
   <string name="gateway.notify.admin.broadcast_expand_details">Tampilkan Detail</string>
@@ -56,5 +56,5 @@
   <string name="gateway.notify.admin.broadcast_ack_state_dismissed">Ditutup</string>
   <string name="gateway.notify.broadcast.acknowledge">Konfirmasi</string>
   <string name="gateway.notify.broadcast.action_failed">Gagal memperbarui status siaran.</string>
-  <string name="gateway.notify.broadcast.invalid_redirect">URL pengalihan tidak valid.</string>
+  <string name="gateway.notify.broadcast.invalid_redirect">URL pengalihan tidak valid atau tidak tepercaya.</string>
 </resources>

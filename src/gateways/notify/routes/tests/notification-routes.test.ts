@@ -781,6 +781,54 @@ test("POST /api/v1/notifications/broadcasts rejects external redirect URLs", asy
     assert.match(response.payload, /invalid_broadcast_redirect/);
 });
 
+test("POST /api/v1/notifications/broadcasts accepts trusted external redirect URLs", async () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+    let createdPayload: Record<string, unknown> | null = null;
+    const route = createNotificationRoutes(
+        gateway,
+        {
+            async getUserNotifPrefs() {
+                return [];
+            },
+            async saveUserNotifPrefs() {},
+            async createBroadcast(input) {
+                createdPayload = input as Record<string, unknown>;
+                return { id: "broadcast-2", ...input };
+            },
+        },
+        {
+            async getTrustedDomains() {
+                return ["example.com"];
+            },
+        },
+    );
+    const adminToken = issueAccessToken("admin-user", "admin", 60);
+    const response = makeResponse();
+
+    await route(
+        requestWithBody(
+            "POST",
+            {
+                title: "Maintenance Window",
+                message: "Planned outage at 22:00 UTC.",
+                displayMode: "bar",
+                targetRoles: ["user"],
+                redirectUrl: "https://status.example.com/landing",
+            },
+            adminToken,
+        ),
+        response,
+        new URL("http://localhost/api/v1/notifications/broadcasts"),
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(
+        createdPayload?.redirectUrl,
+        "https://status.example.com/landing",
+    );
+});
+
 test("GET /api/v1/notifications/broadcasts/active returns role-targeted broadcasts", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
