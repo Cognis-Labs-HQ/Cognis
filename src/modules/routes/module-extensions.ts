@@ -100,8 +100,19 @@ export function createModuleExtensionRoutes(
         );
     }
 
+    /**
+     * Normalizes a module-relative path declared in a manifest by trimming a
+     * leading "./" segment so it can be appended to /static/modules/<id>/.
+     */
     function normalizeModuleRelativePath(relativePath: string): string {
         return relativePath.replace(/^\.\//, "");
+    }
+
+    function buildModuleStaticUrl(
+        moduleId: string,
+        relativePath: string,
+    ): string {
+        return `/static/modules/${moduleId}/${normalizeModuleRelativePath(relativePath)}`;
     }
 
     async function refresh() {
@@ -133,7 +144,10 @@ export function createModuleExtensionRoutes(
                 }
 
                 if (manifest.ui?.navbarPlugin) {
-                    const scriptUrl = `/static/modules/${manifest.id}/${normalizeModuleRelativePath(manifest.ui.navbarPlugin)}`;
+                    const scriptUrl = buildModuleStaticUrl(
+                        manifest.id,
+                        manifest.ui.navbarPlugin,
+                    );
                     const moduleIdCapture = manifest.id;
                     options.uiRegistry.registerNavbarPlugin({
                         scriptUrl,
@@ -147,7 +161,10 @@ export function createModuleExtensionRoutes(
                 }
 
                 if (manifest.ui?.adminSection) {
-                    const scriptUrl = `/static/modules/${manifest.id}/${normalizeModuleRelativePath(manifest.ui.adminSection)}`;
+                    const scriptUrl = buildModuleStaticUrl(
+                        manifest.id,
+                        manifest.ui.adminSection,
+                    );
                     const stringsBaseUrl = `/static/modules/${manifest.id}/languages`;
                     options.uiRegistry.registerAdminSection({
                         id: `module:${manifest.id}`,
