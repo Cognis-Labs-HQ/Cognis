@@ -49,6 +49,8 @@ test("dashboard logout requests server revocation before clearing local token", 
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
+    // This test intentionally locks exact source snippets so logout ordering and
+    // Bearer forwarding remain explicit in dashboard-layout.js.
     const logoutFetchIndex = layoutSource.indexOf(
         'await fetch("/api/v1/auth/logout"',
     );

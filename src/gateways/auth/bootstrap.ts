@@ -58,17 +58,6 @@ async function loadLocalAccountStore(
     return new LocalAccountStoreClass(dbExecutor, log);
 }
 
-/**
- * Returns true when the `cognis_access_token` cookie should be marked Secure.
- *
- * Evaluation order:
- * 1. If `COGNIS_SECURE_COOKIES` env var is "1" or "true", always Secure.
- * 2. If `COGNIS_SECURE_COOKIES` env var is "0" or "false", never Secure.
- * 3. Otherwise, inspect the `X-Forwarded-Proto` header set by a reverse proxy
- *    or load balancer. If any comma-separated value is "https", mark Secure.
- *    This means direct HTTP connections (where the header is absent) default to
- *    non-Secure, while HTTPS-terminated proxies automatically enable it.
- */
 function resolveRole(
     sessionRole: string | undefined,
     isAdmin: boolean | undefined,
