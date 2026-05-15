@@ -475,6 +475,7 @@
   <string name="module.social.messages.receipt_read_single">Dibaca: {day} {time}</string>
   <string name="module.social.messages.receipt_read_by_count">Dibaca oleh: {count} pengguna</string>
   <string name="module.social.messages.typing">sedang mengetik…</string>
+  <string name="module.social.messages.typing_users">{names} sedang mengetik…</string>
   <string name="module.social.messages.requests">Permintaan pesan</string>
   <string name="module.social.messages.requests_empty">Tidak ada permintaan pesan yang tertunda.</string>
   <string name="module.social.messages.approve_request">Setujui</string>

@@ -32,8 +32,8 @@ import {
 } from "/static/reuse/crypto-utils.js";
 
 const TEXT_ENCODER = new TextEncoder();
-const TEXT_DECODER = new TextDecoder();
 const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉"];
+const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
 const EMOJI_NAMES = {
     "👍": "Like",
     "❤": "Heart",
@@ -99,7 +99,7 @@ async function decryptMessageOrReturnPlaintext(key, message) {
             key,
             hexToBytes(cipherHex),
         );
-        return TEXT_DECODER.decode(decrypted);
+        return new TextDecoder().decode(decrypted);
     } catch {
         return null;
     }
@@ -657,7 +657,7 @@ async function renderThread(
             <div class="messages-message${ownClass}">
                 ${senderLabel}
                 <span class="messages-message-content">
-                    <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
+                    <span class="messages-message-body">${escapeHtml(msg.text ?? MESSAGE_UNAVAILABLE_PLACEHOLDER)}</span>
                     ${metadataRow}
                 </span>
                 ${renderReactionRow(msg)}
@@ -1079,7 +1079,9 @@ export async function mount(root, { signal } = {}) {
                 (typer) => typer.displayName || typer.handle || typer.accountId,
             )
             .join(", ");
-        const typingLabel = `${names} ${i18n.t("module.social.messages.typing")}`;
+        const typingLabel = i18n
+            .t("module.social.messages.typing_users")
+            .replace("{names}", names);
         typingStatusEl.innerHTML = `<span class="messages-typing-indicator" aria-hidden="true"><span></span><span></span><span></span></span><span class="messages-typing-label">${escapeHtml(typingLabel)}</span>`;
     }
 
