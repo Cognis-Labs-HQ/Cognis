@@ -230,7 +230,7 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
             return `
       <li class="messages-room ${isActive ? "messages-room--active" : ""}${pendingClass}"
           data-room-id="${escapeHtml(room.id)}">
-        <span class="messages-room-avatar">${avatar}</span>
+        ${avatar}
         <span class="messages-room-meta">
             <span class="messages-room-title">${escapeHtml(titleSource)}</span>
             <span class="messages-room-preview">${escapeHtml(preview)}</span>
@@ -352,29 +352,49 @@ function closeReadTooltips(threadList) {
     threadList?.classList.remove("messages-thread-list--receipt-open");
 }
 
-function formatRoomListAvatar(displayedMember, titleSource) {
-    if (displayedMember?.avatarKey) {
-        return `<img class="messages-room-avatar-img" src="/api/v1/files/${escapeHtml(displayedMember.avatarKey)}" alt="" />`;
+function formatAvatarMarkup({
+    avatarKey,
+    label,
+    colorSeed,
+    avatarClass,
+    imageClass,
+    fallbackClass,
+}) {
+    if (avatarKey) {
+        return `<span class="${escapeHtml(avatarClass)}"><img class="${escapeHtml(imageClass)}" src="/api/v1/files/${escapeHtml(avatarKey)}" alt="" /></span>`;
     }
+    const color = pickInitialsColor(colorSeed || label);
+    return `<span class="${escapeHtml(avatarClass)}"><span class="${escapeHtml(fallbackClass)}" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span></span>`;
+}
+
+function formatRoomListAvatar(displayedMember, titleSource) {
     const label = displayedMember
         ? memberDisplayName(displayedMember)
         : titleSource;
-    const color = pickInitialsColor(
-        displayedMember?.handle || displayedMember?.accountId || titleSource,
-    );
-    return `<span class="messages-room-avatar-fallback" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
+    return formatAvatarMarkup({
+        avatarKey: displayedMember?.avatarKey || null,
+        label,
+        colorSeed:
+            displayedMember?.handle ||
+            displayedMember?.accountId ||
+            titleSource,
+        avatarClass: "messages-room-avatar",
+        imageClass: "messages-room-avatar-img",
+        fallbackClass: "messages-room-avatar-fallback",
+    });
 }
 
 function formatMessageAvatar(message) {
     const senderLabel =
         message.senderDisplayName || message.senderHandle || message.senderId;
-    if (message.senderAvatarKey) {
-        return `<span class="messages-message-avatar"><img class="messages-message-avatar-img" src="/api/v1/files/${escapeHtml(message.senderAvatarKey)}" alt="" /></span>`;
-    }
-    const color = pickInitialsColor(
-        message.senderHandle || message.senderId || senderLabel,
-    );
-    return `<span class="messages-message-avatar"><span class="messages-message-avatar-fallback" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(senderLabel))}</span></span>`;
+    return formatAvatarMarkup({
+        avatarKey: message.senderAvatarKey || null,
+        label: senderLabel,
+        colorSeed: message.senderHandle || message.senderId || senderLabel,
+        avatarClass: "messages-message-avatar",
+        imageClass: "messages-message-avatar-img",
+        fallbackClass: "messages-message-avatar-fallback",
+    });
 }
 
 async function renderThread(
