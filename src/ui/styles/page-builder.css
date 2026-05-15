@@ -767,7 +767,10 @@ body[data-theme="light"] .slider::before {
     --floating-toolbar-viewport-padding: 24px;
     position: fixed;
     left: 50%;
-    bottom: 52px;
+    bottom: calc(
+        var(--footer-floating-height, 38px) +
+            var(--floating-toolbar-footer-gap, 14px)
+    );
     transform: translateX(-50%);
     z-index: 900;
     display: flex;
@@ -793,7 +796,6 @@ body[data-theme="light"] .slider::before {
 
 @media (max-width: 640px) {
     .floating-toolbar {
-        bottom: 44px;
         width: 80vw;
         max-width: 80vw;
         flex-wrap: wrap;

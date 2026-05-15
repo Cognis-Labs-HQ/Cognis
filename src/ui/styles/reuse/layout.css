@@ -1,4 +1,6 @@
 .app-shell {
+    --footer-floating-height: 38px;
+    --floating-toolbar-footer-gap: 14px;
     min-height: 100vh;
     padding-bottom: 56px;
     background: transparent;
@@ -463,6 +465,7 @@
     z-index: 880;
     width: var(--shell-content-width);
     margin: 0;
+    min-height: var(--footer-floating-height);
     padding: 6px 14px;
     border: 1px solid rgba(148, 163, 184, 0.12);
     border-radius: 12px;
@@ -583,6 +586,10 @@ button.dropdown-item {
 }
 
 @media (max-width: 640px) {
+    .app-shell {
+        --footer-floating-height: 34px;
+        --floating-toolbar-footer-gap: 10px;
+    }
     .site-header {
         width: 100%;
         border-radius: 0;
