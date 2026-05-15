@@ -270,7 +270,7 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
                     .replace(/\s+/g, " ")
                     .trim();
                 const unreadBadge =
-                    room.unread > 0 && room.id !== selectedRoomId
+                    room.unread > 0 && !isActive
                         ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
                         : "";
                 const isActive = room.id === selectedRoomId;
