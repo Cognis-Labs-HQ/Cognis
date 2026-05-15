@@ -253,24 +253,37 @@ test("logging stream route ignores invalid multi-value severity thresholds", asy
         const handlers = ctx.routeRegistry.getHandlers();
         const streamHandler = handlers[0];
         const token = issueAccessToken("admin-test", "admin", 300);
-        const req = new RequestRecorder("GET", token);
-        const res = new ResponseRecorder();
 
-        const handled = await streamHandler(
-            req as any,
-            res as any,
-            new URL(
-                "/api/v1/logging/stream?severity=warn,error",
-                "http://localhost",
-            ),
-        );
+        const invalidSeverityValues = [
+            "warn,error",
+            "info,warn,error",
+            "debug,error",
+            "warn, error",
+            ",",
+            " , ",
+            "warn,",
+            "warn,,",
+        ];
+        for (const invalidSeverityValue of invalidSeverityValues) {
+            const req = new RequestRecorder("GET", token);
+            const res = new ResponseRecorder();
+            const handled = await streamHandler(
+                req as any,
+                res as any,
+                new URL(
+                    `/api/v1/logging/stream?severity=${encodeURIComponent(invalidSeverityValue)}`,
+                    "http://localhost",
+                ),
+            );
 
-        assert.equal(handled, true);
-        assert.match(res.payload, /Informational entry/);
-        assert.match(res.payload, /Error entry/);
-
-        req.emit("close");
-        res.emit("close");
+            assert.equal(handled, true);
+            assert.equal(res.statusCode, 200);
+            assert.match(res.payload, /Informational entry/);
+            assert.match(res.payload, /Error entry/);
+            assert.doesNotMatch(res.payload, /event: snapshot_error/);
+            req.emit("close");
+            res.emit("close");
+        }
     } finally {
         if (previousLogFile === undefined) {
             delete process.env.LOG_FILE;

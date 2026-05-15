@@ -41,7 +41,7 @@ test("Logger writes pretty console output and JSON file output", async () => {
     try {
         const logger = new Logger(
             "debug",
-            "/tmp/cognis-logger-test.log",
+            path.join(tmpdir(), "cognis-logger-test.log"),
             async (_filePath, content) => {
                 fileWrites.push(content);
             },
@@ -101,7 +101,7 @@ test("Logger filters console by LOG_LEVEL while persisting all levels to file", 
     try {
         const logger = new Logger(
             "warn",
-            "/tmp/cognis-logger-filter-test.log",
+            path.join(tmpdir(), "cognis-logger-filter-test.log"),
             async (_filePath, content) => {
                 fileWrites.push(content);
             },
@@ -168,7 +168,7 @@ test("Logger rotates and compresses old log files", async () => {
 test("Logger writes to console before queued file writes complete", async () => {
     const stderrWrites: string[] = [];
     const originalStderrWrite = process.stderr.write.bind(process.stderr);
-    let releaseQueuedWrite: (() => void) | null = null;
+    let releaseQueuedWrite: () => void = () => undefined;
     const queuedWriteRelease = new Promise<void>((resolve) => {
         releaseQueuedWrite = resolve;
     });
@@ -181,7 +181,7 @@ test("Logger writes to console before queued file writes complete", async () => 
     try {
         const logger = new Logger(
             "debug",
-            "/tmp/cognis-logger-console-order-test.log",
+            path.join(tmpdir(), "cognis-logger-console-order-test.log"),
             async () => {
                 await queuedWriteRelease;
             },
@@ -189,9 +189,6 @@ test("Logger writes to console before queued file writes complete", async () => 
         );
         const pendingLog = logger.error("Console should be immediate.");
         assert.match(stderrWrites.join(""), /Console should be immediate\./);
-        if (!releaseQueuedWrite) {
-            throw new Error("Expected queued write release callback.");
-        }
         releaseQueuedWrite();
         await pendingLog;
     } finally {
@@ -204,7 +201,7 @@ test("Logger queue continues processing writes after a failed append", async () 
     const persistedWrites: string[] = [];
     const logger = new Logger(
         "debug",
-        "/tmp/cognis-logger-queue-failure-test.log",
+        path.join(tmpdir(), "cognis-logger-queue-failure-test.log"),
         async (_filePath, content) => {
             writeAttemptCount += 1;
             if (writeAttemptCount === 1) {

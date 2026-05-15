@@ -27,6 +27,7 @@ const LEVEL_PRIORITY: Record<LogLevel, number> = {
 function parseSeverityThreshold(value: string | null): LogLevel | null {
     if (!value || value === "all") return null;
     const normalizedValue = value.trim().toLowerCase();
+    // Severity filtering accepts exactly one threshold level.
     if (normalizedValue.includes(",")) return null;
     if (!ALLOWED_LEVELS.has(normalizedValue as LogLevel)) return null;
     return normalizedValue as LogLevel;

@@ -27,6 +27,8 @@ const priorities: Record<LogLevel, number> = {
     warn: 30,
     error: 40,
 };
+const ROTATED_LOG_SUFFIX_PATTERN =
+    /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z-[a-z0-9]+(?:\.gz)?$/;
 
 type FileAppend = (filePath: string, content: string) => Promise<void>;
 
@@ -162,16 +164,27 @@ export class Logger {
         if (priorities[level] >= priorities[this.level]) {
             writeConsoleLog(level, message, meta, this.consoleFormat);
         }
-        const run = async () => {
+        const appendLogEntry = async () => {
             await this.rotateIfNeeded(Buffer.byteLength(line, "utf8"));
             await this.fileAppend(this.filePath, line);
         };
-        const pending = this.writeQueue.then(run, run);
-        this.writeQueue = pending.then(
+        await this.enqueueWrite(appendLogEntry);
+    }
+
+    private async enqueueWrite(
+        appendLogEntry: () => Promise<void>,
+    ): Promise<void> {
+        // Continue queue processing after failures by running appendLogEntry for
+        // both fulfilled and rejected prior writes.
+        const pendingWrite = this.writeQueue.then(
+            appendLogEntry,
+            appendLogEntry,
+        );
+        this.writeQueue = pendingWrite.then(
             () => undefined,
             () => undefined,
         );
-        await pending;
+        await pendingWrite;
     }
 
     private async rotateIfNeeded(incomingBytes: number): Promise<void> {
@@ -195,8 +208,10 @@ export class Logger {
             .toISOString()
             .replaceAll(":", "-")
             .replaceAll(".", "-");
-        const uniqueSuffix = process.hrtime.bigint().toString(36);
-        const rotatedPath = `${this.filePath}.${timestamp}-${uniqueSuffix}`;
+        // Base-36 produces lowercase alphanumeric output compatible with
+        // ROTATED_LOG_SUFFIX_PATTERN.
+        const hrtimeIdentifier = process.hrtime.bigint().toString(36);
+        const rotatedPath = `${this.filePath}.${timestamp}-${hrtimeIdentifier}`;
         await mkdir(path.dirname(this.filePath), { recursive: true });
         await rename(this.filePath, rotatedPath);
         if (this.rotationOptions.compressRotated) {
@@ -216,13 +231,13 @@ export class Logger {
         const dirPath = path.dirname(this.filePath);
         const baseName = path.basename(this.filePath);
         const entries = await readdir(dirPath);
-        const rotatedSuffixPattern =
-            /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z-[a-z0-9]+(?:\.gz)?$/;
         const rotatedCandidates = entries
             .filter(
                 (entry) =>
                     entry.startsWith(`${baseName}.`) &&
-                    rotatedSuffixPattern.test(entry.slice(baseName.length + 1)),
+                    ROTATED_LOG_SUFFIX_PATTERN.test(
+                        entry.slice(baseName.length + 1),
+                    ),
             )
             .map((entry) => path.join(dirPath, entry));
         const resolved = await Promise.all(
