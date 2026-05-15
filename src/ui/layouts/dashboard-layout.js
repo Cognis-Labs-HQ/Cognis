@@ -497,19 +497,22 @@ export async function renderDashboardLayout(root, slots = {}) {
             const footer = existingShell.querySelector(".global-footer");
             const floatingToolbar =
                 existingShell.querySelector(".floating-toolbar");
-            const toolbar = floatingToolbar ?? document.createElement("div");
-            toolbar.className = "floating-toolbar";
-            toolbar.hidden = true;
-            toolbar.innerHTML = slots.floatingToolbar;
+            const floatingToolbarElement =
+                floatingToolbar ?? document.createElement("div");
+            if (!floatingToolbar) {
+                floatingToolbarElement.className = "floating-toolbar";
+            }
+            floatingToolbarElement.hidden = true;
+            floatingToolbarElement.innerHTML = slots.floatingToolbar;
             if (footer) {
                 if (
-                    toolbar.parentElement !== existingShell ||
-                    toolbar.nextElementSibling !== footer
+                    floatingToolbarElement.parentElement !== existingShell ||
+                    floatingToolbarElement.nextElementSibling !== footer
                 ) {
-                    footer.before(toolbar);
+                    footer.before(floatingToolbarElement);
                 }
-            } else if (toolbar.parentElement !== existingShell) {
-                existingShell.append(toolbar);
+            } else if (floatingToolbarElement.parentElement !== existingShell) {
+                existingShell.append(floatingToolbarElement);
             }
         } else {
             existingShell.querySelector(".floating-toolbar")?.remove();
