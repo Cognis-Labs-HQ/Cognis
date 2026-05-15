@@ -1,0 +1,11 @@
+[
+    "/api/v1/modules/jitsi-meet/ping",
+    "/api/v1/modules/jitsi-meet/config",
+    "/api/v1/modules/jitsi-meet/admin/settings",
+    "/api/v1/modules/jitsi-meet/meetings",
+    "/api/v1/modules/jitsi-meet/contacts",
+    {
+        "path": "/meetings",
+        "access": { "minRole": "user" }
+    }
+]

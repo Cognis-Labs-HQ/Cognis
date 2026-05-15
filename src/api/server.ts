@@ -19,6 +19,8 @@ import type { RouteRegistry } from "./route-registry.js";
 import { createGatewayRoutes } from "./routes/gateways/index.js";
 import type { UIRegistry } from "./ui-registry.js";
 
+import type { ModuleCapabilityProvider } from "../modules/routes/module-extensions.js";
+
 export interface ApiDependencies {
     moduleRuntimeGateway: ModuleRuntimeGateway;
     accountStore?: LocalAccountStore;
@@ -26,6 +28,12 @@ export interface ApiDependencies {
     routeRegistry?: RouteRegistry;
     gatewayRegistry?: GatewayRegistry;
     uiRegistry?: UIRegistry;
+    /**
+     * Gateway-contributed capability store passed through to module API
+     * plugins, enabling modules to consume capabilities (e.g. db:executor)
+     * without importing concrete gateway internals.
+     */
+    capabilities?: ModuleCapabilityProvider;
     log?: BootstrapLog;
     moduleIntegrityChecker?: () => Promise<
         Array<{
@@ -82,6 +90,10 @@ export function buildServer(deps: ApiDependencies) {
         deps.moduleRuntimeGateway,
         (moduleId) => enabledModules.has(moduleId),
         log,
+        {
+            capabilities: deps.capabilities,
+            uiRegistry: deps.uiRegistry,
+        },
     );
 
     const moduleRoutes = createModuleRoutes(moduleService, {

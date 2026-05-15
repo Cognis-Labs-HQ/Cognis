@@ -311,6 +311,7 @@ const server = buildServer({
     routeRegistry,
     gatewayRegistry,
     uiRegistry,
+    capabilities,
     log,
     createProfile,
     setProfileRole: capabilities.get<

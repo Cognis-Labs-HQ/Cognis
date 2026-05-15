@@ -7,6 +7,7 @@ import type {
 import path from "node:path";
 import { requireRoleAccess } from "../../gateways/auth/guard.js";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
+import type { UIRegistry } from "../../api/ui-registry.js";
 
 interface RouteHandler {
     method: string;
@@ -24,6 +25,25 @@ interface ModuleRouteOptions {
     access?: unknown;
 }
 
+/**
+ * Minimal interface for the capability store as seen by module route plugins.
+ * Modules call `capabilities.get('db:executor')` etc. to obtain gateway-
+ * contributed capabilities without importing any concrete type.
+ */
+export interface ModuleCapabilityProvider {
+    get<T>(key: string): T | undefined;
+}
+
+export interface ModuleExtensionOptions {
+    /** Provider for gateway-contributed capabilities passed to each module. */
+    capabilities?: ModuleCapabilityProvider;
+    /**
+     * UI registry used to auto-register module static directories, navbar
+     * plugins, and admin sections declared in each module's manifest.
+     */
+    uiRegistry?: UIRegistry;
+}
+
 export interface ModuleExtensionRoutes {
     handle(
         req: IncomingMessage,
@@ -37,11 +57,19 @@ export function createModuleExtensionRoutes(
     runtime: ModuleRuntimeGateway,
     isModuleEnabled: (moduleId: string) => boolean,
     log?: BootstrapLog,
+    options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
     let handlers: RouteHandler[] = [];
     const modulesRoot =
         process.env.COGNIS_MODULES_ROOT ??
         path.resolve(process.cwd(), "src", "modules");
+
+    /**
+     * Tracks module IDs for which UI contributions (static dir, navbar plugin,
+     * admin section) have already been registered. UI contributions are
+     * registered once at first enable and survive subsequent refresh() calls.
+     */
+    const registeredModuleUi = new Set<string>();
 
     /**
      * Writes a standardized warning when a module declares an invalid access policy.
@@ -70,29 +98,97 @@ export function createModuleExtensionRoutes(
         const manifests = await runtime.listManifests();
 
         for (const manifest of manifests) {
-            if (!manifest.entrypoints?.api || !isModuleEnabled(manifest.id))
-                continue;
+            if (!isModuleEnabled(manifest.id)) continue;
 
             const moduleRoot = path.resolve(modulesRoot, manifest.id);
+
+            if (
+                options?.uiRegistry &&
+                !registeredModuleUi.has(manifest.id)
+            ) {
+                registeredModuleUi.add(manifest.id);
+
+                if (manifest.ui?.staticDir) {
+                    const absoluteStaticDir = path.join(
+                        moduleRoot,
+                        manifest.ui.staticDir,
+                    );
+                    options.uiRegistry.registerModuleStaticDir(
+                        manifest.id,
+                        absoluteStaticDir,
+                    );
+                    log?.(
+                        "info",
+                        "Module UI static directory registered.",
+                        {
+                            component: "module-extension-routes",
+                            moduleId: manifest.id,
+                            dir: absoluteStaticDir,
+                        },
+                    );
+                }
+
+                if (manifest.ui?.navbarPlugin) {
+                    const scriptUrl = `/static/modules/${manifest.id}/${manifest.ui.navbarPlugin.replace(/^\.\//, "")}`;
+                    const moduleIdCapture = manifest.id;
+                    options.uiRegistry.registerNavbarPlugin({
+                        scriptUrl,
+                        isEnabled: () => isModuleEnabled(moduleIdCapture),
+                    });
+                    log?.(
+                        "info",
+                        "Module navbar plugin registered.",
+                        {
+                            component: "module-extension-routes",
+                            moduleId: manifest.id,
+                            scriptUrl,
+                        },
+                    );
+                }
+
+                if (manifest.ui?.adminSection) {
+                    const scriptUrl = `/static/modules/${manifest.id}/${manifest.ui.adminSection.replace(/^\.\//, "")}`;
+                    const stringsBaseUrl = `/static/modules/${manifest.id}/languages`;
+                    options.uiRegistry.registerAdminSection({
+                        id: `module:${manifest.id}`,
+                        label: manifest.name,
+                        scriptUrl,
+                        stringsBaseUrl,
+                    });
+                    log?.(
+                        "info",
+                        "Module admin section registered.",
+                        {
+                            component: "module-extension-routes",
+                            moduleId: manifest.id,
+                            scriptUrl,
+                        },
+                    );
+                }
+            }
+
+            if (!manifest.entrypoints?.api) continue;
+
             const pluginPath = path.join(moduleRoot, manifest.entrypoints.api);
             try {
                 const plugin = await import(`${pluginPath}?t=${Date.now()}`);
                 if (typeof plugin.registerApiRoutes === "function") {
                     plugin.registerApiRoutes({
+                        capabilities: options?.capabilities ?? null,
                         get(
                             routePath: string,
                             handler: RouteHandler["handler"],
-                            options?: ModuleRouteOptions,
+                            routeOptions?: ModuleRouteOptions,
                         ) {
                             const parsedAccess = parseRoleAccessPolicy(
-                                options?.access,
+                                routeOptions?.access,
                             );
                             if (parsedAccess.invalid) {
                                 logInvalidAccessPolicy(
                                     "GET",
                                     manifest.id,
                                     routePath,
-                                    options?.access,
+                                    routeOptions?.access,
                                 );
                             }
                             nextHandlers.push({
@@ -107,17 +203,17 @@ export function createModuleExtensionRoutes(
                         post(
                             routePath: string,
                             handler: RouteHandler["handler"],
-                            options?: ModuleRouteOptions,
+                            routeOptions?: ModuleRouteOptions,
                         ) {
                             const parsedAccess = parseRoleAccessPolicy(
-                                options?.access,
+                                routeOptions?.access,
                             );
                             if (parsedAccess.invalid) {
                                 logInvalidAccessPolicy(
                                     "POST",
                                     manifest.id,
                                     routePath,
-                                    options?.access,
+                                    routeOptions?.access,
                                 );
                             }
                             nextHandlers.push({

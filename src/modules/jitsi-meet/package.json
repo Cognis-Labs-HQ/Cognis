@@ -1,0 +1,7 @@
+{
+    "name": "@cognis/module-jitsi-meet",
+    "version": "1.0.0",
+    "description": "Jitsi Meet video call module for Cognis.",
+    "type": "module",
+    "private": true
+}

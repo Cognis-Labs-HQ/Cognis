@@ -1,0 +1,20 @@
+{
+    "id": "jitsi-meet",
+    "name": "Jitsi Meet",
+    "version": "1.0.0",
+    "class": "extension",
+    "coreApiVersion": "v1",
+    "capabilities": ["video:meetings", "ui:page", "ui:navbar", "db:meetings"],
+    "requires": ["social"],
+    "entrypoints": {
+        "api": "./api/index.js",
+        "ui": "./ui/app.html",
+        "cli": "./cli/index.js"
+    },
+    "ui": {
+        "staticDir": "./ui",
+        "navbarPlugin": "navbar.js",
+        "adminSection": "admin-section.js"
+    },
+    "publisher": "Cognis Labs"
+}
