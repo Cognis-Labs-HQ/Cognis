@@ -36,9 +36,9 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.1` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.0` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.0.0` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.0` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.0.1` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.0.2` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.1` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
 ## Gateways
@@ -64,7 +64,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 
 | Component  | Path       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.1.3` |
+| API Server | `src/api/` | `0.1.4` |
 
 ## Modules
 

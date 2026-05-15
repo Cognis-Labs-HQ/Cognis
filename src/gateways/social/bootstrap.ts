@@ -197,7 +197,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "social",
         name: "Social Gateway",
-        version: "1.2.0",
+        version: "1.2.1",
         description: "Profiles, social graph, posts, and messaging.",
         publisher: "Cognis Labs",
         hasAdapters: true,
