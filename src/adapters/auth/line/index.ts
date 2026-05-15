@@ -4,6 +4,7 @@ import type {
     AuthConfigField,
     AuthProviderAdapter,
 } from "../../../gateways/auth/gateway.js";
+import { resolveAbsoluteUrl } from "../../../api/reuse/request-origin.js";
 
 type LifecycleState = "active" | "unlinked" | "deactivated" | "deleted";
 
@@ -353,29 +354,10 @@ class LineAuthAdapter implements AuthProviderAdapter {
                 );
                 return true;
             }
-            const forwardedProto = String(
-                req.headers?.["x-forwarded-proto"] ?? "",
-            ).trim();
-            const requestProtocol = forwardedProto.split(",")[0]?.trim();
-            const protocol =
-                requestProtocol ||
-                (req.socket && "encrypted" in req.socket && req.socket.encrypted
-                    ? "https"
-                    : "http");
-            const forwardedHost = String(
-                req.headers?.["x-forwarded-host"] ?? "",
-            )
-                .trim()
-                .split(",")[0]
-                ?.trim();
-            const host =
-                forwardedHost || String(req.headers?.host ?? "").trim() || "";
-            const callbackUrl = host
-                ? new URL(
-                      this.managedRedirectPath,
-                      `${protocol}://${host}`,
-                  ).toString()
-                : this.managedRedirectPath;
+            const callbackUrl = resolveAbsoluteUrl(
+                req,
+                this.managedRedirectPath,
+            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({

@@ -15,10 +15,9 @@ import {
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 import {
-    generateRandomString,
-    generateCodeChallenge,
-    buildAuthorizationUrl,
-} from "../../reuse/oauth-pkce.js";
+    initiateLineOAuthRedirect,
+    openLineEmailDisclosurePopup,
+} from "../../reuse/line-oauth.js";
 
 /**
  * Mounts the login page into the provided root element.
@@ -66,49 +65,6 @@ export async function mount(root) {
             variant: "error",
             permanent: true,
         });
-    }
-
-    async function initiateLineOAuthRedirect() {
-        try {
-            const initResponse = await fetch("/api/v1/auth/line/init");
-            if (!initResponse.ok) {
-                showToast(i18n.t("ui.app.login.error.line_unavailable"), {
-                    variant: "error",
-                });
-                return;
-            }
-            const initPayload = await initResponse.json();
-            const lineInitData = initPayload.data;
-            const redirectUri =
-                String(lineInitData.callbackUrl ?? "").trim() ||
-                new URL(
-                    lineInitData.managedRedirectPath,
-                    window.location.origin,
-                ).toString();
-            const state = generateRandomString(32);
-            sessionStorage.setItem("line_oauth_state", state);
-            let codeChallenge = "";
-            let codeChallengeMethod = "";
-            if (lineInitData.usePkce) {
-                const codeVerifier = generateRandomString(64);
-                codeChallenge = await generateCodeChallenge(codeVerifier);
-                codeChallengeMethod = "S256";
-                sessionStorage.setItem("line_code_verifier", codeVerifier);
-            }
-            window.location.href = buildAuthorizationUrl({
-                endpoint: lineInitData.authorizationEndpoint,
-                clientId: lineInitData.channelId,
-                redirectUri,
-                state,
-                scope: lineInitData.scope,
-                codeChallenge,
-                codeChallengeMethod,
-            });
-        } catch {
-            showToast(i18n.t("ui.app.login.error.line_unavailable"), {
-                variant: "error",
-            });
-        }
     }
 
     async function loadLoginMethods() {
@@ -173,11 +129,18 @@ export async function mount(root) {
                     btn.addEventListener("click", async () => {
                         if (method.id === "line") {
                             const lineDisclosureAction =
-                                await openLineEmailDisclosurePopup();
+                                await openLineEmailDisclosurePopup({
+                                    i18n,
+                                    openPopup,
+                                    escapeHtml,
+                                });
                             if (lineDisclosureAction !== "confirm") {
                                 return;
                             }
-                            await initiateLineOAuthRedirect();
+                            await initiateLineOAuthRedirect({
+                                i18n,
+                                showToast,
+                            });
                             return;
                         }
                         if (providerInput) providerInput.value = method.id;
@@ -189,30 +152,6 @@ export async function mount(root) {
         } catch {
             // Login methods unavailable — form works with local auth by default
         }
-    }
-
-    async function openLineEmailDisclosurePopup() {
-        return openPopup({
-            title: i18n.t("ui.app.login.line_disclosure.title"),
-            body: `
-      <p>${escapeHtml(i18n.t("ui.app.login.line_disclosure.body"))}</p>
-      <p>${escapeHtml(i18n.t("ui.app.login.line_disclosure.body_followup"))}</p>
-    `,
-            actions: [
-                {
-                    id: "confirm",
-                    label: i18n.t("ui.app.login.line_disclosure.confirm"),
-                    variant: "confirm",
-                },
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.app.login.line_disclosure.cancel"),
-                    variant: "cancel",
-                },
-            ],
-            variant: "warning",
-            maxWidth: "560px",
-        });
     }
 
     async function loadUserEmails(accountId) {

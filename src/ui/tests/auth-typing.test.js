@@ -138,15 +138,19 @@ test("login page maps pending registration outcomes to localized toast keys", ()
 });
 
 test("login page shows LINE disclosure popup before LINE SSO submit", () => {
-    const source = readFileSync(
+    const loginSource = readFileSync(
         resolve(ROOT, "src/ui/app/login/index.js"),
         "utf8",
     );
+    const lineOauthSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/line-oauth.js"),
+        "utf8",
+    );
 
-    assert.match(source, /method\.id === "line"/);
-    assert.match(source, /openLineEmailDisclosurePopup/);
-    assert.match(source, /ui\.app\.login\.line_disclosure\.title/);
-    assert.match(source, /ui\.app\.login\.line_disclosure\.body/);
-    assert.match(source, /ui\.app\.login\.line_disclosure\.confirm/);
-    assert.match(source, /ui\.app\.login\.line_disclosure\.cancel/);
+    assert.match(loginSource, /method\.id === "line"/);
+    assert.match(loginSource, /openLineEmailDisclosurePopup/);
+    assert.match(lineOauthSource, /ui\.app\.login\.line_disclosure\.title/);
+    assert.match(lineOauthSource, /ui\.app\.login\.line_disclosure\.body/);
+    assert.match(lineOauthSource, /ui\.app\.login\.line_disclosure\.confirm/);
+    assert.match(lineOauthSource, /ui\.app\.login\.line_disclosure\.cancel/);
 });
