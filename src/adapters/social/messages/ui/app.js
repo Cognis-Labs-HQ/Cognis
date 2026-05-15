@@ -1260,15 +1260,6 @@ export async function mount(root, { signal } = {}) {
                     }
                 });
 
-                threadList?.addEventListener("keydown", (keyboardEvent) => {
-                    if (
-                        keyboardEvent.key !== "Enter" &&
-                        keyboardEvent.key !== " "
-                    ) {
-                        return;
-                    }
-                });
-
                 if (selectedRoomId) {
                     void openRoom(selectedRoomId);
                     void refreshTypingIndicator();
