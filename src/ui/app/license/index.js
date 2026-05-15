@@ -155,6 +155,7 @@ export async function mount(root) {
                     `<h3>${i18n.t("ui.reuse.navigation")}</h3><nav class="license-nav"></nav>`,
             },
         ],
+        toolbarScrollable: true,
     });
     await composer.init();
 
