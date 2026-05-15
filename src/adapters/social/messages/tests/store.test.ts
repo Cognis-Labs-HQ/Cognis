@@ -77,3 +77,23 @@ test("messages setMuted uses executeCommand with integer muted value", async () 
     assert.ok(updateCmd);
     assert.equal(updateCmd.set.muted, 1);
 });
+
+test("createMessageRequest persists room id when provided", async () => {
+    const { db, commandCalls } = createRecordingExecutor();
+    const store = new DbMessagesStore(db);
+
+    await assert.rejects(async () => {
+        await store.createMessageRequest({
+            fromAccountId: "account-a",
+            toAccountId: "account-b",
+            roomId: "room-123",
+        });
+    });
+
+    const insertCmd = commandCalls.find(
+        (cmd) =>
+            cmd.option === "INSERT" && cmd.table === "chat_message_requests",
+    );
+    assert.ok(insertCmd);
+    assert.equal(insertCmd.values.room_id, "room-123");
+});

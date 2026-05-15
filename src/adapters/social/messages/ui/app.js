@@ -30,10 +30,12 @@ import {
 } from "/static/reuse/crypto-utils.js";
 
 const TEXT_ENCODER = new TextEncoder();
+const TEXT_DECODER = new TextDecoder();
 const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉"];
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
+const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
 
 async function encryptMessage(key, plaintext) {
     const initVector = crypto.getRandomValues(new Uint8Array(12));
@@ -48,12 +50,20 @@ async function encryptMessage(key, plaintext) {
     };
 }
 
-async function decryptMessage(key, ivHex, ciphertextHex) {
+async function decryptMessage(key, message) {
     try {
+        if (message.contentType === "application/vnd.cognis.room-event+json") {
+            return message.ciphertext;
+        }
+        if (!message.iv) return null;
+        let cipherHex = message.ciphertext;
+        if (message.authTag) {
+            cipherHex = `${cipherHex}${message.authTag}`;
+        }
         const decrypted = await crypto.subtle.decrypt(
-            { name: "AES-GCM", iv: hexToBytes(ivHex) },
+            { name: "AES-GCM", iv: hexToBytes(message.iv) },
             key,
-            hexToBytes(ciphertextHex),
+            hexToBytes(cipherHex),
         );
         return TEXT_DECODER.decode(decrypted);
     } catch {
@@ -163,6 +173,22 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
     return rooms
         .map((room) => {
             const titleSource = selectedRoomTitle(room, currentAccountId);
+            const members = Array.isArray(room.members) ? room.members : [];
+            const otherMember =
+                members.find(
+                    (member) => member.accountId !== currentAccountId,
+                ) ||
+                members[0] ||
+                null;
+            const avatar = otherMember?.avatarKey
+                ? `<img class="messages-room-avatar-img" src="/api/v1/files/${escapeHtml(otherMember.avatarKey)}" alt="" />`
+                : `<span class="messages-room-avatar-fallback" style="--initials-bg: ${escapeHtml(pickInitialsColor(otherMember?.handle || otherMember?.accountId || titleSource))};">${escapeHtml(getInitialsText(otherMember ? memberDisplayName(otherMember) : titleSource))}</span>`;
+            const previewSource =
+                room.lastMessagePreview ||
+                room.lastMessage?.senderDisplayName ||
+                room.lastMessage?.senderHandle ||
+                i18n.t("module.social.messages.preview_encrypted");
+            const preview = String(previewSource).replace(/\s+/g, " ").trim();
             const unreadBadge =
                 room.unread > 0
                     ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
@@ -171,12 +197,46 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
             return `
       <li class="messages-room ${isActive ? "messages-room--active" : ""}"
           data-room-id="${escapeHtml(room.id)}">
-        <span class="messages-room-title">${escapeHtml(titleSource)}</span>
+        <span class="messages-room-avatar">${avatar}</span>
+        <span class="messages-room-meta">
+            <span class="messages-room-title">${escapeHtml(titleSource)}</span>
+            <span class="messages-room-preview">${escapeHtml(preview)}</span>
+        </span>
         ${unreadBadge}
       </li>
     `;
         })
         .join("");
+}
+
+function renderStatusIndicator(message, currentAccountId, i18n) {
+    if (message.senderId !== currentAccountId) return "";
+    const readers = Array.isArray(message.readBy) ? message.readBy : [];
+    const readCount = readers.length;
+    const deliveredCount = Number(message.deliveredToCount ?? 0);
+    const status =
+        readCount > 0 ? "read" : deliveredCount > 0 ? "delivered" : "sent";
+    const statusClass = `messages-message-status--${status}`;
+    const statusSymbol = status === "sent" ? "✓" : "✓✓";
+    return `<button type="button" class="messages-message-status ${statusClass}" data-read-toggle-for="${escapeHtml(message.id)}" aria-label="${escapeHtml(i18n.t("module.social.messages.read_details"))}">${escapeHtml(statusSymbol)}</button>`;
+}
+
+function renderReadDetailsPanel(message, i18n) {
+    const readers = Array.isArray(message.readBy) ? message.readBy : [];
+    if (!readers.length) return "";
+    const rows = readers
+        .map((reader) => {
+            const readerName =
+                reader.displayName || reader.handle || reader.accountId;
+            const readTime = reader.readAt
+                ? formatDateTime(reader.readAt)
+                : "—";
+            return `<li>${escapeHtml(readerName)} — ${escapeHtml(readTime)}</li>`;
+        })
+        .join("");
+    return `<div class="messages-read-details" data-read-details-for="${escapeHtml(message.id)}" hidden>
+        <ul>${rows}</ul>
+    </div>`;
 }
 
 function renderReadReceipt(message, currentAccountId, i18n) {
@@ -191,6 +251,44 @@ function renderReadReceipt(message, currentAccountId, i18n) {
         .join(", ");
     const extraCount = readers.length > 3 ? ` +${readers.length - 3}` : "";
     return `<span class="messages-message-read">${escapeHtml(i18n.t("module.social.messages.read_by"))}: ${escapeHtml(names)}${escapeHtml(extraCount)}</span>`;
+}
+
+function renderRoomEvent(message, i18n) {
+    if (message.contentType !== "application/vnd.cognis.room-event+json") {
+        return null;
+    }
+    let payload = null;
+    try {
+        payload = JSON.parse(message.text || "{}");
+    } catch {
+        return null;
+    }
+    const subjectLabel =
+        payload.subjectDisplayName ||
+        payload.subjectHandle ||
+        payload.subjectAccountId;
+    const eventType = payload.eventType;
+    if (eventType === "member_joined") {
+        return i18n
+            .t("module.social.messages.event_member_joined")
+            .replace("{name}", subjectLabel);
+    }
+    if (eventType === "member_left") {
+        return i18n
+            .t("module.social.messages.event_member_left")
+            .replace("{name}", subjectLabel);
+    }
+    if (eventType === "profile_display_name_changed") {
+        return i18n
+            .t("module.social.messages.event_display_name_changed")
+            .replace("{name}", subjectLabel);
+    }
+    if (eventType === "profile_avatar_changed") {
+        return i18n
+            .t("module.social.messages.event_avatar_changed")
+            .replace("{name}", subjectLabel);
+    }
+    return null;
 }
 
 function renderReactionRow(message) {
@@ -229,17 +327,20 @@ async function renderThread(
     }
     const payload = await res.json();
     const messageList = payload?.data ?? [];
+    const pendingRequest = payload?.pendingRequest ?? null;
     const ordered = messageList.slice().reverse();
     const decoded = await Promise.all(
         ordered.map(async (msg) => {
-            const text = key
-                ? await decryptMessage(key, msg.iv, msg.ciphertext)
-                : null;
+            const text = key ? await decryptMessage(key, msg) : null;
             return { ...msg, text };
         }),
     );
     const html = decoded
         .map((msg) => {
+            const roomEventLabel = renderRoomEvent(msg, i18n);
+            if (roomEventLabel) {
+                return `<div class="messages-room-event">${escapeHtml(roomEventLabel)}</div>`;
+            }
             const isOwn = msg.senderId === currentAccountId;
             const ownClass = isOwn ? " messages-message--own" : "";
             const senderLabel = isOwn
@@ -252,7 +353,9 @@ async function renderThread(
             ${senderLabel}
             <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
             ${timeLabel}
+            ${renderStatusIndicator(msg, currentAccountId, i18n)}
             ${renderReadReceipt(msg, currentAccountId, i18n)}
+            ${renderReadDetailsPanel(msg, i18n)}
             ${renderReactionRow(msg)}
         </div>`;
         })
@@ -280,14 +383,41 @@ async function renderThread(
         );
     }
 
-    return oldestCreatedAt;
+    return { oldestCreatedAt, pendingRequest };
 }
 
-async function loadRooms() {
+async function loadRooms(i18n) {
     const res = await apiFetch("/api/v1/messages/rooms");
     if (!res.ok) return [];
     const payload = await res.json();
-    return payload?.data ?? [];
+    const rooms = payload?.data ?? [];
+    return Promise.all(
+        rooms.map(async (room) => {
+            const lastMessage = room.lastMessage ?? null;
+            if (!lastMessage) return room;
+            if (
+                lastMessage.contentType ===
+                "application/vnd.cognis.room-event+json"
+            ) {
+                return {
+                    ...room,
+                    lastMessagePreview: i18n.t(
+                        "module.social.messages.preview_event",
+                    ),
+                };
+            }
+            const roomKey = await getRoomKey(room.id);
+            const previewText = roomKey
+                ? await decryptMessage(roomKey, lastMessage)
+                : null;
+            return {
+                ...room,
+                lastMessagePreview: previewText
+                    ? previewText.slice(0, 90)
+                    : i18n.t("module.social.messages.preview_encrypted"),
+            };
+        }),
+    );
 }
 
 export async function mount(root, { signal } = {}) {
@@ -305,17 +435,32 @@ export async function mount(root, { signal } = {}) {
 
     const initialPath = window.location.pathname;
     const initialRoomMatch = initialPath.match(/^\/messages\/([^/]+)$/);
+    const rememberedRoomId = localStorage.getItem(LAST_OPENED_ROOM_KEY);
     let selectedRoomId = initialRoomMatch
         ? decodeURIComponent(initialRoomMatch[1])
-        : null;
+        : rememberedRoomId;
     let typingSendTimeoutId = null;
     let typingPollIntervalId = null;
     let typingActive = false;
     let lastTypingSentAt = 0;
     let pendingIncomingRequests = [];
 
-    let rooms = await loadRooms();
+    let rooms = await loadRooms(i18n);
     if (signal?.aborted) return;
+    if (
+        selectedRoomId &&
+        !rooms.some((room) => String(room.id) === String(selectedRoomId))
+    ) {
+        selectedRoomId = null;
+    }
+    if (!selectedRoomId && rooms.length > 0) {
+        selectedRoomId = rooms[0].id;
+        history.replaceState(
+            {},
+            "",
+            `/messages/${encodeURIComponent(selectedRoomId)}`,
+        );
+    }
 
     async function loadRoom(roomId) {
         const res = await apiFetch(
@@ -353,12 +498,45 @@ export async function mount(root, { signal } = {}) {
             .join("");
     }
 
+    function renderPendingRequestBanner(pendingRequest) {
+        if (!pendingRequest) return "";
+        const requesterLabel =
+            pendingRequest.requester?.displayName ||
+            pendingRequest.requester?.handle ||
+            pendingRequest.requester?.accountId ||
+            "";
+        if (
+            pendingRequest.direction === "incoming" &&
+            pendingRequest.canRespond
+        ) {
+            return `<div class="messages-request-banner" data-request-id="${escapeHtml(pendingRequest.id)}">
+                <span class="messages-request-banner-text">${escapeHtml(i18n.t("module.social.messages.request_banner_incoming").replace("{name}", requesterLabel))}</span>
+                <div class="messages-request-banner-actions">
+                    <button type="button" class="messages-request-banner-approve" aria-label="${escapeHtml(i18n.t("module.social.messages.approve_request"))}">✅</button>
+                    <button type="button" class="messages-request-banner-reject" aria-label="${escapeHtml(i18n.t("module.social.messages.reject_request"))}">❌</button>
+                </div>
+            </div>`;
+        }
+        if (pendingRequest.direction === "outgoing") {
+            const recipientLabel =
+                pendingRequest.recipient?.displayName ||
+                pendingRequest.recipient?.handle ||
+                pendingRequest.recipient?.accountId ||
+                "";
+            return `<div class="messages-request-banner">
+                <span class="messages-request-banner-text">${escapeHtml(i18n.t("module.social.messages.request_banner_outgoing").replace("{name}", recipientLabel))}</span>
+            </div>`;
+        }
+        return "";
+    }
+
     async function openRoom(roomId) {
         const threadList = document.getElementById("messages-thread-list");
         const headerSlot = document.getElementById(
             "messages-thread-header-slot",
         );
         if (!threadList) return;
+        localStorage.setItem(LAST_OPENED_ROOM_KEY, roomId);
         const room = await loadRoom(roomId);
         if (headerSlot && room) {
             headerSlot.innerHTML = renderThreadHeader(
@@ -368,12 +546,66 @@ export async function mount(root, { signal } = {}) {
             );
             bindRoomHeaderEvents();
         }
+        const pendingBannerSlot = document.getElementById(
+            "messages-request-banner-slot",
+        );
+        if (pendingBannerSlot) {
+            pendingBannerSlot.innerHTML = renderPendingRequestBanner(
+                room?.pendingRequest,
+            );
+        }
         const key = await getRoomKey(roomId);
-        await renderThread(roomId, key, threadList, i18n, currentAccountId);
+        const threadResult = await renderThread(
+            roomId,
+            key,
+            threadList,
+            i18n,
+            currentAccountId,
+        );
+        if (pendingBannerSlot && !room?.pendingRequest) {
+            pendingBannerSlot.innerHTML = renderPendingRequestBanner(
+                threadResult?.pendingRequest ?? null,
+            );
+        }
         await apiFetch(
             `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/read`,
             { method: "POST" },
         ).catch(() => undefined);
+        bindPendingRequestBannerEvents();
+    }
+
+    function bindPendingRequestBannerEvents() {
+        const banner = document.querySelector(
+            "#messages-request-banner-slot [data-request-id]",
+        );
+        if (!banner) return;
+        const requestId = banner.getAttribute("data-request-id");
+        if (!requestId) return;
+        banner
+            .querySelector(".messages-request-banner-approve")
+            ?.addEventListener("click", async () => {
+                const res = await apiFetch(
+                    `/api/v1/messages/requests/${encodeURIComponent(requestId)}/approve`,
+                    { method: "POST" },
+                );
+                if (!res.ok) return;
+                await openRoom(selectedRoomId);
+                await reloadRoomsList();
+            });
+        banner
+            .querySelector(".messages-request-banner-reject")
+            ?.addEventListener("click", async () => {
+                const res = await apiFetch(
+                    `/api/v1/messages/requests/${encodeURIComponent(requestId)}/reject`,
+                    { method: "POST" },
+                );
+                if (!res.ok) return;
+                await reloadRoomsList();
+                const bannerSlot = document.getElementById(
+                    "messages-request-banner-slot",
+                );
+                if (bannerSlot) bannerSlot.innerHTML = "";
+            });
     }
 
     async function toggleReaction(messageId, emoji) {
@@ -506,7 +738,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function reloadRoomsList() {
-        rooms = await loadRooms();
+        rooms = await loadRooms(i18n);
         const roomsList = document.getElementById("messages-rooms-list");
         if (roomsList) {
             roomsList.innerHTML = renderRoomList(
@@ -583,6 +815,7 @@ export async function mount(root, { signal } = {}) {
             render: () =>
                 `<section class="messages-thread">
                     <div id="messages-thread-header-slot"></div>
+                    <div id="messages-request-banner-slot"></div>
                     <div class="messages-typing-status" id="messages-typing-status"></div>
                     <div class="messages-thread-list" id="messages-thread-list"></div>
                     <form class="messages-composer" id="messages-composer">
@@ -605,6 +838,25 @@ export async function mount(root, { signal } = {}) {
                 const form = document.getElementById("messages-composer");
 
                 threadList?.addEventListener("click", async (clickEvent) => {
+                    const readToggle = clickEvent.target.closest(
+                        "[data-read-toggle-for]",
+                    );
+                    if (readToggle) {
+                        const messageId = readToggle.getAttribute(
+                            "data-read-toggle-for",
+                        );
+                        if (!messageId) return;
+                        const panel = threadList.querySelector(
+                            `[data-read-details-for="${messageId}"]`,
+                        );
+                        if (!panel) return;
+                        const hidden = panel.hasAttribute("hidden");
+                        threadList
+                            .querySelectorAll("[data-read-details-for]")
+                            .forEach((node) => node.setAttribute("hidden", ""));
+                        if (hidden) panel.removeAttribute("hidden");
+                        return;
+                    }
                     const reactionButton = clickEvent.target.closest(
                         "[data-message-id][data-emoji]",
                     );
@@ -696,6 +948,16 @@ export async function mount(root, { signal } = {}) {
                 composerInput?.addEventListener("input", () => {
                     const hasText = Boolean((composerInput.value ?? "").trim());
                     queueTypingUpdate(hasText);
+                });
+                composerInput?.addEventListener("keydown", (keyboardEvent) => {
+                    if (
+                        keyboardEvent.key === "Enter" &&
+                        keyboardEvent.ctrlKey &&
+                        !keyboardEvent.shiftKey
+                    ) {
+                        keyboardEvent.preventDefault();
+                        form?.requestSubmit();
+                    }
                 });
 
                 if (selectedRoomId) {

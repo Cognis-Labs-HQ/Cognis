@@ -524,6 +524,34 @@ export class DbMessagesStore {
         });
     }
 
+    async appendRoomEvent(input: {
+        roomId: string;
+        actorId: string;
+        eventType:
+            | "member_joined"
+            | "member_left"
+            | "profile_display_name_changed"
+            | "profile_avatar_changed";
+        subjectAccountId: string;
+        subjectHandle?: string | null;
+        subjectDisplayName?: string | null;
+    }): Promise<MessageRow> {
+        const payload = JSON.stringify({
+            eventType: input.eventType,
+            subjectAccountId: input.subjectAccountId,
+            subjectHandle: input.subjectHandle ?? null,
+            subjectDisplayName: input.subjectDisplayName ?? null,
+        });
+        return this.appendMessage({
+            roomId: input.roomId,
+            senderId: input.actorId,
+            ciphertext: payload,
+            iv: "",
+            authTag: "",
+            contentType: "application/vnd.cognis.room-event+json",
+        });
+    }
+
     async listMessages(
         roomId: string,
         limit: number,
@@ -640,6 +668,7 @@ export class DbMessagesStore {
         fromAccountId: string;
         toAccountId: string;
         note?: string | null;
+        roomId?: string | null;
     }): Promise<MessageRequestRow> {
         const id = randomUUID();
         const nowIso = new Date().toISOString();
@@ -652,6 +681,7 @@ export class DbMessagesStore {
                 to_account_id: input.toAccountId,
                 note: input.note ?? null,
                 status: "pending",
+                room_id: input.roomId ?? null,
                 created_at: nowIso,
             },
         });
@@ -669,6 +699,44 @@ export class DbMessagesStore {
             option: "SELECT",
             table: "chat_message_requests",
             where: [{ column: "id", value: id }],
+            limit: 1,
+        });
+        return result.rows?.[0]
+            ? this.rowToMessageRequest(result.rows[0])
+            : null;
+    }
+
+    async getPendingRoomMessageRequest(
+        roomId: string,
+    ): Promise<MessageRequestRow | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_message_requests",
+            where: [
+                { column: "room_id", value: roomId },
+                { column: "status", value: "pending" },
+            ],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+            limit: 1,
+        });
+        return result.rows?.[0]
+            ? this.rowToMessageRequest(result.rows[0])
+            : null;
+    }
+
+    async getPendingIncomingRoomMessageRequest(
+        roomId: string,
+        toAccountId: string,
+    ): Promise<MessageRequestRow | null> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_message_requests",
+            where: [
+                { column: "room_id", value: roomId },
+                { column: "to_account_id", value: toAccountId },
+                { column: "status", value: "pending" },
+            ],
+            orderBy: [{ column: "created_at", direction: "DESC" }],
             limit: 1,
         });
         return result.rows?.[0]

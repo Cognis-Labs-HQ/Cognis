@@ -139,6 +139,43 @@ export async function bootstrapSocialAdapter(
         registerCategory("messages", "Private Messages");
     }
 
+    ctx.capabilities.contribute(
+        "social:messages:onProfileChanged",
+        async (input: {
+            accountId: string;
+            handle?: string | null;
+            displayName?: string | null;
+            displayNameChanged?: boolean;
+            avatarChanged?: boolean;
+        }): Promise<void> => {
+            const rooms = await messagesStore.listRoomsForAccount(
+                input.accountId,
+            );
+            for (const room of rooms) {
+                if (input.displayNameChanged) {
+                    await messagesStore.appendRoomEvent({
+                        roomId: room.id,
+                        actorId: input.accountId,
+                        eventType: "profile_display_name_changed",
+                        subjectAccountId: input.accountId,
+                        subjectHandle: input.handle ?? null,
+                        subjectDisplayName: input.displayName ?? null,
+                    });
+                }
+                if (input.avatarChanged) {
+                    await messagesStore.appendRoomEvent({
+                        roomId: room.id,
+                        actorId: input.accountId,
+                        eventType: "profile_avatar_changed",
+                        subjectAccountId: input.accountId,
+                        subjectHandle: input.handle ?? null,
+                        subjectDisplayName: input.displayName ?? null,
+                    });
+                }
+            }
+        },
+    );
+
     ctx.registerRoute(
         createMessagesRoutes({
             messagesStore,

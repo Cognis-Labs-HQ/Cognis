@@ -446,7 +446,7 @@
   <string name="ui.app.settings.datetime_tz_heading">Timezone</string>
   <string name="ui.app.settings.datetime_tz_label">Display Timezone</string>
   <string name="ui.app.settings.datetime_tz_auto">Auto-detect ({tz})</string>
-  <string name="module.social.messages.empty">No conversations yet.</string>
+  <string name="module.social.messages.empty">Conversations will show up here. Start a conversation today!</string>
   <string name="module.social.messages.placeholder">Type a message…</string>
   <string name="module.social.messages.send">Send</string>
   <string name="module.social.messages.new">New Conversation</string>
@@ -463,6 +463,15 @@
   <string name="module.social.messages.requests_empty">No pending message requests.</string>
   <string name="module.social.messages.approve_request">Approve</string>
   <string name="module.social.messages.reject_request">Reject</string>
+  <string name="module.social.messages.preview_encrypted">Encrypted message</string>
+  <string name="module.social.messages.preview_event">Room event</string>
+  <string name="module.social.messages.read_details">Open Read Details</string>
+  <string name="module.social.messages.request_banner_incoming">{name} wants to message you. Accept to reveal messages.</string>
+  <string name="module.social.messages.request_banner_outgoing">Waiting for {name} to accept your message request.</string>
+  <string name="module.social.messages.event_member_joined">{name} joined the room.</string>
+  <string name="module.social.messages.event_member_left">{name} left the room.</string>
+  <string name="module.social.messages.event_display_name_changed">{name} updated their display name.</string>
+  <string name="module.social.messages.event_avatar_changed">{name} updated their profile picture.</string>
   <string name="ui.reuse.classes">My Classes</string>
   <string name="module.study.classes.page_title">Classes</string>
   <string name="module.study.classes.page_subtitle">Manage your assigned language classes.</string>

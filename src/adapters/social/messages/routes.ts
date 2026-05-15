@@ -122,6 +122,37 @@ async function enrichMembersWithProfiles(
     );
 }
 
+async function summarizeRoomRequest(
+    request: Awaited<
+        ReturnType<DbMessagesStore["getPendingRoomMessageRequest"]>
+    >,
+    profileStore: DbProfileStore,
+    accountId: string,
+): Promise<{
+    id: string;
+    roomId: string | null;
+    status: string;
+    direction: "incoming" | "outgoing";
+    requester: ReturnType<typeof publicProfileSummary> | null;
+    recipient: ReturnType<typeof publicProfileSummary> | null;
+    canRespond: boolean;
+} | null> {
+    if (!request) return null;
+    const [requester, recipient] = await Promise.all([
+        profileStore.getProfile(request.fromAccountId),
+        profileStore.getProfile(request.toAccountId),
+    ]);
+    return {
+        id: request.id,
+        roomId: request.roomId,
+        status: request.status,
+        direction: request.toAccountId === accountId ? "incoming" : "outgoing",
+        requester: requester ? publicProfileSummary(requester) : null,
+        recipient: recipient ? publicProfileSummary(recipient) : null,
+        canRespond: request.toAccountId === accountId,
+    };
+}
+
 export function createMessagesRoutes(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, dispatch, isAdapterEnabled } = deps;
 
@@ -209,11 +240,16 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             const rooms = await messagesStore.listRoomsForAccount(accountId);
             const enriched = await Promise.all(
                 rooms.map(async (room) => {
-                    const [members, lastList, unread] = await Promise.all([
-                        messagesStore.listMembers(room.id),
-                        messagesStore.listMessages(room.id, 1),
-                        messagesStore.unreadCount(room.id, accountId),
-                    ]);
+                    const [members, lastList, unread, pendingIncoming] =
+                        await Promise.all([
+                            messagesStore.listMembers(room.id),
+                            messagesStore.listMessages(room.id, 1),
+                            messagesStore.unreadCount(room.id, accountId),
+                            messagesStore.getPendingIncomingRoomMessageRequest(
+                                room.id,
+                                accountId,
+                            ),
+                        ]);
                     const last = lastList[0] ?? null;
                     const enrichedMembers = await enrichMembersWithProfiles(
                         members,
@@ -222,8 +258,13 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     return {
                         ...room,
                         members: enrichedMembers,
-                        lastMessage: last,
-                        unread,
+                        lastMessage: pendingIncoming ? null : last,
+                        unread: pendingIncoming ? 0 : unread,
+                        pendingRequest: await summarizeRoomRequest(
+                            pendingIncoming,
+                            profileStore,
+                            accountId,
+                        ),
                     };
                 }),
             );
@@ -320,21 +361,63 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     targetId,
                 );
                 if (!canDirectMessage) {
+                    let room = await messagesStore.findDmBetween(
+                        accountId,
+                        targetId,
+                    );
+                    if (!room) {
+                        room = await messagesStore.createRoom(
+                            "dm",
+                            null,
+                            accountId,
+                        );
+                        await messagesStore.addMember(
+                            room.id,
+                            accountId,
+                            "owner",
+                        );
+                        await messagesStore.addMember(
+                            room.id,
+                            targetId,
+                            "member",
+                        );
+                        await messagesStore.generateAndStoreRoomKey(room.id);
+                        const requesterProfile =
+                            await profileStore.getProfile(accountId);
+                        await messagesStore.appendRoomEvent({
+                            roomId: room.id,
+                            actorId: accountId,
+                            eventType: "member_joined",
+                            subjectAccountId: accountId,
+                            subjectHandle: requesterProfile?.handle ?? null,
+                            subjectDisplayName:
+                                requesterProfile?.displayName ?? null,
+                        });
+                    }
                     const pending =
                         await messagesStore.findPendingMessageRequest(
                             accountId,
                             targetId,
                         );
+                    if (pending && !pending.roomId) {
+                        await messagesStore.updateMessageRequestStatus(
+                            pending.id,
+                            "cancelled",
+                        );
+                    }
                     const request =
-                        pending ??
-                        (await messagesStore.createMessageRequest({
-                            fromAccountId: accountId,
-                            toAccountId: targetId,
-                        }));
+                        pending && pending.roomId === room.id
+                            ? pending
+                            : await messagesStore.createMessageRequest({
+                                  fromAccountId: accountId,
+                                  toAccountId: targetId,
+                                  roomId: room.id,
+                              });
                     res.writeHead(202, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
                             data: {
+                                id: room.id,
                                 requiresApproval: true,
                                 requestId: request.id,
                                 status: request.status,
@@ -358,6 +441,25 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 );
             }
             await messagesStore.generateAndStoreRoomKey(room.id);
+            const creatorProfile = await profileStore.getProfile(accountId);
+            await messagesStore.appendRoomEvent({
+                roomId: room.id,
+                actorId: accountId,
+                eventType: "member_joined",
+                subjectAccountId: accountId,
+                subjectHandle: creatorProfile?.handle ?? null,
+                subjectDisplayName: creatorProfile?.displayName ?? null,
+            });
+            for (const target of targets) {
+                await messagesStore.appendRoomEvent({
+                    roomId: room.id,
+                    actorId: accountId,
+                    eventType: "member_joined",
+                    subjectAccountId: target.accountId,
+                    subjectHandle: target.handle,
+                    subjectDisplayName: target.displayName,
+                });
+            }
             if (isDm) {
                 await messagesStore.approvePendingRequestsBetween(
                     accountId,
@@ -432,6 +534,20 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     request.id,
                     "rejected",
                 );
+                if (request.roomId) {
+                    const recipientProfile = await profileStore.getProfile(
+                        request.toAccountId,
+                    );
+                    await messagesStore.appendRoomEvent({
+                        roomId: request.roomId,
+                        actorId: request.toAccountId,
+                        eventType: "member_left",
+                        subjectAccountId: request.toAccountId,
+                        subjectHandle: recipientProfile?.handle ?? null,
+                        subjectDisplayName:
+                            recipientProfile?.displayName ?? null,
+                    });
+                }
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { status: "rejected" } }));
                 return true;
@@ -453,10 +569,15 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            const existingRoom = await messagesStore.findDmBetween(
-                request.fromAccountId,
-                request.toAccountId,
-            );
+            const requestedRoom = request.roomId
+                ? await messagesStore.getRoom(request.roomId)
+                : null;
+            const existingRoom =
+                requestedRoom ??
+                (await messagesStore.findDmBetween(
+                    request.fromAccountId,
+                    request.toAccountId,
+                ));
             const room =
                 existingRoom ??
                 (await messagesStore.createRoom(
@@ -487,6 +608,17 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 request.toAccountId,
                 room.id,
             );
+            const recipientProfile = await profileStore.getProfile(
+                request.toAccountId,
+            );
+            await messagesStore.appendRoomEvent({
+                roomId: room.id,
+                actorId: request.toAccountId,
+                eventType: "member_joined",
+                subjectAccountId: request.toAccountId,
+                subjectHandle: recipientProfile?.handle ?? null,
+                subjectDisplayName: recipientProfile?.displayName ?? null,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: room }));
             return true;
@@ -525,6 +657,19 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             );
             return true;
         }
+        const pendingIncomingRoomRequest =
+            await messagesStore.getPendingIncomingRoomMessageRequest(
+                roomId,
+                accountId,
+            );
+        const pendingRoomRequest = pendingIncomingRoomRequest
+            ? pendingIncomingRoomRequest
+            : await messagesStore.getPendingRoomMessageRequest(roomId);
+        const pendingRequestSummary = await summarizeRoomRequest(
+            pendingRoomRequest,
+            profileStore,
+            accountId,
+        );
 
         // GET /messages/rooms/:id
         if (!sub && req.method === "GET") {
@@ -535,7 +680,13 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
-                JSON.stringify({ data: { ...room, members: enrichedMembers } }),
+                JSON.stringify({
+                    data: {
+                        ...room,
+                        members: enrichedMembers,
+                        pendingRequest: pendingRequestSummary,
+                    },
+                }),
             );
             return true;
         }
@@ -584,6 +735,19 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
 
         // GET /messages/rooms/:id/key
         if (sub === "key" && !subArg && req.method === "GET") {
+            if (pendingIncomingRoomRequest) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message:
+                                "Approve the message request before reading messages.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const plaintextKeyHex =
                 await messagesStore.getUnwrappedRoomKey(roomId);
             if (!plaintextKeyHex) {
@@ -606,6 +770,16 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         // GET/POST /messages/rooms/:id/messages
         if (sub === "messages" && !subArg) {
             if (req.method === "GET") {
+                if (pendingIncomingRoomRequest) {
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            data: [],
+                            pendingRequest: pendingRequestSummary,
+                        }),
+                    );
+                    return true;
+                }
                 const limit = Math.max(
                     1,
                     Math.min(100, Number(url.searchParams.get("limit") ?? 50)),
@@ -696,10 +870,15 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                                 readAt: roomMember.lastReadAt,
                             };
                         });
+                    const deliveredToCount = roomMembers.filter(
+                        (roomMember) =>
+                            roomMember.accountId !== message.senderId,
+                    ).length;
                     return {
                         ...message,
                         senderHandle: senderProfile?.handle ?? null,
                         senderDisplayName: senderProfile?.displayName ?? null,
+                        deliveredToCount,
                         readBy,
                         reactions: Array.from(
                             reactionsByMessage.get(message.id)?.values() ?? [],
@@ -707,10 +886,28 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     };
                 });
                 res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: enrichedMessages }));
+                res.end(
+                    JSON.stringify({
+                        data: enrichedMessages,
+                        pendingRequest: pendingRequestSummary,
+                    }),
+                );
                 return true;
             }
             if (req.method === "POST") {
+                if (pendingIncomingRoomRequest) {
+                    res.writeHead(403, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "forbidden",
+                                message:
+                                    "Approve the message request before replying.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 const body = (await readJson(req)) as {
                     ciphertext?: unknown;
                     iv?: unknown;
@@ -784,6 +981,11 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
 
         // POST /messages/rooms/:id/read
         if (sub === "read" && !subArg && req.method === "POST") {
+            if (pendingIncomingRoomRequest) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: { ok: true } }));
+                return true;
+            }
             await messagesStore.markRead(roomId, accountId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
@@ -793,6 +995,11 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         // GET/POST /messages/rooms/:id/typing
         if (sub === "typing" && !subArg) {
             if (req.method === "POST") {
+                if (pendingIncomingRoomRequest) {
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(JSON.stringify({ data: { ok: true } }));
+                    return true;
+                }
                 const body = (await readJson(req)) as { typing?: unknown };
                 await messagesStore.setTyping(
                     roomId,
@@ -804,6 +1011,11 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 return true;
             }
             if (req.method === "GET") {
+                if (pendingIncomingRoomRequest) {
+                    res.writeHead(200, { "content-type": "application/json" });
+                    res.end(JSON.stringify({ data: [] }));
+                    return true;
+                }
                 const typingRows = await messagesStore.listActiveTypers(roomId);
                 const enriched = await Promise.all(
                     typingRows
@@ -887,6 +1099,14 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 return true;
             }
             await messagesStore.addMember(roomId, target.accountId, "member");
+            await messagesStore.appendRoomEvent({
+                roomId,
+                actorId: accountId,
+                eventType: "member_joined",
+                subjectAccountId: target.accountId,
+                subjectHandle: target.handle,
+                subjectDisplayName: target.displayName,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
             return true;
@@ -921,6 +1141,14 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
+            await messagesStore.appendRoomEvent({
+                roomId,
+                actorId: accountId,
+                eventType: "member_left",
+                subjectAccountId: target.accountId,
+                subjectHandle: target.handle,
+                subjectDisplayName: target.displayName,
+            });
             await messagesStore.removeMember(roomId, target.accountId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
@@ -934,6 +1162,19 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             subArg2 === "reactions" &&
             req.method === "POST"
         ) {
+            if (pendingIncomingRoomRequest) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "forbidden",
+                            message:
+                                "Approve the message request before reacting.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const message = await messagesStore.getMessage(subArg);
             if (!message || message.chatroomId !== roomId) {
                 res.writeHead(404, { "content-type": "application/json" });

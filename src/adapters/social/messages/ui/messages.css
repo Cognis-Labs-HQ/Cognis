@@ -45,7 +45,7 @@
 .messages-room {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 0.6rem;
     padding: 0.75rem 1rem;
     cursor: pointer;
     border-bottom: 1px solid var(--color-border);
@@ -58,6 +58,45 @@
 
 .messages-room-title {
     font-weight: 500;
+    display: block;
+}
+
+.messages-room-meta {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+}
+
+.messages-room-preview {
+    color: var(--color-text-muted);
+    font-size: 0.76rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.messages-room-avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    overflow: hidden;
+    flex: 0 0 auto;
+}
+
+.messages-room-avatar-img,
+.messages-room-avatar-fallback {
+    width: 100%;
+    height: 100%;
+}
+
+.messages-room-avatar-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: var(--initials-bg, var(--color-accent));
 }
 
 .messages-unread-badge {
@@ -248,6 +287,14 @@
     .messages-page .messages-thread {
         height: 100%;
     }
+
+    .messages-page .main-window--with-toolbar .toolbar {
+        width: min(100vw, 360px);
+    }
+
+    .messages-message {
+        max-width: 95%;
+    }
 }
 
 .messages-thread-header {
@@ -342,6 +389,15 @@
     flex-wrap: wrap;
     gap: 0.25rem;
     margin-top: 0.35rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease-in-out;
+}
+
+.messages-message:hover .messages-reactions-row,
+.messages-message:focus-within .messages-reactions-row {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .messages-reaction-chip,
@@ -370,6 +426,35 @@
     padding: 0.25rem 1rem 0;
     color: var(--color-text-muted);
     font-size: 0.8rem;
+}
+
+.messages-request-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: 0.4rem 1rem 0;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.45rem;
+    background: var(--color-surface-elevated);
+}
+
+.messages-request-banner-text {
+    font-size: 0.82rem;
+}
+
+.messages-request-banner-actions {
+    display: inline-flex;
+    gap: 0.35rem;
+}
+
+.messages-request-banner-actions button {
+    border: 1px solid var(--color-border);
+    border-radius: 0.35rem;
+    background: var(--color-surface);
+    cursor: pointer;
+    padding: 0.15rem 0.45rem;
 }
 
 .messages-requests-section {
@@ -423,4 +508,45 @@
 .messages-requests-empty {
     color: var(--color-text-muted);
     font-size: 0.8rem;
+}
+
+.messages-room-event {
+    align-self: center;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px dashed var(--color-border);
+    border-radius: 0.8rem;
+}
+
+.messages-message-status {
+    align-self: flex-end;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 0.68rem;
+    line-height: 1;
+    min-width: 2.1rem;
+    padding: 0.15rem 0.35rem;
+}
+
+.messages-message-status--read {
+    background: var(--color-accent);
+    color: var(--color-accent-contrast);
+}
+
+.messages-read-details {
+    margin-top: 0.3rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.35rem;
+    background: var(--color-surface);
+    padding: 0.4rem 0.55rem;
+}
+
+.messages-read-details ul {
+    margin: 0;
+    padding: 0 0 0 1rem;
+    font-size: 0.75rem;
 }

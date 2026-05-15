@@ -446,7 +446,7 @@
   <string name="ui.app.settings.datetime_tz_heading">タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_label">表示タイムゾーン</string>
   <string name="ui.app.settings.datetime_tz_auto">自動検出 ({tz})</string>
-  <string name="module.social.messages.empty">まだ会話はありません。</string>
+  <string name="module.social.messages.empty">会話はここに表示されます。今日から会話を始めましょう！</string>
   <string name="module.social.messages.placeholder">メッセージを入力…</string>
   <string name="module.social.messages.send">送信</string>
   <string name="module.social.messages.new">新しい会話</string>
@@ -463,6 +463,15 @@
   <string name="module.social.messages.requests_empty">保留中のメッセージリクエストはありません。</string>
   <string name="module.social.messages.approve_request">承認</string>
   <string name="module.social.messages.reject_request">却下</string>
+  <string name="module.social.messages.preview_encrypted">暗号化されたメッセージ</string>
+  <string name="module.social.messages.preview_event">ルームイベント</string>
+  <string name="module.social.messages.read_details">既読詳細を開く</string>
+  <string name="module.social.messages.request_banner_incoming">{name}さんがメッセージを希望しています。承認するとメッセージが表示されます。</string>
+  <string name="module.social.messages.request_banner_outgoing">{name}さんがメッセージリクエストを承認するのを待っています。</string>
+  <string name="module.social.messages.event_member_joined">{name}さんがルームに参加しました。</string>
+  <string name="module.social.messages.event_member_left">{name}さんがルームを退出しました。</string>
+  <string name="module.social.messages.event_display_name_changed">{name}さんが表示名を更新しました。</string>
+  <string name="module.social.messages.event_avatar_changed">{name}さんがプロフィール画像を更新しました。</string>
   <string name="ui.reuse.classes">マイクラス</string>
   <string name="module.study.classes.page_title">クラス</string>
   <string name="module.study.classes.page_subtitle">担当する語学クラスを管理します。</string>

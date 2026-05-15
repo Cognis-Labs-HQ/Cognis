@@ -446,7 +446,7 @@
   <string name="ui.app.settings.datetime_tz_heading">Zeitzone</string>
   <string name="ui.app.settings.datetime_tz_label">Anzeigezeitzone</string>
   <string name="ui.app.settings.datetime_tz_auto">Automatisch erkennen ({tz})</string>
-  <string name="module.social.messages.empty">Noch keine Unterhaltungen.</string>
+  <string name="module.social.messages.empty">Unterhaltungen erscheinen hier. Starten Sie noch heute eine Unterhaltung!</string>
   <string name="module.social.messages.placeholder">Nachricht eingeben…</string>
   <string name="module.social.messages.send">Senden</string>
   <string name="module.social.messages.new">Neue Unterhaltung</string>
@@ -463,6 +463,15 @@
   <string name="module.social.messages.requests_empty">Keine ausstehenden Nachrichtenanfragen.</string>
   <string name="module.social.messages.approve_request">Genehmigen</string>
   <string name="module.social.messages.reject_request">Ablehnen</string>
+  <string name="module.social.messages.preview_encrypted">Verschlüsselte Nachricht</string>
+  <string name="module.social.messages.preview_event">Raumereignis</string>
+  <string name="module.social.messages.read_details">Lesedetails Öffnen</string>
+  <string name="module.social.messages.request_banner_incoming">{name} möchte Ihnen schreiben. Zum Anzeigen Nachrichtenanfrage annehmen.</string>
+  <string name="module.social.messages.request_banner_outgoing">Warten auf die Annahme Ihrer Nachrichtenanfrage durch {name}.</string>
+  <string name="module.social.messages.event_member_joined">{name} ist dem Raum beigetreten.</string>
+  <string name="module.social.messages.event_member_left">{name} hat den Raum verlassen.</string>
+  <string name="module.social.messages.event_display_name_changed">{name} hat den Anzeigenamen geändert.</string>
+  <string name="module.social.messages.event_avatar_changed">{name} hat das Profilbild geändert.</string>
   <string name="ui.reuse.classes">Meine Klassen</string>
   <string name="module.study.classes.page_title">Klassen</string>
   <string name="module.study.classes.page_subtitle">Verwalten Sie Ihre zugewiesenen Sprachklassen.</string>
