@@ -15,8 +15,8 @@ test("renderInfoTooltip outputs id-based tooltip buttons without inline panels",
     );
     assert.match(
         tooltipMarkup,
-        /data-info-tooltip-id="security-tooltip"/,
-        "tooltip markup should include a stable tooltip id reference",
+        /data-info-tooltip-id="security-tooltip-\d+"/,
+        "tooltip markup should include a unique tooltip id reference",
     );
     assert.doesNotMatch(
         tooltipMarkup,
@@ -35,9 +35,21 @@ test("info-tooltip styles use viewport-level fixed positioning", () => {
         resolve(ROOT, "src/ui/styles/reuse/info-tooltip.css"),
         "utf8",
     );
-    assert.match(
-        tooltipStylesSource,
-        /\.info-tooltip-overlay\s*\{[\s\S]*position:\s*fixed;/,
+    const selectorIndex = tooltipStylesSource.indexOf(".info-tooltip-overlay");
+    assert.notEqual(
+        selectorIndex,
+        -1,
+        "tooltip stylesheet should define .info-tooltip-overlay styles",
+    );
+    const blockStartIndex = tooltipStylesSource.indexOf("{", selectorIndex);
+    const blockEndIndex = tooltipStylesSource.indexOf("}", blockStartIndex);
+    const overlayRuleBlock = tooltipStylesSource.slice(
+        blockStartIndex,
+        blockEndIndex,
+    );
+    assert.equal(
+        overlayRuleBlock.includes("position: fixed;"),
+        true,
         "tooltip overlay should use fixed positioning to avoid container clipping",
     );
 });

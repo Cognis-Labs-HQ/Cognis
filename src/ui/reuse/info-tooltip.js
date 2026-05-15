@@ -201,17 +201,17 @@ function initInfoTooltipRuntime() {
 }
 
 export function renderInfoTooltip(text, ariaLabel = "More information", id) {
-    const uid = id ?? `info-tooltip-${++tooltipSequence}`;
-    tooltipTextById.set(uid, String(text ?? ""));
-    return `<span class="info-tooltip" data-info-tooltip="${uid}">
+    initInfoTooltipRuntime();
+    const baseTooltipId = id ?? "info-tooltip";
+    const tooltipId = `${baseTooltipId}-${++tooltipSequence}`;
+    tooltipTextById.set(tooltipId, String(text ?? ""));
+    return `<span class="info-tooltip" data-info-tooltip="${tooltipId}">
       <button
         class="info-tooltip__btn"
         type="button"
         aria-label="${escapeHtml(ariaLabel)}"
-        data-info-tooltip-id="${uid}"
+        data-info-tooltip-id="${tooltipId}"
         tabindex="0"
       >ℹ</button>
     </span>`;
 }
-
-initInfoTooltipRuntime();
