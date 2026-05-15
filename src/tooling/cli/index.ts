@@ -307,6 +307,46 @@ function mergePayloadFields(
     return { ...fields, ...base };
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+    if (typeof value !== "object" || value === null) return null;
+    return value as Record<string, unknown>;
+}
+
+function readMessageFromPayload(payload: unknown): string | null {
+    const response = asRecord(normalizeResponse(payload));
+    if (!response) return null;
+    const responseMessage = response.message;
+    if (typeof responseMessage === "string" && responseMessage.trim()) {
+        return responseMessage;
+    }
+    const data = asRecord(response.data);
+    const dataMessage = data?.message;
+    if (typeof dataMessage === "string" && dataMessage.trim()) {
+        return dataMessage;
+    }
+    const error = asRecord(response.error);
+    const errorMessage = error?.message;
+    if (typeof errorMessage === "string" && errorMessage.trim()) {
+        return errorMessage;
+    }
+    return null;
+}
+
+function ensureBooleanAcknowledgement(
+    payload: unknown,
+    key: string,
+    expectedValue: boolean,
+    failurePrefix: string,
+) {
+    const response = asRecord(normalizeResponse(payload));
+    const data = asRecord(response?.data);
+    if (!data || !(key in data)) return;
+    if (data[key] === expectedValue) return;
+    const message = readMessageFromPayload(payload);
+    if (message) throw new Error(`${failurePrefix}: ${message}`);
+    throw new Error(failurePrefix);
+}
+
 /**
  * Ensures a target user exists before executing user-mutation commands.
  *
@@ -762,7 +802,19 @@ register(
         requireArgs(args, ["moduleId"], "cognisctl modules:enable <moduleId>");
         const acknowledge = args.includes("--ack-external-disclaimer");
         const route = `/api/v1/modules/${encodeURIComponent(moduleId)}/enable${acknowledge ? "?acknowledgeExternalDisclaimer=true" : ""}`;
-        return apiPost(apiBaseUrl, route, undefined, await getApiToken());
+        const payload = await apiPost(
+            apiBaseUrl,
+            route,
+            undefined,
+            await getApiToken(),
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "enabled",
+            true,
+            `Module "${moduleId}" was not enabled`,
+        );
+        return payload;
     },
     {
         usage: "cognisctl modules:enable <moduleId> [--ack-external-disclaimer]",
@@ -776,12 +828,19 @@ register(
     async ({ args, apiBaseUrl, getApiToken }) => {
         const [moduleId] = args;
         requireArgs(args, ["moduleId"], "cognisctl modules:disable <moduleId>");
-        return apiPost(
+        const payload = await apiPost(
             apiBaseUrl,
             `/api/v1/modules/${encodeURIComponent(moduleId)}/disable`,
             undefined,
             await getApiToken(),
         );
+        ensureBooleanAcknowledgement(
+            payload,
+            "enabled",
+            false,
+            `Module "${moduleId}" was not disabled`,
+        );
+        return payload;
     },
     {
         usage: "cognisctl modules:disable <moduleId>",
@@ -901,6 +960,12 @@ register(
             { role },
             await getApiToken(),
         );
+        ensureBooleanAcknowledgement(
+            payload,
+            "updated",
+            true,
+            `User "${username}" role update failed`,
+        );
         return mergePayloadFields(payload, { username, role });
     },
     {
@@ -929,6 +994,12 @@ register(
             { password },
             await getApiToken(),
         );
+        ensureBooleanAcknowledgement(
+            payload,
+            "updated",
+            true,
+            `User "${username}" password update failed`,
+        );
         return mergePayloadFields(payload, { username });
     },
     {
@@ -950,6 +1021,12 @@ register(
             `/api/v1/users/${encodeURIComponent(username)}/disable`,
             undefined,
             await getApiToken(),
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "updated",
+            true,
+            `User "${username}" disable failed`,
         );
         return mergePayloadFields(payload, { username });
     },
@@ -974,6 +1051,12 @@ register(
             `/api/v1/users/${encodeURIComponent(username)}/enable`,
             undefined,
             await getApiToken(),
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "updated",
+            true,
+            `User "${username}" enable failed`,
         );
         return mergePayloadFields(payload, { username });
     },
@@ -1005,6 +1088,12 @@ register(
             `/api/v1/users/${encodeURIComponent(username)}/isfounder`,
             { isFounder: value === "true" },
             await getApiToken(),
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "updated",
+            true,
+            `User "${username}" founder update failed`,
         );
         return mergePayloadFields(payload, {
             username,
@@ -1043,6 +1132,12 @@ register(
             `/api/v1/users/${encodeURIComponent(username)}`,
             { method: "DELETE", apiToken: await getApiToken() },
         );
+        ensureBooleanAcknowledgement(
+            payload,
+            "deleted",
+            true,
+            `User "${username}" deletion failed`,
+        );
         return mergePayloadFields(payload, { username });
     },
     {
@@ -1067,6 +1162,12 @@ register(
             `/api/v1/users/${encodeURIComponent(username)}/preferences/clear`,
             undefined,
             await getApiToken(),
+        );
+        ensureBooleanAcknowledgement(
+            payload,
+            "cleared",
+            true,
+            `User "${username}" preferences clear failed`,
         );
         return mergePayloadFields(payload, { username });
     },

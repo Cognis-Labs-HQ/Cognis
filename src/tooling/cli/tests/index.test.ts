@@ -197,3 +197,75 @@ test("all existing-user mutations fail fast on missing users", async () => {
         globalThis.fetch = originalFetch;
     }
 });
+
+test("user:set-password fails when API reports updated false", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input) => {
+            const requestUrl = String(input);
+            if (requestUrl.endsWith("/api/v1/users/alice/info")) {
+                return new Response(
+                    JSON.stringify({ data: { username: "alice" } }),
+                    {
+                        status: 200,
+                        headers: { "content-type": "application/json" },
+                    },
+                );
+            }
+            if (requestUrl.endsWith("/api/v1/users/alice/password")) {
+                return new Response(
+                    JSON.stringify({
+                        data: { updated: false, message: "No account changed" },
+                    }),
+                    {
+                        status: 200,
+                        headers: { "content-type": "application/json" },
+                    },
+                );
+            }
+            throw new Error(`Unexpected request: ${requestUrl}`);
+        };
+
+        await assert.rejects(
+            executeRegisteredCommand("user:set-password", ["alice", "pw"], {
+                apiBaseUrl: "http://localhost:3000",
+                getApiToken: async () => "token",
+            }),
+            /User "alice" password update failed: No account changed/,
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("modules:enable fails when API acknowledgement says module is still disabled", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input) => {
+            const requestUrl = String(input);
+            if (requestUrl.endsWith("/api/v1/modules/demo/enable")) {
+                return new Response(
+                    JSON.stringify({
+                        data: { moduleId: "demo", enabled: false },
+                        message: "Module remains disabled",
+                    }),
+                    {
+                        status: 200,
+                        headers: { "content-type": "application/json" },
+                    },
+                );
+            }
+            throw new Error(`Unexpected request: ${requestUrl}`);
+        };
+
+        await assert.rejects(
+            executeRegisteredCommand("modules:enable", ["demo"], {
+                apiBaseUrl: "http://localhost:3000",
+                getApiToken: async () => "token",
+            }),
+            /Module "demo" was not enabled: Module remains disabled/,
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
