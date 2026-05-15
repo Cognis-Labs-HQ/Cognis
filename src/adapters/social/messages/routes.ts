@@ -95,6 +95,17 @@ export async function canSendMessageRequest(
     return true;
 }
 
+export async function canDirectMessageNowOrByApprovedRequest(
+    profileStore: DbProfileStore,
+    messagesStore: DbMessagesStore,
+    fromId: string,
+    toId: string,
+): Promise<boolean> {
+    const directAllowed = await canMessage(profileStore, fromId, toId);
+    if (directAllowed) return true;
+    return messagesStore.hasApprovedMessageRequestBetween(fromId, toId);
+}
+
 function publicProfileSummary(profile: AccountProfile) {
     return {
         accountId: profile.accountId,
@@ -225,16 +236,22 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     accountId,
                     profile.accountId,
                 );
+                const hasApprovedRequest =
+                    await messagesStore.hasApprovedMessageRequestBetween(
+                        accountId,
+                        profile.accountId,
+                    );
+                const canOpenDirect = canDirectMessage || hasApprovedRequest;
                 const canRequestMessage = await canSendMessageRequest(
                     profileStore,
                     accountId,
                     profile.accountId,
                 );
-                if (!canDirectMessage && !canRequestMessage) continue;
+                if (!canOpenDirect && !canRequestMessage) continue;
                 results.push({
                     ...publicProfileSummary(profile),
-                    canDirectMessage,
-                    requiresApproval: !canDirectMessage,
+                    canDirectMessage: canOpenDirect,
+                    requiresApproval: !canOpenDirect,
                 });
             }
             res.writeHead(200, { "content-type": "application/json" });
@@ -262,11 +279,20 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                         members,
                         profileStore,
                     );
+                    const currentMember = members.find(
+                        (entry) => entry.accountId === accountId,
+                    );
+                    const isArchived = Boolean(currentMember?.archived);
+                    const canSend =
+                        !isArchived &&
+                        !(room.kind === "dm" && members.length < 2);
                     return {
                         ...room,
                         members: enrichedMembers,
                         lastMessage: pendingIncoming ? null : last,
                         unread: pendingIncoming ? 0 : unread,
+                        isArchived,
+                        canSend,
                         pendingRequest: await summarizeRoomRequest(
                             pendingIncoming,
                             profileStore,
@@ -314,6 +340,11 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     accountId,
                     candidate.accountId,
                 );
+                const hasApprovedRequest =
+                    await messagesStore.hasApprovedMessageRequestBetween(
+                        accountId,
+                        candidate.accountId,
+                    );
                 const canRequestMessage = await canSendMessageRequest(
                     profileStore,
                     accountId,
@@ -321,6 +352,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 );
                 if (
                     !canDirectMessage &&
+                    !hasApprovedRequest &&
                     (!canRequestMessage || handles.length > 1)
                 ) {
                     res.writeHead(403, { "content-type": "application/json" });
@@ -367,7 +399,14 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     accountId,
                     targetId,
                 );
-                if (!canDirectMessage) {
+                const canDirectWithoutRequest =
+                    await canDirectMessageNowOrByApprovedRequest(
+                        profileStore,
+                        messagesStore,
+                        accountId,
+                        targetId,
+                    );
+                if (!canDirectWithoutRequest) {
                     let room = await messagesStore.findDmBetween(
                         accountId,
                         targetId,
@@ -659,7 +698,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             res.end(
                 JSON.stringify({
                     error: {
-                        code: "forbidden",
+                        code: "not_member",
                         message: "Not a member of this room.",
                     },
                 }),
@@ -693,6 +732,10 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     data: {
                         ...room,
                         members: enrichedMembers,
+                        isArchived: member.archived,
+                        canSend:
+                            !member.archived &&
+                            !(room.kind === "dm" && members.length < 2),
                         pendingRequest: pendingRequestSummary,
                     },
                 }),
@@ -890,6 +933,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                                 accountId: roomMember.accountId,
                                 handle: readerProfile?.handle ?? null,
                                 displayName: readerProfile?.displayName ?? null,
+                                avatarKey: readerProfile?.avatarKey ?? null,
                                 readAt: roomMember.lastReadAt,
                             };
                         });
@@ -927,6 +971,23 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                                 code: "forbidden",
                                 message:
                                     "Approve the message request before replying.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                const activeMembers = await messagesStore.listMembers(roomId);
+                const dmIsArchivedForSender =
+                    room.kind === "dm" &&
+                    (member.archived || activeMembers.length < 2);
+                if (dmIsArchivedForSender) {
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "chat_archived",
+                                message:
+                                    "This conversation is archived. Start a new conversation to message again.",
                             },
                         }),
                     );
@@ -1182,6 +1243,14 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 subjectDisplayName: target.displayName,
             });
             await messagesStore.removeMember(roomId, target.accountId);
+            const remainingMembers = await messagesStore.listMembers(roomId);
+            if (isSelfLeave && remainingMembers.length === 1) {
+                await messagesStore.setArchived(
+                    roomId,
+                    remainingMembers[0].accountId,
+                    true,
+                );
+            }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
             return true;

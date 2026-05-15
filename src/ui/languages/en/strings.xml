@@ -460,6 +460,12 @@
   <string name="module.social.messages.set_avatar">Set avatar</string>
   <string name="module.social.messages.leave_conversation">Leave Conversation</string>
   <string name="module.social.messages.leave_failed">Failed to leave conversation.</string>
+  <string name="module.social.messages.leave_confirm_title">Leave This Conversation?</string>
+  <string name="module.social.messages.leave_confirm_body">Are you sure you want to leave this conversation with {name}?</string>
+  <string name="module.social.messages.archived_section">Archived</string>
+  <string name="module.social.messages.archived_locked">Archived — Start a new conversation to send messages.</string>
+  <string name="module.social.messages.archived_cannot_send">This conversation is archived. Start a new conversation to message again.</string>
+  <string name="module.social.messages.not_member_cannot_send">You are no longer a member of this conversation.</string>
   <string name="module.social.messages.key_unavailable">Encryption key unavailable.</string>
   <string name="module.social.messages.page_subtitle">Your conversations and direct messages.</string>
   <string name="module.social.messages.request_sent">Message request sent.</string>

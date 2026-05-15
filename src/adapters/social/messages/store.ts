@@ -48,6 +48,7 @@ export interface MemberRow {
     joinedAt: string;
     lastReadAt: string | null;
     muted: boolean;
+    archived: boolean;
 }
 
 export interface MessageRow {
@@ -136,6 +137,12 @@ export class DbMessagesStore {
                 },
                 { name: "last_read_at", type: "timestamp" },
                 { name: "muted", type: "integer", notNull: true, default: 0 },
+                {
+                    name: "archived",
+                    type: "integer",
+                    notNull: true,
+                    default: 0,
+                },
             ],
             primaryKey: ["chatroom_id", "account_id"],
             indexes: [
@@ -285,6 +292,7 @@ export class DbMessagesStore {
             joinedAt: String(row.joined_at),
             lastReadAt: (row.last_read_at as string | null) ?? null,
             muted: Boolean(row.muted),
+            archived: Boolean(row.archived),
         };
     }
 
@@ -644,6 +652,22 @@ export class DbMessagesStore {
         });
     }
 
+    async setArchived(
+        roomId: string,
+        accountId: string,
+        archived: boolean,
+    ): Promise<void> {
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "chatroom_members",
+            set: { archived: archived ? 1 : 0 },
+            where: [
+                { column: "chatroom_id", value: roomId },
+                { column: "account_id", value: accountId },
+            ],
+        });
+    }
+
     async findPendingMessageRequest(
         fromAccountId: string,
         toAccountId: string,
@@ -801,6 +825,30 @@ export class DbMessagesStore {
                 ],
             });
         }
+    }
+
+    async hasApprovedMessageRequestBetween(
+        accountA: string,
+        accountB: string,
+    ): Promise<boolean> {
+        for (const [fromAccountId, toAccountId] of [
+            [accountA, accountB],
+            [accountB, accountA],
+        ]) {
+            const result = await this.db.executeCommand({
+                option: "SELECT",
+                table: "chat_message_requests",
+                where: [
+                    { column: "from_account_id", value: fromAccountId },
+                    { column: "to_account_id", value: toAccountId },
+                    { column: "status", value: "approved" },
+                ],
+                orderBy: [{ column: "created_at", direction: "DESC" }],
+                limit: 1,
+            });
+            if (result.rows?.[0]) return true;
+        }
+        return false;
     }
 
     async setTyping(

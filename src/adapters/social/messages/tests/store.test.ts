@@ -53,6 +53,26 @@ test("messages schema uses portable integer default for muted flag", async () =>
     );
 });
 
+test("messages schema includes portable integer archived member flag", async () => {
+    const { db, tableDefs } = createRecordingExecutor();
+    const store = new DbMessagesStore(db);
+
+    await store.ensureSchema();
+
+    const membersTableDef = tableDefs.find(
+        (def) => def.name === "chatroom_members",
+    );
+    assert.ok(membersTableDef, "chatroom_members table should be ensured");
+
+    const archivedCol = membersTableDef.columns.find(
+        (col) => col.name === "archived",
+    );
+    assert.ok(archivedCol, "archived column should exist");
+    assert.equal(archivedCol.type, "integer");
+    assert.equal(archivedCol.default, 0);
+    assert.equal(archivedCol.notNull, true);
+});
+
 test("messages schema includes request typing and reaction tables", async () => {
     const { db, tableDefs } = createRecordingExecutor();
     const store = new DbMessagesStore(db);
@@ -78,6 +98,20 @@ test("messages setMuted uses executeCommand with integer muted value", async () 
     assert.equal(updateCmd.set.muted, 1);
 });
 
+test("messages setArchived uses executeCommand with integer archived value", async () => {
+    const { db, commandCalls } = createRecordingExecutor();
+    const store = new DbMessagesStore(db);
+
+    await store.setArchived("room-1", "account-1", true);
+
+    const updateCmd = commandCalls.find(
+        (cmd): cmd is StructuredDbUpdateCommand =>
+            cmd.option === "UPDATE" && cmd.table === "chatroom_members",
+    );
+    assert.ok(updateCmd);
+    assert.equal(updateCmd.set.archived, 1);
+});
+
 test("createMessageRequest persists room id when provided", async () => {
     const { db, commandCalls } = createRecordingExecutor();
     const store = new DbMessagesStore(db);
@@ -96,4 +130,34 @@ test("createMessageRequest persists room id when provided", async () => {
     );
     assert.ok(insertCmd);
     assert.equal(insertCmd.values.room_id, "room-123");
+});
+
+test("hasApprovedMessageRequestBetween checks both request directions", async () => {
+    const commandCalls: Array<StructuredDbCommand> = [];
+    let selectCount = 0;
+    const db: DbExecutor = {
+        async ensureTable() {},
+        async executeCommand(command: StructuredDbCommand) {
+            commandCalls.push(command);
+            if (command.option === "SELECT") {
+                selectCount += 1;
+                if (selectCount === 1) return { rows: [] };
+                return { rows: [{ id: "approved-request" }] };
+            }
+            return { rows: [] };
+        },
+        async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
+            return callback(db);
+        },
+    };
+    const store = new DbMessagesStore(db);
+
+    const approved = await store.hasApprovedMessageRequestBetween(
+        "account-a",
+        "account-b",
+    );
+
+    assert.equal(approved, true);
+    const selectCalls = commandCalls.filter((cmd) => cmd.option === "SELECT");
+    assert.equal(selectCalls.length, 2);
 });

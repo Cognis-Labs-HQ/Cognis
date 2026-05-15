@@ -15,6 +15,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer.js";
+import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
     getInitialsText,
@@ -129,6 +130,11 @@ function memberDisplayName(member) {
     );
 }
 
+function profileHref(handle) {
+    if (!handle) return "";
+    return `/profile/${encodeURIComponent(String(handle).replace(/^@/, ""))}`;
+}
+
 function selectedRoomTitle(room, currentAccountId) {
     if (!room) return "";
     const otherMembers = (room.members ?? []).filter(
@@ -162,11 +168,11 @@ function renderMemberInitials(member) {
 
 function renderRoomAvatar(room, currentAccountId) {
     if (!room) return "";
-    if (room.avatarKey) {
-        return `<div class="messages-thread-avatar"><img class="messages-thread-avatar-img" src="/api/v1/files/${escapeHtml(room.avatarKey)}" alt="" /></div>`;
-    }
     const members = room.members ?? [];
     if (room.kind === "classroom") {
+        if (room.avatarKey) {
+            return `<div class="messages-thread-avatar"><img class="messages-thread-avatar-img" src="/api/v1/files/${escapeHtml(room.avatarKey)}" alt="" /></div>`;
+        }
         const picked = randomSample(members, 4);
         while (picked.length < 4) picked.push({ handle: "", displayName: "" });
         return `<div class="messages-classroom-collage">${picked.map(renderMemberInitials).join("")}</div>`;
@@ -175,8 +181,16 @@ function renderRoomAvatar(room, currentAccountId) {
         members.find((member) => member.accountId !== currentAccountId) ??
         members[0];
     const label = other ? memberDisplayName(other) : room.title || room.id;
-    const color = pickInitialsColor(other?.handle || other?.accountId || label);
-    return `<div class="messages-thread-avatar"><span class="messages-thread-initials" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span></div>`;
+    return formatAvatarMarkup({
+        avatarKey: room.avatarKey || other?.avatarKey || null,
+        label,
+        colorSeed: other?.handle || other?.accountId || label,
+        avatarClass: "messages-thread-avatar",
+        imageClass: "messages-thread-avatar-img",
+        fallbackClass: "messages-thread-initials",
+        profileHandle: other?.handle || null,
+        linkClass: "messages-avatar-link",
+    });
 }
 
 function renderThreadHeader(room, currentAccountId, i18n) {
@@ -219,55 +233,76 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
     if (!rooms.length) {
         return `<div class="messages-empty">${escapeHtml(i18n.t("module.social.messages.empty"))}</div>`;
     }
-    return rooms
-        .map((room) => {
-            const titleSource = selectedRoomTitle(room, currentAccountId);
-            const members = Array.isArray(room.members) ? room.members : [];
-            const preferredOtherMember = members.find(
-                (member) => member.accountId !== currentAccountId,
-            );
-            const displayedMember = preferredOtherMember ?? members[0] ?? null;
-            const avatar = formatRoomListAvatar(displayedMember, titleSource);
-            const previewSource =
-                room.lastMessagePreview ||
-                room.lastMessage?.senderDisplayName ||
-                room.lastMessage?.senderHandle ||
-                i18n.t("module.social.messages.preview_encrypted");
-            const preview = String(previewSource).replace(/\s+/g, " ").trim();
-            const unreadBadge =
-                room.unread > 0
-                    ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
+    const renderRoomItems = (roomItems) =>
+        roomItems
+            .map((room) => {
+                const titleSource = selectedRoomTitle(room, currentAccountId);
+                const members = Array.isArray(room.members) ? room.members : [];
+                const preferredOtherMember = members.find(
+                    (member) => member.accountId !== currentAccountId,
+                );
+                const displayedMember =
+                    preferredOtherMember ?? members[0] ?? null;
+                const avatar = formatRoomListAvatar(
+                    displayedMember,
+                    titleSource,
+                );
+                const previewSource =
+                    room.lastMessagePreview ||
+                    room.lastMessage?.senderDisplayName ||
+                    room.lastMessage?.senderHandle ||
+                    i18n.t("module.social.messages.preview_encrypted");
+                const preview = String(previewSource)
+                    .replace(/\s+/g, " ")
+                    .trim();
+                const unreadBadge =
+                    room.unread > 0
+                        ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
+                        : "";
+                const isActive = room.id === selectedRoomId;
+                const pendingRequest = room.pendingRequest ?? null;
+                const canRespondInSidebar =
+                    pendingRequest &&
+                    pendingRequest.direction === "incoming" &&
+                    pendingRequest.canRespond &&
+                    pendingRequest.id;
+                const pendingClass = canRespondInSidebar
+                    ? " messages-room--pending"
                     : "";
-            const isActive = room.id === selectedRoomId;
-            const pendingRequest = room.pendingRequest ?? null;
-            const canRespondInSidebar =
-                pendingRequest &&
-                pendingRequest.direction === "incoming" &&
-                pendingRequest.canRespond &&
-                pendingRequest.id;
-            const pendingClass = canRespondInSidebar
-                ? " messages-room--pending"
-                : "";
-            const pendingActions = canRespondInSidebar
-                ? `<span class="messages-room-request-actions" data-request-id="${escapeHtml(pendingRequest.id)}">
+                const archivedClass = room.isArchived
+                    ? " messages-room--archived"
+                    : "";
+                const pendingActions = canRespondInSidebar
+                    ? `<span class="messages-room-request-actions" data-request-id="${escapeHtml(pendingRequest.id)}">
                     <button type="button" class="messages-room-request-approve" aria-label="${escapeHtml(i18n.t("module.social.messages.approve_request"))}">✅</button>
                     <button type="button" class="messages-room-request-reject" aria-label="${escapeHtml(i18n.t("module.social.messages.reject_request"))}">❌</button>
                 </span>`
-                : "";
-            return `
-      <li class="messages-room ${isActive ? "messages-room--active" : ""}${pendingClass}"
+                    : "";
+                const archivedHint = room.isArchived
+                    ? `<span class="messages-room-archived-hint">${escapeHtml(i18n.t("module.social.messages.archived_locked"))}</span>`
+                    : "";
+                return `
+      <li class="messages-room ${isActive ? "messages-room--active" : ""}${pendingClass}${archivedClass}"
           data-room-id="${escapeHtml(room.id)}">
         ${avatar}
         <span class="messages-room-meta">
             <span class="messages-room-title">${escapeHtml(titleSource)}</span>
             <span class="messages-room-preview">${escapeHtml(preview)}</span>
+            ${archivedHint}
         </span>
         ${unreadBadge}
         ${pendingActions}
       </li>
     `;
-        })
-        .join("");
+            })
+            .join("");
+    const activeRooms = rooms.filter((room) => !room.isArchived);
+    const archivedRooms = rooms.filter((room) => room.isArchived);
+    const activeHtml = renderRoomItems(activeRooms);
+    const archivedHtml = archivedRooms.length
+        ? `<li class="messages-room-section-label">${escapeHtml(i18n.t("module.social.messages.archived_section"))}</li>${renderRoomItems(archivedRooms)}`
+        : "";
+    return `${activeHtml}${archivedHtml}`;
 }
 
 function buildLastReadMap(decodedMessages) {
@@ -310,6 +345,8 @@ function renderMessageStatus(
                     avatarClass: "messages-status-avatar",
                     imageClass: "messages-status-avatar-img",
                     fallbackClass: "messages-status-avatar-fallback",
+                    profileHandle: reader.handle || null,
+                    linkClass: "messages-avatar-link",
                 });
             })
             .join("");
@@ -448,7 +485,17 @@ function formatAvatarMarkup({
     avatarClass,
     imageClass,
     fallbackClass,
+    profileHandle = null,
+    linkClass = "",
 }) {
+    const avatarContent = avatarKey
+        ? `<img class="${escapeHtml(imageClass)}" src="/api/v1/files/${escapeHtml(avatarKey)}" alt="" />`
+        : `<span class="${escapeHtml(fallbackClass)}" style="--initials-bg: ${escapeHtml(pickInitialsColor(colorSeed || label))};">${escapeHtml(getInitialsText(label))}</span>`;
+    const profileLink = profileHref(profileHandle);
+    if (profileLink) {
+        const classes = [avatarClass, linkClass].filter(Boolean).join(" ");
+        return `<a class="${escapeHtml(classes)}" href="${escapeHtml(profileLink)}" aria-label="${escapeHtml(label)}">${avatarContent}</a>`;
+    }
     if (avatarKey) {
         return `<span class="${escapeHtml(avatarClass)}"><img class="${escapeHtml(imageClass)}" src="/api/v1/files/${escapeHtml(avatarKey)}" alt="" /></span>`;
     }
@@ -470,6 +517,8 @@ function formatRoomListAvatar(displayedMember, titleSource) {
         avatarClass: "messages-room-avatar",
         imageClass: "messages-room-avatar-img",
         fallbackClass: "messages-room-avatar-fallback",
+        profileHandle: displayedMember?.handle || null,
+        linkClass: "messages-avatar-link",
     });
 }
 
@@ -483,6 +532,8 @@ function formatMessageAvatar(message) {
         avatarClass: "messages-message-avatar",
         imageClass: "messages-message-avatar-img",
         fallbackClass: "messages-message-avatar-fallback",
+        profileHandle: message.senderHandle || null,
+        linkClass: "messages-avatar-link",
     });
 }
 
@@ -739,6 +790,24 @@ export async function mount(root, { signal } = {}) {
         return "";
     }
 
+    function syncComposerAvailability(room) {
+        const input = document.getElementById("messages-composer-input");
+        const sendButton = document.querySelector(".messages-composer-send");
+        const canSend =
+            Boolean(room) &&
+            room?.canSend !== false &&
+            room?.isArchived !== true;
+        if (input) {
+            input.disabled = !canSend;
+            input.placeholder = canSend
+                ? i18n.t("module.social.messages.placeholder")
+                : i18n.t("module.social.messages.archived_cannot_send");
+        }
+        if (sendButton) {
+            sendButton.disabled = !canSend;
+        }
+    }
+
     async function openRoom(roomId) {
         const threadList = document.getElementById("messages-thread-list");
         const headerSlot = document.getElementById(
@@ -762,6 +831,7 @@ export async function mount(root, { signal } = {}) {
             );
             bindRoomHeaderEvents();
         }
+        syncComposerAvailability(room);
         const pendingBannerSlot = document.getElementById(
             "messages-request-banner-slot",
         );
@@ -1021,6 +1091,10 @@ export async function mount(root, { signal } = {}) {
 
     async function reloadRoomsList() {
         rooms = await loadRooms(i18n);
+        const selectedRoom = rooms.find(
+            (room) => String(room.id) === String(selectedRoomId),
+        );
+        syncComposerAvailability(selectedRoom ?? null);
         const roomsList = document.getElementById("messages-rooms-list");
         if (roomsList) {
             roomsList.innerHTML = renderRoomList(
@@ -1034,6 +1108,24 @@ export async function mount(root, { signal } = {}) {
 
     async function leaveSelectedRoom(handle) {
         if (!selectedRoomId || !handle) return;
+        const leaveResult = await openPopup({
+            title: i18n.t("module.social.messages.leave_confirm_title"),
+            body: `<p>${escapeHtml(i18n.t("module.social.messages.leave_confirm_body").replace("{name}", handle))}</p>`,
+            variant: "danger",
+            actions: [
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+                {
+                    id: "confirm",
+                    label: i18n.t("module.social.messages.leave_conversation"),
+                    variant: "confirm",
+                },
+            ],
+        });
+        if (leaveResult !== "confirm") return;
         const roomIdToLeave = selectedRoomId;
         const response = await apiFetch(
             `/api/v1/messages/rooms/${encodeURIComponent(roomIdToLeave)}/members/${encodeURIComponent(handle)}`,
@@ -1063,6 +1155,7 @@ export async function mount(root, { signal } = {}) {
             if (bannerSlot) bannerSlot.innerHTML = "";
             if (typingStatus) typingStatus.textContent = "";
             if (threadList) threadList.innerHTML = "";
+            syncComposerAvailability(null);
             return;
         }
         const fallbackRoomId =
@@ -1203,6 +1296,21 @@ export async function mount(root, { signal } = {}) {
                 form?.addEventListener("submit", async (event) => {
                     event.preventDefault();
                     if (!selectedRoomId) return;
+                    const currentRoom = rooms.find(
+                        (room) => String(room.id) === String(selectedRoomId),
+                    );
+                    if (
+                        currentRoom?.canSend === false ||
+                        currentRoom?.isArchived
+                    ) {
+                        showToast(
+                            i18n.t(
+                                "module.social.messages.archived_cannot_send",
+                            ),
+                            { variant: "error" },
+                        );
+                        return;
+                    }
                     const input = document.getElementById(
                         "messages-composer-input",
                     );
@@ -1227,7 +1335,31 @@ export async function mount(root, { signal } = {}) {
                             body: JSON.stringify({ ciphertext, iv }),
                         },
                     );
-                    if (!res.ok) return;
+                    if (!res.ok) {
+                        const payload = await res.json().catch(() => null);
+                        const code = payload?.error?.code;
+                        if (code === "not_member") {
+                            showToast(
+                                i18n.t(
+                                    "module.social.messages.not_member_cannot_send",
+                                ),
+                                { variant: "error" },
+                            );
+                            await reloadRoomsList();
+                            return;
+                        }
+                        if (code === "chat_archived") {
+                            showToast(
+                                i18n.t(
+                                    "module.social.messages.archived_cannot_send",
+                                ),
+                                { variant: "error" },
+                            );
+                            await reloadRoomsList();
+                            return;
+                        }
+                        return;
+                    }
                     if (input) input.value = "";
                     if (threadList) {
                         await renderThread(

@@ -47,6 +47,15 @@ When the users are visible and unblocked but do not mutually follow each other,
 requester can enter the chat immediately. The recipient sees an approval banner
 in the room and cannot view pending messages until approving.
 
+Message requests are pair-scoped (user-to-user), not room-scoped: once a pair
+has an approved request history, future direct chats between the same two
+accounts can be created directly without requesting again.
+
+If a two-member chat is left by one participant, the remaining participant keeps
+the room in an archived state (shown in a dedicated archived sidebar section)
+and cannot send new messages from that archived room. Messaging the same user
+again creates a fresh direct room.
+
 The same predicate is exposed via the social gateway's
 `GET /api/v1/users/:handle/relationship` endpoint (`canMessage`,
 `canSendMessageRequest`, `requiresMessageRequest`) so the profile UI can decide

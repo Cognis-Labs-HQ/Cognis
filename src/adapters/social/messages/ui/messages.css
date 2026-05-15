@@ -57,6 +57,20 @@
     background: var(--color-surface-elevated);
 }
 
+.messages-room--archived {
+    opacity: 0.78;
+}
+
+.messages-room-section-label {
+    list-style: none;
+    padding: 0.55rem 1rem 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
 .messages-room-title {
     font-weight: 500;
     display: block;
@@ -76,12 +90,22 @@
     white-space: nowrap;
 }
 
+.messages-room-archived-hint {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+}
+
 .messages-room-avatar {
     width: 2rem;
     height: 2rem;
     border-radius: 999px;
     overflow: hidden;
     flex: 0 0 auto;
+}
+
+.messages-avatar-link {
+    color: inherit;
+    text-decoration: none;
 }
 
 .messages-room-avatar-img,
@@ -295,6 +319,12 @@
     background: var(--color-accent);
     color: var(--color-accent-contrast);
     cursor: pointer;
+}
+
+.messages-composer-input:disabled,
+.messages-composer-send:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .messages-composer-send:hover {

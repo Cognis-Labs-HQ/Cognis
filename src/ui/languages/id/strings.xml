@@ -460,6 +460,12 @@
   <string name="module.social.messages.set_avatar">Atur avatar</string>
   <string name="module.social.messages.leave_conversation">Tinggalkan Percakapan</string>
   <string name="module.social.messages.leave_failed">Gagal meninggalkan percakapan.</string>
+  <string name="module.social.messages.leave_confirm_title">Tinggalkan Percakapan Ini?</string>
+  <string name="module.social.messages.leave_confirm_body">Apakah Anda yakin ingin meninggalkan percakapan ini dengan {name}?</string>
+  <string name="module.social.messages.archived_section">Diarsipkan</string>
+  <string name="module.social.messages.archived_locked">Diarsipkan — Mulai percakapan baru untuk mengirim pesan.</string>
+  <string name="module.social.messages.archived_cannot_send">Percakapan ini diarsipkan. Mulai percakapan baru untuk mengirim pesan lagi.</string>
+  <string name="module.social.messages.not_member_cannot_send">Anda bukan lagi anggota percakapan ini.</string>
   <string name="module.social.messages.key_unavailable">Kunci enkripsi tidak tersedia.</string>
   <string name="module.social.messages.page_subtitle">Percakapan dan pesan langsung Anda.</string>
   <string name="module.social.messages.request_sent">Permintaan pesan telah dikirim.</string>
