@@ -200,9 +200,7 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
                 (member) => member.accountId !== currentAccountId,
             );
             const displayedMember = preferredOtherMember ?? members[0] ?? null;
-            const avatar = displayedMember?.avatarKey
-                ? `<img class="messages-room-avatar-img" src="/api/v1/files/${escapeHtml(displayedMember.avatarKey)}" alt="" />`
-                : `<span class="messages-room-avatar-fallback" style="--initials-bg: ${escapeHtml(pickInitialsColor(displayedMember?.handle || displayedMember?.accountId || titleSource))};">${escapeHtml(getInitialsText(displayedMember ? memberDisplayName(displayedMember) : titleSource))}</span>`;
+            const avatar = formatRoomListAvatar(displayedMember, titleSource);
             const previewSource =
                 room.lastMessagePreview ||
                 room.lastMessage?.senderDisplayName ||
@@ -354,7 +352,20 @@ function closeReadTooltips(threadList) {
     threadList?.classList.remove("messages-thread-list--receipt-open");
 }
 
-function renderMessageAvatar(message) {
+function formatRoomListAvatar(displayedMember, titleSource) {
+    if (displayedMember?.avatarKey) {
+        return `<img class="messages-room-avatar-img" src="/api/v1/files/${escapeHtml(displayedMember.avatarKey)}" alt="" />`;
+    }
+    const label = displayedMember
+        ? memberDisplayName(displayedMember)
+        : titleSource;
+    const color = pickInitialsColor(
+        displayedMember?.handle || displayedMember?.accountId || titleSource,
+    );
+    return `<span class="messages-room-avatar-fallback" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
+}
+
+function formatMessageAvatar(message) {
     const senderLabel =
         message.senderDisplayName || message.senderHandle || message.senderId;
     if (message.senderAvatarKey) {
@@ -420,7 +431,7 @@ async function renderThread(
                     : "";
             const ownRowClass = isOwn ? " messages-message-row--own" : "";
             return `<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(msg.id)}">
-            ${renderMessageAvatar(msg)}
+            ${formatMessageAvatar(msg)}
             <div class="messages-message${ownClass}">
                 ${senderLabel}
                 <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>

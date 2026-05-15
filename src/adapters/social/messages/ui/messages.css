@@ -633,34 +633,25 @@
     font-size: 0.75rem;
 }
 
-.messages-page[data-message-style="speech_bubbles"] .messages-message,
-html[data-message-style="speech_bubbles"] .messages-page .messages-message {
+.messages-page[data-message-style="speech_bubbles"] .messages-message {
     border-radius: 1.1rem;
     padding: 0.6rem 0.85rem;
 }
 
-.messages-page[data-message-style="speech_bubbles"] .messages-message--own,
-html[data-message-style="speech_bubbles"]
-    .messages-page
-    .messages-message--own {
+.messages-page[data-message-style="speech_bubbles"] .messages-message--own {
     border-bottom-right-radius: 0.35rem;
 }
 
 .messages-page[data-message-style="speech_bubbles"]
-    .messages-message:not(.messages-message--own),
-html[data-message-style="speech_bubbles"]
-    .messages-page
     .messages-message:not(.messages-message--own) {
     border-bottom-left-radius: 0.35rem;
 }
 
-.messages-page[data-message-style="irc"] .messages-thread-list,
-html[data-message-style="irc"] .messages-page .messages-thread-list {
+.messages-page[data-message-style="irc"] .messages-thread-list {
     gap: 0.15rem;
 }
 
-.messages-page[data-message-style="irc"] .messages-message,
-html[data-message-style="irc"] .messages-page .messages-message {
+.messages-page[data-message-style="irc"] .messages-message {
     max-width: 100%;
     align-self: stretch;
     padding: 0.2rem 0;
@@ -669,8 +660,7 @@ html[data-message-style="irc"] .messages-page .messages-message {
     color: var(--color-text);
 }
 
-.messages-page[data-message-style="irc"] .messages-message-sender,
-html[data-message-style="irc"] .messages-page .messages-message-sender {
+.messages-page[data-message-style="irc"] .messages-message-sender {
     color: var(--color-accent);
     font-size: 0.78rem;
     font-weight: 600;
@@ -678,31 +668,23 @@ html[data-message-style="irc"] .messages-page .messages-message-sender {
 
 .messages-page[data-message-style="irc"]
     .messages-message--own
-    .messages-message-sender,
-html[data-message-style="irc"]
-    .messages-page
-    .messages-message--own
     .messages-message-sender {
     display: none;
 }
 
-.messages-page[data-message-style="irc"] .messages-message-meta,
-html[data-message-style="irc"] .messages-page .messages-message-meta {
+.messages-page[data-message-style="irc"] .messages-message-meta {
     align-self: flex-start;
 }
 
-.messages-page[data-message-style="irc"] .messages-message-time,
-html[data-message-style="irc"] .messages-page .messages-message-time {
+.messages-page[data-message-style="irc"] .messages-message-time {
     color: var(--color-text-muted);
 }
 
-.messages-page[data-message-style="irc"] .messages-message-row,
-html[data-message-style="irc"] .messages-page .messages-message-row {
+.messages-page[data-message-style="irc"] .messages-message-row {
     display: block;
 }
 
-.messages-page[data-message-style="irc"] .messages-message-avatar,
-html[data-message-style="irc"] .messages-page .messages-message-avatar {
+.messages-page[data-message-style="irc"] .messages-message-avatar {
     display: none;
 }
 
