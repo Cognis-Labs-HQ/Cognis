@@ -74,7 +74,7 @@ class LineHttpClient implements LineAuthClient {
             params.set("client_secret", input.channelSecret);
         }
         if (config.usePkce) {
-            if (!input.codeVerifier) {
+            if (!input.codeVerifier || !input.codeVerifier.trim()) {
                 return null;
             }
             params.set("code_verifier", input.codeVerifier);

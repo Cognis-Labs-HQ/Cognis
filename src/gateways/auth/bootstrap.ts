@@ -112,9 +112,10 @@ async function syncExternalIdentity(
         ],
         limit: 1,
     });
-    const accountId =
-        String(existingIdentityResult.rows?.[0]?.account_id ?? "") ||
-        session.accountId;
+    const persistedAccountId = String(
+        existingIdentityResult.rows?.[0]?.account_id ?? "",
+    ).trim();
+    const accountId = persistedAccountId || session.accountId;
     const displayName = session.displayName ?? accountId;
     const accountResult = await dbExecutor.executeCommand({
         option: "SELECT",
@@ -205,12 +206,13 @@ async function touchExternalAccountLastLogin(
     dbExecutor: DbExecutor,
     accountId: string,
 ): Promise<void> {
+    const now = new Date().toISOString();
     await dbExecutor.executeCommand({
         option: "UPDATE",
         table: "accounts",
         set: {
-            last_login: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+            last_login: now,
+            updated_at: now,
         },
         where: [{ column: "id", value: accountId }],
     });
@@ -220,12 +222,12 @@ async function unlinkExternalIdentity(
     dbExecutor: DbExecutor,
     accountId: string,
     provider: string,
-): Promise<boolean> {
+): Promise<{ unlinked: boolean; accountDisabled: boolean }> {
     const now = new Date().toISOString();
     const existing = await dbExecutor.executeCommand({
         option: "SELECT",
         table: "auth_identities",
-        columns: ["id"],
+        columns: ["id", "lifecycle_state", "unlinked_at"],
         where: [
             { column: "account_id", value: accountId },
             { column: "provider", value: provider },
@@ -233,14 +235,28 @@ async function unlinkExternalIdentity(
         limit: 1,
     });
     if (!existing.rows?.[0]?.id) {
-        return false;
+        return {
+            unlinked: false,
+            accountDisabled: false,
+        };
     }
+    const currentLifecycleState = normalizeLifecycleState(
+        existing.rows?.[0]?.lifecycle_state,
+    );
+    const nextLifecycleState =
+        currentLifecycleState === "deleted" ||
+        currentLifecycleState === "deactivated"
+            ? currentLifecycleState
+            : "unlinked";
     await dbExecutor.executeCommand({
         option: "UPDATE",
         table: "auth_identities",
         set: {
-            lifecycle_state: "unlinked",
-            unlinked_at: now,
+            lifecycle_state: nextLifecycleState,
+            unlinked_at:
+                nextLifecycleState === "unlinked"
+                    ? now
+                    : (existing.rows?.[0]?.unlinked_at ?? null),
             updated_at: now,
         },
         where: [
@@ -248,16 +264,32 @@ async function unlinkExternalIdentity(
             { column: "provider", value: provider },
         ],
     });
-    await dbExecutor.executeCommand({
-        option: "UPDATE",
-        table: "accounts",
-        set: {
-            enabled: false,
-            updated_at: now,
-        },
-        where: [{ column: "id", value: accountId }],
+    const identityRows = await dbExecutor.executeCommand({
+        option: "SELECT",
+        table: "auth_identities",
+        columns: ["provider", "lifecycle_state"],
+        where: [{ column: "account_id", value: accountId }],
     });
-    return true;
+    const hasOtherActiveIdentity = (identityRows.rows ?? []).some((row) => {
+        const rowProvider = String(row.provider ?? "");
+        const rowLifecycleState = normalizeLifecycleState(row.lifecycle_state);
+        return rowProvider !== provider && rowLifecycleState === "active";
+    });
+    if (!hasOtherActiveIdentity) {
+        await dbExecutor.executeCommand({
+            option: "UPDATE",
+            table: "accounts",
+            set: {
+                enabled: false,
+                updated_at: now,
+            },
+            where: [{ column: "id", value: accountId }],
+        });
+    }
+    return {
+        unlinked: true,
+        accountDisabled: !hasOtherActiveIdentity,
+    };
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
@@ -705,11 +737,13 @@ function createAuthGatewayRoutes(
                 accessTokenTtlSeconds,
             );
             const localAdapter = authGateway.getLocalAdapter();
-            if (localAdapter && session.provider === "local") {
-                await localAdapter
-                    .updateLastLogin(syncedSession.accountId)
-                    .catch(() => undefined);
-            } else if (session.provider !== "local") {
+            if (session.provider === "local") {
+                if (localAdapter) {
+                    await localAdapter
+                        .updateLastLogin(syncedSession.accountId)
+                        .catch(() => undefined);
+                }
+            } else {
                 await touchExternalAccountLastLogin(
                     dbExecutor,
                     syncedSession.accountId,
@@ -805,18 +839,19 @@ function createAuthGatewayRoutes(
                     JSON.stringify({
                         error: {
                             code: "unsupported_provider",
-                            message: "Local auth provider cannot be unlinked",
+                            message:
+                                "Local authentication cannot be unlinked; use password reset or account deletion instead",
                         },
                     }),
                 );
                 return true;
             }
-            const unlinked = await unlinkExternalIdentity(
+            const unlinkResult = await unlinkExternalIdentity(
                 dbExecutor,
                 claims.sub,
                 provider,
             );
-            if (!unlinked) {
+            if (!unlinkResult.unlinked) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -837,12 +872,17 @@ function createAuthGatewayRoutes(
                 revokeAccessToken(bearerToken);
             }
             const revokedTokenCount = revokeAccessTokensForSubject(claims.sub);
-            log?.("info", "Unlinked external auth provider identity.", {
-                ...logMeta,
-                accountId: claims.sub,
-                provider,
-                revokedTokenCount,
-            });
+            log?.(
+                "info",
+                "Unlinked external auth provider identity and disabled account.",
+                {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    provider,
+                    revokedTokenCount,
+                    accountDisabled: unlinkResult.accountDisabled,
+                },
+            );
             res.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": buildAccessTokenCookie(
@@ -856,7 +896,7 @@ function createAuthGatewayRoutes(
                     data: {
                         unlinked: true,
                         provider,
-                        accountDisabled: true,
+                        accountDisabled: unlinkResult.accountDisabled,
                     },
                 }),
             );
