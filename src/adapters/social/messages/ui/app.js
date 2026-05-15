@@ -36,6 +36,7 @@ const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉"];
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
+const LIVE_REFRESH_INTERVAL_MS = 2500;
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
 
 function resolveMessageStyle() {
@@ -49,6 +50,13 @@ function resolveMessageStyle() {
     } catch {
         return normalizeMessageStyle(null);
     }
+}
+
+function normalizeReactionEmoji(emoji) {
+    return String(emoji ?? "")
+        .trim()
+        .replace(/[\uFE0E\uFE0F]/g, "")
+        .normalize("NFC");
 }
 
 async function encryptMessage(key, plaintext) {
@@ -305,8 +313,26 @@ function formatRoomEventText(message, i18n) {
 
 function renderReactionRow(message) {
     if (!message?.id) return "";
-    const reactions = Array.isArray(message.reactions) ? message.reactions : [];
-    const chips = reactions
+    const reactionRows = Array.isArray(message.reactions)
+        ? message.reactions
+        : [];
+    const mergedByEmoji = new Map();
+    for (const reaction of reactionRows) {
+        const normalizedEmoji = normalizeReactionEmoji(reaction.emoji);
+        if (!normalizedEmoji) continue;
+        const existing = mergedByEmoji.get(normalizedEmoji);
+        if (existing) {
+            existing.count += Number(reaction.count ?? 0);
+            existing.reactedByMe = existing.reactedByMe || reaction.reactedByMe;
+            continue;
+        }
+        mergedByEmoji.set(normalizedEmoji, {
+            emoji: normalizedEmoji,
+            count: Number(reaction.count ?? 0),
+            reactedByMe: Boolean(reaction.reactedByMe),
+        });
+    }
+    const chips = Array.from(mergedByEmoji.values())
         .map((reaction) => {
             const ownClass = reaction.reactedByMe
                 ? " messages-reaction-chip--active"
@@ -398,8 +424,18 @@ async function renderThread(
         container.insertAdjacentHTML("afterbegin", html);
         container.scrollTop += container.scrollHeight - savedHeight;
     } else {
+        const previousTop = container.scrollTop;
+        const wasNearBottom =
+            container.scrollHeight -
+                container.scrollTop -
+                container.clientHeight <
+            40;
         container.innerHTML = html;
-        container.scrollTop = container.scrollHeight;
+        if (wasNearBottom) {
+            container.scrollTop = container.scrollHeight;
+        } else {
+            container.scrollTop = previousTop;
+        }
     }
 
     if (hasMore && oldestCreatedAt) {
@@ -473,6 +509,7 @@ export async function mount(root, { signal } = {}) {
         : rememberedRoomId;
     let typingSendTimeoutId = null;
     let typingPollIntervalId = null;
+    let liveRefreshIntervalId = null;
     let typingActive = false;
     let lastTypingSentAt = 0;
 
@@ -649,11 +686,13 @@ export async function mount(root, { signal } = {}) {
 
     async function toggleReaction(messageId, emoji) {
         if (!selectedRoomId || !messageId || !emoji) return;
+        const normalizedEmoji = normalizeReactionEmoji(emoji);
+        if (!normalizedEmoji) return;
         const res = await apiFetch(
             `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/messages/${encodeURIComponent(messageId)}/reactions`,
             {
                 method: "POST",
-                body: JSON.stringify({ emoji }),
+                body: JSON.stringify({ emoji: normalizedEmoji }),
             },
         );
         if (!res.ok) return;
@@ -669,6 +708,22 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
+    async function refreshActiveConversation() {
+        if (!selectedRoomId || document.visibilityState !== "visible") return;
+        await reloadRoomsList();
+        const threadList = document.getElementById("messages-thread-list");
+        if (!threadList) return;
+        const key = await getRoomKey(selectedRoomId);
+        await renderThread(
+            selectedRoomId,
+            key,
+            threadList,
+            i18n,
+            currentAccountId,
+        );
+        await refreshTypingIndicator();
+    }
+
     function startTypingPolling() {
         if (typingPollIntervalId) {
             clearInterval(typingPollIntervalId);
@@ -678,6 +733,17 @@ export async function mount(root, { signal } = {}) {
         typingPollIntervalId = setInterval(() => {
             void refreshTypingIndicator();
         }, 3000);
+    }
+
+    function startLiveRefreshPolling() {
+        if (liveRefreshIntervalId) {
+            clearInterval(liveRefreshIntervalId);
+            liveRefreshIntervalId = null;
+        }
+        if (!selectedRoomId || document.visibilityState !== "visible") return;
+        liveRefreshIntervalId = setInterval(() => {
+            void refreshActiveConversation();
+        }, LIVE_REFRESH_INTERVAL_MS);
     }
 
     function queueTypingUpdate(typing) {
@@ -975,6 +1041,7 @@ export async function mount(root, { signal } = {}) {
                         );
                     }
                     await refreshTypingIndicator();
+                    startLiveRefreshPolling();
                 });
 
                 const composerInput = document.getElementById(
@@ -1024,6 +1091,7 @@ export async function mount(root, { signal } = {}) {
                     void openRoom(selectedRoomId);
                     void refreshTypingIndicator();
                     startTypingPolling();
+                    startLiveRefreshPolling();
                 }
             },
         },
@@ -1042,6 +1110,7 @@ export async function mount(root, { signal } = {}) {
                 void openRoom(id);
                 void refreshTypingIndicator();
                 startTypingPolling();
+                startLiveRefreshPolling();
             }
         },
         { signal },
@@ -1051,8 +1120,10 @@ export async function mount(root, { signal } = {}) {
         "visibilitychange",
         () => {
             startTypingPolling();
+            startLiveRefreshPolling();
             if (document.visibilityState === "visible") {
                 void refreshTypingIndicator();
+                void refreshActiveConversation();
             }
         },
         { signal },
@@ -1086,6 +1157,7 @@ export async function mount(root, { signal } = {}) {
         () => {
             if (typingSendTimeoutId) clearTimeout(typingSendTimeoutId);
             if (typingPollIntervalId) clearInterval(typingPollIntervalId);
+            if (liveRefreshIntervalId) clearInterval(liveRefreshIntervalId);
         },
         { once: true },
     );
@@ -1131,6 +1203,7 @@ export async function mount(root, { signal } = {}) {
             await openRoom(id);
             await refreshTypingIndicator();
             startTypingPolling();
+            startLiveRefreshPolling();
         });
 
         const newBtn = document.getElementById("messages-new-btn");
@@ -1169,6 +1242,7 @@ export async function mount(root, { signal } = {}) {
 
     await composer.init();
     startTypingPolling();
+    startLiveRefreshPolling();
 }
 
 if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));

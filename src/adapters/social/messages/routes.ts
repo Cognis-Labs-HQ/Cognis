@@ -27,6 +27,13 @@ interface DispatchEnvelope {
 
 type Dispatch = (e: DispatchEnvelope) => Promise<{ dispatched: string[] }>;
 
+function normalizeReactionEmoji(rawEmoji: string): string {
+    return String(rawEmoji ?? "")
+        .trim()
+        .replace(/[\uFE0E\uFE0F]/g, "")
+        .normalize("NFC");
+}
+
 /**
  * Messaging eligibility predicate: A may DM B iff
  *   not blocked in either direction, both users are visible, AND
@@ -55,11 +62,11 @@ export async function canMessage(
     ) {
         return false;
     }
-    const [aFollowsB, bFollowsA] = await Promise.all([
+    const [requesterFollowsTarget, targetFollowsRequester] = await Promise.all([
         profileStore.isFollowing(fromId, toId),
         profileStore.isFollowing(toId, fromId),
     ]);
-    return aFollowsB && bFollowsA;
+    return requesterFollowsTarget && targetFollowsRequester;
 }
 
 export async function canSendMessageRequest(
@@ -827,6 +834,10 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 const reactionRows =
                     await messagesStore.listMessageReactions(roomId);
                 for (const reactionRow of reactionRows) {
+                    const normalizedEmoji = normalizeReactionEmoji(
+                        reactionRow.emoji,
+                    );
+                    if (!normalizedEmoji) continue;
                     let emojiMap = reactionsByMessage.get(
                         reactionRow.messageId,
                     );
@@ -834,15 +845,15 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                         emojiMap = new Map();
                         reactionsByMessage.set(reactionRow.messageId, emojiMap);
                     }
-                    let entry = emojiMap.get(reactionRow.emoji);
+                    let entry = emojiMap.get(normalizedEmoji);
                     if (!entry) {
                         entry = {
-                            emoji: reactionRow.emoji,
+                            emoji: normalizedEmoji,
                             count: 0,
                             reactedByMe: false,
                             reactedBy: [],
                         };
-                        emojiMap.set(reactionRow.emoji, entry);
+                        emojiMap.set(normalizedEmoji, entry);
                     }
                     entry.count += 1;
                     if (reactionRow.accountId === accountId)
@@ -1209,8 +1220,9 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 return true;
             }
             const body = (await readJson(req)) as { emoji?: unknown };
-            const emoji =
-                typeof body.emoji === "string" ? body.emoji.trim() : "";
+            const emoji = normalizeReactionEmoji(
+                typeof body.emoji === "string" ? body.emoji : "",
+            );
             if (!emoji || emoji.length > 16) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -1236,6 +1248,28 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 emoji,
                 !hasReaction,
             );
+            if (dispatch && !hasReaction && message.senderId !== accountId) {
+                const [sender, recipient, recipientMember] = await Promise.all([
+                    profileStore.getProfile(accountId),
+                    profileStore.getProfile(message.senderId),
+                    messagesStore.getMember(roomId, message.senderId),
+                ]);
+                if (recipient && recipientMember && !recipientMember.muted) {
+                    await dispatch({
+                        category: "messages",
+                        recipientUsername: recipient.handle,
+                        subject: "New reaction",
+                        body: "New reaction",
+                        senderName: sender?.handle ?? accountId,
+                        actionUrl: `/messages/${roomId}`,
+                        metadata: {
+                            roomId,
+                            messageId: subArg,
+                            reaction: emoji,
+                        },
+                    }).catch(() => undefined);
+                }
+            }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { active: !hasReaction } }));
             return true;
