@@ -41,3 +41,5 @@ die Nachrichten-API und die UI ergänzt.
 
 - [d4f7f6d](https://github.com/le-firehawk/Cognis/commit/d4f7f6d)
 - [fc3febe](https://github.com/le-firehawk/Cognis/commit/fc3febe)
+- [11eebfa](https://github.com/le-firehawk/Cognis/commit/11eebfa)
+- [2db27c2](https://github.com/le-firehawk/Cognis/commit/2db27c2)
