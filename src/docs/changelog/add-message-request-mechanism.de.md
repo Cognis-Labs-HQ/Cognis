@@ -14,6 +14,13 @@ Folgen wird weiterhin direkt ein Chat gestartet.
 Zusätzlich wurden Lesebestätigungen, Tippindikatoren und Emoji-Reaktionen für
 die Nachrichten-API und die UI ergänzt.
 
+Das Häkchen-System für Lesebestätigungen wurde durch ein Avatar-basiertes
+Design ersetzt. Gesendete Nachrichten zeigen zunächst einen kleinen
+Auskreisring, einen ausgefüllten Kreis nach Serverbestätigung und danach
+den Avatar des Lesers. Gruppenunterhaltungen zeigen mehrere Avatare
+nebeneinander. Tooltips bei Emoji-Reaktionen zeigen jetzt ein einzelnes
+beschreibendes Wort („Like", „Heart", „Haha", „Celebrate").
+
 ## Geänderte Komponenten und Dateien
 
 - Social-Messages-Adapter:
@@ -43,3 +50,4 @@ die Nachrichten-API und die UI ergänzt.
 - [fc3febe](https://github.com/le-firehawk/Cognis/commit/fc3febe)
 - [11eebfa](https://github.com/le-firehawk/Cognis/commit/11eebfa)
 - [2db27c2](https://github.com/le-firehawk/Cognis/commit/2db27c2)
+- [f08f248](https://github.com/le-firehawk/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)

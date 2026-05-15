@@ -471,7 +471,6 @@
   <string name="module.social.messages.reject_request">却下</string>
   <string name="module.social.messages.preview_encrypted">暗号化されたメッセージ</string>
   <string name="module.social.messages.preview_event">ルームイベント</string>
-  <string name="module.social.messages.read_details">既読状況を確認</string>
   <string name="module.social.messages.request_banner_incoming">{name}さんがメッセージを希望しています。承認するとメッセージが表示されます。</string>
   <string name="module.social.messages.request_banner_outgoing">{name}さんがメッセージリクエストを承認するのを待っています。</string>
   <string name="module.social.messages.event_member_joined">{name}さんがルームに参加しました。</string>

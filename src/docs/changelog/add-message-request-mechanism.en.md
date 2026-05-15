@@ -13,6 +13,19 @@ mutual followers.
 Added message read receipts, typing notifications, and emoji reaction toggles
 to the messages API and UI.
 
+Refined messages pane layout: reduced wasted vertical space, fixed y-overflow
+so the composer is always fully visible, moved timestamps inside message bubbles
+as `HH:MM`, added date-divider chips between messages from different dates,
+fixed emoji reaction deduplication, and added a leave-room icon in the thread
+header.
+
+Replaced the tick/double-tick read receipt system with an avatar-based design.
+Sent messages now show a small outline circle until the server confirms
+delivery, a filled circle once delivered, and the reader's avatar once the
+message has been read. Group chats show multiple reader avatars side-by-side.
+Emoji reaction tooltips now show a single descriptive word ("Like", "Heart",
+"Haha", "Celebrate") instead of the raw emoji character.
+
 ## Changed components and files
 
 - Social messages adapter:
@@ -42,3 +55,4 @@ to the messages API and UI.
 - [fc3febe](https://github.com/le-firehawk/Cognis/commit/fc3febe)
 - [11eebfa](https://github.com/le-firehawk/Cognis/commit/11eebfa)
 - [2db27c2](https://github.com/le-firehawk/Cognis/commit/2db27c2)
+- [f08f248](https://github.com/le-firehawk/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)

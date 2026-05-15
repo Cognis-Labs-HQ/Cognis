@@ -22,11 +22,7 @@ import {
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
-import {
-    formatDate,
-    formatDateTime,
-    getEffectiveTimezone,
-} from "/static/reuse/timestamp.js";
+import { formatDate, getEffectiveTimezone } from "/static/reuse/timestamp.js";
 import { normalizeMessageStyle } from "/static/reuse/message-style-options.js";
 import {
     hexToBytes,
@@ -37,6 +33,12 @@ import {
 const TEXT_ENCODER = new TextEncoder();
 const TEXT_DECODER = new TextDecoder();
 const QUICK_REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉"];
+const EMOJI_NAMES = {
+    "👍": "Like",
+    "❤": "Heart",
+    "😂": "Haha",
+    "🎉": "Celebrate",
+};
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
@@ -61,6 +63,11 @@ function normalizeReactionEmoji(emoji) {
         .trim()
         .replace(/[\uFE0E\uFE0F]/g, "")
         .normalize("NFC");
+}
+
+function emojiDisplayName(emoji) {
+    const normalized = normalizeReactionEmoji(emoji);
+    return EMOJI_NAMES[normalized] ?? emoji;
 }
 
 async function encryptMessage(key, plaintext) {
@@ -263,32 +270,53 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
         .join("");
 }
 
-function renderStatusIndicator(message, currentAccountId, i18n) {
+function buildLastReadMap(decodedMessages) {
+    const latestByAccount = new Map();
+    for (const msg of decodedMessages) {
+        if (!Array.isArray(msg.readBy)) continue;
+        for (const reader of msg.readBy) {
+            if (!reader.accountId) continue;
+            latestByAccount.set(reader.accountId, {
+                messageId: msg.id,
+                reader,
+            });
+        }
+    }
+    const readersAtMessage = new Map();
+    for (const [, entry] of latestByAccount) {
+        const existing = readersAtMessage.get(entry.messageId) ?? [];
+        existing.push(entry.reader);
+        readersAtMessage.set(entry.messageId, existing);
+    }
+    return readersAtMessage;
+}
+
+function renderMessageStatus(
+    message,
+    currentAccountId,
+    isDelivered,
+    readersHere,
+) {
     if (message.senderId !== currentAccountId) return "";
-    const readers = Array.isArray(message.readBy) ? message.readBy : [];
-    const readCount = readers.length;
-    const deliveredCount = Number(message.deliveredToCount ?? 0);
-    const hasDelivered = readCount > 0 || deliveredCount > 0;
-    const isRead = readCount > 0;
-    const solidClass = isRead ? " messages-status-tick--solid" : "";
-
-    const tooltipRows = readers
-        .map((reader) => {
-            const readerName =
-                reader.displayName || reader.handle || reader.accountId;
-            const readTime = reader.readAt
-                ? formatDateTime(reader.readAt)
-                : "—";
-            return `<li>${escapeHtml(readerName)} — ${escapeHtml(readTime)}</li>`;
-        })
-        .join("");
-    const tooltip = readers.length
-        ? `<div class="messages-read-tooltip" hidden role="tooltip"><ul>${tooltipRows}</ul></div>`
-        : "";
-
-    return `<div class="messages-status-group" data-status-for="${escapeHtml(message.id)}" role="button" tabindex="0" aria-label="${escapeHtml(i18n.t("module.social.messages.read_details"))}">
-        <span class="messages-status-tick${solidClass}" aria-hidden="true">✓</span>${hasDelivered ? `<span class="messages-status-tick${solidClass}" aria-hidden="true">✓</span>` : ""}${tooltip}
-    </div>`;
+    if (readersHere.length > 0) {
+        const avatarMarkup = readersHere
+            .map((reader) => {
+                const label =
+                    reader.displayName || reader.handle || reader.accountId;
+                return formatAvatarMarkup({
+                    avatarKey: reader.avatarKey || null,
+                    label,
+                    colorSeed: reader.handle || reader.accountId || label,
+                    avatarClass: "messages-status-avatar",
+                    imageClass: "messages-status-avatar-img",
+                    fallbackClass: "messages-status-avatar-fallback",
+                });
+            })
+            .join("");
+        return `<div class="messages-message-status">${avatarMarkup}</div>`;
+    }
+    const circleClass = isDelivered ? " messages-status-circle--delivered" : "";
+    return `<div class="messages-message-status"><span class="messages-status-circle${circleClass}" aria-hidden="true"></span></div>`;
 }
 
 function formatRoomEventText(message, i18n) {
@@ -379,7 +407,8 @@ function renderReactionRow(message) {
                         reactor.accountId,
                 )
                 .join(", ");
-            const titleLabel = reactedByLabel || reaction.emoji;
+            const titleLabel =
+                reactedByLabel || emojiDisplayName(reaction.emoji);
             return `<button type="button" class="messages-reaction-chip${ownClass}" title="${escapeHtml(titleLabel)}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
         })
         .join("");
@@ -394,17 +423,10 @@ function renderReactionRow(message) {
         )
         .map(
             (emoji) =>
-                `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emoji)}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
+                `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emojiDisplayName(emoji))}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
         )
         .join("");
     return `<div class="messages-reactions-row">${chips}<span class="messages-reaction-add-wrap">${quick}</span></div>`;
-}
-
-function closeReadTooltips(threadList) {
-    threadList
-        ?.querySelectorAll(".messages-read-tooltip")
-        .forEach((node) => node.setAttribute("hidden", ""));
-    threadList?.classList.remove("messages-thread-list--receipt-open");
 }
 
 /**
@@ -508,6 +530,7 @@ async function renderThread(
         }),
     );
     let previousDateLabel = "";
+    const readersAtMessage = buildLastReadMap(decoded);
     const html = decoded
         .map((msg) => {
             const dateLabel = formatDate(msg.createdAt, "");
@@ -530,24 +553,33 @@ async function renderThread(
             const timeLabel = msg.createdAt
                 ? `<time class="messages-message-time" datetime="${escapeHtml(msg.createdAt)}">${escapeHtml(formatMessageTime(msg.createdAt))}</time>`
                 : "";
-            const statusIndicator = renderStatusIndicator(
+            const readers = Array.isArray(msg.readBy) ? msg.readBy : [];
+            const deliveredCount = Number(msg.deliveredToCount ?? 0);
+            const isDelivered = deliveredCount > 0 || readers.length > 0;
+            const readersHere = isOwn
+                ? (readersAtMessage.get(msg.id) ?? []).filter(
+                      (reader) => reader.accountId !== currentAccountId,
+                  )
+                : [];
+            const statusBlock = renderMessageStatus(
                 msg,
                 currentAccountId,
-                i18n,
+                isDelivered,
+                readersHere,
             );
-            const metadataRow =
-                timeLabel || statusIndicator
-                    ? `<div class="messages-message-meta">${timeLabel}${statusIndicator}</div>`
-                    : "";
+            const metadataRow = timeLabel
+                ? `<div class="messages-message-meta">${timeLabel}</div>`
+                : "";
             const ownRowClass = isOwn ? " messages-message-row--own" : "";
             return `${showDateDivider}<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(msg.id)}">
-            ${formatMessageAvatar(msg)}
+            ${isOwn ? "" : formatMessageAvatar(msg)}
             <div class="messages-message${ownClass}">
                 ${senderLabel}
                 <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
                 ${metadataRow}
                 ${renderReactionRow(msg)}
             </div>
+            ${statusBlock}
         </div>`;
         })
         .join("");
@@ -1124,30 +1156,6 @@ export async function mount(root, { signal } = {}) {
                 const form = document.getElementById("messages-composer");
 
                 threadList?.addEventListener("click", async (clickEvent) => {
-                    const statusGroup =
-                        clickEvent.target.closest("[data-status-for]");
-                    if (statusGroup) {
-                        const tooltip = statusGroup.querySelector(
-                            ".messages-read-tooltip",
-                        );
-                        if (!tooltip) return;
-                        const isHidden = tooltip.hasAttribute("hidden");
-                        closeReadTooltips(threadList);
-                        if (isHidden) {
-                            tooltip.removeAttribute("hidden");
-                            threadList.classList.add(
-                                "messages-thread-list--receipt-open",
-                            );
-                        }
-                        return;
-                    }
-                    if (
-                        threadList.querySelector(
-                            ".messages-read-tooltip:not([hidden])",
-                        )
-                    ) {
-                        closeReadTooltips(threadList);
-                    }
                     const reactionButton = clickEvent.target.closest(
                         "[data-message-id][data-emoji]",
                     );
@@ -1259,22 +1267,6 @@ export async function mount(root, { signal } = {}) {
                     ) {
                         return;
                     }
-                    const statusGroup =
-                        keyboardEvent.target.closest("[data-status-for]");
-                    if (!statusGroup) return;
-                    keyboardEvent.preventDefault();
-                    const tooltip = statusGroup.querySelector(
-                        ".messages-read-tooltip",
-                    );
-                    if (!tooltip) return;
-                    const isHidden = tooltip.hasAttribute("hidden");
-                    closeReadTooltips(threadList);
-                    if (isHidden) {
-                        tooltip.removeAttribute("hidden");
-                        threadList.classList.add(
-                            "messages-thread-list--receipt-open",
-                        );
-                    }
                 });
 
                 if (selectedRoomId) {
@@ -1315,29 +1307,6 @@ export async function mount(root, { signal } = {}) {
                 void refreshTypingIndicator();
                 void refreshActiveConversation();
             }
-        },
-        { signal },
-    );
-
-    document.addEventListener(
-        "click",
-        (clickEvent) => {
-            if (
-                !(clickEvent.target instanceof Element) ||
-                clickEvent.target.closest("[data-status-for]")
-            ) {
-                return;
-            }
-            document
-                .querySelectorAll(".messages-read-tooltip:not([hidden])")
-                .forEach((tooltip) => tooltip.setAttribute("hidden", ""));
-            document
-                .querySelectorAll(".messages-thread-list--receipt-open")
-                .forEach((thread) =>
-                    thread.classList.remove(
-                        "messages-thread-list--receipt-open",
-                    ),
-                );
         },
         { signal },
     );

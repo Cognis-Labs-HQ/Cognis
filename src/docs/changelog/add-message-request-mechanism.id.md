@@ -36,9 +36,16 @@ reaksi berbasis emoji pada API serta UI pesan.
 - Indeks versi:
     - `src/docs/versions.en.md`
 
+Sistem tanda baca (centang) diganti dengan desain berbasis avatar. Pesan
+yang terkirim menampilkan lingkaran kosong sampai server mengonfirmasi
+pengiriman, lalu lingkaran terisi, dan akhirnya avatar pembaca. Obrolan
+grup menampilkan beberapa avatar berdampingan. Tooltip reaksi emoji kini
+menampilkan satu kata deskriptif ("Like", "Heart", "Haha", "Celebrate").
+
 ## Commit
 
 - [d4f7f6d](https://github.com/le-firehawk/Cognis/commit/d4f7f6d)
 - [fc3febe](https://github.com/le-firehawk/Cognis/commit/fc3febe)
 - [11eebfa](https://github.com/le-firehawk/Cognis/commit/11eebfa)
 - [2db27c2](https://github.com/le-firehawk/Cognis/commit/2db27c2)
+- [f08f248](https://github.com/le-firehawk/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)

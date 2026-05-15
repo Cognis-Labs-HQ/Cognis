@@ -471,7 +471,6 @@
   <string name="module.social.messages.reject_request">Tolak</string>
   <string name="module.social.messages.preview_encrypted">Pesan terenkripsi</string>
   <string name="module.social.messages.preview_event">Peristiwa ruang</string>
-  <string name="module.social.messages.read_details">Lihat Status Baca</string>
   <string name="module.social.messages.request_banner_incoming">{name} ingin mengirim pesan kepada Anda. Setujui untuk menampilkan pesan.</string>
   <string name="module.social.messages.request_banner_outgoing">Menunggu {name} menerima permintaan pesan Anda.</string>
   <string name="module.social.messages.event_member_joined">{name} bergabung ke ruang.</string>

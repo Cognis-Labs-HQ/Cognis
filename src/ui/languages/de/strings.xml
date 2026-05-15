@@ -471,7 +471,6 @@
   <string name="module.social.messages.reject_request">Ablehnen</string>
   <string name="module.social.messages.preview_encrypted">Verschlüsselte Nachricht</string>
   <string name="module.social.messages.preview_event">Raumereignis</string>
-  <string name="module.social.messages.read_details">Lesestatus anzeigen</string>
   <string name="module.social.messages.request_banner_incoming">{name} möchte Ihnen schreiben. Zum Anzeigen Nachrichtenanfrage annehmen.</string>
   <string name="module.social.messages.request_banner_outgoing">Warten auf die Annahme Ihrer Nachrichtenanfrage durch {name}.</string>
   <string name="module.social.messages.event_member_joined">{name} ist dem Raum beigetreten.</string>

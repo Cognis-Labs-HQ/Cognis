@@ -37,9 +37,17 @@ UIに追加しました。
 - バージョン一覧:
     - `src/docs/versions.en.md`
 
+チェックマークによる既読表示システムをアバターベースのデザインに置き換えました。
+送信済みメッセージは、サーバーが配信を確認するまでは空の輪のアイコン、確認後は
+塗りつぶした丸、既読後は読んだユーザーのアバターを表示します。グループ会話では
+複数のアバターが並んで表示されます。絵文字リアクションのツールチップは、絵文字
+の代わりに一言の説明（"Like"・"Heart"・"Haha"・"Celebrate"）を表示するように
+なりました。
+
 ## コミット
 
 - [d4f7f6d](https://github.com/le-firehawk/Cognis/commit/d4f7f6d)
 - [fc3febe](https://github.com/le-firehawk/Cognis/commit/fc3febe)
 - [11eebfa](https://github.com/le-firehawk/Cognis/commit/11eebfa)
 - [2db27c2](https://github.com/le-firehawk/Cognis/commit/2db27c2)
+- [f08f248](https://github.com/le-firehawk/Cognis/commit/f08f248ea1b20fef4b7e5452e19a2857ed4b785e)
