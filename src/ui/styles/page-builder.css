@@ -764,19 +764,16 @@ body[data-theme="light"] .slider::before {
 }
 
 .floating-toolbar {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 900;
     display: flex;
     align-items: center;
     gap: 12px;
+    width: fit-content;
+    max-width: min(var(--shell-content-width), calc(100vw - 24px));
+    margin: 12px auto 0;
     padding: 12px 24px;
     background: var(--toolbar-bg);
     border: 1px solid var(--border);
-    border-bottom: 0;
-    border-radius: 12px 12px 0 0;
+    border-radius: 12px;
     backdrop-filter: blur(10px);
     box-shadow: var(--shadow-floating);
 }

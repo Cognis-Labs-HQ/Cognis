@@ -490,10 +490,26 @@ export async function renderDashboardLayout(root, slots = {}) {
                 (hasToolbar
                     ? `<aside class="toolbar">${slots.toolbar}</aside>`
                     : "") +
-                `<section class="content-grid">${slots.content || ""}</section>` +
-                (hasFloatingToolbar
-                    ? `<div class="floating-toolbar" hidden>${slots.floatingToolbar}</div>`
-                    : "");
+                `<section class="content-grid">${slots.content || ""}</section>`;
+        }
+
+        const footer = existingShell.querySelector(".global-footer");
+        const floatingToolbar = existingShell.querySelector(".floating-toolbar");
+        if (hasFloatingToolbar) {
+            const toolbar =
+                floatingToolbar ?? document.createElement("div");
+            toolbar.className = "floating-toolbar";
+            toolbar.hidden = true;
+            toolbar.innerHTML = slots.floatingToolbar;
+            if (footer && toolbar.parentElement !== existingShell) {
+                footer.before(toolbar);
+            } else if (!footer && toolbar.parentElement !== existingShell) {
+                existingShell.append(toolbar);
+            } else if (footer && toolbar.nextElementSibling !== footer) {
+                footer.before(toolbar);
+            }
+        } else {
+            floatingToolbar?.remove();
         }
 
         if (!showThemeToggle) {
