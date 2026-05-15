@@ -8,6 +8,9 @@ export interface AuthContext {
     provider: string;
     externalUserId: string;
     email?: string;
+    displayName?: string;
+    profileImageUrl?: string;
+    lifecycleState?: "active" | "unlinked" | "deactivated" | "deleted";
     isAdmin?: boolean;
     role?: string;
 }
@@ -84,6 +87,48 @@ export class CoreAuthGateway {
                     notNull: true,
                     default: "{}",
                 },
+            ],
+        });
+        await this.db.ensureTable({
+            name: "auth_identities",
+            columns: [
+                {
+                    name: "id",
+                    type: "text",
+                    notNull: true,
+                    primaryKey: true,
+                },
+                { name: "account_id", type: "text", notNull: true },
+                { name: "provider", type: "text", notNull: true },
+                { name: "external_user_id", type: "text", notNull: true },
+                { name: "display_name", type: "text" },
+                { name: "profile_image_url", type: "text" },
+                {
+                    name: "lifecycle_state",
+                    type: "text",
+                    notNull: true,
+                    default: "active",
+                },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+                {
+                    name: "updated_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+                { name: "unlinked_at", type: "timestamp" },
+                { name: "deactivated_at", type: "timestamp" },
+                { name: "deleted_at", type: "timestamp" },
+            ],
+            uniqueKeys: [["provider", "external_user_id"]],
+            indexes: [
+                { columns: ["account_id"] },
+                { columns: ["account_id", "provider"] },
             ],
         });
     }
