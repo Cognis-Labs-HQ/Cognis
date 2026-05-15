@@ -276,6 +276,16 @@ export function createRegistrationRoutes(
     isGatewayEnabled: () => boolean = () => true,
     log?: GatewayBootstrapContext["log"],
 ) {
+    const isRequestEnabled = (): boolean => {
+        const requestEnabledGetter = (
+            gateway as unknown as { isRequestEnabled?: () => boolean }
+        ).isRequestEnabled;
+        if (typeof requestEnabledGetter !== "function") {
+            return false;
+        }
+        return requestEnabledGetter();
+    };
+
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -319,7 +329,7 @@ export function createRegistrationRoutes(
                 gatewayEnabled: isGatewayEnabled(),
                 inviteEnabled: gateway.isInviteEnabled(),
                 publicEnabled: gateway.isPublicEnabled(),
-                requestEnabled: gateway.isRequestEnabled(),
+                requestEnabled: isRequestEnabled(),
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
@@ -328,7 +338,7 @@ export function createRegistrationRoutes(
                         gatewayEnabled: isGatewayEnabled(),
                         inviteEnabled: gateway.isInviteEnabled(),
                         publicEnabled: gateway.isPublicEnabled(),
-                        requestEnabled: gateway.isRequestEnabled(),
+                        requestEnabled: isRequestEnabled(),
                     },
                 }),
             );
@@ -339,7 +349,7 @@ export function createRegistrationRoutes(
             url.pathname === "/api/v1/registration/requests" &&
             req.method === "GET"
         ) {
-            if (!gateway.isRequestEnabled()) {
+            if (!isRequestEnabled()) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -380,7 +390,7 @@ export function createRegistrationRoutes(
             url.pathname === "/api/v1/registration/requests" &&
             req.method === "POST"
         ) {
-            if (!gateway.isRequestEnabled()) {
+            if (!isRequestEnabled()) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -448,7 +458,7 @@ export function createRegistrationRoutes(
             /^\/api\/v1\/registration\/requests\/([^/]+)\/review$/,
         );
         if (reviewRequestMatch && req.method === "POST") {
-            if (!gateway.isRequestEnabled()) {
+            if (!isRequestEnabled()) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
