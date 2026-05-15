@@ -40,7 +40,9 @@ function ensureTooltipOverlayElement() {
     if (tooltipOverlayElement instanceof HTMLElement) {
         return tooltipOverlayElement;
     }
-    const existingTooltipOverlay = document.getElementById("info-tooltip-overlay");
+    const existingTooltipOverlay = document.getElementById(
+        "info-tooltip-overlay",
+    );
     if (existingTooltipOverlay instanceof HTMLElement) {
         tooltipOverlayElement = existingTooltipOverlay;
         return tooltipOverlayElement;
@@ -67,7 +69,10 @@ function positionTooltipOverlay(tooltipButtonElement, tooltipOverlay) {
         buttonBounds.left + buttonBounds.width / 2 - overlayWidth / 2;
     leftPosition = Math.max(
         viewportPadding,
-        Math.min(leftPosition, window.innerWidth - overlayWidth - viewportPadding),
+        Math.min(
+            leftPosition,
+            window.innerWidth - overlayWidth - viewportPadding,
+        ),
     );
     let topPosition = buttonBounds.top - overlayHeight - tooltipGap;
     let placement = "top";
@@ -139,19 +144,22 @@ function initInfoTooltipRuntime() {
     document.addEventListener("mouseover", (event) => {
         const hoveredElement = event.target;
         if (!(hoveredElement instanceof Element)) return;
-        const tooltipButtonElement = hoveredElement.closest(".info-tooltip__btn");
+        const tooltipButtonElement =
+            hoveredElement.closest(".info-tooltip__btn");
         if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
         showInfoTooltip(tooltipButtonElement);
     });
     document.addEventListener("mouseout", (event) => {
         const originElement = event.target;
         if (!(originElement instanceof Element)) return;
-        const tooltipButtonElement = originElement.closest(".info-tooltip__btn");
+        const tooltipButtonElement =
+            originElement.closest(".info-tooltip__btn");
         if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
         const relatedElement = event.relatedTarget;
         if (
             relatedElement instanceof Element &&
-            relatedElement.closest(".info-tooltip__btn") === tooltipButtonElement
+            relatedElement.closest(".info-tooltip__btn") ===
+                tooltipButtonElement
         ) {
             return;
         }
@@ -160,19 +168,22 @@ function initInfoTooltipRuntime() {
     document.addEventListener("focusin", (event) => {
         const focusedElement = event.target;
         if (!(focusedElement instanceof Element)) return;
-        const tooltipButtonElement = focusedElement.closest(".info-tooltip__btn");
+        const tooltipButtonElement =
+            focusedElement.closest(".info-tooltip__btn");
         if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
         showInfoTooltip(tooltipButtonElement);
     });
     document.addEventListener("focusout", (event) => {
         const blurredElement = event.target;
         if (!(blurredElement instanceof Element)) return;
-        const tooltipButtonElement = blurredElement.closest(".info-tooltip__btn");
+        const tooltipButtonElement =
+            blurredElement.closest(".info-tooltip__btn");
         if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
         const nextFocusedElement = event.relatedTarget;
         if (
             nextFocusedElement instanceof Element &&
-            nextFocusedElement.closest(".info-tooltip__btn") === tooltipButtonElement
+            nextFocusedElement.closest(".info-tooltip__btn") ===
+                tooltipButtonElement
         ) {
             return;
         }
