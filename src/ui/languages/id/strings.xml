@@ -97,6 +97,10 @@
   <string name="ui.app.settings.theme">Tema</string>
   <string name="ui.app.settings.theme_dark">Gelap</string>
   <string name="ui.app.settings.theme_light">Terang</string>
+  <string name="ui.app.settings.message_style">Gaya Pesan</string>
+  <string name="ui.app.settings.message_style_default">Bawaan</string>
+  <string name="ui.app.settings.message_style_speech_bubbles">Gelembung Percakapan</string>
+  <string name="ui.app.settings.message_style_irc">Gaya IRC</string>
   <string name="ui.app.settings.advanced">Lanjutan</string>
   <string name="ui.app.settings.preferences">Preferensi</string>
   <string name="ui.app.settings.prefs_loading">Memuat...</string>

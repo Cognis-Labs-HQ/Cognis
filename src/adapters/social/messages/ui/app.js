@@ -36,6 +36,22 @@ const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
+const MESSAGE_STYLE_OPTIONS = new Set(["default", "speech_bubbles", "irc"]);
+
+function resolveMessageStyle() {
+    const rootStyle = document.documentElement.dataset.messageStyle;
+    if (MESSAGE_STYLE_OPTIONS.has(rootStyle)) return rootStyle;
+    try {
+        const raw = localStorage.getItem("cognis_ui_preferences");
+        if (!raw) return "default";
+        const parsed = JSON.parse(raw);
+        return MESSAGE_STYLE_OPTIONS.has(parsed?.messageStyle)
+            ? parsed.messageStyle
+            : "default";
+    } catch {
+        return "default";
+    }
+}
 
 async function encryptMessage(key, plaintext) {
     const initVector = crypto.getRandomValues(new Uint8Array(12));
@@ -334,11 +350,19 @@ async function renderThread(
             const timeLabel = msg.createdAt
                 ? `<time class="messages-message-time" datetime="${escapeHtml(msg.createdAt)}">${escapeHtml(formatDateTime(msg.createdAt))}</time>`
                 : "";
+            const statusIndicator = renderStatusIndicator(
+                msg,
+                currentAccountId,
+                i18n,
+            );
+            const metadataRow =
+                timeLabel || statusIndicator
+                    ? `<div class="messages-message-meta">${timeLabel}${statusIndicator}</div>`
+                    : "";
             return `<div class="messages-message${ownClass}" data-message-id="${escapeHtml(msg.id)}">
             ${senderLabel}
             <span class="messages-message-body">${escapeHtml(msg.text ?? "…")}</span>
-            ${timeLabel}
-            ${renderStatusIndicator(msg, currentAccountId, i18n)}
+            ${metadataRow}
             ${renderReactionRow(msg)}
         </div>`;
         })
@@ -408,9 +432,13 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "ui.reuse.messages");
 
     root.classList.add("messages-page");
+    root.dataset.messageStyle = resolveMessageStyle();
     signal?.addEventListener(
         "abort",
-        () => root.classList.remove("messages-page"),
+        () => {
+            root.classList.remove("messages-page");
+            delete root.dataset.messageStyle;
+        },
         { once: true },
     );
 

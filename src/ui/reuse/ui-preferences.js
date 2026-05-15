@@ -1,16 +1,22 @@
 /**
- * Loads and applies persisted UI preferences (font family and font size).
+ * Loads and applies persisted UI preferences (font, size, message style).
  *
  * - loadUiPreferences()       — fetches the current account's ui-preferences from the API.
  *                               Returns the parsed prefs object or null on failure.
- * - applyUiPreferences(prefs) — writes --app-font and --app-font-size CSS custom properties
- *                               onto <html> immediately (legacy rem values are converted to pt).
+ * - applyUiPreferences(prefs) — writes message-style + font CSS custom properties onto <html>
+ *                               immediately (legacy rem values are converted to pt).
  *
  * Usage:
  *   const prefs = await loadUiPreferences();
  *   applyUiPreferences(prefs);
  */
 import { apiFetch } from "./api-client.js";
+
+const MESSAGE_STYLE_OPTIONS = new Set(["default", "speech_bubbles", "irc"]);
+
+function normalizeMessageStyle(value) {
+    return MESSAGE_STYLE_OPTIONS.has(value) ? value : "default";
+}
 
 function hasPreferenceApiContext() {
     return Boolean(
@@ -52,6 +58,8 @@ export async function saveUiPreferences(patch) {
 }
 
 export function applyUiPreferences(prefs) {
+    const messageStyle = normalizeMessageStyle(prefs?.messageStyle);
+    document.documentElement.dataset.messageStyle = messageStyle;
     if (!prefs) return;
     const fontFamily = prefs.appFont || prefs.greetingFont;
     if (fontFamily) {

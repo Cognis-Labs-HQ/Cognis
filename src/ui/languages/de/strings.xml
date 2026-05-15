@@ -97,6 +97,10 @@
   <string name="ui.app.settings.theme">Thema</string>
   <string name="ui.app.settings.theme_dark">Dunkel</string>
   <string name="ui.app.settings.theme_light">Hell</string>
+  <string name="ui.app.settings.message_style">Nachrichtenstil</string>
+  <string name="ui.app.settings.message_style_default">Standard</string>
+  <string name="ui.app.settings.message_style_speech_bubbles">Sprechblasen</string>
+  <string name="ui.app.settings.message_style_irc">IRC-Stil</string>
   <string name="ui.app.settings.advanced">Erweitert</string>
   <string name="ui.app.settings.preferences">Einstellungen</string>
   <string name="ui.app.settings.prefs_loading">Wird geladen...</string>

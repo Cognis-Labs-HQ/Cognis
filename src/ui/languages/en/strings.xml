@@ -97,6 +97,10 @@
   <string name="ui.app.settings.theme">Theme</string>
   <string name="ui.app.settings.theme_dark">Dark</string>
   <string name="ui.app.settings.theme_light">Light</string>
+  <string name="ui.app.settings.message_style">Message Style</string>
+  <string name="ui.app.settings.message_style_default">Default</string>
+  <string name="ui.app.settings.message_style_speech_bubbles">Speech Bubbles</string>
+  <string name="ui.app.settings.message_style_irc">IRC Style</string>
   <string name="ui.app.settings.advanced">Advanced</string>
   <string name="ui.app.settings.preferences">Preferences</string>
   <string name="ui.app.settings.prefs_loading">Loading...</string>
