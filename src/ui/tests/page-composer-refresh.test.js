@@ -103,3 +103,17 @@ test("page composer persists separate layout profiles per grid size", () => {
     assert.match(source, /const newCols = getPreferredGridColumnCount\(\)/);
     assert.match(source, /applyLayoutForCurrentGridColumns\(\);/);
 });
+
+test("page composer does not block initial render on async layout loading", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.doesNotMatch(
+        source,
+        /layout = persistLayoutPreferences \? await loadLayout\(\) : null;/,
+    );
+    assert.match(source, /render\(\);\s*\n\s*if \(persistLayoutPreferences\)/m);
+    assert.match(source, /loadLayout\(\)\s*\.then\(/m);
+});

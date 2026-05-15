@@ -108,11 +108,13 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
             }
         }
 
-        await scanManifestDir(modulesRoot);
-        // Study language modules live under study/languages/<code>/ and each
-        // carries its own manifest — scan that nested path so they appear in
-        // the modules list alongside top-level modules.
-        await scanManifestDir(path.join(modulesRoot, "study", "languages"));
+        await Promise.all([
+            scanManifestDir(modulesRoot),
+            // Study language modules live under study/languages/<code>/ and each
+            // carries its own manifest — scan that nested path so they appear in
+            // the modules list alongside top-level modules.
+            scanManifestDir(path.join(modulesRoot, "study", "languages")),
+        ]);
 
         return new InMemoryModuleRuntimeGateway(manifests);
     }

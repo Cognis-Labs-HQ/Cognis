@@ -83,7 +83,7 @@ export async function mount(root) {
         preferenceKey: "study-en-alphabet-layout",
         i18n,
         pageContext: {
-            title: "English Alphabet",
+            title: i18n.t("gateway.study.alphabet_page_title"),
             subtitle: i18n.t("gateway.study.alphabet_subtitle"),
         },
         toolbar: [],

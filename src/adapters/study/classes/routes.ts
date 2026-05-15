@@ -28,6 +28,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { requireAuth } from "../../../gateways/auth/guard.js";
 import { readJson } from "../../../api/reuse/read-json.js";
+import { jsonOk, jsonError } from "../../../api/reuse/json-responses.js";
 import type { DbClassesStore, StudyLanguageRow } from "./store.js";
 
 type SetRole = (username: string, role: "teacher") => Promise<void>;
@@ -54,21 +55,6 @@ export interface ClassesRouteOptions {
         message: string,
         meta?: Record<string, unknown>,
     ) => void;
-}
-
-function jsonOk(res: ServerResponse, data: unknown): void {
-    res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({ data }));
-}
-
-function jsonError(
-    res: ServerResponse,
-    status: number,
-    code: string,
-    message: string,
-): void {
-    res.writeHead(status, { "content-type": "application/json" });
-    res.end(JSON.stringify({ error: { code, message } }));
 }
 
 function normalizeLanguageList(input: unknown): string[] {

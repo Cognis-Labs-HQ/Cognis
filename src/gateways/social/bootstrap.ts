@@ -170,6 +170,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.routeRegistry.register(handler, gatewayId ?? "social"),
         registerNavbarPlugin: (scriptUrl, isEnabled) =>
             ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl, isEnabled }),
+        registerSpaRoute: (route) => ctx.uiRegistry?.registerSpaRoute(route),
         registerStaticDir: (prefix, dir) =>
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
         registerAdapterStaticDir: (gw, ad, dir) =>
@@ -196,7 +197,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "social",
         name: "Social Gateway",
-        version: "1.2.0",
+        version: "1.2.1",
         description: "Profiles, social graph, posts, and messaging.",
         publisher: "Cognis Labs",
         hasAdapters: true,

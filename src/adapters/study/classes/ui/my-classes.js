@@ -312,6 +312,7 @@ export async function mount(root, { signal } = {}) {
         i18n,
         pageContext: {
             title: i18n.t("module.study.classes.my_classes_page_title"),
+            subtitle: i18n.t("module.study.classes.my_classes_page_subtitle"),
         },
     });
 

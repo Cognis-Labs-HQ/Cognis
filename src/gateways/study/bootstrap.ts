@@ -140,55 +140,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const gateway = new CoreStudyGateway();
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
 
-    await gateway.discoverAdapters(adaptersRoot);
-    ctx.log?.("info", "Study gateway: adapters discovered.", {
-        component: "study-gateway",
-        adaptersRoot,
-        adapterCount: gateway.listAdapters().length,
-    });
-
-    await gateway.bootstrapAdapters(adaptersRoot, {
-        gateway,
-        capabilities: ctx.capabilities,
-        gatewayRegistry: ctx.gatewayRegistry,
-        registerRoute: (handler, gatewayId) =>
-            ctx.routeRegistry.register(handler, gatewayId ?? "study"),
-        registerNavbarPlugin: (scriptUrl, isEnabled) =>
-            ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl, isEnabled }),
-        registerPageExtension: (pageId, element) =>
-            ctx.uiRegistry?.registerPageExtension(pageId, element),
-        registerStaticDir: (prefix, dir) =>
-            ctx.uiRegistry?.registerStaticDir(prefix, dir),
-        registerAdapterStaticDir: (gatewayId, adapterId, dir) => {
-            if (!ctx.uiRegistry?.registerAdapterStaticDir) {
-                ctx.log?.(
-                    "warn",
-                    "Study adapter UI static directory registration skipped because the UI registry does not support adapter static dirs.",
-                    {
-                        component: "study-gateway",
-                        gatewayId,
-                        adapterId,
-                        dir,
-                    },
-                );
-                return;
-            }
-            ctx.uiRegistry.registerAdapterStaticDir(gatewayId, adapterId, dir);
+    await Promise.all([
+        gateway.discoverAdapters(adaptersRoot),
+        gateway.discoverLanguageModules(LANGUAGE_MODULES_ROOT),
+    ]);
+    ctx.log?.(
+        "info",
+        "Study gateway: adapters and language modules discovered.",
+        {
+            component: "study-gateway",
+            adaptersRoot,
+            adapterCount: gateway.listAdapters().length,
         },
-        log: ctx.log,
-        dbExecutor: ctx.capabilities.get("db:executor") ?? ctx.dbExecutor,
-    });
-
-    ctx.log?.("info", "Study gateway: adapters bootstrapped.", {
-        component: "study-gateway",
-        adapterCount: gateway.listAdapters().length,
-    });
-
-    await gateway.discoverLanguageModules(LANGUAGE_MODULES_ROOT);
-    ctx.log?.("info", "Study gateway: language modules discovered.", {
-        component: "study-gateway",
-        modulesRoot: LANGUAGE_MODULES_ROOT,
-    });
+    );
 
     const syncModuleEnabledState = (
         moduleId: string,
@@ -215,25 +179,69 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         return gateway.isLanguageModuleEnabled(languageModule.moduleId);
     };
 
-    await gateway.bootstrapLanguageModules(LANGUAGE_MODULES_ROOT, {
-        registerChildRoute: (handler) =>
-            ctx.routeRegistry.register(handler, "study"),
-        registerStaticDir: (prefix, dir) => {
-            if (prefix.startsWith("modules/")) {
-                ctx.uiRegistry?.registerModuleStaticDir(
-                    prefix.slice("modules/".length),
+    await Promise.all([
+        gateway.bootstrapAdapters(adaptersRoot, {
+            gateway,
+            capabilities: ctx.capabilities,
+            gatewayRegistry: ctx.gatewayRegistry,
+            registerRoute: (handler, gatewayId) =>
+                ctx.routeRegistry.register(handler, gatewayId ?? "study"),
+            registerNavbarPlugin: (scriptUrl, isEnabled) =>
+                ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl, isEnabled }),
+            registerSpaRoute: (route) =>
+                ctx.uiRegistry?.registerSpaRoute(route),
+            registerPageExtension: (pageId, element) =>
+                ctx.uiRegistry?.registerPageExtension(pageId, element),
+            registerStaticDir: (prefix, dir) =>
+                ctx.uiRegistry?.registerStaticDir(prefix, dir),
+            registerAdapterStaticDir: (gatewayId, adapterId, dir) => {
+                if (!ctx.uiRegistry?.registerAdapterStaticDir) {
+                    ctx.log?.(
+                        "warn",
+                        "Study adapter UI static directory registration skipped because the UI registry does not support adapter static dirs.",
+                        {
+                            component: "study-gateway",
+                            gatewayId,
+                            adapterId,
+                            dir,
+                        },
+                    );
+                    return;
+                }
+                ctx.uiRegistry.registerAdapterStaticDir(
+                    gatewayId,
+                    adapterId,
                     dir,
                 );
-            } else {
-                ctx.uiRegistry?.registerStaticDir(prefix, dir);
-            }
-        },
-        log: ctx.log,
-    });
+            },
+            log: ctx.log,
+            dbExecutor: ctx.capabilities.get("db:executor") ?? ctx.dbExecutor,
+        }),
+        gateway.bootstrapLanguageModules(LANGUAGE_MODULES_ROOT, {
+            registerChildRoute: (handler) =>
+                ctx.routeRegistry.register(handler, "study"),
+            registerStaticDir: (prefix, dir) => {
+                if (prefix.startsWith("modules/")) {
+                    ctx.uiRegistry?.registerModuleStaticDir(
+                        prefix.slice("modules/".length),
+                        dir,
+                    );
+                } else {
+                    ctx.uiRegistry?.registerStaticDir(prefix, dir);
+                }
+            },
+            log: ctx.log,
+        }),
+    ]);
 
-    ctx.log?.("info", "Study gateway: language modules bootstrapped.", {
-        component: "study-gateway",
-    });
+    ctx.log?.(
+        "info",
+        "Study gateway: adapters and language modules bootstrapped.",
+        {
+            component: "study-gateway",
+            adapterCount: gateway.listAdapters().length,
+        },
+    );
 
     ctx.uiRegistry?.registerStaticDir("study", path.join(GATEWAY_ROOT, "ui"));
 
@@ -305,7 +313,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.5.0",
+        version: "1.5.2",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",

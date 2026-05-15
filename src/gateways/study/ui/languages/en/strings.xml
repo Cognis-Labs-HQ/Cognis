@@ -6,6 +6,11 @@
   <string name="gateway.study.page_subtitle">Your language learning dashboard</string>
   <string name="gateway.study.settings_subtitle">Manage your active study languages</string>
   <string name="gateway.study.alphabet_subtitle">Browse the letters of the English alphabet</string>
+  <string name="gateway.study.alphabet_page_title">English Alphabet</string>
+  <string name="gateway.study.hiragana_page_title">Hiragana Alphabet</string>
+  <string name="gateway.study.hiragana_subtitle">Study the basic phonetic syllabary of Japanese.</string>
+  <string name="gateway.study.hiragana_section_heading">ひらがな — Hiragana</string>
+  <string name="gateway.study.hiragana_description">The basic phonetic syllabary of Japanese. Data is sourced from the language library's characters layer.</string>
   <string name="gateway.study.library_subtitle">Manage language library records</string>
   <string name="gateway.study.classroom_subtitle">View and manage your classroom</string>
   <string name="gateway.study.welcome_heading">Welcome to Cognis</string>

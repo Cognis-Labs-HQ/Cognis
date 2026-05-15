@@ -11,9 +11,33 @@ const DASHBOARD_PAGES = [
     "settings",
     "modules",
     "users",
+    "invite",
     "administration",
     "docs",
     "license",
+];
+
+const ADAPTER_BACKED_SPA_ROUTES = [
+    {
+        id: "social-messages-page",
+        sourceFile: "src/adapters/social/messages/index.ts",
+        scriptUrl: "/static/adapters/social/messages/app.js",
+    },
+    {
+        id: "social-profile-page",
+        sourceFile: "src/adapters/social/profile/index.ts",
+        scriptUrl: "/static/adapters/social/profile/app.js",
+    },
+    {
+        id: "study-classes-teacher-page",
+        sourceFile: "src/adapters/study/classes/index.ts",
+        scriptUrl: "/static/adapters/study/classes/app.js",
+    },
+    {
+        id: "study-classes-student-page",
+        sourceFile: "src/adapters/study/classes/index.ts",
+        scriptUrl: "/static/adapters/study/classes/my-classes.js",
+    },
 ];
 
 test("all dashboard pages export an async mount function", () => {
@@ -79,6 +103,44 @@ test("router registers routes for all dashboard pages", () => {
     }
 });
 
+test("router loads adapter-backed SPA routes from the UI app-routes API", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(
+        src,
+        /loadSpaRoutes/,
+        "app-router.js must load dynamic SPA routes from the route registry",
+    );
+    assert.ok(
+        src.includes("/api/v1/ui/app-routes") ||
+            readFileSync(
+                resolve(ROOT, "src/ui/reuse/spa-route-registry.js"),
+                "utf8",
+            ).includes("/api/v1/ui/app-routes"),
+        "router stack must fetch SPA route metadata from /api/v1/ui/app-routes",
+    );
+});
+
+test("adapters self-register SPA route metadata for the app router", () => {
+    for (const route of ADAPTER_BACKED_SPA_ROUTES) {
+        const src = readFileSync(resolve(ROOT, route.sourceFile), "utf8");
+        assert.ok(
+            src.includes("registerSpaRoute"),
+            `${route.sourceFile} must self-register SPA routes`,
+        );
+        assert.ok(
+            src.includes(route.id),
+            `${route.sourceFile} must register SPA route id ${route.id}`,
+        );
+        assert.ok(
+            src.includes(route.scriptUrl),
+            `${route.sourceFile} must reference ${route.scriptUrl}`,
+        );
+    }
+});
+
 test("router uses history.pushState for navigation", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
@@ -117,6 +179,16 @@ test("dashboard-layout initialises the router after shell setup", () => {
         src,
         /initRouter\(root\)/,
         "dashboard-layout.js must call initRouter(root)",
+    );
+    assert.doesNotMatch(
+        src,
+        /await loadNavbarPlugins\(\)/,
+        "dashboard-layout.js must not block initial shell render on navbar plugin loading",
+    );
+    assert.match(
+        src,
+        /scheduleNavbarEnhancements\(\)/,
+        "dashboard-layout.js must defer navbar enhancements until after the shell renders",
     );
 });
 

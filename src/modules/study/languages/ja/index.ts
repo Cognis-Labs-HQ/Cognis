@@ -12,6 +12,7 @@ import {
     setPageSecurityHeaders,
 } from "../../../../gateways/auth/guard.js";
 import { readJson } from "../../../../api/reuse/read-json.js";
+import { jsonOk, jsonError } from "../../../../api/reuse/json-responses.js";
 import { readFile } from "node:fs/promises";
 import {
     LanguageLibraryStore,
@@ -83,21 +84,6 @@ const LIBRARY_LAYERS: LibraryLayerName[] = [
 
 function isLibraryLayerName(layerName: string): layerName is LibraryLayerName {
     return LIBRARY_LAYERS.includes(layerName as LibraryLayerName);
-}
-
-function jsonOk(res: ServerResponse, data: unknown): void {
-    res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({ data }));
-}
-
-function jsonError(
-    res: ServerResponse,
-    status: number,
-    code: string,
-    message: string,
-): void {
-    res.writeHead(status, { "content-type": "application/json" });
-    res.end(JSON.stringify({ error: { code, message } }));
 }
 
 function createHiraganaPageRoute() {

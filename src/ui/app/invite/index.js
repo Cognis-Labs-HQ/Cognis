@@ -7,11 +7,6 @@ import { escapeHtml } from "../../reuse/escape-html.js";
 import { createRepromptGuard } from "../../reuse/reprompt.js";
 import { formatDateTime } from "../../reuse/timestamp.js";
 
-const root = document.querySelector("#app");
-const i18n = await createI18n();
-applyDocumentTitle(i18n, "ui.page.title.invite");
-const reprompt = createRepromptGuard({ i18n });
-
 async function loadTokens() {
     const response = await apiFetch(
         "/api/v1/registration/tokens?includeClosed=true",
@@ -28,7 +23,7 @@ async function loadInviteState() {
     return payload?.data ?? { inviteEnabled: false };
 }
 
-async function promptEmail() {
+async function promptEmail(i18n) {
     let inputEl = null;
     const action = await openPopup({
         title: i18n.t("ui.reuse.invite"),
@@ -60,7 +55,7 @@ async function promptEmail() {
     return inputEl.value.trim();
 }
 
-function renderTokenRow(row) {
+function renderTokenRow(row, i18n) {
     const isPending = !row.status || row.status === "pending";
     const revokeHtml = isPending
         ? `<button class="invite-revoke-btn btn-cancel btn-animated" data-token-id="${escapeHtml(row.id)}">${escapeHtml(i18n.t("ui.app.invite.revoke"))}</button>`
@@ -84,16 +79,28 @@ function renderTokenRow(row) {
     `;
 }
 
-const inviteState = await loadInviteState();
-let tokens = inviteState.inviteEnabled ? await loadTokens() : [];
-let composer = null;
-const elements = [
-    {
-        id: "invite-tokens",
-        label: i18n.t("ui.reuse.invite"),
-        pinned: true,
-        gridSize: { default: [12, 4], min: [6, 4], max: "full" },
-        render: () => `
+/**
+ * Mounts the invite management page into the provided root element.
+ *
+ * @param {HTMLElement} root - Target app container.
+ * @param {{ signal?: AbortSignal }} [options] - Optional lifecycle controls.
+ * @returns {Promise<void>} Resolves when the page has finished initialising.
+ */
+export async function mount(root, { signal } = {}) {
+    const i18n = await createI18n();
+    applyDocumentTitle(i18n, "ui.page.title.invite");
+    const reprompt = createRepromptGuard({ i18n });
+
+    const inviteState = await loadInviteState();
+    let tokens = inviteState.inviteEnabled ? await loadTokens() : [];
+    let composer = null;
+    const elements = [
+        {
+            id: "invite-tokens",
+            label: i18n.t("ui.reuse.invite"),
+            pinned: true,
+            gridSize: { default: [12, 4], min: [6, 4], max: "full" },
+            render: () => `
         <div class="controls">
           ${
               inviteState.inviteEnabled
@@ -114,65 +121,89 @@ const elements = [
             </tr>
           </thead>
           <tbody>
-            ${tokens.map(renderTokenRow).join("")}
+            ${tokens.map((tokenRow) => renderTokenRow(tokenRow, i18n)).join("")}
           </tbody>
         </table>
         </div>
       `,
-    },
-];
+        },
+    ];
 
-function bindInviteInteractions() {
-    root.querySelector("#invite-create-btn")?.addEventListener(
+    composer = createPageComposer(root, {
+        allowCustomization: false,
+        i18n,
+        preferenceKey: "invite-layout",
+        pageContext: {
+            title: i18n.t("ui.reuse.invite"),
+            subtitle: i18n.t("ui.app.invite.page_subtitle"),
+        },
+        toolbar: [],
+        elements,
+    });
+
+    await composer.init();
+
+    const pageInteractionController = new AbortController();
+    signal?.addEventListener("abort", () => pageInteractionController.abort(), {
+        once: true,
+    });
+
+    root.addEventListener(
         "click",
-        async () => {
-            await reprompt.runWithReprompt(async () => {
-                let email = await promptEmail();
-                while (email) {
-                    const response = await apiFetch(
-                        "/api/v1/registration/tokens",
-                        {
-                            method: "POST",
-                            headers: {
-                                "content-type": "application/json",
+        async (event) => {
+            const targetElement = event.target;
+            if (!(targetElement instanceof Element)) return;
+            const createButton = targetElement.closest("#invite-create-btn");
+            if (createButton) {
+                await reprompt.runWithReprompt(async () => {
+                    let email = await promptEmail(i18n);
+                    while (email) {
+                        const response = await apiFetch(
+                            "/api/v1/registration/tokens",
+                            {
+                                method: "POST",
+                                headers: {
+                                    "content-type": "application/json",
+                                },
+                                body: JSON.stringify({ email }),
                             },
-                            body: JSON.stringify({ email }),
-                        },
-                    );
-                    if (!response.ok) {
-                        const payload = await response.json().catch(() => null);
-                        const code = String(
-                            payload?.error?.code ?? "invite_failed",
                         );
-                        if (code === "email_domain_not_allowed") {
-                            showToast(
-                                i18n.t(
-                                    "ui.app.invite.email_domain_not_allowed",
-                                ),
-                                { variant: "error" },
+                        if (!response.ok) {
+                            const payload = await response
+                                .json()
+                                .catch(() => null);
+                            const code = String(
+                                payload?.error?.code ?? "invite_failed",
                             );
-                            email = await promptEmail();
-                            continue;
+                            if (code === "email_domain_not_allowed") {
+                                showToast(
+                                    i18n.t(
+                                        "ui.app.invite.email_domain_not_allowed",
+                                    ),
+                                    { variant: "error" },
+                                );
+                                email = await promptEmail(i18n);
+                                continue;
+                            }
+                            showToast(i18n.t("ui.reuse.invite_failed"), {
+                                variant: "error",
+                            });
+                            return;
                         }
-                        showToast(i18n.t("ui.reuse.invite_failed"), {
-                            variant: "error",
+                        showToast(i18n.t("ui.reuse.invite_sent"), {
+                            variant: "success",
                         });
+                        tokens = await loadTokens();
+                        composer.refresh(elements);
                         return;
                     }
-                    showToast(i18n.t("ui.reuse.invite_sent"), {
-                        variant: "success",
-                    });
-                    tokens = await loadTokens();
-                    composer.refresh(elements);
-                    return;
-                }
-            });
-        },
-    );
+                });
+                return;
+            }
 
-    root.querySelectorAll(".invite-revoke-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-            const tokenId = btn.dataset.tokenId;
+            const revokeButton = targetElement.closest(".invite-revoke-btn");
+            if (!revokeButton) return;
+            const tokenId = revokeButton.dataset.tokenId;
             if (!tokenId) return;
             const response = await apiFetch(
                 `/api/v1/registration/tokens/${encodeURIComponent(tokenId)}/revoke`,
@@ -189,23 +220,9 @@ function bindInviteInteractions() {
             });
             tokens = await loadTokens();
             composer.refresh(elements);
-        });
-    });
+        },
+        { signal: pageInteractionController.signal },
+    );
 }
 
-composer = createPageComposer(root, {
-    allowCustomization: false,
-    i18n,
-    preferenceKey: "invite-layout",
-    pageContext: {
-        title: i18n.t("ui.reuse.invite"),
-        subtitle: i18n.t("ui.app.invite.page_subtitle"),
-    },
-    toolbar: [],
-    elements,
-    onRender: () => {
-        bindInviteInteractions();
-    },
-});
-
-await composer.init();
+if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));

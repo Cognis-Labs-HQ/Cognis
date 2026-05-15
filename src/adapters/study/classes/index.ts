@@ -188,6 +188,30 @@ export async function bootstrapStudyAdapter(
     });
 
     ctx.registerAdapterStaticDir?.("study", "classes", ADAPTER_UI_ROOT);
+    ctx.registerSpaRoute?.({
+        id: "study-classes-teacher-page",
+        pattern: "^/classes$",
+        base: "/classes",
+        scriptUrl: "/static/adapters/study/classes/app.js",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/adapters/study/classes/classes.css",
+        ],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
+    ctx.registerSpaRoute?.({
+        id: "study-classes-student-page",
+        pattern: "^/my-classes$",
+        base: "/my-classes",
+        scriptUrl: "/static/adapters/study/classes/my-classes.js",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/adapters/study/classes/classes.css",
+        ],
+        isEnabled: () => ctx.isAdapterEnabled(),
+    });
 
     ctx.log?.("info", "Study/classes adapter: bootstrapped.", {
         component: "study-classes",

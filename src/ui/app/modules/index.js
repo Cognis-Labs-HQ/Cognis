@@ -1,6 +1,7 @@
 import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
+import { escapeHtml } from "../../reuse/escape-html.js";
 
 let root = null;
 let i18n = null;
@@ -24,21 +25,22 @@ async function toggleModule(moduleId, action) {
 
 function renderModulesTable(rows) {
     const rowsHtml = rows
-        .map(
-            (mod) =>
-                `<tr>
-          <td>${mod.id}</td>
-          <td>${mod.version}</td>
-          <td>${mod.class}</td>
+        .map((mod) => {
+            const escapedModuleId = escapeHtml(String(mod.id ?? ""));
+            return `<tr>
+          <td>${escapedModuleId}</td>
+          <td>${escapeHtml(String(mod.version ?? ""))}</td>
+          <td>${escapeHtml(String(mod.class ?? ""))}</td>
           <td>
-            <button data-module="${mod.id}" data-action="enable">${i18n.t("ui.reuse.enable")}</button>
-            <button data-module="${mod.id}" data-action="disable">${i18n.t("ui.reuse.disable")}</button>
+            <button class="btn-confirm btn-animated" data-module="${escapedModuleId}" data-action="enable">${i18n.t("ui.reuse.enable")}</button>
+            <button class="btn-cancel btn-animated" data-module="${escapedModuleId}" data-action="disable">${i18n.t("ui.reuse.disable")}</button>
           </td>
-        </tr>`,
-        )
+        </tr>`;
+        })
         .join("");
     return `
-    <table>
+    <div class="users-table-wrap">
+    <table class="users-table">
       <thead>
         <tr>
           <th>${i18n.t("ui.reuse.id")}</th>
@@ -49,6 +51,7 @@ function renderModulesTable(rows) {
       </thead>
       <tbody>${rowsHtml}</tbody>
     </table>
+    </div>
   `;
 }
 
@@ -63,6 +66,7 @@ export async function mount(rootEl) {
         {
             id: "modules-list",
             label: i18n.t("ui.reuse.modules"),
+            gridSize: { default: [12, 5], min: [6, 4], max: "full" },
             render: () =>
                 `<h2>${i18n.t("ui.app.modules.page_title")}</h2>${renderModulesTable(modules)}`,
         },

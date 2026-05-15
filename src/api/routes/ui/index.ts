@@ -721,6 +721,19 @@ export function createUiRoutes(
             return true;
         }
 
+        if (url.pathname === "/api/v1/ui/app-routes" && req.method === "GET") {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const routes = (uiRegistry?.listSpaRoutes() ?? []).filter(
+                (route) =>
+                    (!route.isEnabled || route.isEnabled()) &&
+                    isRoleAllowed(claims.role, route.access),
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: routes }));
+            return true;
+        }
+
         if (url.pathname.startsWith("/static/adapters/")) {
             const rest = url.pathname.slice("/static/adapters/".length);
             const parts = rest.split("/");

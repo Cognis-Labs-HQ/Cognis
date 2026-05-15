@@ -77,6 +77,7 @@
   <string name="ui.app.login.intro.aria">Cognis intro</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>
   <string name="ui.app.login.hero.subtitle">Try learning differently</string>
+  <string name="ui.app.login.page_subtitle">Authenticate to continue to your workspace.</string>
   <string name="ui.app.login.form.username">Username</string>
   <string name="ui.app.login.form.password">Password</string>
   <string name="ui.app.login.form.submit">Login</string>
@@ -199,6 +200,7 @@
   <string name="ui.app.verify_email.invalid_body">This verification link is invalid or has already been used. Please request a new verification email from your account settings.</string>
   <string name="ui.app.verify_email.return_link">Return to Cognis</string>
   <string name="ui.app.register.form_title">Create your account</string>
+  <string name="ui.app.register.page_subtitle">Create a new account to access Cognis.</string>
   <string name="ui.app.register.invited_you">🎁 {inviter} wants you to join Cognis.</string>
   <string name="ui.app.register.email">Email</string>
   <string name="ui.app.register.username">Username</string>
@@ -452,8 +454,10 @@
   <string name="module.social.messages.members">members</string>
   <string name="module.social.messages.set_avatar">Set avatar</string>
   <string name="module.social.messages.key_unavailable">Encryption key unavailable.</string>
+  <string name="module.social.messages.page_subtitle">Your conversations and direct messages.</string>
   <string name="ui.reuse.classes">My Classes</string>
   <string name="module.study.classes.page_title">Classes</string>
+  <string name="module.study.classes.page_subtitle">Manage your assigned language classes.</string>
   <string name="module.study.classes.empty">No classes assigned yet.</string>
   <string name="module.study.classes.request_teacher">Request Teacher Status</string>
   <string name="module.study.classes.request_sent">Your request has been submitted for admin review.</string>
@@ -470,6 +474,7 @@
   <string name="module.study.classes.teacher_application_reason">Tell admins why you should be allowed to teach this language.</string>
   <string name="module.study.classes.submit_application">Submit Application</string>
   <string name="module.study.classes.my_classes_page_title">My Classes</string>
+  <string name="module.study.classes.my_classes_page_subtitle">View and manage your enrolled classes.</string>
   <string name="module.study.classes.enrolled_classes">Enrolled Classes</string>
   <string name="module.study.classes.no_enrolled_classes">You are not enrolled in any classes yet.</string>
   <string name="module.study.classes.available_classes">Available Classes</string>

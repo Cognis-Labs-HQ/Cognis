@@ -52,6 +52,14 @@ export interface SocialAdapterBootstrapCtx {
         absoluteDir: string,
     ): void;
     registerNavbarPlugin(scriptUrl: string, isEnabled?: () => boolean): void;
+    registerSpaRoute?(route: {
+        id: string;
+        pattern: string;
+        base: string;
+        scriptUrl: string;
+        stylesheets?: string[];
+        isEnabled?: () => boolean;
+    }): void;
     registerStaticDir(urlPrefix: string, absoluteDir: string): void;
     registerAuthTypingMessage?(message: {
         id: string;

@@ -18,6 +18,7 @@ import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+import { isAdminScope, isTeacherScope } from "/static/reuse/access-role.js";
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
@@ -25,10 +26,7 @@ export async function mount(root, { signal } = {}) {
 
     let classes = [];
     let pendingRequests = [];
-    let storedRole = (localStorage.getItem("cognis_role") ?? "").trim();
-    const isAdminRole = () => storedRole === "admin" || storedRole === "owner";
-    const isTeacherRole = () => storedRole === "teacher";
-    let isTeacher = isTeacherRole();
+    let isTeacher = isTeacherScope();
     let selectedLanguageFilter = "";
     let managingClassId = "";
     let managePanelMembers = [];
@@ -43,9 +41,11 @@ export async function mount(root, { signal } = {}) {
                 );
                 if (response.ok) {
                     const payload = await response.json();
-                    storedRole = String(payload?.data?.role ?? "").trim();
-                    localStorage.setItem("cognis_role", storedRole);
-                    isTeacher = isTeacherRole();
+                    const refreshedRole = String(
+                        payload?.data?.role ?? "",
+                    ).trim();
+                    localStorage.setItem("cognis_role", refreshedRole);
+                    isTeacher = isTeacherScope();
                 }
             }
         } catch {
@@ -77,7 +77,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function loadPendingRequests() {
-        if (!isAdminRole()) return;
+        if (!isAdminScope()) return;
         try {
             const response = await apiFetch("/api/v1/study/teacher-requests");
             if (response.ok) {
@@ -140,20 +140,25 @@ export async function mount(root, { signal } = {}) {
         return `<div class="classes-filter-row">${allPill}${pills}</div>`;
     }
 
-    function renderManagePanel(classId) {
-        if (managingClassId !== classId) return "";
-        const memberItems = managePanelMembers.length
-            ? managePanelMembers
-                  .map(
-                      (member) => `
+    function renderMemberItems(members) {
+        if (!members.length) {
+            return `<li class="classes-member-item"><span>${escapeHtml(i18n.t("module.study.classes.no_members"))}</span></li>`;
+        }
+        return members
+            .map(
+                (member) => `
               <li class="classes-member-item">
                 <span>${escapeHtml(member.studentAccountId)}</span>
                 <span class="classes-status-badge member">${escapeHtml(i18n.t("module.study.classes.members_section"))}</span>
               </li>
             `,
-                  )
-                  .join("")
-            : `<li class="classes-member-item"><span>${escapeHtml(i18n.t("module.study.classes.no_members"))}</span></li>`;
+            )
+            .join("");
+    }
+
+    function renderManagePanel(classId) {
+        if (managingClassId !== classId) return "";
+        const memberItems = renderMemberItems(managePanelMembers);
 
         const requestItems = managePanelRequests.length
             ? managePanelRequests
@@ -269,7 +274,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     function renderPendingRequests() {
-        if (!isAdminRole()) return "";
+        if (!isAdminScope()) return "";
         const rows = pendingRequests.length
             ? pendingRequests
                   .map(
@@ -625,18 +630,7 @@ export async function mount(root, { signal } = {}) {
                                 );
                                 if (memberList) {
                                     memberList.innerHTML =
-                                        managePanelMembers.length
-                                            ? managePanelMembers
-                                                  .map(
-                                                      (member) => `
-                                          <li class="classes-member-item">
-                                            <span>${escapeHtml(member.studentAccountId)}</span>
-                                            <span class="classes-status-badge member">${escapeHtml(i18n.t("module.study.classes.members_section"))}</span>
-                                          </li>
-                                        `,
-                                                  )
-                                                  .join("")
-                                            : `<li class="classes-member-item"><span>${escapeHtml(i18n.t("module.study.classes.no_members"))}</span></li>`;
+                                        renderMemberItems(managePanelMembers);
                                 }
                             }
                         }
@@ -657,6 +651,7 @@ export async function mount(root, { signal } = {}) {
         i18n,
         pageContext: {
             title: i18n.t("module.study.classes.page_title"),
+            subtitle: i18n.t("module.study.classes.page_subtitle"),
         },
     });
 

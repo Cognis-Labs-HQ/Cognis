@@ -107,6 +107,26 @@ test("UIRegistry registers and lists page extensions", () => {
     assert.deepEqual(reg.listPageExtensions("unknown"), []);
 });
 
+test("UIRegistry registers and lists SPA routes", () => {
+    const reg = new UIRegistry();
+    reg.registerSpaRoute({
+        id: "messages-page",
+        pattern: "^/messages(?:/[^/]+)?$",
+        base: "/messages",
+        scriptUrl: "/static/adapters/social/messages/app.js",
+        stylesheets: ["/static/adapters/social/messages/messages.css"],
+    });
+
+    const routes = reg.listSpaRoutes();
+    assert.equal(routes.length, 1);
+    assert.equal(routes[0].id, "messages-page");
+    assert.equal(routes[0].base, "/messages");
+    assert.equal(
+        routes[0].scriptUrl,
+        "/static/adapters/social/messages/app.js",
+    );
+});
+
 test("UIRegistry registers and lists auth typing messages", () => {
     const reg = new UIRegistry();
     reg.registerAuthTypingMessage({

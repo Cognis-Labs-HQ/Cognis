@@ -77,6 +77,7 @@
   <string name="ui.app.login.intro.aria">Cognis-Einführung</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>
   <string name="ui.app.login.hero.subtitle">Lerne auf neue Weise</string>
+  <string name="ui.app.login.page_subtitle">Authentifizieren Sie sich, um zu Ihrem Arbeitsbereich zu gelangen.</string>
   <string name="ui.app.login.form.username">Benutzername</string>
   <string name="ui.app.login.form.password">Passwort</string>
   <string name="ui.app.login.form.submit">Login</string>
@@ -199,6 +200,7 @@
   <string name="ui.app.verify_email.invalid_body">Dieser Verifizierungslink ist ungültig oder wurde bereits verwendet. Bitte fordern Sie eine neue Verifizierungs-E-Mail in Ihren Kontoeinstellungen an.</string>
   <string name="ui.app.verify_email.return_link">Zurück zu Cognis</string>
   <string name="ui.app.register.form_title">Konto erstellen</string>
+  <string name="ui.app.register.page_subtitle">Erstellen Sie ein neues Konto, um auf Cognis zuzugreifen.</string>
   <string name="ui.app.register.invited_you">🎁 {inviter} möchte, dass Sie Cognis beitreten.</string>
   <string name="ui.app.register.email">E-Mail</string>
   <string name="ui.app.register.username">Benutzername</string>
@@ -452,8 +454,10 @@
   <string name="module.social.messages.members">Mitglieder</string>
   <string name="module.social.messages.set_avatar">Avatar festlegen</string>
   <string name="module.social.messages.key_unavailable">Verschlüsselungsschlüssel nicht verfügbar.</string>
+  <string name="module.social.messages.page_subtitle">Ihre Unterhaltungen und Direktnachrichten.</string>
   <string name="ui.reuse.classes">Meine Klassen</string>
   <string name="module.study.classes.page_title">Klassen</string>
+  <string name="module.study.classes.page_subtitle">Verwalten Sie Ihre zugewiesenen Sprachklassen.</string>
   <string name="module.study.classes.empty">Noch keine Klassen zugewiesen.</string>
   <string name="module.study.classes.request_teacher">Lehrerstatus beantragen</string>
   <string name="module.study.classes.request_sent">Ihr Antrag wurde zur Überprüfung durch einen Administrator eingereicht.</string>
@@ -470,6 +474,7 @@
   <string name="module.study.classes.teacher_application_reason">Erklären Sie den Administratoren, warum Sie diese Sprache unterrichten dürfen sollten.</string>
   <string name="module.study.classes.submit_application">Antrag senden</string>
   <string name="module.study.classes.my_classes_page_title">Meine Klassen</string>
+  <string name="module.study.classes.my_classes_page_subtitle">Sehen und verwalten Sie Ihre eingeschriebenen Kurse.</string>
   <string name="module.study.classes.enrolled_classes">Eingeschriebene Klassen</string>
   <string name="module.study.classes.no_enrolled_classes">Sie sind noch in keiner Klasse eingeschrieben.</string>
   <string name="module.study.classes.available_classes">Verfügbare Klassen</string>

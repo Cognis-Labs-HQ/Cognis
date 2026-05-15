@@ -6,6 +6,11 @@
   <string name="gateway.study.page_subtitle">Dasbor pembelajaran bahasamu</string>
   <string name="gateway.study.settings_subtitle">Kelola bahasa belajar aktifmu</string>
   <string name="gateway.study.alphabet_subtitle">Jelajahi huruf-huruf alfabet bahasa Inggris</string>
+  <string name="gateway.study.alphabet_page_title">Alfabet Bahasa Inggris</string>
+  <string name="gateway.study.hiragana_page_title">Alfabet Hiragana</string>
+  <string name="gateway.study.hiragana_subtitle">Pelajari aksara suku kata fonetik dasar bahasa Jepang.</string>
+  <string name="gateway.study.hiragana_section_heading">ひらがな — Hiragana</string>
+  <string name="gateway.study.hiragana_description">Aksara suku kata fonetik dasar bahasa Jepang. Data bersumber dari lapisan karakter perpustakaan bahasa.</string>
   <string name="gateway.study.library_subtitle">Kelola catatan perpustakaan bahasa</string>
   <string name="gateway.study.classroom_subtitle">Lihat dan kelola kelasmu</string>
   <string name="gateway.study.welcome_heading">Selamat Datang di Cognis</string>

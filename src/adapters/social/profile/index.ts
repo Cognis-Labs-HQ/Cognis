@@ -221,6 +221,19 @@ export async function bootstrapSocialAdapter(
         "ui",
     );
     ctx.registerAdapterStaticDir?.("social", "profile", uiDir);
+    ctx.registerSpaRoute?.({
+        id: "social-profile-page",
+        pattern: "^/profile(?:/[^/]+)?$",
+        base: "/profile",
+        scriptUrl: "/static/adapters/social/profile/app.js",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/adapters/social/profile/profile.css",
+            "/static/styles/reuse/char-counter.css",
+        ],
+        isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
+    });
     ctx.registerNavbarPlugin("/static/adapters/social/profile/navbar.js");
     ctx.registerAuthTypingMessage?.({
         id: "profile-social-space",

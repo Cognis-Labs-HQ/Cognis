@@ -875,6 +875,102 @@ test("GET /api/v1/ui/navbar-plugins returns 401 for unauthenticated request", as
     assert.equal(recorder.status, 401);
 });
 
+test("GET /api/v1/ui/app-routes returns registered routes for authenticated user", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    uiRegistry.registerSpaRoute({
+        id: "messages-page",
+        pattern: "^/messages(?:/[^/]+)?$",
+        base: "/messages",
+        scriptUrl: "/static/adapters/social/messages/app.js",
+        stylesheets: ["/static/adapters/social/messages/messages.css"],
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const userToken = issueAccessToken("u1", "user", 60);
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        {
+            method: "GET",
+            headers: {
+                cookie: `cognis_access_token=${userToken}`,
+                authorization: `Bearer ${userToken}`,
+            },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/app-routes"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    const payload = JSON.parse(recorder.body);
+    assert.equal(payload.data.length, 1);
+    assert.equal(payload.data[0].id, "messages-page");
+});
+
+test("GET /api/v1/ui/app-routes filters disabled and protected routes", async () => {
+    const uiRegistry = new StaticUIRegistry();
+    uiRegistry.registerSpaRoute({
+        id: "enabled-public",
+        pattern: "^/messages(?:/[^/]+)?$",
+        base: "/messages",
+        scriptUrl: "/static/adapters/social/messages/app.js",
+        isEnabled: () => true,
+    });
+    uiRegistry.registerSpaRoute({
+        id: "disabled-route",
+        pattern: "^/disabled$",
+        base: "/disabled",
+        scriptUrl: "/static/adapters/disabled/app.js",
+        isEnabled: () => false,
+    });
+    uiRegistry.registerSpaRoute({
+        id: "admin-only",
+        pattern: "^/admin-only$",
+        base: "/admin-only",
+        scriptUrl: "/static/adapters/admin/app.js",
+        access: { minRole: "admin" },
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    const userToken = issueAccessToken("u1", "user", 60);
+    const userRecorder = createResponseRecorder();
+    await route(
+        {
+            method: "GET",
+            headers: {
+                cookie: `cognis_access_token=${userToken}`,
+                authorization: `Bearer ${userToken}`,
+            },
+        } as any,
+        userRecorder.res as any,
+        new URL("http://localhost/api/v1/ui/app-routes"),
+    );
+    const userPayload = JSON.parse(userRecorder.body);
+    assert.deepEqual(
+        userPayload.data.map((entry: { id: string }) => entry.id),
+        ["enabled-public"],
+    );
+
+    const adminToken = issueAccessToken("u2", "admin", 60);
+    const adminRecorder = createResponseRecorder();
+    await route(
+        {
+            method: "GET",
+            headers: {
+                cookie: `cognis_access_token=${adminToken}`,
+                authorization: `Bearer ${adminToken}`,
+            },
+        } as any,
+        adminRecorder.res as any,
+        new URL("http://localhost/api/v1/ui/app-routes"),
+    );
+    const adminPayload = JSON.parse(adminRecorder.body);
+    assert.deepEqual(
+        adminPayload.data.map((entry: { id: string }) => entry.id),
+        ["enabled-public", "admin-only"],
+    );
+});
+
 test("GET /api/v1/ui/settings-sections returns registered sections for authenticated user", async () => {
     const uiRegistry = new StaticUIRegistry();
     uiRegistry.registerSettingsSection({

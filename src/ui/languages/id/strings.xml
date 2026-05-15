@@ -77,6 +77,7 @@
   <string name="ui.app.login.intro.aria">Pengantar Cognis</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>
   <string name="ui.app.login.hero.subtitle">Coba belajar dengan cara berbeda</string>
+  <string name="ui.app.login.page_subtitle">Autentikasi untuk melanjutkan ke ruang kerja Anda.</string>
   <string name="ui.app.login.form.username">Nama pengguna</string>
   <string name="ui.app.login.form.password">Kata sandi</string>
   <string name="ui.app.login.form.submit">Masuk</string>
@@ -199,6 +200,7 @@
   <string name="ui.app.verify_email.invalid_body">Tautan verifikasi ini tidak valid atau sudah digunakan. Silakan minta email verifikasi baru dari pengaturan akun Anda.</string>
   <string name="ui.app.verify_email.return_link">Kembali ke Cognis</string>
   <string name="ui.app.register.form_title">Buat akun Anda</string>
+  <string name="ui.app.register.page_subtitle">Buat akun baru untuk mengakses Cognis.</string>
   <string name="ui.app.register.invited_you">🎁 {inviter} ingin Anda bergabung ke Cognis.</string>
   <string name="ui.app.register.email">Email</string>
   <string name="ui.app.register.username">Nama pengguna</string>
@@ -452,8 +454,10 @@
   <string name="module.social.messages.members">anggota</string>
   <string name="module.social.messages.set_avatar">Atur avatar</string>
   <string name="module.social.messages.key_unavailable">Kunci enkripsi tidak tersedia.</string>
+  <string name="module.social.messages.page_subtitle">Percakapan dan pesan langsung Anda.</string>
   <string name="ui.reuse.classes">Kelas Saya</string>
   <string name="module.study.classes.page_title">Kelas</string>
+  <string name="module.study.classes.page_subtitle">Kelola kelas bahasa yang ditetapkan untuk Anda.</string>
   <string name="module.study.classes.empty">Belum ada kelas yang ditetapkan.</string>
   <string name="module.study.classes.request_teacher">Minta Status Pengajar</string>
   <string name="module.study.classes.request_sent">Permintaan Anda telah dikirim untuk ditinjau admin.</string>
@@ -470,6 +474,7 @@
   <string name="module.study.classes.teacher_application_reason">Beri tahu admin mengapa Anda seharusnya diizinkan mengajar bahasa ini.</string>
   <string name="module.study.classes.submit_application">Kirim Aplikasi</string>
   <string name="module.study.classes.my_classes_page_title">Kelas Saya</string>
+  <string name="module.study.classes.my_classes_page_subtitle">Lihat dan kelola kelas yang Anda ikuti.</string>
   <string name="module.study.classes.enrolled_classes">Kelas yang Diikuti</string>
   <string name="module.study.classes.no_enrolled_classes">Anda belum terdaftar di kelas mana pun.</string>
   <string name="module.study.classes.available_classes">Kelas Tersedia</string>
