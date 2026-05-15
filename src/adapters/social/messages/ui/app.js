@@ -269,11 +269,11 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
                 const preview = String(previewSource)
                     .replace(/\s+/g, " ")
                     .trim();
+                const isActive = room.id === selectedRoomId;
                 const unreadBadge =
                     room.unread > 0 && !isActive
                         ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
                         : "";
-                const isActive = room.id === selectedRoomId;
                 const pendingRequest = room.pendingRequest ?? null;
                 const canRespondInSidebar =
                     pendingRequest &&
