@@ -505,10 +505,10 @@ export async function renderDashboardLayout(root, slots = {}) {
             toolbarElement.hidden = true;
             toolbarElement.innerHTML = slots.floatingToolbar;
             if (footerElement) {
-                const needsRepositioning =
+                const needsPlacementBeforeFooter =
                     toolbarElement.parentElement !== existingShell ||
                     toolbarElement.nextElementSibling !== footerElement;
-                if (needsRepositioning) {
+                if (needsPlacementBeforeFooter) {
                     footerElement.before(toolbarElement);
                 }
             } else if (toolbarElement.parentElement !== existingShell) {
