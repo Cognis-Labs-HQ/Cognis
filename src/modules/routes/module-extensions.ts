@@ -102,10 +102,7 @@ export function createModuleExtensionRoutes(
 
             const moduleRoot = path.resolve(modulesRoot, manifest.id);
 
-            if (
-                options?.uiRegistry &&
-                !registeredModuleUi.has(manifest.id)
-            ) {
+            if (options?.uiRegistry && !registeredModuleUi.has(manifest.id)) {
                 registeredModuleUi.add(manifest.id);
 
                 if (manifest.ui?.staticDir) {
@@ -117,15 +114,11 @@ export function createModuleExtensionRoutes(
                         manifest.id,
                         absoluteStaticDir,
                     );
-                    log?.(
-                        "info",
-                        "Module UI static directory registered.",
-                        {
-                            component: "module-extension-routes",
-                            moduleId: manifest.id,
-                            dir: absoluteStaticDir,
-                        },
-                    );
+                    log?.("info", "Module UI static directory registered.", {
+                        component: "module-extension-routes",
+                        moduleId: manifest.id,
+                        dir: absoluteStaticDir,
+                    });
                 }
 
                 if (manifest.ui?.navbarPlugin) {
@@ -135,15 +128,11 @@ export function createModuleExtensionRoutes(
                         scriptUrl,
                         isEnabled: () => isModuleEnabled(moduleIdCapture),
                     });
-                    log?.(
-                        "info",
-                        "Module navbar plugin registered.",
-                        {
-                            component: "module-extension-routes",
-                            moduleId: manifest.id,
-                            scriptUrl,
-                        },
-                    );
+                    log?.("info", "Module navbar plugin registered.", {
+                        component: "module-extension-routes",
+                        moduleId: manifest.id,
+                        scriptUrl,
+                    });
                 }
 
                 if (manifest.ui?.adminSection) {
@@ -155,15 +144,11 @@ export function createModuleExtensionRoutes(
                         scriptUrl,
                         stringsBaseUrl,
                     });
-                    log?.(
-                        "info",
-                        "Module admin section registered.",
-                        {
-                            component: "module-extension-routes",
-                            moduleId: manifest.id,
-                            scriptUrl,
-                        },
-                    );
+                    log?.("info", "Module admin section registered.", {
+                        component: "module-extension-routes",
+                        moduleId: manifest.id,
+                        scriptUrl,
+                    });
                 }
             }
 

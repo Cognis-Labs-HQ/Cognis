@@ -1,0 +1,101 @@
+.jitsi-meet-layout {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
+}
+
+.jitsi-meet-panel,
+.jitsi-meet-session {
+    background: var(--surface-2, rgba(15, 23, 42, 0.35));
+    border: 1px solid var(--border-color, rgba(148, 163, 184, 0.2));
+    border-radius: 0.75rem;
+    padding: 1rem;
+}
+
+.jitsi-meet-field {
+    display: grid;
+    gap: 0.4rem;
+    margin-bottom: 0.9rem;
+}
+
+.jitsi-meet-field input {
+    width: 100%;
+}
+
+.jitsi-meet-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.jitsi-meet-contact-list {
+    display: grid;
+    gap: 0.4rem;
+    margin-top: 0.8rem;
+    max-height: 16rem;
+    overflow-y: auto;
+}
+
+.jitsi-meet-contact {
+    border: 1px solid var(--border-color, rgba(148, 163, 184, 0.2));
+    border-radius: 0.5rem;
+    padding: 0.55rem 0.65rem;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+}
+
+.jitsi-meet-contact--active {
+    border-color: var(--accent-color, #38bdf8);
+    background: rgba(56, 189, 248, 0.12);
+}
+
+.jitsi-meet-contact-meta {
+    display: block;
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.jitsi-meet-empty {
+    opacity: 0.7;
+}
+
+.jitsi-meet-iframe-wrap {
+    position: relative;
+    width: 100%;
+    min-height: 28rem;
+    border-radius: 0.65rem;
+    overflow: hidden;
+    border: 1px solid var(--border-color, rgba(148, 163, 184, 0.2));
+}
+
+.jitsi-meet-iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 28rem;
+    border: 0;
+    background: #000;
+}
+
+.jitsi-meet-session-meta {
+    margin-bottom: 0.8rem;
+}
+
+.jitsi-meet-session-meta p {
+    margin: 0.2rem 0;
+}
+
+.jitsi-meet-session-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.8rem;
+}
+
+@media (max-width: 980px) {
+    .jitsi-meet-layout {
+        grid-template-columns: 1fr;
+    }
+}

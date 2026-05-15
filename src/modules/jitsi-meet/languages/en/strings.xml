@@ -1,0 +1,27 @@
+<resources>
+  <string name="module.jitsi_meet.page_title">Jitsi Meet</string>
+  <string name="module.jitsi_meet.page_subtitle">Start direct user-to-user video sessions.</string>
+  <string name="module.jitsi_meet.nav_label">Meetings</string>
+  <string name="module.jitsi_meet.search_label">Find a Contact</string>
+  <string name="module.jitsi_meet.search_placeholder">Search by handle</string>
+  <string name="module.jitsi_meet.search_button">Search</string>
+  <string name="module.jitsi_meet.start_button">Start Meeting</string>
+  <string name="module.jitsi_meet.contacts_empty">No contacts found.</string>
+  <string name="module.jitsi_meet.select_contact_warning">Select a contact first.</string>
+  <string name="module.jitsi_meet.session_failed">Could not start the meeting session.</string>
+  <string name="module.jitsi_meet.no_active_session">No active meeting session yet.</string>
+  <string name="module.jitsi_meet.room_label">Room</string>
+  <string name="module.jitsi_meet.participant_label">Participant</string>
+  <string name="module.jitsi_meet.native_chat_label">Native Chat</string>
+  <string name="module.jitsi_meet.native_chat_found">Linked room found.</string>
+  <string name="module.jitsi_meet.native_chat_missing">No linked room found yet.</string>
+  <string name="module.jitsi_meet.open_native_chat">Open Native Chat</string>
+  <string name="module.jitsi_meet.refresh_native_chat">Refresh Native Chat</string>
+  <string name="module.jitsi_meet.open_pip">Open PiP</string>
+  <string name="module.jitsi_meet.open_new_tab">Open in New Tab</string>
+  <string name="module.jitsi_meet.pip_not_supported">Picture-in-Picture is not supported in this browser.</string>
+  <string name="module.jitsi_meet.admin.section_title">Jitsi Meet Settings</string>
+  <string name="module.jitsi_meet.admin.base_url_label">Jitsi Base URL</string>
+  <string name="module.jitsi_meet.admin.base_url_placeholder">https://meet.jit.si</string>
+  <string name="module.jitsi_meet.admin.base_url_required">Jitsi base URL is required.</string>
+</resources>

@@ -1,0 +1,27 @@
+<resources>
+  <string name="module.jitsi_meet.page_title">Jitsi Meet</string>
+  <string name="module.jitsi_meet.page_subtitle">ユーザー同士の1対1ビデオセッションを開始します。</string>
+  <string name="module.jitsi_meet.nav_label">ミーティング</string>
+  <string name="module.jitsi_meet.search_label">連絡先を検索</string>
+  <string name="module.jitsi_meet.search_placeholder">ハンドルで検索</string>
+  <string name="module.jitsi_meet.search_button">検索</string>
+  <string name="module.jitsi_meet.start_button">ミーティング開始</string>
+  <string name="module.jitsi_meet.contacts_empty">連絡先が見つかりません。</string>
+  <string name="module.jitsi_meet.select_contact_warning">先に連絡先を選択してください。</string>
+  <string name="module.jitsi_meet.session_failed">ミーティングセッションを開始できませんでした。</string>
+  <string name="module.jitsi_meet.no_active_session">まだアクティブなミーティングセッションはありません。</string>
+  <string name="module.jitsi_meet.room_label">ルーム</string>
+  <string name="module.jitsi_meet.participant_label">参加者</string>
+  <string name="module.jitsi_meet.native_chat_label">ネイティブチャット</string>
+  <string name="module.jitsi_meet.native_chat_found">リンク済みルームが見つかりました。</string>
+  <string name="module.jitsi_meet.native_chat_missing">リンク済みルームはまだ見つかっていません。</string>
+  <string name="module.jitsi_meet.open_native_chat">ネイティブチャットを開く</string>
+  <string name="module.jitsi_meet.refresh_native_chat">ネイティブチャットを再取得</string>
+  <string name="module.jitsi_meet.open_pip">PiPを開く</string>
+  <string name="module.jitsi_meet.open_new_tab">新しいタブで開く</string>
+  <string name="module.jitsi_meet.pip_not_supported">このブラウザではピクチャーインピクチャーを使用できません。</string>
+  <string name="module.jitsi_meet.admin.section_title">Jitsi Meet設定</string>
+  <string name="module.jitsi_meet.admin.base_url_label">JitsiベースURL</string>
+  <string name="module.jitsi_meet.admin.base_url_placeholder">https://meet.jit.si</string>
+  <string name="module.jitsi_meet.admin.base_url_required">JitsiベースURLは必須です。</string>
+</resources>
