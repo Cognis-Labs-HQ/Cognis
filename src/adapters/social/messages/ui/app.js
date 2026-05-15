@@ -270,7 +270,7 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
                     .replace(/\s+/g, " ")
                     .trim();
                 const unreadBadge =
-                    room.unread > 0
+                    room.unread > 0 && room.id !== selectedRoomId
                         ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
                         : "";
                 const isActive = room.id === selectedRoomId;
@@ -899,11 +899,33 @@ export async function mount(root, { signal } = {}) {
                 threadResult?.pendingRequest ?? null,
             );
         }
+        await markSelectedRoomRead();
+        bindPendingRequestBannerEvents();
+    }
+
+    function renderRoomsListIntoDom() {
+        const roomsList = document.getElementById("messages-rooms-list");
+        if (!roomsList) return;
+        roomsList.innerHTML = renderRoomList(
+            rooms,
+            currentAccountId,
+            selectedRoomId,
+            i18n,
+        );
+    }
+
+    async function markSelectedRoomRead() {
+        if (!selectedRoomId) return;
         await apiFetch(
-            `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/read`,
+            `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/read`,
             { method: "POST" },
         ).catch(() => undefined);
-        bindPendingRequestBannerEvents();
+        rooms = rooms.map((room) =>
+            String(room.id) === String(selectedRoomId)
+                ? { ...room, unread: 0 }
+                : room,
+        );
+        renderRoomsListIntoDom();
     }
 
     async function respondToPendingRequest(
@@ -1006,6 +1028,7 @@ export async function mount(root, { signal } = {}) {
             i18n,
             currentAccountId,
         );
+        await markSelectedRoomRead();
         await refreshTypingIndicator();
     }
 
@@ -1144,15 +1167,7 @@ export async function mount(root, { signal } = {}) {
             (room) => String(room.id) === String(selectedRoomId),
         );
         syncComposerAvailability(selectedRoom ?? null);
-        const roomsList = document.getElementById("messages-rooms-list");
-        if (roomsList) {
-            roomsList.innerHTML = renderRoomList(
-                rooms,
-                currentAccountId,
-                selectedRoomId,
-                i18n,
-            );
-        }
+        renderRoomsListIntoDom();
     }
 
     async function leaveSelectedRoom(handle) {
