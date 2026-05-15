@@ -188,12 +188,10 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
         .map((room) => {
             const titleSource = selectedRoomTitle(room, currentAccountId);
             const members = Array.isArray(room.members) ? room.members : [];
-            const displayedMember =
-                members.find(
-                    (member) => member.accountId !== currentAccountId,
-                ) ||
-                members[0] ||
-                null;
+            const preferredOtherMember = members.find(
+                (member) => member.accountId !== currentAccountId,
+            );
+            const displayedMember = preferredOtherMember ?? members[0] ?? null;
             const avatar = displayedMember?.avatarKey
                 ? `<img class="messages-room-avatar-img" src="/api/v1/files/${escapeHtml(displayedMember.avatarKey)}" alt="" />`
                 : `<span class="messages-room-avatar-fallback" style="--initials-bg: ${escapeHtml(pickInitialsColor(displayedMember?.handle || displayedMember?.accountId || titleSource))};">${escapeHtml(getInitialsText(displayedMember ? memberDisplayName(displayedMember) : titleSource))}</span>`;
