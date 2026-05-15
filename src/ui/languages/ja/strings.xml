@@ -174,6 +174,11 @@
   <string name="ui.app.login.line_disclosure.body_followup">続行すると、アカウント認証と登録フローのために、LINE から Cognis へメールアドレスが開示されることに同意したものとみなされます。</string>
   <string name="ui.app.login.line_disclosure.confirm">LINE で続行</string>
   <string name="ui.app.login.line_disclosure.cancel">キャンセル</string>
+  <string name="ui.app.login.error.line_unavailable">LINEでのログインは現在利用できません。後でもう一度お試しください。</string>
+  <string name="ui.app.login.reason.line_cancelled">LINEでのログインがキャンセルされました。</string>
+  <string name="ui.app.login.reason.line_error">LINEでのログインに失敗しました。もう一度お試しください。</string>
+  <string name="ui.app.login.reason.line_pending_approval">登録リクエストは管理者の承認待ちです。</string>
+  <string name="ui.app.login.reason.line_rejected">登録リクエストは管理者によって却下されました。</string>
   <string name="ui.app.demo.switched">デモ: サンドボックスページに切り替えました。</string>
   <string name="ui.app.demo.added">デモ: 学習進捗ウィジェットを追加しました。</string>
   <string name="ui.app.demo.tweaked">デモ: 最初のウィジェット設定を調整しました。</string>

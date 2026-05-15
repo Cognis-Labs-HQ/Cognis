@@ -17,6 +17,11 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { clearStoredAuthSession } from "../../reuse/auth-session.js";
+import {
+    generateRandomString,
+    generateCodeChallenge,
+    buildAuthorizationUrl,
+} from "../../reuse/oauth-pkce.js";
 
 async function resetAuthSessionForRegister() {
     const hadStoredSession =
@@ -135,6 +140,107 @@ export async function mount(root) {
     })();
     const typingSamples = await loadAuthTypingSamples(i18n);
 
+    async function openLineEmailDisclosurePopup() {
+        return openPopup({
+            title: i18n.t("ui.app.login.line_disclosure.title"),
+            body: `
+      <p>${escapeHtml(i18n.t("ui.app.login.line_disclosure.body"))}</p>
+      <p>${escapeHtml(i18n.t("ui.app.login.line_disclosure.body_followup"))}</p>
+    `,
+            actions: [
+                {
+                    id: "confirm",
+                    label: i18n.t("ui.app.login.line_disclosure.confirm"),
+                    variant: "confirm",
+                },
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.app.login.line_disclosure.cancel"),
+                    variant: "cancel",
+                },
+            ],
+            variant: "warning",
+            maxWidth: "560px",
+        });
+    }
+
+    async function initiateLineOAuthRedirect() {
+        try {
+            const initResponse = await fetch("/api/v1/auth/line/init");
+            if (!initResponse.ok) {
+                showToast(i18n.t("ui.app.login.error.line_unavailable"), {
+                    variant: "error",
+                });
+                return;
+            }
+            const initPayload = await initResponse.json();
+            const lineInitData = initPayload.data;
+            const redirectUri = new URL(
+                lineInitData.managedRedirectPath,
+                window.location.origin,
+            ).toString();
+            const state = generateRandomString(32);
+            sessionStorage.setItem("line_oauth_state", state);
+            let codeChallenge = "";
+            let codeChallengeMethod = "";
+            if (lineInitData.usePkce) {
+                const codeVerifier = generateRandomString(64);
+                codeChallenge = await generateCodeChallenge(codeVerifier);
+                codeChallengeMethod = "S256";
+                sessionStorage.setItem("line_code_verifier", codeVerifier);
+            }
+            window.location.href = buildAuthorizationUrl({
+                endpoint: lineInitData.authorizationEndpoint,
+                clientId: lineInitData.channelId,
+                redirectUri,
+                state,
+                scope: lineInitData.scope,
+                codeChallenge,
+                codeChallengeMethod,
+            });
+        } catch {
+            showToast(i18n.t("ui.app.login.error.line_unavailable"), {
+                variant: "error",
+            });
+        }
+    }
+
+    async function loadSsoButtons() {
+        try {
+            const methodsResponse = await fetch("/api/v1/auth/login-methods");
+            if (!methodsResponse.ok) return;
+            const methodsPayload = await methodsResponse.json();
+            const methods = methodsPayload.data ?? [];
+            const ssoProviders = methods.filter(
+                (method) => method.id !== "local" && method.id !== "ldap",
+            );
+            const ssoContainer = document.querySelector("#sso-buttons");
+            if (!ssoContainer || ssoProviders.length === 0) return;
+            ssoProviders.forEach((method) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "btn-animated sso-login-btn";
+                button.textContent = i18n
+                    .t("ui.app.login.sso.login_with")
+                    .replace("{provider}", method.name);
+                button.addEventListener("click", async () => {
+                    if (method.id === "line") {
+                        const lineDisclosureAction =
+                            await openLineEmailDisclosurePopup();
+                        if (lineDisclosureAction !== "confirm") {
+                            return;
+                        }
+                        await initiateLineOAuthRedirect();
+                        return;
+                    }
+                });
+                ssoContainer.appendChild(button);
+            });
+        } catch {
+            // SSO methods unavailable — form works without them
+        }
+    }
+
     function formatCountdown(msRemaining) {
         if (msRemaining <= 0) return "00:00:00";
         const totalSeconds = Math.ceil(msRemaining / 1000);
@@ -249,6 +355,7 @@ export async function mount(root) {
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.register.form_title"))}</h2>
       ${messageHtml}
       ${formHtml}
+      <div id="sso-buttons" class="sso-buttons"></div>
     `;
         return renderAuthLayout({
             introPanelAriaLabel: i18n.t("ui.app.login.intro.aria"),
@@ -365,6 +472,7 @@ export async function mount(root) {
                 render: () => renderRegisterShell(),
                 onRender: () => {
                     runTypingShowcase(typingSamples);
+                    loadSsoButtons();
 
                     if (tokenInvalid && invalidTokenToastToken !== token) {
                         invalidTokenToastToken = token;

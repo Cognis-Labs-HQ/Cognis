@@ -158,7 +158,7 @@ class LineAuthAdapter implements AuthProviderAdapter {
     async authenticate(
         credentials: Record<string, unknown>,
     ): Promise<AuthContext | null> {
-        if (!this.channelId || !this.redirectUri) {
+        if (!this.channelId) {
             return null;
         }
 
@@ -251,14 +251,6 @@ class LineAuthAdapter implements AuthProviderAdapter {
                 envVar: "LINE_CHANNEL_SECRET",
             },
             {
-                key: "redirectUri",
-                label: "LINE Redirect URI",
-                hint: "Use the Cognis-managed LINE callback URL shown in the adapter popup unless you need a different public URL. The saved value must exactly match the Callback URL entered in the LINE Developers Console.",
-                type: "text",
-                required: true,
-                envVar: "LINE_REDIRECT_URI",
-            },
-            {
                 key: "usePkce",
                 label: "Use PKCE (required for mobile/web clients)",
                 type: "boolean",
@@ -343,6 +335,41 @@ class LineAuthAdapter implements AuthProviderAdapter {
 
     registerRoutes(context: AuthAdapterRouteContext): void {
         context.registerRoute(async (req, res, url) => {
+            if (
+                url.pathname !== "/api/v1/auth/line/init" ||
+                req.method !== "GET"
+            ) {
+                return false;
+            }
+            if (!this.channelId) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_configured",
+                            message: "LINE adapter is not configured",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        channelId: this.channelId,
+                        managedRedirectPath: this.managedRedirectPath,
+                        usePkce: this.usePkce,
+                        authorizationEndpoint:
+                            "https://access.line.me/oauth2/v2.1/authorize",
+                        scope: "profile openid email",
+                    },
+                }),
+            );
+            return true;
+        });
+
+        context.registerRoute(async (req, res, url) => {
             if (url.pathname !== this.managedRedirectPath) {
                 return false;
             }
@@ -353,10 +380,106 @@ class LineAuthAdapter implements AuthProviderAdapter {
                 res.end("");
                 return true;
             }
-            res.writeHead(204);
-            res.end("");
+            if (url.searchParams.has("code")) {
+                const callbackPage = this.buildCallbackPage();
+                res.writeHead(200, {
+                    "content-type": "text/html; charset=utf-8",
+                });
+                res.end(callbackPage);
+            } else {
+                res.writeHead(204);
+                res.end("");
+            }
             return true;
         });
+    }
+
+    private buildCallbackPage(): string {
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Signing in with LINE\u2026</title>
+<style>
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;font-family:sans-serif;background:#f5f5f5;color:#444;}
+p{font-size:1.1rem;}
+</style>
+</head>
+<body>
+<p id="status">Completing LINE sign-in\u2026</p>
+<script>
+(async function() {
+  var params = new URLSearchParams(location.search);
+  var authorizationCode = params.get('code');
+  var returnedState = params.get('state');
+  var oauthError = params.get('error');
+
+  if (oauthError || !authorizationCode) {
+    sessionStorage.removeItem('line_oauth_state');
+    sessionStorage.removeItem('line_code_verifier');
+    location.href = '/login?reason=line_cancelled';
+    return;
+  }
+
+  var expectedState = sessionStorage.getItem('line_oauth_state');
+  if (!expectedState || expectedState !== returnedState) {
+    sessionStorage.removeItem('line_oauth_state');
+    sessionStorage.removeItem('line_code_verifier');
+    location.href = '/login?reason=line_error';
+    return;
+  }
+  sessionStorage.removeItem('line_oauth_state');
+
+  var codeVerifier = sessionStorage.getItem('line_code_verifier') || '';
+  sessionStorage.removeItem('line_code_verifier');
+
+  var redirectUri = location.origin + '${this.managedRedirectPath}';
+
+  var response;
+  try {
+    response = await fetch('/api/v1/auth/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        provider: 'line',
+        authorizationCode: authorizationCode,
+        codeVerifier: codeVerifier,
+        redirectUri: redirectUri,
+      }),
+    });
+  } catch (networkError) {
+    location.href = '/login?reason=line_error';
+    return;
+  }
+
+  var responseBody;
+  try { responseBody = await response.json(); } catch { responseBody = null; }
+
+  if (response.ok && responseBody && responseBody.data) {
+    var sessionData = responseBody.data;
+    localStorage.setItem('cognis_access_token', sessionData.token);
+    localStorage.setItem('cognis_account', sessionData.accountId);
+    localStorage.setItem('cognis_display_name', sessionData.displayName || sessionData.accountId);
+    localStorage.setItem('cognis_role', sessionData.role || 'user');
+    localStorage.setItem('cognis_is_founder', sessionData.isFounder ? 'true' : 'false');
+    localStorage.setItem('cognis_login_time', new Date().toISOString());
+    localStorage.setItem('cognis_user_validation_mode', sessionData.userValidationMode || 'none');
+    location.href = '/dashboard';
+    return;
+  }
+
+  var errorCode = (responseBody && responseBody.error && responseBody.error.code) || '';
+  var reasonByErrorCode = {
+    registration_pending_approval: 'line_pending_approval',
+    registration_request_rejected: 'line_rejected',
+  };
+  var redirectReason = reasonByErrorCode[errorCode] || 'line_error';
+  location.href = '/login?reason=' + redirectReason;
+})();
+<\/script>
+</body>
+</html>`;
     }
 }
 

@@ -90,3 +90,20 @@ Authentication kini menampilkan URL callback yang dihasilkan serta mengisi
 - [0ad1215](https://github.com/le-firehawk/Cognis/commit/0ad1215)
 - [dcc34fc](https://github.com/le-firehawk/Cognis/commit/dcc34fc)
 - [562d0ed](https://github.com/le-firehawk/Cognis/commit/562d0ed)
+
+---
+
+## Alur OAuth LINE dan Manajemen Redirect URI (tindak lanjut)
+
+### Ringkasan
+
+Adapter LINE kini mengelola URI pengalihan OAuth sepenuhnya melalui rute callback bawaannya. Kolom konfigurasi `redirectUri` telah dihapus dari skema adapter — administrator tidak perlu lagi menempelkan URL ke formulir konfigurasi; URL callback tetap ditampilkan sebagai informasi hanya-baca di popup admin.
+
+Rute callback di `/auth/line/callback` kini menyajikan halaman HTML mandiri saat LINE mengarahkan kembali dengan kode otorisasi. Halaman tersebut memvalidasi status PKCE, menukar kode otorisasi dengan sesi, menyimpan kredensial di `localStorage`, dan mengarahkan ke `/dashboard`. Jika gagal, pengguna diarahkan ke `/login` dengan kode alasan yang sesuai.
+
+Endpoint API baru `/api/v1/auth/line/init` mengekspos ID saluran, pengaturan PKCE, URL endpoint otorisasi, dan cakupan agar halaman login dan register dapat memulai pengalihan OAuth tanpa mengkodekan konstanta khusus LINE secara langsung.
+
+Baik halaman login maupun register kini menyertakan tombol "Masuk dengan LINE" melalui sistem penyedia SSO. Mengkliknya menampilkan popup pengungkapan data LINE; setelah konfirmasi, pengaturan PKCE dilakukan dan pengguna diarahkan ke halaman otorisasi LINE.
+
+Modul baru `src/ui/reuse/oauth-pkce.js` menyediakan fungsi pembantu PKCE generik dan dapat digunakan kembali (`generateRandomString`, `generateCodeChallenge`, `buildAuthorizationUrl`) yang digunakan oleh kedua halaman autentikasi.
+

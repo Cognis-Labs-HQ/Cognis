@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
-test("auth admin section surfaces managed callback URL metadata and prefills redirectUri", () => {
+test("auth admin section surfaces managed callback URL metadata", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/auth/ui/admin-section.js"),
         "utf8",
@@ -19,6 +19,4 @@ test("auth admin section surfaces managed callback URL metadata and prefills red
     );
     assert.match(source, /gateway\.auth\.managed_callback\.title/);
     assert.match(source, /gateway\.auth\.managed_callback\.body/);
-    assert.match(source, /field\.key === "redirectUri"/);
-    assert.match(source, /currentVal = managedRedirectUrl/);
 });

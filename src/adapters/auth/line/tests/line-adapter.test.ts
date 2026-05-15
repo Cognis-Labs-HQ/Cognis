@@ -2,34 +2,37 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createAdapter } from "../index.js";
 
-test("line adapter config schema includes PKCE/mobile fields", () => {
+test("line adapter config schema includes required fields and PKCE toggle", () => {
     const adapter = createAdapter();
     const keys = adapter.getConfigSchema().map((field) => field.key);
     assert.ok(keys.includes("channelId"));
-    assert.ok(keys.includes("redirectUri"));
     assert.ok(keys.includes("usePkce"));
+    assert.equal(
+        keys.includes("redirectUri"),
+        false,
+        "redirectUri must not appear in schema — it is managed by Cognis via the built-in callback route",
+    );
 });
 
-test("line adapter schema provides hints for channelId and redirectUri", () => {
+test("line adapter channelId schema field carries a descriptive hint", () => {
     const adapter = createAdapter();
     const schema = adapter.getConfigSchema();
     const channelIdField = schema.find((field) => field.key === "channelId");
-    const redirectUriField = schema.find(
-        (field) => field.key === "redirectUri",
-    );
     assert.ok(
         channelIdField?.hint,
         "channelId schema field should carry a hint",
     );
-    assert.ok(
-        redirectUriField?.hint,
-        "redirectUri schema field should carry a hint",
-    );
 });
 
-test("line adapter exposes a Cognis-managed redirect path and registers its callback route", async () => {
+test("line adapter exposes a Cognis-managed redirect path", () => {
     const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
         getManagedRedirectPath(): string;
+    };
+    assert.equal(adapter.getManagedRedirectPath(), "/auth/line/callback");
+});
+
+test("line adapter init route returns 503 when channelId is not configured", async () => {
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
         registerRoutes(context: {
             registerRoute(
                 handler: (
@@ -46,42 +49,199 @@ test("line adapter exposes a Cognis-managed redirect path and registers its call
             ): void;
         }): void;
     };
-    assert.equal(adapter.getManagedRedirectPath(), "/auth/line/callback");
 
-    let registeredHandler:
-        | ((req: { method?: string }, res: any, url: URL) => Promise<boolean>)
-        | null = null;
+    const registeredHandlers: Array<
+        (req: { method?: string }, res: any, url: URL) => Promise<boolean>
+    > = [];
     adapter.registerRoutes({
         registerRoute(handler) {
-            registeredHandler = handler;
+            registeredHandlers.push(handler);
         },
     });
 
-    assert.ok(
-        registeredHandler,
-        "line adapter should register a callback route",
-    );
+    const initHandler = registeredHandlers[0];
+    assert.ok(initHandler, "init route handler should be registered");
 
     let statusCode = 0;
-    let allowHeader = "";
-    let payload = "unset";
-    const handled = await registeredHandler!(
+    let responseBody = "";
+    const handled = await initHandler(
+        { method: "GET" },
+        {
+            writeHead(code: number) {
+                statusCode = code;
+            },
+            end(payload = "") {
+                responseBody = payload;
+            },
+        },
+        new URL("http://localhost/api/v1/auth/line/init"),
+    );
+    assert.equal(handled, true);
+    assert.equal(statusCode, 503);
+    const parsed = JSON.parse(responseBody);
+    assert.equal(parsed.error.code, "not_configured");
+});
+
+test("line adapter init route returns channel metadata when configured", async () => {
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
+        registerRoutes(context: {
+            registerRoute(
+                handler: (
+                    req: { method?: string },
+                    res: {
+                        writeHead(
+                            code: number,
+                            headers?: Record<string, string>,
+                        ): void;
+                        end(payload?: string): void;
+                    },
+                    url: URL,
+                ) => Promise<boolean>,
+            ): void;
+        }): void;
+    };
+    adapter.configure({ channelId: "test-channel", usePkce: true });
+
+    const registeredHandlers: Array<
+        (req: { method?: string }, res: any, url: URL) => Promise<boolean>
+    > = [];
+    adapter.registerRoutes({
+        registerRoute(handler) {
+            registeredHandlers.push(handler);
+        },
+    });
+
+    const initHandler = registeredHandlers[0];
+    let statusCode = 0;
+    let responseBody = "";
+    const handled = await initHandler(
+        { method: "GET" },
+        {
+            writeHead(code: number) {
+                statusCode = code;
+            },
+            end(payload = "") {
+                responseBody = payload;
+            },
+        },
+        new URL("http://localhost/api/v1/auth/line/init"),
+    );
+    assert.equal(handled, true);
+    assert.equal(statusCode, 200);
+    const parsed = JSON.parse(responseBody);
+    assert.equal(parsed.data.channelId, "test-channel");
+    assert.equal(parsed.data.managedRedirectPath, "/auth/line/callback");
+    assert.equal(typeof parsed.data.authorizationEndpoint, "string");
+    assert.ok(parsed.data.authorizationEndpoint.length > 0);
+    assert.equal(parsed.data.usePkce, true);
+    assert.equal(typeof parsed.data.scope, "string");
+});
+
+test("line adapter callback route serves HTML handoff page when code param is present", async () => {
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
+        registerRoutes(context: {
+            registerRoute(
+                handler: (
+                    req: { method?: string },
+                    res: {
+                        writeHead(
+                            code: number,
+                            headers?: Record<string, string>,
+                        ): void;
+                        end(payload?: string): void;
+                    },
+                    url: URL,
+                ) => Promise<boolean>,
+            ): void;
+        }): void;
+    };
+
+    const registeredHandlers: Array<
+        (req: { method?: string }, res: any, url: URL) => Promise<boolean>
+    > = [];
+    adapter.registerRoutes({
+        registerRoute(handler) {
+            registeredHandlers.push(handler);
+        },
+    });
+
+    const callbackHandler = registeredHandlers[1];
+    assert.ok(callbackHandler, "callback route handler should be registered");
+
+    let statusCode = 0;
+    let contentType = "";
+    let responseBody = "";
+    const handled = await callbackHandler(
         { method: "GET" },
         {
             writeHead(code: number, headers?: Record<string, string>) {
                 statusCode = code;
-                allowHeader = headers?.allow ?? "";
+                contentType = headers?.["content-type"] ?? "";
             },
-            end(nextPayload = "") {
-                payload = nextPayload;
+            end(payload = "") {
+                responseBody = payload;
+            },
+        },
+        new URL("http://localhost/auth/line/callback?code=abc&state=xyz"),
+    );
+    assert.equal(handled, true);
+    assert.equal(statusCode, 200);
+    assert.ok(
+        contentType.startsWith("text/html"),
+        "callback with code should respond with HTML",
+    );
+    assert.ok(
+        responseBody.includes("<!DOCTYPE html>"),
+        "response should be a complete HTML document",
+    );
+});
+
+test("line adapter callback route returns 204 when no code param is present", async () => {
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
+        registerRoutes(context: {
+            registerRoute(
+                handler: (
+                    req: { method?: string },
+                    res: {
+                        writeHead(
+                            code: number,
+                            headers?: Record<string, string>,
+                        ): void;
+                        end(payload?: string): void;
+                    },
+                    url: URL,
+                ) => Promise<boolean>,
+            ): void;
+        }): void;
+    };
+
+    const registeredHandlers: Array<
+        (req: { method?: string }, res: any, url: URL) => Promise<boolean>
+    > = [];
+    adapter.registerRoutes({
+        registerRoute(handler) {
+            registeredHandlers.push(handler);
+        },
+    });
+
+    const callbackHandler = registeredHandlers[1];
+    let statusCode = 0;
+    let responseBody = "unset";
+    const handled = await callbackHandler(
+        { method: "GET" },
+        {
+            writeHead(code: number) {
+                statusCode = code;
+            },
+            end(payload = "") {
+                responseBody = payload;
             },
         },
         new URL("http://localhost/auth/line/callback"),
     );
     assert.equal(handled, true);
     assert.equal(statusCode, 204);
-    assert.equal(payload, "");
-    assert.equal(allowHeader, "");
+    assert.equal(responseBody, "");
 });
 
 test("line adapter authenticates via authorization code and syncs profile fields", async () => {

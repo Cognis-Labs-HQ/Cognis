@@ -92,3 +92,32 @@ present.
 - [0ad1215](https://github.com/le-firehawk/Cognis/commit/0ad1215)
 - [dcc34fc](https://github.com/le-firehawk/Cognis/commit/dcc34fc)
 - [562d0ed](https://github.com/le-firehawk/Cognis/commit/562d0ed)
+
+---
+
+## LINE OAuth Flow and Redirect URI Management (follow-up)
+
+### Summary
+
+The LINE adapter now manages the OAuth redirect URI entirely via its built-in callback route. The `redirectUri` configuration field has been removed from the adapter schema — admins no longer need to paste the URL into the config form; the callback URL is displayed read-only in the admin popup as before.
+
+The callback route at `/auth/line/callback` now serves a self-contained HTML handoff page when LINE redirects back with an authorization code. The page validates the PKCE state, exchanges the authorization code for a session, stores credentials in `localStorage`, and redirects to `/dashboard`. On failure it redirects to `/login` with an appropriate reason code.
+
+A new `/api/v1/auth/line/init` API endpoint exposes the channel ID, PKCE settings, authorization endpoint URL, and scope so the login and register pages can initiate the OAuth redirect without hardcoding LINE-specific constants.
+
+Both the login and register pages now include a "Login with LINE" button via the SSO provider system. Clicking it shows the LINE data disclosure popup; on confirmation it performs PKCE setup (`generateRandomString`, `generateCodeChallenge` from the new `oauth-pkce.js` reuse module) and redirects to LINE's authorization page.
+
+A new `src/ui/reuse/oauth-pkce.js` module provides generic, reusable PKCE helpers (`generateRandomString`, `generateCodeChallenge`, `buildAuthorizationUrl`) consumed by both auth pages.
+
+### Changed Files / Components
+
+- `src/adapters/auth/line/index.ts` — removed `redirectUri` from config schema; relaxed `authenticate()` guard; added `/api/v1/auth/line/init` route; callback serves HTML handoff page when `?code=` is present
+- `src/adapters/auth/line/package.json` — bumped to 0.4.0
+- `src/gateways/auth/ui/admin-section.js` — removed dead `redirectUri` auto-prefill block
+- `src/gateways/auth/tests/admin-section.test.js` — updated to match removed prefill
+- `src/ui/reuse/oauth-pkce.js` — new PKCE helpers module
+- `src/ui/app/login/index.js` — LINE button now initiates OAuth redirect; added LINE error reason codes
+- `src/ui/app/register/index.js` — added SSO buttons section with LINE support
+- `src/ui/languages/{en,de,ja,id}/strings.xml` — added LINE error and reason code strings
+- `src/adapters/auth/line/tests/line-adapter.test.ts` — updated schema tests; added init route and HTML callback tests
+- `src/docs/versions.en.md` — bumped LINE adapter to 0.4.0

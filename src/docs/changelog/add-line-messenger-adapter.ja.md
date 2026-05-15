@@ -88,3 +88,20 @@ ID を `unlinked` として記録し、アカウントを無効化し、トー�
 - [0ad1215](https://github.com/le-firehawk/Cognis/commit/0ad1215)
 - [dcc34fc](https://github.com/le-firehawk/Cognis/commit/dcc34fc)
 - [562d0ed](https://github.com/le-firehawk/Cognis/commit/562d0ed)
+
+---
+
+## LINE OAuth フローとリダイレクト URI の管理（フォローアップ）
+
+### 概要
+
+LINE アダプターは、組み込みのコールバックルートを通じて OAuth リダイレクト URI を完全に管理するようになりました。`redirectUri` 設定フィールドはアダプタースキーマから削除されました。管理者はコンフィグフォームに URL を貼り付ける必要がなくなりました。コールバック URL は引き続き管理ポップアップに読み取り専用で表示されます。
+
+`/auth/line/callback` のコールバックルートは、LINE が認可コードとともにリダイレクトしてきた際に、独立した HTML ハンドオフページを提供するようになりました。このページは PKCE の状態を検証し、認可コードをセッションと交換し、`localStorage` に認証情報を保存したうえで `/dashboard` にリダイレクトします。失敗した場合は、適切な理由コードとともに `/login` にリダイレクトします。
+
+新しい API エンドポイント `/api/v1/auth/line/init` は、チャンネル ID、PKCE 設定、認可エンドポイント URL、スコープを提供します。これにより、ログインページと登録ページは LINE 固有の定数をハードコードすることなく OAuth リダイレクトを開始できます。
+
+ログインページと登録ページの両方に、SSO プロバイダーシステムを通じて「LINE でログイン」ボタンが追加されました。クリックすると LINE のデータ開示ポップアップが表示され、確認後に PKCE のセットアップが行われ、LINE の認可ページにリダイレクトされます。
+
+新しいモジュール `src/ui/reuse/oauth-pkce.js` は、汎用的で再利用可能な PKCE ヘルパー関数（`generateRandomString`、`generateCodeChallenge`、`buildAuthorizationUrl`）を提供し、両方の認証ページで使用されます。
+

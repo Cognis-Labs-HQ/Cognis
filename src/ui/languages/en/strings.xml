@@ -174,6 +174,11 @@
   <string name="ui.app.login.line_disclosure.body_followup">By continuing, you agree that your email address may be disclosed by LINE to Cognis for account authentication and registration workflows.</string>
   <string name="ui.app.login.line_disclosure.confirm">Continue with LINE</string>
   <string name="ui.app.login.line_disclosure.cancel">Cancel</string>
+  <string name="ui.app.login.error.line_unavailable">LINE sign-in is not available. Please try again later.</string>
+  <string name="ui.app.login.reason.line_cancelled">LINE sign-in was cancelled.</string>
+  <string name="ui.app.login.reason.line_error">LINE sign-in failed. Please try again.</string>
+  <string name="ui.app.login.reason.line_pending_approval">Your registration request is pending admin approval.</string>
+  <string name="ui.app.login.reason.line_rejected">Your registration request was rejected by an admin.</string>
   <string name="ui.app.demo.switched">Demo: switched to sandbox page.</string>
   <string name="ui.app.demo.added">Demo: added a learning progress widget.</string>
   <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>

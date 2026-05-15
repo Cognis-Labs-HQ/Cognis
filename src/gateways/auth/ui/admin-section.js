@@ -104,14 +104,7 @@ export function createAdminSection({
                 : "";
             const fields = schema
                 .map((field) => {
-                    let currentVal = storedConfig[field.key] ?? "";
-                    if (
-                        field.key === "redirectUri" &&
-                        !String(currentVal).trim() &&
-                        managedRedirectUrl
-                    ) {
-                        currentVal = managedRedirectUrl;
-                    }
+                    const currentVal = storedConfig[field.key] ?? "";
                     const requiredAttr = field.required ? " required" : "";
                     const requiredMark = field.required
                         ? ' <span class="auth-config-required">*</span>'

@@ -91,3 +91,20 @@ das Authentifizierungs-Popup zeigt nun die generierte Callback-URL an und füllt
 - [0ad1215](https://github.com/le-firehawk/Cognis/commit/0ad1215)
 - [dcc34fc](https://github.com/le-firehawk/Cognis/commit/dcc34fc)
 - [562d0ed](https://github.com/le-firehawk/Cognis/commit/562d0ed)
+
+---
+
+## LINE-OAuth-Ablauf und Redirect-URI-Verwaltung (Folgemaßnahme)
+
+### Zusammenfassung
+
+Der LINE-Adapter verwaltet die OAuth-Weiterleitungs-URI nun vollständig über seine integrierte Callback-Route. Das Konfigurationsfeld `redirectUri` wurde aus dem Adapter-Schema entfernt — Administratoren müssen die URL nicht mehr manuell in das Konfigurationsformular eintragen; die Callback-URL wird weiterhin schreibgeschützt im Admin-Popup angezeigt.
+
+Die Callback-Route unter `/auth/line/callback` stellt nun eine eigenständige HTML-Seite bereit, wenn LINE nach einer erfolgreichen Autorisierung zurückleitet. Die Seite überprüft den PKCE-Status, tauscht den Autorisierungscode gegen eine Sitzung ein, speichert die Zugangsdaten in `localStorage` und leitet zu `/dashboard` weiter. Bei einem Fehler wird der Nutzer mit einem entsprechenden Grundcode zu `/login` weitergeleitet.
+
+Ein neuer API-Endpunkt `/api/v1/auth/line/init` stellt Kanal-ID, PKCE-Einstellungen, Autorisierungs-Endpunkt-URL und Scopes bereit, sodass die Login- und Registrierungsseiten den OAuth-Redirect starten können, ohne LINE-spezifische Konstanten fest zu kodieren.
+
+Sowohl die Login- als auch die Registrierungsseite erhalten über das SSO-Anbietersystem eine „Mit LINE anmelden"-Schaltfläche. Ein Klick zeigt das LINE-Datenschutz-Popup; nach Bestätigung wird die PKCE-Einrichtung durchgeführt und der Nutzer zur LINE-Autorisierungsseite weitergeleitet.
+
+Das neue Modul `src/ui/reuse/oauth-pkce.js` stellt generische, wiederverwendbare PKCE-Hilfsfunktionen (`generateRandomString`, `generateCodeChallenge`, `buildAuthorizationUrl`) bereit, die von beiden Authentifizierungsseiten genutzt werden.
+
