@@ -40,10 +40,13 @@ CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 
 ## Konfiguration
 
-| Variable           | Standard     | Beschreibung                                        |
-| ------------------ | ------------ | --------------------------------------------------- |
-| `DB_TYPE`          | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`      |
-| `DATABASE_URL`     | —            | Verbindungszeichenkette für PostgreSQL oder MariaDB |
-| `LOG_LEVEL`        | `info`       | Log-Ausführlichkeit                                 |
-| `PORT`             | `3000`       | HTTP-Port                                           |
-| `COGNIS_SMTP_HOST` | —            | SMTP-Server-Hostname                                |
+| Variable               | Standard     | Beschreibung                                        |
+| ---------------------- | ------------ | --------------------------------------------------- |
+| `DB_TYPE`              | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`      |
+| `DATABASE_URL`         | —            | Verbindungszeichenkette für PostgreSQL oder MariaDB |
+| `LOG_LEVEL`            | `info`       | Ausführlichkeit des Laufzeit-Logstreams             |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotiert die aktive Logdatei ab dieser Größe (Bytes) |
+| `LOG_ROTATE_MAX_FILES` | `10`         | Anzahl der aufzubewahrenden rotierten Logarchive    |
+| `LOG_ROTATE_COMPRESS`  | `true`       | Komprimiert rotierte Logs als gzip (`.gz`)          |
+| `PORT`                 | `3000`       | HTTP-Port                                           |
+| `COGNIS_SMTP_HOST`     | —            | SMTP-Server-Hostname                                |

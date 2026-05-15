@@ -162,6 +162,200 @@ test("logging stream route returns filtered event stream logs", async () => {
     }
 });
 
+test("logging stream route treats severity as a threshold", async () => {
+    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
+    const logPath = path.join(tempRoot, "app.log");
+    const previousLogFile = process.env.LOG_FILE;
+    process.env.LOG_FILE = logPath;
+
+    try {
+        await writeFile(
+            logPath,
+            [
+                JSON.stringify({
+                    ts: "2026-05-09T00:00:00.000Z",
+                    level: "info",
+                    message: "Informational entry",
+                }),
+                JSON.stringify({
+                    ts: "2026-05-09T00:00:01.000Z",
+                    level: "warn",
+                    message: "Warning entry",
+                }),
+                JSON.stringify({
+                    ts: "2026-05-09T00:00:02.000Z",
+                    level: "error",
+                    message: "Error entry",
+                }),
+            ].join("\n") + "\n",
+            "utf8",
+        );
+
+        const ctx = await makeContext();
+        await bootstrap(ctx as any);
+
+        const handlers = ctx.routeRegistry.getHandlers();
+        const streamHandler = handlers[0];
+        const token = issueAccessToken("admin-test", "admin", 300);
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
+
+        const handled = await streamHandler(
+            req as any,
+            res as any,
+            new URL("/api/v1/logging/stream?severity=warn", "http://localhost"),
+        );
+
+        assert.equal(handled, true);
+        assert.match(res.payload, /Warning entry/);
+        assert.match(res.payload, /Error entry/);
+        assert.doesNotMatch(res.payload, /Informational entry/);
+
+        req.emit("close");
+        res.emit("close");
+    } finally {
+        if (previousLogFile === undefined) {
+            delete process.env.LOG_FILE;
+        } else {
+            process.env.LOG_FILE = previousLogFile;
+        }
+        await rm(tempRoot, { recursive: true, force: true });
+    }
+});
+
+test("logging stream route ignores invalid multi-value severity thresholds", async () => {
+    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
+    const logPath = path.join(tempRoot, "app.log");
+    const previousLogFile = process.env.LOG_FILE;
+    process.env.LOG_FILE = logPath;
+
+    try {
+        await writeFile(
+            logPath,
+            [
+                JSON.stringify({
+                    ts: "2026-05-09T00:00:00.000Z",
+                    level: "info",
+                    message: "Informational entry",
+                }),
+                JSON.stringify({
+                    ts: "2026-05-09T00:00:01.000Z",
+                    level: "error",
+                    message: "Error entry",
+                }),
+            ].join("\n") + "\n",
+            "utf8",
+        );
+
+        const ctx = await makeContext();
+        await bootstrap(ctx as any);
+
+        const handlers = ctx.routeRegistry.getHandlers();
+        const streamHandler = handlers[0];
+        const token = issueAccessToken("admin-test", "admin", 300);
+
+        const invalidSeverityValues = [
+            "warn,error",
+            "info,warn,error",
+            "debug,error",
+            "warn, error",
+            ",",
+            " , ",
+            "warn,",
+            "warn,,",
+        ];
+        for (const invalidSeverityValue of invalidSeverityValues) {
+            const req = new RequestRecorder("GET", token);
+            const res = new ResponseRecorder();
+            const handled = await streamHandler(
+                req as any,
+                res as any,
+                new URL(
+                    `/api/v1/logging/stream?severity=${encodeURIComponent(invalidSeverityValue)}`,
+                    "http://localhost",
+                ),
+            );
+
+            assert.equal(handled, true);
+            assert.equal(res.statusCode, 200);
+            assert.match(res.payload, /Informational entry/);
+            assert.match(res.payload, /Error entry/);
+            assert.doesNotMatch(res.payload, /event: snapshot_error/);
+            req.emit("close");
+            res.emit("close");
+        }
+    } finally {
+        if (previousLogFile === undefined) {
+            delete process.env.LOG_FILE;
+        } else {
+            process.env.LOG_FILE = previousLogFile;
+        }
+        await rm(tempRoot, { recursive: true, force: true });
+    }
+});
+
+test("logging stream route is not constrained by LOG_LEVEL", async () => {
+    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
+    const logPath = path.join(tempRoot, "app.log");
+    const previousLogFile = process.env.LOG_FILE;
+    const previousLogLevel = process.env.LOG_LEVEL;
+    process.env.LOG_FILE = logPath;
+    process.env.LOG_LEVEL = "error";
+
+    try {
+        await writeFile(
+            logPath,
+            [
+                JSON.stringify({
+                    ts: "2026-05-09T00:00:00.000Z",
+                    level: "info",
+                    message: "Informational entry",
+                }),
+                JSON.stringify({
+                    ts: "2026-05-09T00:00:01.000Z",
+                    level: "error",
+                    message: "Error entry",
+                }),
+            ].join("\n") + "\n",
+            "utf8",
+        );
+
+        const ctx = await makeContext();
+        await bootstrap(ctx as any);
+
+        const handlers = ctx.routeRegistry.getHandlers();
+        const streamHandler = handlers[0];
+        const token = issueAccessToken("admin-test", "admin", 300);
+        const req = new RequestRecorder("GET", token);
+        const res = new ResponseRecorder();
+
+        const handled = await streamHandler(
+            req as any,
+            res as any,
+            new URL("/api/v1/logging/stream", "http://localhost"),
+        );
+
+        assert.equal(handled, true);
+        assert.match(res.payload, /Error entry/);
+        assert.match(res.payload, /Informational entry/);
+
+        req.emit("close");
+        res.emit("close");
+    } finally {
+        if (previousLogFile === undefined) {
+            delete process.env.LOG_FILE;
+        } else {
+            process.env.LOG_FILE = previousLogFile;
+        }
+        if (previousLogLevel === undefined) {
+            delete process.env.LOG_LEVEL;
+        } else {
+            process.env.LOG_LEVEL = previousLogLevel;
+        }
+        await rm(tempRoot, { recursive: true, force: true });
+    }
+});
+
 test("logging stream route applies time range filtering", async () => {
     const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
     const logPath = path.join(tempRoot, "app.log");

@@ -11,21 +11,26 @@ import {
 type LogLevel = "debug" | "info" | "warn" | "error";
 
 const ALLOWED_LEVELS = new Set<LogLevel>(["debug", "info", "warn", "error"]);
+const DEFAULT_ROTATE_MAX_BYTES = 10 * 1024 * 1024;
+const DEFAULT_ROTATE_MAX_FILES = 10;
 const MAX_KEYWORD_LENGTH = 120;
 const MAX_SNAPSHOT_ENTRIES = 300;
 const STREAM_POLL_INTERVAL_MS = 1500;
 const STREAM_HEARTBEAT_INTERVAL_MS = 15000;
+const LEVEL_PRIORITY: Record<LogLevel, number> = {
+    debug: 10,
+    info: 20,
+    warn: 30,
+    error: 40,
+};
 
-function parseLevelFilter(value: string | null): Set<LogLevel> | null {
+function parseSeverityThreshold(value: string | null): LogLevel | null {
     if (!value || value === "all") return null;
-    const levels = value
-        .split(",")
-        .map((part) => part.trim().toLowerCase())
-        .filter((part): part is LogLevel =>
-            ALLOWED_LEVELS.has(part as LogLevel),
-        );
-    if (!levels.length) return null;
-    return new Set(levels);
+    const normalizedValue = value.trim().toLowerCase();
+    // Severity filtering accepts exactly one threshold level.
+    if (normalizedValue.includes(",")) return null;
+    if (!ALLOWED_LEVELS.has(normalizedValue as LogLevel)) return null;
+    return normalizedValue as LogLevel;
 }
 
 function parseKeywordFilter(value: string | null): string {
@@ -75,12 +80,18 @@ function normalizeLogEntry(rawLine: string): Record<string, unknown> {
 
 function matchesFilters(
     entry: Record<string, unknown>,
-    severities: Set<LogLevel> | null,
+    severityThreshold: LogLevel | null,
     keyword: string,
     timeRangeMs: number | null,
 ): boolean {
     const level = String(entry.level ?? "").toLowerCase() as LogLevel;
-    if (severities && !severities.has(level)) {
+    if (!ALLOWED_LEVELS.has(level)) {
+        return false;
+    }
+    if (
+        severityThreshold &&
+        LEVEL_PRIORITY[level] < LEVEL_PRIORITY[severityThreshold]
+    ) {
         return false;
     }
     if (timeRangeMs !== null) {
@@ -133,7 +144,9 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
         const claims = requireAuth(req, res, "admin");
         if (!claims) return true;
 
-        const severities = parseLevelFilter(url.searchParams.get("severity"));
+        const severityThreshold = parseSeverityThreshold(
+            url.searchParams.get("severity"),
+        );
         const keyword = parseKeywordFilter(url.searchParams.get("keyword"));
         const timeRangeMs = parseTimeRangeFilter(
             url.searchParams.get("timeRange"),
@@ -144,7 +157,7 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
         let closed = false;
 
         const pushEntry = (entry: Record<string, unknown>) => {
-            if (!matchesFilters(entry, severities, keyword, timeRangeMs))
+            if (!matchesFilters(entry, severityThreshold, keyword, timeRangeMs))
                 return;
             writeSseEvent(res, "log", { id: seq++, ...entry });
         };
@@ -168,7 +181,12 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
                     .filter((line) => line.length > 0)
                     .map((line) => normalizeLogEntry(line))
                     .filter((entry) =>
-                        matchesFilters(entry, severities, keyword, timeRangeMs),
+                        matchesFilters(
+                            entry,
+                            severityThreshold,
+                            keyword,
+                            timeRangeMs,
+                        ),
                     );
                 for (const entry of entries.slice(-MAX_SNAPSHOT_ENTRIES)) {
                     writeSseEvent(res, "log", { id: seq++, ...entry });
@@ -273,7 +291,7 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
             component: "logging-gateway",
             operation: "stream_open",
             accountId: claims.sub,
-            severityFilter: severities ? Array.from(severities) : "all",
+            severityThreshold: severityThreshold ?? "all",
             keyword: keyword || undefined,
             timeRangeMs: timeRangeMs ?? "all",
         });
@@ -311,13 +329,36 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             | undefined) ?? "info";
     const filePath = process.env.LOG_FILE ?? "/app/logs/app.log";
     const consoleFormat = process.env.LOG_FORMAT === "json" ? "json" : "pretty";
+    const parsedRotateMaxBytes = Number.parseInt(
+        process.env.LOG_ROTATE_MAX_BYTES ?? String(DEFAULT_ROTATE_MAX_BYTES),
+        10,
+    );
+    const rotateMaxBytes =
+        Number.isFinite(parsedRotateMaxBytes) && parsedRotateMaxBytes > 0
+            ? parsedRotateMaxBytes
+            : DEFAULT_ROTATE_MAX_BYTES;
+    const parsedRotateMaxFiles = Number.parseInt(
+        process.env.LOG_ROTATE_MAX_FILES ?? String(DEFAULT_ROTATE_MAX_FILES),
+        10,
+    );
+    const rotateMaxFiles =
+        Number.isFinite(parsedRotateMaxFiles) && parsedRotateMaxFiles >= 0
+            ? parsedRotateMaxFiles
+            : DEFAULT_ROTATE_MAX_FILES;
+    const rotateCompress =
+        process.env.LOG_ROTATE_COMPRESS !== "0" &&
+        process.env.LOG_ROTATE_COMPRESS !== "false";
 
     const fileAppend =
         ctx.capabilities.get<(fp: string, content: string) => Promise<void>>(
             "file:append",
         );
 
-    const logger = new Logger(level, filePath, fileAppend, consoleFormat);
+    const logger = new Logger(level, filePath, fileAppend, consoleFormat, {
+        maxBytes: rotateMaxBytes,
+        maxFiles: rotateMaxFiles,
+        compressRotated: rotateCompress,
+    });
 
     ctx.capabilities.contribute("logging:logger", logger);
     ctx.capabilities.contribute(
@@ -349,7 +390,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.4.0",
+        version: "1.5.0",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",
@@ -362,5 +403,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         filePath,
         level,
         consoleFormat,
+        rotateMaxBytes,
+        rotateMaxFiles,
+        rotateCompress,
     });
 }

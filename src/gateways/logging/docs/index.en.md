@@ -10,19 +10,19 @@ The logging gateway must bootstrap after the files gateway. This dependency is d
 
 ## Responsibilities
 
-- Create a `Logger` instance configured from `LOG_LEVEL`, `LOG_FILE`, and `LOG_FORMAT`.
+- Create a `Logger` instance configured from `LOG_LEVEL`, `LOG_FILE`, `LOG_FORMAT`, and rotation environment variables.
 - Contribute `logging:logger` (the full `Logger` instance) and `logging:log` (a plain log function) to the capability store.
 - Route log file writes through `file:append` when available.
 - Expose `GET /api/v1/logging/stream` for the Administration → Logs page (admin-only SSE stream with severity and keyword filters).
 - Register the `logging` gateway in the gateway registry.
 
-Not responsible for: log aggregation, log rotation, or log shipping to external systems.
+Not responsible for: log aggregation or log shipping to external systems.
 
 ## Architecture
 
 ### Logger class
 
-`Logger` in `src/gateways/logging/logger.ts` accepts a `LogLevel`, a file path, an optional `FileAppend` function, and a console-output format. Every call to `log(level, message, meta?)` writes a human-readable console line by default while appending the same event as a single-line JSON object to the log file.
+`Logger` in `src/gateways/logging/logger.ts` accepts a `LogLevel`, a file path, an optional `FileAppend` function, a console-output format, and optional rotation settings. Every call to `log(level, message, meta?)` writes a console line and appends the same event as a single-line JSON object to the log file.
 
 ```ts
 export class Logger {
@@ -31,6 +31,7 @@ export class Logger {
         filePath: string,
         fileAppend?: FileAppend,
         consoleFormat?: ConsoleLogFormat,
+        rotationOptions?: LoggerRotationOptions,
     );
     async log(
         level: LogLevel,
@@ -44,7 +45,7 @@ export class Logger {
 }
 ```
 
-Log levels in priority order: `debug` (10), `info` (20), `warn` (30), `error` (40). Messages below the configured level are dropped silently.
+Log levels in priority order: `debug` (10), `info` (20), `warn` (30), `error` (40). `LOG_LEVEL` filters the runtime log stream output (stdout/stderr); persistent log-file writes always include all levels.
 
 Persistent log lines remain JSON objects:
 
@@ -74,7 +75,11 @@ const fileAppend =
         "file:append",
     );
 const consoleFormat = process.env.LOG_FORMAT === "json" ? "json" : "pretty";
-const logger = new Logger(level, filePath, fileAppend, consoleFormat);
+const logger = new Logger(level, filePath, fileAppend, consoleFormat, {
+    maxBytes: rotateMaxBytes,
+    maxFiles: rotateMaxFiles,
+    compressRotated: rotateCompress,
+});
 ```
 
 If `file:append` is absent (the capability store returns `undefined`), the `Logger` constructor uses its own `defaultFileAppend` implementation backed by Node's `appendFile`.
@@ -83,8 +88,11 @@ The DB gateway uses the shared logger for its own events but records only summar
 
 ## Configuration
 
-| Variable     | Default             | Description                                                              |
-| ------------ | ------------------- | ------------------------------------------------------------------------ |
-| `LOG_LEVEL`  | `info`              | Minimum log level: `debug`, `info`, `warn`, or `error`                   |
-| `LOG_FILE`   | `/app/logs/app.log` | Absolute path for the persistent log file                                |
-| `LOG_FORMAT` | `pretty`            | Console output format: `pretty` for readable logs or `json` for raw JSON |
+| Variable               | Default             | Description                                                              |
+| ---------------------- | ------------------- | ------------------------------------------------------------------------ |
+| `LOG_LEVEL`            | `info`              | Runtime log-stream verbosity filter: `debug`, `info`, `warn`, `error`    |
+| `LOG_FILE`             | `/app/logs/app.log` | Absolute path for the persistent log file                                |
+| `LOG_FORMAT`           | `pretty`            | Console output format: `pretty` for readable logs or `json` for raw JSON |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`          | Rotate the active log file when it reaches this size (bytes)             |
+| `LOG_ROTATE_MAX_FILES` | `10`                | Number of rotated log archives to keep (`0` keeps none)                  |
+| `LOG_ROTATE_COMPRESS`  | `true`              | When `true`, rotated logs are gzip-compressed (`.gz`)                    |

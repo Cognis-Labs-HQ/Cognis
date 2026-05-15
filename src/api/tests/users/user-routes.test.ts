@@ -125,7 +125,7 @@ test("user routes log account disable operations", async () => {
     assert.equal(status, 200);
     assert.deepEqual(entries, [
         {
-            level: "info",
+            level: "warn",
             message: "Disabled user account.",
             meta: {
                 component: "api-users",

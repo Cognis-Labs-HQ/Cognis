@@ -51,7 +51,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Social                | `src/gateways/social/`       | `1.2.1` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
 | Registration          | `src/gateways/registration/` | `1.1.4` |
-| Logging               | `src/gateways/logging/`      | `1.4.0` |
+| Logging               | `src/gateways/logging/`      | `1.5.0` |
 | Study                 | `src/gateways/study/`        | `1.5.2` |
 
 ## Core contracts

@@ -291,7 +291,7 @@ export function createUserRoutes(
                 String(body.password ?? "changeme"),
                 role === "admin",
             );
-            log?.("info", "Created user account.", {
+            log?.("warn", "Created user account.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: created.username,
@@ -339,14 +339,14 @@ export function createUserRoutes(
             await setProfileRole?.(username, role);
             if (role === "teacher") {
                 await setProfileVisibility?.(username, "friends");
-                log?.("info", "Updated teacher visibility default.", {
+                log?.("warn", "Updated teacher visibility default.", {
                     ...logMeta,
                     accountId: adminClaims.sub,
                     targetAccountId: username,
                     visibility: "friends",
                 });
             }
-            log?.("info", "Updated user role.", {
+            log?.("warn", "Updated user role.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
@@ -363,7 +363,7 @@ export function createUserRoutes(
                 username,
                 String(body.password ?? "changeme"),
             );
-            log?.("info", "Updated user password.", {
+            log?.("warn", "Updated user password.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
@@ -375,7 +375,7 @@ export function createUserRoutes(
 
         if (req.method === "POST" && action === "enable") {
             await accountStore.setEnabled(username, true);
-            log?.("info", "Enabled user account.", {
+            log?.("warn", "Enabled user account.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
@@ -404,7 +404,7 @@ export function createUserRoutes(
             }
             await accountStore.setEnabled(username, false);
             const revokedCount = revokeAccessTokensForSubject(username);
-            log?.("info", "Disabled user account.", {
+            log?.("warn", "Disabled user account.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
@@ -418,7 +418,7 @@ export function createUserRoutes(
         if (req.method === "POST" && action === "isfounder") {
             const body = await readJson(req);
             await accountStore.setFounder(username, Boolean(body.isFounder));
-            log?.("info", "Updated founder status.", {
+            log?.("warn", "Updated founder status.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
@@ -437,7 +437,7 @@ export function createUserRoutes(
             if (preferenceStore) {
                 await preferenceStore.clearUser(username);
             }
-            log?.("info", "Cleared user preferences.", {
+            log?.("warn", "Cleared user preferences.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
@@ -450,7 +450,7 @@ export function createUserRoutes(
         if (req.method === "DELETE" && !action) {
             const revokedCount = revokeAccessTokensForSubject(username);
             await accountStore.delete(username);
-            log?.("info", "Deleted user account.", {
+            log?.("warn", "Deleted user account.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,

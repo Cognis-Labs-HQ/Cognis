@@ -33,10 +33,13 @@ CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 
 ## 設定
 
-| 変数               | デフォルト   | 説明                                                    |
-| ------------------ | ------------ | ------------------------------------------------------- |
-| `DB_TYPE`          | `postgresql` | データベースバックエンド: `postgresql` または `mariadb` |
-| `DATABASE_URL`     | —            | PostgreSQLまたはMariaDBの接続文字列                     |
-| `LOG_LEVEL`        | `info`       | ログの詳細度                                            |
-| `PORT`             | `3000`       | HTTPポート                                              |
-| `COGNIS_SMTP_HOST` | —            | SMTPサーバーのホスト名                                  |
+| 変数                   | デフォルト   | 説明                                                    |
+| ---------------------- | ------------ | ------------------------------------------------------- |
+| `DB_TYPE`              | `postgresql` | データベースバックエンド: `postgresql` または `mariadb` |
+| `DATABASE_URL`         | —            | PostgreSQLまたはMariaDBの接続文字列                     |
+| `LOG_LEVEL`            | `info`       | ランタイムログストリームの詳細度フィルター              |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`   | このサイズ（バイト）でアクティブログをローテーション    |
+| `LOG_ROTATE_MAX_FILES` | `10`         | 保持するローテーション済みログアーカイブ数              |
+| `LOG_ROTATE_COMPRESS`  | `true`       | ローテーション済みログを gzip（`.gz`）圧縮              |
+| `PORT`                 | `3000`       | HTTPポート                                              |
+| `COGNIS_SMTP_HOST`     | —            | SMTPサーバーのホスト名                                  |
