@@ -103,7 +103,11 @@ async function apiRequest(
         : await response.text();
 
     if (!response.ok)
-        throw new ApiRequestError(response.status, response.statusText, payload);
+        throw new ApiRequestError(
+            response.status,
+            response.statusText,
+            payload,
+        );
 
     return payload;
 }

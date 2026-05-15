@@ -114,10 +114,13 @@ test("user:set-password updates password after existence check succeeds", async 
                 );
             }
             if (requestUrl.endsWith("/api/v1/users/alice/password")) {
-                return new Response(JSON.stringify({ data: { updated: true } }), {
-                    status: 200,
-                    headers: { "content-type": "application/json" },
-                });
+                return new Response(
+                    JSON.stringify({ data: { updated: true } }),
+                    {
+                        status: 200,
+                        headers: { "content-type": "application/json" },
+                    },
+                );
             }
             throw new Error(`Unexpected request: ${requestUrl}`);
         };
@@ -161,7 +164,10 @@ test("all existing-user mutations fail fast on missing users", async () => {
                 if (requestUrl.endsWith("/api/v1/users/ghost/info")) {
                     return new Response(
                         JSON.stringify({
-                            error: { code: "not_found", message: "User not found" },
+                            error: {
+                                code: "not_found",
+                                message: "User not found",
+                            },
                         }),
                         {
                             status: 404,
