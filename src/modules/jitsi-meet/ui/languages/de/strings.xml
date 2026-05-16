@@ -1,4 +1,5 @@
 <resources>
+  <string name="module.jitsi_meet.page_title">Besprechungen</string>
   <string name="module.jitsi_meet.page.subtitle">Sichere Cognis-Meetings erstellen und beitreten</string>
   <string name="module.jitsi_meet.overlay.title">Meeting-Overlay</string>
   <string name="module.jitsi_meet.overlay.select_participants">Ziehe mindestens einen Teilnehmer in die Meeting-Liste, um zu starten.</string>
@@ -32,7 +33,9 @@
   <string name="module.jitsi_meet.participants.selected">Meeting-Teilnehmer</string>
   <string name="module.jitsi_meet.admin.config.title">Jitsi Meet Konfigurieren</string>
   <string name="module.jitsi_meet.admin.config.instance_url">Jitsi-Instanz-URL</string>
+  <string name="module.jitsi_meet.admin.config.instance_url_placeholder">https://jitsi.example.com</string>
   <string name="module.jitsi_meet.admin.config.meeting_prefix">Optionales Meeting-URI-Präfix</string>
+  <string name="module.jitsi_meet.admin.config.meeting_prefix_placeholder">unterricht</string>
   <string name="module.jitsi_meet.admin.config.note">Das Modul bleibt deaktiviert, bis eine gültige Instanz-URL gesetzt ist.</string>
   <string name="module.jitsi_meet.admin.config.save_success">Jitsi-Meet-Konfiguration gespeichert.</string>
   <string name="module.jitsi_meet.admin.config.save_failed">Jitsi-Meet-Konfiguration konnte nicht gespeichert werden.</string>

@@ -149,7 +149,7 @@ export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/modules/jitsi-meet/languages"],
     });
-    applyDocumentTitle(i18n.t("ui.reuse.meetings"));
+    applyDocumentTitle(i18n, "module.jitsi_meet.page_title");
 
     const state = {
         availableParticipants: [],
@@ -754,5 +754,9 @@ export async function mount(root, { signal } = {}) {
 // When the SPA router imports this module it sets __spaRouter=true to prevent
 // direct-load auto-mount side effects; keep direct URL loads working otherwise.
 if (!globalThis.__spaRouter) {
-    await mount(document.querySelector("#app"));
+    try {
+        await mount(document.querySelector("#app"));
+    } catch (error) {
+        console.error(error);
+    }
 }

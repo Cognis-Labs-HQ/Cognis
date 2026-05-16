@@ -134,15 +134,15 @@ function renderModulesContent(modules) {
                 mod?.ui?.componentConfig?.scriptUrl ?? "",
             ).trim();
             const configureButton = componentConfigScriptUrl
-                ? `<button type="button" class="btn-cancel" data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}" data-module-id="${escapeHtml(mod.id)}">${escapeHtml(i18n.t("ui.reuse.configure"))}</button>`
+                ? `<button type="button" class="btn-cancel" data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}" data-module-id="${escapeHtml(mod.id)}" title="${escapeHtml(i18n.t("ui.reuse.configure"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.configure"))}">⚙</button>`
                 : "";
 
             return `
         <details class="module-row" data-module="${mod.id}">
           <summary class="module-row-summary">
             <span class="module-row-title"><strong>${mod.name}</strong></span>
-            <span class="state-pill ${pill.className}">${pill.label}</span>
             ${configureButton}
+            <span class="state-pill ${pill.className}">${pill.label}</span>
             <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
               <input type="checkbox" data-module="${mod.id}" ${mod.status === "enabled" ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
               <span class="slider"></span>
