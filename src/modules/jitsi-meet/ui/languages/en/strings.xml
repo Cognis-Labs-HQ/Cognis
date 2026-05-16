@@ -1,7 +1,7 @@
 <resources>
   <string name="module.jitsi_meet.page_title">Meetings</string>
   <string name="module.jitsi_meet.page.subtitle">Create and Join Secure Cognis Meetings</string>
-  <string name="module.jitsi_meet.overlay.title">Meeting Overlay</string>
+  <string name="module.jitsi_meet.overlay.title">Meeting Window</string>
   <string name="module.jitsi_meet.overlay.select_participants">Drag at least one participant into the meeting list to begin.</string>
   <string name="module.jitsi_meet.overlay.start_meeting">Start Meeting</string>
   <string name="module.jitsi_meet.overlay.auth_required">Authentication Required</string>

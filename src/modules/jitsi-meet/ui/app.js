@@ -764,21 +764,33 @@ export async function mount(root, { signal } = {}) {
             id: "jitsi-participants",
             label: i18n.t("module.jitsi_meet.participants.heading"),
             pinned: true,
-            width: 12,
+            gridSize: {
+                default: [12, 4],
+                min: [8, 3],
+                max: "full",
+            },
             render: () => buildParticipantsMarkup(i18n),
         },
         {
             id: "jitsi-stage",
-            label: i18n.t("ui.reuse.meeting"),
+            label: i18n.t("module.jitsi_meet.overlay.title"),
             pinned: true,
-            width: 6,
+            gridSize: {
+                default: [6, 7],
+                min: [4, 6],
+                max: [6, 8],
+            },
             render: () => buildStageMarkup(i18n),
         },
         {
             id: "jitsi-chat",
             label: i18n.t("module.jitsi_meet.chat.heading"),
             pinned: true,
-            width: 6,
+            gridSize: {
+                default: [6, 7],
+                min: [4, 6],
+                max: [6, 8],
+            },
             render: () => buildChatMarkup(i18n),
         },
     ];
@@ -791,6 +803,7 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("ui.reuse.meetings"),
             subtitle: i18n.t("module.jitsi_meet.page.subtitle"),
         },
+        persistLayoutPreferences: false,
         showToolbar: false,
         onRender: bindInteractiveHandlers,
     });
