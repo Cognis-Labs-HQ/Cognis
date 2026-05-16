@@ -84,6 +84,11 @@ function normalizeMeetingId(value) {
     return String(value ?? "").trim();
 }
 
+function readThemeCookie() {
+    const match = document.cookie.match(/(?:^|; )cognis_theme=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : "";
+}
+
 function resolveMeetingChatRoomId(meeting) {
     const directRoomId = normalizeChatRoomId(meeting?.chatRoomId);
     if (directRoomId) return directRoomId;
@@ -144,21 +149,19 @@ function resolveThemeMode() {
     if (storedMode === "light" || storedMode === "dark") {
         return storedMode;
     }
-    const bodyMode = String(document.body.getAttribute("data-theme") ?? "")
-        .trim()
-        .toLowerCase();
-    if (bodyMode === "light" || bodyMode === "dark") {
-        return bodyMode;
-    }
     const shellMode = String(
-        document
-            .querySelector("#dashboard-shell")
-            ?.getAttribute("data-theme") ?? "",
+        document.querySelector(".app-shell")?.getAttribute("data-theme") ?? "",
     )
         .trim()
         .toLowerCase();
     if (shellMode === "light" || shellMode === "dark") {
         return shellMode;
+    }
+    const bodyMode = String(document.body.getAttribute("data-theme") ?? "")
+        .trim()
+        .toLowerCase();
+    if (bodyMode === "light" || bodyMode === "dark") {
+        return bodyMode;
     }
     const rootMode = String(
         document.documentElement.getAttribute("data-theme") ?? "",
@@ -167,6 +170,10 @@ function resolveThemeMode() {
         .toLowerCase();
     if (rootMode === "light" || rootMode === "dark") {
         return rootMode;
+    }
+    const cookieMode = String(readThemeCookie()).trim().toLowerCase();
+    if (cookieMode === "light" || cookieMode === "dark") {
+        return cookieMode;
     }
     return "light";
 }

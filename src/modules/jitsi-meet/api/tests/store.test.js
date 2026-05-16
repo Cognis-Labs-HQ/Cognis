@@ -241,3 +241,34 @@ test("jitsi store meeting creation falls back to a readable default slug", async
         /^cognis-classroom-[a-f0-9]{8}$/,
     );
 });
+
+test("jitsi store ensures ended meeting state columns on legacy schemas", async () => {
+    const executedStatements = [];
+    const mockDb = {
+        async ensureTable() {},
+        async execute(statement) {
+            executedStatements.push(statement);
+            return { rows: [], rowCount: 0 };
+        },
+        async transaction(callback) {
+            return callback(this);
+        },
+        async executeCommand() {
+            return { rows: [] };
+        },
+    };
+    const store = new JitsiMeetStore({ db: mockDb });
+    await store.ensureSchema();
+    assert.equal(
+        executedStatements.some((statement) =>
+            statement.includes("ADD COLUMN IF NOT EXISTS ended_by"),
+        ),
+        true,
+    );
+    assert.equal(
+        executedStatements.some((statement) =>
+            statement.includes("ADD COLUMN IF NOT EXISTS ended_at"),
+        ),
+        true,
+    );
+});

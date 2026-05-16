@@ -127,6 +127,38 @@ export class JitsiMeetStore {
     constructor({ db, log }) {
         this.db = db;
         this.log = log;
+        this.meetingStateEndedColumnsEnsured = false;
+    }
+
+    async ensureMeetingStateEndedColumns() {
+        if (this.meetingStateEndedColumnsEnsured) {
+            return;
+        }
+        const rawExecute = this.db?.execute;
+        if (typeof rawExecute !== "function") {
+            this.meetingStateEndedColumnsEnsured = true;
+            return;
+        }
+        const ensureColumn = async (columnName, columnType) => {
+            await rawExecute(
+                `ALTER TABLE jitsi_meeting_state ADD COLUMN IF NOT EXISTS ${columnName} ${columnType}`,
+            ).catch(async () => {
+                await rawExecute(
+                    `ALTER TABLE jitsi_meeting_state ADD COLUMN ${columnName} ${columnType}`,
+                ).catch((error) => {
+                    const message = String(error?.message ?? "").toLowerCase();
+                    const duplicateColumn =
+                        message.includes("duplicate column") ||
+                        message.includes("already exists");
+                    if (!duplicateColumn) {
+                        throw error;
+                    }
+                });
+            });
+        };
+        await ensureColumn("ended_by", "TEXT");
+        await ensureColumn("ended_at", "TIMESTAMP");
+        this.meetingStateEndedColumnsEnsured = true;
     }
 
     async ensureSchema() {
@@ -245,6 +277,7 @@ export class JitsiMeetStore {
             ],
             primaryKey: ["meeting_id", "username", "session_id"],
         });
+        await this.ensureMeetingStateEndedColumns();
     }
 
     async getConfig() {

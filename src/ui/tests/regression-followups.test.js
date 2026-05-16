@@ -316,6 +316,8 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
         source,
         /await loadActiveMeetings\(\{ resolveRequested: true \}\)/,
     );
+    assert.match(source, /function readThemeCookie\(\)/);
+    assert.match(source, /document\.querySelector\("\.app-shell"\)/);
 });
 
 test("jitsi API exposes user active meetings endpoint", () => {
