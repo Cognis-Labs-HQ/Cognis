@@ -23,8 +23,9 @@
   <string name="module.jitsi_meet.overlay.reclaim_prompt">このミーティングには別セッションですでに参加しています。このセッションで引き継ぎますか？</string>
   <string name="module.jitsi_meet.overlay.reclaim_done">セッションを引き継ぎました。以前のセッションは切断されました。</string>
   <string name="module.jitsi_meet.overlay.in_meeting">ミーティングを開始しました。Cognis のセッション追跡のため、このタブを開いたままにしてください。</string>
+  <string name="module.jitsi_meet.overlay.probe_done">事前チェック完了。</string>
   <string name="module.jitsi_meet.chat.heading">ミーティング チャット</string>
-  <string name="module.jitsi_meet.chat.pending">ミーティング作成後にチャットルームが表示されます。</string>
+  <string name="module.jitsi_meet.chat.pending">ミーティングの開始を待っています。</string>
   <string name="module.jitsi_meet.chat.ready">チャットルームの準備ができました。</string>
   <string name="module.jitsi_meet.chat.open">チャットを開く</string>
   <string name="module.jitsi_meet.participants.heading">参加者</string>
@@ -32,6 +33,7 @@
   <string name="module.jitsi_meet.participants.available">利用可能な参加者</string>
   <string name="module.jitsi_meet.participants.selected">ミーティング参加者</string>
   <string name="module.jitsi_meet.participants.none">表示できる参加者がいません。</string>
+  <string name="module.jitsi_meet.participants.add_selected">選択を追加</string>
   <string name="module.jitsi_meet.admin.config.title">Jitsi Meet 設定</string>
   <string name="module.jitsi_meet.admin.config.instance_url">Jitsi インスタンス URL</string>
   <string name="module.jitsi_meet.admin.config.instance_url_description">Jitsi デプロイのベース URL を完全な形式で入力してください。</string>

@@ -116,3 +116,30 @@
     color: var(--text-muted);
     font-style: italic;
 }
+
+.search-popup-result--selectable {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-popup-result--checked {
+    background: var(--surface-soft);
+    color: var(--accent, #3b82f6);
+}
+
+.search-popup-result-checkbox {
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+.search-popup-confirm-footer {
+    border-top: 1px solid var(--border);
+    padding: 0.6rem 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.search-popup-confirm-btn {
+    font-size: 0.875rem;
+}

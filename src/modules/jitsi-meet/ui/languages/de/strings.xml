@@ -23,8 +23,9 @@
   <string name="module.jitsi_meet.overlay.reclaim_prompt">Du bist in diesem Meeting bereits in einer anderen Sitzung. Diese Sitzung übernehmen?</string>
   <string name="module.jitsi_meet.overlay.reclaim_done">Sitzung übernommen. Vorherige Sitzung wurde getrennt.</string>
   <string name="module.jitsi_meet.overlay.in_meeting">Meeting gestartet. Halte diesen Tab für das Cognis-Tracking geöffnet.</string>
+  <string name="module.jitsi_meet.overlay.probe_done">Pre-Flight-Prüfung bestanden.</string>
   <string name="module.jitsi_meet.chat.heading">Meeting-Chat</string>
-  <string name="module.jitsi_meet.chat.pending">Der Chatraum erscheint nach der Meeting-Erstellung.</string>
+  <string name="module.jitsi_meet.chat.pending">Warten auf Meeting-Start.</string>
   <string name="module.jitsi_meet.chat.ready">Chatraum ist bereit.</string>
   <string name="module.jitsi_meet.chat.open">Chat Öffnen</string>
   <string name="module.jitsi_meet.participants.heading">Teilnehmer</string>
@@ -32,6 +33,7 @@
   <string name="module.jitsi_meet.participants.available">Verfügbare Teilnehmer</string>
   <string name="module.jitsi_meet.participants.selected">Meeting-Teilnehmer</string>
   <string name="module.jitsi_meet.participants.none">Keine Teilnehmer zum Anzeigen.</string>
+  <string name="module.jitsi_meet.participants.add_selected">Ausgewählte Hinzufügen</string>
   <string name="module.jitsi_meet.admin.config.title">Jitsi Meet Konfigurieren</string>
   <string name="module.jitsi_meet.admin.config.instance_url">Jitsi-Instanz-URL</string>
   <string name="module.jitsi_meet.admin.config.instance_url_description">Gib die vollständige Basis-URL deiner Jitsi-Instanz ein.</string>

@@ -11,15 +11,24 @@ Nachfolgende Verbesserungen:
 - Die Tabelle „Verfügbare Teilnehmer" wird beim Laden der Seite mit allen sichtbaren Benutzern vorbelegt.
 - Die Teilnehmersuche wurde durch ein Popup ersetzt (entspricht der „Neues Gespräch"-UX in Nachrichten).
 - Neuer Endpunkt `GET /api/v1/modules/jitsi-meet/participants?q=` liefert sichtbare Profile (alle bei leerem `q`, gefiltert sonst).
+- Teilnehmer-Tabellen wurden durch einen Avatar-Pool ersetzt: Jeder Avatar ist ziehbar (mit Hover-Profilvorschau), kann auf das Meeting-Fenster gezogen werden (grüne Drop-Zone-Hervorhebung) und erscheint dann oberhalb des Titels „Meeting-Fenster".
+- Das Popup „Teilnehmer suchen" unterstützt jetzt Mehrfachauswahl mit einem schwebenden „Ausgewählte hinzufügen"-Button; alle ausgewählten Benutzer werden beim Bestätigen dem verfügbaren Pool hinzugefügt.
+- Composer-Anpassung und Layout-Persistenz aktiviert.
+- Vorab-Meeting-Chatnachricht auf „Warten auf Meeting-Start." geändert.
+- Die Vorab-Prüfung zeigt jetzt ein grünes Häkchen, sobald die Jitsi-Instanz eine gesunde Probe-Antwort liefert.
+- Fehler 400 bei Meeting-Erstellung behoben (Ursache: Groß-/Kleinschreibungsabhängige Handle-Suche); `getProfileByHandle` verwendet jetzt einen Groß-/Kleinschreibungsunabhängigen Vergleich.
+- Verwaltung → Komponenten: Der Einstellungsbutton wurde aus dem `<summary>`-Chevron in den erweiterten Moduldetailbereich verschoben und das Zahnrad-Symbol durch einen Text-Button „Einstellungen" ersetzt.
 
 ## Geänderte Dateien / Komponenten
 
-- `src/modules/jitsi-meet/*` (neue Modul-API, Store, UI, i18n, Doku)
-- `src/modules/routes/module-extensions.ts` (Erweiterungen für Modul-UI-/Capability-Registrierung)
-- `src/api/server.ts` und `src/api/main.ts` (Verdrahtung für Modul-Capability-Provider)
-- `src/adapters/social/messages/*` (Capability zur Auflösung/Wiederverwendung von Gruppenchat-URLs)
-- `src/ui/app/administration/index.js` (Unterstützung für Modul-Konfigurations-Popup)
-- `src/ui/languages/*/strings.xml` (neue wiederverwendbare Meeting-Keys)
+- `src/modules/jitsi-meet/ui/app.js` (Avatar-Pool, Mehrfachauswahl, grünes Häkchen, Drag-to-Stage, Composer-Optionen)
+- `src/modules/jitsi-meet/ui/jitsi-meet.css` (Avatar-Pool, platzierte Teilnehmer, Drop-Zone-Hervorhebung, Häkchen-Indikator)
+- `src/modules/jitsi-meet/ui/languages/*/strings.xml` (neue Keys: probe_done, add_selected; chat.pending aktualisiert)
+- `src/ui/reuse/search-bar.js` (multiSelect + onSelectMultiple-Unterstützung, Bestätigungs-Footer)
+- `src/ui/styles/reuse/search-bar.css` (Mehrfachauswahl-Ergebnisstile, Bestätigungs-Footer)
+- `src/ui/styles/page-builder.css` (Einstellungsbutton-Stil, Zahnrad-Button-Stile entfernt)
+- `src/ui/app/administration/index.js` (Einstellungsbutton in erweiterten Bereich verschoben)
+- `src/adapters/social/profile/store.ts` (Groß-/Kleinschreibungsunabhängiges getProfileByHandle)
 
 ## Commit-Links
 

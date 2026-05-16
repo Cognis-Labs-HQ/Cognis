@@ -4,6 +4,10 @@ import { createPageComposer } from "/static/reuse/page-composer.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import {
+    getInitialsText,
+    pickInitialsColor,
+} from "/static/reuse/avatar-utils.js";
 
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const STATE_REFRESH_INTERVAL_MS = 5_000;
@@ -45,33 +49,34 @@ function normalizeUsername(value) {
         .toLowerCase();
 }
 
-function createParticipantRow(username, displayName) {
-    const row = document.createElement("tr");
-    row.setAttribute("draggable", "true");
-    row.setAttribute("data-username", username);
+function createParticipantAvatarEl(username, displayName) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "jitsi-participant-avatar";
+    wrapper.setAttribute("draggable", "true");
+    wrapper.setAttribute("data-username", username);
+    wrapper.setAttribute("role", "listitem");
 
-    const usernameCell = document.createElement("td");
-    usernameCell.textContent = `@${username}`;
+    const link = document.createElement("a");
+    link.href = `/profile/${encodeURIComponent(username)}`;
+    link.className = "jitsi-participant-avatar-link";
+    link.tabIndex = -1;
+    link.setAttribute("aria-label", displayName || username);
 
-    const displayNameCell = document.createElement("td");
-    displayNameCell.textContent = displayName || username;
+    const color = pickInitialsColor(username);
+    const initials = getInitialsText(displayName || username);
+    const bubble = document.createElement("span");
+    bubble.className = "jitsi-participant-avatar-bubble";
+    bubble.style.setProperty("--initials-bg", color);
+    bubble.textContent = initials;
+    link.appendChild(bubble);
 
-    const dragCell = document.createElement("td");
-    dragCell.className = "drag-handle";
-    dragCell.textContent = "⬍";
+    const label = document.createElement("span");
+    label.className = "jitsi-participant-avatar-label";
+    label.textContent = `@${username}`;
 
-    row.append(usernameCell, displayNameCell, dragCell);
-    return row;
-}
-
-function createEmptyParticipantRow(message) {
-    const row = document.createElement("tr");
-    row.className = "jitsi-participants-empty-row";
-    const cell = document.createElement("td");
-    cell.colSpan = 3;
-    cell.textContent = message;
-    row.append(cell);
-    return row;
+    wrapper.appendChild(link);
+    wrapper.appendChild(label);
+    return wrapper;
 }
 
 function buildStageMarkup(i18n) {
@@ -80,6 +85,7 @@ function buildStageMarkup(i18n) {
       <div class="jitsi-stage-frame-wrap">
         <iframe id="jitsi-meeting-frame" class="jitsi-stage-frame" title="${escapeHtml(i18n.t("ui.reuse.meeting"))}" allow="camera; microphone; fullscreen; display-capture" hidden></iframe>
         <div id="jitsi-overlay" class="jitsi-overlay">
+          <div id="jitsi-staged-participants" class="jitsi-staged-participants" role="list"></div>
           <h3 class="jitsi-overlay-title">${escapeHtml(i18n.t("module.jitsi_meet.overlay.title"))}</h3>
           <p id="jitsi-overlay-message" class="jitsi-overlay-message">${escapeHtml(i18n.t("module.jitsi_meet.overlay.select_participants"))}</p>
           <div class="jitsi-overlay-actions">
@@ -89,7 +95,7 @@ function buildStageMarkup(i18n) {
           </div>
           <div id="jitsi-loading" class="jitsi-loading" hidden>
             <span class="jitsi-spinner" aria-hidden="true"></span>
-            <span>${escapeHtml(i18n.t("module.jitsi_meet.overlay.loading"))}</span>
+            <span id="jitsi-loading-text">${escapeHtml(i18n.t("module.jitsi_meet.overlay.loading"))}</span>
           </div>
         </div>
       </div>
@@ -116,38 +122,8 @@ function buildParticipantsMarkup(i18n) {
           ${escapeHtml(i18n.t("module.jitsi_meet.participants.search"))}
         </button>
       </header>
-      <div class="jitsi-participants-tables">
-        <section>
-          <h4>${escapeHtml(i18n.t("module.jitsi_meet.participants.available"))}</h4>
-          <div class="users-table-wrap">
-            <table class="users-table">
-              <thead>
-                <tr>
-                  <th>${escapeHtml(i18n.t("ui.reuse.username"))}</th>
-                  <th>${escapeHtml(i18n.t("ui.reuse.display_name"))}</th>
-                  <th>${escapeHtml(i18n.t("ui.reuse.move"))}</th>
-                </tr>
-              </thead>
-              <tbody id="jitsi-available-participants"></tbody>
-            </table>
-          </div>
-        </section>
-        <section>
-          <h4>${escapeHtml(i18n.t("module.jitsi_meet.participants.selected"))}</h4>
-          <div class="users-table-wrap">
-            <table class="users-table">
-              <thead>
-                <tr>
-                  <th>${escapeHtml(i18n.t("ui.reuse.username"))}</th>
-                  <th>${escapeHtml(i18n.t("ui.reuse.display_name"))}</th>
-                  <th>${escapeHtml(i18n.t("ui.reuse.move"))}</th>
-                </tr>
-              </thead>
-              <tbody id="jitsi-selected-participants"></tbody>
-            </table>
-          </div>
-        </section>
-      </div>
+      <p class="jitsi-participants-pool-label">${escapeHtml(i18n.t("module.jitsi_meet.participants.available"))}</p>
+      <div id="jitsi-available-participants" class="jitsi-avatar-pool" role="list"></div>
     </section>
   `;
 }
@@ -213,6 +189,7 @@ export async function mount(root, { signal } = {}) {
     function updateOverlay({
         message,
         loading = false,
+        probed = false,
         canStart = false,
         showAuth = false,
         showReclaim = false,
@@ -222,12 +199,31 @@ export async function mount(root, { signal } = {}) {
         const reclaimButton = root.querySelector("#jitsi-reclaim-btn");
         const messageEl = root.querySelector("#jitsi-overlay-message");
         const loadingEl = root.querySelector("#jitsi-loading");
+        const spinnerEl = root.querySelector(".jitsi-spinner");
+        const loadingTextEl = root.querySelector("#jitsi-loading-text");
 
         if (messageEl instanceof HTMLElement && typeof message === "string") {
             messageEl.textContent = message;
         }
         if (loadingEl instanceof HTMLElement) {
-            loadingEl.hidden = !loading;
+            loadingEl.hidden = !(loading || probed);
+        }
+        if (spinnerEl instanceof HTMLElement) {
+            if (probed) {
+                spinnerEl.classList.remove("jitsi-spinner");
+                spinnerEl.classList.add("jitsi-tick");
+            } else {
+                spinnerEl.classList.remove("jitsi-tick");
+                spinnerEl.classList.add("jitsi-spinner");
+            }
+        }
+        if (
+            loadingTextEl instanceof HTMLElement &&
+            typeof message === "string"
+        ) {
+            if (loading || probed) {
+                loadingTextEl.textContent = message;
+            }
         }
         if (startButton instanceof HTMLButtonElement) {
             startButton.disabled = !canStart;
@@ -260,34 +256,28 @@ export async function mount(root, { signal } = {}) {
         chatLink.hidden = false;
     }
 
-    function renderParticipantTables() {
-        const availableBody = root.querySelector(
+    function renderParticipants() {
+        const availablePool = root.querySelector(
             "#jitsi-available-participants",
         );
-        const selectedBody = root.querySelector("#jitsi-selected-participants");
+        const stagedArea = root.querySelector("#jitsi-staged-participants");
         if (
-            !(availableBody instanceof HTMLElement) ||
-            !(selectedBody instanceof HTMLElement)
+            !(availablePool instanceof HTMLElement) ||
+            !(stagedArea instanceof HTMLElement)
         ) {
             return;
         }
-        const emptyMessage = i18n.t("module.jitsi_meet.participants.none");
-        const availableRows = state.availableParticipants.map((entry) =>
-            createParticipantRow(entry.username, entry.displayName),
-        );
-        const selectedRows = state.selectedParticipants.map((entry) =>
-            createParticipantRow(entry.username, entry.displayName),
+
+        availablePool.replaceChildren(
+            ...state.availableParticipants.map((entry) =>
+                createParticipantAvatarEl(entry.username, entry.displayName),
+            ),
         );
 
-        availableBody.replaceChildren(
-            ...(availableRows.length > 0
-                ? availableRows
-                : [createEmptyParticipantRow(emptyMessage)]),
-        );
-        selectedBody.replaceChildren(
-            ...(selectedRows.length > 0
-                ? selectedRows
-                : [createEmptyParticipantRow(emptyMessage)]),
+        stagedArea.replaceChildren(
+            ...state.selectedParticipants.map((entry) =>
+                createParticipantAvatarEl(entry.username, entry.displayName),
+            ),
         );
 
         const participantCount = state.selectedParticipants.length;
@@ -324,7 +314,7 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
-    function applyDrop(username, targetTableId) {
+    function applyDrop(username, targetZone) {
         if (!username) return;
         const normalized = normalizeUsername(username);
         if (!normalized) return;
@@ -336,14 +326,14 @@ export async function mount(root, { signal } = {}) {
             (entry) => entry.username === normalized,
         );
 
-        if (targetTableId === "jitsi-selected-participants" && fromAvailable) {
+        if (targetZone === "stage" && fromAvailable) {
             state.availableParticipants = state.availableParticipants.filter(
                 (entry) => entry.username !== normalized,
             );
             addParticipant(fromAvailable);
         }
 
-        if (targetTableId === "jitsi-available-participants" && fromSelected) {
+        if (targetZone === "available" && fromSelected) {
             removeParticipant(normalized);
             if (
                 !state.availableParticipants.some(
@@ -357,7 +347,7 @@ export async function mount(root, { signal } = {}) {
             );
         }
 
-        renderParticipantTables();
+        renderParticipants();
     }
 
     async function loadMeetingState() {
@@ -559,8 +549,16 @@ export async function mount(root, { signal } = {}) {
         }
 
         updateOverlay({
+            message: i18n.t("module.jitsi_meet.overlay.probe_done"),
+            probed: true,
+            canStart: false,
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 600));
+
+        updateOverlay({
             message: i18n.t("module.jitsi_meet.overlay.joining"),
-            loading: false,
+            loading: true,
             canStart: false,
         });
 
@@ -618,35 +616,38 @@ export async function mount(root, { signal } = {}) {
                         noResultsText: i18n.t(
                             "module.jitsi_meet.participants.none",
                         ),
-                        onSelect: (result) => {
-                            const username = normalizeUsername(
-                                result?.handle ?? result?.username ?? "",
-                            );
-                            const displayName = String(
-                                result?.displayName ?? result?.handle ?? "",
-                            );
-                            if (!username) return;
-                            if (
-                                state.selectedParticipants.some(
-                                    (entry) => entry.username === username,
-                                )
-                            ) {
-                                return;
-                            }
-                            if (
-                                !state.availableParticipants.some(
-                                    (entry) => entry.username === username,
-                                )
-                            ) {
+                        confirmLabel: i18n.t(
+                            "module.jitsi_meet.participants.add_selected",
+                        ),
+                        multiSelect: true,
+                        onSelectMultiple: (results) => {
+                            for (const result of results) {
+                                const username = normalizeUsername(
+                                    result?.handle ?? result?.username ?? "",
+                                );
+                                const displayName = String(
+                                    result?.displayName ?? result?.handle ?? "",
+                                );
+                                if (!username) continue;
+                                if (
+                                    state.selectedParticipants.some(
+                                        (entry) => entry.username === username,
+                                    ) ||
+                                    state.availableParticipants.some(
+                                        (entry) => entry.username === username,
+                                    )
+                                ) {
+                                    continue;
+                                }
                                 state.availableParticipants.push({
                                     username,
                                     displayName,
                                 });
-                                state.availableParticipants.sort((a, b) =>
-                                    a.username.localeCompare(b.username),
-                                );
                             }
-                            renderParticipantTables();
+                            state.availableParticipants.sort((a, b) =>
+                                a.username.localeCompare(b.username),
+                            );
+                            renderParticipants();
                         },
                     });
                 },
@@ -657,9 +658,11 @@ export async function mount(root, { signal } = {}) {
         container.addEventListener(
             "dragstart",
             (event) => {
-                const row = event.target.closest("tr[data-username]");
-                if (!(row instanceof HTMLElement)) return;
-                state.dragUsername = row.dataset.username ?? null;
+                const avatar = event.target.closest(
+                    "[draggable][data-username]",
+                );
+                if (!(avatar instanceof HTMLElement)) return;
+                state.dragUsername = avatar.dataset.username ?? null;
                 event.dataTransfer?.setData(
                     "text/plain",
                     state.dragUsername ?? "",
@@ -668,33 +671,76 @@ export async function mount(root, { signal } = {}) {
             { signal: bindSignal },
         );
 
-        container.addEventListener(
-            "dragover",
-            (event) => {
-                const zone = event.target.closest(
-                    "#jitsi-available-participants, #jitsi-selected-participants",
-                );
-                if (!zone) return;
-                event.preventDefault();
-            },
-            { signal: bindSignal },
+        const overlay = container.querySelector("#jitsi-overlay");
+        const availablePool = container.querySelector(
+            "#jitsi-available-participants",
         );
 
-        container.addEventListener(
-            "drop",
-            (event) => {
-                const tableBody = event.target.closest(
-                    "#jitsi-available-participants, #jitsi-selected-participants",
-                );
-                if (!(tableBody instanceof HTMLElement)) return;
-                const username =
-                    state.dragUsername ??
-                    event.dataTransfer?.getData("text/plain");
-                state.dragUsername = null;
-                applyDrop(username, tableBody.id);
-            },
-            { signal: bindSignal },
-        );
+        if (overlay instanceof HTMLElement) {
+            overlay.addEventListener(
+                "dragover",
+                (event) => {
+                    const username =
+                        state.dragUsername ??
+                        event.dataTransfer?.types?.includes("text/plain");
+                    if (!username) return;
+                    event.preventDefault();
+                    overlay.classList.add("jitsi-drop-active");
+                },
+                { signal: bindSignal },
+            );
+
+            overlay.addEventListener(
+                "dragleave",
+                (event) => {
+                    if (!overlay.contains(event.relatedTarget)) {
+                        overlay.classList.remove("jitsi-drop-active");
+                    }
+                },
+                { signal: bindSignal },
+            );
+
+            overlay.addEventListener(
+                "drop",
+                (event) => {
+                    overlay.classList.remove("jitsi-drop-active");
+                    const username =
+                        state.dragUsername ??
+                        event.dataTransfer?.getData("text/plain");
+                    state.dragUsername = null;
+                    event.preventDefault();
+                    applyDrop(username, "stage");
+                },
+                { signal: bindSignal },
+            );
+        }
+
+        if (availablePool instanceof HTMLElement) {
+            availablePool.addEventListener(
+                "dragover",
+                (event) => {
+                    const username =
+                        state.dragUsername ??
+                        event.dataTransfer?.types?.includes("text/plain");
+                    if (!username) return;
+                    event.preventDefault();
+                },
+                { signal: bindSignal },
+            );
+
+            availablePool.addEventListener(
+                "drop",
+                (event) => {
+                    const username =
+                        state.dragUsername ??
+                        event.dataTransfer?.getData("text/plain");
+                    state.dragUsername = null;
+                    event.preventDefault();
+                    applyDrop(username, "available");
+                },
+                { signal: bindSignal },
+            );
+        }
 
         if (startButton instanceof HTMLButtonElement) {
             startButton.addEventListener(
@@ -769,7 +815,7 @@ export async function mount(root, { signal } = {}) {
             );
         }
 
-        renderParticipantTables();
+        renderParticipants();
         void updateChatLink();
     }
 
@@ -822,15 +868,14 @@ export async function mount(root, { signal } = {}) {
         .sort((a, b) => a.username.localeCompare(b.username));
 
     const composer = createPageComposer(root, {
-        allowCustomization: false,
+        allowCustomization: true,
         elements,
         i18n,
         pageContext: {
             title: i18n.t("ui.reuse.meetings"),
             subtitle: i18n.t("module.jitsi_meet.page.subtitle"),
         },
-        persistLayoutPreferences: false,
-        showToolbar: false,
+        persistLayoutPreferences: true,
         onRender: bindInteractiveHandlers,
     });
 

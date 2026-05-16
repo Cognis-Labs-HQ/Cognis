@@ -120,6 +120,7 @@ function renderFlatResults(
     noResultsText,
     onSelect,
     closeOverlay,
+    multiSelectState,
 ) {
     resultsContainer.innerHTML = "";
     if (!items.length) {
@@ -135,14 +136,52 @@ function renderFlatResults(
 
     for (const item of items) {
         const listItem = document.createElement("li");
-        listItem.className = "search-popup-result";
-        listItem.textContent =
-            item.label || item.displayName || item.accountId || item.id || "";
-        listItem.addEventListener("mousedown", (event) => {
-            event.preventDefault();
-            closeOverlay();
-            onSelect(item);
-        });
+        const itemKey = item.handle ?? item.id ?? item.accountId ?? "";
+        const isSelected = multiSelectState?.selected.has(itemKey);
+
+        if (multiSelectState) {
+            listItem.className = `search-popup-result search-popup-result--selectable${isSelected ? " search-popup-result--checked" : ""}`;
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.className = "search-popup-result-checkbox";
+            checkbox.checked = Boolean(isSelected);
+            checkbox.setAttribute("aria-hidden", "true");
+            checkbox.tabIndex = -1;
+            const label = document.createElement("span");
+            label.textContent =
+                item.label ||
+                item.displayName ||
+                item.accountId ||
+                item.id ||
+                "";
+            listItem.appendChild(checkbox);
+            listItem.appendChild(label);
+            listItem.addEventListener("mousedown", (event) => {
+                event.preventDefault();
+                if (multiSelectState.selected.has(itemKey)) {
+                    multiSelectState.selected.delete(itemKey);
+                    multiSelectState.itemMap.delete(itemKey);
+                } else {
+                    multiSelectState.selected.add(itemKey);
+                    multiSelectState.itemMap.set(itemKey, item);
+                }
+                multiSelectState.onSelectionChange();
+            });
+        } else {
+            listItem.className = "search-popup-result";
+            listItem.textContent =
+                item.label ||
+                item.displayName ||
+                item.accountId ||
+                item.id ||
+                "";
+            listItem.addEventListener("mousedown", (event) => {
+                event.preventDefault();
+                closeOverlay();
+                onSelect(item);
+            });
+        }
+
         list.appendChild(listItem);
     }
 
@@ -158,6 +197,7 @@ async function runSearch({
     noResultsText,
     onSelect,
     closeOverlay,
+    multiSelectState,
 }) {
     if (!query) {
         resultsContainer.innerHTML = "";
@@ -214,6 +254,7 @@ async function runSearch({
                 noResultsText,
                 onSelect,
                 closeOverlay,
+                multiSelectState,
             );
         } else if (matchedLocalGroups.length === 0) {
             renderFlatResults(
@@ -222,6 +263,7 @@ async function runSearch({
                 noResultsText,
                 onSelect,
                 closeOverlay,
+                multiSelectState,
             );
         }
     } catch {
@@ -239,13 +281,16 @@ async function runSearch({
 export function openSearchPopup({
     endpoint,
     onSelect,
+    onSelectMultiple,
     onClose,
     placeholder = "",
     category = "",
     ariaLabel = "Search",
     noResultsText = "No results found.",
+    confirmLabel = "Add selected",
     typeFilter = "",
     localGroups = [],
+    multiSelect = false,
 }) {
     const existingOverlay = document.querySelector(".search-popup-overlay");
     if (existingOverlay) {
@@ -277,6 +322,60 @@ export function openSearchPopup({
 
     popup.appendChild(input);
     popup.appendChild(resultsContainer);
+
+    let multiSelectState = null;
+    let confirmFooter = null;
+
+    if (multiSelect) {
+        confirmFooter = document.createElement("div");
+        confirmFooter.className = "search-popup-confirm-footer";
+        confirmFooter.hidden = true;
+
+        const confirmBtn = document.createElement("button");
+        confirmBtn.type = "button";
+        confirmBtn.className = "search-popup-confirm-btn btn-animated";
+        confirmBtn.textContent = confirmLabel;
+        confirmFooter.appendChild(confirmBtn);
+        popup.appendChild(confirmFooter);
+
+        const updateFooter = () => {
+            const count = multiSelectState.selected.size;
+            confirmFooter.hidden = count === 0;
+            confirmBtn.textContent = `${confirmLabel} (${count})`;
+
+            const allItems = resultsContainer.querySelectorAll(
+                ".search-popup-result--selectable",
+            );
+            for (const item of allItems) {
+                const checkbox = item.querySelector(
+                    ".search-popup-result-checkbox",
+                );
+                const label = item.querySelector("span");
+                if (!checkbox || !label) continue;
+                const key = checkbox.dataset.key ?? label.textContent.trim();
+                const isChecked = multiSelectState.selected.has(key);
+                checkbox.checked = isChecked;
+                item.classList.toggle(
+                    "search-popup-result--checked",
+                    isChecked,
+                );
+            }
+        };
+
+        multiSelectState = {
+            selected: new Set(),
+            itemMap: new Map(),
+            onSelectionChange: updateFooter,
+        };
+
+        confirmBtn.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+            const selectedItems = Array.from(multiSelectState.itemMap.values());
+            closeOverlay();
+            onSelectMultiple?.(selectedItems);
+        });
+    }
+
     overlay.appendChild(popup);
     document.body.appendChild(overlay);
 
@@ -315,6 +414,7 @@ export function openSearchPopup({
                     noResultsText,
                     onSelect,
                     closeOverlay,
+                    multiSelectState,
                 }),
             DEBOUNCE_MS,
         );

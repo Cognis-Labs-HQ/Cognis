@@ -228,10 +228,18 @@ export class DbProfileStore implements ProfileCreateStore {
     }
 
     async getProfileByHandle(handle: string): Promise<AccountProfile | null> {
+        const escapedHandle = handle.replace(/[\\%_]/g, "\\$&");
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "account_profiles",
-            where: [{ column: "handle", value: handle }],
+            where: [
+                {
+                    column: "handle",
+                    operator: "LIKE",
+                    value: escapedHandle,
+                    escapeChar: "\\",
+                },
+            ],
         });
         const row = result.rows?.[0];
         return row ? rowToProfile(row) : null;

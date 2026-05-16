@@ -11,15 +11,24 @@ Penyempurnaan lanjutan:
 - Tabel "Peserta Tersedia" diisi awal dengan semua pengguna yang terlihat saat halaman dimuat.
 - Pencarian peserta diganti dengan popup (sesuai UX "Percakapan Baru" di Pesan).
 - Endpoint baru `GET /api/v1/modules/jitsi-meet/participants?q=` menyajikan profil yang terlihat (semua saat `q` kosong; difilter jika tidak).
+- Tabel peserta diganti dengan kumpulan avatar bebas: setiap avatar dapat diseret (dengan pratinjau profil saat dihover), dapat dijatuhkan ke Jendela Rapat (sorotan zona drop hijau) dan tampil di atas teks "Jendela Rapat".
+- Popup "Cari Peserta" kini mendukung pilihan berganda dengan tombol konfirmasi "Tambahkan yang Dipilih"; semua pengguna terpilih ditambahkan ke kumpulan tersedia saat dikonfirmasi.
+- Kustomisasi composer dan persistensi tata letak diaktifkan.
+- Pesan chat pra-rapat diubah menjadi "Menunggu rapat dimulai."
+- Pemeriksaan pra-penerbangan kini menampilkan centang hijau saat instans Jitsi mengembalikan respons probe yang sehat.
+- Kesalahan 400 saat membuat rapat diperbaiki akibat pencarian handle peka huruf besar-kecil; `getProfileByHandle` kini menggunakan pencocokan tidak peka huruf besar-kecil.
+- Administrasi → Komponen: Tombol Pengaturan dipindahkan dari dalam `<summary>` chevron ke bagian detail modul yang diperluas, mengganti ikon roda gigi dengan tombol teks "Pengaturan".
 
 ## Berkas / Komponen yang Diubah
 
-- `src/modules/jitsi-meet/*` (API modul baru, store, UI, i18n, dokumentasi)
-- `src/modules/routes/module-extensions.ts` (peningkatan registrasi UI/capability modul)
-- `src/api/server.ts` dan `src/api/main.ts` (wiring provider capability modul)
-- `src/adapters/social/messages/*` (capability resolusi/penggunaan ulang URL chat grup)
-- `src/ui/app/administration/index.js` (dukungan popup konfigurasi modul)
-- `src/ui/languages/*/strings.xml` (kunci meeting reusable baru)
+- `src/modules/jitsi-meet/ui/app.js` (kumpulan avatar, pilihan berganda, centang hijau, drag-to-stage, opsi composer)
+- `src/modules/jitsi-meet/ui/jitsi-meet.css` (kumpulan avatar, peserta yang dipasang, sorotan zona drop, indikator centang)
+- `src/modules/jitsi-meet/ui/languages/*/strings.xml` (kunci baru: probe_done, add_selected; chat.pending diperbarui)
+- `src/ui/reuse/search-bar.js` (dukungan multiSelect + onSelectMultiple, footer konfirmasi)
+- `src/ui/styles/reuse/search-bar.css` (gaya hasil pilihan berganda, footer konfirmasi)
+- `src/ui/styles/page-builder.css` (gaya tombol pengaturan, gaya tombol roda gigi dihapus)
+- `src/ui/app/administration/index.js` (tombol pengaturan dipindahkan ke bagian yang diperluas)
+- `src/adapters/social/profile/store.ts` (getProfileByHandle tidak peka huruf besar-kecil)
 
 ## Tautan Commit
 
