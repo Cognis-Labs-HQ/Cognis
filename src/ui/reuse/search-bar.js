@@ -134,24 +134,24 @@ function renderFlatResults(
     const list = document.createElement("ul");
     list.className = "search-popup-result-list";
 
-    function toggleMultiSelectItem(itemKey, item) {
+    function toggleMultiSelectItem(uniqueItemKey, item) {
         if (!multiSelectState) {
             return;
         }
-        if (multiSelectState.selected.has(itemKey)) {
-            multiSelectState.selected.delete(itemKey);
-            multiSelectState.itemMap.delete(itemKey);
+        if (multiSelectState.selected.has(uniqueItemKey)) {
+            multiSelectState.selected.delete(uniqueItemKey);
+            multiSelectState.itemMap.delete(uniqueItemKey);
         } else {
-            multiSelectState.selected.add(itemKey);
-            multiSelectState.itemMap.set(itemKey, item);
+            multiSelectState.selected.add(uniqueItemKey);
+            multiSelectState.itemMap.set(uniqueItemKey, item);
         }
         multiSelectState.onSelectionChange();
     }
 
     for (const item of items) {
         const listItem = document.createElement("li");
-        const itemKey = item.handle ?? item.id ?? item.accountId ?? "";
-        const isSelected = multiSelectState?.selected.has(itemKey);
+        const uniqueItemKey = item.handle ?? item.id ?? item.accountId ?? "";
+        const isSelected = multiSelectState?.selected.has(uniqueItemKey);
 
         if (multiSelectState) {
             listItem.className = `search-popup-result search-popup-result--selectable${isSelected ? " search-popup-result--checked" : ""}`;
@@ -159,7 +159,7 @@ function renderFlatResults(
             checkbox.type = "checkbox";
             checkbox.className = "search-popup-result-checkbox";
             checkbox.checked = Boolean(isSelected);
-            checkbox.dataset.key = itemKey;
+            checkbox.dataset.key = uniqueItemKey;
             checkbox.setAttribute("aria-hidden", "true");
             checkbox.tabIndex = -1;
             const label = document.createElement("span");
@@ -177,12 +177,12 @@ function renderFlatResults(
             listItem.appendChild(label);
             listItem.addEventListener("click", (event) => {
                 event.preventDefault();
-                toggleMultiSelectItem(itemKey, item);
+                toggleMultiSelectItem(uniqueItemKey, item);
             });
             listItem.addEventListener("keydown", (event) => {
                 if (event.key === " " || event.key === "Enter") {
                     event.preventDefault();
-                    toggleMultiSelectItem(itemKey, item);
+                    toggleMultiSelectItem(uniqueItemKey, item);
                 }
             });
         } else {

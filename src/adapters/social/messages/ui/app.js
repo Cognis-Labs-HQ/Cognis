@@ -166,7 +166,7 @@ function selectedRoomTitle(room, currentAccountId) {
     );
 }
 
-function renderMemberCountMarkup(room, members, i18n) {
+function renderMemberCountControl(room, members, i18n) {
     const label = `${String(members.length)} ${i18n.t("module.social.messages.members")}`;
     if (room?.kind !== "group") {
         return `<span class="messages-thread-subtitle">${escapeHtml(label)}</span>`;
@@ -232,7 +232,7 @@ function renderThreadHeader(room, currentAccountId, i18n) {
             ${renderRoomAvatar(room, currentAccountId)}
             <div class="messages-thread-title-wrap">
                 <h2 class="messages-thread-title">${escapeHtml(selectedRoomTitle(room, currentAccountId))}</h2>
-                ${renderMemberCountMarkup(room, members, i18n)}
+                ${renderMemberCountControl(room, members, i18n)}
             </div>
             <div class="messages-thread-actions">
                 ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}

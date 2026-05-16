@@ -221,7 +221,6 @@ export class JitsiMeetStore {
         if (this.meetingSchemaPrepared) {
             return;
         }
-        this.meetingSchemaPrepared = true;
         if (typeof this.db.execute !== "function") {
             return;
         }
@@ -291,6 +290,7 @@ export class JitsiMeetStore {
                 where: [{ column: "id", value: String(meetingRow.id) }],
             });
         }
+        this.meetingSchemaPrepared = true;
     }
 
     async getConfig() {

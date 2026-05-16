@@ -38,8 +38,8 @@ function normalizeUsername(value) {
         .toLowerCase();
 }
 
-function buildMeetingChatTitle(createdAt = new Date().toISOString()) {
-    const isoDate = String(createdAt).slice(0, 10);
+function buildMeetingChatTitle(createdAt = null) {
+    const isoDate = String(createdAt ?? new Date().toISOString()).slice(0, 10);
     return `${MEETING_TITLE} — ${isoDate}`;
 }
 
@@ -321,9 +321,9 @@ export function registerApiRoutes(router, ctx) {
             if (!claims) return;
             const url = new URL(req.url, "http://localhost");
             const rawQuery = (url.searchParams.get("q") ?? "").trim();
-            // Strip leading '@' and normalise case. SQL wildcard characters
-            // (%, _, \) are escaped inside profileStore.searchProfiles, so no
-            // additional sanitisation is needed here.
+            // Strip leading '@' and normalise case. The profile-store
+            // searchProfiles() contract owns LIKE wildcard escaping for the
+            // underlying DB dialect.
             const query = rawQuery.replace(/^@/, "").toLowerCase();
             const candidates = await profileStore.searchProfiles(query, 50);
             const results = candidates
