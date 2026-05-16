@@ -1,10 +1,11 @@
 .jitsi-meeting-stage {
-    min-height: 36rem;
+    height: 100%;
 }
 
 .jitsi-stage-frame-wrap {
     position: relative;
-    min-height: 36rem;
+    height: 100%;
+    min-height: 0;
     border-radius: 1rem;
     overflow: hidden;
     background: rgba(15, 23, 42, 0.55);
@@ -12,7 +13,8 @@
 
 .jitsi-stage-frame {
     width: 100%;
-    min-height: 36rem;
+    height: 100%;
+    min-height: 0;
     border: 0;
 }
 
@@ -72,11 +74,11 @@
 }
 
 .jitsi-chat-pane {
-    min-height: 36rem;
+    height: 100%;
 }
 
 .jitsi-participants-pane {
-    min-height: 20rem;
+    height: 100%;
 }
 
 .jitsi-participants-header {
@@ -117,11 +119,6 @@
 @media (max-width: 1080px) {
     .jitsi-participants-tables {
         grid-template-columns: minmax(0, 1fr);
-    }
-
-    .jitsi-meeting-stage,
-    .jitsi-chat-pane {
-        min-height: 24rem;
     }
 }
 
