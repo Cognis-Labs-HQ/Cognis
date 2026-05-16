@@ -205,6 +205,43 @@
     color: rgba(255, 255, 255, 0.75);
 }
 
+body[data-theme="light"] .jitsi-stage-frame-wrap {
+    background: rgba(226, 232, 240, 0.92);
+}
+
+body[data-theme="light"] .jitsi-overlay {
+    background: linear-gradient(
+        180deg,
+        rgba(248, 250, 255, 0.88) 0%,
+        rgba(226, 232, 240, 0.72) 100%
+    );
+}
+
+body[data-theme="light"] .jitsi-overlay.jitsi-drop-active {
+    background: linear-gradient(
+        180deg,
+        rgba(240, 253, 244, 0.95) 0%,
+        rgba(187, 247, 208, 0.72) 100%
+    );
+}
+
+body[data-theme="light"] .jitsi-spinner {
+    border-color: rgba(15, 23, 42, 0.18);
+    border-top-color: rgba(15, 23, 42, 0.75);
+}
+
+body[data-theme="light"]
+    .jitsi-staged-participants
+    .jitsi-participant-avatar-bubble {
+    border-color: rgba(15, 23, 42, 0.18);
+}
+
+body[data-theme="light"]
+    .jitsi-staged-participants
+    .jitsi-participant-avatar-label {
+    color: var(--text-muted);
+}
+
 @keyframes jitsi-spin {
     to {
         transform: rotate(360deg);

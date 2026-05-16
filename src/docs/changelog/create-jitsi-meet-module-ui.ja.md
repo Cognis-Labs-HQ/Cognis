@@ -21,6 +21,7 @@
 - 古い `jitsi_meetings` テーブルはその場で拡張されるようになり、`participant_key` や `meeting_url` などの最新カラムが欠けていてもミーティング作成が失敗しなくなりました。
 - ミーティングに関連付けられたグループチャットのルームタイトルに、ミーティング日付が含まれるようになりました。
 - ミーティング用グループチャットのメンバー数をクリックすると、現在参加中のユーザーをプロフィールプレビュー付きのリンクアバターで表示するポップアップが開くようになりました。
+- ライトテーマでは Meeting Window のオーバーレイ表現を大幅に明るくし、ミーティング開始前のステージが暗すぎて読みにくくならないようにしました。
 
 ## 変更されたファイル / コンポーネント
 
@@ -39,6 +40,7 @@
 - `src/adapters/social/messages/ui/languages/*/strings.xml`（参加中ユーザー要約用の文字列）
 - `src/modules/jitsi-meet/api/tests/store.test.js`（スキーマ準備のリグレッションカバレッジ）
 - `src/ui/tests/regression-followups.test.js`（ミーティングチャットタイトルとメンバー要約のリグレッション）
+- `src/modules/jitsi-meet/ui/jitsi-meet.css`（ライトテーマでの Meeting Window オーバーレイ、スピナー、配置済みユーザーのコントラスト改善）
 
 ## コミットリンク
 

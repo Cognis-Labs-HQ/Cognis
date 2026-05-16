@@ -111,3 +111,16 @@ test("messages member count button opens a meeting presence summary popup", () =
         /openPopup\([\s\S]*module\.social\.messages\.present_users_title/,
     );
 });
+
+test("jitsi meeting window has light-theme overlay overrides", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
+        "utf8",
+    );
+    assert.match(source, /body\[data-theme="light"\] \.jitsi-overlay\s*\{/);
+    assert.match(source, /body\[data-theme="light"\] \.jitsi-spinner\s*\{/);
+    assert.match(
+        source,
+        /body\[data-theme="light"\][\s\S]*\.jitsi-staged-participants[\s\S]*\.jitsi-participant-avatar-label\s*\{/,
+    );
+});

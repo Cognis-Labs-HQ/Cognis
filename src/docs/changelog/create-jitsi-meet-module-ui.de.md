@@ -21,6 +21,7 @@ Nachfolgende Verbesserungen:
 - Ältere `jitsi_meetings`-Tabellen werden jetzt direkt erweitert, sodass fehlende moderne Spalten wie `participant_key` und `meeting_url` die Meeting-Erstellung nicht mehr blockieren.
 - Mit Meetings verknüpfte Gruppenchats enthalten jetzt das Meeting-Datum im Raumnamen.
 - Ein Klick auf die Mitgliederanzahl in einem Meeting-Gruppenchat öffnet jetzt ein Popup mit den aktuell anwesenden Benutzern und verlinkten Avataren für Profilvorschauen.
+- Das Meeting-Fenster verwendet im hellen Design jetzt eine deutlich hellere Overlay-Darstellung, damit die Vorab-Ansicht nicht mehr zu stark abgedunkelt ist.
 
 ## Geänderte Dateien / Komponenten
 
@@ -39,6 +40,7 @@ Nachfolgende Verbesserungen:
 - `src/adapters/social/messages/ui/languages/*/strings.xml` (Strings für Anwesenheitsübersicht)
 - `src/modules/jitsi-meet/api/tests/store.test.js` (Regressionstests für Schema-Vorbereitung)
 - `src/ui/tests/regression-followups.test.js` (Regressionen für Meeting-Chat-Titel und Mitgliederübersicht)
+- `src/modules/jitsi-meet/ui/jitsi-meet.css` (helleres Meeting-Fenster-Overlay, Spinner- und Staged-User-Kontrast im hellen Design)
 
 ## Commit-Links
 

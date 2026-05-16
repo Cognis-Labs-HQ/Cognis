@@ -21,6 +21,7 @@ Penyempurnaan lanjutan:
 - Tabel `jitsi_meetings` lama kini ditingkatkan langsung sehingga kolom modern yang hilang seperti `participant_key` dan `meeting_url` tidak lagi memblokir pembuatan rapat.
 - Chat grup yang terhubung ke rapat kini menyertakan tanggal rapat pada judul ruang.
 - Mengklik jumlah anggota pada chat grup rapat kini membuka popup yang menampilkan pengguna yang sedang hadir dengan avatar tertaut untuk pratinjau profil.
+- Meeting Window kini memakai tampilan overlay yang jauh lebih terang pada mode terang agar panggung pra-rapat tidak lagi tampak terlalu gelap.
 
 ## Berkas / Komponen yang Diubah
 
@@ -39,6 +40,7 @@ Penyempurnaan lanjutan:
 - `src/adapters/social/messages/ui/languages/*/strings.xml` (string ringkasan pengguna hadir)
 - `src/modules/jitsi-meet/api/tests/store.test.js` (cakupan regresi persiapan skema)
 - `src/ui/tests/regression-followups.test.js` (regresi judul chat rapat dan ringkasan anggota)
+- `src/modules/jitsi-meet/ui/jitsi-meet.css` (overlay Meeting Window yang lebih terang, spinner, dan kontras pengguna tersusun pada mode terang)
 
 ## Tautan Commit
 

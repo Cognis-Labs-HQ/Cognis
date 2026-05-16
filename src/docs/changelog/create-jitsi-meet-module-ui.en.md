@@ -21,6 +21,7 @@ Subsequent improvements:
 - Older `jitsi_meetings` tables are now upgraded in-place so missing modern columns such as `participant_key` and `meeting_url` no longer break meeting creation.
 - Meeting-linked group chats now include the meeting date in their room title.
 - Clicking the member count in a meeting group chat now opens a popup showing currently present users with linked avatars for profile previews.
+- The Meeting Window now uses a much lighter overlay treatment in light mode so the pre-meeting stage is readable instead of heavily shaded.
 
 ## Changed Files / Components
 
@@ -39,6 +40,7 @@ Subsequent improvements:
 - `src/adapters/social/messages/ui/languages/*/strings.xml` (present-user summary strings)
 - `src/modules/jitsi-meet/api/tests/store.test.js` (schema-preparation regression coverage)
 - `src/ui/tests/regression-followups.test.js` (meeting chat title and member-summary regressions)
+- `src/modules/jitsi-meet/ui/jitsi-meet.css` (lighter Meeting Window overlay, spinner, and staged-user contrast in light mode)
 
 ## Commit Links
 
