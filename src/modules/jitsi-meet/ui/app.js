@@ -1263,6 +1263,7 @@ export async function mount(root, { signal } = {}) {
     const composer = createPageComposer(root, {
         allowCustomization: true,
         elements,
+        preferenceKey: "meetings-layout",
         i18n,
         pageContext: {
             title: i18n.t("ui.reuse.meetings"),

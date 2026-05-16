@@ -124,3 +124,11 @@ test("jitsi meeting window has light-theme overlay overrides", () => {
         /body\[data-theme="light"\][\s\S]*\.jitsi-staged-participants[\s\S]*\.jitsi-participant-avatar-label\s*\{/,
     );
 });
+
+test("meetings page composer uses a dedicated layout preference key", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(source, /preferenceKey:\s*"meetings-layout"/);
+});
