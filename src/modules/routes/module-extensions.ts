@@ -106,8 +106,8 @@ export function createModuleExtensionRoutes(
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
     let handlers: RouteHandler[] = [];
-    const registeredUiModules = new Set<string>();
-    const registeredUiContributions = new Set<string>();
+    const staticDirsRegisteredByModule = new Set<string>();
+    const uiHooksRegisteredByModule = new Set<string>();
     const modulesRoot =
         process.env.COGNIS_MODULES_ROOT ??
         path.resolve(process.cwd(), "src", "modules");
@@ -141,12 +141,12 @@ export function createModuleExtensionRoutes(
         for (const manifest of manifests) {
             const moduleRoot = path.resolve(modulesRoot, manifest.id);
 
-            if (!registeredUiModules.has(manifest.id)) {
+            if (!staticDirsRegisteredByModule.has(manifest.id)) {
                 options?.uiRegistry?.registerModuleStaticDir(
                     manifest.id,
                     path.join(moduleRoot, "ui"),
                 );
-                registeredUiModules.add(manifest.id);
+                staticDirsRegisteredByModule.add(manifest.id);
             }
 
             if (!manifest.entrypoints?.api) continue;
@@ -159,7 +159,7 @@ export function createModuleExtensionRoutes(
                 if (
                     plugin.registerUi &&
                     options?.uiRegistry &&
-                    !registeredUiContributions.has(manifest.id)
+                    !uiHooksRegisteredByModule.has(manifest.id)
                 ) {
                     plugin.registerUi({
                         moduleId: manifest.id,
@@ -203,7 +203,7 @@ export function createModuleExtensionRoutes(
                             );
                         },
                     });
-                    registeredUiContributions.add(manifest.id);
+                    uiHooksRegisteredByModule.add(manifest.id);
                 }
                 if (typeof plugin.registerApiRoutes === "function") {
                     plugin.registerApiRoutes(

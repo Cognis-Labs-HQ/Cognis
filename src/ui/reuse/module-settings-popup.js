@@ -1,3 +1,58 @@
+/**
+ * Reusable module settings popup helper.
+ *
+ * Public exports:
+ * - openModuleSettingsPopup(options): Loads module config, renders a popup
+ *   form from field descriptors, saves values to the module endpoint, and
+ *   emits localized success/error toasts.
+ *
+ * Usage example:
+ *   await openModuleSettingsPopup({
+ *     i18n,
+ *     apiFetch,
+ *     openPopup,
+ *     showToast,
+ *     escapeHtml,
+ *     loadUrl: '/api/v1/modules/example/config',
+ *     saveUrl: '/api/v1/modules/example/config',
+ *     titleKey: 'module.example.config.title',
+ *     fields: [
+ *       {
+ *         id: 'example-url',
+ *         configKey: 'instanceUrl',
+ *         labelKey: 'module.example.config.instance_url',
+ *         placeholderKey: 'module.example.config.instance_url_placeholder',
+ *         type: 'url',
+ *       },
+ *     ],
+ *     noteKey: 'module.example.config.note',
+ *     successKey: 'module.example.config.save_success',
+ *     failedKey: 'module.example.config.save_failed',
+ *   });
+ *
+ * @param {{
+ *   i18n: { t: (key: string) => string },
+ *   apiFetch: (url: string, init?: RequestInit) => Promise<Response>,
+ *   openPopup: (options: object) => Promise<string | null>,
+ *   showToast: (message: string, options?: object) => void,
+ *   escapeHtml: (value: string) => string,
+ *   loadUrl: string,
+ *   saveUrl: string,
+ *   titleKey: string,
+ *   fields: Array<{
+ *     id: string,
+ *     configKey: string,
+ *     labelKey: string,
+ *     placeholderKey?: string,
+ *     type?: 'url' | 'text',
+ *     serialize?: (value: string) => unknown,
+ *   }>,
+ *   noteKey?: string,
+ *   successKey: string,
+ *   failedKey: string,
+ * }} options
+ * @returns {Promise<boolean>}
+ */
 export async function openModuleSettingsPopup({
     i18n,
     apiFetch,
@@ -13,6 +68,12 @@ export async function openModuleSettingsPopup({
     failedKey,
 }) {
     const loadResponse = await apiFetch(loadUrl);
+    if (!loadResponse.ok) {
+        showToast(i18n.t(failedKey), {
+            variant: "error",
+        });
+        return false;
+    }
     const loadPayload = await loadResponse.json().catch(() => ({ data: {} }));
     const config = loadPayload?.data ?? {};
 

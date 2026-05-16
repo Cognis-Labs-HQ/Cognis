@@ -492,6 +492,9 @@ export class DbMessagesStore {
         return result.rows?.[0] ? this.rowToRoom(result.rows[0]) : null;
     }
 
+    /**
+     * Updates a room title and returns the refreshed room row.
+     */
     async updateRoomTitle(
         roomId: string,
         title: string | null,
@@ -508,6 +511,10 @@ export class DbMessagesStore {
         return this.getRoom(roomId);
     }
 
+    /**
+     * Finds a group room whose member set exactly matches the provided account
+     * IDs (order-insensitive). Returns null when no exact match exists.
+     */
     async findGroupByExactMembers(
         memberAccountIds: string[],
     ): Promise<RoomRow | null> {
@@ -531,11 +538,16 @@ export class DbMessagesStore {
             this.rowToRoom(row),
         );
 
-        for (const candidate of candidates) {
-            const candidateMembers = await this.listMembers(candidate.id);
+        const candidateMemberships = await Promise.all(
+            candidates.map(async (candidate) => ({
+                candidate,
+                members: await this.listMembers(candidate.id),
+            })),
+        );
+        for (const entry of candidateMemberships) {
             const normalizedCandidateMembers = Array.from(
                 new Set(
-                    candidateMembers
+                    entry.members
                         .map((member) => String(member.accountId ?? "").trim())
                         .filter(Boolean),
                 ),
@@ -548,7 +560,7 @@ export class DbMessagesStore {
                         accountId === normalizedMembers[index],
                 )
             ) {
-                return candidate;
+                return entry.candidate;
             }
         }
 

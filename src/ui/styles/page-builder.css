@@ -746,6 +746,12 @@ body[data-theme="light"] .slider::before {
     color: var(--color-danger-outline-text, var(--color-danger-text));
 }
 
+.admin-inline-note {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.92rem;
+}
+
 .btn-animated {
     transition:
         background 0.18s ease,

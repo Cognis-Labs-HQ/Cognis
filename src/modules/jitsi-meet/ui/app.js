@@ -755,7 +755,10 @@ export async function mount(root, { signal } = {}) {
 // direct-load auto-mount side effects; keep direct URL loads working otherwise.
 if (!globalThis.__spaRouter) {
     try {
-        await mount(document.querySelector("#app"));
+        const mountController = new AbortController();
+        await mount(document.querySelector("#app"), {
+            signal: mountController.signal,
+        });
     } catch (error) {
         console.error(error);
     }

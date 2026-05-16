@@ -533,41 +533,59 @@ export class JitsiMeetStore {
             orderBy: [{ column: "updated_at", direction: "DESC" }],
             limit: 200,
         });
-        const meetings = [];
-        for (const row of meetingsResult.rows ?? []) {
-            const meeting = await this.getMeetingById(String(row.id));
-            if (!meeting) continue;
-            const presence = await this.listPresence(meeting.id);
-            const activePresence = presence.filter((entry) => {
-                if (!entry.active) return false;
-                const seenAt = Date.parse(entry.lastSeenAt);
-                return Number.isFinite(seenAt)
-                    ? seenAt >= Date.now() - ACTIVE_PRESENCE_WINDOW_MS
-                    : false;
-            });
-            if (activePresence.length === 0) continue;
-            const participants = await this.listParticipants(meeting.id);
-            const state = await this.getMeetingState(meeting.id);
-            meetings.push({
-                id: meeting.id,
-                meetingUrl: meeting.meetingUrl,
-                meetingName: meeting.meetingName,
-                classroomId: meeting.classroomId,
-                createdBy: meeting.createdBy,
-                createdAt: meeting.createdAt,
-                participantCount: participants.length,
-                activeSessionCount: activePresence.length,
-                activeUsernames: Array.from(
-                    new Set(activePresence.map((entry) => entry.username)),
-                ).sort(),
-                authRequired: state.authRequired,
-                authCompleted: Boolean(state.authCompletedAt),
-                updatedAt: meeting.updatedAt,
-            });
-        }
-        return meetings;
+        const rows = meetingsResult.rows ?? [];
+        const mappedMeetings = await Promise.all(
+            rows.map(async (row) => {
+                const meeting = {
+                    id: String(row.id),
+                    meetingUrl: String(row.meeting_url),
+                    meetingName: String(row.meeting_name ?? "Cognis Classroom"),
+                    classroomId: row.classroom_id
+                        ? String(row.classroom_id)
+                        : null,
+                    createdBy: String(row.created_by),
+                    createdAt: String(row.created_at),
+                    updatedAt: String(row.updated_at),
+                };
+                const [presence, participants, state] = await Promise.all([
+                    this.listPresence(meeting.id),
+                    this.listParticipants(meeting.id),
+                    this.getMeetingState(meeting.id),
+                ]);
+                const activePresence = presence.filter((entry) => {
+                    if (!entry.active) return false;
+                    const seenAt = Date.parse(entry.lastSeenAt);
+                    return Number.isFinite(seenAt)
+                        ? seenAt >= Date.now() - ACTIVE_PRESENCE_WINDOW_MS
+                        : false;
+                });
+                if (activePresence.length === 0) return null;
+                return {
+                    id: meeting.id,
+                    meetingUrl: meeting.meetingUrl,
+                    meetingName: meeting.meetingName,
+                    classroomId: meeting.classroomId,
+                    createdBy: meeting.createdBy,
+                    createdAt: meeting.createdAt,
+                    participantCount: participants.length,
+                    activeSessionCount: activePresence.length,
+                    activeUsernames: Array.from(
+                        new Set(activePresence.map((entry) => entry.username)),
+                    ).sort(),
+                    authRequired: state.authRequired,
+                    authCompleted: Boolean(state.authCompletedAt),
+                    updatedAt: meeting.updatedAt,
+                };
+            }),
+        );
+        return mappedMeetings.filter(Boolean);
     }
 
+    /**
+     * Determines whether the current participant may initiate meeting auth.
+     * Priority is granted to the first joiner for two minutes; after timeout,
+     * any participant may initiate if auth is still pending.
+     */
     canCurrentUserInitiateAuth(state, currentUsername) {
         if (!state.authRequired) return false;
         if (state.authCompletedAt) return false;
@@ -585,6 +603,9 @@ export class JitsiMeetStore {
         return now - authStartMs >= AUTH_WAIT_TIMEOUT_MS;
     }
 
+    /**
+     * Builds the normalized meeting payload shape returned by API routes.
+     */
     buildMeetingPayload(meeting, participants, state, extra = {}) {
         return {
             id: meeting.id,
