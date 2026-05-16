@@ -492,6 +492,66 @@ export class DbMessagesStore {
         return result.rows?.[0] ? this.rowToRoom(result.rows[0]) : null;
     }
 
+    async updateRoomTitle(
+        roomId: string,
+        title: string | null,
+    ): Promise<RoomRow | null> {
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "chatrooms",
+            set: {
+                title,
+                updated_at: new Date().toISOString(),
+            },
+            where: [{ column: "id", value: roomId }],
+        });
+        return this.getRoom(roomId);
+    }
+
+    async findGroupByExactMembers(
+        memberAccountIds: string[],
+    ): Promise<RoomRow | null> {
+        const normalizedMembers = Array.from(
+            new Set(
+                memberAccountIds
+                    .map((accountId) => String(accountId ?? "").trim())
+                    .filter(Boolean),
+            ),
+        ).sort();
+        if (normalizedMembers.length < 2) return null;
+
+        const candidateRoomsResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chatrooms",
+            where: [{ column: "kind", value: "group" }],
+            orderBy: [{ column: "updated_at", direction: "DESC" }],
+        });
+        const candidates = (candidateRoomsResult.rows ?? []).map((row) =>
+            this.rowToRoom(row),
+        );
+
+        for (const candidate of candidates) {
+            const candidateMembers = await this.listMembers(candidate.id);
+            const normalizedCandidateMembers = Array.from(
+                new Set(
+                    candidateMembers
+                        .map((member) => String(member.accountId ?? "").trim())
+                        .filter(Boolean),
+                ),
+            ).sort();
+            if (
+                normalizedCandidateMembers.length === normalizedMembers.length &&
+                normalizedCandidateMembers.every(
+                    (accountId, index) => accountId === normalizedMembers[index],
+                )
+            ) {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
     async appendMessage(input: {
         roomId: string;
         senderId: string;

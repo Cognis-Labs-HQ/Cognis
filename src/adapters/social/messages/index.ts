@@ -176,6 +176,97 @@ export async function bootstrapSocialAdapter(
         },
     );
 
+    ctx.capabilities.contribute(
+        "social:messages:resolveGroupChatUrl",
+        async (input: {
+            usernames: string[];
+            title?: string | null;
+            createdByAccountId?: string;
+        }): Promise<{
+            roomId: string;
+            url: string;
+            reused: boolean;
+        }> => {
+            const normalizedUsernames = Array.from(
+                new Set(
+                    (Array.isArray(input.usernames) ? input.usernames : [])
+                        .map((username) =>
+                            String(username ?? "")
+                                .trim()
+                                .replace(/^@+/, "")
+                                .toLowerCase(),
+                        )
+                        .filter(Boolean),
+                ),
+            );
+            const accountIds: string[] = [];
+            if (input.createdByAccountId) {
+                accountIds.push(String(input.createdByAccountId));
+            }
+            for (const username of normalizedUsernames) {
+                const profile = await profileStore.getProfileByHandle(username);
+                if (!profile?.accountId) continue;
+                if (!accountIds.includes(profile.accountId)) {
+                    accountIds.push(profile.accountId);
+                }
+            }
+            if (accountIds.length < 2) {
+                throw new Error(
+                    "At least two valid participants are required for group chat resolution.",
+                );
+            }
+
+            const title =
+                typeof input.title === "string" && input.title.trim().length > 0
+                    ? input.title.trim()
+                    : null;
+            const existing = await messagesStore.findGroupByExactMembers(
+                accountIds,
+            );
+            if (existing) {
+                if (title && existing.title !== title) {
+                    await messagesStore.updateRoomTitle(existing.id, title);
+                }
+                return {
+                    roomId: existing.id,
+                    url: `/messages/${encodeURIComponent(existing.id)}`,
+                    reused: true,
+                };
+            }
+
+            const ownerAccountId = String(
+                input.createdByAccountId ?? accountIds[0],
+            );
+            const room = await messagesStore.createRoom(
+                "group",
+                title,
+                ownerAccountId,
+            );
+            for (const accountId of accountIds) {
+                await messagesStore.addMember(
+                    room.id,
+                    accountId,
+                    accountId === ownerAccountId ? "owner" : "member",
+                );
+            }
+            await messagesStore.generateAndStoreRoomKey(room.id);
+            const ownerProfile = await profileStore.getProfile(ownerAccountId);
+            await messagesStore.appendRoomEvent({
+                roomId: room.id,
+                actorId: ownerAccountId,
+                eventType: "member_joined",
+                subjectAccountId: ownerAccountId,
+                subjectHandle: ownerProfile?.handle ?? null,
+                subjectDisplayName: ownerProfile?.displayName ?? null,
+            });
+            return {
+                roomId: room.id,
+                url: `/messages/${encodeURIComponent(room.id)}`,
+                reused: false,
+            };
+        },
+    );
+
     ctx.registerRoute(
         createMessagesRoutes({
             messagesStore,

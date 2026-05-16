@@ -1,0 +1,145 @@
+.jitsi-page-layout {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-areas:
+    'stage chat'
+    'participants participants';
+}
+
+.jitsi-meeting-stage {
+  grid-area: stage;
+  min-height: 28rem;
+}
+
+.jitsi-stage-frame-wrap {
+  position: relative;
+  min-height: 28rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.jitsi-stage-frame {
+  width: 100%;
+  min-height: 28rem;
+  border: 0;
+}
+
+.jitsi-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.78) 0%,
+    rgba(15, 23, 42, 0.6) 100%
+  );
+}
+
+.jitsi-overlay-title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.jitsi-overlay-message {
+  margin: 0;
+  max-width: 52ch;
+}
+
+.jitsi-overlay-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.jitsi-start-ready {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.jitsi-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.jitsi-spinner {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  animation: jitsi-spin 0.9s linear infinite;
+}
+
+.jitsi-chat-pane {
+  grid-area: chat;
+}
+
+.jitsi-participants-pane {
+  grid-area: participants;
+}
+
+.jitsi-participants-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.jitsi-participant-search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.jitsi-participant-search input {
+  min-width: 14rem;
+}
+
+.jitsi-participants-tables {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.drag-handle {
+  text-align: center;
+  width: 2rem;
+  cursor: grab;
+}
+
+.admin-inline-note {
+  opacity: 0.9;
+  font-size: 0.92rem;
+}
+
+@media (max-width: 1080px) {
+  .jitsi-page-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'stage'
+      'participants'
+      'chat';
+  }
+
+  .jitsi-participants-tables {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@keyframes jitsi-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

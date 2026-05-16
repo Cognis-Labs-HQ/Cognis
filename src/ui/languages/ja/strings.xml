@@ -12,6 +12,15 @@
   <string name="ui.reuse.administration">管理</string>
   <string name="ui.reuse.logout">ログアウト</string>
   <string name="ui.reuse.modules">モジュール</string>
+  <string name="ui.reuse.meeting">ミーティング</string>
+  <string name="ui.reuse.meetings">ミーティング</string>
+  <string name="ui.reuse.username">ユーザー名</string>
+  <string name="ui.reuse.display_name">表示名</string>
+  <string name="ui.reuse.move">移動</string>
+  <string name="ui.reuse.updated_at">更新日時</string>
+  <string name="ui.reuse.unknown">不明</string>
+  <string name="ui.reuse.yes">はい</string>
+  <string name="ui.reuse.no">いいえ</string>
   <string name="ui.reuse.file_integrity">ファイル整合性</string>
   <string name="ui.reuse.navigation">ナビゲーション</string>
   <string name="ui.reuse.appearance">外観</string>

@@ -130,12 +130,19 @@ function renderModulesContent(modules) {
             const pill = getStatePill(mod.status);
             const disableBlocked = mod.class === "core";
             const toggleTitle = i18n.t("ui.app.admin.toggle_module");
+            const componentConfigScriptUrl = String(
+                mod?.ui?.componentConfig?.scriptUrl ?? "",
+            ).trim();
+            const configureButton = componentConfigScriptUrl
+                ? `<button type="button" class="btn btn-secondary module-configure-button" data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}" data-module-id="${escapeHtml(mod.id)}">${escapeHtml(i18n.t("ui.reuse.configure"))}</button>`
+                : "";
 
             return `
         <details class="module-row" data-module="${mod.id}">
           <summary class="module-row-summary">
             <span class="module-row-title"><strong>${mod.name}</strong></span>
             <span class="state-pill ${pill.className}">${pill.label}</span>
+            ${configureButton}
             <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
               <input type="checkbox" data-module="${mod.id}" ${mod.status === "enabled" ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
               <span class="slider"></span>
@@ -400,6 +407,42 @@ function bindModuleToggles() {
             });
         },
     );
+}
+
+function bindModuleConfigureButtons() {
+    root.querySelectorAll(".module-configure-button").forEach((button) => {
+        button.addEventListener("click", async (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const moduleId = button.getAttribute("data-module-id");
+            const scriptUrl = button.getAttribute("data-module-config-script-url");
+            if (!moduleId || !scriptUrl) return;
+            try {
+                const moduleUi = await import(scriptUrl);
+                if (typeof moduleUi.openModuleConfigPopup !== "function") return;
+                const didSave = await moduleUi.openModuleConfigPopup({
+                    i18n,
+                    apiFetch,
+                    openPopup,
+                    showToast,
+                    escapeHtml,
+                    moduleId,
+                });
+                if (didSave) {
+                    modules = await loadModules();
+                    composer.refresh(elements);
+                }
+            } catch (error) {
+                showToast(i18n.t("ui.reuse.save_failed"), {
+                    variant: "error",
+                });
+                console.error(
+                    "[administration] Failed to open module settings popup.",
+                    error,
+                );
+            }
+        });
+    });
 }
 
 function bindGatewayToggles() {
@@ -1387,6 +1430,7 @@ export async function mount(rootEl, { signal } = {}) {
                 ],
                 onRender: () => {
                     bindModuleToggles();
+                    bindModuleConfigureButtons();
                     bindGatewayToggles();
                     bindAdapterToggles();
                     bindAdapterRows();

@@ -20,7 +20,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Registrierungs-Token      | `src/adapters/registration/token/`  | `0.1.1` |
 | Öffentliche Registrierung | `src/adapters/registration/public/` | `0.1.0` |
 | Profil (Social)           | `src/adapters/social/profile/`      | `1.0.0` |
-| Nachrichten (Social)      | `src/adapters/social/messages/`     | `1.0.0` |
+| Nachrichten (Social)      | `src/adapters/social/messages/`     | `1.3.0` |
 
 ## Gateways
 
@@ -51,5 +51,6 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Komponente       | Pfad                              | Version |
 | ---------------- | --------------------------------- | ------- |
 | Sample Analytics | `src/modules/sample-analytics/`   | `0.1.0` |
+| Jitsi Meet       | `src/modules/jitsi-meet/`         | `1.0.0` |
 | Cognis Japanisch | `src/modules/study/languages/ja/` | `1.2.2` |
 | Cognis Englisch  | `src/modules/study/languages/en/` | `1.2.0` |

@@ -331,6 +331,8 @@ const server = buildServer({
     onModuleStateChanged: capabilities.get<
         (moduleId: string, enabled: boolean) => Promise<void> | void
     >("modules:onStateChanged"),
+    getModuleCapability: <T>(capabilityId: string) =>
+        capabilities.get<T>(capabilityId),
     loadModuleStates: async () => {
         const result = await dbExecutor.executeCommand({
             option: "SELECT",

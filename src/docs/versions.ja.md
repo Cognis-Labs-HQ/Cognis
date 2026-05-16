@@ -20,7 +20,7 @@
 | 登録トークン               | `src/adapters/registration/token/`  | `0.1.1`    |
 | 公開登録                   | `src/adapters/registration/public/` | `0.1.0`    |
 | プロフィール (ソーシャル)  | `src/adapters/social/profile/`      | `1.0.0`    |
-| メッセージ (ソーシャル)    | `src/adapters/social/messages/`     | `1.0.0`    |
+| メッセージ (ソーシャル)    | `src/adapters/social/messages/`     | `1.3.0`    |
 
 ## ゲートウェイ
 
@@ -45,5 +45,6 @@
 | コンポーネント | パス                              | バージョン |
 | -------------- | --------------------------------- | ---------- |
 | サンプル分析   | `src/modules/sample-analytics/`   | `0.1.0`    |
+| Jitsi Meet     | `src/modules/jitsi-meet/`         | `1.0.0`    |
 | Cognis 日本語  | `src/modules/study/languages/ja/` | `1.2.2`    |
 | Cognis 英語    | `src/modules/study/languages/en/` | `1.2.0`    |

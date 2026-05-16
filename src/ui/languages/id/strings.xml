@@ -12,6 +12,15 @@
   <string name="ui.reuse.administration">Administrasi</string>
   <string name="ui.reuse.logout">Keluar</string>
   <string name="ui.reuse.modules">Modul</string>
+  <string name="ui.reuse.meeting">Rapat</string>
+  <string name="ui.reuse.meetings">Rapat</string>
+  <string name="ui.reuse.username">Nama Pengguna</string>
+  <string name="ui.reuse.display_name">Nama Tampilan</string>
+  <string name="ui.reuse.move">Pindahkan</string>
+  <string name="ui.reuse.updated_at">Diperbarui Pada</string>
+  <string name="ui.reuse.unknown">Tidak Diketahui</string>
+  <string name="ui.reuse.yes">Ya</string>
+  <string name="ui.reuse.no">Tidak</string>
   <string name="ui.reuse.file_integrity">Integritas Berkas</string>
   <string name="ui.reuse.navigation">Navigasi</string>
   <string name="ui.reuse.appearance">Tampilan</string>

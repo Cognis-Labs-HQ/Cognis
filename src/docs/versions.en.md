@@ -37,7 +37,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.0.3` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.2.0` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.3.0` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.1` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
@@ -71,5 +71,6 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component        | Path                              | Version |
 | ---------------- | --------------------------------- | ------- |
 | Sample Analytics | `src/modules/sample-analytics/`   | `0.1.0` |
+| Jitsi Meet       | `src/modules/jitsi-meet/`         | `1.0.0` |
 | Cognis Japanese  | `src/modules/study/languages/ja/` | `1.2.2` |
 | Cognis English   | `src/modules/study/languages/en/` | `1.2.0` |

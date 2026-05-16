@@ -70,6 +70,7 @@ export interface ApiDependencies {
         moduleId: string,
         enabled: boolean,
     ) => Promise<void> | void;
+    getModuleCapability?: <T>(capabilityId: string) => T | undefined;
 }
 
 export function buildServer(deps: ApiDependencies) {
@@ -82,6 +83,10 @@ export function buildServer(deps: ApiDependencies) {
         deps.moduleRuntimeGateway,
         (moduleId) => enabledModules.has(moduleId),
         log,
+        {
+            uiRegistry: deps.uiRegistry,
+            getCapability: deps.getModuleCapability,
+        },
     );
 
     const moduleRoutes = createModuleRoutes(moduleService, {
