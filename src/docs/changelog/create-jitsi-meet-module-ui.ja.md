@@ -27,6 +27,7 @@
 - 事前チェックはミーティング開始前に実行され、参加者選択とは独立して表示され、成功するまで開始をブロックします。
 - 埋め込み Jitsi 参加では参加者情報を事前入力し、追加の prejoin 手順を省略し、別セッションがミーティングを引き継いだ場合は追い出されたタブを切断します。
 - 生成されるミーティング用スラッグは読みやすい形式（`classroom-xxxxxxxx` / `cognis-classroom-xxxxxxxx`）を維持し、Jitsi の参加名が崩れないようになりました。
+- ミーティングウィンドウとチャットは、既定で再び半分/半分の幅で表示されるようになり、高さ・幅とも自由にリサイズできるまま、誤って保存された全幅レイアウトをリセットするためにレイアウト設定キーも更新されました。
 
 ## 変更されたファイル / コンポーネント
 
@@ -47,11 +48,13 @@
 - `src/ui/tests/regression-followups.test.js`（ミーティングチャットタイトルとメンバー要約のリグレッション）
 - `src/modules/jitsi-meet/ui/jitsi-meet.css`（ライトテーマでの Meeting Window オーバーレイ、スピナー、配置済みユーザーのコントラスト改善）
 - `src/modules/jitsi-meet/ui/app.js`（ネイティブなミーティングチャット、事前チェックの先行ゲート、事前入力付き Jitsi 参加 URL、セッション引き継ぎ時のキックアウト処理）
+- `src/modules/jitsi-meet/ui/app.js`（ミーティングウィンドウとチャットを半幅既定に戻し、自由なリサイズを維持、レイアウト設定キーを更新）
 - `src/modules/jitsi-meet/api/index.js`（ユーザー向け事前チェックエンドポイント、引き継ぎ検知用のアクティブセッション状態返却）
 - `src/modules/jitsi-meet/api/store.js`（読みやすい既定ミーティングスラッグ生成）
 - `src/modules/jitsi-meet/ui/languages/*/strings.xml`（ネイティブチャット、事前チェック、セッション引き継ぎ状態の文言）
-- `src/modules/jitsi-meet/package.json`（モジュール版を `1.0.1` に更新）
-- `src/docs/versions.en.md`（Jitsi Meet の版を `1.0.1` に更新）
+- `src/modules/jitsi-meet/package.json`（モジュール版を `1.0.3` に更新）
+- `src/modules/jitsi-meet/manifest.json`（モジュールマニフェスト版を `1.0.3` に更新）
+- `src/docs/versions.en.md`（Jitsi Meet の版を `1.0.3` に更新）
 
 ## コミットリンク
 

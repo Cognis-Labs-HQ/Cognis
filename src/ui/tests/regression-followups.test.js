@@ -130,7 +130,7 @@ test("meetings page composer uses a dedicated layout preference key", () => {
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
-    assert.match(source, /preferenceKey:\s*"meetings-layout"/);
+    assert.match(source, /preferenceKey:\s*"meetings-layout-v2"/);
 });
 
 test("jitsi meetings embed enforces subject, theme, password, and reduced toolbar", () => {
@@ -189,16 +189,24 @@ test("jitsi meetings reset participant state and hide chat hint when ready", () 
     assert.match(source, /chatHint\.hidden = true;/);
 });
 
-test("meetings page allows full-width meeting and chat panels in composer", () => {
+test("meetings page defaults meeting and chat panels to half-width while keeping them resizable", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
     assert.match(
         source,
-        /id:\s*"jitsi-stage"[\s\S]*gridSize:\s*\{[\s\S]*max:\s*"full"/,
+        /id:\s*"jitsi-stage"[\s\S]*gridSize:\s*\{[\s\S]*default:\s*\[6,\s*5\][\s\S]*min:\s*\[4,\s*4\]/,
     );
     assert.match(
+        source,
+        /id:\s*"jitsi-chat"[\s\S]*gridSize:\s*\{[\s\S]*default:\s*\[6,\s*5\][\s\S]*min:\s*\[4,\s*4\]/,
+    );
+    assert.doesNotMatch(
+        source,
+        /id:\s*"jitsi-stage"[\s\S]*gridSize:\s*\{[\s\S]*max:\s*"full"/,
+    );
+    assert.doesNotMatch(
         source,
         /id:\s*"jitsi-chat"[\s\S]*gridSize:\s*\{[\s\S]*max:\s*"full"/,
     );

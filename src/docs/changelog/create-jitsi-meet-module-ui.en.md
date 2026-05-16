@@ -27,6 +27,7 @@ Subsequent improvements:
 - Pre-flight checks now run before meeting start, stay visible independently of participant selection, and block meeting start until they succeed.
 - Embedded Jitsi joins now prefill participant info, skip the extra prejoin step, and kick the displaced tab out when another session reclaims the meeting.
 - Generated meeting room slugs now stay readable (`classroom-xxxxxxxx` / `cognis-classroom-xxxxxxxx`) so Jitsi no longer shows a garbled join name.
+- Meeting Window and Chat now default back to a half-width / half-width layout, remain freely resizable, and use a refreshed layout preference key to clear the accidental full-width default.
 
 ## Changed Files / Components
 
@@ -47,11 +48,13 @@ Subsequent improvements:
 - `src/ui/tests/regression-followups.test.js` (meeting chat title and member-summary regressions)
 - `src/modules/jitsi-meet/ui/jitsi-meet.css` (lighter Meeting Window overlay, spinner, and staged-user contrast in light mode)
 - `src/modules/jitsi-meet/ui/app.js` (native meeting chat, up-front pre-flight gating, prefilled Jitsi join URL, reclaim kick-out handling)
+- `src/modules/jitsi-meet/ui/app.js` (Meeting Window and Chat restored to half-width defaults with free resizing, refreshed layout preference key)
 - `src/modules/jitsi-meet/api/index.js` (user-facing pre-flight endpoint, session-active state reporting for reclaim detection)
 - `src/modules/jitsi-meet/api/store.js` (readable default meeting slug generation)
 - `src/modules/jitsi-meet/ui/languages/*/strings.xml` (native chat + pre-flight + reclaim status copy)
-- `src/modules/jitsi-meet/package.json` (module version bumped to `1.0.1`)
-- `src/docs/versions.en.md` (Jitsi Meet version updated to `1.0.1`)
+- `src/modules/jitsi-meet/package.json` (module version bumped to `1.0.3`)
+- `src/modules/jitsi-meet/manifest.json` (module manifest version bumped to `1.0.3`)
+- `src/docs/versions.en.md` (Jitsi Meet version updated to `1.0.3`)
 
 ## Commit Links
 

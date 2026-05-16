@@ -1524,7 +1524,6 @@ export async function mount(root, { signal } = {}) {
             gridSize: {
                 default: [6, 5],
                 min: [4, 4],
-                max: "full",
             },
             render: () => buildStageMarkup(i18n),
         },
@@ -1535,7 +1534,6 @@ export async function mount(root, { signal } = {}) {
             gridSize: {
                 default: [6, 5],
                 min: [4, 4],
-                max: "full",
             },
             render: () => buildChatMarkup(i18n),
         },
@@ -1560,7 +1558,7 @@ export async function mount(root, { signal } = {}) {
     const composer = createPageComposer(root, {
         allowCustomization: true,
         elements,
-        preferenceKey: "meetings-layout",
+        preferenceKey: "meetings-layout-v2",
         i18n,
         pageContext: {
             title: i18n.t("ui.reuse.meetings"),
