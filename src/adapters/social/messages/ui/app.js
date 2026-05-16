@@ -873,6 +873,14 @@ export async function mount(root, { signal } = {}) {
             },
         );
         if (!res.ok) {
+            if (res.status !== 404) {
+                showToast(
+                    i18n.t("module.social.messages.present_users_unavailable"),
+                    {
+                        variant: "info",
+                    },
+                );
+            }
             return null;
         }
         return (await res.json()).data ?? null;

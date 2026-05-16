@@ -39,7 +39,11 @@ function normalizeUsername(value) {
 }
 
 function buildMeetingChatTitle(createdAt = null) {
-    const isoDate = String(createdAt ?? new Date().toISOString()).slice(0, 10);
+    const parsedCreatedAt =
+        typeof createdAt === "string" ? Date.parse(createdAt) : Number.NaN;
+    const isoDate = Number.isFinite(parsedCreatedAt)
+        ? new Date(parsedCreatedAt).toISOString().slice(0, 10)
+        : new Date().toISOString().slice(0, 10);
     return `${MEETING_TITLE} — ${isoDate}`;
 }
 

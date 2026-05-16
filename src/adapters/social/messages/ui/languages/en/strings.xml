@@ -40,6 +40,7 @@
   <string name="module.social.messages.present_users_title">Present Users</string>
   <string name="module.social.messages.present_users_empty">No users are currently present in this meeting.</string>
   <string name="module.social.messages.present_now">Present Now</string>
+  <string name="module.social.messages.present_users_unavailable">Live presence could not be loaded right now.</string>
   <string name="module.social.messages.member_summary_title">Group Members</string>
   <string name="module.social.messages.member_summary_empty">No members found for this conversation.</string>
 </resources>

@@ -222,6 +222,14 @@ export class JitsiMeetStore {
             return;
         }
         if (typeof this.db.execute !== "function") {
+            this.log?.(
+                "warn",
+                "Skipping Jitsi meeting schema preparation because raw execute() is unavailable.",
+                {
+                    component: "module:jitsi-meet",
+                    operation: "prepareMeetingSchema",
+                },
+            );
             return;
         }
 
@@ -270,10 +278,15 @@ export class JitsiMeetStore {
                 String(meetingRow.id),
             );
             if (participantUsernames.length === 0) {
-                participantUsernames = normalizeUsernames([
-                    meetingRow.participant_a,
-                    meetingRow.participant_b,
-                ]);
+                const hasLegacyParticipantColumns =
+                    "participant_a" in meetingRow ||
+                    "participant_b" in meetingRow;
+                participantUsernames = hasLegacyParticipantColumns
+                    ? normalizeUsernames([
+                          meetingRow.participant_a,
+                          meetingRow.participant_b,
+                      ])
+                    : [];
             }
             if (participantUsernames.length === 0) {
                 continue;

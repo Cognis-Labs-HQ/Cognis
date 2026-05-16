@@ -40,6 +40,7 @@
   <string name="module.social.messages.present_users_title">Pengguna yang Hadir</string>
   <string name="module.social.messages.present_users_empty">Belum ada pengguna yang sedang hadir di rapat ini.</string>
   <string name="module.social.messages.present_now">Sedang Hadir</string>
+  <string name="module.social.messages.present_users_unavailable">Kehadiran langsung belum dapat dimuat saat ini.</string>
   <string name="module.social.messages.member_summary_title">Anggota Grup</string>
   <string name="module.social.messages.member_summary_empty">Tidak ada anggota yang ditemukan untuk percakapan ini.</string>
 </resources>
