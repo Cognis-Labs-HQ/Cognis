@@ -31,6 +31,7 @@
   <string name="module.jitsi_meet.participants.search">参加者を検索</string>
   <string name="module.jitsi_meet.participants.available">利用可能な参加者</string>
   <string name="module.jitsi_meet.participants.selected">ミーティング参加者</string>
+  <string name="module.jitsi_meet.participants.none">表示できる参加者がいません。</string>
   <string name="module.jitsi_meet.admin.config.title">Jitsi Meet 設定</string>
   <string name="module.jitsi_meet.admin.config.instance_url">Jitsi インスタンス URL</string>
   <string name="module.jitsi_meet.admin.config.instance_url_description">Jitsi デプロイのベース URL を完全な形式で入力してください。</string>

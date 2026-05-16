@@ -1,14 +1,4 @@
-.jitsi-page-layout {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-    grid-template-areas:
-        "stage chat"
-        "participants participants";
-}
-
 .jitsi-meeting-stage {
-    grid-area: stage;
     min-height: 28rem;
 }
 
@@ -82,11 +72,11 @@
 }
 
 .jitsi-chat-pane {
-    grid-area: chat;
+    min-height: 28rem;
 }
 
 .jitsi-participants-pane {
-    grid-area: participants;
+    min-height: 16rem;
 }
 
 .jitsi-participants-header {
@@ -119,17 +109,19 @@
     cursor: grab;
 }
 
-@media (max-width: 1080px) {
-    .jitsi-page-layout {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-areas:
-            "stage"
-            "participants"
-            "chat";
-    }
+.jitsi-participants-empty-row td {
+    text-align: center;
+    color: var(--text-muted);
+}
 
+@media (max-width: 1080px) {
     .jitsi-participants-tables {
         grid-template-columns: minmax(0, 1fr);
+    }
+
+    .jitsi-meeting-stage,
+    .jitsi-chat-pane {
+        min-height: 22rem;
     }
 }
 

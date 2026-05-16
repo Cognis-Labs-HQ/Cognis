@@ -31,6 +31,7 @@
   <string name="module.jitsi_meet.participants.search">Cari Peserta</string>
   <string name="module.jitsi_meet.participants.available">Peserta Tersedia</string>
   <string name="module.jitsi_meet.participants.selected">Peserta Rapat</string>
+  <string name="module.jitsi_meet.participants.none">Tidak ada peserta untuk ditampilkan.</string>
   <string name="module.jitsi_meet.admin.config.title">Konfigurasi Jitsi Meet</string>
   <string name="module.jitsi_meet.admin.config.instance_url">URL Instans Jitsi</string>
   <string name="module.jitsi_meet.admin.config.instance_url_description">Masukkan URL dasar lengkap dari deployment Jitsi kamu.</string>

@@ -63,75 +63,91 @@ function createParticipantRow(username, displayName) {
     return row;
 }
 
-function buildPageMarkup(i18n) {
+function createEmptyParticipantRow(message) {
+    const row = document.createElement("tr");
+    row.className = "jitsi-participants-empty-row";
+    const cell = document.createElement("td");
+    cell.colSpan = 3;
+    cell.textContent = message;
+    row.append(cell);
+    return row;
+}
+
+function buildStageMarkup(i18n) {
     return `
-    <section class="jitsi-page-layout">
-      <div class="jitsi-meeting-stage card-elevated">
-        <div class="jitsi-stage-frame-wrap">
-          <iframe id="jitsi-meeting-frame" class="jitsi-stage-frame" title="${escapeHtml(i18n.t("ui.reuse.meeting"))}" allow="camera; microphone; fullscreen; display-capture" hidden></iframe>
-          <div id="jitsi-overlay" class="jitsi-overlay">
-            <h3 class="jitsi-overlay-title">${escapeHtml(i18n.t("module.jitsi_meet.overlay.title"))}</h3>
-            <p id="jitsi-overlay-message" class="jitsi-overlay-message">${escapeHtml(i18n.t("module.jitsi_meet.overlay.select_participants"))}</p>
-            <div class="jitsi-overlay-actions">
-              <button id="jitsi-start-btn" class="btn-animated" type="button" disabled>${escapeHtml(i18n.t("module.jitsi_meet.overlay.start_meeting"))}</button>
-              <button id="jitsi-auth-btn" class="btn-cancel" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.auth_required"))}</button>
-              <button id="jitsi-reclaim-btn" class="btn-cancel" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.reclaim"))}</button>
-            </div>
-            <div id="jitsi-loading" class="jitsi-loading" hidden>
-              <span class="jitsi-spinner" aria-hidden="true"></span>
-              <span>${escapeHtml(i18n.t("module.jitsi_meet.overlay.loading"))}</span>
-            </div>
+    <div class="jitsi-meeting-stage card-elevated">
+      <div class="jitsi-stage-frame-wrap">
+        <iframe id="jitsi-meeting-frame" class="jitsi-stage-frame" title="${escapeHtml(i18n.t("ui.reuse.meeting"))}" allow="camera; microphone; fullscreen; display-capture" hidden></iframe>
+        <div id="jitsi-overlay" class="jitsi-overlay">
+          <h3 class="jitsi-overlay-title">${escapeHtml(i18n.t("module.jitsi_meet.overlay.title"))}</h3>
+          <p id="jitsi-overlay-message" class="jitsi-overlay-message">${escapeHtml(i18n.t("module.jitsi_meet.overlay.select_participants"))}</p>
+          <div class="jitsi-overlay-actions">
+            <button id="jitsi-start-btn" class="btn-animated" type="button" disabled>${escapeHtml(i18n.t("module.jitsi_meet.overlay.start_meeting"))}</button>
+            <button id="jitsi-auth-btn" class="btn-cancel" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.auth_required"))}</button>
+            <button id="jitsi-reclaim-btn" class="btn-cancel" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.reclaim"))}</button>
+          </div>
+          <div id="jitsi-loading" class="jitsi-loading" hidden>
+            <span class="jitsi-spinner" aria-hidden="true"></span>
+            <span>${escapeHtml(i18n.t("module.jitsi_meet.overlay.loading"))}</span>
           </div>
         </div>
       </div>
+    </div>
+  `;
+}
 
-      <aside class="jitsi-chat-pane card-elevated">
-        <h3>${escapeHtml(i18n.t("module.jitsi_meet.chat.heading"))}</h3>
-        <p id="jitsi-chat-hint">${escapeHtml(i18n.t("module.jitsi_meet.chat.pending"))}</p>
-        <a id="jitsi-chat-link" class="btn-cancel" href="/messages" hidden>${escapeHtml(i18n.t("module.jitsi_meet.chat.open"))}</a>
-      </aside>
+function buildChatMarkup(i18n) {
+    return `
+    <aside class="jitsi-chat-pane card-elevated">
+      <h3>${escapeHtml(i18n.t("module.jitsi_meet.chat.heading"))}</h3>
+      <p id="jitsi-chat-hint">${escapeHtml(i18n.t("module.jitsi_meet.chat.pending"))}</p>
+      <a id="jitsi-chat-link" class="btn-cancel" href="/messages" hidden>${escapeHtml(i18n.t("module.jitsi_meet.chat.open"))}</a>
+    </aside>
+  `;
+}
 
-      <section class="jitsi-participants-pane card-elevated">
-        <header class="jitsi-participants-header">
-          <h3>${escapeHtml(i18n.t("module.jitsi_meet.participants.heading"))}</h3>
-          <label class="jitsi-participant-search">
-            <span>${escapeHtml(i18n.t("module.jitsi_meet.participants.search"))}</span>
-            <input id="jitsi-participant-search-input" type="search" placeholder="@username" />
-          </label>
-        </header>
-        <div class="jitsi-participants-tables">
-          <section>
-            <h4>${escapeHtml(i18n.t("module.jitsi_meet.participants.available"))}</h4>
-            <div class="users-table-wrap">
-              <table class="users-table">
-                <thead>
-                  <tr>
-                    <th>${escapeHtml(i18n.t("ui.reuse.username"))}</th>
-                    <th>${escapeHtml(i18n.t("ui.reuse.display_name"))}</th>
-                    <th>${escapeHtml(i18n.t("ui.reuse.move"))}</th>
-                  </tr>
-                </thead>
-                <tbody id="jitsi-available-participants"></tbody>
-              </table>
-            </div>
-          </section>
-          <section>
-            <h4>${escapeHtml(i18n.t("module.jitsi_meet.participants.selected"))}</h4>
-            <div class="users-table-wrap">
-              <table class="users-table">
-                <thead>
-                  <tr>
-                    <th>${escapeHtml(i18n.t("ui.reuse.username"))}</th>
-                    <th>${escapeHtml(i18n.t("ui.reuse.display_name"))}</th>
-                    <th>${escapeHtml(i18n.t("ui.reuse.move"))}</th>
-                  </tr>
-                </thead>
-                <tbody id="jitsi-selected-participants"></tbody>
-              </table>
-            </div>
-          </section>
-        </div>
-      </section>
+function buildParticipantsMarkup(i18n) {
+    return `
+    <section class="jitsi-participants-pane card-elevated">
+      <header class="jitsi-participants-header">
+        <h3>${escapeHtml(i18n.t("module.jitsi_meet.participants.heading"))}</h3>
+        <label class="jitsi-participant-search">
+          <span>${escapeHtml(i18n.t("module.jitsi_meet.participants.search"))}</span>
+          <input id="jitsi-participant-search-input" type="search" placeholder="@username" />
+        </label>
+      </header>
+      <div class="jitsi-participants-tables">
+        <section>
+          <h4>${escapeHtml(i18n.t("module.jitsi_meet.participants.available"))}</h4>
+          <div class="users-table-wrap">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>${escapeHtml(i18n.t("ui.reuse.username"))}</th>
+                  <th>${escapeHtml(i18n.t("ui.reuse.display_name"))}</th>
+                  <th>${escapeHtml(i18n.t("ui.reuse.move"))}</th>
+                </tr>
+              </thead>
+              <tbody id="jitsi-available-participants"></tbody>
+            </table>
+          </div>
+        </section>
+        <section>
+          <h4>${escapeHtml(i18n.t("module.jitsi_meet.participants.selected"))}</h4>
+          <div class="users-table-wrap">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>${escapeHtml(i18n.t("ui.reuse.username"))}</th>
+                  <th>${escapeHtml(i18n.t("ui.reuse.display_name"))}</th>
+                  <th>${escapeHtml(i18n.t("ui.reuse.move"))}</th>
+                </tr>
+              </thead>
+              <tbody id="jitsi-selected-participants"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </section>
   `;
 }
@@ -255,16 +271,23 @@ export async function mount(root, { signal } = {}) {
         ) {
             return;
         }
+        const emptyMessage = i18n.t("module.jitsi_meet.participants.none");
+        const availableRows = state.availableParticipants.map((entry) =>
+            createParticipantRow(entry.username, entry.displayName),
+        );
+        const selectedRows = state.selectedParticipants.map((entry) =>
+            createParticipantRow(entry.username, entry.displayName),
+        );
 
         availableBody.replaceChildren(
-            ...state.availableParticipants.map((entry) =>
-                createParticipantRow(entry.username, entry.displayName),
-            ),
+            ...(availableRows.length > 0
+                ? availableRows
+                : [createEmptyParticipantRow(emptyMessage)]),
         );
         selectedBody.replaceChildren(
-            ...state.selectedParticipants.map((entry) =>
-                createParticipantRow(entry.username, entry.displayName),
-            ),
+            ...(selectedRows.length > 0
+                ? selectedRows
+                : [createEmptyParticipantRow(emptyMessage)]),
         );
 
         const participantCount = state.selectedParticipants.length;
@@ -573,8 +596,7 @@ export async function mount(root, { signal } = {}) {
             );
         }
         const bindSignal = bindController.signal;
-        const container = root.querySelector("#jitsi-main");
-        if (!(container instanceof HTMLElement)) return;
+        const container = root;
 
         const searchInput = container.querySelector(
             "#jitsi-participant-search-input",
@@ -737,15 +759,27 @@ export async function mount(root, { signal } = {}) {
         void updateChatLink();
     }
 
-    // Keep the composer `elements` API even with one card so this page follows
-    // the same layout contract as other dashboard pages.
     const elements = [
         {
-            id: "jitsi-main",
-            label: i18n.t("ui.reuse.meetings"),
+            id: "jitsi-participants",
+            label: i18n.t("module.jitsi_meet.participants.heading"),
             pinned: true,
             width: 12,
-            render: () => buildPageMarkup(i18n),
+            render: () => buildParticipantsMarkup(i18n),
+        },
+        {
+            id: "jitsi-stage",
+            label: i18n.t("ui.reuse.meeting"),
+            pinned: true,
+            width: 6,
+            render: () => buildStageMarkup(i18n),
+        },
+        {
+            id: "jitsi-chat",
+            label: i18n.t("module.jitsi_meet.chat.heading"),
+            pinned: true,
+            width: 6,
+            render: () => buildChatMarkup(i18n),
         },
     ];
 
