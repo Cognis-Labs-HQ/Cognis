@@ -498,15 +498,10 @@
     background: none;
     padding: 0;
     text-align: left;
+    color: inherit;
     cursor: pointer;
-}
-
-.messages-thread-subtitle-btn:hover,
-.messages-thread-subtitle-btn:focus-visible {
-    color: var(--color-accent);
-    outline: none;
-    text-decoration: underline;
-    text-underline-offset: 0.12rem;
+    animation: none;
+    transition: none;
 }
 
 @media (max-width: 900px) {
