@@ -141,7 +141,7 @@ export class JitsiMeetStore {
                     notNull: true,
                     default: "Cognis Classroom",
                 },
-                { name: "room_slug", type: "text" },
+                { name: "room_slug", type: "text", notNull: true },
                 { name: "chat_room_id", type: "text" },
                 { name: "classroom_id", type: "text" },
                 { name: "created_by", type: "text", notNull: true },
