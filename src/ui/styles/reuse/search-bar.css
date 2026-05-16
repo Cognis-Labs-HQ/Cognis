@@ -143,11 +143,8 @@
 .search-popup-result--checked {
     background: var(--surface-soft);
     color: var(--accent, #3b82f6);
-    box-shadow: inset 0 0 0 1px color-mix(
-        in srgb,
-        var(--accent, #3b82f6) 32%,
-        transparent
-    );
+    box-shadow: inset 0 0 0 1px
+        color-mix(in srgb, var(--accent, #3b82f6) 32%, transparent);
 }
 
 .search-popup-result-checkbox {

@@ -19,7 +19,10 @@ test("meetings search popup adds confirmed users directly to meeting participant
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
-    assert.match(source, /onSelectMultiple:\s*\(results\)\s*=>[\s\S]*addParticipant\(participantEntry\)/);
+    assert.match(
+        source,
+        /onSelectMultiple:\s*\(results\)\s*=>[\s\S]*addParticipant\(participantEntry\)/,
+    );
     assert.doesNotMatch(
         source,
         /onSelectMultiple:\s*\(results\)\s*=>[\s\S]*state\.availableParticipants\.push/,
@@ -31,7 +34,10 @@ test("search popup selectable rows style checked state on the result entry", () 
         resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
         "utf8",
     );
-    assert.match(source, /\.search-popup-result--checked \.search-popup-result-checkbox\s*\{/);
+    assert.match(
+        source,
+        /\.search-popup-result--checked \.search-popup-result-checkbox\s*\{/,
+    );
 });
 
 test("classes page redirects non-teachers back to dashboard", () => {

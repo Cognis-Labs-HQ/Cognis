@@ -2,10 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { JitsiMeetStore } from "../store.js";
 
-function createLegacyJitsiDb({
-    meetingRows = [],
-    participantRows = [],
-} = {}) {
+function createLegacyJitsiDb({ meetingRows = [], participantRows = [] } = {}) {
     const storedMeetingRows = [...meetingRows];
     const storedParticipantRows = [...participantRows];
     const executedSql = [];
@@ -46,14 +43,17 @@ function createLegacyJitsiDb({
             if (
                 command.option === "SELECT" &&
                 command.table === "jitsi_meetings" &&
-                command.where?.some((whereEntry) => whereEntry.column === "participant_key")
+                command.where?.some(
+                    (whereEntry) => whereEntry.column === "participant_key",
+                )
             ) {
                 const participantKey = command.where.find(
                     (whereEntry) => whereEntry.column === "participant_key",
                 )?.value;
                 return {
                     rows: storedMeetingRows.filter(
-                        (meetingRow) => meetingRow.participant_key === participantKey,
+                        (meetingRow) =>
+                            meetingRow.participant_key === participantKey,
                     ),
                 };
             }
@@ -82,7 +82,10 @@ function createLegacyJitsiDb({
                 )?.value;
                 return {
                     rows: storedParticipantRows
-                        .filter((participantRow) => participantRow.meeting_id === meetingId)
+                        .filter(
+                            (participantRow) =>
+                                participantRow.meeting_id === meetingId,
+                        )
                         .map((participantRow) => ({
                             username: participantRow.username,
                         })),
