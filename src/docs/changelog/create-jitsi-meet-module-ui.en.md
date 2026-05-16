@@ -5,6 +5,7 @@
 Added a new Jitsi Meet module with configurable instance settings, meeting persistence, participant-gated access checks, meeting session state APIs, a dedicated meetings page, and administration monitoring.
 
 Subsequent improvements:
+
 - Meetings page layout is now entirely composer-driven: participants panel is full-width on top; Meeting Window and Chat each occupy exactly half the available grid width using `gridSize.max: 'half'`.
 - Meeting Overlay renamed to Meeting Window throughout.
 - Available Participants table pre-populated with all visible users on page load.

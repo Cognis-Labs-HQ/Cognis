@@ -316,6 +316,9 @@ export function registerApiRoutes(router, ctx) {
             if (!claims) return;
             const url = new URL(req.url, "http://localhost");
             const rawQuery = (url.searchParams.get("q") ?? "").trim();
+            // Strip leading '@' and normalise case. SQL wildcard characters
+            // (%, _, \) are escaped inside profileStore.searchProfiles, so no
+            // additional sanitisation is needed here.
             const query = rawQuery.replace(/^@/, "").toLowerCase();
             const candidates = await profileStore.searchProfiles(query, 50);
             const results = candidates

@@ -792,6 +792,8 @@ export async function mount(root, { signal } = {}) {
             gridSize: {
                 default: [6, 5],
                 min: [4, 4],
+                // 'half' is the composer magic string for halfGrid(gridCols):
+                // each panel fills exactly 50% of the available grid width.
                 max: "half",
             },
             render: () => buildStageMarkup(i18n),
@@ -803,6 +805,7 @@ export async function mount(root, { signal } = {}) {
             gridSize: {
                 default: [6, 5],
                 min: [4, 4],
+                // 'half' — same composer convention as jitsi-stage above.
                 max: "half",
             },
             render: () => buildChatMarkup(i18n),

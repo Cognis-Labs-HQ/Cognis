@@ -5,6 +5,7 @@
 Ein neues Jitsi-Meet-Modul mit konfigurierbaren Instanz-Einstellungen, Meeting-Persistenz, teilnehmergebundenen Zugriffskontrollen, Meeting-Sitzungsstatus-APIs, eigener Meetings-Seite und Administrationsüberwachung wurde hinzugefügt.
 
 Nachfolgende Verbesserungen:
+
 - Das Layout der Meetings-Seite wird vollständig durch den Composer gesteuert: Das Teilnehmer-Panel ist oben in voller Breite; Meeting-Fenster und Chat nehmen jeweils genau die halbe verfügbare Rasterbreite ein (`gridSize.max: 'half'`).
 - „Meeting Overlay" wurde durchgängig in „Meeting-Fenster" umbenannt.
 - Die Tabelle „Verfügbare Teilnehmer" wird beim Laden der Seite mit allen sichtbaren Benutzern vorbelegt.

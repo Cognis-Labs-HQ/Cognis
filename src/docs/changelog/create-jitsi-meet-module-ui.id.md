@@ -5,6 +5,7 @@
 Menambahkan modul Jitsi Meet baru dengan pengaturan instans yang dapat dikonfigurasi, persistensi rapat, pemeriksaan akses berbasis peserta, API status sesi rapat, halaman Meetings khusus, dan pemantauan administrasi.
 
 Penyempurnaan lanjutan:
+
 - Tata letak halaman Meetings kini sepenuhnya dikendalikan oleh composer: panel peserta berada di atas dengan lebar penuh; Meeting Window dan Chat masing-masing menempati setengah lebar kisi yang tersedia (`gridSize.max: 'half'`).
 - "Meeting Overlay" diubah namanya menjadi "Meeting Window" di seluruh antarmuka.
 - Tabel "Peserta Tersedia" diisi awal dengan semua pengguna yang terlihat saat halaman dimuat.
