@@ -91,16 +91,15 @@ function buildParticipantKey(usernames, classroomId = null) {
  *   db: {
  *     ensureTable: (definition: object) => Promise<void>,
  *     executeCommand: (command: object) => Promise<{ rows?: Array<Record<string, unknown>> }>,
+ *     transaction: (callback: (executor: object) => Promise<void>) => Promise<void>,
  *   },
  *   log?: (level: string, message: string, meta?: Record<string, unknown>) => void,
  * }} options
  */
 export class JitsiMeetStore {
-    constructor({ db, log, dbType }) {
+    constructor({ db, log }) {
         this.db = db;
         this.log = log;
-        this.dbType = typeof dbType === "string" ? dbType : "postgresql";
-        this.meetingSchemaPrepared = false;
     }
 
     async ensureSchema() {
@@ -215,96 +214,6 @@ export class JitsiMeetStore {
             ],
             primaryKey: ["meeting_id", "username", "session_id"],
         });
-        await this.prepareMeetingSchema();
-    }
-
-    async prepareMeetingSchema() {
-        if (this.meetingSchemaPrepared) {
-            return;
-        }
-        if (typeof this.db.execute !== "function") {
-            this.log?.(
-                "warn",
-                "Skipping Jitsi meeting schema preparation because raw execute() is unavailable.",
-                {
-                    component: "module:jitsi-meet",
-                    operation: "prepareMeetingSchema",
-                },
-            );
-            return;
-        }
-
-        await this.db.execute(
-            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS participant_key TEXT",
-        );
-        await this.db.execute(
-            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS meeting_url TEXT",
-        );
-        await this.db.execute(
-            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS meeting_password TEXT",
-        );
-        await this.db.execute(
-            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS meeting_name TEXT",
-        );
-        await this.db.execute(
-            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS chat_room_id TEXT",
-        );
-        await this.db.execute(
-            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS classroom_id TEXT",
-        );
-        await this.db.execute(
-            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS created_by TEXT",
-        );
-        await this.db.execute(
-            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS created_at TIMESTAMP",
-        );
-        await this.db.execute(
-            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP",
-        );
-        await this.db.execute(
-            "CREATE UNIQUE INDEX IF NOT EXISTS idx_jitsi_meetings_participant_key ON jitsi_meetings (participant_key)",
-        );
-        await this.db.execute(
-            "CREATE UNIQUE INDEX IF NOT EXISTS idx_jitsi_meetings_meeting_url ON jitsi_meetings (meeting_url)",
-        );
-
-        const meetingRowsResult = await this.db.execute(
-            "SELECT * FROM jitsi_meetings",
-        );
-        for (const meetingRow of meetingRowsResult.rows ?? []) {
-            if (meetingRow.participant_key) {
-                continue;
-            }
-            let participantUsernames = await this.listParticipants(
-                String(meetingRow.id),
-            );
-            if (participantUsernames.length === 0) {
-                const hasLegacyParticipantColumns =
-                    "participant_a" in meetingRow ||
-                    "participant_b" in meetingRow;
-                participantUsernames = hasLegacyParticipantColumns
-                    ? normalizeUsernames([
-                          meetingRow.participant_a,
-                          meetingRow.participant_b,
-                      ])
-                    : [];
-            }
-            if (participantUsernames.length === 0) {
-                continue;
-            }
-            await this.db.executeCommand({
-                option: "UPDATE",
-                table: "jitsi_meetings",
-                set: {
-                    participant_key: buildParticipantKey(
-                        participantUsernames,
-                        meetingRow.classroom_id ?? null,
-                    ),
-                },
-                where: [{ column: "id", value: String(meetingRow.id) }],
-            });
-        }
-        this.meetingSchemaPrepared = true;
     }
 
     async getConfig() {

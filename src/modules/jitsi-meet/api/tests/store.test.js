@@ -2,25 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { JitsiMeetStore } from "../store.js";
 
-function createLegacyJitsiDb({ meetingRows = [], participantRows = [] } = {}) {
+function createMockJitsiDb({ meetingRows = [], participantRows = [] } = {}) {
     const storedMeetingRows = [...meetingRows];
     const storedParticipantRows = [...participantRows];
-    const executedSql = [];
     const insertedMeetingRows = [];
 
     return {
-        executedSql,
         insertedMeetingRows,
         async ensureTable() {},
         async transaction(callback) {
             return callback(this);
-        },
-        async execute(sql) {
-            executedSql.push(sql);
-            if (sql.includes("SELECT * FROM jitsi_meetings")) {
-                return { rows: storedMeetingRows };
-            }
-            return { rows: [] };
         },
         async executeCommand(command) {
             if (
@@ -118,51 +109,9 @@ function createLegacyJitsiDb({ meetingRows = [], participantRows = [] } = {}) {
     };
 }
 
-test("jitsi store prepares participant_key for legacy meeting rows", async () => {
-    const legacyDb = createLegacyJitsiDb({
-        meetingRows: [
-            {
-                id: "meeting-1",
-                participant_a: "alice",
-                participant_b: "bob",
-                participant_key: null,
-                meeting_url: "https://meet.example.com/room-1",
-                meeting_password: "secret",
-                meeting_name: "Cognis Classroom",
-                chat_room_id: null,
-                classroom_id: null,
-                created_by: "alice",
-                created_at: "2026-05-16T00:00:00.000Z",
-                updated_at: "2026-05-16T00:00:00.000Z",
-            },
-        ],
-        participantRows: [
-            { meeting_id: "meeting-1", username: "alice" },
-            { meeting_id: "meeting-1", username: "bob" },
-        ],
-    });
-    const store = new JitsiMeetStore({ db: legacyDb });
-
-    await store.ensureSchema();
-    const meeting = await store.findMeetingByParticipants(["bob", "alice"]);
-
-    assert.ok(
-        legacyDb.executedSql.some((statement) =>
-            statement.includes("ADD COLUMN IF NOT EXISTS participant_key"),
-        ),
-    );
-    assert.ok(
-        legacyDb.executedSql.some((statement) =>
-            statement.includes("ADD COLUMN IF NOT EXISTS meeting_url"),
-        ),
-    );
-    assert.ok(meeting);
-    assert.notEqual(meeting?.participantKey, "undefined");
-});
-
-test("jitsi store inserts only modern meeting columns after schema preparation", async () => {
-    const legacyDb = createLegacyJitsiDb();
-    const store = new JitsiMeetStore({ db: legacyDb });
+test("jitsi store meeting creation uses the modern column set", async () => {
+    const mockDb = createMockJitsiDb();
+    const store = new JitsiMeetStore({ db: mockDb });
 
     await store.ensureSchema();
     const createdMeeting = await store.createMeeting({
@@ -174,10 +123,11 @@ test("jitsi store inserts only modern meeting columns after schema preparation",
         chatRoomId: null,
     });
 
-    assert.equal(legacyDb.insertedMeetingRows.length, 1);
-    assert.ok(legacyDb.insertedMeetingRows[0].participant_key);
-    assert.equal("participant_a" in legacyDb.insertedMeetingRows[0], false);
-    assert.equal("participant_b" in legacyDb.insertedMeetingRows[0], false);
-    assert.ok(legacyDb.insertedMeetingRows[0].meeting_url);
+    assert.equal(mockDb.insertedMeetingRows.length, 1);
+    assert.ok(mockDb.insertedMeetingRows[0].participant_key);
+    assert.ok(mockDb.insertedMeetingRows[0].meeting_url);
+    assert.equal("participant_a" in mockDb.insertedMeetingRows[0], false);
+    assert.equal("participant_b" in mockDb.insertedMeetingRows[0], false);
+    assert.equal("room_slug" in mockDb.insertedMeetingRows[0], false);
     assert.equal(createdMeeting?.reused, false);
 });
