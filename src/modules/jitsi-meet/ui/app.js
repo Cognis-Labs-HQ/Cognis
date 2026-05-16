@@ -635,21 +635,20 @@ export async function mount(root, { signal } = {}) {
                                 if (
                                     state.selectedParticipants.some(
                                         (entry) => entry.username === username,
-                                    ) ||
-                                    state.availableParticipants.some(
-                                        (entry) => entry.username === username,
                                     )
                                 ) {
                                     continue;
                                 }
-                                state.availableParticipants.push({
+                                const participantEntry = {
                                     username,
                                     displayName,
-                                });
+                                };
+                                state.availableParticipants =
+                                    state.availableParticipants.filter(
+                                        (entry) => entry.username !== username,
+                                    );
+                                addParticipant(participantEntry);
                             }
-                            state.availableParticipants.sort((a, b) =>
-                                a.username.localeCompare(b.username),
-                            );
                             renderParticipants();
                         },
                     });

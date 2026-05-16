@@ -99,6 +99,8 @@ export class JitsiMeetStore {
     constructor({ db, log }) {
         this.db = db;
         this.log = log;
+        this.hasLegacyParticipantColumns = false;
+        this.meetingSchemaPrepared = false;
     }
 
     async ensureSchema() {
@@ -213,6 +215,65 @@ export class JitsiMeetStore {
             ],
             primaryKey: ["meeting_id", "username", "session_id"],
         });
+        await this.prepareMeetingSchema();
+    }
+
+    async prepareMeetingSchema() {
+        if (this.meetingSchemaPrepared) {
+            return;
+        }
+        this.meetingSchemaPrepared = true;
+        if (typeof this.db.execute !== "function") {
+            return;
+        }
+
+        await this.db.execute(
+            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS participant_key TEXT",
+        );
+        await this.db.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_jitsi_meetings_participant_key ON jitsi_meetings (participant_key)",
+        );
+
+        try {
+            await this.db.execute(
+                "SELECT participant_a, participant_b FROM jitsi_meetings LIMIT 1",
+            );
+            this.hasLegacyParticipantColumns = true;
+        } catch {
+            this.hasLegacyParticipantColumns = false;
+        }
+
+        const meetingRowsResult = await this.db.execute(
+            "SELECT * FROM jitsi_meetings",
+        );
+        for (const meetingRow of meetingRowsResult.rows ?? []) {
+            if (meetingRow.participant_key) {
+                continue;
+            }
+            let participantUsernames = await this.listParticipants(
+                String(meetingRow.id),
+            );
+            if (participantUsernames.length === 0) {
+                participantUsernames = normalizeUsernames([
+                    meetingRow.participant_a,
+                    meetingRow.participant_b,
+                ]);
+            }
+            if (participantUsernames.length === 0) {
+                continue;
+            }
+            await this.db.executeCommand({
+                option: "UPDATE",
+                table: "jitsi_meetings",
+                set: {
+                    participant_key: buildParticipantKey(
+                        participantUsernames,
+                        meetingRow.classroom_id ?? null,
+                    ),
+                },
+                where: [{ column: "id", value: String(meetingRow.id) }],
+            });
+        }
     }
 
     async getConfig() {
@@ -265,9 +326,13 @@ export class JitsiMeetStore {
         });
         const row = result.rows?.[0];
         if (!row) return null;
+        const participants = await this.listParticipants(meetingId);
+        const participantKey =
+            row.participant_key ??
+            buildParticipantKey(participants, row.classroom_id ?? null);
         return {
             id: String(row.id),
-            participantKey: String(row.participant_key),
+            participantKey: String(participantKey),
             meetingUrl: String(row.meeting_url),
             meetingPassword: String(row.meeting_password),
             meetingName: String(row.meeting_name ?? "Cognis Classroom"),
@@ -344,21 +409,26 @@ export class JitsiMeetStore {
         const createdAt = nowIso();
 
         await this.db.transaction(async (executor) => {
+            const meetingInsertValues = {
+                id: meetingId,
+                participant_key: participantKey,
+                meeting_url: meetingUrl,
+                meeting_password: meetingPassword,
+                meeting_name: "Cognis Classroom",
+                chat_room_id: chatRoomId ?? null,
+                classroom_id: normalizedClassroomId,
+                created_by: createdBy,
+                created_at: createdAt,
+                updated_at: createdAt,
+            };
+            if (this.hasLegacyParticipantColumns) {
+                meetingInsertValues.participant_a = participantUsernames[0];
+                meetingInsertValues.participant_b = participantUsernames[1];
+            }
             await executor.executeCommand({
                 option: "INSERT",
                 table: "jitsi_meetings",
-                values: {
-                    id: meetingId,
-                    participant_key: participantKey,
-                    meeting_url: meetingUrl,
-                    meeting_password: meetingPassword,
-                    meeting_name: "Cognis Classroom",
-                    chat_room_id: chatRoomId ?? null,
-                    classroom_id: normalizedClassroomId,
-                    created_by: createdBy,
-                    created_at: createdAt,
-                    updated_at: createdAt,
-                },
+                values: meetingInsertValues,
             });
 
             for (const username of participantUsernames) {

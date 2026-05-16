@@ -14,6 +14,26 @@ test("messages new-conversation search uses messaging lookup endpoint", () => {
     assert.match(source, /endpoint:\s*"\/api\/v1\/messages\/users\/lookup"/);
 });
 
+test("meetings search popup adds confirmed users directly to meeting participants", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(source, /onSelectMultiple:\s*\(results\)\s*=>[\s\S]*addParticipant\(participantEntry\)/);
+    assert.doesNotMatch(
+        source,
+        /onSelectMultiple:\s*\(results\)\s*=>[\s\S]*state\.availableParticipants\.push/,
+    );
+});
+
+test("search popup selectable rows style checked state on the result entry", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
+        "utf8",
+    );
+    assert.match(source, /\.search-popup-result--checked \.search-popup-result-checkbox\s*\{/);
+});
+
 test("classes page redirects non-teachers back to dashboard", () => {
     const source = readFileSync(
         resolve(ROOT, "src/adapters/study/classes/ui/app.js"),

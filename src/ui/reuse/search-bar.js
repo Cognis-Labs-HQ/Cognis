@@ -134,6 +134,20 @@ function renderFlatResults(
     const list = document.createElement("ul");
     list.className = "search-popup-result-list";
 
+    function toggleMultiSelectItem(itemKey, item) {
+        if (!multiSelectState) {
+            return;
+        }
+        if (multiSelectState.selected.has(itemKey)) {
+            multiSelectState.selected.delete(itemKey);
+            multiSelectState.itemMap.delete(itemKey);
+        } else {
+            multiSelectState.selected.add(itemKey);
+            multiSelectState.itemMap.set(itemKey, item);
+        }
+        multiSelectState.onSelectionChange();
+    }
+
     for (const item of items) {
         const listItem = document.createElement("li");
         const itemKey = item.handle ?? item.id ?? item.accountId ?? "";
@@ -149,24 +163,27 @@ function renderFlatResults(
             checkbox.setAttribute("aria-hidden", "true");
             checkbox.tabIndex = -1;
             const label = document.createElement("span");
+            label.className = "search-popup-result-label";
             label.textContent =
                 item.label ||
                 item.displayName ||
                 item.accountId ||
                 item.id ||
                 "";
+            listItem.setAttribute("role", "checkbox");
+            listItem.setAttribute("aria-checked", String(Boolean(isSelected)));
+            listItem.tabIndex = 0;
             listItem.appendChild(checkbox);
             listItem.appendChild(label);
-            listItem.addEventListener("mousedown", (event) => {
+            listItem.addEventListener("click", (event) => {
                 event.preventDefault();
-                if (multiSelectState.selected.has(itemKey)) {
-                    multiSelectState.selected.delete(itemKey);
-                    multiSelectState.itemMap.delete(itemKey);
-                } else {
-                    multiSelectState.selected.add(itemKey);
-                    multiSelectState.itemMap.set(itemKey, item);
+                toggleMultiSelectItem(itemKey, item);
+            });
+            listItem.addEventListener("keydown", (event) => {
+                if (event.key === " " || event.key === "Enter") {
+                    event.preventDefault();
+                    toggleMultiSelectItem(itemKey, item);
                 }
-                multiSelectState.onSelectionChange();
             });
         } else {
             listItem.className = "search-popup-result";
