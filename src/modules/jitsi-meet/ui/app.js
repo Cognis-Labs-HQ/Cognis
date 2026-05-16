@@ -561,6 +561,7 @@ export async function mount(root, { signal } = {}) {
 
         updateOverlay({
             message: i18n.t("module.jitsi_meet.overlay.joining"),
+            loading: false,
             canStart: false,
         });
 
