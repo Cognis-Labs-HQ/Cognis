@@ -248,6 +248,12 @@ export function registerApiRoutes(router, ctx) {
                 unavailablePayload(res);
             },
         );
+        router.get(
+            "/api/v1/modules/jitsi-meet/participants",
+            async (_req, res) => {
+                sendJson(res, 200, { data: [] });
+            },
+        );
         router.get("/api/v1/modules/jitsi-meet/ping", async (_req, res) => {
             sendJson(res, 200, {
                 data: {
@@ -301,6 +307,26 @@ export function registerApiRoutes(router, ctx) {
             sendJson(res, 200, { data: config });
         },
         { access: { minRole: "admin" }, allowWhenDisabled: true },
+    );
+
+    router.get(
+        "/api/v1/modules/jitsi-meet/participants",
+        async (req, res) => {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const url = new URL(req.url, "http://localhost");
+            const rawQuery = (url.searchParams.get("q") ?? "").trim();
+            const query = rawQuery.replace(/^@/, "").toLowerCase();
+            const candidates = await profileStore.searchProfiles(query, 50);
+            const results = candidates
+                .filter((profile) => profile.accountId !== claims.sub)
+                .map((profile) => ({
+                    handle: profile.handle,
+                    displayName: profile.displayName ?? profile.handle,
+                }));
+            sendJson(res, 200, { data: results });
+        },
+        { access: { minRole: "user" } },
     );
 
     router.post(

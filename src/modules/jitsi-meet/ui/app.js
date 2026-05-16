@@ -1,6 +1,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer.js";
+import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
@@ -111,10 +112,9 @@ function buildParticipantsMarkup(i18n) {
     <section class="jitsi-participants-pane card-elevated">
       <header class="jitsi-participants-header">
         <h3>${escapeHtml(i18n.t("module.jitsi_meet.participants.heading"))}</h3>
-        <label class="jitsi-participant-search">
-          <span>${escapeHtml(i18n.t("module.jitsi_meet.participants.search"))}</span>
-          <input id="jitsi-participant-search-input" type="search" placeholder="@username" />
-        </label>
+        <button id="jitsi-find-participants-btn" class="btn-cancel" type="button">
+          ${escapeHtml(i18n.t("module.jitsi_meet.participants.search"))}
+        </button>
       </header>
       <div class="jitsi-participants-tables">
         <section>
@@ -154,7 +154,7 @@ function buildParticipantsMarkup(i18n) {
 
 async function fetchParticipants(query) {
     const response = await apiFetch(
-        `/api/v1/messages/users/lookup?q=${encodeURIComponent(query)}`,
+        `/api/v1/modules/jitsi-meet/participants?q=${encodeURIComponent(query)}`,
     );
     if (!response.ok) return [];
     const payload = await response.json().catch(() => ({ data: [] }));
@@ -598,43 +598,57 @@ export async function mount(root, { signal } = {}) {
         const bindSignal = bindController.signal;
         const container = root;
 
-        const searchInput = container.querySelector(
-            "#jitsi-participant-search-input",
+        const findButton = container.querySelector(
+            "#jitsi-find-participants-btn",
         );
         const startButton = container.querySelector("#jitsi-start-btn");
         const authButton = container.querySelector("#jitsi-auth-btn");
         const reclaimButton = container.querySelector("#jitsi-reclaim-btn");
 
-        if (searchInput instanceof HTMLInputElement) {
-            searchInput.addEventListener(
-                "input",
-                async () => {
-                    const query = searchInput.value.trim();
-                    if (!query) {
-                        state.availableParticipants = [];
-                        renderParticipantTables();
-                        return;
-                    }
-                    const participants = await fetchParticipants(query);
-                    state.availableParticipants = participants
-                        .map((entry) => ({
-                            username: normalizeUsername(
-                                entry?.handle ?? entry?.username ?? "",
-                            ),
-                            displayName: String(
-                                entry?.displayName ?? entry?.handle ?? "",
-                            ),
-                        }))
-                        .filter((entry) => Boolean(entry.username))
-                        .filter(
-                            (entry) =>
-                                !state.selectedParticipants.some(
-                                    (selected) =>
-                                        selected.username === entry.username,
-                                ),
-                        )
-                        .sort((a, b) => a.username.localeCompare(b.username));
-                    renderParticipantTables();
+        if (findButton instanceof HTMLButtonElement) {
+            findButton.addEventListener(
+                "click",
+                () => {
+                    openSearchPopup({
+                        endpoint: "/api/v1/modules/jitsi-meet/participants",
+                        category: "user",
+                        ariaLabel: i18n.t(
+                            "module.jitsi_meet.participants.search",
+                        ),
+                        noResultsText: i18n.t(
+                            "module.jitsi_meet.participants.none",
+                        ),
+                        onSelect: (result) => {
+                            const username = normalizeUsername(
+                                result?.handle ?? result?.username ?? "",
+                            );
+                            const displayName = String(
+                                result?.displayName ?? result?.handle ?? "",
+                            );
+                            if (!username) return;
+                            if (
+                                state.selectedParticipants.some(
+                                    (entry) => entry.username === username,
+                                )
+                            ) {
+                                return;
+                            }
+                            if (
+                                !state.availableParticipants.some(
+                                    (entry) => entry.username === username,
+                                )
+                            ) {
+                                state.availableParticipants.push({
+                                    username,
+                                    displayName,
+                                });
+                                state.availableParticipants.sort((a, b) =>
+                                    a.username.localeCompare(b.username),
+                                );
+                            }
+                            renderParticipantTables();
+                        },
+                    });
                 },
                 { signal: bindSignal },
             );
@@ -778,7 +792,7 @@ export async function mount(root, { signal } = {}) {
             gridSize: {
                 default: [6, 5],
                 min: [4, 4],
-                max: [6, 6],
+                max: "half",
             },
             render: () => buildStageMarkup(i18n),
         },
@@ -789,11 +803,20 @@ export async function mount(root, { signal } = {}) {
             gridSize: {
                 default: [6, 5],
                 min: [4, 4],
-                max: [6, 6],
+                max: "half",
             },
             render: () => buildChatMarkup(i18n),
         },
     ];
+
+    const allParticipants = await fetchParticipants("");
+    state.availableParticipants = allParticipants
+        .map((entry) => ({
+            username: normalizeUsername(entry?.handle ?? entry?.username ?? ""),
+            displayName: String(entry?.displayName ?? entry?.handle ?? ""),
+        }))
+        .filter((entry) => Boolean(entry.username))
+        .sort((a, b) => a.username.localeCompare(b.username));
 
     const composer = createPageComposer(root, {
         allowCustomization: false,
