@@ -312,7 +312,10 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
     assert.match(source, /\/api\/v1\/modules\/jitsi-meet\/meetings\/active/);
     assert.match(source, /requestedMeetingId/);
     assert.match(source, /async function joinMeetingById/);
-    assert.match(source, /await loadActiveMeetings\(\{ resolveRequested: true \}\)/);
+    assert.match(
+        source,
+        /await loadActiveMeetings\(\{ resolveRequested: true \}\)/,
+    );
 });
 
 test("jitsi API exposes user active meetings endpoint", () => {
@@ -321,6 +324,12 @@ test("jitsi API exposes user active meetings endpoint", () => {
         "utf8",
     );
     assert.match(source, /"\/api\/v1\/modules\/jitsi-meet\/meetings\/active"/);
-    assert.match(source, /const activeMeetings = await store\.listActiveMeetings\(\)/);
-    assert.match(source, /if \(state\.authRequired && !state\.authCompletedAt\) continue;/);
+    assert.match(
+        source,
+        /const activeMeetings = await store\.listActiveMeetings\(\)/,
+    );
+    assert.match(
+        source,
+        /if \(state\.authRequired && !state\.authCompletedAt\) continue;/,
+    );
 });

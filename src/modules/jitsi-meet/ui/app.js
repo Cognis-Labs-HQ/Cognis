@@ -151,8 +151,9 @@ function resolveThemeMode() {
         return bodyMode;
     }
     const shellMode = String(
-        document.querySelector("#dashboard-shell")?.getAttribute("data-theme") ??
-            "",
+        document
+            .querySelector("#dashboard-shell")
+            ?.getAttribute("data-theme") ?? "",
     )
         .trim()
         .toLowerCase();
@@ -715,7 +716,10 @@ export async function mount(root, { signal } = {}) {
         if (!(activeMeetingsEl instanceof HTMLElement)) {
             return;
         }
-        if (!Array.isArray(state.activeMeetings) || state.activeMeetings.length === 0) {
+        if (
+            !Array.isArray(state.activeMeetings) ||
+            state.activeMeetings.length === 0
+        ) {
             const emptyMessage = loading
                 ? i18n.t("module.jitsi_meet.participants.active_loading")
                 : i18n.t("module.jitsi_meet.participants.active_none");
@@ -739,7 +743,10 @@ export async function mount(root, { signal } = {}) {
                 const button = document.createElement("button");
                 button.type = "button";
                 button.className = "jitsi-active-meeting-item";
-                if (state.requestedMeetingId && state.requestedMeetingId === meetingId) {
+                if (
+                    state.requestedMeetingId &&
+                    state.requestedMeetingId === meetingId
+                ) {
                     button.classList.add("jitsi-active-meeting-item-selected");
                 }
                 button.dataset.meetingId = meetingId;
@@ -777,15 +784,18 @@ export async function mount(root, { signal } = {}) {
             showReclaim: false,
             visible: true,
         });
-        const getResponse = await apiFetch("/api/v1/modules/jitsi-meet/meetings/get", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
+        const getResponse = await apiFetch(
+            "/api/v1/modules/jitsi-meet/meetings/get",
+            {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({
+                    meetingId: normalizedMeetingId,
+                }),
             },
-            body: JSON.stringify({
-                meetingId: normalizedMeetingId,
-            }),
-        });
+        );
         if (!getResponse.ok) {
             state.meeting = null;
             updateOverlay({
@@ -821,7 +831,9 @@ export async function mount(root, { signal } = {}) {
 
     async function loadActiveMeetings({ resolveRequested = true } = {}) {
         renderActiveMeetings({ loading: true });
-        const response = await apiFetch("/api/v1/modules/jitsi-meet/meetings/active");
+        const response = await apiFetch(
+            "/api/v1/modules/jitsi-meet/meetings/active",
+        );
         if (!response.ok) {
             state.activeMeetings = [];
             renderActiveMeetings();
@@ -1433,7 +1445,9 @@ export async function mount(root, { signal } = {}) {
         const reclaimButton = container.querySelector("#jitsi-reclaim-btn");
         const chatForm = container.querySelector("#jitsi-chat-form");
         const chatInput = container.querySelector("#jitsi-chat-input");
-        const activeMeetingsEl = container.querySelector("#jitsi-active-meetings");
+        const activeMeetingsEl = container.querySelector(
+            "#jitsi-active-meetings",
+        );
 
         if (findButton instanceof HTMLButtonElement) {
             findButton.addEventListener(
@@ -1590,7 +1604,9 @@ export async function mount(root, { signal } = {}) {
                         ".jitsi-active-meeting-item[data-meeting-id]",
                     );
                     if (!(button instanceof HTMLButtonElement)) return;
-                    const meetingId = normalizeMeetingId(button.dataset.meetingId);
+                    const meetingId = normalizeMeetingId(
+                        button.dataset.meetingId,
+                    );
                     if (!meetingId) return;
                     void joinMeetingById(meetingId);
                 },

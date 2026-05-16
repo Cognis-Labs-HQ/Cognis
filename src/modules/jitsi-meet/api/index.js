@@ -347,7 +347,9 @@ export function registerApiRoutes(router, ctx) {
                 subject,
                 body,
                 senderName,
-                actionUrl: buildMeetingActionUrl(meetingId ?? metadata?.meetingId),
+                actionUrl: buildMeetingActionUrl(
+                    meetingId ?? metadata?.meetingId,
+                ),
                 metadata,
             }).catch(() => undefined);
         }
@@ -501,7 +503,9 @@ export function registerApiRoutes(router, ctx) {
                     chatRoomId: meeting.chatRoomId,
                     createdAt: meeting.createdAt,
                     participantCount: participants.length,
-                    activeSessionCount: Number(activeMeeting.activeSessionCount),
+                    activeSessionCount: Number(
+                        activeMeeting.activeSessionCount,
+                    ),
                     state: {
                         authRequired: state.authRequired,
                         authCompletedAt: state.authCompletedAt,
@@ -844,7 +848,8 @@ export function registerApiRoutes(router, ctx) {
                 {
                     subject: "Participant Joined",
                     body: `${resolved.requesterUsername} joined the meeting.`,
-                    senderName: state.firstJoinedBy ?? resolved.requesterUsername,
+                    senderName:
+                        state.firstJoinedBy ?? resolved.requesterUsername,
                     metadata: {
                         event: "participant_joined",
                         meetingId: resolved.meeting.id,
