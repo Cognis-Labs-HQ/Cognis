@@ -145,6 +145,7 @@ function renderFlatResults(
             checkbox.type = "checkbox";
             checkbox.className = "search-popup-result-checkbox";
             checkbox.checked = Boolean(isSelected);
+            checkbox.dataset.key = itemKey;
             checkbox.setAttribute("aria-hidden", "true");
             checkbox.tabIndex = -1;
             const label = document.createElement("span");
@@ -350,9 +351,8 @@ export function openSearchPopup({
                 const checkbox = item.querySelector(
                     ".search-popup-result-checkbox",
                 );
-                const label = item.querySelector("span");
-                if (!checkbox || !label) continue;
-                const key = checkbox.dataset.key ?? label.textContent.trim();
+                if (!(checkbox instanceof HTMLInputElement)) continue;
+                const key = checkbox.dataset.key ?? "";
                 const isChecked = multiSelectState.selected.has(key);
                 checkbox.checked = isChecked;
                 item.classList.toggle(
