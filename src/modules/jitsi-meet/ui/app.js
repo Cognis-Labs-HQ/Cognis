@@ -94,7 +94,7 @@ function buildStageMarkup(i18n) {
             <button id="jitsi-reclaim-btn" class="btn-cancel" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.reclaim"))}</button>
           </div>
           <div id="jitsi-loading" class="jitsi-loading" hidden>
-            <span class="jitsi-spinner" aria-hidden="true"></span>
+            <span id="jitsi-loading-indicator" class="jitsi-spinner" aria-hidden="true"></span>
             <span id="jitsi-loading-text">${escapeHtml(i18n.t("module.jitsi_meet.overlay.loading"))}</span>
           </div>
         </div>
@@ -199,7 +199,7 @@ export async function mount(root, { signal } = {}) {
         const reclaimButton = root.querySelector("#jitsi-reclaim-btn");
         const messageEl = root.querySelector("#jitsi-overlay-message");
         const loadingEl = root.querySelector("#jitsi-loading");
-        const spinnerEl = root.querySelector(".jitsi-spinner");
+        const indicatorEl = root.querySelector("#jitsi-loading-indicator");
         const loadingTextEl = root.querySelector("#jitsi-loading-text");
 
         if (messageEl instanceof HTMLElement && typeof message === "string") {
@@ -208,13 +208,13 @@ export async function mount(root, { signal } = {}) {
         if (loadingEl instanceof HTMLElement) {
             loadingEl.hidden = !(loading || probed);
         }
-        if (spinnerEl instanceof HTMLElement) {
+        if (indicatorEl instanceof HTMLElement) {
             if (probed) {
-                spinnerEl.classList.remove("jitsi-spinner");
-                spinnerEl.classList.add("jitsi-tick");
+                indicatorEl.classList.remove("jitsi-spinner");
+                indicatorEl.classList.add("jitsi-tick");
             } else {
-                spinnerEl.classList.remove("jitsi-tick");
-                spinnerEl.classList.add("jitsi-spinner");
+                indicatorEl.classList.remove("jitsi-tick");
+                indicatorEl.classList.add("jitsi-spinner");
             }
         }
         if (
@@ -558,7 +558,6 @@ export async function mount(root, { signal } = {}) {
 
         updateOverlay({
             message: i18n.t("module.jitsi_meet.overlay.joining"),
-            loading: true,
             canStart: false,
         });
 
@@ -825,8 +824,8 @@ export async function mount(root, { signal } = {}) {
             label: i18n.t("module.jitsi_meet.participants.heading"),
             pinned: true,
             gridSize: {
-                default: [12, 3],
-                min: [8, 3],
+                default: [12, 2],
+                min: [8, 2],
                 max: "full",
             },
             render: () => buildParticipantsMarkup(i18n),

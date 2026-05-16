@@ -51,6 +51,13 @@ function rowToPost(row: any): Post {
     };
 }
 
+function normalizeHandleKey(handle: string | null | undefined): string {
+    return String(handle ?? "")
+        .trim()
+        .replace(/^@+/, "")
+        .toLowerCase();
+}
+
 const JOINED_PROFILE_COLUMNS: Array<{ col: string; as: string }> = [
     { col: "p.account_id", as: "account_id" },
     { col: "p.handle", as: "handle" },
@@ -228,21 +235,30 @@ export class DbProfileStore implements ProfileCreateStore {
     }
 
     async getProfileByHandle(handle: string): Promise<AccountProfile | null> {
-        const escapedHandle = handle.replace(/[\\%_]/g, "\\$&");
-        const result = await this.db.executeCommand({
+        const normalizedHandle = normalizeHandleKey(handle);
+        if (!normalizedHandle) return null;
+
+        const exactResult = await this.db.executeCommand({
             option: "SELECT",
             table: "account_profiles",
-            where: [
-                {
-                    column: "handle",
-                    operator: "LIKE",
-                    value: escapedHandle,
-                    escapeChar: "\\",
-                },
-            ],
+            where: [{ column: "handle", value: handle }],
+            limit: 1,
         });
-        const row = result.rows?.[0];
-        return row ? rowToProfile(row) : null;
+        const exactRow = exactResult.rows?.[0];
+        if (exactRow) {
+            return rowToProfile(exactRow);
+        }
+
+        const allProfilesResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+        });
+        const matchedRow = (allProfilesResult.rows ?? []).find(
+            (row) =>
+                normalizeHandleKey(String(row.handle ?? "")) ===
+                normalizedHandle,
+        );
+        return matchedRow ? rowToProfile(matchedRow) : null;
     }
 
     async searchProfiles(

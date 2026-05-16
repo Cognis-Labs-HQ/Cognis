@@ -107,7 +107,7 @@
 }
 
 .jitsi-participants-pane {
-    height: 100%;
+    height: auto;
 }
 
 .jitsi-participants-header {
@@ -116,11 +116,11 @@
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.35rem;
 }
 
 .jitsi-participants-pool-label {
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.35rem;
     font-size: 0.8rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -131,9 +131,9 @@
 .jitsi-avatar-pool {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    padding: 0.25rem 0;
-    min-height: 3.5rem;
+    gap: 0.5rem;
+    padding: 0.1rem 0 0;
+    min-height: 0;
 }
 
 .jitsi-participant-avatar {
@@ -158,13 +158,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.75rem;
-    height: 2.75rem;
+    width: 2.4rem;
+    height: 2.4rem;
     border-radius: 999px;
     background: var(--initials-bg, #64748b);
     color: #ffffff;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.9rem;
     transition:
         transform 0.15s ease,
         box-shadow 0.15s ease;
@@ -176,7 +176,7 @@
 }
 
 .jitsi-participant-avatar-label {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     color: var(--text-muted);
     max-width: 4rem;
     overflow: hidden;
