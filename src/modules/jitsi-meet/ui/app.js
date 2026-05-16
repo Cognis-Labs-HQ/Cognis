@@ -5,6 +5,11 @@ import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
+    bytesToHex,
+    hexToBytes,
+    importRoomKey,
+} from "/static/reuse/crypto-utils.js";
+import {
     getInitialsText,
     pickInitialsColor,
 } from "/static/reuse/avatar-utils.js";
@@ -12,7 +17,9 @@ import {
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const PROBE_SUCCESS_DISPLAY_MS = 600;
 const STATE_REFRESH_INTERVAL_MS = 5_000;
+const CHAT_REFRESH_INTERVAL_MS = 2_500;
 const SESSION_ID_STORAGE_KEY = "jitsi-meet:session-id";
+const TEXT_ENCODER = new TextEncoder();
 
 function ensureSessionId() {
     const existing = localStorage.getItem(SESSION_ID_STORAGE_KEY);
@@ -48,6 +55,55 @@ function normalizeUsername(value) {
         .trim()
         .replace(/^@+/, "")
         .toLowerCase();
+}
+
+function normalizeChatRoomId(value) {
+    const asString = String(value ?? "").trim();
+    if (!asString) return "";
+    return asString.replace(/^\/+|\/+$/g, "");
+}
+
+function resolveMeetingChatRoomId(meeting) {
+    const directRoomId = normalizeChatRoomId(meeting?.chatRoomId);
+    if (directRoomId) return directRoomId;
+    const rawChatUrl = String(meeting?.chatUrl ?? "").trim();
+    if (!rawChatUrl) return "";
+    const match = rawChatUrl.match(/\/messages\/([^/?#]+)/);
+    return match ? normalizeChatRoomId(decodeURIComponent(match[1])) : "";
+}
+
+async function fetchCurrentProfile() {
+    const response = await apiFetch("/api/v1/profile");
+    if (!response.ok) return null;
+    const payload = await response.json().catch(() => ({ data: null }));
+    const profile = payload?.data;
+    if (!profile) return null;
+    const handle = normalizeUsername(profile.handle ?? "");
+    const displayName = String(profile.displayName ?? profile.handle ?? "").trim();
+    return {
+        handle,
+        displayName: displayName || handle || "Cognis User",
+        email: handle ? `${handle}@cognis.local` : "",
+    };
+}
+
+function buildMeetingJoinUrl(meetingUrl, profile) {
+    try {
+        const parsed = new URL(meetingUrl);
+        const hashParams = new URLSearchParams(parsed.hash.replace(/^#/, ""));
+        hashParams.set("config.prejoinConfig.enabled", "false");
+        hashParams.set("config.requireDisplayName", "false");
+        if (profile?.displayName) {
+            hashParams.set("userInfo.displayName", profile.displayName);
+        }
+        if (profile?.email) {
+            hashParams.set("userInfo.email", profile.email);
+        }
+        parsed.hash = hashParams.toString();
+        return parsed.toString();
+    } catch {
+        return meetingUrl;
+    }
 }
 
 function createParticipantAvatarEl(username, displayName) {
@@ -109,7 +165,11 @@ function buildChatMarkup(i18n) {
     <aside class="jitsi-chat-pane card-elevated">
       <h3>${escapeHtml(i18n.t("module.jitsi_meet.chat.heading"))}</h3>
       <p id="jitsi-chat-hint">${escapeHtml(i18n.t("module.jitsi_meet.chat.pending"))}</p>
-      <iframe id="jitsi-chat-frame" class="jitsi-chat-frame" title="${escapeHtml(i18n.t("module.jitsi_meet.chat.heading"))}" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals" hidden></iframe>
+      <div id="jitsi-chat-thread" class="jitsi-chat-thread" aria-live="polite"></div>
+      <form id="jitsi-chat-form" class="jitsi-chat-form" hidden>
+        <textarea id="jitsi-chat-input" class="jitsi-chat-input" rows="3" placeholder="${escapeHtml(i18n.t("module.jitsi_meet.chat.placeholder"))}"></textarea>
+        <button id="jitsi-chat-send" class="btn-animated" type="submit">${escapeHtml(i18n.t("ui.reuse.send"))}</button>
+      </form>
     </aside>
   `;
 }
@@ -160,6 +220,10 @@ export async function mount(root, { signal } = {}) {
         meeting: null,
         heartbeatTimer: null,
         stateRefreshTimer: null,
+        chatRefreshTimer: null,
+        chatRoomId: "",
+        chatRoomKey: null,
+        currentProfile: null,
         sessionId: ensureSessionId(),
         dragUsername: null,
     };
@@ -172,6 +236,10 @@ export async function mount(root, { signal } = {}) {
         if (state.stateRefreshTimer !== null) {
             clearInterval(state.stateRefreshTimer);
             state.stateRefreshTimer = null;
+        }
+        if (state.chatRefreshTimer !== null) {
+            clearInterval(state.chatRefreshTimer);
+            state.chatRefreshTimer = null;
         }
     }
 
@@ -238,24 +306,173 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
-    async function updateChatEmbed() {
+    async function getChatRoomKey(roomId) {
+        if (!roomId) return null;
+        if (state.chatRoomKey && state.chatRoomId === roomId) {
+            return state.chatRoomKey;
+        }
+        const response = await apiFetch(
+            `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/key`,
+        );
+        if (!response.ok) return null;
+        const payload = await response.json().catch(() => ({ data: null }));
+        const keyHex = String(payload?.data?.key ?? "").trim();
+        if (!keyHex) return null;
+        const imported = await importRoomKey(keyHex);
+        state.chatRoomKey = imported;
+        return imported;
+    }
+
+    async function decryptChatMessage(message, key) {
+        if (!key) return null;
+        if (
+            message?.contentType ===
+            "application/vnd.cognis.room-event+json"
+        ) {
+            return String(message?.ciphertext ?? "");
+        }
+        const ivHex = String(message?.iv ?? "").trim();
+        const cipherHex = String(message?.ciphertext ?? "").trim();
+        const authTag = String(message?.authTag ?? "").trim();
+        if (!ivHex || !cipherHex) return null;
+        try {
+            const decrypted = await crypto.subtle.decrypt(
+                { name: "AES-GCM", iv: hexToBytes(ivHex) },
+                key,
+                hexToBytes(`${cipherHex}${authTag}`),
+            );
+            return new TextDecoder().decode(decrypted);
+        } catch {
+            return null;
+        }
+    }
+
+    async function encryptChatMessage(text, key) {
+        const initVector = crypto.getRandomValues(new Uint8Array(12));
+        const encrypted = await crypto.subtle.encrypt(
+            { name: "AES-GCM", iv: initVector },
+            key,
+            TEXT_ENCODER.encode(text),
+        );
+        return {
+            iv: bytesToHex(initVector),
+            ciphertext: bytesToHex(new Uint8Array(encrypted)),
+        };
+    }
+
+    function renderChatMessages(messages) {
+        const chatThread = root.querySelector("#jitsi-chat-thread");
+        if (!(chatThread instanceof HTMLElement)) return;
+        if (!Array.isArray(messages) || messages.length === 0) {
+            chatThread.innerHTML = `<p class="jitsi-chat-empty">${escapeHtml(i18n.t("module.jitsi_meet.chat.empty"))}</p>`;
+            return;
+        }
+        chatThread.innerHTML = messages
+            .map((message) => {
+                const isOwn =
+                    String(message?.senderId ?? "") ===
+                    String(localStorage.getItem("cognis_account") ?? "");
+                const messageClass = isOwn
+                    ? "jitsi-chat-message jitsi-chat-message-own"
+                    : "jitsi-chat-message";
+                const sender =
+                    String(message?.senderDisplayName ?? "").trim() ||
+                    String(message?.senderHandle ?? "").trim() ||
+                    String(message?.senderId ?? "").trim() ||
+                    "Unknown";
+                const createdAt = String(message?.createdAt ?? "").trim();
+                const safeTime = createdAt
+                    ? new Date(createdAt).toLocaleTimeString()
+                    : "";
+                const body = escapeHtml(
+                    String(message?.text ?? i18n.t("ui.reuse.unknown")),
+                ).replace(/\n/g, "<br>");
+                return `<article class="${messageClass}">
+              <header class="jitsi-chat-message-head">
+                <strong>${escapeHtml(sender)}</strong>
+                <time>${escapeHtml(safeTime)}</time>
+              </header>
+              <p class="jitsi-chat-message-body">${body}</p>
+            </article>`;
+            })
+            .join("");
+    }
+
+    async function refreshNativeChat() {
         const chatHint = root.querySelector("#jitsi-chat-hint");
-        const chatFrame = root.querySelector("#jitsi-chat-frame");
+        const chatForm = root.querySelector("#jitsi-chat-form");
         if (
             !(chatHint instanceof HTMLElement) ||
-            !(chatFrame instanceof HTMLIFrameElement)
+            !(chatForm instanceof HTMLFormElement)
         ) {
             return;
         }
-        if (!state.meeting?.chatUrl) {
+        const roomId = state.chatRoomId;
+        if (!roomId) {
             chatHint.textContent = i18n.t("module.jitsi_meet.chat.pending");
-            chatFrame.src = "about:blank";
-            chatFrame.hidden = true;
+            chatForm.hidden = true;
+            renderChatMessages([]);
             return;
         }
+        const roomKey = await getChatRoomKey(roomId);
+        if (!roomKey) {
+            chatHint.textContent = i18n.t("module.jitsi_meet.chat.unavailable");
+            chatForm.hidden = true;
+            renderChatMessages([]);
+            return;
+        }
+        const response = await apiFetch(
+            `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=50`,
+        );
+        if (!response.ok) {
+            chatHint.textContent = i18n.t("module.jitsi_meet.chat.unavailable");
+            chatForm.hidden = true;
+            renderChatMessages([]);
+            return;
+        }
+        const payload = await response.json().catch(() => ({ data: [] }));
+        const ordered = Array.isArray(payload?.data)
+            ? payload.data.slice().reverse()
+            : [];
+        const decoded = await Promise.all(
+            ordered.map(async (message) => ({
+                ...message,
+                text: await decryptChatMessage(message, roomKey),
+            })),
+        );
+        renderChatMessages(decoded);
         chatHint.textContent = i18n.t("module.jitsi_meet.chat.ready");
-        chatFrame.src = state.meeting.chatUrl;
-        chatFrame.hidden = false;
+        chatForm.hidden = false;
+    }
+
+    function stopNativeChatPolling() {
+        if (state.chatRefreshTimer === null) return;
+        clearInterval(state.chatRefreshTimer);
+        state.chatRefreshTimer = null;
+    }
+
+    function startNativeChatPolling() {
+        if (!state.chatRoomId || state.chatRefreshTimer !== null) return;
+        state.chatRefreshTimer = setInterval(() => {
+            void refreshNativeChat();
+        }, CHAT_REFRESH_INTERVAL_MS);
+    }
+
+    async function updateNativeChat() {
+        const chatHint = root.querySelector("#jitsi-chat-hint");
+        if (!(chatHint instanceof HTMLElement)) {
+            return;
+        }
+        state.chatRoomId = resolveMeetingChatRoomId(state.meeting);
+        if (!state.chatRoomId) {
+            state.chatRoomKey = null;
+            stopNativeChatPolling();
+            chatHint.textContent = i18n.t("module.jitsi_meet.chat.pending");
+            await refreshNativeChat();
+            return;
+        }
+        await refreshNativeChat();
+        startNativeChatPolling();
     }
 
     function renderParticipants() {
@@ -406,7 +623,10 @@ export async function mount(root, { signal } = {}) {
         const frame = root.querySelector("#jitsi-meeting-frame");
         if (!(frame instanceof HTMLIFrameElement)) return;
 
-        frame.src = state.meeting.meetingUrl;
+        frame.src = buildMeetingJoinUrl(
+            state.meeting.meetingUrl,
+            state.currentProfile,
+        );
         frame.hidden = false;
         updateOverlay({
             message: i18n.t("module.jitsi_meet.overlay.in_meeting"),
@@ -441,7 +661,7 @@ export async function mount(root, { signal } = {}) {
 
         const joinPayload = await joinResponse.json();
         state.meeting = joinPayload?.data ?? state.meeting;
-        await updateChatEmbed();
+        await updateNativeChat();
 
         if (state.meeting.requiresReclaim) {
             updateOverlay({
@@ -514,7 +734,7 @@ export async function mount(root, { signal } = {}) {
             .json()
             .catch(() => ({ data: null }));
         state.meeting = createPayload?.data;
-        await updateChatEmbed();
+        await updateNativeChat();
 
         updateOverlay({
             message: i18n.t("module.jitsi_meet.overlay.probing"),
@@ -606,6 +826,8 @@ export async function mount(root, { signal } = {}) {
         const startButton = container.querySelector("#jitsi-start-btn");
         const authButton = container.querySelector("#jitsi-auth-btn");
         const reclaimButton = container.querySelector("#jitsi-reclaim-btn");
+        const chatForm = container.querySelector("#jitsi-chat-form");
+        const chatInput = container.querySelector("#jitsi-chat-input");
 
         if (findButton instanceof HTMLButtonElement) {
             findButton.addEventListener(
@@ -818,8 +1040,52 @@ export async function mount(root, { signal } = {}) {
             );
         }
 
+        if (
+            chatForm instanceof HTMLFormElement &&
+            chatInput instanceof HTMLTextAreaElement
+        ) {
+            chatForm.addEventListener(
+                "submit",
+                async (event) => {
+                    event.preventDefault();
+                    const roomId = state.chatRoomId;
+                    if (!roomId) return;
+                    const messageText = chatInput.value.trim();
+                    if (!messageText) return;
+                    const roomKey = await getChatRoomKey(roomId);
+                    if (!roomKey) return;
+                    const encrypted = await encryptChatMessage(
+                        messageText,
+                        roomKey,
+                    );
+                    const response = await apiFetch(
+                        `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "content-type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                ...encrypted,
+                                contentType: "text/plain",
+                            }),
+                        },
+                    );
+                    if (!response.ok) {
+                        showToast(i18n.t("module.jitsi_meet.chat.send_failed"), {
+                            variant: "error",
+                        });
+                        return;
+                    }
+                    chatInput.value = "";
+                    await refreshNativeChat();
+                },
+                { signal: bindSignal },
+            );
+        }
+
         renderParticipants();
-        void updateChatEmbed();
+        void updateNativeChat();
     }
 
     const elements = [
