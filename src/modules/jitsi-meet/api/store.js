@@ -96,9 +96,10 @@ function buildParticipantKey(usernames, classroomId = null) {
  * }} options
  */
 export class JitsiMeetStore {
-    constructor({ db, log }) {
+    constructor({ db, log, dbType }) {
         this.db = db;
         this.log = log;
+        this.dbType = typeof dbType === "string" ? dbType : "postgresql";
         this.meetingSchemaPrepared = false;
     }
 
