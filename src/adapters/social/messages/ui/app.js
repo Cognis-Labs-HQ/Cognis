@@ -171,7 +171,7 @@ function renderMemberCountControl(room, members, i18n) {
     if (room?.kind !== "group") {
         return `<span class="messages-thread-subtitle">${escapeHtml(label)}</span>`;
     }
-    return `<button type="button" class="messages-thread-subtitle messages-thread-subtitle-btn" id="messages-member-summary-btn">${escapeHtml(label)}</button>`;
+    return `<span class="messages-thread-subtitle messages-thread-subtitle-btn" id="messages-member-summary-btn" role="button" tabindex="0">${escapeHtml(label)}</span>`;
 }
 
 function randomSample(values, count) {
@@ -864,28 +864,6 @@ export async function mount(root, { signal } = {}) {
         return (await res.json()).data ?? null;
     }
 
-    async function loadMeetingChatSummary(roomId) {
-        const res = await apiFetch(
-            "/api/v1/modules/jitsi-meet/meetings/chat-room-summary",
-            {
-                method: "POST",
-                body: JSON.stringify({ chatRoomId: roomId }),
-            },
-        );
-        if (!res.ok) {
-            if (res.status !== 404) {
-                showToast(
-                    i18n.t("module.social.messages.present_users_unavailable"),
-                    {
-                        variant: "info",
-                    },
-                );
-            }
-            return null;
-        }
-        return (await res.json()).data ?? null;
-    }
-
     function renderPendingRequestBanner(pendingRequest) {
         if (!pendingRequest) return "";
         const requesterLabel =
@@ -1244,36 +1222,19 @@ export async function mount(root, { signal } = {}) {
         const memberSummaryButton = document.getElementById(
             "messages-member-summary-btn",
         );
+        memberSummaryButton?.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ") {
+                return;
+            }
+            event.preventDefault();
+            memberSummaryButton.click();
+        });
         memberSummaryButton?.addEventListener("click", async () => {
             if (!selectedRoomId) return;
             const selectedRoom = rooms.find(
                 (room) => String(room.id) === String(selectedRoomId),
             );
             if (!selectedRoom) return;
-            const meetingSummary = await loadMeetingChatSummary(selectedRoomId);
-            if (meetingSummary) {
-                await openPopup({
-                    title: i18n.t("module.social.messages.present_users_title"),
-                    body: renderMemberSummaryBody({
-                        members: meetingSummary.activeParticipants ?? [],
-                        emptyText: i18n.t(
-                            "module.social.messages.present_users_empty",
-                        ),
-                        presentStatusText: i18n.t(
-                            "module.social.messages.present_now",
-                        ),
-                    }),
-                    actions: [
-                        {
-                            id: "close",
-                            label: i18n.t("ui.reuse.close"),
-                            variant: "confirm",
-                        },
-                    ],
-                    maxWidth: "560px",
-                });
-                return;
-            }
             await openPopup({
                 title: i18n.t("module.social.messages.member_summary_title"),
                 body: renderMemberSummaryBody({

@@ -96,19 +96,19 @@ test("jitsi meeting group chats include the meeting date in their title", () => 
     assert.match(source, /title:\s*meetingChatTitle/);
 });
 
-test("messages member count button opens a meeting presence summary popup", () => {
+test("messages member count control opens local member summary without jitsi calls", () => {
     const source = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
         "utf8",
     );
     assert.match(source, /id="messages-member-summary-btn"/);
-    assert.match(
+    assert.doesNotMatch(
         source,
         /loadMeetingChatSummary[\s\S]*\/api\/v1\/modules\/jitsi-meet\/meetings\/chat-room-summary/,
     );
     assert.match(
         source,
-        /openPopup\([\s\S]*module\.social\.messages\.present_users_title/,
+        /openPopup\([\s\S]*module\.social\.messages\.member_summary_title/,
     );
 });
 
