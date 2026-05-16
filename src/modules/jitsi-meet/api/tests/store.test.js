@@ -17,9 +17,6 @@ function createLegacyJitsiDb({ meetingRows = [], participantRows = [] } = {}) {
         },
         async execute(sql) {
             executedSql.push(sql);
-            if (sql.includes("SELECT participant_a, participant_b")) {
-                return { rows: [] };
-            }
             if (sql.includes("SELECT * FROM jitsi_meetings")) {
                 return { rows: storedMeetingRows };
             }
@@ -149,17 +146,21 @@ test("jitsi store prepares participant_key for legacy meeting rows", async () =>
     await store.ensureSchema();
     const meeting = await store.findMeetingByParticipants(["bob", "alice"]);
 
-    assert.equal(store.hasLegacyParticipantColumns, true);
     assert.ok(
         legacyDb.executedSql.some((statement) =>
             statement.includes("ADD COLUMN IF NOT EXISTS participant_key"),
+        ),
+    );
+    assert.ok(
+        legacyDb.executedSql.some((statement) =>
+            statement.includes("ADD COLUMN IF NOT EXISTS meeting_url"),
         ),
     );
     assert.ok(meeting);
     assert.notEqual(meeting?.participantKey, "undefined");
 });
 
-test("jitsi store keeps legacy participant columns populated after schema preparation", async () => {
+test("jitsi store inserts only modern meeting columns after schema preparation", async () => {
     const legacyDb = createLegacyJitsiDb();
     const store = new JitsiMeetStore({ db: legacyDb });
 
@@ -174,8 +175,9 @@ test("jitsi store keeps legacy participant columns populated after schema prepar
     });
 
     assert.equal(legacyDb.insertedMeetingRows.length, 1);
-    assert.equal(legacyDb.insertedMeetingRows[0].participant_a, "alice");
-    assert.equal(legacyDb.insertedMeetingRows[0].participant_b, "bob");
     assert.ok(legacyDb.insertedMeetingRows[0].participant_key);
+    assert.equal("participant_a" in legacyDb.insertedMeetingRows[0], false);
+    assert.equal("participant_b" in legacyDb.insertedMeetingRows[0], false);
+    assert.ok(legacyDb.insertedMeetingRows[0].meeting_url);
     assert.equal(createdMeeting?.reused, false);
 });

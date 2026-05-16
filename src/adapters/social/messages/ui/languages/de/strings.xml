@@ -37,4 +37,9 @@
   <string name="module.social.messages.event_member_left">{name} hat den Raum verlassen.</string>
   <string name="module.social.messages.event_display_name_changed">{name} hat den Anzeigenamen geändert.</string>
   <string name="module.social.messages.event_avatar_changed">{name} hat das Profilbild geändert.</string>
+  <string name="module.social.messages.present_users_title">Anwesende Benutzer</string>
+  <string name="module.social.messages.present_users_empty">Derzeit sind keine Benutzer in diesem Meeting anwesend.</string>
+  <string name="module.social.messages.present_now">Jetzt Anwesend</string>
+  <string name="module.social.messages.member_summary_title">Gruppenmitglieder</string>
+  <string name="module.social.messages.member_summary_empty">Für diese Unterhaltung wurden keine Mitglieder gefunden.</string>
 </resources>

@@ -86,3 +86,28 @@ test("study hub detects native library child component by descriptor id", () => 
         /hasLibraryModule[\s\S]*component\?\.id[\s\S]*===\s*"library"/,
     );
 });
+
+test("jitsi meeting group chats include the meeting date in their title", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+    assert.match(source, /function buildMeetingChatTitle[\s\S]*slice\(0, 10\)/);
+    assert.match(source, /title:\s*meetingChatTitle/);
+});
+
+test("messages member count button opens a meeting presence summary popup", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
+        "utf8",
+    );
+    assert.match(source, /id="messages-member-summary-btn"/);
+    assert.match(
+        source,
+        /loadMeetingChatSummary[\s\S]*\/api\/v1\/modules\/jitsi-meet\/meetings\/chat-room-summary/,
+    );
+    assert.match(
+        source,
+        /openPopup\([\s\S]*module\.social\.messages\.present_users_title/,
+    );
+});

@@ -99,7 +99,6 @@ export class JitsiMeetStore {
     constructor({ db, log }) {
         this.db = db;
         this.log = log;
-        this.hasLegacyParticipantColumns = false;
         this.meetingSchemaPrepared = false;
     }
 
@@ -231,17 +230,35 @@ export class JitsiMeetStore {
             "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS participant_key TEXT",
         );
         await this.db.execute(
+            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS meeting_url TEXT",
+        );
+        await this.db.execute(
+            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS meeting_password TEXT",
+        );
+        await this.db.execute(
+            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS meeting_name TEXT",
+        );
+        await this.db.execute(
+            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS chat_room_id TEXT",
+        );
+        await this.db.execute(
+            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS classroom_id TEXT",
+        );
+        await this.db.execute(
+            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS created_by TEXT",
+        );
+        await this.db.execute(
+            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS created_at TIMESTAMP",
+        );
+        await this.db.execute(
+            "ALTER TABLE jitsi_meetings ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP",
+        );
+        await this.db.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_jitsi_meetings_participant_key ON jitsi_meetings (participant_key)",
         );
-
-        try {
-            await this.db.execute(
-                "SELECT participant_a, participant_b FROM jitsi_meetings LIMIT 1",
-            );
-            this.hasLegacyParticipantColumns = true;
-        } catch {
-            this.hasLegacyParticipantColumns = false;
-        }
+        await this.db.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_jitsi_meetings_meeting_url ON jitsi_meetings (meeting_url)",
+        );
 
         const meetingRowsResult = await this.db.execute(
             "SELECT * FROM jitsi_meetings",
@@ -333,15 +350,30 @@ export class JitsiMeetStore {
         return {
             id: String(row.id),
             participantKey: String(participantKey),
-            meetingUrl: String(row.meeting_url),
-            meetingPassword: String(row.meeting_password),
+            meetingUrl: row.meeting_url ? String(row.meeting_url) : "",
+            meetingPassword: row.meeting_password
+                ? String(row.meeting_password)
+                : "",
             meetingName: String(row.meeting_name ?? "Cognis Classroom"),
             chatRoomId: row.chat_room_id ? String(row.chat_room_id) : null,
             classroomId: row.classroom_id ? String(row.classroom_id) : null,
-            createdBy: String(row.created_by),
-            createdAt: String(row.created_at),
-            updatedAt: String(row.updated_at),
+            createdBy: row.created_by ? String(row.created_by) : "",
+            createdAt: row.created_at ? String(row.created_at) : null,
+            updatedAt: row.updated_at ? String(row.updated_at) : null,
         };
+    }
+
+    async getMeetingByChatRoomId(chatRoomId) {
+        if (!chatRoomId) return null;
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "jitsi_meetings",
+            where: [{ column: "chat_room_id", value: chatRoomId }],
+            limit: 1,
+        });
+        const row = result.rows?.[0];
+        if (!row?.id) return null;
+        return this.getMeetingById(String(row.id));
     }
 
     async listParticipants(meetingId) {
@@ -364,7 +396,11 @@ export class JitsiMeetStore {
         });
         const row = result.rows?.[0];
         if (!row) return null;
-        return this.getMeetingById(String(row.id));
+        const meeting = await this.getMeetingById(String(row.id));
+        if (!meeting?.meetingUrl || !meeting.meetingPassword) {
+            return null;
+        }
+        return meeting;
     }
 
     async createMeeting({
@@ -409,26 +445,21 @@ export class JitsiMeetStore {
         const createdAt = nowIso();
 
         await this.db.transaction(async (executor) => {
-            const meetingInsertValues = {
-                id: meetingId,
-                participant_key: participantKey,
-                meeting_url: meetingUrl,
-                meeting_password: meetingPassword,
-                meeting_name: "Cognis Classroom",
-                chat_room_id: chatRoomId ?? null,
-                classroom_id: normalizedClassroomId,
-                created_by: createdBy,
-                created_at: createdAt,
-                updated_at: createdAt,
-            };
-            if (this.hasLegacyParticipantColumns) {
-                meetingInsertValues.participant_a = participantUsernames[0];
-                meetingInsertValues.participant_b = participantUsernames[1];
-            }
             await executor.executeCommand({
                 option: "INSERT",
                 table: "jitsi_meetings",
-                values: meetingInsertValues,
+                values: {
+                    id: meetingId,
+                    participant_key: participantKey,
+                    meeting_url: meetingUrl,
+                    meeting_password: meetingPassword,
+                    meeting_name: "Cognis Classroom",
+                    chat_room_id: chatRoomId ?? null,
+                    classroom_id: normalizedClassroomId,
+                    created_by: createdBy,
+                    created_at: createdAt,
+                    updated_at: createdAt,
+                },
             });
 
             for (const username of participantUsernames) {
@@ -622,6 +653,9 @@ export class JitsiMeetStore {
         const rows = meetingsResult.rows ?? [];
         const mappedMeetings = await Promise.all(
             rows.map(async (row) => {
+                if (!row.meeting_url) {
+                    return null;
+                }
                 const meeting = {
                     id: String(row.id),
                     meetingUrl: String(row.meeting_url),

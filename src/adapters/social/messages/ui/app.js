@@ -166,6 +166,14 @@ function selectedRoomTitle(room, currentAccountId) {
     );
 }
 
+function renderMemberCountMarkup(room, members, i18n) {
+    const label = `${String(members.length)} ${i18n.t("module.social.messages.members")}`;
+    if (room?.kind !== "group") {
+        return `<span class="messages-thread-subtitle">${escapeHtml(label)}</span>`;
+    }
+    return `<button type="button" class="messages-thread-subtitle messages-thread-subtitle-btn" id="messages-member-summary-btn">${escapeHtml(label)}</button>`;
+}
+
 function randomSample(values, count) {
     return values
         .map((value) => ({ value, rank: Math.random() }))
@@ -224,7 +232,7 @@ function renderThreadHeader(room, currentAccountId, i18n) {
             ${renderRoomAvatar(room, currentAccountId)}
             <div class="messages-thread-title-wrap">
                 <h2 class="messages-thread-title">${escapeHtml(selectedRoomTitle(room, currentAccountId))}</h2>
-                <span class="messages-thread-subtitle">${escapeHtml(String(members.length))} ${escapeHtml(i18n.t("module.social.messages.members"))}</span>
+                ${renderMemberCountMarkup(room, members, i18n)}
             </div>
             <div class="messages-thread-actions">
                 ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}
@@ -565,6 +573,56 @@ function formatRoomListAvatar(displayedMember, titleSource) {
     });
 }
 
+function renderMemberSummaryItem(
+    member,
+    { avatarClass, imageClass, fallbackClass, statusText = "" },
+) {
+    const label = memberDisplayName(member);
+    return `
+        <li class="messages-member-summary-item">
+            ${formatAvatarMarkup({
+                avatarKey: member.avatarKey || null,
+                label,
+                colorSeed: member.handle || member.accountId || label,
+                avatarClass,
+                imageClass,
+                fallbackClass,
+                profileHandle: member.handle || null,
+                linkClass: "messages-avatar-link",
+            })}
+            <div class="messages-member-summary-meta">
+                <span class="messages-member-summary-name">${escapeHtml(label)}</span>
+                <span class="messages-member-summary-handle">${escapeHtml(`@${member.handle || member.username || member.accountId || ""}`)}</span>
+            </div>
+            ${
+                statusText
+                    ? `<span class="messages-member-summary-status">${escapeHtml(statusText)}</span>`
+                    : ""
+            }
+        </li>
+    `;
+}
+
+function renderMemberSummaryBody({
+    members,
+    emptyText,
+    presentStatusText = "",
+}) {
+    if (!Array.isArray(members) || members.length === 0) {
+        return `<p class="messages-member-summary-empty">${escapeHtml(emptyText)}</p>`;
+    }
+    return `<ul class="messages-member-summary-list">${members
+        .map((member) =>
+            renderMemberSummaryItem(member, {
+                avatarClass: "messages-member-summary-avatar",
+                imageClass: "messages-member-summary-avatar-img",
+                fallbackClass: "messages-member-summary-avatar-fallback",
+                statusText: presentStatusText,
+            }),
+        )
+        .join("")}</ul>`;
+}
+
 function formatMessageAvatar(message) {
     const senderLabel =
         message.senderDisplayName || message.senderHandle || message.senderId;
@@ -803,6 +861,20 @@ export async function mount(root, { signal } = {}) {
             `/api/v1/messages/rooms/${encodeURIComponent(roomId)}`,
         );
         if (!res.ok) return null;
+        return (await res.json()).data ?? null;
+    }
+
+    async function loadMeetingChatSummary(roomId) {
+        const res = await apiFetch(
+            "/api/v1/modules/jitsi-meet/meetings/chat-room-summary",
+            {
+                method: "POST",
+                body: JSON.stringify({ chatRoomId: roomId }),
+            },
+        );
+        if (!res.ok) {
+            return null;
+        }
         return (await res.json()).data ?? null;
     }
 
@@ -1160,6 +1232,57 @@ export async function mount(root, { signal } = {}) {
         leaveButton?.addEventListener("click", async () => {
             const leaveHandle = leaveButton.getAttribute("data-leave-handle");
             await leaveSelectedRoom(leaveHandle);
+        });
+        const memberSummaryButton = document.getElementById(
+            "messages-member-summary-btn",
+        );
+        memberSummaryButton?.addEventListener("click", async () => {
+            if (!selectedRoomId) return;
+            const selectedRoom = rooms.find(
+                (room) => String(room.id) === String(selectedRoomId),
+            );
+            if (!selectedRoom) return;
+            const meetingSummary = await loadMeetingChatSummary(selectedRoomId);
+            if (meetingSummary) {
+                await openPopup({
+                    title: i18n.t("module.social.messages.present_users_title"),
+                    body: renderMemberSummaryBody({
+                        members: meetingSummary.activeParticipants ?? [],
+                        emptyText: i18n.t(
+                            "module.social.messages.present_users_empty",
+                        ),
+                        presentStatusText: i18n.t(
+                            "module.social.messages.present_now",
+                        ),
+                    }),
+                    actions: [
+                        {
+                            id: "close",
+                            label: i18n.t("ui.reuse.close"),
+                            variant: "confirm",
+                        },
+                    ],
+                    maxWidth: "560px",
+                });
+                return;
+            }
+            await openPopup({
+                title: i18n.t("module.social.messages.member_summary_title"),
+                body: renderMemberSummaryBody({
+                    members: selectedRoom.members ?? [],
+                    emptyText: i18n.t(
+                        "module.social.messages.member_summary_empty",
+                    ),
+                }),
+                actions: [
+                    {
+                        id: "close",
+                        label: i18n.t("ui.reuse.close"),
+                        variant: "confirm",
+                    },
+                ],
+                maxWidth: "560px",
+            });
         });
     }
 

@@ -38,6 +38,11 @@ function normalizeUsername(value) {
         .toLowerCase();
 }
 
+function buildMeetingChatTitle(createdAt = new Date().toISOString()) {
+    const isoDate = String(createdAt).slice(0, 10);
+    return `${MEETING_TITLE} — ${isoDate}`;
+}
+
 async function resolveRequesterUsername(profileStore, accountId) {
     const profile = await profileStore.getProfile(accountId);
     const normalized = normalizeUsername(profile?.handle ?? "");
@@ -413,9 +418,10 @@ export function registerApiRoutes(router, ctx) {
 
             let chatRoom = null;
             if (typeof resolveGroupChat === "function") {
+                const meetingChatTitle = buildMeetingChatTitle();
                 chatRoom = await resolveGroupChat({
                     usernames: normalizedInput.participantUsernames,
-                    title: MEETING_TITLE,
+                    title: meetingChatTitle,
                     createdByAccountId: claims.sub,
                 }).catch(() => null);
             }
@@ -623,6 +629,90 @@ export function registerApiRoutes(router, ctx) {
             sendJson(res, 200, {
                 data: {
                     reclaimed: true,
+                },
+            });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.post(
+        "/api/v1/modules/jitsi-meet/meetings/chat-room-summary",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const body = await readJson(req);
+            const chatRoomId = String(body.chatRoomId ?? "").trim();
+            if (!chatRoomId) {
+                sendError(res, 400, "bad_request", "chatRoomId is required.");
+                return;
+            }
+
+            const requesterUsername = await resolveRequesterUsername(
+                profileStore,
+                claims.sub,
+            );
+            const meeting = await store.getMeetingByChatRoomId(chatRoomId);
+            if (!meeting) {
+                sendError(res, 404, "not_found", "Meeting not found.");
+                return;
+            }
+            const authorized = await canAccessMeeting({
+                store,
+                meeting,
+                username: requesterUsername,
+                listClassroomParticipantHandles,
+            });
+            if (!authorized) {
+                sendError(
+                    res,
+                    403,
+                    "forbidden",
+                    "You are not listed as an allowed meeting participant.",
+                );
+                return;
+            }
+
+            const [participants, presence] = await Promise.all([
+                store.listParticipants(meeting.id),
+                store.listPresence(meeting.id),
+            ]);
+            const activeUsernames = Array.from(
+                new Set(
+                    presence
+                        .filter((entry) => {
+                            if (!entry.active) return false;
+                            const seenAt = Date.parse(entry.lastSeenAt);
+                            return Number.isFinite(seenAt)
+                                ? seenAt >= Date.now() - 45_000
+                                : false;
+                        })
+                        .map((entry) => entry.username),
+                ),
+            ).sort();
+            const activeParticipants = await Promise.all(
+                activeUsernames.map(async (username) => {
+                    const profile =
+                        await profileStore.getProfileByHandle(username);
+                    return {
+                        username,
+                        handle: profile?.handle ?? username,
+                        displayName:
+                            profile?.displayName ?? profile?.handle ?? username,
+                        avatarKey: profile?.avatarKey ?? null,
+                    };
+                }),
+            );
+
+            sendJson(res, 200, {
+                data: {
+                    meetingId: meeting.id,
+                    meetingName: meeting.meetingName,
+                    chatRoomId,
+                    createdAt: meeting.createdAt,
+                    participantCount: participants.length,
+                    presentCount: activeParticipants.length,
+                    activeParticipants,
                 },
             });
         },
