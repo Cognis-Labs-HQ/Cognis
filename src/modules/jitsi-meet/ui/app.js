@@ -145,6 +145,16 @@ async function fetchParticipants(query) {
     return Array.isArray(payload?.data) ? payload.data : [];
 }
 
+/**
+ * Mounts the Meetings page inside the dashboard shell and wires all runtime
+ * interactions (participant selection, meeting lifecycle polling, and chat
+ * link updates). The optional AbortSignal is used by the SPA router to clean
+ * up timers and event listeners when users navigate away.
+ *
+ * @param {HTMLElement} root - Page mount root (usually #app).
+ * @param {{ signal?: AbortSignal }} [options] - Router-provided lifecycle options.
+ * @returns {Promise<void>}
+ */
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/modules/jitsi-meet/languages"],
@@ -727,6 +737,8 @@ export async function mount(root, { signal } = {}) {
         void updateChatLink();
     }
 
+    // Keep the composer `elements` API even with one card so this page follows
+    // the same layout contract as other dashboard pages.
     const elements = [
         {
             id: "jitsi-main",

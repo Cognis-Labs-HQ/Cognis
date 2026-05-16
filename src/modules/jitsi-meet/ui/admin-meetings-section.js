@@ -3,6 +3,36 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 const REFRESH_INTERVAL_MS = 2500;
 const TABLE_COLUMN_COUNT = 7;
 
+/**
+ * Creates the Jitsi Meetings administration section contribution rendered in
+ * the Administration page sub-composer.
+ *
+ * @example
+ * const section = createAdminSection({ i18n, apiFetch, escapeHtml });
+ *
+ * @param {{
+ *   i18n: { t: (key: string) => string },
+ *   apiFetch: (url: string, init?: RequestInit) => Promise<Response>,
+ *   escapeHtml: (value: string) => string,
+ * }} options
+ * @returns {{
+ *   id: string,
+ *   label: string,
+ *   dataReady: Promise<void>,
+ *   subComposerOptions: {
+ *     allowCustomization: boolean,
+ *     preferenceKey: string,
+ *     heading: string,
+ *     onRender: () => void,
+ *     elements: Array<{
+ *       id: string,
+ *       label: string,
+ *       pinned: boolean,
+ *       render: () => string,
+ *     }>,
+ *   },
+ * }}
+ */
 export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
     let panelRoot = null;
     let refreshTimer = null;

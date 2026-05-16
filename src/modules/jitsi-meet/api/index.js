@@ -9,6 +9,14 @@ const LIVELINESS_TIMEOUT_MS = 5000;
 
 const storeByExecutor = new WeakMap();
 
+/**
+ * Sends a JSON response with a fixed content-type header.
+ *
+ * @param {import("node:http").ServerResponse} res - HTTP response object.
+ * @param {number} status - HTTP status code.
+ * @param {unknown} payload - Serializable JSON payload.
+ * @returns {void}
+ */
 function sendJson(res, status, payload) {
     res.writeHead(status, { "content-type": "application/json" });
     res.end(JSON.stringify(payload));
@@ -121,6 +129,12 @@ async function resolveMeetingPayloadOrReject({
     };
 }
 
+/**
+ * Checks whether a meeting URL is reachable within a bounded timeout.
+ *
+ * @param {string} meetingUrl - Absolute meeting URL to probe.
+ * @returns {Promise<{ alive: boolean, status?: number, error?: string }>}
+ */
 async function checkMeetingLiveness(meetingUrl) {
     const abortController = new AbortController();
     const timer = setTimeout(() => {

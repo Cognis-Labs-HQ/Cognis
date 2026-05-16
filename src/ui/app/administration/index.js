@@ -124,15 +124,17 @@ function renderDetailsList(mod) {
     return rows;
 }
 
+function resolveModuleConfigScriptUrl(mod) {
+    return String(mod?.ui?.componentConfig?.scriptUrl ?? "").trim();
+}
+
 function renderModulesContent(modules) {
     return modules
         .map((mod) => {
             const pill = getStatePill(mod.status);
             const disableBlocked = mod.class === "core";
             const toggleTitle = i18n.t("ui.app.admin.toggle_module");
-            const componentConfigScriptUrl = String(
-                mod?.ui?.componentConfig?.scriptUrl ?? "",
-            ).trim();
+            const componentConfigScriptUrl = resolveModuleConfigScriptUrl(mod);
             const hasConfigButton = componentConfigScriptUrl.length > 0;
             const summaryClass = hasConfigButton
                 ? "module-row-summary module-row-summary--has-config"

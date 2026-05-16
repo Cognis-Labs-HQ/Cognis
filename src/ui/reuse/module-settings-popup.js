@@ -114,8 +114,12 @@ export async function openModuleSettingsPopup({
 
     const action = await openPopup({
         title: i18n.t(titleKey),
-        body: () =>
-            `<div class="module-settings-popup-fields">${fieldRows}</div>${noteBlock}`,
+        body: () => `
+      <div class="module-settings-popup-fields">
+        ${fieldRows}
+      </div>
+      ${noteBlock}
+    `,
         actions: [
             {
                 id: "save",

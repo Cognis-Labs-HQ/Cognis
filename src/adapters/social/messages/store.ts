@@ -537,20 +537,34 @@ export class DbMessagesStore {
         const candidates = (candidateRoomsResult.rows ?? []).map((row) =>
             this.rowToRoom(row),
         );
+        if (candidates.length === 0) return null;
 
-        const candidateMemberships = await Promise.all(
-            candidates.map(async (candidate) => ({
-                candidate,
-                members: await this.listMembers(candidate.id),
-            })),
-        );
-        for (const entry of candidateMemberships) {
+        const candidateRoomIds = candidates.map((candidate) => candidate.id);
+        const candidateMembersResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chatroom_members",
+            where: [
+                {
+                    column: "chatroom_id",
+                    operator: "IN",
+                    value: candidateRoomIds,
+                },
+            ],
+        });
+        const membersByRoomId = new Map<string, string[]>();
+        for (const row of candidateMembersResult.rows ?? []) {
+            const roomId = String(row.chatroom_id ?? "").trim();
+            const accountId = String(row.account_id ?? "").trim();
+            if (!roomId || !accountId) continue;
+            if (!membersByRoomId.has(roomId)) {
+                membersByRoomId.set(roomId, []);
+            }
+            membersByRoomId.get(roomId)?.push(accountId);
+        }
+
+        for (const candidate of candidates) {
             const normalizedCandidateMembers = Array.from(
-                new Set(
-                    entry.members
-                        .map((member) => String(member.accountId ?? "").trim())
-                        .filter(Boolean),
-                ),
+                new Set(membersByRoomId.get(candidate.id) ?? []),
             ).sort();
             if (
                 normalizedCandidateMembers.length ===
@@ -560,7 +574,7 @@ export class DbMessagesStore {
                         accountId === normalizedMembers[index],
                 )
             ) {
-                return entry.candidate;
+                return candidate;
             }
         }
 

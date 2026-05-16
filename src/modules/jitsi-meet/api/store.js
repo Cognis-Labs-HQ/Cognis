@@ -79,6 +79,22 @@ function buildParticipantKey(usernames, classroomId = null) {
     return createHash("sha256").update(payload).digest("hex");
 }
 
+/**
+ * Persistence layer for Jitsi module configuration, meetings, participants,
+ * auth state, and active session presence.
+ *
+ * Public methods provide schema setup, meeting creation/query helpers,
+ * participant/auth-state updates, and normalized response payload helpers used
+ * by the Jitsi API routes.
+ *
+ * @param {{
+ *   db: {
+ *     ensureTable: (definition: object) => Promise<void>,
+ *     executeCommand: (command: object) => Promise<{ rows?: Array<Record<string, unknown>> }>,
+ *   },
+ *   log?: (level: string, message: string, meta?: Record<string, unknown>) => void,
+ * }} options
+ */
 export class JitsiMeetStore {
     constructor({ db, log }) {
         this.db = db;
@@ -629,6 +645,17 @@ export class JitsiMeetStore {
         };
     }
 
+    /**
+     * Normalizes meeting-creation input into a deduplicated participant list
+     * that always includes the creator, plus a sanitized classroomId value.
+     *
+     * @param {{
+     *   participants?: string[],
+     *   classroomId?: string | null,
+     *   creatorUsername: string,
+     * }} input
+     * @returns {{ participantUsernames: string[], classroomId: string | null }}
+     */
     normalizeMeetingCreationInput({
         participants,
         classroomId,
