@@ -37,7 +37,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.0.3` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.3.0` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.0` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.1` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 

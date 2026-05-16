@@ -20,6 +20,7 @@ const ADAPTER_UI_ROOT = path.resolve(
 );
 
 let adapterReady = false;
+const MESSAGES_ASSET_VERSION = "1.4.0";
 
 export function createSocialAdapter(): SocialAdapter {
     return {
@@ -290,16 +291,16 @@ export async function bootstrapSocialAdapter(
         id: "social-messages-page",
         pattern: "^/messages(?:/[^/]+)?$",
         base: "/messages",
-        scriptUrl: "/static/adapters/social/messages/app.js",
+        scriptUrl: `/static/adapters/social/messages/app.js?v=${MESSAGES_ASSET_VERSION}`,
         stylesheets: [
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
-            "/static/adapters/social/messages/messages.css",
+            `/static/adapters/social/messages/messages.css?v=${MESSAGES_ASSET_VERSION}`,
         ],
         isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
     });
     ctx.registerNavbarPlugin(
-        "/static/adapters/social/messages/navbar.js",
+        `/static/adapters/social/messages/navbar.js?v=${MESSAGES_ASSET_VERSION}`,
         () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
     );
 

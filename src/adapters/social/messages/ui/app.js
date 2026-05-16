@@ -171,7 +171,7 @@ function renderMemberCountControl(room, members, i18n) {
     if (room?.kind !== "group") {
         return `<span class="messages-thread-subtitle">${escapeHtml(label)}</span>`;
     }
-    return `<span class="messages-thread-subtitle messages-thread-subtitle-btn" id="messages-member-summary-btn" role="button" tabindex="0">${escapeHtml(label)}</span>`;
+    return `<span class="messages-thread-subtitle messages-thread-subtitle-action" id="messages-member-summary-btn" role="button" tabindex="0">${escapeHtml(label)}</span>`;
 }
 
 function randomSample(values, count) {
