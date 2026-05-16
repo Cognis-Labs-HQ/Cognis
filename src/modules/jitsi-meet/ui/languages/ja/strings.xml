@@ -7,6 +7,8 @@
   <string name="module.jitsi_meet.overlay.auth_required">認証が必要です</string>
   <string name="module.jitsi_meet.overlay.reclaim">セッションを引き継ぐ</string>
   <string name="module.jitsi_meet.overlay.loading">事前チェックを実行中...</string>
+  <string name="module.jitsi_meet.overlay.preflight_running">事前チェックを実行しています。成功するまでミーティング開始は無効です。</string>
+  <string name="module.jitsi_meet.overlay.preflight_required">ミーティングを開始する前に事前チェックを成功させる必要があります。</string>
   <string name="module.jitsi_meet.overlay.ready_to_start">参加者が選択されました。ミーティングを開始できます。</string>
   <string name="module.jitsi_meet.overlay.creating">ミーティング URL を作成または再利用しています...</string>
   <string name="module.jitsi_meet.overlay.config_required">ミーティングを使う前に、管理者が Jitsi インスタンス URL を設定する必要があります。</string>
@@ -22,11 +24,16 @@
   <string name="module.jitsi_meet.overlay.auth_completed">認証が完了しました。待機中の参加者は参加できます。</string>
   <string name="module.jitsi_meet.overlay.reclaim_prompt">このミーティングには別セッションですでに参加しています。このセッションで引き継ぎますか？</string>
   <string name="module.jitsi_meet.overlay.reclaim_done">セッションを引き継ぎました。以前のセッションは切断されました。</string>
+  <string name="module.jitsi_meet.overlay.reclaimed_elsewhere">このミーティングは別のセッションに引き継がれました。ここで再参加するには、もう一度引き継いでください。</string>
   <string name="module.jitsi_meet.overlay.in_meeting">ミーティングを開始しました。Cognis のセッション追跡のため、このタブを開いたままにしてください。</string>
   <string name="module.jitsi_meet.overlay.probe_done">事前チェック完了。</string>
   <string name="module.jitsi_meet.chat.heading">ミーティング チャット</string>
   <string name="module.jitsi_meet.chat.pending">ミーティングの開始を待っています。</string>
   <string name="module.jitsi_meet.chat.ready">チャットルームの準備ができました。</string>
+  <string name="module.jitsi_meet.chat.unavailable">ミーティング チャットは現在利用できません。</string>
+  <string name="module.jitsi_meet.chat.empty">まだメッセージはありません。</string>
+  <string name="module.jitsi_meet.chat.placeholder">ミーティング チャットにメッセージを書く</string>
+  <string name="module.jitsi_meet.chat.send_failed">チャットメッセージの送信に失敗しました。</string>
   <string name="module.jitsi_meet.chat.open">チャットを開く</string>
   <string name="module.jitsi_meet.participants.heading">参加者</string>
   <string name="module.jitsi_meet.participants.search">参加者を検索</string>

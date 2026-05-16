@@ -7,6 +7,8 @@
   <string name="module.jitsi_meet.overlay.auth_required">Authentifizierung Erforderlich</string>
   <string name="module.jitsi_meet.overlay.reclaim">Sitzung Übernehmen</string>
   <string name="module.jitsi_meet.overlay.loading">Pre-Flight-Prüfung Läuft...</string>
+  <string name="module.jitsi_meet.overlay.preflight_running">Pre-Flight-Prüfung läuft. Das Starten bleibt deaktiviert, bis sie erfolgreich ist.</string>
+  <string name="module.jitsi_meet.overlay.preflight_required">Die Pre-Flight-Prüfung muss erfolgreich sein, bevor das Meeting starten kann.</string>
   <string name="module.jitsi_meet.overlay.ready_to_start">Teilnehmer ausgewählt. Meeting kann gestartet werden.</string>
   <string name="module.jitsi_meet.overlay.creating">Meeting-URL wird erstellt oder wiederverwendet...</string>
   <string name="module.jitsi_meet.overlay.config_required">Ein Admin muss zuerst die Jitsi-Instanz-URL konfigurieren.</string>
@@ -22,11 +24,16 @@
   <string name="module.jitsi_meet.overlay.auth_completed">Authentifizierung abgeschlossen. Wartende Teilnehmer können jetzt beitreten.</string>
   <string name="module.jitsi_meet.overlay.reclaim_prompt">Du bist in diesem Meeting bereits in einer anderen Sitzung. Diese Sitzung übernehmen?</string>
   <string name="module.jitsi_meet.overlay.reclaim_done">Sitzung übernommen. Vorherige Sitzung wurde getrennt.</string>
+  <string name="module.jitsi_meet.overlay.reclaimed_elsewhere">Dieses Meeting wurde von einer anderen Sitzung übernommen. Übernimm es erneut, wenn du hier wieder beitreten möchtest.</string>
   <string name="module.jitsi_meet.overlay.in_meeting">Meeting gestartet. Halte diesen Tab für das Cognis-Tracking geöffnet.</string>
   <string name="module.jitsi_meet.overlay.probe_done">Pre-Flight-Prüfung bestanden.</string>
   <string name="module.jitsi_meet.chat.heading">Meeting-Chat</string>
   <string name="module.jitsi_meet.chat.pending">Warten auf Meeting-Start.</string>
   <string name="module.jitsi_meet.chat.ready">Chatraum ist bereit.</string>
+  <string name="module.jitsi_meet.chat.unavailable">Der Meeting-Chat ist derzeit nicht verfügbar.</string>
+  <string name="module.jitsi_meet.chat.empty">Noch keine Nachrichten.</string>
+  <string name="module.jitsi_meet.chat.placeholder">Nachricht an den Meeting-Chat schreiben</string>
+  <string name="module.jitsi_meet.chat.send_failed">Die Chatnachricht konnte nicht gesendet werden.</string>
   <string name="module.jitsi_meet.chat.open">Chat Öffnen</string>
   <string name="module.jitsi_meet.participants.heading">Teilnehmer</string>
   <string name="module.jitsi_meet.participants.search">Teilnehmer Suchen</string>

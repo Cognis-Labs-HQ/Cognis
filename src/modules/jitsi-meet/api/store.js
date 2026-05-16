@@ -2,6 +2,7 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
 const ACTIVE_PRESENCE_WINDOW_MS = 45 * 1000;
+const DEFAULT_MEETING_SLUG_PREFIX = "cognis-classroom";
 
 function nowIso() {
     return new Date().toISOString();
@@ -48,8 +49,10 @@ function normalizeInstanceUrl(rawUrl) {
 }
 
 function buildRoomSlug(prefix) {
-    const entropy = randomBytes(8).toString("hex");
-    return prefix ? `${prefix}-${entropy}` : entropy;
+    const readablePrefix =
+        normalizeMeetingPrefix(prefix) || DEFAULT_MEETING_SLUG_PREFIX;
+    const entropy = randomBytes(4).toString("hex");
+    return `${readablePrefix}-${entropy}`;
 }
 
 function extractInstanceFromMeetingUrl(meetingUrl) {

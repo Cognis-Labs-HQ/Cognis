@@ -79,11 +79,14 @@ async function fetchCurrentProfile() {
     const profile = payload?.data;
     if (!profile) return null;
     const handle = normalizeUsername(profile.handle ?? "");
-    const displayName = String(profile.displayName ?? profile.handle ?? "").trim();
+    const displayName = String(
+        profile.displayName ?? profile.handle ?? "",
+    ).trim();
+    const email = typeof profile.email === "string" ? profile.email.trim() : "";
     return {
         handle,
         displayName: displayName || handle || "Cognis User",
-        email: handle ? `${handle}@cognis.local` : "",
+        email,
     };
 }
 
@@ -224,6 +227,10 @@ export async function mount(root, { signal } = {}) {
         chatRoomId: "",
         chatRoomKey: null,
         currentProfile: null,
+        preflightStatus: "idle",
+        preflightPassed: false,
+        preflightMessage: "",
+        preflightNeedsConfig: false,
         sessionId: ensureSessionId(),
         dragUsername: null,
     };
@@ -255,6 +262,41 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
+    function updatePreflightIndicator() {
+        const loadingEl = root.querySelector("#jitsi-loading");
+        const indicatorEl = root.querySelector("#jitsi-loading-indicator");
+        const loadingTextEl = root.querySelector("#jitsi-loading-text");
+        if (
+            !(loadingEl instanceof HTMLElement) ||
+            !(indicatorEl instanceof HTMLElement) ||
+            !(loadingTextEl instanceof HTMLElement)
+        ) {
+            return;
+        }
+        const showIndicator = state.preflightStatus !== "idle";
+        loadingEl.hidden = !showIndicator;
+        indicatorEl.classList.remove(
+            "jitsi-spinner",
+            "jitsi-tick",
+            "jitsi-cross",
+        );
+        if (state.preflightStatus === "running") {
+            indicatorEl.classList.add("jitsi-spinner");
+        } else if (state.preflightStatus === "passed") {
+            indicatorEl.classList.add("jitsi-tick");
+        } else if (state.preflightStatus === "failed") {
+            indicatorEl.classList.add("jitsi-cross");
+        }
+        loadingTextEl.textContent = state.preflightMessage;
+    }
+
+    function setPreflightStatus(status, message) {
+        state.preflightStatus = status;
+        state.preflightPassed = status === "passed";
+        state.preflightMessage = message;
+        updatePreflightIndicator();
+    }
+
     function updateOverlay({
         message,
         loading = false,
@@ -262,7 +304,9 @@ export async function mount(root, { signal } = {}) {
         canStart = false,
         showAuth = false,
         showReclaim = false,
+        visible = true,
     }) {
+        const overlay = root.querySelector("#jitsi-overlay");
         const startButton = root.querySelector("#jitsi-start-btn");
         const authButton = root.querySelector("#jitsi-auth-btn");
         const reclaimButton = root.querySelector("#jitsi-reclaim-btn");
@@ -274,15 +318,27 @@ export async function mount(root, { signal } = {}) {
         if (messageEl instanceof HTMLElement && typeof message === "string") {
             messageEl.textContent = message;
         }
+        if (overlay instanceof HTMLElement) {
+            overlay.hidden = !visible;
+        }
         if (loadingEl instanceof HTMLElement) {
-            loadingEl.hidden = !loading;
+            loadingEl.hidden =
+                !loading &&
+                state.preflightStatus !== "running" &&
+                state.preflightStatus !== "passed" &&
+                state.preflightStatus !== "failed";
         }
         if (indicatorEl instanceof HTMLElement) {
-            if (probed) {
+            if (state.preflightStatus === "failed") {
+                indicatorEl.classList.remove("jitsi-spinner", "jitsi-tick");
+                indicatorEl.classList.add("jitsi-cross");
+            } else if (state.preflightStatus === "passed" || probed) {
                 indicatorEl.classList.remove("jitsi-spinner");
+                indicatorEl.classList.remove("jitsi-cross");
                 indicatorEl.classList.add("jitsi-tick");
             } else {
                 indicatorEl.classList.remove("jitsi-tick");
+                indicatorEl.classList.remove("jitsi-cross");
                 indicatorEl.classList.add("jitsi-spinner");
             }
         }
@@ -292,6 +348,8 @@ export async function mount(root, { signal } = {}) {
         ) {
             if (loading || probed) {
                 loadingTextEl.textContent = message;
+            } else if (state.preflightMessage) {
+                loadingTextEl.textContent = state.preflightMessage;
             }
         }
         if (startButton instanceof HTMLButtonElement) {
@@ -325,10 +383,7 @@ export async function mount(root, { signal } = {}) {
 
     async function decryptChatMessage(message, key) {
         if (!key) return null;
-        if (
-            message?.contentType ===
-            "application/vnd.cognis.room-event+json"
-        ) {
+        if (message?.contentType === "application/vnd.cognis.room-event+json") {
             return String(message?.ciphertext ?? "");
         }
         const ivHex = String(message?.iv ?? "").trim();
@@ -475,6 +530,76 @@ export async function mount(root, { signal } = {}) {
         startNativeChatPolling();
     }
 
+    function closeMeetingEmbed() {
+        const frame = root.querySelector("#jitsi-meeting-frame");
+        if (!(frame instanceof HTMLIFrameElement)) return;
+        frame.src = "about:blank";
+        frame.hidden = true;
+    }
+
+    function lobbyMessageKey(participantCount) {
+        if (state.preflightStatus === "running") {
+            return "module.jitsi_meet.overlay.preflight_running";
+        }
+        if (state.preflightStatus === "failed") {
+            if (state.preflightNeedsConfig) {
+                return "module.jitsi_meet.overlay.config_required";
+            }
+            return "module.jitsi_meet.overlay.preflight_required";
+        }
+        if (participantCount > 0) {
+            return "module.jitsi_meet.overlay.ready_to_start";
+        }
+        return "module.jitsi_meet.overlay.select_participants";
+    }
+
+    async function runPreflightCheck({ showErrors = false } = {}) {
+        if (state.preflightStatus === "running") {
+            return false;
+        }
+        setPreflightStatus(
+            "running",
+            i18n.t("module.jitsi_meet.overlay.loading"),
+        );
+        const response = await apiFetch(
+            "/api/v1/modules/jitsi-meet/meetings/preflight",
+            {
+                method: "POST",
+            },
+        );
+        if (!response.ok) {
+            state.preflightNeedsConfig = response.status === 409;
+            const message =
+                response.status === 409
+                    ? i18n.t("module.jitsi_meet.overlay.config_required")
+                    : i18n.t("module.jitsi_meet.overlay.probe_failed");
+            setPreflightStatus("failed", message);
+            renderParticipants();
+            if (showErrors) {
+                showToast(message, { variant: "error" });
+            }
+            return false;
+        }
+        const payload = await response.json().catch(() => ({ data: null }));
+        state.preflightNeedsConfig = false;
+        const isAlive = payload?.data?.alive === true;
+        if (!isAlive) {
+            const message = i18n.t("module.jitsi_meet.overlay.probe_failed");
+            setPreflightStatus("failed", message);
+            renderParticipants();
+            if (showErrors) {
+                showToast(message, { variant: "error" });
+            }
+            return false;
+        }
+        setPreflightStatus(
+            "passed",
+            i18n.t("module.jitsi_meet.overlay.probe_done"),
+        );
+        renderParticipants();
+        return true;
+    }
+
     function renderParticipants() {
         const availablePool = root.querySelector(
             "#jitsi-available-participants",
@@ -500,16 +625,12 @@ export async function mount(root, { signal } = {}) {
         );
 
         const participantCount = state.selectedParticipants.length;
-        if (participantCount > 0) {
-            updateOverlay({
-                message: i18n.t("module.jitsi_meet.overlay.ready_to_start"),
-                canStart: true,
-            });
-            return;
-        }
         updateOverlay({
-            message: i18n.t("module.jitsi_meet.overlay.select_participants"),
-            canStart: false,
+            message: i18n.t(lobbyMessageKey(participantCount)),
+            canStart:
+                participantCount > 0 &&
+                state.preflightPassed &&
+                !state.meeting?.id,
         });
     }
 
@@ -580,6 +701,7 @@ export async function mount(root, { signal } = {}) {
                 },
                 body: JSON.stringify({
                     meetingId: state.meeting.id,
+                    sessionId: state.sessionId,
                 }),
             },
         );
@@ -587,10 +709,28 @@ export async function mount(root, { signal } = {}) {
         const payload = await response.json().catch(() => ({ data: null }));
         const latestState = payload?.data?.state;
         if (!latestState) return;
+        if (payload?.data?.sessionActive === false) {
+            closeMeetingEmbed();
+            stopNativeChatPolling();
+            if (state.heartbeatTimer !== null) {
+                clearInterval(state.heartbeatTimer);
+                state.heartbeatTimer = null;
+            }
+            updateOverlay({
+                message: i18n.t(
+                    "module.jitsi_meet.overlay.reclaimed_elsewhere",
+                ),
+                canStart: false,
+                showReclaim: true,
+                visible: true,
+            });
+            return;
+        }
         if (latestState.authRequired && !latestState.authCompletedAt) {
             updateOverlay({
                 message: i18n.t("module.jitsi_meet.overlay.auth_waiting"),
                 showAuth: true,
+                visible: true,
             });
             return;
         }
@@ -599,6 +739,7 @@ export async function mount(root, { signal } = {}) {
                 message: i18n.t("module.jitsi_meet.overlay.auth_completed"),
                 canStart: false,
                 showAuth: false,
+                visible: true,
             });
         }
     }
@@ -633,6 +774,7 @@ export async function mount(root, { signal } = {}) {
             canStart: false,
             showAuth: false,
             showReclaim: false,
+            visible: false,
         });
         await keepPresenceAlive(true);
     }
@@ -667,6 +809,7 @@ export async function mount(root, { signal } = {}) {
             updateOverlay({
                 message: i18n.t("module.jitsi_meet.overlay.reclaim_prompt"),
                 showReclaim: true,
+                visible: true,
             });
             return;
         }
@@ -674,6 +817,7 @@ export async function mount(root, { signal } = {}) {
         if (state.meeting.waitingForAuthentication) {
             updateOverlay({
                 message: i18n.t("module.jitsi_meet.overlay.auth_waiting_other"),
+                visible: true,
             });
             return;
         }
@@ -687,6 +831,7 @@ export async function mount(root, { signal } = {}) {
                     "module.jitsi_meet.overlay.auth_required_description",
                 ),
                 showAuth: Boolean(state.meeting.canAuthenticate),
+                visible: true,
             });
             return;
         }
@@ -695,12 +840,21 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function prepareMeetingStart() {
+        if (!state.preflightPassed) {
+            const passed = await runPreflightCheck({ showErrors: true });
+            if (!passed) return;
+        }
+
         const selected = selectedUsernames();
-        if (selected.length === 0) return;
+        if (selected.length === 0) {
+            renderParticipants();
+            return;
+        }
 
         updateOverlay({
             message: i18n.t("module.jitsi_meet.overlay.creating"),
             loading: true,
+            visible: true,
         });
 
         const createResponse = await apiFetch(
@@ -724,7 +878,8 @@ export async function mount(root, { signal } = {}) {
             updateOverlay({
                 message,
                 loading: false,
-                canStart: true,
+                canStart: state.preflightPassed && selected.length > 0,
+                visible: true,
             });
             showToast(message, { variant: "error" });
             return;
@@ -737,53 +892,10 @@ export async function mount(root, { signal } = {}) {
         await updateNativeChat();
 
         updateOverlay({
-            message: i18n.t("module.jitsi_meet.overlay.probing"),
-            loading: true,
-            canStart: false,
-        });
-
-        const probeResponse = await apiFetch(
-            "/api/v1/modules/jitsi-meet/meetings/probe",
-            {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                },
-                body: JSON.stringify({
-                    meetingId: state.meeting.id,
-                }),
-            },
-        );
-
-        const probePayload = await probeResponse
-            .json()
-            .catch(() => ({ data: null }));
-        if (!probeResponse.ok || probePayload?.data?.alive !== true) {
-            updateOverlay({
-                message: i18n.t("module.jitsi_meet.overlay.probe_failed"),
-                loading: false,
-                canStart: true,
-            });
-            showToast(i18n.t("module.jitsi_meet.overlay.probe_failed"), {
-                variant: "error",
-            });
-            return;
-        }
-
-        updateOverlay({
-            message: i18n.t("module.jitsi_meet.overlay.probe_done"),
-            probed: true,
-            canStart: false,
-        });
-
-        await new Promise((resolve) =>
-            setTimeout(resolve, PROBE_SUCCESS_DISPLAY_MS),
-        );
-
-        updateOverlay({
             message: i18n.t("module.jitsi_meet.overlay.joining"),
             loading: false,
             canStart: false,
+            visible: true,
         });
 
         await joinMeeting();
@@ -999,9 +1111,13 @@ export async function mount(root, { signal } = {}) {
                             "module.jitsi_meet.overlay.auth_in_progress",
                         ),
                         showAuth: true,
+                        visible: true,
                     });
                     window.open(
-                        state.meeting.meetingUrl,
+                        buildMeetingJoinUrl(
+                            state.meeting.meetingUrl,
+                            state.currentProfile,
+                        ),
                         "_blank",
                         "noopener,noreferrer",
                     );
@@ -1033,6 +1149,7 @@ export async function mount(root, { signal } = {}) {
                             "module.jitsi_meet.overlay.reclaim_done",
                         ),
                         showReclaim: false,
+                        visible: true,
                     });
                     await openMeetingEmbed();
                 },
@@ -1072,9 +1189,12 @@ export async function mount(root, { signal } = {}) {
                         },
                     );
                     if (!response.ok) {
-                        showToast(i18n.t("module.jitsi_meet.chat.send_failed"), {
-                            variant: "error",
-                        });
+                        showToast(
+                            i18n.t("module.jitsi_meet.chat.send_failed"),
+                            {
+                                variant: "error",
+                            },
+                        );
                         return;
                     }
                     chatInput.value = "";
@@ -1127,7 +1247,11 @@ export async function mount(root, { signal } = {}) {
         },
     ];
 
-    const allParticipants = await fetchParticipants("");
+    const [allParticipants, currentProfile] = await Promise.all([
+        fetchParticipants(""),
+        fetchCurrentProfile(),
+    ]);
+    state.currentProfile = currentProfile;
     state.availableParticipants = allParticipants
         .map((entry) => ({
             username: normalizeUsername(entry?.handle ?? entry?.username ?? ""),
@@ -1149,6 +1273,7 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
+    await runPreflightCheck();
 }
 
 // When the SPA router imports this module it sets __spaRouter=true to prevent

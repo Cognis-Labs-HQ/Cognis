@@ -275,6 +275,7 @@ export function registerApiRoutes(router, ctx) {
             "/api/v1/modules/jitsi-meet/config",
             "/api/v1/modules/jitsi-meet/meetings/create",
             "/api/v1/modules/jitsi-meet/meetings/get",
+            "/api/v1/modules/jitsi-meet/meetings/preflight",
             "/api/v1/modules/jitsi-meet/meetings/probe",
             "/api/v1/modules/jitsi-meet/meetings/join",
             "/api/v1/modules/jitsi-meet/meetings/reclaim",
@@ -496,6 +497,33 @@ export function registerApiRoutes(router, ctx) {
             });
             sendJson(res, 200, {
                 data: payload,
+            });
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.post(
+        "/api/v1/modules/jitsi-meet/meetings/preflight",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const config = await store.getConfig();
+            if (!config.instanceUrl) {
+                sendError(
+                    res,
+                    409,
+                    "config_required",
+                    "The Jitsi instance URL must be configured before meetings can be created.",
+                );
+                return;
+            }
+            const liveness = await checkMeetingLiveness(config.instanceUrl);
+            sendJson(res, 200, {
+                data: {
+                    ...liveness,
+                    instanceUrl: config.instanceUrl,
+                },
             });
         },
         { access: { minRole: "user" } },
@@ -898,12 +926,23 @@ export function registerApiRoutes(router, ctx) {
             if (!resolved) return;
 
             const presence = await store.listPresence(resolved.meeting.id);
+            const sessionId = String(body.sessionId ?? "").trim();
+            const sessionPresence = sessionId
+                ? presence.find(
+                      (entry) =>
+                          entry.username === resolved.requesterUsername &&
+                          entry.sessionId === sessionId,
+                  )
+                : null;
             sendJson(res, 200, {
                 data: {
                     state: resolved.state,
                     activeParticipants: presence
                         .filter((entry) => entry.active)
                         .map((entry) => entry.username),
+                    sessionActive: sessionPresence
+                        ? sessionPresence.active
+                        : true,
                 },
             });
         },

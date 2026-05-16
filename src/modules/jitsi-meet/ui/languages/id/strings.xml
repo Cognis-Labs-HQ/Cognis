@@ -7,6 +7,8 @@
   <string name="module.jitsi_meet.overlay.auth_required">Autentikasi Diperlukan</string>
   <string name="module.jitsi_meet.overlay.reclaim">Ambil Alih Sesi</string>
   <string name="module.jitsi_meet.overlay.loading">Pemeriksaan Pra-Penerbangan Berjalan...</string>
+  <string name="module.jitsi_meet.overlay.preflight_running">Pemeriksaan pra-penerbangan sedang berjalan. Mulai rapat dinonaktifkan sampai pemeriksaan berhasil.</string>
+  <string name="module.jitsi_meet.overlay.preflight_required">Pemeriksaan pra-penerbangan harus berhasil sebelum rapat bisa dimulai.</string>
   <string name="module.jitsi_meet.overlay.ready_to_start">Peserta dipilih. Rapat siap dimulai.</string>
   <string name="module.jitsi_meet.overlay.creating">Membuat atau menggunakan ulang URL rapat...</string>
   <string name="module.jitsi_meet.overlay.config_required">Admin harus mengatur URL instans Jitsi sebelum Rapat dapat dipakai.</string>
@@ -22,11 +24,16 @@
   <string name="module.jitsi_meet.overlay.auth_completed">Autentikasi selesai. Peserta yang menunggu sekarang bisa bergabung.</string>
   <string name="module.jitsi_meet.overlay.reclaim_prompt">Kamu sudah berada di rapat ini pada sesi lain. Ambil alih sesi ini?</string>
   <string name="module.jitsi_meet.overlay.reclaim_done">Sesi diambil alih. Sesi sebelumnya diputus.</string>
+  <string name="module.jitsi_meet.overlay.reclaimed_elsewhere">Rapat ini diambil alih oleh sesi lain. Ambil alih lagi jika kamu ingin bergabung kembali dari sini.</string>
   <string name="module.jitsi_meet.overlay.in_meeting">Rapat dimulai. Biarkan tab ini terbuka untuk pelacakan sesi Cognis.</string>
   <string name="module.jitsi_meet.overlay.probe_done">Pemeriksaan Pra-Penerbangan Berhasil.</string>
   <string name="module.jitsi_meet.chat.heading">Chat Rapat</string>
   <string name="module.jitsi_meet.chat.pending">Menunggu rapat dimulai.</string>
   <string name="module.jitsi_meet.chat.ready">Ruang chat siap.</string>
+  <string name="module.jitsi_meet.chat.unavailable">Chat rapat sedang tidak tersedia.</string>
+  <string name="module.jitsi_meet.chat.empty">Belum ada pesan.</string>
+  <string name="module.jitsi_meet.chat.placeholder">Tulis pesan ke chat rapat</string>
+  <string name="module.jitsi_meet.chat.send_failed">Gagal mengirim pesan chat.</string>
   <string name="module.jitsi_meet.chat.open">Buka Chat</string>
   <string name="module.jitsi_meet.participants.heading">Peserta</string>
   <string name="module.jitsi_meet.participants.search">Cari Peserta</string>

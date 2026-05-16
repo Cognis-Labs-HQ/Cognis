@@ -127,6 +127,10 @@ test("jitsi store meeting creation uses the modern column set", async () => {
     assert.ok(mockDb.insertedMeetingRows[0].participant_key);
     assert.ok(mockDb.insertedMeetingRows[0].meeting_url);
     assert.ok(mockDb.insertedMeetingRows[0].room_slug);
+    assert.match(
+        String(mockDb.insertedMeetingRows[0].room_slug),
+        /^classroom-[a-f0-9]{8}$/,
+    );
     assert.equal(
         String(mockDb.insertedMeetingRows[0].meeting_url).endsWith(
             `/${mockDb.insertedMeetingRows[0].room_slug}`,
@@ -216,4 +220,24 @@ test("jitsi store meeting creation retries with legacy participant columns", asy
     assert.equal(insertedMeetingRows.length, 1);
     assert.equal(insertedMeetingRows[0].participant_a, "alice");
     assert.equal(insertedMeetingRows[0].participant_b, "bob");
+});
+
+test("jitsi store meeting creation falls back to a readable default slug", async () => {
+    const mockDb = createMockJitsiDb();
+    const store = new JitsiMeetStore({ db: mockDb });
+
+    await store.ensureSchema();
+    await store.createMeeting({
+        instanceUrl: "https://meet.example.com",
+        meetingPrefix: "",
+        usernames: ["alice", "bob"],
+        classroomId: null,
+        createdBy: "alice",
+        chatRoomId: null,
+    });
+
+    assert.match(
+        String(mockDb.insertedMeetingRows[0].room_slug),
+        /^cognis-classroom-[a-f0-9]{8}$/,
+    );
 });

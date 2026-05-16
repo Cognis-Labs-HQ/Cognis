@@ -23,6 +23,10 @@ Nachfolgende Verbesserungen:
 - Mit Meetings verknüpfte Gruppenchats enthalten jetzt das Meeting-Datum im Raumnamen.
 - Ein Klick auf die Mitgliederanzahl in einem Meeting-Gruppenchat öffnet jetzt ein Popup mit den aktuell anwesenden Benutzern und verlinkten Avataren für Profilvorschauen.
 - Das Meeting-Fenster verwendet im hellen Design jetzt eine deutlich hellere Overlay-Darstellung, damit die Vorab-Ansicht nicht mehr zu stark abgedunkelt ist.
+- Der Chat auf der Meetings-Seite wird jetzt nativ innerhalb der Seite über die Messages-APIs gerendert, statt eine zweite Chat-Seite aus einer anderen URL einzubetten.
+- Die Pre-Flight-Prüfung läuft jetzt vor dem Meeting-Start, bleibt unabhängig von der Teilnehmerauswahl sichtbar und blockiert den Start, bis sie erfolgreich ist.
+- Eingebettete Jitsi-Beitritte füllen Teilnehmerinformationen vorab aus, überspringen den zusätzlichen Vorab-Beitrittsschritt und trennen den verdrängten Tab, wenn eine andere Sitzung das Meeting übernimmt.
+- Generierte Meeting-Slugs bleiben jetzt lesbar (`classroom-xxxxxxxx` / `cognis-classroom-xxxxxxxx`), sodass Jitsi keinen verstümmelten Beitrittsnamen mehr anzeigt.
 
 ## Geänderte Dateien / Komponenten
 
@@ -42,6 +46,12 @@ Nachfolgende Verbesserungen:
 - `src/modules/jitsi-meet/api/tests/store.test.js` (`room_slug`-Prüfung ergänzt: Wert wird aus dem Meeting-URL-Slug gesetzt)
 - `src/ui/tests/regression-followups.test.js` (Regressionen für Meeting-Chat-Titel und Mitgliederübersicht)
 - `src/modules/jitsi-meet/ui/jitsi-meet.css` (helleres Meeting-Fenster-Overlay, Spinner- und Staged-User-Kontrast im hellen Design)
+- `src/modules/jitsi-meet/ui/app.js` (nativer Meeting-Chat, vorgelagerte Pre-Flight-Sperre, vorausgefüllte Jitsi-Beitritts-URL, Kick-out bei Sitzungsübernahme)
+- `src/modules/jitsi-meet/api/index.js` (benutzerseitiger Pre-Flight-Endpunkt, Statusmeldung zur aktiven Sitzung für Sitzungsübernahmen)
+- `src/modules/jitsi-meet/api/store.js` (lesbare Standard-Erzeugung für Meeting-Slugs)
+- `src/modules/jitsi-meet/ui/languages/*/strings.xml` (Texte für nativen Chat, Pre-Flight und Sitzungsübernahme)
+- `src/modules/jitsi-meet/package.json` (Modulversion auf `1.0.1` erhöht)
+- `src/docs/versions.en.md` (Jitsi-Meet-Version auf `1.0.1` aktualisiert)
 
 ## Commit-Links
 

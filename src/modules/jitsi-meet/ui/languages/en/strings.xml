@@ -7,6 +7,8 @@
   <string name="module.jitsi_meet.overlay.auth_required">Authentication Required</string>
   <string name="module.jitsi_meet.overlay.reclaim">Reclaim Session</string>
   <string name="module.jitsi_meet.overlay.loading">Running Pre-Flight Check...</string>
+  <string name="module.jitsi_meet.overlay.preflight_running">Pre-Flight Check In Progress. Starting is disabled until it succeeds.</string>
+  <string name="module.jitsi_meet.overlay.preflight_required">Pre-Flight Check must pass before the meeting can start.</string>
   <string name="module.jitsi_meet.overlay.ready_to_start">Participants selected. Meeting can be started.</string>
   <string name="module.jitsi_meet.overlay.creating">Creating or Reusing Meeting URL...</string>
   <string name="module.jitsi_meet.overlay.config_required">An admin must configure the Jitsi instance URL before Meetings can be used.</string>
@@ -22,11 +24,16 @@
   <string name="module.jitsi_meet.overlay.auth_completed">Authentication completed. Waiting participants can now join.</string>
   <string name="module.jitsi_meet.overlay.reclaim_prompt">You are already in this meeting in another session. Reclaim this session?</string>
   <string name="module.jitsi_meet.overlay.reclaim_done">Session reclaimed. Previous session has been disconnected.</string>
+  <string name="module.jitsi_meet.overlay.reclaimed_elsewhere">This meeting was reclaimed by another session. Reclaim it again if you want to rejoin here.</string>
   <string name="module.jitsi_meet.overlay.in_meeting">Meeting started. Keep this tab open for Cognis session tracking.</string>
   <string name="module.jitsi_meet.overlay.probe_done">Pre-Flight Check Passed.</string>
   <string name="module.jitsi_meet.chat.heading">Meeting Chat</string>
   <string name="module.jitsi_meet.chat.pending">Waiting for meeting to start.</string>
   <string name="module.jitsi_meet.chat.ready">Chat room is ready.</string>
+  <string name="module.jitsi_meet.chat.unavailable">Meeting chat is not available right now.</string>
+  <string name="module.jitsi_meet.chat.empty">No messages yet.</string>
+  <string name="module.jitsi_meet.chat.placeholder">Write a message to the meeting chat</string>
+  <string name="module.jitsi_meet.chat.send_failed">Failed to send the chat message.</string>
   <string name="module.jitsi_meet.chat.open">Open Chat</string>
   <string name="module.jitsi_meet.participants.heading">Participants</string>
   <string name="module.jitsi_meet.participants.search">Find Participants</string>

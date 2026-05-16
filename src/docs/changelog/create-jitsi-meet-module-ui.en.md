@@ -23,6 +23,10 @@ Subsequent improvements:
 - Meeting-linked group chats now include the meeting date in their room title.
 - Clicking the member count in a meeting group chat now opens a popup showing currently present users with linked avatars for profile previews.
 - The Meeting Window now uses a much lighter overlay treatment in light mode so the pre-meeting stage is readable instead of heavily shaded.
+- The Meetings page chat now renders natively inside the page using Messages APIs instead of embedding a second chat page from another URL.
+- Pre-flight checks now run before meeting start, stay visible independently of participant selection, and block meeting start until they succeed.
+- Embedded Jitsi joins now prefill participant info, skip the extra prejoin step, and kick the displaced tab out when another session reclaims the meeting.
+- Generated meeting room slugs now stay readable (`classroom-xxxxxxxx` / `cognis-classroom-xxxxxxxx`) so Jitsi no longer shows a garbled join name.
 
 ## Changed Files / Components
 
@@ -42,6 +46,12 @@ Subsequent improvements:
 - `src/modules/jitsi-meet/api/tests/store.test.js` (meeting insert assertions now verify `room_slug` is populated from the meeting URL slug)
 - `src/ui/tests/regression-followups.test.js` (meeting chat title and member-summary regressions)
 - `src/modules/jitsi-meet/ui/jitsi-meet.css` (lighter Meeting Window overlay, spinner, and staged-user contrast in light mode)
+- `src/modules/jitsi-meet/ui/app.js` (native meeting chat, up-front pre-flight gating, prefilled Jitsi join URL, reclaim kick-out handling)
+- `src/modules/jitsi-meet/api/index.js` (user-facing pre-flight endpoint, session-active state reporting for reclaim detection)
+- `src/modules/jitsi-meet/api/store.js` (readable default meeting slug generation)
+- `src/modules/jitsi-meet/ui/languages/*/strings.xml` (native chat + pre-flight + reclaim status copy)
+- `src/modules/jitsi-meet/package.json` (module version bumped to `1.0.1`)
+- `src/docs/versions.en.md` (Jitsi Meet version updated to `1.0.1`)
 
 ## Commit Links
 

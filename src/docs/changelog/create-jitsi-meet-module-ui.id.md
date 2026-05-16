@@ -23,6 +23,10 @@ Penyempurnaan lanjutan:
 - Chat grup yang terhubung ke rapat kini menyertakan tanggal rapat pada judul ruang.
 - Mengklik jumlah anggota pada chat grup rapat kini membuka popup yang menampilkan pengguna yang sedang hadir dengan avatar tertaut untuk pratinjau profil.
 - Meeting Window kini memakai tampilan overlay yang jauh lebih terang pada mode terang agar panggung pra-rapat tidak lagi tampak terlalu gelap.
+- Chat pada halaman Meetings sekarang dirender secara native di dalam halaman melalui API Messages, bukan lagi menyematkan halaman chat kedua dari URL lain.
+- Pemeriksaan pra-penerbangan kini berjalan sebelum rapat dimulai, tetap terlihat terlepas dari pemilihan peserta, dan memblokir start sampai berhasil.
+- Join Jitsi tertanam sekarang mengisi info peserta lebih dulu, melewati langkah pra-join tambahan, dan menendang tab yang tergeser saat sesi lain mengambil alih rapat.
+- Slug ruang rapat yang dihasilkan sekarang tetap terbaca (`classroom-xxxxxxxx` / `cognis-classroom-xxxxxxxx`) sehingga Jitsi tidak lagi menampilkan nama join yang berantakan.
 
 ## Berkas / Komponen yang Diubah
 
@@ -42,6 +46,12 @@ Penyempurnaan lanjutan:
 - `src/modules/jitsi-meet/api/tests/store.test.js` (assertion `room_slug` ditambahkan: nilainya harus mengikuti slug URL rapat)
 - `src/ui/tests/regression-followups.test.js` (regresi judul chat rapat dan ringkasan anggota)
 - `src/modules/jitsi-meet/ui/jitsi-meet.css` (overlay Meeting Window yang lebih terang, spinner, dan kontras pengguna tersusun pada mode terang)
+- `src/modules/jitsi-meet/ui/app.js` (chat rapat native, gerbang pra-penerbangan di muka, URL join Jitsi terisi otomatis, penanganan kick-out saat pengambilalihan sesi)
+- `src/modules/jitsi-meet/api/index.js` (endpoint pra-penerbangan untuk pengguna, pelaporan status sesi aktif untuk deteksi pengambilalihan)
+- `src/modules/jitsi-meet/api/store.js` (pembuatan slug rapat default yang tetap terbaca)
+- `src/modules/jitsi-meet/ui/languages/*/strings.xml` (teks untuk chat native, pra-penerbangan, dan status pengambilalihan sesi)
+- `src/modules/jitsi-meet/package.json` (versi modul dinaikkan ke `1.0.1`)
+- `src/docs/versions.en.md` (versi Jitsi Meet diperbarui ke `1.0.1`)
 
 ## Tautan Commit
 
