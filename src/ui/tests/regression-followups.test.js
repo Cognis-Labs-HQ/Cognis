@@ -158,12 +158,48 @@ test("jitsi meetings embed enforces subject, theme, password, and reduced toolba
         source,
         /hashParams\.set\("config\.preferredTheme", themeMode\)/,
     );
+    assert.match(source, /executeCommand\("password", meetingPassword\);/);
+    assert.match(source, /addEventListener\("passwordRequired", \(\) => \{/);
+});
+
+test("jitsi meetings lock participants and block navigation while meeting is active", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(source, /function isMeetingActive\(\)/);
+    assert.match(source, /jitsi-participants-disabled/);
     assert.match(
         source,
-        /state\.jitsiApi\.executeCommand\("password", meetingPassword\);/,
+        /window\.addEventListener\(\s*"beforeunload"[\s\S]*event\.returnValue = "";/,
     );
     assert.match(
         source,
-        /state\.jitsiApi\.addEventListener\("passwordRequired", \(\) => \{/,
+        /window\.addEventListener\(\s*"click"[\s\S]*module\.jitsi_meet\.overlay\.leave_blocked/,
+    );
+});
+
+test("jitsi meetings reset participant state and hide chat hint when ready", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(source, /async function resetMeetingState\(\)/);
+    assert.match(source, /resetParticipantSelection\(\);/);
+    assert.match(source, /chatHint\.hidden = true;/);
+});
+
+test("meetings page allows full-width meeting and chat panels in composer", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /id:\s*"jitsi-stage"[\s\S]*gridSize:\s*\{[\s\S]*max:\s*"full"/,
+    );
+    assert.match(
+        source,
+        /id:\s*"jitsi-chat"[\s\S]*gridSize:\s*\{[\s\S]*max:\s*"full"/,
     );
 });

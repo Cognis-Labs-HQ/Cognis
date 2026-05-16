@@ -195,6 +195,19 @@
     height: auto;
 }
 
+.jitsi-participants-pane.jitsi-participants-disabled {
+    opacity: 0.56;
+}
+
+.jitsi-participants-pane.jitsi-participants-disabled .jitsi-avatar-pool {
+    pointer-events: none;
+    filter: grayscale(0.25);
+}
+
+.jitsi-participants-pane.jitsi-participants-disabled .jitsi-participant-avatar {
+    cursor: not-allowed;
+}
+
 .jitsi-participants-header {
     display: flex;
     justify-content: space-between;
