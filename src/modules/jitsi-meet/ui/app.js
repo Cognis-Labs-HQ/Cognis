@@ -955,17 +955,20 @@ export async function mount(root, { signal } = {}) {
 
     async function keepPresenceAlive(active = true) {
         if (!state.meeting?.id) return null;
-        const response = await apiFetch("/api/v1/modules/jitsi-meet/meetings/presence", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
+        const response = await apiFetch(
+            "/api/v1/modules/jitsi-meet/meetings/presence",
+            {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({
+                    meetingId: state.meeting.id,
+                    sessionId: state.sessionId,
+                    active,
+                }),
             },
-            body: JSON.stringify({
-                meetingId: state.meeting.id,
-                sessionId: state.sessionId,
-                active,
-            }),
-        });
+        );
         if (!response.ok) return null;
         const payload = await response.json().catch(() => ({ data: null }));
         return payload?.data ?? null;

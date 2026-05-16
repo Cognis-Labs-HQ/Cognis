@@ -666,9 +666,8 @@ export class JitsiMeetStore {
                     this.listParticipants(meeting.id),
                     this.getMeetingState(meeting.id),
                 ]);
-                const activePresence = this.filterCurrentPresenceEntries(
-                    presence,
-                );
+                const activePresence =
+                    this.filterCurrentPresenceEntries(presence);
                 if (activePresence.length === 0) return null;
                 return {
                     id: meeting.id,

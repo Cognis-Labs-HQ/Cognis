@@ -184,7 +184,7 @@ test("jitsi meetings reset participant state and hide chat hint when ready", () 
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
-    assert.match(source, /async function resetMeetingState\(\)/);
+    assert.match(source, /async function resetMeetingState\(\s*\{/);
     assert.match(source, /resetParticipantSelection\(\);/);
     assert.match(source, /chatHint\.hidden = true;/);
 });
