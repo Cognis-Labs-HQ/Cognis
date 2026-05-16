@@ -234,6 +234,85 @@
     min-height: 0;
 }
 
+.jitsi-participants-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.jitsi-participants-grid-column {
+    min-width: 0;
+}
+
+.jitsi-active-meetings {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    min-height: 2.5rem;
+}
+
+.jitsi-active-meetings-empty {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.jitsi-active-meeting-item {
+    width: 100%;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 0.7rem;
+    background: rgba(15, 23, 42, 0.45);
+    color: inherit;
+    padding: 0.45rem 0.55rem;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.jitsi-active-meeting-item-selected {
+    border-color: rgba(59, 130, 246, 0.85);
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.6);
+}
+
+.jitsi-active-meeting-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: var(--initials-bg, #334155);
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    flex: 0 0 auto;
+}
+
+.jitsi-active-meeting-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.jitsi-active-meeting-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.jitsi-active-meeting-owner {
+    font-size: 0.73rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .jitsi-participant-avatar {
     display: flex;
     flex-direction: column;
@@ -351,6 +430,12 @@ body[data-theme="light"]
     .jitsi-staged-participants
     .jitsi-participant-avatar-label {
     color: var(--text-muted);
+}
+
+@media (max-width: 980px) {
+    .jitsi-participants-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @keyframes jitsi-spin {

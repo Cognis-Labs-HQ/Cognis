@@ -41,6 +41,9 @@
   <string name="module.jitsi_meet.participants.heading">Participants</string>
   <string name="module.jitsi_meet.participants.search">Find Participants</string>
   <string name="module.jitsi_meet.participants.available">Available Participants</string>
+  <string name="module.jitsi_meet.participants.active_meetings">Active Meetings</string>
+  <string name="module.jitsi_meet.participants.active_loading">Loading active meetings...</string>
+  <string name="module.jitsi_meet.participants.active_none">No active meetings.</string>
   <string name="module.jitsi_meet.participants.selected">Meeting Participants</string>
   <string name="module.jitsi_meet.participants.none">No participants to display.</string>
   <string name="module.jitsi_meet.participants.add_selected">Add Selected</string>

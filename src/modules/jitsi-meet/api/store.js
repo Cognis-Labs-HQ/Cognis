@@ -142,8 +142,6 @@ export class JitsiMeetStore {
                     notNull: true,
                     default: "now",
                 },
-                { name: "ended_by", type: "text" },
-                { name: "ended_at", type: "timestamp" },
             ],
         });
 
@@ -220,6 +218,8 @@ export class JitsiMeetStore {
                 { name: "auth_started_by", type: "text" },
                 { name: "auth_started_at", type: "timestamp" },
                 { name: "auth_completed_at", type: "timestamp" },
+                { name: "ended_by", type: "text" },
+                { name: "ended_at", type: "timestamp" },
                 {
                     name: "updated_at",
                     type: "timestamp",
@@ -672,6 +672,7 @@ export class JitsiMeetStore {
                 return {
                     id: meeting.id,
                     meetingUrl: meeting.meetingUrl,
+                    roomSlug: extractRoomSlug(meeting.meetingUrl),
                     meetingName: meeting.meetingName,
                     classroomId: meeting.classroomId,
                     createdBy: meeting.createdBy,
@@ -683,6 +684,9 @@ export class JitsiMeetStore {
                     ).sort(),
                     authRequired: state.authRequired,
                     authCompleted: Boolean(state.authCompletedAt),
+                    startedBy: state.firstJoinedBy,
+                    endedBy: state.endedBy,
+                    endedAt: state.endedAt,
                     updatedAt: meeting.updatedAt,
                 };
             }),

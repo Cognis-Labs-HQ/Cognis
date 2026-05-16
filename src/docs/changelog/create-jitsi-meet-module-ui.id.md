@@ -29,6 +29,7 @@ Penyempurnaan lanjutan:
 - Slug ruang rapat yang dihasilkan sekarang tetap terbaca (`classroom-xxxxxxxx` / `cognis-classroom-xxxxxxxx`) sehingga Jitsi tidak lagi menampilkan nama join yang berantakan.
 - Meeting Window dan Chat kini kembali memakai tata letak awal setengah/setengah, tetap bebas diubah ukuran tinggi maupun lebarnya, dan memakai kunci preferensi tata letak baru untuk menghapus default lebar penuh yang tidak disengaja.
 - Rapat yang digunakan ulang kini tidak lagi menampilkan prompt ambil-alih-sesi palsu setelah rapat sebelumnya sudah berakhir, tidak lagi memunculkan toast palsu “diambil alih di tempat lain” saat menunggu ambil alih, dan kini menampilkan pesan overlay yang jelas saat rapat ditutup untuk semua orang atau saat seorang peserta keluar.
+- Meetings kini benar-benar mengikuti tema terang/gelap Cognis aktif pada jendela Jitsi, menampilkan panel “Rapat Aktif” di samping “Peserta Tersedia” untuk gabung instan, dan mengarahkan notifikasi rapat lewat deep-link langsung ke entri rapat aktif yang sesuai (dengan status tangkapan “rapat ditutup” jika tujuan sudah berakhir).
 
 ## Berkas / Komponen yang Diubah
 
@@ -52,12 +53,16 @@ Penyempurnaan lanjutan:
 - `src/modules/jitsi-meet/ui/app.js` (Meeting Window dan Chat dipulihkan ke default setengah lebar dengan ukuran bebas, kunci preferensi tata letak diperbarui)
 - `src/modules/jitsi-meet/ui/app.js` (pesan overlay untuk rapat ditutup/ditinggalkan, perbaikan polling reclaim, pelacakan sesi yang digerakkan oleh status)
 - `src/modules/jitsi-meet/api/index.js` (endpoint pra-penerbangan untuk pengguna, pelaporan status sesi aktif untuk deteksi pengambilalihan)
-- `src/modules/jitsi-meet/api/store.js` (pembuatan slug rapat default yang tetap terbaca, status rapat berakhir, dan helper kehadiran aktif)
+- `src/modules/jitsi-meet/ui/app.js` (sinkronisasi tema, panel Rapat Aktif, alur gabung instan/deep-link)
+- `src/modules/jitsi-meet/api/index.js` (endpoint rapat aktif untuk pengguna dan notifikasi rapat deep-link dengan pengirim terarah)
+- `src/modules/jitsi-meet/api/store.js` (slug rapat bawaan tetap terbaca, status rapat berakhir, helper kehadiran aktif, dan metadata rapat aktif)
+- `src/modules/jitsi-meet/ui/jitsi-meet.css` (tata letak dan styling responsif panel Rapat Aktif)
 - `src/modules/jitsi-meet/ui/languages/*/strings.xml` (teks untuk chat native, pra-penerbangan, dan status pengambilalihan sesi)
 - `src/ui/tests/regression-followups.test.js` (regresi rapat ditutup / ambil alih sesi)
-- `src/modules/jitsi-meet/package.json` (versi modul dinaikkan ke `1.0.4`)
-- `src/modules/jitsi-meet/manifest.json` (versi manifest modul dinaikkan ke `1.0.4`)
-- `src/docs/versions.en.md` (versi Jitsi Meet diperbarui ke `1.0.4`)
+- `src/ui/tests/regression-followups.test.js` (regresi rapat aktif / notifikasi deep-link)
+- `src/modules/jitsi-meet/package.json` (versi modul dinaikkan ke `1.0.5`)
+- `src/modules/jitsi-meet/manifest.json` (versi manifest modul dinaikkan ke `1.0.5`)
+- `src/docs/versions.en.md` (versi Jitsi Meet diperbarui ke `1.0.5`)
 
 ## Tautan Commit
 

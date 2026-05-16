@@ -41,6 +41,9 @@
   <string name="module.jitsi_meet.participants.heading">参加者</string>
   <string name="module.jitsi_meet.participants.search">参加者を検索</string>
   <string name="module.jitsi_meet.participants.available">利用可能な参加者</string>
+  <string name="module.jitsi_meet.participants.active_meetings">アクティブなミーティング</string>
+  <string name="module.jitsi_meet.participants.active_loading">アクティブなミーティングを読み込み中...</string>
+  <string name="module.jitsi_meet.participants.active_none">アクティブなミーティングはありません。</string>
   <string name="module.jitsi_meet.participants.selected">ミーティング参加者</string>
   <string name="module.jitsi_meet.participants.none">表示できる参加者がいません。</string>
   <string name="module.jitsi_meet.participants.add_selected">選択を追加</string>

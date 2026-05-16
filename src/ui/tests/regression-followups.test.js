@@ -298,4 +298,29 @@ test("jitsi API dispatches meeting lifecycle and participant notifications", () 
     assert.match(source, /subject: "Meeting Ended"/);
     assert.match(source, /subject: "Participant Joined"/);
     assert.match(source, /subject: "Participant Left"/);
+    assert.match(source, /function buildMeetingActionUrl\(meetingId\)/);
+    assert.match(source, /senderName:/);
+    assert.match(source, /actionUrl: buildMeetingActionUrl/);
+});
+
+test("meetings UI renders active meetings panel and deep-link join support", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(source, /module\.jitsi_meet\.participants\.active_meetings/);
+    assert.match(source, /\/api\/v1\/modules\/jitsi-meet\/meetings\/active/);
+    assert.match(source, /requestedMeetingId/);
+    assert.match(source, /async function joinMeetingById/);
+    assert.match(source, /await loadActiveMeetings\(\{ resolveRequested: true \}\)/);
+});
+
+test("jitsi API exposes user active meetings endpoint", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+    assert.match(source, /"\/api\/v1\/modules\/jitsi-meet\/meetings\/active"/);
+    assert.match(source, /const activeMeetings = await store\.listActiveMeetings\(\)/);
+    assert.match(source, /if \(state\.authRequired && !state\.authCompletedAt\) continue;/);
 });

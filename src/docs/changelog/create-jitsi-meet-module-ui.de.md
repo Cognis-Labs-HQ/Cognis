@@ -29,6 +29,7 @@ Nachfolgende Verbesserungen:
 - Generierte Meeting-Slugs bleiben jetzt lesbar (`classroom-xxxxxxxx` / `cognis-classroom-xxxxxxxx`), sodass Jitsi keinen verstümmelten Beitrittsnamen mehr anzeigt.
 - Meeting-Fenster und Chat starten jetzt wieder standardmäßig in einer Halbbreite/Halbbreite-Aufteilung, bleiben frei in Höhe und Breite anpassbar und verwenden einen erneuerten Layout-Präferenzschlüssel, um das versehentliche Vollbreiten-Layout zurückzusetzen.
 - Wiederverwendete Meetings zeigen jetzt nach einem bereits beendeten Meeting keine falsche Sitzung-übernehmen-Aufforderung mehr an, lösen beim Warten auf die Übernahme keinen falschen „anderswo übernommen“-Toast mehr aus und zeigen klare Overlay-Meldungen, wenn das Meeting für alle endet oder wenn ein Teilnehmer es verlässt.
+- Meetings übernehmen jetzt konsequent das aktive Cognis-Hell/Dunkel-Design im Jitsi-Fenster, zeigen ein neues Panel „Aktive Meetings“ neben „Verfügbare Teilnehmer“ für Sofortbeitritte und leiten Meeting-Benachrichtigungen per Deep-Link direkt zum passenden aktiven Meeting weiter (inklusive „Meeting beendet“-Auffangzustand).
 
 ## Geänderte Dateien / Komponenten
 
@@ -52,12 +53,16 @@ Nachfolgende Verbesserungen:
 - `src/modules/jitsi-meet/ui/app.js` (Meeting-Fenster und Chat wieder mit Halbbreiten-Standard und freier Größenanpassung, erneuerter Layout-Präferenzschlüssel)
 - `src/modules/jitsi-meet/ui/app.js` (Overlay-Meldungen für Meeting-Ende/Verlassen, Fix für Reclaim-Polling, gesteuerte Sitzungsverfolgung)
 - `src/modules/jitsi-meet/api/index.js` (benutzerseitiger Pre-Flight-Endpunkt, Statusmeldung zur aktiven Sitzung für Sitzungsübernahmen)
-- `src/modules/jitsi-meet/api/store.js` (lesbare Standard-Erzeugung für Meeting-Slugs, Zustandsfelder für beendete Meetings und Hilfen für aktuelle Präsenz)
+- `src/modules/jitsi-meet/ui/app.js` (Theme-Abgleich, Panel „Aktive Meetings“, Sofortbeitritt/Deep-Link-Verhalten)
+- `src/modules/jitsi-meet/api/index.js` (Aktive-Meetings-Endpunkt für Benutzer und absenderbezogene Meeting-Deep-Link-Benachrichtigungen)
+- `src/modules/jitsi-meet/api/store.js` (lesbare Standard-Erzeugung für Meeting-Slugs, Zustandsfelder für beendete Meetings, Hilfen für aktuelle Präsenz und aktive-Meeting-Metadaten)
+- `src/modules/jitsi-meet/ui/jitsi-meet.css` (Layout und Responsive-Styling für das Panel „Aktive Meetings“)
 - `src/modules/jitsi-meet/ui/languages/*/strings.xml` (Texte für nativen Chat, Pre-Flight und Sitzungsübernahme)
 - `src/ui/tests/regression-followups.test.js` (Regressionen für Meeting-Ende / Sitzungsübernahme)
-- `src/modules/jitsi-meet/package.json` (Modulversion auf `1.0.4` erhöht)
-- `src/modules/jitsi-meet/manifest.json` (Manifest-Version des Moduls auf `1.0.4` erhöht)
-- `src/docs/versions.en.md` (Jitsi-Meet-Version auf `1.0.4` aktualisiert)
+- `src/ui/tests/regression-followups.test.js` (Regressionen für aktive Meetings / Deep-Link-Benachrichtigungen)
+- `src/modules/jitsi-meet/package.json` (Modulversion auf `1.0.5` erhöht)
+- `src/modules/jitsi-meet/manifest.json` (Manifest-Version des Moduls auf `1.0.5` erhöht)
+- `src/docs/versions.en.md` (Jitsi-Meet-Version auf `1.0.5` aktualisiert)
 
 ## Commit-Links
 

@@ -15,6 +15,7 @@ import {
 } from "/static/reuse/avatar-utils.js";
 
 const HEARTBEAT_INTERVAL_MS = 10_000;
+const ACTIVE_MEETINGS_REFRESH_INTERVAL_MS = 10_000;
 const PROBE_SUCCESS_DISPLAY_MS = 600;
 const STATE_REFRESH_INTERVAL_MS = 5_000;
 const CHAT_REFRESH_INTERVAL_MS = 2_500;
@@ -79,6 +80,10 @@ function normalizeChatRoomId(value) {
     return asString.replace(/^\/+|\/+$/g, "");
 }
 
+function normalizeMeetingId(value) {
+    return String(value ?? "").trim();
+}
+
 function resolveMeetingChatRoomId(meeting) {
     const directRoomId = normalizeChatRoomId(meeting?.chatRoomId);
     if (directRoomId) return directRoomId;
@@ -133,15 +138,36 @@ function buildMeetingJoinUrl(meetingUrl, profile) {
 }
 
 function resolveThemeMode() {
-    const storedMode = localStorage.getItem("cognis_theme");
+    const storedMode = String(localStorage.getItem("cognis_theme") ?? "")
+        .trim()
+        .toLowerCase();
     if (storedMode === "light" || storedMode === "dark") {
         return storedMode;
     }
-    const documentMode = document.body.getAttribute("data-theme");
-    if (documentMode === "light" || documentMode === "dark") {
-        return documentMode;
+    const bodyMode = String(document.body.getAttribute("data-theme") ?? "")
+        .trim()
+        .toLowerCase();
+    if (bodyMode === "light" || bodyMode === "dark") {
+        return bodyMode;
     }
-    return "dark";
+    const shellMode = String(
+        document.querySelector("#dashboard-shell")?.getAttribute("data-theme") ??
+            "",
+    )
+        .trim()
+        .toLowerCase();
+    if (shellMode === "light" || shellMode === "dark") {
+        return shellMode;
+    }
+    const rootMode = String(
+        document.documentElement.getAttribute("data-theme") ?? "",
+    )
+        .trim()
+        .toLowerCase();
+    if (rootMode === "light" || rootMode === "dark") {
+        return rootMode;
+    }
+    return "light";
 }
 
 function resolveMeetingHost(meetingUrl) {
@@ -303,8 +329,16 @@ function buildParticipantsMarkup(i18n) {
           ${escapeHtml(i18n.t("module.jitsi_meet.participants.search"))}
         </button>
       </header>
-      <p class="jitsi-participants-pool-label">${escapeHtml(i18n.t("module.jitsi_meet.participants.available"))}</p>
-      <div id="jitsi-available-participants" class="jitsi-avatar-pool" role="list"></div>
+      <div class="jitsi-participants-grid">
+        <div class="jitsi-participants-grid-column">
+          <p class="jitsi-participants-pool-label">${escapeHtml(i18n.t("module.jitsi_meet.participants.available"))}</p>
+          <div id="jitsi-available-participants" class="jitsi-avatar-pool" role="list"></div>
+        </div>
+        <div class="jitsi-participants-grid-column">
+          <p class="jitsi-participants-pool-label">${escapeHtml(i18n.t("module.jitsi_meet.participants.active_meetings"))}</p>
+          <div id="jitsi-active-meetings" class="jitsi-active-meetings" role="list"></div>
+        </div>
+      </div>
     </section>
   `;
 }
@@ -350,6 +384,11 @@ export async function mount(root, { signal } = {}) {
         preflightMessage: "",
         preflightNeedsConfig: false,
         sessionId: ensureSessionId(),
+        requestedMeetingId: normalizeMeetingId(
+            new URL(window.location.href).searchParams.get("meetingId"),
+        ),
+        activeMeetings: [],
+        activeMeetingsRefreshTimer: null,
         dragUsername: null,
         jitsiApi: null,
     };
@@ -383,6 +422,7 @@ export async function mount(root, { signal } = {}) {
     if (signal) {
         signal.addEventListener("abort", () => {
             clearTimers();
+            stopActiveMeetingsPolling();
             closeMeetingEmbed();
         });
     }
@@ -670,6 +710,160 @@ export async function mount(root, { signal } = {}) {
         startNativeChatPolling();
     }
 
+    function renderActiveMeetings({ loading = false } = {}) {
+        const activeMeetingsEl = root.querySelector("#jitsi-active-meetings");
+        if (!(activeMeetingsEl instanceof HTMLElement)) {
+            return;
+        }
+        if (!Array.isArray(state.activeMeetings) || state.activeMeetings.length === 0) {
+            const emptyMessage = loading
+                ? i18n.t("module.jitsi_meet.participants.active_loading")
+                : i18n.t("module.jitsi_meet.participants.active_none");
+            activeMeetingsEl.innerHTML = `<p class="jitsi-active-meetings-empty">${escapeHtml(emptyMessage)}</p>`;
+            return;
+        }
+        activeMeetingsEl.replaceChildren(
+            ...state.activeMeetings.map((meeting) => {
+                const meetingId = normalizeMeetingId(meeting?.id);
+                const startedByDisplayName = String(
+                    meeting?.startedBy?.displayName ??
+                        meeting?.startedBy?.username ??
+                        "",
+                ).trim();
+                const fallbackLabel = String(
+                    meeting?.meetingName ?? i18n.t("ui.reuse.meeting"),
+                ).trim();
+                const badgeLabel = startedByDisplayName || fallbackLabel;
+                const badgeColor = pickInitialsColor(meetingId || badgeLabel);
+                const badgeInitials = getInitialsText(badgeLabel);
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "jitsi-active-meeting-item";
+                if (state.requestedMeetingId && state.requestedMeetingId === meetingId) {
+                    button.classList.add("jitsi-active-meeting-item-selected");
+                }
+                button.dataset.meetingId = meetingId;
+                button.innerHTML = `
+                  <span class="jitsi-active-meeting-avatar" style="--initials-bg: ${escapeHtml(badgeColor)}">${escapeHtml(
+                      badgeInitials,
+                  )}</span>
+                  <span class="jitsi-active-meeting-meta">
+                    <span class="jitsi-active-meeting-title">${escapeHtml(fallbackLabel)}</span>
+                    <span class="jitsi-active-meeting-owner">${escapeHtml(startedByDisplayName || i18n.t("ui.reuse.system"))}</span>
+                  </span>
+                `;
+                return button;
+            }),
+        );
+    }
+
+    async function joinMeetingById(meetingId) {
+        const normalizedMeetingId = normalizeMeetingId(meetingId);
+        if (!normalizedMeetingId) return;
+        if (isMeetingActive() && state.meeting?.id === normalizedMeetingId) {
+            return;
+        }
+        if (isMeetingActive() && state.meeting?.id !== normalizedMeetingId) {
+            showToast(i18n.t("module.jitsi_meet.overlay.leave_blocked"), {
+                variant: "warning",
+            });
+            return;
+        }
+        updateOverlay({
+            message: i18n.t("module.jitsi_meet.overlay.joining"),
+            loading: false,
+            canStart: false,
+            showAuth: false,
+            showReclaim: false,
+            visible: true,
+        });
+        const getResponse = await apiFetch("/api/v1/modules/jitsi-meet/meetings/get", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({
+                meetingId: normalizedMeetingId,
+            }),
+        });
+        if (!getResponse.ok) {
+            state.meeting = null;
+            updateOverlay({
+                message: i18n.t("module.jitsi_meet.overlay.meeting_closed"),
+                canStart: false,
+                showAuth: false,
+                showReclaim: false,
+                visible: true,
+            });
+            return;
+        }
+        const meetingPayload = await getResponse
+            .json()
+            .catch(() => ({ data: null }));
+        if (!meetingPayload?.data?.id || meetingPayload?.data?.state?.endedAt) {
+            state.meeting = null;
+            updateOverlay({
+                message: i18n.t("module.jitsi_meet.overlay.meeting_closed"),
+                canStart: false,
+                showAuth: false,
+                showReclaim: false,
+                visible: true,
+            });
+            return;
+        }
+        state.meeting = meetingPayload.data;
+        await updateNativeChat();
+        const joinState = await joinMeeting();
+        if (joinState?.trackingAllowed) {
+            ensureMeetingTracking();
+        }
+    }
+
+    async function loadActiveMeetings({ resolveRequested = true } = {}) {
+        renderActiveMeetings({ loading: true });
+        const response = await apiFetch("/api/v1/modules/jitsi-meet/meetings/active");
+        if (!response.ok) {
+            state.activeMeetings = [];
+            renderActiveMeetings();
+            return;
+        }
+        const payload = await response.json().catch(() => ({ data: [] }));
+        state.activeMeetings = Array.isArray(payload?.data) ? payload.data : [];
+        renderActiveMeetings();
+        const requestedMeetingId = resolveRequested
+            ? normalizeMeetingId(state.requestedMeetingId)
+            : "";
+        if (!requestedMeetingId) return;
+        state.requestedMeetingId = "";
+        const requestedMeeting = state.activeMeetings.find(
+            (meeting) => normalizeMeetingId(meeting?.id) === requestedMeetingId,
+        );
+        if (!requestedMeeting) {
+            updateOverlay({
+                message: i18n.t("module.jitsi_meet.overlay.meeting_closed"),
+                canStart: false,
+                showAuth: false,
+                showReclaim: false,
+                visible: true,
+            });
+            return;
+        }
+        await joinMeetingById(requestedMeeting.id);
+    }
+
+    function stopActiveMeetingsPolling() {
+        if (state.activeMeetingsRefreshTimer === null) return;
+        clearInterval(state.activeMeetingsRefreshTimer);
+        state.activeMeetingsRefreshTimer = null;
+    }
+
+    function startActiveMeetingsPolling() {
+        if (state.activeMeetingsRefreshTimer !== null) return;
+        state.activeMeetingsRefreshTimer = setInterval(() => {
+            void loadActiveMeetings({ resolveRequested: false });
+        }, ACTIVE_MEETINGS_REFRESH_INTERVAL_MS);
+    }
+
     function closeMeetingEmbed() {
         if (state.jitsiApi) {
             const activeApi = state.jitsiApi;
@@ -700,6 +894,7 @@ export async function mount(root, { signal } = {}) {
         resetParticipantSelection();
         renderParticipants();
         await updateNativeChat();
+        void loadActiveMeetings({ resolveRequested: false });
         if (overlayMessageKey) {
             updateOverlay({
                 message: i18n.t(overlayMessageKey),
@@ -841,6 +1036,7 @@ export async function mount(root, { signal } = {}) {
                     !state.meeting?.id,
             });
         }
+        renderActiveMeetings();
     }
 
     function removeParticipant(username) {
@@ -1206,6 +1402,7 @@ export async function mount(root, { signal } = {}) {
         if (joinState?.trackingAllowed) {
             ensureMeetingTracking();
         }
+        void loadActiveMeetings({ resolveRequested: false });
     }
 
     let bindController = null;
@@ -1236,6 +1433,7 @@ export async function mount(root, { signal } = {}) {
         const reclaimButton = container.querySelector("#jitsi-reclaim-btn");
         const chatForm = container.querySelector("#jitsi-chat-form");
         const chatInput = container.querySelector("#jitsi-chat-input");
+        const activeMeetingsEl = container.querySelector("#jitsi-active-meetings");
 
         if (findButton instanceof HTMLButtonElement) {
             findButton.addEventListener(
@@ -1384,6 +1582,22 @@ export async function mount(root, { signal } = {}) {
             );
         }
 
+        if (activeMeetingsEl instanceof HTMLElement) {
+            activeMeetingsEl.addEventListener(
+                "click",
+                (event) => {
+                    const button = event.target.closest(
+                        ".jitsi-active-meeting-item[data-meeting-id]",
+                    );
+                    if (!(button instanceof HTMLButtonElement)) return;
+                    const meetingId = normalizeMeetingId(button.dataset.meetingId);
+                    if (!meetingId) return;
+                    void joinMeetingById(meetingId);
+                },
+                { signal: bindSignal },
+            );
+        }
+
         if (startButton instanceof HTMLButtonElement) {
             startButton.addEventListener(
                 "click",
@@ -1503,6 +1717,7 @@ export async function mount(root, { signal } = {}) {
                     });
                     await openMeetingEmbed();
                     ensureMeetingTracking();
+                    void loadActiveMeetings({ resolveRequested: false });
                 },
                 { signal: bindSignal },
             );
@@ -1638,6 +1853,8 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
+    await loadActiveMeetings({ resolveRequested: true });
+    startActiveMeetingsPolling();
     await runPreflightCheck();
 }
 

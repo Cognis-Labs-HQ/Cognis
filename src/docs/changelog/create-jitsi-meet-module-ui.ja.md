@@ -29,6 +29,7 @@
 - 生成されるミーティング用スラッグは読みやすい形式（`classroom-xxxxxxxx` / `cognis-classroom-xxxxxxxx`）を維持し、Jitsi の参加名が崩れないようになりました。
 - ミーティングウィンドウとチャットは、既定で再び半分/半分の幅で表示されるようになり、高さ・幅とも自由にリサイズできるまま、誤って保存された全幅レイアウトをリセットするためにレイアウト設定キーも更新されました。
 - 再利用されたミーティングでは、すでに終了したミーティングに対して誤ったセッション引き継ぎメッセージが出続ける問題と、引き継ぎ待ち中に誤って「別セッションに引き継がれた」トーストが出る問題を修正し、全員に対してミーティングが終了した場合や参加者が退出した場合のオーバーレイメッセージも明確になりました。
+- Meetings は Jitsi ウィンドウでも Cognis の現在のライト/ダークテーマに追従するようになり、「利用可能な参加者」の横に即時参加用の「アクティブなミーティング」パネルを追加し、ミーティング通知は対応するアクティブ項目へ直接 Deep-Link されるようになりました（対象が終了済みの場合は「ミーティング終了」状態で受け止めます）。
 
 ## 変更されたファイル / コンポーネント
 
@@ -52,12 +53,16 @@
 - `src/modules/jitsi-meet/ui/app.js`（ミーティングウィンドウとチャットを半幅既定に戻し、自由なリサイズを維持、レイアウト設定キーを更新）
 - `src/modules/jitsi-meet/ui/app.js`（ミーティング終了/退出オーバーレイ文言、reclaim ポーリング修正、状態に応じたセッション追跡）
 - `src/modules/jitsi-meet/api/index.js`（ユーザー向け事前チェックエンドポイント、引き継ぎ検知用のアクティブセッション状態返却）
-- `src/modules/jitsi-meet/api/store.js`（読みやすい既定ミーティングスラッグ生成、終了済みミーティング状態、現在有効なプレゼンス判定ヘルパー）
+- `src/modules/jitsi-meet/ui/app.js`（テーマ追従調整、アクティブミーティングパネル、即時参加/Deep-Link 動作）
+- `src/modules/jitsi-meet/api/index.js`（ユーザー向けアクティブミーティング一覧エンドポイントと送信者付きミーティング Deep-Link 通知）
+- `src/modules/jitsi-meet/api/store.js`（読みやすい既定ミーティングスラッグ生成、終了済み状態、現在有効なプレゼンス判定、およびアクティブミーティング補助メタデータ）
+- `src/modules/jitsi-meet/ui/jitsi-meet.css`（アクティブミーティングパネルのレイアウトとレスポンシブスタイル）
 - `src/modules/jitsi-meet/ui/languages/*/strings.xml`（ネイティブチャット、事前チェック、セッション引き継ぎ状態の文言）
 - `src/ui/tests/regression-followups.test.js`（ミーティング終了 / セッション引き継ぎの回帰）
-- `src/modules/jitsi-meet/package.json`（モジュール版を `1.0.4` に更新）
-- `src/modules/jitsi-meet/manifest.json`（モジュールマニフェスト版を `1.0.4` に更新）
-- `src/docs/versions.en.md`（Jitsi Meet の版を `1.0.4` に更新）
+- `src/ui/tests/regression-followups.test.js`（アクティブミーティング / Deep-Link 通知の回帰）
+- `src/modules/jitsi-meet/package.json`（モジュール版を `1.0.5` に更新）
+- `src/modules/jitsi-meet/manifest.json`（モジュールマニフェスト版を `1.0.5` に更新）
+- `src/docs/versions.en.md`（Jitsi Meet の版を `1.0.5` に更新）
 
 ## コミットリンク
 
