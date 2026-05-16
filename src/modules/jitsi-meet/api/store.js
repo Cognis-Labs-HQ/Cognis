@@ -142,6 +142,8 @@ export class JitsiMeetStore {
                     notNull: true,
                     default: "now",
                 },
+                { name: "ended_by", type: "text" },
+                { name: "ended_at", type: "timestamp" },
             ],
         });
 
@@ -486,6 +488,8 @@ export class JitsiMeetStore {
                 authStartedAt: null,
                 authCompletedAt: null,
                 updatedAt: null,
+                endedBy: null,
+                endedAt: null,
             };
         }
         return {
@@ -507,6 +511,8 @@ export class JitsiMeetStore {
                 ? String(row.auth_completed_at)
                 : null,
             updatedAt: row.updated_at ? String(row.updated_at) : null,
+            endedBy: row.ended_by ? String(row.ended_by) : null,
+            endedAt: row.ended_at ? String(row.ended_at) : null,
         };
     }
 
@@ -528,6 +534,8 @@ export class JitsiMeetStore {
                 auth_started_at: merged.authStartedAt,
                 auth_completed_at: merged.authCompletedAt,
                 updated_at: merged.updatedAt,
+                ended_by: merged.endedBy,
+                ended_at: merged.endedAt,
             },
             conflict: {
                 action: "update",
@@ -557,7 +565,7 @@ export class JitsiMeetStore {
         return timestamp;
     }
 
-    async setOtherSessionsInactive(meetingId, username, keepSessionId) {
+    async setUserSessionsInactive(meetingId, username, keepSessionId = null) {
         const presenceRows = await this.db.executeCommand({
             option: "SELECT",
             table: "jitsi_meeting_presence",
@@ -586,6 +594,10 @@ export class JitsiMeetStore {
         }
     }
 
+    async setOtherSessionsInactive(meetingId, username, keepSessionId) {
+        await this.setUserSessionsInactive(meetingId, username, keepSessionId);
+    }
+
     async listPresence(meetingId) {
         const result = await this.db.executeCommand({
             option: "SELECT",
@@ -602,15 +614,26 @@ export class JitsiMeetStore {
         }));
     }
 
+    isPresenceEntryCurrent(entry, referenceTime = Date.now()) {
+        if (!entry?.active) return false;
+        const seenAt = Date.parse(entry.lastSeenAt);
+        return Number.isFinite(seenAt)
+            ? seenAt >= referenceTime - ACTIVE_PRESENCE_WINDOW_MS
+            : false;
+    }
+
+    filterCurrentPresenceEntries(entries, referenceTime = Date.now()) {
+        return (Array.isArray(entries) ? entries : []).filter((entry) =>
+            this.isPresenceEntryCurrent(entry, referenceTime),
+        );
+    }
+
     async getActiveSessionsForUser(meetingId, username, sessionId) {
         const presence = await this.listPresence(meetingId);
-        const threshold = Date.now() - ACTIVE_PRESENCE_WINDOW_MS;
-        return presence.filter((entry) => {
+        return this.filterCurrentPresenceEntries(presence).filter((entry) => {
             if (entry.username !== username) return false;
-            if (!entry.active) return false;
             if (sessionId && entry.sessionId === sessionId) return false;
-            const seenAt = Date.parse(entry.lastSeenAt);
-            return Number.isFinite(seenAt) && seenAt >= threshold;
+            return true;
         });
     }
 
@@ -643,13 +666,9 @@ export class JitsiMeetStore {
                     this.listParticipants(meeting.id),
                     this.getMeetingState(meeting.id),
                 ]);
-                const activePresence = presence.filter((entry) => {
-                    if (!entry.active) return false;
-                    const seenAt = Date.parse(entry.lastSeenAt);
-                    return Number.isFinite(seenAt)
-                        ? seenAt >= Date.now() - ACTIVE_PRESENCE_WINDOW_MS
-                        : false;
-                });
+                const activePresence = this.filterCurrentPresenceEntries(
+                    presence,
+                );
                 if (activePresence.length === 0) return null;
                 return {
                     id: meeting.id,
@@ -713,6 +732,8 @@ export class JitsiMeetStore {
                 authCompletedAt: state.authCompletedAt,
                 firstJoinedBy: state.firstJoinedBy,
                 firstJoinedAt: state.firstJoinedAt,
+                endedBy: state.endedBy,
+                endedAt: state.endedAt,
             },
             instanceUrl: extractInstanceFromMeetingUrl(meeting.meetingUrl),
             roomSlug: extractRoomSlug(meeting.meetingUrl),

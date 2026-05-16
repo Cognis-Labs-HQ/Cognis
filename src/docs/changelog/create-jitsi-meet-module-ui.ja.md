@@ -28,6 +28,7 @@
 - 埋め込み Jitsi 参加では参加者情報を事前入力し、追加の prejoin 手順を省略し、別セッションがミーティングを引き継いだ場合は追い出されたタブを切断します。
 - 生成されるミーティング用スラッグは読みやすい形式（`classroom-xxxxxxxx` / `cognis-classroom-xxxxxxxx`）を維持し、Jitsi の参加名が崩れないようになりました。
 - ミーティングウィンドウとチャットは、既定で再び半分/半分の幅で表示されるようになり、高さ・幅とも自由にリサイズできるまま、誤って保存された全幅レイアウトをリセットするためにレイアウト設定キーも更新されました。
+- 再利用されたミーティングでは、すでに終了したミーティングに対して誤ったセッション引き継ぎメッセージが出続ける問題と、引き継ぎ待ち中に誤って「別セッションに引き継がれた」トーストが出る問題を修正し、全員に対してミーティングが終了した場合や参加者が退出した場合のオーバーレイメッセージも明確になりました。
 
 ## 変更されたファイル / コンポーネント
 
@@ -49,12 +50,14 @@
 - `src/modules/jitsi-meet/ui/jitsi-meet.css`（ライトテーマでの Meeting Window オーバーレイ、スピナー、配置済みユーザーのコントラスト改善）
 - `src/modules/jitsi-meet/ui/app.js`（ネイティブなミーティングチャット、事前チェックの先行ゲート、事前入力付き Jitsi 参加 URL、セッション引き継ぎ時のキックアウト処理）
 - `src/modules/jitsi-meet/ui/app.js`（ミーティングウィンドウとチャットを半幅既定に戻し、自由なリサイズを維持、レイアウト設定キーを更新）
+- `src/modules/jitsi-meet/ui/app.js`（ミーティング終了/退出オーバーレイ文言、reclaim ポーリング修正、状態に応じたセッション追跡）
 - `src/modules/jitsi-meet/api/index.js`（ユーザー向け事前チェックエンドポイント、引き継ぎ検知用のアクティブセッション状態返却）
-- `src/modules/jitsi-meet/api/store.js`（読みやすい既定ミーティングスラッグ生成）
+- `src/modules/jitsi-meet/api/store.js`（読みやすい既定ミーティングスラッグ生成、終了済みミーティング状態、現在有効なプレゼンス判定ヘルパー）
 - `src/modules/jitsi-meet/ui/languages/*/strings.xml`（ネイティブチャット、事前チェック、セッション引き継ぎ状態の文言）
-- `src/modules/jitsi-meet/package.json`（モジュール版を `1.0.3` に更新）
-- `src/modules/jitsi-meet/manifest.json`（モジュールマニフェスト版を `1.0.3` に更新）
-- `src/docs/versions.en.md`（Jitsi Meet の版を `1.0.3` に更新）
+- `src/ui/tests/regression-followups.test.js`（ミーティング終了 / セッション引き継ぎの回帰）
+- `src/modules/jitsi-meet/package.json`（モジュール版を `1.0.4` に更新）
+- `src/modules/jitsi-meet/manifest.json`（モジュールマニフェスト版を `1.0.4` に更新）
+- `src/docs/versions.en.md`（Jitsi Meet の版を `1.0.4` に更新）
 
 ## コミットリンク
 

@@ -682,8 +682,15 @@ export async function mount(root, { signal } = {}) {
         frame.replaceChildren();
     }
 
-    async function resetMeetingState() {
-        await keepPresenceAlive(false).catch(() => undefined);
+    async function resetMeetingState({
+        overlayMessageKey = null,
+        toastMessageKey = null,
+        toastVariant = "info",
+        skipPresenceUpdate = false,
+    } = {}) {
+        if (!skipPresenceUpdate) {
+            await keepPresenceAlive(false).catch(() => undefined);
+        }
         clearTimers();
         closeMeetingEmbed();
         state.meeting = null;
@@ -693,6 +700,35 @@ export async function mount(root, { signal } = {}) {
         resetParticipantSelection();
         renderParticipants();
         await updateNativeChat();
+        if (overlayMessageKey) {
+            updateOverlay({
+                message: i18n.t(overlayMessageKey),
+                canStart: false,
+                showAuth: false,
+                showReclaim: false,
+                visible: true,
+            });
+        }
+        if (toastMessageKey) {
+            showToast(i18n.t(toastMessageKey), {
+                variant: toastVariant,
+            });
+        }
+    }
+
+    async function handleMeetingExit({
+        fallbackOverlayMessageKey,
+        forceClosedOverlay = false,
+    }) {
+        const leaveState = await keepPresenceAlive(false).catch(() => null);
+        const overlayMessageKey =
+            forceClosedOverlay || leaveState?.meetingClosed
+                ? "module.jitsi_meet.overlay.meeting_closed"
+                : fallbackOverlayMessageKey;
+        await resetMeetingState({
+            overlayMessageKey,
+            skipPresenceUpdate: true,
+        });
     }
 
     function lobbyMessageKey(participantCount) {
@@ -883,10 +919,19 @@ export async function mount(root, { signal } = {}) {
         const payload = await response.json().catch(() => ({ data: null }));
         const latestState = payload?.data?.state;
         if (!latestState) return;
+        if (latestState.endedAt) {
+            await resetMeetingState({
+                overlayMessageKey: "module.jitsi_meet.overlay.meeting_closed",
+            });
+            return;
+        }
         if (payload?.data?.sessionActive === false) {
-            await resetMeetingState();
-            showToast(i18n.t("module.jitsi_meet.overlay.reclaimed_elsewhere"), {
-                variant: "warning",
+            await resetMeetingState({
+                overlayMessageKey:
+                    "module.jitsi_meet.overlay.reclaimed_elsewhere",
+                toastMessageKey:
+                    "module.jitsi_meet.overlay.reclaimed_elsewhere",
+                toastVariant: "warning",
             });
             return;
         }
@@ -909,8 +954,8 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function keepPresenceAlive(active = true) {
-        if (!state.meeting?.id) return;
-        await apiFetch("/api/v1/modules/jitsi-meet/meetings/presence", {
+        if (!state.meeting?.id) return null;
+        const response = await apiFetch("/api/v1/modules/jitsi-meet/meetings/presence", {
             method: "POST",
             headers: {
                 "content-type": "application/json",
@@ -921,6 +966,22 @@ export async function mount(root, { signal } = {}) {
                 active,
             }),
         });
+        if (!response.ok) return null;
+        const payload = await response.json().catch(() => ({ data: null }));
+        return payload?.data ?? null;
+    }
+
+    function ensureMeetingTracking() {
+        if (state.heartbeatTimer === null) {
+            state.heartbeatTimer = setInterval(() => {
+                void keepPresenceAlive(true);
+            }, HEARTBEAT_INTERVAL_MS);
+        }
+        if (state.stateRefreshTimer === null) {
+            state.stateRefreshTimer = setInterval(() => {
+                void loadMeetingState();
+            }, STATE_REFRESH_INTERVAL_MS);
+        }
     }
 
     async function openMeetingEmbed() {
@@ -978,7 +1039,18 @@ export async function mount(root, { signal } = {}) {
         };
         const handleMeetingLeft = () => {
             if (state.jitsiApi !== apiInstance) return;
-            void resetMeetingState();
+            void handleMeetingExit({
+                fallbackOverlayMessageKey:
+                    "module.jitsi_meet.overlay.meeting_left",
+            });
+        };
+        const handleMeetingClosed = () => {
+            if (state.jitsiApi !== apiInstance) return;
+            void handleMeetingExit({
+                fallbackOverlayMessageKey:
+                    "module.jitsi_meet.overlay.meeting_closed",
+                forceClosedOverlay: true,
+            });
         };
         apiInstance.addEventListener("videoConferenceJoined", () => {
             applyMeetingSubject();
@@ -993,7 +1065,7 @@ export async function mount(root, { signal } = {}) {
             applyMeetingPassword();
         });
         apiInstance.addEventListener("videoConferenceLeft", handleMeetingLeft);
-        apiInstance.addEventListener("readyToClose", handleMeetingLeft);
+        apiInstance.addEventListener("readyToClose", handleMeetingClosed);
         renderParticipants();
 
         frame.hidden = false;
@@ -1039,7 +1111,7 @@ export async function mount(root, { signal } = {}) {
                 showReclaim: true,
                 visible: true,
             });
-            return;
+            return { trackingAllowed: false };
         }
 
         if (state.meeting.waitingForAuthentication) {
@@ -1047,7 +1119,7 @@ export async function mount(root, { signal } = {}) {
                 message: i18n.t("module.jitsi_meet.overlay.auth_waiting_other"),
                 visible: true,
             });
-            return;
+            return { trackingAllowed: true };
         }
 
         if (
@@ -1061,10 +1133,11 @@ export async function mount(root, { signal } = {}) {
                 showAuth: Boolean(state.meeting.canAuthenticate),
                 visible: true,
             });
-            return;
+            return { trackingAllowed: true };
         }
 
         await openMeetingEmbed();
+        return { trackingAllowed: true };
     }
 
     async function prepareMeetingStart() {
@@ -1126,17 +1199,9 @@ export async function mount(root, { signal } = {}) {
             visible: true,
         });
 
-        await joinMeeting();
-
-        if (state.heartbeatTimer === null) {
-            state.heartbeatTimer = setInterval(() => {
-                void keepPresenceAlive(true);
-            }, HEARTBEAT_INTERVAL_MS);
-        }
-        if (state.stateRefreshTimer === null) {
-            state.stateRefreshTimer = setInterval(() => {
-                void loadMeetingState();
-            }, STATE_REFRESH_INTERVAL_MS);
+        const joinState = await joinMeeting();
+        if (joinState?.trackingAllowed) {
+            ensureMeetingTracking();
         }
     }
 
@@ -1434,6 +1499,7 @@ export async function mount(root, { signal } = {}) {
                         visible: true,
                     });
                     await openMeetingEmbed();
+                    ensureMeetingTracking();
                 },
                 { signal: bindSignal },
             );

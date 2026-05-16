@@ -680,7 +680,8 @@ export function registerApiRoutes(router, ctx) {
                 resolved.requesterUsername,
                 sessionId,
             );
-            const requiresReclaim = conflictingSessions.length > 0;
+            const requiresReclaim =
+                !resolved.state.endedAt && conflictingSessions.length > 0;
 
             await store.upsertPresence(
                 resolved.meeting.id,
@@ -691,10 +692,16 @@ export function registerApiRoutes(router, ctx) {
 
             let state = resolved.state;
             let meetingStarted = false;
-            if (!state.firstJoinedBy) {
+            if (!state.firstJoinedBy || state.endedAt) {
                 state = await store.updateMeetingState(resolved.meeting.id, {
                     firstJoinedBy: resolved.requesterUsername,
                     firstJoinedAt: new Date().toISOString(),
+                    authRequired: false,
+                    authStartedBy: null,
+                    authStartedAt: null,
+                    authCompletedAt: null,
+                    endedBy: null,
+                    endedAt: null,
                 });
                 meetingStarted = true;
             }
@@ -919,6 +926,10 @@ export function registerApiRoutes(router, ctx) {
             );
 
             if (previousSessionPresence?.active && !nextPresenceActive) {
+                await store.setUserSessionsInactive(
+                    resolved.meeting.id,
+                    resolved.requesterUsername,
+                );
                 const moderatorUsernames = await resolveModeratorUsernames(
                     resolved.meeting,
                     resolved.participants,
@@ -937,11 +948,21 @@ export function registerApiRoutes(router, ctx) {
                     resolved.meeting.id,
                 );
                 const activeParticipantUsernames = new Set(
-                    updatedPresenceEntries
-                        .filter((entry) => entry.active)
+                    store
+                        .filterCurrentPresenceEntries(updatedPresenceEntries)
                         .map((entry) => entry.username),
                 );
                 if (activeParticipantUsernames.size === 0) {
+                    await store.updateMeetingState(resolved.meeting.id, {
+                        authRequired: false,
+                        authStartedBy: null,
+                        authStartedAt: null,
+                        authCompletedAt: null,
+                        firstJoinedBy: null,
+                        firstJoinedAt: null,
+                        endedBy: resolved.requesterUsername,
+                        endedAt: new Date().toISOString(),
+                    });
                     await dispatchMeetingNotifications(resolved.participants, {
                         subject: "Meeting Ended",
                         body: `${resolved.requesterUsername} ended the meeting.`,
@@ -956,6 +977,12 @@ export function registerApiRoutes(router, ctx) {
             sendJson(res, 200, {
                 data: {
                     ok: true,
+                    meetingClosed:
+                        previousSessionPresence?.active && !nextPresenceActive
+                            ? store.filterCurrentPresenceEntries(
+                                  await store.listPresence(resolved.meeting.id),
+                              ).length === 0
+                            : false,
                 },
             });
         },
@@ -1108,11 +1135,11 @@ export function registerApiRoutes(router, ctx) {
             sendJson(res, 200, {
                 data: {
                     state: resolved.state,
-                    activeParticipants: presence
-                        .filter((entry) => entry.active)
+                    activeParticipants: store
+                        .filterCurrentPresenceEntries(presence)
                         .map((entry) => entry.username),
                     sessionActive: sessionPresence
-                        ? sessionPresence.active
+                        ? store.isPresenceEntryCurrent(sessionPresence)
                         : true,
                 },
             });

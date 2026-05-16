@@ -26,6 +26,8 @@
   <string name="module.jitsi_meet.overlay.reclaim_done">Sesi diambil alih. Sesi sebelumnya diputus.</string>
   <string name="module.jitsi_meet.overlay.reclaimed_elsewhere">Rapat ini diambil alih oleh sesi lain. Ambil alih lagi jika kamu ingin bergabung kembali dari sini.</string>
   <string name="module.jitsi_meet.overlay.in_meeting">Rapat dimulai. Biarkan tab ini terbuka untuk pelacakan sesi Cognis.</string>
+  <string name="module.jitsi_meet.overlay.meeting_closed">Rapat ini telah ditutup.</string>
+  <string name="module.jitsi_meet.overlay.meeting_left">Anda telah meninggalkan rapat.</string>
   <string name="module.jitsi_meet.overlay.leave_blocked">Keluar dari rapat dulu sebelum berpindah dari halaman ini.</string>
   <string name="module.jitsi_meet.overlay.probe_done">Pemeriksaan Pra-Penerbangan Berhasil.</string>
   <string name="module.jitsi_meet.chat.heading">Chat Rapat</string>

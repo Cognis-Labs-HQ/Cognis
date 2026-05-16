@@ -231,6 +231,33 @@ test("meetings mini chat sends on Enter and hides explicit send button", () => {
     assert.match(source, /chatForm\.requestSubmit\(\)/);
 });
 
+test("meetings session state polling handles closed meetings and distinct leave messaging", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(source, /latestState\.endedAt/);
+    assert.match(source, /module\.jitsi_meet\.overlay\.meeting_closed/);
+    assert.match(source, /module\.jitsi_meet\.overlay\.meeting_left/);
+    assert.match(
+        source,
+        /addEventListener\("readyToClose", handleMeetingClosed\)/,
+    );
+});
+
+test("jitsi API resets ended meetings and reports meetingClosed from presence updates", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /!resolved\.state\.endedAt && conflictingSessions\.length > 0/,
+    );
+    assert.match(source, /endedBy:\s*resolved\.requesterUsername/);
+    assert.match(source, /meetingClosed:/);
+});
+
 test("meetings mini chat filters room-event records from rendering", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
