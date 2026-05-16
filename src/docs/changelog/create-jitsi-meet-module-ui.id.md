@@ -18,6 +18,9 @@ Penyempurnaan lanjutan:
 - Pemeriksaan pra-penerbangan kini menampilkan centang hijau saat instans Jitsi mengembalikan respons probe yang sehat.
 - Kesalahan 400 saat membuat rapat diperbaiki akibat pencarian handle peka huruf besar-kecil; `getProfileByHandle` kini menggunakan pencocokan tidak peka huruf besar-kecil.
 - Administrasi → Komponen: Tombol Pengaturan dipindahkan dari dalam `<summary>` chevron ke bagian detail modul yang diperluas, mengganti ikon roda gigi dengan tombol teks "Pengaturan".
+- Tabel `jitsi_meetings` lama kini ditingkatkan langsung sehingga kolom modern yang hilang seperti `participant_key` dan `meeting_url` tidak lagi memblokir pembuatan rapat.
+- Chat grup yang terhubung ke rapat kini menyertakan tanggal rapat pada judul ruang.
+- Mengklik jumlah anggota pada chat grup rapat kini membuka popup yang menampilkan pengguna yang sedang hadir dengan avatar tertaut untuk pratinjau profil.
 
 ## Berkas / Komponen yang Diubah
 
@@ -29,8 +32,16 @@ Penyempurnaan lanjutan:
 - `src/ui/styles/page-builder.css` (gaya tombol pengaturan, gaya tombol roda gigi dihapus)
 - `src/ui/app/administration/index.js` (tombol pengaturan dipindahkan ke bagian yang diperluas)
 - `src/adapters/social/profile/store.ts` (getProfileByHandle tidak peka huruf besar-kecil)
+- `src/modules/jitsi-meet/api/store.js` (persiapan skema lama untuk kolom rapat modern)
+- `src/modules/jitsi-meet/api/index.js` (judul chat rapat bertanggal, endpoint ringkasan ruang chat rapat)
+- `src/adapters/social/messages/ui/app.js` (jumlah anggota yang dapat diklik untuk popup ringkasan kehadiran)
+- `src/adapters/social/messages/ui/messages.css` (gaya popup ringkasan anggota dan subtitel yang dapat diklik)
+- `src/adapters/social/messages/ui/languages/*/strings.xml` (string ringkasan pengguna hadir)
+- `src/modules/jitsi-meet/api/tests/store.test.js` (cakupan regresi persiapan skema)
+- `src/ui/tests/regression-followups.test.js` (regresi judul chat rapat dan ringkasan anggota)
 
 ## Tautan Commit
 
 - https://github.com/le-firehawk/Cognis/commit/a1a90e53bc3366961181b3cbd4d09094179a463c
 - https://github.com/le-firehawk/Cognis/commit/224a1bfb594412391c5dea99962fb9dc8c432396
+- https://github.com/le-firehawk/Cognis/commit/65261ce6

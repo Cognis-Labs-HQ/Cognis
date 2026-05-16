@@ -18,6 +18,9 @@ Nachfolgende Verbesserungen:
 - Die Vorab-Prüfung zeigt jetzt ein grünes Häkchen, sobald die Jitsi-Instanz eine gesunde Probe-Antwort liefert.
 - Fehler 400 bei Meeting-Erstellung behoben (Ursache: Groß-/Kleinschreibungsabhängige Handle-Suche); `getProfileByHandle` verwendet jetzt einen Groß-/Kleinschreibungsunabhängigen Vergleich.
 - Verwaltung → Komponenten: Der Einstellungsbutton wurde aus dem `<summary>`-Chevron in den erweiterten Moduldetailbereich verschoben und das Zahnrad-Symbol durch einen Text-Button „Einstellungen" ersetzt.
+- Ältere `jitsi_meetings`-Tabellen werden jetzt direkt erweitert, sodass fehlende moderne Spalten wie `participant_key` und `meeting_url` die Meeting-Erstellung nicht mehr blockieren.
+- Mit Meetings verknüpfte Gruppenchats enthalten jetzt das Meeting-Datum im Raumnamen.
+- Ein Klick auf die Mitgliederanzahl in einem Meeting-Gruppenchat öffnet jetzt ein Popup mit den aktuell anwesenden Benutzern und verlinkten Avataren für Profilvorschauen.
 
 ## Geänderte Dateien / Komponenten
 
@@ -29,8 +32,16 @@ Nachfolgende Verbesserungen:
 - `src/ui/styles/page-builder.css` (Einstellungsbutton-Stil, Zahnrad-Button-Stile entfernt)
 - `src/ui/app/administration/index.js` (Einstellungsbutton in erweiterten Bereich verschoben)
 - `src/adapters/social/profile/store.ts` (Groß-/Kleinschreibungsunabhängiges getProfileByHandle)
+- `src/modules/jitsi-meet/api/store.js` (Legacy-Schema-Vorbereitung für moderne Meeting-Spalten)
+- `src/modules/jitsi-meet/api/index.js` (datierte Meeting-Chat-Titel, Chat-Raum-Zusammenfassungs-Endpunkt)
+- `src/adapters/social/messages/ui/app.js` (anklickbare Mitgliederanzahl mit Popup für Anwesenheitsübersichten)
+- `src/adapters/social/messages/ui/messages.css` (Popup-Stile für Mitgliedsübersicht und anklickbarer Untertitel)
+- `src/adapters/social/messages/ui/languages/*/strings.xml` (Strings für Anwesenheitsübersicht)
+- `src/modules/jitsi-meet/api/tests/store.test.js` (Regressionstests für Schema-Vorbereitung)
+- `src/ui/tests/regression-followups.test.js` (Regressionen für Meeting-Chat-Titel und Mitgliederübersicht)
 
 ## Commit-Links
 
 - https://github.com/le-firehawk/Cognis/commit/a1a90e53bc3366961181b3cbd4d09094179a463c
 - https://github.com/le-firehawk/Cognis/commit/224a1bfb594412391c5dea99962fb9dc8c432396
+- https://github.com/le-firehawk/Cognis/commit/65261ce6

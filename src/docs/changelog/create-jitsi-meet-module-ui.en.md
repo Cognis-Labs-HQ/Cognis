@@ -18,6 +18,9 @@ Subsequent improvements:
 - Pre-flight check now shows a green tick when the Jitsi instance returns a healthy probe response.
 - Fixed 400 error on meeting creation caused by case-sensitive handle lookup; `getProfileByHandle` now does a case-insensitive match.
 - Administration → Components: Settings button moved from inside the chevron `<summary>` to the expanded module detail section, replacing the cog icon with a text "Settings" button.
+- Older `jitsi_meetings` tables are now upgraded in-place so missing modern columns such as `participant_key` and `meeting_url` no longer break meeting creation.
+- Meeting-linked group chats now include the meeting date in their room title.
+- Clicking the member count in a meeting group chat now opens a popup showing currently present users with linked avatars for profile previews.
 
 ## Changed Files / Components
 
@@ -29,8 +32,16 @@ Subsequent improvements:
 - `src/ui/styles/page-builder.css` (settings button style, removed cog button styles)
 - `src/ui/app/administration/index.js` (Settings button moved to expanded section)
 - `src/adapters/social/profile/store.ts` (case-insensitive getProfileByHandle)
+- `src/modules/jitsi-meet/api/store.js` (legacy schema preparation for modern meeting columns)
+- `src/modules/jitsi-meet/api/index.js` (dated meeting chat titles, meeting chat-room summary endpoint)
+- `src/adapters/social/messages/ui/app.js` (clickable member count popup for present-user summaries)
+- `src/adapters/social/messages/ui/messages.css` (member summary popup and clickable subtitle styles)
+- `src/adapters/social/messages/ui/languages/*/strings.xml` (present-user summary strings)
+- `src/modules/jitsi-meet/api/tests/store.test.js` (schema-preparation regression coverage)
+- `src/ui/tests/regression-followups.test.js` (meeting chat title and member-summary regressions)
 
 ## Commit Links
 
 - https://github.com/le-firehawk/Cognis/commit/a1a90e53bc3366961181b3cbd4d09094179a463c
 - https://github.com/le-firehawk/Cognis/commit/224a1bfb594412391c5dea99962fb9dc8c432396
+- https://github.com/le-firehawk/Cognis/commit/65261ce6

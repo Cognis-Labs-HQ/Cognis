@@ -18,6 +18,9 @@
 - 事前チェックは Jitsi インスタンスが正常なプローブ応答を返すとすぐに緑のチェックマークを表示するようになりました。
 - ハンドルの大文字・小文字を区別した検索によるミーティング作成時の 400 エラーを修正しました。`getProfileByHandle` は大文字・小文字を区別しない照合を使用するようになりました。
 - 管理 → コンポーネント: 設定ボタンをチェブロン `<summary>` の内側から、展開されたモジュール詳細セクションに移動し、歯車アイコンをテキスト「設定」ボタンに置き換えました。
+- 古い `jitsi_meetings` テーブルはその場で拡張されるようになり、`participant_key` や `meeting_url` などの最新カラムが欠けていてもミーティング作成が失敗しなくなりました。
+- ミーティングに関連付けられたグループチャットのルームタイトルに、ミーティング日付が含まれるようになりました。
+- ミーティング用グループチャットのメンバー数をクリックすると、現在参加中のユーザーをプロフィールプレビュー付きのリンクアバターで表示するポップアップが開くようになりました。
 
 ## 変更されたファイル / コンポーネント
 
@@ -29,8 +32,16 @@
 - `src/ui/styles/page-builder.css`（設定ボタンスタイル、歯車ボタンスタイル削除）
 - `src/ui/app/administration/index.js`（設定ボタンを展開セクションに移動）
 - `src/adapters/social/profile/store.ts`（大文字・小文字を区別しない getProfileByHandle）
+- `src/modules/jitsi-meet/api/store.js`（最新ミーティングカラム向けの旧スキーマ準備）
+- `src/modules/jitsi-meet/api/index.js`（日付付きミーティングチャットタイトル、チャットルーム要約エンドポイント）
+- `src/adapters/social/messages/ui/app.js`（参加状況要約ポップアップ用のクリック可能なメンバー数）
+- `src/adapters/social/messages/ui/messages.css`（メンバー要約ポップアップとクリック可能なサブタイトルのスタイル）
+- `src/adapters/social/messages/ui/languages/*/strings.xml`（参加中ユーザー要約用の文字列）
+- `src/modules/jitsi-meet/api/tests/store.test.js`（スキーマ準備のリグレッションカバレッジ）
+- `src/ui/tests/regression-followups.test.js`（ミーティングチャットタイトルとメンバー要約のリグレッション）
 
 ## コミットリンク
 
 - https://github.com/le-firehawk/Cognis/commit/a1a90e53bc3366961181b3cbd4d09094179a463c
 - https://github.com/le-firehawk/Cognis/commit/224a1bfb594412391c5dea99962fb9dc8c432396
+- https://github.com/le-firehawk/Cognis/commit/65261ce6
