@@ -268,7 +268,8 @@ export function createModuleExtensionRoutes(
                         {
                             moduleId: manifest.id,
                             moduleRoot,
-                            getCapability: options?.getCapability ?? (() => undefined),
+                            getCapability:
+                                options?.getCapability ?? (() => undefined),
                         },
                     );
                 }
@@ -294,10 +295,7 @@ export function createModuleExtensionRoutes(
                     entry.method === method && entry.routePath === url.pathname,
             );
             if (!match) return false;
-            if (
-                !isModuleEnabled(match.moduleId) &&
-                !match.allowWhenDisabled
-            ) {
+            if (!isModuleEnabled(match.moduleId) && !match.allowWhenDisabled) {
                 return false;
             }
             if (match.invalidAccessPolicy) {

@@ -134,7 +134,7 @@ function renderModulesContent(modules) {
                 mod?.ui?.componentConfig?.scriptUrl ?? "",
             ).trim();
             const configureButton = componentConfigScriptUrl
-                ? `<button type="button" class="btn btn-secondary module-configure-button" data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}" data-module-id="${escapeHtml(mod.id)}">${escapeHtml(i18n.t("ui.reuse.configure"))}</button>`
+                ? `<button type="button" class="btn-cancel" data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}" data-module-id="${escapeHtml(mod.id)}">${escapeHtml(i18n.t("ui.reuse.configure"))}</button>`
                 : "";
 
             return `
@@ -410,39 +410,41 @@ function bindModuleToggles() {
 }
 
 function bindModuleConfigureButtons() {
-    root.querySelectorAll(".module-configure-button").forEach((button) => {
-        button.addEventListener("click", async (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            const moduleId = button.getAttribute("data-module-id");
-            const scriptUrl = button.getAttribute("data-module-config-script-url");
-            if (!moduleId || !scriptUrl) return;
-            try {
-                const moduleUi = await import(scriptUrl);
-                if (typeof moduleUi.openModuleConfigPopup !== "function") return;
-                const didSave = await moduleUi.openModuleConfigPopup({
-                    i18n,
-                    apiFetch,
-                    openPopup,
-                    showToast,
-                    escapeHtml,
-                    moduleId,
-                });
-                if (didSave) {
-                    modules = await loadModules();
-                    composer.refresh(elements);
-                }
-            } catch (error) {
-                showToast(i18n.t("ui.reuse.save_failed"), {
-                    variant: "error",
-                });
-                console.error(
-                    "[administration] Failed to open module settings popup.",
-                    error,
+    root.querySelectorAll("[data-module-config-script-url]").forEach(
+        (button) => {
+            button.addEventListener("click", async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const moduleId = button.getAttribute("data-module-id");
+                const scriptUrl = button.getAttribute(
+                    "data-module-config-script-url",
                 );
-            }
-        });
-    });
+                if (!moduleId || !scriptUrl) return;
+                try {
+                    const moduleUi = await import(scriptUrl);
+                    if (typeof moduleUi.openModuleConfigPopup !== "function")
+                        return;
+                    const didSave = await moduleUi.openModuleConfigPopup({
+                        i18n,
+                        apiFetch,
+                        openPopup,
+                        showToast,
+                        escapeHtml,
+                        moduleId,
+                    });
+                    if (didSave) {
+                        modules = await loadModules();
+                        composer.refresh(elements);
+                    }
+                } catch (error) {
+                    showToast(i18n.t("ui.reuse.save_failed"), {
+                        variant: "error",
+                    });
+                    console.error(error);
+                }
+            });
+        },
+    );
 }
 
 function bindGatewayToggles() {

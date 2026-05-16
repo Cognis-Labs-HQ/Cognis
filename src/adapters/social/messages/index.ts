@@ -220,9 +220,8 @@ export async function bootstrapSocialAdapter(
                 typeof input.title === "string" && input.title.trim().length > 0
                     ? input.title.trim()
                     : null;
-            const existing = await messagesStore.findGroupByExactMembers(
-                accountIds,
-            );
+            const existing =
+                await messagesStore.findGroupByExactMembers(accountIds);
             if (existing) {
                 if (title && existing.title !== title) {
                     await messagesStore.updateRoomTitle(existing.id, title);

@@ -525,6 +525,7 @@ export class DbMessagesStore {
             table: "chatrooms",
             where: [{ column: "kind", value: "group" }],
             orderBy: [{ column: "updated_at", direction: "DESC" }],
+            limit: 250,
         });
         const candidates = (candidateRoomsResult.rows ?? []).map((row) =>
             this.rowToRoom(row),
@@ -540,9 +541,11 @@ export class DbMessagesStore {
                 ),
             ).sort();
             if (
-                normalizedCandidateMembers.length === normalizedMembers.length &&
+                normalizedCandidateMembers.length ===
+                    normalizedMembers.length &&
                 normalizedCandidateMembers.every(
-                    (accountId, index) => accountId === normalizedMembers[index],
+                    (accountId, index) =>
+                        accountId === normalizedMembers[index],
                 )
             ) {
                 return candidate;

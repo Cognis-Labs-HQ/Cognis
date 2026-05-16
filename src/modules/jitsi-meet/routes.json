@@ -1,8 +1,8 @@
 [
-  {
-    "path": "/meeting",
-    "access": {
-      "minRole": "user"
+    {
+        "path": "/meeting",
+        "access": {
+            "minRole": "user"
+        }
     }
-  }
 ]
