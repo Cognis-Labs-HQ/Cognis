@@ -1,7 +1,7 @@
 import { formatDateTime } from "/static/reuse/timestamp.js";
 
 const REFRESH_INTERVAL_MS = 2500;
-const TABLE_COLUMN_COUNT = 7;
+const TABLE_COLUMN_COUNT = 5;
 
 /**
  * Creates the Jitsi Meetings administration section contribution rendered in
@@ -61,9 +61,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
           <td><code>${escapeHtml(row.id ?? "")}</code></td>
           <td><a href="${escapeHtml(row.meetingUrl ?? "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(row.meetingName ?? "Cognis Classroom")}</a></td>
           <td>${escapeHtml(String(row.participantCount ?? 0))}</td>
-          <td>${escapeHtml(String(row.activeSessionCount ?? 0))}</td>
           <td>${escapeHtml(users)}</td>
-          <td>${escapeHtml(row.authRequired ? i18n.t("ui.reuse.yes") : i18n.t("ui.reuse.no"))}</td>
           <td>${escapeHtml(formatDateTime(row.updatedAt, i18n.t("ui.reuse.unknown")))}</td>
         </tr>`;
             })
@@ -102,7 +100,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
         subComposerOptions: {
             allowCustomization: false,
             preferenceKey: "administration-jitsi-meetings-layout",
-            heading: i18n.t("module.jitsi_meet.admin.meetings.heading"),
+            heading: i18n.t("ui.reuse.meetings"),
             onRender: () => {
                 panelRoot = document.querySelector(
                     "#jitsi-admin-meetings-root",
@@ -126,15 +124,13 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
               <table class="users-table">
                 <thead>
                   <tr>
-                    <th>${escapeHtml(i18n.t("ui.reuse.id"))}</th>
-                    <th>${escapeHtml(i18n.t("ui.reuse.meeting"))}</th>
-                    <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.participants"))}</th>
-                    <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.active_sessions"))}</th>
-                    <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.active_users"))}</th>
-                    <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.auth_required"))}</th>
-                    <th>${escapeHtml(i18n.t("ui.reuse.updated_at"))}</th>
-                  </tr>
-                </thead>
+                     <th>${escapeHtml(i18n.t("ui.reuse.id"))}</th>
+                     <th>${escapeHtml(i18n.t("ui.reuse.meeting"))}</th>
+                     <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.participants"))}</th>
+                     <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.active_users"))}</th>
+                     <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.last_active"))}</th>
+                   </tr>
+                 </thead>
                                 <tbody>
                   <tr><td colspan="${TABLE_COLUMN_COUNT}">${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.loading"))}</td></tr>
                 </tbody>

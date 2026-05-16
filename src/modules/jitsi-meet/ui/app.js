@@ -84,7 +84,7 @@ function buildStageMarkup(i18n) {
     return `
     <div class="jitsi-meeting-stage card-elevated">
       <div class="jitsi-stage-frame-wrap">
-        <iframe id="jitsi-meeting-frame" class="jitsi-stage-frame" title="${escapeHtml(i18n.t("ui.reuse.meeting"))}" allow="camera; microphone; fullscreen; display-capture" hidden></iframe>
+        <iframe id="jitsi-meeting-frame" class="jitsi-stage-frame" title="${escapeHtml(i18n.t("ui.reuse.meeting"))}" allow="camera; microphone; fullscreen; display-capture" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals allow-pointer-lock allow-presentation" hidden></iframe>
         <div id="jitsi-overlay" class="jitsi-overlay">
           <div id="jitsi-staged-participants" class="jitsi-staged-participants" role="list"></div>
           <h3 class="jitsi-overlay-title">${escapeHtml(i18n.t("module.jitsi_meet.overlay.title"))}</h3>
@@ -109,7 +109,7 @@ function buildChatMarkup(i18n) {
     <aside class="jitsi-chat-pane card-elevated">
       <h3>${escapeHtml(i18n.t("module.jitsi_meet.chat.heading"))}</h3>
       <p id="jitsi-chat-hint">${escapeHtml(i18n.t("module.jitsi_meet.chat.pending"))}</p>
-      <a id="jitsi-chat-link" class="btn-cancel" href="/messages" hidden>${escapeHtml(i18n.t("module.jitsi_meet.chat.open"))}</a>
+      <iframe id="jitsi-chat-frame" class="jitsi-chat-frame" title="${escapeHtml(i18n.t("module.jitsi_meet.chat.heading"))}" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals" hidden></iframe>
     </aside>
   `;
 }
@@ -141,7 +141,7 @@ async function fetchParticipants(query) {
 /**
  * Mounts the Meetings page inside the dashboard shell and wires all runtime
  * interactions (participant selection, meeting lifecycle polling, and chat
- * link updates). The optional AbortSignal is used by the SPA router to clean
+ * embed updates). The optional AbortSignal is used by the SPA router to clean
  * up timers and event listeners when users navigate away.
  *
  * @param {HTMLElement} root - Page mount root (usually #app).
@@ -238,23 +238,24 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
-    async function updateChatLink() {
+    async function updateChatEmbed() {
         const chatHint = root.querySelector("#jitsi-chat-hint");
-        const chatLink = root.querySelector("#jitsi-chat-link");
+        const chatFrame = root.querySelector("#jitsi-chat-frame");
         if (
             !(chatHint instanceof HTMLElement) ||
-            !(chatLink instanceof HTMLAnchorElement)
+            !(chatFrame instanceof HTMLIFrameElement)
         ) {
             return;
         }
         if (!state.meeting?.chatUrl) {
             chatHint.textContent = i18n.t("module.jitsi_meet.chat.pending");
-            chatLink.hidden = true;
+            chatFrame.src = "about:blank";
+            chatFrame.hidden = true;
             return;
         }
         chatHint.textContent = i18n.t("module.jitsi_meet.chat.ready");
-        chatLink.href = state.meeting.chatUrl;
-        chatLink.hidden = false;
+        chatFrame.src = state.meeting.chatUrl;
+        chatFrame.hidden = false;
     }
 
     function renderParticipants() {
@@ -440,7 +441,7 @@ export async function mount(root, { signal } = {}) {
 
         const joinPayload = await joinResponse.json();
         state.meeting = joinPayload?.data ?? state.meeting;
-        await updateChatLink();
+        await updateChatEmbed();
 
         if (state.meeting.requiresReclaim) {
             updateOverlay({
@@ -513,7 +514,7 @@ export async function mount(root, { signal } = {}) {
             .json()
             .catch(() => ({ data: null }));
         state.meeting = createPayload?.data;
-        await updateChatLink();
+        await updateChatEmbed();
 
         updateOverlay({
             message: i18n.t("module.jitsi_meet.overlay.probing"),
@@ -818,7 +819,7 @@ export async function mount(root, { signal } = {}) {
         }
 
         renderParticipants();
-        void updateChatLink();
+        void updateChatEmbed();
     }
 
     const elements = [

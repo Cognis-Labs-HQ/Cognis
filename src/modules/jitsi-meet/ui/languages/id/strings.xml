@@ -45,7 +45,7 @@
   <string name="module.jitsi_meet.admin.config.load_failed">Gagal memuat konfigurasi Jitsi Meet.</string>
   <string name="module.jitsi_meet.admin.config.save_success">Konfigurasi Jitsi Meet tersimpan.</string>
   <string name="module.jitsi_meet.admin.config.save_failed">Gagal menyimpan konfigurasi Jitsi Meet.</string>
-  <string name="module.jitsi_meet.admin.meetings.heading">Rapat Cognis Aktif</string>
+  <string name="module.jitsi_meet.admin.meetings.heading">Rapat</string>
   <string name="module.jitsi_meet.admin.meetings.table_label">Aktivitas Rapat Realtime</string>
   <string name="module.jitsi_meet.admin.meetings.loading">Memuat rapat aktif...</string>
   <string name="module.jitsi_meet.admin.meetings.empty">Tidak ada rapat aktif.</string>
@@ -53,4 +53,5 @@
   <string name="module.jitsi_meet.admin.meetings.active_sessions">Sesi Aktif</string>
   <string name="module.jitsi_meet.admin.meetings.active_users">Pengguna Aktif</string>
   <string name="module.jitsi_meet.admin.meetings.auth_required">Auth Diperlukan</string>
+  <string name="module.jitsi_meet.admin.meetings.last_active">Terakhir Aktif</string>
 </resources>

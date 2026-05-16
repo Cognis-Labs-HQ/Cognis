@@ -113,6 +113,6 @@ export function setPageSecurityHeaders(res: ServerResponse): void {
     res.setHeader("referrer-policy", "no-referrer");
     res.setHeader(
         "content-security-policy",
-        "default-src 'self'; img-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'",
+        "default-src 'self'; img-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; frame-src 'self' https: http:; worker-src 'self'; manifest-src 'self'",
     );
 }

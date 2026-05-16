@@ -45,7 +45,7 @@
   <string name="module.jitsi_meet.admin.config.load_failed">Failed to load Jitsi Meet configuration.</string>
   <string name="module.jitsi_meet.admin.config.save_success">Jitsi Meet configuration saved.</string>
   <string name="module.jitsi_meet.admin.config.save_failed">Failed to save Jitsi Meet configuration.</string>
-  <string name="module.jitsi_meet.admin.meetings.heading">Active Cognis Meetings</string>
+  <string name="module.jitsi_meet.admin.meetings.heading">Meetings</string>
   <string name="module.jitsi_meet.admin.meetings.table_label">Realtime Meeting Activity</string>
   <string name="module.jitsi_meet.admin.meetings.loading">Loading Active Meetings...</string>
   <string name="module.jitsi_meet.admin.meetings.empty">No active meetings.</string>
@@ -53,4 +53,5 @@
   <string name="module.jitsi_meet.admin.meetings.active_sessions">Active Sessions</string>
   <string name="module.jitsi_meet.admin.meetings.active_users">Active Users</string>
   <string name="module.jitsi_meet.admin.meetings.auth_required">Auth Required</string>
+  <string name="module.jitsi_meet.admin.meetings.last_active">Last Active</string>
 </resources>
