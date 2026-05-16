@@ -79,6 +79,30 @@ function buildParticipantKey(usernames, classroomId = null) {
     return createHash("sha256").update(payload).digest("hex");
 }
 
+function isLegacyParticipantConstraintError(error) {
+    const message = String(error?.message ?? "").toLowerCase();
+    if (!message) {
+        return false;
+    }
+    const mentionsLegacyColumn =
+        message.includes("participant_a") || message.includes("participant_b");
+    const mentionsNotNullViolation =
+        message.includes("null value in column") ||
+        message.includes("not null") ||
+        message.includes("cannot be null");
+    return mentionsLegacyColumn && mentionsNotNullViolation;
+}
+
+function buildLegacyParticipantColumns(participantUsernames, createdBy) {
+    const fallbackUsername = normalizeUsername(createdBy) || "system";
+    const firstParticipant = participantUsernames[0] ?? fallbackUsername;
+    const secondParticipant = participantUsernames[1] ?? firstParticipant;
+    return {
+        participant_a: firstParticipant,
+        participant_b: secondParticipant,
+    };
+}
+
 /**
  * Persistence layer for Jitsi module configuration, meetings, participants,
  * auth state, and active session presence.
@@ -370,24 +394,41 @@ export class JitsiMeetStore {
         const createdAt = nowIso();
 
         await this.db.transaction(async (executor) => {
-            await executor.executeCommand({
-                option: "INSERT",
-                table: "jitsi_meetings",
-                values: {
-                    id: meetingId,
-                    participant_key: participantKey,
-                    meeting_url: meetingUrl,
-                    meeting_password: meetingPassword,
-                    meeting_name: "Cognis Classroom",
-                    // Persist the generated URL slug explicitly in room_slug.
-                    room_slug: meetingSlug,
-                    chat_room_id: chatRoomId ?? null,
-                    classroom_id: normalizedClassroomId,
-                    created_by: createdBy,
-                    created_at: createdAt,
-                    updated_at: createdAt,
-                },
-            });
+            const meetingValues = {
+                id: meetingId,
+                participant_key: participantKey,
+                meeting_url: meetingUrl,
+                meeting_password: meetingPassword,
+                meeting_name: "Cognis Classroom",
+                room_slug: meetingSlug,
+                chat_room_id: chatRoomId ?? null,
+                classroom_id: normalizedClassroomId,
+                created_by: createdBy,
+                created_at: createdAt,
+                updated_at: createdAt,
+            };
+            try {
+                await executor.executeCommand({
+                    option: "INSERT",
+                    table: "jitsi_meetings",
+                    values: meetingValues,
+                });
+            } catch (error) {
+                if (!isLegacyParticipantConstraintError(error)) {
+                    throw error;
+                }
+                await executor.executeCommand({
+                    option: "INSERT",
+                    table: "jitsi_meetings",
+                    values: {
+                        ...meetingValues,
+                        ...buildLegacyParticipantColumns(
+                            participantUsernames,
+                            createdBy,
+                        ),
+                    },
+                });
+            }
 
             for (const username of participantUsernames) {
                 await executor.executeCommand({

@@ -137,3 +137,83 @@ test("jitsi store meeting creation uses the modern column set", async () => {
     assert.equal("participant_b" in mockDb.insertedMeetingRows[0], false);
     assert.equal(createdMeeting?.reused, false);
 });
+
+test("jitsi store meeting creation retries with legacy participant columns", async () => {
+    const insertedMeetingRows = [];
+    let hasFailedLegacyInsert = false;
+    const mockDb = {
+        async ensureTable() {},
+        async transaction(callback) {
+            return callback(this);
+        },
+        async executeCommand(command) {
+            if (
+                command.option === "INSERT" &&
+                command.table === "jitsi_meetings"
+            ) {
+                if (
+                    !hasFailedLegacyInsert &&
+                    !("participant_a" in command.values) &&
+                    !("participant_b" in command.values)
+                ) {
+                    hasFailedLegacyInsert = true;
+                    throw new Error(
+                        'null value in column "participant_a" violates not-null constraint',
+                    );
+                }
+                insertedMeetingRows.push(command.values);
+                return { rows: [] };
+            }
+            if (
+                command.option === "SELECT" &&
+                command.table === "jitsi_meetings" &&
+                command.where?.some((whereEntry) => whereEntry.column === "id")
+            ) {
+                const selectedMeetingId = command.where.find(
+                    (whereEntry) => whereEntry.column === "id",
+                )?.value;
+                return {
+                    rows: insertedMeetingRows.filter(
+                        (meetingRow) => meetingRow.id === selectedMeetingId,
+                    ),
+                };
+            }
+            if (
+                command.option === "INSERT" &&
+                command.table === "jitsi_meeting_participants"
+            ) {
+                return { rows: [] };
+            }
+            if (
+                command.option === "SELECT" &&
+                command.table === "jitsi_meeting_participants"
+            ) {
+                return {
+                    rows: [],
+                };
+            }
+            if (
+                command.option === "INSERT" &&
+                command.table === "jitsi_meeting_state"
+            ) {
+                return { rows: [] };
+            }
+            return { rows: [] };
+        },
+    };
+
+    const store = new JitsiMeetStore({ db: mockDb });
+    await store.ensureSchema();
+    await store.createMeeting({
+        instanceUrl: "https://meet.example.com",
+        meetingPrefix: "classroom",
+        usernames: ["alice", "bob"],
+        classroomId: null,
+        createdBy: "alice",
+        chatRoomId: null,
+    });
+
+    assert.equal(insertedMeetingRows.length, 1);
+    assert.equal(insertedMeetingRows[0].participant_a, "alice");
+    assert.equal(insertedMeetingRows[0].participant_b, "bob");
+});
