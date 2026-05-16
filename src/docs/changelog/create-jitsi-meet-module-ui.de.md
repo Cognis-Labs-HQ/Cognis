@@ -19,6 +19,7 @@ Nachfolgende Verbesserungen:
 - Fehler 400 bei Meeting-Erstellung behoben (Ursache: Groß-/Kleinschreibungsabhängige Handle-Suche); `getProfileByHandle` verwendet jetzt einen Groß-/Kleinschreibungsunabhängigen Vergleich.
 - Verwaltung → Komponenten: Der Einstellungsbutton wurde aus dem `<summary>`-Chevron in den erweiterten Moduldetailbereich verschoben und das Zahnrad-Symbol durch einen Text-Button „Einstellungen" ersetzt.
 - Das Meeting-Store-Schema ist zukunftsorientiert: `ensureTable` definiert den maßgeblichen Spaltensatz; Rückwärtskompatibilitätscode für ältere Schemata wurde vollständig entfernt.
+- Die Meeting-Erstellung schreibt jetzt `room_slug` aus dem generierten URL-Slug, damit Datenbanken mit weiterhin `NOT NULL` gesetzter Legacy-Spalte `room_slug` nicht mehr fehlschlagen.
 - Mit Meetings verknüpfte Gruppenchats enthalten jetzt das Meeting-Datum im Raumnamen.
 - Ein Klick auf die Mitgliederanzahl in einem Meeting-Gruppenchat öffnet jetzt ein Popup mit den aktuell anwesenden Benutzern und verlinkten Avataren für Profilvorschauen.
 - Das Meeting-Fenster verwendet im hellen Design jetzt eine deutlich hellere Overlay-Darstellung, damit die Vorab-Ansicht nicht mehr zu stark abgedunkelt ist.
@@ -33,12 +34,12 @@ Nachfolgende Verbesserungen:
 - `src/ui/styles/page-builder.css` (Einstellungsbutton-Stil, Zahnrad-Button-Stile entfernt)
 - `src/ui/app/administration/index.js` (Einstellungsbutton in erweiterten Bereich verschoben)
 - `src/adapters/social/profile/store.ts` (Groß-/Kleinschreibungsunabhängiges getProfileByHandle)
-- `src/modules/jitsi-meet/api/store.js` (zukunftsorientiertes, sauberes Schema; Rückwärtskompatibilitätscode entfernt)
+- `src/modules/jitsi-meet/api/store.js` (zukunftsorientiertes Schema plus `room_slug`-Kompatibilität beim Meeting-Insert)
 - `src/modules/jitsi-meet/api/index.js` (datierte Meeting-Chat-Titel, Chat-Raum-Zusammenfassungs-Endpunkt)
 - `src/adapters/social/messages/ui/app.js` (anklickbare Mitgliederanzahl mit Popup für Anwesenheitsübersichten)
 - `src/adapters/social/messages/ui/messages.css` (Popup-Stile für Mitgliedsübersicht und anklickbarer Untertitel)
 - `src/adapters/social/messages/ui/languages/*/strings.xml` (Strings für Anwesenheitsübersicht)
-- `src/modules/jitsi-meet/api/tests/store.test.js` (Mock in createMockJitsiDb umbenannt; Legacy-Migrationstest entfernt; explizite Spaltensatz-Prüfung hinzugefügt)
+- `src/modules/jitsi-meet/api/tests/store.test.js` (`room_slug`-Prüfung ergänzt: Wert wird aus dem Meeting-URL-Slug gesetzt)
 - `src/ui/tests/regression-followups.test.js` (Regressionen für Meeting-Chat-Titel und Mitgliederübersicht)
 - `src/modules/jitsi-meet/ui/jitsi-meet.css` (helleres Meeting-Fenster-Overlay, Spinner- und Staged-User-Kontrast im hellen Design)
 

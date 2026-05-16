@@ -19,6 +19,7 @@
 - ハンドルの大文字・小文字を区別した検索によるミーティング作成時の 400 エラーを修正しました。`getProfileByHandle` は大文字・小文字を区別しない照合を使用するようになりました。
 - 管理 → コンポーネント: 設定ボタンをチェブロン `<summary>` の内側から、展開されたモジュール詳細セクションに移動し、歯車アイコンをテキスト「設定」ボタンに置き換えました。
 - ミーティングストアのスキーマは前向き設計です。`ensureTable` が正式なカラム定義を保持し、旧スキーマへの後方互換コードはすべて削除されました。
+- ミーティング作成時に生成した URL スラッグから `room_slug` を保存するようにし、旧来の `room_slug` 列が `NOT NULL` のまま残っている DB でも失敗しないようにしました。
 - ミーティングに関連付けられたグループチャットのルームタイトルに、ミーティング日付が含まれるようになりました。
 - ミーティング用グループチャットのメンバー数をクリックすると、現在参加中のユーザーをプロフィールプレビュー付きのリンクアバターで表示するポップアップが開くようになりました。
 - ライトテーマでは Meeting Window のオーバーレイ表現を大幅に明るくし、ミーティング開始前のステージが暗すぎて読みにくくならないようにしました。
@@ -33,12 +34,12 @@
 - `src/ui/styles/page-builder.css`（設定ボタンスタイル、歯車ボタンスタイル削除）
 - `src/ui/app/administration/index.js`（設定ボタンを展開セクションに移動）
 - `src/adapters/social/profile/store.ts`（大文字・小文字を区別しない getProfileByHandle）
-- `src/modules/jitsi-meet/api/store.js`（前向き設計の清潔なスキーマ；後方互換マイグレーションコード削除）
+- `src/modules/jitsi-meet/api/store.js`（前向き設計スキーマに加え、ミーティング INSERT 時の `room_slug` 互換を追加）
 - `src/modules/jitsi-meet/api/index.js`（日付付きミーティングチャットタイトル、チャットルーム要約エンドポイント）
 - `src/adapters/social/messages/ui/app.js`（参加状況要約ポップアップ用のクリック可能なメンバー数）
 - `src/adapters/social/messages/ui/messages.css`（メンバー要約ポップアップとクリック可能なサブタイトルのスタイル）
 - `src/adapters/social/messages/ui/languages/*/strings.xml`（参加中ユーザー要約用の文字列）
-- `src/modules/jitsi-meet/api/tests/store.test.js`（モックを createMockJitsiDb に改名；旧マイグレーションテスト削除；カラムセット検証を明示的に追加）
+- `src/modules/jitsi-meet/api/tests/store.test.js`（`room_slug` 検証を追加：ミーティング URL のスラッグが保存されることを確認）
 - `src/ui/tests/regression-followups.test.js`（ミーティングチャットタイトルとメンバー要約のリグレッション）
 - `src/modules/jitsi-meet/ui/jitsi-meet.css`（ライトテーマでの Meeting Window オーバーレイ、スピナー、配置済みユーザーのコントラスト改善）
 

@@ -19,6 +19,7 @@ Penyempurnaan lanjutan:
 - Kesalahan 400 saat membuat rapat diperbaiki akibat pencarian handle peka huruf besar-kecil; `getProfileByHandle` kini menggunakan pencocokan tidak peka huruf besar-kecil.
 - Administrasi → Komponen: Tombol Pengaturan dipindahkan dari dalam `<summary>` chevron ke bagian detail modul yang diperluas, mengganti ikon roda gigi dengan tombol teks "Pengaturan".
 - Skema meeting store bersifat maju: `ensureTable` mendefinisikan rangkaian kolom yang berwenang; tidak ada kode kompatibilitas mundur untuk skema lama.
+- Pembuatan rapat sekarang menulis `room_slug` dari slug URL rapat yang dihasilkan, sehingga basis data dengan kolom lama `room_slug` yang masih `NOT NULL` tidak lagi gagal.
 - Chat grup yang terhubung ke rapat kini menyertakan tanggal rapat pada judul ruang.
 - Mengklik jumlah anggota pada chat grup rapat kini membuka popup yang menampilkan pengguna yang sedang hadir dengan avatar tertaut untuk pratinjau profil.
 - Meeting Window kini memakai tampilan overlay yang jauh lebih terang pada mode terang agar panggung pra-rapat tidak lagi tampak terlalu gelap.
@@ -33,12 +34,12 @@ Penyempurnaan lanjutan:
 - `src/ui/styles/page-builder.css` (gaya tombol pengaturan, gaya tombol roda gigi dihapus)
 - `src/ui/app/administration/index.js` (tombol pengaturan dipindahkan ke bagian yang diperluas)
 - `src/adapters/social/profile/store.ts` (getProfileByHandle tidak peka huruf besar-kecil)
-- `src/modules/jitsi-meet/api/store.js` (skema maju yang bersih; kode kompatibilitas mundur dihapus)
+- `src/modules/jitsi-meet/api/store.js` (skema maju dengan kompatibilitas `room_slug` saat insert rapat)
 - `src/modules/jitsi-meet/api/index.js` (judul chat rapat bertanggal, endpoint ringkasan ruang chat rapat)
 - `src/adapters/social/messages/ui/app.js` (jumlah anggota yang dapat diklik untuk popup ringkasan kehadiran)
 - `src/adapters/social/messages/ui/messages.css` (gaya popup ringkasan anggota dan subtitel yang dapat diklik)
 - `src/adapters/social/messages/ui/languages/*/strings.xml` (string ringkasan pengguna hadir)
-- `src/modules/jitsi-meet/api/tests/store.test.js` (mock diubah namanya menjadi createMockJitsiDb; pengujian migrasi lama dihapus; pernyataan rangkaian kolom ditambahkan)
+- `src/modules/jitsi-meet/api/tests/store.test.js` (assertion `room_slug` ditambahkan: nilainya harus mengikuti slug URL rapat)
 - `src/ui/tests/regression-followups.test.js` (regresi judul chat rapat dan ringkasan anggota)
 - `src/modules/jitsi-meet/ui/jitsi-meet.css` (overlay Meeting Window yang lebih terang, spinner, dan kontras pengguna tersusun pada mode terang)
 
