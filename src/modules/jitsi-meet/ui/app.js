@@ -10,6 +10,7 @@ import {
 } from "/static/reuse/avatar-utils.js";
 
 const HEARTBEAT_INTERVAL_MS = 10_000;
+const PROBE_SUCCESS_DISPLAY_MS = 600;
 const STATE_REFRESH_INTERVAL_MS = 5_000;
 const SESSION_ID_STORAGE_KEY = "jitsi-meet:session-id";
 
@@ -206,7 +207,7 @@ export async function mount(root, { signal } = {}) {
             messageEl.textContent = message;
         }
         if (loadingEl instanceof HTMLElement) {
-            loadingEl.hidden = !(loading || probed);
+            loadingEl.hidden = !loading;
         }
         if (indicatorEl instanceof HTMLElement) {
             if (probed) {
@@ -554,7 +555,9 @@ export async function mount(root, { signal } = {}) {
             canStart: false,
         });
 
-        await new Promise((resolve) => setTimeout(resolve, 600));
+        await new Promise((resolve) =>
+            setTimeout(resolve, PROBE_SUCCESS_DISPLAY_MS),
+        );
 
         updateOverlay({
             message: i18n.t("module.jitsi_meet.overlay.joining"),

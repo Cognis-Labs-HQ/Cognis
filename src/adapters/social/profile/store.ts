@@ -249,16 +249,20 @@ export class DbProfileStore implements ProfileCreateStore {
             return rowToProfile(exactRow);
         }
 
-        const allProfilesResult = await this.db.executeCommand({
+        const profileHandleRowsResult = await this.db.executeCommand({
             option: "SELECT",
             table: "account_profiles",
+            columns: ["account_id", "handle"],
         });
-        const matchedRow = (allProfilesResult.rows ?? []).find(
-            (row) =>
-                normalizeHandleKey(String(row.handle ?? "")) ===
+        const matchedHandleRow = (profileHandleRowsResult.rows ?? []).find(
+            (profileHandleRow) =>
+                normalizeHandleKey(String(profileHandleRow.handle ?? "")) ===
                 normalizedHandle,
         );
-        return matchedRow ? rowToProfile(matchedRow) : null;
+        if (!matchedHandleRow?.account_id) {
+            return null;
+        }
+        return this.getProfile(String(matchedHandleRow.account_id));
     }
 
     async searchProfiles(
