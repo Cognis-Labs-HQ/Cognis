@@ -141,6 +141,7 @@ export class JitsiMeetStore {
                     notNull: true,
                     default: "Cognis Classroom",
                 },
+                // Retained for legacy deployments where room_slug is still NOT NULL.
                 { name: "room_slug", type: "text", notNull: true },
                 { name: "chat_room_id", type: "text" },
                 { name: "classroom_id", type: "text" },
@@ -378,6 +379,7 @@ export class JitsiMeetStore {
                     meeting_url: meetingUrl,
                     meeting_password: meetingPassword,
                     meeting_name: "Cognis Classroom",
+                    // Populate legacy NOT NULL room_slug from the generated URL slug.
                     room_slug: meetingSlug,
                     chat_room_id: chatRoomId ?? null,
                     classroom_id: normalizedClassroomId,
