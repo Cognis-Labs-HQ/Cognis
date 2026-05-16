@@ -72,6 +72,17 @@ async function resolveRequestedParticipants(profileStore, requestedHandles) {
     return usernames;
 }
 
+function isModeratorRole(roleName) {
+    const normalizedRole = String(roleName ?? "")
+        .trim()
+        .toLowerCase();
+    return (
+        normalizedRole === "owner" ||
+        normalizedRole === "admin" ||
+        normalizedRole === "teacher"
+    );
+}
+
 async function canAccessMeeting({
     store,
     meeting,
@@ -239,6 +250,15 @@ export function registerApiRoutes(router, ctx) {
     const listClassroomParticipantHandles =
         ctx.getCapability("study:classroom:listParticipantHandles") ??
         (async () => []);
+    const dispatchNotification = ctx.getCapability("notify:dispatch");
+    const registerNotificationCategory = ctx.getCapability(
+        "notify:registerCategory",
+    );
+    const accountStore = ctx.getCapability("auth:accountStore");
+
+    if (typeof registerNotificationCategory === "function") {
+        registerNotificationCategory("meetings", "Meetings");
+    }
 
     if (!dbExecutor || !profileStore) {
         const unavailablePayload = (res) =>
@@ -293,6 +313,68 @@ export function registerApiRoutes(router, ctx) {
     }
 
     const store = resolveStore(dbExecutor, ctx.getCapability("logging:log"));
+
+    async function dispatchMeetingNotifications(
+        recipientUsernames,
+        { subject, body, metadata = {} },
+    ) {
+        if (typeof dispatchNotification !== "function") return;
+        const normalizedRecipients = Array.from(
+            new Set(
+                (Array.isArray(recipientUsernames) ? recipientUsernames : [])
+                    .map((username) => normalizeUsername(username))
+                    .filter(Boolean),
+            ),
+        );
+        for (const recipientUsername of normalizedRecipients) {
+            await dispatchNotification({
+                category: "meetings",
+                recipientUsername,
+                subject,
+                body,
+                actionUrl: "/meetings",
+                metadata,
+            }).catch(() => undefined);
+        }
+    }
+
+    async function resolveModeratorUsernames(meeting, participantUsernames) {
+        const normalizedParticipants = Array.from(
+            new Set(
+                (Array.isArray(participantUsernames)
+                    ? participantUsernames
+                    : []
+                )
+                    .map((username) => normalizeUsername(username))
+                    .filter(Boolean),
+            ),
+        );
+        const moderatorSet = new Set([
+            normalizeUsername(meeting?.createdBy ?? ""),
+        ]);
+        if (
+            !accountStore ||
+            typeof accountStore.list !== "function" ||
+            normalizedParticipants.length === 0
+        ) {
+            return Array.from(moderatorSet).filter(Boolean);
+        }
+        const users = await accountStore.list().catch(() => []);
+        for (const user of users) {
+            const username = normalizeUsername(user?.username);
+            if (!username || !normalizedParticipants.includes(username)) {
+                continue;
+            }
+            if (
+                isModeratorRole(user?.role) ||
+                user?.isAdmin === true ||
+                user?.isFounder === true
+            ) {
+                moderatorSet.add(username);
+            }
+        }
+        return Array.from(moderatorSet).filter(Boolean);
+    }
 
     router.get(
         "/api/v1/modules/jitsi-meet/ping",
@@ -456,6 +538,18 @@ export function registerApiRoutes(router, ctx) {
                 requiresReclaim: false,
             });
 
+            const addedParticipantUsernames = participants.filter(
+                (username) => username !== requesterUsername,
+            );
+            await dispatchMeetingNotifications(addedParticipantUsernames, {
+                subject: "Added to Meeting",
+                body: `${requesterUsername} added you to a meeting.`,
+                metadata: {
+                    event: "meeting_added",
+                    meetingId: meeting.id,
+                },
+            });
+
             sendJson(res, 200, {
                 data: {
                     ...payload,
@@ -596,11 +690,13 @@ export function registerApiRoutes(router, ctx) {
             );
 
             let state = resolved.state;
+            let meetingStarted = false;
             if (!state.firstJoinedBy) {
                 state = await store.updateMeetingState(resolved.meeting.id, {
                     firstJoinedBy: resolved.requesterUsername,
                     firstJoinedAt: new Date().toISOString(),
                 });
+                meetingStarted = true;
             }
 
             const payload = await createMeetingPayload({
@@ -614,6 +710,36 @@ export function registerApiRoutes(router, ctx) {
                     : null,
                 requiresReclaim,
             });
+
+            if (meetingStarted) {
+                await dispatchMeetingNotifications(resolved.participants, {
+                    subject: "Meeting Started",
+                    body: `${resolved.requesterUsername} started the meeting.`,
+                    metadata: {
+                        event: "meeting_started",
+                        meetingId: resolved.meeting.id,
+                    },
+                });
+            }
+
+            const moderatorUsernames = await resolveModeratorUsernames(
+                resolved.meeting,
+                resolved.participants,
+            );
+            await dispatchMeetingNotifications(
+                moderatorUsernames.filter(
+                    (username) => username !== resolved.requesterUsername,
+                ),
+                {
+                    subject: "Participant Joined",
+                    body: `${resolved.requesterUsername} joined the meeting.`,
+                    metadata: {
+                        event: "participant_joined",
+                        meetingId: resolved.meeting.id,
+                        participant: resolved.requesterUsername,
+                    },
+                },
+            );
 
             sendJson(res, 200, {
                 data: payload,
@@ -775,12 +901,57 @@ export function registerApiRoutes(router, ctx) {
                 return;
             }
 
+            const previousPresenceEntries = await store.listPresence(
+                resolved.meeting.id,
+            );
+            const previousSessionPresence = previousPresenceEntries.find(
+                (entry) =>
+                    entry.username === resolved.requesterUsername &&
+                    entry.sessionId === sessionId,
+            );
+            const nextPresenceActive = body.active !== false;
+
             await store.upsertPresence(
                 resolved.meeting.id,
                 resolved.requesterUsername,
                 sessionId,
-                body.active !== false,
+                nextPresenceActive,
             );
+
+            if (previousSessionPresence?.active && !nextPresenceActive) {
+                const moderatorUsernames = await resolveModeratorUsernames(
+                    resolved.meeting,
+                    resolved.participants,
+                );
+                await dispatchMeetingNotifications(moderatorUsernames, {
+                    subject: "Participant Left",
+                    body: `${resolved.requesterUsername} left the meeting.`,
+                    metadata: {
+                        event: "participant_left",
+                        meetingId: resolved.meeting.id,
+                        participant: resolved.requesterUsername,
+                    },
+                });
+
+                const updatedPresenceEntries = await store.listPresence(
+                    resolved.meeting.id,
+                );
+                const activeParticipantUsernames = new Set(
+                    updatedPresenceEntries
+                        .filter((entry) => entry.active)
+                        .map((entry) => entry.username),
+                );
+                if (activeParticipantUsernames.size === 0) {
+                    await dispatchMeetingNotifications(resolved.participants, {
+                        subject: "Meeting Ended",
+                        body: `${resolved.requesterUsername} ended the meeting.`,
+                        metadata: {
+                            event: "meeting_ended",
+                            meetingId: resolved.meeting.id,
+                        },
+                    });
+                }
+            }
 
             sendJson(res, 200, {
                 data: {

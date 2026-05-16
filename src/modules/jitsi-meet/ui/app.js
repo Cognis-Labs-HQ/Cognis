@@ -269,7 +269,7 @@ function buildStageMarkup(i18n) {
           <div class="jitsi-overlay-actions">
             <button id="jitsi-start-btn" class="btn-animated" type="button" disabled>${escapeHtml(i18n.t("module.jitsi_meet.overlay.start_meeting"))}</button>
             <button id="jitsi-auth-btn" class="btn-cancel" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.auth_required"))}</button>
-            <button id="jitsi-reclaim-btn" class="btn-cancel" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.reclaim"))}</button>
+            <button id="jitsi-reclaim-btn" class="btn-confirm" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.reclaim"))}</button>
           </div>
           <div id="jitsi-loading" class="jitsi-loading" hidden>
             <span id="jitsi-loading-indicator" class="jitsi-spinner" aria-hidden="true"></span>
@@ -289,7 +289,6 @@ function buildChatMarkup(i18n) {
       <div id="jitsi-chat-thread" class="jitsi-chat-thread" aria-live="polite"></div>
       <form id="jitsi-chat-form" class="jitsi-chat-form" hidden>
         <textarea id="jitsi-chat-input" class="jitsi-chat-input" rows="3" placeholder="${escapeHtml(i18n.t("module.jitsi_meet.chat.placeholder"))}"></textarea>
-        <button id="jitsi-chat-send" class="btn-animated" type="submit">${escapeHtml(i18n.t("ui.reuse.send"))}</button>
       </form>
     </aside>
   `;
@@ -515,9 +514,6 @@ export async function mount(root, { signal } = {}) {
 
     async function decryptChatMessage(message, key) {
         if (!key) return null;
-        if (message?.contentType === "application/vnd.cognis.room-event+json") {
-            return String(message?.ciphertext ?? "");
-        }
         const ivHex = String(message?.iv ?? "").trim();
         const cipherHex = String(message?.ciphertext ?? "").trim();
         const authTag = String(message?.authTag ?? "").trim();
@@ -622,7 +618,14 @@ export async function mount(root, { signal } = {}) {
         }
         const payload = await response.json().catch(() => ({ data: [] }));
         const ordered = Array.isArray(payload?.data)
-            ? payload.data.slice().reverse()
+            ? payload.data
+                  .slice()
+                  .reverse()
+                  .filter(
+                      (message) =>
+                          message?.contentType !==
+                          "application/vnd.cognis.room-event+json",
+                  )
             : [];
         const decoded = await Promise.all(
             ordered.map(async (message) => ({
@@ -1440,6 +1443,21 @@ export async function mount(root, { signal } = {}) {
             chatForm instanceof HTMLFormElement &&
             chatInput instanceof HTMLTextAreaElement
         ) {
+            chatInput.addEventListener(
+                "keydown",
+                (event) => {
+                    if (
+                        event.key !== "Enter" ||
+                        event.shiftKey ||
+                        event.isComposing
+                    ) {
+                        return;
+                    }
+                    event.preventDefault();
+                    chatForm.requestSubmit();
+                },
+                { signal: bindSignal },
+            );
             chatForm.addEventListener(
                 "submit",
                 async (event) => {

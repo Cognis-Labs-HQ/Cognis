@@ -203,3 +203,64 @@ test("meetings page allows full-width meeting and chat panels in composer", () =
         /id:\s*"jitsi-chat"[\s\S]*gridSize:\s*\{[\s\S]*max:\s*"full"/,
     );
 });
+
+test("reclaim session button uses success outline styling", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(source, /id="jitsi-reclaim-btn" class="btn-confirm"/);
+});
+
+test("meetings mini chat sends on Enter and hides explicit send button", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.doesNotMatch(source, /id="jitsi-chat-send"/);
+    assert.match(source, /chatInput\.addEventListener\(\s*"keydown"/);
+    assert.match(source, /event\.key !== "Enter"/);
+    assert.match(source, /chatForm\.requestSubmit\(\)/);
+});
+
+test("meetings mini chat filters room-event records from rendering", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /\.filter\(\s*\(message\)\s*=>[\s\S]*application\/vnd\.cognis\.room-event\+json/,
+    );
+});
+
+test("page CSP allows loading Jitsi external_api.js", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/auth/guard.ts"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /script-src 'self' https:\/\/meet\.firehawk-systems\.com;/,
+    );
+    assert.match(
+        source,
+        /script-src-elem 'self' https:\/\/meet\.firehawk-systems\.com;/,
+    );
+});
+
+test("jitsi API dispatches meeting lifecycle and participant notifications", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /registerNotificationCategory\("meetings", "Meetings"\)/,
+    );
+    assert.match(source, /subject: "Added to Meeting"/);
+    assert.match(source, /subject: "Meeting Started"/);
+    assert.match(source, /subject: "Meeting Ended"/);
+    assert.match(source, /subject: "Participant Joined"/);
+    assert.match(source, /subject: "Participant Left"/);
+});
