@@ -132,3 +132,38 @@ test("meetings page composer uses a dedicated layout preference key", () => {
     );
     assert.match(source, /preferenceKey:\s*"meetings-layout"/);
 });
+
+test("jitsi meetings embed enforces subject, theme, password, and reduced toolbar", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(source, /const MEETING_SUBJECT = "Cognis Classroom";/);
+    const toolbarArrayMatch = source.match(
+        /const JITSI_TOOLBAR_BUTTONS = \[([\s\S]*?)\];/,
+    );
+    assert.ok(toolbarArrayMatch);
+    const toolbarArraySource = toolbarArrayMatch[1];
+    assert.equal(/"chat"/.test(toolbarArraySource), false);
+    assert.equal(/"invite"/.test(toolbarArraySource), false);
+    assert.equal(/"settings"/.test(toolbarArraySource), false);
+    assert.match(source, /subject: MEETING_SUBJECT,/);
+    assert.match(source, /executeCommand\("subject", MEETING_SUBJECT\)/);
+    assert.match(source, /preferredTheme: themeMode,/);
+    assert.match(
+        source,
+        /hashParams\.set\("config\.subject", MEETING_SUBJECT\)/,
+    );
+    assert.match(
+        source,
+        /hashParams\.set\("config\.preferredTheme", themeMode\)/,
+    );
+    assert.match(
+        source,
+        /state\.jitsiApi\.executeCommand\("password", meetingPassword\);/,
+    );
+    assert.match(
+        source,
+        /state\.jitsiApi\.addEventListener\("passwordRequired", \(\) => \{/,
+    );
+});
