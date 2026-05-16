@@ -1,5 +1,11 @@
 [
     {
+        "path": "/meetings",
+        "access": {
+            "minRole": "user"
+        }
+    },
+    {
         "path": "/meeting",
         "access": {
             "minRole": "user"

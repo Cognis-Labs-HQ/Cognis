@@ -21,6 +21,7 @@
  *         id: 'example-url',
  *         configKey: 'instanceUrl',
  *         labelKey: 'module.example.config.instance_url',
+ *         descriptionKey: 'module.example.config.instance_url_description',
  *         placeholderKey: 'module.example.config.instance_url_placeholder',
  *         type: 'url',
  *       },
@@ -43,11 +44,13 @@
  *     id: string,
  *     configKey: string,
  *     labelKey: string,
+ *     descriptionKey?: string,
  *     placeholderKey?: string,
  *     type?: 'url' | 'text',
  *     serialize?: (value: string) => unknown,
  *   }>,
  *   noteKey?: string,
+ *   loadFailedKey?: string,
  *   successKey: string,
  *   failedKey: string,
  * }} options
@@ -64,12 +67,13 @@ export async function openModuleSettingsPopup({
     titleKey,
     fields,
     noteKey,
+    loadFailedKey,
     successKey,
     failedKey,
 }) {
     const loadResponse = await apiFetch(loadUrl);
     if (!loadResponse.ok) {
-        showToast(i18n.t(failedKey), {
+        showToast(i18n.t(loadFailedKey ?? failedKey), {
             variant: "error",
         });
         return false;
@@ -88,10 +92,17 @@ export async function openModuleSettingsPopup({
             const placeholder = field.placeholderKey
                 ? i18n.t(field.placeholderKey)
                 : "";
+            const description = field.descriptionKey
+                ? i18n.t(field.descriptionKey)
+                : "";
+            const descriptionBlock = description
+                ? `<p class="module-settings-popup-description">${escapeHtml(description)}</p>`
+                : "";
             const inputType = field.type === "url" ? "url" : "text";
             return `
-      <label class="provider-option-row">
-        <span class="provider-option-label">${escapeHtml(label)}</span>
+      <label class="module-settings-popup-field">
+        <span class="module-settings-popup-label">${escapeHtml(label)}</span>
+        ${descriptionBlock}
         <input id="${escapeHtml(fieldId)}" type="${escapeHtml(inputType)}" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" />
       </label>
     `;
@@ -103,7 +114,8 @@ export async function openModuleSettingsPopup({
 
     const action = await openPopup({
         title: i18n.t(titleKey),
-        body: () => `${fieldRows}${noteBlock}`,
+        body: () =>
+            `<div class="module-settings-popup-fields">${fieldRows}</div>${noteBlock}`,
         actions: [
             {
                 id: "save",

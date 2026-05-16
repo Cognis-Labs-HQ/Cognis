@@ -133,13 +133,17 @@ function renderModulesContent(modules) {
             const componentConfigScriptUrl = String(
                 mod?.ui?.componentConfig?.scriptUrl ?? "",
             ).trim();
-            const configureButton = componentConfigScriptUrl
-                ? `<button type="button" class="btn-cancel" data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}" data-module-id="${escapeHtml(mod.id)}" title="${escapeHtml(i18n.t("ui.reuse.configure"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.configure"))}">⚙</button>`
+            const hasConfigButton = componentConfigScriptUrl.length > 0;
+            const summaryClass = hasConfigButton
+                ? "module-row-summary module-row-summary--has-config"
+                : "module-row-summary";
+            const configureButton = hasConfigButton
+                ? `<button type="button" class="module-config-cog-button" data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}" data-module-id="${escapeHtml(mod.id)}" aria-label="${escapeHtml(i18n.t("ui.reuse.settings"))}">⚙</button>`
                 : "";
 
             return `
         <details class="module-row" data-module="${mod.id}">
-          <summary class="module-row-summary">
+          <summary class="${summaryClass}">
             <span class="module-row-title"><strong>${mod.name}</strong></span>
             ${configureButton}
             <span class="state-pill ${pill.className}">${pill.label}</span>

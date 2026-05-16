@@ -33,10 +33,13 @@
   <string name="module.jitsi_meet.participants.selected">Peserta Rapat</string>
   <string name="module.jitsi_meet.admin.config.title">Konfigurasi Jitsi Meet</string>
   <string name="module.jitsi_meet.admin.config.instance_url">URL Instans Jitsi</string>
+  <string name="module.jitsi_meet.admin.config.instance_url_description">Masukkan URL dasar lengkap dari deployment Jitsi kamu.</string>
   <string name="module.jitsi_meet.admin.config.instance_url_placeholder">https://jitsi.example.com</string>
   <string name="module.jitsi_meet.admin.config.meeting_prefix">Prefix URI Rapat Opsional</string>
+  <string name="module.jitsi_meet.admin.config.meeting_prefix_description">Prefix path opsional yang dipakai saat membuat URL rapat.</string>
   <string name="module.jitsi_meet.admin.config.meeting_prefix_placeholder">kelas</string>
   <string name="module.jitsi_meet.admin.config.note">Modul tetap nonaktif sampai URL instans valid dikonfigurasi.</string>
+  <string name="module.jitsi_meet.admin.config.load_failed">Gagal memuat konfigurasi Jitsi Meet.</string>
   <string name="module.jitsi_meet.admin.config.save_success">Konfigurasi Jitsi Meet tersimpan.</string>
   <string name="module.jitsi_meet.admin.config.save_failed">Gagal menyimpan konfigurasi Jitsi Meet.</string>
   <string name="module.jitsi_meet.admin.meetings.heading">Rapat Cognis Aktif</string>

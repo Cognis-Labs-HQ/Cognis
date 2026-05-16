@@ -464,11 +464,15 @@ code {
 .module-row-summary {
     list-style: none;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) max-content max-content 52px auto;
+    grid-template-columns: minmax(0, 1fr) max-content 52px auto;
     gap: 12px;
     align-items: center;
     cursor: pointer;
     padding: 16px;
+}
+
+.module-row-summary--has-config {
+    grid-template-columns: minmax(0, 1fr) max-content max-content 52px auto;
 }
 
 .module-row-title {
@@ -551,6 +555,31 @@ code {
 
 .module-chevron {
     transition: transform 0.2s ease;
+}
+
+.module-config-cog-button {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+    justify-self: end;
+}
+
+.module-config-cog-button:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-soft);
+}
+
+.module-config-cog-button:focus-visible {
+    outline: 2px solid var(--color-accent, #3b82f6);
+    outline-offset: 2px;
 }
 
 .module-meta {
@@ -712,8 +741,12 @@ body[data-theme="light"] .slider::before {
 @media (max-width: 640px) {
     .module-row summary,
     .module-row-summary {
-        grid-template-columns: minmax(0, 1fr) max-content max-content 52px auto;
+        grid-template-columns: minmax(0, 1fr) max-content 52px auto;
         gap: 10px;
+    }
+
+    .module-row-summary--has-config {
+        grid-template-columns: minmax(0, 1fr) max-content max-content 52px auto;
     }
 
     .module-detail-item {
@@ -750,6 +783,29 @@ body[data-theme="light"] .slider::before {
     margin: 0;
     opacity: 0.9;
     font-size: 0.92rem;
+}
+
+.module-settings-popup-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.module-settings-popup-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.module-settings-popup-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.module-settings-popup-description {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.86rem;
 }
 
 .btn-animated {

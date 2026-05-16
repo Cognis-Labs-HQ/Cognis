@@ -727,28 +727,29 @@ export async function mount(root, { signal } = {}) {
         void updateChatLink();
     }
 
+    const elements = [
+        {
+            id: "jitsi-main",
+            label: i18n.t("ui.reuse.meetings"),
+            pinned: true,
+            width: 12,
+            render: () => buildPageMarkup(i18n),
+        },
+    ];
+
     const composer = createPageComposer(root, {
+        allowCustomization: false,
+        elements,
+        i18n,
         pageContext: {
             title: i18n.t("ui.reuse.meetings"),
             subtitle: i18n.t("module.jitsi_meet.page.subtitle"),
         },
         showToolbar: false,
         onRender: bindInteractiveHandlers,
-        content: {
-            className: "jitsi-page-content",
-            elements: [
-                {
-                    id: "jitsi-main",
-                    label: i18n.t("ui.reuse.meetings"),
-                    pinned: true,
-                    width: 12,
-                    render: () => buildPageMarkup(i18n),
-                },
-            ],
-        },
     });
 
-    composer.refresh();
+    await composer.init();
 }
 
 // When the SPA router imports this module it sets __spaRouter=true to prevent

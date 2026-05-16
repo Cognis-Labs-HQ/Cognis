@@ -33,10 +33,13 @@
   <string name="module.jitsi_meet.participants.selected">ミーティング参加者</string>
   <string name="module.jitsi_meet.admin.config.title">Jitsi Meet 設定</string>
   <string name="module.jitsi_meet.admin.config.instance_url">Jitsi インスタンス URL</string>
+  <string name="module.jitsi_meet.admin.config.instance_url_description">Jitsi デプロイのベース URL を完全な形式で入力してください。</string>
   <string name="module.jitsi_meet.admin.config.instance_url_placeholder">https://jitsi.example.com</string>
   <string name="module.jitsi_meet.admin.config.meeting_prefix">任意のミーティング URI プレフィックス</string>
+  <string name="module.jitsi_meet.admin.config.meeting_prefix_description">ミーティング URL 生成時に使う任意のパスプレフィックスです。</string>
   <string name="module.jitsi_meet.admin.config.meeting_prefix_placeholder">classroom</string>
   <string name="module.jitsi_meet.admin.config.note">有効なインスタンス URL が設定されるまで、モジュールは無効のままです。</string>
+  <string name="module.jitsi_meet.admin.config.load_failed">Jitsi Meet 設定の読み込みに失敗しました。</string>
   <string name="module.jitsi_meet.admin.config.save_success">Jitsi Meet 設定を保存しました。</string>
   <string name="module.jitsi_meet.admin.config.save_failed">Jitsi Meet 設定の保存に失敗しました。</string>
   <string name="module.jitsi_meet.admin.meetings.heading">アクティブな Cognis ミーティング</string>

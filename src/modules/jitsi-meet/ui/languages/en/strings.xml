@@ -33,10 +33,13 @@
   <string name="module.jitsi_meet.participants.selected">Meeting Participants</string>
   <string name="module.jitsi_meet.admin.config.title">Configure Jitsi Meet</string>
   <string name="module.jitsi_meet.admin.config.instance_url">Jitsi Instance URL</string>
+  <string name="module.jitsi_meet.admin.config.instance_url_description">Enter the full base URL of your Jitsi deployment.</string>
   <string name="module.jitsi_meet.admin.config.instance_url_placeholder">https://jitsi.example.com</string>
   <string name="module.jitsi_meet.admin.config.meeting_prefix">Optional Meeting URI Prefix</string>
+  <string name="module.jitsi_meet.admin.config.meeting_prefix_description">Optional path prefix used when generating meeting URLs.</string>
   <string name="module.jitsi_meet.admin.config.meeting_prefix_placeholder">classroom</string>
   <string name="module.jitsi_meet.admin.config.note">The module stays disabled until a valid instance URL is configured.</string>
+  <string name="module.jitsi_meet.admin.config.load_failed">Failed to load Jitsi Meet configuration.</string>
   <string name="module.jitsi_meet.admin.config.save_success">Jitsi Meet configuration saved.</string>
   <string name="module.jitsi_meet.admin.config.save_failed">Failed to save Jitsi Meet configuration.</string>
   <string name="module.jitsi_meet.admin.meetings.heading">Active Cognis Meetings</string>

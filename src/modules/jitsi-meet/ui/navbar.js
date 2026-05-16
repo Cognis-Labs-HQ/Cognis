@@ -14,9 +14,9 @@ async function syncMeetingLink() {
     if (!(link instanceof HTMLAnchorElement)) {
         link = document.createElement("a");
         link.setAttribute("data-meeting-link", "true");
-        link.href = "/meeting";
         topnav.appendChild(link);
     }
+    link.href = "/meetings";
 
     link.textContent = i18n.t("ui.reuse.meetings");
     try {
