@@ -22,19 +22,23 @@ test("users role dropdown includes every assignable access role", () => {
     assert.match(source, /roleOptionsHtml/);
 });
 
-test("users table treats founder admins as owner while keeping owner admin management enabled", () => {
+test("users table uses effective roles for owner and admin management state", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),
         "utf8",
     );
 
-    assert.match(source, /currentUser\?\.isAdmin && currentUser\?\.isFounder/);
     assert.match(
         source,
-        /const viewerIsAdmin = currentRole === "admin" && !viewerIsOwner/,
+        /const currentRole = currentUser\?\.role \?\? getCurrentRole\(\)/,
     );
     assert.match(
         source,
-        /userRole === "owner" \|\|\s*Boolean\(user\.isAdmin && user\.isFounder\)/,
+        /const viewerCanManagePrivileged = currentRole === "owner"/,
     );
+    assert.match(source, /const isOwner = userRole === "owner"/);
+    assert.match(source, /hasMinAccessRole\(userRole, "admin"\)/);
+    assert.doesNotMatch(source, /currentUser\?\.isAdmin/);
+    assert.doesNotMatch(source, /user\.isFounder/);
+    assert.doesNotMatch(source, /const viewerIsAdmin/);
 });

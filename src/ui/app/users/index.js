@@ -7,7 +7,11 @@ import { showToast } from "../../reuse/toast.js";
 import { createRepromptGuard } from "../../reuse/reprompt.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
-import { ACCESS_ROLES, getRoleLabel } from "../../reuse/access-role.js";
+import {
+    ACCESS_ROLES,
+    getRoleLabel,
+    hasMinAccessRole,
+} from "../../reuse/access-role.js";
 
 let root = null;
 let i18n = null;
@@ -149,13 +153,8 @@ async function refreshData() {
 function renderUsersTable() {
     const currentUsername = getCurrentUsername();
     const currentUser = users.find((user) => user.username === currentUsername);
-    const currentRole =
-        currentUser?.role ??
-        (currentUser?.isAdmin ? "admin" : getCurrentRole());
-    const viewerIsOwner =
-        currentRole === "owner" ||
-        Boolean(currentUser?.isAdmin && currentUser?.isFounder);
-    const viewerIsAdmin = currentRole === "admin" && !viewerIsOwner;
+    const currentRole = currentUser?.role ?? getCurrentRole();
+    const viewerCanManagePrivileged = currentRole === "owner";
     const inviteButtonHtml = registrationGatewayActive
         ? `<div class="controls">
           <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</button>
@@ -176,22 +175,15 @@ function renderUsersTable() {
         <tbody>
           ${users
               .map((user) => {
-                  const isProtected = user.isAdmin && user.isFounder;
                   const isSelf = user.username === currentUsername;
-                  const userRole =
-                      user.role ?? (user.isAdmin ? "admin" : "user");
-                  const isOwner =
-                      userRole === "owner" ||
-                      Boolean(user.isAdmin && user.isFounder);
-                  const protectPrivilegedFromAdmin =
-                      viewerIsAdmin &&
-                      (userRole === "admin" || userRole === "owner") &&
+                  const userRole = user.role ?? "user";
+                  const isOwner = userRole === "owner";
+                  const protectPrivilegedFromViewer =
+                      !viewerCanManagePrivileged &&
+                      hasMinAccessRole(userRole, "admin") &&
                       !isSelf;
                   const roleDisabled =
-                      isProtected ||
-                      isOwner ||
-                      isSelf ||
-                      protectPrivilegedFromAdmin;
+                      isOwner || isSelf || protectPrivilegedFromViewer;
                   const roleOptionsHtml = ACCESS_ROLES.filter(
                       (role) => role !== "owner",
                   )
@@ -204,7 +196,7 @@ function renderUsersTable() {
                       ? escapeHtml(i18n.t("ui.reuse.role_owner"))
                       : `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
                   const actionsHtml =
-                      isProtected || isOwner || protectPrivilegedFromAdmin
+                      isOwner || protectPrivilegedFromViewer
                           ? ""
                           : `
                         <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.disable")) : escapeHtml(i18n.t("ui.reuse.enable"))}</button>
