@@ -1081,7 +1081,12 @@ export function registerApiRoutes(router, ctx) {
                         .filterCurrentPresenceEntries(updatedPresenceEntries)
                         .map((entry) => entry.username),
                 );
-                if (activeParticipantUsernames.size === 0) {
+                const participantCount = resolved.participants.length;
+                const shouldCloseMeeting =
+                    activeParticipantUsernames.size === 0 ||
+                    (participantCount === 2 &&
+                        activeParticipantUsernames.size < participantCount);
+                if (shouldCloseMeeting) {
                     await store.updateMeetingState(resolved.meeting.id, {
                         authRequired: false,
                         authStartedBy: null,
@@ -1113,9 +1118,8 @@ export function registerApiRoutes(router, ctx) {
                     ok: true,
                     meetingClosed:
                         previousSessionPresence?.active && !nextPresenceActive
-                            ? store.filterCurrentPresenceEntries(
-                                  await store.listPresence(resolved.meeting.id),
-                              ).length === 0
+                            ? (await store.getMeetingState(resolved.meeting.id))
+                                  .endedAt !== null
                             : false,
                 },
             });

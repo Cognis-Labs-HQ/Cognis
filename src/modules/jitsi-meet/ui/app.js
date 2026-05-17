@@ -377,10 +377,19 @@ export async function mount(root, { signal } = {}) {
         activeMeetingsRefreshTimer: null,
         dragUsername: null,
         jitsiApi: null,
+        jitsiParticipantId: "",
+        jitsiModerator: false,
+        recoveringMeetingSession: false,
     };
 
     function isMeetingActive() {
         return Boolean(state.meeting?.id && state.jitsiApi);
+    }
+
+    function isMeetingEmbedMissing() {
+        if (!state.meeting?.id || !state.jitsiApi) return false;
+        const frame = root.querySelector("#jitsi-meeting-frame");
+        return !(frame instanceof HTMLElement) || frame.childElementCount === 0;
     }
 
     function resetParticipantSelection() {
@@ -865,6 +874,8 @@ export async function mount(root, { signal } = {}) {
         if (state.jitsiApi) {
             const activeApi = state.jitsiApi;
             state.jitsiApi = null;
+            state.jitsiParticipantId = "";
+            state.jitsiModerator = false;
             activeApi.dispose();
         }
         const frame = root.querySelector("#jitsi-meeting-frame");
@@ -1180,6 +1191,85 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
+    function getParticipantId(candidate) {
+        return String(candidate?.id ?? candidate?.participantId ?? "").trim();
+    }
+
+    function getParticipantRole(candidate) {
+        return String(candidate?.role ?? "")
+            .trim()
+            .toLowerCase();
+    }
+
+    function getLocalParticipantInfo(apiInstance) {
+        if (
+            !apiInstance ||
+            typeof apiInstance.getParticipantsInfo !== "function"
+        ) {
+            return null;
+        }
+        const participants = apiInstance.getParticipantsInfo();
+        if (!Array.isArray(participants)) return null;
+        return (
+            participants.find((participant) => participant?.local === true) ??
+            participants.find(
+                (participant) =>
+                    state.jitsiParticipantId &&
+                    getParticipantId(participant) === state.jitsiParticipantId,
+            ) ??
+            null
+        );
+    }
+
+    function currentUserIsJitsiModerator(apiInstance) {
+        if (state.jitsiModerator) return true;
+        if (
+            apiInstance &&
+            typeof apiInstance.isParticipantModerator === "function"
+        ) {
+            try {
+                return apiInstance.isParticipantModerator() === true;
+            } catch (error) {
+                console.warn(
+                    "[jitsi-meet] failed to check Jitsi moderator status:",
+                    error,
+                );
+                return false;
+            }
+        }
+        return (
+            getParticipantRole(getLocalParticipantInfo(apiInstance)) ===
+            "moderator"
+        );
+    }
+
+    function recoverMeetingSessionAfterComposerRender() {
+        if (state.recoveringMeetingSession || !isMeetingEmbedMissing()) return;
+        const staleApi = state.jitsiApi;
+        state.jitsiApi = null;
+        state.jitsiParticipantId = "";
+        state.jitsiModerator = false;
+        try {
+            staleApi?.dispose?.();
+        } catch (error) {
+            console.warn(
+                "[jitsi-meet] failed to dispose stale meeting session during recovery:",
+                error,
+            );
+        }
+        state.recoveringMeetingSession = true;
+        void joinMeeting()
+            .catch(() => {
+                showToast(i18n.t("module.jitsi_meet.overlay.join_failed"), {
+                    variant: "error",
+                });
+            })
+            .finally(() => {
+                state.recoveringMeetingSession = false;
+                renderParticipants();
+            });
+    }
+
     async function openMeetingEmbed() {
         if (!state.meeting?.meetingUrl) return;
         const frame = root.querySelector("#jitsi-meeting-frame");
@@ -1229,13 +1319,15 @@ export async function mount(root, { signal } = {}) {
             },
         });
         state.jitsiApi = apiInstance;
-        const applyMeetingPassword = () => {
-            if (!meetingPassword || state.jitsiApi !== apiInstance) return;
-            apiInstance.executeCommand("password", meetingPassword);
-        };
-        const applyMeetingSubject = () => {
+        state.jitsiParticipantId = "";
+        state.jitsiModerator = false;
+        const applyPrivilegedMeetingSettings = () => {
             if (state.jitsiApi !== apiInstance) return;
+            if (!currentUserIsJitsiModerator(apiInstance)) return;
             apiInstance.executeCommand("subject", MEETING_SUBJECT);
+            if (meetingPassword) {
+                apiInstance.executeCommand("password", meetingPassword);
+            }
         };
         const handleMeetingLeft = () => {
             if (state.jitsiApi !== apiInstance) return;
@@ -1252,17 +1344,20 @@ export async function mount(root, { signal } = {}) {
                 forceClosedOverlay: true,
             });
         };
-        apiInstance.addEventListener("videoConferenceJoined", () => {
-            applyMeetingSubject();
-            applyMeetingPassword();
+        apiInstance.addEventListener("videoConferenceJoined", (event) => {
+            state.jitsiParticipantId = getParticipantId(event);
+            state.jitsiModerator = currentUserIsJitsiModerator(apiInstance);
+            applyPrivilegedMeetingSettings();
         });
         apiInstance.addEventListener("participantRoleChanged", (event) => {
-            if (event?.role !== "moderator") return;
-            applyMeetingSubject();
-            applyMeetingPassword();
+            const participantId = getParticipantId(event);
+            if (participantId && participantId !== state.jitsiParticipantId)
+                return;
+            state.jitsiModerator = getParticipantRole(event) === "moderator";
+            applyPrivilegedMeetingSettings();
         });
         apiInstance.addEventListener("passwordRequired", () => {
-            applyMeetingPassword();
+            applyPrivilegedMeetingSettings();
         });
         apiInstance.addEventListener("videoConferenceLeft", handleMeetingLeft);
         apiInstance.addEventListener("readyToClose", handleMeetingClosed);
@@ -1424,6 +1519,7 @@ export async function mount(root, { signal } = {}) {
             );
         }
         const bindSignal = bindController.signal;
+        recoverMeetingSessionAfterComposerRender();
         const container = root;
 
         const findButton = container.querySelector(
@@ -1811,8 +1907,8 @@ export async function mount(root, { signal } = {}) {
             label: i18n.t("module.jitsi_meet.overlay.title"),
             pinned: true,
             gridSize: {
-                default: [6, 5],
-                min: [4, 4],
+                default: [9, 5],
+                min: [6, 4],
             },
             render: () => buildStageMarkup(i18n),
         },
@@ -1821,8 +1917,8 @@ export async function mount(root, { signal } = {}) {
             label: i18n.t("module.jitsi_meet.chat.heading"),
             pinned: true,
             gridSize: {
-                default: [6, 5],
-                min: [4, 4],
+                default: [3, 5],
+                min: [3, 4],
             },
             render: () => buildChatMarkup(i18n),
         },

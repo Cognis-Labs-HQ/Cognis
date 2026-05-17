@@ -51,7 +51,7 @@ test("meetings page composer uses a dedicated layout preference key", () => {
     assert.match(source, /preferenceKey:\s*"meetings-layout-v2"/);
 });
 
-test("jitsi meetings embed enforces subject, theme, password, and reduced toolbar", () => {
+test("jitsi meetings embed gates privileged settings by local moderator role and uses reduced toolbar", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
@@ -66,6 +66,7 @@ test("jitsi meetings embed enforces subject, theme, password, and reduced toolba
     assert.equal(/"invite"/.test(toolbarArraySource), false);
     assert.equal(/"settings"/.test(toolbarArraySource), false);
     assert.match(source, /subject: MEETING_SUBJECT,/);
+    assert.match(source, /currentUserIsJitsiModerator\(apiInstance\)/);
     assert.match(source, /executeCommand\("subject", MEETING_SUBJECT\)/);
     assert.match(source, /preferredTheme: themeMode,/);
     assert.match(
@@ -78,6 +79,10 @@ test("jitsi meetings embed enforces subject, theme, password, and reduced toolba
     );
     assert.match(source, /executeCommand\("password", meetingPassword\);/);
     assert.match(source, /addEventListener\("passwordRequired", \(\) => \{/);
+    assert.match(
+        source,
+        /participantRoleChanged[\s\S]*getParticipantRole\(event\) === "moderator"/,
+    );
 });
 
 test("jitsi meetings lock participants and block navigation while meeting is active", () => {
@@ -107,18 +112,18 @@ test("jitsi meetings reset participant state and hide chat hint when ready", () 
     assert.match(source, /chatHint\.hidden = true;/);
 });
 
-test("meetings page defaults meeting and chat panels to half-width while keeping them resizable", () => {
+test("meetings page defaults meeting and chat panels to 75-25 split while keeping them resizable", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
     assert.match(
         source,
-        /id:\s*"jitsi-stage"[\s\S]*gridSize:\s*\{[\s\S]*default:\s*\[6,\s*5\][\s\S]*min:\s*\[4,\s*4\]/,
+        /id:\s*"jitsi-stage"[\s\S]*gridSize:\s*\{[\s\S]*default:\s*\[9,\s*5\][\s\S]*min:\s*\[6,\s*4\]/,
     );
     assert.match(
         source,
-        /id:\s*"jitsi-chat"[\s\S]*gridSize:\s*\{[\s\S]*default:\s*\[6,\s*5\][\s\S]*min:\s*\[4,\s*4\]/,
+        /id:\s*"jitsi-chat"[\s\S]*gridSize:\s*\{[\s\S]*default:\s*\[3,\s*5\][\s\S]*min:\s*\[3,\s*4\]/,
     );
     assert.doesNotMatch(
         source,
@@ -127,6 +132,23 @@ test("meetings page defaults meeting and chat panels to half-width while keeping
     assert.doesNotMatch(
         source,
         /id:\s*"jitsi-chat"[\s\S]*gridSize:\s*\{[\s\S]*max:\s*"full"/,
+    );
+});
+
+test("meetings UI recovers a live session after composer edit rerenders the iframe", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /function recoverMeetingSessionAfterComposerRender\(\)/,
+    );
+    assert.match(source, /isMeetingEmbedMissing\(\)/);
+    assert.match(source, /state\.jitsiApi = null;[\s\S]*void joinMeeting\(\)/);
+    assert.match(
+        source,
+        /const bindSignal = bindController\.signal;[\s\S]*recoverMeetingSessionAfterComposerRender\(\);/,
     );
 });
 
@@ -173,6 +195,7 @@ test("jitsi API resets ended meetings and reports meetingClosed from presence up
         /!resolved\.state\.endedAt && conflictingSessions\.length > 0/,
     );
     assert.match(source, /endedBy:\s*resolved\.requesterUsername/);
+    assert.match(source, /participantCount === 2/);
     assert.match(source, /meetingClosed:/);
 });
 
