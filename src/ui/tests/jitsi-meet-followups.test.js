@@ -293,6 +293,14 @@ test("jitsi API dispatches meeting lifecycle and participant notifications", () 
     assert.match(source, /subject: "Participant Joined"/);
     assert.match(source, /subject: "Participant Left"/);
     assert.match(source, /function buildMeetingActionUrl\(meetingId\)/);
+    assert.match(source, /function buildMeetingEmailLink\(meetingId\)/);
+    assert.match(source, /function appendMeetingLinkToBody\(body, meetingId\)/);
+    assert.match(source, /Meeting link: /);
+    assert.match(source, /body: bodyWithMeetingLink/);
+    assert.match(source, /organizerUsername: resolved\.meeting\.createdBy/);
+    assert.match(source, /organizerUsername: meeting\.createdBy/);
+    assert.match(source, /excludeUsernames: \[resolved\.requesterUsername\]/);
+    assert.match(source, /!excludedRecipients\.has\(username\)/);
     assert.match(source, /senderName:/);
     assert.match(source, /actionUrl: buildMeetingActionUrl/);
 });

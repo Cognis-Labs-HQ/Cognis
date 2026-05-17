@@ -56,6 +56,27 @@ function buildMeetingActionUrl(meetingId) {
     return `/meetings?meetingId=${encodeURIComponent(normalizedMeetingId)}`;
 }
 
+function resolveExternalHost() {
+    return (
+        process.env.EXTERNAL_HOST ??
+        (process.env.HOST ? `http://${process.env.HOST}` : "")
+    )
+        .trim()
+        .replace(/\/+$/g, "");
+}
+
+function buildMeetingEmailLink(meetingId) {
+    const actionUrl = buildMeetingActionUrl(meetingId);
+    const externalHost = resolveExternalHost();
+    return externalHost ? `${externalHost}${actionUrl}` : actionUrl;
+}
+
+function appendMeetingLinkToBody(body, meetingId) {
+    const meetingLink = buildMeetingEmailLink(meetingId);
+    if (!meetingLink) return body;
+    return `${body}\n\nMeeting link: ${meetingLink}`;
+}
+
 async function resolveRequesterUsername(profileStore, accountId) {
     const profile = await profileStore.getProfile(accountId);
     const normalized = normalizeUsername(profile?.handle ?? "");
@@ -321,15 +342,34 @@ export function registerApiRoutes(router, ctx) {
 
     async function dispatchMeetingNotifications(
         recipientUsernames,
-        { subject, body, metadata = {}, senderName, meetingId = null },
+        {
+            subject,
+            body,
+            metadata = {},
+            senderName,
+            meetingId = null,
+            organizerUsername = "",
+            excludeUsernames = [],
+        },
     ) {
         if (typeof dispatchNotification !== "function") return;
+        const notificationMeetingId = meetingId ?? metadata?.meetingId;
+        const excludedRecipients = new Set(
+            [organizerUsername, ...excludeUsernames]
+                .map((username) => normalizeUsername(username))
+                .filter(Boolean),
+        );
         const normalizedRecipients = Array.from(
             new Set(
                 (Array.isArray(recipientUsernames) ? recipientUsernames : [])
                     .map((username) => normalizeUsername(username))
-                    .filter(Boolean),
+                    .filter(Boolean)
+                    .filter((username) => !excludedRecipients.has(username)),
             ),
+        );
+        const bodyWithMeetingLink = appendMeetingLinkToBody(
+            body,
+            notificationMeetingId,
         );
         for (const recipientUsername of normalizedRecipients) {
             try {
@@ -337,11 +377,9 @@ export function registerApiRoutes(router, ctx) {
                     category: "meetings",
                     recipientUsername,
                     subject,
-                    body,
+                    body: bodyWithMeetingLink,
                     senderName,
-                    actionUrl: buildMeetingActionUrl(
-                        meetingId ?? metadata?.meetingId,
-                    ),
+                    actionUrl: buildMeetingActionUrl(notificationMeetingId),
                     metadata,
                 });
             } catch (error) {
@@ -662,6 +700,7 @@ export function registerApiRoutes(router, ctx) {
                     meetingId: meeting.id,
                 },
                 meetingId: meeting.id,
+                organizerUsername: meeting.createdBy,
             });
 
             sendJson(res, 200, {
@@ -847,6 +886,7 @@ export function registerApiRoutes(router, ctx) {
                         meetingId: resolved.meeting.id,
                     },
                     meetingId: resolved.meeting.id,
+                    organizerUsername: resolved.meeting.createdBy,
                 });
             }
 
@@ -869,6 +909,8 @@ export function registerApiRoutes(router, ctx) {
                         participant: resolved.requesterUsername,
                     },
                     meetingId: resolved.meeting.id,
+                    organizerUsername: resolved.meeting.createdBy,
+                    excludeUsernames: [resolved.requesterUsername],
                 },
             );
 
@@ -1072,6 +1114,8 @@ export function registerApiRoutes(router, ctx) {
                         participant: resolved.requesterUsername,
                     },
                     meetingId: resolved.meeting.id,
+                    organizerUsername: resolved.meeting.createdBy,
+                    excludeUsernames: [resolved.requesterUsername],
                 });
 
                 const updatedPresenceEntries = await store.listPresence(
@@ -1109,6 +1153,7 @@ export function registerApiRoutes(router, ctx) {
                             meetingId: resolved.meeting.id,
                         },
                         meetingId: resolved.meeting.id,
+                        organizerUsername: resolved.meeting.createdBy,
                     });
                 }
             }
