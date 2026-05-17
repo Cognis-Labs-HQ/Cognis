@@ -68,6 +68,26 @@ test("docs route returns group and title metadata", async () => {
     assert.ok("title" in uiEntry, "title field present");
 });
 
+test("docs route returns concise navigation titles", async () => {
+    const route = createDocsRoutes();
+    let body = "";
+    await route(
+        { method: "GET" } as any,
+        {
+            writeHead() {},
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/docs"),
+    );
+    const parsed = JSON.parse(body);
+    const longTitles = parsed.data
+        .filter((doc: any) => (doc.title ?? "").length > 36)
+        .map((doc: any) => ({ slug: doc.slug, title: doc.title }));
+    assert.deepEqual(longTitles, []);
+});
+
 test("docs route falls back to English when requested lang is missing", async () => {
     const route = createDocsRoutes();
     let status = 0;

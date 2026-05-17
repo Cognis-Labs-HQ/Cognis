@@ -1,4 +1,4 @@
-# PR Changelog — Centralize API Permission Checks
+# API Permission Checks
 
 ## Summary
 

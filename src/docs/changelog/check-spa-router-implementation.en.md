@@ -1,4 +1,4 @@
-# PR Changelog — Check SPA Router Implementation
+# SPA Router Check
 
 ## Summary
 
