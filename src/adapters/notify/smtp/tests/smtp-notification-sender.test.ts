@@ -259,6 +259,18 @@ function smtpSuccessHandler(conn: net.Socket): void {
 
 const noopSleep = () => Promise.resolve();
 
+function decodeQuotedPrintableForAssertion(value: string): string {
+    return value
+        .replace(/=\r\n/g, "")
+        .replace(/=([0-9A-F]{2})/gi, (_match, hex: string) =>
+            String.fromCharCode(Number.parseInt(hex, 16)),
+        );
+}
+
+function unfoldHeadersForAssertion(value: string): string {
+    return value.replace(/\r\n[ \t]+/g, " ");
+}
+
 test("SmtpNotificationSender retries after greylisting (4xx on MAIL FROM) and succeeds on second attempt", async () => {
     let sleepCallCount = 0;
     const trackingSleep = () => {
@@ -583,8 +595,10 @@ test("SmtpNotificationSender email includes light theme colors and subject when 
             capturedData.includes("#e8eef9"),
             "light theme outer background color should be present",
         );
+        const decodedTransferBody =
+            decodeQuotedPrintableForAssertion(capturedData);
         assert.ok(
-            capturedData.includes(
+            decodedTransferBody.includes(
                 "cognis.example.com/assets/icons/cognis-icon.png",
             ),
             "icon URL should be present",
@@ -751,9 +765,90 @@ test("SmtpNotificationSender registration invites use Sign Up CTA and clickable 
             capturedData.includes("Sign Up"),
             "registration email should use Sign Up CTA",
         );
+        const decodedTransferBody =
+            decodeQuotedPrintableForAssertion(capturedData);
         assert.ok(
-            capturedData.includes(`href="${inviteUrl}"`),
+            decodedTransferBody.includes(`href="${inviteUrl}"`),
             "registration email should include clickable invite URL link",
+        );
+    } finally {
+        await server.close();
+    }
+});
+
+test("SmtpNotificationSender emits provider-required message headers and MIME parts", async () => {
+    let capturedData = "";
+
+    const server = await createMockSmtpServer((conn) => {
+        conn.setEncoding("utf8");
+        conn.write("220 mock.example.com SMTP\r\n");
+
+        conn.on("data", (chunk: string) => {
+            capturedData += chunk;
+            const upper = chunk.toUpperCase();
+            if (upper.includes("EHLO") || upper.includes("HELO"))
+                conn.write("250 OK\r\n");
+            if (upper.includes("MAIL FROM")) conn.write("250 OK\r\n");
+            if (upper.includes("RCPT TO")) conn.write("250 OK\r\n");
+            if (upper.includes("\r\nDATA\r\n") || chunk.trim() === "DATA")
+                conn.write("354 Start mail input\r\n");
+            if (chunk.includes("\r\n.\r\n")) conn.write("250 OK\r\n");
+            if (upper.includes("QUIT")) {
+                conn.write("221 Bye\r\n");
+                conn.end();
+            }
+        });
+    });
+
+    try {
+        const sender = new SmtpNotificationSender(
+            {
+                host: server.host,
+                port: server.port,
+                from: "no-reply@example.com",
+                senderName: "Cognis Notifications",
+                secure: "none",
+                greylistRetries: 0,
+                externalHost: "https://cognis.example.com",
+            },
+            undefined,
+            noopSleep,
+        );
+        await sender.send({
+            category: "test",
+            recipientUsername: "alice",
+            recipientEmail: "alice@example.com",
+            subject: "Provider compliance",
+            body: "A body with UTF-8: café",
+        });
+
+        const headerSection = capturedData.split("\r\n\r\n")[0] ?? "";
+        assert.match(headerSection, /^Date: .+ GMT$/m);
+        assert.match(
+            headerSection,
+            /^Message-ID: <[A-Za-z0-9._-]+@[a-z0-9.-]+>$/m,
+        );
+        assert.match(
+            headerSection,
+            /^From: Cognis Notifications <no-reply@example\.com>$/m,
+        );
+        assert.match(headerSection, /^MIME-Version: 1\.0$/m);
+        assert.match(headerSection, /^Auto-Submitted: auto-generated$/m);
+        assert.match(
+            unfoldHeadersForAssertion(capturedData),
+            /Content-Type: multipart\/alternative; boundary="cognis-[^"]+"/,
+        );
+        assert.match(capturedData, /Content-Type: text\/plain; charset=UTF-8/);
+        assert.match(capturedData, /Content-Type: text\/html; charset=UTF-8/);
+        assert.match(
+            capturedData,
+            /Content-Transfer-Encoding: quoted-printable/,
+        );
+        assert.ok(
+            capturedData
+                .split("\r\n")
+                .every((line) => line.length <= 998 || line === "."),
+            "SMTP data lines should stay within the RFC 5321 hard limit",
         );
     } finally {
         await server.close();
