@@ -1,7 +1,11 @@
 import path from "node:path";
 import { JitsiMeetStore } from "./store.js";
-import { requireAuth } from "../../../gateways/auth/guard.js";
+import {
+    registerPageScriptOrigin,
+    requireAuth,
+} from "../../../gateways/auth/guard.js";
 import { readJson } from "../../../api/reuse/read-json.js";
+import { isModeratorRole, normalizeUsername } from "./reuse-meeting-values.js";
 
 const MODULE_ID = "jitsi-meet";
 const MEETING_TITLE = "Cognis Classroom";
@@ -29,13 +33,6 @@ function sendError(res, status, code, message) {
             message,
         },
     });
-}
-
-function normalizeUsername(value) {
-    return String(value ?? "")
-        .trim()
-        .replace(/^@+/, "")
-        .toLowerCase();
 }
 
 function buildMeetingChatTitle(createdAt = null) {
@@ -78,17 +75,6 @@ async function resolveRequestedParticipants(profileStore, requestedHandles) {
         usernames.push(normalizeUsername(profile.handle));
     }
     return usernames;
-}
-
-function isModeratorRole(roleName) {
-    const normalizedRole = String(roleName ?? "")
-        .trim()
-        .toLowerCase();
-    return (
-        normalizedRole === "owner" ||
-        normalizedRole === "admin" ||
-        normalizedRole === "teacher"
-    );
 }
 
 async function canAccessMeeting({
@@ -222,6 +208,20 @@ function resolveStore(dbExecutor, log) {
     return nextStore;
 }
 
+function registerConfiguredJitsiOrigin(config) {
+    if (config?.instanceUrl) {
+        registerPageScriptOrigin(config.instanceUrl);
+    }
+}
+
+async function registerStoredJitsiOrigin(store) {
+    await store
+        .ensureSchema()
+        .then(() => store.getConfig())
+        .then(registerConfiguredJitsiOrigin)
+        .catch(() => undefined);
+}
+
 export function registerUi(ctx) {
     const moduleUiRoot = path.join(ctx.moduleRoot, "ui");
     ctx.registerStaticDir("", moduleUiRoot);
@@ -327,6 +327,7 @@ export function registerApiRoutes(router, ctx) {
     }
 
     const store = resolveStore(dbExecutor, ctx.getCapability("logging:log"));
+    void registerStoredJitsiOrigin(store);
 
     async function dispatchMeetingNotifications(
         recipientUsernames,
@@ -552,6 +553,7 @@ export function registerApiRoutes(router, ctx) {
                 instanceUrl,
                 meetingPrefix,
             });
+            registerConfiguredJitsiOrigin(saved);
             sendJson(res, 200, {
                 data: saved,
             });

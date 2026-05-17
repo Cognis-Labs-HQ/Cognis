@@ -269,19 +269,41 @@ test("meetings mini chat filters room-event records from rendering", () => {
     );
 });
 
-test("page CSP allows loading Jitsi external_api.js", () => {
-    const source = readFileSync(
+test("page CSP registers configured Jitsi script origins without hardcoded hosts", () => {
+    const guardSource = readFileSync(
         resolve(ROOT, "src/gateways/auth/guard.ts"),
         "utf8",
     );
-    assert.match(
-        source,
-        /script-src 'self' https:\/\/meet\.firehawk-systems\.com;/,
+    const jitsiApiSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
     );
-    assert.match(
-        source,
-        /script-src-elem 'self' https:\/\/meet\.firehawk-systems\.com;/,
+    assert.match(guardSource, /registerPageScriptOrigin/);
+    assert.match(guardSource, /buildScriptDirective\("script-src"\)/);
+    assert.match(guardSource, /buildScriptDirective\("script-src-elem"\)/);
+    assert.match(jitsiApiSource, /registerConfiguredJitsiOrigin\(saved\)/);
+});
+
+test("messages assets are referenced without query-string version parameters", () => {
+    const adapterSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/index.ts"),
+        "utf8",
     );
+    const htmlSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/index.html"),
+        "utf8",
+    );
+    assert.doesNotMatch(adapterSource, /\?v=/);
+    assert.doesNotMatch(htmlSource, /\?v=/);
+});
+
+test("meeting-linked chat reuse does not rename existing group chats", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/index.ts"),
+        "utf8",
+    );
+    assert.match(source, /const existing =[\s\S]*findGroupByExactMembers/);
+    assert.doesNotMatch(source, /updateRoomTitle\(existing\.id, title\)/);
 });
 
 test("jitsi API dispatches meeting lifecycle and participant notifications", () => {

@@ -1,4 +1,10 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
+import {
+    normalizeInstanceUrl,
+    normalizeMeetingPrefix,
+    normalizeUsername,
+    normalizeUsernames,
+} from "./reuse-meeting-values.js";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
 const ACTIVE_PRESENCE_WINDOW_MS = 45 * 1000;
@@ -6,46 +12,6 @@ const DEFAULT_MEETING_SLUG_PREFIX = "cognis-classroom";
 
 function nowIso() {
     return new Date().toISOString();
-}
-
-function normalizeUsername(value) {
-    return String(value ?? "")
-        .trim()
-        .replace(/^@+/, "")
-        .toLowerCase();
-}
-
-function normalizeUsernames(values) {
-    return Array.from(
-        new Set(
-            (Array.isArray(values) ? values : [])
-                .map((value) => normalizeUsername(value))
-                .filter(Boolean),
-        ),
-    ).sort();
-}
-
-function normalizeMeetingPrefix(rawPrefix) {
-    const value = String(rawPrefix ?? "")
-        .trim()
-        .toLowerCase();
-    if (!value) return "";
-    return value
-        .replace(/[^a-z0-9-]/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-+|-+$/g, "");
-}
-
-function normalizeInstanceUrl(rawUrl) {
-    const trimmed = String(rawUrl ?? "").trim();
-    if (!trimmed) return null;
-    try {
-        const parsed = new URL(trimmed);
-        if (!["http:", "https:"].includes(parsed.protocol)) return null;
-        return `${parsed.protocol}//${parsed.host}`;
-    } catch {
-        return null;
-    }
 }
 
 function buildRoomSlug(prefix) {

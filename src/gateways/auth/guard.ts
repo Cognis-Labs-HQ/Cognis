@@ -10,6 +10,38 @@ import {
 export { hasMinRole, isRoleAllowed, isAccessRole };
 export type { RoleAccessPolicy };
 
+const pageScriptOrigins = new Set<string>();
+
+function normalizePageResourceOrigin(
+    rawOrigin: string | null | undefined,
+): string | null {
+    const trimmed = String(rawOrigin ?? "").trim();
+    if (!trimmed) return null;
+    try {
+        const parsed = new URL(trimmed);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+            return null;
+        }
+        return `${parsed.protocol}//${parsed.host}`;
+    } catch {
+        return null;
+    }
+}
+
+function buildScriptDirective(name: string): string {
+    const allowedSources = ["'self'", ...Array.from(pageScriptOrigins).sort()];
+    return `${name} ${allowedSources.join(" ")}`;
+}
+
+export function registerPageScriptOrigin(
+    rawOrigin: string | null | undefined,
+): string | null {
+    const origin = normalizePageResourceOrigin(rawOrigin);
+    if (!origin) return null;
+    pageScriptOrigins.add(origin);
+    return origin;
+}
+
 interface AuthClaims {
     sub: string;
     role: AccessRole;
@@ -113,6 +145,17 @@ export function setPageSecurityHeaders(res: ServerResponse): void {
     res.setHeader("referrer-policy", "no-referrer");
     res.setHeader(
         "content-security-policy",
-        "default-src 'self'; img-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://meet.firehawk-systems.com; script-src-elem 'self' https://meet.firehawk-systems.com; connect-src 'self'; frame-src 'self' https: http:; worker-src 'self'; manifest-src 'self'",
+        [
+            "default-src 'self'",
+            "img-src 'self' blob:",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.gstatic.com",
+            buildScriptDirective("script-src"),
+            buildScriptDirective("script-src-elem"),
+            "connect-src 'self'",
+            "frame-src 'self' https: http:",
+            "worker-src 'self'",
+            "manifest-src 'self'",
+        ].join("; "),
     );
 }

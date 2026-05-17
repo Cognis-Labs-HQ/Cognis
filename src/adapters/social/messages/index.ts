@@ -20,7 +20,6 @@ const ADAPTER_UI_ROOT = path.resolve(
 );
 
 let adapterReady = false;
-const MESSAGES_ASSET_VERSION = "1.4.0";
 
 export function createSocialAdapter(): SocialAdapter {
     return {
@@ -224,9 +223,6 @@ export async function bootstrapSocialAdapter(
             const existing =
                 await messagesStore.findGroupByExactMembers(accountIds);
             if (existing) {
-                if (title && existing.title !== title) {
-                    await messagesStore.updateRoomTitle(existing.id, title);
-                }
                 return {
                     roomId: existing.id,
                     url: `/messages/${encodeURIComponent(existing.id)}`,
@@ -291,16 +287,16 @@ export async function bootstrapSocialAdapter(
         id: "social-messages-page",
         pattern: "^/messages(?:/[^/]+)?$",
         base: "/messages",
-        scriptUrl: `/static/adapters/social/messages/app.js?v=${MESSAGES_ASSET_VERSION}`,
+        scriptUrl: "/static/adapters/social/messages/app.js",
         stylesheets: [
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
-            `/static/adapters/social/messages/messages.css?v=${MESSAGES_ASSET_VERSION}`,
+            "/static/adapters/social/messages/messages.css",
         ],
         isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
     });
     ctx.registerNavbarPlugin(
-        `/static/adapters/social/messages/navbar.js?v=${MESSAGES_ASSET_VERSION}`,
+        "/static/adapters/social/messages/navbar.js",
         () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
     );
 
