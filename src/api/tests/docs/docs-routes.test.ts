@@ -66,6 +66,7 @@ test("docs route returns group and title metadata", async () => {
     assert.ok(uiEntry, "ui slug present");
     assert.ok("group" in uiEntry, "group field present");
     assert.ok("title" in uiEntry, "title field present");
+    assert.equal(uiEntry.sourcePath, "docs/ui");
 });
 
 test("docs route falls back to English when requested lang is missing", async () => {

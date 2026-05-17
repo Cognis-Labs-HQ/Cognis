@@ -13,6 +13,7 @@ interface DocEntry {
     group: string;
     title: string;
     fileStem: string;
+    sourcePath: string;
 }
 
 async function findDocsDirs(
@@ -120,6 +121,7 @@ async function collectDocIndex(): Promise<Map<string, DocEntry>> {
                 group,
                 title,
                 fileStem,
+                sourcePath: relFromSrc,
             });
         }
     }
@@ -142,11 +144,12 @@ export function createDocsRoutes() {
         if (url.pathname === "/api/v1/docs") {
             const index = await collectDocIndex();
             const data = [...index.values()].map(
-                ({ slug, path, group, title }) => ({
+                ({ slug, path, group, title, sourcePath }) => ({
                     slug,
                     path,
                     group,
                     title,
+                    sourcePath,
                 }),
             );
             res.writeHead(200, { "content-type": "application/json" });
