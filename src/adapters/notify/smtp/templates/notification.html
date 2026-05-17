@@ -9,17 +9,21 @@
         style="margin:0;padding:0;background:{{bgOuter}};font-family:Arial,Helvetica,sans-serif;"
     >
         <table
+            role="presentation"
             width="100%"
             cellpadding="0"
             cellspacing="0"
+            border="0"
             style="background:{{bgOuter}};padding:32px 16px;"
         >
             <tr>
                 <td align="center">
                     <table
+                        role="presentation"
                         width="600"
                         cellpadding="0"
                         cellspacing="0"
+                        border="0"
                         style="max-width:600px;width:100%;border-radius:10px;overflow:hidden;box-shadow:0 8px 32px {{shadowColor}};"
                     >
                         <tr>
@@ -27,34 +31,22 @@
                                 style="background:{{bgHeader}};padding:24px 36px;border-bottom:2px solid {{colorAccent}};"
                             >
                                 <table
+                                    role="presentation"
                                     width="100%"
                                     cellpadding="0"
                                     cellspacing="0"
+                                    border="0"
                                 >
                                     <tr>
                                         <td>
                                             <table
+                                                role="presentation"
                                                 cellpadding="0"
                                                 cellspacing="0"
+                                                border="0"
                                             >
                                                 <tr>
-                                                    <td
-                                                        style="
-                                                            vertical-align: middle;
-                                                            padding-right: 12px;
-                                                        "
-                                                    >
-                                                        <img
-                                                            src="{{iconUrl}}"
-                                                            alt="Cognis"
-                                                            width="36"
-                                                            height="36"
-                                                            style="
-                                                                display: block;
-                                                                border-radius: 6px;
-                                                            "
-                                                        />
-                                                    </td>
+                                                    {{brandIcon}}
                                                     <td
                                                         style="
                                                             vertical-align: middle;
@@ -119,9 +111,11 @@
                                 style="background:{{bgFooter}};padding:16px 36px;border-top:1px solid {{colorDivider}};"
                             >
                                 <table
+                                    role="presentation"
                                     width="100%"
                                     cellpadding="0"
                                     cellspacing="0"
+                                    border="0"
                                 >
                                     <tr>
                                         <td>
@@ -133,14 +127,10 @@
                                                     style="color:{{colorAccent2}};"
                                                     >system</strong
                                                 >
-                                                from
-                                                <a
-                                                    href="{{externalHost}}"
-                                                    style="color:{{colorAccent2}};text-decoration:none;"
-                                                    >Cognis</a
-                                                >. This is an automated
-                                                notification &#8212; please do
-                                                not reply to this message.
+                                                from {{footerBrandLink}}. This
+                                                is an automated notification
+                                                &#8212; please do not reply to
+                                                this message.
                                             </p>
                                         </td>
                                         <td

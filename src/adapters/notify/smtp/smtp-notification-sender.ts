@@ -1,5 +1,6 @@
 import net from "node:net";
 import tls from "node:tls";
+import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import type { NotificationEnvelope, NotificationSender } from "@cognis/core";
@@ -102,6 +103,166 @@ const LIGHT_PALETTE: ThemePalette = {
     shadowColor: "rgba(15,23,42,0.15)",
 };
 
+const MAX_QP_LINE_LENGTH = 76;
+const MAX_HEADER_LINE_LENGTH = 78;
+
+function normalizeNewlines(value: string): string {
+    return value.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+}
+
+function sanitizeHeader(value: string): string {
+    return value
+        .replace(/[\r\n]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function sanitizeSmtpPath(value: string): string {
+    return extractEmailAddress(value)
+        .replace(/[\r\n<>]/g, "")
+        .trim();
+}
+
+function extractEmailAddress(value: string): string {
+    const sanitized = sanitizeHeader(value);
+    const bracketed = sanitized.match(/<([^<>\s]+@[^<>\s]+)>/);
+    return bracketed?.[1] ?? sanitized;
+}
+
+function getAddressDomain(value: string): string | null {
+    const address = extractEmailAddress(value);
+    const atIndex = address.lastIndexOf("@");
+    if (atIndex === -1) return null;
+    const domain = address.slice(atIndex + 1).toLowerCase();
+    if (/^[a-z0-9.-]+\.[a-z0-9-]+$/.test(domain)) return domain;
+    return null;
+}
+
+function sanitizeMessageIdDomain(value: string | undefined): string | null {
+    if (!value) return null;
+    const candidate = sanitizeHeader(value)
+        .replace(/^https?:\/\//i, "")
+        .split("/")[0]
+        .split(":")[0]
+        .toLowerCase();
+    if (/^[a-z0-9.-]+\.[a-z0-9-]+$/.test(candidate)) return candidate;
+    return null;
+}
+
+function makeMessageId(from: string, domainHint?: string): string {
+    const domain =
+        getAddressDomain(from) ??
+        sanitizeMessageIdDomain(domainHint) ??
+        "localhost.localdomain";
+    return `<${Date.now()}.${randomUUID()}@${domain}>`;
+}
+
+function encodeHeaderPhrase(value: string): string {
+    const sanitized = sanitizeHeader(value);
+    if (/^[\x20-\x7e]*$/.test(sanitized)) return sanitized;
+    return `=?UTF-8?B?${Buffer.from(sanitized, "utf8").toString("base64")}?=`;
+}
+
+function foldHeader(name: string, value: string): string {
+    const prefix = `${name}: `;
+    const maxFirst = MAX_HEADER_LINE_LENGTH - prefix.length;
+    if (value.length <= maxFirst) return `${prefix}${value}`;
+
+    const words = value.split(" ");
+    const lines: string[] = [];
+    let current = prefix;
+    for (const word of words) {
+        const separator =
+            current.endsWith(" ") || current === prefix ? "" : " ";
+        const limit =
+            lines.length === 0
+                ? MAX_HEADER_LINE_LENGTH
+                : MAX_HEADER_LINE_LENGTH - 1;
+        if (
+            `${current}${separator}${word}`.length > limit &&
+            current.trim() !== `${name}:`
+        ) {
+            lines.push(current);
+            current = ` ${word}`;
+        } else {
+            current += `${separator}${word}`;
+        }
+    }
+    lines.push(current);
+    return lines.join("\r\n");
+}
+
+function encodeAddressDisplayName(value: string): string {
+    const encoded = encodeHeaderPhrase(value);
+    if (encoded.startsWith("=?")) return encoded;
+    if (/^[A-Za-z0-9 !#$%&'*+\-/=?^_`{|}~]+$/.test(encoded)) return encoded;
+    return `"${encoded.replace(/(["\\])/g, "\\$1")}"`;
+}
+
+function formatAddressHeader(address: string, displayName?: string): string {
+    const email = extractEmailAddress(address);
+    const safeDisplayName = displayName ? sanitizeHeader(displayName) : "";
+    if (!safeDisplayName) return sanitizeHeader(address);
+    return `${encodeAddressDisplayName(safeDisplayName)} <${email}>`;
+}
+
+function encodeQuotedPrintable(input: string): string {
+    const normalized = normalizeNewlines(input);
+    const encodedLines = normalized.split("\n").map((line) => {
+        let encoded = "";
+        for (const byte of Buffer.from(line, "utf8")) {
+            if (
+                byte === 9 ||
+                (byte >= 32 && byte <= 60) ||
+                (byte >= 62 && byte <= 126)
+            ) {
+                encoded += String.fromCharCode(byte);
+            } else {
+                encoded += `=${byte.toString(16).toUpperCase().padStart(2, "0")}`;
+            }
+        }
+        return encoded.replace(
+            /[ \t]$/g,
+            (char) =>
+                `=${char.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`,
+        );
+    });
+
+    const wrapped: string[] = [];
+    for (const encodedLine of encodedLines) {
+        let remaining = encodedLine;
+        while (remaining.length > MAX_QP_LINE_LENGTH) {
+            let take = MAX_QP_LINE_LENGTH - 1;
+            while (take > 0 && remaining[take - 1] === "=") take--;
+            if (take > 1 && remaining[take - 2] === "=") take -= 2;
+            wrapped.push(`${remaining.slice(0, take)}=`);
+            remaining = remaining.slice(take);
+        }
+        wrapped.push(remaining);
+    }
+    return wrapped.join("\r\n");
+}
+
+function stripHtmlTags(html: string): string {
+    return html
+        .replace(/<br\s*\/?\s*>/gi, "\n")
+        .replace(/<[^>]+>/g, "")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#x27;/g, "'")
+        .replace(/&#8212;/g, "—");
+}
+
+function dotStuff(message: string): string {
+    return normalizeNewlines(message)
+        .split("\n")
+        .map((line) => (line.startsWith(".") ? `.${line}` : line))
+        .join("\r\n");
+}
+
 async function buildMessage(
     from: string,
     to: string,
@@ -112,6 +273,8 @@ async function buildMessage(
         externalHost?: string;
         verifyUrl?: string;
         verifyButtonLabel?: string;
+        senderName?: string;
+        messageIdDomain?: string;
     } = {},
 ): Promise<string> {
     const palette = options.theme === "dark" ? DARK_PALETTE : LIGHT_PALETTE;
@@ -119,6 +282,14 @@ async function buildMessage(
     const iconUrl = externalHost
         ? `${externalHost}/assets/icons/cognis-icon.png`
         : "";
+    const brandIcon = iconUrl
+        ? `<td style="vertical-align:middle;padding-right:12px;">
+              <img src="${escapeHtmlForEmail(iconUrl)}" alt="Cognis" width="36" height="36" border="0" style="display:block;border-radius:6px;outline:none;text-decoration:none;" />
+            </td>`
+        : "";
+    const footerBrandLink = externalHost
+        ? `<a href="${escapeHtmlForEmail(externalHost)}" style="color:${palette.colorAccent2};text-decoration:none;">Cognis</a>`
+        : `<span style="color:${palette.colorAccent2};">Cognis</span>`;
 
     const verifyButton = options.verifyUrl
         ? `<tr>
@@ -152,7 +323,8 @@ async function buildMessage(
         .replace(/\{\{subject\}\}/g, escapeHtmlForEmail(subject))
         .replace(/\{\{body\}\}/g, renderBodyWithLinks(body))
         .replace(/\{\{verifyButton\}\}/g, verifyButton)
-        .replace(/\{\{iconUrl\}\}/g, escapeHtmlForEmail(iconUrl))
+        .replace(/\{\{brandIcon\}\}/g, brandIcon)
+        .replace(/\{\{footerBrandLink\}\}/g, footerBrandLink)
         .replace(/\{\{externalHost\}\}/g, escapeHtmlForEmail(externalHost))
         .replace(/\{\{bgOuter\}\}/g, palette.bgOuter)
         .replace(/\{\{bgHeader\}\}/g, palette.bgHeader)
@@ -169,29 +341,52 @@ async function buildMessage(
         .replace(/\{\{colorDiamond\}\}/g, palette.colorDiamond)
         .replace(/\{\{shadowColor\}\}/g, palette.shadowColor);
 
-    const fromHeader = from;
+    const textBody = [
+        subject,
+        "",
+        stripHtmlTags(renderBodyWithLinks(body)),
+        ...(options.verifyUrl
+            ? [
+                  "",
+                  `${options.verifyButtonLabel ?? "Verify Email Address"}: ${options.verifyUrl}`,
+              ]
+            : []),
+        "",
+        "-- ",
+        "Cognis automated notification. Please do not reply to this message.",
+    ].join("\n");
+    const boundary = `cognis-${randomUUID()}`;
+    const headers = [
+        foldHeader("From", formatAddressHeader(from, options.senderName)),
+        foldHeader("To", formatAddressHeader(to)),
+        foldHeader("Subject", encodeHeaderPhrase(subject)),
+        `Date: ${new Date().toUTCString()}`,
+        `Message-ID: ${makeMessageId(from, options.messageIdDomain ?? options.externalHost)}`,
+        "MIME-Version: 1.0",
+        "Auto-Submitted: auto-generated",
+        "X-Auto-Response-Suppress: All",
+        foldHeader(
+            "Content-Type",
+            `multipart/alternative; boundary="${boundary}"`,
+        ),
+    ];
 
-    const normalised = htmlBody.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-    const dotStuffed = normalised
-        .split("\n")
-        .map((line) => (line.startsWith(".") ? `.${line}` : line))
-        .join("\r\n");
+    const mimeBody = [
+        `--${boundary}`,
+        "Content-Type: text/plain; charset=UTF-8",
+        "Content-Transfer-Encoding: quoted-printable",
+        "",
+        encodeQuotedPrintable(textBody),
+        `--${boundary}`,
+        "Content-Type: text/html; charset=UTF-8",
+        "Content-Transfer-Encoding: quoted-printable",
+        "",
+        encodeQuotedPrintable(htmlBody),
+        `--${boundary}--`,
+        "",
+    ].join("\r\n");
 
-    function sanitizeHeader(value: string): string {
-        return value.replace(/[\r\n]/g, "");
-    }
-
-    return (
-        [
-            `From: ${sanitizeHeader(fromHeader)}`,
-            `To: ${sanitizeHeader(to)}`,
-            `Subject: ${sanitizeHeader(subject)}`,
-            "MIME-Version: 1.0",
-            "Content-Type: text/html; charset=utf-8",
-            "",
-            dotStuffed,
-        ].join("\r\n") + "\r\n.\r\n"
-    );
+    return `${dotStuff(`${headers.join("\r\n")}\r\n\r\n${mimeBody}`)}\r\n.\r\n`;
 }
 
 interface SmtpResponse {
@@ -333,9 +528,8 @@ async function sendMail(
                 : new Error(msg);
         }
 
-        let ehlo = await session.cmd(
-            `EHLO ${config.ehloHostname ?? "localhost"}`,
-        );
+        const ehloHostname = sanitizeHeader(config.ehloHostname ?? "localhost");
+        let ehlo = await session.cmd(`EHLO ${ehloHostname || "localhost"}`);
         if (ehlo.code !== 250) {
             throw new Error(`smtp_ehlo_failed:${ehlo.code}`);
         }
@@ -346,9 +540,7 @@ async function sendMail(
                 throw new Error(`smtp_starttls_failed:${starttls.code}`);
             }
             session = await upgradeToTls(session, config.allowSelfSigned);
-            ehlo = await session.cmd(
-                `EHLO ${config.ehloHostname ?? "localhost"}`,
-            );
+            ehlo = await session.cmd(`EHLO ${ehloHostname || "localhost"}`);
             if (ehlo.code !== 250) {
                 throw new Error(`smtp_ehlo_after_tls_failed:${ehlo.code}`);
             }
@@ -365,7 +557,9 @@ async function sendMail(
             }
         }
 
-        const mailFrom = await session.cmd(`MAIL FROM:<${config.from}>`);
+        const mailFromAddress = sanitizeSmtpPath(config.from);
+        const recipientAddress = sanitizeSmtpPath(to);
+        const mailFrom = await session.cmd(`MAIL FROM:<${mailFromAddress}>`);
         if (mailFrom.code !== 250) {
             const msg = `smtp_mail_from_failed:${mailFrom.code}`;
             throw isTemporaryCode(mailFrom.code)
@@ -373,7 +567,7 @@ async function sendMail(
                 : new Error(msg);
         }
 
-        const rcptTo = await session.cmd(`RCPT TO:<${to}>`);
+        const rcptTo = await session.cmd(`RCPT TO:<${recipientAddress}>`);
         if (rcptTo.code !== 250 && rcptTo.code !== 251) {
             const msg = `smtp_rcpt_to_failed:${rcptTo.code}`;
             throw isTemporaryCode(rcptTo.code)
@@ -395,6 +589,8 @@ async function sendMail(
                 externalHost: config.externalHost,
                 verifyUrl,
                 verifyButtonLabel,
+                senderName: config.senderName,
+                messageIdDomain: config.ehloHostname ?? config.host,
             }),
         );
         const sent = await session.read();
