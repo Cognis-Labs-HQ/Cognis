@@ -22,6 +22,23 @@ test("users role dropdown includes every assignable access role", () => {
     assert.match(source, /roleOptionsHtml/);
 });
 
+test("users role dropdown renders owner as a disabled display select", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/users/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /const roleOptions = isOwner\s*\? \["owner"\]/);
+    assert.match(
+        source,
+        /const roleCellHtml = `<select class="users-role-select theme-select"/,
+    );
+    assert.doesNotMatch(
+        source,
+        /\? escapeHtml\(i18n\.t\("ui\.reuse\.role_owner"\)\)/,
+    );
+});
+
 test("users table uses effective roles for owner and admin management state", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),

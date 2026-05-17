@@ -184,17 +184,16 @@ function renderUsersTable() {
                       !isSelf;
                   const roleDisabled =
                       isOwner || isSelf || protectPrivilegedFromViewer;
-                  const roleOptionsHtml = ACCESS_ROLES.filter(
-                      (role) => role !== "owner",
-                  )
+                  const roleOptions = isOwner
+                      ? ["owner"]
+                      : ACCESS_ROLES.filter((role) => role !== "owner");
+                  const roleOptionsHtml = roleOptions
                       .map(
                           (role) =>
                               `<option value="${escapeHtml(role)}"${userRole === role ? " selected" : ""}>${escapeHtml(getRoleLabel(i18n, role))}</option>`,
                       )
                       .join("");
-                  const roleCellHtml = isOwner
-                      ? escapeHtml(i18n.t("ui.reuse.role_owner"))
-                      : `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
+                  const roleCellHtml = `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
                   const actionsHtml =
                       isOwner || protectPrivilegedFromViewer
                           ? ""
