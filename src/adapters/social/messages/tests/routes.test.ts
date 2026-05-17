@@ -178,3 +178,103 @@ test("POST /messages/requests/:id/reject removes rejected recipient from pending
     assert.deepEqual(removed, [{ roomId: "room-1", accountId: "bob" }]);
     assert.match(responseBody, /"rejected"/);
 });
+
+test("admin can create DM with hidden recipient without a message request", async () => {
+    const token = issueAccessToken("admin", "admin", 60);
+    const createdRequests: unknown[] = [];
+    const addedMembers: Array<{ roomId: string; accountId: string }> = [];
+    const messagesStore = {
+        async findDmBetween() {
+            return null;
+        },
+        async hasApprovedMessageRequestBetween() {
+            return false;
+        },
+        async createRoom() {
+            return { id: "room-admin-hidden", kind: "dm" };
+        },
+        async addMember(roomId: string, accountId: string) {
+            addedMembers.push({ roomId, accountId });
+        },
+        async generateAndStoreRoomKey() {},
+        async appendRoomEvent() {},
+        async approvePendingRequestsBetween() {},
+        async findPendingMessageRequest() {
+            return null;
+        },
+        async createMessageRequest(input: unknown) {
+            createdRequests.push(input);
+            return { id: "unexpected", status: "pending" };
+        },
+    };
+    const profileStore = {
+        async getProfile(accountId: string) {
+            if (accountId === "admin") {
+                return {
+                    accountId,
+                    handle: "admin",
+                    displayName: "Admin",
+                    visibility: "hidden",
+                };
+            }
+            return {
+                accountId,
+                handle: "hidden-user",
+                displayName: "Hidden User",
+                visibility: "hidden",
+            };
+        },
+        async getProfileByHandle(handle: string) {
+            if (handle !== "hidden-user") return null;
+            return {
+                accountId: "hidden-user-id",
+                handle: "hidden-user",
+                displayName: "Hidden User",
+                visibility: "hidden",
+            };
+        },
+        async isBlocked() {
+            return false;
+        },
+        async isFollowing() {
+            return false;
+        },
+    };
+    const route = createMessagesRoutes({
+        messagesStore: messagesStore as any,
+        profileStore: profileStore as any,
+        dispatch: null,
+        isAdapterEnabled: () => true,
+    });
+    let statusCode = 0;
+    let responseBody = "";
+    const req = {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}` },
+        [Symbol.asyncIterator]: async function* () {
+            yield Buffer.from(JSON.stringify({ handles: ["hidden-user"] }));
+        },
+    } as any;
+
+    const handled = await route(
+        req,
+        {
+            writeHead(status: number) {
+                statusCode = status;
+            },
+            end(payload: string) {
+                responseBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/messages/rooms"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(statusCode, 201);
+    assert.deepEqual(createdRequests, []);
+    assert.deepEqual(addedMembers, [
+        { roomId: "room-admin-hidden", accountId: "admin" },
+        { roomId: "room-admin-hidden", accountId: "hidden-user-id" },
+    ]);
+    assert.match(responseBody, /room-admin-hidden/);
+});

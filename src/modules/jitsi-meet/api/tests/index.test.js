@@ -22,7 +22,7 @@ test("jitsi API registers configured CSP origins through auth capability", () =>
     );
     assert.equal(
         sharedGatewayImport,
-        'import { requireAuth } from "../../../gateways/shared.js";',
+        'import { hasMinRole, requireAuth } from "../../../gateways/shared.js";',
     );
 });
 
@@ -34,4 +34,30 @@ test("jitsi API logs stored CSP origin registration failures", () => {
 
     assert.match(source, /Failed to register stored Jitsi CSP origin/);
     assert.match(source, /operation: "register_stored_jitsi_origin"/);
+});
+
+test("jitsi participant lookup lets admins include hidden profiles", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /includeHidden = hasMinRole\(claims\.role, "admin"\)/);
+    assert.match(source, /searchProfiles\(query, 50, \{\s*includeHidden,/);
+});
+
+test("jitsi meeting creation resolves hidden participants only for admins", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /if \(!includeHidden && profile\.visibility === "hidden"\) continue/,
+    );
+    assert.match(
+        source,
+        /\{ includeHidden: hasMinRole\(claims\.role, "admin"\) \}/,
+    );
 });

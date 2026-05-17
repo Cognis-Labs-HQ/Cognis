@@ -1,5 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { getAuthClaims, requireAuth } from "../../../../gateways/auth/guard.js";
+import {
+    getAuthClaims,
+    hasMinRole,
+    requireAuth,
+} from "../../../../gateways/auth/guard.js";
 import type {
     ProfileStore,
     AccountProfile,
@@ -55,6 +59,10 @@ function profileResponse(
     };
 }
 
+function hasAdminProfileBypass(role: string | null | undefined): boolean {
+    return Boolean(role && hasMinRole(role as AccountRole, "admin"));
+}
+
 function minimalProfileResponse(profile: AccountProfile) {
     return {
         accountId: profile.accountId,
@@ -80,7 +88,7 @@ async function canDiscoverProfile(
     requesterRole: string | null,
     target: AccountProfile,
 ): Promise<boolean> {
-    if (requesterRole === "admin") return true;
+    if (hasAdminProfileBypass(requesterRole)) return true;
     if (requesterId === target.accountId) return true;
     if (!requesterId) return false;
     return target.visibility !== "hidden";
@@ -92,7 +100,7 @@ async function canViewFullProfile(
     target: AccountProfile,
     profileStore: ProfileStore,
 ): Promise<boolean> {
-    if (requesterRole === "admin") return true;
+    if (hasAdminProfileBypass(requesterRole)) return true;
     if (requesterId === target.accountId) return true;
     if (!requesterId || target.visibility === "hidden") return false;
     if (target.visibility === "community") return true;
@@ -586,7 +594,10 @@ export function createProfileRoutes(
                 );
                 return true;
             }
-            if (await profileStore.isBlocked(target.accountId, claims!.sub)) {
+            if (
+                !hasAdminProfileBypass(claims!.role) &&
+                (await profileStore.isBlocked(target.accountId, claims!.sub))
+            ) {
                 log?.("debug", "Public profile lookup was blocked.", {
                     ...logMeta,
                     targetHandle: handle,

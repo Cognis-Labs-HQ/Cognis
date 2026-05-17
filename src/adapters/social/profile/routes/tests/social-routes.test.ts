@@ -350,3 +350,107 @@ test("social routes - followers list is empty for friends-visibility account whe
         rmSync(dir, { recursive: true, force: true });
     }
 });
+
+test("social routes - admin search includes hidden users", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUsers(executor, "admin", "hidden-user");
+        await profileStore.updateProfile("hidden-user", {
+            visibility: "hidden",
+        });
+        const route = createSocialRoutes(profileStore);
+        const adminToken = issueAccessToken("admin", "admin", 60);
+        let status = 0;
+        let body = "";
+
+        await route(
+            makeReq("GET", adminToken),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end(p: string) {
+                    body = p;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/users/search?q=hidden"),
+        );
+
+        assert.equal(status, 200);
+        const parsed = JSON.parse(body);
+        assert.equal(parsed.data.length, 1);
+        assert.equal(parsed.data[0].handle, "hidden-user");
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
+test("social routes - regular search excludes hidden users", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUsers(executor, "alice", "hidden-user");
+        await profileStore.updateProfile("alice", { visibility: "community" });
+        await profileStore.updateProfile("hidden-user", {
+            visibility: "hidden",
+        });
+        const route = createSocialRoutes(profileStore);
+        const aliceToken = issueAccessToken("alice", "user", 60);
+        let status = 0;
+        let body = "";
+
+        await route(
+            makeReq("GET", aliceToken),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end(p: string) {
+                    body = p;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/users/search?q=hidden"),
+        );
+
+        assert.equal(status, 200);
+        const parsed = JSON.parse(body);
+        assert.deepEqual(parsed.data, []);
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
+test("social routes - admin relationship can message hidden users", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUsers(executor, "admin", "hidden-user");
+        await profileStore.updateProfile("admin", { visibility: "hidden" });
+        await profileStore.updateProfile("hidden-user", {
+            visibility: "hidden",
+        });
+        const route = createSocialRoutes(profileStore);
+        const adminToken = issueAccessToken("admin", "admin", 60);
+        let status = 0;
+        let body = "";
+
+        await route(
+            makeReq("GET", adminToken),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end(p: string) {
+                    body = p;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/users/hidden-user/relationship"),
+        );
+
+        assert.equal(status, 200);
+        const parsed = JSON.parse(body);
+        assert.equal(parsed.data.canMessage, true);
+        assert.equal(parsed.data.canSendMessageRequest, true);
+        assert.equal(parsed.data.requiresMessageRequest, false);
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});

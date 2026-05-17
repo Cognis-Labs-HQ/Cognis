@@ -12,7 +12,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth } from "../../../gateways/auth/guard.js";
+import { hasMinRole, requireAuth } from "../../../gateways/auth/guard.js";
 
 interface SearchResultItem {
     id: string;
@@ -29,6 +29,7 @@ interface SearchResultGroup {
 type ProfileSearchFn = (
     query: string,
     limit: number,
+    options?: { includeHidden?: boolean },
 ) => Promise<
     Array<{ accountId?: string; handle?: string; displayName?: string }>
 >;
@@ -50,6 +51,7 @@ export function createSearchRoutes(
 
         const query = (url.searchParams.get("q") ?? "").trim();
         const typeFilter = url.searchParams.get("type") ?? "";
+        const includeHiddenProfiles = hasMinRole(claims.role, "admin");
 
         if (!query) {
             res.writeHead(200, { "content-type": "application/json" });
@@ -61,7 +63,9 @@ export function createSearchRoutes(
             let userItems: SearchResultItem[] = [];
             if (searchProfiles) {
                 try {
-                    const profiles = await searchProfiles(query, 10);
+                    const profiles = await searchProfiles(query, 10, {
+                        includeHidden: includeHiddenProfiles,
+                    });
                     userItems = profiles.map(
                         (profile) =>
                             ({
@@ -100,7 +104,9 @@ export function createSearchRoutes(
 
         if (searchProfiles) {
             try {
-                const profiles = await searchProfiles(query, 5);
+                const profiles = await searchProfiles(query, 5, {
+                    includeHidden: includeHiddenProfiles,
+                });
                 if (profiles.length > 0) {
                     groups.push({
                         category: "Users",

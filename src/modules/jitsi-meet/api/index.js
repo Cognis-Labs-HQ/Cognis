@@ -1,6 +1,6 @@
 import path from "node:path";
 import { JitsiMeetStore } from "./store.js";
-import { requireAuth } from "../../../gateways/shared.js";
+import { hasMinRole, requireAuth } from "../../../gateways/shared.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
 import {
@@ -79,7 +79,11 @@ async function resolveRequesterUsername(profileStore, accountId) {
     return normalized;
 }
 
-async function resolveRequestedParticipants(profileStore, requestedHandles) {
+async function resolveRequestedParticipants(
+    profileStore,
+    requestedHandles,
+    { includeHidden = false } = {},
+) {
     const usernames = [];
     for (const candidate of Array.isArray(requestedHandles)
         ? requestedHandles
@@ -88,6 +92,7 @@ async function resolveRequestedParticipants(profileStore, requestedHandles) {
         if (!normalizedHandle) continue;
         const profile = await profileStore.getProfileByHandle(normalizedHandle);
         if (!profile?.handle) continue;
+        if (!includeHidden && profile.visibility === "hidden") continue;
         usernames.push(normalizeHandleKey(profile.handle));
     }
     return usernames;
@@ -459,7 +464,10 @@ export function registerApiRoutes(router, ctx) {
             // searchProfiles() contract owns LIKE wildcard escaping for the
             // underlying DB dialect.
             const query = rawQuery.replace(/^@/, "").toLowerCase();
-            const candidates = await profileStore.searchProfiles(query, 50);
+            const includeHidden = hasMinRole(claims.role, "admin");
+            const candidates = await profileStore.searchProfiles(query, 50, {
+                includeHidden,
+            });
             const results = candidates
                 .filter((profile) => profile.accountId !== claims.sub)
                 .map((profile) => ({
@@ -616,6 +624,7 @@ export function registerApiRoutes(router, ctx) {
             const requestedParticipants = await resolveRequestedParticipants(
                 profileStore,
                 body.participants,
+                { includeHidden: hasMinRole(claims.role, "admin") },
             );
             const normalizedInput = store.normalizeMeetingCreationInput({
                 participants: requestedParticipants,
