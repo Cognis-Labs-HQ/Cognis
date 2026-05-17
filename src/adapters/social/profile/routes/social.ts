@@ -1,9 +1,13 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth } from "../../../../gateways/auth/guard.js";
+import { hasMinRole, requireAuth } from "../../../../gateways/auth/guard.js";
 import type { DbProfileStore, AccountProfile } from "../store.js";
 import { visibilityRank } from "../store.js";
 
 const SEARCH_RESULTS_LIMIT = 10;
+
+function hasAdminBypass(role: string | null | undefined): boolean {
+    return Boolean(role && hasMinRole(role, "admin"));
+}
 
 function publicProfile(profile: AccountProfile) {
     return {
@@ -21,7 +25,7 @@ async function canDiscoverProfile(
     requesterRole: string,
     target: AccountProfile,
 ): Promise<boolean> {
-    if (requesterRole === "admin") return true;
+    if (hasAdminBypass(requesterRole)) return true;
     if (requesterId === target.accountId) return true;
     return target.visibility !== "hidden";
 }
@@ -33,7 +37,7 @@ async function canFollowProfile(
     target: AccountProfile,
     profileStore: DbProfileStore,
 ): Promise<boolean> {
-    if (requesterRole === "admin") return true;
+    if (hasAdminBypass(requesterRole)) return true;
     if (!requester || requester.visibility === "hidden") return false;
     if (target.visibility === "hidden") return false;
     if (target.visibility === "private") {
@@ -63,6 +67,7 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
             const results = await profileStore.searchProfiles(
                 query,
                 SEARCH_RESULTS_LIMIT,
+                { includeHidden: hasAdminBypass(claims.role) },
             );
             const filtered = results.filter((p) => p.accountId !== claims.sub);
             res.writeHead(200, { "content-type": "application/json" });
@@ -87,10 +92,9 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                 );
                 return true;
             }
-            const blockedBy = await profileStore.isBlocked(
-                target.accountId,
-                claims.sub,
-            );
+            const blockedBy = hasAdminBypass(claims.role)
+                ? false
+                : await profileStore.isBlocked(target.accountId, claims.sub);
             if (blockedBy) {
                 // Treat as not-found from the requester's perspective; the blocker
                 // must never appear to exist (mirrors follow/followers handlers below).
@@ -142,13 +146,16 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                 claims.sub,
                 target.accountId,
             );
+            const hasBypass = hasAdminBypass(claims.role);
             const canSendMessageRequest =
                 !isSelf &&
-                !blocked &&
-                requester?.visibility !== "hidden" &&
-                target.visibility !== "hidden";
+                (hasBypass ||
+                    (!blocked &&
+                        requester?.visibility !== "hidden" &&
+                        target.visibility !== "hidden"));
             const canMessage =
-                canSendMessageRequest && followsTarget && followedBy;
+                canSendMessageRequest &&
+                (hasBypass || (followsTarget && followedBy));
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -187,7 +194,10 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                 );
                 return true;
             }
-            if (await profileStore.isBlocked(target.accountId, claims.sub)) {
+            if (
+                !hasAdminBypass(claims.role) &&
+                (await profileStore.isBlocked(target.accountId, claims.sub))
+            ) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -319,7 +329,10 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                 );
                 return true;
             }
-            if (await profileStore.isBlocked(target.accountId, claims.sub)) {
+            if (
+                !hasAdminBypass(claims.role) &&
+                (await profileStore.isBlocked(target.accountId, claims.sub))
+            ) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -343,7 +356,7 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                 return true;
             }
             const showList =
-                claims.role === "admin" ||
+                hasAdminBypass(claims.role) ||
                 claims.sub === target.accountId ||
                 visibilityRank(target.visibility) >=
                     visibilityRank("community") ||
@@ -376,7 +389,10 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                 );
                 return true;
             }
-            if (await profileStore.isBlocked(target.accountId, claims.sub)) {
+            if (
+                !hasAdminBypass(claims.role) &&
+                (await profileStore.isBlocked(target.accountId, claims.sub))
+            ) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -400,7 +416,7 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
                 return true;
             }
             const showList =
-                claims.role === "admin" ||
+                hasAdminBypass(claims.role) ||
                 claims.sub === target.accountId ||
                 visibilityRank(target.visibility) >=
                     visibilityRank("community") ||
