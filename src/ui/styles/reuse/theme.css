@@ -200,4 +200,7 @@ body[data-theme="light"] {
     --badge-text: var(--text);
     --toolbar-bg: rgba(255, 255, 255, 0.5);
     --widget-card-tint: var(--surface);
+    --scrollbar-track: rgba(241, 245, 249, 0.95);
+    --scrollbar-thumb: rgba(100, 116, 139, 0.62);
+    --scrollbar-thumb-hover: rgba(71, 85, 105, 0.78);
 }
