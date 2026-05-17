@@ -389,11 +389,12 @@ test("deleting a user frees the username for re-registration", async () => {
     assert.equal(status, 201);
 });
 
-test("admin can demote disable or delete other admins but not owner", async () => {
+test("admins cannot manage admin or owner accounts while owner can manage others", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "pw", true);
-    await accounts.register("alice", "pw", false);
-    await accounts.setRole("alice", "admin");
+    await accounts.register("owner", "pw", true);
+    await accounts.setFounder("owner", true);
+    await accounts.register("alice", "pw", true);
     await accounts.register("bob", "pw", true);
     await accounts.register("carol", "pw", true);
     await accounts.register("founder", "pw", true);
@@ -418,8 +419,8 @@ test("admin can demote disable or delete other admins but not owner", async () =
         } as any,
         new URL("http://localhost/api/v1/users/alice/role"),
     );
-    assert.equal(status, 200);
-    assert.equal((await accounts.getInfo("alice"))?.role, "user");
+    assert.equal(status, 403);
+    assert.equal((await accounts.getInfo("alice"))?.role, "admin");
 
     await route(
         { method: "POST", headers } as any,
@@ -431,8 +432,8 @@ test("admin can demote disable or delete other admins but not owner", async () =
         } as any,
         new URL("http://localhost/api/v1/users/bob/disable"),
     );
-    assert.equal(status, 200);
-    assert.equal((await accounts.getInfo("bob"))?.enabled, false);
+    assert.equal(status, 403);
+    assert.equal((await accounts.getInfo("bob"))?.enabled, true);
 
     await route(
         { method: "DELETE", headers } as any,
@@ -444,8 +445,8 @@ test("admin can demote disable or delete other admins but not owner", async () =
         } as any,
         new URL("http://localhost/api/v1/users/carol"),
     );
-    assert.equal(status, 200);
-    assert.equal(await accounts.has("carol"), false);
+    assert.equal(status, 403);
+    assert.equal(await accounts.has("carol"), true);
 
     await route(
         {
@@ -466,28 +467,23 @@ test("admin can demote disable or delete other admins but not owner", async () =
     assert.equal(status, 403);
 
     await route(
-        { method: "POST", headers } as any,
+        {
+            method: "POST",
+            headers: ownerHeaders,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"role":"user"}');
+            },
+        } as any,
         {
             writeHead(c: number) {
                 status = c;
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/users/founder/disable"),
+        new URL("http://localhost/api/v1/users/alice/role"),
     );
-    assert.equal(status, 403);
-
-    await route(
-        { method: "DELETE", headers } as any,
-        {
-            writeHead(c: number) {
-                status = c;
-            },
-            end() {},
-        } as any,
-        new URL("http://localhost/api/v1/users/founder"),
-    );
-    assert.equal(status, 403);
+    assert.equal(status, 200);
+    assert.equal((await accounts.getInfo("alice"))?.role, "user");
 
     await route(
         { method: "POST", headers: ownerHeaders } as any,
@@ -497,9 +493,113 @@ test("admin can demote disable or delete other admins but not owner", async () =
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/users/founder/disable"),
+        new URL("http://localhost/api/v1/users/bob/disable"),
     );
     assert.equal(status, 200);
+    assert.equal((await accounts.getInfo("bob"))?.enabled, false);
+
+    await route(
+        { method: "DELETE", headers: ownerHeaders } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/carol"),
+    );
+    assert.equal(status, 200);
+    assert.equal(await accounts.has("carol"), false);
+
+    await route(
+        {
+            method: "POST",
+            headers: ownerHeaders,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"role":"user"}');
+            },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/owner/role"),
+    );
+    assert.equal(status, 403);
+    assert.equal((await accounts.getInfo("owner"))?.role, "admin");
+
+    await route(
+        { method: "POST", headers: ownerHeaders } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/owner/disable"),
+    );
+    assert.equal(status, 403);
+    assert.equal((await accounts.getInfo("owner"))?.enabled, true);
+
+    await route(
+        { method: "DELETE", headers: ownerHeaders } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/owner"),
+    );
+    assert.equal(status, 403);
+    assert.equal(await accounts.has("owner"), true);
+});
+
+test("role changes invalidate target access tokens immediately", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "pw", true);
+    await accounts.register("alice", "pw", true);
+    const prefs = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, prefs);
+    let status = 0;
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const aliceHeaders = { authorization: `Bearer ${aliceToken}` };
+
+    assert.equal(verifyAccessToken(aliceToken)?.role, "admin");
+
+    await route(
+        {
+            method: "POST",
+            headers: ownerHeaders,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"role":"user"}');
+            },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/alice/role"),
+    );
+
+    assert.equal(status, 200);
+    assert.equal(verifyAccessToken(aliceToken), null);
+
+    await route(
+        { method: "GET", headers: aliceHeaders } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users"),
+    );
+    assert.equal(status, 401);
 });
 
 test("users list reports founder admins as owner role", async () => {

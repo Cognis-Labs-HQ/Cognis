@@ -172,27 +172,55 @@ export function createUserRoutes(
             return targetInfoCache;
         }
 
-        const isRestrictedOwnerManagementAction =
+        const ADMIN_PROTECTED_ACTIONS = new Set([
+            "role",
+            "password",
+            "enable",
+            "disable",
+            "isfounder",
+            "preferences/clear",
+        ]);
+        const isProtectedManagementAction =
             (req.method === "POST" &&
-                (action === "role" || action === "disable")) ||
+                action !== undefined &&
+                ADMIN_PROTECTED_ACTIONS.has(action)) ||
             (req.method === "DELETE" && !action);
 
-        if (
-            isRestrictedOwnerManagementAction &&
-            callerClaims &&
-            callerIsAdmin &&
-            callerClaims.sub !== username
-        ) {
+        if (isProtectedManagementAction && callerClaims) {
             const targetInfo = await getTargetInfo();
             const targetRole = resolveEffectiveRole(
                 targetInfo?.role,
                 Boolean(targetInfo?.isAdmin),
                 Boolean(targetInfo?.isFounder),
             );
-            if (targetRole === "owner") {
+            if (callerClaims.sub === username) {
+                log?.("warn", "Blocked self-management attempt.", {
+                    ...logMeta,
+                    accountId: callerClaims.sub,
+                    targetAccountId: username,
+                    action,
+                    targetRole,
+                });
+                res.writeHead(403, {
+                    "content-type": "application/json",
+                });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "protected_self_account",
+                            message: "Accounts cannot modify themselves here",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (
+                callerIsAdmin &&
+                (targetRole === "admin" || targetRole === "owner")
+            ) {
                 log?.(
                     "warn",
-                    "Blocked admin attempt to modify owner account.",
+                    "Blocked admin attempt to modify privileged account.",
                     {
                         ...logMeta,
                         accountId: callerClaims.sub,
@@ -207,9 +235,9 @@ export function createUserRoutes(
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "protected_owner_account",
+                            code: "protected_admin_account",
                             message:
-                                "Only owner can demote, disable, or delete owner accounts",
+                                "Only owner can modify admin or owner accounts",
                         },
                     }),
                 );
@@ -333,6 +361,7 @@ export function createUserRoutes(
                 );
                 return true;
             }
+            const revokedCount = revokeAccessTokensForSubject(username);
             await accountStore.setRole(username, role as any);
             await setProfileRole?.(username, role);
             if (role === "teacher") {
@@ -349,6 +378,7 @@ export function createUserRoutes(
                 accountId: adminClaims.sub,
                 targetAccountId: username,
                 role,
+                revokedTokenCount: revokedCount,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));

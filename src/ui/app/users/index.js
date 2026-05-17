@@ -25,6 +25,10 @@ function formatLastLogin(iso) {
     return formatDateTime(iso, i18n.t("ui.app.dashboard.never"));
 }
 
+function getCurrentRole() {
+    return (localStorage.getItem("cognis_role") ?? "user").trim();
+}
+
 function getCurrentUsername() {
     const token = localStorage.getItem("cognis_access_token");
     if (!token) return null;
@@ -144,6 +148,8 @@ async function refreshData() {
 
 function renderUsersTable() {
     const currentUsername = getCurrentUsername();
+    const currentRole = getCurrentRole();
+    const viewerIsAdmin = currentRole === "admin";
     const inviteButtonHtml = registrationGatewayActive
         ? `<div class="controls">
           <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</button>
@@ -169,7 +175,15 @@ function renderUsersTable() {
                   const userRole =
                       user.role ?? (user.isAdmin ? "admin" : "user");
                   const isOwner = userRole === "owner";
-                  const roleDisabled = isProtected || isOwner || isSelf;
+                  const protectPrivilegedFromAdmin =
+                      viewerIsAdmin &&
+                      (userRole === "admin" || userRole === "owner") &&
+                      !isSelf;
+                  const roleDisabled =
+                      isProtected ||
+                      isOwner ||
+                      isSelf ||
+                      protectPrivilegedFromAdmin;
                   const roleOptionsHtml = ACCESS_ROLES.filter(
                       (role) => role !== "owner",
                   )
@@ -182,11 +196,11 @@ function renderUsersTable() {
                       ? escapeHtml(i18n.t("ui.reuse.role_owner"))
                       : `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
                   const actionsHtml =
-                      isProtected || isOwner
+                      isProtected || isOwner || protectPrivilegedFromAdmin
                           ? ""
                           : `
                         <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.disable")) : escapeHtml(i18n.t("ui.reuse.enable"))}</button>
-                        <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}">☰</button>`;
+                        <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>☰</button>`;
                   return `
               <tr class="users-row" data-username="${escapeHtml(user.username)}">
                 <td>${escapeHtml(user.username)}</td>
