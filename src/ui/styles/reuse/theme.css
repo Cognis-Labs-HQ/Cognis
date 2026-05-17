@@ -80,7 +80,9 @@
     --color-success-hover-bg: rgba(52, 211, 153, 0.12);
     --shadow-btn: 0 4px 14px rgba(2, 6, 23, 0.35);
     --shadow-floating: 0 -4px 24px rgba(2, 6, 23, 0.28);
-    --drawer-backdrop: rgba(0, 0, 0, 0.48);
+    --popup-shade-bg: rgba(2, 6, 23, 0.72);
+    --popup-shade-filter: blur(3px);
+    --drawer-backdrop: var(--popup-shade-bg);
 }
 
 body[data-theme="light"] {
@@ -96,7 +98,9 @@ body[data-theme="light"] {
     --color-success-hover-bg: rgba(5, 150, 105, 0.08);
     --shadow-btn: 0 4px 14px rgba(15, 23, 42, 0.2);
     --shadow-floating: 0 -4px 24px rgba(15, 23, 42, 0.15);
-    --drawer-backdrop: rgba(15, 23, 42, 0.32);
+    --popup-shade-bg: rgba(15, 23, 42, 0.42);
+    --popup-shade-filter: blur(3px);
+    --drawer-backdrop: var(--popup-shade-bg);
 }
 
 * {

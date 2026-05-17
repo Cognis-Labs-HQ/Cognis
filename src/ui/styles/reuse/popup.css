@@ -5,8 +5,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(2, 6, 23, 0.9);
-    backdrop-filter: blur(3px);
+    background: var(--popup-shade-bg);
+    backdrop-filter: var(--popup-shade-filter);
     padding: 24px;
     overflow-y: auto;
     overscroll-behavior: contain;
