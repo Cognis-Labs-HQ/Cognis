@@ -29,7 +29,8 @@
 .search-popup-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.45);
+    background: var(--popup-shade-bg);
+    backdrop-filter: var(--popup-shade-filter);
     display: flex;
     align-items: flex-start;
     justify-content: center;
