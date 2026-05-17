@@ -148,8 +148,14 @@ async function refreshData() {
 
 function renderUsersTable() {
     const currentUsername = getCurrentUsername();
-    const currentRole = getCurrentRole();
-    const viewerIsAdmin = currentRole === "admin";
+    const currentUser = users.find((user) => user.username === currentUsername);
+    const currentRole =
+        currentUser?.role ??
+        (currentUser?.isAdmin ? "admin" : getCurrentRole());
+    const viewerIsOwner =
+        currentRole === "owner" ||
+        Boolean(currentUser?.isAdmin && currentUser?.isFounder);
+    const viewerIsAdmin = currentRole === "admin" && !viewerIsOwner;
     const inviteButtonHtml = registrationGatewayActive
         ? `<div class="controls">
           <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</button>
@@ -174,7 +180,9 @@ function renderUsersTable() {
                   const isSelf = user.username === currentUsername;
                   const userRole =
                       user.role ?? (user.isAdmin ? "admin" : "user");
-                  const isOwner = userRole === "owner";
+                  const isOwner =
+                      userRole === "owner" ||
+                      Boolean(user.isAdmin && user.isFounder);
                   const protectPrivilegedFromAdmin =
                       viewerIsAdmin &&
                       (userRole === "admin" || userRole === "owner") &&

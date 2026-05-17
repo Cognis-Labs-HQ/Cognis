@@ -21,3 +21,20 @@ test("users role dropdown includes every assignable access role", () => {
     assert.match(source, /getRoleLabel\(i18n, role\)/);
     assert.match(source, /roleOptionsHtml/);
 });
+
+test("users table treats founder admins as owner while keeping owner admin management enabled", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/users/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /currentUser\?\.isAdmin && currentUser\?\.isFounder/);
+    assert.match(
+        source,
+        /const viewerIsAdmin = currentRole === "admin" && !viewerIsOwner/,
+    );
+    assert.match(
+        source,
+        /userRole === "owner" \|\|\s*Boolean\(user\.isAdmin && user\.isFounder\)/,
+    );
+});
