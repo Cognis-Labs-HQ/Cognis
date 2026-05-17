@@ -309,12 +309,11 @@ function buildStageMarkup(i18n) {
 
 function buildChatMarkup(i18n) {
     return `
-    <aside class="jitsi-chat-pane card-elevated">
+    <aside class="jitsi-chat-pane jitsi-chat-disabled card-elevated" aria-disabled="true">
       <h3>${escapeHtml(i18n.t("module.jitsi_meet.chat.heading"))}</h3>
-      <p id="jitsi-chat-hint">${escapeHtml(i18n.t("module.jitsi_meet.chat.pending"))}</p>
-      <div id="jitsi-chat-thread" class="jitsi-chat-thread" aria-live="polite"></div>
+      <div id="jitsi-chat-thread" class="jitsi-chat-thread" aria-live="polite" aria-busy="true"></div>
       <form id="jitsi-chat-form" class="jitsi-chat-form" hidden>
-        <textarea id="jitsi-chat-input" class="jitsi-chat-input" rows="3" placeholder="${escapeHtml(i18n.t("module.jitsi_meet.chat.placeholder"))}"></textarea>
+        <textarea id="jitsi-chat-input" class="jitsi-chat-input" rows="3" placeholder="${escapeHtml(i18n.t("module.jitsi_meet.chat.placeholder"))}" disabled></textarea>
       </form>
     </aside>
   `;
@@ -631,39 +630,52 @@ export async function mount(root, { signal } = {}) {
             .join("");
     }
 
-    async function refreshNativeChat() {
-        const chatHint = root.querySelector("#jitsi-chat-hint");
-        const chatForm = root.querySelector("#jitsi-chat-form");
-        if (
-            !(chatHint instanceof HTMLElement) ||
-            !(chatForm instanceof HTMLFormElement)
-        ) {
-            return;
+    function clearNativeChatThread() {
+        const chatThread = root.querySelector("#jitsi-chat-thread");
+        if (chatThread instanceof HTMLElement) {
+            chatThread.replaceChildren();
         }
+    }
+
+    function setNativeChatReady(ready) {
+        const chatPane = root.querySelector(".jitsi-chat-pane");
+        const chatThread = root.querySelector("#jitsi-chat-thread");
+        const chatForm = root.querySelector("#jitsi-chat-form");
+        const chatInput = root.querySelector("#jitsi-chat-input");
+        if (chatPane instanceof HTMLElement) {
+            chatPane.classList.toggle("jitsi-chat-disabled", !ready);
+            chatPane.setAttribute("aria-disabled", String(!ready));
+        }
+        if (chatThread instanceof HTMLElement) {
+            chatThread.setAttribute("aria-busy", String(!ready));
+        }
+        if (chatForm instanceof HTMLFormElement) {
+            chatForm.hidden = !ready;
+        }
+        if (chatInput instanceof HTMLTextAreaElement) {
+            chatInput.disabled = !ready;
+        }
+    }
+
+    async function refreshNativeChat() {
         const roomId = state.chatRoomId;
         if (!roomId) {
-            chatHint.textContent = i18n.t("module.jitsi_meet.chat.pending");
-            chatHint.hidden = false;
-            chatForm.hidden = true;
-            renderChatMessages([]);
+            setNativeChatReady(false);
+            clearNativeChatThread();
             return;
         }
         const roomKey = await getChatRoomKey(roomId);
         if (!roomKey) {
-            chatHint.textContent = i18n.t("module.jitsi_meet.chat.unavailable");
-            chatHint.hidden = false;
-            chatForm.hidden = true;
-            renderChatMessages([]);
+            setNativeChatReady(false);
+            clearNativeChatThread();
             return;
         }
         const response = await apiFetch(
             `/api/v1/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=50`,
         );
         if (!response.ok) {
-            chatHint.textContent = i18n.t("module.jitsi_meet.chat.unavailable");
-            chatHint.hidden = false;
-            chatForm.hidden = true;
-            renderChatMessages([]);
+            setNativeChatReady(false);
+            clearNativeChatThread();
             return;
         }
         const payload = await response.json().catch(() => ({ data: [] }));
@@ -684,9 +696,7 @@ export async function mount(root, { signal } = {}) {
             })),
         );
         renderChatMessages(decoded);
-        chatHint.textContent = "";
-        chatHint.hidden = true;
-        chatForm.hidden = false;
+        setNativeChatReady(true);
     }
 
     function stopNativeChatPolling() {
@@ -703,16 +713,10 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function updateNativeChat() {
-        const chatHint = root.querySelector("#jitsi-chat-hint");
-        if (!(chatHint instanceof HTMLElement)) {
-            return;
-        }
         state.chatRoomId = resolveMeetingChatRoomId(state.meeting);
         if (!state.chatRoomId) {
             state.chatRoomKey = null;
             stopNativeChatPolling();
-            chatHint.textContent = i18n.t("module.jitsi_meet.chat.pending");
-            chatHint.hidden = false;
             await refreshNativeChat();
             return;
         }

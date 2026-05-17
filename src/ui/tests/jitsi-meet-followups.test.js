@@ -114,14 +114,24 @@ test("jitsi meetings lock participants and block navigation while meeting is act
     );
 });
 
-test("jitsi meetings reset participant state and hide chat hint when ready", () => {
+test("jitsi meetings reset participant state and disable mini chat until ready", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
+    const cssSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
+        "utf8",
+    );
     assert.match(source, /async function resetMeetingState\(\s*\{/);
     assert.match(source, /resetParticipantSelection\(\);/);
-    assert.match(source, /chatHint\.hidden = true;/);
+    assert.doesNotMatch(source, /jitsi-chat-hint/);
+    assert.match(source, /function setNativeChatReady\(ready\)/);
+    assert.match(source, /jitsi-chat-disabled/);
+    assert.match(source, /chatInput\.disabled = !ready;/);
+    assert.match(source, /aria-busy/);
+    assert.match(cssSource, /\.jitsi-chat-pane\.jitsi-chat-disabled/);
+    assert.match(cssSource, /pointer-events: none;/);
 });
 
 test("meetings page defaults meeting and chat panels to 75-25 split while keeping them resizable", () => {
