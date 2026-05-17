@@ -1,4 +1,4 @@
-# Adapter Autentikasi Lokal
+# Adapter Auth Lokal
 
 ## Ikhtisar
 

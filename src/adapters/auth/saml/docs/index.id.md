@@ -1,4 +1,4 @@
-# Adapter Autentikasi SAML SSO
+# Adapter SSO SAML
 
 ## Ikhtisar
 

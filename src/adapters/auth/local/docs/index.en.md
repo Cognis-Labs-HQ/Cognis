@@ -1,4 +1,4 @@
-# Local Authentication Adapter
+# Local Auth Adapter
 
 ## Overview
 

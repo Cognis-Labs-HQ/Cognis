@@ -1,4 +1,4 @@
-# Adaptor Notifikasi Internal
+# Adapter Notify Internal
 
 ## Ikhtisar
 

@@ -1,4 +1,4 @@
-# Internal Notification Adapter
+# Internal Notify Adapter
 
 ## Overview
 

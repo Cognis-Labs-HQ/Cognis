@@ -22,10 +22,21 @@ const OLD_DOC_FILE_URL_PATTERNS = [
 ];
 
 function listTrackedDocFiles() {
-    return execFileSync("git", ["ls-files", "*.md", "*.html"], {
-        cwd: ROOT,
-        encoding: "utf8",
-    })
+    return execFileSync(
+        "git",
+        [
+            "ls-files",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+            "*.md",
+            "*.html",
+        ],
+        {
+            cwd: ROOT,
+            encoding: "utf8",
+        },
+    )
         .trim()
         .split("\n")
         .filter(Boolean);
@@ -75,6 +86,33 @@ test("markdown document titles stay concise", () => {
         }
     }
     assert.deepEqual(longTitles, []);
+});
+
+function localizedDocGroup(file) {
+    const match = file.match(/^(.*)\.(de|en|id|ja)\.md$/);
+    if (!match) return null;
+    return { stem: `${match[1]}.md`, lang: match[2] };
+}
+
+test("localized docs stay in language lockstep", () => {
+    const groups = new Map();
+    for (const file of listTrackedDocFiles().filter((name) =>
+        name.endsWith(".md"),
+    )) {
+        const group = localizedDocGroup(file);
+        if (!group) continue;
+        if (!groups.has(group.stem)) groups.set(group.stem, new Set());
+        groups.get(group.stem).add(group.lang);
+    }
+
+    const incompleteGroups = [];
+    for (const [stem, languages] of groups) {
+        const missing = ["de", "en", "id", "ja"].filter(
+            (lang) => !languages.has(lang),
+        );
+        if (missing.length > 0) incompleteGroups.push({ stem, missing });
+    }
+    assert.deepEqual(incompleteGroups, []);
 });
 
 test("docs page strips pretty docs URL prefixes before loading document slugs", () => {
