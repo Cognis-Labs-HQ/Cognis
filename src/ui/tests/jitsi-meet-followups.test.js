@@ -67,8 +67,19 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
     assert.equal(/"settings"/.test(toolbarArraySource), false);
     assert.match(source, /subject: MEETING_SUBJECT,/);
     assert.match(source, /currentUserIsJitsiModerator\(apiInstance\)/);
-    assert.match(source, /executeCommand\("subject", MEETING_SUBJECT\)/);
+    assert.match(source, /"subject",[\s\S]*MEETING_SUBJECT/);
     assert.match(source, /preferredTheme: themeMode,/);
+    assert.match(source, /disableDeepLinking: true,/);
+    assert.match(source, /avatarUrl: state\.currentProfile\?\.avatarUrl/);
+    assert.match(source, /"avatarUrl",[\s\S]*state\.currentProfile\.avatarUrl/);
+    assert.match(
+        source,
+        /hashParams\.set\("config\.disableDeepLinking", "true"\)/,
+    );
+    assert.match(
+        source,
+        /hashParams\.set\("userInfo\.avatarUrl", profile\.avatarUrl\)/,
+    );
     assert.match(
         source,
         /hashParams\.set\("config\.subject", MEETING_SUBJECT\)/,
@@ -77,8 +88,9 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
         source,
         /hashParams\.set\("config\.preferredTheme", themeMode\)/,
     );
-    assert.match(source, /executeCommand\("password", meetingPassword\);/);
+    assert.match(source, /"password",[\s\S]*meetingPassword/);
     assert.match(source, /addEventListener\("passwordRequired", \(\) => \{/);
+    assert.match(source, /const submitMeetingPassword = \(\) =>/);
     assert.match(
         source,
         /participantRoleChanged[\s\S]*getParticipantRole\(event\) === "moderator"/,
@@ -183,6 +195,9 @@ test("meetings session state polling handles closed meetings and distinct leave 
         source,
         /addEventListener\("readyToClose", handleMeetingClosed\)/,
     );
+    assert.match(source, /MEETING_TERMINATED_TEXT = "meeting terminated"/);
+    assert.match(source, /addEventListener\("notificationTriggered"/);
+    assert.match(source, /reportTerminated: true/);
 });
 
 test("jitsi API resets ended meetings and reports meetingClosed from presence updates", () => {
@@ -197,6 +212,11 @@ test("jitsi API resets ended meetings and reports meetingClosed from presence up
     assert.match(source, /endedBy:\s*resolved\.requesterUsername/);
     assert.match(source, /participantCount === 2/);
     assert.match(source, /meetingClosed:/);
+    assert.match(
+        source,
+        /const meetingTerminated = body\.terminated === true;/,
+    );
+    assert.match(source, /meetingTerminated \|\|/);
 });
 
 test("meetings mini chat filters room-event records from rendering", () => {
@@ -244,6 +264,38 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
     );
     assert.match(source, /function readThemeCookie\(\)/);
     assert.match(source, /document\.querySelector\("\.app-shell"\)/);
+    assert.match(source, /async function switchAwayFromActiveMeeting\(\)/);
+    assert.match(source, /await switchAwayFromActiveMeeting\(\)/);
+    assert.match(source, /role="grid"/);
+});
+
+test("meetings UI keeps Jitsi theme and active-meeting table responsive", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    const cssSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
+        "utf8",
+    );
+    assert.match(appSource, /const syncJitsiTheme = \(\) =>/);
+    assert.match(
+        appSource,
+        /executeJitsiCommandIfSupported\(state\.jitsiApi, "overwriteConfig", \{[\s\S]*preferredTheme: nextThemeMode/,
+    );
+    assert.match(appSource, /new MutationObserver\(syncJitsiTheme\)/);
+    assert.match(
+        cssSource,
+        /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/,
+    );
+    assert.match(
+        cssSource,
+        /max-width: 720px[\s\S]*repeat\(2, minmax\(0, 1fr\)\)/,
+    );
+    assert.match(
+        cssSource,
+        /max-width: 520px[\s\S]*grid-template-columns: 1fr/,
+    );
 });
 
 test("jitsi API exposes user active meetings endpoint", () => {

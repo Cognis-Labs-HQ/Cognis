@@ -28,6 +28,7 @@ const CHAT_REFRESH_INTERVAL_MS = 2_500;
 const SESSION_ID_STORAGE_KEY = "jitsi-meet:session-id";
 const TEXT_ENCODER = new TextEncoder();
 const MEETING_SUBJECT = "Cognis Classroom";
+const MEETING_TERMINATED_TEXT = "meeting terminated";
 const JITSI_TOOLBAR_BUTTONS = [
     "microphone",
     "camera",
@@ -108,10 +109,19 @@ async function fetchCurrentProfile() {
         profile.displayName ?? profile.handle ?? "",
     ).trim();
     const email = typeof profile.email === "string" ? profile.email.trim() : "";
+    const avatarKey =
+        typeof profile.avatarKey === "string" ? profile.avatarKey.trim() : "";
+    const avatarUrl = avatarKey
+        ? `${window.location.origin}/api/v1/files/${avatarKey
+              .split("/")
+              .map((part) => encodeURIComponent(part))
+              .join("/")}`
+        : "";
     return {
         handle,
         displayName: displayName || handle || "Cognis User",
         email,
+        avatarUrl,
     };
 }
 
@@ -122,6 +132,7 @@ function buildMeetingJoinUrl(meetingUrl, profile) {
         const themeMode = resolveThemeMode();
         hashParams.set("config.prejoinConfig.enabled", "false");
         hashParams.set("config.requireDisplayName", "false");
+        hashParams.set("config.disableDeepLinking", "true");
         hashParams.set("config.subject", MEETING_SUBJECT);
         hashParams.set("config.preferredTheme", themeMode);
         hashParams.set(
@@ -133,6 +144,9 @@ function buildMeetingJoinUrl(meetingUrl, profile) {
         }
         if (profile?.email) {
             hashParams.set("userInfo.email", profile.email);
+        }
+        if (profile?.avatarUrl) {
+            hashParams.set("userInfo.avatarUrl", profile.avatarUrl);
         }
         parsed.hash = hashParams.toString();
         return parsed.toString();
@@ -322,7 +336,7 @@ function buildParticipantsMarkup(i18n) {
         </div>
         <div class="jitsi-participants-grid-column">
           <p class="jitsi-participants-pool-label">${escapeHtml(i18n.t("module.jitsi_meet.participants.active_meetings"))}</p>
-          <div id="jitsi-active-meetings" class="jitsi-active-meetings" role="list"></div>
+          <div id="jitsi-active-meetings" class="jitsi-active-meetings" role="grid"></div>
         </div>
       </div>
     </section>
@@ -379,6 +393,7 @@ export async function mount(root, { signal } = {}) {
         jitsiApi: null,
         jitsiParticipantId: "",
         jitsiModerator: false,
+        jitsiThemeMode: resolveThemeMode(),
         recoveringMeetingSession: false,
     };
 
@@ -744,6 +759,7 @@ export async function mount(root, { signal } = {}) {
                     button.classList.add("jitsi-active-meeting-item-selected");
                 }
                 button.dataset.meetingId = meetingId;
+                button.setAttribute("role", "gridcell");
                 button.innerHTML = `
                   <span class="jitsi-active-meeting-avatar" style="--initials-bg: ${escapeHtml(badgeColor)}">${escapeHtml(
                       badgeInitials,
@@ -758,16 +774,22 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
+    async function switchAwayFromActiveMeeting() {
+        if (!isMeetingActive()) return;
+        await keepPresenceAlive(false).catch(() => undefined);
+        clearTimers();
+        closeMeetingEmbed();
+        state.meeting = null;
+        state.chatRoomId = "";
+        state.chatRoomKey = null;
+        stopNativeChatPolling();
+        await updateNativeChat();
+    }
+
     async function joinMeetingById(meetingId) {
         const normalizedMeetingId = normalizeMeetingId(meetingId);
         if (!normalizedMeetingId) return;
         if (isMeetingActive() && state.meeting?.id === normalizedMeetingId) {
-            return;
-        }
-        if (isMeetingActive() && state.meeting?.id !== normalizedMeetingId) {
-            showToast(i18n.t("module.jitsi_meet.overlay.leave_blocked"), {
-                variant: "warning",
-            });
             return;
         }
         updateOverlay({
@@ -814,6 +836,9 @@ export async function mount(root, { signal } = {}) {
                 visible: true,
             });
             return;
+        }
+        if (isMeetingActive() && state.meeting?.id !== normalizedMeetingId) {
+            await switchAwayFromActiveMeeting();
         }
         state.meeting = meetingPayload.data;
         await updateNativeChat();
@@ -922,8 +947,11 @@ export async function mount(root, { signal } = {}) {
     async function handleMeetingExit({
         fallbackOverlayMessageKey,
         forceClosedOverlay = false,
+        reportTerminated = false,
     }) {
-        const leaveState = await keepPresenceAlive(false).catch(() => null);
+        const leaveState = await keepPresenceAlive(false, {
+            terminated: reportTerminated,
+        }).catch(() => null);
         const overlayMessageKey =
             forceClosedOverlay || leaveState?.meetingClosed
                 ? "module.jitsi_meet.overlay.meeting_closed"
@@ -1157,7 +1185,10 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
-    async function keepPresenceAlive(active = true) {
+    async function keepPresenceAlive(
+        active = true,
+        { terminated = false } = {},
+    ) {
         if (!state.meeting?.id) return null;
         const response = await apiFetch(
             "/api/v1/modules/jitsi-meet/meetings/presence",
@@ -1170,6 +1201,7 @@ export async function mount(root, { signal } = {}) {
                     meetingId: state.meeting.id,
                     sessionId: state.sessionId,
                     active,
+                    terminated,
                 }),
             },
         );
@@ -1219,6 +1251,37 @@ export async function mount(root, { signal } = {}) {
             ) ??
             null
         );
+    }
+
+    function executeJitsiCommandIfSupported(apiInstance, command, ...args) {
+        if (!apiInstance || typeof apiInstance.executeCommand !== "function") {
+            return;
+        }
+        if (typeof apiInstance.getSupportedCommands === "function") {
+            const supportedCommands = apiInstance.getSupportedCommands();
+            if (
+                Array.isArray(supportedCommands) &&
+                !supportedCommands.includes(command)
+            ) {
+                return;
+            }
+        }
+        apiInstance.executeCommand(command, ...args);
+    }
+
+    function isMeetingTerminatedNotice(event) {
+        const message = [
+            event?.title,
+            event?.description,
+            event?.message,
+            event?.name,
+            event?.notification?.title,
+            event?.notification?.description,
+            event?.details?.message,
+        ]
+            .map((value) => String(value ?? "").toLowerCase())
+            .join(" ");
+        return message.includes(MEETING_TERMINATED_TEXT);
     }
 
     function currentUserIsJitsiModerator(apiInstance) {
@@ -1309,6 +1372,7 @@ export async function mount(root, { signal } = {}) {
                     enabled: false,
                 },
                 requireDisplayName: false,
+                disableDeepLinking: true,
                 subject: MEETING_SUBJECT,
                 preferredTheme: themeMode,
                 toolbarButtons: JITSI_TOOLBAR_BUTTONS,
@@ -1316,17 +1380,59 @@ export async function mount(root, { signal } = {}) {
             userInfo: {
                 displayName: state.currentProfile?.displayName ?? "",
                 email: state.currentProfile?.email ?? "",
+                avatarUrl: state.currentProfile?.avatarUrl ?? "",
             },
         });
         state.jitsiApi = apiInstance;
         state.jitsiParticipantId = "";
         state.jitsiModerator = false;
+        state.jitsiThemeMode = themeMode;
         const applyPrivilegedMeetingSettings = () => {
             if (state.jitsiApi !== apiInstance) return;
             if (!currentUserIsJitsiModerator(apiInstance)) return;
-            apiInstance.executeCommand("subject", MEETING_SUBJECT);
+            executeJitsiCommandIfSupported(
+                apiInstance,
+                "subject",
+                MEETING_SUBJECT,
+            );
             if (meetingPassword) {
-                apiInstance.executeCommand("password", meetingPassword);
+                executeJitsiCommandIfSupported(
+                    apiInstance,
+                    "password",
+                    meetingPassword,
+                );
+            }
+        };
+        const submitMeetingPassword = () => {
+            if (state.jitsiApi !== apiInstance || !meetingPassword) return;
+            executeJitsiCommandIfSupported(
+                apiInstance,
+                "password",
+                meetingPassword,
+            );
+        };
+        const applyParticipantProfile = () => {
+            if (state.jitsiApi !== apiInstance) return;
+            if (state.currentProfile?.displayName) {
+                executeJitsiCommandIfSupported(
+                    apiInstance,
+                    "displayName",
+                    state.currentProfile.displayName,
+                );
+            }
+            if (state.currentProfile?.email) {
+                executeJitsiCommandIfSupported(
+                    apiInstance,
+                    "email",
+                    state.currentProfile.email,
+                );
+            }
+            if (state.currentProfile?.avatarUrl) {
+                executeJitsiCommandIfSupported(
+                    apiInstance,
+                    "avatarUrl",
+                    state.currentProfile.avatarUrl,
+                );
             }
         };
         const handleMeetingLeft = () => {
@@ -1344,9 +1450,19 @@ export async function mount(root, { signal } = {}) {
                 forceClosedOverlay: true,
             });
         };
+        const handleMeetingTerminated = () => {
+            if (state.jitsiApi !== apiInstance) return;
+            void handleMeetingExit({
+                fallbackOverlayMessageKey:
+                    "module.jitsi_meet.overlay.meeting_closed",
+                forceClosedOverlay: true,
+                reportTerminated: true,
+            });
+        };
         apiInstance.addEventListener("videoConferenceJoined", (event) => {
             state.jitsiParticipantId = getParticipantId(event);
             state.jitsiModerator = currentUserIsJitsiModerator(apiInstance);
+            applyParticipantProfile();
             applyPrivilegedMeetingSettings();
         });
         apiInstance.addEventListener("participantRoleChanged", (event) => {
@@ -1357,7 +1473,16 @@ export async function mount(root, { signal } = {}) {
             applyPrivilegedMeetingSettings();
         });
         apiInstance.addEventListener("passwordRequired", () => {
+            submitMeetingPassword();
             applyPrivilegedMeetingSettings();
+        });
+        apiInstance.addEventListener("notificationTriggered", (event) => {
+            if (!isMeetingTerminatedNotice(event)) return;
+            handleMeetingTerminated();
+        });
+        apiInstance.addEventListener("errorOccurred", (event) => {
+            if (!isMeetingTerminatedNotice(event)) return;
+            handleMeetingTerminated();
         });
         apiInstance.addEventListener("videoConferenceLeft", handleMeetingLeft);
         apiInstance.addEventListener("readyToClose", handleMeetingClosed);
@@ -1709,6 +1834,38 @@ export async function mount(root, { signal } = {}) {
                 { signal: bindSignal },
             );
         }
+
+        const syncJitsiTheme = () => {
+            const nextThemeMode = resolveThemeMode();
+            if (nextThemeMode === state.jitsiThemeMode) return;
+            state.jitsiThemeMode = nextThemeMode;
+            if (!state.jitsiApi) return;
+            executeJitsiCommandIfSupported(state.jitsiApi, "overwriteConfig", {
+                preferredTheme: nextThemeMode,
+            });
+        };
+        const themeObserver = new MutationObserver(syncJitsiTheme);
+        themeObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ["data-theme", "class"],
+        });
+        themeObserver.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["data-theme", "class"],
+        });
+        const appShell = document.querySelector(".app-shell");
+        if (appShell instanceof HTMLElement) {
+            themeObserver.observe(appShell, {
+                attributes: true,
+                attributeFilter: ["data-theme", "class"],
+            });
+        }
+        signal?.addEventListener("abort", () => themeObserver.disconnect(), {
+            once: true,
+        });
+        window.addEventListener("storage", syncJitsiTheme, {
+            signal: bindSignal,
+        });
 
         window.addEventListener(
             "beforeunload",

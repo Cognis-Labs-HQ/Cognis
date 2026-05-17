@@ -1041,6 +1041,7 @@ export function registerApiRoutes(router, ctx) {
                     entry.sessionId === sessionId,
             );
             const nextPresenceActive = body.active !== false;
+            const meetingTerminated = body.terminated === true;
 
             await store.upsertPresence(
                 resolved.meeting.id,
@@ -1083,10 +1084,11 @@ export function registerApiRoutes(router, ctx) {
                 );
                 const participantCount = resolved.participants.length;
                 const shouldCloseMeeting =
+                    meetingTerminated ||
                     activeParticipantUsernames.size === 0 ||
                     (participantCount === 2 &&
                         activeParticipantUsernames.size < participantCount);
-                if (shouldCloseMeeting) {
+                if (shouldCloseMeeting && !resolved.state.endedAt) {
                     await store.updateMeetingState(resolved.meeting.id, {
                         authRequired: false,
                         authStartedBy: null,
@@ -1099,7 +1101,9 @@ export function registerApiRoutes(router, ctx) {
                     });
                     await dispatchMeetingNotifications(resolved.participants, {
                         subject: "Meeting Ended",
-                        body: `${resolved.requesterUsername} ended the meeting.`,
+                        body: meetingTerminated
+                            ? "The Jitsi conference was terminated."
+                            : `${resolved.requesterUsername} ended the meeting.`,
                         senderName:
                             resolved.state.firstJoinedBy ??
                             resolved.meeting.createdBy ??

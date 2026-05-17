@@ -245,13 +245,14 @@
 }
 
 .jitsi-active-meetings {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.45rem;
     min-height: 2.5rem;
 }
 
 .jitsi-active-meetings-empty {
+    grid-column: 1 / -1;
     margin: 0;
     color: var(--text-muted);
     font-size: 0.85rem;
@@ -434,6 +435,18 @@ body[data-theme="light"]
 
 @media (max-width: 980px) {
     .jitsi-participants-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .jitsi-active-meetings {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .jitsi-active-meetings {
         grid-template-columns: 1fr;
     }
 }
