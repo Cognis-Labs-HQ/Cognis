@@ -269,9 +269,24 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     );
     assert.match(source, /module\.jitsi_meet\.overlay\.alone_prompt/);
     assert.match(source, /alonePromptDismissedMeetingId/);
+
+    const loadMeetingStateMatch = source.match(
+        /async function loadMeetingState\(\) \{([\s\S]*?)\n    async function keepPresenceAlive/,
+    );
+    assert.ok(loadMeetingStateMatch);
+    const loadMeetingStateSource = loadMeetingStateMatch[1];
+    const authWaitingIndex = loadMeetingStateSource.indexOf(
+        "module.jitsi_meet.overlay.auth_waiting",
+    );
+    const alonePromptIndex = loadMeetingStateSource.indexOf(
+        "updateAloneParticipantPrompt(payload?.data?.activeParticipants)",
+    );
+    assert.notEqual(authWaitingIndex, -1);
+    assert.notEqual(alonePromptIndex, -1);
+    assert.ok(authWaitingIndex < alonePromptIndex);
     assert.match(
-        source,
-        /payload\?\.data\?\.activeParticipants[\s\S]*module\.jitsi_meet\.overlay\.auth_waiting/,
+        loadMeetingStateSource,
+        /if \(latestState\.authRequired && !latestState\.authCompletedAt\) \{[\s\S]*return;[\s\S]*\}/,
     );
     assert.match(
         source,
