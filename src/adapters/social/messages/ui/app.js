@@ -120,6 +120,82 @@ async function decryptMessageOrReturnPlaintext(key, message) {
 }
 
 const roomKeyCache = new Map();
+const threadRenderSignatures = new Map();
+
+function stableJson(value) {
+    return JSON.stringify(value);
+}
+
+function messageRenderSignature(messages, pendingRequest) {
+    return stableJson({
+        pendingRequest: pendingRequest
+            ? {
+                  id: pendingRequest.id,
+                  direction: pendingRequest.direction,
+                  canRespond: pendingRequest.canRespond,
+              }
+            : null,
+        messages: messages.map((message) => ({
+            id: message.id,
+            createdAt: message.createdAt,
+            senderId: message.senderId,
+            contentType: message.contentType,
+            ciphertext: message.ciphertext,
+            iv: message.iv,
+            authTag: message.authTag,
+            deliveredToCount: message.deliveredToCount,
+            reactions: (message.reactions ?? []).map((reaction) => ({
+                emoji: reaction.emoji,
+                count: reaction.count,
+                reactedByMe: reaction.reactedByMe,
+            })),
+            readBy: (message.readBy ?? []).map((reader) => ({
+                accountId: reader.accountId,
+                readAt: reader.readAt,
+            })),
+        })),
+    });
+}
+
+function roomListRenderSignature(rooms, selectedRoomId) {
+    return stableJson({
+        selectedRoomId,
+        rooms: rooms.map((room) => ({
+            id: room.id,
+            title: room.title,
+            kind: room.kind,
+            unread: room.unread,
+            isArchived: room.isArchived,
+            canSend: room.canSend,
+            pendingRequest: room.pendingRequest
+                ? {
+                      id: room.pendingRequest.id,
+                      direction: room.pendingRequest.direction,
+                      canRespond: room.pendingRequest.canRespond,
+                  }
+                : null,
+            lastMessagePreview: room.lastMessagePreview,
+            lastMessage: room.lastMessage
+                ? {
+                      id: room.lastMessage.id,
+                      createdAt: room.lastMessage.createdAt,
+                      senderId: room.lastMessage.senderId,
+                      senderDisplayName: room.lastMessage.senderDisplayName,
+                      senderHandle: room.lastMessage.senderHandle,
+                      contentType: room.lastMessage.contentType,
+                      ciphertext: room.lastMessage.ciphertext,
+                      iv: room.lastMessage.iv,
+                  }
+                : null,
+            members: (room.members ?? []).map((member) => ({
+                accountId: member.accountId,
+                handle: member.handle,
+                displayName: member.displayName,
+                username: member.username,
+            })),
+        })),
+    });
+}
 
 async function getRoomKey(roomId) {
     if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
@@ -659,6 +735,7 @@ async function renderThread(
     i18n,
     currentAccountId,
     before,
+    { force = false } = {},
 ) {
     const params = new URLSearchParams({ limit: "50" });
     if (before) params.set("before", before);
@@ -672,6 +749,18 @@ async function renderThread(
     const payload = await res.json();
     const messageList = payload?.data ?? [];
     const pendingRequest = payload?.pendingRequest ?? null;
+    const renderSignature = messageRenderSignature(messageList, pendingRequest);
+    if (
+        !before &&
+        !force &&
+        threadRenderSignatures.get(roomId) === renderSignature
+    ) {
+        return {
+            oldestCreatedAt: messageList.at(-1)?.createdAt ?? null,
+            pendingRequest,
+            changed: false,
+        };
+    }
     const ordered = messageList.slice().reverse();
     const decoded = await Promise.all(
         ordered.map(async (msg) => {
@@ -771,7 +860,9 @@ async function renderThread(
         );
     }
 
-    return { oldestCreatedAt, pendingRequest };
+    if (!before) threadRenderSignatures.set(roomId, renderSignature);
+
+    return { oldestCreatedAt, pendingRequest, changed: true };
 }
 
 async function loadRooms(i18n) {
@@ -836,6 +927,7 @@ export async function mount(root, { signal } = {}) {
     let typingSendTimeoutId = null;
     let typingPollIntervalId = null;
     let liveRefreshIntervalId = null;
+    let lastRoomsListRenderSignature = null;
     let typingActive = false;
     let lastTypingSentAt = 0;
 
@@ -855,6 +947,10 @@ export async function mount(root, { signal } = {}) {
             `/messages/${encodeURIComponent(selectedRoomId)}`,
         );
     }
+    lastRoomsListRenderSignature = roomListRenderSignature(
+        rooms,
+        selectedRoomId,
+    );
 
     async function loadRoom(roomId) {
         const res = await apiFetch(
@@ -953,6 +1049,8 @@ export async function mount(root, { signal } = {}) {
             threadList,
             i18n,
             currentAccountId,
+            undefined,
+            { force: true },
         );
         if (pendingBannerSlot && !room?.pendingRequest) {
             pendingBannerSlot.innerHTML = renderPendingRequestBanner(
@@ -963,15 +1061,18 @@ export async function mount(root, { signal } = {}) {
         bindPendingRequestBannerEvents();
     }
 
-    function renderRoomsListIntoDom() {
+    function renderRoomsListIntoDom({ force = false } = {}) {
         const roomsList = document.getElementById("messages-rooms-list");
         if (!roomsList) return;
+        const renderSignature = roomListRenderSignature(rooms, selectedRoomId);
+        if (!force && lastRoomsListRenderSignature === renderSignature) return;
         roomsList.innerHTML = renderRoomList(
             rooms,
             currentAccountId,
             selectedRoomId,
             i18n,
         );
+        lastRoomsListRenderSignature = renderSignature;
     }
 
     async function markSelectedRoomRead() {
