@@ -8,8 +8,11 @@
     background: rgba(2, 6, 23, 0.9);
     backdrop-filter: blur(3px);
     padding: 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     opacity: 0;
     transition: opacity 0.18s ease;
+    -webkit-overflow-scrolling: touch;
 }
 
 .popup-overlay--visible {
@@ -123,12 +126,14 @@
 
 @media (max-width: 640px) {
     .popup-overlay {
-        padding: 0;
+        align-items: flex-start;
+        padding: 12px;
     }
 
     .popup-dialog {
-        width: 100vw;
+        width: 100%;
         max-width: none;
+        margin: auto 0;
     }
 }
 

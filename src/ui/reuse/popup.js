@@ -63,6 +63,45 @@
 
 let stylesheetReady = null;
 
+const scrollLockState = {
+    count: 0,
+    bodyOverflow: null,
+    mainOverflowValues: [],
+};
+
+function getScrollableMainElements() {
+    return Array.from(document.querySelectorAll("main"));
+}
+
+function lockPageScroll() {
+    if (scrollLockState.count === 0) {
+        scrollLockState.bodyOverflow = document.body.style.overflow;
+        scrollLockState.mainOverflowValues = getScrollableMainElements().map(
+            (element) => ({
+                element,
+                overflow: element.style.overflow,
+            }),
+        );
+        document.body.style.overflow = "hidden";
+        scrollLockState.mainOverflowValues.forEach(({ element }) => {
+            element.style.overflow = "hidden";
+        });
+    }
+    scrollLockState.count += 1;
+}
+
+function unlockPageScroll() {
+    scrollLockState.count = Math.max(0, scrollLockState.count - 1);
+    if (scrollLockState.count > 0) return;
+
+    document.body.style.overflow = scrollLockState.bodyOverflow ?? "";
+    scrollLockState.mainOverflowValues.forEach(({ element, overflow }) => {
+        element.style.overflow = overflow;
+    });
+    scrollLockState.bodyOverflow = null;
+    scrollLockState.mainOverflowValues = [];
+}
+
 function ensureStylesheet() {
     if (stylesheetReady) return stylesheetReady;
 
@@ -116,14 +155,17 @@ export async function openPopup({
                 .replaceAll("'", "&#39;");
         }
 
+        let dismissed = false;
         function dismiss(actionId) {
+            if (dismissed) return;
+            dismissed = true;
             document.removeEventListener("keydown", onKeyDown);
-            document.body.style.overflow = "";
             let removed = false;
             function removeOverlay() {
                 if (!removed) {
                     removed = true;
                     overlay.remove();
+                    unlockPageScroll();
                 }
             }
             overlay.addEventListener("transitionend", removeOverlay, {
@@ -212,7 +254,7 @@ export async function openPopup({
         document.addEventListener("keydown", onKeyDown);
 
         document.body.appendChild(overlay);
-        document.body.style.overflow = "hidden";
+        lockPageScroll();
 
         if (typeof onOpen === "function") {
             onOpen(overlay);
