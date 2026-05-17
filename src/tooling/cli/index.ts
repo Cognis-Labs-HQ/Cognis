@@ -507,7 +507,6 @@ function renderUsersList(payload: unknown) {
         data?: Array<{
             username?: string;
             role?: string;
-            isAdmin?: boolean;
             enabled?: boolean;
             isFounder?: boolean;
         }>;
@@ -524,7 +523,7 @@ function renderUsersList(payload: unknown) {
             ],
             data.map((user) => ({
                 username: user.username ?? FIELD_EMPTY_PLACEHOLDER,
-                role: user.role ?? (user.isAdmin ? "admin" : "user"),
+                role: user.role ?? "user",
                 status: user.enabled ? "enabled" : "disabled",
                 founder: user.isFounder ? "yes" : "no",
             })),
@@ -538,14 +537,13 @@ function renderUserCreate(payload: unknown) {
         data?: {
             username?: string;
             role?: string;
-            isAdmin?: boolean;
             enabled?: boolean;
         };
     };
     const data = response.data ?? {};
     return formatSuccessBlock("User Created", "green", [
         formatField("Username", data.username),
-        formatField("Role", data.role ?? (data.isAdmin ? "admin" : "user")),
+        formatField("Role", data.role ?? "user"),
         formatField("Status", data.enabled ? "enabled" : "disabled"),
     ]);
 }

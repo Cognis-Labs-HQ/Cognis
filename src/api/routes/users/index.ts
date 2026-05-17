@@ -18,11 +18,13 @@ const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin", "owner"]);
  */
 function resolveEffectiveRole(
     role: unknown,
-    isAdmin: boolean,
     isFounder: boolean,
 ): "user" | "teacher" | "moderator" | "admin" | "owner" {
     const normalizedRole = String(role ?? "").trim();
-    if (isFounder && (normalizedRole === "owner" || isAdmin)) {
+    if (
+        isFounder &&
+        (normalizedRole === "owner" || normalizedRole === "admin")
+    ) {
         return "owner";
     }
     if (
@@ -34,7 +36,7 @@ function resolveEffectiveRole(
     ) {
         return normalizedRole;
     }
-    return isAdmin ? "admin" : "user";
+    return "user";
 }
 
 export function createUserRoutes(
@@ -65,11 +67,7 @@ export function createUserRoutes(
             if (!claims) return true;
             const users = (await accountStore.list()).map((user) => ({
                 ...user,
-                role: resolveEffectiveRole(
-                    user.role,
-                    Boolean(user.isAdmin),
-                    Boolean(user.isFounder),
-                ),
+                role: resolveEffectiveRole(user.role, Boolean(user.isFounder)),
             }));
             log?.("debug", "Listed users.", {
                 ...logMeta,
@@ -139,11 +137,7 @@ export function createUserRoutes(
             });
             const normalizedInfo = {
                 ...info,
-                role: resolveEffectiveRole(
-                    info.role,
-                    Boolean(info.isAdmin),
-                    Boolean(info.isFounder),
-                ),
+                role: resolveEffectiveRole(info.role, Boolean(info.isFounder)),
             };
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: normalizedInfo }));
@@ -190,7 +184,6 @@ export function createUserRoutes(
             const targetInfo = await getTargetInfo();
             const targetRole = resolveEffectiveRole(
                 targetInfo?.role,
-                Boolean(targetInfo?.isAdmin),
                 Boolean(targetInfo?.isFounder),
             );
             if (callerClaims.sub === username) {
@@ -263,7 +256,11 @@ export function createUserRoutes(
                 callerClaims.sub !== username
             ) {
                 const targetInfo = await getTargetInfo();
-                if (targetInfo?.isAdmin && targetInfo?.isFounder) {
+                const targetRole = resolveEffectiveRole(
+                    targetInfo?.role,
+                    Boolean(targetInfo?.isFounder),
+                );
+                if (targetRole === "owner") {
                     log?.(
                         "warn",
                         "Blocked modification of protected founder account.",

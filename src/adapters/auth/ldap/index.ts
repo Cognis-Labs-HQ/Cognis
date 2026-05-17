@@ -28,7 +28,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         if (!this.client || !accessToken) return null;
         const identity = await this.client.authenticate(accessToken);
         if (!identity) return null;
-        const isAdmin = (identity.groups ?? []).some((g) =>
+        const hasAdminRole = (identity.groups ?? []).some((g) =>
             this.adminGroups.has(g),
         );
         return {
@@ -36,7 +36,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             provider: "ldap",
             externalUserId: identity.id,
             email: identity.email,
-            isAdmin,
+            role: hasAdminRole ? "admin" : "user",
         };
     }
 

@@ -693,7 +693,7 @@ test("registration:public:register capability is looked up lazily in register ha
         "registration:public:register",
         async ({ username }: { username: string }) => {
             createdUsername = username;
-            return { username, isAdmin: false, enabled: true };
+            return { username, role: "user", enabled: true };
         },
     );
 
@@ -812,14 +812,14 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
                 register: (
                     username: string,
                     password: string,
-                    isAdmin?: boolean,
+                    role?: "user" | "teacher" | "moderator" | "admin",
                 ) => Promise<{
                     username: string;
-                    isAdmin: boolean;
+                    role?: string;
                     enabled: boolean;
                 }>;
             }>("auth:accountStore");
-            return accountStore!.register(username, password, false);
+            return accountStore!.register(username, password, "user");
         },
     );
     capabilities.contribute("preferences:store", {

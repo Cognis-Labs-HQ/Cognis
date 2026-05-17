@@ -30,7 +30,7 @@ class OidcAuthAdapter implements AuthProviderAdapter {
         if (!this.client || !accessToken) return null;
         const claims = await this.client.introspect(accessToken);
         if (!claims) return null;
-        const isAdmin = (claims.roles ?? []).some((r) =>
+        const hasAdminRole = (claims.roles ?? []).some((r) =>
             this.adminRoles.has(r),
         );
         return {
@@ -38,7 +38,7 @@ class OidcAuthAdapter implements AuthProviderAdapter {
             provider: this.providerName,
             externalUserId: claims.sub,
             email: claims.email,
-            isAdmin,
+            role: hasAdminRole ? "admin" : "user",
         };
     }
 

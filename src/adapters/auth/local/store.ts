@@ -56,9 +56,12 @@ export class DbLocalAccountStore implements LocalAccountStore {
         // Schema is created by provider init scripts; this is a no-op safety net.
     }
 
-    async register(username: string, password: string, isAdmin = false) {
+    async register(
+        username: string,
+        password: string,
+        role: "user" | "teacher" | "moderator" | "admin" = "user",
+    ) {
         if (await this.has(username)) throw new Error("username_taken");
-        const role = isAdmin ? "admin" : "user";
         const passwordHash = await hashPassword(password);
         try {
             await this.db.transaction(async (txDb) => {
@@ -68,7 +71,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     values: {
                         id: username,
                         display_name: username,
-                        is_admin: isAdmin,
+                        is_admin: role === "admin",
                         role,
                         enabled: true,
                         created_at: new Date().toISOString(),
@@ -99,9 +102,9 @@ export class DbLocalAccountStore implements LocalAccountStore {
         this.writeLog("info", "Registered local account.", {
             component: "auth-local-store",
             accountId: username,
-            isAdmin,
+            role,
         });
-        return { username, isAdmin, enabled: true, role };
+        return { username, enabled: true, role };
     }
 
     async verify(
@@ -152,7 +155,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
             accountId: username,
             provider: "local",
             externalUserId: username,
-            isAdmin: Boolean(account.is_admin),
             role: derivedRole,
         };
     }
@@ -199,7 +201,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
         });
         return (result.rows ?? []).map((row) => ({
             username: String(row.username),
-            isAdmin: Boolean(row.is_admin),
             enabled: Boolean(row.enabled),
             isFounder: Boolean(row.is_founder),
             role:
@@ -406,7 +407,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
         createdAt: string | null;
         lastLogin: string | null;
         enabled: boolean;
-        isAdmin: boolean;
         isFounder: boolean;
     } | null> {
         const result = await this.db.executeCommand({
@@ -440,7 +440,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
             createdAt: row.created_at ? String(row.created_at) : null,
             lastLogin: row.last_login ? String(row.last_login) : null,
             enabled: Boolean(row.enabled),
-            isAdmin: Boolean(row.is_admin),
             isFounder: Boolean(row.is_founder),
             role:
                 (row.role as string | undefined) ??

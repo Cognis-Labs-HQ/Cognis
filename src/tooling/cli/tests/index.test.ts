@@ -29,7 +29,7 @@ test("formatCommandOutput renders user:create with labeled fields", () => {
     const output = formatCommandOutput("user:create", {
         data: {
             username: "alice",
-            isAdmin: true,
+            role: "admin",
             enabled: true,
         },
     });
@@ -46,14 +46,12 @@ test("formatCommandOutput renders user:list with effective roles", () => {
             {
                 username: "admin",
                 role: "owner",
-                isAdmin: true,
                 enabled: true,
                 isFounder: true,
             },
             {
                 username: "alice",
                 role: "admin",
-                isAdmin: true,
                 enabled: true,
                 isFounder: false,
             },

@@ -10,8 +10,8 @@ export interface LocalAuthAdapter extends AuthProviderAdapter {
     register(
         username: string,
         password: string,
-        isAdmin?: boolean,
-    ): Promise<{ username: string; isAdmin: boolean; enabled: boolean }>;
+        role?: "user" | "teacher" | "moderator" | "admin",
+    ): Promise<{ username: string; role?: string; enabled: boolean }>;
     updateLastLogin(username: string): Promise<void>;
     store: LocalAccountStore;
 }
@@ -45,9 +45,9 @@ class LocalAuthAdapterImpl implements LocalAuthAdapter {
     async register(
         username: string,
         password: string,
-        isAdmin = false,
-    ): Promise<{ username: string; isAdmin: boolean; enabled: boolean }> {
-        return this.store.register(username, password, isAdmin);
+        role: "user" | "teacher" | "moderator" | "admin" = "user",
+    ): Promise<{ username: string; role?: string; enabled: boolean }> {
+        return this.store.register(username, password, role);
     }
 
     async updateLastLogin(username: string): Promise<void> {

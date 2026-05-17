@@ -49,7 +49,7 @@ export interface RegistrationPublicAdapter {
         displayName?: string;
     }): Promise<{
         username: string;
-        isAdmin: boolean;
+        role?: string;
         enabled: boolean;
     }>;
 }
