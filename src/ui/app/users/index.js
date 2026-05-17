@@ -43,6 +43,21 @@ function getCurrentRole() {
     return (localStorage.getItem("cognis_role") ?? "user").trim();
 }
 
+export function consumeUsersPageAction(expectedAction) {
+    const currentUrl = new URL(globalThis.location.href);
+    if (currentUrl.searchParams.get("action") !== expectedAction) {
+        return false;
+    }
+
+    currentUrl.searchParams.delete("action");
+    globalThis.history.replaceState(
+        globalThis.history.state,
+        "",
+        `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`,
+    );
+    return true;
+}
+
 function buildElements() {
     const estimatedHeight = Math.max(6, Math.ceil(users.length * 0.65 + 2));
     elements = [
@@ -503,8 +518,8 @@ export async function mount(rootEl, { signal } = {}) {
 
     await composer.init();
 
-    const pageAction = new URL(location.href).searchParams.get("action");
-    if (pageAction === "invite" && registrationGatewayActive) {
+    const shouldOpenInviteFlow = consumeUsersPageAction("invite");
+    if (shouldOpenInviteFlow && registrationGatewayActive) {
         await triggerInviteFlow();
     }
 }
