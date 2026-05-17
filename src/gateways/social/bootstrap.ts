@@ -8,6 +8,10 @@ import { DbAdapterConfigStore } from "./adapter-config-store.js";
 import { CoreSocialGateway } from "./gateway.js";
 
 export type { SocialAdapterBootstrapCtx, SocialAdapter } from "./gateway.js";
+export {
+    normalizeHandleKey,
+    normalizeHandleKeys,
+} from "./reuse/profile-record.js";
 
 /**
  * Route handler for social adapter management. Mirrors the notification

@@ -1,14 +1,14 @@
 import path from "node:path";
 import { JitsiMeetStore } from "./store.js";
-import { requireAuth } from "../../../gateways/auth/reuse/session-guard.js";
+import { requireAuth } from "../../../gateways/shared.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
 import {
-    isModeratorRole,
-    normalizeInstanceUrl,
-    normalizeMeetingPrefix,
-    normalizeUsername,
-} from "../../../api/reuse/meeting-values.js";
+    normalizeHttpUrl,
+    resolveExternalBaseUrl,
+} from "../../../api/reuse/url-parts.js";
+import { normalizeHandleKey } from "../../../gateways/social/bootstrap.js";
+import { isModeratorRole, normalizeMeetingPrefix } from "./meeting-values.js";
 
 const MODULE_ID = "jitsi-meet";
 const PAGE_SCRIPT_ORIGIN_OWNER_ID = "module:jitsi-meet";
@@ -56,18 +56,9 @@ function buildMeetingActionUrl(meetingId) {
     return `/meetings?meetingId=${encodeURIComponent(normalizedMeetingId)}`;
 }
 
-function resolveExternalHost() {
-    return (
-        process.env.EXTERNAL_HOST ??
-        (process.env.HOST ? `http://${process.env.HOST}` : "")
-    )
-        .trim()
-        .replace(/\/+$/g, "");
-}
-
 function buildMeetingEmailLink(meetingId) {
     const actionUrl = buildMeetingActionUrl(meetingId);
-    const externalHost = resolveExternalHost();
+    const externalHost = resolveExternalBaseUrl();
     return externalHost ? `${externalHost}${actionUrl}` : actionUrl;
 }
 
@@ -79,7 +70,7 @@ function appendMeetingLinkToBody(body, meetingId) {
 
 async function resolveRequesterUsername(profileStore, accountId) {
     const profile = await profileStore.getProfile(accountId);
-    const normalized = normalizeUsername(profile?.handle ?? "");
+    const normalized = normalizeHandleKey(profile?.handle ?? "");
     if (!normalized) {
         throw new Error(
             "A visible profile handle is required to use Meetings.",
@@ -93,11 +84,11 @@ async function resolveRequestedParticipants(profileStore, requestedHandles) {
     for (const candidate of Array.isArray(requestedHandles)
         ? requestedHandles
         : []) {
-        const normalizedHandle = normalizeUsername(candidate);
+        const normalizedHandle = normalizeHandleKey(candidate);
         if (!normalizedHandle) continue;
         const profile = await profileStore.getProfileByHandle(normalizedHandle);
         if (!profile?.handle) continue;
-        usernames.push(normalizeUsername(profile.handle));
+        usernames.push(normalizeHandleKey(profile.handle));
     }
     return usernames;
 }
@@ -356,13 +347,13 @@ export function registerApiRoutes(router, ctx) {
         const notificationMeetingId = meetingId ?? metadata?.meetingId;
         const excludedRecipients = new Set(
             [organizerUsername, ...excludeUsernames]
-                .map((username) => normalizeUsername(username))
+                .map((username) => normalizeHandleKey(username))
                 .filter(Boolean),
         );
         const normalizedRecipients = Array.from(
             new Set(
                 (Array.isArray(recipientUsernames) ? recipientUsernames : [])
-                    .map((username) => normalizeUsername(username))
+                    .map((username) => normalizeHandleKey(username))
                     .filter(Boolean)
                     .filter((username) => !excludedRecipients.has(username)),
             ),
@@ -401,12 +392,12 @@ export function registerApiRoutes(router, ctx) {
                     ? participantUsernames
                     : []
                 )
-                    .map((username) => normalizeUsername(username))
+                    .map((username) => normalizeHandleKey(username))
                     .filter(Boolean),
             ),
         );
         const moderatorSet = new Set([
-            normalizeUsername(meeting?.createdBy ?? ""),
+            normalizeHandleKey(meeting?.createdBy ?? ""),
         ]);
         if (
             !accountStore ||
@@ -417,7 +408,7 @@ export function registerApiRoutes(router, ctx) {
         }
         const users = await accountStore.list().catch(() => []);
         for (const user of users) {
-            const username = normalizeUsername(user?.username);
+            const username = normalizeHandleKey(user?.username);
             if (!username || !normalizedParticipants.includes(username)) {
                 continue;
             }
@@ -574,7 +565,7 @@ export function registerApiRoutes(router, ctx) {
             const claims = requireAuth(req, res, "admin");
             if (!claims) return;
             const body = await readJson(req);
-            const instanceUrl = normalizeInstanceUrl(body.instanceUrl);
+            const instanceUrl = normalizeHttpUrl(body.instanceUrl);
             if (!instanceUrl) {
                 sendError(
                     res,

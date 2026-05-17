@@ -15,5 +15,5 @@
             "scriptUrl": "/static/modules/jitsi-meet/admin-config-popup.js"
         }
     },
-    "requires": ["social:messages"]
+    "requires": ["social"]
 }

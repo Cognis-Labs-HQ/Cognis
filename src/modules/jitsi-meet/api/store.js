@@ -1,15 +1,14 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { nowIso } from "../../../api/reuse/time.js";
 import {
     extractUrlOrigin,
     extractUrlPathSlug,
+    normalizeHttpUrl,
 } from "../../../api/reuse/url-parts.js";
 import {
-    normalizeInstanceUrl,
-    normalizeMeetingPrefix,
-    normalizeUsername,
-    normalizeUsernames,
-} from "../../../api/reuse/meeting-values.js";
+    normalizeHandleKey,
+    normalizeHandleKeys,
+} from "../../../gateways/social/bootstrap.js";
+import { normalizeMeetingPrefix } from "./meeting-values.js";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
 const ACTIVE_PRESENCE_WINDOW_MS = 45 * 1000;
@@ -25,7 +24,7 @@ function buildRoomSlug(prefix) {
 function buildParticipantKey(usernames, classroomId = null) {
     const payload = JSON.stringify({
         classroomId: classroomId ? String(classroomId) : null,
-        participants: normalizeUsernames(usernames),
+        participants: normalizeHandleKeys(usernames),
     });
     return createHash("sha256").update(payload).digest("hex");
 }
@@ -189,10 +188,10 @@ export class JitsiMeetStore {
     }
 
     async saveConfig({ instanceUrl, meetingPrefix }) {
-        const normalizedInstanceUrl = normalizeInstanceUrl(instanceUrl);
+        const normalizedInstanceUrl = normalizeHttpUrl(instanceUrl);
         const normalizedPrefix = normalizeMeetingPrefix(meetingPrefix);
         const previousConfig = await this.getConfig();
-        const updatedAt = nowIso();
+        const updatedAt = new Date().toISOString();
         const instanceChanged = Boolean(
             previousConfig.instanceUrl &&
             previousConfig.instanceUrl !== normalizedInstanceUrl,
@@ -313,13 +312,13 @@ export class JitsiMeetStore {
         createdBy,
         chatRoomId,
     }) {
-        const normalizedInstanceUrl = normalizeInstanceUrl(instanceUrl);
+        const normalizedInstanceUrl = normalizeHttpUrl(instanceUrl);
         if (!normalizedInstanceUrl) {
             throw new Error(
                 "A valid Jitsi instance URL is required before creating meetings.",
             );
         }
-        const participantUsernames = normalizeUsernames(usernames);
+        const participantUsernames = normalizeHandleKeys(usernames);
         const normalizedClassroomId =
             typeof classroomId === "string" && classroomId.trim().length > 0
                 ? classroomId.trim()
@@ -344,7 +343,7 @@ export class JitsiMeetStore {
             participantUsernames,
             normalizedClassroomId,
         );
-        const createdAt = nowIso();
+        const createdAt = new Date().toISOString();
 
         await this.db.transaction(async (executor) => {
             const meetingValues = {
@@ -451,7 +450,7 @@ export class JitsiMeetStore {
         const merged = {
             ...(await this.getMeetingState(meetingId)),
             ...updates,
-            updatedAt: nowIso(),
+            updatedAt: new Date().toISOString(),
         };
         await this.db.executeCommand({
             option: "INSERT",
@@ -477,7 +476,7 @@ export class JitsiMeetStore {
     }
 
     async upsertPresence(meetingId, username, sessionId, active = true) {
-        const timestamp = nowIso();
+        const timestamp = new Date().toISOString();
         await this.db.executeCommand({
             option: "INSERT",
             table: "jitsi_meeting_presence",
@@ -514,7 +513,7 @@ export class JitsiMeetStore {
                 table: "jitsi_meeting_presence",
                 set: {
                     active: 0,
-                    last_seen_at: nowIso(),
+                    last_seen_at: new Date().toISOString(),
                 },
                 where: [
                     { column: "meeting_id", value: meetingId },
@@ -691,7 +690,7 @@ export class JitsiMeetStore {
         classroomId,
         creatorUsername,
     }) {
-        const normalizedParticipants = normalizeUsernames([
+        const normalizedParticipants = normalizeHandleKeys([
             ...(Array.isArray(participants) ? participants : []),
             creatorUsername,
         ]);

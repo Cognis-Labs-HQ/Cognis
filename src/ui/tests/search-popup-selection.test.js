@@ -6,13 +6,10 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
-test("search popup selectable rows style checked state on the result entry", () => {
+test("search popup checked indicator stays centered in selectable rows", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
         "utf8",
     );
-    assert.match(
-        source,
-        /\.search-popup-result--checked \.search-popup-result-checkbox\s*\{/,
-    );
+    assert.match(source, /transform: translate\(-50%, -58%\) rotate\(45deg\);/);
 });

@@ -16,63 +16,30 @@ import {
 import {
     normalizeUsername,
     resolveUrlHost,
-    resolveUrlOrigin,
-    resolveUrlPathSlug,
-} from "/static/reuse/meeting-values.js";
-
-const HEARTBEAT_INTERVAL_MS = 10_000;
-const ACTIVE_MEETINGS_REFRESH_INTERVAL_MS = 10_000;
-const PROBE_SUCCESS_DISPLAY_MS = 600;
-const STATE_REFRESH_INTERVAL_MS = 5_000;
-const CHAT_REFRESH_INTERVAL_MS = 2_500;
-const SESSION_ID_STORAGE_KEY = "jitsi-meet:session-id";
-const TEXT_ENCODER = new TextEncoder();
-const MEETING_SUBJECT = "Cognis Classroom";
-const MEETING_TERMINATED_TEXT = "meeting terminated";
-const JITSI_TOOLBAR_BUTTONS = [
-    "microphone",
-    "camera",
-    "desktop",
-    "fullscreen",
-    "hangup",
-    "participants-pane",
-    "tileview",
-    "select-background",
-    "videoquality",
-    "raisehand",
-    "fodeviceselection",
-];
-
-let jitsiExternalApiLoader = null;
-
-function ensureSessionId() {
-    const existing = localStorage.getItem(SESSION_ID_STORAGE_KEY);
-    if (existing) return existing;
-    let generated = globalThis.crypto?.randomUUID?.() ?? "";
-    if (!generated) {
-        const randomBytes = new Uint8Array(16);
-        if (globalThis.crypto?.getRandomValues) {
-            globalThis.crypto.getRandomValues(randomBytes);
-            const randomHex = Array.from(randomBytes)
-                .map((byte) => byte.toString(16).padStart(2, "0"))
-                .join("");
-            generated = `session-${randomHex}`;
-        } else {
-            const fallbackEntropy = [
-                Date.now(),
-                globalThis.performance?.now?.() ?? 0,
-                globalThis.navigator?.userAgent ?? "",
-                globalThis.location?.href ?? "",
-                localStorage.getItem("cognis_account") ?? "",
-            ].join("|");
-            generated = `session-${btoa(fallbackEntropy)
-                .replace(/[^a-zA-Z0-9]/g, "")
-                .slice(0, 48)}`;
-        }
-    }
-    localStorage.setItem(SESSION_ID_STORAGE_KEY, generated);
-    return generated;
-}
+} from "/static/reuse/value-normalizers.js";
+import {
+    ACTIVE_MEETINGS_REFRESH_INTERVAL_MS,
+    CHAT_REFRESH_INTERVAL_MS,
+    HEARTBEAT_INTERVAL_MS,
+    MEETING_SUBJECT,
+    MEETING_TERMINATED_TEXT,
+    PROBE_SUCCESS_DISPLAY_MS,
+    STATE_REFRESH_INTERVAL_MS,
+    TEXT_ENCODER,
+    JITSI_TOOLBAR_BUTTONS,
+} from "./constants.js";
+import { ensureSessionId } from "./session.js";
+import {
+    buildMeetingJoinUrl,
+    loadJitsiExternalApi,
+    resolveRoomName,
+    resolveThemeMode,
+} from "./meeting-embed.js";
+import {
+    buildChatMarkup,
+    buildParticipantsMarkup,
+    buildStageMarkup,
+} from "./markup.js";
 
 function normalizeChatRoomId(value) {
     const asString = String(value ?? "").trim();
@@ -82,11 +49,6 @@ function normalizeChatRoomId(value) {
 
 function normalizeMeetingId(value) {
     return String(value ?? "").trim();
-}
-
-function readThemeCookie() {
-    const match = document.cookie.match(/(?:^|; )cognis_theme=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : "";
 }
 
 function resolveMeetingChatRoomId(meeting) {
@@ -125,134 +87,6 @@ async function fetchCurrentProfile() {
     };
 }
 
-function buildMeetingJoinUrl(meetingUrl, profile) {
-    try {
-        const parsed = new URL(meetingUrl);
-        const hashParams = new URLSearchParams(parsed.hash.replace(/^#/, ""));
-        const themeMode = resolveThemeMode();
-        hashParams.set("config.prejoinConfig.enabled", "false");
-        hashParams.set("config.requireDisplayName", "false");
-        hashParams.set("config.disableDeepLinking", "true");
-        hashParams.set("config.subject", MEETING_SUBJECT);
-        hashParams.set("config.preferredTheme", themeMode);
-        hashParams.set(
-            "config.toolbarButtons",
-            JSON.stringify(JITSI_TOOLBAR_BUTTONS),
-        );
-        if (profile?.displayName) {
-            hashParams.set("userInfo.displayName", profile.displayName);
-        }
-        if (profile?.email) {
-            hashParams.set("userInfo.email", profile.email);
-        }
-        if (profile?.avatarUrl) {
-            hashParams.set("userInfo.avatarUrl", profile.avatarUrl);
-        }
-        parsed.hash = hashParams.toString();
-        return parsed.toString();
-    } catch {
-        return meetingUrl;
-    }
-}
-
-function resolveThemeMode() {
-    const storedMode = String(localStorage.getItem("cognis_theme") ?? "")
-        .trim()
-        .toLowerCase();
-    if (storedMode === "light" || storedMode === "dark") {
-        return storedMode;
-    }
-    const shellMode = String(
-        document.querySelector(".app-shell")?.getAttribute("data-theme") ?? "",
-    )
-        .trim()
-        .toLowerCase();
-    if (shellMode === "light" || shellMode === "dark") {
-        return shellMode;
-    }
-    const bodyMode = String(document.body.getAttribute("data-theme") ?? "")
-        .trim()
-        .toLowerCase();
-    if (bodyMode === "light" || bodyMode === "dark") {
-        return bodyMode;
-    }
-    const rootMode = String(
-        document.documentElement.getAttribute("data-theme") ?? "",
-    )
-        .trim()
-        .toLowerCase();
-    if (rootMode === "light" || rootMode === "dark") {
-        return rootMode;
-    }
-    const cookieMode = String(readThemeCookie()).trim().toLowerCase();
-    if (cookieMode === "light" || cookieMode === "dark") {
-        return cookieMode;
-    }
-    return "light";
-}
-
-function resolveRoomName(meeting) {
-    if (typeof meeting?.roomSlug === "string" && meeting.roomSlug.trim()) {
-        return meeting.roomSlug.trim();
-    }
-    return resolveUrlPathSlug(meeting?.meetingUrl ?? "");
-}
-
-function loadJitsiExternalApi(meetingUrl) {
-    const meetingOrigin = resolveUrlOrigin(meetingUrl);
-    if (!meetingOrigin) {
-        return Promise.reject(new Error("Missing Jitsi meeting origin."));
-    }
-    if (
-        jitsiExternalApiLoader &&
-        jitsiExternalApiLoader.origin === meetingOrigin
-    ) {
-        return jitsiExternalApiLoader.promise;
-    }
-    const externalApiScriptUrl = `${meetingOrigin}/external_api.js`;
-    jitsiExternalApiLoader = {
-        origin: meetingOrigin,
-        promise: new Promise((resolve, reject) => {
-            const existingScript = document.querySelector(
-                `script[data-jitsi-origin="${meetingOrigin}"]`,
-            );
-            if (existingScript) {
-                existingScript.addEventListener("load", () => resolve(), {
-                    once: true,
-                });
-                existingScript.addEventListener(
-                    "error",
-                    () => reject(new Error("Failed to load Jitsi API script.")),
-                    {
-                        once: true,
-                    },
-                );
-                if (typeof window.JitsiMeetExternalAPI === "function") {
-                    resolve();
-                }
-                return;
-            }
-
-            const scriptElement = document.createElement("script");
-            scriptElement.src = externalApiScriptUrl;
-            scriptElement.async = true;
-            scriptElement.dataset.jitsiOrigin = meetingOrigin;
-            scriptElement.addEventListener("load", () => resolve(), {
-                once: true,
-            });
-            scriptElement.addEventListener(
-                "error",
-                () => reject(new Error("Failed to load Jitsi API script.")),
-                {
-                    once: true,
-                },
-            );
-            document.head.appendChild(scriptElement);
-        }),
-    };
-    return jitsiExternalApiLoader.promise;
-}
-
 function createParticipantAvatarEl(username, displayName) {
     const wrapper = document.createElement("div");
     wrapper.className = "jitsi-participant-avatar";
@@ -281,67 +115,6 @@ function createParticipantAvatarEl(username, displayName) {
     wrapper.appendChild(link);
     wrapper.appendChild(label);
     return wrapper;
-}
-
-function buildStageMarkup(i18n) {
-    return `
-    <div class="jitsi-meeting-stage card-elevated">
-      <div class="jitsi-stage-frame-wrap">
-        <div id="jitsi-meeting-frame" class="jitsi-stage-frame" title="${escapeHtml(i18n.t("ui.reuse.meeting"))}" hidden></div>
-        <div id="jitsi-overlay" class="jitsi-overlay">
-          <div id="jitsi-staged-participants" class="jitsi-staged-participants" role="list"></div>
-          <h3 class="jitsi-overlay-title">${escapeHtml(i18n.t("module.jitsi_meet.overlay.title"))}</h3>
-          <p id="jitsi-overlay-message" class="jitsi-overlay-message">${escapeHtml(i18n.t("module.jitsi_meet.overlay.select_participants"))}</p>
-          <div class="jitsi-overlay-actions">
-            <button id="jitsi-start-btn" class="btn-animated" type="button" disabled>${escapeHtml(i18n.t("module.jitsi_meet.overlay.start_meeting"))}</button>
-            <button id="jitsi-auth-btn" class="btn-cancel" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.auth_required"))}</button>
-            <button id="jitsi-reclaim-btn" class="btn-confirm" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.reclaim"))}</button>
-            <button id="jitsi-leave-alone-btn" class="btn-cancel" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.leave_meeting"))}</button>
-            <button id="jitsi-remain-alone-btn" class="btn-confirm" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.remain_in_meeting"))}</button>
-          </div>
-          <div id="jitsi-loading" class="jitsi-loading" hidden>
-            <span id="jitsi-loading-indicator" class="jitsi-spinner" aria-hidden="true"></span>
-            <span id="jitsi-loading-text">${escapeHtml(i18n.t("module.jitsi_meet.overlay.loading"))}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function buildChatMarkup(i18n) {
-    return `
-    <aside class="jitsi-chat-pane jitsi-chat-disabled card-elevated" aria-disabled="true">
-      <h3>${escapeHtml(i18n.t("module.jitsi_meet.chat.heading"))}</h3>
-      <div id="jitsi-chat-thread" class="jitsi-chat-thread" aria-live="polite" aria-busy="true"></div>
-      <form id="jitsi-chat-form" class="jitsi-chat-form" hidden>
-        <textarea id="jitsi-chat-input" class="jitsi-chat-input" rows="3" placeholder="${escapeHtml(i18n.t("module.jitsi_meet.chat.placeholder"))}" disabled></textarea>
-      </form>
-    </aside>
-  `;
-}
-
-function buildParticipantsMarkup(i18n) {
-    return `
-    <section class="jitsi-participants-pane card-elevated">
-      <header class="jitsi-participants-header">
-        <h3>${escapeHtml(i18n.t("module.jitsi_meet.participants.heading"))}</h3>
-        <button id="jitsi-find-participants-btn" class="btn-cancel" type="button">
-          ${escapeHtml(i18n.t("module.jitsi_meet.participants.search"))}
-        </button>
-      </header>
-      <div class="jitsi-participants-grid">
-        <div class="jitsi-participants-grid-column">
-          <p class="jitsi-participants-pool-label">${escapeHtml(i18n.t("module.jitsi_meet.participants.available"))}</p>
-          <div id="jitsi-available-participants" class="jitsi-avatar-pool" role="list"></div>
-        </div>
-        <div class="jitsi-participants-grid-column">
-          <p class="jitsi-participants-pool-label">${escapeHtml(i18n.t("module.jitsi_meet.participants.active_meetings"))}</p>
-          <div id="jitsi-active-meetings" class="jitsi-active-meetings" role="grid"></div>
-        </div>
-      </div>
-    </section>
-  `;
 }
 
 async function fetchParticipants(query) {

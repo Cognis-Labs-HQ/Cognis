@@ -1,18 +1,11 @@
 /**
- * Reusable browser-side meeting value helpers for participant names and meeting URLs.
+ * Generic browser-side value normalization helpers.
  *
  * Public exports:
- * - normalizeUsername(value): Normalizes a user handle for participant matching.
+ * - normalizeUsername(value): Normalizes a user handle for matching.
  * - resolveUrlHost(value): Extracts a URL host string or an empty fallback.
  * - resolveUrlOrigin(value): Extracts a URL origin string or an empty fallback.
  * - resolveUrlPathSlug(value): Extracts a trimmed path slug from a URL.
- *
- * Usage example:
- *   const username = normalizeUsername("@Alice");
- *   const host = resolveUrlHost(meeting.instanceUrl || meeting.meetingUrl);
- *
- * @param {unknown} value - Raw username or URL-like value.
- * @returns {string} Normalized username or parsed URL component, with an empty string on invalid input.
  */
 export function normalizeUsername(value) {
     return String(value ?? "")

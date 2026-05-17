@@ -56,8 +56,19 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
-    assert.match(source, /const MEETING_SUBJECT = "Cognis Classroom";/);
-    const toolbarArrayMatch = source.match(
+    const constantsSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/constants.js"),
+        "utf8",
+    );
+    const embedSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/meeting-embed.js"),
+        "utf8",
+    );
+    assert.match(
+        constantsSource,
+        /export const MEETING_SUBJECT = "Cognis Classroom";/,
+    );
+    const toolbarArrayMatch = constantsSource.match(
         /const JITSI_TOOLBAR_BUTTONS = \[([\s\S]*?)\];/,
     );
     assert.ok(toolbarArrayMatch);
@@ -73,20 +84,20 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
     assert.match(source, /avatarUrl: state\.currentProfile\?\.avatarUrl/);
     assert.match(source, /"avatarUrl",[\s\S]*state\.currentProfile\.avatarUrl/);
     assert.match(
-        source,
+        embedSource,
         /hashParams\.set\("config\.disableDeepLinking", "true"\)/,
     );
     assert.match(
-        source,
+        embedSource,
         /hashParams\.set\("userInfo\.avatarUrl", profile\.avatarUrl\)/,
     );
     assert.match(
-        source,
+        embedSource,
         /hashParams\.set\("config\.subject", MEETING_SUBJECT\)/,
     );
     assert.match(
-        source,
-        /hashParams\.set\("config\.preferredTheme", themeMode\)/,
+        embedSource,
+        /hashParams\.set\("config\.preferredTheme", resolveThemeMode\(\)\)/,
     );
     assert.match(source, /"password",[\s\S]*meetingPassword/);
     assert.match(source, /addEventListener\("passwordRequired", \(\) => \{/);
@@ -176,7 +187,7 @@ test("meetings UI recovers a live session after composer edit rerenders the ifra
 
 test("reclaim session button uses success outline styling", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        resolve(ROOT, "src/modules/jitsi-meet/ui/markup.js"),
         "utf8",
     );
     assert.match(source, /id="jitsi-reclaim-btn" class="btn-confirm"/);
@@ -206,7 +217,14 @@ test("meetings session state polling handles closed meetings and distinct leave 
         source,
         /addEventListener\("readyToClose", handleMeetingLeft\)/,
     );
-    assert.match(source, /MEETING_TERMINATED_TEXT = "meeting terminated"/);
+    const constantsSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/constants.js"),
+        "utf8",
+    );
+    assert.match(
+        constantsSource,
+        /MEETING_TERMINATED_TEXT = "meeting terminated"/,
+    );
     assert.match(source, /addEventListener\("notificationTriggered"/);
     assert.match(source, /reportTerminated: true/);
 });
@@ -235,8 +253,12 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
-    assert.match(source, /id="jitsi-leave-alone-btn"/);
-    assert.match(source, /id="jitsi-remain-alone-btn"/);
+    const markupSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/markup.js"),
+        "utf8",
+    );
+    assert.match(markupSource, /id="jitsi-leave-alone-btn"/);
+    assert.match(markupSource, /id="jitsi-remain-alone-btn"/);
     assert.match(
         source,
         /function shouldPromptLocalUserAlone\(activeParticipants\)/,
@@ -310,7 +332,18 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
-    assert.match(source, /module\.jitsi_meet\.participants\.active_meetings/);
+    const markupSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/markup.js"),
+        "utf8",
+    );
+    const embedSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/meeting-embed.js"),
+        "utf8",
+    );
+    assert.match(
+        markupSource,
+        /module\.jitsi_meet\.participants\.active_meetings/,
+    );
     assert.match(source, /\/api\/v1\/modules\/jitsi-meet\/meetings\/active/);
     assert.match(source, /requestedMeetingId/);
     assert.match(source, /async function joinMeetingById/);
@@ -318,11 +351,11 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
         source,
         /await loadActiveMeetings\(\{ resolveRequested: true \}\)/,
     );
-    assert.match(source, /function readThemeCookie\(\)/);
-    assert.match(source, /document\.querySelector\("\.app-shell"\)/);
+    assert.match(embedSource, /function readThemeCookie\(\)/);
+    assert.match(embedSource, /document\.querySelector\("\.app-shell"\)/);
     assert.match(source, /async function switchAwayFromActiveMeeting\(\)/);
     assert.match(source, /await switchAwayFromActiveMeeting\(\)/);
-    assert.match(source, /role="grid"/);
+    assert.match(markupSource, /role="grid"/);
 });
 
 test("meetings UI keeps Jitsi theme and active-meeting table responsive", () => {

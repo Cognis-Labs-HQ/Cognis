@@ -7,6 +7,7 @@ import {
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { resolveModuleConfigScriptUrl } from "./module-config.js";
 import { initSecuritySection } from "./security.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
@@ -122,10 +123,6 @@ function renderDetailsList(mod) {
     }
 
     return rows;
-}
-
-function resolveModuleConfigScriptUrl(mod) {
-    return String(mod?.ui?.componentConfig?.scriptUrl ?? "").trim();
 }
 
 function renderModulesContent(modules) {
