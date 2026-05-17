@@ -6,19 +6,51 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(fileURLToPath(import.meta.url), "../../../../");
-const DOC_LINK_PATTERN = /\[[^\]]+\]\((?!https?:)[^)]+\.md(?:[#?][^)]*)?\)/;
+const OLD_DOC_FILE_URL_PATTERNS = [
+    {
+        label: "inline markdown link",
+        pattern: /\[[^\]]+\]\((?!https?:)[^)]+\.md(?:[#?][^)]*)?\)/g,
+    },
+    {
+        label: "reference markdown link",
+        pattern: /^\s*\[[^\]]+\]:\s*(?!https?:)\S+\.md(?:[#?]\S*)?/gm,
+    },
+    {
+        label: "HTML href",
+        pattern: /href=["'](?!https?:)[^"']+\.md(?:[#?][^"']*)?["']/g,
+    },
+];
 
-test("docs markdown links use pretty docs URLs instead of language-suffixed markdown files", () => {
-    const files = execFileSync("git", ["ls-files", "*.md"], {
+function listTrackedDocFiles() {
+    return execFileSync("git", ["ls-files", "*.md", "*.html"], {
         cwd: ROOT,
         encoding: "utf8",
     })
         .trim()
         .split("\n")
         .filter(Boolean);
-    const offenders = files.filter((file) =>
-        DOC_LINK_PATTERN.test(readFileSync(join(ROOT, file), "utf8")),
-    );
+}
+
+function lineNumberAt(content, index) {
+    return content.slice(0, index).split("\n").length;
+}
+
+test("docs links use pretty docs URLs instead of markdown file URLs", () => {
+    const offenders = [];
+    for (const file of listTrackedDocFiles()) {
+        const content = readFileSync(join(ROOT, file), "utf8");
+        for (const { label, pattern } of OLD_DOC_FILE_URL_PATTERNS) {
+            pattern.lastIndex = 0;
+            for (const match of content.matchAll(pattern)) {
+                offenders.push({
+                    file,
+                    line: lineNumberAt(content, match.index ?? 0),
+                    label,
+                    match: match[0],
+                });
+            }
+        }
+    }
     assert.deepEqual(offenders, []);
 });
 
