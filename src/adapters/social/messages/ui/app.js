@@ -166,6 +166,14 @@ function selectedRoomTitle(room, currentAccountId) {
     );
 }
 
+function renderMemberCountControl(room, members, i18n) {
+    const label = `${String(members.length)} ${i18n.t("module.social.messages.members")}`;
+    if (room?.kind !== "group") {
+        return `<span class="messages-thread-subtitle">${escapeHtml(label)}</span>`;
+    }
+    return `<span class="messages-thread-subtitle messages-thread-subtitle-action" id="messages-member-summary-btn" role="button" tabindex="0">${escapeHtml(label)}</span>`;
+}
+
 function randomSample(values, count) {
     return values
         .map((value) => ({ value, rank: Math.random() }))
@@ -224,7 +232,7 @@ function renderThreadHeader(room, currentAccountId, i18n) {
             ${renderRoomAvatar(room, currentAccountId)}
             <div class="messages-thread-title-wrap">
                 <h2 class="messages-thread-title">${escapeHtml(selectedRoomTitle(room, currentAccountId))}</h2>
-                <span class="messages-thread-subtitle">${escapeHtml(String(members.length))} ${escapeHtml(i18n.t("module.social.messages.members"))}</span>
+                ${renderMemberCountControl(room, members, i18n)}
             </div>
             <div class="messages-thread-actions">
                 ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}
@@ -563,6 +571,56 @@ function formatRoomListAvatar(displayedMember, titleSource) {
         profileHandle: displayedMember?.handle || null,
         linkClass: "messages-avatar-link",
     });
+}
+
+function renderMemberSummaryItem(
+    member,
+    { avatarClass, imageClass, fallbackClass, statusText = "" },
+) {
+    const label = memberDisplayName(member);
+    return `
+        <li class="messages-member-summary-item">
+            ${formatAvatarMarkup({
+                avatarKey: member.avatarKey || null,
+                label,
+                colorSeed: member.handle || member.accountId || label,
+                avatarClass,
+                imageClass,
+                fallbackClass,
+                profileHandle: member.handle || null,
+                linkClass: "messages-avatar-link",
+            })}
+            <div class="messages-member-summary-meta">
+                <span class="messages-member-summary-name">${escapeHtml(label)}</span>
+                <span class="messages-member-summary-handle">${escapeHtml(`@${member.handle || member.username || member.accountId || ""}`)}</span>
+            </div>
+            ${
+                statusText
+                    ? `<span class="messages-member-summary-status">${escapeHtml(statusText)}</span>`
+                    : ""
+            }
+        </li>
+    `;
+}
+
+function renderMemberSummaryBody({
+    members,
+    emptyText,
+    presentStatusText = "",
+}) {
+    if (!Array.isArray(members) || members.length === 0) {
+        return `<p class="messages-member-summary-empty">${escapeHtml(emptyText)}</p>`;
+    }
+    return `<ul class="messages-member-summary-list">${members
+        .map((member) =>
+            renderMemberSummaryItem(member, {
+                avatarClass: "messages-member-summary-avatar",
+                imageClass: "messages-member-summary-avatar-img",
+                fallbackClass: "messages-member-summary-avatar-fallback",
+                statusText: presentStatusText,
+            }),
+        )
+        .join("")}</ul>`;
 }
 
 function formatMessageAvatar(message) {
@@ -1160,6 +1218,40 @@ export async function mount(root, { signal } = {}) {
         leaveButton?.addEventListener("click", async () => {
             const leaveHandle = leaveButton.getAttribute("data-leave-handle");
             await leaveSelectedRoom(leaveHandle);
+        });
+        const memberSummaryButton = document.getElementById(
+            "messages-member-summary-btn",
+        );
+        memberSummaryButton?.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ") {
+                return;
+            }
+            event.preventDefault();
+            memberSummaryButton.click();
+        });
+        memberSummaryButton?.addEventListener("click", async () => {
+            if (!selectedRoomId) return;
+            const selectedRoom = rooms.find(
+                (room) => String(room.id) === String(selectedRoomId),
+            );
+            if (!selectedRoom) return;
+            await openPopup({
+                title: i18n.t("module.social.messages.member_summary_title"),
+                body: renderMemberSummaryBody({
+                    members: selectedRoom.members ?? [],
+                    emptyText: i18n.t(
+                        "module.social.messages.member_summary_empty",
+                    ),
+                }),
+                actions: [
+                    {
+                        id: "close",
+                        label: i18n.t("ui.reuse.close"),
+                        variant: "confirm",
+                    },
+                ],
+                maxWidth: "560px",
+            });
         });
     }
 

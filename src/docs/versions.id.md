@@ -20,7 +20,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Token Registrasi       | `src/adapters/registration/token/`  | `0.1.1` |
 | Registrasi Publik      | `src/adapters/registration/public/` | `0.1.0` |
 | Profil (Sosial)        | `src/adapters/social/profile/`      | `1.0.0` |
-| Pesan (Sosial)         | `src/adapters/social/messages/`     | `1.0.0` |
+| Pesan (Sosial)         | `src/adapters/social/messages/`     | `1.4.0` |
 
 ## Gateway
 
@@ -45,5 +45,6 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Komponen         | Path                              | Versi   |
 | ---------------- | --------------------------------- | ------- |
 | Sample Analytics | `src/modules/sample-analytics/`   | `0.1.0` |
+| Jitsi Meet       | `src/modules/jitsi-meet/`         | `1.0.0` |
 | Cognis Jepang    | `src/modules/study/languages/ja/` | `1.2.2` |
 | Cognis Inggris   | `src/modules/study/languages/en/` | `1.2.0` |

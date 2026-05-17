@@ -1,6 +1,10 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
+import {
+    normalizeHandleKey,
+    rowToProfile,
+} from "../../../gateways/social/reuse/profile-record.js";
 export type {
     AccountRole,
     AccountVisibility,
@@ -21,23 +25,6 @@ import type {
     FileSizeLimit,
     ProfileCreateStore,
 } from "./profile-store.js";
-
-function rowToProfile(row: any): AccountProfile {
-    return {
-        accountId: row.account_id,
-        handle: row.handle,
-        displayName: row.display_name ?? null,
-        role: row.role as AccountRole,
-        bio: row.bio ?? null,
-        location: row.location ?? null,
-        website: row.website ?? null,
-        avatarKey: row.avatar_key ?? null,
-        bannerKey: row.banner_key ?? null,
-        visibility: row.visibility as AccountVisibility,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-    };
-}
 
 function rowToPost(row: any): Post {
     return {
@@ -228,13 +215,34 @@ export class DbProfileStore implements ProfileCreateStore {
     }
 
     async getProfileByHandle(handle: string): Promise<AccountProfile | null> {
-        const result = await this.db.executeCommand({
+        const normalizedHandle = normalizeHandleKey(handle);
+        if (!normalizedHandle) return null;
+
+        const exactResult = await this.db.executeCommand({
             option: "SELECT",
             table: "account_profiles",
             where: [{ column: "handle", value: handle }],
+            limit: 1,
         });
-        const row = result.rows?.[0];
-        return row ? rowToProfile(row) : null;
+        const exactRow = exactResult.rows?.[0];
+        if (exactRow) {
+            return rowToProfile(exactRow);
+        }
+
+        const profileHandleRowsResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "account_profiles",
+            columns: ["account_id", "handle"],
+        });
+        const matchedHandleRow = (profileHandleRowsResult.rows ?? []).find(
+            (profileHandleRow) =>
+                normalizeHandleKey(String(profileHandleRow.handle ?? "")) ===
+                normalizedHandle,
+        );
+        if (!matchedHandleRow?.account_id) {
+            return null;
+        }
+        return this.getProfile(String(matchedHandleRow.account_id));
     }
 
     async searchProfiles(

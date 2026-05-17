@@ -1,6 +1,7 @@
 import path from "node:path";
 import {
     getAuthClaims,
+    registerPageScriptOrigins,
     requireAuth,
     readJson,
     CapabilityStore,
@@ -145,7 +146,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.3.2",
+        version: "1.3.3",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -162,6 +163,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.capabilities.contribute("auth:accountStore", accountStore);
+    ctx.capabilities.contribute(
+        "auth:registerPageScriptOrigins",
+        registerPageScriptOrigins,
+    );
     ctx.capabilities.contribute(
         "auth:createLocalAdmin",
         async (username: string, password: string) => {

@@ -492,6 +492,95 @@ export class DbMessagesStore {
         return result.rows?.[0] ? this.rowToRoom(result.rows[0]) : null;
     }
 
+    /**
+     * Updates a room title and returns the refreshed room row.
+     */
+    async updateRoomTitle(
+        roomId: string,
+        title: string | null,
+    ): Promise<RoomRow | null> {
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "chatrooms",
+            set: {
+                title,
+                updated_at: new Date().toISOString(),
+            },
+            where: [{ column: "id", value: roomId }],
+        });
+        return this.getRoom(roomId);
+    }
+
+    /**
+     * Finds a group room whose member set exactly matches the provided account
+     * IDs (order-insensitive). Returns null when no exact match exists.
+     */
+    async findGroupByExactMembers(
+        memberAccountIds: string[],
+    ): Promise<RoomRow | null> {
+        const normalizedMembers = Array.from(
+            new Set(
+                memberAccountIds
+                    .map((accountId) => String(accountId ?? "").trim())
+                    .filter(Boolean),
+            ),
+        ).sort();
+        if (normalizedMembers.length < 2) return null;
+
+        const candidateRoomsResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chatrooms",
+            where: [{ column: "kind", value: "group" }],
+            orderBy: [{ column: "updated_at", direction: "DESC" }],
+            limit: 250,
+        });
+        const candidates = (candidateRoomsResult.rows ?? []).map((row) =>
+            this.rowToRoom(row),
+        );
+        if (candidates.length === 0) return null;
+
+        const candidateRoomIds = candidates.map((candidate) => candidate.id);
+        const candidateMembersResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chatroom_members",
+            where: [
+                {
+                    column: "chatroom_id",
+                    operator: "IN",
+                    value: candidateRoomIds,
+                },
+            ],
+        });
+        const membersByRoomId = new Map<string, string[]>();
+        for (const row of candidateMembersResult.rows ?? []) {
+            const roomId = String(row.chatroom_id ?? "").trim();
+            const accountId = String(row.account_id ?? "").trim();
+            if (!roomId || !accountId) continue;
+            if (!membersByRoomId.has(roomId)) {
+                membersByRoomId.set(roomId, []);
+            }
+            membersByRoomId.get(roomId)?.push(accountId);
+        }
+
+        for (const candidate of candidates) {
+            const normalizedCandidateMembers = Array.from(
+                new Set(membersByRoomId.get(candidate.id) ?? []),
+            ).sort();
+            if (
+                normalizedCandidateMembers.length ===
+                    normalizedMembers.length &&
+                normalizedCandidateMembers.every(
+                    (accountId, index) =>
+                        accountId === normalizedMembers[index],
+                )
+            ) {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
     async appendMessage(input: {
         roomId: string;
         senderId: string;

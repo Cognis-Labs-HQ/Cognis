@@ -12,6 +12,15 @@
   <string name="ui.reuse.administration">Administration</string>
   <string name="ui.reuse.logout">Logout</string>
   <string name="ui.reuse.modules">Modules</string>
+  <string name="ui.reuse.meeting">Meeting</string>
+  <string name="ui.reuse.meetings">Meetings</string>
+  <string name="ui.reuse.username">Username</string>
+  <string name="ui.reuse.display_name">Display Name</string>
+  <string name="ui.reuse.move">Move</string>
+  <string name="ui.reuse.updated_at">Updated At</string>
+  <string name="ui.reuse.unknown">Unknown</string>
+  <string name="ui.reuse.yes">Yes</string>
+  <string name="ui.reuse.no">No</string>
   <string name="ui.reuse.file_integrity">File Integrity</string>
   <string name="ui.reuse.navigation">Navigation</string>
   <string name="ui.reuse.appearance">Appearance</string>

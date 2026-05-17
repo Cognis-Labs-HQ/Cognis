@@ -10,6 +10,66 @@ import {
 export { hasMinRole, isRoleAllowed, isAccessRole };
 export type { RoleAccessPolicy };
 
+const pageScriptOriginsByOwner = new Map<string, Set<string>>();
+
+function normalizePageResourceOrigin(
+    rawOrigin: string | null | undefined,
+): string | null {
+    const trimmed = String(rawOrigin ?? "").trim();
+    if (!trimmed) return null;
+    try {
+        const parsed = new URL(trimmed);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+            return null;
+        }
+        return `${parsed.protocol}//${parsed.host}`;
+    } catch {
+        return null;
+    }
+}
+
+function listPageScriptOrigins(): string[] {
+    return Array.from(pageScriptOriginsByOwner.values())
+        .flatMap((origins) => Array.from(origins))
+        .sort();
+}
+
+function buildScriptDirective(name: string): string {
+    const allowedSources = ["'self'", ...listPageScriptOrigins()];
+    return `${name} ${allowedSources.join(" ")}`;
+}
+
+export function registerPageScriptOrigins(
+    ownerId: string,
+    rawOrigins: Array<string | null | undefined>,
+): string[] {
+    const normalizedOwnerId = String(ownerId ?? "").trim();
+    if (!normalizedOwnerId) return [];
+
+    const origins = Array.from(
+        new Set(
+            rawOrigins
+                .map((rawOrigin) => normalizePageResourceOrigin(rawOrigin))
+                .filter((origin): origin is string => Boolean(origin)),
+        ),
+    ).sort();
+
+    if (origins.length === 0) {
+        pageScriptOriginsByOwner.delete(normalizedOwnerId);
+        return [];
+    }
+
+    pageScriptOriginsByOwner.set(normalizedOwnerId, new Set(origins));
+    return origins;
+}
+
+export function registerPageScriptOrigin(
+    rawOrigin: string | null | undefined,
+): string | null {
+    const registeredOrigins = registerPageScriptOrigins("global", [rawOrigin]);
+    return registeredOrigins[0] ?? null;
+}
+
 interface AuthClaims {
     sub: string;
     role: AccessRole;
@@ -113,6 +173,17 @@ export function setPageSecurityHeaders(res: ServerResponse): void {
     res.setHeader("referrer-policy", "no-referrer");
     res.setHeader(
         "content-security-policy",
-        "default-src 'self'; img-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'",
+        [
+            "default-src 'self'",
+            "img-src 'self' blob:",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.gstatic.com",
+            buildScriptDirective("script-src"),
+            buildScriptDirective("script-src-elem"),
+            "connect-src 'self'",
+            "frame-src 'self' https: http:",
+            "worker-src 'self'",
+            "manifest-src 'self'",
+        ].join("; "),
     );
 }

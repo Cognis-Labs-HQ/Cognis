@@ -226,3 +226,114 @@ export async function openPopup({
         firstFocusable?.focus();
     });
 }
+
+/**
+ * Opens a reusable configuration form popup backed by load/save endpoints.
+ * Callers provide translated labels, field descriptors, request helpers, and
+ * toast callbacks so module and gateway settings can share one popup flow.
+ */
+export async function openConfigFormPopup({
+    i18n,
+    apiFetch,
+    showToast,
+    escapeHtml,
+    loadUrl,
+    saveUrl,
+    titleKey,
+    fields,
+    noteKey,
+    loadFailedKey,
+    successKey,
+    failedKey,
+}) {
+    const loadResponse = await apiFetch(loadUrl);
+    if (!loadResponse.ok) {
+        showToast(i18n.t(loadFailedKey ?? failedKey), { variant: "error" });
+        return false;
+    }
+    const loadPayload = await loadResponse.json().catch(() => ({ data: {} }));
+    const config = loadPayload?.data ?? {};
+
+    let popupOverlay = null;
+    const fieldRows = (Array.isArray(fields) ? fields : [])
+        .map((field) => {
+            const fieldId = String(field.id ?? "").trim();
+            if (!fieldId) return "";
+            const label = i18n.t(field.labelKey);
+            const rawValue = config?.[field.configKey];
+            const value = rawValue == null ? "" : String(rawValue);
+            const placeholder = field.placeholderKey
+                ? i18n.t(field.placeholderKey)
+                : "";
+            const description = field.descriptionKey
+                ? i18n.t(field.descriptionKey)
+                : "";
+            const descriptionBlock = description
+                ? `<p class="module-settings-popup-description">${escapeHtml(description)}</p>`
+                : "";
+            const inputType = field.type === "url" ? "url" : "text";
+            return `
+      <label class="module-settings-popup-field">
+        <span class="module-settings-popup-label">${escapeHtml(label)}</span>
+        ${descriptionBlock}
+        <input id="${escapeHtml(fieldId)}" type="${escapeHtml(inputType)}" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" />
+      </label>
+    `;
+        })
+        .join("");
+    const noteBlock = noteKey
+        ? `<p class="module-settings-popup-note">${escapeHtml(i18n.t(noteKey))}</p>`
+        : "";
+
+    const action = await openPopup({
+        title: i18n.t(titleKey),
+        body: () => `
+      <div class="module-settings-popup-fields">
+        ${fieldRows}
+      </div>
+      ${noteBlock}
+    `,
+        actions: [
+            { id: "save", label: i18n.t("ui.reuse.save"), variant: "confirm" },
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "cancel",
+            },
+        ],
+        onOpen: (overlay) => {
+            popupOverlay = overlay;
+        },
+    });
+
+    if (action !== "save" || !(popupOverlay instanceof HTMLElement)) {
+        return false;
+    }
+
+    const values = {};
+    for (const field of fields ?? []) {
+        const fieldId = String(field.id ?? "").trim();
+        if (!fieldId) continue;
+        const input = popupOverlay.querySelector(`#${fieldId}`);
+        const rawValue =
+            input instanceof HTMLInputElement ? input.value.trim() : "";
+        values[field.configKey] =
+            typeof field.serialize === "function"
+                ? field.serialize(rawValue)
+                : rawValue;
+    }
+
+    const saveResponse = await apiFetch(saveUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(values),
+    });
+
+    if (!saveResponse.ok) {
+        showToast(i18n.t(failedKey), { variant: "error" });
+        return false;
+    }
+
+    showToast(i18n.t(successKey), { variant: "success" });
+    return true;
+}

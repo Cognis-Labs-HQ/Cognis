@@ -7,6 +7,7 @@ import {
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { resolveModuleConfigScriptUrl } from "./module-config.js";
 import { initSecuritySection } from "./security.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
@@ -130,11 +131,16 @@ function renderModulesContent(modules) {
             const pill = getStatePill(mod.status);
             const disableBlocked = mod.class === "core";
             const toggleTitle = i18n.t("ui.app.admin.toggle_module");
+            const componentConfigScriptUrl = resolveModuleConfigScriptUrl(mod);
+            const hasConfigButton = componentConfigScriptUrl.length > 0;
+            const settingsButton = hasConfigButton
+                ? `<button type="button" class="module-config-settings-button" data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}" data-module-id="${escapeHtml(mod.id)}" aria-label="${escapeHtml(i18n.t("ui.reuse.settings"))}" title="${escapeHtml(i18n.t("ui.reuse.settings"))}">⚙</button>`
+                : "";
 
             return `
         <details class="module-row" data-module="${mod.id}">
           <summary class="module-row-summary">
-            <span class="module-row-title"><strong>${mod.name}</strong></span>
+            <span class="module-row-title"><strong>${mod.name}</strong>${settingsButton}</span>
             <span class="state-pill ${pill.className}">${pill.label}</span>
             <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
               <input type="checkbox" data-module="${mod.id}" ${mod.status === "enabled" ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
@@ -397,6 +403,44 @@ function bindModuleToggles() {
                 await toggleModule(moduleId, action);
                 modules = await loadModules();
                 composer.refresh(elements);
+            });
+        },
+    );
+}
+
+function bindModuleConfigureButtons() {
+    root.querySelectorAll("[data-module-config-script-url]").forEach(
+        (button) => {
+            button.addEventListener("click", async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const moduleId = button.getAttribute("data-module-id");
+                const scriptUrl = button.getAttribute(
+                    "data-module-config-script-url",
+                );
+                if (!moduleId || !scriptUrl) return;
+                try {
+                    const moduleUi = await import(scriptUrl);
+                    if (typeof moduleUi.openModuleConfigPopup !== "function")
+                        return;
+                    const didSave = await moduleUi.openModuleConfigPopup({
+                        i18n,
+                        apiFetch,
+                        openPopup,
+                        showToast,
+                        escapeHtml,
+                        moduleId,
+                    });
+                    if (didSave) {
+                        modules = await loadModules();
+                        composer.refresh(elements);
+                    }
+                } catch (error) {
+                    showToast(i18n.t("ui.reuse.save_failed"), {
+                        variant: "error",
+                    });
+                    console.error(error);
+                }
             });
         },
     );
@@ -1387,6 +1431,7 @@ export async function mount(rootEl, { signal } = {}) {
                 ],
                 onRender: () => {
                     bindModuleToggles();
+                    bindModuleConfigureButtons();
                     bindGatewayToggles();
                     bindAdapterToggles();
                     bindAdapterRows();

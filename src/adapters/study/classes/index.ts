@@ -150,9 +150,52 @@ export async function bootstrapStudyAdapter(
         setRole(username: string, role: "teacher"): Promise<void>;
         exists(username: string): Promise<boolean>;
     }>("auth:accountStore");
+    const profileStore = ctx.capabilities.get<{
+        getProfile: (
+            accountId: string,
+        ) => Promise<{ handle?: string | null } | null>;
+    }>("social:profileStore");
     const setProfileRole = ctx.capabilities.get<
         (handle: string, role: "teacher") => Promise<void>
     >("profile:setRoleByHandle");
+
+    ctx.capabilities.contribute(
+        "study:classroom:listParticipantHandles",
+        async (input: { classId: string }): Promise<string[]> => {
+            const classId = String(input?.classId ?? "").trim();
+            if (!classId) return [];
+            const classRow = await store.getClass(classId);
+            if (!classRow) return [];
+            const members = await store.listClassMembers(classId);
+
+            const accountIds = Array.from(
+                new Set([
+                    classRow.teacherAccountId,
+                    ...members.map((member) => member.studentAccountId),
+                ]),
+            );
+            const profileRows = await Promise.all(
+                accountIds.map(async (accountId) => ({
+                    accountId,
+                    profile: profileStore
+                        ? await profileStore.getProfile(accountId)
+                        : null,
+                })),
+            );
+            return Array.from(
+                new Set(
+                    profileRows
+                        .map((row) =>
+                            String(
+                                row.profile?.handle ?? row.accountId ?? "",
+                            ).toLowerCase(),
+                        )
+                        .map((handle) => handle.replace(/^@+/, "").trim())
+                        .filter(Boolean),
+                ),
+            );
+        },
+    );
 
     ctx.registerRoute(createClassesPageRoute(isEnabled), "study");
     ctx.registerRoute(createMyClassesPageRoute(isEnabled), "study");

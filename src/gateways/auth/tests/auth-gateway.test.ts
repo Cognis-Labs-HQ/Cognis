@@ -924,3 +924,37 @@ test("login userValidation exempts founder admin even when SMTP is available", a
     assert.equal(payload.data.userValidationMode, "smtp");
     assert.equal(payload.data.requiredUserValidation, false);
 });
+
+test("auth bootstrap contributes page script origin registration capability", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const registerScriptOrigins = capabilities.get<
+        (
+            ownerId: string,
+            rawOrigins: Array<string | null | undefined>,
+        ) => string[]
+    >("auth:registerPageScriptOrigins");
+
+    assert.equal(typeof registerScriptOrigins, "function");
+    assert.deepEqual(
+        registerScriptOrigins?.("test:auth-gateway", [
+            "https://meetings.example.test/path",
+        ]),
+        ["https://meetings.example.test"],
+    );
+});
