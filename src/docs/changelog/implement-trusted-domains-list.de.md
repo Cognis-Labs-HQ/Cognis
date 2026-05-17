@@ -1,4 +1,4 @@
-# Vertrauenswürdige Domains für Broadcast-Links und E-Mail-Prüfungen
+# Vertrauensdomains
 
 ## Zusammenfassung
 

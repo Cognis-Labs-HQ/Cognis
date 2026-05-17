@@ -1,4 +1,4 @@
-# Mode Pengiriman Siaran Admin dan Kontrol Audiens
+# Opsi Siaran Admin
 
 ## Ringkasan
 

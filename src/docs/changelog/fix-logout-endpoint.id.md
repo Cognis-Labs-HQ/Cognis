@@ -1,4 +1,4 @@
-# Memperbaiki Endpoint Logout yang Tidak Ada
+# Perbaiki Endpoint Logout
 
 ## Ringkasan
 

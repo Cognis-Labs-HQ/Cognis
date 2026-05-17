@@ -1,4 +1,4 @@
-# PR-Änderungsprotokoll — Verzeichnisstruktur Bereinigen
+# Verzeichnisbereinigung
 
 ## Zusammenfassung
 

@@ -1,4 +1,4 @@
-# Catatan Perubahan PR — Pemusatan Pemeriksaan Izin API
+# Pemeriksaan Izin API
 
 ## Ringkasan
 

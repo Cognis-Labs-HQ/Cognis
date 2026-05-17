@@ -1,4 +1,4 @@
-# Filter Stream Log, Default Peringatan, dan Rotasi
+# Filter & Rotasi Log
 
 ## Ringkasan
 

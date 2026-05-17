@@ -54,6 +54,29 @@ test("docs links use pretty docs URLs instead of markdown file URLs", () => {
     assert.deepEqual(offenders, []);
 });
 
+function firstMarkdownTitle(content) {
+    return content
+        .split("\n")
+        .find((line) => line.startsWith("# "))
+        ?.slice(2)
+        .trim();
+}
+
+test("markdown document titles stay concise", () => {
+    const longTitles = [];
+    for (const file of listTrackedDocFiles().filter((name) =>
+        name.endsWith(".md"),
+    )) {
+        const title = firstMarkdownTitle(
+            readFileSync(join(ROOT, file), "utf8"),
+        );
+        if (title && title.length > 30) {
+            longTitles.push({ file, length: title.length, title });
+        }
+    }
+    assert.deepEqual(longTitles, []);
+});
+
 test("docs page strips pretty docs URL prefixes before loading document slugs", () => {
     const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
     assert.ok(

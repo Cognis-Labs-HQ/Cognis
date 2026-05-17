@@ -83,7 +83,7 @@ test("docs route returns concise navigation titles", async () => {
     );
     const parsed = JSON.parse(body);
     const longTitles = parsed.data
-        .filter((doc: any) => (doc.title ?? "").length > 36)
+        .filter((doc: any) => (doc.title ?? "").length > 30)
         .map((doc: any) => ({ slug: doc.slug, title: doc.title }));
     assert.deepEqual(longTitles, []);
 });

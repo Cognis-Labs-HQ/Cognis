@@ -1,4 +1,4 @@
-# SQLite-Datenbankadapter (Entfernt)
+# SQLite-Adapter entfernt
 
 SQLite wird nicht mehr unterstützt. Der SQLite-Adapter wurde aus Cognis entfernt.
 

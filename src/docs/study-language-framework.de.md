@@ -1,4 +1,4 @@
-# Sprachlernframework (Study Language Framework)
+# Study-Sprachframework
 
 ## Überblick
 

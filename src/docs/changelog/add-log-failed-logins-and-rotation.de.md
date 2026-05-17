@@ -1,4 +1,4 @@
-# Log-Stream-Filter, Warn-Standard und Rotation
+# Log-Filter & Rotation
 
 ## Zusammenfassung
 
