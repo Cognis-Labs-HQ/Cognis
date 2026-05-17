@@ -137,13 +137,13 @@ function renderModulesContent(modules) {
             const componentConfigScriptUrl = resolveModuleConfigScriptUrl(mod);
             const hasConfigButton = componentConfigScriptUrl.length > 0;
             const settingsButton = hasConfigButton
-                ? `<button type="button" class="module-config-settings-button btn-cancel" data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}" data-module-id="${escapeHtml(mod.id)}">${escapeHtml(i18n.t("ui.reuse.settings"))}</button>`
+                ? `<button type="button" class="module-config-settings-button" data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}" data-module-id="${escapeHtml(mod.id)}" aria-label="${escapeHtml(i18n.t("ui.reuse.settings"))}" title="${escapeHtml(i18n.t("ui.reuse.settings"))}">⚙</button>`
                 : "";
 
             return `
         <details class="module-row" data-module="${mod.id}">
           <summary class="module-row-summary">
-            <span class="module-row-title"><strong>${mod.name}</strong></span>
+            <span class="module-row-title"><strong>${mod.name}</strong>${settingsButton}</span>
             <span class="state-pill ${pill.className}">${pill.label}</span>
             <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
               <input type="checkbox" data-module="${mod.id}" ${mod.status === "enabled" ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
@@ -153,7 +153,6 @@ function renderModulesContent(modules) {
           </summary>
           <div class="module-meta">
             <ul class="module-details">${renderDetailsList(mod)}</ul>
-            ${settingsButton}
           </div>
         </details>
       `;

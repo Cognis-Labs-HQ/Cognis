@@ -11,9 +11,11 @@ test("jitsi API registers configured CSP origins through auth capability", () =>
         "utf8",
     );
 
-    const guardImport = source
+    const authReuseImport = source
         .split("\n")
-        .find((line) => line.includes("../../../gateways/auth/guard.js"));
+        .find((line) =>
+            line.includes("../../../gateways/auth/reuse/session-guard.js"),
+        );
 
     assert.match(source, /auth:registerPageScriptOrigins/);
     assert.match(
@@ -21,8 +23,8 @@ test("jitsi API registers configured CSP origins through auth capability", () =>
         /registerConfiguredJitsiOrigin\(registerScriptOrigins, saved\)/,
     );
     assert.equal(
-        guardImport,
-        'import { requireAuth } from "../../../gateways/auth/guard.js";',
+        authReuseImport,
+        'import { requireAuth } from "../../../gateways/auth/reuse/session-guard.js";',
     );
 });
 

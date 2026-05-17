@@ -13,6 +13,12 @@ import {
     getInitialsText,
     pickInitialsColor,
 } from "/static/reuse/avatar-utils.js";
+import {
+    normalizeUsername,
+    resolveUrlHost,
+    resolveUrlOrigin,
+    resolveUrlPathSlug,
+} from "/static/reuse/meeting-values.js";
 
 const HEARTBEAT_INTERVAL_MS = 10_000;
 const ACTIVE_MEETINGS_REFRESH_INTERVAL_MS = 10_000;
@@ -65,13 +71,6 @@ function ensureSessionId() {
     }
     localStorage.setItem(SESSION_ID_STORAGE_KEY, generated);
     return generated;
-}
-
-function normalizeUsername(value) {
-    return String(value ?? "")
-        .trim()
-        .replace(/^@+/, "")
-        .toLowerCase();
 }
 
 function normalizeChatRoomId(value) {
@@ -178,36 +177,15 @@ function resolveThemeMode() {
     return "light";
 }
 
-function resolveMeetingHost(meetingUrl) {
-    try {
-        return new URL(meetingUrl).host;
-    } catch {
-        return "";
-    }
-}
-
-function resolveMeetingOrigin(meetingUrl) {
-    try {
-        return new URL(meetingUrl).origin;
-    } catch {
-        return "";
-    }
-}
-
 function resolveRoomName(meeting) {
     if (typeof meeting?.roomSlug === "string" && meeting.roomSlug.trim()) {
         return meeting.roomSlug.trim();
     }
-    try {
-        const parsedUrl = new URL(meeting?.meetingUrl ?? "");
-        return parsedUrl.pathname.replace(/^\/+|\/+$/g, "");
-    } catch {
-        return "";
-    }
+    return resolveUrlPathSlug(meeting?.meetingUrl ?? "");
 }
 
 function loadJitsiExternalApi(meetingUrl) {
-    const meetingOrigin = resolveMeetingOrigin(meetingUrl);
+    const meetingOrigin = resolveUrlOrigin(meetingUrl);
     if (!meetingOrigin) {
         return Promise.reject(new Error("Missing Jitsi meeting origin."));
     }
@@ -1208,9 +1186,13 @@ export async function mount(root, { signal } = {}) {
         if (!(frame instanceof HTMLElement)) return;
 
         closeMeetingEmbed();
-        await loadJitsiExternalApi(state.meeting.meetingUrl);
+        await loadJitsiExternalApi(
+            state.meeting.instanceUrl || state.meeting.meetingUrl,
+        );
 
-        const meetingHost = resolveMeetingHost(state.meeting.meetingUrl);
+        const meetingHost = resolveUrlHost(
+            state.meeting.instanceUrl || state.meeting.meetingUrl,
+        );
         const roomName = resolveRoomName(state.meeting);
         if (!meetingHost || !roomName) {
             showToast(i18n.t("module.jitsi_meet.overlay.join_failed"), {

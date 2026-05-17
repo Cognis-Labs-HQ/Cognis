@@ -109,7 +109,7 @@ export async function openModuleSettingsPopup({
         })
         .join("");
     const noteBlock = noteKey
-        ? `<p class="admin-inline-note">${escapeHtml(i18n.t(noteKey))}</p>`
+        ? `<p class="module-settings-popup-note">${escapeHtml(i18n.t(noteKey))}</p>`
         : "";
 
     const action = await openPopup({

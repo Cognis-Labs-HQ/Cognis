@@ -104,21 +104,6 @@ test("page composer persists separate layout profiles per grid size", () => {
     assert.match(source, /applyLayoutForCurrentGridColumns\(\);/);
 });
 
-test("page composer keeps user-resized half-width cards within half-grid limits", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer.js"),
-        "utf8",
-    );
-
-    assert.match(
-        source,
-        /const halfWidthLimit = Math\.min\(maxCols, halfGrid\(maxCols\)\);/,
-    );
-    assert.match(source, /w = Math\.min\(\s*halfWidthLimit,/m);
-    assert.match(source, /if \(p\.w > maxAllowed\) return true;/);
-    assert.match(source, /if \(pl\.w > maxAllowed\) return true;/);
-});
-
 test("page composer does not block initial render on async layout loading", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-composer.js"),

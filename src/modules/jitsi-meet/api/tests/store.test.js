@@ -142,86 +142,6 @@ test("jitsi store meeting creation uses the modern column set", async () => {
     assert.equal(createdMeeting?.reused, false);
 });
 
-test("jitsi store meeting creation retries with legacy participant columns", async () => {
-    const insertedMeetingRows = [];
-    let hasFailedLegacyInsert = false;
-    const mockDb = {
-        async ensureTable() {},
-        async transaction(callback) {
-            return callback(this);
-        },
-        async executeCommand(command) {
-            if (
-                command.option === "INSERT" &&
-                command.table === "jitsi_meetings"
-            ) {
-                if (
-                    !hasFailedLegacyInsert &&
-                    !("participant_a" in command.values) &&
-                    !("participant_b" in command.values)
-                ) {
-                    hasFailedLegacyInsert = true;
-                    throw new Error(
-                        'null value in column "participant_a" violates not-null constraint',
-                    );
-                }
-                insertedMeetingRows.push(command.values);
-                return { rows: [] };
-            }
-            if (
-                command.option === "SELECT" &&
-                command.table === "jitsi_meetings" &&
-                command.where?.some((whereEntry) => whereEntry.column === "id")
-            ) {
-                const selectedMeetingId = command.where.find(
-                    (whereEntry) => whereEntry.column === "id",
-                )?.value;
-                return {
-                    rows: insertedMeetingRows.filter(
-                        (meetingRow) => meetingRow.id === selectedMeetingId,
-                    ),
-                };
-            }
-            if (
-                command.option === "INSERT" &&
-                command.table === "jitsi_meeting_participants"
-            ) {
-                return { rows: [] };
-            }
-            if (
-                command.option === "SELECT" &&
-                command.table === "jitsi_meeting_participants"
-            ) {
-                return {
-                    rows: [],
-                };
-            }
-            if (
-                command.option === "INSERT" &&
-                command.table === "jitsi_meeting_state"
-            ) {
-                return { rows: [] };
-            }
-            return { rows: [] };
-        },
-    };
-
-    const store = new JitsiMeetStore({ db: mockDb });
-    await store.ensureSchema();
-    await store.createMeeting({
-        instanceUrl: "https://meet.example.com",
-        meetingPrefix: "classroom",
-        usernames: ["alice", "bob"],
-        classroomId: null,
-        createdBy: "alice",
-        chatRoomId: null,
-    });
-
-    assert.equal(insertedMeetingRows.length, 1);
-    assert.equal(insertedMeetingRows[0].participant_a, "alice");
-    assert.equal(insertedMeetingRows[0].participant_b, "bob");
-});
-
 test("jitsi store meeting creation falls back to a readable default slug", async () => {
     const mockDb = createMockJitsiDb();
     const store = new JitsiMeetStore({ db: mockDb });
@@ -242,33 +162,49 @@ test("jitsi store meeting creation falls back to a readable default slug", async
     );
 });
 
-test("jitsi store ensures ended meeting state columns on legacy schemas", async () => {
-    const executedStatements = [];
+test("jitsi store config change invalidates existing meeting rows", async () => {
+    const commands = [];
     const mockDb = {
         async ensureTable() {},
-        async execute(statement) {
-            executedStatements.push(statement);
-            return { rows: [], rowCount: 0 };
-        },
         async transaction(callback) {
             return callback(this);
         },
-        async executeCommand() {
+        async executeCommand(command) {
+            commands.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "jitsi_module_config"
+            ) {
+                return {
+                    rows: [
+                        {
+                            instance_url: "https://old.example.com",
+                            meeting_prefix: "old",
+                            updated_at: "2026-01-01T00:00:00.000Z",
+                        },
+                    ],
+                };
+            }
             return { rows: [] };
         },
     };
     const store = new JitsiMeetStore({ db: mockDb });
-    await store.ensureSchema();
-    assert.equal(
-        executedStatements.some((statement) =>
-            statement.includes("ADD COLUMN IF NOT EXISTS ended_by"),
-        ),
-        true,
-    );
-    assert.equal(
-        executedStatements.some((statement) =>
-            statement.includes("ADD COLUMN IF NOT EXISTS ended_at"),
-        ),
-        true,
+
+    const saved = await store.saveConfig({
+        instanceUrl: "https://new.example.com",
+        meetingPrefix: "classroom",
+    });
+
+    assert.equal(saved.invalidatedMeetings, true);
+    assert.deepEqual(
+        commands
+            .filter((command) => command.option === "DELETE")
+            .map((command) => command.table),
+        [
+            "jitsi_meeting_presence",
+            "jitsi_meeting_state",
+            "jitsi_meeting_participants",
+            "jitsi_meetings",
+        ],
     );
 });

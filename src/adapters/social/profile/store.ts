@@ -1,6 +1,10 @@
 import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
+import {
+    normalizeHandleKey,
+    rowToProfile,
+} from "../../../gateways/social/reuse/profile-record.js";
 export type {
     AccountRole,
     AccountVisibility,
@@ -22,23 +26,6 @@ import type {
     ProfileCreateStore,
 } from "./profile-store.js";
 
-function rowToProfile(row: any): AccountProfile {
-    return {
-        accountId: row.account_id,
-        handle: row.handle,
-        displayName: row.display_name ?? null,
-        role: row.role as AccountRole,
-        bio: row.bio ?? null,
-        location: row.location ?? null,
-        website: row.website ?? null,
-        avatarKey: row.avatar_key ?? null,
-        bannerKey: row.banner_key ?? null,
-        visibility: row.visibility as AccountVisibility,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-    };
-}
-
 function rowToPost(row: any): Post {
     return {
         id: row.id,
@@ -49,13 +36,6 @@ function rowToPost(row: any): Post {
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
-}
-
-function normalizeHandleKey(handle: string | null | undefined): string {
-    return String(handle ?? "")
-        .trim()
-        .replace(/^@+/, "")
-        .toLowerCase();
 }
 
 const JOINED_PROFILE_COLUMNS: Array<{ col: string; as: string }> = [

@@ -157,7 +157,8 @@
     border: 1px solid var(--border);
     border-radius: 0.3rem;
     background: var(--surface);
-    position: relative;
+    display: grid;
+    place-items: center;
 }
 
 .search-popup-result--checked .search-popup-result-checkbox {
@@ -167,11 +168,9 @@
 
 .search-popup-result--checked .search-popup-result-checkbox::after {
     content: "";
-    position: absolute;
-    left: 0.3rem;
-    top: 0.08rem;
-    width: 0.2rem;
-    height: 0.48rem;
+    width: 0.24rem;
+    height: 0.5rem;
+    margin-top: -0.08rem;
     border: solid #ffffff;
     border-width: 0 0.12rem 0.12rem 0;
     transform: rotate(45deg);

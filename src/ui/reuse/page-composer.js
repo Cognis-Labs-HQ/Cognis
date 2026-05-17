@@ -2500,10 +2500,9 @@ export function createPageComposer(
             if (gridSize?.fullWidth) {
                 w = maxCols;
             } else if (gridSize?.halfWidth) {
-                const halfWidthLimit = Math.min(maxCols, halfGrid(maxCols));
                 w = Math.min(
-                    halfWidthLimit,
-                    Math.max(gridSize.min[0], Math.min(orig.w, maxCols)),
+                    maxCols,
+                    Math.max(gridSize.min[0], halfGrid(maxCols)),
                 );
             } else {
                 w = Math.min(orig.w, maxCols);
@@ -2585,11 +2584,11 @@ export function createPageComposer(
             const gridSize = getGridSize(element);
             if (gridSize.fullWidth && p.w !== gridCols) return true;
             if (gridSize.halfWidth) {
-                const maxAllowed = Math.min(
+                const target = Math.min(
                     gridCols,
                     Math.max(gridSize.min[0], halfGrid(gridCols)),
                 );
-                if (p.w > maxAllowed) return true;
+                if (p.w !== target) return true;
             }
             return false;
         });
@@ -2610,11 +2609,11 @@ export function createPageComposer(
             const gridSize = getGridSize(element);
             if (gridSize.fullWidth && pl.w !== state.gridCols) return true;
             if (gridSize.halfWidth) {
-                const maxAllowed = Math.min(
+                const target = Math.min(
                     state.gridCols,
                     Math.max(gridSize.min[0], halfGrid(state.gridCols)),
                 );
-                if (pl.w > maxAllowed) return true;
+                if (pl.w !== target) return true;
             }
             return false;
         });

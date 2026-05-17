@@ -1,8 +1,14 @@
 import path from "node:path";
 import { JitsiMeetStore } from "./store.js";
-import { requireAuth } from "../../../gateways/auth/guard.js";
+import { requireAuth } from "../../../gateways/auth/reuse/session-guard.js";
 import { readJson } from "../../../api/reuse/read-json.js";
-import { isModeratorRole, normalizeUsername } from "./reuse/meeting-values.js";
+import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
+import {
+    isModeratorRole,
+    normalizeInstanceUrl,
+    normalizeMeetingPrefix,
+    normalizeUsername,
+} from "../../../api/reuse/meeting-values.js";
 
 const MODULE_ID = "jitsi-meet";
 const PAGE_SCRIPT_ORIGIN_OWNER_ID = "module:jitsi-meet";
@@ -139,37 +145,6 @@ async function resolveMeetingPayloadOrReject({
         state,
         requesterUsername,
     };
-}
-
-/**
- * Checks whether a meeting URL is reachable within a bounded timeout.
- *
- * @param {string} meetingUrl - Absolute meeting URL to probe.
- * @returns {Promise<{ alive: boolean, status?: number, error?: string }>}
- */
-async function checkMeetingLiveness(meetingUrl) {
-    const abortController = new AbortController();
-    const timer = setTimeout(() => {
-        abortController.abort();
-    }, LIVELINESS_TIMEOUT_MS);
-    try {
-        const response = await fetch(meetingUrl, {
-            method: "GET",
-            signal: abortController.signal,
-            redirect: "follow",
-        });
-        return {
-            alive: response.ok,
-            status: response.status,
-        };
-    } catch (error) {
-        return {
-            alive: false,
-            error: error instanceof Error ? error.message : String(error),
-        };
-    } finally {
-        clearTimeout(timer);
-    }
 }
 
 async function createMeetingPayload({
@@ -561,7 +536,7 @@ export function registerApiRoutes(router, ctx) {
             const claims = requireAuth(req, res, "admin");
             if (!claims) return;
             const body = await readJson(req);
-            const instanceUrl = store.normalizeInstanceUrl(body.instanceUrl);
+            const instanceUrl = normalizeInstanceUrl(body.instanceUrl);
             if (!instanceUrl) {
                 sendError(
                     res,
@@ -571,7 +546,7 @@ export function registerApiRoutes(router, ctx) {
                 );
                 return;
             }
-            const meetingPrefix = store.normalizeMeetingPrefix(
+            const meetingPrefix = normalizeMeetingPrefix(
                 body.meetingPrefix ?? "",
             );
             const saved = await store.saveConfig({
@@ -751,7 +726,9 @@ export function registerApiRoutes(router, ctx) {
                 );
                 return;
             }
-            const liveness = await checkMeetingLiveness(config.instanceUrl);
+            const liveness = await checkHttpLiveness(config.instanceUrl, {
+                timeoutMs: LIVELINESS_TIMEOUT_MS,
+            });
             sendJson(res, 200, {
                 data: {
                     ...liveness,
@@ -780,8 +757,11 @@ export function registerApiRoutes(router, ctx) {
             });
             if (!resolved) return;
 
-            const liveness = await checkMeetingLiveness(
+            const liveness = await checkHttpLiveness(
                 resolved.meeting.meetingUrl,
+                {
+                    timeoutMs: LIVELINESS_TIMEOUT_MS,
+                },
             );
             sendJson(res, 200, {
                 data: liveness,

@@ -1,18 +1,19 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { nowIso } from "../../../api/reuse/time.js";
+import {
+    extractUrlOrigin,
+    extractUrlPathSlug,
+} from "../../../api/reuse/url-parts.js";
 import {
     normalizeInstanceUrl,
     normalizeMeetingPrefix,
     normalizeUsername,
     normalizeUsernames,
-} from "./reuse/meeting-values.js";
+} from "../../../api/reuse/meeting-values.js";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
 const ACTIVE_PRESENCE_WINDOW_MS = 45 * 1000;
 const DEFAULT_MEETING_SLUG_PREFIX = "cognis-classroom";
-
-function nowIso() {
-    return new Date().toISOString();
-}
 
 function buildRoomSlug(prefix) {
     const readablePrefix =
@@ -21,55 +22,12 @@ function buildRoomSlug(prefix) {
     return `${readablePrefix}-${entropy}`;
 }
 
-function extractInstanceFromMeetingUrl(meetingUrl) {
-    try {
-        const parsed = new URL(String(meetingUrl ?? ""));
-        return `${parsed.protocol}//${parsed.host}`;
-    } catch {
-        return null;
-    }
-}
-
-function extractRoomSlug(meetingUrl) {
-    try {
-        const parsed = new URL(String(meetingUrl ?? ""));
-        const cleanPath = parsed.pathname.replace(/^\/+/, "");
-        return cleanPath || null;
-    } catch {
-        return null;
-    }
-}
-
 function buildParticipantKey(usernames, classroomId = null) {
     const payload = JSON.stringify({
         classroomId: classroomId ? String(classroomId) : null,
         participants: normalizeUsernames(usernames),
     });
     return createHash("sha256").update(payload).digest("hex");
-}
-
-function isLegacyParticipantConstraintError(error) {
-    const message = String(error?.message ?? "").toLowerCase();
-    if (!message) {
-        return false;
-    }
-    const mentionsLegacyColumn =
-        message.includes("participant_a") || message.includes("participant_b");
-    const mentionsNotNullViolation =
-        message.includes("null value in column") ||
-        message.includes("not null") ||
-        message.includes("cannot be null");
-    return mentionsLegacyColumn && mentionsNotNullViolation;
-}
-
-function buildLegacyParticipantColumns(participantUsernames, createdBy) {
-    const fallbackUsername = normalizeUsername(createdBy) || "system";
-    const firstParticipant = participantUsernames[0] ?? fallbackUsername;
-    const secondParticipant = participantUsernames[1] ?? firstParticipant;
-    return {
-        participant_a: firstParticipant,
-        participant_b: secondParticipant,
-    };
 }
 
 /**
@@ -93,38 +51,6 @@ export class JitsiMeetStore {
     constructor({ db, log }) {
         this.db = db;
         this.log = log;
-        this.meetingStateEndedColumnsEnsured = false;
-    }
-
-    async ensureMeetingStateEndedColumns() {
-        if (this.meetingStateEndedColumnsEnsured) {
-            return;
-        }
-        const rawExecute = this.db?.execute;
-        if (typeof rawExecute !== "function") {
-            this.meetingStateEndedColumnsEnsured = true;
-            return;
-        }
-        const ensureColumn = async (columnName, columnType) => {
-            await rawExecute(
-                `ALTER TABLE jitsi_meeting_state ADD COLUMN IF NOT EXISTS ${columnName} ${columnType}`,
-            ).catch(async () => {
-                await rawExecute(
-                    `ALTER TABLE jitsi_meeting_state ADD COLUMN ${columnName} ${columnType}`,
-                ).catch((error) => {
-                    const message = String(error?.message ?? "").toLowerCase();
-                    const duplicateColumn =
-                        message.includes("duplicate column") ||
-                        message.includes("already exists");
-                    if (!duplicateColumn) {
-                        throw error;
-                    }
-                });
-            });
-        };
-        await ensureColumn("ended_by", "TEXT");
-        await ensureColumn("ended_at", "TIMESTAMP");
-        this.meetingStateEndedColumnsEnsured = true;
     }
 
     async ensureSchema() {
@@ -243,7 +169,6 @@ export class JitsiMeetStore {
             ],
             primaryKey: ["meeting_id", "username", "session_id"],
         });
-        await this.ensureMeetingStateEndedColumns();
     }
 
     async getConfig() {
@@ -266,24 +191,48 @@ export class JitsiMeetStore {
     async saveConfig({ instanceUrl, meetingPrefix }) {
         const normalizedInstanceUrl = normalizeInstanceUrl(instanceUrl);
         const normalizedPrefix = normalizeMeetingPrefix(meetingPrefix);
-        await this.db.executeCommand({
-            option: "INSERT",
-            table: "jitsi_module_config",
-            values: {
-                id: "default",
-                instance_url: normalizedInstanceUrl,
-                meeting_prefix: normalizedPrefix,
-                updated_at: nowIso(),
-            },
-            conflict: {
-                action: "update",
-                target: ["id"],
-            },
+        const previousConfig = await this.getConfig();
+        const updatedAt = nowIso();
+        const instanceChanged = Boolean(
+            previousConfig.instanceUrl &&
+            previousConfig.instanceUrl !== normalizedInstanceUrl,
+        );
+
+        await this.db.transaction(async (executor) => {
+            if (instanceChanged) {
+                for (const table of [
+                    "jitsi_meeting_presence",
+                    "jitsi_meeting_state",
+                    "jitsi_meeting_participants",
+                    "jitsi_meetings",
+                ]) {
+                    await executor.executeCommand({
+                        option: "DELETE",
+                        table,
+                    });
+                }
+            }
+            await executor.executeCommand({
+                option: "INSERT",
+                table: "jitsi_module_config",
+                values: {
+                    id: "default",
+                    instance_url: normalizedInstanceUrl,
+                    meeting_prefix: normalizedPrefix,
+                    updated_at: updatedAt,
+                },
+                conflict: {
+                    action: "update",
+                    target: ["id"],
+                },
+            });
         });
+
         return {
             instanceUrl: normalizedInstanceUrl ?? "",
             meetingPrefix: normalizedPrefix,
-            updatedAt: nowIso(),
+            updatedAt,
+            invalidatedMeetings: instanceChanged,
         };
     }
 
@@ -411,28 +360,11 @@ export class JitsiMeetStore {
                 created_at: createdAt,
                 updated_at: createdAt,
             };
-            try {
-                await executor.executeCommand({
-                    option: "INSERT",
-                    table: "jitsi_meetings",
-                    values: meetingValues,
-                });
-            } catch (error) {
-                if (!isLegacyParticipantConstraintError(error)) {
-                    throw error;
-                }
-                await executor.executeCommand({
-                    option: "INSERT",
-                    table: "jitsi_meetings",
-                    values: {
-                        ...meetingValues,
-                        ...buildLegacyParticipantColumns(
-                            participantUsernames,
-                            createdBy,
-                        ),
-                    },
-                });
-            }
+            await executor.executeCommand({
+                option: "INSERT",
+                table: "jitsi_meetings",
+                values: meetingValues,
+            });
 
             for (const username of participantUsernames) {
                 await executor.executeCommand({
@@ -671,7 +603,7 @@ export class JitsiMeetStore {
                 return {
                     id: meeting.id,
                     meetingUrl: meeting.meetingUrl,
-                    roomSlug: extractRoomSlug(meeting.meetingUrl),
+                    roomSlug: extractUrlPathSlug(meeting.meetingUrl),
                     meetingName: meeting.meetingName,
                     classroomId: meeting.classroomId,
                     createdBy: meeting.createdBy,
@@ -737,8 +669,8 @@ export class JitsiMeetStore {
                 endedBy: state.endedBy,
                 endedAt: state.endedAt,
             },
-            instanceUrl: extractInstanceFromMeetingUrl(meeting.meetingUrl),
-            roomSlug: extractRoomSlug(meeting.meetingUrl),
+            instanceUrl: extractUrlOrigin(meeting.meetingUrl),
+            roomSlug: extractUrlPathSlug(meeting.meetingUrl),
             ...extra,
         };
     }
@@ -770,17 +702,5 @@ export class JitsiMeetStore {
                     ? classroomId.trim()
                     : null,
         };
-    }
-
-    normalizeInstanceUrl(rawUrl) {
-        return normalizeInstanceUrl(rawUrl);
-    }
-
-    normalizeMeetingPrefix(rawPrefix) {
-        return normalizeMeetingPrefix(rawPrefix);
-    }
-
-    normalizeUsernames(rawUsernames) {
-        return normalizeUsernames(rawUsernames);
     }
 }
