@@ -30,7 +30,7 @@ const adminToken = issueAccessToken("admin-user", "admin", 60);
 
 const accountStore = {
     async register(username: string) {
-        return { username, isAdmin: false, enabled: true };
+        return { username, role: "user", enabled: true };
     },
     async verify() {
         return null;

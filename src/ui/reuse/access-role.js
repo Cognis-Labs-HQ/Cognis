@@ -6,6 +6,7 @@
  * Public exports:
  * - `ACCESS_ROLES` Ordered list of supported role IDs for selectors.
  * - `getRoleLabel(i18n, role)` Localizes a role ID into a user-facing label.
+ * - `hasMinAccessRole(role, minRole)` Returns true when a role meets a minimum role rank.
  * - `isAdminScope()` Returns true when the session role is `admin` or `owner`.
  * - `isTeacherScope()` Returns true when the session role is `teacher`.
  * - `isStudentScope()` Returns true when the session role is `user`, `admin`, or `owner`.
@@ -22,6 +23,10 @@
  */
 export const ACCESS_ROLES = ["user", "teacher", "moderator", "admin", "owner"];
 
+const ACCESS_ROLE_RANKS = new Map(
+    ACCESS_ROLES.map((role, index) => [role, index]),
+);
+
 export function getRoleLabel(i18n, role) {
     const normalizedRole = String(role ?? "").trim();
     const key = `ui.reuse.role_${normalizedRole}`;
@@ -31,13 +36,28 @@ export function getRoleLabel(i18n, role) {
 }
 
 /**
+ * Checks whether a role meets or exceeds a minimum access role. Unknown roles
+ * fail closed.
+ *
+ * @param {string | null | undefined} role Role ID to test.
+ * @param {string} minRole Minimum role ID required.
+ * @returns {boolean} True when `role` ranks at least as high as `minRole`.
+ */
+export function hasMinAccessRole(role, minRole) {
+    const roleRank = ACCESS_ROLE_RANKS.get(String(role ?? "").trim());
+    const minRoleRank = ACCESS_ROLE_RANKS.get(String(minRole ?? "").trim());
+    return (
+        typeof roleRank === "number" &&
+        typeof minRoleRank === "number" &&
+        roleRank >= minRoleRank
+    );
+}
+
+/**
  * @returns {boolean} True when the active session role is `admin` or `owner`.
  */
 export function isAdminScope() {
-    const roleValue = String(localStorage.getItem("cognis_role") ?? "")
-        .trim()
-        .toLowerCase();
-    return roleValue === "admin" || roleValue === "owner";
+    return hasMinAccessRole(localStorage.getItem("cognis_role"), "admin");
 }
 
 /**

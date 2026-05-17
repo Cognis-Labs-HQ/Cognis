@@ -15,7 +15,7 @@ const ownerHeaders = { authorization: `Bearer ${ownerToken}` };
 
 test("user routes create/list/update lifecycle", async () => {
     const accounts = new VolatileLocalAccountStore();
-    await accounts.register("admin", "x", true);
+    await accounts.register("admin", "x", "admin");
     const prefs = new VolatileUserPreferenceStore();
     const route = createUserRoutes(accounts, prefs);
     let body = "";
@@ -93,8 +93,8 @@ test("user routes create/list/update lifecycle", async () => {
 
 test("user routes log account disable operations", async () => {
     const accounts = new VolatileLocalAccountStore();
-    await accounts.register("admin", "x", true);
-    await accounts.register("alice", "pw", false);
+    await accounts.register("admin", "x", "admin");
+    await accounts.register("alice", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
     const entries: Array<{
         level: string;
@@ -141,7 +141,7 @@ test("user routes log account disable operations", async () => {
 
 test("user info endpoint allows self-access and admin access, blocks others", async () => {
     const accounts = new VolatileLocalAccountStore();
-    await accounts.register("alice", "pw", false);
+    await accounts.register("alice", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
     const route = createUserRoutes(accounts, prefs);
     let body = "";
@@ -212,7 +212,7 @@ test("user info endpoint allows self-access and admin access, blocks others", as
 
 test("getInfo endpoint returns lastLogin field", async () => {
     const accounts = new VolatileLocalAccountStore();
-    await accounts.register("carol", "pw", false);
+    await accounts.register("carol", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
     const route = createUserRoutes(accounts, prefs);
     let body = "";
@@ -269,7 +269,7 @@ test("getInfo endpoint returns lastLogin field", async () => {
 
 test("admin can set founder flag through isfounder endpoint", async () => {
     const accounts = new VolatileLocalAccountStore();
-    await accounts.register("dana", "pw", false);
+    await accounts.register("dana", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
     const route = createUserRoutes(accounts, prefs);
     let status = 0;
@@ -301,8 +301,8 @@ test("admin can set founder flag through isfounder endpoint", async () => {
 
 test("disabling a user invalidates existing access tokens for that user", async () => {
     const accounts = new VolatileLocalAccountStore();
-    await accounts.register("admin", "pw", true);
-    await accounts.register("erin", "pw", false);
+    await accounts.register("admin", "pw", "admin");
+    await accounts.register("erin", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
     const route = createUserRoutes(accounts, prefs);
     let status = 0;
@@ -327,7 +327,7 @@ test("disabling a user invalidates existing access tokens for that user", async 
 
 test("deleting a user invalidates existing access tokens for that user", async () => {
     const accounts = new VolatileLocalAccountStore();
-    await accounts.register("frank", "pw", false);
+    await accounts.register("frank", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
     const route = createUserRoutes(accounts, prefs);
     let status = 0;
@@ -352,7 +352,7 @@ test("deleting a user invalidates existing access tokens for that user", async (
 
 test("deleting a user frees the username for re-registration", async () => {
     const accounts = new VolatileLocalAccountStore();
-    await accounts.register("grace", "pw", false);
+    await accounts.register("grace", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
     const route = createUserRoutes(accounts, prefs);
     let status = 0;
@@ -389,10 +389,16 @@ test("deleting a user frees the username for re-registration", async () => {
     assert.equal(status, 201);
 });
 
-test("admin cannot demote disable or delete other admins", async () => {
+test("admins cannot manage admin or owner accounts while owner can manage others", async () => {
     const accounts = new VolatileLocalAccountStore();
-    await accounts.register("admin", "pw", true);
-    await accounts.register("alice", "pw", true);
+    await accounts.register("admin", "pw", "admin");
+    await accounts.register("owner", "pw", "admin");
+    await accounts.setFounder("owner", true);
+    await accounts.register("alice", "pw", "admin");
+    await accounts.register("bob", "pw", "admin");
+    await accounts.register("carol", "pw", "admin");
+    await accounts.register("founder", "pw", "admin");
+    await accounts.setFounder("founder", true);
     const prefs = new VolatileUserPreferenceStore();
     const route = createUserRoutes(accounts, prefs);
     let status = 0;
@@ -414,6 +420,7 @@ test("admin cannot demote disable or delete other admins", async () => {
         new URL("http://localhost/api/v1/users/alice/role"),
     );
     assert.equal(status, 403);
+    assert.equal((await accounts.getInfo("alice"))?.role, "admin");
 
     await route(
         { method: "POST", headers } as any,
@@ -423,9 +430,10 @@ test("admin cannot demote disable or delete other admins", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/users/alice/disable"),
+        new URL("http://localhost/api/v1/users/bob/disable"),
     );
     assert.equal(status, 403);
+    assert.equal((await accounts.getInfo("bob"))?.enabled, true);
 
     await route(
         { method: "DELETE", headers } as any,
@@ -435,9 +443,47 @@ test("admin cannot demote disable or delete other admins", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/users/alice"),
+        new URL("http://localhost/api/v1/users/carol"),
     );
     assert.equal(status, 403);
+    assert.equal(await accounts.has("carol"), true);
+
+    await route(
+        {
+            method: "POST",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"role":"user"}');
+            },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/founder/role"),
+    );
+    assert.equal(status, 403);
+
+    await route(
+        {
+            method: "POST",
+            headers: ownerHeaders,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"role":"user"}');
+            },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/alice/role"),
+    );
+    assert.equal(status, 200);
+    assert.equal((await accounts.getInfo("alice"))?.role, "user");
 
     await route(
         { method: "POST", headers: ownerHeaders } as any,
@@ -447,14 +493,118 @@ test("admin cannot demote disable or delete other admins", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/users/alice/disable"),
+        new URL("http://localhost/api/v1/users/bob/disable"),
     );
     assert.equal(status, 200);
+    assert.equal((await accounts.getInfo("bob"))?.enabled, false);
+
+    await route(
+        { method: "DELETE", headers: ownerHeaders } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/carol"),
+    );
+    assert.equal(status, 200);
+    assert.equal(await accounts.has("carol"), false);
+
+    await route(
+        {
+            method: "POST",
+            headers: ownerHeaders,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"role":"user"}');
+            },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/owner/role"),
+    );
+    assert.equal(status, 403);
+    assert.equal((await accounts.getInfo("owner"))?.role, "admin");
+
+    await route(
+        { method: "POST", headers: ownerHeaders } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/owner/disable"),
+    );
+    assert.equal(status, 403);
+    assert.equal((await accounts.getInfo("owner"))?.enabled, true);
+
+    await route(
+        { method: "DELETE", headers: ownerHeaders } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/owner"),
+    );
+    assert.equal(status, 403);
+    assert.equal(await accounts.has("owner"), true);
+});
+
+test("role changes invalidate target access tokens immediately", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "pw", "admin");
+    await accounts.register("alice", "pw", "admin");
+    const prefs = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, prefs);
+    let status = 0;
+    const aliceToken = issueAccessToken("alice", "admin", 60);
+    const aliceHeaders = { authorization: `Bearer ${aliceToken}` };
+
+    assert.equal(verifyAccessToken(aliceToken)?.role, "admin");
+
+    await route(
+        {
+            method: "POST",
+            headers: ownerHeaders,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"role":"user"}');
+            },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/alice/role"),
+    );
+
+    assert.equal(status, 200);
+    assert.equal(verifyAccessToken(aliceToken), null);
+
+    await route(
+        { method: "GET", headers: aliceHeaders } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users"),
+    );
+    assert.equal(status, 401);
 });
 
 test("users list reports founder admins as owner role", async () => {
     const accounts = new VolatileLocalAccountStore();
-    await accounts.register("admin", "pw", true);
+    await accounts.register("admin", "pw", "admin");
     await accounts.setFounder("admin", true);
     const prefs = new VolatileUserPreferenceStore();
     const route = createUserRoutes(accounts, prefs);
@@ -477,12 +627,13 @@ test("users list reports founder admins as owner role", async () => {
     assert.equal(status, 200);
     const payload = JSON.parse(body);
     assert.equal(payload.data[0].role, "owner");
+    assert.equal("isAdmin" in payload.data[0], false);
 });
 
 test("teacher role change normalizes hidden/private visibility to friends", async () => {
     const accounts = new VolatileLocalAccountStore();
-    await accounts.register("admin", "pw", true);
-    await accounts.register("alice", "pw", false);
+    await accounts.register("admin", "pw", "admin");
+    await accounts.register("alice", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
     let status = 0;
     const appliedVisibilityUpdates: string[] = [];
@@ -520,8 +671,8 @@ test("teacher role change normalizes hidden/private visibility to friends", asyn
 
 test("teacher role change sets profile visibility to friends", async () => {
     const accounts = new VolatileLocalAccountStore();
-    await accounts.register("admin", "pw", true);
-    await accounts.register("alice", "pw", false);
+    await accounts.register("admin", "pw", "admin");
+    await accounts.register("alice", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
     let status = 0;
     const appliedVisibilityUpdates: string[] = [];

@@ -18,11 +18,13 @@ const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin", "owner"]);
  */
 function resolveEffectiveRole(
     role: unknown,
-    isAdmin: boolean,
     isFounder: boolean,
 ): "user" | "teacher" | "moderator" | "admin" | "owner" {
     const normalizedRole = String(role ?? "").trim();
-    if (isFounder && (normalizedRole === "owner" || isAdmin)) {
+    if (
+        isFounder &&
+        (normalizedRole === "owner" || normalizedRole === "admin")
+    ) {
         return "owner";
     }
     if (
@@ -34,7 +36,7 @@ function resolveEffectiveRole(
     ) {
         return normalizedRole;
     }
-    return isAdmin ? "admin" : "user";
+    return "user";
 }
 
 export function createUserRoutes(
@@ -65,11 +67,7 @@ export function createUserRoutes(
             if (!claims) return true;
             const users = (await accountStore.list()).map((user) => ({
                 ...user,
-                role: resolveEffectiveRole(
-                    user.role,
-                    Boolean(user.isAdmin),
-                    Boolean(user.isFounder),
-                ),
+                role: resolveEffectiveRole(user.role, Boolean(user.isFounder)),
             }));
             log?.("debug", "Listed users.", {
                 ...logMeta,
@@ -139,11 +137,7 @@ export function createUserRoutes(
             });
             const normalizedInfo = {
                 ...info,
-                role: resolveEffectiveRole(
-                    info.role,
-                    Boolean(info.isAdmin),
-                    Boolean(info.isFounder),
-                ),
+                role: resolveEffectiveRole(info.role, Boolean(info.isFounder)),
             };
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: normalizedInfo }));
@@ -172,29 +166,54 @@ export function createUserRoutes(
             return targetInfoCache;
         }
 
-        const isRestrictedAdminManagementAction =
+        const ADMIN_PROTECTED_ACTIONS = new Set([
+            "role",
+            "password",
+            "enable",
+            "disable",
+            "isfounder",
+            "preferences/clear",
+        ]);
+        const isProtectedManagementAction =
             (req.method === "POST" &&
-                (action === "role" || action === "disable")) ||
+                action !== undefined &&
+                ADMIN_PROTECTED_ACTIONS.has(action)) ||
             (req.method === "DELETE" && !action);
 
-        if (
-            isRestrictedAdminManagementAction &&
-            callerClaims &&
-            callerIsAdmin &&
-            callerClaims.sub !== username
-        ) {
+        if (isProtectedManagementAction && callerClaims) {
             const targetInfo = await getTargetInfo();
             const targetRole = resolveEffectiveRole(
                 targetInfo?.role,
-                Boolean(targetInfo?.isAdmin),
                 Boolean(targetInfo?.isFounder),
             );
-            const targetIsAdminOrOwner =
-                targetRole === "admin" || targetRole === "owner";
-            if (targetIsAdminOrOwner) {
+            if (callerClaims.sub === username) {
+                log?.("warn", "Blocked self-management attempt.", {
+                    ...logMeta,
+                    accountId: callerClaims.sub,
+                    targetAccountId: username,
+                    action,
+                    targetRole,
+                });
+                res.writeHead(403, {
+                    "content-type": "application/json",
+                });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "protected_self_account",
+                            message: "Accounts cannot modify themselves here",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (
+                callerIsAdmin &&
+                (targetRole === "admin" || targetRole === "owner")
+            ) {
                 log?.(
                     "warn",
-                    "Blocked admin attempt to modify admin account.",
+                    "Blocked admin attempt to modify privileged account.",
                     {
                         ...logMeta,
                         accountId: callerClaims.sub,
@@ -211,7 +230,7 @@ export function createUserRoutes(
                         error: {
                             code: "protected_admin_account",
                             message:
-                                "Only owner can demote, disable, or delete other admins",
+                                "Only owner can modify admin or owner accounts",
                         },
                     }),
                 );
@@ -237,7 +256,11 @@ export function createUserRoutes(
                 callerClaims.sub !== username
             ) {
                 const targetInfo = await getTargetInfo();
-                if (targetInfo?.isAdmin && targetInfo?.isFounder) {
+                const targetRole = resolveEffectiveRole(
+                    targetInfo?.role,
+                    Boolean(targetInfo?.isFounder),
+                );
+                if (targetRole === "owner") {
                     log?.(
                         "warn",
                         "Blocked modification of protected founder account.",
@@ -335,6 +358,7 @@ export function createUserRoutes(
                 );
                 return true;
             }
+            const revokedCount = revokeAccessTokensForSubject(username);
             await accountStore.setRole(username, role as any);
             await setProfileRole?.(username, role);
             if (role === "teacher") {
@@ -351,6 +375,7 @@ export function createUserRoutes(
                 accountId: adminClaims.sub,
                 targetAccountId: username,
                 role,
+                revokedTokenCount: revokedCount,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));

@@ -47,12 +47,12 @@ export class LocalAuthGateway implements AuthGateway {
         password: string,
     ): Promise<AuthContext> {
         if (!(await this.store.has(username)))
-            await this.store.register(username, password, true);
+            await this.store.register(username, password, "admin");
         return {
             accountId: username,
             provider: "local",
             externalUserId: username,
-            isAdmin: true,
+            role: "admin",
         };
     }
 

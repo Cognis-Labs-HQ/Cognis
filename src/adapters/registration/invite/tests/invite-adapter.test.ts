@@ -42,7 +42,7 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
     };
     const accountStore = {
         async register(username: string) {
-            return { username, isAdmin: false, enabled: true };
+            return { username, role: "user", enabled: true };
         },
         async delete(username: string) {
             deletedAccountId = username;

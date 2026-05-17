@@ -693,7 +693,7 @@ test("registration:public:register capability is looked up lazily in register ha
         "registration:public:register",
         async ({ username }: { username: string }) => {
             createdUsername = username;
-            return { username, isAdmin: false, enabled: true };
+            return { username, role: "user", enabled: true };
         },
     );
 
@@ -812,14 +812,14 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
                 register: (
                     username: string,
                     password: string,
-                    isAdmin?: boolean,
+                    role?: "user" | "teacher" | "moderator" | "admin",
                 ) => Promise<{
                     username: string;
-                    isAdmin: boolean;
+                    role?: string;
                     enabled: boolean;
                 }>;
             }>("auth:accountStore");
-            return accountStore!.register(username, password, false);
+            return accountStore!.register(username, password, "user");
         },
     );
     capabilities.contribute("preferences:store", {
@@ -893,12 +893,12 @@ test("login userValidation exempts founder admin even when SMTP is available", a
         (username: string, password: string) => Promise<void>
     >("auth:createLocalAdmin");
     const accountStore = capabilities.get<{
-        setFounder: (username: string, isFounder: boolean) => Promise<void>;
+        isFounder: (username: string) => Promise<boolean>;
     }>("auth:accountStore");
     assert.ok(createLocalAdmin);
     assert.ok(accountStore);
     await createLocalAdmin?.("root-admin", "adminpass");
-    await accountStore?.setFounder("root-admin", true);
+    assert.equal(await accountStore?.isFounder("root-admin"), true);
 
     const loginResult = await dispatchRoute(
         routeRegistry,
@@ -919,7 +919,7 @@ test("login userValidation exempts founder admin even when SMTP is available", a
             userValidationMode: string;
         };
     };
-    assert.equal(payload.data.role, "admin");
+    assert.equal(payload.data.role, "owner");
     assert.equal(payload.data.isFounder, true);
     assert.equal(payload.data.userValidationMode, "smtp");
     assert.equal(payload.data.requiredUserValidation, false);

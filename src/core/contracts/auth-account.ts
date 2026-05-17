@@ -2,7 +2,7 @@ export interface AuthAccount {
     id: string;
     email?: string;
     displayName?: string;
-    isAdmin?: boolean;
+    role?: string;
 }
 
 export interface ExternalIdentity {
@@ -10,7 +10,7 @@ export interface ExternalIdentity {
     externalUserId: string;
     email?: string;
     displayName?: string;
-    isAdmin?: boolean;
+    role?: string;
 }
 
 export interface AuthAccountStore {
@@ -27,6 +27,6 @@ export interface AuthAccountStore {
         username: string;
         passwordHash: string;
         email?: string;
-        isAdmin?: boolean;
+        role?: string;
     }): Promise<AuthAccount>;
 }

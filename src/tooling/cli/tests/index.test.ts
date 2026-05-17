@@ -29,7 +29,7 @@ test("formatCommandOutput renders user:create with labeled fields", () => {
     const output = formatCommandOutput("user:create", {
         data: {
             username: "alice",
-            isAdmin: true,
+            role: "admin",
             enabled: true,
         },
     });
@@ -38,6 +38,30 @@ test("formatCommandOutput renders user:create with labeled fields", () => {
     assert.match(output, /Username: alice/);
     assert.match(output, /Role: admin/);
     assert.match(output, /Status: enabled/);
+});
+
+test("formatCommandOutput renders user:list with effective roles", () => {
+    const output = formatCommandOutput("user:list", {
+        data: [
+            {
+                username: "admin",
+                role: "owner",
+                enabled: true,
+                isFounder: true,
+            },
+            {
+                username: "alice",
+                role: "admin",
+                enabled: true,
+                isFounder: false,
+            },
+        ],
+    });
+
+    assert.match(output, /^Users/m);
+    assert.match(output, /Username\s+Role\s+Status\s+Founder/);
+    assert.match(output, /admin\s+owner\s+enabled\s+yes/);
+    assert.match(output, /alice\s+admin\s+enabled\s+no/);
 });
 
 test("formatCommandOutput renders modules:list as a table", () => {

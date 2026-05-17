@@ -35,7 +35,7 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
             return true;
         },
         async register(username) {
-            return { username, isAdmin: false, enabled: true };
+            return { username, role: "user", enabled: true };
         },
     });
     map.set("notify:canSendRegistrationInviteEmail", () => true);
@@ -123,7 +123,7 @@ test("registration:public:isEnabled capability returns false when gateway is dis
             return true;
         },
         async register(username: string) {
-            return { username, isAdmin: false, enabled: true };
+            return { username, role: "user", enabled: true };
         },
     });
     map.set("notify:canSendRegistrationInviteEmail", () => true);
@@ -198,7 +198,7 @@ test("registration:public:register capability throws when gateway is disabled", 
             return true;
         },
         async register(username: string) {
-            return { username, isAdmin: false, enabled: true };
+            return { username, role: "user", enabled: true };
         },
     });
     map.set("notify:canSendRegistrationInviteEmail", () => true);

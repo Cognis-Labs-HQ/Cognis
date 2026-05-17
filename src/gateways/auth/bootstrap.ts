@@ -59,10 +59,7 @@ async function loadLocalAccountStore(
     return new LocalAccountStoreClass(dbExecutor, log);
 }
 
-function resolveRole(
-    sessionRole: string | undefined,
-    isAdmin: boolean | undefined,
-): AccessRole {
+function resolveRole(sessionRole: string | undefined): AccessRole {
     if (
         sessionRole === "owner" ||
         sessionRole === "admin" ||
@@ -72,7 +69,7 @@ function resolveRole(
     ) {
         return sessionRole;
     }
-    return isAdmin ? "admin" : "user";
+    return "user";
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
@@ -174,8 +171,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             if (!localAdapter) throw new Error("local_adapter_unavailable");
             const has = await accountStore.has(username);
             if (!has) {
-                await localAdapter.register(username, password, true);
+                await localAdapter.register(username, password, "admin");
             }
+            await accountStore.setFounder(username, true);
         },
     );
     ctx.capabilities.contribute("auth:getLoginMethods", () =>
@@ -337,7 +335,7 @@ function createAuthGatewayRoutes(
                     displayName?: string;
                 }) => Promise<{
                     username: string;
-                    isAdmin: boolean;
+                    role?: string;
                     enabled: boolean;
                 }>
             >("registration:public:register");
@@ -366,7 +364,7 @@ function createAuthGatewayRoutes(
             });
             const verifyToken = issueAccessToken(
                 result.username,
-                result.isAdmin ? "admin" : "user",
+                result.role ?? "user",
                 1800,
             );
 
@@ -465,7 +463,7 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            let role = resolveRole(session.role, session.isAdmin);
+            let role = resolveRole(session.role);
             const profileStore = capabilities.get<{
                 getProfile(
                     accountId: string,
@@ -478,6 +476,27 @@ function createAuthGatewayRoutes(
                 if (existingProfile?.role === "owner") {
                     role = "owner";
                 }
+            }
+            const isFounder = await accountStore
+                .isFounder(session.accountId)
+                .catch((error) => {
+                    ctx.log?.(
+                        "warn",
+                        "Failed to resolve founder status during login.",
+                        {
+                            component: "auth-gateway",
+                            accountId: session.accountId,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                    // Founder status only affects owner elevation and optional UI routing; keep login available on lookup failure.
+                    return false;
+                });
+            if (isFounder && (role === "admin" || role === "owner")) {
+                role = "owner";
             }
             const parsedTtlSeconds = Number.parseInt(
                 process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? "43200",
@@ -506,24 +525,6 @@ function createAuthGatewayRoutes(
                 ) => Promise<void>
             >("profile:createProfile");
             await createProfile?.(session.accountId, session.accountId, role);
-            const isFounder = await accountStore
-                .isFounder(session.accountId)
-                .catch((error) => {
-                    ctx.log?.(
-                        "warn",
-                        "Failed to resolve founder status during login.",
-                        {
-                            component: "auth-gateway",
-                            accountId: session.accountId,
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        },
-                    );
-                    // Founder status only affects optional UI routing; keep login available on lookup failure.
-                    return false;
-                });
             const securitySettings = await readSecuritySettings();
             const canSendVerificationEmail = capabilities.get<() => boolean>(
                 "notify:canSendVerificationEmail",

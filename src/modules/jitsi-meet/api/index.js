@@ -417,11 +417,7 @@ export function registerApiRoutes(router, ctx) {
             if (!username || !normalizedParticipants.includes(username)) {
                 continue;
             }
-            if (
-                isModeratorRole(user?.role) ||
-                user?.isAdmin === true ||
-                user?.isFounder === true
-            ) {
+            if (isModeratorRole(user?.role) || user?.isFounder === true) {
                 moderatorSet.add(username);
             }
         }

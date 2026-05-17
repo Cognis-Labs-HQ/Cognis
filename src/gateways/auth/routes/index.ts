@@ -31,11 +31,9 @@ function buildAccessTokenCookie(
     return `cognis_access_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ttlSeconds}${securePart}`;
 }
 
-function resolveRole(
-    sessionRole: string | undefined,
-    isAdmin: boolean | undefined,
-): AccessRole {
+function resolveRole(sessionRole: string | undefined): AccessRole {
     if (
+        sessionRole === "owner" ||
         sessionRole === "admin" ||
         sessionRole === "teacher" ||
         sessionRole === "moderator" ||
@@ -43,7 +41,7 @@ function resolveRole(
     ) {
         return sessionRole;
     }
-    return isAdmin ? "admin" : "user";
+    return "user";
 }
 
 export function createAuthRoutes(
@@ -79,12 +77,12 @@ export function createAuthRoutes(
             const result = await accountStore.register(
                 username,
                 password,
-                false,
+                "user",
             );
             await createProfile?.(username, username, "user");
             const verifyToken = issueAccessToken(
                 result.username,
-                result.isAdmin ? "admin" : "user",
+                result.role ?? "user",
                 1800,
             );
             res.writeHead(201, { "content-type": "application/json" });
@@ -112,7 +110,13 @@ export function createAuthRoutes(
                 );
                 return true;
             }
-            const role = resolveRole(session.role, session.isAdmin);
+            let role = resolveRole(session.role);
+            const isFounder = await accountStore
+                .isFounder(session.accountId)
+                .catch(() => false);
+            if (isFounder && (role === "admin" || role === "owner")) {
+                role = "owner";
+            }
             const parsedTtlSeconds = Number.parseInt(
                 process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? "43200",
                 10,

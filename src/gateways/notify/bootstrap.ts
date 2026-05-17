@@ -295,7 +295,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     Array<{
                         username: string;
                         role?: string;
-                        isAdmin?: boolean;
                     }>
                 >;
             }>("auth:accountStore");
@@ -303,8 +302,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             const users = await accountStore.list();
             const recipients = users
                 .filter((user) => {
-                    const userRole =
-                        user.role ?? (user.isAdmin ? "admin" : "user");
+                    const userRole = user.role ?? "user";
                     if (role === "admin")
                         return userRole === "admin" || userRole === "owner";
                     if (role === "teacher") return userRole === "teacher";

@@ -35,13 +35,13 @@ class SamlAuthAdapter implements AuthProviderAdapter {
             : rawAttribute
               ? [rawAttribute]
               : [];
-        const isAdmin = values.includes(this.adminValue);
+        const hasAdminRole = values.includes(this.adminValue);
         return {
             accountId: parsed.nameId,
             provider: "saml",
             externalUserId: parsed.nameId,
             email: parsed.email,
-            isAdmin,
+            role: hasAdminRole ? "admin" : "user",
         };
     }
 

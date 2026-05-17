@@ -8,7 +8,6 @@ export interface AuthContext {
     provider: string;
     externalUserId: string;
     email?: string;
-    isAdmin?: boolean;
     role?: string;
 }
 
@@ -54,10 +53,10 @@ export class CoreAuthGateway {
               register(
                   username: string,
                   password: string,
-                  isAdmin?: boolean,
+                  role?: "user" | "teacher" | "moderator" | "admin",
               ): Promise<{
                   username: string;
-                  isAdmin: boolean;
+                  role?: string;
                   enabled: boolean;
               }>;
               updateLastLogin(username: string): Promise<void>;
@@ -100,10 +99,10 @@ export class CoreAuthGateway {
             register(
                 username: string,
                 password: string,
-                isAdmin?: boolean,
+                role?: "user" | "teacher" | "moderator" | "admin",
             ): Promise<{
                 username: string;
-                isAdmin: boolean;
+                role?: string;
                 enabled: boolean;
             }>;
             updateLastLogin(username: string): Promise<void>;

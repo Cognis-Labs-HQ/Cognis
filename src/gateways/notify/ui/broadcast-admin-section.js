@@ -67,7 +67,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     function resolveUserRole(userRecord) {
         const declaredRole = String(userRecord?.role ?? "").trim();
         if (declaredRole) return declaredRole;
-        return userRecord?.isAdmin ? "admin" : "user";
+        return "user";
     }
 
     function renderScheduleText(broadcast) {

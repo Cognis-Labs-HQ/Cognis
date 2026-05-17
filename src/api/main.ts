@@ -159,7 +159,7 @@ bootstrapLog("info", "Starting Cognis API bootstrap.", { host, port });
 
 const cliTokenPath =
     process.env.COGNIS_CLI_TOKEN_PATH ?? "/app/config/cli-access.token";
-const cliAccessToken = issueAccessToken("cognis-cli", "admin", null);
+const cliAccessToken = issueAccessToken("cognis-cli", "owner", null);
 try {
     await mkdir(path.dirname(cliTokenPath), { recursive: true });
     await writeFile(cliTokenPath, `${cliAccessToken}\n`, { mode: 0o600 });
@@ -255,6 +255,7 @@ const adminInitialized = adminStateResult.rows?.[0]?.state_value === "true";
 const createLocalAdmin = capabilities.get<
     (username: string, password: string) => Promise<void>
 >("auth:createLocalAdmin");
+const accountStore = capabilities.get<LocalAccountStore>("auth:accountStore");
 
 if (!adminInitialized && createLocalAdmin) {
     const { randomBytes } = await import("node:crypto");
@@ -279,6 +280,16 @@ if (!adminInitialized && createLocalAdmin) {
     await log("info", "Default admin bootstrap skipped (already initialized).");
 }
 
+if (accountStore && (await accountStore.exists("admin"))) {
+    const isFounder = await accountStore.isFounder("admin");
+    if (!isFounder) {
+        await accountStore.setFounder("admin", true);
+        await log("warn", "Default admin account promoted to owner.", {
+            username: "admin",
+        });
+    }
+}
+
 const createProfile = capabilities.get<
     (accountId: string, handle: string, role?: string) => Promise<void>
 >("profile:createProfile");
@@ -286,7 +297,6 @@ if (!adminInitialized && createProfile) {
     await createProfile("admin", "admin", "owner");
 }
 
-const accountStore = capabilities.get<LocalAccountStore>("auth:accountStore");
 const preferenceStore =
     capabilities.get<UserPreferenceStore>("preferences:store");
 

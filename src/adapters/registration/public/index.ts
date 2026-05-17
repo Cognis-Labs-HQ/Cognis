@@ -24,7 +24,7 @@ export function createAdapter(deps: {
                 displayName?: string;
             }): Promise<{
                 username: string;
-                isAdmin: boolean;
+                role?: string;
                 enabled: boolean;
             }> {
                 const username = String(input.username ?? "").trim();
@@ -35,7 +35,7 @@ export function createAdapter(deps: {
                 const created = await accountStore.register(
                     username,
                     password,
-                    false,
+                    "user",
                 );
                 await createProfile?.(
                     username,
