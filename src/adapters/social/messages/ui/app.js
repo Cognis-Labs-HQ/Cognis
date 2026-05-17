@@ -120,6 +120,121 @@ async function decryptMessageOrReturnPlaintext(key, message) {
 }
 
 const roomKeyCache = new Map();
+const threadRenderSignatures = new Map();
+const unavailableAvatarKeys = new Set();
+
+function stableJson(value) {
+    return JSON.stringify(value);
+}
+
+function messageRenderSignature(messages, pendingRequest) {
+    return stableJson({
+        pendingRequest: pendingRequest
+            ? {
+                  id: pendingRequest.id,
+                  direction: pendingRequest.direction,
+                  canRespond: pendingRequest.canRespond,
+              }
+            : null,
+        messages: messages.map((message) => ({
+            id: message.id,
+            createdAt: message.createdAt,
+            senderId: message.senderId,
+            contentType: message.contentType,
+            ciphertext: message.ciphertext,
+            iv: message.iv,
+            authTag: message.authTag,
+            deliveredToCount: message.deliveredToCount,
+            reactions: (message.reactions ?? []).map((reaction) => ({
+                emoji: reaction.emoji,
+                count: reaction.count,
+                reactedByMe: reaction.reactedByMe,
+            })),
+            readBy: (message.readBy ?? []).map((reader) => ({
+                accountId: reader.accountId,
+            })),
+        })),
+    });
+}
+
+function roomListRenderSignature(rooms, selectedRoomId) {
+    return stableJson({
+        selectedRoomId,
+        rooms: rooms.map((room) => ({
+            id: room.id,
+            title: room.title,
+            kind: room.kind,
+            unread: room.unread,
+            isArchived: room.isArchived,
+            canSend: room.canSend,
+            pendingRequest: room.pendingRequest
+                ? {
+                      id: room.pendingRequest.id,
+                      direction: room.pendingRequest.direction,
+                      canRespond: room.pendingRequest.canRespond,
+                  }
+                : null,
+            lastMessagePreview: room.lastMessagePreview,
+            lastMessage: room.lastMessage
+                ? {
+                      id: room.lastMessage.id,
+                      createdAt: room.lastMessage.createdAt,
+                      senderId: room.lastMessage.senderId,
+                      senderDisplayName: room.lastMessage.senderDisplayName,
+                      senderHandle: room.lastMessage.senderHandle,
+                      contentType: room.lastMessage.contentType,
+                      ciphertext: room.lastMessage.ciphertext,
+                      iv: room.lastMessage.iv,
+                  }
+                : null,
+            members: (room.members ?? []).map((member) => ({
+                accountId: member.accountId,
+                handle: member.handle,
+                displayName: member.displayName,
+                username: member.username,
+            })),
+        })),
+    });
+}
+
+function avatarFileSrc(avatarKey) {
+    return `/api/v1/files/${String(avatarKey)
+        .split("/")
+        .map((segment) => encodeURIComponent(segment))
+        .join("/")}`;
+}
+
+function avatarImageMarkup(
+    avatarKey,
+    imageClass,
+    label,
+    colorSeed,
+    fallbackClass,
+) {
+    if (!avatarKey || unavailableAvatarKeys.has(avatarKey)) return "";
+    return `<img class="${escapeHtml(imageClass)}" src="${escapeHtml(avatarFileSrc(avatarKey))}" alt="" data-avatar-key="${escapeHtml(avatarKey)}" data-avatar-label="${escapeHtml(label)}" data-avatar-color-seed="${escapeHtml(colorSeed)}" data-avatar-fallback-class="${escapeHtml(fallbackClass)}" />`;
+}
+
+function avatarFallbackMarkup(label, colorSeed, fallbackClass) {
+    const color = pickInitialsColor(colorSeed);
+    return `<span class="${escapeHtml(fallbackClass)}" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
+}
+
+function handleAvatarImageError(event) {
+    const image = event.target;
+    if (!image || image.tagName !== "IMG") return;
+    const avatarKey = image.dataset?.avatarKey;
+    if (!avatarKey) return;
+    unavailableAvatarKeys.add(avatarKey);
+    const fallbackClass = image.dataset.avatarFallbackClass;
+    if (!fallbackClass) return;
+    const label = image.dataset.avatarLabel || "";
+    const colorSeed = image.dataset.avatarColorSeed || label;
+    const template = document.createElement("template");
+    template.innerHTML = avatarFallbackMarkup(label, colorSeed, fallbackClass);
+    const fallback = template.content.firstElementChild;
+    if (fallback) image.replaceWith(fallback);
+}
 
 async function getRoomKey(roomId) {
     if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
@@ -192,8 +307,15 @@ function renderRoomAvatar(room, currentAccountId) {
     if (!room) return "";
     const members = room.members ?? [];
     if (room.kind === "classroom") {
-        if (room.avatarKey) {
-            return `<div class="messages-thread-avatar"><img class="messages-thread-avatar-img" src="/api/v1/files/${escapeHtml(room.avatarKey)}" alt="" /></div>`;
+        if (room.avatarKey && !unavailableAvatarKeys.has(room.avatarKey)) {
+            const label = room.title || room.id;
+            return `<div class="messages-thread-avatar">${avatarImageMarkup(
+                room.avatarKey,
+                "messages-thread-avatar-img",
+                label,
+                room.id || label,
+                "messages-thread-initials",
+            )}</div>`;
         }
         const picked = randomSample(members, 4);
         while (picked.length < 4) picked.push({ handle: "", displayName: "" });
@@ -539,19 +661,21 @@ function formatAvatarMarkup({
     profileHandle = null,
     linkClass = "",
 }) {
-    const avatarContent = avatarKey
-        ? `<img class="${escapeHtml(imageClass)}" src="/api/v1/files/${escapeHtml(avatarKey)}" alt="" />`
-        : `<span class="${escapeHtml(fallbackClass)}" style="--initials-bg: ${escapeHtml(pickInitialsColor(colorSeed || label))};">${escapeHtml(getInitialsText(label))}</span>`;
+    const safeColorSeed = colorSeed || label;
+    const avatarContent =
+        avatarImageMarkup(
+            avatarKey,
+            imageClass,
+            label,
+            safeColorSeed,
+            fallbackClass,
+        ) || avatarFallbackMarkup(label, safeColorSeed, fallbackClass);
     const profileLink = profileHref(profileHandle);
     if (profileLink) {
         const classes = [avatarClass, linkClass].filter(Boolean).join(" ");
         return `<a class="${escapeHtml(classes)}" href="${escapeHtml(profileLink)}" aria-label="${escapeHtml(label)}">${avatarContent}</a>`;
     }
-    if (avatarKey) {
-        return `<span class="${escapeHtml(avatarClass)}"><img class="${escapeHtml(imageClass)}" src="/api/v1/files/${escapeHtml(avatarKey)}" alt="" /></span>`;
-    }
-    const color = pickInitialsColor(colorSeed || label);
-    return `<span class="${escapeHtml(avatarClass)}"><span class="${escapeHtml(fallbackClass)}" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span></span>`;
+    return `<span class="${escapeHtml(avatarClass)}">${avatarContent}</span>`;
 }
 
 function formatRoomListAvatar(displayedMember, titleSource) {
@@ -659,6 +783,7 @@ async function renderThread(
     i18n,
     currentAccountId,
     before,
+    { force = false } = {},
 ) {
     const params = new URLSearchParams({ limit: "50" });
     if (before) params.set("before", before);
@@ -672,6 +797,18 @@ async function renderThread(
     const payload = await res.json();
     const messageList = payload?.data ?? [];
     const pendingRequest = payload?.pendingRequest ?? null;
+    const renderSignature = messageRenderSignature(messageList, pendingRequest);
+    if (
+        !before &&
+        !force &&
+        threadRenderSignatures.get(roomId) === renderSignature
+    ) {
+        return {
+            oldestCreatedAt: messageList.at(-1)?.createdAt ?? null,
+            pendingRequest,
+            changed: false,
+        };
+    }
     const ordered = messageList.slice().reverse();
     const decoded = await Promise.all(
         ordered.map(async (msg) => {
@@ -771,7 +908,9 @@ async function renderThread(
         );
     }
 
-    return { oldestCreatedAt, pendingRequest };
+    if (!before) threadRenderSignatures.set(roomId, renderSignature);
+
+    return { oldestCreatedAt, pendingRequest, changed: true };
 }
 
 async function loadRooms(i18n) {
@@ -816,6 +955,10 @@ export async function mount(root, { signal } = {}) {
 
     root.classList.add("messages-page");
     root.dataset.messageStyle = resolveMessageStyle();
+    root.addEventListener("error", handleAvatarImageError, {
+        capture: true,
+        signal,
+    });
     signal?.addEventListener(
         "abort",
         () => {
@@ -836,6 +979,7 @@ export async function mount(root, { signal } = {}) {
     let typingSendTimeoutId = null;
     let typingPollIntervalId = null;
     let liveRefreshIntervalId = null;
+    let lastRoomsListRenderSignature = null;
     let typingActive = false;
     let lastTypingSentAt = 0;
 
@@ -855,6 +999,10 @@ export async function mount(root, { signal } = {}) {
             `/messages/${encodeURIComponent(selectedRoomId)}`,
         );
     }
+    lastRoomsListRenderSignature = roomListRenderSignature(
+        rooms,
+        selectedRoomId,
+    );
 
     async function loadRoom(roomId) {
         const res = await apiFetch(
@@ -953,29 +1101,43 @@ export async function mount(root, { signal } = {}) {
             threadList,
             i18n,
             currentAccountId,
+            undefined,
+            { force: true },
         );
         if (pendingBannerSlot && !room?.pendingRequest) {
             pendingBannerSlot.innerHTML = renderPendingRequestBanner(
                 threadResult?.pendingRequest ?? null,
             );
         }
-        await markSelectedRoomRead();
+        await markSelectedRoomRead({ force: true });
         bindPendingRequestBannerEvents();
     }
 
-    function renderRoomsListIntoDom() {
+    function renderRoomsListIntoDom({ force = false } = {}) {
         const roomsList = document.getElementById("messages-rooms-list");
         if (!roomsList) return;
+        const renderSignature = roomListRenderSignature(rooms, selectedRoomId);
+        if (!force && lastRoomsListRenderSignature === renderSignature) return;
         roomsList.innerHTML = renderRoomList(
             rooms,
             currentAccountId,
             selectedRoomId,
             i18n,
         );
+        lastRoomsListRenderSignature = renderSignature;
     }
 
-    async function markSelectedRoomRead() {
+    function selectedRoomHasUnread() {
+        return rooms.some(
+            (room) =>
+                String(room.id) === String(selectedRoomId) &&
+                Number(room.unread ?? 0) > 0,
+        );
+    }
+
+    async function markSelectedRoomRead({ force = false } = {}) {
         if (!selectedRoomId) return;
+        if (!force && !selectedRoomHasUnread()) return;
         await apiFetch(
             `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/read`,
             { method: "POST" },
@@ -1081,14 +1243,16 @@ export async function mount(root, { signal } = {}) {
         const threadList = document.getElementById("messages-thread-list");
         if (!threadList) return;
         const key = await getRoomKey(selectedRoomId);
-        await renderThread(
+        const threadResult = await renderThread(
             selectedRoomId,
             key,
             threadList,
             i18n,
             currentAccountId,
         );
-        await markSelectedRoomRead();
+        if (threadResult?.changed || selectedRoomHasUnread()) {
+            await markSelectedRoomRead();
+        }
         await refreshTypingIndicator();
     }
 
