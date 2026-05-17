@@ -8,7 +8,11 @@ import {
     revokeAccessTokensForSubject,
     verifyAccessToken,
 } from "../access-tokens.js";
-import { requireAuth } from "../guard.js";
+import {
+    registerPageScriptOrigin,
+    requireAuth,
+    setPageSecurityHeaders,
+} from "../guard.js";
 
 test("access tokens issue and verify", () => {
     const token = issueAccessToken("u1", "admin", 60);
@@ -72,4 +76,34 @@ test("revoking tokens by subject invalidates all issued tokens for that user", (
         sub: "subject-b",
         role: "user",
     });
+});
+
+test("page security headers include registered script origins", () => {
+    const headers = new Map<string, string>();
+    const response = {
+        setHeader(name: string, value: string) {
+            headers.set(name.toLowerCase(), value);
+        },
+    } as unknown as import("node:http").ServerResponse;
+
+    const registered = registerPageScriptOrigin(
+        "https://meetings.example.test/path?ignored=true",
+    );
+    setPageSecurityHeaders(response);
+
+    const contentSecurityPolicy = headers.get("content-security-policy") ?? "";
+    assert.equal(registered, "https://meetings.example.test");
+    assert.match(
+        contentSecurityPolicy,
+        /script-src 'self' https:\/\/meetings\.example\.test/,
+    );
+    assert.match(
+        contentSecurityPolicy,
+        /script-src-elem 'self' https:\/\/meetings\.example\.test/,
+    );
+});
+
+test("page script origin registration rejects non-http origins", () => {
+    assert.equal(registerPageScriptOrigin("javascript:alert(1)"), null);
+    assert.equal(registerPageScriptOrigin(""), null);
 });

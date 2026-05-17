@@ -12,7 +12,7 @@
 - `auth_adapter_configs` に永続化されたアダプターの有効・無効状態を管理する。
 - 要求されたプロバイダーの有効なアダプターに委譲して認証情報を検証する。
 - 認証成功後に `issueAccessToken` でアクセストークンを発行する。
-- `auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods` をケイパビリティストアに提供する。
+- `auth:accountStore`、`auth:createLocalAdmin`、`auth:getLoginMethods`、`auth:registerPageScriptOrigin` をケイパビリティストアに提供する。
 - すべての認証APIルートとアダプター管理ルートを登録する。
 
 責務外: ユーザープロフィールデータの保存（プロフィールゲートウェイの責務）、トークン発行を超えたセッション管理、非認証ビジネスロジック。
@@ -48,11 +48,12 @@ export class CoreAuthGateway {
 
 提供されるケイパビリティ:
 
-| ケイパビリティ          | 型                                             | 説明                                                 |
-| ----------------------- | ---------------------------------------------- | ---------------------------------------------------- |
-| `auth:accountStore`     | `LocalAccountStore`                            | ローカルアダプターが使用するローカルアカウントストア |
-| `auth:createLocalAdmin` | `(username, password) => Promise<AuthContext>` | 存在しない場合に管理者アカウントを作成               |
-| `auth:getLoginMethods`  | `() => Promise<AdapterInfo[]>`                 | すべての有効なプロバイダーのメタデータを返す         |
+| ケイパビリティ                  | 型                                             | 説明                                                               |
+| ------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------ |
+| `auth:accountStore`             | `LocalAccountStore`                            | ローカルアダプターが使用するローカルアカウントストア               |
+| `auth:createLocalAdmin`         | `(username, password) => Promise<AuthContext>` | 存在しない場合に管理者アカウントを作成                             |
+| `auth:getLoginMethods`          | `() => Promise<AdapterInfo[]>`                 | すべての有効なプロバイダーのメタデータを返す                       |
+| `auth:registerPageScriptOrigin` | `(origin) => string \| null`                   | ページのCSPヘッダー用に信頼済みhttp(s)スクリプトオリジンを登録する |
 
 ## APIルート
 

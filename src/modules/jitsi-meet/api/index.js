@@ -1,11 +1,8 @@
 import path from "node:path";
 import { JitsiMeetStore } from "./store.js";
-import {
-    registerPageScriptOrigin,
-    requireAuth,
-} from "../../../gateways/auth/guard.js";
+import { requireAuth } from "../../../gateways/auth/guard.js";
 import { readJson } from "../../../api/reuse/read-json.js";
-import { isModeratorRole, normalizeUsername } from "./reuse-meeting-values.js";
+import { isModeratorRole, normalizeUsername } from "./reuse/meeting-values.js";
 
 const MODULE_ID = "jitsi-meet";
 const MEETING_TITLE = "Cognis Classroom";
@@ -208,18 +205,27 @@ function resolveStore(dbExecutor, log) {
     return nextStore;
 }
 
-function registerConfiguredJitsiOrigin(config) {
-    if (config?.instanceUrl) {
-        registerPageScriptOrigin(config.instanceUrl);
+function registerConfiguredJitsiOrigin(registerScriptOrigin, config) {
+    if (typeof registerScriptOrigin !== "function" || !config?.instanceUrl) {
+        return;
     }
+    registerScriptOrigin(config.instanceUrl);
 }
 
-async function registerStoredJitsiOrigin(store) {
-    await store
-        .ensureSchema()
-        .then(() => store.getConfig())
-        .then(registerConfiguredJitsiOrigin)
-        .catch(() => undefined);
+async function registerStoredJitsiOrigin({ store, registerScriptOrigin, log }) {
+    try {
+        await store.ensureSchema();
+        registerConfiguredJitsiOrigin(
+            registerScriptOrigin,
+            await store.getConfig(),
+        );
+    } catch (error) {
+        log?.("error", "Failed to register stored Jitsi CSP origin.", {
+            component: "jitsi-meet-module",
+            operation: "register_stored_jitsi_origin",
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
 }
 
 export function registerUi(ctx) {
@@ -326,8 +332,12 @@ export function registerApiRoutes(router, ctx) {
         return;
     }
 
-    const store = resolveStore(dbExecutor, ctx.getCapability("logging:log"));
-    void registerStoredJitsiOrigin(store);
+    const log = ctx.getCapability("logging:log");
+    const registerScriptOrigin = ctx.getCapability(
+        "auth:registerPageScriptOrigin",
+    );
+    const store = resolveStore(dbExecutor, log);
+    void registerStoredJitsiOrigin({ store, registerScriptOrigin, log });
 
     async function dispatchMeetingNotifications(
         recipientUsernames,
@@ -342,17 +352,27 @@ export function registerApiRoutes(router, ctx) {
             ),
         );
         for (const recipientUsername of normalizedRecipients) {
-            await dispatchNotification({
-                category: "meetings",
-                recipientUsername,
-                subject,
-                body,
-                senderName,
-                actionUrl: buildMeetingActionUrl(
-                    meetingId ?? metadata?.meetingId,
-                ),
-                metadata,
-            }).catch(() => undefined);
+            try {
+                await dispatchNotification({
+                    category: "meetings",
+                    recipientUsername,
+                    subject,
+                    body,
+                    senderName,
+                    actionUrl: buildMeetingActionUrl(
+                        meetingId ?? metadata?.meetingId,
+                    ),
+                    metadata,
+                });
+            } catch (error) {
+                log?.("error", "Failed to dispatch meeting notification.", {
+                    component: "jitsi-meet-module",
+                    operation: "dispatch_meeting_notification",
+                    recipientUsername,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+            }
         }
     }
 
@@ -553,7 +573,13 @@ export function registerApiRoutes(router, ctx) {
                 instanceUrl,
                 meetingPrefix,
             });
-            registerConfiguredJitsiOrigin(saved);
+            registerConfiguredJitsiOrigin(registerScriptOrigin, saved);
+            log?.("info", "Jitsi Meet configuration updated.", {
+                component: "jitsi-meet-module",
+                operation: "save_config",
+                hasInstanceUrl: Boolean(saved.instanceUrl),
+                hasMeetingPrefix: Boolean(saved.meetingPrefix),
+            });
             sendJson(res, 200, {
                 data: saved,
             });

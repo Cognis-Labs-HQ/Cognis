@@ -4,7 +4,7 @@ import {
     normalizeMeetingPrefix,
     normalizeUsername,
     normalizeUsernames,
-} from "./reuse-meeting-values.js";
+} from "./reuse/meeting-values.js";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
 const ACTIVE_PRESENCE_WINDOW_MS = 45 * 1000;

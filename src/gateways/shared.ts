@@ -14,6 +14,7 @@
  *   - getAuthClaims            Extracts validated claims from an authenticated request.
  *   - getCookieSession         Reads the access token from the request cookie.
  *   - setPageSecurityHeaders   Writes security headers on HTML page responses.
+ *   - registerPageScriptOrigin Allows trusted page script origins in the HTML CSP.
  *   - hasMinRole               Returns true when a role meets or exceeds the minimum required rank.
  *   - isRoleAllowed            Returns true when a role satisfies a role access policy.
  *   - isAccessRole             Runtime check for AccessRole values.
@@ -38,6 +39,7 @@ export {
     requireRoleAccess,
     getAuthClaims,
     getCookieSession,
+    registerPageScriptOrigin,
     setPageSecurityHeaders,
     hasMinRole,
     isRoleAllowed,
