@@ -248,14 +248,18 @@ export class DbProfileStore implements ProfileCreateStore {
     async searchProfiles(
         query: string,
         limit: number = 10,
+        options: { includeHidden?: boolean } = {},
     ): Promise<AccountProfile[]> {
         const pattern = query.toLowerCase().replace(/[\\%_]/g, "\\$&") + "%";
+        const visibilityFilters = options.includeHidden
+            ? []
+            : [{ column: "visibility", operator: "!=", value: "hidden" }];
 
         const byHandle = await this.db.executeCommand({
             option: "SELECT",
             table: "account_profiles",
             where: [
-                { column: "visibility", operator: "!=", value: "hidden" },
+                ...visibilityFilters,
                 {
                     column: "handle",
                     operator: "LIKE",
@@ -269,7 +273,7 @@ export class DbProfileStore implements ProfileCreateStore {
             option: "SELECT",
             table: "account_profiles",
             where: [
-                { column: "visibility", operator: "!=", value: "hidden" },
+                ...visibilityFilters,
                 {
                     column: "display_name",
                     operator: "LIKE",

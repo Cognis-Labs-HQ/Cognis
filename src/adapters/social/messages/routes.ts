@@ -10,7 +10,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth } from "../../../gateways/auth/guard.js";
+import { hasMinRole, requireAuth } from "../../../gateways/auth/guard.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import type { DbMessagesStore, MemberRow } from "./store.js";
 import type { DbProfileStore, AccountProfile } from "../profile/store.js";
@@ -112,6 +112,10 @@ export async function canDirectMessageNowOrByApprovedRequest(
     return messagesStore.hasApprovedMessageRequestBetween(fromId, toId);
 }
 
+function hasAdminBypass(role: string | null | undefined): boolean {
+    return Boolean(role && hasMinRole(role, "admin"));
+}
+
 function publicProfileSummary(profile: AccountProfile) {
     return {
         accountId: profile.accountId,
@@ -200,6 +204,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
         const claims = requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = claims.sub;
+        const hasBypass = hasAdminBypass(claims.role);
 
         // GET /messages/users/lookup?q=handle
         if (
@@ -207,7 +212,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             req.method === "GET"
         ) {
             const requesterProfile = await profileStore.getProfile(accountId);
-            if (requesterProfile?.visibility === "hidden") {
+            if (!hasBypass && requesterProfile?.visibility === "hidden") {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -227,7 +232,9 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 res.end(JSON.stringify({ data: [] }));
                 return true;
             }
-            const candidates = await profileStore.searchProfiles(query, 10);
+            const candidates = await profileStore.searchProfiles(query, 10, {
+                includeHidden: hasBypass,
+            });
             const results: Array<
                 ReturnType<typeof publicProfileSummary> & {
                     canDirectMessage: boolean;
@@ -236,23 +243,28 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             > = [];
             for (const profile of candidates) {
                 if (profile.accountId === accountId) continue;
-                if (profile.visibility === "hidden") continue;
-                const canDirectMessage = await canMessage(
-                    profileStore,
-                    accountId,
-                    profile.accountId,
-                );
+                if (!hasBypass && profile.visibility === "hidden") continue;
+                const canDirectMessage = hasBypass
+                    ? true
+                    : await canMessage(
+                          profileStore,
+                          accountId,
+                          profile.accountId,
+                      );
                 const hasApprovedRequest =
-                    await messagesStore.hasApprovedMessageRequestBetween(
+                    hasBypass ||
+                    (await messagesStore.hasApprovedMessageRequestBetween(
                         accountId,
                         profile.accountId,
-                    );
+                    ));
                 const canOpenDirect = canDirectMessage || hasApprovedRequest;
-                const canRequestMessage = await canSendMessageRequest(
-                    profileStore,
-                    accountId,
-                    profile.accountId,
-                );
+                const canRequestMessage = hasBypass
+                    ? true
+                    : await canSendMessageRequest(
+                          profileStore,
+                          accountId,
+                          profile.accountId,
+                      );
                 if (!canOpenDirect && !canRequestMessage) continue;
                 results.push({
                     ...publicProfileSummary(profile),
@@ -341,21 +353,26 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             for (const handle of handles) {
                 const candidate = await profileStore.getProfileByHandle(handle);
                 if (!candidate || candidate.accountId === accountId) continue;
-                const canDirectMessage = await canMessage(
-                    profileStore,
-                    accountId,
-                    candidate.accountId,
-                );
+                const canDirectMessage = hasBypass
+                    ? true
+                    : await canMessage(
+                          profileStore,
+                          accountId,
+                          candidate.accountId,
+                      );
                 const hasApprovedRequest =
-                    await messagesStore.hasApprovedMessageRequestBetween(
+                    hasBypass ||
+                    (await messagesStore.hasApprovedMessageRequestBetween(
                         accountId,
                         candidate.accountId,
-                    );
-                const canRequestMessage = await canSendMessageRequest(
-                    profileStore,
-                    accountId,
-                    candidate.accountId,
-                );
+                    ));
+                const canRequestMessage = hasBypass
+                    ? true
+                    : await canSendMessageRequest(
+                          profileStore,
+                          accountId,
+                          candidate.accountId,
+                      );
                 if (
                     !canDirectMessage &&
                     !hasApprovedRequest &&
@@ -400,18 +417,17 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     res.end(JSON.stringify({ data: existing }));
                     return true;
                 }
-                const canDirectMessage = await canMessage(
-                    profileStore,
-                    accountId,
-                    targetId,
-                );
+                const canDirectMessage = hasBypass
+                    ? true
+                    : await canMessage(profileStore, accountId, targetId);
                 const canDirectWithoutRequest =
-                    await canDirectMessageNowOrByApprovedRequest(
+                    hasBypass ||
+                    (await canDirectMessageNowOrByApprovedRequest(
                         profileStore,
                         messagesStore,
                         accountId,
                         targetId,
-                    );
+                    ));
                 if (!canDirectWithoutRequest) {
                     let room = await messagesStore.findDmBetween(
                         accountId,
@@ -715,11 +731,12 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             );
             return true;
         }
-        const pendingIncomingRoomRequest =
-            await messagesStore.getPendingIncomingRoomMessageRequest(
-                roomId,
-                accountId,
-            );
+        const pendingIncomingRoomRequest = hasBypass
+            ? null
+            : await messagesStore.getPendingIncomingRoomMessageRequest(
+                  roomId,
+                  accountId,
+              );
         const pendingRoomRequest = pendingIncomingRoomRequest
             ? pendingIncomingRoomRequest
             : await messagesStore.getPendingRoomMessageRequest(roomId);
@@ -1184,11 +1201,9 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            const allowed = await canMessage(
-                profileStore,
-                accountId,
-                target.accountId,
-            );
+            const allowed =
+                hasBypass ||
+                (await canMessage(profileStore, accountId, target.accountId));
             if (!allowed) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
