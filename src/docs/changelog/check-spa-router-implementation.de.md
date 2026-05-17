@@ -1,4 +1,4 @@
-# SPA-Routerprüfung
+# PR-Änderungsprotokoll — SPA-Router-Implementierung prüfen
 
 ## Zusammenfassung
 

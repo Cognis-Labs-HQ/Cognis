@@ -1,4 +1,4 @@
-# Admin Broadcast Options
+# Admin Broadcast Delivery Modes and Audience Controls
 
 ## Summary
 

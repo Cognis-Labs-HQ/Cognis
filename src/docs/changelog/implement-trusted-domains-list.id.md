@@ -1,4 +1,4 @@
-# Domain Tepercaya
+# Domain Tepercaya untuk Tautan Broadcast dan Pemeriksaan Email
 
 ## Ringkasan
 

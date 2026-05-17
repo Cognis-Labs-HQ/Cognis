@@ -1,4 +1,4 @@
-# AGPL License
+# GNU Affero General Public License
 
 ## Version 3, 19 November 2007
 

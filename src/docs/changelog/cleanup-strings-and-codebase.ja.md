@@ -1,4 +1,4 @@
-# コードベース整理
+# PR 変更履歴 — Cleanup Strings and Codebase
 
 ## 要約
 

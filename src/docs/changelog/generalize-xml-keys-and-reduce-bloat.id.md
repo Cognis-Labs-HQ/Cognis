@@ -1,4 +1,4 @@
-# Cleanup String i18n
+# Generalisasi String i18n dan Pengurangan Bloat Inti
 
 ## Ringkasan
 

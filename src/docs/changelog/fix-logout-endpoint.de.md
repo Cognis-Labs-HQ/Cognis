@@ -1,4 +1,4 @@
-# Logout-Endpunkt fehlt
+# Fehlenden Logout-Endpunkt beheben
 
 ## Zusammenfassung
 

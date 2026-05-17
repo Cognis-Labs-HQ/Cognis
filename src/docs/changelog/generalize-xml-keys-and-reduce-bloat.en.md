@@ -1,4 +1,4 @@
-# i18n String Cleanup
+# Generalize i18n Strings and Reduce Core Bloat
 
 ## Summary
 

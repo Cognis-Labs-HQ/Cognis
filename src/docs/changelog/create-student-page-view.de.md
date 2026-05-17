@@ -1,4 +1,4 @@
-# Klassen & Study-Hub
+# Schüler-Klassenmitgliedschaft, Lehrerverwaltung & Studiehub
 
 ## Zusammenfassung
 

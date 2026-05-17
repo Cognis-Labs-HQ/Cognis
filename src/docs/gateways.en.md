@@ -1,4 +1,4 @@
-# Gateway and Adapter Dev
+# Gateway and Adapter Development
 
 ## Overview
 

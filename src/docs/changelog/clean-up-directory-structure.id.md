@@ -1,4 +1,4 @@
-# Rapikan Direktori
+# Catatan Perubahan PR — Rapikan Struktur Direktori
 
 ## Ringkasan
 

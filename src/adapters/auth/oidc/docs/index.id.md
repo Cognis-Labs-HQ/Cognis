@@ -1,4 +1,4 @@
-# Adapter SSO OIDC
+# Adapter Autentikasi OIDC SSO
 
 ## Ikhtisar
 

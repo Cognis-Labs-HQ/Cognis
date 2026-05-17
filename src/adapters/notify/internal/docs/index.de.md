@@ -1,4 +1,4 @@
-# Interner Notify-Adapter
+# Interner Benachrichtigungs-Adapter
 
 ## Übersicht
 

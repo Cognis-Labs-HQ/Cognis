@@ -1,4 +1,4 @@
-# Login Logs & Rotation
+# Logging Stream Filtering, Warning Defaults, and Rotation
 
 ## Summary
 

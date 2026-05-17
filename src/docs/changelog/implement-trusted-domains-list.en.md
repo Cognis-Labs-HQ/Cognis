@@ -1,4 +1,4 @@
-# Trusted Domains
+# Trusted Domains for Broadcast Links and Email Checks
 
 ## Summary
 

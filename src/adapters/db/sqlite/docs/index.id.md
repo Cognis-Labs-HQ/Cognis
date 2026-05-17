@@ -1,4 +1,4 @@
-# Adapter SQLite Dihapus
+# Adapter Database SQLite (Dihapus)
 
 SQLite tidak lagi didukung. Adapter SQLite telah dihapus dari Cognis.
 

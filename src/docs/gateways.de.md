@@ -1,4 +1,4 @@
-# Gateway- & Adapter-Dev
+# Gateway- und Adapter-Entwicklung
 
 ## Überblick
 

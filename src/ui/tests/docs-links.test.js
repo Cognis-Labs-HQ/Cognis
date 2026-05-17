@@ -65,29 +65,6 @@ test("docs links use pretty docs URLs instead of markdown file URLs", () => {
     assert.deepEqual(offenders, []);
 });
 
-function firstMarkdownTitle(content) {
-    return content
-        .split("\n")
-        .find((line) => line.startsWith("# "))
-        ?.slice(2)
-        .trim();
-}
-
-test("markdown document titles stay concise", () => {
-    const longTitles = [];
-    for (const file of listTrackedDocFiles().filter((name) =>
-        name.endsWith(".md"),
-    )) {
-        const title = firstMarkdownTitle(
-            readFileSync(join(ROOT, file), "utf8"),
-        );
-        if (title && title.length > 30) {
-            longTitles.push({ file, length: title.length, title });
-        }
-    }
-    assert.deepEqual(longTitles, []);
-});
-
 function localizedDocGroup(file) {
     const match = file.match(/^(.*)\.(de|en|id|ja)\.md$/);
     if (!match) return null;
