@@ -36,6 +36,7 @@ function resolveRole(
     isAdmin: boolean | undefined,
 ): AccessRole {
     if (
+        sessionRole === "owner" ||
         sessionRole === "admin" ||
         sessionRole === "teacher" ||
         sessionRole === "moderator" ||
@@ -112,7 +113,13 @@ export function createAuthRoutes(
                 );
                 return true;
             }
-            const role = resolveRole(session.role, session.isAdmin);
+            let role = resolveRole(session.role, session.isAdmin);
+            const isFounder = await accountStore
+                .isFounder(session.accountId)
+                .catch(() => false);
+            if (isFounder && (role === "admin" || role === "owner")) {
+                role = "owner";
+            }
             const parsedTtlSeconds = Number.parseInt(
                 process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? "43200",
                 10,

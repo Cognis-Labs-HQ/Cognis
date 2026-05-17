@@ -176,6 +176,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             if (!has) {
                 await localAdapter.register(username, password, true);
             }
+            await accountStore.setFounder(username, true);
         },
     );
     ctx.capabilities.contribute("auth:getLoginMethods", () =>
@@ -479,6 +480,27 @@ function createAuthGatewayRoutes(
                     role = "owner";
                 }
             }
+            const isFounder = await accountStore
+                .isFounder(session.accountId)
+                .catch((error) => {
+                    ctx.log?.(
+                        "warn",
+                        "Failed to resolve founder status during login.",
+                        {
+                            component: "auth-gateway",
+                            accountId: session.accountId,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                    // Founder status only affects owner elevation and optional UI routing; keep login available on lookup failure.
+                    return false;
+                });
+            if (isFounder && (role === "admin" || role === "owner")) {
+                role = "owner";
+            }
             const parsedTtlSeconds = Number.parseInt(
                 process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? "43200",
                 10,
@@ -506,24 +528,6 @@ function createAuthGatewayRoutes(
                 ) => Promise<void>
             >("profile:createProfile");
             await createProfile?.(session.accountId, session.accountId, role);
-            const isFounder = await accountStore
-                .isFounder(session.accountId)
-                .catch((error) => {
-                    ctx.log?.(
-                        "warn",
-                        "Failed to resolve founder status during login.",
-                        {
-                            component: "auth-gateway",
-                            accountId: session.accountId,
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        },
-                    );
-                    // Founder status only affects optional UI routing; keep login available on lookup failure.
-                    return false;
-                });
             const securitySettings = await readSecuritySettings();
             const canSendVerificationEmail = capabilities.get<() => boolean>(
                 "notify:canSendVerificationEmail",
