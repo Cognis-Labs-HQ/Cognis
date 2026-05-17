@@ -56,6 +56,7 @@ export interface ApiDependencies {
     searchProfiles?: (
         query: string,
         limit: number,
+        options?: { includeHidden?: boolean },
     ) => Promise<
         Array<{ accountId?: string; handle?: string; displayName?: string }>
     >;
