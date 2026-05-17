@@ -1,49 +1,32 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizeDocSlug } from "../reuse/docs-link-normalizer.js";
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const docs = [
-    { slug: "index", sourcePath: "docs/index" },
-    { slug: "overview", sourcePath: "docs/overview" },
-    { slug: "gateways/db", sourcePath: "gateways/db/docs/index" },
-    {
-        slug: "adapters/db/sqlite",
-        sourcePath: "adapters/db/sqlite/docs/index",
-    },
-];
+const ROOT = resolve(fileURLToPath(import.meta.url), "../../../../");
+const DOC_LINK_PATTERN = /\[[^\]]+\]\((?!https?:)[^)]+\.md(?:[#?][^)]*)?\)/;
 
-test("docs links normalize repository-relative markdown paths to docs slugs", () => {
-    assert.equal(
-        normalizeDocSlug("../gateways/db/docs/index.en.md", docs[0], docs),
-        "gateways/db",
+test("docs markdown links use pretty docs URLs instead of language-suffixed markdown files", () => {
+    const files = execFileSync("git", ["ls-files", "*.md"], {
+        cwd: ROOT,
+        encoding: "utf8",
+    })
+        .trim()
+        .split("\n")
+        .filter(Boolean);
+    const offenders = files.filter((file) =>
+        DOC_LINK_PATTERN.test(readFileSync(join(ROOT, file), "utf8")),
     );
+    assert.deepEqual(offenders, []);
 });
 
-test("docs links drop existing language query parameters", () => {
-    assert.equal(
-        normalizeDocSlug(
-            "../gateways/db/docs/index.en.md?langs=en",
-            docs[0],
-            docs,
-        ),
-        "gateways/db",
+test("docs page strips pretty docs URL prefixes before loading document slugs", () => {
+    const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
+    assert.ok(
+        source.includes('.replace(/^docs\\/?/, "")'),
+        "pretty /docs links are normalized to document slugs",
     );
-});
-
-test("docs links resolve relative paths from nested docs", () => {
-    assert.equal(
-        normalizeDocSlug(
-            "../../../../gateways/db/docs/index.en.md",
-            docs[3],
-            docs,
-        ),
-        "gateways/db",
-    );
-});
-
-test("docs links keep API docs paths as slugs", () => {
-    assert.equal(
-        normalizeDocSlug("/api/v1/docs/gateways/db?langs=en", docs[0], docs),
-        "gateways/db",
-    );
+    assert.match(source, /const slug = normalizeDocSlug\(href\);/);
 });

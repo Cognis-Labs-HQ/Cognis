@@ -6,7 +6,6 @@ import {
 } from "../../reuse/i18n.js";
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
-import { normalizeDocSlug } from "../../reuse/docs-link-normalizer.js";
 
 const GROUP_KEYS = {
     "": "ui.app.docs.group.platform",
@@ -46,6 +45,17 @@ function docTitle(item) {
     );
 }
 
+function normalizeDocSlug(href) {
+    return href
+        .replace(/[?#].*$/, "")
+        .replace(/^\.\//, "")
+        .replace(/^\//, "")
+        .replace(/^docs\/?/, "")
+        .replace(/^api\/v1\/docs\/?/, "")
+        .replace(/\.[a-z]{2}(?:-[a-z]{2})?\.md$/i, "")
+        .replace(/\.md$/i, "");
+}
+
 function buildGroupedNav(i18n, items) {
     const groups = new Map();
     for (const item of items) {
@@ -83,7 +93,6 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "ui.page.title.docs");
 
     let activeHtml = null;
-    let activeDocSlug = null;
 
     function renderActiveDoc() {
         const docEl = root.querySelector("#doc");
@@ -96,7 +105,6 @@ export async function mount(root, { signal } = {}) {
             activeHtml = await loadMarkdownDocumentHtml(
                 `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,
             );
-            activeDocSlug = slug;
         } catch {
             return;
         }
@@ -129,7 +137,6 @@ export async function mount(root, { signal } = {}) {
     }
 
     const docs = await loadDocsIndex();
-    const docsBySlug = new Map(docs.map((doc) => [doc.slug, doc]));
 
     const elements = [
         {
@@ -183,11 +190,7 @@ export async function mount(root, { signal } = {}) {
             if (href.startsWith("http://") || href.startsWith("https://"))
                 return;
 
-            const slug = normalizeDocSlug(
-                href,
-                docsBySlug.get(activeDocSlug),
-                docs,
-            );
+            const slug = normalizeDocSlug(href);
             if (!slug) return;
 
             event.preventDefault();

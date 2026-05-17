@@ -10,32 +10,32 @@ Diese Dokumente sind für Entwickler-Mitwirkende geschrieben, nicht für Endbenu
 
 ### Plattform
 
-| Dokument                                   | Beschreibung                                            |
-| ------------------------------------------ | ------------------------------------------------------- |
-| [Übersicht](./overview.en.md)              | Was Cognis ist und wie die Schichten zusammenpassen     |
-| [Plattform-Features](./features.de.md)     | Eingebaute Fähigkeiten und Adapter-Abdeckung            |
-| [Dokumentationsstandard](./standard.en.md) | Wie Dokumentation in dieser Codebase geschrieben wird   |
-| [ACL-Matrix](./acl-matrix.de.md)           | Rollendefinitionen und vollständige Berechtigungsmatrix |
-| [Komponentenversionen](./versions.de.md)   | Aktuelle Versionen aller Gateways, Adapter und Module   |
+| Dokument                                 | Beschreibung                                            |
+| ---------------------------------------- | ------------------------------------------------------- |
+| [Übersicht](/docs/overview)              | Was Cognis ist und wie die Schichten zusammenpassen     |
+| [Plattform-Features](/docs/features)     | Eingebaute Fähigkeiten und Adapter-Abdeckung            |
+| [Dokumentationsstandard](/docs/standard) | Wie Dokumentation in dieser Codebase geschrieben wird   |
+| [ACL-Matrix](/docs/acl-matrix)           | Rollendefinitionen und vollständige Berechtigungsmatrix |
+| [Komponentenversionen](/docs/versions)   | Aktuelle Versionen aller Gateways, Adapter und Module   |
 
 ### Architekturschichten
 
-| Dokument                     | Beschreibung                                                   |
-| ---------------------------- | -------------------------------------------------------------- |
-| [Core](./core.en.md)         | Contracts, Schnittstellen und Policy-Services                  |
-| [API](./api.de.md)           | HTTP-Server, Route-Gruppen, Auth-Modell                        |
-| [UI](./ui.de.md)             | Browser-Frontend: Seiten, Layouts, i18n                        |
-| [Adapter](./adapters.de.md)  | Plattformweite Übersicht der Adapters-Schicht                  |
-| [Gateways](./gateways.de.md) | Gateways und Adapter erstellen; Startreihenfolge; Capabilities |
-| [DevOps](./devops.de.md)     | Dockerfile, GitHub Actions, Umgebungsvariablen                 |
+| Dokument                   | Beschreibung                                                   |
+| -------------------------- | -------------------------------------------------------------- |
+| [Core](/docs/core)         | Contracts, Schnittstellen und Policy-Services                  |
+| [API](/docs/api)           | HTTP-Server, Route-Gruppen, Auth-Modell                        |
+| [UI](/docs/ui)             | Browser-Frontend: Seiten, Layouts, i18n                        |
+| [Adapter](/docs/adapters)  | Plattformweite Übersicht der Adapters-Schicht                  |
+| [Gateways](/docs/gateways) | Gateways und Adapter erstellen; Startreihenfolge; Capabilities |
+| [DevOps](/docs/devops)     | Dockerfile, GitHub Actions, Umgebungsvariablen                 |
 
 ### Gateways
 
-| Dokument                                                 | Beschreibung                                   |
-| -------------------------------------------------------- | ---------------------------------------------- |
-| [Auth-Gateway](../gateways/auth/docs/index.de.md)        | Authentifizierungsanbieter, Token-Ausstellung  |
-| [Datenbank-Gateway](../gateways/db/docs/index.de.md)     | Datenbankzugriff, Executor, Dialekt-Helfer     |
-| [Dateien-Gateway](../gateways/files/docs/index.de.md)    | Lokale Dateispeicher-Capabilities              |
-| [Logging-Gateway](../gateways/logging/docs/index.de.md)  | Strukturiertes Logging                         |
-| [Notify-Gateway](../gateways/notify/docs/index.de.md)    | Pluggbarer Benachrichtigungsversand            |
-| [Social-Gateway](../gateways/social/docs/standard.en.md) | Profile, sozialer Graph, Beiträge, Nachrichten |
+| Dokument                                         | Beschreibung                                   |
+| ------------------------------------------------ | ---------------------------------------------- |
+| [Auth-Gateway](/docs/gateways/auth)              | Authentifizierungsanbieter, Token-Ausstellung  |
+| [Datenbank-Gateway](/docs/gateways/db)           | Datenbankzugriff, Executor, Dialekt-Helfer     |
+| [Dateien-Gateway](/docs/gateways/files)          | Lokale Dateispeicher-Capabilities              |
+| [Logging-Gateway](/docs/gateways/logging)        | Strukturiertes Logging                         |
+| [Notify-Gateway](/docs/gateways/notify)          | Pluggbarer Benachrichtigungsversand            |
+| [Social-Gateway](/docs/gateways/social/standard) | Profile, sozialer Graph, Beiträge, Nachrichten |

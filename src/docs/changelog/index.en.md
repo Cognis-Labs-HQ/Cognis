@@ -21,4 +21,4 @@ easy to audit.
 
 ## Entries
 
-- [cleanup-strings-and-codebase](./cleanup-strings-and-codebase.en.md)
+- [cleanup-strings-and-codebase](/docs/changelog/cleanup-strings-and-codebase)
