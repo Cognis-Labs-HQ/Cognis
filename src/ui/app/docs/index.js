@@ -47,9 +47,11 @@ function docTitle(item) {
 
 function normalizeDocSlug(href) {
     return href
+        .replace(/[?#].*$/, "")
         .replace(/^\.\//, "")
         .replace(/^\//, "")
-        .replace(/^api\/v1\/docs\//, "")
+        .replace(/^docs\/?/, "")
+        .replace(/^api\/v1\/docs\/?/, "")
         .replace(/\.[a-z]{2}(?:-[a-z]{2})?\.md$/i, "")
         .replace(/\.md$/i, "");
 }

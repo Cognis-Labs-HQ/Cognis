@@ -10,32 +10,32 @@ Dokumen-dokumen ini ditulis untuk kontributor pengembang, bukan pengguna akhir. 
 
 ### Platform
 
-| Dokumen                                 | Keterangan                                              |
-| --------------------------------------- | ------------------------------------------------------- |
-| [Ikhtisar](./overview.en.md)            | Apa itu Cognis dan bagaimana lapisan-lapisannya bersatu |
-| [Fitur Platform](./features.id.md)      | Kemampuan bawaan dan cakupan adapter                    |
-| [Standar Dokumentasi](./standard.en.md) | Cara penulisan dan pengorganisasian dokumentasi         |
-| [Matriks ACL](./acl-matrix.id.md)       | Definisi peran dan matriks izin lengkap                 |
-| [Versi Komponen](./versions.id.md)      | Versi terkini setiap gateway, adapter, dan modul        |
+| Dokumen                               | Keterangan                                              |
+| ------------------------------------- | ------------------------------------------------------- |
+| [Ikhtisar](/docs/overview)            | Apa itu Cognis dan bagaimana lapisan-lapisannya bersatu |
+| [Fitur Platform](/docs/features)      | Kemampuan bawaan dan cakupan adapter                    |
+| [Standar Dokumentasi](/docs/standard) | Cara penulisan dan pengorganisasian dokumentasi         |
+| [Matriks ACL](/docs/acl-matrix)       | Definisi peran dan matriks izin lengkap                 |
+| [Versi Komponen](/docs/versions)      | Versi terkini setiap gateway, adapter, dan modul        |
 
 ### Lapisan Arsitektur
 
-| Dokumen                     | Keterangan                                                      |
-| --------------------------- | --------------------------------------------------------------- |
-| [Inti](./core.en.md)        | Kontrak, antarmuka, dan layanan kebijakan                       |
-| [API](./api.id.md)          | Server HTTP, grup route, model autentikasi                      |
-| [UI](./ui.id.md)            | Frontend browser: halaman, layout, i18n                         |
-| [Adapter](./adapters.id.md) | Ikhtisar lapisan adapter platform                               |
-| [Gateway](./gateways.id.md) | Cara membuat gateway dan adapter; urutan boot; capability store |
-| [DevOps](./devops.id.md)    | Dockerfile, GitHub Actions, referensi variabel environment      |
+| Dokumen                   | Keterangan                                                      |
+| ------------------------- | --------------------------------------------------------------- |
+| [Inti](/docs/core)        | Kontrak, antarmuka, dan layanan kebijakan                       |
+| [API](/docs/api)          | Server HTTP, grup route, model autentikasi                      |
+| [UI](/docs/ui)            | Frontend browser: halaman, layout, i18n                         |
+| [Adapter](/docs/adapters) | Ikhtisar lapisan adapter platform                               |
+| [Gateway](/docs/gateways) | Cara membuat gateway dan adapter; urutan boot; capability store |
+| [DevOps](/docs/devops)    | Dockerfile, GitHub Actions, referensi variabel environment      |
 
 ### Gateway
 
-| Dokumen                                                   | Keterangan                                |
-| --------------------------------------------------------- | ----------------------------------------- |
-| [Gateway Autentikasi](../gateways/auth/docs/index.id.md)  | Penyedia autentikasi, penerbitan token    |
-| [Gateway Database](../gateways/db/docs/index.id.md)       | Akses database, executor, helper dialek   |
-| [Gateway File](../gateways/files/docs/index.id.md)        | Capability penyimpanan file lokal         |
-| [Gateway Logging](../gateways/logging/docs/index.id.md)   | Logging terstruktur                       |
-| [Gateway Notifikasi](../gateways/notify/docs/index.id.md) | Pengiriman notifikasi yang dapat dipasang |
-| [Gateway Sosial](../gateways/social/docs/standard.en.md)  | Profil, grafik sosial, postingan, pesan   |
+| Dokumen                                          | Keterangan                                |
+| ------------------------------------------------ | ----------------------------------------- |
+| [Gateway Autentikasi](/docs/gateways/auth)       | Penyedia autentikasi, penerbitan token    |
+| [Gateway Database](/docs/gateways/db)            | Akses database, executor, helper dialek   |
+| [Gateway File](/docs/gateways/files)             | Capability penyimpanan file lokal         |
+| [Gateway Logging](/docs/gateways/logging)        | Logging terstruktur                       |
+| [Gateway Notifikasi](/docs/gateways/notify)      | Pengiriman notifikasi yang dapat dipasang |
+| [Gateway Sosial](/docs/gateways/social/standard) | Profil, grafik sosial, postingan, pesan   |
