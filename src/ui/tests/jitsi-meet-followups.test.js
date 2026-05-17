@@ -201,9 +201,10 @@ test("meetings session state polling handles closed meetings and distinct leave 
     assert.match(source, /latestState\.endedAt/);
     assert.match(source, /module\.jitsi_meet\.overlay\.meeting_closed/);
     assert.match(source, /module\.jitsi_meet\.overlay\.meeting_left/);
+    assert.match(source, /honorMeetingClosed: false/);
     assert.match(
         source,
-        /addEventListener\("readyToClose", handleMeetingClosed\)/,
+        /addEventListener\("readyToClose", handleMeetingLeft\)/,
     );
     assert.match(source, /MEETING_TERMINATED_TEXT = "meeting terminated"/);
     assert.match(source, /addEventListener\("notificationTriggered"/);
@@ -220,13 +221,50 @@ test("jitsi API resets ended meetings and reports meetingClosed from presence up
         /!resolved\.state\.endedAt && conflictingSessions\.length > 0/,
     );
     assert.match(source, /endedBy:\s*resolved\.requesterUsername/);
-    assert.match(source, /participantCount === 2/);
+    assert.doesNotMatch(source, /participantCount === 2/);
     assert.match(source, /meetingClosed:/);
     assert.match(
         source,
         /const meetingTerminated = body\.terminated === true;/,
     );
     assert.match(source, /meetingTerminated \|\|/);
+});
+
+test("meetings UI prompts a participant who becomes alone before leaving", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(source, /id="jitsi-leave-alone-btn"/);
+    assert.match(source, /id="jitsi-remain-alone-btn"/);
+    assert.match(
+        source,
+        /function shouldPromptLocalUserAlone\(activeParticipants\)/,
+    );
+    assert.match(
+        source,
+        /function updateAloneParticipantPrompt\(activeParticipants\)/,
+    );
+    assert.match(source, /module\.jitsi_meet\.overlay\.alone_prompt/);
+    assert.match(source, /alonePromptDismissedMeetingId/);
+    assert.match(
+        source,
+        /payload\?\.data\?\.activeParticipants[\s\S]*module\.jitsi_meet\.overlay\.auth_waiting/,
+    );
+    assert.match(
+        source,
+        /jitsi-leave-alone-btn[\s\S]*module\.jitsi_meet\.overlay\.meeting_left/,
+    );
+});
+
+test("meetings overlay strings include alone participant prompt actions", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/languages/en/strings.xml"),
+        "utf8",
+    );
+    assert.match(source, /module\.jitsi_meet\.overlay\.alone_prompt/);
+    assert.match(source, /module\.jitsi_meet\.overlay\.leave_meeting/);
+    assert.match(source, /module\.jitsi_meet\.overlay\.remain_in_meeting/);
 });
 
 test("meetings mini chat filters room-event records from rendering", () => {

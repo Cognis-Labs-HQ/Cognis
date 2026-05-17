@@ -296,6 +296,8 @@ function buildStageMarkup(i18n) {
             <button id="jitsi-start-btn" class="btn-animated" type="button" disabled>${escapeHtml(i18n.t("module.jitsi_meet.overlay.start_meeting"))}</button>
             <button id="jitsi-auth-btn" class="btn-cancel" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.auth_required"))}</button>
             <button id="jitsi-reclaim-btn" class="btn-confirm" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.reclaim"))}</button>
+            <button id="jitsi-leave-alone-btn" class="btn-cancel" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.leave_meeting"))}</button>
+            <button id="jitsi-remain-alone-btn" class="btn-confirm" type="button" hidden>${escapeHtml(i18n.t("module.jitsi_meet.overlay.remain_in_meeting"))}</button>
           </div>
           <div id="jitsi-loading" class="jitsi-loading" hidden>
             <span id="jitsi-loading-indicator" class="jitsi-spinner" aria-hidden="true"></span>
@@ -393,6 +395,8 @@ export async function mount(root, { signal } = {}) {
         jitsiParticipantId: "",
         jitsiModerator: false,
         jitsiThemeMode: resolveThemeMode(),
+        alonePromptMeetingId: "",
+        alonePromptDismissedMeetingId: "",
         recoveringMeetingSession: false,
     };
 
@@ -484,12 +488,15 @@ export async function mount(root, { signal } = {}) {
         canStart = false,
         showAuth = false,
         showReclaim = false,
+        showAlonePrompt = false,
         visible = true,
     }) {
         const overlay = root.querySelector("#jitsi-overlay");
         const startButton = root.querySelector("#jitsi-start-btn");
         const authButton = root.querySelector("#jitsi-auth-btn");
         const reclaimButton = root.querySelector("#jitsi-reclaim-btn");
+        const leaveAloneButton = root.querySelector("#jitsi-leave-alone-btn");
+        const remainAloneButton = root.querySelector("#jitsi-remain-alone-btn");
         const messageEl = root.querySelector("#jitsi-overlay-message");
         const loadingEl = root.querySelector("#jitsi-loading");
         const indicatorEl = root.querySelector("#jitsi-loading-indicator");
@@ -541,6 +548,12 @@ export async function mount(root, { signal } = {}) {
         }
         if (reclaimButton instanceof HTMLElement) {
             reclaimButton.hidden = !showReclaim;
+        }
+        if (leaveAloneButton instanceof HTMLElement) {
+            leaveAloneButton.hidden = !showAlonePrompt;
+        }
+        if (remainAloneButton instanceof HTMLElement) {
+            remainAloneButton.hidden = !showAlonePrompt;
         }
     }
 
@@ -783,6 +796,8 @@ export async function mount(root, { signal } = {}) {
         await keepPresenceAlive(false).catch(() => undefined);
         clearTimers();
         closeMeetingEmbed();
+        state.alonePromptMeetingId = "";
+        state.alonePromptDismissedMeetingId = "";
         state.meeting = null;
         state.chatRoomId = "";
         state.chatRoomKey = null;
@@ -843,6 +858,10 @@ export async function mount(root, { signal } = {}) {
         }
         if (isMeetingActive() && state.meeting?.id !== normalizedMeetingId) {
             await switchAwayFromActiveMeeting();
+        }
+        if (state.meeting?.id !== meetingPayload.data.id) {
+            state.alonePromptMeetingId = "";
+            state.alonePromptDismissedMeetingId = "";
         }
         state.meeting = meetingPayload.data;
         await updateNativeChat();
@@ -924,6 +943,8 @@ export async function mount(root, { signal } = {}) {
         }
         clearTimers();
         closeMeetingEmbed();
+        state.alonePromptMeetingId = "";
+        state.alonePromptDismissedMeetingId = "";
         state.meeting = null;
         state.chatRoomId = "";
         state.chatRoomKey = null;
@@ -951,19 +972,85 @@ export async function mount(root, { signal } = {}) {
     async function handleMeetingExit({
         fallbackOverlayMessageKey,
         forceClosedOverlay = false,
+        honorMeetingClosed = true,
         reportTerminated = false,
     }) {
         const leaveState = await keepPresenceAlive(false, {
             terminated: reportTerminated,
         }).catch(() => null);
         const overlayMessageKey =
-            forceClosedOverlay || leaveState?.meetingClosed
+            forceClosedOverlay ||
+            (honorMeetingClosed && leaveState?.meetingClosed)
                 ? "module.jitsi_meet.overlay.meeting_closed"
                 : fallbackOverlayMessageKey;
         await resetMeetingState({
             overlayMessageKey,
             skipPresenceUpdate: true,
         });
+    }
+
+    function shouldPromptLocalUserAlone(activeParticipants) {
+        if (!isMeetingActive() || !state.meeting?.id) return false;
+        if (state.alonePromptDismissedMeetingId === state.meeting.id) {
+            return false;
+        }
+        const localUsername = normalizeUsername(
+            state.currentProfile?.handle ?? "",
+        );
+        if (!localUsername) return false;
+        const uniqueActiveParticipants = Array.from(
+            new Set(
+                (Array.isArray(activeParticipants) ? activeParticipants : [])
+                    .map((entry) => normalizeUsername(entry))
+                    .filter(Boolean),
+            ),
+        );
+        const invitedParticipants = Array.isArray(state.meeting?.participants)
+            ? state.meeting.participants
+                  .map((entry) => normalizeUsername(entry))
+                  .filter(Boolean)
+            : [];
+        return (
+            invitedParticipants.length > 1 &&
+            uniqueActiveParticipants.length === 1 &&
+            uniqueActiveParticipants[0] === localUsername
+        );
+    }
+
+    function updateAloneParticipantPrompt(activeParticipants) {
+        if (!state.meeting?.id) return false;
+        if (!shouldPromptLocalUserAlone(activeParticipants)) {
+            if (state.alonePromptMeetingId === state.meeting.id) {
+                state.alonePromptMeetingId = "";
+                updateOverlay({
+                    message: i18n.t("module.jitsi_meet.overlay.in_meeting"),
+                    canStart: false,
+                    showAuth: false,
+                    showReclaim: false,
+                    showAlonePrompt: false,
+                    visible: false,
+                });
+            }
+            const uniqueActiveParticipants = new Set(
+                (Array.isArray(activeParticipants) ? activeParticipants : [])
+                    .map((entry) => normalizeUsername(entry))
+                    .filter(Boolean),
+            );
+            if (uniqueActiveParticipants.size > 1) {
+                state.alonePromptDismissedMeetingId = "";
+            }
+            return false;
+        }
+        state.alonePromptMeetingId = state.meeting.id;
+        updateOverlay({
+            message: i18n.t("module.jitsi_meet.overlay.alone_prompt"),
+            canStart: false,
+            showAuth: false,
+            showReclaim: false,
+            showAlonePrompt: true,
+            visible: true,
+        });
+        return true;
     }
 
     function lobbyMessageKey(participantCount) {
@@ -1169,6 +1256,9 @@ export async function mount(root, { signal } = {}) {
                     "module.jitsi_meet.overlay.reclaimed_elsewhere",
                 toastVariant: "warning",
             });
+            return;
+        }
+        if (updateAloneParticipantPrompt(payload?.data?.activeParticipants)) {
             return;
         }
         if (latestState.authRequired && !latestState.authCompletedAt) {
@@ -1444,6 +1534,7 @@ export async function mount(root, { signal } = {}) {
             void handleMeetingExit({
                 fallbackOverlayMessageKey:
                     "module.jitsi_meet.overlay.meeting_left",
+                honorMeetingClosed: false,
             });
         };
         const handleMeetingClosed = () => {
@@ -1489,7 +1580,7 @@ export async function mount(root, { signal } = {}) {
             handleMeetingTerminated();
         });
         apiInstance.addEventListener("videoConferenceLeft", handleMeetingLeft);
-        apiInstance.addEventListener("readyToClose", handleMeetingClosed);
+        apiInstance.addEventListener("readyToClose", handleMeetingLeft);
         renderParticipants();
 
         frame.hidden = false;
@@ -1947,6 +2038,48 @@ export async function mount(root, { signal } = {}) {
                         "_blank",
                         "noopener,noreferrer",
                     );
+                },
+                { signal: bindSignal },
+            );
+        }
+
+        const leaveAloneButton = container.querySelector(
+            "#jitsi-leave-alone-btn",
+        );
+        const remainAloneButton = container.querySelector(
+            "#jitsi-remain-alone-btn",
+        );
+
+        if (leaveAloneButton instanceof HTMLButtonElement) {
+            leaveAloneButton.addEventListener(
+                "click",
+                async () => {
+                    state.alonePromptMeetingId = "";
+                    state.alonePromptDismissedMeetingId = "";
+                    await resetMeetingState({
+                        overlayMessageKey:
+                            "module.jitsi_meet.overlay.meeting_left",
+                    });
+                },
+                { signal: bindSignal },
+            );
+        }
+
+        if (remainAloneButton instanceof HTMLButtonElement) {
+            remainAloneButton.addEventListener(
+                "click",
+                () => {
+                    state.alonePromptDismissedMeetingId =
+                        state.meeting?.id ?? "";
+                    state.alonePromptMeetingId = "";
+                    updateOverlay({
+                        message: i18n.t("module.jitsi_meet.overlay.in_meeting"),
+                        canStart: false,
+                        showAuth: false,
+                        showReclaim: false,
+                        showAlonePrompt: false,
+                        visible: false,
+                    });
                 },
                 { signal: bindSignal },
             );

@@ -26,6 +26,9 @@
   <string name="module.jitsi_meet.overlay.reclaim_done">Session reclaimed. Previous session has been disconnected.</string>
   <string name="module.jitsi_meet.overlay.reclaimed_elsewhere">This meeting was reclaimed by another session. Reclaim it again if you want to rejoin here.</string>
   <string name="module.jitsi_meet.overlay.in_meeting">Meeting started. Keep this tab open for Cognis session tracking.</string>
+  <string name="module.jitsi_meet.overlay.alone_prompt">You are the only participant still in this meeting. Do you want to leave or remain?</string>
+  <string name="module.jitsi_meet.overlay.leave_meeting">Leave Meeting</string>
+  <string name="module.jitsi_meet.overlay.remain_in_meeting">Remain in Meeting</string>
   <string name="module.jitsi_meet.overlay.meeting_closed">This meeting has been closed.</string>
   <string name="module.jitsi_meet.overlay.meeting_left">You left the meeting.</string>
   <string name="module.jitsi_meet.overlay.leave_blocked">Leave the meeting before navigating away from this page.</string>

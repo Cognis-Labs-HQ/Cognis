@@ -1082,12 +1082,8 @@ export function registerApiRoutes(router, ctx) {
                         .filterCurrentPresenceEntries(updatedPresenceEntries)
                         .map((entry) => entry.username),
                 );
-                const participantCount = resolved.participants.length;
                 const shouldCloseMeeting =
-                    meetingTerminated ||
-                    activeParticipantUsernames.size === 0 ||
-                    (participantCount === 2 &&
-                        activeParticipantUsernames.size < participantCount);
+                    meetingTerminated || activeParticipantUsernames.size === 0;
                 if (shouldCloseMeeting && !resolved.state.endedAt) {
                     await store.updateMeetingState(resolved.meeting.id, {
                         authRequired: false,

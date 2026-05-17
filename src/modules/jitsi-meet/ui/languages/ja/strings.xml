@@ -26,6 +26,9 @@
   <string name="module.jitsi_meet.overlay.reclaim_done">セッションを引き継ぎました。以前のセッションは切断されました。</string>
   <string name="module.jitsi_meet.overlay.reclaimed_elsewhere">このミーティングは別のセッションに引き継がれました。ここで再参加するには、もう一度引き継いでください。</string>
   <string name="module.jitsi_meet.overlay.in_meeting">ミーティングを開始しました。Cognis のセッション追跡のため、このタブを開いたままにしてください。</string>
+  <string name="module.jitsi_meet.overlay.alone_prompt">このミーティングに残っている参加者はあなたのみです。退出しますか、それとも残りますか？</string>
+  <string name="module.jitsi_meet.overlay.leave_meeting">ミーティングから退出</string>
+  <string name="module.jitsi_meet.overlay.remain_in_meeting">ミーティングに残る</string>
   <string name="module.jitsi_meet.overlay.meeting_closed">このミーティングは終了しました。</string>
   <string name="module.jitsi_meet.overlay.meeting_left">ミーティングから退出しました。</string>
   <string name="module.jitsi_meet.overlay.leave_blocked">このページから移動する前にミーティングを退出してください。</string>
