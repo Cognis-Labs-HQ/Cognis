@@ -28,3 +28,33 @@ test("meeting-linked chat reuse does not rename existing group chats", () => {
     assert.match(source, /const existing =[\s\S]*findGroupByExactMembers/);
     assert.doesNotMatch(source, /updateRoomTitle\(existing\.id, title\)/);
 });
+
+test("messages polling does not rerender for read timestamp churn", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
+        "utf8",
+    );
+    const signatureBody =
+        source.match(
+            /function messageRenderSignature[\s\S]*?function roomListRenderSignature/,
+        )?.[0] ?? "";
+
+    assert.match(signatureBody, /accountId: reader\.accountId/);
+    assert.doesNotMatch(signatureBody, /readAt: reader\.readAt/);
+    assert.match(source, /if \(!force && !selectedRoomHasUnread\(\)\) return;/);
+});
+
+test("messages avatars fall back after failed image loads", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
+        "utf8",
+    );
+
+    assert.match(source, /const unavailableAvatarKeys = new Set\(\)/);
+    assert.match(source, /unavailableAvatarKeys\.add\(avatarKey\)/);
+    assert.match(source, /data-avatar-key=/);
+    assert.match(
+        source,
+        /root\.addEventListener\("error", handleAvatarImageError/,
+    );
+});

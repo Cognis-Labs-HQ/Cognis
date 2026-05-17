@@ -121,6 +121,7 @@ async function decryptMessageOrReturnPlaintext(key, message) {
 
 const roomKeyCache = new Map();
 const threadRenderSignatures = new Map();
+const unavailableAvatarKeys = new Set();
 
 function stableJson(value) {
     return JSON.stringify(value);
@@ -151,7 +152,6 @@ function messageRenderSignature(messages, pendingRequest) {
             })),
             readBy: (message.readBy ?? []).map((reader) => ({
                 accountId: reader.accountId,
-                readAt: reader.readAt,
             })),
         })),
     });
@@ -195,6 +195,45 @@ function roomListRenderSignature(rooms, selectedRoomId) {
             })),
         })),
     });
+}
+
+function avatarFileSrc(avatarKey) {
+    return `/api/v1/files/${String(avatarKey)
+        .split("/")
+        .map((segment) => encodeURIComponent(segment))
+        .join("/")}`;
+}
+
+function avatarImageMarkup(
+    avatarKey,
+    imageClass,
+    label,
+    colorSeed,
+    fallbackClass,
+) {
+    if (!avatarKey || unavailableAvatarKeys.has(avatarKey)) return "";
+    return `<img class="${escapeHtml(imageClass)}" src="${escapeHtml(avatarFileSrc(avatarKey))}" alt="" data-avatar-key="${escapeHtml(avatarKey)}" data-avatar-label="${escapeHtml(label)}" data-avatar-color-seed="${escapeHtml(colorSeed)}" data-avatar-fallback-class="${escapeHtml(fallbackClass)}" />`;
+}
+
+function avatarFallbackMarkup(label, colorSeed, fallbackClass) {
+    const color = pickInitialsColor(colorSeed);
+    return `<span class="${escapeHtml(fallbackClass)}" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
+}
+
+function handleAvatarImageError(event) {
+    const image = event.target;
+    if (!image || image.tagName !== "IMG") return;
+    const avatarKey = image.dataset?.avatarKey;
+    if (!avatarKey) return;
+    unavailableAvatarKeys.add(avatarKey);
+    const fallbackClass = image.dataset.avatarFallbackClass;
+    if (!fallbackClass) return;
+    const label = image.dataset.avatarLabel || "";
+    const colorSeed = image.dataset.avatarColorSeed || label;
+    const template = document.createElement("template");
+    template.innerHTML = avatarFallbackMarkup(label, colorSeed, fallbackClass);
+    const fallback = template.content.firstElementChild;
+    if (fallback) image.replaceWith(fallback);
 }
 
 async function getRoomKey(roomId) {
@@ -268,8 +307,15 @@ function renderRoomAvatar(room, currentAccountId) {
     if (!room) return "";
     const members = room.members ?? [];
     if (room.kind === "classroom") {
-        if (room.avatarKey) {
-            return `<div class="messages-thread-avatar"><img class="messages-thread-avatar-img" src="/api/v1/files/${escapeHtml(room.avatarKey)}" alt="" /></div>`;
+        if (room.avatarKey && !unavailableAvatarKeys.has(room.avatarKey)) {
+            const label = room.title || room.id;
+            return `<div class="messages-thread-avatar">${avatarImageMarkup(
+                room.avatarKey,
+                "messages-thread-avatar-img",
+                label,
+                room.id || label,
+                "messages-thread-initials",
+            )}</div>`;
         }
         const picked = randomSample(members, 4);
         while (picked.length < 4) picked.push({ handle: "", displayName: "" });
@@ -615,19 +661,21 @@ function formatAvatarMarkup({
     profileHandle = null,
     linkClass = "",
 }) {
-    const avatarContent = avatarKey
-        ? `<img class="${escapeHtml(imageClass)}" src="/api/v1/files/${escapeHtml(avatarKey)}" alt="" />`
-        : `<span class="${escapeHtml(fallbackClass)}" style="--initials-bg: ${escapeHtml(pickInitialsColor(colorSeed || label))};">${escapeHtml(getInitialsText(label))}</span>`;
+    const safeColorSeed = colorSeed || label;
+    const avatarContent =
+        avatarImageMarkup(
+            avatarKey,
+            imageClass,
+            label,
+            safeColorSeed,
+            fallbackClass,
+        ) || avatarFallbackMarkup(label, safeColorSeed, fallbackClass);
     const profileLink = profileHref(profileHandle);
     if (profileLink) {
         const classes = [avatarClass, linkClass].filter(Boolean).join(" ");
         return `<a class="${escapeHtml(classes)}" href="${escapeHtml(profileLink)}" aria-label="${escapeHtml(label)}">${avatarContent}</a>`;
     }
-    if (avatarKey) {
-        return `<span class="${escapeHtml(avatarClass)}"><img class="${escapeHtml(imageClass)}" src="/api/v1/files/${escapeHtml(avatarKey)}" alt="" /></span>`;
-    }
-    const color = pickInitialsColor(colorSeed || label);
-    return `<span class="${escapeHtml(avatarClass)}"><span class="${escapeHtml(fallbackClass)}" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span></span>`;
+    return `<span class="${escapeHtml(avatarClass)}">${avatarContent}</span>`;
 }
 
 function formatRoomListAvatar(displayedMember, titleSource) {
@@ -907,6 +955,10 @@ export async function mount(root, { signal } = {}) {
 
     root.classList.add("messages-page");
     root.dataset.messageStyle = resolveMessageStyle();
+    root.addEventListener("error", handleAvatarImageError, {
+        capture: true,
+        signal,
+    });
     signal?.addEventListener(
         "abort",
         () => {
@@ -1057,7 +1109,7 @@ export async function mount(root, { signal } = {}) {
                 threadResult?.pendingRequest ?? null,
             );
         }
-        await markSelectedRoomRead();
+        await markSelectedRoomRead({ force: true });
         bindPendingRequestBannerEvents();
     }
 
@@ -1075,8 +1127,17 @@ export async function mount(root, { signal } = {}) {
         lastRoomsListRenderSignature = renderSignature;
     }
 
-    async function markSelectedRoomRead() {
+    function selectedRoomHasUnread() {
+        return rooms.some(
+            (room) =>
+                String(room.id) === String(selectedRoomId) &&
+                Number(room.unread ?? 0) > 0,
+        );
+    }
+
+    async function markSelectedRoomRead({ force = false } = {}) {
         if (!selectedRoomId) return;
+        if (!force && !selectedRoomHasUnread()) return;
         await apiFetch(
             `/api/v1/messages/rooms/${encodeURIComponent(selectedRoomId)}/read`,
             { method: "POST" },
@@ -1182,14 +1243,16 @@ export async function mount(root, { signal } = {}) {
         const threadList = document.getElementById("messages-thread-list");
         if (!threadList) return;
         const key = await getRoomKey(selectedRoomId);
-        await renderThread(
+        const threadResult = await renderThread(
             selectedRoomId,
             key,
             threadList,
             i18n,
             currentAccountId,
         );
-        await markSelectedRoomRead();
+        if (threadResult?.changed || selectedRoomHasUnread()) {
+            await markSelectedRoomRead();
+        }
         await refreshTypingIndicator();
     }
 
