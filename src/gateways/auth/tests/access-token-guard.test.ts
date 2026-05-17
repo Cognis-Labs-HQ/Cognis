@@ -10,6 +10,7 @@ import {
 } from "../access-tokens.js";
 import {
     registerPageScriptOrigin,
+    registerPageScriptOrigins,
     requireAuth,
     setPageSecurityHeaders,
 } from "../guard.js";
@@ -106,4 +107,30 @@ test("page security headers include registered script origins", () => {
 test("page script origin registration rejects non-http origins", () => {
     assert.equal(registerPageScriptOrigin("javascript:alert(1)"), null);
     assert.equal(registerPageScriptOrigin(""), null);
+});
+
+test("page script origins are isolated and replaced per owner", () => {
+    const firstOrigins = registerPageScriptOrigins("test:replaceable", [
+        "https://first.example.test/path",
+    ]);
+    const secondOrigins = registerPageScriptOrigins("test:replaceable", [
+        "https://second.example.test/path",
+    ]);
+    const headers = new Map<string, string>();
+    const response = {
+        setHeader(name: string, value: string) {
+            headers.set(name.toLowerCase(), value);
+        },
+    } as unknown as import("node:http").ServerResponse;
+
+    setPageSecurityHeaders(response);
+
+    const contentSecurityPolicy = headers.get("content-security-policy") ?? "";
+    assert.deepEqual(firstOrigins, ["https://first.example.test"]);
+    assert.deepEqual(secondOrigins, ["https://second.example.test"]);
+    assert.doesNotMatch(
+        contentSecurityPolicy,
+        /https:\/\/first\.example\.test/,
+    );
+    assert.match(contentSecurityPolicy, /https:\/\/second\.example\.test/);
 });

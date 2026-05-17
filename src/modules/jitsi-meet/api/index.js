@@ -5,6 +5,7 @@ import { readJson } from "../../../api/reuse/read-json.js";
 import { isModeratorRole, normalizeUsername } from "./reuse/meeting-values.js";
 
 const MODULE_ID = "jitsi-meet";
+const PAGE_SCRIPT_ORIGIN_OWNER_ID = "module:jitsi-meet";
 const MEETING_TITLE = "Cognis Classroom";
 const LIVELINESS_TIMEOUT_MS = 5000;
 
@@ -205,18 +206,22 @@ function resolveStore(dbExecutor, log) {
     return nextStore;
 }
 
-function registerConfiguredJitsiOrigin(registerScriptOrigin, config) {
-    if (typeof registerScriptOrigin !== "function" || !config?.instanceUrl) {
+function registerConfiguredJitsiOrigin(registerScriptOrigins, config) {
+    if (typeof registerScriptOrigins !== "function") {
         return;
     }
-    registerScriptOrigin(config.instanceUrl);
+    registerScriptOrigins(PAGE_SCRIPT_ORIGIN_OWNER_ID, [config?.instanceUrl]);
 }
 
-async function registerStoredJitsiOrigin({ store, registerScriptOrigin, log }) {
+async function registerStoredJitsiOrigin({
+    store,
+    registerScriptOrigins,
+    log,
+}) {
     try {
         await store.ensureSchema();
         registerConfiguredJitsiOrigin(
-            registerScriptOrigin,
+            registerScriptOrigins,
             await store.getConfig(),
         );
     } catch (error) {
@@ -333,11 +338,11 @@ export function registerApiRoutes(router, ctx) {
     }
 
     const log = ctx.getCapability("logging:log");
-    const registerScriptOrigin = ctx.getCapability(
-        "auth:registerPageScriptOrigin",
+    const registerScriptOrigins = ctx.getCapability(
+        "auth:registerPageScriptOrigins",
     );
     const store = resolveStore(dbExecutor, log);
-    void registerStoredJitsiOrigin({ store, registerScriptOrigin, log });
+    void registerStoredJitsiOrigin({ store, registerScriptOrigins, log });
 
     async function dispatchMeetingNotifications(
         recipientUsernames,
@@ -573,7 +578,7 @@ export function registerApiRoutes(router, ctx) {
                 instanceUrl,
                 meetingPrefix,
             });
-            registerConfiguredJitsiOrigin(registerScriptOrigin, saved);
+            registerConfiguredJitsiOrigin(registerScriptOrigins, saved);
             log?.("info", "Jitsi Meet configuration updated.", {
                 component: "jitsi-meet-module",
                 operation: "save_config",

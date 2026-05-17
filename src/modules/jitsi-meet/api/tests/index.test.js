@@ -15,10 +15,10 @@ test("jitsi API registers configured CSP origins through auth capability", () =>
         .split("\n")
         .find((line) => line.includes("../../../gateways/auth/guard.js"));
 
-    assert.match(source, /auth:registerPageScriptOrigin/);
+    assert.match(source, /auth:registerPageScriptOrigins/);
     assert.match(
         source,
-        /registerConfiguredJitsiOrigin\(registerScriptOrigin, saved\)/,
+        /registerConfiguredJitsiOrigin\(registerScriptOrigins, saved\)/,
     );
     assert.equal(
         guardImport,

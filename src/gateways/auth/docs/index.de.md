@@ -12,7 +12,7 @@ Das Gateway entdeckt Adapter durch Scannen von `src/adapters/auth/` beim Bootstr
 - Adapter-Aktivierungsstatus in `auth_adapter_configs` verwalten und persistieren.
 - Anmeldedaten durch Delegierung an den aktivierten Adapter für den angeforderten Anbieter verifizieren.
 - Zugriffstoken nach erfolgreicher Authentifizierung über `issueAccessToken` ausstellen.
-- `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods` und `auth:registerPageScriptOrigin` zum Capability-Store beitragen.
+- `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods` und `auth:registerPageScriptOrigins` zum Capability-Store beitragen.
 - Alle Auth-API-Routen und Adapter-Admin-Routen registrieren.
 
 Nicht verantwortlich für: Benutzerprofile speichern (das ist das Profil-Gateway), Session-Management über die Token-Ausstellung hinaus, oder nicht-auth-bezogene Geschäftslogik.
@@ -48,12 +48,12 @@ Bootstrap in `src/gateways/auth/bootstrap.ts`:
 
 Beigetragene Capabilities:
 
-| Capability                      | Typ                                            | Beschreibung                                                                      |
-| ------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------- |
-| `auth:accountStore`             | `LocalAccountStore`                            | Lokaler Account-Store, der vom lokalen Adapter verwendet wird                     |
-| `auth:createLocalAdmin`         | `(username, password) => Promise<AuthContext>` | Erstellt einen Admin-Account, wenn er nicht existiert                             |
-| `auth:getLoginMethods`          | `() => Promise<AdapterInfo[]>`                 | Gibt Metadaten für alle aktivierten Anbieter zurück                               |
-| `auth:registerPageScriptOrigin` | `(origin) => string \| null`                   | Registriert einen vertrauenswürdigen http(s)-Skriptursprung für Seiten-CSP-Header |
+| Capability                       | Typ                                            | Beschreibung                                                                               |
+| -------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `auth:accountStore`              | `LocalAccountStore`                            | Lokaler Account-Store, der vom lokalen Adapter verwendet wird                              |
+| `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Erstellt einen Admin-Account, wenn er nicht existiert                                      |
+| `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Gibt Metadaten für alle aktivierten Anbieter zurück                                        |
+| `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Ersetzt vertrauenswürdige http(s)-Skriptursprünge für einen Besitzer in Seiten-CSP-Headern |
 
 ## API-Routen
 

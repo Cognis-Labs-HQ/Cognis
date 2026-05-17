@@ -12,7 +12,7 @@ The gateway discovers adapters by scanning `src/adapters/auth/` at bootstrap tim
 - Manage adapter enable/disable state persisted in `auth_adapter_configs`.
 - Verify credentials by delegating to the enabled adapter for the requested provider.
 - Issue access tokens after successful authentication via `issueAccessToken`.
-- Contribute `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, and `auth:registerPageScriptOrigin` to the capability store.
+- Contribute `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, and `auth:registerPageScriptOrigins` to the capability store.
 - Register all auth API routes and adapter admin routes.
 
 Not responsible for: storing user profile data (the profile gateway), session management beyond token issuance, or any non-auth business logic.
@@ -48,12 +48,12 @@ Bootstrap in `src/gateways/auth/bootstrap.ts`:
 
 Capabilities contributed:
 
-| Capability                      | Type                                           | Description                                                    |
-| ------------------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
-| `auth:accountStore`             | `LocalAccountStore`                            | Local account store used by the local adapter                  |
-| `auth:createLocalAdmin`         | `(username, password) => Promise<AuthContext>` | Creates an admin account if it does not exist                  |
-| `auth:getLoginMethods`          | `() => Promise<AdapterInfo[]>`                 | Returns metadata for all enabled providers                     |
-| `auth:registerPageScriptOrigin` | `(origin) => string \| null`                   | Registers a trusted http(s) script origin for page CSP headers |
+| Capability                       | Type                                           | Description                                                               |
+| -------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------- |
+| `auth:accountStore`              | `LocalAccountStore`                            | Local account store used by the local adapter                             |
+| `auth:createLocalAdmin`          | `(username, password) => Promise<AuthContext>` | Creates an admin account if it does not exist                             |
+| `auth:getLoginMethods`           | `() => Promise<AdapterInfo[]>`                 | Returns metadata for all enabled providers                                |
+| `auth:registerPageScriptOrigins` | `(ownerId, origins) => string[]`               | Replaces trusted http(s) script origins for one owner in page CSP headers |
 
 ## API Routes
 

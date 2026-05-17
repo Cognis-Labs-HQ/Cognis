@@ -1,7 +1,7 @@
 import path from "node:path";
 import {
     getAuthClaims,
-    registerPageScriptOrigin,
+    registerPageScriptOrigins,
     requireAuth,
     readJson,
     CapabilityStore,
@@ -164,8 +164,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     ctx.capabilities.contribute("auth:accountStore", accountStore);
     ctx.capabilities.contribute(
-        "auth:registerPageScriptOrigin",
-        registerPageScriptOrigin,
+        "auth:registerPageScriptOrigins",
+        registerPageScriptOrigins,
     );
     ctx.capabilities.contribute(
         "auth:createLocalAdmin",

@@ -943,13 +943,18 @@ test("auth bootstrap contributes page script origin registration capability", as
         capabilities,
     });
 
-    const registerScriptOrigin = capabilities.get<
-        (rawOrigin: string) => string | null
-    >("auth:registerPageScriptOrigin");
+    const registerScriptOrigins = capabilities.get<
+        (
+            ownerId: string,
+            rawOrigins: Array<string | null | undefined>,
+        ) => string[]
+    >("auth:registerPageScriptOrigins");
 
-    assert.equal(typeof registerScriptOrigin, "function");
-    assert.equal(
-        registerScriptOrigin?.("https://meetings.example.test/path"),
-        "https://meetings.example.test",
+    assert.equal(typeof registerScriptOrigins, "function");
+    assert.deepEqual(
+        registerScriptOrigins?.("test:auth-gateway", [
+            "https://meetings.example.test/path",
+        ]),
+        ["https://meetings.example.test"],
     );
 });

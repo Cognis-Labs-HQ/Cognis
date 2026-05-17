@@ -10,7 +10,7 @@ import {
 export { hasMinRole, isRoleAllowed, isAccessRole };
 export type { RoleAccessPolicy };
 
-const pageScriptOrigins = new Set<string>();
+const pageScriptOriginsByOwner = new Map<string, Set<string>>();
 
 function normalizePageResourceOrigin(
     rawOrigin: string | null | undefined,
@@ -28,18 +28,46 @@ function normalizePageResourceOrigin(
     }
 }
 
+function listPageScriptOrigins(): string[] {
+    return Array.from(pageScriptOriginsByOwner.values())
+        .flatMap((origins) => Array.from(origins))
+        .sort();
+}
+
 function buildScriptDirective(name: string): string {
-    const allowedSources = ["'self'", ...Array.from(pageScriptOrigins).sort()];
+    const allowedSources = ["'self'", ...listPageScriptOrigins()];
     return `${name} ${allowedSources.join(" ")}`;
+}
+
+export function registerPageScriptOrigins(
+    ownerId: string,
+    rawOrigins: Array<string | null | undefined>,
+): string[] {
+    const normalizedOwnerId = String(ownerId ?? "").trim();
+    if (!normalizedOwnerId) return [];
+
+    const origins = Array.from(
+        new Set(
+            rawOrigins
+                .map((rawOrigin) => normalizePageResourceOrigin(rawOrigin))
+                .filter((origin): origin is string => Boolean(origin)),
+        ),
+    ).sort();
+
+    if (origins.length === 0) {
+        pageScriptOriginsByOwner.delete(normalizedOwnerId);
+        return [];
+    }
+
+    pageScriptOriginsByOwner.set(normalizedOwnerId, new Set(origins));
+    return origins;
 }
 
 export function registerPageScriptOrigin(
     rawOrigin: string | null | undefined,
 ): string | null {
-    const origin = normalizePageResourceOrigin(rawOrigin);
-    if (!origin) return null;
-    pageScriptOrigins.add(origin);
-    return origin;
+    const registeredOrigins = registerPageScriptOrigins("global", [rawOrigin]);
+    return registeredOrigins[0] ?? null;
 }
 
 interface AuthClaims {
