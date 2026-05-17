@@ -271,7 +271,7 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     assert.match(source, /alonePromptDismissedMeetingId/);
     assert.match(
         source,
-        /payload\?\.data\?\.activeParticipants[\s\S]*module\.jitsi_meet\.overlay\.auth_waiting/,
+        /module\.jitsi_meet\.overlay\.auth_waiting[\s\S]*payload\?\.data\?\.activeParticipants/,
     );
     assert.match(
         source,

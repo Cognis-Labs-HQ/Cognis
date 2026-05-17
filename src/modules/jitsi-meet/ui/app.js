@@ -1031,9 +1031,7 @@ export async function mount(root, { signal } = {}) {
             });
             return;
         }
-        if (updateAloneParticipantPrompt(payload?.data?.activeParticipants)) {
-            return;
-        }
+        state.meeting.state = latestState;
         if (latestState.authRequired && !latestState.authCompletedAt) {
             updateOverlay({
                 message: i18n.t("module.jitsi_meet.overlay.auth_waiting"),
@@ -1049,6 +1047,9 @@ export async function mount(root, { signal } = {}) {
                 showAuth: false,
                 visible: true,
             });
+        }
+        if (updateAloneParticipantPrompt(payload?.data?.activeParticipants)) {
+            return;
         }
     }
 
