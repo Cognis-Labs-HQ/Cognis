@@ -389,10 +389,15 @@ test("deleting a user frees the username for re-registration", async () => {
     assert.equal(status, 201);
 });
 
-test("admin cannot demote disable or delete other admins", async () => {
+test("admin can demote disable or delete other admins but not owner", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "pw", true);
-    await accounts.register("alice", "pw", true);
+    await accounts.register("alice", "pw", false);
+    await accounts.setRole("alice", "admin");
+    await accounts.register("bob", "pw", true);
+    await accounts.register("carol", "pw", true);
+    await accounts.register("founder", "pw", true);
+    await accounts.setFounder("founder", true);
     const prefs = new VolatileUserPreferenceStore();
     const route = createUserRoutes(accounts, prefs);
     let status = 0;
@@ -413,6 +418,51 @@ test("admin cannot demote disable or delete other admins", async () => {
         } as any,
         new URL("http://localhost/api/v1/users/alice/role"),
     );
+    assert.equal(status, 200);
+    assert.equal((await accounts.getInfo("alice"))?.role, "user");
+
+    await route(
+        { method: "POST", headers } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/bob/disable"),
+    );
+    assert.equal(status, 200);
+    assert.equal((await accounts.getInfo("bob"))?.enabled, false);
+
+    await route(
+        { method: "DELETE", headers } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/carol"),
+    );
+    assert.equal(status, 200);
+    assert.equal(await accounts.has("carol"), false);
+
+    await route(
+        {
+            method: "POST",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"role":"user"}');
+            },
+        } as any,
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/founder/role"),
+    );
     assert.equal(status, 403);
 
     await route(
@@ -423,7 +473,7 @@ test("admin cannot demote disable or delete other admins", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/users/alice/disable"),
+        new URL("http://localhost/api/v1/users/founder/disable"),
     );
     assert.equal(status, 403);
 
@@ -435,7 +485,7 @@ test("admin cannot demote disable or delete other admins", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/users/alice"),
+        new URL("http://localhost/api/v1/users/founder"),
     );
     assert.equal(status, 403);
 
@@ -447,7 +497,7 @@ test("admin cannot demote disable or delete other admins", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/users/alice/disable"),
+        new URL("http://localhost/api/v1/users/founder/disable"),
     );
     assert.equal(status, 200);
 });

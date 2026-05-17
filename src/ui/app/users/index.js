@@ -39,10 +39,6 @@ function getCurrentUsername() {
     }
 }
 
-function getCurrentRole() {
-    return (localStorage.getItem("cognis_role") ?? "user").trim();
-}
-
 function buildElements() {
     const estimatedHeight = Math.max(6, Math.ceil(users.length * 0.65 + 2));
     elements = [
@@ -148,8 +144,6 @@ async function refreshData() {
 
 function renderUsersTable() {
     const currentUsername = getCurrentUsername();
-    const currentRole = getCurrentRole();
-    const viewerIsAdmin = currentRole === "admin";
     const inviteButtonHtml = registrationGatewayActive
         ? `<div class="controls">
           <button id="users-invite-btn" class="btn-confirm btn-animated" type="button">+ ${escapeHtml(i18n.t("ui.reuse.invite"))}</button>
@@ -175,19 +169,20 @@ function renderUsersTable() {
                   const userRole =
                       user.role ?? (user.isAdmin ? "admin" : "user");
                   const isOwner = userRole === "owner";
-                  const protectAdminFromAdmin =
-                      viewerIsAdmin && userRole === "admin" && !isSelf;
-                  const roleDisabled =
-                      isProtected || isOwner || isSelf || protectAdminFromAdmin;
+                  const roleDisabled = isProtected || isOwner || isSelf;
+                  const roleOptionsHtml = ACCESS_ROLES.filter(
+                      (role) => role !== "owner",
+                  )
+                      .map(
+                          (role) =>
+                              `<option value="${escapeHtml(role)}"${userRole === role ? " selected" : ""}>${escapeHtml(getRoleLabel(i18n, role))}</option>`,
+                      )
+                      .join("");
                   const roleCellHtml = isOwner
                       ? escapeHtml(i18n.t("ui.reuse.role_owner"))
-                      : `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>
-                            <option value="user"${userRole === "user" ? " selected" : ""}>${escapeHtml(i18n.t("ui.reuse.role_user"))}</option>
-                            <option value="teacher"${userRole === "teacher" ? " selected" : ""}>${escapeHtml(i18n.t("ui.reuse.role_teacher"))}</option>
-                            <option value="admin"${userRole === "admin" ? " selected" : ""}>${escapeHtml(i18n.t("ui.reuse.role_admin"))}</option>
-                         </select>`;
+                      : `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
                   const actionsHtml =
-                      isProtected || isOwner || protectAdminFromAdmin
+                      isProtected || isOwner
                           ? ""
                           : `
                         <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.disable")) : escapeHtml(i18n.t("ui.reuse.enable"))}</button>

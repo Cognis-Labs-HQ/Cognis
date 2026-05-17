@@ -172,13 +172,13 @@ export function createUserRoutes(
             return targetInfoCache;
         }
 
-        const isRestrictedAdminManagementAction =
+        const isRestrictedOwnerManagementAction =
             (req.method === "POST" &&
                 (action === "role" || action === "disable")) ||
             (req.method === "DELETE" && !action);
 
         if (
-            isRestrictedAdminManagementAction &&
+            isRestrictedOwnerManagementAction &&
             callerClaims &&
             callerIsAdmin &&
             callerClaims.sub !== username
@@ -189,12 +189,10 @@ export function createUserRoutes(
                 Boolean(targetInfo?.isAdmin),
                 Boolean(targetInfo?.isFounder),
             );
-            const targetIsAdminOrOwner =
-                targetRole === "admin" || targetRole === "owner";
-            if (targetIsAdminOrOwner) {
+            if (targetRole === "owner") {
                 log?.(
                     "warn",
-                    "Blocked admin attempt to modify admin account.",
+                    "Blocked admin attempt to modify owner account.",
                     {
                         ...logMeta,
                         accountId: callerClaims.sub,
@@ -209,9 +207,9 @@ export function createUserRoutes(
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "protected_admin_account",
+                            code: "protected_owner_account",
                             message:
-                                "Only owner can demote, disable, or delete other admins",
+                                "Only owner can demote, disable, or delete owner accounts",
                         },
                     }),
                 );
