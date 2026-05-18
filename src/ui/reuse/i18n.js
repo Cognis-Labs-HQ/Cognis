@@ -18,7 +18,7 @@
  *   i18n.t('ui.reuse.save');   // → 'Guardar'
  *   applyStaticTranslations(i18n);
  */
-const DEFAULT_LOCALE = "en";
+export const DEFAULT_LOCALE = "en";
 const STRINGS_BASE_PATH = "/static/languages";
 
 const cache = new Map();
@@ -90,6 +90,12 @@ function detectLocale() {
     return DEFAULT_LOCALE;
 }
 
+/**
+ * Converts a locale value to its normalized language code.
+ *
+ * @param {string | undefined | null} locale
+ * @returns {string | null}
+ */
 function normalizeLocale(locale) {
     if (typeof locale !== "string") return null;
     const trimmed = locale.trim();
