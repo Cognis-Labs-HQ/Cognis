@@ -73,3 +73,4 @@ aufgelöst wurde. Dadurch tritt der Startup-`ReferenceError` in
 - [c6ba65b](https://github.com/le-firehawk/Cognis/commit/c6ba65b)
 - [acaded15](https://github.com/le-firehawk/Cognis/commit/acaded15)
 - [e7255fe0](https://github.com/le-firehawk/Cognis/commit/e7255fe0)
+- [a68ab2ab](https://github.com/le-firehawk/Cognis/commit/a68ab2ab)
