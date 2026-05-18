@@ -128,3 +128,15 @@
         transform: scaleX(0);
     }
 }
+
+body[data-theme="light"] .toast--error .toast-icon {
+    color: var(--color-danger-outline-text, #dc2626);
+}
+
+body[data-theme="light"] .toast--success .toast-icon {
+    color: var(--color-success-outline-text, #059669);
+}
+
+body[data-theme="light"] .toast--warning .toast-icon {
+    color: #b45309;
+}
