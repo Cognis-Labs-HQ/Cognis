@@ -72,3 +72,4 @@ diterbitkan setelah kapabilitas auth berhasil diambil dari ctx, sehingga
 - [feb1bbc](https://github.com/le-firehawk/Cognis/commit/feb1bbc)
 - [c6ba65b](https://github.com/le-firehawk/Cognis/commit/c6ba65b)
 - [acaded15](https://github.com/le-firehawk/Cognis/commit/acaded15)
+- [e7255fe0](https://github.com/le-firehawk/Cognis/commit/e7255fe0)
