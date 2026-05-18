@@ -42,6 +42,30 @@ function getDisplayName() {
     );
 }
 
+function updateDisplayedName(displayName = getDisplayName()) {
+    const nameElement = document.querySelector("#profile-name");
+    if (nameElement) nameElement.textContent = displayName;
+}
+
+function storeProfileDisplayName(displayName) {
+    const normalizedName = String(displayName ?? "").trim();
+    if (!normalizedName) return;
+    localStorage.setItem("cognis_display_name", normalizedName);
+    updateDisplayedName(normalizedName);
+}
+
+async function refreshDisplayNameFromProfile() {
+    if (!localStorage.getItem("cognis_access_token")) return;
+    try {
+        const response = await apiFetch("/api/v1/profile");
+        if (!response.ok) return;
+        const payload = await response.json().catch(() => null);
+        storeProfileDisplayName(payload?.data?.displayName);
+    } catch {
+        // Keep the login-provided name when profile refresh is unavailable.
+    }
+}
+
 function applyActiveNavigation() {
     const currentPath = window.location.pathname;
     document.querySelectorAll(".topnav a").forEach((link) => {
@@ -95,11 +119,11 @@ function bindTopbarActions() {
     const nameEl = document.querySelector("#profile-name");
 
     if (nameEl) nameEl.textContent = getDisplayName();
+    refreshDisplayNameFromProfile().catch(() => {});
 
     window.addEventListener("storage", (event) => {
         if (event.key === "cognis_display_name") {
-            const nameElement = document.querySelector("#profile-name");
-            if (nameElement) nameElement.textContent = getDisplayName();
+            updateDisplayedName();
         }
     });
 
