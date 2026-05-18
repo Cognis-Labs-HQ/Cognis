@@ -136,7 +136,13 @@ async function enrichMembersWithProfiles(
     members: MemberRow[],
     profileStore: DbProfileStore,
 ): Promise<
-    Array<MemberRow & { handle: string | null; displayName: string | null }>
+    Array<
+        MemberRow & {
+            handle: string | null;
+            displayName: string | null;
+            avatarKey: string | null;
+        }
+    >
 > {
     return Promise.all(
         members.map(async (memberRow) => {
@@ -145,6 +151,7 @@ async function enrichMembersWithProfiles(
                 ...memberRow,
                 handle: profile?.handle ?? null,
                 displayName: profile?.displayName ?? null,
+                avatarKey: profile?.avatarKey ?? null,
             };
         }),
     );

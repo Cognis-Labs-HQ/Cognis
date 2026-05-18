@@ -187,11 +187,13 @@ function roomListRenderSignature(rooms, selectedRoomId) {
                       iv: room.lastMessage.iv,
                   }
                 : null,
+            avatarKey: room.avatarKey,
             members: (room.members ?? []).map((member) => ({
                 accountId: member.accountId,
                 handle: member.handle,
                 displayName: member.displayName,
                 username: member.username,
+                avatarKey: member.avatarKey,
             })),
         })),
     });
@@ -388,6 +390,7 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
                 const displayedMember =
                     preferredOtherMember ?? members[0] ?? null;
                 const avatar = formatRoomListAvatar(
+                    room,
                     displayedMember,
                     titleSource,
                 );
@@ -678,12 +681,12 @@ function formatAvatarMarkup({
     return `<span class="${escapeHtml(avatarClass)}">${avatarContent}</span>`;
 }
 
-function formatRoomListAvatar(displayedMember, titleSource) {
+function formatRoomListAvatar(room, displayedMember, titleSource) {
     const label = displayedMember
         ? memberDisplayName(displayedMember)
         : titleSource;
     return formatAvatarMarkup({
-        avatarKey: displayedMember?.avatarKey || null,
+        avatarKey: room?.avatarKey || displayedMember?.avatarKey || null,
         label,
         colorSeed:
             displayedMember?.handle ||

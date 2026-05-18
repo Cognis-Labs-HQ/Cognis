@@ -53,6 +53,11 @@ test("messages avatars fall back after failed image loads", () => {
     assert.match(source, /const unavailableAvatarKeys = new Set\(\)/);
     assert.match(source, /unavailableAvatarKeys\.add\(avatarKey\)/);
     assert.match(source, /data-avatar-key=/);
+    assert.match(source, /avatarKey: member\.avatarKey/);
+    assert.match(
+        source,
+        /avatarKey: room\?\.avatarKey \|\| displayedMember\?\.avatarKey/,
+    );
     assert.match(
         source,
         /root\.addEventListener\("error", handleAvatarImageError/,

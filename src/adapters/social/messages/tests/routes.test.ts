@@ -278,3 +278,88 @@ test("admin can create DM with hidden recipient without a message request", asyn
     ]);
     assert.match(responseBody, /room-admin-hidden/);
 });
+
+test("GET /messages/rooms includes member avatar keys from profiles", async () => {
+    const token = issueAccessToken("alice", "user", 60);
+    const messagesStore = {
+        async listRoomsForAccount(accountId: string) {
+            assert.equal(accountId, "alice");
+            return [{ id: "room-1", kind: "dm", title: null, avatarKey: null }];
+        },
+        async listMembers(roomId: string) {
+            assert.equal(roomId, "room-1");
+            return [
+                {
+                    roomId,
+                    accountId: "alice",
+                    role: "member",
+                    muted: false,
+                    archived: false,
+                },
+                {
+                    roomId,
+                    accountId: "bob",
+                    role: "member",
+                    muted: false,
+                    archived: false,
+                },
+            ];
+        },
+        async listMessages() {
+            return [];
+        },
+        async unreadCount() {
+            return 0;
+        },
+        async getPendingIncomingRoomMessageRequest() {
+            return null;
+        },
+    };
+    const profileStore = {
+        async getProfile(accountId: string) {
+            if (accountId === "bob") {
+                return {
+                    accountId,
+                    handle: "bob",
+                    displayName: "Bob",
+                    avatarKey: "avatars/bob.png",
+                    visibility: "community",
+                };
+            }
+            return {
+                accountId,
+                handle: "alice",
+                displayName: "Alice",
+                avatarKey: "avatars/alice.png",
+                visibility: "community",
+            };
+        },
+    };
+    const route = createMessagesRoutes({
+        messagesStore: messagesStore as any,
+        profileStore: profileStore as any,
+        dispatch: null,
+        isAdapterEnabled: () => true,
+    });
+    let statusCode = 0;
+    let responseBody = "";
+
+    const handled = await route(
+        makeReq("GET", token),
+        {
+            writeHead(status: number) {
+                statusCode = status;
+            },
+            end(payload: string) {
+                responseBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/messages/rooms"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(statusCode, 200);
+    const payload = JSON.parse(responseBody);
+    assert.equal(payload.data[0].members[0].avatarKey, "avatars/alice.png");
+    assert.equal(payload.data[0].members[1].avatarKey, "avatars/bob.png");
+});
