@@ -359,32 +359,6 @@ export function createUiRoutes(
             return true;
         }
 
-        if (url.pathname === "/modules") {
-            const loginRedirect = await resolveLoginRedirectLocation(
-                req,
-                accountStore,
-                log,
-            );
-            if (loginRedirect) {
-                res.writeHead(302, { location: loginRedirect });
-                res.end();
-                return true;
-            }
-            const session = getCookieSession(req);
-            if (
-                !session ||
-                !isRoleAllowed(session.role, { minRole: "admin" })
-            ) {
-                res.writeHead(302, { location: "/dashboard" });
-                res.end();
-                return true;
-            }
-
-            res.writeHead(302, { location: "/administration" });
-            res.end();
-            return true;
-        }
-
         if (url.pathname === "/users") {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
