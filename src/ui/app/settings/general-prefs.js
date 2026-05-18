@@ -253,6 +253,18 @@ export function initGeneralPrefs(root, { i18n, username }) {
         return true;
     }
 
+    function bindEmailAddShortcut() {
+        root.addEventListener("keydown", (evt) => {
+            const target = evt.target;
+            if (!(target instanceof HTMLInputElement)) return;
+            if (target.id !== "email-add-input") return;
+            if (evt.key !== "Enter") return;
+
+            evt.preventDefault();
+            root.querySelector("#email-add-btn")?.click();
+        });
+    }
+
     function bindEmailActions() {
         root.addEventListener("click", async (evt) => {
             const target = evt.target;
@@ -386,6 +398,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
         async init() {
             await loadEmails();
             renderEmailList();
+            bindEmailAddShortcut();
             bindEmailActions();
         },
         async refresh() {
