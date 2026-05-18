@@ -9,13 +9,19 @@ Pilihan bahasa pada halaman registrasi sekarang otomatis memilih bahasa
 terdeteksi yang didukung, lalu mempertahankan pilihan itu sampai pengguna
 mengubahnya sendiri.
 
-Prioritas bahasa kini dievaluasi ulang dari bahasa browser/sistem setiap
-refresh, sehingga perubahan bahasa di browser atau OS langsung diterapkan, dan
-bahasa Inggris tetap menjadi fallback yang selalu tersedia.
+Kode bahasa yang tidak dikenal atau tidak didukung kini dibuang secara diam-diam
+dari preferensi bahasa sehingga tidak muncul sebagai entri aktif di pengaturan.
+
+Begitu pengguna mengubah urutan prioritas bahasa secara manual, urutan itu akan
+menjadi acuan utama. Bahasa baru yang kemudian didukung tetap muncul di daftar
+Tersedia, dan perubahan urutan bahasa browser/sistem tidak lagi mengacak urutan
+bahasa aplikasi.
 
 ## Komponen dan file yang diubah
 
 - `src/ui/reuse/i18n.js`
+- `src/ui/app/settings/index.js`
+- `src/ui/app/settings/language-prefs.js`
 - `src/ui/app/register/index.js`
 - `src/ui/tests/browser-language-detection.test.js`
 

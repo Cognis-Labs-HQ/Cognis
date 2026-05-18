@@ -10,9 +10,10 @@
  * - applyStaticTranslations(i18n)    — resolves data-i18n / data-i18n-placeholder /
  *                                      data-i18n-aria-label / data-i18n-alt attributes in the DOM.
  * - applyDocumentTitle(i18n, key)    — sets document.title from a locale key.
- * - readPreferredLanguages()         — returns runtime language priority with browser/system
- *                                      preferences first, then stored fallback preferences.
- * - setPreferredLanguages(languages) — persists a language-priority array to localStorage + cookie.
+ * - readPreferredLanguages()         — returns runtime language priority using browser/system
+ *                                      order until the user manually customizes language priority.
+ * - setPreferredLanguages(languages) — persists a language-priority array to localStorage + cookie,
+ *                                      optionally marking it as a manual override.
  *
  * Usage:
  *   const i18n = await createI18n({ preferredLanguages: ['es', 'en'], componentStringBaseUrls: ['/static/my-component/languages'] });
@@ -25,6 +26,10 @@ const STRINGS_BASE_PATH = "/static/languages";
 const cache = new Map();
 
 const LANGUAGE_COOKIE = "cognis_lang_priority";
+const LANGUAGE_PRIORITY_STORAGE_KEY = "cognis_language_priority";
+const LANGUAGE_PRIORITY_MODE_STORAGE_KEY = "cognis_language_priority_mode";
+const LANGUAGE_PRIORITY_MODE_AUTO = "auto";
+const LANGUAGE_PRIORITY_MODE_MANUAL = "manual";
 
 function readCookie(name) {
     const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]+)`));
@@ -35,18 +40,55 @@ function writeLanguageCookie(locale) {
     document.cookie = `${LANGUAGE_COOKIE}=${encodeURIComponent(locale)}; Path=/; Max-Age=31536000; SameSite=Lax`;
 }
 
-export function setPreferredLanguages(languages) {
-    const normalized = [
-        ...new Set(
-            (languages || [DEFAULT_LOCALE])
-                .map((item) => normalizeLocale(item))
-                .filter(Boolean),
-        ),
-    ];
+export function readLanguagePriorityMode() {
+    if (typeof localStorage === "undefined") {
+        return LANGUAGE_PRIORITY_MODE_AUTO;
+    }
+    const storedMode = localStorage.getItem(LANGUAGE_PRIORITY_MODE_STORAGE_KEY);
+    return storedMode === LANGUAGE_PRIORITY_MODE_MANUAL
+        ? LANGUAGE_PRIORITY_MODE_MANUAL
+        : LANGUAGE_PRIORITY_MODE_AUTO;
+}
+
+function normalizeLanguagePriority(languages, supportedLanguages) {
+    const supportedSet = Array.isArray(supportedLanguages)
+        ? new Set(
+              supportedLanguages
+                  .map((item) => normalizeLocale(item))
+                  .filter(Boolean),
+          )
+        : null;
+    const normalized = [];
+    for (const language of languages || []) {
+        const normalizedLanguage = normalizeLocale(language);
+        if (!normalizedLanguage) continue;
+        if (supportedSet && !supportedSet.has(normalizedLanguage)) continue;
+        if (normalized.includes(normalizedLanguage)) continue;
+        normalized.push(normalizedLanguage);
+    }
+    if (!normalized.includes(DEFAULT_LOCALE)) {
+        normalized.push(DEFAULT_LOCALE);
+    }
+    return normalized;
+}
+
+export function sanitizeLanguagePriority(languages, supportedLanguages) {
+    return normalizeLanguagePriority(languages, supportedLanguages);
+}
+
+export function setPreferredLanguages(languages, options = {}) {
+    const normalized = normalizeLanguagePriority(languages);
+    const nextMode =
+        options.mode === LANGUAGE_PRIORITY_MODE_MANUAL
+            ? LANGUAGE_PRIORITY_MODE_MANUAL
+            : options.mode === LANGUAGE_PRIORITY_MODE_AUTO
+              ? LANGUAGE_PRIORITY_MODE_AUTO
+              : readLanguagePriorityMode();
     localStorage.setItem(
-        "cognis_language_priority",
+        LANGUAGE_PRIORITY_STORAGE_KEY,
         JSON.stringify(normalized),
     );
+    localStorage.setItem(LANGUAGE_PRIORITY_MODE_STORAGE_KEY, nextMode);
     writeLanguageCookie(normalized.join(","));
 }
 
@@ -70,7 +112,7 @@ function detectBrowserLocales() {
 function readStoredPreferredLanguages() {
     try {
         const localValue = JSON.parse(
-            localStorage.getItem("cognis_language_priority") || "null",
+            localStorage.getItem(LANGUAGE_PRIORITY_STORAGE_KEY) || "null",
         );
         if (Array.isArray(localValue) && localValue.length) {
             return localValue;
@@ -85,34 +127,39 @@ function readStoredPreferredLanguages() {
 }
 
 /**
- * Builds runtime language priority so browser/system preferences always come
- * first, while stored preferences remain as fallback choices.
+ * Builds runtime language priority from browser/system preferences until the
+ * user manually customizes language order, after which stored preferences
+ * become authoritative.
  *
  * Usage:
  *   buildLanguagePriority(['de-DE'], ['ja', 'en']); // ['de', 'ja', 'en']
  *
  * @param {string[] | undefined | null} browserLanguages
  * @param {string[] | undefined | null} storedLanguages
+ * @param {{ mode?: 'auto' | 'manual' }} [options]
  * @returns {string[]}
  */
-export function buildLanguagePriority(browserLanguages, storedLanguages) {
-    return [
-        ...new Set(
-            [
-                ...(browserLanguages || []),
-                ...(storedLanguages || []),
-                DEFAULT_LOCALE,
-            ]
-                .map((item) => normalizeLocale(item))
-                .filter(Boolean),
-        ),
-    ];
+export function buildLanguagePriority(
+    browserLanguages,
+    storedLanguages,
+    options = {},
+) {
+    const isManual =
+        options.mode === LANGUAGE_PRIORITY_MODE_MANUAL ||
+        (options.mode == null &&
+            readLanguagePriorityMode() === LANGUAGE_PRIORITY_MODE_MANUAL);
+    return normalizeLanguagePriority(
+        isManual
+            ? storedLanguages || []
+            : [...(browserLanguages || []), ...(storedLanguages || [])],
+    );
 }
 
 export function readPreferredLanguages() {
     return buildLanguagePriority(
         detectBrowserLocales(),
         readStoredPreferredLanguages(),
+        { mode: readLanguagePriorityMode() },
     );
 }
 

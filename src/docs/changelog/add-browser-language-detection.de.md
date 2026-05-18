@@ -10,13 +10,19 @@ Die Sprachauswahl auf der Registrierungsseite wählt nun standardmäßig die
 erkannte unterstützte Sprache aus und behält diese Auswahl bei, bis der Nutzer
 sie manuell ändert.
 
-Die Sprachpriorität wird beim Neuladen jetzt anhand der aktuellen
-Browser-/Systemsprache neu ausgewertet, sodass Sprachänderungen sofort wirksam
-werden; Englisch bleibt als garantierter Fallback erhalten.
+Unbekannte oder nicht unterstützte Sprachcodes werden nun still aus den
+Spracheinstellungen entfernt, damit sie dort nicht als aktive Einträge
+erscheinen.
+
+Sobald ein Nutzer seine Sprachpriorität manuell anpasst, gilt diese Reihenfolge
+als maßgeblich. Neu unterstützte Sprachen bleiben in „Verfügbar“, und spätere
+Änderungen der Browser-/System-Sprachreihenfolge mischen die App nicht mehr um.
 
 ## Geänderte Komponenten und Dateien
 
 - `src/ui/reuse/i18n.js`
+- `src/ui/app/settings/index.js`
+- `src/ui/app/settings/language-prefs.js`
 - `src/ui/app/register/index.js`
 - `src/ui/tests/browser-language-detection.test.js`
 

@@ -8,13 +8,18 @@ load and applies them when supported by the app language packs.
 The registration page language selector now defaults to the detected supported
 language and keeps that value until the user selects a different language.
 
-Language priority now re-evaluates browser/system preferences on each refresh,
-so switching the browser or OS language is reflected immediately, with English
-kept as guaranteed fallback.
+Unknown or unsupported language codes are now dropped silently from language
+preferences so they never appear as active entries in the settings UI.
+
+Once a user manually customizes their language priority order, that order is
+treated as authoritative. Newly supported languages stay in Available, and
+later browser/system language-order changes no longer reshuffle the app.
 
 ## Changed files/components
 
 - `src/ui/reuse/i18n.js`
+- `src/ui/app/settings/index.js`
+- `src/ui/app/settings/language-prefs.js`
 - `src/ui/app/register/index.js`
 - `src/ui/tests/browser-language-detection.test.js`
 

@@ -3,6 +3,7 @@ import { apiFetch } from "../../reuse/api-client.js";
 import {
     applyDocumentTitle,
     createI18n,
+    readLanguagePriorityMode,
     readPreferredLanguages,
     setPreferredLanguages,
 } from "../../reuse/i18n.js";
@@ -83,6 +84,19 @@ const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
 export async function mount(root, { signal } = {}) {
     let loadedPrefs = await loadPrefs().catch(() => null);
+    const storedLanguagePriorityMode = readLanguagePriorityMode();
+    const initialLanguagePriorityMode =
+        loadedPrefs?.languagePriorityMode === "manual"
+            ? "manual"
+            : storedLanguagePriorityMode;
+    if (
+        initialLanguagePriorityMode === "manual" &&
+        Array.isArray(loadedPrefs?.languagePriority)
+    ) {
+        setPreferredLanguages(loadedPrefs.languagePriority, {
+            mode: initialLanguagePriorityMode,
+        });
+    }
     let languagePriority = Array.isArray(loadedPrefs?.languagePriority)
         ? loadedPrefs.languagePriority
         : readPreferredLanguages();
@@ -512,6 +526,12 @@ export async function mount(root, { signal } = {}) {
                     fontPrefs?.getFontSize() ?? loadedPrefs?.appFontSize,
                 languagePriority:
                     languagePrefs?.getPriority() ?? languagePriority,
+                languagePriorityMode:
+                    languagePrefs?.isDirty() === true
+                        ? "manual"
+                        : loadedPrefs?.languagePriorityMode === "manual"
+                          ? "manual"
+                          : storedLanguagePriorityMode,
                 mode,
                 timezone:
                     datetimePrefs?.getTimezone() ??
@@ -525,7 +545,9 @@ export async function mount(root, { signal } = {}) {
             loadedPrefs = { ...loadedPrefs, ...prefs };
             persistTheme(mode);
             applyTheme(mode);
-            setPreferredLanguages(prefs.languagePriority);
+            setPreferredLanguages(prefs.languagePriority, {
+                mode: prefs.languagePriorityMode,
+            });
             applyTimezoneToLocalStorage(prefs.timezone ?? null, null);
             localStorage.setItem(
                 "cognis_ui_preferences",

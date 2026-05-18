@@ -1,4 +1,5 @@
 import { apiFetch } from "../../reuse/api-client.js";
+import { sanitizeLanguagePriority } from "../../reuse/i18n.js";
 
 async function loadLanguagesCatalog() {
     const response = await apiFetch("/api/v1/system/languages");
@@ -14,6 +15,10 @@ export function initLanguagePrefs(
     let languagePriority = [...initialPriority];
     let savedPriority = [...initialPriority];
     let catalog = [];
+
+    function getSupportedLanguageCodes() {
+        return catalog.map((item) => item.iso_code);
+    }
 
     function notifyDirty() {
         const dirty =
@@ -175,8 +180,10 @@ export function initLanguagePrefs(
                 );
         }
 
-        languagePriority = [...new Set(languagePriority)];
-        if (!languagePriority.includes("en")) languagePriority.push("en");
+        languagePriority = sanitizeLanguagePriority(
+            languagePriority,
+            getSupportedLanguageCodes(),
+        );
         renderTables();
         notifyDirty();
     }
@@ -235,6 +242,14 @@ export function initLanguagePrefs(
         catalog = await loadLanguagesCatalog().catch(() => [
             { iso_code: "en", name: "English" },
         ]);
+        languagePriority = sanitizeLanguagePriority(
+            languagePriority,
+            getSupportedLanguageCodes(),
+        );
+        savedPriority = sanitizeLanguagePriority(
+            savedPriority,
+            getSupportedLanguageCodes(),
+        );
         renderTables();
     }
 

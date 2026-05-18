@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
     selectSupportedLanguage,
     buildLanguagePriority,
+    sanitizeLanguagePriority,
 } from "../reuse/i18n.js";
 
 test("selectSupportedLanguage picks first supported browser language", () => {
@@ -43,4 +44,21 @@ test("buildLanguagePriority puts browser language before stored preferences", ()
 test("buildLanguagePriority always includes English fallback", () => {
     const languagePriority = buildLanguagePriority([], []);
     assert.deepEqual(languagePriority, ["en"]);
+});
+
+test("buildLanguagePriority ignores browser order after manual priority changes", () => {
+    const languagePriority = buildLanguagePriority(
+        ["de-DE", "id-ID"],
+        ["ja", "en"],
+        { mode: "manual" },
+    );
+    assert.deepEqual(languagePriority, ["ja", "en"]);
+});
+
+test("sanitizeLanguagePriority drops unsupported languages silently", () => {
+    const languagePriority = sanitizeLanguagePriority(
+        ["xx", "ja-JP", "en-US"],
+        ["en", "ja"],
+    );
+    assert.deepEqual(languagePriority, ["ja", "en"]);
 });
