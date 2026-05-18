@@ -22,10 +22,20 @@ async function ensureAuthTables(executor: StrictAuthExecutor): Promise<void> {
         columns: [
             { name: "id", type: "text", primaryKey: true },
             { name: "display_name", type: "text" },
-            { name: "is_admin", type: "integer", notNull: true, default: false },
+            {
+                name: "is_admin",
+                type: "integer",
+                notNull: true,
+                default: false,
+            },
             { name: "role", type: "text" },
             { name: "enabled", type: "integer", notNull: true, default: true },
-            { name: "is_founder", type: "integer", notNull: true, default: false },
+            {
+                name: "is_founder",
+                type: "integer",
+                notNull: true,
+                default: false,
+            },
             { name: "created_at", type: "text" },
             { name: "updated_at", type: "text" },
             { name: "last_login", type: "text" },
