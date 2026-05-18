@@ -981,33 +981,32 @@ export async function mount(root, { signal } = {}) {
         return [
             pendingRequest.id ?? "",
             pendingRequest.direction ?? "",
-            pendingRequest.canRespond ? "1" : "0",
+            String(Boolean(pendingRequest.canRespond)),
         ].join(":");
     }
 
     function setSelectedRoomPendingRequest(pendingRequest) {
         if (!selectedRoomId) return;
         const nextSignature = pendingRequestSignature(pendingRequest);
-        let selectedRoomChanged = false;
-        rooms = rooms.map((room) => {
-            if (String(room.id) !== String(selectedRoomId)) {
-                return room;
-            }
-            const previousSignature = pendingRequestSignature(
-                room.pendingRequest ?? null,
-            );
-            if (previousSignature === nextSignature) {
-                return room;
-            }
-            selectedRoomChanged = true;
-            return {
-                ...room,
-                pendingRequest,
-            };
-        });
-        if (selectedRoomChanged) {
-            renderRoomsListIntoDom();
-        }
+        const selectedRoomIndex = rooms.findIndex(
+            (room) => String(room.id) === String(selectedRoomId),
+        );
+        if (selectedRoomIndex < 0) return;
+        const selectedRoom = rooms[selectedRoomIndex];
+        const previousSignature = pendingRequestSignature(
+            selectedRoom.pendingRequest,
+        );
+        if (previousSignature === nextSignature) return;
+        const updatedRoom = {
+            ...selectedRoom,
+            pendingRequest,
+        };
+        rooms = [
+            ...rooms.slice(0, selectedRoomIndex),
+            updatedRoom,
+            ...rooms.slice(selectedRoomIndex + 1),
+        ];
+        renderRoomsListIntoDom();
     }
 
     function syncPendingRequestBanner(pendingRequest) {
