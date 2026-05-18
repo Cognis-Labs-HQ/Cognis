@@ -71,15 +71,28 @@ class FakeElement {
 
     appendChild(child) {
         if (!child) return child;
+        if (child.parentNode) {
+            const priorIndex = child.parentNode.children.indexOf(child);
+            if (priorIndex >= 0) {
+                child.parentNode.children.splice(priorIndex, 1);
+            }
+        }
         child.parentNode = this;
         this.children.push(child);
         return child;
     }
 
     insertBefore(child, referenceChild) {
+        if (child === referenceChild) return child;
         if (!referenceChild) return this.appendChild(child);
         const index = this.children.indexOf(referenceChild);
         if (index === -1) return this.appendChild(child);
+        if (child.parentNode) {
+            const priorIndex = child.parentNode.children.indexOf(child);
+            if (priorIndex >= 0) {
+                child.parentNode.children.splice(priorIndex, 1);
+            }
+        }
         child.parentNode = this;
         this.children.splice(index, 0, child);
         return child;
