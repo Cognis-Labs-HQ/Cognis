@@ -4,12 +4,12 @@
 
 Saat page composer beralih antara tampilan layar kecil dan layar besar, grid
 di-render ulang dan sebelumnya menghapus semua teks, pilihan, atau kotak centang
-yang telah diisi pengguna pada kartu elemen yang terlihat.  Nilai field formulir
+yang telah diisi pengguna pada kartu elemen yang terlihat. Nilai field formulir
 kini diambil tepat sebelum grid dikosongkan dan dipulihkan ke kartu yang baru
 di-render, sehingga pengguna tidak kehilangan masukan mereka saat ukuran layar
 berubah.
 
-Perbaikan ini mencakup grid composer utama maupun sub-grid composer.  Field
+Perbaikan ini mencakup grid composer utama maupun sub-grid composer. Field
 dicocokkan berdasarkan `name`, lalu `id`, lalu posisi urutan di dalam kartu
 elemen masing-masing.
 

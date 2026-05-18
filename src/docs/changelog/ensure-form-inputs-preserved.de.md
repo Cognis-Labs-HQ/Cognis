@@ -4,13 +4,13 @@
 
 Beim Wechsel zwischen kleiner und großer Bildschirmdarstellung wird das Gitter
 des Page Composers neu gerendert, wobei bisher alle eingetippten Texte,
-Auswahlen und Kontrollkästchen verloren gingen.  Formularfeldwerte werden nun
+Auswahlen und Kontrollkästchen verloren gingen. Formularfeldwerte werden nun
 direkt vor dem Leeren des Gitters gesichert und nach dem Neurendern
 wiederhergestellt, damit Benutzereingaben bei einem Bildschirmgrößenwechsel
 erhalten bleiben.
 
 Die Korrektur gilt sowohl für den Haupt-Grid-Composer als auch für den
-Sub-Grid-Composer.  Felder werden anhand von `name`, dann `id` und schließlich
+Sub-Grid-Composer. Felder werden anhand von `name`, dann `id` und schließlich
 ihrer Position innerhalb der Element-Karte zugeordnet.
 
 ## Geänderte Dateien/Komponenten

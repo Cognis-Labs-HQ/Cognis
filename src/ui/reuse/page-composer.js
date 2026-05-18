@@ -393,7 +393,7 @@ export function createPageComposer(
      * replacement as long as the element card set does not change.
      *
      * @param {Element} container
-     * @returns {Map<string, Map<string, string|boolean>>}
+     * @returns {Map<string, Map<string, (string|boolean)>>}
      */
     function captureFormState(container) {
         const snapshot = new Map();
@@ -426,7 +426,7 @@ export function createPageComposer(
      * the container DOM has been rebuilt.
      *
      * @param {Element} container
-     * @param {Map<string, Map<string, string|boolean>>} snapshot
+     * @param {Map<string, Map<string, (string|boolean)>>} snapshot
      */
     function restoreFormState(container, snapshot) {
         if (!snapshot || snapshot.size === 0) return;
