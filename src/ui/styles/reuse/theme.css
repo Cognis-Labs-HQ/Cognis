@@ -73,11 +73,14 @@
     --color-danger: rgba(239, 68, 68, 0.22);
     --color-danger-text: #f87171;
     --color-danger-border: rgba(239, 68, 68, 0.4);
+    --color-danger-outline-text: #f87171;
     --color-danger-hover-bg: rgba(239, 68, 68, 0.12);
     --color-success: rgba(52, 211, 153, 0.22);
     --color-success-text: #34d399;
     --color-success-border: rgba(52, 211, 153, 0.4);
+    --color-success-outline-text: #34d399;
     --color-success-hover-bg: rgba(52, 211, 153, 0.12);
+    --color-warning-outline-text: #f59e0b;
     --shadow-btn: 0 4px 14px rgba(2, 6, 23, 0.35);
     --shadow-floating: 0 -4px 24px rgba(2, 6, 23, 0.28);
     --popup-shade-bg: rgba(2, 6, 23, 0.72);
@@ -96,6 +99,7 @@ body[data-theme="light"] {
     --color-success-border: #059669;
     --color-success-outline-text: #059669;
     --color-success-hover-bg: rgba(5, 150, 105, 0.08);
+    --color-warning-outline-text: #b45309;
     --shadow-btn: 0 4px 14px rgba(15, 23, 42, 0.2);
     --shadow-floating: 0 -4px 24px rgba(15, 23, 42, 0.15);
     --popup-shade-bg: rgba(15, 23, 42, 0.42);
