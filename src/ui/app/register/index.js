@@ -4,6 +4,7 @@ import {
     createI18n,
     applyDocumentTitle,
     readPreferredLanguages,
+    sanitizeLanguagePriority,
     selectSupportedLanguage,
     setPreferredLanguages,
 } from "../../reuse/i18n.js";
@@ -558,7 +559,10 @@ export async function mount(root, { signal } = {}) {
                                     }
                                 }
                                 setPreferredLanguages(
-                                    [chosenLanguage, DEFAULT_LOCALE],
+                                    sanitizeLanguagePriority([
+                                        chosenLanguage,
+                                        DEFAULT_LOCALE,
+                                    ]),
                                     {
                                         mode: "manual",
                                     },

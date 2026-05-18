@@ -79,6 +79,29 @@ function hasLanguagePriorityChanged(prev, next) {
     return next.some((lang, i) => lang !== prev[i]);
 }
 
+/**
+ * Resolves the language priority mode to persist when the user saves settings.
+ * If the language prefs have pending unsaved changes, the pending mode is used
+ * (so "sync from browser" correctly resets to "auto"). Otherwise the previously
+ * stored/loaded mode is preserved.
+ *
+ * @param {ReturnType<import('./language-prefs.js').initLanguagePrefs> | undefined} languagePrefsController
+ * @param {{ languagePriorityMode?: string } | null} existingPrefs
+ * @param {string} storedMode
+ * @returns {string}
+ */
+function resolveLanguagePriorityMode(
+    languagePrefsController,
+    existingPrefs,
+    storedMode,
+) {
+    if (languagePrefsController?.isDirty()) {
+        return languagePrefsController.getPendingMode() ?? "manual";
+    }
+    if (existingPrefs?.languagePriorityMode === "manual") return "manual";
+    return storedMode;
+}
+
 const LANGUAGE_RELOAD_DELAY_MS = 400;
 const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
@@ -534,12 +557,11 @@ export async function mount(root, { signal } = {}) {
                     fontPrefs?.getFontSize() ?? loadedPrefs?.appFontSize,
                 languagePriority:
                     languagePrefs?.getPriority() ?? languagePriority,
-                languagePriorityMode:
-                    languagePrefs?.isDirty() === true
-                        ? (languagePrefs.getPendingMode() ?? "manual")
-                        : loadedPrefs?.languagePriorityMode === "manual"
-                          ? "manual"
-                          : storedLanguagePriorityMode,
+                languagePriorityMode: resolveLanguagePriorityMode(
+                    languagePrefs,
+                    loadedPrefs,
+                    storedLanguagePriorityMode,
+                ),
                 mode,
                 timezone:
                     datetimePrefs?.getTimezone() ??
