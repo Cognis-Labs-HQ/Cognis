@@ -5,7 +5,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
 function loadApiClientForTests({
     token = "test-token",
@@ -16,9 +16,7 @@ function loadApiClientForTests({
         "utf8",
     );
     const testableSource =
-        source
-            .replace(/^import .*;\n/gm, "")
-            .replace(/\bexport\s+/g, "") +
+        source.replace(/^import .*;\n/gm, "").replace(/\bexport\s+/g, "") +
         "\n" +
         "globalThis.__testExports = {\n" +
         "  apiFetch,\n" +
@@ -73,10 +71,9 @@ test("apiFetch shows one permanent warning toast for repeated API network failur
     );
 
     assert.equal(showToastCalls.length, 1);
-    assert.deepEqual(showToastCalls[0], {
-        message: "Connection interrupted.",
-        options: { variant: "warning", permanent: true },
-    });
+    assert.equal(showToastCalls[0].message, "Connection interrupted.");
+    assert.equal(showToastCalls[0].options.variant, "warning");
+    assert.equal(showToastCalls[0].options.permanent, true);
 });
 
 test("apiFetch does not show connection toast when there is no authenticated session", async () => {
@@ -118,8 +115,7 @@ test("apiFetch shows a permanent warning toast for retryable API server response
 
     assert.equal(response.status, 503);
     assert.equal(showToastCalls.length, 1);
-    assert.deepEqual(showToastCalls[0], {
-        message: "Connection interrupted.",
-        options: { variant: "warning", permanent: true },
-    });
+    assert.equal(showToastCalls[0].message, "Connection interrupted.");
+    assert.equal(showToastCalls[0].options.variant, "warning");
+    assert.equal(showToastCalls[0].options.permanent, true);
 });

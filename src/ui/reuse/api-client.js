@@ -63,11 +63,7 @@ export async function apiFetch(path, options = {}) {
         }
         return response;
     } catch (error) {
-        if (
-            token &&
-            requestTargetsApi(path) &&
-            error?.name !== "AbortError"
-        ) {
+        if (token && requestTargetsApi(path) && error?.name !== "AbortError") {
             showConnectionRecoveryToast();
         }
         throw error;
