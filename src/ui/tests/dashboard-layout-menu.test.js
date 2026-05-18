@@ -70,3 +70,24 @@ test("dashboard logout requests server revocation before clearing local token", 
         "logout request should send Bearer token when available",
     );
 });
+
+test("dashboard layout refreshes the greeting from the profile display name", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.ok(
+        layoutSource.includes('apiFetch("/api/v1/profile")'),
+        "dashboard layout should fetch the authenticated profile to refresh the greeting display name",
+    );
+    assert.ok(
+        layoutSource.includes(
+            'localStorage.setItem("cognis_display_name", normalizedName)',
+        ),
+        "dashboard layout should store the profile display name for the user greeting",
+    );
+    assert.ok(
+        layoutSource.includes("updateDisplayedName(normalizedName)"),
+        "dashboard layout should update the visible greeting immediately after storing the profile display name",
+    );
+});

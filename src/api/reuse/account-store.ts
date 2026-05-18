@@ -37,6 +37,7 @@ export interface LocalAccountStore {
         username: string,
         password: string,
         role?: "user" | "teacher" | "moderator" | "admin",
+        displayName?: string,
     ): Promise<{
         username: string;
         enabled: boolean;
@@ -102,6 +103,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         username: string,
         password: string,
         role: "user" | "teacher" | "moderator" | "admin" = "user",
+        displayName?: string,
     ) {
         if (this.accounts.has(username)) throw new Error("username_taken");
         this.accounts.set(username, {
@@ -109,7 +111,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             isFounder: false,
             enabled: true,
             lastLogin: null,
-            displayName: username,
+            displayName: displayName?.trim() || username,
             role,
         });
         return {

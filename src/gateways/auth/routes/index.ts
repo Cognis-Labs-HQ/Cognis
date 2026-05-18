@@ -51,6 +51,7 @@ export function createAuthRoutes(
         accountId: string,
         handle: string,
         role?: string,
+        displayName?: string,
     ) => Promise<void>,
 ) {
     return async (
@@ -62,6 +63,8 @@ export function createAuthRoutes(
             const body = await readJson(req);
             const username = String(body.username ?? "");
             const password = String(body.password ?? "");
+            const displayName =
+                String(body.displayName ?? "").trim() || undefined;
             if (!username || !password) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -78,8 +81,9 @@ export function createAuthRoutes(
                 username,
                 password,
                 "user",
+                displayName,
             );
-            await createProfile?.(username, username, "user");
+            await createProfile?.(username, username, "user", displayName);
             const verifyToken = issueAccessToken(
                 result.username,
                 result.role ?? "user",
@@ -136,7 +140,16 @@ export function createAuthRoutes(
                 shouldSetSecureCookie(req),
             );
             await accountStore.updateLastLogin(session.accountId);
-            await createProfile?.(session.accountId, session.accountId, role);
+            const accountDisplayName =
+                (
+                    await accountStore.getDisplayName(session.accountId)
+                )?.trim() || undefined;
+            await createProfile?.(
+                session.accountId,
+                session.accountId,
+                role,
+                accountDisplayName,
+            );
             res.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": cookie,
@@ -145,7 +158,7 @@ export function createAuthRoutes(
                 JSON.stringify({
                     data: {
                         accountId: session.accountId,
-                        displayName: session.accountId,
+                        displayName: accountDisplayName ?? session.accountId,
                         provider: session.provider,
                         role,
                         token: apiToken,

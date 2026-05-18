@@ -60,9 +60,11 @@ export class DbLocalAccountStore implements LocalAccountStore {
         username: string,
         password: string,
         role: "user" | "teacher" | "moderator" | "admin" = "user",
+        displayName?: string,
     ) {
         if (await this.has(username)) throw new Error("username_taken");
         const passwordHash = await hashPassword(password);
+        const accountDisplayName = displayName?.trim() || username;
         try {
             await this.db.transaction(async (txDb) => {
                 await txDb.executeCommand({
@@ -70,7 +72,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     table: "accounts",
                     values: {
                         id: username,
-                        display_name: username,
+                        display_name: accountDisplayName,
                         is_admin: role === "admin",
                         role,
                         enabled: true,

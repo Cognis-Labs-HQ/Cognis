@@ -32,6 +32,7 @@ interface AuthAccountStore {
     delete(username: string): Promise<void>;
     isFounder(username: string): Promise<boolean>;
     verify(username: string, password: string): Promise<boolean>;
+    getDisplayName(username: string): Promise<string | null>;
 }
 
 async function loadLocalAccountStore(
@@ -522,9 +523,19 @@ function createAuthGatewayRoutes(
                     accountId: string,
                     handle: string,
                     role?: string,
+                    displayName?: string,
                 ) => Promise<void>
             >("profile:createProfile");
-            await createProfile?.(session.accountId, session.accountId, role);
+            const accountDisplayName =
+                (
+                    await accountStore.getDisplayName(session.accountId)
+                )?.trim() || undefined;
+            await createProfile?.(
+                session.accountId,
+                session.accountId,
+                role,
+                accountDisplayName,
+            );
             const securitySettings = await readSecuritySettings();
             const canSendVerificationEmail = capabilities.get<() => boolean>(
                 "notify:canSendVerificationEmail",
@@ -556,7 +567,7 @@ function createAuthGatewayRoutes(
                 JSON.stringify({
                     data: {
                         accountId: session.accountId,
-                        displayName: session.accountId,
+                        displayName: accountDisplayName ?? session.accountId,
                         provider: session.provider,
                         role,
                         isFounder,

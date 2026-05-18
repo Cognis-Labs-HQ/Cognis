@@ -48,7 +48,11 @@ test("auth routes register and login via gateway", async () => {
     let payload = "";
 
     await route(
-        requestWithBody("POST", { username: "u1", password: "p1" }),
+        requestWithBody("POST", {
+            username: "u1",
+            password: "p1",
+            displayName: "User One",
+        }),
         {
             writeHead(code: number) {
                 status = code;
@@ -76,6 +80,7 @@ test("auth routes register and login via gateway", async () => {
     );
     assert.equal(status, 200);
     assert.match(payload, /"provider":"local"/);
+    assert.match(payload, /"displayName":"User One"/);
 });
 
 test("login records lastLogin on the account", async () => {
