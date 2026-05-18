@@ -16,4 +16,4 @@ language and keeps that value until the user selects a different language.
 
 ## Commits
 
-- [pending](https://github.com/le-firehawk/Cognis/commit/pending)
+- [0b39a0e](https://github.com/le-firehawk/Cognis/commit/0b39a0e)

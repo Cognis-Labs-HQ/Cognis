@@ -17,4 +17,4 @@ UI言語の初期化で、初回表示時にブラウザーの言語設定を優
 
 ## コミット
 
-- [pending](https://github.com/le-firehawk/Cognis/commit/pending)
+- [0b39a0e](https://github.com/le-firehawk/Cognis/commit/0b39a0e)

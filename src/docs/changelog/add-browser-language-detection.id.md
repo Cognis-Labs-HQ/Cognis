@@ -17,4 +17,4 @@ mengubahnya sendiri.
 
 ## Commit
 
-- [pending](https://github.com/le-firehawk/Cognis/commit/pending)
+- [0b39a0e](https://github.com/le-firehawk/Cognis/commit/0b39a0e)
