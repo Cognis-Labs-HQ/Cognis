@@ -29,7 +29,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.1.0` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.5` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.0` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.2.2` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.2.3` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.2.1` |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.2.1` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.2.1` |

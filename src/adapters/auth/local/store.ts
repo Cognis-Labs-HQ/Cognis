@@ -123,7 +123,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 { col: "a.is_admin", as: "is_admin" },
                 { col: "a.role", as: "role" },
                 { col: "a.enabled", as: "enabled" },
-                { col: "p.role", as: "profile_role" },
             ],
             joins: [
                 {
@@ -131,12 +130,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     table: "accounts",
                     alias: "a",
                     on: { leftColumn: "c.account_id", rightColumn: "a.id" },
-                },
-                {
-                    type: "LEFT",
-                    table: "account_profiles",
-                    alias: "p",
-                    on: { leftColumn: "a.id", rightColumn: "p.account_id" },
                 },
             ],
             where: [{ column: "c.username", value: username }],
@@ -150,8 +143,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         );
         if (!passwordOk) return null;
         const derivedRole =
-            account.role ??
-            account.profile_role ??
+            (account.role as string | undefined) ??
             (Boolean(account.is_admin) ? "admin" : "user");
         return {
             accountId: username,
@@ -183,7 +175,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 { col: "a.role", as: "role" },
                 { col: "a.enabled", as: "enabled" },
                 { col: "a.is_founder", as: "is_founder" },
-                { col: "p.role", as: "profile_role" },
             ],
             joins: [
                 {
@@ -191,12 +182,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     table: "accounts",
                     alias: "a",
                     on: { leftColumn: "c.account_id", rightColumn: "a.id" },
-                },
-                {
-                    type: "LEFT",
-                    table: "account_profiles",
-                    alias: "p",
-                    on: { leftColumn: "a.id", rightColumn: "p.account_id" },
                 },
             ],
             orderBy: [{ column: "c.username", direction: "ASC" }],
@@ -207,7 +192,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
             isFounder: Boolean(row.is_founder),
             role:
                 (row.role as string | undefined) ??
-                (row.profile_role as string | undefined) ??
                 (Boolean(row.is_admin) ? "admin" : "user"),
         }));
     }
