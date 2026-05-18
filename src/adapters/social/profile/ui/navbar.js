@@ -1,5 +1,6 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { registerAvatarProvider } from "/static/layouts/dashboard-layout.js";
+import { fetchProfileAvatarBlobUrl } from "/static/gateways/social/reuse/profile-avatar.js";
 
 registerAvatarProvider(async function profileAvatarProvider() {
     try {
@@ -16,11 +17,9 @@ registerAvatarProvider(async function profileAvatarProvider() {
         const avatarKey = payload?.data?.avatarKey;
         if (!avatarKey) return { profileAvailable: true };
 
-        const fileRes = await apiFetch(`/api/v1/files/${avatarKey}`);
-        if (!fileRes.ok) return { profileAvailable: true };
-
-        const avatarBlobUrl = URL.createObjectURL(await fileRes.blob());
-        return { profileAvailable: true, avatarBlobUrl };
+        const avatarBlobUrl = await fetchProfileAvatarBlobUrl(avatarKey);
+        if (avatarBlobUrl) return { profileAvailable: true, avatarBlobUrl };
+        return { profileAvailable: true };
     } catch {
         return { profileAvailable: true };
     }
