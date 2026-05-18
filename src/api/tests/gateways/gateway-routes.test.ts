@@ -305,6 +305,40 @@ test("GET /api/v1/admin/sections filters sections by role access policy", async 
     );
 });
 
+test("GET /api/v1/admin/sections filters out sections whose isEnabled returns false", async () => {
+    const registry = new GatewayRegistry();
+    const uiReg = new UIRegistry();
+    uiReg.registerAdminSection({
+        id: "meetings",
+        label: "Meetings",
+        scriptUrl: "/static/modules/jitsi-meet/admin-meetings-section.js",
+        isEnabled: () => false,
+    });
+    uiReg.registerAdminSection({
+        id: "audit",
+        label: "Audit",
+        scriptUrl: "/static/gateways/logging/audit.js",
+        isEnabled: () => true,
+    });
+    const handler = createGatewayRoutes(registry, uiReg);
+
+    const req = makeRequest("GET", adminToken);
+    const res = makeResponse();
+    const handled = await handler(
+        req,
+        res,
+        new URL("/api/v1/admin/sections", "http://localhost"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload);
+    assert.deepEqual(
+        body.data.map((entry: { id: string }) => entry.id),
+        ["audit"],
+    );
+});
+
 test("POST /api/v1/gateways/:id/enable sets gateway status to active", async () => {
     const registry = new GatewayRegistry();
     registry.register({
