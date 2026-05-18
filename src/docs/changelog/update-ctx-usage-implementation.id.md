@@ -46,3 +46,4 @@ lainnya.
 ## Commits
 
 - [feb1bbc](https://github.com/le-firehawk/Cognis/commit/feb1bbc)
+- [c6ba65b](https://github.com/le-firehawk/Cognis/commit/c6ba65b)
