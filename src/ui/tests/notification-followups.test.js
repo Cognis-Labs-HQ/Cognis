@@ -45,7 +45,7 @@ class FakeElement {
         this.disabled = false;
         this.tabIndex = 0;
         this.textContent = "";
-        this.innerHTML = "";
+        this._innerHTML = "";
         this.dataset = {};
         this.style = {};
         this.listeners = new Map();
@@ -128,6 +128,7 @@ class FakeElement {
     }
 
     async click() {
+        if (this.disabled) return;
         const handlers = this.listeners.get("click") ?? [];
         const event = {
             target: this,
@@ -154,6 +155,29 @@ class FakeElement {
         };
         this.children.forEach(visit);
         return matches;
+    }
+
+    set innerHTML(value) {
+        this._innerHTML = String(value ?? "");
+        this.children = [];
+        this.textContent = "";
+
+        if (this._innerHTML.includes('id="notification-count"')) {
+            const badge = new FakeElement("span", this.ownerDocument);
+            badge.id = "notification-count";
+            badge.className = "notification-count";
+            this.appendChild(badge);
+        }
+
+        if (this._innerHTML.includes('class="notification-dismiss"')) {
+            const dismissButton = new FakeElement("button", this.ownerDocument);
+            dismissButton.className = "notification-dismiss";
+            this.appendChild(dismissButton);
+        }
+    }
+
+    get innerHTML() {
+        return this._innerHTML;
     }
 }
 
@@ -312,15 +336,29 @@ test("clear-all click does not open popup when empty inbox is rendered", async (
         "clear-all button should be disabled for an empty inbox",
     );
 
+    await clearAllButton.click();
+    assert.equal(
+        openPopupCalls,
+        0,
+        "disabled clear-all button should not open confirmation popup",
+    );
+
     clearAllButton.disabled = false;
     await clearAllButton.click();
     assert.equal(
         openPopupCalls,
         0,
-        "empty inbox clear-all click should not open confirmation popup",
+        "empty inbox guard should still block confirmation popup",
     );
 
     context.__testExports.setCurrentNotifications([{ id: "n1" }]);
+    context.__testExports.renderPanelContents(i18n);
+    assert.equal(
+        clearAllButton.disabled,
+        false,
+        "clear-all button should be enabled after rendering non-empty inbox",
+    );
+
     clearAllButton.disabled = false;
     await clearAllButton.click();
     assert.equal(
