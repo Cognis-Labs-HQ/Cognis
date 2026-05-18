@@ -2,6 +2,8 @@ import { createPageComposer } from "../../reuse/page-composer.js";
 import {
     createI18n,
     applyDocumentTitle,
+    readPreferredLanguages,
+    selectSupportedLanguage,
     setPreferredLanguages,
 } from "../../reuse/i18n.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
@@ -121,17 +123,14 @@ export async function mount(root) {
     }
 
     (function detectInitialLanguage() {
-        const browserLangs = navigator.languages?.length
-            ? [...navigator.languages]
-            : [navigator.language || "en"];
-        for (const browserLang of browserLangs) {
-            const code = browserLang.toLowerCase().split("-")[0];
-            if (availableLanguages.some((l) => l.key === code)) {
-                selectedLanguage = code;
-                return;
-            }
-        }
-        selectedLanguage = "en";
+        const supportedLanguageCodes = availableLanguages.map(
+            (languageOption) => languageOption.key,
+        );
+        selectedLanguage = selectSupportedLanguage(
+            [i18n.locale, ...readPreferredLanguages()],
+            supportedLanguageCodes,
+            "en",
+        );
     })();
     const typingSamples = await loadAuthTypingSamples(i18n);
 
@@ -411,6 +410,13 @@ export async function mount(root) {
 
                     const form = root.querySelector("#register-form");
                     if (!(form instanceof HTMLFormElement)) return;
+                    const languageSelectElement =
+                        form.elements.namedItem("language");
+                    if (languageSelectElement instanceof HTMLSelectElement) {
+                        languageSelectElement.addEventListener("change", () => {
+                            selectedLanguage = languageSelectElement.value;
+                        });
+                    }
                     form.addEventListener("submit", async (event) => {
                         event.preventDefault();
                         const email = String(form.email.value ?? "")
@@ -535,7 +541,7 @@ export async function mount(root) {
                                     );
                                 }
                             }
-                            if (chosenLanguage && chosenLanguage !== "en") {
+                            if (chosenLanguage) {
                                 setPreferredLanguages([chosenLanguage, "en"]);
                             }
                             showToast(i18n.t("ui.app.register.success"), {

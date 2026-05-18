@@ -49,11 +49,21 @@ export function setPreferredLanguages(languages) {
     writeLanguageCookie(normalized.join(","));
 }
 
-function detectBrowserLocale() {
-    const htmlLang = document.documentElement.lang?.trim();
-    if (htmlLang) return htmlLang.toLowerCase();
-    const browserLocale = navigator.language || DEFAULT_LOCALE;
-    return browserLocale.toLowerCase();
+function detectBrowserLocales() {
+    const candidates = [];
+    if (Array.isArray(navigator.languages) && navigator.languages.length) {
+        candidates.push(...navigator.languages);
+    }
+    if (typeof navigator.language === "string" && navigator.language.trim()) {
+        candidates.push(navigator.language);
+    }
+    const htmlLanguage = document.documentElement.lang?.trim();
+    if (htmlLanguage) candidates.push(htmlLanguage);
+    return [
+        ...new Set(
+            candidates.map((item) => normalizeLocale(item)).filter(Boolean),
+        ),
+    ];
 }
 
 export function readPreferredLanguages() {
@@ -71,13 +81,13 @@ export function readPreferredLanguages() {
             .filter(Boolean);
         if (parsed.length) return parsed;
     }
-    return [detectBrowserLocale(), DEFAULT_LOCALE];
+    return [...new Set([...detectBrowserLocales(), DEFAULT_LOCALE])];
 }
 
 function detectLocale() {
     const preferredList = readPreferredLanguages();
     if (preferredList?.[0]) return preferredList[0].toLowerCase();
-    return detectBrowserLocale();
+    return DEFAULT_LOCALE;
 }
 
 function normalizeLocale(locale) {
@@ -86,6 +96,26 @@ function normalizeLocale(locale) {
     if (!trimmed) return null;
     const lower = trimmed.toLowerCase();
     return lower.split("-")[0];
+}
+
+export function selectSupportedLanguage(
+    preferredLanguages,
+    supportedLanguages,
+    fallbackLanguage = DEFAULT_LOCALE,
+) {
+    const supportedSet = new Set(
+        (supportedLanguages || [])
+            .map((item) => normalizeLocale(item))
+            .filter(Boolean),
+    );
+    for (const language of preferredLanguages || []) {
+        const normalizedLanguage = normalizeLocale(language);
+        if (normalizedLanguage && supportedSet.has(normalizedLanguage)) {
+            return normalizedLanguage;
+        }
+    }
+    const normalizedFallback = normalizeLocale(fallbackLanguage);
+    return normalizedFallback || DEFAULT_LOCALE;
 }
 
 function parseStringsXml(xmlText) {
