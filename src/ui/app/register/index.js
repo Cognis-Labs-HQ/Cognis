@@ -410,11 +410,10 @@ export async function mount(root) {
 
                     const form = root.querySelector("#register-form");
                     if (!(form instanceof HTMLFormElement)) return;
-                    const languageSelectElement =
-                        form.elements.namedItem("language");
-                    if (languageSelectElement instanceof HTMLSelectElement) {
-                        languageSelectElement.addEventListener("change", () => {
-                            selectedLanguage = languageSelectElement.value;
+                    const languageSelect = form.elements.namedItem("language");
+                    if (languageSelect instanceof HTMLSelectElement) {
+                        languageSelect.addEventListener("change", () => {
+                            selectedLanguage = languageSelect.value;
                         });
                     }
                     form.addEventListener("submit", async (event) => {

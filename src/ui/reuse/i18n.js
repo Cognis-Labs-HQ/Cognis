@@ -98,6 +98,18 @@ function normalizeLocale(locale) {
     return lower.split("-")[0];
 }
 
+/**
+ * Resolves the first preferred locale that is also present in the list of
+ * supported locales.
+ *
+ * Usage:
+ *   selectSupportedLanguage(['ja-JP', 'de-DE'], ['en', 'de', 'ja'], 'en'); // 'ja'
+ *
+ * @param {string[] | undefined | null} preferredLanguages
+ * @param {string[] | undefined | null} supportedLanguages
+ * @param {string} [fallbackLanguage='en']
+ * @returns {string}
+ */
 export function selectSupportedLanguage(
     preferredLanguages,
     supportedLanguages,
