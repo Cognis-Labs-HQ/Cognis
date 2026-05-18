@@ -30,6 +30,12 @@ import {
     bytesToHex,
     importRoomKey,
 } from "/static/reuse/crypto-utils.js";
+import {
+    buildProfileAvatarMarkup,
+    hydrateProfileAvatars,
+    handleProfileAvatarError,
+    isProfileAvatarUnavailable,
+} from "/static/gateways/social/reuse/profile-avatar.js";
 
 const TEXT_ENCODER = new TextEncoder();
 const QUICK_REACTION_EMOJIS = ["👍", "❤", "😂", "🎉"];
@@ -121,8 +127,6 @@ async function decryptMessageOrReturnPlaintext(key, message) {
 
 const roomKeyCache = new Map();
 const threadRenderSignatures = new Map();
-const unavailableAvatarKeys = new Set();
-const avatarBlobUrlCache = new Map();
 
 function stableJson(value) {
     return JSON.stringify(value);
@@ -200,110 +204,6 @@ function roomListRenderSignature(rooms, selectedRoomId) {
     });
 }
 
-function avatarFileSrc(avatarKey) {
-    return `/api/v1/files/${String(avatarKey)
-        .split("/")
-        .map((segment) => encodeURIComponent(segment))
-        .join("/")}`;
-}
-
-function avatarImageMarkup(
-    avatarKey,
-    imageClass,
-    label,
-    colorSeed,
-    fallbackClass,
-) {
-    if (!avatarKey || unavailableAvatarKeys.has(avatarKey)) return "";
-    return avatarFallbackMarkup(label, colorSeed, fallbackClass, {
-        avatarKey,
-        imageClass,
-    });
-}
-
-function avatarFallbackMarkup(
-    label,
-    colorSeed,
-    fallbackClass,
-    { avatarKey = "", imageClass = "" } = {},
-) {
-    const color = pickInitialsColor(colorSeed);
-    const avatarData = avatarKey
-        ? ` data-avatar-key="${escapeHtml(avatarKey)}" data-avatar-label="${escapeHtml(label)}" data-avatar-color-seed="${escapeHtml(colorSeed)}" data-avatar-fallback-class="${escapeHtml(fallbackClass)}" data-avatar-image-class="${escapeHtml(imageClass)}"`
-        : "";
-    return `<span class="${escapeHtml(fallbackClass)}" style="--initials-bg: ${escapeHtml(color)};"${avatarData}>${escapeHtml(getInitialsText(label))}</span>`;
-}
-
-async function loadAvatarBlobUrl(avatarKey) {
-    if (!avatarKey || unavailableAvatarKeys.has(avatarKey)) return null;
-    if (avatarBlobUrlCache.has(avatarKey)) {
-        return avatarBlobUrlCache.get(avatarKey);
-    }
-    const promise = apiFetch(avatarFileSrc(avatarKey))
-        .then(async (response) => {
-            if (!response.ok) return null;
-            return URL.createObjectURL(await response.blob());
-        })
-        .catch(() => null);
-    avatarBlobUrlCache.set(avatarKey, promise);
-    return promise;
-}
-
-function replaceAvatarPlaceholder(placeholder, blobUrl) {
-    const avatarKey = placeholder.dataset.avatarKey;
-    const fallbackClass = placeholder.dataset.avatarFallbackClass;
-    const label = placeholder.dataset.avatarLabel || "";
-    const colorSeed = placeholder.dataset.avatarColorSeed || label;
-    const imageClass = placeholder.dataset.avatarImageClass;
-    if (!avatarKey || !fallbackClass || !imageClass) return;
-    const image = document.createElement("img");
-    image.className = imageClass;
-    image.src = blobUrl;
-    image.alt = "";
-    image.dataset.avatarKey = avatarKey;
-    image.dataset.avatarLabel = label;
-    image.dataset.avatarColorSeed = colorSeed;
-    image.dataset.avatarFallbackClass = fallbackClass;
-    placeholder.replaceWith(image);
-}
-
-async function hydrateAvatarImages(container) {
-    const placeholders = Array.from(
-        container.querySelectorAll(
-            "[data-avatar-key][data-avatar-image-class]",
-        ),
-    );
-    await Promise.all(
-        placeholders.map(async (placeholder) => {
-            const avatarKey = placeholder.dataset?.avatarKey;
-            if (!avatarKey || unavailableAvatarKeys.has(avatarKey)) return;
-            const blobUrl = await loadAvatarBlobUrl(avatarKey);
-            if (!blobUrl) {
-                unavailableAvatarKeys.add(avatarKey);
-                return;
-            }
-            if (!placeholder.isConnected) return;
-            replaceAvatarPlaceholder(placeholder, blobUrl);
-        }),
-    );
-}
-
-function handleAvatarImageError(event) {
-    const image = event.target;
-    if (!image || image.tagName !== "IMG") return;
-    const avatarKey = image.dataset?.avatarKey;
-    if (!avatarKey) return;
-    unavailableAvatarKeys.add(avatarKey);
-    const fallbackClass = image.dataset.avatarFallbackClass;
-    if (!fallbackClass) return;
-    const label = image.dataset.avatarLabel || "";
-    const colorSeed = image.dataset.avatarColorSeed || label;
-    const template = document.createElement("template");
-    template.innerHTML = avatarFallbackMarkup(label, colorSeed, fallbackClass);
-    const fallback = template.content.firstElementChild;
-    if (fallback) image.replaceWith(fallback);
-}
-
 async function getRoomKey(roomId) {
     if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
     const res = await apiFetch(
@@ -375,15 +275,16 @@ function renderRoomAvatar(room, currentAccountId) {
     if (!room) return "";
     const members = room.members ?? [];
     if (room.kind === "classroom") {
-        if (room.avatarKey && !unavailableAvatarKeys.has(room.avatarKey)) {
+        if (room.avatarKey && !isProfileAvatarUnavailable(room.avatarKey)) {
             const label = room.title || room.id;
-            return `<div class="messages-thread-avatar">${avatarImageMarkup(
-                room.avatarKey,
-                "messages-thread-avatar-img",
+            return buildProfileAvatarMarkup({
+                avatarKey: room.avatarKey,
                 label,
-                room.id || label,
-                "messages-thread-initials",
-            )}</div>`;
+                colorSeed: room.id || label,
+                avatarClass: "messages-thread-avatar",
+                imageClass: "messages-thread-avatar-img",
+                fallbackClass: "messages-thread-initials",
+            });
         }
         const picked = randomSample(members, 4);
         while (picked.length < 4) picked.push({ handle: "", displayName: "" });
@@ -393,7 +294,7 @@ function renderRoomAvatar(room, currentAccountId) {
         members.find((member) => member.accountId !== currentAccountId) ??
         members[0];
     const label = other ? memberDisplayName(other) : room.title || room.id;
-    return formatAvatarMarkup({
+    return buildProfileAvatarMarkup({
         avatarKey: room.avatarKey || other?.avatarKey || null,
         label,
         colorSeed: other?.handle || other?.accountId || label,
@@ -580,7 +481,7 @@ function renderMessageStatus(
             .map((reader) => {
                 const label =
                     reader.displayName || reader.handle || reader.accountId;
-                return formatAvatarMarkup({
+                return buildProfileAvatarMarkup({
                     avatarKey: reader.avatarKey || null,
                     label,
                     colorSeed: reader.handle || reader.accountId || label,
@@ -708,50 +609,11 @@ function renderReactionRow(message) {
     return `<div class="messages-reactions-row">${chips}<span class="messages-reaction-add-wrap">${quick}</span></div>`;
 }
 
-/**
- * Builds avatar markup with image-first rendering and initials fallback.
- *
- * @param {object} options - Avatar rendering options.
- * @param {string | null} options.avatarKey - File key for avatar image.
- * @param {string} options.label - Fallback label used for initials.
- * @param {string} options.colorSeed - Value used for deterministic color pick.
- * @param {string} options.avatarClass - Wrapper class for avatar element.
- * @param {string} options.imageClass - Image class for avatar `<img>`.
- * @param {string} options.fallbackClass - Fallback initials class name.
- * @returns {string}
- */
-function formatAvatarMarkup({
-    avatarKey,
-    label,
-    colorSeed,
-    avatarClass,
-    imageClass,
-    fallbackClass,
-    profileHandle = null,
-    linkClass = "",
-}) {
-    const safeColorSeed = colorSeed || label;
-    const avatarContent =
-        avatarImageMarkup(
-            avatarKey,
-            imageClass,
-            label,
-            safeColorSeed,
-            fallbackClass,
-        ) || avatarFallbackMarkup(label, safeColorSeed, fallbackClass);
-    const profileLink = profileHref(profileHandle);
-    if (profileLink) {
-        const classes = [avatarClass, linkClass].filter(Boolean).join(" ");
-        return `<a class="${escapeHtml(classes)}" href="${escapeHtml(profileLink)}" aria-label="${escapeHtml(label)}">${avatarContent}</a>`;
-    }
-    return `<span class="${escapeHtml(avatarClass)}">${avatarContent}</span>`;
-}
-
 function formatRoomListAvatar(room, displayedMember, titleSource) {
     const label = displayedMember
         ? memberDisplayName(displayedMember)
         : titleSource;
-    return formatAvatarMarkup({
+    return buildProfileAvatarMarkup({
         avatarKey: room?.avatarKey || displayedMember?.avatarKey || null,
         label,
         colorSeed:
@@ -773,7 +635,7 @@ function renderMemberSummaryItem(
     const label = memberDisplayName(member);
     return `
         <li class="messages-member-summary-item">
-            ${formatAvatarMarkup({
+            ${buildProfileAvatarMarkup({
                 avatarKey: member.avatarKey || null,
                 label,
                 colorSeed: member.handle || member.accountId || label,
@@ -819,7 +681,7 @@ function renderMemberSummaryBody({
 function formatMessageAvatar(message) {
     const senderLabel =
         message.senderDisplayName || message.senderHandle || message.senderId;
-    return formatAvatarMarkup({
+    return buildProfileAvatarMarkup({
         avatarKey: message.senderAvatarKey || null,
         label: senderLabel,
         colorSeed: message.senderHandle || message.senderId || senderLabel,
@@ -967,7 +829,7 @@ async function renderThread(
             container.scrollTop = previousTop;
         }
     }
-    void hydrateAvatarImages(container);
+    void hydrateProfileAvatars(container);
 
     if (hasMore && oldestCreatedAt) {
         container.insertAdjacentHTML(
@@ -1025,7 +887,7 @@ export async function mount(root, { signal } = {}) {
 
     root.classList.add("messages-page");
     root.dataset.messageStyle = resolveMessageStyle();
-    root.addEventListener("error", handleAvatarImageError, {
+    root.addEventListener("error", handleProfileAvatarError, {
         capture: true,
         signal,
     });
@@ -1153,7 +1015,7 @@ export async function mount(root, { signal } = {}) {
                 currentAccountId,
                 i18n,
             );
-            void hydrateAvatarImages(headerSlot);
+            void hydrateProfileAvatars(headerSlot);
             bindRoomHeaderEvents();
         }
         syncComposerAvailability(room);
@@ -1195,7 +1057,7 @@ export async function mount(root, { signal } = {}) {
             selectedRoomId,
             i18n,
         );
-        void hydrateAvatarImages(roomsList);
+        void hydrateProfileAvatars(roomsList);
         lastRoomsListRenderSignature = renderSignature;
     }
 
@@ -1840,7 +1702,7 @@ export async function mount(root, { signal } = {}) {
 
     function bindSidebarEvents() {
         const roomsList = document.getElementById("messages-rooms-list");
-        if (roomsList) void hydrateAvatarImages(roomsList);
+        if (roomsList) void hydrateProfileAvatars(roomsList);
         roomsList?.addEventListener("click", async (clickEvent) => {
             const requestActionButton = clickEvent.target.closest(
                 ".messages-room-request-approve, .messages-room-request-reject",

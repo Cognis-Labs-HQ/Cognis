@@ -45,26 +45,34 @@ test("messages polling does not rerender for read timestamp churn", () => {
 });
 
 test("messages avatars fall back after failed image loads", () => {
-    const source = readFileSync(
+    const appSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
         "utf8",
     );
-
-    assert.match(source, /const unavailableAvatarKeys = new Set\(\)/);
-    assert.match(source, /unavailableAvatarKeys\.add\(avatarKey\)/);
-    assert.match(source, /data-avatar-key=/);
-    assert.match(source, /apiFetch\(avatarFileSrc\(avatarKey\)\)/);
-    assert.doesNotMatch(
-        source,
-        /src=\"\$\{escapeHtml\(avatarFileSrc\(avatarKey\)\)\}/,
+    const sharedSource = readFileSync(
+        resolve(ROOT, "src/gateways/social/ui/reuse/profile-avatar.js"),
+        "utf8",
     );
-    assert.match(source, /avatarKey: member\.avatarKey/);
+
+    assert.match(sharedSource, /const unavailableAvatarKeys = new Set\(\)/);
+    assert.match(sharedSource, /unavailableAvatarKeys\.add\(avatarKey\)/);
+    assert.match(sharedSource, /data-avatar-key=/);
+    assert.match(sharedSource, /apiFetch\(buildAvatarFileUrl\(avatarKey\)\)/);
+    assert.doesNotMatch(
+        sharedSource,
+        /src=\"\$\{escapeHtml\(buildAvatarFileUrl\(avatarKey\)\)\}/,
+    );
+    assert.match(appSource, /avatarKey: member\.avatarKey/);
     assert.match(
-        source,
+        appSource,
         /avatarKey: room\?\.avatarKey \|\| displayedMember\?\.avatarKey/,
     );
     assert.match(
-        source,
-        /root\.addEventListener\("error", handleAvatarImageError/,
+        appSource,
+        /root\.addEventListener\("error", handleProfileAvatarError/,
+    );
+    assert.match(
+        appSource,
+        /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
     );
 });
