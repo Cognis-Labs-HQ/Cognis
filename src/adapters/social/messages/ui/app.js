@@ -1015,7 +1015,8 @@ export async function mount(root, { signal } = {}) {
             "messages-request-banner-slot",
         );
         if (!pendingBannerSlot) return;
-        pendingBannerSlot.innerHTML = renderPendingRequestBanner(pendingRequest);
+        pendingBannerSlot.innerHTML =
+            renderPendingRequestBanner(pendingRequest);
     }
 
     function syncComposerAvailability(room) {
