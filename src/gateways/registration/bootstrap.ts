@@ -181,12 +181,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         isEnabled: () => isGatewayEnabled() && gateway.isPublicEnabled(),
     });
 
-    /** registration:public:isEnabled — reports whether public self-registration is currently available. */
+    /**
+     * registration:public:isEnabled — reports whether public self-registration
+     * is currently available.
+     */
     ctx.capabilities.contribute(
         "registration:public:isEnabled",
         () => isGatewayEnabled() && gateway.isPublicEnabled(),
     );
-    /** registration:public:register — public self-registration entry point exported for auth/UI consumers. */
+    /**
+     * registration:public:register — public self-registration entry point
+     * exported for auth/UI consumers.
+     */
     ctx.capabilities.contribute(
         "registration:public:register",
         async (input: {

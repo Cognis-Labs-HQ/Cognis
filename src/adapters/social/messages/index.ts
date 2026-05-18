@@ -146,7 +146,10 @@ export async function bootstrapSocialAdapter(
         registerCategory("messages", "Private Messages");
     }
 
-    /** social:messages:onProfileChanged — propagates profile updates into room event history. */
+    /**
+     * social:messages:onProfileChanged — propagates profile updates into room
+     * event history.
+     */
     ctx.capabilities.contribute(
         "social:messages:onProfileChanged",
         async (input: {
@@ -184,7 +187,10 @@ export async function bootstrapSocialAdapter(
         },
     );
 
-    /** social:messages:resolveGroupChatUrl — resolves or creates a reusable group-chat URL for participants. */
+    /**
+     * social:messages:resolveGroupChatUrl — resolves or creates a reusable
+     * group-chat URL for participants.
+     */
     ctx.capabilities.contribute(
         "social:messages:resolveGroupChatUrl",
         async (input: {

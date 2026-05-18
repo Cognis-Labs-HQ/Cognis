@@ -291,15 +291,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     // Expose the notification gateway itself + a thin dispatch helper as
     // capabilities so other adapters (e.g. the social/messages adapter) can
     // hand off delivery without holding a direct reference to this gateway.
-    /** notify:gateway — notification gateway surface for advanced senders/category consumers. */
+    /**
+     * notify:gateway — notification gateway surface for advanced sender/category
+     * consumers.
+     */
     ctx.capabilities.contribute("notify:gateway", gateway);
-    /** notify:dispatch — one-shot notification dispatch helper for other components. */
+    /**
+     * notify:dispatch — one-shot notification dispatch helper for other
+     * components.
+     */
     ctx.capabilities.contribute(
         "notify:dispatch",
         (envelope: Parameters<typeof gateway.dispatch>[0]) =>
             gateway.dispatch(envelope),
     );
-    /** notify:dispatchToRole — role-based notification fan-out helper for admin/module flows. */
+    /**
+     * notify:dispatchToRole — role-based notification fan-out helper for
+     * admin/module flows.
+     */
     ctx.capabilities.contribute(
         "notify:dispatchToRole",
         async (
@@ -342,21 +351,33 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             return { recipients, dispatched };
         },
     );
-    /** notify:registerCategory — allows other components to register categories through this gateway. */
+    /**
+     * notify:registerCategory — allows other components to register categories
+     * through this gateway.
+     */
     ctx.capabilities.contribute(
         "notify:registerCategory",
         (id: string, label: string) => gateway.registerCategory(id, label),
     );
 
-    /** notify:canSendRegistrationInviteEmail — reports whether invite-email delivery is currently available. */
+    /**
+     * notify:canSendRegistrationInviteEmail — reports whether invite-email
+     * delivery is currently available.
+     */
     ctx.capabilities.contribute("notify:canSendRegistrationInviteEmail", () =>
         gateway.canSendRegistrationInviteEmail(),
     );
-    /** notify:canSendVerificationEmail — reports whether verification-email delivery is currently available. */
+    /**
+     * notify:canSendVerificationEmail — reports whether verification-email
+     * delivery is currently available.
+     */
     ctx.capabilities.contribute("notify:canSendVerificationEmail", () =>
         gateway.canSendVerificationEmail(),
     );
-    /** notify:sendRegistrationInviteEmail — sends a registration invite via the active notification sender. */
+    /**
+     * notify:sendRegistrationInviteEmail — sends a registration invite via the
+     * active notification sender.
+     */
     ctx.capabilities.contribute(
         "notify:sendRegistrationInviteEmail",
         async (
@@ -372,18 +393,27 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 theme,
             ),
     );
-    /** notify:isEmailRegistered — checks whether an email is already registered in notification-owned identity data. */
+    /**
+     * notify:isEmailRegistered — checks whether an email is already registered
+     * in notification-owned identity data.
+     */
     ctx.capabilities.contribute(
         "notify:isEmailRegistered",
         async (email: string) => notifStore.isEmailRegistered(email),
     );
-    /** notify:upsertVerifiedPrimaryEmail — stores a verified primary email for an account. */
+    /**
+     * notify:upsertVerifiedPrimaryEmail — stores a verified primary email for
+     * an account.
+     */
     ctx.capabilities.contribute(
         "notify:upsertVerifiedPrimaryEmail",
         async (accountId: string, email: string) =>
             notifStore.upsertVerifiedPrimaryEmail(accountId, email),
     );
-    /** notify:hasVerifiedEmail — indicates whether an account currently has a verified email on file. */
+    /**
+     * notify:hasVerifiedEmail — indicates whether an account currently has a
+     * verified email on file.
+     */
     ctx.capabilities.contribute(
         "notify:hasVerifiedEmail",
         async (accountId: string) => notifStore.hasVerifiedEmail(accountId),

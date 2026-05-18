@@ -164,7 +164,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ): void => {
         gateway.setLanguageModuleEnabled(moduleId, enabled);
     };
-    /** modules:onStateChanged — keeps study language module availability synchronized with runtime module state changes. */
+    /**
+     * modules:onStateChanged — keeps study language module availability
+     * synchronized with runtime module state changes.
+     */
     ctx.capabilities.contribute(
         "modules:onStateChanged",
         syncModuleEnabledState,

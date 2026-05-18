@@ -169,7 +169,10 @@ export async function bootstrapStudyAdapter(
         (handle: string, role: "teacher") => Promise<void>
     >("profile:setRoleByHandle");
 
-    /** study:classroom:listParticipantHandles — resolves normalized participant handles for classroom-linked features. */
+    /**
+     * study:classroom:listParticipantHandles — resolves normalized participant
+     * handles for classroom-linked features.
+     */
     ctx.capabilities.contribute(
         "study:classroom:listParticipantHandles",
         async (input: { classId: string }): Promise<string[]> => {

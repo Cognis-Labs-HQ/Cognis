@@ -154,15 +154,24 @@ export async function bootstrapSocialAdapter(
 
     const prefStore = new DbUserPreferenceStore(dbExecutor);
     await prefStore.ensureSchema();
-    /** preferences:store — per-user settings persistence consumed by shared UI and gateways. */
+    /**
+     * preferences:store — per-user settings persistence consumed by shared UI
+     * and gateways.
+     */
     ctx.capabilities.contribute("preferences:store", prefStore);
-    /** social:profileStore — profile/search/social-graph storage exported to peer adapters and modules. */
+    /**
+     * social:profileStore — profile/search/social-graph storage exported to
+     * peer adapters and modules.
+     */
     ctx.capabilities.contribute("social:profileStore", profileStore);
     ctx.log?.("info", "Profile preference store schema ready.", {
         component: "social-profile-adapter",
     });
 
-    /** profile:createProfile — creates a profile row for an account during auth/registration flows. */
+    /**
+     * profile:createProfile — creates a profile row for an account during
+     * auth/registration flows.
+     */
     ctx.capabilities.contribute(
         "profile:createProfile",
         async (
@@ -180,7 +189,10 @@ export async function bootstrapSocialAdapter(
         },
     );
 
-    /** profile:setRoleByHandle — synchronizes profile role metadata with account role changes. */
+    /**
+     * profile:setRoleByHandle — synchronizes profile role metadata with account
+     * role changes.
+     */
     ctx.capabilities.contribute(
         "profile:setRoleByHandle",
         async (handle: string, role: string): Promise<void> => {
