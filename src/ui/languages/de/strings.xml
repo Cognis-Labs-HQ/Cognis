@@ -41,6 +41,7 @@
   <string name="ui.reuse.reset">Zurücksetzen</string>
   <string name="ui.reuse.reset_draft">Entwurf zurücksetzen</string>
   <string name="ui.reuse.refresh">Aktualisieren</string>
+  <string name="ui.reuse.connection_lost_refresh_prompt">Verbindung unterbrochen. Bitte die Seite aktualisieren.</string>
   <string name="ui.reuse.loading">Wird geladen…</string>
   <string name="ui.reuse.followers">Follower</string>
   <string name="ui.reuse.following">folgt</string>

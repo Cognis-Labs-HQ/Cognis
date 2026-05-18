@@ -101,7 +101,7 @@
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
 
-import { apiFetch } from "./api-client.js";
+import { apiFetch, configureConnectionRecoveryPrompt } from "./api-client.js";
 import { renderDashboardLayout } from "../layouts/dashboard-layout.js";
 import { prefersReducedMotion } from "./motion.js";
 import { showToast, configureToastDismissLabel } from "./toast.js";
@@ -3330,6 +3330,9 @@ export function createPageComposer(
 
     async function init() {
         configureToastDismissLabel(i18n.t("ui.reuse.dismiss"));
+        configureConnectionRecoveryPrompt(
+            i18n.t("ui.reuse.connection_lost_refresh_prompt"),
+        );
 
         const pageContextHtml = pageContext
             ? `<h1>${pageContext.title}</h1><p>${pageContext.subtitle}</p>`

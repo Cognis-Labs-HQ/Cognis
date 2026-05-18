@@ -41,6 +41,7 @@
   <string name="ui.reuse.reset">Setel ulang</string>
   <string name="ui.reuse.reset_draft">Setel ulang draf</string>
   <string name="ui.reuse.refresh">Segarkan</string>
+  <string name="ui.reuse.connection_lost_refresh_prompt">Koneksi terputus. Silakan segarkan halaman.</string>
   <string name="ui.reuse.loading">Memuat…</string>
   <string name="ui.reuse.followers">pengikut</string>
   <string name="ui.reuse.following">mengikuti</string>
