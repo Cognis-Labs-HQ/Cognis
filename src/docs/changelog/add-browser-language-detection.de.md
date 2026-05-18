@@ -10,6 +10,10 @@ Die Sprachauswahl auf der Registrierungsseite wählt nun standardmäßig die
 erkannte unterstützte Sprache aus und behält diese Auswahl bei, bis der Nutzer
 sie manuell ändert.
 
+Die Sprachpriorität wird beim Neuladen jetzt anhand der aktuellen
+Browser-/Systemsprache neu ausgewertet, sodass Sprachänderungen sofort wirksam
+werden; Englisch bleibt als garantierter Fallback erhalten.
+
 ## Geänderte Komponenten und Dateien
 
 - `src/ui/reuse/i18n.js`

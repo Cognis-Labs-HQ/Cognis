@@ -10,7 +10,8 @@
  * - applyStaticTranslations(i18n)    — resolves data-i18n / data-i18n-placeholder /
  *                                      data-i18n-aria-label / data-i18n-alt attributes in the DOM.
  * - applyDocumentTitle(i18n, key)    — sets document.title from a locale key.
- * - readPreferredLanguages()         — returns the stored language-priority array.
+ * - readPreferredLanguages()         — returns runtime language priority with browser/system
+ *                                      preferences first, then stored fallback preferences.
  * - setPreferredLanguages(languages) — persists a language-priority array to localStorage + cookie.
  *
  * Usage:
@@ -66,22 +67,49 @@ function detectBrowserLocales() {
     ];
 }
 
-export function readPreferredLanguages() {
+function readStoredPreferredLanguages() {
     try {
-        const local = JSON.parse(
+        const localValue = JSON.parse(
             localStorage.getItem("cognis_language_priority") || "null",
         );
-        if (Array.isArray(local) && local.length) return local;
+        if (Array.isArray(localValue) && localValue.length) {
+            return localValue;
+        }
     } catch {}
-    const cookie = readCookie(LANGUAGE_COOKIE);
-    if (cookie) {
-        const parsed = cookie
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean);
-        if (parsed.length) return parsed;
-    }
-    return [...new Set([...detectBrowserLocales(), DEFAULT_LOCALE])];
+    const cookieValue = readCookie(LANGUAGE_COOKIE);
+    if (!cookieValue) return [];
+    return cookieValue
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+}
+
+/**
+ * Builds runtime language priority so browser/system preferences always come
+ * first, while stored preferences remain as fallback choices.
+ *
+ * Usage:
+ *   buildLanguagePriority(['de-DE'], ['ja', 'en']); // ['de', 'ja', 'en']
+ *
+ * @param {string[] | undefined | null} browserLanguages
+ * @param {string[] | undefined | null} storedLanguages
+ * @returns {string[]}
+ */
+export function buildLanguagePriority(browserLanguages, storedLanguages) {
+    return [
+        ...new Set(
+            [...(browserLanguages || []), ...(storedLanguages || []), DEFAULT_LOCALE]
+                .map((item) => normalizeLocale(item))
+                .filter(Boolean),
+        ),
+    ];
+}
+
+export function readPreferredLanguages() {
+    return buildLanguagePriority(
+        detectBrowserLocales(),
+        readStoredPreferredLanguages(),
+    );
 }
 
 function detectLocale() {
