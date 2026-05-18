@@ -161,6 +161,7 @@ let panelEl = null;
 let listEl = null;
 let emptyEl = null;
 let markAllBtn = null;
+let clearAllBtn = null;
 let mobileBackdropEl = null;
 let currentNotifications = [];
 let seenIds = null;
@@ -193,6 +194,11 @@ function updateBadge(count) {
     if (!badgeEl) return;
     badgeEl.textContent = String(count > 99 ? "99+" : count);
     badgeEl.hidden = count === 0;
+}
+
+function updateClearAllButton() {
+    if (!clearAllBtn) return;
+    clearAllBtn.disabled = currentNotifications.length === 0;
 }
 
 function renderNotificationItem(notif, i18n) {
@@ -250,6 +256,7 @@ function renderNotificationItem(notif, i18n) {
             if (currentNotifications.length === 0 && emptyEl) {
                 emptyEl.hidden = false;
             }
+            updateClearAllButton();
         } catch {
             showToast(i18n.t("adapter.notify.internal.error_dismiss"), {
                 variant: "error",
@@ -283,6 +290,8 @@ function renderPanelContents(i18n) {
     currentNotifications.forEach((n) => seenIds?.add(n.id));
     const unreadCount = currentNotifications.filter((n) => !n.read).length;
     updateBadge(unreadCount);
+
+    updateClearAllButton();
 
     if (currentNotifications.length === 0) {
         if (emptyEl) emptyEl.hidden = false;
@@ -401,7 +410,7 @@ function buildButton(i18n) {
     });
     header.appendChild(markAllBtn);
 
-    const clearAllBtn = document.createElement("button");
+    clearAllBtn = document.createElement("button");
     clearAllBtn.className = "notification-clear-all";
     clearAllBtn.type = "button";
     clearAllBtn.setAttribute(
@@ -409,8 +418,11 @@ function buildButton(i18n) {
         i18n.t("adapter.notify.internal.clear_all"),
     );
     clearAllBtn.title = i18n.t("adapter.notify.internal.clear_all");
+    clearAllBtn.disabled = true;
     clearAllBtn.innerHTML = "&#x1F5D1;";
     clearAllBtn.addEventListener("click", async () => {
+        if (currentNotifications.length === 0) return;
+
         const result = await openPopup({
             title: i18n.t("adapter.notify.internal.clear_all"),
             body: escapeHtml(

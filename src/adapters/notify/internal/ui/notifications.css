@@ -114,9 +114,14 @@
     border-radius: 4px;
 }
 
-.notification-clear-all:hover {
+.notification-clear-all:hover:not(:disabled) {
     color: var(--danger, #c0392b);
     background: var(--surface-hover, rgba(0, 0, 0, 0.05));
+}
+
+.notification-clear-all:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
 }
 
 .notification-list {
