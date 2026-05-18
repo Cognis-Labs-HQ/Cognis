@@ -976,6 +976,13 @@ export async function mount(root, { signal } = {}) {
         return "";
     }
 
+    /**
+     * Builds a stable signature for pending-request state so UI updates only
+     * run when request identity/direction/respondability actually changes.
+     *
+     * @param {Object|null} pendingRequest
+     * @returns {string}
+     */
     function pendingRequestSignature(pendingRequest) {
         if (!pendingRequest) return "";
         return [
@@ -985,6 +992,13 @@ export async function mount(root, { signal } = {}) {
         ].join(":");
     }
 
+    /**
+     * Reconciles pending-request state for the selected room and re-renders the
+     * rooms list only when its pending-request signature changes.
+     *
+     * @param {Object|null} pendingRequest
+     * @returns {void}
+     */
     function setSelectedRoomPendingRequest(pendingRequest) {
         if (!selectedRoomId) return;
         const nextSignature = pendingRequestSignature(pendingRequest);
@@ -1009,6 +1023,13 @@ export async function mount(root, { signal } = {}) {
         renderRoomsListIntoDom();
     }
 
+    /**
+     * Synchronizes the request banner with current pending-request state.
+     * Passing null clears any existing banner message/actions.
+     *
+     * @param {Object|null} pendingRequest
+     * @returns {void}
+     */
     function syncPendingRequestBanner(pendingRequest) {
         const pendingBannerSlot = document.getElementById(
             "messages-request-banner-slot",
