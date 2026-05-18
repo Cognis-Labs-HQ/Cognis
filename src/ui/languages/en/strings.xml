@@ -39,6 +39,7 @@
   <string name="ui.reuse.version">Version</string>
   <string name="ui.reuse.class">Class</string>
   <string name="ui.reuse.reset">Reset</string>
+  <string name="ui.reuse.reset_draft">Reset Draft</string>
   <string name="ui.reuse.refresh">Refresh</string>
   <string name="ui.reuse.loading">Loading…</string>
   <string name="ui.reuse.followers">followers</string>

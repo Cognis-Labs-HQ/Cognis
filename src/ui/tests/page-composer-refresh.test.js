@@ -117,3 +117,66 @@ test("page composer does not block initial render on async layout loading", () =
     assert.match(source, /render\(\);\s*\n\s*if \(persistLayoutPreferences\)/m);
     assert.match(source, /loadLayout\(\)\s*\.then\(/m);
 });
+
+test("page composer preserves form input values across grid re-renders", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /function captureFormState\(container, options = \{\}\)/,
+    );
+    assert.match(source, /function restoreFormState\(container, snapshot\)/);
+    assert.match(
+        source,
+        /const gridFormSnapshot = mergeFormStateSnapshots\(\s*loadPersistedFormState\(preferenceKey\),\s*captureFormState\(contentGrid\),\s*\)/m,
+    );
+    assert.match(source, /restoreFormState\(contentGrid, gridFormSnapshot\)/);
+    assert.match(
+        source,
+        /bindFormDraftPersistence\(contentGrid, preferenceKey\)/,
+    );
+    assert.match(
+        source,
+        /const subGridFormSnapshot = mergeFormStateSnapshots\(\s*loadPersistedFormState\(state\.preferenceKey\),\s*captureFormState\(state\.container\),\s*\)/m,
+    );
+    assert.match(
+        source,
+        /restoreFormState\(state\.container, subGridFormSnapshot\)/,
+    );
+    assert.match(
+        source,
+        /bindFormDraftPersistence\(state\.container, state\.preferenceKey\)/,
+    );
+});
+
+test("page composer persists drafts and renders large-form draft reset control", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.match(source, /FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft"/);
+    assert.match(source, /function loadPersistedFormState\(scopeKey\)/);
+    assert.match(
+        source,
+        /function savePersistedFormState\(scopeKey, snapshot\)/,
+    );
+    assert.match(
+        source,
+        /function clearPersistedFormState\(scopeKey, elementId = null\)/,
+    );
+    assert.match(
+        source,
+        /if \(!account \|\| !scopeKey\) \{\s*return null;\s*\}/m,
+    );
+    assert.match(source, /LARGE_FORM_RESET_FIELD_THRESHOLD = 6/);
+    assert.match(source, /button\.className = "composer-form-draft-reset-btn"/);
+    assert.match(
+        source,
+        /button\.setAttribute\("aria-label", i18n\.t\("ui\.reuse\.reset_draft"\)\)/,
+    );
+    assert.match(source, /i18n\.t\("ui\.reuse\.reset_draft"\)/);
+});

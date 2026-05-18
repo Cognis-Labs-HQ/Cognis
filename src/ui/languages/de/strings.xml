@@ -39,6 +39,7 @@
   <string name="ui.reuse.version">Version</string>
   <string name="ui.reuse.class">Klasse</string>
   <string name="ui.reuse.reset">Zurücksetzen</string>
+  <string name="ui.reuse.reset_draft">Entwurf zurücksetzen</string>
   <string name="ui.reuse.refresh">Aktualisieren</string>
   <string name="ui.reuse.loading">Wird geladen…</string>
   <string name="ui.reuse.followers">Follower</string>
