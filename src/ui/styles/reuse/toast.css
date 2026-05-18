@@ -86,7 +86,7 @@
 }
 
 .toast--warning .toast-icon {
-    color: #f59e0b;
+    color: var(--color-warning-outline-text, #f59e0b);
 }
 
 .toast--error .toast-icon {
@@ -138,5 +138,5 @@ body[data-theme="light"] .toast--success .toast-icon {
 }
 
 body[data-theme="light"] .toast--warning .toast-icon {
-    color: #b45309;
+    color: var(--color-warning-outline-text, #b45309);
 }
