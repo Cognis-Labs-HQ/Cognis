@@ -168,7 +168,15 @@ test("page composer persists drafts and renders large-form draft reset control",
         source,
         /function clearPersistedFormState\(scopeKey, elementId = null\)/,
     );
+    assert.match(
+        source,
+        /if \(!account \|\| !scopeKey\) \{\s*return null;\s*\}/m,
+    );
     assert.match(source, /LARGE_FORM_RESET_FIELD_THRESHOLD = 6/);
     assert.match(source, /button\.className = "composer-form-draft-reset-btn"/);
+    assert.match(
+        source,
+        /button\.setAttribute\("aria-label", i18n\.t\("ui\.reuse\.reset_draft"\)\)/,
+    );
     assert.match(source, /i18n\.t\("ui\.reuse\.reset_draft"\)/);
 });

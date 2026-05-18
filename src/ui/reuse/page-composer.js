@@ -404,12 +404,9 @@ export function createPageComposer(
         ) {
             return true;
         }
-        const fingerprint =
-            `${field.name ?? ""} ${field.id ?? ""}`.toLowerCase();
-        return (
-            fingerprint.includes("password") ||
-            fingerprint.includes("secret") ||
-            fingerprint.includes("token")
+        const fingerprint = `${field.name ?? ""} ${field.id ?? ""}`;
+        return /(^|[\W_])(password|passphrase|secret|token|api[_-]?key|auth[_-]?code)([\W_]|$)/i.test(
+            fingerprint,
         );
     }
 
@@ -578,14 +575,21 @@ export function createPageComposer(
     }
 
     function getDraftStorageScope(scopeKey) {
-        const account = localStorage.getItem("cognis_account") ?? "anonymous";
-        const pagePath = window.location.pathname || "dashboard";
+        const account = localStorage.getItem("cognis_account");
+        if (!account || !scopeKey) {
+            return null;
+        }
+        const pagePath = window.location.pathname || "";
         return `${FORM_DRAFT_STORAGE_PREFIX}:${account}:${pagePath}:${scopeKey}`;
     }
 
     function loadPersistedFormState(scopeKey) {
+        const storageScope = getDraftStorageScope(scopeKey);
+        if (!storageScope) {
+            return new Map();
+        }
         try {
-            const raw = localStorage.getItem(getDraftStorageScope(scopeKey));
+            const raw = localStorage.getItem(storageScope);
             if (!raw) return new Map();
             return deserializeFormStateSnapshot(JSON.parse(raw));
         } catch {
@@ -594,20 +598,25 @@ export function createPageComposer(
     }
 
     function savePersistedFormState(scopeKey, snapshot) {
-        const serialized = serializeFormStateSnapshot(snapshot);
-        if (Object.keys(serialized).length === 0) {
-            localStorage.removeItem(getDraftStorageScope(scopeKey));
+        const storageScope = getDraftStorageScope(scopeKey);
+        if (!storageScope) {
             return;
         }
-        localStorage.setItem(
-            getDraftStorageScope(scopeKey),
-            JSON.stringify(serialized),
-        );
+        const serialized = serializeFormStateSnapshot(snapshot);
+        if (Object.keys(serialized).length === 0) {
+            localStorage.removeItem(storageScope);
+            return;
+        }
+        localStorage.setItem(storageScope, JSON.stringify(serialized));
     }
 
     function clearPersistedFormState(scopeKey, elementId = null) {
+        const storageScope = getDraftStorageScope(scopeKey);
+        if (!storageScope) {
+            return;
+        }
         if (!elementId) {
-            localStorage.removeItem(getDraftStorageScope(scopeKey));
+            localStorage.removeItem(storageScope);
             return;
         }
         const nextSnapshot = loadPersistedFormState(scopeKey);
@@ -630,7 +639,7 @@ export function createPageComposer(
         });
     }
 
-    function bindDraftResetButton(card, scopeKey, persistDraftSnapshot) {
+    function bindDraftResetButton(card, scopeKey) {
         const fields = Array.from(
             card.querySelectorAll("input, textarea, select"),
         );
@@ -653,10 +662,10 @@ export function createPageComposer(
         button.type = "button";
         button.className = "composer-form-draft-reset-btn";
         button.textContent = `↺ ${i18n.t("ui.reuse.reset_draft")}`;
+        button.setAttribute("aria-label", i18n.t("ui.reuse.reset_draft"));
         button.addEventListener("click", () => {
             resetFormFieldsInCard(card);
             clearPersistedFormState(scopeKey, elementId);
-            persistDraftSnapshot();
         });
         wrapper.appendChild(button);
         const firstForm = card.querySelector("form");
@@ -692,7 +701,7 @@ export function createPageComposer(
                         clearPersistedFormState(scopeKey, elementId);
                     });
                 });
-                bindDraftResetButton(card, scopeKey, persistDraftSnapshot);
+                bindDraftResetButton(card, scopeKey);
             });
         persistDraftSnapshot();
     }
