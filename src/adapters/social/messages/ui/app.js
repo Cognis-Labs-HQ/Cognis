@@ -896,6 +896,7 @@ export async function mount(root, { signal } = {}) {
     let typingPollIntervalId = null;
     let liveRefreshIntervalId = null;
     let lastRoomsListRenderSignature = null;
+    let pendingBannerSlotElement = null;
     let typingActive = false;
     let lastTypingSentAt = 0;
 
@@ -960,6 +961,73 @@ export async function mount(root, { signal } = {}) {
         return "";
     }
 
+    /**
+     * Builds a stable signature for pending-request state so UI updates only
+     * run when request identity/direction/respondability actually changes.
+     *
+     * @param {Object|null} pendingRequest
+     * @returns {string}
+     */
+    function getPendingRequestSignature(pendingRequest) {
+        if (!pendingRequest) return "";
+        return [
+            pendingRequest.id ?? "",
+            pendingRequest.direction ?? "",
+            String(Boolean(pendingRequest.canRespond)),
+        ].join(":");
+    }
+
+    /**
+     * Reconciles pending-request state for the selected room and re-renders the
+     * rooms list only when its pending-request signature changes.
+     *
+     * @param {Object|null} pendingRequest
+     * @returns {void}
+     */
+    function setSelectedRoomPendingRequest(pendingRequest) {
+        if (!selectedRoomId) return;
+        const nextSignature = getPendingRequestSignature(pendingRequest);
+        const selectedRoomIndex = rooms.findIndex(
+            (room) => String(room.id) === String(selectedRoomId),
+        );
+        if (selectedRoomIndex < 0) return;
+        const selectedRoom = rooms[selectedRoomIndex];
+        const previousSignature = getPendingRequestSignature(
+            selectedRoom.pendingRequest,
+        );
+        if (previousSignature === nextSignature) return;
+        const updatedRoom = {
+            ...selectedRoom,
+            pendingRequest,
+        };
+        rooms = [
+            ...rooms.slice(0, selectedRoomIndex),
+            updatedRoom,
+            ...rooms.slice(selectedRoomIndex + 1),
+        ];
+        renderRoomsListIntoDom();
+    }
+
+    /**
+     * Synchronizes the request banner with current pending-request state.
+     * Passing null clears any existing banner message/actions.
+     *
+     * @param {Object|null} pendingRequest
+     * @returns {void}
+     */
+    function syncPendingRequestBanner(pendingRequest) {
+        if (pendingBannerSlotElement && !pendingBannerSlotElement.isConnected) {
+            pendingBannerSlotElement = null;
+        }
+        const pendingBannerSlot =
+            pendingBannerSlotElement ??
+            document.getElementById("messages-request-banner-slot");
+        if (!pendingBannerSlot) return;
+        pendingBannerSlotElement = pendingBannerSlot;
+        pendingBannerSlot.innerHTML =
+            renderPendingRequestBanner(pendingRequest);
+    }
+
     function syncComposerAvailability(room) {
         const input = document.getElementById("messages-composer-input");
         const sendButton = document.querySelector(".messages-composer-send");
@@ -1003,14 +1071,7 @@ export async function mount(root, { signal } = {}) {
             bindRoomHeaderEvents();
         }
         syncComposerAvailability(room);
-        const pendingBannerSlot = document.getElementById(
-            "messages-request-banner-slot",
-        );
-        if (pendingBannerSlot) {
-            pendingBannerSlot.innerHTML = renderPendingRequestBanner(
-                room?.pendingRequest,
-            );
-        }
+        syncPendingRequestBanner(room?.pendingRequest ?? null);
         const key = await getRoomKey(roomId);
         const threadResult = await renderThread(
             roomId,
@@ -1021,10 +1082,10 @@ export async function mount(root, { signal } = {}) {
             undefined,
             { force: true },
         );
-        if (pendingBannerSlot && !room?.pendingRequest) {
-            pendingBannerSlot.innerHTML = renderPendingRequestBanner(
-                threadResult?.pendingRequest ?? null,
-            );
+        if (threadResult) {
+            const resolvedPendingRequest = threadResult.pendingRequest ?? null;
+            setSelectedRoomPendingRequest(resolvedPendingRequest);
+            syncPendingRequestBanner(resolvedPendingRequest);
         }
         await markSelectedRoomRead({ force: true });
         bindPendingRequestBannerEvents();
@@ -1168,6 +1229,11 @@ export async function mount(root, { signal } = {}) {
             i18n,
             currentAccountId,
         );
+        if (threadResult) {
+            const resolvedPendingRequest = threadResult.pendingRequest ?? null;
+            setSelectedRoomPendingRequest(resolvedPendingRequest);
+            syncPendingRequestBanner(resolvedPendingRequest);
+        }
         if (threadResult?.changed || selectedRoomHasUnread()) {
             await markSelectedRoomRead();
         }
