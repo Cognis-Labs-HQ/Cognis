@@ -122,6 +122,7 @@ async function decryptMessageOrReturnPlaintext(key, message) {
 const roomKeyCache = new Map();
 const threadRenderSignatures = new Map();
 const unavailableAvatarKeys = new Set();
+const avatarBlobUrlCache = new Map();
 
 function stableJson(value) {
     return JSON.stringify(value);
@@ -214,12 +215,77 @@ function avatarImageMarkup(
     fallbackClass,
 ) {
     if (!avatarKey || unavailableAvatarKeys.has(avatarKey)) return "";
-    return `<img class="${escapeHtml(imageClass)}" src="${escapeHtml(avatarFileSrc(avatarKey))}" alt="" data-avatar-key="${escapeHtml(avatarKey)}" data-avatar-label="${escapeHtml(label)}" data-avatar-color-seed="${escapeHtml(colorSeed)}" data-avatar-fallback-class="${escapeHtml(fallbackClass)}" />`;
+    return avatarFallbackMarkup(label, colorSeed, fallbackClass, {
+        avatarKey,
+        imageClass,
+    });
 }
 
-function avatarFallbackMarkup(label, colorSeed, fallbackClass) {
+function avatarFallbackMarkup(
+    label,
+    colorSeed,
+    fallbackClass,
+    { avatarKey = "", imageClass = "" } = {},
+) {
     const color = pickInitialsColor(colorSeed);
-    return `<span class="${escapeHtml(fallbackClass)}" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
+    const avatarData = avatarKey
+        ? ` data-avatar-key="${escapeHtml(avatarKey)}" data-avatar-label="${escapeHtml(label)}" data-avatar-color-seed="${escapeHtml(colorSeed)}" data-avatar-fallback-class="${escapeHtml(fallbackClass)}" data-avatar-image-class="${escapeHtml(imageClass)}"`
+        : "";
+    return `<span class="${escapeHtml(fallbackClass)}" style="--initials-bg: ${escapeHtml(color)};"${avatarData}>${escapeHtml(getInitialsText(label))}</span>`;
+}
+
+async function loadAvatarBlobUrl(avatarKey) {
+    if (!avatarKey || unavailableAvatarKeys.has(avatarKey)) return null;
+    if (avatarBlobUrlCache.has(avatarKey)) {
+        return avatarBlobUrlCache.get(avatarKey);
+    }
+    const promise = apiFetch(avatarFileSrc(avatarKey))
+        .then(async (response) => {
+            if (!response.ok) return null;
+            return URL.createObjectURL(await response.blob());
+        })
+        .catch(() => null);
+    avatarBlobUrlCache.set(avatarKey, promise);
+    return promise;
+}
+
+function replaceAvatarPlaceholder(placeholder, blobUrl) {
+    const avatarKey = placeholder.dataset.avatarKey;
+    const fallbackClass = placeholder.dataset.avatarFallbackClass;
+    const label = placeholder.dataset.avatarLabel || "";
+    const colorSeed = placeholder.dataset.avatarColorSeed || label;
+    const imageClass = placeholder.dataset.avatarImageClass;
+    if (!avatarKey || !fallbackClass || !imageClass) return;
+    const image = document.createElement("img");
+    image.className = imageClass;
+    image.src = blobUrl;
+    image.alt = "";
+    image.dataset.avatarKey = avatarKey;
+    image.dataset.avatarLabel = label;
+    image.dataset.avatarColorSeed = colorSeed;
+    image.dataset.avatarFallbackClass = fallbackClass;
+    placeholder.replaceWith(image);
+}
+
+async function hydrateAvatarImages(container) {
+    const placeholders = Array.from(
+        container.querySelectorAll(
+            "[data-avatar-key][data-avatar-image-class]",
+        ),
+    );
+    await Promise.all(
+        placeholders.map(async (placeholder) => {
+            const avatarKey = placeholder.dataset?.avatarKey;
+            if (!avatarKey || unavailableAvatarKeys.has(avatarKey)) return;
+            const blobUrl = await loadAvatarBlobUrl(avatarKey);
+            if (!blobUrl) {
+                unavailableAvatarKeys.add(avatarKey);
+                return;
+            }
+            if (!placeholder.isConnected) return;
+            replaceAvatarPlaceholder(placeholder, blobUrl);
+        }),
+    );
 }
 
 function handleAvatarImageError(event) {
@@ -901,6 +967,7 @@ async function renderThread(
             container.scrollTop = previousTop;
         }
     }
+    void hydrateAvatarImages(container);
 
     if (hasMore && oldestCreatedAt) {
         container.insertAdjacentHTML(
@@ -1086,6 +1153,7 @@ export async function mount(root, { signal } = {}) {
                 currentAccountId,
                 i18n,
             );
+            void hydrateAvatarImages(headerSlot);
             bindRoomHeaderEvents();
         }
         syncComposerAvailability(room);
@@ -1127,6 +1195,7 @@ export async function mount(root, { signal } = {}) {
             selectedRoomId,
             i18n,
         );
+        void hydrateAvatarImages(roomsList);
         lastRoomsListRenderSignature = renderSignature;
     }
 
@@ -1771,6 +1840,7 @@ export async function mount(root, { signal } = {}) {
 
     function bindSidebarEvents() {
         const roomsList = document.getElementById("messages-rooms-list");
+        if (roomsList) void hydrateAvatarImages(roomsList);
         roomsList?.addEventListener("click", async (clickEvent) => {
             const requestActionButton = clickEvent.target.closest(
                 ".messages-room-request-approve, .messages-room-request-reject",

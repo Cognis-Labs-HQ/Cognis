@@ -53,6 +53,11 @@ test("messages avatars fall back after failed image loads", () => {
     assert.match(source, /const unavailableAvatarKeys = new Set\(\)/);
     assert.match(source, /unavailableAvatarKeys\.add\(avatarKey\)/);
     assert.match(source, /data-avatar-key=/);
+    assert.match(source, /apiFetch\(avatarFileSrc\(avatarKey\)\)/);
+    assert.doesNotMatch(
+        source,
+        /src=\"\$\{escapeHtml\(avatarFileSrc\(avatarKey\)\)\}/,
+    );
     assert.match(source, /avatarKey: member\.avatarKey/);
     assert.match(
         source,
