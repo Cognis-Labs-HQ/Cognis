@@ -158,7 +158,7 @@ export function createAuthRoutes(
                 JSON.stringify({
                     data: {
                         accountId: session.accountId,
-                        displayName: session.accountId,
+                        displayName: accountDisplayName ?? session.accountId,
                         provider: session.provider,
                         role,
                         token: apiToken,

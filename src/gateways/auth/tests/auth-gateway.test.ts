@@ -804,22 +804,30 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
         async ({
             username,
             password,
+            displayName,
         }: {
             username: string;
             password: string;
+            displayName?: string;
         }) => {
             const accountStore = capabilities.get<{
                 register: (
                     username: string,
                     password: string,
                     role?: "user" | "teacher" | "moderator" | "admin",
+                    displayName?: string,
                 ) => Promise<{
                     username: string;
                     role?: string;
                     enabled: boolean;
                 }>;
             }>("auth:accountStore");
-            return accountStore!.register(username, password, "user");
+            return accountStore!.register(
+                username,
+                password,
+                "user",
+                displayName,
+            );
         },
     );
     capabilities.contribute("preferences:store", {
@@ -842,7 +850,11 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
 
     const registerResult = await dispatchRoute(
         routeRegistry,
-        makeJsonRequest("POST", { username: "alice", password: "pass123" }),
+        makeJsonRequest("POST", {
+            username: "alice",
+            password: "pass123",
+            displayName: "Alice Liddell",
+        }),
         "/api/v1/auth/register",
     );
     assert.ok(registerResult.handled);
@@ -860,8 +872,13 @@ test("login userValidation fails open when SMTP validation is enabled but unavai
     assert.ok(loginResult.handled);
     assert.equal(loginResult.res.status, 200);
     const payload = JSON.parse(loginResult.res.payload) as {
-        data: { requiredUserValidation: boolean; userValidationMode: string };
+        data: {
+            displayName: string;
+            requiredUserValidation: boolean;
+            userValidationMode: string;
+        };
     };
+    assert.equal(payload.data.displayName, "Alice Liddell");
     assert.equal(payload.data.userValidationMode, "smtp");
     assert.equal(payload.data.requiredUserValidation, false);
 });
