@@ -39,6 +39,7 @@
   <string name="ui.reuse.version">バージョン</string>
   <string name="ui.reuse.class">クラス</string>
   <string name="ui.reuse.reset">リセット</string>
+  <string name="ui.reuse.reset_draft">下書きをリセット</string>
   <string name="ui.reuse.refresh">更新</string>
   <string name="ui.reuse.loading">読み込み中…</string>
   <string name="ui.reuse.followers">フォロワー</string>

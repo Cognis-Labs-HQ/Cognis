@@ -162,6 +162,8 @@ export function createPageComposer(
 
     const UNIT = 90; // grid cell size in pixels
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
+    const FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft";
+    const LARGE_FORM_RESET_FIELD_THRESHOLD = 6;
 
     function gridStep(dim) {
         return dim % 2 === 1 ? 0.5 : 1;
@@ -385,46 +387,84 @@ export function createPageComposer(
         return layoutData ? JSON.parse(JSON.stringify(layoutData)) : null;
     }
 
+    function getFormFieldKey(field, fieldIndex) {
+        return field.name
+            ? `name:${field.name}`
+            : field.id
+              ? `id:${field.id}`
+              : `pos:${fieldIndex}`;
+    }
+
+    function isSensitiveDraftField(field) {
+        const fieldType = String(field.type ?? "").toLowerCase();
+        if (
+            fieldType === "password" ||
+            fieldType === "file" ||
+            fieldType === "hidden"
+        ) {
+            return true;
+        }
+        const fingerprint =
+            `${field.name ?? ""} ${field.id ?? ""}`.toLowerCase();
+        return (
+            fingerprint.includes("password") ||
+            fingerprint.includes("secret") ||
+            fingerprint.includes("token")
+        );
+    }
+
+    function readFormFieldValue(field) {
+        if (field.type === "checkbox" || field.type === "radio") {
+            return field.checked;
+        }
+        return field.value;
+    }
+
+    function writeFormFieldValue(field, value) {
+        if (field.type === "file") {
+            return;
+        }
+        if (field.type === "checkbox" || field.type === "radio") {
+            field.checked = Boolean(value);
+            return;
+        }
+        field.value = typeof value === "string" ? value : "";
+    }
+
     /**
-     * Snapshot the current values of every form field inside a container so
-     * they can be restored after the container's DOM is rebuilt.  Fields are
-     * keyed first by `name`, then by `id`, then by their ordinal position
-     * within the owning element card, so the mapping survives a full innerHTML
-     * replacement as long as the element card set does not change.
-     *
      * @param {Element} container
+     * @param {{ persistableOnly?: boolean }} [options]
      * @returns {Map<string, Map<string, (string|boolean)>>}
      */
-    function captureFormState(container) {
+    function captureFormState(container, options = {}) {
+        const { persistableOnly = false } = options;
         const snapshot = new Map();
         container
             .querySelectorAll("[data-composer-element]")
             .forEach((card) => {
                 const elementId = card.dataset.composerElement;
+                if (!elementId) return;
                 const fields = card.querySelectorAll("input, textarea, select");
                 if (fields.length === 0) return;
                 const fieldMap = new Map();
                 fields.forEach((field, fieldIndex) => {
-                    const key = field.name
-                        ? `name:${field.name}`
-                        : field.id
-                          ? `id:${field.id}`
-                          : `pos:${fieldIndex}`;
-                    if (field.type === "checkbox" || field.type === "radio") {
-                        fieldMap.set(key, field.checked);
-                    } else {
-                        fieldMap.set(key, field.value);
+                    if (field.type === "file") {
+                        return;
                     }
+                    if (persistableOnly && isSensitiveDraftField(field)) {
+                        return;
+                    }
+                    const key = getFormFieldKey(field, fieldIndex);
+                    fieldMap.set(key, readFormFieldValue(field));
                 });
-                snapshot.set(elementId, fieldMap);
+                if (fieldMap.size > 0) {
+                    snapshot.set(elementId, fieldMap);
+                }
             });
         return snapshot;
     }
 
     /**
-     * Re-apply form field values captured by {@link captureFormState} after
-     * the container DOM has been rebuilt.
-     *
      * @param {Element} container
      * @param {Map<string, Map<string, (string|boolean)>>} snapshot
      */
@@ -434,28 +474,227 @@ export function createPageComposer(
             .querySelectorAll("[data-composer-element]")
             .forEach((card) => {
                 const elementId = card.dataset.composerElement;
+                if (!elementId) return;
                 const fieldMap = snapshot.get(elementId);
                 if (!fieldMap) return;
                 card.querySelectorAll("input, textarea, select").forEach(
                     (field, fieldIndex) => {
-                        const key = field.name
-                            ? `name:${field.name}`
-                            : field.id
-                              ? `id:${field.id}`
-                              : `pos:${fieldIndex}`;
+                        const key = getFormFieldKey(field, fieldIndex);
                         if (!fieldMap.has(key)) return;
-                        const saved = fieldMap.get(key);
-                        if (
-                            field.type === "checkbox" ||
-                            field.type === "radio"
-                        ) {
-                            field.checked = Boolean(saved);
-                        } else {
-                            field.value = saved;
-                        }
+                        writeFormFieldValue(field, fieldMap.get(key));
                     },
                 );
             });
+    }
+
+    /**
+     * @param {Map<string, Map<string, (string|boolean)>>} source
+     * @returns {Map<string, Map<string, (string|boolean)>>}
+     */
+    function cloneFormStateSnapshot(source) {
+        if (!source || source.size === 0) return new Map();
+        const clone = new Map();
+        source.forEach((fieldMap, elementId) => {
+            clone.set(elementId, new Map(fieldMap));
+        });
+        return clone;
+    }
+
+    /**
+     * @param {Map<string, Map<string, (string|boolean)>>} baseSnapshot
+     * @param {Map<string, Map<string, (string|boolean)>>} overrideSnapshot
+     * @returns {Map<string, Map<string, (string|boolean)>>}
+     */
+    function mergeFormStateSnapshots(baseSnapshot, overrideSnapshot) {
+        const merged = cloneFormStateSnapshot(baseSnapshot);
+        if (!overrideSnapshot || overrideSnapshot.size === 0) {
+            return merged;
+        }
+        overrideSnapshot.forEach((fieldMap, elementId) => {
+            const mergedFieldMap = new Map(merged.get(elementId) ?? []);
+            fieldMap.forEach((value, fieldKey) => {
+                mergedFieldMap.set(fieldKey, value);
+            });
+            if (mergedFieldMap.size > 0) {
+                merged.set(elementId, mergedFieldMap);
+            }
+        });
+        return merged;
+    }
+
+    /**
+     * @param {Map<string, Map<string, (string|boolean)>>} snapshot
+     * @returns {Record<string, Record<string, (string|boolean)>>}
+     */
+    function serializeFormStateSnapshot(snapshot) {
+        const serialized = {};
+        if (!snapshot || snapshot.size === 0) {
+            return serialized;
+        }
+        snapshot.forEach((fieldMap, elementId) => {
+            const record = {};
+            fieldMap.forEach((value, fieldKey) => {
+                record[fieldKey] = value;
+            });
+            if (Object.keys(record).length > 0) {
+                serialized[elementId] = record;
+            }
+        });
+        return serialized;
+    }
+
+    /**
+     * @param {unknown} rawValue
+     * @returns {Map<string, Map<string, (string|boolean)>>}
+     */
+    function deserializeFormStateSnapshot(rawValue) {
+        if (
+            !rawValue ||
+            typeof rawValue !== "object" ||
+            Array.isArray(rawValue)
+        ) {
+            return new Map();
+        }
+        const snapshot = new Map();
+        for (const [elementId, fieldValue] of Object.entries(rawValue)) {
+            if (
+                !fieldValue ||
+                typeof fieldValue !== "object" ||
+                Array.isArray(fieldValue)
+            ) {
+                continue;
+            }
+            const fieldMap = new Map();
+            for (const [fieldKey, value] of Object.entries(fieldValue)) {
+                if (typeof value === "string" || typeof value === "boolean") {
+                    fieldMap.set(fieldKey, value);
+                }
+            }
+            if (fieldMap.size > 0) {
+                snapshot.set(elementId, fieldMap);
+            }
+        }
+        return snapshot;
+    }
+
+    function getDraftStorageScope(scopeKey) {
+        const account = localStorage.getItem("cognis_account") ?? "anonymous";
+        const pagePath = window.location.pathname || "dashboard";
+        return `${FORM_DRAFT_STORAGE_PREFIX}:${account}:${pagePath}:${scopeKey}`;
+    }
+
+    function loadPersistedFormState(scopeKey) {
+        try {
+            const raw = localStorage.getItem(getDraftStorageScope(scopeKey));
+            if (!raw) return new Map();
+            return deserializeFormStateSnapshot(JSON.parse(raw));
+        } catch {
+            return new Map();
+        }
+    }
+
+    function savePersistedFormState(scopeKey, snapshot) {
+        const serialized = serializeFormStateSnapshot(snapshot);
+        if (Object.keys(serialized).length === 0) {
+            localStorage.removeItem(getDraftStorageScope(scopeKey));
+            return;
+        }
+        localStorage.setItem(
+            getDraftStorageScope(scopeKey),
+            JSON.stringify(serialized),
+        );
+    }
+
+    function clearPersistedFormState(scopeKey, elementId = null) {
+        if (!elementId) {
+            localStorage.removeItem(getDraftStorageScope(scopeKey));
+            return;
+        }
+        const nextSnapshot = loadPersistedFormState(scopeKey);
+        nextSnapshot.delete(elementId);
+        savePersistedFormState(scopeKey, nextSnapshot);
+    }
+
+    function resetFormFieldsInCard(card) {
+        card.querySelectorAll("input, textarea, select").forEach((field) => {
+            if (field.type === "file") return;
+            if (field.type === "checkbox" || field.type === "radio") {
+                field.checked = field.defaultChecked;
+                return;
+            }
+            const defaultValue =
+                typeof field.defaultValue === "string"
+                    ? field.defaultValue
+                    : "";
+            field.value = defaultValue;
+        });
+    }
+
+    function bindDraftResetButton(card, scopeKey, persistDraftSnapshot) {
+        const fields = Array.from(
+            card.querySelectorAll("input, textarea, select"),
+        );
+        const persistableFields = fields.filter(
+            (field) => !isSensitiveDraftField(field) && field.type !== "file",
+        );
+        if (persistableFields.length < LARGE_FORM_RESET_FIELD_THRESHOLD) {
+            card.querySelector("[data-composer-draft-reset-wrapper]")?.remove();
+            return;
+        }
+        if (card.querySelector("[data-composer-draft-reset-wrapper]")) {
+            return;
+        }
+        const elementId = card.dataset.composerElement;
+        if (!elementId) return;
+        const wrapper = document.createElement("div");
+        wrapper.className = "composer-form-draft-actions";
+        wrapper.dataset.composerDraftResetWrapper = "true";
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "composer-form-draft-reset-btn";
+        button.textContent = `↺ ${i18n.t("ui.reuse.reset_draft")}`;
+        button.addEventListener("click", () => {
+            resetFormFieldsInCard(card);
+            clearPersistedFormState(scopeKey, elementId);
+            persistDraftSnapshot();
+        });
+        wrapper.appendChild(button);
+        const firstForm = card.querySelector("form");
+        if (firstForm) {
+            firstForm.appendChild(wrapper);
+        } else {
+            card.appendChild(wrapper);
+        }
+    }
+
+    function bindFormDraftPersistence(container, scopeKey) {
+        if (!scopeKey) return;
+        const persistDraftSnapshot = () => {
+            const snapshot = captureFormState(container, {
+                persistableOnly: true,
+            });
+            savePersistedFormState(scopeKey, snapshot);
+        };
+        container
+            .querySelectorAll("[data-composer-element]")
+            .forEach((card) => {
+                const elementId = card.dataset.composerElement;
+                if (!elementId) return;
+                card.querySelectorAll("input, textarea, select").forEach(
+                    (field) => {
+                        if (field.type === "file") return;
+                        field.addEventListener("input", persistDraftSnapshot);
+                        field.addEventListener("change", persistDraftSnapshot);
+                    },
+                );
+                card.querySelectorAll("form").forEach((form) => {
+                    form.addEventListener("submit", () => {
+                        clearPersistedFormState(scopeKey, elementId);
+                    });
+                });
+                bindDraftResetButton(card, scopeKey, persistDraftSnapshot);
+            });
+        persistDraftSnapshot();
     }
 
     function applyLayoutForCurrentGridColumns() {
@@ -2316,7 +2555,10 @@ export function createPageComposer(
         initializeSubPlacements(state);
         computeSubGridDimensions(state);
 
-        const subGridFormSnapshot = captureFormState(state.container);
+        const subGridFormSnapshot = mergeFormStateSnapshots(
+            loadPersistedFormState(state.preferenceKey),
+            captureFormState(state.container),
+        );
         state.container.innerHTML = "";
 
         if (state.editing) {
@@ -2368,6 +2610,7 @@ export function createPageComposer(
         }
 
         restoreFormState(state.container, subGridFormSnapshot);
+        bindFormDraftPersistence(state.container, state.preferenceKey);
 
         state.onRender?.();
     }
@@ -2718,7 +2961,10 @@ export function createPageComposer(
         computeGridDimensions();
 
         contentGrid.classList.remove("composer-grid-active");
-        const gridFormSnapshot = captureFormState(contentGrid);
+        const gridFormSnapshot = mergeFormStateSnapshots(
+            loadPersistedFormState(preferenceKey),
+            captureFormState(contentGrid),
+        );
         contentGrid.innerHTML = "";
 
         const panel = document.createElement("article");
@@ -2799,6 +3045,7 @@ export function createPageComposer(
         }
 
         restoreFormState(contentGrid, gridFormSnapshot);
+        bindFormDraftPersistence(contentGrid, preferenceKey);
 
         const renderedElementIds = visiblePlacements.map((p) => p.id);
         for (const id of renderedElementIds) {

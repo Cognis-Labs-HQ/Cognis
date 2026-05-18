@@ -1625,3 +1625,26 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     border-color: var(--border-strong);
     color: var(--text);
 }
+
+.composer-form-draft-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.composer-form-draft-reset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.composer-form-draft-reset-btn:hover {
+    background: var(--control-hover-bg);
+    border-color: var(--border-strong);
+    color: var(--text);
+}

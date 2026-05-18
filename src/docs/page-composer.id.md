@@ -42,3 +42,11 @@ Unit grid adalah 90 px lebar dan tinggi. `gridSize.max: 'full'` merentangkan ele
 ### Navigasi Sub-Halaman
 
 Saat `subPageNavigation: true`, hanya satu elemen yang terlihat pada satu waktu. Tombol toolbar dengan `[data-composer-scroll]` berfungsi sebagai pemilih bagian.
+
+### Persistensi
+
+Layout tetap disimpan melalui API preferensi menggunakan `preferenceKey`. Selain itu, draf formulir kini disimpan di `localStorage` per pengguna, path halaman, dan kunci composer agar input tetap muncul setelah halaman dimuat ulang atau setelah render ulang responsif.
+
+Field sensitif (`password`, `file`, `hidden`, dan pengenal yang memuat `password`/`secret`/`token`) tidak disimpan sebagai draf persisten.
+
+Kartu dengan formulir besar (minimal 6 field yang dapat dipersistensikan) menampilkan tombol **Setel ulang draf**. Tombol ini menghapus draf tersimpan untuk kartu tersebut dan mengembalikan field saat ini ke nilai bawaan.

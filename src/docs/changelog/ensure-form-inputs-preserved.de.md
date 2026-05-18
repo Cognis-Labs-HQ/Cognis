@@ -1,24 +1,24 @@
-# Formulareingaben bei Gitter-Neurenderings im Page Composer erhalten
+# Formularentwürfe im Page Composer erhalten und verwalten
 
 ## Zusammenfassung
 
-Beim Wechsel zwischen kleiner und großer Bildschirmdarstellung wird das Gitter
-des Page Composers neu gerendert, wobei bisher alle eingetippten Texte,
-Auswahlen und Kontrollkästchen verloren gingen. Formularfeldwerte werden nun
-direkt vor dem Leeren des Gitters gesichert und nach dem Neurendern
-wiederhergestellt, damit Benutzereingaben bei einem Bildschirmgrößenwechsel
-erhalten bleiben.
-
-Die Korrektur gilt sowohl für den Haupt-Grid-Composer als auch für den
-Sub-Grid-Composer. Felder werden anhand von `name`, dann `id` und schließlich
-ihrer Position innerhalb der Element-Karte zugeordnet.
+- Formularwerte bleiben nun nicht nur bei responsiven Neurenderings erhalten,
+  sondern auch bei vollständigen Seitenaktualisierungen durch persistente
+  Entwurfsspeicherung pro Benutzer und Seite.
+- Persistente Entwürfe sind sowohl im Haupt-Grid-Composer als auch in
+  verschachtelten Sub-Composern aktiv.
+- Sensible Feldtypen und Kennungen werden von der persistenten Speicherung
+  ausgeschlossen.
+- Große Formulare erhalten eine Aktion **Entwurf zurücksetzen**, damit
+  gespeicherte Eingaben bei Bedarf schnell gelöscht werden können.
 
 ## Geänderte Dateien/Komponenten
 
-- `src/ui/reuse/page-composer.js` — Hilfsfunktionen `captureFormState` /
-  `restoreFormState` hinzugefügt; Aufrufe in `renderGridComposer` und
-  `renderSubGrid`
-- `src/ui/tests/page-composer-refresh.test.js` — neuer Strukturtest
+- `src/ui/reuse/page-composer.js`
+- `src/ui/tests/page-composer-refresh.test.js`
+- `src/ui/styles/page-builder.css`
+- `src/ui/languages/{en,de,id,ja}/strings.xml`
+- `src/docs/page-composer.{en,de,id,ja}.md`
 
 ## Commit-Links
 
