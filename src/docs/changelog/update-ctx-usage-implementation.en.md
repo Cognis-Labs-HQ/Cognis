@@ -16,6 +16,10 @@ contributions more explicitly at their contributor sites. Internal workspace
 package references to `@cognis/core` were also aligned so `npm install` again
 resolves the local workspace package cleanly.
 
+This update also fixes API bootstrap ordering so the CLI access token is issued
+only after the auth capability has been resolved from ctx, preventing the
+startup-time `ReferenceError` in `src/api/main.ts`.
+
 ## Changed Components and Files
 
 - Core/API capability and route context wiring:

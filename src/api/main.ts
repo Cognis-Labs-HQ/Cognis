@@ -159,24 +159,6 @@ bootstrapLog("info", "Starting Cognis API bootstrap.", { host, port });
 
 const cliTokenPath =
     process.env.COGNIS_CLI_TOKEN_PATH ?? "/app/config/cli-access.token";
-const cliAccessToken = issueAccessToken("cognis-cli", "owner", null);
-try {
-    await mkdir(path.dirname(cliTokenPath), { recursive: true });
-    await writeFile(cliTokenPath, `${cliAccessToken}\n`, { mode: 0o600 });
-    bootstrapLog("info", "CLI access token initialized.", {
-        path: cliTokenPath,
-    });
-} catch (error) {
-    bootstrapLog(
-        "warn",
-        "Failed to persist CLI access token; continuing without file bootstrap token.",
-        {
-            path: cliTokenPath,
-            error: error instanceof Error ? error.message : String(error),
-        },
-    );
-}
-
 const runtime = await InMemoryModuleRuntimeGateway.bootstrap();
 bootstrapLog("info", "Module runtime bootstrapped.");
 
@@ -214,6 +196,24 @@ if (contributedLog) {
     setAppLogger(contributedLog);
 }
 const log = contributedLog ?? bootstrapLog;
+
+const cliAccessToken = issueAccessToken("cognis-cli", "owner", null);
+try {
+    await mkdir(path.dirname(cliTokenPath), { recursive: true });
+    await writeFile(cliTokenPath, `${cliAccessToken}\n`, { mode: 0o600 });
+    log("info", "CLI access token initialized.", {
+        path: cliTokenPath,
+    });
+} catch (error) {
+    log(
+        "warn",
+        "Failed to persist CLI access token; continuing without file bootstrap token.",
+        {
+            path: cliTokenPath,
+            error: error instanceof Error ? error.message : String(error),
+        },
+    );
+}
 
 function logFatalFailure(
     event: "uncaught_exception" | "unhandled_rejection",

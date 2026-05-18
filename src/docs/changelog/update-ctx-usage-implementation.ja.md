@@ -15,6 +15,10 @@ gateway 所有の UI/API ルートまで広げ、capability の提供箇所で�
 より明確に文書化しました。加えて `@cognis/core` への内部 workspace 参照を
 揃え、`npm install` が再びローカル workspace package を正しく解決します。
 
+今回の更新では、CLI アクセストークンを ctx から auth capability を解決した
+後でのみ発行するよう API bootstrap 順序も修正し、`src/api/main.ts` の
+起動時 `ReferenceError` を解消しました。
+
 ## 変更コンポーネント/ファイル
 
 - コア/API の capability と route context 配線:

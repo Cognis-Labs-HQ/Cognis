@@ -17,6 +17,10 @@ dokumentasi kontribusi kapabilitas di lokasi kontributornya. Referensi internal
 workspace ke `@cognis/core` juga disejajarkan agar `npm install` kembali
 menyelesaikan paket workspace lokal dengan benar.
 
+Pembaruan ini juga memperbaiki urutan bootstrap API agar token akses CLI baru
+diterbitkan setelah kapabilitas auth berhasil diambil dari ctx, sehingga
+`ReferenceError` saat startup di `src/api/main.ts` tidak lagi terjadi.
+
 ## Komponen dan Berkas yang Diubah
 
 - Wiring kapabilitas inti/API dan route context:

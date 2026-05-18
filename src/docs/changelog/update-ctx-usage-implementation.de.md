@@ -16,6 +16,11 @@ Fähigkeitsbeiträge an ihren Beitragspunkten klarer dokumentiert. Außerdem
 wurden interne Workspace-Verweise auf `@cognis/core` angeglichen, damit
 `npm install` wieder sauber auf das lokale Workspace-Paket auflöst.
 
+Dieses Update behebt außerdem die Bootstrap-Reihenfolge der API, sodass das
+CLI-Zugriffstoken erst erzeugt wird, nachdem die Auth-Fähigkeit aus ctx
+aufgelöst wurde. Dadurch tritt der Startup-`ReferenceError` in
+`src/api/main.ts` nicht mehr auf.
+
 ## Geänderte Komponenten und Dateien
 
 - Kern/API-Fähigkeiten und Route-Context:
