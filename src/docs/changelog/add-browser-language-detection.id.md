@@ -27,6 +27,11 @@ Tabel Bahasa Tersedia sekarang tetap menjadi area drop aktif meskipun tidak ada
 baris, dan tombol Sinkronkan dari browser kini ditempatkan berdampingan dengan
 judul Bahasa prioritas.
 
+Kedua kartu tabel bahasa kini menggunakan jarak judul yang identik sehingga
+tampak konsisten secara visual. Sorotan hijau saat drag-over juga sekarang
+tampil dengan benar saat bahasa pertama diseret kembali ke tabel Bahasa Tersedia
+yang kosong.
+
 ## Komponen dan file yang diubah
 
 - `src/ui/reuse/i18n.js`

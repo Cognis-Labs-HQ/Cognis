@@ -24,6 +24,10 @@ The Available Languages table now stays as a live drop zone even when it has no
 rows, and the Sync from Browser button now sits adjacent to the Preferred
 Languages heading.
 
+Both language table cards now use identical heading spacing so they are visually
+consistent. The drag-over green highlight now also appears correctly when dragging
+the first language back into an empty Available Languages table.
+
 ## Changed files/components
 
 - `src/ui/reuse/i18n.js`

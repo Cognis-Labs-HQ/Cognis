@@ -229,10 +229,22 @@ export function initLanguagePrefs(
         clearDropMarkers();
 
         const row = zone.closest("tr[data-lang-row]");
-        if (!row) return;
-        const rect = row.getBoundingClientRect();
-        const isAfter = event.clientY > rect.top + rect.height / 2;
-        row.classList.add(isAfter ? "drop-target-after" : "drop-target-before");
+        if (row) {
+            const rect = row.getBoundingClientRect();
+            const isAfter = event.clientY > rect.top + rect.height / 2;
+            row.classList.add(
+                isAfter ? "drop-target-after" : "drop-target-before",
+            );
+        } else {
+            // Zone is the table itself — available table is showing the empty placeholder row.
+            // fall through to placeholder highlight (lines below)
+            const placeholderRow = zone.querySelector(
+                "tr:not([data-lang-row])",
+            );
+            if (placeholderRow) {
+                placeholderRow.classList.add("drop-target-before");
+            }
+        }
     });
 
     root.addEventListener("drop", (event) => {

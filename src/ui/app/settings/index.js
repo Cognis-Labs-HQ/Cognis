@@ -374,7 +374,9 @@ export async function mount(root, { signal } = {}) {
                         id: "available-languages",
                         label: i18n.t("ui.app.settings.available_languages"),
                         render: () => `
-            <h3>${i18n.t("ui.app.settings.available_languages")}</h3>
+            <div class="settings-language-heading-row">
+              <h3>${i18n.t("ui.app.settings.available_languages")}</h3>
+            </div>
             <table id="available-languages" class="language-table"></table>
           `,
                     },

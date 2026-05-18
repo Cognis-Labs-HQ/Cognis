@@ -913,7 +913,7 @@ body[data-theme="light"] .slider::before {
 }
 
 .language-table-empty-cell {
-    height: 34px;
+    color: transparent;
 }
 
 .sub-composer-heading {
