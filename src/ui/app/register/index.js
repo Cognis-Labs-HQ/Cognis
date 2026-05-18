@@ -557,12 +557,10 @@ export async function mount(root, { signal } = {}) {
                                         );
                                     }
                                 }
-                                if (chosenLanguage) {
-                                    setPreferredLanguages([
-                                        chosenLanguage,
-                                        DEFAULT_LOCALE,
-                                    ]);
-                                }
+                                setPreferredLanguages([
+                                    chosenLanguage,
+                                    DEFAULT_LOCALE,
+                                ]);
                                 showToast(i18n.t("ui.app.register.success"), {
                                     variant: "success",
                                 });

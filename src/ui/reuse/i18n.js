@@ -110,6 +110,7 @@ function normalizeLocale(locale) {
  *
  * Usage:
  *   selectSupportedLanguage(['ja-JP', 'de-DE'], ['en', 'de', 'ja'], 'en'); // 'ja'
+ *   selectSupportedLanguage(['pt-BR'], ['en', 'de', 'ja'], 'en'); // 'en'
  *
  * @param {string[] | undefined | null} preferredLanguages
  * @param {string[] | undefined | null} supportedLanguages
