@@ -19,3 +19,4 @@ Der Page Composer setzt nun einen übersetzten gemeinsamen Aktualisierungshinwei
 ## Commits
 
 - https://github.com/le-firehawk/Cognis/commit/bbee24a
+- https://github.com/le-firehawk/Cognis/commit/3b7bded

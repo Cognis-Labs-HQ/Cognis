@@ -19,3 +19,4 @@ The page composer now configures a translated shared refresh prompt so the warni
 ## Commits
 
 - https://github.com/le-firehawk/Cognis/commit/bbee24a
+- https://github.com/le-firehawk/Cognis/commit/3b7bded

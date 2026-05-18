@@ -19,3 +19,4 @@
 ## コミット
 
 - https://github.com/le-firehawk/Cognis/commit/bbee24a
+- https://github.com/le-firehawk/Cognis/commit/3b7bded
