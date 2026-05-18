@@ -109,9 +109,9 @@ export function createModuleExtensionRoutes(
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
     let handlers: RouteHandler[] = [];
-    const routeContext = createDefaultRouteContext();
     const requireRoleAccess =
-        options?.requireRoleAccess ?? routeContext.requireRoleAccess;
+        options?.requireRoleAccess ??
+        createDefaultRouteContext().requireRoleAccess;
     const staticDirsRegisteredByModule = new Set<string>();
     const uiHooksRegisteredByModule = new Set<string>();
     const modulesRoot =

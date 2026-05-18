@@ -96,6 +96,7 @@ async function serveHtmlPage(
 }
 
 async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
+    dbExecutor: DbExecutor;
     notifStore: NotificationStoreWithSchema;
     notificationPrefStore: {
         getSenderIds(
@@ -134,7 +135,7 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
     const notificationPrefStore = new NotificationPreferenceStoreClass(
         notifStore,
     );
-    return { notifStore, notificationPrefStore };
+    return { dbExecutor, notifStore, notificationPrefStore };
 }
 
 /**
@@ -144,9 +145,7 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
  * inside this module directly.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const dbExecutor =
-        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
-    const { notifStore, notificationPrefStore } =
+    const { dbExecutor, notifStore, notificationPrefStore } =
         await loadNotificationStores(ctx);
     await notifStore.ensureSchema();
     ctx.log?.("info", "Notification store schema ready.", {

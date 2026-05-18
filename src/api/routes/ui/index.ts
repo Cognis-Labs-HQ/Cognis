@@ -109,13 +109,13 @@ async function serveFile(
     res: ServerResponse,
     filePath: string,
     contentType: string,
-    routeContext: RouteContext,
     log?: BootstrapLog,
     logMeta?: Record<string, unknown>,
+    routeContext?: RouteContext,
 ) {
     try {
         const file = await readFile(filePath);
-        routeContext.setPageSecurityHeaders(res);
+        routeContext?.setPageSecurityHeaders(res);
         res.writeHead(200, {
             "content-type": contentType,
             "cache-control": "no-store",
@@ -140,17 +140,17 @@ async function serveFile(
 async function serveHtmlPage(
     res: ServerResponse,
     filePath: string,
-    routeContext: RouteContext,
     log?: BootstrapLog,
     logMeta?: Record<string, unknown>,
+    routeContext?: RouteContext,
 ) {
     await serveFile(
         res,
         filePath,
         "text/html; charset=utf-8",
-        routeContext,
         log,
         logMeta,
+        routeContext,
     );
 }
 
@@ -303,9 +303,9 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "index.html"),
-                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
+                ctx,
             );
             return true;
         }
@@ -314,9 +314,9 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "login.html"),
-                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
+                ctx,
             );
             return true;
         }
@@ -337,9 +337,9 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "settings.html"),
-                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
+                ctx,
             );
             return true;
         }
@@ -369,9 +369,9 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "administration.html"),
-                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
+                ctx,
             );
             return true;
         }
@@ -404,9 +404,9 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "users.html"),
-                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
+                ctx,
             );
             return true;
         }
@@ -470,9 +470,9 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "invite.html"),
-                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
+                ctx,
             );
             return true;
         }
@@ -493,9 +493,9 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "docs.html"),
-                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
+                ctx,
             );
             return true;
         }
@@ -516,9 +516,9 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "license.html"),
-                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
+                ctx,
             );
             return true;
         }
@@ -574,11 +574,17 @@ export function createUiRoutes(
                             manifest.id,
                             manifest.entrypoints.ui,
                         );
-                        await serveHtmlPage(res, uiFile, ctx, log, {
-                            path: url.pathname,
-                            method: req.method ?? "GET",
-                            moduleId: manifest.id,
-                        });
+                        await serveHtmlPage(
+                            res,
+                            uiFile,
+                            log,
+                            {
+                                path: url.pathname,
+                                method: req.method ?? "GET",
+                                moduleId: manifest.id,
+                            },
+                            ctx,
+                        );
                         return true;
                     }
                 } catch (error) {
@@ -753,6 +759,8 @@ export function createUiRoutes(
                         res,
                         path.join(dir, filePart),
                         resolveContentType(filePart),
+                        undefined,
+                        undefined,
                         ctx,
                     );
                     return true;
@@ -786,6 +794,8 @@ export function createUiRoutes(
                         res,
                         path.join(dir, filePart),
                         resolveContentType(filePart),
+                        undefined,
+                        undefined,
                         ctx,
                     );
                     return true;
@@ -829,6 +839,8 @@ export function createUiRoutes(
                     res,
                     path.join(resolved.dir, resolved.relPath),
                     resolveContentType(resolved.relPath),
+                    undefined,
+                    undefined,
                     ctx,
                 );
                 return true;
@@ -870,7 +882,14 @@ export function createUiRoutes(
                 ? path.join(PUBLIC_ROOT, relative)
                 : path.join(STATIC_ROOT, relative);
 
-        await serveFile(res, filePath, resolveContentType(filePath), ctx);
+        await serveFile(
+            res,
+            filePath,
+            resolveContentType(filePath),
+            undefined,
+            undefined,
+            ctx,
+        );
         return true;
     };
 }
