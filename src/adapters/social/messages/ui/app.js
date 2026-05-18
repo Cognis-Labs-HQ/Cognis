@@ -912,6 +912,7 @@ export async function mount(root, { signal } = {}) {
     let typingPollIntervalId = null;
     let liveRefreshIntervalId = null;
     let lastRoomsListRenderSignature = null;
+    let pendingBannerSlotElement = null;
     let typingActive = false;
     let lastTypingSentAt = 0;
 
@@ -983,7 +984,7 @@ export async function mount(root, { signal } = {}) {
      * @param {Object|null} pendingRequest
      * @returns {string}
      */
-    function pendingRequestSignature(pendingRequest) {
+    function getPendingRequestSignature(pendingRequest) {
         if (!pendingRequest) return "";
         return [
             pendingRequest.id ?? "",
@@ -1001,13 +1002,13 @@ export async function mount(root, { signal } = {}) {
      */
     function setSelectedRoomPendingRequest(pendingRequest) {
         if (!selectedRoomId) return;
-        const nextSignature = pendingRequestSignature(pendingRequest);
+        const nextSignature = getPendingRequestSignature(pendingRequest);
         const selectedRoomIndex = rooms.findIndex(
             (room) => String(room.id) === String(selectedRoomId),
         );
         if (selectedRoomIndex < 0) return;
         const selectedRoom = rooms[selectedRoomIndex];
-        const previousSignature = pendingRequestSignature(
+        const previousSignature = getPendingRequestSignature(
             selectedRoom.pendingRequest,
         );
         if (previousSignature === nextSignature) return;
@@ -1031,10 +1032,14 @@ export async function mount(root, { signal } = {}) {
      * @returns {void}
      */
     function syncPendingRequestBanner(pendingRequest) {
-        const pendingBannerSlot = document.getElementById(
-            "messages-request-banner-slot",
-        );
+        if (pendingBannerSlotElement && !pendingBannerSlotElement.isConnected) {
+            pendingBannerSlotElement = null;
+        }
+        const pendingBannerSlot =
+            pendingBannerSlotElement ??
+            document.getElementById("messages-request-banner-slot");
         if (!pendingBannerSlot) return;
+        pendingBannerSlotElement = pendingBannerSlot;
         pendingBannerSlot.innerHTML =
             renderPendingRequestBanner(pendingRequest);
     }
