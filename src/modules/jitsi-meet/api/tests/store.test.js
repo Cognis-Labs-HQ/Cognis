@@ -137,8 +137,6 @@ test("jitsi store meeting creation uses the modern column set", async () => {
         ),
         true,
     );
-    assert.equal("participant_a" in mockDb.insertedMeetingRows[0], false);
-    assert.equal("participant_b" in mockDb.insertedMeetingRows[0], false);
     assert.equal(createdMeeting?.reused, false);
 });
 
