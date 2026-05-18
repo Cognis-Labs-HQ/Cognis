@@ -98,7 +98,11 @@ function readStoredPreferredLanguages() {
 export function buildLanguagePriority(browserLanguages, storedLanguages) {
     return [
         ...new Set(
-            [...(browserLanguages || []), ...(storedLanguages || []), DEFAULT_LOCALE]
+            [
+                ...(browserLanguages || []),
+                ...(storedLanguages || []),
+                DEFAULT_LOCALE,
+            ]
                 .map((item) => normalizeLocale(item))
                 .filter(Boolean),
         ),
