@@ -29,3 +29,4 @@ later browser/system language-order changes no longer reshuffle the app.
 - [d9550aa2](https://github.com/le-firehawk/Cognis/commit/d9550aa2)
 - [a70d7e70](https://github.com/le-firehawk/Cognis/commit/a70d7e70)
 - [c8634d6e](https://github.com/le-firehawk/Cognis/commit/c8634d6e)
+- [61a470b9](https://github.com/le-firehawk/Cognis/commit/61a470b9)
