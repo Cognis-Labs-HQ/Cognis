@@ -117,3 +117,26 @@ test("page composer does not block initial render on async layout loading", () =
     assert.match(source, /render\(\);\s*\n\s*if \(persistLayoutPreferences\)/m);
     assert.match(source, /loadLayout\(\)\s*\.then\(/m);
 });
+
+test("page composer preserves form input values across grid re-renders", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.match(source, /function captureFormState\(container\)/);
+    assert.match(source, /function restoreFormState\(container, snapshot\)/);
+    assert.match(
+        source,
+        /const gridFormSnapshot = captureFormState\(contentGrid\)/,
+    );
+    assert.match(source, /restoreFormState\(contentGrid, gridFormSnapshot\)/);
+    assert.match(
+        source,
+        /const subGridFormSnapshot = captureFormState\(state\.container\)/,
+    );
+    assert.match(
+        source,
+        /restoreFormState\(state\.container, subGridFormSnapshot\)/,
+    );
+});

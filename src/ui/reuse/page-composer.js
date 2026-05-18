@@ -385,6 +385,79 @@ export function createPageComposer(
         return layoutData ? JSON.parse(JSON.stringify(layoutData)) : null;
     }
 
+    /**
+     * Snapshot the current values of every form field inside a container so
+     * they can be restored after the container's DOM is rebuilt.  Fields are
+     * keyed first by `name`, then by `id`, then by their ordinal position
+     * within the owning element card, so the mapping survives a full innerHTML
+     * replacement as long as the element card set does not change.
+     *
+     * @param {Element} container
+     * @returns {Map<string, Map<string, string|boolean>>}
+     */
+    function captureFormState(container) {
+        const snapshot = new Map();
+        container
+            .querySelectorAll("[data-composer-element]")
+            .forEach((card) => {
+                const elementId = card.dataset.composerElement;
+                const fields = card.querySelectorAll("input, textarea, select");
+                if (fields.length === 0) return;
+                const fieldMap = new Map();
+                fields.forEach((field, fieldIndex) => {
+                    const key = field.name
+                        ? `name:${field.name}`
+                        : field.id
+                          ? `id:${field.id}`
+                          : `pos:${fieldIndex}`;
+                    if (field.type === "checkbox" || field.type === "radio") {
+                        fieldMap.set(key, field.checked);
+                    } else {
+                        fieldMap.set(key, field.value);
+                    }
+                });
+                snapshot.set(elementId, fieldMap);
+            });
+        return snapshot;
+    }
+
+    /**
+     * Re-apply form field values captured by {@link captureFormState} after
+     * the container DOM has been rebuilt.
+     *
+     * @param {Element} container
+     * @param {Map<string, Map<string, string|boolean>>} snapshot
+     */
+    function restoreFormState(container, snapshot) {
+        if (!snapshot || snapshot.size === 0) return;
+        container
+            .querySelectorAll("[data-composer-element]")
+            .forEach((card) => {
+                const elementId = card.dataset.composerElement;
+                const fieldMap = snapshot.get(elementId);
+                if (!fieldMap) return;
+                card.querySelectorAll("input, textarea, select").forEach(
+                    (field, fieldIndex) => {
+                        const key = field.name
+                            ? `name:${field.name}`
+                            : field.id
+                              ? `id:${field.id}`
+                              : `pos:${fieldIndex}`;
+                        if (!fieldMap.has(key)) return;
+                        const saved = fieldMap.get(key);
+                        if (
+                            field.type === "checkbox" ||
+                            field.type === "radio"
+                        ) {
+                            field.checked = Boolean(saved);
+                        } else {
+                            field.value = saved;
+                        }
+                    },
+                );
+            });
+    }
+
     function applyLayoutForCurrentGridColumns() {
         const selected = getLayoutForGrid(layoutProfiles, gridCols);
         if (!selected.layout) return false;
@@ -2243,6 +2316,7 @@ export function createPageComposer(
         initializeSubPlacements(state);
         computeSubGridDimensions(state);
 
+        const subGridFormSnapshot = captureFormState(state.container);
         state.container.innerHTML = "";
 
         if (state.editing) {
@@ -2292,6 +2366,8 @@ export function createPageComposer(
         if (state.editing) {
             createSubElementsPanel(state);
         }
+
+        restoreFormState(state.container, subGridFormSnapshot);
 
         state.onRender?.();
     }
@@ -2642,6 +2718,7 @@ export function createPageComposer(
         computeGridDimensions();
 
         contentGrid.classList.remove("composer-grid-active");
+        const gridFormSnapshot = captureFormState(contentGrid);
         contentGrid.innerHTML = "";
 
         const panel = document.createElement("article");
@@ -2720,6 +2797,8 @@ export function createPageComposer(
         if (editing) {
             createElementsPanel();
         }
+
+        restoreFormState(contentGrid, gridFormSnapshot);
 
         const renderedElementIds = visiblePlacements.map((p) => p.id);
         for (const id of renderedElementIds) {
