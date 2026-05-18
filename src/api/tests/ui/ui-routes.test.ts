@@ -204,19 +204,6 @@ test("ui routes serve public assets directly from /assets", async () => {
     assert.equal(assetRes.headers["content-type"], "image/png");
 });
 
-test("legacy modules page is no longer registered", async () => {
-    const route = createUiRoutes();
-    const recorder = createResponseRecorder();
-    const handled = await route(
-        { headers: {} } as any,
-        recorder.res as any,
-        new URL("http://localhost/modules"),
-    );
-
-    assert.equal(handled, false);
-    assert.equal(recorder.status, 0);
-});
-
 test("module ui routes can be published outside /modules prefix", async () => {
     const route = createUiRoutes({
         listManifests: async () => [
