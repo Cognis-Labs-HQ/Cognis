@@ -586,4 +586,4 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
 }
 
-if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
+if (!globalThis.__spaRouter) await mount(document.querySelector("#app"), {});
