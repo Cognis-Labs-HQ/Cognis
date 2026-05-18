@@ -306,4 +306,13 @@ test("clear-all click does not open popup when empty inbox is rendered", async (
         0,
         "empty inbox clear-all click should not open confirmation popup",
     );
+
+    context.__testExports.setCurrentNotifications([{ id: "n1" }]);
+    clearAllButton.disabled = false;
+    await clearAllButton.click();
+    assert.equal(
+        openPopupCalls,
+        1,
+        "clear-all click should open confirmation popup when inbox has items",
+    );
 });
