@@ -1,9 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { hasMinRole } from "@cognis/core";
 import {
-    requireAuth,
-    getAuthClaims,
-    hasMinRole,
-} from "../../../../gateways/auth/guard.js";
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../../api/reuse/route-context.js";
 import type {
     DbProfileStore,
     AccountProfile,
@@ -57,14 +57,18 @@ async function canViewPost(
     }
 }
 
-export function createPostRoutes(profileStore: DbProfileStore) {
+export function createPostRoutes(
+    profileStore: DbProfileStore,
+    routeContext?: RouteContext,
+) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname === "/api/v1/posts" && req.method === "POST") {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const profile = await profileStore.getProfile(claims.sub);
             if (!profile) {
@@ -142,7 +146,7 @@ export function createPostRoutes(profileStore: DbProfileStore) {
         }
 
         if (url.pathname === "/api/v1/posts" && req.method === "GET") {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const posts = await profileStore.getPostsByAccount(claims.sub);
             res.writeHead(200, { "content-type": "application/json" });
@@ -152,7 +156,7 @@ export function createPostRoutes(profileStore: DbProfileStore) {
 
         const deleteMatch = url.pathname.match(/^\/api\/v1\/posts\/([^/]+)$/);
         if (deleteMatch && req.method === "DELETE") {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const postId = decodeURIComponent(deleteMatch[1]);
             const post = await profileStore.getPostById(postId);
@@ -190,7 +194,7 @@ export function createPostRoutes(profileStore: DbProfileStore) {
             /^\/api\/v1\/users\/([^/]+)\/posts$/,
         );
         if (userPostsMatch && req.method === "GET") {
-            const claims = getAuthClaims(req);
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(

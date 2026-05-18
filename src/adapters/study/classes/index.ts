@@ -9,10 +9,9 @@ import { DbClassesStore } from "./store.js";
 import { createClassesRoutes } from "./routes.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import {
-    getCookieSession,
-    hasMinRole,
-    setPageSecurityHeaders,
-} from "../../../gateways/auth/guard.js";
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../api/reuse/route-context.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -34,7 +33,11 @@ export function createStudyAdapter(): StudyAdapter {
 /**
  * Page-serving route for `/classes`. Serves the classes SPA page.
  */
-function createClassesPageRoute(isAdapterEnabled: () => boolean) {
+function createClassesPageRoute(
+    routeContext: RouteContext | undefined,
+    isAdapterEnabled: () => boolean,
+) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -43,18 +46,18 @@ function createClassesPageRoute(isAdapterEnabled: () => boolean) {
         if (req.method && req.method !== "GET") return false;
         if (!isAdapterEnabled()) return false;
         if (url.pathname !== "/classes") return false;
-        const session = getCookieSession(req);
+        const session = ctx.getCookieSession(req);
         if (!session) {
             res.writeHead(302, { location: "/login" });
             res.end();
             return true;
         }
-        if (!hasMinRole(session.role, "teacher")) {
+        if (!ctx.hasMinRole(session.role, "teacher")) {
             res.writeHead(302, { location: "/dashboard" });
             res.end();
             return true;
         }
-        setPageSecurityHeaders(res);
+        ctx.setPageSecurityHeaders(res);
         const html = await import("node:fs/promises").then((fs) =>
             fs.readFile(path.join(ADAPTER_UI_ROOT, "index.html"), "utf8"),
         );
@@ -67,7 +70,11 @@ function createClassesPageRoute(isAdapterEnabled: () => boolean) {
 /**
  * Page-serving route for `/my-classes`. Serves the student classes SPA page.
  */
-function createMyClassesPageRoute(isAdapterEnabled: () => boolean) {
+function createMyClassesPageRoute(
+    routeContext: RouteContext | undefined,
+    isAdapterEnabled: () => boolean,
+) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -76,7 +83,7 @@ function createMyClassesPageRoute(isAdapterEnabled: () => boolean) {
         if (req.method && req.method !== "GET") return false;
         if (!isAdapterEnabled()) return false;
         if (url.pathname !== "/my-classes") return false;
-        const session = getCookieSession(req);
+        const session = ctx.getCookieSession(req);
         if (!session) {
             res.writeHead(302, { location: "/login" });
             res.end();
@@ -87,7 +94,7 @@ function createMyClassesPageRoute(isAdapterEnabled: () => boolean) {
             res.end();
             return true;
         }
-        setPageSecurityHeaders(res);
+        ctx.setPageSecurityHeaders(res);
         const html = await import("node:fs/promises").then((fs) =>
             fs.readFile(path.join(ADAPTER_UI_ROOT, "my-classes.html"), "utf8"),
         );
@@ -100,6 +107,8 @@ function createMyClassesPageRoute(isAdapterEnabled: () => boolean) {
 export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,
 ): Promise<void> {
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
     const dbExecutor = ctx.capabilities.get("db:executor") ?? ctx.dbExecutor;
     if (!dbExecutor) {
         ctx.log?.(
@@ -160,6 +169,7 @@ export async function bootstrapStudyAdapter(
         (handle: string, role: "teacher") => Promise<void>
     >("profile:setRoleByHandle");
 
+    /** study:classroom:listParticipantHandles — resolves normalized participant handles for classroom-linked features. */
     ctx.capabilities.contribute(
         "study:classroom:listParticipantHandles",
         async (input: { classId: string }): Promise<string[]> => {
@@ -198,8 +208,11 @@ export async function bootstrapStudyAdapter(
         },
     );
 
-    ctx.registerRoute(createClassesPageRoute(isEnabled), "study");
-    ctx.registerRoute(createMyClassesPageRoute(isEnabled), "study");
+    ctx.registerRoute(createClassesPageRoute(routeContext, isEnabled), "study");
+    ctx.registerRoute(
+        createMyClassesPageRoute(routeContext, isEnabled),
+        "study",
+    );
     ctx.registerRoute(
         createClassesRoutes(store, {
             requireTeacherManualApproval: readTeacherManualApproval,
@@ -210,6 +223,7 @@ export async function bootstrapStudyAdapter(
             accountExists: accountStore
                 ? (id) => accountStore.exists(id)
                 : undefined,
+            routeContext,
             dispatchToRole: (role, envelope) => {
                 const dispatch = ctx.capabilities.get<
                     (

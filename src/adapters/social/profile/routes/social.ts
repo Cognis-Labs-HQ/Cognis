@@ -1,5 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { hasMinRole, requireAuth } from "../../../../gateways/auth/guard.js";
+import { hasMinRole } from "@cognis/core";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../../api/reuse/route-context.js";
 import type { DbProfileStore, AccountProfile } from "../store.js";
 import { visibilityRank } from "../store.js";
 
@@ -46,7 +50,11 @@ async function canFollowProfile(
     return true;
 }
 
-export function createSocialRoutes(profileStore: DbProfileStore) {
+export function createSocialRoutes(
+    profileStore: DbProfileStore,
+    routeContext?: RouteContext,
+) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -54,7 +62,7 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
     ): Promise<boolean> => {
         const searchMatch = url.pathname === "/api/v1/users/search";
         if (searchMatch && req.method === "GET") {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const query = (url.searchParams.get("q") ?? "")
                 .trim()
@@ -79,7 +87,7 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
             /^\/api\/v1\/users\/([^/]+)\/relationship$/,
         );
         if (relationshipMatch && req.method === "GET") {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const handle = decodeURIComponent(relationshipMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);
@@ -181,7 +189,7 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
             /^\/api\/v1\/users\/([^/]+)\/follow$/,
         );
         if (followMatch) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const handle = decodeURIComponent(followMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);
@@ -273,7 +281,7 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
             /^\/api\/v1\/users\/([^/]+)\/block$/,
         );
         if (blockMatch) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const handle = decodeURIComponent(blockMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);
@@ -316,7 +324,7 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
             /^\/api\/v1\/users\/([^/]+)\/followers$/,
         );
         if (followersMatch && req.method === "GET") {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const handle = decodeURIComponent(followersMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);
@@ -376,7 +384,7 @@ export function createSocialRoutes(profileStore: DbProfileStore) {
             /^\/api\/v1\/users\/([^/]+)\/following$/,
         );
         if (followingMatch && req.method === "GET") {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const handle = decodeURIComponent(followingMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);

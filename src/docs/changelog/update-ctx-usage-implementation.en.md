@@ -10,6 +10,12 @@ factories and module extension routing no longer import auth gateway internals
 directly. Gateway and adapter bootstrap code now prefers ctx capability lookups
 for DB access and related cross-component wiring.
 
+A follow-up pass pushed ctx usage deeper into adapter routes, study language
+modules, and gateway-owned UI/API routes, and documented capability
+contributions more explicitly at their contributor sites. Internal workspace
+package references to `@cognis/core` were also aligned so `npm install` again
+resolves the local workspace package cleanly.
+
 ## Changed Components and Files
 
 - Core/API capability and route context wiring:
@@ -27,20 +33,34 @@ for DB access and related cross-component wiring.
     - `src/api/routes/ui/index.ts`
 - Gateway/adapter ctx capability cleanup:
     - `src/gateways/auth/bootstrap.ts`
+    - `src/gateways/logging/bootstrap.ts`
     - `src/gateways/db/bootstrap.ts`
     - `src/gateways/notify/bootstrap.ts`
+    - `src/gateways/notify/routes/notifications.ts`
     - `src/gateways/notify/gateway.ts`
     - `src/gateways/registration/bootstrap.ts`
     - `src/gateways/social/bootstrap.ts`
     - `src/gateways/study/bootstrap.ts`
     - `src/adapters/notify/internal/index.ts`
+    - `src/adapters/notify/internal/routes.ts`
     - `src/adapters/social/messages/index.ts`
+    - `src/adapters/social/messages/routes.ts`
     - `src/adapters/social/profile/index.ts`
+    - `src/adapters/social/profile/routes/index.ts`
+    - `src/adapters/social/profile/routes/social.ts`
+    - `src/adapters/social/profile/routes/files.ts`
+    - `src/adapters/social/profile/routes/preferences.ts`
+    - `src/adapters/social/profile/routes/posts.ts`
     - `src/adapters/study/classes/index.ts`
+    - `src/adapters/study/classes/routes.ts`
+    - `src/modules/study/languages/en/index.ts`
+    - `src/modules/study/languages/ja/index.ts`
+    - `src/gateways/study/gateway.ts`
 - Instructions and version tracking:
     - `.github/copilot-instructions.md`
     - `src/api/gateway-bootstrap.ts`
     - `src/docs/versions.en.md`
+    - adapter/module `package.json` manifests that now point to local `@cognis/core@0.1.1`
 
 ## Commits
 

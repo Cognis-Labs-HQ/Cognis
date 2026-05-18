@@ -58,6 +58,7 @@ export interface LanguageModule {
  */
 export interface LanguageModuleBootstrapCtx {
     gateway: CoreStudyGateway;
+    capabilities: CapabilityStore;
     languageCode: string;
     moduleRoot: string;
     registerChildRoute(

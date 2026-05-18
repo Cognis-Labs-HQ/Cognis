@@ -12,7 +12,6 @@ import {
 } from "@cognis/core";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { issueAccessToken } from "../gateways/auth/access-tokens.js";
 import { createHash } from "node:crypto";
 import { RouteRegistry } from "./route-registry.js";
 import { UIRegistry } from "./ui-registry.js";
@@ -200,6 +199,17 @@ const requiredGatewayIds = await gatewayService.bootstrap(gatewaysRoot, {
 });
 
 const contributedLog = capabilities.get<BootstrapLog>("logging:log");
+const issueAccessToken = capabilities.get<
+    (
+        subject: string,
+        role: "user" | "teacher" | "moderator" | "admin" | "owner",
+        ttlSeconds: number | null,
+        options?: { issuedAt?: number },
+    ) => string
+>("auth:issueAccessToken");
+if (!issueAccessToken) {
+    throw new Error("auth_issue_access_token_unavailable");
+}
 if (contributedLog) {
     setAppLogger(contributedLog);
 }

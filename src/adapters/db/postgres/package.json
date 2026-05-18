@@ -5,6 +5,6 @@
     "type": "module",
     "main": "postgres-db-gateway.ts",
     "dependencies": {
-        "@cognis/core": "0.1.0"
+        "@cognis/core": "0.1.1"
     }
 }

@@ -1,16 +1,16 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { hasMinRole, type FileStorageGateway } from "@cognis/core";
 import {
-    getAuthClaims,
-    hasMinRole,
-    requireAuth,
-} from "../../../../gateways/auth/guard.js";
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../../api/reuse/route-context.js";
 import type {
     ProfileStore,
     AccountProfile,
     AccountVisibility,
     AccountRole,
 } from "../profile-store.js";
-import type { BootstrapLog, FileStorageGateway } from "@cognis/core";
+import type { BootstrapLog } from "@cognis/core";
 import { readRawBody, readJson } from "../../../../api/reuse/read-json.js";
 
 const VALID_VISIBILITY = new Set<AccountVisibility>([
@@ -135,13 +135,15 @@ export function createProfileRoutes(
         displayNameChanged?: boolean;
         avatarChanged?: boolean;
     }) => Promise<void>,
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const claims = getAuthClaims(req);
+        const claims = ctx.getAuthClaims(req);
         const logMeta = {
             component: "api-profile",
             method: req.method ?? "GET",
@@ -150,7 +152,7 @@ export function createProfileRoutes(
         };
 
         if (url.pathname === "/api/v1/profile/ping" && req.method === "GET") {
-            if (!requireAuth(req, res, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             if (isGatewayEnabled && !isGatewayEnabled()) {
                 log?.(
                     "warn",
@@ -175,7 +177,7 @@ export function createProfileRoutes(
         }
 
         if (url.pathname === "/api/v1/profile" && req.method === "GET") {
-            if (!requireAuth(req, res, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             let profile = await profileStore.getProfile(claims!.sub);
             if (!profile) {
                 profile = await profileStore.createProfile(
@@ -228,7 +230,7 @@ export function createProfileRoutes(
         }
 
         if (url.pathname === "/api/v1/profile" && req.method === "PATCH") {
-            if (!requireAuth(req, res, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             const body = await readJson(req);
             const updates: Parameters<typeof profileStore.updateProfile>[1] =
                 {};
@@ -308,7 +310,7 @@ export function createProfileRoutes(
         }
 
         if (url.pathname === "/api/v1/profile/avatar" && req.method === "PUT") {
-            if (!requireAuth(req, res, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
                 log?.(
                     "warn",
@@ -408,7 +410,7 @@ export function createProfileRoutes(
             url.pathname === "/api/v1/profile/avatar" &&
             req.method === "DELETE"
         ) {
-            if (!requireAuth(req, res, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
                 log?.(
                     "warn",
@@ -449,7 +451,7 @@ export function createProfileRoutes(
         }
 
         if (url.pathname === "/api/v1/profile/banner" && req.method === "PUT") {
-            if (!requireAuth(req, res, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
                 log?.(
                     "warn",
@@ -541,7 +543,7 @@ export function createProfileRoutes(
             url.pathname === "/api/v1/profile/banner" &&
             req.method === "DELETE"
         ) {
-            if (!requireAuth(req, res, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             if (!fileGateway) {
                 log?.(
                     "warn",
@@ -575,7 +577,7 @@ export function createProfileRoutes(
             /^\/api\/v1\/users\/([^/]+)\/profile$/,
         );
         if (publicProfileMatch && req.method === "GET") {
-            if (!requireAuth(req, res, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             const handle = decodeURIComponent(publicProfileMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);
             if (!target) {

@@ -155,7 +155,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.3.4",
+        version: "1.3.5",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -171,11 +171,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         stringsBaseUrl: "/static/gateways/auth/languages",
     });
 
+    /** auth:accountStore — account persistence surface consumed by registration, notify, and admin flows. */
     ctx.capabilities.contribute("auth:accountStore", accountStore);
+    /** auth:registerPageScriptOrigins — CSP script-origin registration hook for module/gateway pages. */
     ctx.capabilities.contribute(
         "auth:registerPageScriptOrigins",
         registerPageScriptOrigins,
     );
+    /** auth:createLocalAdmin — bootstrap helper that ensures the initial local founder admin exists. */
     ctx.capabilities.contribute(
         "auth:createLocalAdmin",
         async (username: string, password: string) => {
@@ -188,10 +191,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             await accountStore.setFounder(username, true);
         },
     );
+    /** auth:getLoginMethods — lists enabled authentication adapters for login UI/API consumers. */
     ctx.capabilities.contribute("auth:getLoginMethods", () =>
         authGateway
             .getEnabledAdapters()
             .map((a) => ({ id: a.id, name: a.name })),
+    );
+    /** auth:issueAccessToken — issues an access token using the auth gateway's token policy. */
+    ctx.capabilities.contribute(
+        "auth:issueAccessToken",
+        (
+            subject: string,
+            role: AccessRole,
+            ttlSeconds: number | null,
+            options?: { issuedAt?: number },
+        ) => issueAccessToken(subject, role, ttlSeconds, options),
     );
     const routeContext: RouteContext = {
         getAuthClaims,
@@ -204,6 +218,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         lookupAccessToken,
         revokeAccessTokensForSubject,
     };
+    /** auth:routeContext — request auth/session/token helpers injected into route factories and modules. */
     ctx.capabilities.contribute("auth:routeContext", routeContext);
     ctx.log?.("info", "Auth gateway initialized.", {
         component: "auth-gateway",
