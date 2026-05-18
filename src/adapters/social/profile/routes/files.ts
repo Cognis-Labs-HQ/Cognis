@@ -1,7 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth, hasMinRole } from "../../../../gateways/auth/guard.js";
+import { hasMinRole, type FileStorageGateway } from "@cognis/core";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../../api/reuse/route-context.js";
 import type { DbProfileStore } from "../store.js";
-import type { FileStorageGateway } from "@cognis/core";
 import { readRawBody, readJson } from "../../../../api/reuse/read-json.js";
 
 const MIME_FROM_EXT: Record<string, string> = {
@@ -29,7 +32,9 @@ function categoryForBucket(bucket: string): string {
 export function createFileRoutes(
     profileStore: DbProfileStore,
     fileGateway: FileStorageGateway,
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -39,7 +44,7 @@ export function createFileRoutes(
             /^\/api\/v1\/files\/([^/]+)\/(.+)$/,
         );
         if (fileMatch) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const bucket = decodeURIComponent(fileMatch[1]);
             const key = `${bucket}/${decodeURIComponent(fileMatch[2])}`;
@@ -128,7 +133,7 @@ export function createFileRoutes(
             url.pathname === "/api/v1/admin/file-limits" &&
             req.method === "GET"
         ) {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const limits = await profileStore.getAllFileSizeLimits();
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: limits }));
@@ -139,7 +144,7 @@ export function createFileRoutes(
             /^\/api\/v1\/admin\/file-limits\/([^/]+)$/,
         );
         if (limitMatch && req.method === "PUT") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const category = decodeURIComponent(limitMatch[1]);
             const body = await readJson(req);
             const maxBytes = Number(body.maxBytes);

@@ -10,7 +10,11 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { hasMinRole, requireAuth } from "../../../gateways/auth/guard.js";
+import { hasMinRole } from "@cognis/core";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../api/reuse/route-context.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import type { DbMessagesStore, MemberRow } from "./store.js";
 import type { DbProfileStore, AccountProfile } from "../profile/store.js";
@@ -130,6 +134,7 @@ export interface MessagesRoutesDeps {
     profileStore: DbProfileStore;
     dispatch: Dispatch | null;
     isAdapterEnabled: () => boolean;
+    routeContext?: RouteContext;
 }
 
 async function enrichMembersWithProfiles(
@@ -190,6 +195,7 @@ async function summarizeRoomRequest(
 
 export function createMessagesRoutes(deps: MessagesRoutesDeps) {
     const { messagesStore, profileStore, dispatch, isAdapterEnabled } = deps;
+    const ctx = resolveRouteContext(deps.routeContext);
 
     return async (
         req: IncomingMessage,
@@ -208,7 +214,7 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             return true;
         }
 
-        const claims = requireAuth(req, res, "user");
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = claims.sub;
         const hasBypass = hasAdminBypass(claims.role);

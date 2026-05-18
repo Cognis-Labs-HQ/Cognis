@@ -14,6 +14,10 @@ import { createUiRoutes } from "./routes/ui/index.js";
 import { createModuleExtensionRoutes } from "../modules/routes/module-extensions.js";
 import type { LocalAccountStore } from "./reuse/account-store.js";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
+import {
+    createDefaultRouteContext,
+    type RouteContext,
+} from "./reuse/route-context.js";
 import { createUserRoutes } from "./routes/users/index.js";
 import type { RouteRegistry } from "./route-registry.js";
 import { createGatewayRoutes } from "./routes/gateways/index.js";
@@ -72,10 +76,12 @@ export interface ApiDependencies {
         enabled: boolean,
     ) => Promise<void> | void;
     getModuleCapability?: <T>(capabilityId: string) => T | undefined;
+    routeContext?: RouteContext;
 }
 
 export function buildServer(deps: ApiDependencies) {
     const log = deps.log ?? (() => undefined);
+    const routeContext = deps.routeContext ?? createDefaultRouteContext();
     const moduleService = new ModuleService(deps.moduleRuntimeGateway);
     const healthService = new HealthService();
     const enabledModules = new Set<string>();
@@ -87,31 +93,37 @@ export function buildServer(deps: ApiDependencies) {
         {
             uiRegistry: deps.uiRegistry,
             getCapability: deps.getModuleCapability,
+            requireRoleAccess: routeContext.requireRoleAccess,
         },
     );
 
-    const moduleRoutes = createModuleRoutes(moduleService, {
-        onEnabled: async (moduleId) => {
-            enabledModules.add(moduleId);
-            await deps.onModuleStateChanged?.(moduleId, true);
-            await deps.persistModuleState?.(moduleId, true);
-            await moduleExtensionRoutes.refresh();
+    const moduleRoutes = createModuleRoutes(
+        moduleService,
+        {
+            onEnabled: async (moduleId) => {
+                enabledModules.add(moduleId);
+                await deps.onModuleStateChanged?.(moduleId, true);
+                await deps.persistModuleState?.(moduleId, true);
+                await moduleExtensionRoutes.refresh();
+            },
+            onDisabled: async (moduleId) => {
+                enabledModules.delete(moduleId);
+                await deps.onModuleStateChanged?.(moduleId, false);
+                await deps.persistModuleState?.(moduleId, false);
+                await moduleExtensionRoutes.refresh();
+            },
+            getStatus: (moduleId) =>
+                enabledModules.has(moduleId) ? "enabled" : "disabled",
+            getIntegrityReport: deps.moduleIntegrityChecker,
+            log,
         },
-        onDisabled: async (moduleId) => {
-            enabledModules.delete(moduleId);
-            await deps.onModuleStateChanged?.(moduleId, false);
-            await deps.persistModuleState?.(moduleId, false);
-            await moduleExtensionRoutes.refresh();
-        },
-        getStatus: (moduleId) =>
-            enabledModules.has(moduleId) ? "enabled" : "disabled",
-        getIntegrityReport: deps.moduleIntegrityChecker,
-        log,
-    });
+        routeContext,
+    );
     const systemRoutes = createSystemRoutes(
         healthService,
         deps.preferenceStore,
         log,
+        routeContext,
     );
     const docsRoutes = createDocsRoutes();
     const uiRoutes = createUiRoutes(
@@ -121,6 +133,7 @@ export function buildServer(deps: ApiDependencies) {
         deps.gatewayRegistry,
         (moduleId) => enabledModules.has(moduleId),
         log,
+        routeContext,
     );
     const userRoutes = deps.accountStore
         ? createUserRoutes(
@@ -130,6 +143,7 @@ export function buildServer(deps: ApiDependencies) {
               log,
               deps.getProfileVisibility,
               deps.setProfileVisibility,
+              routeContext,
           )
         : null;
     const gatewayRoutes = deps.gatewayRegistry
@@ -138,9 +152,10 @@ export function buildServer(deps: ApiDependencies) {
               deps.uiRegistry,
               deps.persistGatewayState,
               log,
+              routeContext,
           )
         : null;
-    const searchRoutes = createSearchRoutes(deps.searchProfiles);
+    const searchRoutes = createSearchRoutes(deps.searchProfiles, routeContext);
 
     Promise.all([
         deps.moduleRuntimeGateway.listManifests(),

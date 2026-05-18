@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import type { CapabilityStore } from "@cognis/core";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 
 /**
@@ -10,6 +11,7 @@ import type { DbExecutor } from "../db/reuse/db-executor.js";
  */
 export interface NotifyAdapterBootstrapCtx {
     gateway: CoreNotificationGateway;
+    capabilities: CapabilityStore;
     registerRoute(
         handler: (
             req: IncomingMessage,

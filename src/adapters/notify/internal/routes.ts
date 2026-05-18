@@ -1,5 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { getAuthClaims } from "../../../gateways/auth/guard.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../api/reuse/route-context.js";
 import type { IInternalNotificationStore } from "./store.js";
 
 /**
@@ -14,7 +17,9 @@ import type { IInternalNotificationStore } from "./store.js";
  */
 export function createInternalNotificationRoutes(
     store: IInternalNotificationStore,
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -24,7 +29,7 @@ export function createInternalNotificationRoutes(
             return false;
         }
 
-        const claims = getAuthClaims(req);
+        const claims = ctx.getAuthClaims(req);
         if (!claims) {
             res.writeHead(401, { "content-type": "application/json" });
             res.end(

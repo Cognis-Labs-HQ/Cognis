@@ -10,6 +10,7 @@ import {
     AsyncInternalNotificationStore,
 } from "./store.js";
 import { DbInternalNotificationStore } from "./db-store.js";
+import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { getDataEncryptionKey } from "../../../api/reuse/crypto.js";
 import { createInternalNotificationRoutes } from "./routes.js";
 
@@ -78,9 +79,12 @@ export function getActiveStoreForTesting(): IInternalNotificationStore {
 export async function bootstrapNotifyAdapter(
     ctx: NotifyAdapterBootstrapCtx,
 ): Promise<void> {
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
     ctx.gateway.registerAlwaysOnSender(SENDER_ID);
+    const dbExecutor = ctx.capabilities.get("db:executor") ?? ctx.dbExecutor;
 
-    if (ctx.dbExecutor) {
+    if (dbExecutor) {
         const secret = getDataEncryptionKey();
         if (!secret) {
             const baseMessage =
@@ -98,7 +102,7 @@ export async function bootstrapNotifyAdapter(
             }
         }
         const dbStore = new DbInternalNotificationStore(
-            ctx.dbExecutor,
+            dbExecutor,
             secret,
             ctx.log,
         );
@@ -121,7 +125,10 @@ export async function bootstrapNotifyAdapter(
         );
     }
 
-    ctx.registerRoute(createInternalNotificationRoutes(activeStore), "notify");
+    ctx.registerRoute(
+        createInternalNotificationRoutes(activeStore, routeContext),
+        "notify",
+    );
 
     const uiDir = path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),

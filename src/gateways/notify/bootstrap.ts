@@ -1,10 +1,7 @@
 import path from "node:path";
 import { readFile } from "node:fs/promises";
 import {
-    requireAuth,
-    getAuthClaims,
     readJson,
-    canAccessUserData,
     type GatewayBootstrapContext,
     type GatewayRegistry,
 } from "../shared.js";
@@ -19,7 +16,12 @@ import {
     parseSecuritySettings,
     SECURITY_SETTINGS_KEY,
 } from "../../api/reuse/security-settings.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../api/reuse/route-context.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import type { DbExecutor } from "../db/reuse/db-executor.js";
 import { createNotificationRoutes } from "./routes/notifications.js";
 
 interface NotificationUserEmailStore {
@@ -95,6 +97,7 @@ async function serveHtmlPage(
 }
 
 async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
+    dbExecutor: DbExecutor;
     notifStore: NotificationStoreWithSchema;
     notificationPrefStore: {
         getSenderIds(
@@ -103,6 +106,11 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
         ): Promise<string[]>;
     };
 }> {
+    const dbExecutor =
+        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
+    if (!dbExecutor) {
+        throw new Error("db_executor_unavailable");
+    }
     const notificationStoreModulePath = path.resolve(
         process.cwd(),
         "src",
@@ -115,9 +123,7 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
     );
     const NotificationStoreClass =
         notificationStoreModule.DbNotificationStore as
-            | (new (
-                  dbExecutor: GatewayBootstrapContext["dbExecutor"],
-              ) => NotificationStoreWithSchema)
+            | (new (dbExecutor: DbExecutor) => NotificationStoreWithSchema)
             | undefined;
     const NotificationPreferenceStoreClass =
         notificationStoreModule.DbNotificationPreferenceStore as
@@ -126,11 +132,11 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
     if (!NotificationStoreClass || !NotificationPreferenceStoreClass) {
         throw new Error("notification_store_gateway_exports_missing");
     }
-    const notifStore = new NotificationStoreClass(ctx.dbExecutor);
+    const notifStore = new NotificationStoreClass(dbExecutor);
     const notificationPrefStore = new NotificationPreferenceStoreClass(
         notifStore,
     );
-    return { notifStore, notificationPrefStore };
+    return { dbExecutor, notifStore, notificationPrefStore };
 }
 
 /**
@@ -140,7 +146,9 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
  * inside this module directly.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const { notifStore, notificationPrefStore } =
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
+    const { dbExecutor, notifStore, notificationPrefStore } =
         await loadNotificationStores(ctx);
     await notifStore.ensureSchema();
     ctx.log?.("info", "Notification store schema ready.", {
@@ -165,6 +173,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     await gateway.bootstrapAdapters(notifyAdaptersRoot, {
         gateway,
+        capabilities: ctx.capabilities,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId),
         registerNavbarPlugin: (scriptUrl) =>
@@ -172,7 +181,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         registerStaticDir: (prefix, dir) =>
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
         log: ctx.log,
-        dbExecutor: ctx.dbExecutor,
+        dbExecutor,
     });
     ctx.log?.("info", "Notification adapter bootstrapping complete.", {
         component: "notify-gateway",
@@ -206,6 +215,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.routeRegistry.register(
         createNotificationRoutes(gateway, notifStore, {
             getTrustedDomains,
+            routeContext,
         }),
         "notify",
     );
@@ -216,6 +226,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             verifyTokenService,
             gateway,
             externalHost,
+            routeContext,
         ),
         "notify",
     );
@@ -233,7 +244,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "notify",
     );
     ctx.routeRegistry.register(
-        createGatewayAdapterRoutes("notify", gateway, ctx.gatewayRegistry),
+        createGatewayAdapterRoutes(
+            "notify",
+            gateway,
+            ctx.gatewayRegistry,
+            routeContext,
+        ),
         "notify",
     );
     ctx.log?.("info", "Notification gateway routes registered.", {
@@ -243,7 +259,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.4.1",
+        version: "1.4.3",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
         required: true,
@@ -275,12 +291,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     // Expose the notification gateway itself + a thin dispatch helper as
     // capabilities so other adapters (e.g. the social/messages adapter) can
     // hand off delivery without holding a direct reference to this gateway.
+    /**
+     * notify:gateway — notification gateway surface for advanced sender/category
+     * consumers.
+     */
     ctx.capabilities.contribute("notify:gateway", gateway);
+    /**
+     * notify:dispatch — one-shot notification dispatch helper for other
+     * components.
+     */
     ctx.capabilities.contribute(
         "notify:dispatch",
         (envelope: Parameters<typeof gateway.dispatch>[0]) =>
             gateway.dispatch(envelope),
     );
+    /**
+     * notify:dispatchToRole — role-based notification fan-out helper for
+     * admin/module flows.
+     */
     ctx.capabilities.contribute(
         "notify:dispatchToRole",
         async (
@@ -323,17 +351,33 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             return { recipients, dispatched };
         },
     );
+    /**
+     * notify:registerCategory — allows other components to register categories
+     * through this gateway.
+     */
     ctx.capabilities.contribute(
         "notify:registerCategory",
         (id: string, label: string) => gateway.registerCategory(id, label),
     );
 
+    /**
+     * notify:canSendRegistrationInviteEmail — reports whether invite-email
+     * delivery is currently available.
+     */
     ctx.capabilities.contribute("notify:canSendRegistrationInviteEmail", () =>
         gateway.canSendRegistrationInviteEmail(),
     );
+    /**
+     * notify:canSendVerificationEmail — reports whether verification-email
+     * delivery is currently available.
+     */
     ctx.capabilities.contribute("notify:canSendVerificationEmail", () =>
         gateway.canSendVerificationEmail(),
     );
+    /**
+     * notify:sendRegistrationInviteEmail — sends a registration invite via the
+     * active notification sender.
+     */
     ctx.capabilities.contribute(
         "notify:sendRegistrationInviteEmail",
         async (
@@ -349,15 +393,27 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 theme,
             ),
     );
+    /**
+     * notify:isEmailRegistered — checks whether an email is already registered
+     * in notification-owned identity data.
+     */
     ctx.capabilities.contribute(
         "notify:isEmailRegistered",
         async (email: string) => notifStore.isEmailRegistered(email),
     );
+    /**
+     * notify:upsertVerifiedPrimaryEmail — stores a verified primary email for
+     * an account.
+     */
     ctx.capabilities.contribute(
         "notify:upsertVerifiedPrimaryEmail",
         async (accountId: string, email: string) =>
             notifStore.upsertVerifiedPrimaryEmail(accountId, email),
     );
+    /**
+     * notify:hasVerifiedEmail — indicates whether an account currently has a
+     * verified email on file.
+     */
     ctx.capabilities.contribute(
         "notify:hasVerifiedEmail",
         async (accountId: string) => notifStore.hasVerifiedEmail(accountId),
@@ -389,7 +445,9 @@ export function createUserEmailRoutes(
     verifyTokenService: VerifyTokenService,
     gateway: CoreNotificationGateway,
     externalHost?: string,
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -460,7 +518,7 @@ export function createUserEmailRoutes(
         );
         if (emailsMatch) {
             const username = decodeURIComponent(emailsMatch[1]);
-            const claims = getAuthClaims(req);
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
@@ -473,7 +531,7 @@ export function createUserEmailRoutes(
                 );
                 return true;
             }
-            if (!canAccessUserData(claims, username)) {
+            if (!ctx.canAccessUserData(claims, username)) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -646,7 +704,7 @@ export function createUserEmailRoutes(
                 return true;
             }
 
-            const claims = getAuthClaims(req);
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
@@ -659,7 +717,7 @@ export function createUserEmailRoutes(
                 );
                 return true;
             }
-            if (!canAccessUserData(claims, username)) {
+            if (!ctx.canAccessUserData(claims, username)) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -838,7 +896,9 @@ function createGatewayAdapterRoutes(
     gatewayId: string,
     gateway: CoreNotificationGateway,
     gatewayRegistry: GatewayRegistry,
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
 
     return async (
@@ -847,7 +907,7 @@ function createGatewayAdapterRoutes(
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname === base && req.method === "GET") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: gateway.listSenders() }));
             return true;
@@ -860,7 +920,7 @@ function createGatewayAdapterRoutes(
             const adapterId = decodeURIComponent(configMatch[1]);
 
             if (req.method === "GET") {
-                if (!requireAuth(req, res, "admin")) return true;
+                if (!ctx.requireAuth(req, res, "admin")) return true;
                 const config = gateway.getProviderConfig(adapterId);
                 if (config === null) {
                     res.writeHead(404, {
@@ -893,7 +953,7 @@ function createGatewayAdapterRoutes(
             }
 
             if (req.method === "PUT") {
-                if (!requireAuth(req, res, "admin")) return true;
+                if (!ctx.requireAuth(req, res, "admin")) return true;
                 const body = await readJson(req);
                 await gateway.saveProviderConfig(
                     adapterId,
@@ -911,7 +971,7 @@ function createGatewayAdapterRoutes(
             new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
         );
         if (toggleMatch && req.method === "POST") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(toggleMatch[1]);
             const action = toggleMatch[2] as "enable" | "disable";
             const sender = gateway.getSender(adapterId);
@@ -976,7 +1036,7 @@ function createGatewayAdapterRoutes(
             new RegExp(`^${base}/([^/]+)/test$`),
         );
         if (testMatch && req.method === "POST") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(testMatch[1]);
             const body = await readJson(req);
             const to = String(body.to ?? "");

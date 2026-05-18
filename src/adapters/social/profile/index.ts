@@ -10,15 +10,15 @@ import { createPostRoutes } from "./routes/posts.js";
 import { createFileRoutes } from "./routes/files.js";
 import { createPreferencesRoutes } from "./routes/preferences.js";
 import type { FileStorageGateway } from "@cognis/core";
-import {
-    getCookieSession,
-    setPageSecurityHeaders,
-} from "../../../gateways/auth/guard.js";
 import type { AccountRole } from "./store.js";
 import type {
     SocialAdapter,
     SocialAdapterBootstrapCtx,
 } from "../../../gateways/social/gateway.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../api/reuse/route-context.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
@@ -45,7 +45,11 @@ export function createSocialAdapter(): SocialAdapter {
  * routes return `false` so that the server's 404 handler takes over,
  * preventing access to the profile UI while the social gateway is disabled.
  */
-export function createProfilePageRoutes(isAdapterEnabled?: () => boolean) {
+export function createProfilePageRoutes(
+    routeContext?: RouteContext,
+    isAdapterEnabled?: () => boolean,
+) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -56,7 +60,7 @@ export function createProfilePageRoutes(isAdapterEnabled?: () => boolean) {
         if (isAdapterEnabled && !isAdapterEnabled()) return false;
 
         if (url.pathname === "/profile") {
-            const session = getCookieSession(req);
+            const session = ctx.getCookieSession(req);
             if (!session) {
                 res.writeHead(302, { location: "/login" });
                 res.end();
@@ -73,7 +77,7 @@ export function createProfilePageRoutes(isAdapterEnabled?: () => boolean) {
             url.pathname.startsWith("/profile/") &&
             url.pathname.length > "/profile/".length
         ) {
-            if (!getCookieSession(req)) {
+            if (!ctx.getCookieSession(req)) {
                 res.writeHead(302, { location: "/login" });
                 res.end();
                 return true;
@@ -81,7 +85,7 @@ export function createProfilePageRoutes(isAdapterEnabled?: () => boolean) {
             try {
                 const filePath = path.join(ADAPTER_UI_ROOT, "index.html");
                 const file = await readFile(filePath);
-                setPageSecurityHeaders(res);
+                ctx.setPageSecurityHeaders(res);
                 res.writeHead(200, {
                     "content-type": "text/html; charset=utf-8",
                     "cache-control": "no-store",
@@ -128,6 +132,8 @@ export function createProfilePageRoutes(isAdapterEnabled?: () => boolean) {
 export async function bootstrapSocialAdapter(
     ctx: SocialAdapterBootstrapCtx,
 ): Promise<void> {
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
     const dbExecutor =
         ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
 
@@ -148,12 +154,24 @@ export async function bootstrapSocialAdapter(
 
     const prefStore = new DbUserPreferenceStore(dbExecutor);
     await prefStore.ensureSchema();
+    /**
+     * preferences:store — per-user settings persistence consumed by shared UI
+     * and gateways.
+     */
     ctx.capabilities.contribute("preferences:store", prefStore);
+    /**
+     * social:profileStore — profile/search/social-graph storage exported to
+     * peer adapters and modules.
+     */
     ctx.capabilities.contribute("social:profileStore", profileStore);
     ctx.log?.("info", "Profile preference store schema ready.", {
         component: "social-profile-adapter",
     });
 
+    /**
+     * profile:createProfile — creates a profile row for an account during
+     * auth/registration flows.
+     */
     ctx.capabilities.contribute(
         "profile:createProfile",
         async (
@@ -171,6 +189,10 @@ export async function bootstrapSocialAdapter(
         },
     );
 
+    /**
+     * profile:setRoleByHandle — synchronizes profile role metadata with account
+     * role changes.
+     */
     ctx.capabilities.contribute(
         "profile:setRoleByHandle",
         async (handle: string, role: string): Promise<void> => {
@@ -197,13 +219,14 @@ export async function bootstrapSocialAdapter(
             () => ctx.isGatewayEnabled(),
             ctx.log as never,
             onMessagesProfileChanged ?? undefined,
+            routeContext,
         ),
         "social",
     );
 
     if (fileGateway) {
         ctx.registerRoute(
-            createFileRoutes(profileStore, fileGateway),
+            createFileRoutes(profileStore, fileGateway, routeContext),
             "social",
         );
         ctx.log?.("info", "Profile adapter: file routes registered.");
@@ -215,12 +238,15 @@ export async function bootstrapSocialAdapter(
     }
 
     ctx.registerRoute(
-        createProfilePageRoutes(() => ctx.isGatewayEnabled()),
+        createProfilePageRoutes(routeContext, () => ctx.isGatewayEnabled()),
         "social",
     );
-    ctx.registerRoute(createSocialRoutes(profileStore), "social");
-    ctx.registerRoute(createPostRoutes(profileStore), "social");
-    ctx.registerRoute(createPreferencesRoutes(prefStore), "social");
+    ctx.registerRoute(createSocialRoutes(profileStore, routeContext), "social");
+    ctx.registerRoute(createPostRoutes(profileStore, routeContext), "social");
+    ctx.registerRoute(
+        createPreferencesRoutes(prefStore, routeContext),
+        "social",
+    );
     ctx.log?.("info", "Profile adapter routes registered.", {
         component: "social-profile-adapter",
         hasFileGateway: Boolean(fileGateway),

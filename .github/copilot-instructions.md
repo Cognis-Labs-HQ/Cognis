@@ -28,6 +28,15 @@ Route handlers should be unassuming about the details of any backing service or 
 
 Prefer gateway/adapter abstractions at every seam where a concrete implementation might change. This extends beyond the DB layer to auth providers, file storage, queues, and any other pluggable subsystem.
 
+### Ctx is the capability backbone
+
+Use `ctx` as the only cross-component import surface. When a gateway, adapter, module, or route needs something owned elsewhere, it must obtain that capability through `ctx` (or a request/route context built from `ctx`) instead of importing another component's internals or receiving ad-hoc side-channel references.
+
+- Register exported capabilities through `ctx.capabilities`.
+- Consume capabilities by querying `ctx`/`ctx.capabilities`, including optional dependency checks.
+- Use `ctx` to detect whether another component is present; do not hardcode adapter-to-adapter imports for availability checks.
+- When a subsystem exposes multiple provider tracks or outputs, model that selection through capabilities and ctx-backed contracts rather than hardcoded branches.
+
 ### Each gateway is the sole authority for its adapter type
 
 A gateway is the only component that may interact directly with its adapters. No route handler, service, or utility outside a gateway may hold a reference to a concrete adapter instance or call its methods directly. All capabilities of an adapter must be obtained by calling methods on the owning gateway. Passing a raw adapter instance around (e.g. `smtpSender`, a raw DB driver, a concrete auth client) anywhere outside the gateway violates this principle and must never be introduced.
@@ -42,6 +51,10 @@ inside `src/api/*` contracts). If behavior or metadata is cross-cutting, define
 it in a neutral contract location and let gateways consume or re-export it.
 When a capability is truly gateway-specific, depend on that gateway's declared
 surface instead of duplicating gateway knowledge in core code.
+
+### Route auth must be injected through route context
+
+Core API route factories and module extension routers must receive auth/request helpers through a route context assembled from `ctx` capabilities. Route files must not import auth gateway internals directly; they consume `requireAuth`, session lookups, token lookups, and similar helpers through the injected route context.
 
 ### Module CLI controls
 

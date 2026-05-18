@@ -8,11 +8,11 @@ import type {
 } from "../../../gateways/social/gateway.js";
 import { DbMessagesStore } from "./store.js";
 import { createMessagesRoutes } from "./routes.js";
-import {
-    getCookieSession,
-    setPageSecurityHeaders,
-} from "../../../gateways/auth/guard.js";
 import type { DbProfileStore } from "../profile/store.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../api/reuse/route-context.js";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -34,7 +34,11 @@ export function createSocialAdapter(): SocialAdapter {
  * same `messages.html` template; client-side routing inside the SPA picks
  * the room from the URL.
  */
-function createMessagesPageRoutes(isAdapterEnabled: () => boolean) {
+function createMessagesPageRoutes(
+    routeContext: RouteContext | undefined,
+    isAdapterEnabled: () => boolean,
+) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -48,7 +52,7 @@ function createMessagesPageRoutes(isAdapterEnabled: () => boolean) {
         ) {
             return false;
         }
-        if (!getCookieSession(req)) {
+        if (!ctx.getCookieSession(req)) {
             res.writeHead(302, { location: "/login" });
             res.end();
             return true;
@@ -57,7 +61,7 @@ function createMessagesPageRoutes(isAdapterEnabled: () => boolean) {
             const file = await readFile(
                 path.join(ADAPTER_UI_ROOT, "index.html"),
             );
-            setPageSecurityHeaders(res);
+            ctx.setPageSecurityHeaders(res);
             res.writeHead(200, {
                 "content-type": "text/html; charset=utf-8",
                 "cache-control": "no-store",
@@ -93,6 +97,8 @@ function createMessagesPageRoutes(isAdapterEnabled: () => boolean) {
 export async function bootstrapSocialAdapter(
     ctx: SocialAdapterBootstrapCtx,
 ): Promise<void> {
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
     const profileStore = ctx.capabilities.get<DbProfileStore>(
         "social:profileStore",
     );
@@ -104,7 +110,8 @@ export async function bootstrapSocialAdapter(
         );
         return;
     }
-    if (!ctx.dbExecutor) {
+    const dbExecutor = ctx.capabilities.get("db:executor") ?? ctx.dbExecutor;
+    if (!dbExecutor) {
         ctx.log?.(
             "warn",
             "Messages adapter: no database executor available — messages disabled.",
@@ -113,7 +120,7 @@ export async function bootstrapSocialAdapter(
         return;
     }
 
-    const messagesStore = new DbMessagesStore(ctx.dbExecutor);
+    const messagesStore = new DbMessagesStore(dbExecutor);
     await messagesStore.ensureSchema();
     ctx.log?.("info", "Messages adapter: schema ready.", {
         component: "social-messages-adapter",
@@ -139,6 +146,10 @@ export async function bootstrapSocialAdapter(
         registerCategory("messages", "Private Messages");
     }
 
+    /**
+     * social:messages:onProfileChanged — propagates profile updates into room
+     * event history.
+     */
     ctx.capabilities.contribute(
         "social:messages:onProfileChanged",
         async (input: {
@@ -176,6 +187,10 @@ export async function bootstrapSocialAdapter(
         },
     );
 
+    /**
+     * social:messages:resolveGroupChatUrl — resolves or creates a reusable
+     * group-chat URL for participants.
+     */
     ctx.capabilities.contribute(
         "social:messages:resolveGroupChatUrl",
         async (input: {
@@ -269,12 +284,13 @@ export async function bootstrapSocialAdapter(
             profileStore,
             dispatch: dispatch ?? null,
             isAdapterEnabled: () => ctx.isGatewayEnabled(),
+            routeContext,
         }),
         "social",
     );
 
     ctx.registerRoute(
-        createMessagesPageRoutes(() => ctx.isGatewayEnabled()),
+        createMessagesPageRoutes(routeContext, () => ctx.isGatewayEnabled()),
         "social",
     );
 

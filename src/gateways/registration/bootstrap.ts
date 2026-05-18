@@ -2,11 +2,7 @@ import path from "node:path";
 import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
-    getAuthClaims,
-    getCookieSession,
     readJson,
-    requireAuth,
-    setPageSecurityHeaders,
     type GatewayBootstrapContext,
     type GatewayRegistry,
 } from "../shared.js";
@@ -18,6 +14,10 @@ import {
     parseSecuritySettings,
     SECURITY_SETTINGS_KEY,
 } from "../../api/reuse/security-settings.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../api/reuse/route-context.js";
 import { CoreRegistrationGateway } from "./gateway.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
@@ -52,8 +52,13 @@ function redeemInviteErrorStatus(code: string): number {
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const dbExecutor = (ctx.capabilities.get<DbExecutor>("db:executor") ??
-        ctx.dbExecutor)!;
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
+    const dbExecutor =
+        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
+    if (!dbExecutor) {
+        throw new Error("db_executor_unavailable");
+    }
     const accountStore =
         ctx.capabilities.get<LocalAccountStore>("auth:accountStore");
     if (!accountStore) return;
@@ -140,10 +145,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             getTrustedDomains,
             isGatewayEnabled,
             ctx.log,
+            routeContext,
         ),
         "registration",
     );
-    ctx.routeRegistry.register(createRegistrationPageRoutes(), "registration");
+    ctx.routeRegistry.register(
+        createRegistrationPageRoutes(routeContext),
+        "registration",
+    );
     ctx.log?.("info", "Registration gateway routes registered.", {
         component: "registration-gateway",
     });
@@ -172,10 +181,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         isEnabled: () => isGatewayEnabled() && gateway.isPublicEnabled(),
     });
 
+    /**
+     * registration:public:isEnabled — reports whether public self-registration
+     * is currently available.
+     */
     ctx.capabilities.contribute(
         "registration:public:isEnabled",
         () => isGatewayEnabled() && gateway.isPublicEnabled(),
     );
+    /**
+     * registration:public:register — public self-registration entry point
+     * exported for auth/UI consumers.
+     */
     ctx.capabilities.contribute(
         "registration:public:register",
         async (input: {
@@ -194,6 +211,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             "registration",
             gateway,
             ctx.gatewayRegistry,
+            routeContext,
         ),
         "registration",
     );
@@ -201,7 +219,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.1.4",
+        version: "1.1.6",
         description:
             "Registration workflows via pluggable invite/public adapters.",
         publisher: "Cognis Labs",
@@ -213,7 +231,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 }
 
-export function createRegistrationPageRoutes() {
+export function createRegistrationPageRoutes(routeContext?: RouteContext) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -225,7 +244,7 @@ export function createRegistrationPageRoutes() {
             const file = await readFile(
                 path.join(PUBLIC_ROOT, "pages", "register.html"),
             );
-            setPageSecurityHeaders(res);
+            ctx.setPageSecurityHeaders(res);
             res.writeHead(200, {
                 "content-type": "text/html; charset=utf-8",
                 "cache-control": "no-store",
@@ -250,13 +269,15 @@ export function createRegistrationRoutes(
     getTrustedDomains: () => Promise<string[]> = async () => [],
     isGatewayEnabled: () => boolean = () => true,
     log?: GatewayBootstrapContext["log"],
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const claims = getAuthClaims(req);
+        const claims = ctx.getAuthClaims(req);
         const logMeta = {
             component: "registration-gateway",
             method: req.method ?? "GET",
@@ -286,7 +307,7 @@ export function createRegistrationRoutes(
             url.pathname === "/api/v1/registration/state" &&
             req.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             log?.("debug", "Read registration state.", {
                 ...logMeta,
@@ -444,7 +465,7 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const isPrivilegedRole =
                 claims.role === "admin" || claims.role === "owner";
@@ -495,7 +516,7 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const isPrivilegedRole =
                 claims.role === "admin" || claims.role === "owner";
@@ -597,7 +618,7 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const tokenId = decodeURIComponent(revokeMatch[1]);
             const isPrivilegedRole =
@@ -673,7 +694,7 @@ export function createRegistrationRoutes(
                 res.end();
                 return true;
             }
-            const session = getCookieSession(req);
+            const session = ctx.getCookieSession(req);
             if (!session) {
                 res.writeHead(302, { location: "/login" });
                 res.end();
@@ -692,7 +713,9 @@ function createGatewayAdapterRoutes(
     gatewayId: string,
     gateway: CoreRegistrationGateway,
     gatewayRegistry: GatewayRegistry,
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
 
     return async (
@@ -701,7 +724,7 @@ function createGatewayAdapterRoutes(
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname === base && req.method === "GET") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: gateway.listAdapters() }));
             return true;
@@ -711,7 +734,7 @@ function createGatewayAdapterRoutes(
             new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
         );
         if (toggleMatch && req.method === "POST") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(toggleMatch[1]);
             const action = toggleMatch[2] as "enable" | "disable";
             const known = gateway
@@ -761,7 +784,7 @@ function createGatewayAdapterRoutes(
             new RegExp(`^${base}/([^/]+)/config$`),
         );
         if (configMatch && req.method === "GET") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(configMatch[1]);
             const adapter = gateway
                 .listAdapters()

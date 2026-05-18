@@ -2,8 +2,11 @@ import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
-import { requireAuth } from "../auth/guard.js";
 import { readJson } from "../../api/reuse/read-json.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../api/reuse/route-context.js";
 import { DbAdapterConfigStore } from "./adapter-config-store.js";
 import { CoreSocialGateway } from "./gateway.js";
 
@@ -22,7 +25,9 @@ function createSocialAdapterRoutes(
     gatewayId: string,
     gateway: CoreSocialGateway,
     gatewayRegistry: GatewayBootstrapContext["gatewayRegistry"],
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
 
     return async (
@@ -31,7 +36,7 @@ function createSocialAdapterRoutes(
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname === base && req.method === "GET") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: gateway.listAdapters() }));
             return true;
@@ -41,7 +46,7 @@ function createSocialAdapterRoutes(
             new RegExp(`^${base}/([^/]+)/config$`),
         );
         if (configMatch) {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(configMatch[1]);
 
             if (req.method === "GET") {
@@ -100,7 +105,7 @@ function createSocialAdapterRoutes(
             new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
         );
         if (toggleMatch && req.method === "POST") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(toggleMatch[1]);
             const action = toggleMatch[2] as "enable" | "disable";
             const adapter = gateway.getAdapter(adapterId);
@@ -150,8 +155,13 @@ function createSocialAdapterRoutes(
  * Standard gateway bootstrap entry point for the Social Gateway.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
     const dbExecutor =
         ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
+    if (!dbExecutor) {
+        throw new Error("db_executor_unavailable");
+    }
     const configStore = new DbAdapterConfigStore(dbExecutor);
     await configStore.ensureSchema();
 
@@ -194,14 +204,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.routeRegistry.register(
-        createSocialAdapterRoutes("social", gateway, ctx.gatewayRegistry),
+        createSocialAdapterRoutes(
+            "social",
+            gateway,
+            ctx.gatewayRegistry,
+            routeContext,
+        ),
         "social",
     );
 
     ctx.gatewayRegistry.register({
         id: "social",
         name: "Social Gateway",
-        version: "1.2.1",
+        version: "1.2.3",
         description: "Profiles, social graph, posts, and messaging.",
         publisher: "Cognis Labs",
         hasAdapters: true,

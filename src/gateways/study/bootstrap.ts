@@ -3,12 +3,11 @@ import { fileURLToPath } from "node:url";
 import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
-import {
-    requireAuth,
-    getCookieSession,
-    setPageSecurityHeaders,
-} from "../auth/guard.js";
 import { readJson } from "../../api/reuse/read-json.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../api/reuse/route-context.js";
 import { CoreStudyGateway } from "./gateway.js";
 
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -33,7 +32,9 @@ function createStudyAdapterRoutes(
     gatewayId: string,
     gateway: CoreStudyGateway,
     isLanguageEnabled: (languageCode: string) => Promise<boolean>,
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
 
     return async (
@@ -42,7 +43,7 @@ function createStudyAdapterRoutes(
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname === base && req.method === "GET") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: gateway.listAdapters() }));
             return true;
@@ -52,7 +53,7 @@ function createStudyAdapterRoutes(
             /^\/api\/v1\/study\/languages\/([^/]+)\/modules$/,
         );
         if (modulesMatch && req.method === "GET") {
-            const claims = requireAuth(req, res);
+            const claims = ctx.requireAuth(req, res);
             if (!claims) return true;
             const languageCode = decodeURIComponent(modulesMatch[1]);
             const languageIsEnabled = await isLanguageEnabled(languageCode);
@@ -74,7 +75,7 @@ function createStudyAdapterRoutes(
             new RegExp(`^${base}/([^/]+)/config$`),
         );
         if (configMatch) {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(configMatch[1]);
 
             if (req.method === "GET") {
@@ -137,6 +138,9 @@ function createStudyAdapterRoutes(
  * Standard gateway bootstrap entry point for the Study Gateway.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
+    const routeHelpers = resolveRouteContext(routeContext);
     const gateway = new CoreStudyGateway();
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
 
@@ -160,6 +164,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ): void => {
         gateway.setLanguageModuleEnabled(moduleId, enabled);
     };
+    /**
+     * modules:onStateChanged — keeps study language module availability
+     * synchronized with runtime module state changes.
+     */
     ctx.capabilities.contribute(
         "modules:onStateChanged",
         syncModuleEnabledState,
@@ -218,6 +226,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             dbExecutor: ctx.capabilities.get("db:executor") ?? ctx.dbExecutor,
         }),
         gateway.bootstrapLanguageModules(LANGUAGE_MODULES_ROOT, {
+            capabilities: ctx.capabilities,
             registerChildRoute: (handler) =>
                 ctx.routeRegistry.register(handler, "study"),
             registerStaticDir: (prefix, dir) => {
@@ -257,12 +266,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             url.pathname !== "/study/settings"
         )
             return false;
-        if (!getCookieSession(req)) {
+        if (!routeHelpers.getCookieSession(req)) {
             res.writeHead(302, { location: "/login" });
             res.end();
             return true;
         }
-        setPageSecurityHeaders(res);
+        routeHelpers.setPageSecurityHeaders(res);
         const html = await readFile(
             path.join(GATEWAY_ROOT, "ui", "study.html"),
             "utf8",
@@ -283,7 +292,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             req.method !== "GET"
         )
             return false;
-        const claims = requireAuth(req, res);
+        const claims = routeHelpers.requireAuth(req, res);
         if (!claims) return true;
         const languages = gateway
             .listRegisteredLanguageModules()
@@ -313,7 +322,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.5.2",
+        version: "1.5.4",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",

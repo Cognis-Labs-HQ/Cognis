@@ -7,13 +7,12 @@ import type {
     LanguageChildComponent,
     LanguageModuleBootstrapCtx,
 } from "../../../../gateways/study/gateway.js";
-import {
-    getCookieSession,
-    requireAuth,
-    setPageSecurityHeaders,
-} from "../../../../gateways/auth/guard.js";
 import { readJson } from "../../../../api/reuse/read-json.js";
 import { jsonOk, jsonError } from "../../../../api/reuse/json-responses.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../../api/reuse/route-context.js";
 import {
     LanguageLibraryStore,
     type LibraryLayerName,
@@ -75,7 +74,7 @@ class EnglishLanguageModule implements LanguageModule {
     readonly languageCode = "en";
     readonly languageName = "English";
     readonly languageFlag = "🇬🇧";
-    readonly version = "1.2.0";
+    readonly version = "1.2.1";
 
     listChildComponents(): LanguageChildComponent[] {
         return CHILD_COMPONENTS;
@@ -86,7 +85,8 @@ function isLibraryLayerName(layerName: string): layerName is LibraryLayerName {
     return LIBRARY_LAYERS.includes(layerName as LibraryLayerName);
 }
 
-function createAlphabetPageRoute() {
+function createAlphabetPageRoute(routeContext: RouteContext | undefined) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -94,12 +94,12 @@ function createAlphabetPageRoute() {
     ): Promise<boolean> => {
         if (req.method && req.method !== "GET") return false;
         if (url.pathname !== ALPHABET_PAGE_URL) return false;
-        if (!getCookieSession(req)) {
+        if (!ctx.getCookieSession(req)) {
             res.writeHead(302, { location: "/login" });
             res.end();
             return true;
         }
-        setPageSecurityHeaders(res);
+        ctx.setPageSecurityHeaders(res);
         const htmlPath = path.join(
             MODULE_ROOT,
             "components",
@@ -114,7 +114,8 @@ function createAlphabetPageRoute() {
     };
 }
 
-function createLibraryPageRoute() {
+function createLibraryPageRoute(routeContext: RouteContext | undefined) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -122,7 +123,7 @@ function createLibraryPageRoute() {
     ): Promise<boolean> => {
         if (req.method && req.method !== "GET") return false;
         if (url.pathname !== LIBRARY_PAGE_URL) return false;
-        const session = getCookieSession(req);
+        const session = ctx.getCookieSession(req);
         if (!session) {
             res.writeHead(302, { location: "/login" });
             res.end();
@@ -133,7 +134,7 @@ function createLibraryPageRoute() {
             res.end("Requires admin scope");
             return true;
         }
-        setPageSecurityHeaders(res);
+        ctx.setPageSecurityHeaders(res);
         const htmlPath = path.join(
             MODULE_ROOT,
             "components",
@@ -148,7 +149,8 @@ function createLibraryPageRoute() {
     };
 }
 
-function createClassroomPageRoute() {
+function createClassroomPageRoute(routeContext: RouteContext | undefined) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -156,12 +158,12 @@ function createClassroomPageRoute() {
     ): Promise<boolean> => {
         if (req.method && req.method !== "GET") return false;
         if (url.pathname !== CLASSROOM_PAGE_URL) return false;
-        if (!getCookieSession(req)) {
+        if (!ctx.getCookieSession(req)) {
             res.writeHead(302, { location: "/login" });
             res.end();
             return true;
         }
-        setPageSecurityHeaders(res);
+        ctx.setPageSecurityHeaders(res);
         const htmlPath = path.join(
             MODULE_ROOT,
             "components",
@@ -176,7 +178,8 @@ function createClassroomPageRoute() {
     };
 }
 
-function createLibraryApiRoute() {
+function createLibraryApiRoute(routeContext: RouteContext | undefined) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -186,7 +189,7 @@ function createLibraryApiRoute() {
             return false;
         }
 
-        const claims = requireAuth(req, res, "user");
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
 
         if (!libraryStore) {
@@ -341,6 +344,8 @@ export function createLanguageModule(): LanguageModule {
 export async function bootstrapLanguageModule(
     ctx: LanguageModuleBootstrapCtx,
 ): Promise<void> {
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
     libraryStore = new LanguageLibraryStore({
         moduleRoot: MODULE_ROOT,
         languageCode: "en",
@@ -348,10 +353,10 @@ export async function bootstrapLanguageModule(
     });
     await libraryStore.initialise();
 
-    ctx.registerChildRoute(createAlphabetPageRoute());
-    ctx.registerChildRoute(createLibraryPageRoute());
-    ctx.registerChildRoute(createClassroomPageRoute());
-    ctx.registerChildRoute(createLibraryApiRoute());
+    ctx.registerChildRoute(createAlphabetPageRoute(routeContext));
+    ctx.registerChildRoute(createLibraryPageRoute(routeContext));
+    ctx.registerChildRoute(createClassroomPageRoute(routeContext));
+    ctx.registerChildRoute(createLibraryApiRoute(routeContext));
 
     ctx.registerStaticDir(
         "modules/study/languages/reuse",

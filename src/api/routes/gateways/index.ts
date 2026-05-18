@@ -1,4 +1,3 @@
-import { requireAuth } from "../../../gateways/auth/guard.js";
 import {
     isRoleAllowed,
     type BootstrapLog,
@@ -6,6 +5,10 @@ import {
 } from "@cognis/core";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { UIRegistry } from "../../ui-registry.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../reuse/route-context.js";
 
 /**
  * Creates route handlers for the gateway management API.
@@ -24,7 +27,9 @@ export function createGatewayRoutes(
         enabled: boolean,
     ) => Promise<void>,
     log?: BootstrapLog,
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -36,7 +41,7 @@ export function createGatewayRoutes(
             path: url.pathname,
         };
         if (url.pathname === "/api/v1/gateways" && req.method === "GET") {
-            const claims = requireAuth(req, res, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             log?.("debug", "Listed gateways.", {
                 ...logMeta,
@@ -49,7 +54,7 @@ export function createGatewayRoutes(
         }
 
         if (url.pathname === "/api/v1/admin/sections" && req.method === "GET") {
-            const claims = requireAuth(req, res, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const sections = (uiRegistry?.listAdminSections() ?? []).filter(
                 (section) => isRoleAllowed(claims.role, section.access),
@@ -68,7 +73,7 @@ export function createGatewayRoutes(
             /^\/api\/v1\/gateways\/([^/]+)$/,
         );
         if (singleMatch && req.method === "GET") {
-            const claims = requireAuth(req, res, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const id = decodeURIComponent(singleMatch[1]);
             const manifest = registry.get(id);
@@ -104,7 +109,7 @@ export function createGatewayRoutes(
             /^\/api\/v1\/gateways\/([^/]+)\/(enable|disable)$/,
         );
         if (actionMatch && req.method === "POST") {
-            const claims = requireAuth(req, res, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const id = decodeURIComponent(actionMatch[1]);
             const action = actionMatch[2] as "enable" | "disable";

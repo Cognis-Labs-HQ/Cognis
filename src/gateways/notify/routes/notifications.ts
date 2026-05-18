@@ -1,12 +1,11 @@
-import {
-    requireAuth,
-    getAuthClaims,
-    canAccessUserData,
-    isAccessRole,
-} from "../../auth/guard.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../api/reuse/read-json.js";
 import { isTrustedHttpUrl } from "../../../api/reuse/security-settings.js";
+import { isAccessRole } from "@cognis/core";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../api/reuse/route-context.js";
 import type { CoreNotificationGateway } from "../gateway.js";
 import type {
     NotificationBroadcastDisplayMode,
@@ -196,8 +195,10 @@ export function createNotificationRoutes(
     notifStore?: NotificationPreferenceRouteStore,
     options?: {
         getTrustedDomains?: () => Promise<string[]>;
+        routeContext?: RouteContext;
     },
 ) {
+    const ctx = resolveRouteContext(options?.routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -207,7 +208,7 @@ export function createNotificationRoutes(
             url.pathname === "/api/v1/notifications/send" &&
             req.method === "POST"
         ) {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
 
             const body = await readJson(req);
             const category = String(body.category ?? "");
@@ -251,7 +252,7 @@ export function createNotificationRoutes(
             url.pathname === "/api/v1/notifications/providers" &&
             req.method === "GET"
         ) {
-            if (!requireAuth(req, res, "user")) return true;
+            if (!ctx.requireAuth(req, res, "user")) return true;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: gateway.listSenders() }));
             return true;
@@ -261,7 +262,7 @@ export function createNotificationRoutes(
             url.pathname === "/api/v1/notifications/categories" &&
             req.method === "GET"
         ) {
-            const claims = getAuthClaims(req);
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
@@ -283,7 +284,7 @@ export function createNotificationRoutes(
             url.pathname === "/api/v1/notifications/broadcasts" &&
             req.method === "GET"
         ) {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             if (!notifStore?.listBroadcasts) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: [] }));
@@ -299,7 +300,7 @@ export function createNotificationRoutes(
             url.pathname === "/api/v1/notifications/broadcasts" &&
             req.method === "POST"
         ) {
-            const claims = requireAuth(req, res, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             if (!notifStore?.createBroadcast) {
                 res.writeHead(503, { "content-type": "application/json" });
@@ -378,7 +379,7 @@ export function createNotificationRoutes(
             /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/(enable|disable)$/,
         );
         if (setBroadcastEnabledMatch && req.method === "POST") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             if (!notifStore?.setBroadcastEnabled) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
@@ -414,7 +415,7 @@ export function createNotificationRoutes(
             /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/states$/,
         );
         if (broadcastStatesMatch && req.method === "GET") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             if (!notifStore?.listBroadcastStates) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: [] }));
@@ -432,7 +433,7 @@ export function createNotificationRoutes(
             url.pathname === "/api/v1/notifications/broadcasts/active" &&
             req.method === "GET"
         ) {
-            const claims = getAuthClaims(req);
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
@@ -464,7 +465,7 @@ export function createNotificationRoutes(
             /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/acknowledge$/,
         );
         if (acknowledgeBroadcastMatch && req.method === "POST") {
-            const claims = getAuthClaims(req);
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
@@ -495,7 +496,7 @@ export function createNotificationRoutes(
             /^\/api\/v1\/notifications\/broadcasts\/([^/]+)\/dismiss$/,
         );
         if (dismissBroadcastMatch && req.method === "POST") {
-            const claims = getAuthClaims(req);
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
@@ -529,7 +530,7 @@ export function createNotificationRoutes(
             const senderId = decodeURIComponent(providerConfigMatch[1]);
 
             if (req.method === "GET") {
-                if (!requireAuth(req, res, "admin")) return true;
+                if (!ctx.requireAuth(req, res, "admin")) return true;
                 const config = gateway.getProviderConfig(senderId);
                 if (config === null) {
                     res.writeHead(404, { "content-type": "application/json" });
@@ -556,7 +557,7 @@ export function createNotificationRoutes(
             }
 
             if (req.method === "PUT") {
-                if (!requireAuth(req, res, "admin")) return true;
+                if (!ctx.requireAuth(req, res, "admin")) return true;
                 const body = await readJson(req);
                 await gateway.saveProviderConfig(
                     senderId,
@@ -574,7 +575,7 @@ export function createNotificationRoutes(
             /^\/api\/v1\/notifications\/providers\/([^/]+)\/test$/,
         );
         if (providerTestMatch && req.method === "POST") {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const senderId = decodeURIComponent(providerTestMatch[1]);
             const body = await readJson(req);
             const to = String(body.to ?? "");
@@ -609,7 +610,7 @@ export function createNotificationRoutes(
         if (userPrefsMatch) {
             const username = decodeURIComponent(userPrefsMatch[1]);
 
-            const claims = getAuthClaims(req);
+            const claims = ctx.getAuthClaims(req);
             if (!claims) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
@@ -622,7 +623,7 @@ export function createNotificationRoutes(
                 );
                 return true;
             }
-            if (!canAccessUserData(claims, username)) {
+            if (!ctx.canAccessUserData(claims, username)) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({

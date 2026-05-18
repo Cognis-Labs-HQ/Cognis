@@ -1,14 +1,18 @@
-import {
-    requireAuth,
-    canAccessUserData,
-} from "../../../../gateways/auth/guard.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson } from "../../../../api/reuse/read-json.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../../api/reuse/route-context.js";
 export type { UserPreferenceStore } from "../../../../api/reuse/preference-store.js";
 export { VolatileUserPreferenceStore } from "../../../../api/reuse/preference-store.js";
 import type { UserPreferenceStore } from "../../../../api/reuse/preference-store.js";
 
-export function createPreferencesRoutes(store: UserPreferenceStore) {
+export function createPreferencesRoutes(
+    store: UserPreferenceStore,
+    routeContext?: RouteContext,
+) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -18,10 +22,10 @@ export function createPreferencesRoutes(store: UserPreferenceStore) {
             /^\/api\/v1\/users\/([^/]+)\/preferences\/([^/]+)$/,
         );
         if (!match) return false;
-        const claims = requireAuth(req, res, "user");
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = decodeURIComponent(match[1]);
-        if (!canAccessUserData(claims, accountId)) {
+        if (!ctx.canAccessUserData(claims, accountId)) {
             res.writeHead(403, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({

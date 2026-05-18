@@ -2,11 +2,11 @@ import { open, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Logger } from "./logger.js";
+import { type BootstrapLog, type GatewayBootstrapContext } from "../shared.js";
 import {
-    requireAuth,
-    type BootstrapLog,
-    type GatewayBootstrapContext,
-} from "../shared.js";
+    resolveRouteContext,
+    type RouteContext,
+} from "../../api/reuse/route-context.js";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -131,7 +131,12 @@ async function readFileChunk(
     }
 }
 
-function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
+function createLoggingRoutes(
+    filePath: string,
+    log?: BootstrapLog,
+    routeContext?: RouteContext,
+) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -141,7 +146,7 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
             return false;
         }
 
-        const claims = requireAuth(req, res, "admin");
+        const claims = ctx.requireAuth(req, res, "admin");
         if (!claims) return true;
 
         const severityThreshold = parseSeverityThreshold(
@@ -320,6 +325,8 @@ function createLoggingRoutes(filePath: string, log?: BootstrapLog) {
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const log = ctx.log;
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
     const level =
         (process.env.LOG_LEVEL as
             | "debug"
@@ -371,7 +378,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             void logger.log(logLevel, message, meta);
         },
     );
-    ctx.routeRegistry.register(createLoggingRoutes(filePath, log), "logging");
+    ctx.routeRegistry.register(
+        createLoggingRoutes(filePath, log, routeContext),
+        "logging",
+    );
 
     const uiDir = path.resolve(
         process.cwd(),
@@ -390,7 +400,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.5.0",
+        version: "1.5.1",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",

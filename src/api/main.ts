@@ -12,13 +12,13 @@ import {
 } from "@cognis/core";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { issueAccessToken } from "../gateways/auth/access-tokens.js";
 import { createHash } from "node:crypto";
 import { RouteRegistry } from "./route-registry.js";
 import { UIRegistry } from "./ui-registry.js";
 import { setAppLogger, writeConsoleLog } from "./logger.js";
 import type { LocalAccountStore } from "./reuse/account-store.js";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
+import type { RouteContext } from "./reuse/route-context.js";
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
 import type { DbDialectHelper } from "../gateways/db/bootstrap.js";
 
@@ -159,24 +159,6 @@ bootstrapLog("info", "Starting Cognis API bootstrap.", { host, port });
 
 const cliTokenPath =
     process.env.COGNIS_CLI_TOKEN_PATH ?? "/app/config/cli-access.token";
-const cliAccessToken = issueAccessToken("cognis-cli", "owner", null);
-try {
-    await mkdir(path.dirname(cliTokenPath), { recursive: true });
-    await writeFile(cliTokenPath, `${cliAccessToken}\n`, { mode: 0o600 });
-    bootstrapLog("info", "CLI access token initialized.", {
-        path: cliTokenPath,
-    });
-} catch (error) {
-    bootstrapLog(
-        "warn",
-        "Failed to persist CLI access token; continuing without file bootstrap token.",
-        {
-            path: cliTokenPath,
-            error: error instanceof Error ? error.message : String(error),
-        },
-    );
-}
-
 const runtime = await InMemoryModuleRuntimeGateway.bootstrap();
 bootstrapLog("info", "Module runtime bootstrapped.");
 
@@ -199,10 +181,39 @@ const requiredGatewayIds = await gatewayService.bootstrap(gatewaysRoot, {
 });
 
 const contributedLog = capabilities.get<BootstrapLog>("logging:log");
+const issueAccessToken = capabilities.get<
+    (
+        subject: string,
+        role: "user" | "teacher" | "moderator" | "admin" | "owner",
+        ttlSeconds: number | null,
+        options?: { issuedAt?: number },
+    ) => string
+>("auth:issueAccessToken");
+if (!issueAccessToken) {
+    throw new Error("auth_issue_access_token_unavailable");
+}
 if (contributedLog) {
     setAppLogger(contributedLog);
 }
 const log = contributedLog ?? bootstrapLog;
+
+const cliAccessToken = issueAccessToken("cognis-cli", "owner", null);
+try {
+    await mkdir(path.dirname(cliTokenPath), { recursive: true });
+    await writeFile(cliTokenPath, `${cliAccessToken}\n`, { mode: 0o600 });
+    log("info", "CLI access token initialized.", {
+        path: cliTokenPath,
+    });
+} catch (error) {
+    log(
+        "warn",
+        "Failed to persist CLI access token; continuing without file bootstrap token.",
+        {
+            path: cliTokenPath,
+            error: error instanceof Error ? error.message : String(error),
+        },
+    );
+}
 
 function logFatalFailure(
     event: "uncaught_exception" | "unhandled_rejection",
@@ -344,6 +355,7 @@ const server = buildServer({
     >("modules:onStateChanged"),
     getModuleCapability: <T>(capabilityId: string) =>
         capabilities.get<T>(capabilityId),
+    routeContext: capabilities.get<RouteContext>("auth:routeContext"),
     loadModuleStates: async () => {
         const result = await dbExecutor.executeCommand({
             option: "SELECT",

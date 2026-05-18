@@ -26,9 +26,12 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth } from "../../../gateways/auth/guard.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import { jsonOk, jsonError } from "../../../api/reuse/json-responses.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../api/reuse/route-context.js";
 import type { DbClassesStore, StudyLanguageRow } from "./store.js";
 
 type SetRole = (username: string, role: "teacher") => Promise<void>;
@@ -55,6 +58,7 @@ export interface ClassesRouteOptions {
         message: string,
         meta?: Record<string, unknown>,
     ) => void;
+    routeContext?: RouteContext;
 }
 
 function normalizeLanguageList(input: unknown): string[] {
@@ -74,6 +78,7 @@ export function createClassesRoutes(
     store: DbClassesStore,
     options: ClassesRouteOptions = {},
 ): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
+    const ctx = resolveRouteContext(options.routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -86,7 +91,7 @@ export function createClassesRoutes(
         };
 
         if (url.pathname === "/api/v1/study/classes" && req.method === "GET") {
-            const claims = requireAuth(req, res, "teacher");
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const languageFilter =
                 url.searchParams.get("language") || undefined;
@@ -102,7 +107,7 @@ export function createClassesRoutes(
             url.pathname === "/api/v1/study/my-classes" &&
             req.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             try {
                 const classes = await store.getEnrolledClasses(claims.sub);
@@ -127,7 +132,7 @@ export function createClassesRoutes(
             url.pathname === "/api/v1/study/available-classes" &&
             req.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             try {
                 const languageCode =
@@ -157,7 +162,7 @@ export function createClassesRoutes(
             url.pathname === "/api/v1/study/preferences" &&
             req.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const prefs = await store.getStudyPreferences(claims.sub);
             jsonOk(res, prefs);
@@ -168,7 +173,7 @@ export function createClassesRoutes(
             url.pathname === "/api/v1/study/preferences" &&
             req.method === "PUT"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const body = (await readJson(req)) as {
                 learningLanguages?: unknown;
@@ -199,7 +204,7 @@ export function createClassesRoutes(
             url.pathname === "/api/v1/study/teacher-requests" &&
             req.method === "POST"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
 
             const body = (await readJson(req)) as {
@@ -288,7 +293,7 @@ export function createClassesRoutes(
             url.pathname === "/api/v1/study/teacher-requests" &&
             req.method === "GET"
         ) {
-            if (!requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(req, res, "admin")) return true;
             const pending = await store.listPendingRequests();
             jsonOk(res, pending);
             return true;
@@ -298,7 +303,7 @@ export function createClassesRoutes(
             /^\/api\/v1\/study\/teacher-requests\/([^/]+)\/(approve|reject)$/,
         );
         if (approveMatch && req.method === "POST") {
-            const claims = requireAuth(req, res, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
 
             const requestId = decodeURIComponent(approveMatch[1]);
@@ -347,7 +352,7 @@ export function createClassesRoutes(
             url.pathname === "/api/v1/study/languages" &&
             req.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const languages = await store.listStudyLanguages(true);
             jsonOk(res, languages);
@@ -358,7 +363,7 @@ export function createClassesRoutes(
             url.pathname === "/api/v1/study/languages" &&
             req.method === "POST"
         ) {
-            const claims = requireAuth(req, res, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const body = (await readJson(req)) as Partial<StudyLanguageRow> & {
                 code?: string;
@@ -383,7 +388,7 @@ export function createClassesRoutes(
             url.pathname === "/api/v1/study/classrooms" &&
             req.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const languageFilter =
                 url.searchParams.get("language") || undefined;
@@ -441,7 +446,7 @@ export function createClassesRoutes(
             /^\/api\/v1\/study\/classrooms\/([^/]+)\/layout$/,
         );
         if (classroomLayoutMatch && req.method === "PATCH") {
-            const claims = requireAuth(req, res, "teacher");
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(classroomLayoutMatch[1]);
             const body = (await readJson(req)) as {
@@ -543,7 +548,7 @@ export function createClassesRoutes(
             /^\/api\/v1\/study\/classrooms\/([^/]+)\/students\/([^/]+)$/,
         );
         if (classroomStudentMatch && req.method === "DELETE") {
-            const claims = requireAuth(req, res, "teacher");
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(classroomStudentMatch[1]);
             const studentAccountId = decodeURIComponent(
@@ -587,7 +592,7 @@ export function createClassesRoutes(
             /^\/api\/v1\/study\/classes\/([^/]+)\/join$/,
         );
         if (joinMatch && req.method === "POST") {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const classId = decodeURIComponent(joinMatch[1]);
             try {
@@ -619,7 +624,7 @@ export function createClassesRoutes(
             /^\/api\/v1\/study\/classes\/([^/]+)\/membership$/,
         );
         if (membershipMatch && req.method === "DELETE") {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const classId = decodeURIComponent(membershipMatch[1]);
             try {
@@ -646,7 +651,7 @@ export function createClassesRoutes(
             /^\/api\/v1\/study\/classes\/([^/]+)\/members$/,
         );
         if (membersMatch && req.method === "GET") {
-            const claims = requireAuth(req, res, "teacher");
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(membersMatch[1]);
             const searchQuery = url.searchParams.get("search") ?? undefined;
@@ -687,7 +692,7 @@ export function createClassesRoutes(
             /^\/api\/v1\/study\/classes\/([^/]+)\/join-requests$/,
         );
         if (joinRequestsMatch && req.method === "GET") {
-            const claims = requireAuth(req, res, "teacher");
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(joinRequestsMatch[1]);
             try {
@@ -726,7 +731,7 @@ export function createClassesRoutes(
             /^\/api\/v1\/study\/classes\/([^/]+)\/invite$/,
         );
         if (inviteMatch && req.method === "POST") {
-            const claims = requireAuth(req, res, "teacher");
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(inviteMatch[1]);
             const body = (await readJson(req)) as Record<string, unknown>;
@@ -788,7 +793,7 @@ export function createClassesRoutes(
             /^\/api\/v1\/study\/classes\/([^/]+)\/join-requests\/([^/]+)\/(approve|reject)$/,
         );
         if (reviewRequestMatch && req.method === "POST") {
-            const claims = requireAuth(req, res, "teacher");
+            const claims = ctx.requireAuth(req, res, "teacher");
             if (!claims) return true;
             const classId = decodeURIComponent(reviewRequestMatch[1]);
             const studentAccountId = decodeURIComponent(reviewRequestMatch[2]);

@@ -88,8 +88,19 @@ export class CapabilityStore {
         this.store.set(key, value);
     }
 
+    has(key: string): boolean {
+        return this.store.has(key);
+    }
+
     get<T>(key: string): T | undefined {
         return this.store.get(key) as T | undefined;
+    }
+
+    require<T>(key: string): T {
+        if (!this.store.has(key)) {
+            throw new Error(`Required capability "${key}" is not available.`);
+        }
+        return this.store.get(key) as T;
     }
 }
 
