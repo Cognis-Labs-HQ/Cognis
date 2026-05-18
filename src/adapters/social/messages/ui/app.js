@@ -374,29 +374,14 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
                     room.unread > 0 && !isActive
                         ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
                         : "";
-                const pendingRequest = room.pendingRequest ?? null;
-                const canRespondInSidebar =
-                    pendingRequest &&
-                    pendingRequest.direction === "incoming" &&
-                    pendingRequest.canRespond &&
-                    pendingRequest.id;
-                const pendingClass = canRespondInSidebar
-                    ? " messages-room--pending"
-                    : "";
                 const archivedClass = room.isArchived
                     ? " messages-room--archived"
-                    : "";
-                const pendingActions = canRespondInSidebar
-                    ? `<span class="messages-room-request-actions" data-request-id="${escapeHtml(pendingRequest.id)}">
-                    <button type="button" class="messages-room-request-approve" aria-label="${escapeHtml(i18n.t("module.social.messages.approve_request"))}">${escapeHtml(i18n.t("module.social.messages.approve_request"))}</button>
-                    <button type="button" class="messages-room-request-reject" aria-label="${escapeHtml(i18n.t("module.social.messages.reject_request"))}">${escapeHtml(i18n.t("module.social.messages.reject_request"))}</button>
-                </span>`
                     : "";
                 const archivedHint = room.isArchived
                     ? `<span class="messages-room-archived-hint">${escapeHtml(i18n.t("module.social.messages.archived_locked"))}</span>`
                     : "";
                 return `
-      <li class="messages-room ${isActive ? "messages-room--active" : ""}${pendingClass}${archivedClass}"
+      <li class="messages-room ${isActive ? "messages-room--active" : ""}${archivedClass}"
           data-room-id="${escapeHtml(room.id)}">
         ${avatar}
         <span class="messages-room-meta">
@@ -405,7 +390,6 @@ function renderRoomList(rooms, currentAccountId, selectedRoomId, i18n) {
             ${archivedHint}
         </span>
         ${unreadBadge}
-        ${pendingActions}
       </li>
     `;
             })
@@ -1704,29 +1688,6 @@ export async function mount(root, { signal } = {}) {
         const roomsList = document.getElementById("messages-rooms-list");
         if (roomsList) void hydrateProfileAvatars(roomsList);
         roomsList?.addEventListener("click", async (clickEvent) => {
-            const requestActionButton = clickEvent.target.closest(
-                ".messages-room-request-approve, .messages-room-request-reject",
-            );
-            if (requestActionButton) {
-                clickEvent.preventDefault();
-                clickEvent.stopPropagation();
-                const roomItem = clickEvent.target.closest("[data-room-id]");
-                const roomId = roomItem?.getAttribute("data-room-id");
-                const requestId = clickEvent.target
-                    .closest("[data-request-id]")
-                    ?.getAttribute("data-request-id");
-                if (!requestId || !roomId) return;
-                if (
-                    requestActionButton.classList.contains(
-                        "messages-room-request-approve",
-                    )
-                ) {
-                    await respondToPendingRequest(requestId, "approve", roomId);
-                    return;
-                }
-                await respondToPendingRequest(requestId, "reject", roomId);
-                return;
-            }
             const item = clickEvent.target.closest("[data-room-id]");
             if (!item) return;
             const id = item.getAttribute("data-room-id");
