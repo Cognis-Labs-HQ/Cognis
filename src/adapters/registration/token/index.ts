@@ -374,7 +374,13 @@ export function createAdapter(deps: {
         );
         if (!inviterStillExists) throw new Error("inviter_not_found");
 
-        const created = await accountStore.register(username, password, false);
+        const displayName = input.displayName?.trim() || undefined;
+        const created = await accountStore.register(
+            username,
+            password,
+            "user",
+            displayName,
+        );
         try {
             await upsertVerifiedPrimaryEmail(
                 created.username,
@@ -384,7 +390,6 @@ export function createAdapter(deps: {
             await rollbackCreatedAccount(created.username);
             throw error;
         }
-        const displayName = input.displayName?.trim();
         if (displayName) {
             await dbExecutor.executeCommand({
                 option: "UPDATE",
@@ -403,7 +408,7 @@ export function createAdapter(deps: {
             created.username,
             created.username,
             "user",
-            displayName || undefined,
+            displayName,
         );
 
         const nowIso = new Date().toISOString();
