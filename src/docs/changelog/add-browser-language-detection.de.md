@@ -18,6 +18,12 @@ Sobald ein Nutzer seine Sprachpriorität manuell anpasst, gilt diese Reihenfolge
 als maßgeblich. Neu unterstützte Sprachen bleiben in „Verfügbar“, und spätere
 Änderungen der Browser-/System-Sprachreihenfolge mischen die App nicht mehr um.
 
+Auf der Seite Einstellungen → Sprachen ermöglicht die Schaltfläche „Mit Browser
+synchronisieren“, die Prioritätsliste jederzeit an die aktuelle Sprachreihenfolge
+des Browsers anzupassen. Ein Klick darauf stellt die bevorzugten Sprachen
+entsprechend ein und setzt den Prioritätsmodus auf „automatisch“ zurück, sodass
+spätere Browser-Änderungen wieder automatisch übernommen werden.
+
 ## Geänderte Komponenten und Dateien
 
 - `src/ui/reuse/i18n.js`
@@ -25,6 +31,7 @@ als maßgeblich. Neu unterstützte Sprachen bleiben in „Verfügbar“, und sp�
 - `src/ui/app/settings/language-prefs.js`
 - `src/ui/app/register/index.js`
 - `src/ui/tests/browser-language-detection.test.js`
+- `src/ui/languages/*/strings.xml`
 
 ## Commits
 

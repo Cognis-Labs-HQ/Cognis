@@ -360,6 +360,7 @@ export async function mount(root, { signal } = {}) {
                         label: i18n.t("ui.app.settings.preferred_languages"),
                         render: () => `
             <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
+            <button id="pref-language-sync-from-browser" type="button" class="btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
             <table id="preferred-languages" class="language-table"></table>
           `,
                     },
@@ -377,6 +378,13 @@ export async function mount(root, { signal } = {}) {
                         languagePrefs.init();
                     } else {
                         languagePrefs.renderTables();
+                    }
+                    const syncButton = root.querySelector(
+                        "#pref-language-sync-from-browser",
+                    );
+                    if (syncButton) {
+                        syncButton.onclick = () =>
+                            languagePrefs?.syncFromBrowser();
                     }
                 },
             },
@@ -528,7 +536,7 @@ export async function mount(root, { signal } = {}) {
                     languagePrefs?.getPriority() ?? languagePriority,
                 languagePriorityMode:
                     languagePrefs?.isDirty() === true
-                        ? "manual"
+                        ? (languagePrefs.getPendingMode() ?? "manual")
                         : loadedPrefs?.languagePriorityMode === "manual"
                           ? "manual"
                           : storedLanguagePriorityMode,

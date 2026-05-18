@@ -280,6 +280,7 @@
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">利用可能な言語</string>
   <string name="ui.app.settings.preferred_languages">優先言語</string>
+  <string name="ui.app.settings.sync_from_browser">ブラウザーから同期</string>
   <string name="ui.reuse.edit_layout">レイアウトを編集</string>
   <string name="ui.reuse.elements">要素</string>
   <string name="ui.reuse.all_elements_visible">すべての要素が表示されています。</string>

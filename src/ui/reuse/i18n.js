@@ -12,6 +12,7 @@
  * - applyDocumentTitle(i18n, key)    — sets document.title from a locale key.
  * - readPreferredLanguages()         — returns runtime language priority using browser/system
  *                                      order until the user manually customizes language priority.
+ * - readBrowserLocales()             — returns the normalized locale codes from the browser/system.
  * - setPreferredLanguages(languages) — persists a language-priority array to localStorage + cookie,
  *                                      optionally marking it as a manual override.
  *
@@ -153,6 +154,10 @@ export function buildLanguagePriority(
             ? storedLanguages || []
             : [...(browserLanguages || []), ...(storedLanguages || [])],
     );
+}
+
+export function readBrowserLocales() {
+    return detectBrowserLocales();
 }
 
 export function readPreferredLanguages() {

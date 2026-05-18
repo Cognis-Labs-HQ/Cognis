@@ -1,5 +1,8 @@
 import { apiFetch } from "../../reuse/api-client.js";
-import { sanitizeLanguagePriority } from "../../reuse/i18n.js";
+import {
+    sanitizeLanguagePriority,
+    readBrowserLocales,
+} from "../../reuse/i18n.js";
 
 async function loadLanguagesCatalog() {
     const response = await apiFetch("/api/v1/system/languages");
@@ -15,6 +18,7 @@ export function initLanguagePrefs(
     let languagePriority = [...initialPriority];
     let savedPriority = [...initialPriority];
     let catalog = [];
+    let pendingMode = null;
 
     function getSupportedLanguageCodes() {
         return catalog.map((item) => item.iso_code);
@@ -186,6 +190,7 @@ export function initLanguagePrefs(
         );
         renderTables();
         notifyDirty();
+        pendingMode = "manual";
     }
 
     let dragLanguage = null;
@@ -230,10 +235,12 @@ export function initLanguagePrefs(
 
     function commit() {
         savedPriority = [...languagePriority];
+        pendingMode = null;
     }
 
     function discard() {
         languagePriority = [...savedPriority];
+        pendingMode = null;
         renderTables();
         notifyDirty();
     }
@@ -256,6 +263,16 @@ export function initLanguagePrefs(
     return {
         init,
         renderTables,
+        syncFromBrowser() {
+            languagePriority = sanitizeLanguagePriority(
+                readBrowserLocales(),
+                getSupportedLanguageCodes(),
+            );
+            renderTables();
+            notifyDirty();
+            pendingMode = "auto";
+        },
+        getPendingMode: () => pendingMode,
         getPriority: () => languagePriority,
         isDirty: () =>
             JSON.stringify(languagePriority) !== JSON.stringify(savedPriority),

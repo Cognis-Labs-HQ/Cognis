@@ -280,6 +280,7 @@
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Bahasa tersedia</string>
   <string name="ui.app.settings.preferred_languages">Bahasa prioritas</string>
+  <string name="ui.app.settings.sync_from_browser">Sinkronkan dari browser</string>
   <string name="ui.reuse.edit_layout">Edit Tata Letak</string>
   <string name="ui.reuse.elements">Elemen</string>
   <string name="ui.reuse.all_elements_visible">Semua elemen ditampilkan.</string>

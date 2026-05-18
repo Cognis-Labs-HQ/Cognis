@@ -15,6 +15,11 @@ Once a user manually customizes their language priority order, that order is
 treated as authoritative. Newly supported languages stay in Available, and
 later browser/system language-order changes no longer reshuffle the app.
 
+A "Sync from browser" button on the Settings → Languages page lets users bring
+their priority back in line with the current browser language order at any time.
+Clicking it re-syncs the preferred list to browser languages and resets the
+priority mode to auto so future browser changes are reflected again.
+
 ## Changed files/components
 
 - `src/ui/reuse/i18n.js`
@@ -22,6 +27,7 @@ later browser/system language-order changes no longer reshuffle the app.
 - `src/ui/app/settings/language-prefs.js`
 - `src/ui/app/register/index.js`
 - `src/ui/tests/browser-language-detection.test.js`
+- `src/ui/languages/*/strings.xml`
 
 ## Commits
 
