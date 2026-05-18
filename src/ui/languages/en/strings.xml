@@ -41,6 +41,7 @@
   <string name="ui.reuse.reset">Reset</string>
   <string name="ui.reuse.reset_draft">Reset Draft</string>
   <string name="ui.reuse.refresh">Refresh</string>
+  <string name="ui.reuse.connection_lost_refresh_prompt">Connection Interrupted. Please Refresh the Page.</string>
   <string name="ui.reuse.loading">Loading…</string>
   <string name="ui.reuse.followers">followers</string>
   <string name="ui.reuse.following">following</string>

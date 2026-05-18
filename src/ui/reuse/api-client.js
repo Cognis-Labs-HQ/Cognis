@@ -10,6 +10,40 @@
  * @param {RequestInit} [options]
  * @returns {Promise<Response>}
  */
+import { showToast } from "./toast.js";
+
+const RETRYABLE_SERVER_STATUS_CODES = new Set([502, 503, 504]);
+
+let connectionRecoveryPrompt = "";
+let didShowConnectionRecoveryToast = false;
+
+export function configureConnectionRecoveryPrompt(message) {
+    if (typeof message !== "string") return;
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage) return;
+    connectionRecoveryPrompt = trimmedMessage;
+}
+
+function requestTargetsApi(path) {
+    if (typeof path !== "string") return false;
+    if (path.startsWith("/api/")) return true;
+    try {
+        const parsed = new URL(path, window.location.origin);
+        return parsed.pathname.startsWith("/api/");
+    } catch {
+        return false;
+    }
+}
+
+function showConnectionRecoveryToast() {
+    if (didShowConnectionRecoveryToast || !connectionRecoveryPrompt) return;
+    didShowConnectionRecoveryToast = true;
+    showToast(connectionRecoveryPrompt, {
+        variant: "warning",
+        permanent: true,
+    });
+}
+
 export async function apiFetch(path, options = {}) {
     const token = localStorage.getItem("cognis_access_token");
     const headers = {
@@ -18,5 +52,20 @@ export async function apiFetch(path, options = {}) {
     if (token) {
         headers.authorization = `Bearer ${token}`;
     }
-    return fetch(path, { ...options, headers });
+    try {
+        const response = await fetch(path, { ...options, headers });
+        if (
+            token &&
+            requestTargetsApi(path) &&
+            RETRYABLE_SERVER_STATUS_CODES.has(response.status)
+        ) {
+            showConnectionRecoveryToast();
+        }
+        return response;
+    } catch (error) {
+        if (token && requestTargetsApi(path) && error?.name !== "AbortError") {
+            showConnectionRecoveryToast();
+        }
+        throw error;
+    }
 }
