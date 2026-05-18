@@ -125,9 +125,6 @@
   <string name="ui.app.license.page_title">ライセンス</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3 のライセンス条項。</string>
   <string name="ui.app.license.load_error">ライセンステキストを読み込めませんでした。</string>
-  <string name="ui.app.modules.page_title">モジュール概要</string>
-  <string name="ui.app.modules.page_subtitle">インストール済みモジュールを有効化/無効化します。</string>
-  <string name="ui.app.modules.toolbar_subtitle">管理者専用コントロール</string>
   <string name="ui.app.admin.state.active">有効</string>
   <string name="ui.app.admin.state.available">利用可能</string>
   <string name="ui.app.admin.state.disabled">無効</string>
@@ -198,7 +195,6 @@
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
   <string name="ui.page.title.docs">Cognis - Docs</string>
-  <string name="ui.page.title.modules">Cognis - Modules</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.page.title.license">Cognis - ライセンス</string>

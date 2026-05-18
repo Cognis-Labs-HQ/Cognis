@@ -9,7 +9,6 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const DASHBOARD_PAGES = [
     "dashboard",
     "settings",
-    "modules",
     "users",
     "invite",
     "administration",

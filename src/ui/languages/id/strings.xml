@@ -125,9 +125,6 @@
   <string name="ui.app.license.page_title">Lisensi</string>
   <string name="ui.app.license.page_subtitle">Ketentuan lisensi GNU AGPLv3.</string>
   <string name="ui.app.license.load_error">Teks lisensi tidak dapat dimuat.</string>
-  <string name="ui.app.modules.page_title">Ringkasan Modul</string>
-  <string name="ui.app.modules.page_subtitle">Aktifkan dan nonaktifkan modul terpasang.</string>
-  <string name="ui.app.modules.toolbar_subtitle">Kontrol khusus admin</string>
   <string name="ui.app.admin.state.active">Aktif</string>
   <string name="ui.app.admin.state.available">Tersedia</string>
   <string name="ui.app.admin.state.disabled">Nonaktif</string>
@@ -198,7 +195,6 @@
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
   <string name="ui.page.title.docs">Cognis - Docs</string>
-  <string name="ui.page.title.modules">Cognis - Modules</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.page.title.license">Cognis - Lisensi</string>

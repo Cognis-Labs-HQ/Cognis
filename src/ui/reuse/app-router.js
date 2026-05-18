@@ -210,12 +210,6 @@ const STATIC_ROUTES = [
         load: () => import("../app/settings/index.js"),
     },
     {
-        pattern: /^\/modules$/,
-        base: "/modules",
-        stylesheets: ["/static/styles/page-builder.css"],
-        load: () => import("../app/modules/index.js"),
-    },
-    {
         pattern: /^\/users/,
         base: "/users",
         stylesheets: [

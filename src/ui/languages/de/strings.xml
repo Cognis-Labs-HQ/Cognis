@@ -125,9 +125,6 @@
   <string name="ui.app.license.page_title">Lizenz</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3-Lizenzbedingungen.</string>
   <string name="ui.app.license.load_error">Der Lizenztext konnte nicht geladen werden.</string>
-  <string name="ui.app.modules.page_title">Modulübersicht</string>
-  <string name="ui.app.modules.page_subtitle">Installierte Module aktivieren oder deaktivieren.</string>
-  <string name="ui.app.modules.toolbar_subtitle">Nur für Admins</string>
   <string name="ui.app.admin.state.active">Aktiv</string>
   <string name="ui.app.admin.state.available">Verfügbar</string>
   <string name="ui.app.admin.state.disabled">Deaktiviert</string>
@@ -198,7 +195,6 @@
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
   <string name="ui.page.title.docs">Cognis - Docs</string>
-  <string name="ui.page.title.modules">Cognis - Modules</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.page.title.license">Cognis - Lizenz</string>

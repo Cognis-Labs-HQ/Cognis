@@ -204,36 +204,17 @@ test("ui routes serve public assets directly from /assets", async () => {
     assert.equal(assetRes.headers["content-type"], "image/png");
 });
 
-test("modules page requires login and serves html when authenticated", async () => {
+test("legacy modules page is no longer registered", async () => {
     const route = createUiRoutes();
-    const anonymous = createResponseRecorder();
-    await route(
+    const recorder = createResponseRecorder();
+    const handled = await route(
         { headers: {} } as any,
-        anonymous.res as any,
+        recorder.res as any,
         new URL("http://localhost/modules"),
     );
-    assert.equal(anonymous.status, 302);
-    assert.equal(anonymous.headers.location, "/login");
 
-    const userToken = issueAccessToken("u1", "user", 60);
-    const nonAdmin = createResponseRecorder();
-    await route(
-        { headers: { cookie: `cognis_access_token=${userToken}` } } as any,
-        nonAdmin.res as any,
-        new URL("http://localhost/modules"),
-    );
-    assert.equal(nonAdmin.status, 302);
-    assert.equal(nonAdmin.headers.location, "/dashboard");
-
-    const token = issueAccessToken("u1", "admin", 60);
-    const authed = createResponseRecorder();
-    await route(
-        { headers: { cookie: `cognis_access_token=${token}` } } as any,
-        authed.res as any,
-        new URL("http://localhost/modules"),
-    );
-    assert.equal(authed.status, 302);
-    assert.equal(authed.headers.location, "/administration");
+    assert.equal(handled, false);
+    assert.equal(recorder.status, 0);
 });
 
 test("module ui routes can be published outside /modules prefix", async () => {
