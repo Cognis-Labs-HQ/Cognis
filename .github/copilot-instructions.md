@@ -259,6 +259,12 @@ Do not add any comments at all in CSS files. CSS is self-describing through its 
 
 When editing a file, make opportunistic improvements to the surrounding code that align with these principles — within the scope of the files being touched. Do not perform project-wide refactors as a side-effect of a targeted change.
 
+### No legacy compatibility
+
+Legacy compatibility is never required and never acceptable. Do not introduce fallback paths, conditional shims, or alternate code branches that exist solely to handle older schema layouts, API shapes, or data formats that are no longer the standard — even temporarily. This rule applies with particular force when the "legacy" concern originates in the same pull request that introduces the modern replacement: a feature cannot be deprecated and replaced in the same PR that creates it. If a feature is new, it ships clean; if an old feature is being removed, the removal is complete and unconditional.
+
+Do not write tests that verify legacy artefacts are absent. Asserting that a field does not exist, a route is not registered, or a column is not written is a legacy-absence test — it encodes an expectation about a removed thing rather than a requirement about the current system. These tests are forbidden and must be deleted on sight.
+
 ---
 
 ## Testing
@@ -275,6 +281,8 @@ Write unit tests that verify the API responds correctly under defined conditions
 - A missing required field returns an appropriate error response.
 
 Tests live alongside the code they cover. Place tests for a gateway, adapter, or module inside a `tests/` subdirectory within that component (e.g., `src/adapters/notify/smtp/tests/`, `src/gateways/notify/tests/`). Core API utilities that are not component-specific may keep their tests under `src/api/tests/<subdomain>/` (e.g., `src/api/tests/tfa/`). All new features require tests, logging, and documentation.
+
+Never write tests that verify the absence of legacy artefacts — for example, asserting that a deprecated column is not written, a removed route is unreachable, or a renamed field is gone. These are legacy-absence tests. They test something that is no longer part of the system and anchor the test suite to removed things rather than live requirements. Legacy-absence tests are strictly forbidden and must be deleted wherever they appear.
 
 ---
 
@@ -328,6 +336,8 @@ Comprehensive logging is required for every new feature and behaviour change.
 - Do not add AI process notes, agent reasoning, or session context to any product-facing documentation.
 - Do not use inline result messages or browser alerts for user feedback. All transient user-facing feedback (success confirmations, warnings, errors, info notices) must be delivered via `showToast` from `src/ui/reuse/toast.js`. Never write feedback text directly into a DOM element's `textContent` or `innerHTML`, and never call `alert()`, `confirm()`, or `prompt()`. Reserve `openPopup` exclusively for interactions that require a deliberate user decision (e.g. confirming a destructive action, filling in a form) — not for displaying a result.
 - Do not use inline hint text (`<span class="...-hint">`) below or beside form fields to deliver longer contextual descriptions. Instead, use `renderInfoTooltip(text)` from `src/ui/reuse/info-tooltip.js` placed inline next to the label or heading. This keeps forms visually clean while still making context available on demand. Inline hint text is only appropriate for a single short phrase that must always be visible; anything longer or more contextual belongs in an info tooltip.
+- Do not introduce legacy compatibility code: fallback paths, conditional shims, retry branches, or any alternate logic that exists solely to accommodate an older schema layout, API shape, or data format that is no longer the standard. Legacy compatibility is never required and never acceptable, even when framed as temporary. A feature that ships with built-in backward compatibility for its own "legacy" form was never properly designed — ship it clean or don't ship it at all.
+- Do not write tests that assert the absence of legacy artefacts — for example, "this deprecated column is not present in the insert" or "this removed route returns 404". These legacy-absence tests are strictly forbidden. Delete any that already exist.
 
 ## Symbols and icons
 
