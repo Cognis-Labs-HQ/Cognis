@@ -86,6 +86,16 @@ export function initLanguagePrefs(
         return row;
     }
 
+    function makeEmptyDropZoneRow() {
+        const row = document.createElement("tr");
+        const emptyCell = document.createElement("td");
+        emptyCell.setAttribute("colspan", "2");
+        emptyCell.className = "language-table-empty-cell";
+        emptyCell.textContent = "\u00A0";
+        row.append(emptyCell);
+        return row;
+    }
+
     function renderTables() {
         const preferred = root.querySelector("#preferred-languages");
         const available = root.querySelector("#available-languages");
@@ -100,12 +110,15 @@ export function initLanguagePrefs(
             }),
         );
 
+        const availableRows = catalog
+            .filter((item) => !preferredSet.has(item.iso_code))
+            .map((item) =>
+                makeRow(item.iso_code, `${item.name} (${item.iso_code})`),
+            );
         available.replaceChildren(
-            ...catalog
-                .filter((item) => !preferredSet.has(item.iso_code))
-                .map((item) =>
-                    makeRow(item.iso_code, `${item.name} (${item.iso_code})`),
-                ),
+            ...(availableRows.length
+                ? availableRows
+                : [makeEmptyDropZoneRow()]),
         );
     }
 

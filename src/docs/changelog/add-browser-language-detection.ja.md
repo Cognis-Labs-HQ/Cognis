@@ -20,11 +20,15 @@ UI言語の初期化で、初回表示時にブラウザーの言語設定を優
 優先順位をいつでも再同期できます。クリックすると優先言語リストが更新され、優先順位モードが
 「自動」にリセットされるため、以後のブラウザー言語変更も再び反映されるようになります。
 
+「利用可能な言語」テーブルは行が0件でも有効なドロップ領域として維持されるようになり、
+「ブラウザーから同期」ボタンは「優先言語」見出しの横に配置されるようになりました。
+
 ## 変更されたコンポーネントとファイル
 
 - `src/ui/reuse/i18n.js`
 - `src/ui/app/settings/index.js`
 - `src/ui/app/settings/language-prefs.js`
+- `src/ui/styles/page-builder.css`
 - `src/ui/app/register/index.js`
 - `src/ui/tests/browser-language-detection.test.js`
 - `src/ui/languages/*/strings.xml`

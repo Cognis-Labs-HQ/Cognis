@@ -900,6 +900,22 @@ body[data-theme="light"] .slider::before {
     background: color-mix(in srgb, var(--accent-2) 10%, transparent);
 }
 
+.settings-language-heading-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.settings-language-heading-row h3 {
+    margin: 0;
+}
+
+.language-table-empty-cell {
+    height: 34px;
+}
+
 .sub-composer-heading {
     margin: 0 0 12px;
 }

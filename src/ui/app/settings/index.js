@@ -382,8 +382,10 @@ export async function mount(root, { signal } = {}) {
                         id: "preferred-languages",
                         label: i18n.t("ui.app.settings.preferred_languages"),
                         render: () => `
-            <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
-            <button id="pref-language-sync-from-browser" type="button" class="btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
+            <div class="settings-language-heading-row">
+              <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
+              <button id="pref-language-sync-from-browser" type="button" class="btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
+            </div>
             <table id="preferred-languages" class="language-table"></table>
           `,
                     },

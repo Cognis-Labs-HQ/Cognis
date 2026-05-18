@@ -20,11 +20,16 @@ their priority back in line with the current browser language order at any time.
 Clicking it re-syncs the preferred list to browser languages and resets the
 priority mode to auto so future browser changes are reflected again.
 
+The Available Languages table now stays as a live drop zone even when it has no
+rows, and the Sync from Browser button now sits adjacent to the Preferred
+Languages heading.
+
 ## Changed files/components
 
 - `src/ui/reuse/i18n.js`
 - `src/ui/app/settings/index.js`
 - `src/ui/app/settings/language-prefs.js`
+- `src/ui/styles/page-builder.css`
 - `src/ui/app/register/index.js`
 - `src/ui/tests/browser-language-detection.test.js`
 - `src/ui/languages/*/strings.xml`

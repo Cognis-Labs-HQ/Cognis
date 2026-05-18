@@ -24,11 +24,16 @@ des Browsers anzupassen. Ein Klick darauf stellt die bevorzugten Sprachen
 entsprechend ein und setzt den Prioritätsmodus auf „automatisch“ zurück, sodass
 spätere Browser-Änderungen wieder automatisch übernommen werden.
 
+Die Tabelle „Verfügbare Sprachen“ bleibt jetzt auch ohne Einträge als aktive
+Drop-Zone erhalten, und die Schaltfläche „Mit Browser synchronisieren“ steht nun
+direkt neben der Überschrift „Bevorzugte Sprachen“.
+
 ## Geänderte Komponenten und Dateien
 
 - `src/ui/reuse/i18n.js`
 - `src/ui/app/settings/index.js`
 - `src/ui/app/settings/language-prefs.js`
+- `src/ui/styles/page-builder.css`
 - `src/ui/app/register/index.js`
 - `src/ui/tests/browser-language-detection.test.js`
 - `src/ui/languages/*/strings.xml`
