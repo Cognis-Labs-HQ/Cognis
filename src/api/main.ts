@@ -19,6 +19,7 @@ import { UIRegistry } from "./ui-registry.js";
 import { setAppLogger, writeConsoleLog } from "./logger.js";
 import type { LocalAccountStore } from "./reuse/account-store.js";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
+import type { RouteContext } from "./reuse/route-context.js";
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
 import type { DbDialectHelper } from "../gateways/db/bootstrap.js";
 
@@ -344,6 +345,7 @@ const server = buildServer({
     >("modules:onStateChanged"),
     getModuleCapability: <T>(capabilityId: string) =>
         capabilities.get<T>(capabilityId),
+    routeContext: capabilities.get<RouteContext>("auth:routeContext"),
     loadModuleStates: async () => {
         const result = await dbExecutor.executeCommand({
             option: "SELECT",

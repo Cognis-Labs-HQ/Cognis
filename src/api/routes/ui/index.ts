@@ -2,12 +2,6 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
-    requireAuth,
-    getCookieSession,
-    setPageSecurityHeaders,
-} from "../../../gateways/auth/guard.js";
-import { lookupAccessToken } from "../../../gateways/auth/access-tokens.js";
-import {
     isRoleAllowed,
     type BootstrapLog,
     type ModuleRuntimeGateway,
@@ -17,6 +11,10 @@ import {
 import type { UIRegistry } from "../../ui-registry.js";
 import type { LocalAccountStore } from "../../reuse/account-store.js";
 import { parseRoleAccessPolicy } from "../../reuse/parse-role-access-policy.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../reuse/route-context.js";
 
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
@@ -111,12 +109,13 @@ async function serveFile(
     res: ServerResponse,
     filePath: string,
     contentType: string,
+    routeContext: RouteContext,
     log?: BootstrapLog,
     logMeta?: Record<string, unknown>,
 ) {
     try {
         const file = await readFile(filePath);
-        setPageSecurityHeaders(res);
+        routeContext.setPageSecurityHeaders(res);
         res.writeHead(200, {
             "content-type": contentType,
             "cache-control": "no-store",
@@ -141,10 +140,18 @@ async function serveFile(
 async function serveHtmlPage(
     res: ServerResponse,
     filePath: string,
+    routeContext: RouteContext,
     log?: BootstrapLog,
     logMeta?: Record<string, unknown>,
 ) {
-    await serveFile(res, filePath, "text/html; charset=utf-8", log, logMeta);
+    await serveFile(
+        res,
+        filePath,
+        "text/html; charset=utf-8",
+        routeContext,
+        log,
+        logMeta,
+    );
 }
 
 function getCookieAccessToken(req: IncomingMessage): string | null {
@@ -156,16 +163,17 @@ function getCookieAccessToken(req: IncomingMessage): string | null {
 
 async function resolveLoginRedirectLocation(
     req: IncomingMessage,
+    routeContext: RouteContext,
     accountStore?: LocalAccountStore,
     log?: BootstrapLog,
 ): Promise<string> {
     const cookieToken = getCookieAccessToken(req);
-    const session = getCookieSession(req);
+    const session = routeContext.getCookieSession(req);
     if (!cookieToken) {
         return "/login";
     }
 
-    const tokenInfo = lookupAccessToken(cookieToken);
+    const tokenInfo = routeContext.lookupAccessToken(cookieToken);
     const accountId = session?.sub ?? tokenInfo?.sub ?? null;
 
     if (
@@ -219,7 +227,9 @@ export function createUiRoutes(
     gatewayRegistry?: GatewayRegistry,
     isModuleEnabled?: (moduleId: string) => boolean,
     log?: BootstrapLog,
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -280,6 +290,7 @@ export function createUiRoutes(
         if (url.pathname === "/dashboard") {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
+                ctx,
                 accountStore,
                 log,
             );
@@ -292,6 +303,7 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "index.html"),
+                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -302,6 +314,7 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "login.html"),
+                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -311,6 +324,7 @@ export function createUiRoutes(
         if (url.pathname === "/settings") {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
+                ctx,
                 accountStore,
                 log,
             );
@@ -323,6 +337,7 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "settings.html"),
+                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -332,6 +347,7 @@ export function createUiRoutes(
         if (url.pathname === "/administration") {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
+                ctx,
                 accountStore,
                 log,
             );
@@ -340,7 +356,7 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            const session = getCookieSession(req);
+            const session = ctx.getCookieSession(req);
             if (
                 !session ||
                 !isRoleAllowed(session.role, { minRole: "admin" })
@@ -353,6 +369,7 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "administration.html"),
+                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -362,6 +379,7 @@ export function createUiRoutes(
         if (url.pathname === "/users") {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
+                ctx,
                 accountStore,
                 log,
             );
@@ -370,7 +388,7 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            const session = getCookieSession(req);
+            const session = ctx.getCookieSession(req);
             if (!session) {
                 res.writeHead(302, {
                     location: "/login?reason=session_expired",
@@ -386,6 +404,7 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "users.html"),
+                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -395,6 +414,7 @@ export function createUiRoutes(
         if (url.pathname === "/invite") {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
+                ctx,
                 accountStore,
                 log,
             );
@@ -403,7 +423,7 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            const session = getCookieSession(req);
+            const session = ctx.getCookieSession(req);
             if (!session) {
                 res.writeHead(302, {
                     location: "/login?reason=session_expired",
@@ -450,6 +470,7 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "invite.html"),
+                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -459,6 +480,7 @@ export function createUiRoutes(
         if (url.pathname.startsWith("/docs")) {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
+                ctx,
                 accountStore,
                 log,
             );
@@ -471,6 +493,7 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "docs.html"),
+                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
@@ -480,6 +503,7 @@ export function createUiRoutes(
         if (url.pathname === "/license") {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
+                ctx,
                 accountStore,
                 log,
             );
@@ -492,13 +516,14 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "license.html"),
+                ctx,
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
             );
             return true;
         }
 
-        const session = getCookieSession(req);
+        const session = ctx.getCookieSession(req);
         if (runtime && session) {
             const manifests = await runtime.listManifests();
 
@@ -549,7 +574,7 @@ export function createUiRoutes(
                             manifest.id,
                             manifest.entrypoints.ui,
                         );
-                        await serveHtmlPage(res, uiFile, log, {
+                        await serveHtmlPage(res, uiFile, ctx, log, {
                             path: url.pathname,
                             method: req.method ?? "GET",
                             moduleId: manifest.id,
@@ -578,7 +603,7 @@ export function createUiRoutes(
             /^\/api\/v1\/ui\/page-extensions\/([^/]+)$/,
         );
         if (pageExtMatch && req.method === "GET") {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const pageId = decodeURIComponent(pageExtMatch[1]);
             const extensions = (
@@ -597,7 +622,7 @@ export function createUiRoutes(
             url.pathname === "/api/v1/ui/auth-typing-messages" &&
             req.method === "GET"
         ) {
-            const viewerSession = getCookieSession(req);
+            const viewerSession = ctx.getCookieSession(req);
             const gatewayMessages = (uiRegistry?.listAuthTypingMessages() ?? [])
                 .filter((message) => {
                     if (message.isEnabled && !message.isEnabled()) {
@@ -663,7 +688,7 @@ export function createUiRoutes(
             url.pathname === "/api/v1/ui/settings-sections" &&
             req.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const sections = (uiRegistry?.listSettingsSections() ?? []).filter(
                 (section) =>
@@ -683,7 +708,7 @@ export function createUiRoutes(
             url.pathname === "/api/v1/ui/navbar-plugins" &&
             req.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const plugins = (uiRegistry?.listNavbarPlugins() ?? []).filter(
                 (plugin) =>
@@ -696,7 +721,7 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/api/v1/ui/app-routes" && req.method === "GET") {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const routes = (uiRegistry?.listSpaRoutes() ?? []).filter(
                 (route) =>
@@ -728,6 +753,7 @@ export function createUiRoutes(
                         res,
                         path.join(dir, filePart),
                         resolveContentType(filePart),
+                        ctx,
                     );
                     return true;
                 }
@@ -760,6 +786,7 @@ export function createUiRoutes(
                         res,
                         path.join(dir, filePart),
                         resolveContentType(filePart),
+                        ctx,
                     );
                     return true;
                 }
@@ -802,6 +829,7 @@ export function createUiRoutes(
                     res,
                     path.join(resolved.dir, resolved.relPath),
                     resolveContentType(resolved.relPath),
+                    ctx,
                 );
                 return true;
             }
@@ -842,7 +870,7 @@ export function createUiRoutes(
                 ? path.join(PUBLIC_ROOT, relative)
                 : path.join(STATIC_ROOT, relative);
 
-        await serveFile(res, filePath, resolveContentType(filePath));
+        await serveFile(res, filePath, resolveContentType(filePath), ctx);
         return true;
     };
 }

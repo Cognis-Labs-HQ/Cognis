@@ -100,7 +100,8 @@ function createMyClassesPageRoute(isAdapterEnabled: () => boolean) {
 export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,
 ): Promise<void> {
-    if (!ctx.dbExecutor) {
+    const dbExecutor = ctx.capabilities.get("db:executor") ?? ctx.dbExecutor;
+    if (!dbExecutor) {
         ctx.log?.(
             "warn",
             "Study/classes adapter: no DB executor available — skipping.",
@@ -109,7 +110,7 @@ export async function bootstrapStudyAdapter(
         return;
     }
 
-    const store = new DbClassesStore(ctx.dbExecutor);
+    const store = new DbClassesStore(dbExecutor);
 
     try {
         await store.ensureSchema();

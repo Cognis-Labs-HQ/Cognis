@@ -5,7 +5,7 @@ import type {
     RoleAccessPolicy,
 } from "@cognis/core";
 import path from "node:path";
-import { requireRoleAccess } from "../../gateways/auth/guard.js";
+import { createDefaultRouteContext } from "../../api/reuse/route-context.js";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
 import type { UIRegistry } from "../../api/ui-registry.js";
 
@@ -88,6 +88,9 @@ interface ModulePlugin {
 export interface ModuleExtensionOptions {
     uiRegistry?: UIRegistry;
     getCapability?: <T>(capabilityId: string) => T | undefined;
+    requireRoleAccess?: ReturnType<
+        typeof createDefaultRouteContext
+    >["requireRoleAccess"];
 }
 
 export interface ModuleExtensionRoutes {
@@ -106,6 +109,9 @@ export function createModuleExtensionRoutes(
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
     let handlers: RouteHandler[] = [];
+    const routeContext = createDefaultRouteContext();
+    const requireRoleAccess =
+        options?.requireRoleAccess ?? routeContext.requireRoleAccess;
     const staticDirsRegisteredByModule = new Set<string>();
     const uiHooksRegisteredByModule = new Set<string>();
     const modulesRoot =

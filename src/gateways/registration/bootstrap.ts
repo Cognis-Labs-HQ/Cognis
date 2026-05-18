@@ -52,8 +52,11 @@ function redeemInviteErrorStatus(code: string): number {
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const dbExecutor = (ctx.capabilities.get<DbExecutor>("db:executor") ??
-        ctx.dbExecutor)!;
+    const dbExecutor =
+        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
+    if (!dbExecutor) {
+        throw new Error("db_executor_unavailable");
+    }
     const accountStore =
         ctx.capabilities.get<LocalAccountStore>("auth:accountStore");
     if (!accountStore) return;
@@ -201,7 +204,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.1.4",
+        version: "1.1.5",
         description:
             "Registration workflows via pluggable invite/public adapters.",
         publisher: "Cognis Labs",

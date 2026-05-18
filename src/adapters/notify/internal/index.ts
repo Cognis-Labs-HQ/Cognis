@@ -79,8 +79,9 @@ export async function bootstrapNotifyAdapter(
     ctx: NotifyAdapterBootstrapCtx,
 ): Promise<void> {
     ctx.gateway.registerAlwaysOnSender(SENDER_ID);
+    const dbExecutor = ctx.capabilities.get("db:executor") ?? ctx.dbExecutor;
 
-    if (ctx.dbExecutor) {
+    if (dbExecutor) {
         const secret = getDataEncryptionKey();
         if (!secret) {
             const baseMessage =
@@ -98,7 +99,7 @@ export async function bootstrapNotifyAdapter(
             }
         }
         const dbStore = new DbInternalNotificationStore(
-            ctx.dbExecutor,
+            dbExecutor,
             secret,
             ctx.log,
         );

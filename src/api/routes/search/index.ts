@@ -12,7 +12,10 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { hasMinRole, requireAuth } from "../../../gateways/auth/guard.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../reuse/route-context.js";
 
 interface SearchResultItem {
     id: string;
@@ -36,7 +39,9 @@ type ProfileSearchFn = (
 
 export function createSearchRoutes(
     searchProfiles?: ProfileSearchFn,
+    routeContext?: RouteContext,
 ): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -46,12 +51,12 @@ export function createSearchRoutes(
             return false;
         }
 
-        const claims = requireAuth(req, res, "user");
+        const claims = ctx.requireAuth(req, res, "user");
         if (!claims) return true;
 
         const query = (url.searchParams.get("q") ?? "").trim();
         const typeFilter = url.searchParams.get("type") ?? "";
-        const includeHiddenProfiles = hasMinRole(claims.role, "admin");
+        const includeHiddenProfiles = ctx.hasMinRole(claims.role, "admin");
 
         if (!query) {
             res.writeHead(200, { "content-type": "application/json" });

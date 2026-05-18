@@ -1,9 +1,14 @@
 import path from "node:path";
 import {
+    canAccessUserData,
     getAuthClaims,
+    getCookieSession,
+    hasMinRole,
     registerPageScriptOrigins,
     requireAuth,
+    requireRoleAccess,
     readJson,
+    setPageSecurityHeaders,
     CapabilityStore,
     type GatewayBootstrapContext,
 } from "../shared.js";
@@ -15,9 +20,11 @@ import {
 } from "../../api/reuse/access-token-http.js";
 import {
     issueAccessToken,
+    lookupAccessToken,
     isTokenVerificationFresh,
     recordTokenVerification,
     revokeAccessToken,
+    revokeAccessTokensForSubject,
     type AccessRole,
 } from "./access-tokens.js";
 import { CoreAuthGateway } from "./gateway.js";
@@ -25,6 +32,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthProviderAdapter } from "./gateway.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
+import type { RouteContext } from "../../api/reuse/route-context.js";
 
 interface AuthAccountStore {
     ensureSchema(): Promise<void>;
@@ -74,8 +82,11 @@ function resolveRole(sessionRole: string | undefined): AccessRole {
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
-    const dbExecutor = (ctx.capabilities.get<DbExecutor>("db:executor") ??
-        ctx.dbExecutor)!;
+    const dbExecutor =
+        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
+    if (!dbExecutor) {
+        throw new Error("db_executor_unavailable");
+    }
 
     const accountStore = await loadLocalAccountStore(dbExecutor, ctx.log);
     await accountStore.ensureSchema();
@@ -144,7 +155,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.3.3",
+        version: "1.3.4",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -182,6 +193,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             .getEnabledAdapters()
             .map((a) => ({ id: a.id, name: a.name })),
     );
+    const routeContext: RouteContext = {
+        getAuthClaims,
+        requireAuth,
+        requireRoleAccess,
+        canAccessUserData,
+        hasMinRole,
+        getCookieSession,
+        setPageSecurityHeaders,
+        lookupAccessToken,
+        revokeAccessTokensForSubject,
+    };
+    ctx.capabilities.contribute("auth:routeContext", routeContext);
     ctx.log?.("info", "Auth gateway initialized.", {
         component: "auth-gateway",
         adapterCount: authGateway.listAdapters().length,

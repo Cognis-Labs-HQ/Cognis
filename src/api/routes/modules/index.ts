@@ -1,6 +1,9 @@
-import { requireAuth } from "../../../gateways/auth/guard.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog, ModuleService } from "@cognis/core";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../reuse/route-context.js";
 
 export interface ModuleRouteHooks {
     onEnabled?: (moduleId: string) => Promise<void> | void;
@@ -21,7 +24,9 @@ export interface ModuleRouteHooks {
 export function createModuleRoutes(
     moduleService: ModuleService,
     hooks?: ModuleRouteHooks,
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -33,7 +38,7 @@ export function createModuleRoutes(
             path: url.pathname,
         };
         if (url.pathname === "/api/v1/modules" && req.method === "GET") {
-            const claims = requireAuth(req, res, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const manifests = await moduleService.list();
             const data = manifests.map((manifest) => ({
@@ -55,7 +60,7 @@ export function createModuleRoutes(
             url.pathname === "/api/v1/modules/integrity" &&
             req.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const data = (await hooks?.getIntegrityReport?.()) ?? [];
             hooks?.log?.("debug", "Generated module integrity report.", {
@@ -73,7 +78,7 @@ export function createModuleRoutes(
         );
         if (!match || req.method !== "POST") return false;
 
-        const claims = requireAuth(req, res, "admin");
+        const claims = ctx.requireAuth(req, res, "admin");
         if (!claims) return true;
 
         const moduleId = decodeURIComponent(match[1]);

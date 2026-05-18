@@ -2,9 +2,12 @@ import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog, HealthService } from "@cognis/core";
-import { requireAuth } from "../../../gateways/auth/guard.js";
 import { readJson } from "../../reuse/read-json.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../reuse/route-context.js";
 import {
     defaultSecuritySettings,
     normalizeTrustedDomains,
@@ -66,7 +69,9 @@ export function createSystemRoutes(
     healthService: HealthService,
     preferenceStore?: UserPreferenceStore,
     log?: BootstrapLog,
+    routeContext?: RouteContext,
 ) {
+    const ctx = resolveRouteContext(routeContext);
     const licenseMarkdownFile = resolve(
         process.cwd(),
         "src",
@@ -131,7 +136,7 @@ export function createSystemRoutes(
             url.pathname === "/api/v1/system/security" &&
             req.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const raw = preferenceStore
                 ? await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY)
@@ -160,7 +165,7 @@ export function createSystemRoutes(
             url.pathname === "/api/v1/system/security" &&
             req.method === "PUT"
         ) {
-            const claims = requireAuth(req, res, "admin");
+            const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const body = await readJson(req);
             const trustedDomains = normalizeTrustedDomains(body.trustedDomains);

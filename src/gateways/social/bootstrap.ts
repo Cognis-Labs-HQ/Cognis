@@ -152,6 +152,9 @@ function createSocialAdapterRoutes(
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor =
         ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
+    if (!dbExecutor) {
+        throw new Error("db_executor_unavailable");
+    }
     const configStore = new DbAdapterConfigStore(dbExecutor);
     await configStore.ensureSchema();
 
@@ -201,7 +204,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "social",
         name: "Social Gateway",
-        version: "1.2.1",
+        version: "1.2.2",
         description: "Profiles, social graph, posts, and messaging.",
         publisher: "Cognis Labs",
         hasAdapters: true,

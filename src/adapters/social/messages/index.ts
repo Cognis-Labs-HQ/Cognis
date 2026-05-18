@@ -104,7 +104,8 @@ export async function bootstrapSocialAdapter(
         );
         return;
     }
-    if (!ctx.dbExecutor) {
+    const dbExecutor = ctx.capabilities.get("db:executor") ?? ctx.dbExecutor;
+    if (!dbExecutor) {
         ctx.log?.(
             "warn",
             "Messages adapter: no database executor available — messages disabled.",
@@ -113,7 +114,7 @@ export async function bootstrapSocialAdapter(
         return;
     }
 
-    const messagesStore = new DbMessagesStore(ctx.dbExecutor);
+    const messagesStore = new DbMessagesStore(dbExecutor);
     await messagesStore.ensureSchema();
     ctx.log?.("info", "Messages adapter: schema ready.", {
         component: "social-messages-adapter",

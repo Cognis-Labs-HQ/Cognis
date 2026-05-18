@@ -20,6 +20,7 @@ import {
     SECURITY_SETTINGS_KEY,
 } from "../../api/reuse/security-settings.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import type { DbExecutor } from "../db/reuse/db-executor.js";
 import { createNotificationRoutes } from "./routes/notifications.js";
 
 interface NotificationUserEmailStore {
@@ -103,6 +104,11 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
         ): Promise<string[]>;
     };
 }> {
+    const dbExecutor =
+        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
+    if (!dbExecutor) {
+        throw new Error("db_executor_unavailable");
+    }
     const notificationStoreModulePath = path.resolve(
         process.cwd(),
         "src",
@@ -115,9 +121,7 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
     );
     const NotificationStoreClass =
         notificationStoreModule.DbNotificationStore as
-            | (new (
-                  dbExecutor: GatewayBootstrapContext["dbExecutor"],
-              ) => NotificationStoreWithSchema)
+            | (new (dbExecutor: DbExecutor) => NotificationStoreWithSchema)
             | undefined;
     const NotificationPreferenceStoreClass =
         notificationStoreModule.DbNotificationPreferenceStore as
@@ -126,7 +130,7 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
     if (!NotificationStoreClass || !NotificationPreferenceStoreClass) {
         throw new Error("notification_store_gateway_exports_missing");
     }
-    const notifStore = new NotificationStoreClass(ctx.dbExecutor);
+    const notifStore = new NotificationStoreClass(dbExecutor);
     const notificationPrefStore = new NotificationPreferenceStoreClass(
         notifStore,
     );
@@ -140,6 +144,8 @@ async function loadNotificationStores(ctx: GatewayBootstrapContext): Promise<{
  * inside this module directly.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const dbExecutor =
+        ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
     const { notifStore, notificationPrefStore } =
         await loadNotificationStores(ctx);
     await notifStore.ensureSchema();
@@ -165,6 +171,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     await gateway.bootstrapAdapters(notifyAdaptersRoot, {
         gateway,
+        capabilities: ctx.capabilities,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId),
         registerNavbarPlugin: (scriptUrl) =>
@@ -172,7 +179,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         registerStaticDir: (prefix, dir) =>
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
         log: ctx.log,
-        dbExecutor: ctx.dbExecutor,
+        dbExecutor,
     });
     ctx.log?.("info", "Notification adapter bootstrapping complete.", {
         component: "notify-gateway",
@@ -243,7 +250,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.4.1",
+        version: "1.4.2",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
         required: true,
