@@ -8,7 +8,7 @@ import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 
 const GROUP_KEYS = {
-    "": "ui.app.docs.group.platform",
+    platform: "ui.app.docs.group.platform",
     gateways: "ui.app.docs.group.gateways",
     "adapters/auth": "ui.app.docs.group.adapters_auth",
     "adapters/db": "ui.app.docs.group.adapters_db",
@@ -75,10 +75,14 @@ function normalizeDocSlug(href) {
         .replace(/\.md$/i, "");
 }
 
+function isChangelogDoc(item) {
+    return item.slug === "changelog" || item.slug.startsWith("changelog/");
+}
+
 function buildGroupedNav(i18n, items) {
     const groups = new Map();
     for (const item of items) {
-        const groupKey = item.group ?? "";
+        const groupKey = item.group || "platform";
         if (!groups.has(groupKey)) groups.set(groupKey, []);
         groups.get(groupKey).push(item);
     }
@@ -89,17 +93,12 @@ function buildGroupedNav(i18n, items) {
         const links = groupItems
             .map((item) => renderDocNavButton(item))
             .join("");
-
-        if (group === "") {
-            html += `<ul class="docs-nav-group docs-nav-top">${links}</ul>`;
-        } else {
-            const storageKey = `docs-group-open:${group}`;
-            const isOpen = localStorage.getItem(storageKey) !== "false";
-            html += `<details class="docs-nav-group" ${isOpen ? "open" : ""} data-nav-group="${group}">`;
-            html += `<summary>${label}</summary>`;
-            html += `<ul>${links}</ul>`;
-            html += `</details>`;
-        }
+        const storageKey = `docs-group-open:${group}`;
+        const isOpen = localStorage.getItem(storageKey) !== "false";
+        html += `<details class="docs-nav-group" ${isOpen ? "open" : ""} data-nav-group="${group}">`;
+        html += `<summary>${label}</summary>`;
+        html += `<ul>${links}</ul>`;
+        html += `</details>`;
     }
     return html;
 }
@@ -144,16 +143,17 @@ export async function mount(root, { signal } = {}) {
         });
     }
 
-    function resolveDefaultSlug(subpath, docs) {
+    function resolveDefaultSlug(subpath, docs, fallbackDocs = docs) {
         if (subpath && docs.find((doc) => doc.slug === subpath)) return subpath;
         return (
-            docs.find((doc) => doc.slug === "overview")?.slug ??
-            docs.find((doc) => doc.slug === "index")?.slug ??
-            docs[0]?.slug
+            fallbackDocs.find((doc) => doc.slug === "overview")?.slug ??
+            fallbackDocs.find((doc) => doc.slug === "index")?.slug ??
+            fallbackDocs[0]?.slug
         );
     }
 
     const docs = await loadDocsIndex();
+    const navigationDocs = docs.filter((doc) => !isChangelogDoc(doc));
 
     const elements = [
         {
@@ -179,7 +179,7 @@ export async function mount(root, { signal } = {}) {
                 id: "docs-nav",
                 label: i18n.t("ui.reuse.navigation"),
                 render: () =>
-                    `<h3>${i18n.t("ui.reuse.navigation")}</h3><nav class="docs-nav">${buildGroupedNav(i18n, docs)}</nav>`,
+                    `<h3>${i18n.t("ui.reuse.navigation")}</h3><nav class="docs-nav">${buildGroupedNav(i18n, navigationDocs)}</nav>`,
             },
         ],
         toolbarScrollable: true,
@@ -227,7 +227,11 @@ export async function mount(root, { signal } = {}) {
                     /^\/docs\/?/,
                     "",
                 );
-                const fallback = resolveDefaultSlug(subpath, docs);
+                const fallback = resolveDefaultSlug(
+                    subpath,
+                    docs,
+                    navigationDocs,
+                );
                 if (fallback) showDoc(fallback, { pushHistory: false });
             }
         },
@@ -236,7 +240,7 @@ export async function mount(root, { signal } = {}) {
 
     const defaultDoc = (() => {
         const subpath = window.location.pathname.replace(/^\/docs\/?/, "");
-        return resolveDefaultSlug(subpath, docs);
+        return resolveDefaultSlug(subpath, docs, navigationDocs);
     })();
     if (defaultDoc) await showDoc(defaultDoc, { pushHistory: false });
 }

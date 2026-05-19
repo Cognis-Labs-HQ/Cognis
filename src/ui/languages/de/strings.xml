@@ -85,6 +85,7 @@
   <string name="ui.layout.avatar.alt">Benutzeravatar</string>
   <string name="ui.layout.theme.aria">Thema umschalten</string>
   <string name="ui.layout.footer.license">Lizenz</string>
+  <string name="ui.layout.footer.changelogs">Änderungsprotokolle</string>
   <string name="ui.app.login.title">Anmelden</string>
   <string name="ui.app.login.intro.aria">Cognis-Einführung</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>

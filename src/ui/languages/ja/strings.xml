@@ -85,6 +85,7 @@
   <string name="ui.layout.avatar.alt">ユーザーアバター</string>
   <string name="ui.layout.theme.aria">テーマ切替</string>
   <string name="ui.layout.footer.license">ライセンス</string>
+  <string name="ui.layout.footer.changelogs">変更履歴</string>
   <string name="ui.app.login.title">サインイン</string>
   <string name="ui.app.login.intro.aria">Cognis 紹介</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>

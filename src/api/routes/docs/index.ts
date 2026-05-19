@@ -82,7 +82,11 @@ function buildLogicalSlug(relFromSrc: string): string {
 }
 
 function computeGroup(slug: string, isRootDocs: boolean): string {
-    if (isRootDocs) return "";
+    if (isRootDocs) {
+        const rootSegments = slug.split("/");
+        if (rootSegments.length > 1) return rootSegments[0];
+        return "platform";
+    }
     const parts = slug.split("/");
     const first = parts[0];
     if (parts.length === 1) return first;

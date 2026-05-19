@@ -85,6 +85,7 @@
   <string name="ui.layout.avatar.alt">Avatar pengguna</string>
   <string name="ui.layout.theme.aria">Ubah tema</string>
   <string name="ui.layout.footer.license">Lisensi</string>
+  <string name="ui.layout.footer.changelogs">Log Perubahan</string>
   <string name="ui.app.login.title">Masuk</string>
   <string name="ui.app.login.intro.aria">Pengantar Cognis</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>

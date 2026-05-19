@@ -137,6 +137,26 @@ test("docs page strips pretty docs URL prefixes before loading document slugs", 
     assert.match(source, /const slug = normalizeDocSlug\(href\);/);
 });
 
+test("docs page excludes changelog entries from navigation menu", () => {
+    const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
+    assert.ok(
+        source.includes("function isChangelogDoc(item)"),
+        "docs page should classify changelog slugs",
+    );
+    assert.ok(
+        source.includes("docs.filter((doc) => !isChangelogDoc(doc))"),
+        "docs navigation should exclude changelog docs",
+    );
+});
+
+test("docs page falls back ungrouped docs to the platform section", () => {
+    const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
+    assert.ok(
+        source.includes('const groupKey = item.group || "platform";'),
+        "docs navigation should assign ungrouped docs to platform",
+    );
+});
+
 test("docs page keeps docs-specific stylesheet enabled", () => {
     const html = readFileSync(
         join(ROOT, "src/ui/public/pages/docs.html"),

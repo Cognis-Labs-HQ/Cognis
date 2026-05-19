@@ -44,6 +44,23 @@ test("layout CSS restores [hidden] visibility inside .dropdown", () => {
     );
 });
 
+test("dashboard footer renders license and changelogs links", () => {
+    const template = readFileSync(
+        resolve(ROOT, "src/ui/public/templates/dashboard-layout.html"),
+        "utf8",
+    );
+    const licenseLinkIndex = template.indexOf('href="/license"');
+    const changelogsLinkIndex = template.indexOf('href="/docs/changelog"');
+    assert.ok(
+        licenseLinkIndex !== -1 && changelogsLinkIndex !== -1,
+        "dashboard footer should include license and changelogs links",
+    );
+    assert.ok(
+        changelogsLinkIndex > licenseLinkIndex,
+        "changelogs link should render next to license in footer order",
+    );
+});
+
 test("dashboard logout requests server revocation before clearing local token", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
