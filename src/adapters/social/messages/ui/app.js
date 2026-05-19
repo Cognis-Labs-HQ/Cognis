@@ -43,6 +43,8 @@ const MAX_EMOJI_GRID_SIZE = 80;
 
 let cachedEmojiList = null;
 let cachedEmojiUsage = [];
+let reactionHoverPopupElement = null;
+let reactionHoverAnchorButton = null;
 
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
@@ -661,19 +663,12 @@ function renderReactionRow(message, i18n) {
             const ownClass = reaction.reactedByMe
                 ? " messages-reaction-chip--active"
                 : "";
-            const reactedByLabel = reaction.reactedBy
-                .map(
-                    (reactor) =>
-                        reactor.displayName ||
-                        reactor.handle ||
-                        reactor.accountId,
-                )
-                .join(", ");
             const emojiName = emojiDisplayName(reaction.emoji, i18n);
-            const titleLabel = reactedByLabel
-                ? `${emojiName} — ${reactedByLabel}`
-                : emojiName;
-            return `<button type="button" class="messages-reaction-chip${ownClass}" title="${escapeHtml(titleLabel)}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
+            const reactedByLabels = reaction.reactedBy
+                .map((reactor) => memberDisplayName(reactor))
+                .filter(Boolean);
+            const reactedByPayload = stableJson(reactedByLabels);
+            return `<button type="button" class="messages-reaction-chip${ownClass}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}" data-reaction-emoji-name="${escapeHtml(emojiName)}" data-reacted-by="${escapeHtml(reactedByPayload)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
         })
         .join("");
     const quickEmojis = getQuickReactionEmojis();
@@ -693,6 +688,104 @@ function renderReactionRow(message, i18n) {
         ? "messages-reactions-row messages-reactions-row--has-chips"
         : "messages-reactions-row";
     return `<div class="${rowClass}">${chips}<span class="messages-reaction-add-wrap">${quick}${moreBtn}</span></div>`;
+}
+
+function getReactionHoverPopup() {
+    if (reactionHoverPopupElement instanceof HTMLElement) {
+        return reactionHoverPopupElement;
+    }
+    reactionHoverPopupElement = document.createElement("aside");
+    reactionHoverPopupElement.className = "messages-reaction-hover-popup";
+    reactionHoverPopupElement.setAttribute("role", "tooltip");
+    reactionHoverPopupElement.hidden = true;
+    document.body.appendChild(reactionHoverPopupElement);
+    return reactionHoverPopupElement;
+}
+
+function positionReactionHoverPopup(anchorButton, popupElement) {
+    const anchorBounds = anchorButton.getBoundingClientRect();
+    popupElement.style.left = "0";
+    popupElement.style.top = "0";
+    popupElement.hidden = false;
+    const popupBounds = popupElement.getBoundingClientRect();
+    const viewportPadding = 8;
+    const popupGap = 8;
+    let leftPosition =
+        anchorBounds.left + anchorBounds.width / 2 - popupBounds.width / 2;
+    leftPosition = Math.max(
+        viewportPadding,
+        Math.min(
+            leftPosition,
+            window.innerWidth - popupBounds.width - viewportPadding,
+        ),
+    );
+    let topPosition = anchorBounds.bottom + popupGap;
+    if (topPosition + popupBounds.height > window.innerHeight - viewportPadding) {
+        topPosition = anchorBounds.top - popupBounds.height - popupGap;
+    }
+    topPosition = Math.max(
+        viewportPadding,
+        Math.min(
+            topPosition,
+            window.innerHeight - popupBounds.height - viewportPadding,
+        ),
+    );
+    popupElement.style.left = `${Math.round(leftPosition)}px`;
+    popupElement.style.top = `${Math.round(topPosition)}px`;
+}
+
+function hideReactionHoverPopup() {
+    reactionHoverAnchorButton = null;
+    if (!(reactionHoverPopupElement instanceof HTMLElement)) return;
+    reactionHoverPopupElement.hidden = true;
+    reactionHoverPopupElement.innerHTML = "";
+}
+
+function showReactionHoverPopup(reactionChipButton) {
+    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
+    if (
+        reactionHoverAnchorButton instanceof HTMLButtonElement &&
+        reactionHoverAnchorButton === reactionChipButton &&
+        reactionHoverPopupElement instanceof HTMLElement &&
+        !reactionHoverPopupElement.hidden
+    ) {
+        positionReactionHoverPopup(reactionChipButton, reactionHoverPopupElement);
+        return;
+    }
+    const emojiName = String(
+        reactionChipButton.getAttribute("data-reaction-emoji-name") ?? "",
+    ).trim();
+    if (!emojiName) {
+        hideReactionHoverPopup();
+        return;
+    }
+    const rawReactedBy = String(
+        reactionChipButton.getAttribute("data-reacted-by") ?? "[]",
+    );
+    let reactedByLabels = [];
+    try {
+        const parsedReactedBy = JSON.parse(rawReactedBy);
+        reactedByLabels = Array.isArray(parsedReactedBy)
+            ? parsedReactedBy
+                  .map((label) => String(label ?? "").trim())
+                  .filter(Boolean)
+            : [];
+    } catch {
+        reactedByLabels = [];
+    }
+    const popupElement = getReactionHoverPopup();
+    const participantsMarkup =
+        reactedByLabels.length > 0
+            ? `<ul class="messages-reaction-hover-popup-users">${reactedByLabels
+                  .map(
+                      (participantLabel) =>
+                          `<li class="messages-reaction-hover-popup-user">${escapeHtml(participantLabel)}</li>`,
+                  )
+                  .join("")}</ul>`
+            : "";
+    popupElement.innerHTML = `<h3 class="messages-reaction-hover-popup-title">${escapeHtml(emojiName)}</h3>${participantsMarkup}`;
+    reactionHoverAnchorButton = reactionChipButton;
+    positionReactionHoverPopup(reactionChipButton, popupElement);
 }
 
 function formatRoomListAvatar(room, displayedMember, titleSource) {
@@ -895,6 +988,7 @@ async function renderThread(
 
     const hasMore = messageList.length === 50;
     const oldestCreatedAt = ordered[0]?.createdAt ?? null;
+    hideReactionHoverPopup();
 
     if (before) {
         const savedHeight = container.scrollHeight;
@@ -1737,6 +1831,7 @@ export async function mount(root, { signal } = {}) {
                 const form = document.getElementById("messages-composer");
 
                 threadList?.addEventListener("click", async (clickEvent) => {
+                    hideReactionHoverPopup();
                     const moreButton = clickEvent.target.closest(
                         "[data-reaction-more]",
                     );
@@ -1791,6 +1886,75 @@ export async function mount(root, { signal } = {}) {
                         currentAccountId,
                         beforeTime,
                     );
+                });
+
+                threadList?.addEventListener("mouseover", (pointerEvent) => {
+                    const hoveredElement = pointerEvent.target;
+                    if (!(hoveredElement instanceof Element)) return;
+                    const reactionChipButton = hoveredElement.closest(
+                        ".messages-reaction-chip",
+                    );
+                    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
+                    const relatedElement = pointerEvent.relatedTarget;
+                    if (
+                        relatedElement instanceof Element &&
+                        reactionChipButton.contains(relatedElement)
+                    ) {
+                        return;
+                    }
+                    showReactionHoverPopup(reactionChipButton);
+                });
+
+                threadList?.addEventListener("mouseout", (pointerEvent) => {
+                    const originElement = pointerEvent.target;
+                    if (!(originElement instanceof Element)) return;
+                    const reactionChipButton = originElement.closest(
+                        ".messages-reaction-chip",
+                    );
+                    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
+                    const relatedElement = pointerEvent.relatedTarget;
+                    if (
+                        relatedElement instanceof Element &&
+                        reactionChipButton.contains(relatedElement)
+                    ) {
+                        return;
+                    }
+                    hideReactionHoverPopup();
+                });
+
+                threadList?.addEventListener("focusin", (focusEvent) => {
+                    const focusedElement = focusEvent.target;
+                    if (!(focusedElement instanceof Element)) return;
+                    const reactionChipButton = focusedElement.closest(
+                        ".messages-reaction-chip",
+                    );
+                    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
+                    showReactionHoverPopup(reactionChipButton);
+                });
+
+                threadList?.addEventListener("focusout", (focusEvent) => {
+                    const blurredElement = focusEvent.target;
+                    if (!(blurredElement instanceof Element)) return;
+                    const reactionChipButton = blurredElement.closest(
+                        ".messages-reaction-chip",
+                    );
+                    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
+                    const nextFocusedElement = focusEvent.relatedTarget;
+                    if (
+                        nextFocusedElement instanceof Element &&
+                        reactionChipButton.contains(nextFocusedElement)
+                    ) {
+                        return;
+                    }
+                    hideReactionHoverPopup();
+                });
+
+                window.addEventListener("scroll", hideReactionHoverPopup, {
+                    capture: true,
+                    signal,
+                });
+                window.addEventListener("resize", hideReactionHoverPopup, {
+                    signal,
                 });
 
                 form?.addEventListener("submit", async (event) => {
@@ -1937,6 +2101,12 @@ export async function mount(root, { signal } = {}) {
     signal?.addEventListener(
         "abort",
         () => {
+            hideReactionHoverPopup();
+            if (reactionHoverPopupElement instanceof HTMLElement) {
+                reactionHoverPopupElement.remove();
+            }
+            reactionHoverPopupElement = null;
+            reactionHoverAnchorButton = null;
             if (typingSendTimeoutId) clearTimeout(typingSendTimeoutId);
             if (typingPollIntervalId) clearInterval(typingPollIntervalId);
             if (liveRefreshIntervalId) clearInterval(liveRefreshIntervalId);
