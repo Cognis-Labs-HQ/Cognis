@@ -8,6 +8,7 @@ import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { navigateTo } from "../../reuse/app-router.js";
 
+// platform is the fallback group for ungrouped root-level docs.
 const GROUP_KEYS = {
     platform: "ui.app.docs.group.platform",
     gateways: "ui.app.docs.group.gateways",

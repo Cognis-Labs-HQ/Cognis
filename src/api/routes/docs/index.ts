@@ -87,6 +87,7 @@ function computeGroup(slug: string, isRootDocs: boolean): string {
         // Root docs with nested paths stay grouped under their top-level segment
         // so related docs remain together in one section. Top-level root docs use
         // platform to avoid creating singleton groups for each standalone page.
+        // Changelog rendering is handled separately by the changelogs UI route.
         if (rootSegments.length > 1) return rootSegments[0];
         return "platform";
     }

@@ -8,8 +8,10 @@ import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { navigateTo } from "../../reuse/app-router.js";
 
+const CHANGELOG_GROUP_KEY = "changelog";
+
 const GROUP_KEYS = {
-    changelog: "ui.app.changelogs.group.changelogs",
+    [CHANGELOG_GROUP_KEY]: "ui.app.changelogs.group.changelogs",
 };
 
 function escapeHtml(value) {
@@ -79,7 +81,7 @@ function changelogSlugToRoutePath(slug) {
     if (slug.startsWith("changelog/")) {
         return `/changelogs/${slug.slice("changelog/".length)}`;
     }
-    return `/docs/${slug}`;
+    return "/changelogs";
 }
 
 function changelogRouteSubpathToSlug(subpath) {
@@ -93,10 +95,7 @@ function changelogRouteSubpathToSlug(subpath) {
 function buildGroupedNav(i18n, items) {
     const groups = new Map();
     for (const item of items) {
-        const groupKey =
-            item.group === "changelog" || item.group === "changelogs"
-                ? "changelog"
-                : item.group || "changelog";
+        const groupKey = CHANGELOG_GROUP_KEY;
         if (!groups.has(groupKey)) groups.set(groupKey, []);
         groups.get(groupKey).push(item);
     }
