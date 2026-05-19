@@ -1,4 +1,5 @@
 import { createI18n } from "/static/reuse/i18n.js";
+import { shouldShowInviteMenuEntry } from "./invite-menu-visibility.js";
 
 async function loadRegistrationState() {
     try {
@@ -19,10 +20,17 @@ async function loadRegistrationState() {
 async function registerInviteMenuEntry() {
     const role = localStorage.getItem("cognis_role");
     const isFounder = localStorage.getItem("cognis_is_founder") === "true";
-    if (role === "admin" || !isFounder) return;
     const registrationState = await loadRegistrationState();
-    if (!registrationState?.gatewayEnabled) return;
-    if (registrationState.inviteEnabled !== true) return;
+    if (
+        !shouldShowInviteMenuEntry({
+            role,
+            isFounder,
+            gatewayEnabled: registrationState?.gatewayEnabled,
+            inviteEnabled: registrationState?.inviteEnabled,
+        })
+    ) {
+        return;
+    }
 
     const dropdown = document.querySelector("#profile-dropdown");
     if (!(dropdown instanceof HTMLUListElement)) return;
@@ -47,4 +55,6 @@ async function registerInviteMenuEntry() {
     dropdown.appendChild(entry);
 }
 
-registerInviteMenuEntry();
+if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+    registerInviteMenuEntry();
+}

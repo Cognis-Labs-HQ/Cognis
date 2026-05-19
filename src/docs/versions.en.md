@@ -50,7 +50,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Notification (notify) | `src/gateways/notify/`       | `1.4.3` |
 | Social                | `src/gateways/social/`       | `1.2.3` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
-| Registration          | `src/gateways/registration/` | `1.1.6` |
+| Registration          | `src/gateways/registration/` | `1.1.7` |
 | Logging               | `src/gateways/logging/`      | `1.5.1` |
 | Study                 | `src/gateways/study/`        | `1.5.4` |
 
