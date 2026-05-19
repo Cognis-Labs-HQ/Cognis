@@ -2939,7 +2939,10 @@ export function createPageComposer(
         const normalized = [];
         let changed = false;
         for (const rowGroup of rowGroups) {
-            if (rowGroup.placements.length < 2) {
+            if (!rowGroup.placements.length) {
+                continue;
+            }
+            if (rowGroup.placements.length === 1) {
                 const placement = rowGroup.placements[0];
                 const bounds = resolvePlacementWidthBounds(
                     placement,

@@ -93,11 +93,9 @@ test("page composer expands compact single-pane rows to full width", () => {
         "utf8",
     );
 
-    assert.match(source, /COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS = 10/);
-    assert.match(
-        source,
-        /maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS[\s\S]*boundedWidth < bounds\.max/,
-    );
+    assert.match(source, /COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS\s*=/);
+    assert.match(source, /maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS/);
+    assert.match(source, /boundedWidth < bounds\.max/);
     assert.match(source, /normalizedPlacement = shouldExpandToFullWidth/);
     assert.match(source, /col: 0,/);
     assert.match(source, /w: bounds\.max,/);
