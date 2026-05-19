@@ -1,4 +1,4 @@
-# Übertragungsmodi und
+# Modi und Zielgruppensteuerung
 
 ## Zusammenfassung
 

@@ -1,4 +1,4 @@
-# SAML SSO Authentication Adapter
+# SAML SSO Auth Adapter
 
 ## Overview
 
