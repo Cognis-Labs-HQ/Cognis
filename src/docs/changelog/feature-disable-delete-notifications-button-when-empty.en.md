@@ -1,4 +1,4 @@
-# Disable Empty Inbox Clear-All Action
+# Disable Empty Inbox...
 
 ## Summary
 

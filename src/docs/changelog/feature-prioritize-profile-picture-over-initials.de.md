@@ -1,4 +1,4 @@
-# Profilbilder in Nachrichten bevorzugen
+# Profilbilder in...
 
 ## Zusammenfassung
 

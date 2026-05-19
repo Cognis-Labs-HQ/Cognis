@@ -1,4 +1,4 @@
-# Pangkas Judul Dokumen Panjang di UI
+# Pangkas Judul Dokumen...
 
 ## Ringkasan
 

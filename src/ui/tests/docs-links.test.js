@@ -101,29 +101,29 @@ test("docs page strips pretty docs URL prefixes before loading document slugs", 
     assert.match(source, /const slug = normalizeDocSlug\(href\);/);
 });
 
-test("docs page truncates long navigation titles and document headings in the UI", () => {
+test("docs page keeps docs-specific stylesheet enabled", () => {
     const html = readFileSync(
         join(ROOT, "src/ui/public/pages/docs.html"),
         "utf8",
     );
-    const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
-    const styles = readFileSync(join(ROOT, "src/ui/styles/docs.css"), "utf8");
-
     assert.match(html, /\/static\/styles\/docs\.css/);
-    assert.match(source, /const DOCUMENT_HEADING_SELECTOR = "h1,h2,h3";/);
-    assert.match(
-        source,
-        /const DOCUMENT_HEADING_CLASS = "docs-truncated-heading";/,
+});
+
+test("docs markdown titles stay within 30 characters", () => {
+    const docs = listTrackedDocFiles().filter((file) =>
+        file.startsWith("src/docs/") && file.endsWith(".md"),
     );
-    assert.match(source, /querySelectorAll\(DOCUMENT_HEADING_SELECTOR\)/);
-    assert.match(source, /heading\.classList\.add\(DOCUMENT_HEADING_CLASS\)/);
-    assert.match(source, /heading\.scrollWidth > heading\.clientWidth/);
-    assert.match(styles, /\.docs-nav \.docs-nav-link\s*\{/);
-    assert.match(styles, /inline-size:\s*fit-content/);
-    assert.match(styles, /min-inline-size:\s*0/);
-    assert.match(styles, /max-inline-size:\s*min\(100%, 30ch\)/);
-    assert.match(styles, /\.docs-nav-label\s*\{/);
-    assert.match(styles, /#doc \.docs-truncated-heading\s*\{/);
-    assert.match(styles, /max-inline-size:\s*min\(100%, 30ch\)/);
-    assert.match(styles, /text-overflow:\s*ellipsis/);
+    const offenders = [];
+    for (const file of docs) {
+        const content = readFileSync(join(ROOT, file), "utf8");
+        const headingLine = content
+            .split("\n")
+            .find((line) => line.startsWith("# "));
+        if (!headingLine) continue;
+        const title = headingLine.slice(2).trim();
+        if (title.length > 30) {
+            offenders.push({ file, title, length: title.length });
+        }
+    }
+    assert.deepEqual(offenders, []);
 });

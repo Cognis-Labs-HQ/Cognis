@@ -1,4 +1,4 @@
-# Keanggotaan Kelas Siswa, Manajemen Kelas Pengajar & Hub Belajar
+# Keanggotaan Kelas Siswa,...
 
 ## Ringkasan
 

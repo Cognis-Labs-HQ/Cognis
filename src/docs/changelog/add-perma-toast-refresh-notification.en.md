@@ -1,4 +1,4 @@
-# Permanent Refresh Toast for Broken API Connections
+# Permanent Refresh Toast...
 
 ## Summary
 

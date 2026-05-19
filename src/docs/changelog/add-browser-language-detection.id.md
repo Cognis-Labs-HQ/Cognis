@@ -1,4 +1,4 @@
-# Changelog PR — Menambahkan Deteksi Bahasa Browser
+# Changelog PR...
 
 ## Ringkasan
 

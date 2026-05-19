@@ -1,4 +1,4 @@
-# Fix Non-Existent Logout Endpoint
+# Fix Non-Existent Logout...
 
 ## Summary
 

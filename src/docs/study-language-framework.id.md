@@ -1,4 +1,4 @@
-# Kerangka Bahasa Studi (Study Language Framework)
+# Kerangka Bahasa Studi...
 
 ## Gambaran Umum
 

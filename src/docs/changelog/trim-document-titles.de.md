@@ -1,4 +1,4 @@
-# Lange Doku-Titel in der UI kürzen
+# Lange Doku-Titel in der...
 
 ## Zusammenfassung
 

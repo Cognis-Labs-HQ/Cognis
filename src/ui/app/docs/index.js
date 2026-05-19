@@ -7,9 +7,6 @@ import {
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 
-const DOCUMENT_HEADING_SELECTOR = "h1,h2,h3";
-const DOCUMENT_HEADING_CLASS = "docs-truncated-heading";
-
 const GROUP_KEYS = {
     "": "ui.app.docs.group.platform",
     gateways: "ui.app.docs.group.gateways",
@@ -62,9 +59,7 @@ function renderDocNavButton(item) {
     const safeTitle = escapeHtml(title);
     return `
         <li>
-            <button class="docs-nav-link" data-slug="${item.slug}" title="${safeTitle}">
-                <span class="docs-nav-label">${safeTitle}</span>
-            </button>
+            <button class="docs-nav-link" data-slug="${item.slug}">${safeTitle}</button>
         </li>
     `;
 }
@@ -119,20 +114,6 @@ export async function mount(root, { signal } = {}) {
         const docEl = root.querySelector("#doc");
         if (!docEl || activeHtml === null) return;
         docEl.innerHTML = activeHtml;
-        const headings = Array.from(
-            docEl.querySelectorAll(DOCUMENT_HEADING_SELECTOR),
-        );
-        headings.forEach((heading) => {
-            heading.classList.add(DOCUMENT_HEADING_CLASS);
-        });
-        headings.forEach((heading) => {
-            const headingText = heading.textContent?.trim() ?? "";
-            const isVisuallyTruncated =
-                heading.scrollWidth > heading.clientWidth;
-            if (headingText && isVisuallyTruncated) {
-                heading.setAttribute("title", headingText);
-            }
-        });
     }
 
     async function showDoc(slug, { pushHistory = true, signal } = {}) {

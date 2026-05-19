@@ -1,4 +1,4 @@
-# PR-Changelog — Ctx als Fähigkeits-Backbone etablieren
+# PR-Changelog — Ctx als...
 
 ## Zusammenfassung
 

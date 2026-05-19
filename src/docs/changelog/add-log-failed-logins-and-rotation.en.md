@@ -1,4 +1,4 @@
-# Logging Stream Filtering, Warning Defaults, and Rotation
+# Logging Stream Filtering,...
 
 ## Summary
 

@@ -1,4 +1,4 @@
-# Deaktivierung der „Alle löschen“-Aktion bei leerem Posteingang
+# Deaktivierung der „Alle...
 
 ## Zusammenfassung
 

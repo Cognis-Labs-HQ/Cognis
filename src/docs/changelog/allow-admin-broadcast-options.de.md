@@ -1,4 +1,4 @@
-# Übertragungsmodi und Zielgruppensteuerung für Admin-Rundsendungen
+# Übertragungsmodi und...
 
 ## Zusammenfassung
 

@@ -1,4 +1,4 @@
-# Changelog PR — Menambahkan Mekanisme Permintaan Pesan
+# Changelog PR...
 
 ## Ringkasan
 
