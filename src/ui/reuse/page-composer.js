@@ -2856,6 +2856,16 @@ export function createPageComposer(
         return packed;
     }
 
+    /**
+     * Resolves min/max width constraints for a placement at the current grid
+     * column count by combining the placement size with the element's grid-size
+     * contract.
+     *
+     * @param {{ id: string, w: number }} placement
+     * @param {number} maxCols
+     * @param {Array<{ id: string, gridSize?: object }>} [elems]
+     * @returns {{ min: number, max: number }}
+     */
     function resolvePlacementWidthBounds(placement, maxCols, elems = elements) {
         const element = elems.find((entry) => entry.id === placement.id);
         const currentWidth = Math.min(maxCols, Math.max(1, placement.w));
@@ -2889,12 +2899,20 @@ export function createPageComposer(
         return { min: minWidth, max: maxWidth };
     }
 
+    /**
+     * Normalizes each visible row so multi-pane rows expand or contract to the
+     * active grid column count while respecting per-element width bounds.
+     *
+     * @param {Array<{ id: string, col: number, row: number, w: number, h: number }>} sortedVisible
+     * @param {number} maxCols
+     * @param {Array<{ id: string, gridSize?: object }>} [elems]
+     * @returns {Array<{ id: string, col: number, row: number, w: number, h: number }>|null}
+     */
     function normalizePlacementRowsForGridWidth(
         sortedVisible,
         maxCols,
         elems = elements,
     ) {
-        const MAX_ROW_WIDTH_DISTRIBUTION_ITERATIONS = 4000;
         const step = gridStep(maxCols);
         const epsilon = 0.001;
         const rowGroups = [];
@@ -2980,12 +2998,13 @@ export function createPageComposer(
             );
             let remaining = Math.round((maxCols - currentTotal) / step) * step;
             let guard = 0;
-            const getDistributionDistance = (descriptor) =>
+            const maxIterations = Math.max(
+                1,
+                Math.ceil(maxCols / step) * descriptors.length * 2,
+            );
+            const getProportionalDelta = (descriptor) =>
                 descriptor.assignedWidth - descriptor.proportionalBaseWidth;
-            while (
-                remaining > epsilon &&
-                guard < MAX_ROW_WIDTH_DISTRIBUTION_ITERATIONS
-            ) {
+            while (remaining > epsilon && guard < maxIterations) {
                 guard++;
                 const candidate = descriptors
                     .filter(
@@ -2994,8 +3013,8 @@ export function createPageComposer(
                             descriptor.max + epsilon,
                     )
                     .sort((left, right) => {
-                        const rightDistance = getDistributionDistance(right);
-                        const leftDistance = getDistributionDistance(left);
+                        const rightDistance = getProportionalDelta(right);
+                        const leftDistance = getProportionalDelta(left);
                         if (rightDistance !== leftDistance) {
                             return rightDistance - leftDistance;
                         }
@@ -3010,10 +3029,7 @@ export function createPageComposer(
                 candidate.assignedWidth += step;
                 remaining = Math.round((remaining - step) / step) * step;
             }
-            while (
-                remaining < -epsilon &&
-                guard < MAX_ROW_WIDTH_DISTRIBUTION_ITERATIONS
-            ) {
+            while (remaining < -epsilon && guard < maxIterations) {
                 guard++;
                 const candidate = descriptors
                     .filter(
@@ -3022,8 +3038,8 @@ export function createPageComposer(
                             descriptor.min - epsilon,
                     )
                     .sort((left, right) => {
-                        const rightDistance = getDistributionDistance(right);
-                        const leftDistance = getDistributionDistance(left);
+                        const rightDistance = getProportionalDelta(right);
+                        const leftDistance = getProportionalDelta(left);
                         if (rightDistance !== leftDistance) {
                             return rightDistance - leftDistance;
                         }
