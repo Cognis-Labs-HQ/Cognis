@@ -133,17 +133,19 @@ function syncGatewayAndAdapterToggles() {
     const moduleStateById = new Map(
         modules.map((moduleRecord) => [moduleRecord.id, moduleRecord]),
     );
-    root.querySelectorAll('input[type="checkbox"][data-module]').forEach((toggle) => {
-        if (!(toggle instanceof HTMLInputElement)) return;
-        const moduleId = toggle.dataset.module;
-        if (!moduleId) return;
-        const moduleRecord = moduleStateById.get(moduleId);
-        if (!moduleRecord) return;
-        const isEnabled = isModuleEnabled(moduleRecord);
-        toggle.checked = isEnabled;
-        toggle.defaultChecked = isEnabled;
-        toggle.disabled = moduleRecord.class === "core";
-    });
+    root.querySelectorAll('input[type="checkbox"][data-module]').forEach(
+        (toggle) => {
+            if (!(toggle instanceof HTMLInputElement)) return;
+            const moduleId = toggle.dataset.module;
+            if (!moduleId) return;
+            const moduleRecord = moduleStateById.get(moduleId);
+            if (!moduleRecord) return;
+            const isEnabled = isModuleEnabled(moduleRecord);
+            toggle.checked = isEnabled;
+            toggle.defaultChecked = isEnabled;
+            toggle.disabled = moduleRecord.class === "core";
+        },
+    );
 
     const gatewayStateById = new Map(
         gateways.map((gateway) => [gateway.id, gateway]),
