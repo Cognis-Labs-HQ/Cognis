@@ -162,6 +162,8 @@ export function createPageComposer(
 
     const UNIT = 90; // grid cell size in pixels
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
+    // Treat narrow grids as compact so single-pane rows expand and avoid
+    // visibly wasted horizontal space on small screens.
     const COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS = 10;
     const FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft";
     const LARGE_FORM_RESET_FIELD_THRESHOLD = 6;
