@@ -43,4 +43,6 @@
   <string name="module.social.messages.present_users_unavailable">Live presence could not be loaded right now.</string>
   <string name="module.social.messages.member_summary_title">Group Members</string>
   <string name="module.social.messages.member_summary_empty">No members found for this conversation.</string>
+  <string name="module.social.messages.emoji_more">More Reactions</string>
+  <string name="module.social.messages.emoji_search_placeholder">Search emojis…</string>
 </resources>

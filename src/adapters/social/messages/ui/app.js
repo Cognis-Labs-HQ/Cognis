@@ -38,19 +38,97 @@ import {
 } from "/static/gateways/social/reuse/profile-avatar.js";
 
 const TEXT_ENCODER = new TextEncoder();
-const QUICK_REACTION_EMOJIS = ["👍", "❤", "😂", "🎉"];
+const DEFAULT_QUICK_EMOJIS = ["👍", "❤", "😂", "🎉", "😮"];
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
-const EMOJI_NAMES = {
-    "👍": "Like",
-    "❤": "Heart",
-    "😂": "Haha",
-    "🎉": "Celebrate",
-};
+const EMOJI_USAGE_STORAGE_KEY = "cognis_messages_emoji_usage";
+
+let cachedEmojiList = null;
+
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
 const LIVE_REFRESH_INTERVAL_MS = 2500;
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
+
+/**
+ * Fetches the full emoji list from the social gateway static asset, caching
+ * the result in memory. Falls back to an empty array on network failure.
+ *
+ * @returns {Promise<Array<{emoji: string, name: string}>>}
+ */
+async function loadAllEmojis() {
+    if (cachedEmojiList) return cachedEmojiList;
+    try {
+        const response = await fetch("/static/gateways/social/emojis.json");
+        if (response.ok) {
+            cachedEmojiList = await response.json();
+        }
+    } catch {
+        // fall through to empty list (lines below)
+    }
+    cachedEmojiList = cachedEmojiList ?? [];
+    return cachedEmojiList;
+}
+
+/**
+ * Loads the per-user emoji usage map from localStorage.
+ * Returns a plain object mapping normalized emoji strings to usage counts.
+ *
+ * @returns {Record<string, number>}
+ */
+function loadEmojiUsage() {
+    try {
+        const raw = localStorage.getItem(EMOJI_USAGE_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch {
+        return {};
+    }
+}
+
+/**
+ * Increments the usage count for a normalized emoji in localStorage so that
+ * the quick-reaction strip adapts over time to the user's preferences.
+ *
+ * @param {string} emoji
+ */
+function recordEmojiUsage(emoji) {
+    try {
+        const usage = loadEmojiUsage();
+        const normalized = normalizeReactionEmoji(emoji);
+        if (!normalized) return;
+        usage[normalized] = (usage[normalized] ?? 0) + 1;
+        localStorage.setItem(EMOJI_USAGE_STORAGE_KEY, JSON.stringify(usage));
+    } catch {
+        // ignore storage errors
+    }
+}
+
+/**
+ * Returns the five emojis to show in the quick-reaction strip. Emojis the
+ * user has reacted with most are ranked first; remaining slots are filled from
+ * DEFAULT_QUICK_EMOJIS.
+ *
+ * @returns {string[]}
+ */
+function getQuickReactionEmojis() {
+    const usage = loadEmojiUsage();
+    const sortedByUsage = Object.entries(usage)
+        .sort((entryA, entryB) => entryB[1] - entryA[1])
+        .map(([emoji]) => normalizeReactionEmoji(emoji))
+        .filter(Boolean);
+
+    const result = [];
+    for (const emoji of sortedByUsage) {
+        if (result.length >= 5) break;
+        if (!result.includes(emoji)) result.push(emoji);
+    }
+    for (const emoji of DEFAULT_QUICK_EMOJIS) {
+        if (result.length >= 5) break;
+        const normalized = normalizeReactionEmoji(emoji);
+        if (!result.includes(normalized)) result.push(normalized);
+    }
+    return result;
+}
 
 function resolveMessageStyle() {
     const rootStyle = document.documentElement.dataset.messageStyle;
@@ -80,15 +158,18 @@ function normalizeReactionEmoji(emoji) {
 }
 
 /**
- * Returns a readable emoji label for known reactions, falling back to the
- * emoji token itself when no mapping exists.
+ * Returns a readable emoji label. Searches the cached emoji list first,
+ * falling back to the emoji token itself when no entry is found.
  *
  * @param {string} emoji
  * @returns {string}
  */
 function emojiDisplayName(emoji) {
     const normalized = normalizeReactionEmoji(emoji);
-    return EMOJI_NAMES[normalized] ?? emoji;
+    const entry = (cachedEmojiList ?? []).find(
+        (item) => normalizeReactionEmoji(item.emoji) === normalized,
+    );
+    return entry?.name ?? emoji;
 }
 
 async function encryptMessage(key, plaintext) {
@@ -521,7 +602,7 @@ function formatRoomEventText(message, i18n) {
     return null;
 }
 
-function renderReactionRow(message) {
+function renderReactionRow(message, i18n) {
     if (!message?.id) return "";
     const reactionRows = Array.isArray(message.reactions)
         ? message.reactions
@@ -558,6 +639,7 @@ function renderReactionRow(message) {
                 : [],
         });
     }
+    const hasChips = mergedByEmoji.size > 0;
     const chips = Array.from(mergedByEmoji.values())
         .map((reaction) => {
             const ownClass = reaction.reactedByMe
@@ -576,11 +658,8 @@ function renderReactionRow(message) {
             return `<button type="button" class="messages-reaction-chip${ownClass}" title="${escapeHtml(titleLabel)}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
         })
         .join("");
-    const quick = Array.from(
-        new Set(
-            QUICK_REACTION_EMOJIS.map((emoji) => normalizeReactionEmoji(emoji)),
-        ),
-    )
+    const quickEmojis = getQuickReactionEmojis();
+    const quick = Array.from(new Set(quickEmojis))
         .filter(
             (emoji) =>
                 emoji && !mergedByEmoji.has(normalizeReactionEmoji(emoji)),
@@ -590,7 +669,12 @@ function renderReactionRow(message) {
                 `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emojiDisplayName(emoji))}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
         )
         .join("");
-    return `<div class="messages-reactions-row">${chips}<span class="messages-reaction-add-wrap">${quick}</span></div>`;
+    const moreLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
+    const moreBtn = `<button type="button" class="messages-reaction-more-btn" title="${escapeHtml(moreLabel)}" data-message-id="${escapeHtml(message.id)}" data-reaction-more="1">···</button>`;
+    const rowClass = hasChips
+        ? "messages-reactions-row messages-reactions-row--has-chips"
+        : "messages-reactions-row";
+    return `<div class="${rowClass}">${chips}<span class="messages-reaction-add-wrap">${quick}${moreBtn}</span></div>`;
 }
 
 function formatRoomListAvatar(room, displayedMember, titleSource) {
@@ -784,7 +868,7 @@ async function renderThread(
                     <span class="messages-message-body">${escapeHtml(msg.text ?? MESSAGE_UNAVAILABLE_PLACEHOLDER)}</span>
                     ${metadataRow}
                 </span>
-                ${renderReactionRow(msg)}
+                ${renderReactionRow(msg, i18n)}
             </div>
             ${statusBlock}
         </div>`;
@@ -1216,6 +1300,68 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
+    async function openEmojiPickerPopup(messageId) {
+        const allEmojis = await loadAllEmojis();
+        const pickerPlaceholder = i18n.t(
+            "module.social.messages.emoji_search_placeholder",
+        );
+        const pickerTitle = i18n.t("module.social.messages.emoji_more");
+
+        function buildEmojiGridHtml(entries) {
+            return entries
+                .slice(0, 80)
+                .map(
+                    (entry) =>
+                        `<button type="button" class="messages-emoji-picker-btn" data-emoji="${escapeHtml(entry.emoji)}" title="${escapeHtml(entry.name)}">${escapeHtml(entry.emoji)}</button>`,
+                )
+                .join("");
+        }
+
+        await openPopup({
+            title: pickerTitle,
+            maxWidth: "420px",
+            body: `<div class="messages-emoji-picker"><input type="text" class="messages-emoji-search" placeholder="${escapeHtml(pickerPlaceholder)}" autocomplete="off" /><div class="messages-emoji-grid">${buildEmojiGridHtml(allEmojis)}</div></div>`,
+            actions: [
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+            ],
+            onOpen: (overlay) => {
+                const searchInput = overlay.querySelector(
+                    ".messages-emoji-search",
+                );
+                const grid = overlay.querySelector(".messages-emoji-grid");
+
+                grid?.addEventListener("click", async (event) => {
+                    const btn = event.target.closest(
+                        ".messages-emoji-picker-btn",
+                    );
+                    if (!btn) return;
+                    const chosenEmoji = btn.dataset.emoji;
+                    overlay.querySelector("[data-popup-action]")?.click();
+                    recordEmojiUsage(chosenEmoji);
+                    await toggleReaction(messageId, chosenEmoji);
+                });
+
+                searchInput?.addEventListener("input", () => {
+                    const query = searchInput.value.toLowerCase().trim();
+                    const filtered = query
+                        ? allEmojis.filter((entry) =>
+                              entry.name.includes(query),
+                          )
+                        : allEmojis;
+                    if (grid) {
+                        grid.innerHTML = buildEmojiGridHtml(filtered);
+                    }
+                });
+
+                searchInput?.focus();
+            },
+        });
+    }
+
     async function refreshActiveConversation() {
         if (!selectedRoomId || document.visibilityState !== "visible") return;
         await reloadRoomsList();
@@ -1555,6 +1701,15 @@ export async function mount(root, { signal } = {}) {
                 const form = document.getElementById("messages-composer");
 
                 threadList?.addEventListener("click", async (clickEvent) => {
+                    const moreButton = clickEvent.target.closest(
+                        "[data-reaction-more]",
+                    );
+                    if (moreButton) {
+                        const messageId =
+                            moreButton.getAttribute("data-message-id");
+                        if (messageId) await openEmojiPickerPopup(messageId);
+                        return;
+                    }
                     const reactionButton = clickEvent.target.closest(
                         "[data-message-id][data-emoji]",
                     );
@@ -1576,6 +1731,9 @@ export async function mount(root, { signal } = {}) {
                             "messages-reaction-add-btn",
                         )
                     ) {
+                        recordEmojiUsage(
+                            reactionButton.getAttribute("data-emoji"),
+                        );
                         await toggleReaction(
                             reactionButton.getAttribute("data-message-id"),
                             reactionButton.getAttribute("data-emoji"),

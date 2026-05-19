@@ -43,4 +43,6 @@
   <string name="module.social.messages.present_users_unavailable">Die Live-Anwesenheit konnte gerade nicht geladen werden.</string>
   <string name="module.social.messages.member_summary_title">Gruppenmitglieder</string>
   <string name="module.social.messages.member_summary_empty">Für diese Unterhaltung wurden keine Mitglieder gefunden.</string>
+  <string name="module.social.messages.emoji_more">Mehr Reaktionen</string>
+  <string name="module.social.messages.emoji_search_placeholder">Emojis suchen…</string>
 </resources>

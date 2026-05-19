@@ -43,4 +43,6 @@
   <string name="module.social.messages.present_users_unavailable">Kehadiran langsung belum dapat dimuat saat ini.</string>
   <string name="module.social.messages.member_summary_title">Anggota Grup</string>
   <string name="module.social.messages.member_summary_empty">Tidak ada anggota yang ditemukan untuk percakapan ini.</string>
+  <string name="module.social.messages.emoji_more">Reaksi Lainnya</string>
+  <string name="module.social.messages.emoji_search_placeholder">Cari emoji…</string>
 </resources>
