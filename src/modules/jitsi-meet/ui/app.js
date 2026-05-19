@@ -41,6 +41,8 @@ import {
     buildStageMarkup,
 } from "./markup.js";
 
+const MOBILE_LAYOUT_MEDIA_QUERY = "(max-width: 720px)";
+
 function normalizeChatRoomId(value) {
     const asString = String(value ?? "").trim();
     if (!asString) return "";
@@ -1502,7 +1504,7 @@ export async function mount(root, { signal } = {}) {
             '[data-composer-element="jitsi-chat"]',
         );
         if (!(chatCard instanceof HTMLElement)) return;
-        if (window.matchMedia("(max-width: 720px)").matches) {
+        if (window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches) {
             chatCard.style.gridColumn = "1 / -1";
             return;
         }

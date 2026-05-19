@@ -2838,7 +2838,7 @@ export function createPageComposer(
         );
         fallbackButton.setAttribute("role", "button");
         fallbackButton.hidden = true;
-        // syncEditToggle/syncSubEditToggle bind title, icon, and click handlers
+        // syncEditToggle/syncSubEditToggle set visibility, tooltip, and icon
         // immediately after this helper returns the fallback button.
         const fallbackHost = root.querySelector(".workspace") ?? root;
         fallbackHost.appendChild(fallbackButton);
@@ -3030,8 +3030,8 @@ export function createPageComposer(
             let remaining = Math.round((maxCols - currentTotal) / step) * step;
             let guard = 0;
             // Guard width redistribution loops using the maximum number of grid
-            // step changes across all panes in one growth pass plus one shrink
-            // pass to prevent infinite redistribution attempts.
+            // step changes each pane can take across the grid in both growth and
+            // shrink directions to prevent infinite redistribution attempts.
             const maxIterations = Math.max(
                 1,
                 Math.ceil(maxCols / step) * descriptors.length * 2,

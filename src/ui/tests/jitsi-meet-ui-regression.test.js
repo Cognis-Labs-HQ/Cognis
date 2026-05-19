@@ -384,7 +384,11 @@ test("meetings UI keeps Jitsi theme and active-meeting table responsive", () => 
     );
     assert.match(appSource, /const syncJitsiTheme = \(\) =>/);
     assert.match(appSource, /function syncMobileChatPaneWidth\(\)/);
-    assert.match(appSource, /window\.matchMedia\("\(max-width: 720px\)"\)/);
+    assert.match(
+        appSource,
+        /const MOBILE_LAYOUT_MEDIA_QUERY = "\(max-width: 720px\)"/,
+    );
+    assert.match(appSource, /window\.matchMedia\(MOBILE_LAYOUT_MEDIA_QUERY\)/);
     assert.match(appSource, /chatCard\.style\.gridColumn = "1 \/ -1"/);
     assert.match(appSource, /syncMobileChatPaneWidth\(\);/);
     assert.match(
