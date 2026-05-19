@@ -154,6 +154,41 @@ async function serveHtmlPage(
     );
 }
 
+async function serveHtmlPageWithReplacements(
+    res: ServerResponse,
+    filePath: string,
+    replacements: Array<{ from: string; to: string }>,
+    log?: BootstrapLog,
+    logMeta?: Record<string, unknown>,
+    routeContext?: RouteContext,
+) {
+    try {
+        let html = await readFile(filePath, "utf8");
+        for (const replacement of replacements) {
+            html = html.replaceAll(replacement.from, replacement.to);
+        }
+        routeContext?.setPageSecurityHeaders(res);
+        res.writeHead(200, {
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": "no-store",
+        });
+        res.end(html);
+    } catch (error) {
+        log?.("error", "Failed to serve UI asset.", {
+            component: "api-ui",
+            filePath,
+            ...(logMeta ?? {}),
+            error: error instanceof Error ? error.message : String(error),
+        });
+        res.writeHead(404, { "content-type": "application/json" });
+        res.end(
+            JSON.stringify({
+                error: { code: "not_found", message: "Asset not found." },
+            }),
+        );
+    }
+}
+
 function getCookieAccessToken(req: IncomingMessage): string | null {
     const cookie = req.headers.cookie ?? "";
     const match = cookie.match(/(?:^|; )cognis_access_token=([^;]+)/);
@@ -513,9 +548,19 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveHtmlPage(
+            await serveHtmlPageWithReplacements(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "docs.html"),
+                [
+                    {
+                        from: "{{ui.page.title.docs}}",
+                        to: "{{ui.page.title.changelogs}}",
+                    },
+                    {
+                        from: "/static/app/docs/index.js",
+                        to: "/static/app/changelogs/index.js",
+                    },
+                ],
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,

@@ -457,7 +457,7 @@ test("license route requires login cookie and serves dedicated page", async () =
     assert.match(authed.body, /id="app"/);
 });
 
-test("changelogs route requires login cookie and serves docs boilerplate page", async () => {
+test("changelogs route requires login cookie and serves changelog entrypoint from docs boilerplate", async () => {
     const route = createUiRoutes();
     const anonymous = createResponseRecorder();
     await route(
@@ -476,7 +476,7 @@ test("changelogs route requires login cookie and serves docs boilerplate page", 
         new URL("http://localhost/changelogs"),
     );
     assert.equal(authed.status, 200);
-    assert.match(authed.body, /static\/app\/docs\/index\.js/);
+    assert.match(authed.body, /static\/app\/changelogs\/index\.js/);
     assert.match(authed.body, /id="app"/);
 });
 

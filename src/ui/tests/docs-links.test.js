@@ -193,18 +193,6 @@ test("changelogs page keeps changelog-only navigation data", () => {
     );
 });
 
-test("docs entrypoint boots changelogs page for direct /changelogs loads", () => {
-    const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
-    assert.ok(
-        source.includes('window.location.pathname.startsWith("/changelogs")'),
-        "docs entrypoint should hand off direct /changelogs loads",
-    );
-    assert.ok(
-        source.includes('await import("../changelogs/index.js")'),
-        "docs entrypoint should load changelogs module from shared boilerplate",
-    );
-});
-
 test("docs markdown titles stay within 30 characters", () => {
     const docs = listTrackedDocFiles().filter(
         (file) => file.startsWith("src/docs/") && file.endsWith(".md"),
