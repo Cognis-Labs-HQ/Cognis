@@ -3641,13 +3641,26 @@ export function createPageComposer(
         return root.querySelector(`[data-floating-slot="${CSS.escape(id)}"]`);
     }
 
+    function restoreWindowScrollPosition(left, top) {
+        window.requestAnimationFrame(() => {
+            window.scrollTo({
+                left,
+                top,
+                behavior: "auto",
+            });
+        });
+    }
+
     function refresh(newElements) {
+        const previousScrollLeft = window.scrollX;
+        const previousScrollTop = window.scrollY;
         if (editing) endEditMode();
         editing = false;
         if (Array.isArray(newElements)) {
             elements = newElements;
         }
         render();
+        restoreWindowScrollPosition(previousScrollLeft, previousScrollTop);
     }
 
     return { init, refresh, getFloatingSlot, showToast };

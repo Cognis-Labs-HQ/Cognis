@@ -18,6 +18,26 @@ test("page composer refresh preserves existing elements when called without args
     );
 });
 
+test("page composer refresh restores window scroll position after re-render", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.match(source, /function restoreWindowScrollPosition\(left, top\)/);
+    assert.match(source, /window\.requestAnimationFrame\(\(\) => \{/);
+    assert.match(
+        source,
+        /window\.scrollTo\(\{\s*left,\s*top,\s*behavior: "auto",\s*\}\);/m,
+    );
+    assert.match(source, /const previousScrollLeft = window\.scrollX;/);
+    assert.match(source, /const previousScrollTop = window\.scrollY;/);
+    assert.match(
+        source,
+        /render\(\);\s*restoreWindowScrollPosition\(previousScrollLeft, previousScrollTop\);/m,
+    );
+});
+
 test("page composer invokes element-level onRender callbacks", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-composer.js"),
