@@ -11,10 +11,20 @@ export function createSettingsSection({ i18n }) {
             "/api/v1/auth/password-reset-capability",
         );
         if (!response.ok) {
+            const payload = await response.json().catch(() => null);
+            console.warn(
+                "[settings:security] password reset capability lookup failed",
+                {
+                    status: response.status,
+                    message: payload?.error?.message,
+                },
+            );
             capability = {
                 adapterName: i18n.t("gateway.auth.security.unknown_provider"),
                 supported: false,
-                reason: i18n.t("gateway.auth.security.load_failed"),
+                reason:
+                    payload?.error?.message ||
+                    i18n.t("gateway.auth.security.load_failed"),
             };
             return;
         }
@@ -26,9 +36,9 @@ export function createSettingsSection({ i18n }) {
         if (!capability) {
             return `<p>${i18n.t("gateway.auth.security.loading")}</p>`;
         }
-        const providerName = capability?.adapterName
+        const providerName = capability.adapterName
             ? escapeHtml(capability.adapterName)
-            : escapeHtml(i18n.t("gateway.auth.security.unknown_provider"));
+            : i18n.t("gateway.auth.security.unknown_provider");
         const disabled = capability?.supported === true ? "" : " disabled";
         const reason =
             capability?.supported === true
@@ -89,15 +99,10 @@ export function createSettingsSection({ i18n }) {
         if (popupResult !== "save" || !formElement) {
             return;
         }
-        const nextPasswordInput = formElement.querySelector(
-            'input[name="nextPassword"]',
-        );
-        const confirmPasswordInput = formElement.querySelector(
-            'input[name="confirmPassword"]',
-        );
-        const nextPassword = String(nextPasswordInput?.value ?? "").trim();
+        const formData = new FormData(formElement);
+        const nextPassword = String(formData.get("nextPassword") ?? "").trim();
         const confirmPassword = String(
-            confirmPasswordInput?.value ?? "",
+            formData.get("confirmPassword") ?? "",
         ).trim();
         if (!nextPassword || !confirmPassword) {
             showToast(i18n.t("gateway.auth.security.required"), {
@@ -140,8 +145,8 @@ export function createSettingsSection({ i18n }) {
 
     return {
         id: "security",
-        label: i18n.t("ui.app.admin.security.title"),
-        heading: i18n.t("ui.app.admin.security.title"),
+        label: i18n.t("gateway.auth.security.section_title"),
+        heading: i18n.t("gateway.auth.security.section_title"),
         preferenceKey: "settings-security-layout",
         renderContent,
         async onRender(root) {
@@ -151,9 +156,12 @@ export function createSettingsSection({ i18n }) {
                 panel.innerHTML = renderBody();
             }
             const button = root.querySelector("#settings-reset-password-btn");
-            button?.addEventListener("click", () => {
+            if (!button) {
+                return;
+            }
+            button.onclick = () => {
                 openPasswordResetPopup();
-            });
+            };
         },
         isDirty: () => false,
         save: async () => undefined,

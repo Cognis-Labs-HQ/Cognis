@@ -265,10 +265,11 @@ export function issueAccessToken(
     }
     const token = `cgs_${randomBytes(32).toString("base64url")}`;
     const issuedAt = options?.issuedAt ?? Date.now();
-    const providerId =
-        typeof options?.providerId === "string" && options.providerId.trim()
+    const normalizedProviderId =
+        typeof options?.providerId === "string"
             ? options.providerId.trim()
-            : "local";
+            : "";
+    const providerId = normalizedProviderId || "local";
     const expiresAt = ttlSeconds === null ? null : issuedAt + ttlSeconds * 1000;
     tokenStore.set(hashToken(token), {
         subject,

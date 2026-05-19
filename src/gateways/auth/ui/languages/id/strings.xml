@@ -1,6 +1,7 @@
 <resources>
   <string name="gateway.auth.no_providers">Tidak ada adaptor autentikasi yang dikonfigurasi.</string>
   <string name="gateway.auth.security.loading">Memuat pengaturan keamanan…</string>
+  <string name="gateway.auth.security.section_title">Keamanan</string>
   <string name="gateway.auth.security.unknown_provider">Penyedia Tidak Dikenal</string>
   <string name="gateway.auth.security.load_failed">Tidak dapat memuat kemampuan reset kata sandi.</string>
   <string name="gateway.auth.security.unsupported_default">Reset kata sandi tidak didukung untuk penyedia ini.</string>

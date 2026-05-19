@@ -1,6 +1,7 @@
 <resources>
   <string name="gateway.auth.no_providers">No authentication adapters configured.</string>
   <string name="gateway.auth.security.loading">Loading security settings…</string>
+  <string name="gateway.auth.security.section_title">Security</string>
   <string name="gateway.auth.security.unknown_provider">Unknown Provider</string>
   <string name="gateway.auth.security.load_failed">Unable to load password reset capability.</string>
   <string name="gateway.auth.security.unsupported_default">Password reset is not supported for this provider.</string>

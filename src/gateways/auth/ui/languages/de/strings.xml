@@ -1,6 +1,7 @@
 <resources>
   <string name="gateway.auth.no_providers">Keine Authentifizierungsadapter konfiguriert.</string>
   <string name="gateway.auth.security.loading">Sicherheitseinstellungen werden geladen…</string>
+  <string name="gateway.auth.security.section_title">Sicherheit</string>
   <string name="gateway.auth.security.unknown_provider">Unbekannter Anbieter</string>
   <string name="gateway.auth.security.load_failed">Die Funktion zum Zurücksetzen des Passworts konnte nicht geladen werden.</string>
   <string name="gateway.auth.security.unsupported_default">Das Zurücksetzen des Passworts wird für diesen Anbieter nicht unterstützt.</string>

@@ -303,7 +303,7 @@ export class CoreAuthGateway {
                 adapterId: adapter.id,
                 adapterName: adapter.name,
                 supported: support.supported,
-                ...(support.reason ? { reason: support.reason } : {}),
+                reason: support.reason,
             };
         }
         if (typeof adapter.resetPassword === "function") {
@@ -327,12 +327,15 @@ export class CoreAuthGateway {
         nextPassword: string,
     ): Promise<void> {
         const adapter = this.adapters.get(adapterId);
-        if (!adapter || typeof adapter.resetPassword !== "function") {
+        if (!adapter) {
             throw new Error("password_reset_unsupported");
         }
         const support = this.getPasswordResetSupport(adapterId);
         if (!support.supported) {
             throw new Error(support.reason || "password_reset_unsupported");
+        }
+        if (typeof adapter.resetPassword !== "function") {
+            throw new Error("password_reset_unsupported");
         }
         const result = await adapter.resetPassword(accountId, nextPassword);
         if (result.updated !== true) {

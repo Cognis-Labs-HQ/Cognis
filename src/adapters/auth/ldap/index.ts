@@ -141,7 +141,13 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         if (!support.supported) {
             return { updated: false, message: support.reason };
         }
-        const updated = await this.client!.updatePassword!(
+        if (!this.client || typeof this.client.updatePassword !== "function") {
+            return {
+                updated: false,
+                message: "LDAP writeback client is unavailable.",
+            };
+        }
+        const updated = await this.client.updatePassword(
             accountId,
             nextPassword,
             {

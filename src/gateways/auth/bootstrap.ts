@@ -166,7 +166,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerStaticDir("auth", uiDir);
     ctx.uiRegistry?.registerSettingsSection({
         id: "security",
-        label: "Security",
+        label: "gateway.auth.security.section_title",
         scriptUrl: "/static/gateways/auth/security-prefs.js",
         stringsBaseUrl: "/static/gateways/auth/languages",
     });
@@ -724,6 +724,18 @@ function createAuthGatewayRoutes(
                         error: {
                             code: "bad_request",
                             message: "Password is required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (nextPassword.length < 8) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "password_too_short",
+                            message: "Password must be at least 8 characters",
                         },
                     }),
                 );

@@ -326,7 +326,7 @@ test("auth gateway bootstrap registers correct static dir and admin-section.js e
     );
 });
 
-test("auth gateway bootstrap moves security UI to settings and removes auth admin section", async () => {
+test("auth gateway bootstrap registers security in settings and no auth admin section", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
