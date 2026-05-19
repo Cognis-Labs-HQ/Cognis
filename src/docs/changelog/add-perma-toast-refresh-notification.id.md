@@ -1,4 +1,4 @@
-# Toast Permanen untuk Menyegarkan Halaman Saat Koneksi API Terputus
+# Toast Permanen untuk Refresh
 
 ## Ringkasan
 

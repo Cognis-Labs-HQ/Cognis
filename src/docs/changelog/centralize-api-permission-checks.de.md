@@ -1,4 +1,4 @@
-# PR-Changelog — API-Berechtigungsprüfungen zentralisieren
+# PR-Changelog
 
 ## Zusammenfassung
 

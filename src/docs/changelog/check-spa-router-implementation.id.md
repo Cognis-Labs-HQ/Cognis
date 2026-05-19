@@ -1,4 +1,4 @@
-# Changelog PR — Periksa Implementasi Router SPA
+# Changelog PR — Periksa
 
 ## Ringkasan
 

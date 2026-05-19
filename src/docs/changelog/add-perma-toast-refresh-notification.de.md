@@ -1,4 +1,4 @@
-# Permanenter Aktualisieren-Toast bei unterbrochenen API-Verbindungen
+# Permanenter Refresh-Toast
 
 ## Zusammenfassung
 

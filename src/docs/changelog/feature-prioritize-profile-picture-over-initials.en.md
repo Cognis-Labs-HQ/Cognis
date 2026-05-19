@@ -1,4 +1,4 @@
-# Prefer Profile Avatars in Messages
+# Prefer Profile Avatars
 
 ## Summary
 

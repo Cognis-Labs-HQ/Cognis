@@ -1,4 +1,4 @@
-# PR Changelog — Cleanup Strings and Codebase
+# PR Changelog — String Cleanup
 
 ## Summary
 

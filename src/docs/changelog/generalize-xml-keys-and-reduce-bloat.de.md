@@ -1,4 +1,4 @@
-# i18n-Strings verallgemeinern und Core-Bloat reduzieren
+# i18n-Strings vereinfachen
 
 ## Zusammenfassung
 

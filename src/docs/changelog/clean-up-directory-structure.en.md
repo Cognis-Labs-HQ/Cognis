@@ -1,4 +1,4 @@
-# PR Changelog — Clean Up Directory Structure
+# PR Changelog — Dir Cleanup
 
 ## Summary
 

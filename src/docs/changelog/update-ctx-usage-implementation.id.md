@@ -1,4 +1,4 @@
-# Catatan Perubahan PR — Menjadikan Ctx Tulang Punggung Kapabilitas
+# Catatan Perubahan PR
 
 ## Ringkasan
 

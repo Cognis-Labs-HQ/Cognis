@@ -1,4 +1,4 @@
-# PR-Changelog — Mechanismus für Nachrichtenanfragen Hinzugefügt
+# PR-Changelog
 
 ## Zusammenfassung
 

@@ -1,4 +1,4 @@
-# PR Changelog — Make Ctx the Capability Backbone
+# PR Changelog — Ctx Backbone
 
 ## Summary
 

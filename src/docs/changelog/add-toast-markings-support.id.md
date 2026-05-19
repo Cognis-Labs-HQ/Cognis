@@ -1,4 +1,4 @@
-# Visibilitas Ikon Toast di Mode Terang
+# Visibilitas Ikon Toast Terang
 
 ## Ringkasan
 

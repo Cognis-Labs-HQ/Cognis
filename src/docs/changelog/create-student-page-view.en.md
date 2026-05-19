@@ -1,4 +1,4 @@
-# Student Class Membership, Teacher Class Management & Study Hub
+# Student Class Membership
 
 ## Summary
 

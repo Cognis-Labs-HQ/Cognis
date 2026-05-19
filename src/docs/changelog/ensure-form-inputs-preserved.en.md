@@ -1,4 +1,4 @@
-# Preserve and Manage Page Composer Form Drafts
+# Preserve Page Form Drafts
 
 ## Summary
 

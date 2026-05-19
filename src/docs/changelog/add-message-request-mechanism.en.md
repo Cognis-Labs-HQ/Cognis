@@ -1,4 +1,4 @@
-# PR Changelog — Add Message Request Mechanism
+# PR Changelog — Msg Requests
 
 ## Summary
 

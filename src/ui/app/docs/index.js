@@ -18,6 +18,15 @@ const GROUP_KEYS = {
     tooling: "ui.app.docs.group.tooling",
 };
 
+function escapeHtml(value) {
+    return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
+
 function groupLabel(i18n, group) {
     const key = GROUP_KEYS[group];
     if (key) return i18n.t(key);
@@ -45,6 +54,16 @@ function docTitle(item) {
     );
 }
 
+function renderDocNavButton(item) {
+    const title = docTitle(item);
+    const safeTitle = escapeHtml(title);
+    return `
+        <li>
+            <button class="docs-nav-link" data-slug="${item.slug}">${safeTitle}</button>
+        </li>
+    `;
+}
+
 function normalizeDocSlug(href) {
     return href
         .replace(/[?#].*$/, "")
@@ -68,10 +87,7 @@ function buildGroupedNav(i18n, items) {
     for (const [group, groupItems] of groups) {
         const label = groupLabel(i18n, group);
         const links = groupItems
-            .map(
-                (item) =>
-                    `<li><button data-slug="${item.slug}">${docTitle(item)}</button></li>`,
-            )
+            .map((item) => renderDocNavButton(item))
             .join("");
 
         if (group === "") {
@@ -96,7 +112,8 @@ export async function mount(root, { signal } = {}) {
 
     function renderActiveDoc() {
         const docEl = root.querySelector("#doc");
-        if (docEl && activeHtml !== null) docEl.innerHTML = activeHtml;
+        if (!docEl || activeHtml === null) return;
+        docEl.innerHTML = activeHtml;
     }
 
     async function showDoc(slug, { pushHistory = true, signal } = {}) {

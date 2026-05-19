@@ -1,4 +1,4 @@
-# Toast Icon Visibility in Light Mode
+# Toast Icons in Light Mode
 
 ## Summary
 

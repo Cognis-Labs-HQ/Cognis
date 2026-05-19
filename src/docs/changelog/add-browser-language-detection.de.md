@@ -1,4 +1,4 @@
-# PR-Änderungsprotokoll — Browser-Spracherkennung Hinzugefügt
+# PR-Änderungsprotokoll
 
 ## Zusammenfassung
 

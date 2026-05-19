@@ -100,3 +100,30 @@ test("docs page strips pretty docs URL prefixes before loading document slugs", 
     );
     assert.match(source, /const slug = normalizeDocSlug\(href\);/);
 });
+
+test("docs page keeps docs-specific stylesheet enabled", () => {
+    const html = readFileSync(
+        join(ROOT, "src/ui/public/pages/docs.html"),
+        "utf8",
+    );
+    assert.match(html, /\/static\/styles\/docs\.css/);
+});
+
+test("docs markdown titles stay within 30 characters", () => {
+    const docs = listTrackedDocFiles().filter(
+        (file) => file.startsWith("src/docs/") && file.endsWith(".md"),
+    );
+    const offenders = [];
+    for (const file of docs) {
+        const content = readFileSync(join(ROOT, file), "utf8");
+        const headingLine = content
+            .split("\n")
+            .find((line) => line.startsWith("# "));
+        if (!headingLine) continue;
+        const title = headingLine.slice(2).trim();
+        if (title.length > 30) {
+            offenders.push({ file, title, length: title.length });
+        }
+    }
+    assert.deepEqual(offenders, []);
+});

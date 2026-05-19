@@ -1,4 +1,4 @@
-# Admins im Invite-Menü für Gründer ausblenden
+# Admins aus Invite-Menü raus
 
 ## Zusammenfassung
 

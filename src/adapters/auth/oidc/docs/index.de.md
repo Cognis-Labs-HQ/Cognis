@@ -1,4 +1,4 @@
-# OIDC-SSO-Authentifizierungsadapter
+# OIDC-SSO-Auth-Adapter
 
 ## Überblick
 

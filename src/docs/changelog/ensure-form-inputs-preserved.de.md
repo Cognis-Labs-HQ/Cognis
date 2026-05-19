@@ -1,4 +1,4 @@
-# Formularentwürfe im Page Composer erhalten und verwalten
+# Formularentwürfe im Composer
 
 ## Zusammenfassung
 

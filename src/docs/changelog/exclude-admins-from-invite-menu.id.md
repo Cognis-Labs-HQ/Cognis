@@ -1,4 +1,4 @@
-# Kecualikan Admin dari Entri Menu Invite Pendiri
+# Kecualikan Admin dari Invite
 
 ## Ringkasan
 

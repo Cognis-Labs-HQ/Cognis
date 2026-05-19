@@ -1,4 +1,4 @@
-# Menonaktifkan Aksi Hapus Semua Saat Kotak Masuk Kosong
+# Menonaktifkan Aksi Hapus
 
 ## Ringkasan
 
