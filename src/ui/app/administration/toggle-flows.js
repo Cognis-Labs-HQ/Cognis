@@ -2,6 +2,14 @@ export function isAdapterActive(adapter) {
     return Boolean(adapter?.active ?? adapter?.enabled);
 }
 
+export function isGatewayEnabled(gateway) {
+    return (gateway?.status ?? "active") !== "disabled";
+}
+
+export function shouldQueryGatewayAdapters(gateway) {
+    return gateway?.hasAdapters === true && isGatewayEnabled(gateway);
+}
+
 export function getGatewayAdapters(allAdapters, gatewayId) {
     return allAdapters.filter((adapter) => adapter._gatewayId === gatewayId);
 }

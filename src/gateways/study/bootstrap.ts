@@ -38,6 +38,9 @@ function createStudyAdapterRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
+    const toggleAdapterRoutePattern = new RegExp(
+        `^${base}/([^/]+)/(enable|disable)$`,
+    );
 
     return async (
         req: IncomingMessage,
@@ -145,9 +148,7 @@ function createStudyAdapterRoutes(
             return false;
         }
 
-        const toggleMatch = url.pathname.match(
-            new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
-        );
+        const toggleMatch = url.pathname.match(toggleAdapterRoutePattern);
         if (toggleMatch && req.method === "POST") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(toggleMatch[1]);
@@ -386,7 +387,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.5.5",
+        version: "1.5.6",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",

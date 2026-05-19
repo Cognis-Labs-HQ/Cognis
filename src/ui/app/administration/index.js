@@ -16,6 +16,7 @@ import {
     getAdapterDisableContext,
     getGatewayAdapters,
     getGatewayEnableableAdapters,
+    shouldQueryGatewayAdapters,
 } from "./toggle-flows.js";
 
 let root = null;
@@ -71,6 +72,16 @@ async function loadGatewayAdapters(gatewayId) {
     return payload.data ?? [];
 }
 
+/**
+ * Resolves an adapter record either from the optional override or by matching
+ * the loaded adapter cache for a gateway/adapter pair.
+ *
+ * @param {string} gatewayId
+ * @param {string} adapterId
+ * @param {Record<string, unknown> | null} [adapterOverride]
+ * @returns {Record<string, unknown> | null} Matching adapter record from the
+ * override or adapter cache, or null when no adapter can be resolved.
+ */
 function findAdapterRecord(gatewayId, adapterId, adapterOverride = null) {
     if (adapterOverride) {
         return adapterOverride;
@@ -84,6 +95,16 @@ function findAdapterRecord(gatewayId, adapterId, adapterOverride = null) {
     );
 }
 
+/**
+ * Resolves the URL for an adapter control endpoint using announced metadata
+ * when present, with a standard gateway/adapter fallback path.
+ *
+ * @param {string} gatewayId
+ * @param {string} adapterId
+ * @param {string} controlName
+ * @param {Record<string, unknown> | null} [adapterOverride]
+ * @returns {string}
+ */
 function resolveAdapterControlUrl(
     gatewayId,
     adapterId,
@@ -101,6 +122,12 @@ function resolveAdapterControlUrl(
     return `/api/v1/gateways/${encodedGatewayId}/adapters/${encodedAdapterId}/${controlName}`;
 }
 
+/**
+ * Synchronizes gateway and adapter toggle controls after UI refresh so checkbox
+ * state reflects the latest loaded gateway/adapter runtime status. This
+ * function queries the current DOM toggle nodes and should run after
+ * page-composer rerender/refresh operations.
+ */
 function syncGatewayAndAdapterToggles() {
     const gatewayStateById = new Map(
         gateways.map((gateway) => [gateway.id, gateway]),
@@ -1462,7 +1489,7 @@ async function openAdapterConfig(
 async function loadAllAdapters(gatewayList) {
     const results = await Promise.all(
         gatewayList
-            .filter((gw) => gw.hasAdapters === true)
+            .filter((gw) => shouldQueryGatewayAdapters(gw))
             .map(async (gw) => {
                 const adapters = await loadGatewayAdapters(gw.id);
                 return adapters.map((a) => ({ ...a, _gatewayId: gw.id }));
