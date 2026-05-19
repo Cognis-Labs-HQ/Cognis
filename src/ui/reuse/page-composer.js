@@ -2980,6 +2980,8 @@ export function createPageComposer(
             );
             let remaining = Math.round((maxCols - currentTotal) / step) * step;
             let guard = 0;
+            const getDistributionDistance = (descriptor) =>
+                descriptor.assignedWidth - descriptor.proportionalBaseWidth;
             while (
                 remaining > epsilon &&
                 guard < MAX_ROW_WIDTH_DISTRIBUTION_ITERATIONS
@@ -2992,10 +2994,8 @@ export function createPageComposer(
                             descriptor.max + epsilon,
                     )
                     .sort((left, right) => {
-                        const rightDistance =
-                            right.assignedWidth - right.proportionalBaseWidth;
-                        const leftDistance =
-                            left.assignedWidth - left.proportionalBaseWidth;
+                        const rightDistance = getDistributionDistance(right);
+                        const leftDistance = getDistributionDistance(left);
                         if (rightDistance !== leftDistance) {
                             return rightDistance - leftDistance;
                         }
@@ -3022,10 +3022,8 @@ export function createPageComposer(
                             descriptor.min - epsilon,
                     )
                     .sort((left, right) => {
-                        const rightDistance =
-                            right.assignedWidth - right.proportionalBaseWidth;
-                        const leftDistance =
-                            left.assignedWidth - left.proportionalBaseWidth;
+                        const rightDistance = getDistributionDistance(right);
+                        const leftDistance = getDistributionDistance(left);
                         if (rightDistance !== leftDistance) {
                             return rightDistance - leftDistance;
                         }
@@ -3058,7 +3056,7 @@ export function createPageComposer(
                     changed = true;
                 }
                 normalized.push(nextPlacement);
-                column += descriptor.targetWidth;
+                column += descriptor.assignedWidth;
             }
         }
 
