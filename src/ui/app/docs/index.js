@@ -53,7 +53,7 @@ function docTitle(item) {
             .split("-")
             .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
             .join(" ")
-        );
+    );
 }
 
 function renderDocNavButton(item) {
@@ -120,7 +120,7 @@ export async function mount(root, { signal } = {}) {
         const docEl = root.querySelector("#doc");
         if (!docEl || activeHtml === null) return;
         docEl.innerHTML = activeHtml;
-        docEl.querySelectorAll("h1, h2, h3").forEach((heading) => {
+        docEl.querySelectorAll("h1,h2,h3").forEach((heading) => {
             const headingText = heading.textContent?.trim() ?? "";
             if (headingText.length > DOCUMENT_TITLE_MAX_CH) {
                 heading.setAttribute("title", headingText);

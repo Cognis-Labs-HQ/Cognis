@@ -111,7 +111,7 @@ test("docs page truncates long navigation titles and document headings in the UI
 
     assert.match(html, /\/static\/styles\/docs\.css/);
     assert.match(source, /const DOCUMENT_TITLE_MAX_CH = 30;/);
-    assert.match(source, /querySelectorAll\("h1, h2, h3"\)/);
+    assert.match(source, /querySelectorAll\("h1,h2,h3"\)/);
     assert.match(styles, /\.docs-nav-label\s*\{/);
     assert.match(styles, /max-inline-size:\s*min\(100%, 30ch\)/);
     assert.match(styles, /text-overflow:\s*ellipsis/);
