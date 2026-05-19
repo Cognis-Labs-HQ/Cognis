@@ -15,7 +15,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer.js";
-import { openPopup } from "/static/reuse/popup.js";
+import { createAnchoredPopup, openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
     getInitialsText,
@@ -43,8 +43,9 @@ const MAX_EMOJI_GRID_SIZE = 80;
 
 let cachedEmojiList = null;
 let cachedEmojiUsage = [];
-let reactionHoverPopupElement = null;
-let reactionHoverAnchorButton = null;
+const reactionHoverPopup = createAnchoredPopup({
+    className: "messages-reaction-hover-popup",
+});
 
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
@@ -690,74 +691,12 @@ function renderReactionRow(message, i18n) {
     return `<div class="${rowClass}">${chips}<span class="messages-reaction-add-wrap">${quick}${moreBtn}</span></div>`;
 }
 
-function getReactionHoverPopup() {
-    if (reactionHoverPopupElement instanceof HTMLElement) {
-        return reactionHoverPopupElement;
-    }
-    reactionHoverPopupElement = document.createElement("aside");
-    reactionHoverPopupElement.className = "messages-reaction-hover-popup";
-    reactionHoverPopupElement.setAttribute("role", "tooltip");
-    reactionHoverPopupElement.hidden = true;
-    document.body.appendChild(reactionHoverPopupElement);
-    return reactionHoverPopupElement;
-}
-
-function positionReactionHoverPopup(anchorButton, popupElement) {
-    const anchorBounds = anchorButton.getBoundingClientRect();
-    popupElement.style.left = "0";
-    popupElement.style.top = "0";
-    popupElement.hidden = false;
-    const popupBounds = popupElement.getBoundingClientRect();
-    const viewportPadding = 8;
-    const popupGap = 8;
-    let leftPosition =
-        anchorBounds.left + anchorBounds.width / 2 - popupBounds.width / 2;
-    leftPosition = Math.max(
-        viewportPadding,
-        Math.min(
-            leftPosition,
-            window.innerWidth - popupBounds.width - viewportPadding,
-        ),
-    );
-    let topPosition = anchorBounds.bottom + popupGap;
-    if (
-        topPosition + popupBounds.height >
-        window.innerHeight - viewportPadding
-    ) {
-        topPosition = anchorBounds.top - popupBounds.height - popupGap;
-    }
-    topPosition = Math.max(
-        viewportPadding,
-        Math.min(
-            topPosition,
-            window.innerHeight - popupBounds.height - viewportPadding,
-        ),
-    );
-    popupElement.style.left = `${Math.round(leftPosition)}px`;
-    popupElement.style.top = `${Math.round(topPosition)}px`;
-}
-
 function hideReactionHoverPopup() {
-    reactionHoverAnchorButton = null;
-    if (!(reactionHoverPopupElement instanceof HTMLElement)) return;
-    reactionHoverPopupElement.hidden = true;
-    reactionHoverPopupElement.innerHTML = "";
+    reactionHoverPopup.hide();
 }
 
 function showReactionHoverPopup(reactionChipButton) {
     if (!(reactionChipButton instanceof HTMLButtonElement)) return;
-    if (
-        reactionHoverAnchorButton instanceof HTMLButtonElement &&
-        reactionHoverAnchorButton === reactionChipButton &&
-        reactionHoverPopupElement instanceof HTMLElement &&
-        !reactionHoverPopupElement.hidden
-    ) {
-        positionReactionHoverPopup(
-            reactionChipButton,
-            reactionHoverPopupElement,
-        );
-        return;
-    }
     const emojiName = String(
         reactionChipButton.getAttribute("data-reaction-emoji-name") ?? "",
     ).trim();
@@ -779,7 +718,6 @@ function showReactionHoverPopup(reactionChipButton) {
     } catch {
         reactedByLabels = [];
     }
-    const popupElement = getReactionHoverPopup();
     const participantsMarkup =
         reactedByLabels.length > 0
             ? `<ul class="messages-reaction-hover-popup-users">${reactedByLabels
@@ -789,9 +727,10 @@ function showReactionHoverPopup(reactionChipButton) {
                   )
                   .join("")}</ul>`
             : "";
-    popupElement.innerHTML = `<h3 class="messages-reaction-hover-popup-title">${escapeHtml(emojiName)}</h3>${participantsMarkup}`;
-    reactionHoverAnchorButton = reactionChipButton;
-    positionReactionHoverPopup(reactionChipButton, popupElement);
+    reactionHoverPopup.show(
+        reactionChipButton,
+        `<h3 class="messages-reaction-hover-popup-title">${escapeHtml(emojiName)}</h3>${participantsMarkup}`,
+    );
 }
 
 function formatRoomListAvatar(room, displayedMember, titleSource) {
@@ -2001,9 +1940,15 @@ export async function mount(root, { signal } = {}) {
                     hideReactionHoverPopup,
                     reactionHoverEventOptions,
                 );
-                window.addEventListener("resize", hideReactionHoverPopup, {
-                    signal,
-                });
+                window.addEventListener(
+                    "resize",
+                    () => {
+                        reactionHoverPopup.reposition();
+                    },
+                    {
+                        signal,
+                    },
+                );
 
                 form?.addEventListener("submit", async (event) => {
                     event.preventDefault();
@@ -2150,11 +2095,7 @@ export async function mount(root, { signal } = {}) {
         "abort",
         () => {
             hideReactionHoverPopup();
-            if (reactionHoverPopupElement instanceof HTMLElement) {
-                reactionHoverPopupElement.remove();
-            }
-            reactionHoverPopupElement = null;
-            reactionHoverAnchorButton = null;
+            reactionHoverPopup.destroy();
             if (typingSendTimeoutId) clearTimeout(typingSendTimeoutId);
             if (typingPollIntervalId) clearInterval(typingPollIntervalId);
             if (liveRefreshIntervalId) clearInterval(liveRefreshIntervalId);

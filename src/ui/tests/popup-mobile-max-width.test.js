@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createAnchoredPopup } from "../reuse/popup.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -33,4 +34,108 @@ test("popup locks page scrolling while preserving popup overflow", () => {
         stylesSource,
         /@media \(max-width: 640px\) \{[\s\S]*\.popup-overlay \{[\s\S]*align-items: flex-start;[\s\S]*padding: 12px;/,
     );
+});
+
+test("createAnchoredPopup creates, positions, and tears down anchored popups", () => {
+    class FakeHTMLElement {
+        constructor(tagName = "div") {
+            this.tagName = tagName;
+            this.style = {};
+            this.hidden = false;
+            this.className = "";
+            this.innerHTML = "";
+            this.attributes = {};
+            this.children = [];
+            this.removed = false;
+            this.rect = {
+                left: 100,
+                top: 80,
+                bottom: 100,
+                width: 20,
+                height: 20,
+            };
+        }
+
+        setAttribute(name, value) {
+            this.attributes[name] = value;
+        }
+
+        appendChild(child) {
+            this.children.push(child);
+            child.parentNode = this;
+            return child;
+        }
+
+        addEventListener() {}
+
+        remove() {
+            this.removed = true;
+        }
+
+        getBoundingClientRect() {
+            return this.rect;
+        }
+    }
+
+    const originalHTMLElement = globalThis.HTMLElement;
+    const originalDocument = globalThis.document;
+    const originalWindow = globalThis.window;
+    const body = new FakeHTMLElement("body");
+    const head = new FakeHTMLElement("head");
+
+    globalThis.HTMLElement = FakeHTMLElement;
+    globalThis.document = {
+        querySelector() {
+            return null;
+        },
+        createElement(tagName) {
+            return new FakeHTMLElement(tagName);
+        },
+        body,
+        head,
+    };
+    globalThis.window = {
+        innerWidth: 1280,
+        innerHeight: 720,
+    };
+
+    try {
+        const anchoredPopup = createAnchoredPopup({
+            className: "test-anchored-popup",
+        });
+        const anchor = new FakeHTMLElement("button");
+
+        anchoredPopup.show(anchor, "<strong>Hello</strong>");
+        const popup = body.children[0];
+
+        assert.ok(popup instanceof FakeHTMLElement);
+        assert.equal(popup.className, "test-anchored-popup");
+        assert.equal(popup.attributes.role, "tooltip");
+        assert.equal(popup.hidden, false);
+        assert.equal(popup.innerHTML, "<strong>Hello</strong>");
+        assert.match(String(popup.style.left), /\d+px/);
+        assert.match(String(popup.style.top), /\d+px/);
+
+        anchor.rect = {
+            left: 160,
+            top: 140,
+            bottom: 160,
+            width: 24,
+            height: 20,
+        };
+        anchoredPopup.reposition();
+        assert.match(String(popup.style.left), /\d+px/);
+        assert.match(String(popup.style.top), /\d+px/);
+
+        anchoredPopup.hide();
+        assert.equal(popup.hidden, true);
+        assert.equal(popup.innerHTML, "");
+
+        anchoredPopup.destroy();
+        assert.equal(popup.removed, true);
+    } finally {
+        globalThis.HTMLElement = originalHTMLElement;
+        globalThis.document = originalDocument;
+        globalThis.window = originalWindow;
+    }
 });

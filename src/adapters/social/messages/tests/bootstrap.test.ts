@@ -90,6 +90,7 @@ test("messages reaction chips render hover popup metadata and styles", () => {
     assert.match(appSource, /data-reaction-emoji-name=/);
     assert.match(appSource, /data-reacted-by=/);
     assert.match(appSource, /function showReactionHoverPopup/);
+    assert.match(appSource, /createAnchoredPopup/);
     assert.doesNotMatch(
         appSource,
         /class="messages-reaction-chip[^"]*" title=/,
