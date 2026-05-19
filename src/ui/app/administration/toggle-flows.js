@@ -6,6 +6,10 @@ export function isGatewayEnabled(gateway) {
     return (gateway?.status ?? "active") !== "disabled";
 }
 
+export function isModuleEnabled(moduleRecord) {
+    return moduleRecord?.status === "enabled";
+}
+
 export function shouldQueryGatewayAdapters(gateway) {
     return gateway?.hasAdapters === true && isGatewayEnabled(gateway);
 }
