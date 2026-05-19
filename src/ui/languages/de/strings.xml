@@ -85,6 +85,7 @@
   <string name="ui.layout.avatar.alt">Benutzeravatar</string>
   <string name="ui.layout.theme.aria">Thema umschalten</string>
   <string name="ui.layout.footer.license">Lizenz</string>
+  <string name="ui.layout.footer.changelogs">Änderungsprotokolle</string>
   <string name="ui.app.login.title">Anmelden</string>
   <string name="ui.app.login.intro.aria">Cognis-Einführung</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>
@@ -124,6 +125,9 @@
   <string name="ui.app.docs.group.adapters_file">Datei-Adapter</string>
   <string name="ui.app.docs.group.adapters_notify">Benachrichtigungs-Adapter</string>
   <string name="ui.app.docs.group.tooling">Werkzeuge</string>
+  <string name="ui.app.changelogs.page_title">Änderungsprotokolle</string>
+  <string name="ui.app.changelogs.page_subtitle">Projektänderungsverlauf.</string>
+  <string name="ui.app.changelogs.group.changelogs">Änderungsprotokolle</string>
   <string name="ui.app.license.page_title">Lizenz</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3-Lizenzbedingungen.</string>
   <string name="ui.app.license.load_error">Der Lizenztext konnte nicht geladen werden.</string>
@@ -197,6 +201,7 @@
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
   <string name="ui.page.title.docs">Cognis - Docs</string>
+  <string name="ui.page.title.changelogs">Cognis - Änderungsprotokolle</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.page.title.license">Cognis - Lizenz</string>

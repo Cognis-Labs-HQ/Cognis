@@ -92,6 +92,42 @@ test("localized docs stay in language lockstep", () => {
     assert.deepEqual(incompleteGroups, []);
 });
 
+test("unsuffixed markdown docs have localized variants", () => {
+    const trackedDocs = listTrackedDocFiles().filter((name) =>
+        name.endsWith(".md"),
+    );
+    const trackedDocSet = new Set(trackedDocs);
+    const unsuffixedDocs = trackedDocs.filter(
+        (name) => !/\.(de|en|id|ja)\.md$/.test(name),
+    );
+    const exemptUnsuffixedDocs = new Set([".github/copilot-instructions.md"]);
+    const missingExemptions = [...exemptUnsuffixedDocs].filter(
+        (file) => !trackedDocSet.has(file),
+    );
+    assert.deepEqual(missingExemptions, []);
+    const missingLocalizedVariants = [];
+
+    for (const unsuffixedDoc of unsuffixedDocs) {
+        if (exemptUnsuffixedDocs.has(unsuffixedDoc)) {
+            continue;
+        }
+        const missingLanguages = ["de", "en", "id", "ja"].filter(
+            (languageCode) =>
+                !trackedDocSet.has(
+                    unsuffixedDoc.replace(/\.md$/, `.${languageCode}.md`),
+                ),
+        );
+        if (missingLanguages.length > 0) {
+            missingLocalizedVariants.push({
+                file: unsuffixedDoc,
+                missingLanguages,
+            });
+        }
+    }
+
+    assert.deepEqual(missingLocalizedVariants, []);
+});
+
 test("docs page strips pretty docs URL prefixes before loading document slugs", () => {
     const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
     assert.ok(
@@ -101,12 +137,60 @@ test("docs page strips pretty docs URL prefixes before loading document slugs", 
     assert.match(source, /const slug = normalizeDocSlug\(href\);/);
 });
 
+test("docs page excludes changelog entries from navigation menu", () => {
+    const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
+    assert.ok(
+        source.includes("function isChangelogDoc(item)"),
+        "docs page should classify changelog slugs",
+    );
+    assert.ok(
+        source.includes("docs.filter((doc) => !isChangelogDoc(doc))"),
+        "docs navigation should exclude changelog docs",
+    );
+    assert.ok(
+        source.includes("resolveDefaultSlug(subpath, navigationDocs)"),
+        "docs default selection should only consider non-changelog docs",
+    );
+});
+
+test("docs page falls back ungrouped docs to the platform section", () => {
+    const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
+    assert.ok(
+        source.includes('const groupKey = item.group || "platform";'),
+        "docs navigation should assign ungrouped docs to platform",
+    );
+});
+
 test("docs page keeps docs-specific stylesheet enabled", () => {
     const html = readFileSync(
         join(ROOT, "src/ui/public/pages/docs.html"),
         "utf8",
     );
     assert.match(html, /\/static\/styles\/docs\.css/);
+});
+
+test("docs page template includes docs stylesheet and docs entry script", () => {
+    const html = readFileSync(
+        join(ROOT, "src/ui/public/pages/docs.html"),
+        "utf8",
+    );
+    assert.match(html, /\/static\/styles\/docs\.css/);
+    assert.match(html, /\/static\/app\/docs\/index\.js/);
+});
+
+test("changelogs module keeps changelog-only navigation data", () => {
+    const source = readFileSync(
+        join(ROOT, "src/ui/app/changelogs/index.js"),
+        "utf8",
+    );
+    assert.ok(
+        source.includes("docs.filter((doc) => isChangelogDoc(doc))"),
+        "changelogs page navigation should include only changelog docs",
+    );
+    assert.ok(
+        source.includes('applyDocumentTitle(i18n, "ui.page.title.changelogs")'),
+        "changelogs page should apply the dedicated page title",
+    );
 });
 
 test("docs markdown titles stay within 30 characters", () => {

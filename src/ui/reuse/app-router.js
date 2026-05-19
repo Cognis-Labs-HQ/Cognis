@@ -242,8 +242,19 @@ const STATIC_ROUTES = [
         stylesheets: [
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
+            "/static/styles/docs.css",
         ],
         load: () => import("../app/docs/index.js"),
+    },
+    {
+        pattern: /^\/changelogs/,
+        base: "/changelogs",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/styles/docs.css",
+        ],
+        load: () => import("../app/changelogs/index.js"),
     },
     {
         pattern: /^\/license$/,

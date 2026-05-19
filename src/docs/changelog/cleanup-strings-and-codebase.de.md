@@ -36,8 +36,8 @@ Längenangabe in Index- oder Schlüssel-Constraints ablehnt.
     - `src/docs/versions.id.md`
     - `src/docs/versions.ja.md`
 - Neue Changelog-Dokumente:
-    - `src/docs/changelog/index.en.md`
-    - `src/docs/changelog/cleanup-strings-and-codebase.en.md`
+    - `src/changelogs/index.en.md`
+    - `src/changelogs/cleanup-strings-and-codebase.en.md`
 - Entferntes Root-Changelog:
     - `CHANGELOG.md`
 - Verschobene DB-Stores (entfernt aus `src/adapters/db/reuse/`):

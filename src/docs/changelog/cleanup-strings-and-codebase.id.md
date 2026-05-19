@@ -36,8 +36,8 @@ batasan indeks atau kunci.
     - `src/docs/versions.id.md`
     - `src/docs/versions.ja.md`
 - Dokumen changelog baru:
-    - `src/docs/changelog/index.en.md`
-    - `src/docs/changelog/cleanup-strings-and-codebase.en.md`
+    - `src/changelogs/index.en.md`
+    - `src/changelogs/cleanup-strings-and-codebase.en.md`
 - Changelog root yang dihapus:
     - `CHANGELOG.md`
 - DB store yang dipindahkan (dihapus dari `src/adapters/db/reuse/`):

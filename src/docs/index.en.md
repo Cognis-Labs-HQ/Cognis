@@ -17,7 +17,7 @@ These docs are written for developer contributors, not end users. They describe 
 | [Documentation Standard](/docs/standard) | How documentation is written and organised in this codebase                  |
 | [ACL Matrix](/docs/acl-matrix)           | Role definitions and the full permission matrix                              |
 | [Component Versions](/docs/versions)     | Current version of every gateway, adapter, and module                        |
-| [Changelog](/docs/changelog)             | Per-PR changelog entries                                                     |
+| [Changelog](/changelogs)                 | Per-PR changelog entries                                                     |
 
 ### Architecture layers
 

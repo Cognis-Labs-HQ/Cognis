@@ -30,8 +30,8 @@
             "sha256": "ce32c37e42fb73ced351b34b3bfd1b08b49912bd1c018280aa28fd096644a114"
         },
         {
-            "path": "content/README.md",
-            "sha256": "60e8f61c0c739592c3f7b450361afce2c1774e6b901a19b594ec076519ab8f50"
+            "path": "content/README.en.md",
+            "sha256": "ceb17b5f8bada669e23aee2fb3bf0cc546a788edc7a1011b3611993120f9181d"
         }
     ]
 }

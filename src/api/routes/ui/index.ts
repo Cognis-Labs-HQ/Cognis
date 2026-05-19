@@ -154,6 +154,43 @@ async function serveHtmlPage(
     );
 }
 
+async function serveHtmlPageWithReplacements(
+    res: ServerResponse,
+    filePath: string,
+    replacements: Array<{ from: string; to: string }>,
+    log?: BootstrapLog,
+    logMeta?: Record<string, unknown>,
+    routeContext?: RouteContext,
+) {
+    try {
+        let html = await readFile(filePath, "utf8");
+        // Replacements are literal string substitutions (no regex semantics).
+        // Keep replacement "from" values non-overlapping to avoid cascading
+        // substitutions across sequential replaceAll() calls. This list is
+        // intentionally small (route-specific boilerplate adjustments only).
+        for (const replacement of replacements) {
+            html = html.replaceAll(replacement.from, replacement.to);
+        }
+        routeContext?.setPageSecurityHeaders(res);
+        res.writeHead(200, {
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": "no-store",
+        });
+        res.end(html);
+    } catch (error) {
+        log?.("error", "Failed to serve UI asset.", {
+            component: "api-ui",
+            filePath,
+            ...(logMeta ?? {}),
+            error: error instanceof Error ? error.message : String(error),
+        });
+        res.writeHead(404, { "content-type": "text/html; charset=utf-8" });
+        res.end(
+            "<!doctype html><html><body><h1>Not found</h1><p>Asset not found.</p></body></html>",
+        );
+    }
+}
+
 function getCookieAccessToken(req: IncomingMessage): string | null {
     const cookie = req.headers.cookie ?? "";
     const match = cookie.match(/(?:^|; )cognis_access_token=([^;]+)/);
@@ -493,6 +530,39 @@ export function createUiRoutes(
             await serveHtmlPage(
                 res,
                 path.join(PUBLIC_ROOT, "pages", "docs.html"),
+                log,
+                { path: url.pathname, method: req.method ?? "GET" },
+                ctx,
+            );
+            return true;
+        }
+
+        if (url.pathname.startsWith("/changelogs")) {
+            const loginRedirect = await resolveLoginRedirectLocation(
+                req,
+                ctx,
+                accountStore,
+                log,
+            );
+            if (loginRedirect) {
+                res.writeHead(302, { location: loginRedirect });
+                res.end();
+                return true;
+            }
+
+            await serveHtmlPageWithReplacements(
+                res,
+                path.join(PUBLIC_ROOT, "pages", "docs.html"),
+                [
+                    {
+                        from: "{{ui.page.title.docs}}",
+                        to: "{{ui.page.title.changelogs}}",
+                    },
+                    {
+                        from: "/static/app/docs/index.js",
+                        to: "/static/app/changelogs/index.js",
+                    },
+                ],
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,

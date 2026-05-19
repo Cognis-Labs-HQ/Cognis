@@ -79,7 +79,7 @@ export function createSystemRoutes(
         "public",
         "assets",
         "reuse",
-        "license.md",
+        "license.en.md",
     );
     return async (
         req: IncomingMessage,

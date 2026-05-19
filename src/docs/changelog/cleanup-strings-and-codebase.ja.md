@@ -33,8 +33,8 @@
     - `src/docs/versions.id.md`
     - `src/docs/versions.ja.md`
 - 新しい変更履歴ドキュメント:
-    - `src/docs/changelog/index.en.md`
-    - `src/docs/changelog/cleanup-strings-and-codebase.en.md`
+    - `src/changelogs/index.en.md`
+    - `src/changelogs/cleanup-strings-and-codebase.en.md`
 - 削除したルート変更履歴:
     - `CHANGELOG.md`
 - 移動した DB ストア（`src/adapters/db/reuse/` から削除）:

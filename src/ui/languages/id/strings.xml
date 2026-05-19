@@ -85,6 +85,7 @@
   <string name="ui.layout.avatar.alt">Avatar pengguna</string>
   <string name="ui.layout.theme.aria">Ubah tema</string>
   <string name="ui.layout.footer.license">Lisensi</string>
+  <string name="ui.layout.footer.changelogs">Log Perubahan</string>
   <string name="ui.app.login.title">Masuk</string>
   <string name="ui.app.login.intro.aria">Pengantar Cognis</string>
   <string name="ui.app.login.hero.tagline">Disce. Loquere. Vive.</string>
@@ -124,6 +125,9 @@
   <string name="ui.app.docs.group.adapters_file">Adapter Berkas</string>
   <string name="ui.app.docs.group.adapters_notify">Adapter Notifikasi</string>
   <string name="ui.app.docs.group.tooling">Perkakas</string>
+  <string name="ui.app.changelogs.page_title">Log Perubahan</string>
+  <string name="ui.app.changelogs.page_subtitle">Riwayat perubahan proyek.</string>
+  <string name="ui.app.changelogs.group.changelogs">Log Perubahan</string>
   <string name="ui.app.license.page_title">Lisensi</string>
   <string name="ui.app.license.page_subtitle">Ketentuan lisensi GNU AGPLv3.</string>
   <string name="ui.app.license.load_error">Teks lisensi tidak dapat dimuat.</string>
@@ -197,6 +201,7 @@
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
   <string name="ui.page.title.docs">Cognis - Docs</string>
+  <string name="ui.page.title.changelogs">Cognis - Log Perubahan</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.page.title.license">Cognis - Lisensi</string>

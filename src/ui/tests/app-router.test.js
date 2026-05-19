@@ -13,6 +13,7 @@ const DASHBOARD_PAGES = [
     "invite",
     "administration",
     "docs",
+    "changelogs",
     "license",
 ];
 

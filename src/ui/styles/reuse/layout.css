@@ -479,9 +479,10 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    gap: 6px;
 }
 
-.global-footer-license-link {
+.global-footer-link {
     color: var(--text-muted);
     text-decoration: none;
     font-size: 0.82rem;
@@ -490,8 +491,8 @@
     border-radius: 8px;
 }
 
-.global-footer-license-link:hover,
-.global-footer-license-link:focus-visible {
+.global-footer-link:hover,
+.global-footer-link:focus-visible {
     color: var(--text);
     background: var(--surface-soft);
 }

@@ -32,8 +32,8 @@ MariaDB requires when a TEXT column is used in an index or key constraint.
     - `src/docs/versions.id.md`
     - `src/docs/versions.ja.md`
 - New changelog docs:
-    - `src/docs/changelog/index.en.md`
-    - `src/docs/changelog/cleanup-strings-and-codebase.en.md`
+    - `src/changelogs/index.en.md`
+    - `src/changelogs/cleanup-strings-and-codebase.en.md`
 - Removed root changelog:
     - `CHANGELOG.md`
 - Relocated DB stores (removed from `src/adapters/db/reuse/`):
