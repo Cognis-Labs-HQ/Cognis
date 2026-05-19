@@ -13,3 +13,25 @@
 .docs-nav-top {
     margin-bottom: 8px;
 }
+
+.docs-nav-link {
+    inline-size: 100%;
+    text-align: left;
+}
+
+.docs-nav-label {
+    display: block;
+    max-inline-size: min(100%, 30ch);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#doc h1,
+#doc h2,
+#doc h3 {
+    max-inline-size: min(100%, 30ch);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

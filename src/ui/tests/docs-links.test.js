@@ -100,3 +100,19 @@ test("docs page strips pretty docs URL prefixes before loading document slugs", 
     );
     assert.match(source, /const slug = normalizeDocSlug\(href\);/);
 });
+
+test("docs page truncates long navigation titles and document headings in the UI", () => {
+    const html = readFileSync(
+        join(ROOT, "src/ui/public/pages/docs.html"),
+        "utf8",
+    );
+    const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
+    const styles = readFileSync(join(ROOT, "src/ui/styles/docs.css"), "utf8");
+
+    assert.match(html, /\/static\/styles\/docs\.css/);
+    assert.match(source, /const DOCUMENT_TITLE_MAX_CH = 30;/);
+    assert.match(source, /querySelectorAll\("h1, h2, h3"\)/);
+    assert.match(styles, /\.docs-nav-label\s*\{/);
+    assert.match(styles, /max-inline-size:\s*min\(100%, 30ch\)/);
+    assert.match(styles, /text-overflow:\s*ellipsis/);
+});

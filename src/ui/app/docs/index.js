@@ -7,6 +7,8 @@ import {
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 
+const DOCUMENT_TITLE_MAX_CH = 30;
+
 const GROUP_KEYS = {
     "": "ui.app.docs.group.platform",
     gateways: "ui.app.docs.group.gateways",
@@ -17,6 +19,15 @@ const GROUP_KEYS = {
     modules: "ui.reuse.modules",
     tooling: "ui.app.docs.group.tooling",
 };
+
+function escapeHtml(value) {
+    return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
 
 function groupLabel(i18n, group) {
     const key = GROUP_KEYS[group];
@@ -42,7 +53,21 @@ function docTitle(item) {
             .split("-")
             .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
             .join(" ")
-    );
+        );
+}
+
+function renderDocNavButton(item) {
+    const title = docTitle(item);
+    const safeTitle = escapeHtml(title);
+    const titleAttr =
+        title.length > DOCUMENT_TITLE_MAX_CH ? ` title="${safeTitle}"` : "";
+    return `
+        <li>
+            <button class="docs-nav-link" data-slug="${item.slug}"${titleAttr}>
+                <span class="docs-nav-label">${safeTitle}</span>
+            </button>
+        </li>
+    `;
 }
 
 function normalizeDocSlug(href) {
@@ -68,10 +93,7 @@ function buildGroupedNav(i18n, items) {
     for (const [group, groupItems] of groups) {
         const label = groupLabel(i18n, group);
         const links = groupItems
-            .map(
-                (item) =>
-                    `<li><button data-slug="${item.slug}">${docTitle(item)}</button></li>`,
-            )
+            .map((item) => renderDocNavButton(item))
             .join("");
 
         if (group === "") {
@@ -96,7 +118,16 @@ export async function mount(root, { signal } = {}) {
 
     function renderActiveDoc() {
         const docEl = root.querySelector("#doc");
-        if (docEl && activeHtml !== null) docEl.innerHTML = activeHtml;
+        if (!docEl || activeHtml === null) return;
+        docEl.innerHTML = activeHtml;
+        docEl.querySelectorAll("h1, h2, h3").forEach((heading) => {
+            const headingText = heading.textContent?.trim() ?? "";
+            if (headingText.length > DOCUMENT_TITLE_MAX_CH) {
+                heading.setAttribute("title", headingText);
+            } else {
+                heading.removeAttribute("title");
+            }
+        });
     }
 
     async function showDoc(slug, { pushHistory = true, signal } = {}) {
