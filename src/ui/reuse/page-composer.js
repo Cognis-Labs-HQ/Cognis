@@ -2894,6 +2894,7 @@ export function createPageComposer(
         maxCols,
         elems = elements,
     ) {
+        const MAX_ROW_WIDTH_DISTRIBUTION_ITERATIONS = 4000;
         const step = gridStep(maxCols);
         const epsilon = 0.001;
         const rowGroups = [];
@@ -2934,9 +2935,8 @@ export function createPageComposer(
                     placement,
                     min: bounds.min,
                     max: bounds.max,
-                    width: boundedWidth,
-                    ratioWidth: boundedWidth,
-                    targetWidth: boundedWidth,
+                    proportionalBaseWidth: boundedWidth,
+                    assignedWidth: boundedWidth,
                 };
             });
             if (
@@ -2956,7 +2956,7 @@ export function createPageComposer(
                 return null;
             }
             const ratioTotal = descriptors.reduce(
-                (sum, descriptor) => sum + descriptor.ratioWidth,
+                (sum, descriptor) => sum + descriptor.proportionalBaseWidth,
                 0,
             );
             if (ratioTotal <= 0) {
@@ -2964,8 +2964,8 @@ export function createPageComposer(
             }
             for (const descriptor of descriptors) {
                 const rawTarget =
-                    (descriptor.ratioWidth / ratioTotal) * maxCols;
-                descriptor.targetWidth = Math.min(
+                    (descriptor.proportionalBaseWidth / ratioTotal) * maxCols;
+                descriptor.assignedWidth = Math.min(
                     descriptor.max,
                     Math.max(
                         descriptor.min,
@@ -2975,55 +2975,66 @@ export function createPageComposer(
             }
 
             let currentTotal = descriptors.reduce(
-                (sum, descriptor) => sum + descriptor.targetWidth,
+                (sum, descriptor) => sum + descriptor.assignedWidth,
                 0,
             );
             let remaining = Math.round((maxCols - currentTotal) / step) * step;
             let guard = 0;
-            while (remaining > epsilon && guard < 2000) {
+            while (
+                remaining > epsilon &&
+                guard < MAX_ROW_WIDTH_DISTRIBUTION_ITERATIONS
+            ) {
                 guard++;
                 const candidate = descriptors
                     .filter(
                         (descriptor) =>
-                            descriptor.targetWidth + step <=
+                            descriptor.assignedWidth + step <=
                             descriptor.max + epsilon,
                     )
                     .sort((left, right) => {
                         const rightDistance =
-                            right.targetWidth - right.ratioWidth;
-                        const leftDistance = left.targetWidth - left.ratioWidth;
+                            right.assignedWidth - right.proportionalBaseWidth;
+                        const leftDistance =
+                            left.assignedWidth - left.proportionalBaseWidth;
                         if (rightDistance !== leftDistance) {
                             return rightDistance - leftDistance;
                         }
-                        return right.ratioWidth - left.ratioWidth;
+                        return (
+                            right.proportionalBaseWidth -
+                            left.proportionalBaseWidth
+                        );
                     })[0];
                 if (!candidate) {
                     break;
                 }
-                candidate.targetWidth += step;
+                candidate.assignedWidth += step;
                 remaining = Math.round((remaining - step) / step) * step;
             }
-            while (remaining < -epsilon && guard < 4000) {
+            while (
+                remaining < -epsilon &&
+                guard < MAX_ROW_WIDTH_DISTRIBUTION_ITERATIONS
+            ) {
                 guard++;
                 const candidate = descriptors
                     .filter(
                         (descriptor) =>
-                            descriptor.targetWidth - step >=
+                            descriptor.assignedWidth - step >=
                             descriptor.min - epsilon,
                     )
                     .sort((left, right) => {
                         const rightDistance =
-                            right.targetWidth - right.ratioWidth;
-                        const leftDistance = left.targetWidth - left.ratioWidth;
+                            right.assignedWidth - right.proportionalBaseWidth;
+                        const leftDistance =
+                            left.assignedWidth - left.proportionalBaseWidth;
                         if (rightDistance !== leftDistance) {
                             return rightDistance - leftDistance;
                         }
-                        return right.targetWidth - left.targetWidth;
+                        return right.assignedWidth - left.assignedWidth;
                     })[0];
                 if (!candidate) {
                     break;
                 }
-                candidate.targetWidth -= step;
+                candidate.assignedWidth -= step;
                 remaining = Math.round((remaining + step) / step) * step;
             }
             if (Math.abs(remaining) > epsilon) {
@@ -3032,13 +3043,13 @@ export function createPageComposer(
 
             let column = 0;
             for (const descriptor of descriptors) {
-                if (column + descriptor.targetWidth > maxCols + epsilon) {
+                if (column + descriptor.assignedWidth > maxCols + epsilon) {
                     return null;
                 }
                 const nextPlacement = {
                     ...descriptor.placement,
                     col: column,
-                    w: descriptor.targetWidth,
+                    w: descriptor.assignedWidth,
                 };
                 if (
                     nextPlacement.col !== descriptor.placement.col ||
