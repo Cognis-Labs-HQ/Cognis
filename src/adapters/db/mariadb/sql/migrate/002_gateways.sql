@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS gateways (
+  gateway_id VARCHAR(255) PRIMARY KEY,
+  enabled TINYINT(1) NOT NULL DEFAULT 1
+);

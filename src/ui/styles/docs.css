@@ -1,0 +1,38 @@
+.docs-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.docs-nav-group {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.docs-nav-top {
+    margin-bottom: 8px;
+}
+
+.docs-nav .docs-nav-link {
+    display: block;
+    inline-size: fit-content;
+    max-inline-size: min(100%, 30ch);
+    min-inline-size: 0;
+    text-align: left;
+}
+
+.docs-nav-label {
+    display: block;
+    inline-size: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#doc .docs-truncated-heading {
+    max-inline-size: min(100%, 30ch);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

@@ -1,0 +1,274 @@
+import { createI18n } from "/static/reuse/i18n.js";
+import { apiFetch } from "/static/reuse/api-client.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { navigateTo } from "/static/reuse/app-router.js";
+import { showToast } from "/static/reuse/toast.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import {
+    isTrustedHttpUrl,
+    loadTrustedDomains,
+} from "/static/reuse/trusted-domains.js";
+
+const CSS_HREF = "/static/gateways/notify/broadcast.css";
+const POLL_INTERVAL_VISIBLE_MILLISECONDS = 20_000;
+const POLL_INTERVAL_HIDDEN_MILLISECONDS = 45_000;
+const BAR_CONTAINER_ID = "notify-broadcast-bar";
+
+let currentBarBroadcastId = null;
+let currentPopupBroadcastId = null;
+let isPopupOpen = false;
+let pollTimer = null;
+let stopPollingForAuthFailure = false;
+
+async function navigateAfterClose(redirectUrl, i18n) {
+    if (!redirectUrl) return;
+    try {
+        const trustedDomains = await loadTrustedDomains(apiFetch);
+        if (
+            !isTrustedHttpUrl(redirectUrl, {
+                baseUrl: window.location.origin,
+                trustedDomains,
+            })
+        ) {
+            throw new Error("invalid_redirect");
+        }
+        const parsedUrl = new URL(redirectUrl, window.location.origin);
+        if (parsedUrl.origin === window.location.origin) {
+            navigateTo(parsedUrl.pathname + parsedUrl.search + parsedUrl.hash);
+            return;
+        }
+        window.location.assign(parsedUrl.toString());
+    } catch {
+        showToast(i18n.t("gateway.notify.broadcast.invalid_redirect"), {
+            variant: "warning",
+        });
+    }
+}
+
+async function fetchActiveBroadcasts() {
+    try {
+        const response = await apiFetch(
+            "/api/v1/notifications/broadcasts/active",
+        );
+        if (response.status === 401) {
+            return { broadcasts: [], unauthorized: true };
+        }
+        if (!response.ok) return { broadcasts: [], unauthorized: false };
+        const payload = await response.json().catch(() => null);
+        return {
+            broadcasts: Array.isArray(payload?.data) ? payload.data : [],
+            unauthorized: false,
+        };
+    } catch {
+        return { broadcasts: [], unauthorized: false };
+    }
+}
+
+async function acknowledgeBroadcast(broadcastId) {
+    await apiFetch(
+        `/api/v1/notifications/broadcasts/${encodeURIComponent(broadcastId)}/acknowledge`,
+        { method: "POST" },
+    );
+}
+
+async function dismissBroadcast(broadcastId) {
+    await apiFetch(
+        `/api/v1/notifications/broadcasts/${encodeURIComponent(broadcastId)}/dismiss`,
+        { method: "POST" },
+    );
+}
+
+function getBarContainer() {
+    let barContainer = document.getElementById(BAR_CONTAINER_ID);
+    if (barContainer) return barContainer;
+    barContainer = document.createElement("div");
+    barContainer.id = BAR_CONTAINER_ID;
+    document.body.prepend(barContainer);
+    return barContainer;
+}
+
+function removeBroadcastBar() {
+    document.getElementById(BAR_CONTAINER_ID)?.remove();
+}
+
+function renderBroadcastBar(broadcast, i18n) {
+    const barContainer = getBarContainer();
+    barContainer.innerHTML = `
+      <section class="notify-broadcast-bar" role="status" aria-live="polite">
+        <div class="notify-broadcast-content">
+          <strong class="notify-broadcast-title">${escapeHtml(broadcast.title)}</strong>
+          <span class="notify-broadcast-message">${escapeHtml(broadcast.message)}</span>
+        </div>
+        <div class="notify-broadcast-actions">
+          <button type="button" class="notify-broadcast-ack btn-animated">${
+              broadcast.requireAcknowledgement
+                  ? i18n.t("gateway.notify.broadcast.acknowledge")
+                  : i18n.t("ui.reuse.dismiss")
+          }</button>
+          ${
+              broadcast.requireAcknowledgement
+                  ? `<button type="button" class="notify-broadcast-close">${i18n.t("ui.reuse.close")}</button>`
+                  : ""
+          }
+        </div>
+      </section>
+    `;
+
+    const acknowledgeButton = barContainer.querySelector(
+        ".notify-broadcast-ack",
+    );
+    acknowledgeButton?.addEventListener("click", async () => {
+        try {
+            if (broadcast.requireAcknowledgement) {
+                await acknowledgeBroadcast(broadcast.id);
+            } else {
+                await dismissBroadcast(broadcast.id);
+            }
+            removeBroadcastBar();
+            await navigateAfterClose(broadcast.redirectUrl, i18n);
+        } catch {
+            showToast(i18n.t("gateway.notify.broadcast.action_failed"), {
+                variant: "error",
+            });
+        }
+    });
+
+    const closeButton = barContainer.querySelector(".notify-broadcast-close");
+    closeButton?.addEventListener("click", async () => {
+        removeBroadcastBar();
+        if (broadcast.redirectUrl) {
+            await navigateAfterClose(broadcast.redirectUrl, i18n);
+        }
+    });
+}
+
+async function openBroadcastPopup(broadcast, i18n) {
+    if (isPopupOpen) return;
+    isPopupOpen = true;
+    const popupActions = broadcast.requireAcknowledgement
+        ? [
+              {
+                  id: "acknowledge",
+                  label: i18n.t("gateway.notify.broadcast.acknowledge"),
+                  variant: "confirm",
+              },
+          ]
+        : [
+              {
+                  id: "dismiss",
+                  label: i18n.t("ui.reuse.dismiss"),
+                  variant: "confirm",
+              },
+              {
+                  id: "close",
+                  label: i18n.t("ui.reuse.close"),
+                  variant: "cancel",
+              },
+          ];
+    try {
+        const popupResult = await openPopup({
+            title: escapeHtml(broadcast.title),
+            body: escapeHtml(broadcast.message),
+            actions: popupActions,
+        });
+        const didAcknowledge = popupResult === "acknowledge";
+        if (didAcknowledge) {
+            await acknowledgeBroadcast(broadcast.id);
+            await navigateAfterClose(broadcast.redirectUrl, i18n);
+            return;
+        }
+
+        if (broadcast.requireAcknowledgement) {
+            if (broadcast.redirectUrl) {
+                await navigateAfterClose(broadcast.redirectUrl, i18n);
+            }
+            return;
+        }
+
+        await dismissBroadcast(broadcast.id);
+        await navigateAfterClose(broadcast.redirectUrl, i18n);
+    } catch {
+        showToast(i18n.t("gateway.notify.broadcast.action_failed"), {
+            variant: "error",
+        });
+    } finally {
+        isPopupOpen = false;
+    }
+}
+
+async function refreshBroadcast(i18n) {
+    const { broadcasts, unauthorized } = await fetchActiveBroadcasts();
+    if (unauthorized) {
+        stopPollingForAuthFailure = true;
+        removeBroadcastBar();
+        return;
+    }
+    const activeBarBroadcast = broadcasts.find(
+        (broadcast) => broadcast.displayMode === "bar",
+    );
+    const activePopupBroadcast = broadcasts.find(
+        (broadcast) => broadcast.displayMode === "popup",
+    );
+
+    if (!activeBarBroadcast) {
+        currentBarBroadcastId = null;
+        removeBroadcastBar();
+    } else {
+        const barIsMissing = document.getElementById(BAR_CONTAINER_ID) === null;
+        if (activeBarBroadcast.id !== currentBarBroadcastId || barIsMissing) {
+            currentBarBroadcastId = activeBarBroadcast.id;
+            removeBroadcastBar();
+            renderBroadcastBar(activeBarBroadcast, i18n);
+        }
+    }
+
+    if (!activePopupBroadcast) {
+        currentPopupBroadcastId = null;
+        return;
+    }
+
+    if (isPopupOpen || activePopupBroadcast.id === currentPopupBroadcastId) {
+        return;
+    }
+    currentPopupBroadcastId = activePopupBroadcast.id;
+    await openBroadcastPopup(activePopupBroadcast, i18n);
+}
+
+async function startPolling(i18n) {
+    await refreshBroadcast(i18n);
+
+    const runTick = async () => {
+        if (stopPollingForAuthFailure) {
+            pollTimer = null;
+            return;
+        }
+        await refreshBroadcast(i18n);
+        const pollDelay =
+            document.visibilityState === "visible"
+                ? POLL_INTERVAL_VISIBLE_MILLISECONDS
+                : POLL_INTERVAL_HIDDEN_MILLISECONDS;
+        pollTimer = setTimeout(runTick, pollDelay);
+    };
+
+    const initialPollDelay =
+        document.visibilityState === "visible"
+            ? POLL_INTERVAL_VISIBLE_MILLISECONDS
+            : POLL_INTERVAL_HIDDEN_MILLISECONDS;
+    pollTimer = setTimeout(runTick, initialPollDelay);
+}
+
+(async function initBroadcastPlugin() {
+    if (!localStorage.getItem("cognis_access_token")) return;
+    if (pollTimer) clearTimeout(pollTimer);
+    stopPollingForAuthFailure = false;
+    try {
+        await ensurePageStylesheet(CSS_HREF);
+        const i18n = await createI18n({
+            componentStringBaseUrls: ["/static/gateways/notify/languages"],
+        });
+        await startPolling(i18n);
+    } catch {
+        removeBroadcastBar();
+    }
+})();

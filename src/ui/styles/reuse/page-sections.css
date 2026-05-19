@@ -1,0 +1,238 @@
+.content-section {
+    min-width: 0;
+}
+
+.content-panel > .content-section {
+    --composer-grid-inset: 28px;
+    padding: var(--composer-grid-inset);
+}
+
+.content-section :where(input, select, textarea, button) {
+    max-width: 100%;
+}
+
+.widget-card > h2,
+.widget-card > h3 {
+    margin: 0 0 14px;
+}
+
+.provider-popup-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+}
+
+.provider-popup-toggle-label {
+    font-weight: 600;
+    flex: 1;
+}
+
+.provider-popup-switch {
+    margin-top: 0;
+}
+
+.provider-popup-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.provider-popup-field input,
+.provider-popup-field select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.provider-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+    margin: 10px 0;
+}
+
+.provider-option-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 0 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+}
+
+.provider-option-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.provider-option-label {
+    font-size: 0.9em;
+    flex: 1;
+}
+
+.provider-test-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.provider-test-input {
+    flex: 1;
+}
+
+.provider-test-btn {
+    flex-shrink: 0;
+}
+
+.provider-field-missing input,
+.provider-field-missing select {
+    border-color: var(--danger);
+}
+
+.provider-field-required input,
+.provider-field-required select {
+    outline: 2px solid var(--danger);
+    outline-offset: 1px;
+}
+
+.provider-popup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.provider-enable-toggle {
+    display: none;
+}
+
+.provider-field-env-warning {
+    display: block;
+    color: var(--warning);
+    font-size: 0.8em;
+    margin-top: 2px;
+}
+
+.provider-auth-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+    margin: 0 0 4px;
+}
+
+.notif-debug-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 8px;
+}
+
+.notif-debug-empty {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    margin: 0;
+}
+
+.notif-debug-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+}
+
+.notif-debug-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.9em;
+}
+
+.notif-debug-field--full {
+    grid-column: 1 / -1;
+}
+
+.notif-debug-field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.notif-debug-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.notif-debug-send {
+    flex-shrink: 0;
+}
+
+.security-settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 640px;
+}
+
+.security-field-hint {
+    font-weight: 400;
+    color: var(--color-text-muted, #64748b);
+    font-size: 0.85em;
+}
+
+.security-field-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.security-domains-input {
+    flex: 1;
+}
+
+.components-section {
+    margin-bottom: 24px;
+}
+
+.components-section-heading {
+    font-size: 1em;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+.components-section-body {
+    min-width: 0;
+}
+
+@media (max-width: 900px) {
+    .provider-fields,
+    .provider-auth-fields,
+    .notif-debug-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .provider-test-row,
+    .security-field-row,
+    .notif-debug-actions {
+        flex-wrap: wrap;
+    }
+
+    .provider-test-input,
+    .security-domains-input {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .content-panel > .content-section {
+        --composer-grid-inset: 14px;
+        padding: var(--composer-grid-inset);
+    }
+}

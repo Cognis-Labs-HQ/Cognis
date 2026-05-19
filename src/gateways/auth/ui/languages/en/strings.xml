@@ -1,0 +1,3 @@
+<resources>
+  <string name="gateway.auth.no_providers">No authentication adapters configured.</string>
+</resources>

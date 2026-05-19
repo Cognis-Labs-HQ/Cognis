@@ -1,0 +1,9 @@
+{
+    "id": "logging",
+    "name": "Logging Gateway",
+    "version": "1.5.0",
+    "required": true,
+    "requires": ["files"],
+    "description": "Structured application logging to stdout/stderr and file.",
+    "publisher": "Cognis Labs"
+}
