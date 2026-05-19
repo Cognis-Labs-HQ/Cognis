@@ -10,6 +10,12 @@
     padding: 0;
 }
 
+.docs-nav .docs-nav-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
 .docs-nav-top {
     margin-bottom: 8px;
 }
@@ -19,6 +25,9 @@
     inline-size: fit-content;
     max-inline-size: min(100%, 30ch);
     min-inline-size: 0;
+    min-block-size: 0;
+    padding-block: 4px;
+    padding-inline: 8px;
     text-align: left;
 }
 
