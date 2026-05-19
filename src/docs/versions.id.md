@@ -4,7 +4,7 @@
 
 Dokumen ini melacak versi terkini setiap gateway, adapter, dan modul dalam kodebase Cognis. Dokumen ini berfungsi sebagai indeks changelog dan referensi cepat.
 
-Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`. Saat Anda memodifikasi komponen, Anda harus menaikkan versi di `package.json` tersebut mengikuti Semantic Versioning. Entri changelog disimpan sebagai file per-PR di `src/docs/changelog/`.
+Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`. Saat Anda memodifikasi komponen, Anda harus menaikkan versi di `package.json` tersebut mengikuti Semantic Versioning. Entri changelog disimpan sebagai file per-PR di `src/changelogs/`.
 
 ## Adapter
 

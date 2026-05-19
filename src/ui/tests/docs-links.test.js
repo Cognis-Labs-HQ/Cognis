@@ -147,6 +147,10 @@ test("docs page excludes changelog entries from navigation menu", () => {
         source.includes("docs.filter((doc) => !isChangelogDoc(doc))"),
         "docs navigation should exclude changelog docs",
     );
+    assert.ok(
+        source.includes("resolveDefaultSlug(subpath, navigationDocs)"),
+        "docs default selection should only consider non-changelog docs",
+    );
 });
 
 test("docs page falls back ungrouped docs to the platform section", () => {
@@ -163,6 +167,30 @@ test("docs page keeps docs-specific stylesheet enabled", () => {
         "utf8",
     );
     assert.match(html, /\/static\/styles\/docs\.css/);
+});
+
+test("changelogs page keeps docs-specific stylesheet and dedicated script enabled", () => {
+    const html = readFileSync(
+        join(ROOT, "src/ui/public/pages/changelogs.html"),
+        "utf8",
+    );
+    assert.match(html, /\/static\/styles\/docs\.css/);
+    assert.match(html, /\/static\/app\/changelogs\/index\.js/);
+});
+
+test("changelogs page keeps changelog-only navigation data", () => {
+    const source = readFileSync(
+        join(ROOT, "src/ui/app/changelogs/index.js"),
+        "utf8",
+    );
+    assert.ok(
+        source.includes("docs.filter((doc) => isChangelogDoc(doc))"),
+        "changelogs page navigation should include only changelog docs",
+    );
+    assert.ok(
+        source.includes("applyDocumentTitle(i18n, \"ui.page.title.changelogs\")"),
+        "changelogs page should apply the dedicated page title",
+    );
 });
 
 test("docs markdown titles stay within 30 characters", () => {

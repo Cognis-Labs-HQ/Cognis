@@ -50,7 +50,7 @@ test("dashboard footer renders license and changelogs links", () => {
         "utf8",
     );
     const licenseLinkIndex = template.indexOf('href="/license"');
-    const changelogsLinkIndex = template.indexOf('href="/docs/changelog"');
+    const changelogsLinkIndex = template.indexOf('href="/changelogs"');
     assert.ok(
         licenseLinkIndex !== -1 && changelogsLinkIndex !== -1,
         "dashboard footer should include license and changelogs links",

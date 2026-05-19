@@ -125,6 +125,9 @@
   <string name="ui.app.docs.group.adapters_file">ファイルアダプター</string>
   <string name="ui.app.docs.group.adapters_notify">通知アダプター</string>
   <string name="ui.app.docs.group.tooling">ツール</string>
+  <string name="ui.app.changelogs.page_title">変更履歴</string>
+  <string name="ui.app.changelogs.page_subtitle">プロジェクトの変更履歴。</string>
+  <string name="ui.app.changelogs.group.changelogs">変更履歴</string>
   <string name="ui.app.license.page_title">ライセンス</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3 のライセンス条項。</string>
   <string name="ui.app.license.load_error">ライセンステキストを読み込めませんでした。</string>
@@ -198,6 +201,7 @@
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
   <string name="ui.page.title.docs">Cognis - Docs</string>
+  <string name="ui.page.title.changelogs">Cognis - 変更履歴</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.page.title.license">Cognis - ライセンス</string>

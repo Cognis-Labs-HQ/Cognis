@@ -500,6 +500,29 @@ export function createUiRoutes(
             return true;
         }
 
+        if (url.pathname.startsWith("/changelogs")) {
+            const loginRedirect = await resolveLoginRedirectLocation(
+                req,
+                ctx,
+                accountStore,
+                log,
+            );
+            if (loginRedirect) {
+                res.writeHead(302, { location: loginRedirect });
+                res.end();
+                return true;
+            }
+
+            await serveHtmlPage(
+                res,
+                path.join(PUBLIC_ROOT, "pages", "changelogs.html"),
+                log,
+                { path: url.pathname, method: req.method ?? "GET" },
+                ctx,
+            );
+            return true;
+        }
+
         if (url.pathname === "/license") {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,

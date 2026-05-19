@@ -21,4 +21,4 @@ tetap modular dan mudah diaudit.
 
 ## Entri
 
-- [cleanup-strings-and-codebase](/docs/changelog/cleanup-strings-and-codebase)
+- [cleanup-strings-and-codebase](/changelogs/cleanup-strings-and-codebase)

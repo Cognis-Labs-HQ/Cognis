@@ -4,12 +4,12 @@
 
 This document tracks the current version of every gateway, adapter, and module in the Cognis codebase. It serves as a changelog index and a quick reference for determining whether a component has been updated since a previous release.
 
-Every gateway, adapter, and module carries a `package.json` with a `version` field. When you modify a component — including its internal logic, database schema, public API, or configuration format — you must increment the version in that `package.json` following Semantic Versioning. This document is updated at the same time. Changelog entries are stored as per-PR files under `src/docs/changelog/`.
+Every gateway, adapter, and module carries a `package.json` with a `version` field. When you modify a component — including its internal logic, database schema, public API, or configuration format — you must increment the version in that `package.json` following Semantic Versioning. This document is updated at the same time. Changelog entries are stored as per-PR files under `src/changelogs/`.
 
 ## Responsibilities
 
 - Record the current version of every versioned component in the codebase.
-- Serve as the changelog index: link to per-component docs and `src/docs/changelog/` for history.
+- Serve as the changelog index: link to per-component docs and `src/changelogs/` for history.
 - Make it straightforward to detect version drift between deployed components and the current codebase.
 
 Not responsible for: enforcing version bumps (that is a code review concern) or tracking dependency versions of external packages.

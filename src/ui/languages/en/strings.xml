@@ -125,6 +125,9 @@
   <string name="ui.app.docs.group.adapters_file">File Adapters</string>
   <string name="ui.app.docs.group.adapters_notify">Notification Adapters</string>
   <string name="ui.app.docs.group.tooling">Tooling</string>
+  <string name="ui.app.changelogs.page_title">Changelogs</string>
+  <string name="ui.app.changelogs.page_subtitle">Project change history.</string>
+  <string name="ui.app.changelogs.group.changelogs">Changelogs</string>
   <string name="ui.app.license.page_title">License</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3 license terms.</string>
   <string name="ui.app.license.load_error">License text could not be loaded.</string>
@@ -198,6 +201,7 @@
   <string name="ui.page.title.login">Cognis - Login</string>
   <string name="ui.page.title.dashboard">Cognis - Dashboard</string>
   <string name="ui.page.title.docs">Cognis - Docs</string>
+  <string name="ui.page.title.changelogs">Cognis - Changelogs</string>
   <string name="ui.page.title.administration">Cognis - Administration</string>
   <string name="ui.page.title.settings">Cognis - Settings</string>
   <string name="ui.page.title.license">Cognis - License</string>
