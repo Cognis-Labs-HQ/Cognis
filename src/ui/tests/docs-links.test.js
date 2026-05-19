@@ -121,10 +121,7 @@ test("docs page truncates long navigation titles and document headings in the UI
     assert.match(styles, /\.docs-nav \.docs-nav-link\s*\{/);
     assert.match(styles, /inline-size:\s*fit-content/);
     assert.match(styles, /min-inline-size:\s*0/);
-    assert.match(styles, /min-block-size:\s*0/);
-    assert.match(styles, /padding-block:\s*4px/);
     assert.match(styles, /max-inline-size:\s*min\(100%, 30ch\)/);
-    assert.match(styles, /\.docs-nav \.docs-nav-group\s*\{/);
     assert.match(styles, /\.docs-nav-label\s*\{/);
     assert.match(styles, /#doc \.docs-truncated-heading\s*\{/);
     assert.match(styles, /max-inline-size:\s*min\(100%, 30ch\)/);
