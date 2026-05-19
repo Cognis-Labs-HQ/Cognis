@@ -195,3 +195,66 @@ test("study Japanese child routes are only active while module is enabled", asyn
     assert.equal(enabledPageHandled, true);
     assert.equal(enabledPageResponse.statusCode, 200);
 });
+
+test("study adapter routes announce controls and support disable toggles", async () => {
+    const { routeRegistry } = await bootstrapStudyGateway();
+    const adminToken = issueAccessToken("admin-user", "admin", 60);
+
+    const listResponse = new ResponseRecorder();
+    const listHandled = await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET", bearerToken: adminToken }),
+        listResponse,
+        new URL("http://localhost/api/v1/gateways/study/adapters"),
+    );
+
+    assert.equal(listHandled, true);
+    assert.equal(listResponse.statusCode, 200);
+    const listPayload = JSON.parse(listResponse.payload) as {
+        data: Array<{
+            id: string;
+            active: boolean;
+            controls?: Record<string, string>;
+        }>;
+    };
+    const classesAdapter = listPayload.data.find(
+        (adapter) => adapter.id === "classes",
+    );
+    assert.equal(
+        classesAdapter?.controls?.config,
+        "/api/v1/gateways/study/adapters/classes/config",
+    );
+    assert.equal(
+        classesAdapter?.controls?.disable,
+        "/api/v1/gateways/study/adapters/classes/disable",
+    );
+
+    const disableResponse = new ResponseRecorder();
+    const disableHandled = await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "POST", bearerToken: adminToken }),
+        disableResponse,
+        new URL(
+            "http://localhost/api/v1/gateways/study/adapters/classes/disable",
+        ),
+    );
+
+    assert.equal(disableHandled, true);
+    assert.equal(disableResponse.statusCode, 200);
+    assert.match(disableResponse.payload, /"enabled":false/);
+
+    const updatedListResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET", bearerToken: adminToken }),
+        updatedListResponse,
+        new URL("http://localhost/api/v1/gateways/study/adapters"),
+    );
+    const updatedPayload = JSON.parse(updatedListResponse.payload) as {
+        data: Array<{ id: string; active: boolean }>;
+    };
+    const updatedClassesAdapter = updatedPayload.data.find(
+        (adapter) => adapter.id === "classes",
+    );
+    assert.equal(updatedClassesAdapter?.active, false);
+});

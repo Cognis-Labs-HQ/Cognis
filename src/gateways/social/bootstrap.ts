@@ -3,6 +3,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import { readJson } from "../../api/reuse/read-json.js";
+import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -38,7 +39,17 @@ function createSocialAdapterRoutes(
         if (url.pathname === base && req.method === "GET") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: gateway.listAdapters() }));
+            res.end(
+                JSON.stringify({
+                    data: gateway.listAdapters().map((adapter) => ({
+                        ...adapter,
+                        controls: buildGatewayAdapterAdminControls(
+                            base,
+                            adapter.id,
+                        ),
+                    })),
+                }),
+            );
             return true;
         }
 
@@ -216,7 +227,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "social",
         name: "Social Gateway",
-        version: "1.2.3",
+        version: "1.2.4",
         description: "Profiles, social graph, posts, and messaging.",
         publisher: "Cognis Labs",
         hasAdapters: true,

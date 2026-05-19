@@ -20,6 +20,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../api/reuse/route-context.js";
+import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import { createNotificationRoutes } from "./routes/notifications.js";
@@ -259,7 +260,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.4.3",
+        version: "1.4.4",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
         required: true,
@@ -909,7 +910,22 @@ function createGatewayAdapterRoutes(
         if (url.pathname === base && req.method === "GET") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: gateway.listSenders() }));
+            res.end(
+                JSON.stringify({
+                    data: gateway.listSenders().map((sender) => ({
+                        ...sender,
+                        controls: buildGatewayAdapterAdminControls(
+                            base,
+                            sender.senderId,
+                            {
+                                includeTest:
+                                    typeof gateway.getSender(sender.senderId)
+                                        ?.sendTestEmail === "function",
+                            },
+                        ),
+                    })),
+                }),
+            );
             return true;
         }
 

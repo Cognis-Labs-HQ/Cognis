@@ -299,7 +299,27 @@ export class CoreStudyGateway {
     ): Promise<void> {
         const adapter = this.registeredAdapters.get(adapterId);
         if (!adapter || typeof adapter.setConfig !== "function") return;
-        await Promise.resolve(adapter.setConfig(config));
+        const { enabled, ...adapterConfig } = config;
+        if (enabled === false || enabled === "false") {
+            this.disabledAdapters.add(adapterId);
+        } else if (enabled === true || enabled === "true") {
+            this.disabledAdapters.delete(adapterId);
+        }
+        await Promise.resolve(adapter.setConfig(adapterConfig));
+    }
+
+    async enableAdapter(adapterId: string): Promise<void> {
+        if (!this.registeredAdapters.has(adapterId)) {
+            throw new Error("not_found");
+        }
+        this.disabledAdapters.delete(adapterId);
+    }
+
+    async disableAdapter(adapterId: string): Promise<void> {
+        if (!this.registeredAdapters.has(adapterId)) {
+            throw new Error("not_found");
+        }
+        this.disabledAdapters.add(adapterId);
     }
 
     async discoverAdapters(adaptersRoot: string): Promise<void> {

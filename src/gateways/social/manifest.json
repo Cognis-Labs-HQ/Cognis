@@ -1,7 +1,7 @@
 {
     "id": "social",
     "name": "Social Gateway",
-    "version": "1.2.1",
+    "version": "1.2.4",
     "required": false,
     "requires": ["db", "files"],
     "description": "Thin gateway for social features. Concrete capabilities (profiles, posts, social graph, messaging) are provided by adapters under src/adapters/social/.",

@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
 import { readJson } from "../../api/reuse/read-json.js";
+import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -31,6 +32,7 @@ export type {
 function createStudyAdapterRoutes(
     gatewayId: string,
     gateway: CoreStudyGateway,
+    gatewayRegistry: GatewayBootstrapContext["gatewayRegistry"],
     isLanguageEnabled: (languageCode: string) => Promise<boolean>,
     routeContext?: RouteContext,
 ) {
@@ -45,7 +47,17 @@ function createStudyAdapterRoutes(
         if (url.pathname === base && req.method === "GET") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: gateway.listAdapters() }));
+            res.end(
+                JSON.stringify({
+                    data: gateway.listAdapters().map((adapter) => ({
+                        ...adapter,
+                        controls: buildGatewayAdapterAdminControls(
+                            base,
+                            adapter.id,
+                        ),
+                    })),
+                }),
+            );
             return true;
         }
 
@@ -95,7 +107,10 @@ function createStudyAdapterRoutes(
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
-                        data: config,
+                        data: {
+                            ...config,
+                            enabled: gateway.isAdapterEnabled(adapterId),
+                        },
                         envValues: {},
                         requiredFields: [],
                         supportsTest: false,
@@ -128,6 +143,50 @@ function createStudyAdapterRoutes(
             }
 
             return false;
+        }
+
+        const toggleMatch = url.pathname.match(
+            new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
+        );
+        if (toggleMatch && req.method === "POST") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
+            const adapterId = decodeURIComponent(toggleMatch[1]);
+            const action = toggleMatch[2] as "enable" | "disable";
+            const adapter = gateway.getAdapter(adapterId);
+            if (!adapter) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Adapter not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (action === "enable") {
+                const gatewayEntry = gatewayRegistry.get(gatewayId);
+                if (gatewayEntry?.status === "disabled") {
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "gateway_disabled",
+                                message:
+                                    "Cannot enable an adapter while its gateway is disabled",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                await gateway.enableAdapter(adapterId);
+            } else {
+                await gateway.disableAdapter(adapterId);
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { enabled: action === "enable" } }));
+            return true;
         }
 
         return false;
@@ -315,14 +374,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     ctx.routeRegistry.register(
-        createStudyAdapterRoutes("study", gateway, isLanguageEnabled),
+        createStudyAdapterRoutes(
+            "study",
+            gateway,
+            ctx.gatewayRegistry,
+            isLanguageEnabled,
+        ),
         "study",
     );
 
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.5.4",
+        version: "1.5.5",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs",
