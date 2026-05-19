@@ -83,22 +83,28 @@ test("page composer resolves edit toggle from the active page root", () => {
     assert.match(source, /function getComposerEditToggleButton\(\)/);
     assert.match(source, /root\.querySelector\("#composer-edit-toggle"\)/);
     assert.match(source, /document\.getElementById\("composer-edit-toggle"\)/);
-    assert.match(source, /function ensureComposerEditToggleButton\(\)/);
-    assert.match(
-        source,
-        /const editBtn = allowCustomization[\s\S]*ensureComposerEditToggleButton\(\)/,
+    assert.match(source, /const editBtn = getComposerEditToggleButton\(\)/);
+    assert.doesNotMatch(source, /function ensureComposerEditToggleButton\(\)/);
+});
+
+test("page composer expands compact single-pane rows to full width", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
     );
+
+    assert.match(source, /COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS = 10/);
     assert.match(
         source,
-        /const editBtn = allowCustomization[\s\S]*getComposerEditToggleButton\(\)/,
+        /maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS[\s\S]*boundedWidth < bounds\.max/,
     );
+    assert.match(source, /normalizedPlacement = shouldExpandToFullWidth/);
+    assert.match(source, /col: 0,/);
+    assert.match(source, /w: bounds\.max,/);
+    assert.match(source, /w: boundedWidth,/);
     assert.match(
         source,
-        /const editBtn = state\.allowCustomization[\s\S]*ensureComposerEditToggleButton\(\)/,
-    );
-    assert.match(
-        source,
-        /const editBtn = state\.allowCustomization[\s\S]*getComposerEditToggleButton\(\)/,
+        /normalizedPlacement\.col !== placement\.col[\s\S]*normalizedPlacement\.w !== placement\.w/,
     );
 });
 

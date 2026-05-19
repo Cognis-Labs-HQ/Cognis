@@ -41,8 +41,6 @@ import {
     buildStageMarkup,
 } from "./markup.js";
 
-const MOBILE_LAYOUT_MEDIA_QUERY = "(max-width: 720px)";
-
 function normalizeChatRoomId(value) {
     const asString = String(value ?? "").trim();
     if (!asString) return "";
@@ -1499,18 +1497,6 @@ export async function mount(root, { signal } = {}) {
 
     let bindController = null;
 
-    function syncMobileChatPaneWidth() {
-        const chatCard = root.querySelector(
-            '[data-composer-element="jitsi-chat"]',
-        );
-        if (!(chatCard instanceof HTMLElement)) return;
-        if (window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches) {
-            chatCard.style.gridColumn = "1 / -1";
-            return;
-        }
-        chatCard.style.removeProperty("grid-column");
-    }
-
     function bindInteractiveHandlers() {
         if (bindController) {
             bindController.abort();
@@ -1528,7 +1514,6 @@ export async function mount(root, { signal } = {}) {
         }
         const bindSignal = bindController.signal;
         recoverMeetingSessionAfterComposerRender();
-        syncMobileChatPaneWidth();
         const container = root;
 
         const findButton = container.querySelector(

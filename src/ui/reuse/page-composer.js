@@ -162,6 +162,7 @@ export function createPageComposer(
 
     const UNIT = 90; // grid cell size in pixels
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
+    const COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS = 10;
     const FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft";
     const LARGE_FORM_RESET_FIELD_THRESHOLD = 6;
 
@@ -2720,9 +2721,7 @@ export function createPageComposer(
     }
 
     function syncSubEditToggle(state) {
-        const editBtn = state.allowCustomization
-            ? ensureComposerEditToggleButton()
-            : getComposerEditToggleButton();
+        const editBtn = getComposerEditToggleButton();
         if (!editBtn) return;
         if (!state.allowCustomization) {
             editBtn.hidden = true;
@@ -2772,9 +2771,7 @@ export function createPageComposer(
     }
 
     function syncEditToggle() {
-        const editBtn = allowCustomization
-            ? ensureComposerEditToggleButton()
-            : getComposerEditToggleButton();
+        const editBtn = getComposerEditToggleButton();
         if (!editBtn) return;
         if (!allowCustomization) {
             editBtn.hidden = true;
@@ -2823,26 +2820,6 @@ export function createPageComposer(
             root.querySelector("#composer-edit-toggle") ??
             document.getElementById("composer-edit-toggle")
         );
-    }
-
-    function ensureComposerEditToggleButton() {
-        const existingButton = getComposerEditToggleButton();
-        if (existingButton) return existingButton;
-        const fallbackButton = document.createElement("button");
-        fallbackButton.type = "button";
-        fallbackButton.id = "composer-edit-toggle";
-        fallbackButton.className = "composer-edit-toggle";
-        fallbackButton.setAttribute(
-            "aria-label",
-            i18n.t("ui.reuse.edit_layout"),
-        );
-        fallbackButton.setAttribute("role", "button");
-        fallbackButton.hidden = true;
-        // syncEditToggle/syncSubEditToggle set visibility, tooltip, and icon
-        // immediately after this helper returns the fallback button.
-        const fallbackHost = root.querySelector(".workspace") ?? root;
-        fallbackHost.appendChild(fallbackButton);
-        return fallbackButton;
     }
 
     function repackPlacementsIntoColumns(
@@ -2963,11 +2940,36 @@ export function createPageComposer(
         let changed = false;
         for (const rowGroup of rowGroups) {
             if (rowGroup.placements.length < 2) {
-                normalized.push(
-                    ...rowGroup.placements.map((placement) => ({
-                        ...placement,
-                    })),
+                const placement = rowGroup.placements[0];
+                const bounds = resolvePlacementWidthBounds(
+                    placement,
+                    maxCols,
+                    elems,
                 );
+                const boundedWidth = Math.min(
+                    bounds.max,
+                    Math.max(bounds.min, placement.w),
+                );
+                const shouldExpandToFullWidth =
+                    maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS &&
+                    boundedWidth < bounds.max;
+                const normalizedPlacement = shouldExpandToFullWidth
+                    ? {
+                          ...placement,
+                          col: 0,
+                          w: bounds.max,
+                      }
+                    : {
+                          ...placement,
+                          w: boundedWidth,
+                      };
+                if (
+                    normalizedPlacement.col !== placement.col ||
+                    normalizedPlacement.w !== placement.w
+                ) {
+                    changed = true;
+                }
+                normalized.push(normalizedPlacement);
                 continue;
             }
             const descriptors = rowGroup.placements.map((placement) => {
