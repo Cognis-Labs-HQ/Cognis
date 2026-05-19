@@ -1,4 +1,4 @@
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog, HealthService } from "@cognis/core";
@@ -14,25 +14,10 @@ import {
     parseSecuritySettings,
     SECURITY_SETTINGS_KEY,
 } from "../../reuse/security-settings.js";
-
-const DEFAULT_DOC_LANGUAGE = "en";
-const CHANGELOG_DOCS_DIR = resolve(process.cwd(), "src", "docs", "changelog");
-const API_PACKAGE_JSON_FILE = resolve(
-    process.cwd(),
-    "src",
-    "api",
-    "package.json",
-);
-const RELEASE_NOTES_SUMMARY_MAX_LENGTH = 260;
-
-type ChangelogEntrySummary = {
-    slug: string;
-    title: string;
-    summary: string;
-    path: string;
-};
-
-let cachedReleaseVersion: string | null = null;
+import {
+    loadReleaseChangelogEntries,
+    readReleaseVersion,
+} from "../../reuse/release-changelog-feed.js";
 
 async function listLanguages(log?: BootstrapLog) {
     const root = join(process.cwd(), "src", "ui", "languages");
@@ -68,93 +53,6 @@ async function listLanguages(log?: BootstrapLog) {
 function parseDemoModeFromEnv() {
     const raw = process.env.COGNIS_UI_DEMO_MODE;
     return raw === "1" || raw === "true";
-}
-
-function collapseWhitespace(value: string): string {
-    return value.replace(/\s+/g, " ").trim();
-}
-
-function truncateSummary(summary: string): string {
-    if (summary.length <= RELEASE_NOTES_SUMMARY_MAX_LENGTH) return summary;
-    return `${summary.slice(0, RELEASE_NOTES_SUMMARY_MAX_LENGTH - 1).trimEnd()}…`;
-}
-
-function extractChangelogSummary(markdown: string): string {
-    const summaryBlockMatch = markdown.match(
-        /^##\s+Summary\s*$([\s\S]*?)(?=^##\s+|\Z)/im,
-    );
-    const candidateBlock = summaryBlockMatch?.[1] ?? markdown;
-    const summaryLines = candidateBlock
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter((line) => line.length > 0)
-        .filter((line) => !line.startsWith("#"));
-    const summaryText = collapseWhitespace(summaryLines.join(" "));
-    return truncateSummary(summaryText);
-}
-
-function extractChangelogTitle(markdown: string, fallbackSlug: string): string {
-    const headingMatch = markdown.match(/^#\s+(.+)$/m);
-    if (headingMatch?.[1]) return headingMatch[1].trim();
-    return fallbackSlug
-        .split("-")
-        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-        .join(" ");
-}
-
-async function readReleaseVersion(): Promise<string> {
-    if (cachedReleaseVersion) return cachedReleaseVersion;
-    try {
-        const rawPackage = await readFile(API_PACKAGE_JSON_FILE, "utf-8");
-        const parsedPackage = JSON.parse(rawPackage);
-        const normalizedVersion = String(parsedPackage?.version ?? "").trim();
-        cachedReleaseVersion = normalizedVersion || "0.0.0";
-    } catch {
-        cachedReleaseVersion = "0.0.0";
-    }
-    return cachedReleaseVersion;
-}
-
-async function loadReleaseChangelogEntries(): Promise<ChangelogEntrySummary[]> {
-    let changelogFiles;
-    try {
-        changelogFiles = await readdir(CHANGELOG_DOCS_DIR, {
-            withFileTypes: true,
-        });
-    } catch {
-        return [];
-    }
-    const entryFiles = changelogFiles.filter(
-        (entry) =>
-            entry.isFile() &&
-            entry.name.endsWith(`.${DEFAULT_DOC_LANGUAGE}.md`) &&
-            entry.name !== `index.${DEFAULT_DOC_LANGUAGE}.md`,
-    );
-    const entries = await Promise.all(
-        entryFiles.map(async (entry) => {
-            const filePath = join(CHANGELOG_DOCS_DIR, entry.name);
-            const slug = entry.name.replace(`.${DEFAULT_DOC_LANGUAGE}.md`, "");
-            try {
-                const [markdown, metadata] = await Promise.all([
-                    readFile(filePath, "utf8"),
-                    stat(filePath),
-                ]);
-                return {
-                    slug,
-                    title: extractChangelogTitle(markdown, slug),
-                    summary: extractChangelogSummary(markdown),
-                    path: `/changelogs/${slug}`,
-                    mtimeMs: metadata.mtimeMs,
-                };
-            } catch {
-                return null;
-            }
-        }),
-    );
-    return entries
-        .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
-        .sort((entryA, entryB) => entryB.mtimeMs - entryA.mtimeMs)
-        .map(({ mtimeMs: _mtimeMs, ...entry }) => entry);
 }
 
 function serializeSecuritySettings(input: {

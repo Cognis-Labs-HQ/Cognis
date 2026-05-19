@@ -41,9 +41,11 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
       `;
         })
         .join("");
-    const safeVersion = escapeHtml(releaseVersion || "");
+    const introText = i18n
+        .t("ui.reuse.release_notes_intro")
+        .replace("{version}", releaseVersion || i18n.t("ui.reuse.unknown"));
     return `
-      <p>${escapeHtml(i18n.t("ui.reuse.release_notes_intro").replace("{version}", safeVersion))}</p>
+      <p>${escapeHtml(introText)}</p>
       <ul class="release-notes-popup-list">${notesItems}</ul>
       <label class="release-notes-popup-never-show">
         <input id="release-notes-never-show-checkbox" type="checkbox" />
@@ -54,8 +56,7 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
 
 export async function maybeShowReleaseChangelogPopup(i18n) {
     const accountId = localStorage.getItem("cognis_account");
-    const accessToken = localStorage.getItem("cognis_access_token");
-    if (!accountId || !accessToken) return;
+    if (!accountId) return;
 
     const prefs = (await loadUiPreferences()) ?? {};
     if (prefs.releaseChangelogNeverShow === true) return;
