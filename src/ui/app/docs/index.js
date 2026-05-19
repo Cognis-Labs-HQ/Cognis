@@ -271,4 +271,10 @@ export async function mount(root, { signal } = {}) {
     if (defaultDoc) await showDoc(defaultDoc, { pushHistory: false });
 }
 
-if (!globalThis.__spaRouter) await mount(document.querySelector("#app"));
+if (!globalThis.__spaRouter) {
+    if (window.location.pathname.startsWith("/changelogs")) {
+        await import("../changelogs/index.js");
+    } else {
+        await mount(document.querySelector("#app"));
+    }
+}

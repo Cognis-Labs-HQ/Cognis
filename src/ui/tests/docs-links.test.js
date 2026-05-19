@@ -169,13 +169,10 @@ test("docs page keeps docs-specific stylesheet enabled", () => {
     assert.match(html, /\/static\/styles\/docs\.css/);
 });
 
-test("changelogs page keeps docs-specific stylesheet and dedicated script enabled", () => {
-    const html = readFileSync(
-        join(ROOT, "src/ui/public/pages/changelogs.html"),
-        "utf8",
-    );
+test("docs page includes shared stylesheet and entry script for docs and changelogs", () => {
+    const html = readFileSync(join(ROOT, "src/ui/public/pages/docs.html"), "utf8");
     assert.match(html, /\/static\/styles\/docs\.css/);
-    assert.match(html, /\/static\/app\/changelogs\/index\.js/);
+    assert.match(html, /\/static\/app\/docs\/index\.js/);
 });
 
 test("changelogs page keeps changelog-only navigation data", () => {
@@ -190,6 +187,18 @@ test("changelogs page keeps changelog-only navigation data", () => {
     assert.ok(
         source.includes('applyDocumentTitle(i18n, "ui.page.title.changelogs")'),
         "changelogs page should apply the dedicated page title",
+    );
+});
+
+test("docs entrypoint boots changelogs page for direct /changelogs loads", () => {
+    const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
+    assert.ok(
+        source.includes('window.location.pathname.startsWith("/changelogs")'),
+        "docs entrypoint should hand off direct /changelogs loads",
+    );
+    assert.ok(
+        source.includes('await import("../changelogs/index.js")'),
+        "docs entrypoint should load changelogs module from shared boilerplate",
     );
 });
 

@@ -515,7 +515,7 @@ export function createUiRoutes(
 
             await serveHtmlPage(
                 res,
-                path.join(PUBLIC_ROOT, "pages", "changelogs.html"),
+                path.join(PUBLIC_ROOT, "pages", "docs.html"),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
