@@ -1,4 +1,4 @@
-# Permanent Refresh Toast...
+# Permanent Refresh Toast
 
 ## Summary
 

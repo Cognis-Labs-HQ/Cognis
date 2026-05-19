@@ -1,4 +1,4 @@
-# Logging Stream Filtering,...
+# Logging Stream Filtering
 
 ## Summary
 

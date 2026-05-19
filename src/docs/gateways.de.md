@@ -1,4 +1,4 @@
-# Gateway- und...
+# Gateway- und Adapter-Leitfaden
 
 ## Überblick
 

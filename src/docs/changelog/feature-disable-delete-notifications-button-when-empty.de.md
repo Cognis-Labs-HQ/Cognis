@@ -1,4 +1,4 @@
-# Deaktivierung der „Alle...
+# Leere Inbox: Löschen gesperrt
 
 ## Zusammenfassung
 

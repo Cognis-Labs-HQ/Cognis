@@ -1,4 +1,4 @@
-# Keanggotaan Kelas Siswa,...
+# Keanggotaan Kelas Siswa
 
 ## Ringkasan
 

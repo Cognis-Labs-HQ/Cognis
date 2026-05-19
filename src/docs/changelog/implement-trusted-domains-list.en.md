@@ -1,4 +1,4 @@
-# Trusted Domains for...
+# Trusted Domains List
 
 ## Summary
 

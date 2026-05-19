@@ -1,4 +1,4 @@
-# Filter Stream Log,...
+# Filter Stream Log
 
 ## Ringkasan
 

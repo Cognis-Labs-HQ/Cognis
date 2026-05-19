@@ -1,4 +1,4 @@
-# Formularentwürfe im Page...
+# Formularentwürfe im Page
 
 ## Zusammenfassung
 

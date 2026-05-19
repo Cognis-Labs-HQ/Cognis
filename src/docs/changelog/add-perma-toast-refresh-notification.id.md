@@ -1,4 +1,4 @@
-# Toast Permanen untuk...
+# Toast Permanen untuk
 
 ## Ringkasan
 

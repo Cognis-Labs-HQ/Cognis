@@ -1,4 +1,4 @@
-# Schüler-Klassenmitgliedscha...
+# Klassen & Studiehub
 
 ## Zusammenfassung
 

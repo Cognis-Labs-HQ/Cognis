@@ -1,4 +1,4 @@
-# PR 変更履歴 — Cleanup Strings...
+# PR 変更履歴 — Cleanup Strings
 
 ## 要約
 

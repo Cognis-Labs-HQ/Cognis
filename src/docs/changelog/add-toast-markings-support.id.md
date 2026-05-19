@@ -1,4 +1,4 @@
-# Visibilitas Ikon Toast di...
+# Visibilitas Ikon Toast di
 
 ## Ringkasan
 

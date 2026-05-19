@@ -1,4 +1,4 @@
-# Sprachlernframework...
+# Sprachlernframework
 
 ## Überblick
 

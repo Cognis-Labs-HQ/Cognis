@@ -1,4 +1,4 @@
-# Memperbaiki Endpoint...
+# Memperbaiki Endpoint
 
 ## Ringkasan
 

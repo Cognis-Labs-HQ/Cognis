@@ -1,4 +1,4 @@
-# Pengembangan Gateway dan...
+# Panduan Gateway dan Adapter
 
 ## Ikhtisar
 

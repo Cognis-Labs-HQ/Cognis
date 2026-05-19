@@ -1,4 +1,4 @@
-# Mengutamakan Avatar...
+# Mengutamakan Avatar
 
 ## Ringkasan
 

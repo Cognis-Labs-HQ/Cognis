@@ -1,4 +1,4 @@
-# Pangkas Judul Dokumen...
+# Pangkas Judul Dokumen
 
 ## Ringkasan
 

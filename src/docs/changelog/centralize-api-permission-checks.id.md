@@ -1,4 +1,4 @@
-# Catatan Perubahan PR...
+# Catatan Perubahan PR
 
 ## Ringkasan
 

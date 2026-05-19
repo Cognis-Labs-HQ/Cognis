@@ -1,4 +1,4 @@
-# Gateway and Adapter...
+# Gateway and Adapter
 
 ## Overview
 

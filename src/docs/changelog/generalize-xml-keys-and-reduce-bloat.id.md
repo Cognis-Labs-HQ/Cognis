@@ -1,4 +1,4 @@
-# Generalisasi String i18n...
+# Generalisasi String i18n
 
 ## Ringkasan
 

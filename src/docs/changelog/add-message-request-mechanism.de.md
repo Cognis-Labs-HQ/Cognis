@@ -1,4 +1,4 @@
-# PR-Changelog...
+# PR-Changelog
 
 ## Zusammenfassung
 

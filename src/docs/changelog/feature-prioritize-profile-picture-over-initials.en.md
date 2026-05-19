@@ -1,4 +1,4 @@
-# Prefer Profile Avatars in...
+# Prefer Profile Avatars
 
 ## Summary
 

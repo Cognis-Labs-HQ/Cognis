@@ -1,4 +1,4 @@
-# Admin Broadcast Delivery...
+# Admin Broadcast Delivery
 
 ## Summary
 

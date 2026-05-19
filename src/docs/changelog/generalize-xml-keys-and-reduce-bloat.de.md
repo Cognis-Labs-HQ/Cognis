@@ -1,4 +1,4 @@
-# i18n-Strings...
+# i18n-Strings vereinfachen
 
 ## Zusammenfassung
 

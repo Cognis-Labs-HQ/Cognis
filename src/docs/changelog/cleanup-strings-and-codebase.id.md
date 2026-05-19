@@ -1,4 +1,4 @@
-# Changelog PR — Cleanup...
+# Changelog PR — Cleanup
 
 ## Ringkasan
 

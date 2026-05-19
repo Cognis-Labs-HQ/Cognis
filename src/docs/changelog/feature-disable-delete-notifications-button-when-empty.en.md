@@ -1,4 +1,4 @@
-# Disable Empty Inbox...
+# Disable Empty Inbox
 
 ## Summary
 

@@ -1,4 +1,4 @@
-# Toast Icon Visibility in...
+# Toast Icon Visibility in
 
 ## Summary
 

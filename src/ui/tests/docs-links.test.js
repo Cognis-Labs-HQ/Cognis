@@ -110,8 +110,8 @@ test("docs page keeps docs-specific stylesheet enabled", () => {
 });
 
 test("docs markdown titles stay within 30 characters", () => {
-    const docs = listTrackedDocFiles().filter((file) =>
-        file.startsWith("src/docs/") && file.endsWith(".md"),
+    const docs = listTrackedDocFiles().filter(
+        (file) => file.startsWith("src/docs/") && file.endsWith(".md"),
     );
     const offenders = [];
     for (const file of docs) {

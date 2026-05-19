@@ -1,4 +1,4 @@
-# Generalize i18n Strings...
+# Generalize i18n & Cut Bloat
 
 ## Summary
 

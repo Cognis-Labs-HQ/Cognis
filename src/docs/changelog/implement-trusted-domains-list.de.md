@@ -1,4 +1,4 @@
-# Vertrauenswürdige Domains...
+# Vertrauenswürdige Domains
 
 ## Zusammenfassung
 

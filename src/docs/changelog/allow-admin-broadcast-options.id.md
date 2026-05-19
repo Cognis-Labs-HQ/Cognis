@@ -1,4 +1,4 @@
-# Mode Pengiriman Siaran...
+# Mode Pengiriman Siaran
 
 ## Ringkasan
 

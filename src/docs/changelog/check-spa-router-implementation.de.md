@@ -1,4 +1,4 @@
-# PR-Änderungsprotokoll...
+# PR-Änderungsprotokoll
 
 ## Zusammenfassung
 

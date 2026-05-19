@@ -1,4 +1,4 @@
-# Domain Tepercaya untuk...
+# Domain Tepercaya untuk
 
 ## Ringkasan
 

@@ -1,4 +1,4 @@
-# Lange Doku-Titel in der...
+# Lange Doku-Titel kürzen
 
 ## Zusammenfassung
 

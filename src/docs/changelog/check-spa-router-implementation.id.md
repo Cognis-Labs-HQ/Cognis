@@ -1,4 +1,4 @@
-# Changelog PR — Periksa...
+# Changelog PR — Periksa
 
 ## Ringkasan
 

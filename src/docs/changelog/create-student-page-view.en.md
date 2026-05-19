@@ -1,4 +1,4 @@
-# Student Class Membership,...
+# Student Class Membership
 
 ## Summary
 

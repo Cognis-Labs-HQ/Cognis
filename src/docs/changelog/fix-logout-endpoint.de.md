@@ -1,4 +1,4 @@
-# Fehlenden Logout-Endpunkt...
+# Fehlenden Logout-Endpunkt
 
 ## Zusammenfassung
 

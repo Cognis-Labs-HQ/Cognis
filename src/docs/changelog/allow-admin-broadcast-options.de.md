@@ -1,4 +1,4 @@
-# Übertragungsmodi und...
+# Übertragungsmodi und
 
 ## Zusammenfassung
 

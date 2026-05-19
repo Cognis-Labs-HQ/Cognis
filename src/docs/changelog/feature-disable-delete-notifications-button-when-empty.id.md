@@ -1,4 +1,4 @@
-# Menonaktifkan Aksi Hapus...
+# Menonaktifkan Aksi Hapus
 
 ## Ringkasan
 

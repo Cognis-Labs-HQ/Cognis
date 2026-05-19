@@ -1,4 +1,4 @@
-# PR-Changelog — Cleanup...
+# PR-Changelog — Cleanup
 
 ## Zusammenfassung
 

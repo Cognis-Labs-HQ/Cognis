@@ -1,4 +1,4 @@
-# Pertahankan dan Kelola...
+# Pertahankan dan Kelola
 
 ## Ringkasan
 

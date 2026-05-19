@@ -1,4 +1,4 @@
-# PR Changelog — Add...
+# PR Changelog — Lang Detect
 
 ## Summary
 

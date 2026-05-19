@@ -1,4 +1,4 @@
-# Log-Stream-Filter,...
+# Log-Stream-Filter
 
 ## Zusammenfassung
 
