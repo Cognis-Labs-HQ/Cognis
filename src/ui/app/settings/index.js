@@ -138,6 +138,7 @@ export async function mount(root, { signal } = {}) {
     let languagePrefs;
     let themePrefs;
     let messageStylePrefs;
+    let releaseNotesPrefs;
     let changesBar;
     let generalPrefs;
     let datetimePrefs;
@@ -258,6 +259,56 @@ export async function mount(root, { signal } = {}) {
         };
     }
 
+    function initReleaseNotesPrefs({ onDirtyChange }) {
+        let savedNeverShowReleaseNotes = Boolean(
+            loadedPrefs?.releaseChangelogNeverShow,
+        );
+        let currentNeverShowReleaseNotes = savedNeverShowReleaseNotes;
+
+        function syncCheckboxState() {
+            const checkbox = root.querySelector(
+                "#pref-release-notes-never-show",
+            );
+            if (!(checkbox instanceof HTMLInputElement)) return;
+            checkbox.checked = currentNeverShowReleaseNotes;
+        }
+
+        function bindCheckboxEvents() {
+            const checkbox = root.querySelector(
+                "#pref-release-notes-never-show",
+            );
+            if (!(checkbox instanceof HTMLInputElement)) return;
+            if (checkbox.dataset.dirtyHandlerBound === "true") return;
+            checkbox.dataset.dirtyHandlerBound = "true";
+            checkbox.addEventListener("change", () => {
+                currentNeverShowReleaseNotes = checkbox.checked;
+                onDirtyChange?.(
+                    currentNeverShowReleaseNotes !== savedNeverShowReleaseNotes,
+                );
+            });
+        }
+
+        syncCheckboxState();
+        bindCheckboxEvents();
+
+        return {
+            refresh: () => {
+                syncCheckboxState();
+                bindCheckboxEvents();
+            },
+            getNeverShowReleaseNotes: () => currentNeverShowReleaseNotes,
+            commit: () => {
+                savedNeverShowReleaseNotes = currentNeverShowReleaseNotes;
+                onDirtyChange?.(false);
+            },
+            discard: () => {
+                currentNeverShowReleaseNotes = savedNeverShowReleaseNotes;
+                syncCheckboxState();
+                onDirtyChange?.(false);
+            },
+        };
+    }
+
     const elements = [
         {
             id: "general",
@@ -277,6 +328,11 @@ export async function mount(root, { signal } = {}) {
               <input id="email-add-input" type="email" placeholder="${i18n.t("ui.app.settings.emails_add_placeholder")}" />
               <button id="email-add-btn" class="btn-confirm btn-animated" type="button">${i18n.t("ui.app.settings.emails_add")}</button>
             </div>
+            <h3>${i18n.t("ui.reuse.changelogs")}</h3>
+            <label class="settings-checkbox-row">
+              <input id="pref-release-notes-never-show" type="checkbox" />
+              <span>${i18n.t("ui.reuse.release_notes_never_show_again")}</span>
+            </label>
           `,
                     },
                 ],
@@ -291,6 +347,14 @@ export async function mount(root, { signal } = {}) {
                         generalPrefs.init();
                     } else {
                         generalPrefs.refresh();
+                    }
+                    if (!releaseNotesPrefs) {
+                        releaseNotesPrefs = initReleaseNotesPrefs({
+                            onDirtyChange: (dirty) =>
+                                markDirty("release-notes", dirty),
+                        });
+                    } else {
+                        releaseNotesPrefs.refresh();
                     }
                 },
             },
@@ -574,6 +638,13 @@ export async function mount(root, { signal } = {}) {
                 messageStyle:
                     messageStylePrefs?.getMessageStyle() ??
                     normalizeMessageStyle(loadedPrefs?.messageStyle),
+                releaseChangelogNeverShow:
+                    releaseNotesPrefs?.getNeverShowReleaseNotes() ??
+                    Boolean(loadedPrefs?.releaseChangelogNeverShow),
+                releaseChangelogSeenSlugs:
+                    loadedPrefs?.releaseChangelogSeenSlugs ?? [],
+                releaseChangelogLastVersion:
+                    loadedPrefs?.releaseChangelogLastVersion ?? null,
             };
             await savePrefs(prefs);
             loadedPrefs = { ...loadedPrefs, ...prefs };
@@ -591,6 +662,7 @@ export async function mount(root, { signal } = {}) {
             fontPrefs?.commit();
             themePrefs?.commit();
             messageStylePrefs?.commit();
+            releaseNotesPrefs?.commit();
             datetimePrefs?.commit();
             languagePrefs?.commit();
             for (const section of contributedSections) {
@@ -615,6 +687,7 @@ export async function mount(root, { signal } = {}) {
             languagePrefs?.discard();
             themePrefs?.discard();
             messageStylePrefs?.discard();
+            releaseNotesPrefs?.discard();
             datetimePrefs?.discard();
             for (const section of contributedSections) {
                 section.discard();

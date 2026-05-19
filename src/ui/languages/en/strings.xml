@@ -128,6 +128,10 @@
   <string name="ui.app.changelogs.page_title">Changelogs</string>
   <string name="ui.app.changelogs.page_subtitle">Project change history.</string>
   <string name="ui.app.changelogs.group.changelogs">Changelogs</string>
+  <string name="ui.reuse.release_notes_title">What's New in {version}</string>
+  <string name="ui.reuse.release_notes_intro">Here are the latest changelog updates for release {version}.</string>
+  <string name="ui.reuse.release_notes_never_show_again">Never Show Release Notes Again</string>
+  <string name="ui.reuse.release_notes_view_all">View Full Changelogs</string>
   <string name="ui.app.license.page_title">License</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3 license terms.</string>
   <string name="ui.app.license.load_error">License text could not be loaded.</string>

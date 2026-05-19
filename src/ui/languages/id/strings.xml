@@ -128,6 +128,10 @@
   <string name="ui.app.changelogs.page_title">Log Perubahan</string>
   <string name="ui.app.changelogs.page_subtitle">Riwayat perubahan proyek.</string>
   <string name="ui.app.changelogs.group.changelogs">Log Perubahan</string>
+  <string name="ui.reuse.release_notes_title">Yang Baru di {version}</string>
+  <string name="ui.reuse.release_notes_intro">Berikut pembaruan log perubahan terbaru untuk rilis {version}.</string>
+  <string name="ui.reuse.release_notes_never_show_again">Jangan Tampilkan Catatan Rilis Lagi</string>
+  <string name="ui.reuse.release_notes_view_all">Lihat Semua Log Perubahan</string>
   <string name="ui.app.license.page_title">Lisensi</string>
   <string name="ui.app.license.page_subtitle">Ketentuan lisensi GNU AGPLv3.</string>
   <string name="ui.app.license.load_error">Teks lisensi tidak dapat dimuat.</string>

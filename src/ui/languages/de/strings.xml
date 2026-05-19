@@ -128,6 +128,10 @@
   <string name="ui.app.changelogs.page_title">Änderungsprotokolle</string>
   <string name="ui.app.changelogs.page_subtitle">Projektänderungsverlauf.</string>
   <string name="ui.app.changelogs.group.changelogs">Änderungsprotokolle</string>
+  <string name="ui.reuse.release_notes_title">Neu in {version}</string>
+  <string name="ui.reuse.release_notes_intro">Hier sind die neuesten Änderungsprotokoll-Updates für Version {version}.</string>
+  <string name="ui.reuse.release_notes_never_show_again">Release-Hinweise Nie Wieder Anzeigen</string>
+  <string name="ui.reuse.release_notes_view_all">Vollständige Änderungsprotokolle Anzeigen</string>
   <string name="ui.app.license.page_title">Lizenz</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3-Lizenzbedingungen.</string>
   <string name="ui.app.license.load_error">Der Lizenztext konnte nicht geladen werden.</string>

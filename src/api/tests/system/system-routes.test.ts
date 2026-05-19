@@ -56,6 +56,65 @@ test("system route exposes env-backed ui config", async () => {
     assert.match(body, /"demoMode":true/);
 });
 
+test("system release changelog feed requires authentication", async () => {
+    const route = createSystemRoutes(healthService as any);
+    let status = 0;
+    let body = "";
+
+    const handled = await route(
+        { method: "GET", headers: {} } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/system/release-changelog"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(status, 401);
+    assert.match(body, /"unauthorized"/);
+});
+
+test("system release changelog feed returns release version and entries", async () => {
+    const token = issueAccessToken("alice", "user", 60);
+    const route = createSystemRoutes(healthService as any);
+    let status = 0;
+    let body = "";
+
+    const handled = await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/system/release-changelog"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(status, 200);
+    const parsed = JSON.parse(body);
+    assert.match(parsed.data.releaseVersion, /^\d+\.\d+\.\d+$/);
+    assert.ok(Array.isArray(parsed.data.entries));
+    assert.ok(parsed.data.entries.length > 0);
+    const [firstEntry] = parsed.data.entries;
+    assert.equal(typeof firstEntry.slug, "string");
+    assert.equal(typeof firstEntry.title, "string");
+    assert.equal(typeof firstEntry.summary, "string");
+    assert.equal(typeof firstEntry.path, "string");
+    assert.ok(firstEntry.path.startsWith("/changelogs/"));
+});
+
 test("system route serves license markdown payload", async () => {
     const route = createSystemRoutes(healthService as any);
     let status = 0;
