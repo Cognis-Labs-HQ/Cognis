@@ -119,8 +119,13 @@ export async function mount(root, { signal } = {}) {
         const docEl = root.querySelector("#doc");
         if (!docEl || activeHtml === null) return;
         docEl.innerHTML = activeHtml;
-        docEl.querySelectorAll(DOCUMENT_HEADING_SELECTOR).forEach((heading) => {
+        const headings = Array.from(
+            docEl.querySelectorAll(DOCUMENT_HEADING_SELECTOR),
+        );
+        headings.forEach((heading) => {
             heading.classList.add(DOCUMENT_HEADING_CLASS);
+        });
+        headings.forEach((heading) => {
             const headingText = heading.textContent?.trim() ?? "";
             const isVisuallyTruncated =
                 heading.scrollWidth > heading.clientWidth;

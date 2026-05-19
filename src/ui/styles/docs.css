@@ -19,7 +19,6 @@
     inline-size: fit-content;
     max-inline-size: min(100%, 30ch);
     min-inline-size: 0;
-    min-width: 0;
     text-align: left;
 }
 
