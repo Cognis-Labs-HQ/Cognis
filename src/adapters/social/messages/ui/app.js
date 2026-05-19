@@ -38,12 +38,11 @@ import {
 } from "/static/gateways/social/reuse/profile-avatar.js";
 
 const TEXT_ENCODER = new TextEncoder();
-const DEFAULT_QUICK_EMOJIS = ["👍", "❤", "😂", "🎉", "😮"];
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
-const EMOJI_USAGE_STORAGE_KEY = "cognis_messages_emoji_usage";
 const MAX_EMOJI_GRID_SIZE = 80;
 
 let cachedEmojiList = null;
+let cachedEmojiUsage = [];
 
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
@@ -72,50 +71,60 @@ async function loadAllEmojis() {
 }
 
 /**
- * Loads the per-user emoji usage map from localStorage.
- * Returns a plain object mapping normalized emoji strings to usage counts.
+ * Fetches the top emoji usage records for the current user from the server and
+ * stores them in the module-level cache. Returns an empty array on failure so
+ * the quick strip falls back to the first five emojis in the loaded list.
  *
- * @returns {Record<string, number>}
+ * @returns {Promise<Array<{emoji: string, usageCount: number}>>}
  */
-function loadEmojiUsage() {
+async function fetchEmojiUsage() {
     try {
-        const raw = localStorage.getItem(EMOJI_USAGE_STORAGE_KEY);
-        return raw ? JSON.parse(raw) : {};
+        const response = await apiFetch("/api/v1/messages/emoji-usage");
+        if (!response.ok) return [];
+        const payload = await response.json();
+        return Array.isArray(payload?.data) ? payload.data : [];
     } catch {
-        return {};
+        return [];
     }
 }
 
 /**
- * Increments the usage count for a normalized emoji in localStorage so that
- * the quick-reaction strip adapts over time to the user's preferences.
+ * Records an emoji pick: updates the module-level cache immediately so the
+ * quick strip reflects the choice at next render, then persists to the server.
+ * Failures are silent.
  *
  * @param {string} emoji
  */
 function recordEmojiUsage(emoji) {
-    try {
-        const usage = loadEmojiUsage();
-        const normalized = normalizeReactionEmoji(emoji);
-        if (!normalized) return;
-        usage[normalized] = (usage[normalized] ?? 0) + 1;
-        localStorage.setItem(EMOJI_USAGE_STORAGE_KEY, JSON.stringify(usage));
-    } catch {
-        // ignore storage errors
+    const normalized = normalizeReactionEmoji(emoji);
+    if (!normalized) return;
+    const existing = cachedEmojiUsage.find(
+        (entry) => normalizeReactionEmoji(entry.emoji) === normalized,
+    );
+    if (existing) {
+        existing.usageCount += 1;
+    } else {
+        cachedEmojiUsage.push({ emoji: normalized, usageCount: 1 });
     }
+    cachedEmojiUsage.sort(
+        (entryA, entryB) => entryB.usageCount - entryA.usageCount,
+    );
+    apiFetch("/api/v1/messages/emoji-usage", {
+        method: "POST",
+        body: JSON.stringify({ emoji: normalized }),
+    }).catch(() => undefined);
 }
 
 /**
- * Returns the five emojis to show in the quick-reaction strip. Emojis the
- * user has reacted with most are ranked first; remaining slots are filled from
- * DEFAULT_QUICK_EMOJIS.
+ * Returns the five emojis to show in the quick-reaction strip.
+ * Emojis the user has used most are ranked first; remaining slots are filled
+ * from the first entries in the loaded emoji list (no hardcoded defaults).
  *
  * @returns {string[]}
  */
 function getQuickReactionEmojis() {
-    const usage = loadEmojiUsage();
-    const sortedByUsage = Object.entries(usage)
-        .sort((entryA, entryB) => entryB[1] - entryA[1])
-        .map(([emoji]) => normalizeReactionEmoji(emoji))
+    const sortedByUsage = cachedEmojiUsage
+        .map((entry) => normalizeReactionEmoji(entry.emoji))
         .filter(Boolean);
 
     const result = [];
@@ -123,10 +132,10 @@ function getQuickReactionEmojis() {
         if (result.length >= 5) break;
         if (!result.includes(emoji)) result.push(emoji);
     }
-    for (const emoji of DEFAULT_QUICK_EMOJIS) {
+    for (const entry of cachedEmojiList ?? []) {
         if (result.length >= 5) break;
-        const normalized = normalizeReactionEmoji(emoji);
-        if (!result.includes(normalized)) result.push(normalized);
+        const normalized = normalizeReactionEmoji(entry.emoji);
+        if (normalized && !result.includes(normalized)) result.push(normalized);
     }
     return result;
 }
@@ -159,18 +168,24 @@ function normalizeReactionEmoji(emoji) {
 }
 
 /**
- * Returns a readable emoji label. Searches the cached emoji list first,
- * falling back to the emoji token itself when no entry is found.
+ * Returns a readable emoji label by resolving the entry's i18n name key.
+ * Falls back to the emoji token itself when no matching entry is found.
  *
  * @param {string} emoji
+ * @param {object} i18n
  * @returns {string}
  */
-function emojiDisplayName(emoji) {
+function emojiDisplayName(emoji, i18n) {
     const normalized = normalizeReactionEmoji(emoji);
-    const entry = (cachedEmojiList ?? []).find(
-        (item) => normalizeReactionEmoji(item.emoji) === normalized,
-    );
-    return entry?.name ?? emoji;
+    let entry = null;
+    for (const item of cachedEmojiList ?? []) {
+        if (normalizeReactionEmoji(item.emoji) === normalized) {
+            entry = item;
+            break;
+        }
+    }
+    if (!entry) return emoji;
+    return i18n?.t(entry.name) ?? emoji;
 }
 
 async function encryptMessage(key, plaintext) {
@@ -655,7 +670,7 @@ function renderReactionRow(message, i18n) {
                 )
                 .join(", ");
             const titleLabel =
-                reactedByLabel || emojiDisplayName(reaction.emoji);
+                reactedByLabel || emojiDisplayName(reaction.emoji, i18n);
             return `<button type="button" class="messages-reaction-chip${ownClass}" title="${escapeHtml(titleLabel)}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
         })
         .join("");
@@ -667,7 +682,7 @@ function renderReactionRow(message, i18n) {
         )
         .map(
             (emoji) =>
-                `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emojiDisplayName(emoji))}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
+                `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emojiDisplayName(emoji, i18n))}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
         )
         .join("");
     const moreLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
@@ -950,7 +965,10 @@ async function loadRooms(i18n) {
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
-        componentStringBaseUrls: ["/static/adapters/social/messages/languages"],
+        componentStringBaseUrls: [
+            "/static/adapters/social/messages/languages",
+            "/static/gateways/social/languages",
+        ],
     });
     applyDocumentTitle(i18n, "ui.reuse.messages");
 
@@ -970,6 +988,13 @@ export async function mount(root, { signal } = {}) {
     );
 
     const currentAccountId = localStorage.getItem("cognis_account") ?? "";
+
+    const [loadedEmojis, loadedUsage] = await Promise.all([
+        loadAllEmojis(),
+        fetchEmojiUsage(),
+    ]);
+    cachedEmojiList = loadedEmojis;
+    cachedEmojiUsage = loadedUsage;
 
     const initialPath = window.location.pathname;
     const initialRoomMatch = initialPath.match(/^\/messages\/([^/]+)$/);
@@ -1311,10 +1336,10 @@ export async function mount(root, { signal } = {}) {
         function buildEmojiGridHtml(entries) {
             return entries
                 .slice(0, MAX_EMOJI_GRID_SIZE)
-                .map(
-                    (entry) =>
-                        `<button type="button" class="messages-emoji-picker-btn" data-emoji="${escapeHtml(entry.emoji)}" title="${escapeHtml(entry.name)}">${escapeHtml(entry.emoji)}</button>`,
-                )
+                .map((entry) => {
+                    const resolvedName = i18n.t(entry.name) ?? entry.name;
+                    return `<button type="button" class="messages-emoji-picker-btn" data-emoji="${escapeHtml(entry.emoji)}" title="${escapeHtml(resolvedName)}">${escapeHtml(entry.emoji)}</button>`;
+                })
                 .join("");
         }
 
@@ -1347,11 +1372,19 @@ export async function mount(root, { signal } = {}) {
                 });
 
                 searchInput?.addEventListener("input", () => {
-                    const query = searchInput.value.toLowerCase().trim();
+                    const query = searchInput.value
+                        .normalize("NFC")
+                        .toLowerCase()
+                        .trim();
                     const filtered = query
-                        ? allEmojis.filter((entry) =>
-                              entry.name.toLowerCase().includes(query),
-                          )
+                        ? allEmojis.filter((entry) => {
+                              const resolvedName = (
+                                  i18n.t(entry.name) ?? entry.name
+                              )
+                                  .normalize("NFC")
+                                  .toLowerCase();
+                              return resolvedName.includes(query);
+                          })
                         : allEmojis;
                     if (grid) {
                         grid.innerHTML = buildEmojiGridHtml(filtered);
