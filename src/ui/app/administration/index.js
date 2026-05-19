@@ -98,9 +98,6 @@ function resolveAdapterControlUrl(
 
     const encodedGatewayId = encodeURIComponent(gatewayId);
     const encodedAdapterId = encodeURIComponent(adapterId);
-    if (controlName === "config" || controlName === "test") {
-        return `/api/v1/gateways/${encodedGatewayId}/adapters/${encodedAdapterId}/${controlName}`;
-    }
     return `/api/v1/gateways/${encodedGatewayId}/adapters/${encodedAdapterId}/${controlName}`;
 }
 

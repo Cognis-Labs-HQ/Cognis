@@ -85,7 +85,16 @@ export interface StudyAdapter {
     readonly adapterId: string;
     readonly adapterName: string;
     readonly requires?: string[];
+    /**
+     * Returns adapter-specific config fields only. The gateway reserves the
+     * `enabled` key for Administration runtime toggle state and injects it when
+     * serving adapter config responses.
+     */
     getConfig?(): Record<string, unknown>;
+    /**
+     * Receives adapter-specific config fields only. The gateway strips its
+     * reserved Administration `enabled` toggle before calling this hook.
+     */
     setConfig?(config: Record<string, unknown>): void;
     isConfigured?(): boolean;
 }
