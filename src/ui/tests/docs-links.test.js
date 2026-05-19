@@ -170,7 +170,10 @@ test("docs page keeps docs-specific stylesheet enabled", () => {
 });
 
 test("docs page includes shared stylesheet and entry script for docs and changelogs", () => {
-    const html = readFileSync(join(ROOT, "src/ui/public/pages/docs.html"), "utf8");
+    const html = readFileSync(
+        join(ROOT, "src/ui/public/pages/docs.html"),
+        "utf8",
+    );
     assert.match(html, /\/static\/styles\/docs\.css/);
     assert.match(html, /\/static\/app\/docs\/index\.js/);
 });
