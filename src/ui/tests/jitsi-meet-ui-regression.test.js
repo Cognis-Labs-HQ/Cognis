@@ -48,7 +48,7 @@ test("meetings page composer uses a dedicated layout preference key", () => {
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
-    assert.match(source, /preferenceKey:\s*"meetings-layout-v2"/);
+    assert.match(source, /preferenceKey:\s*"meetings-layout-v3"/);
 });
 
 test("jitsi meetings embed gates privileged settings by local moderator role and uses reduced toolbar", () => {
@@ -145,14 +145,14 @@ test("jitsi meetings reset participant state and disable mini chat until ready",
     assert.match(cssSource, /pointer-events: none;/);
 });
 
-test("meetings page defaults meeting and chat panels to 75-25 split while keeping them resizable", () => {
+test("meetings page defaults meeting and chat panels to a 70-30 split while keeping them resizable", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
     assert.match(
         source,
-        /id:\s*"jitsi-stage"[\s\S]*gridSize:\s*\{[\s\S]*default:\s*\[9,\s*5\][\s\S]*min:\s*\[6,\s*4\]/,
+        /id:\s*"jitsi-stage"[\s\S]*gridSize:\s*\{[\s\S]*default:\s*\[7,\s*5\][\s\S]*min:\s*\[6,\s*4\]/,
     );
     assert.match(
         source,

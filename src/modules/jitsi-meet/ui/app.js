@@ -1975,7 +1975,7 @@ export async function mount(root, { signal } = {}) {
             label: i18n.t("module.jitsi_meet.overlay.title"),
             pinned: true,
             gridSize: {
-                default: [9, 5],
+                default: [7, 5],
                 min: [6, 4],
             },
             render: () => buildStageMarkup(i18n),
@@ -2011,7 +2011,7 @@ export async function mount(root, { signal } = {}) {
     const composer = createPageComposer(root, {
         allowCustomization: true,
         elements,
-        preferenceKey: "meetings-layout-v2",
+        preferenceKey: "meetings-layout-v3",
         i18n,
         pageContext: {
             title: i18n.t("ui.reuse.meetings"),

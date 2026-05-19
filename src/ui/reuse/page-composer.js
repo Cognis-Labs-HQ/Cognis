@@ -2856,6 +2856,194 @@ export function createPageComposer(
         return packed;
     }
 
+    function resolvePlacementWidthBounds(placement, maxCols, elems = elements) {
+        const element = elems.find((entry) => entry.id === placement.id);
+        const currentWidth = Math.min(maxCols, Math.max(1, placement.w));
+        if (!element) {
+            return {
+                min: currentWidth,
+                max: maxCols,
+            };
+        }
+        const gridSize = getGridSize(element);
+        const minWidth = Math.min(maxCols, Math.max(1, gridSize.min[0]));
+        if (gridSize.fullWidth || gridSize.fillWidth) {
+            return { min: maxCols, max: maxCols };
+        }
+        if (gridSize.halfWidth) {
+            const halfWidth = Math.min(
+                maxCols,
+                Math.max(minWidth, halfGrid(maxCols)),
+            );
+            return { min: halfWidth, max: halfWidth };
+        }
+        const declaredMaxWidth =
+            Array.isArray(gridSize.max) &&
+            Number.isFinite(gridSize.max[0]) &&
+            gridSize.max[0] !== null
+                ? gridSize.max[0]
+                : null;
+        const maxWidth = declaredMaxWidth
+            ? Math.min(maxCols, Math.max(minWidth, declaredMaxWidth))
+            : maxCols;
+        return { min: minWidth, max: maxWidth };
+    }
+
+    function normalizePlacementRowsForGridWidth(
+        sortedVisible,
+        maxCols,
+        elems = elements,
+    ) {
+        const step = gridStep(maxCols);
+        const epsilon = 0.001;
+        const rowGroups = [];
+        for (const placement of sortedVisible) {
+            const previousRow = rowGroups.at(-1);
+            if (!previousRow || previousRow.row !== placement.row) {
+                rowGroups.push({
+                    row: placement.row,
+                    placements: [placement],
+                });
+                continue;
+            }
+            previousRow.placements.push(placement);
+        }
+
+        const normalized = [];
+        let changed = false;
+        for (const rowGroup of rowGroups) {
+            if (rowGroup.placements.length < 2) {
+                normalized.push(...rowGroup.placements.map((placement) => ({ ...placement })));
+                continue;
+            }
+            const descriptors = rowGroup.placements.map((placement) => {
+                const bounds = resolvePlacementWidthBounds(placement, maxCols, elems);
+                const boundedWidth = Math.min(
+                    bounds.max,
+                    Math.max(bounds.min, placement.w),
+                );
+                return {
+                    placement,
+                    min: bounds.min,
+                    max: bounds.max,
+                    width: boundedWidth,
+                    ratioWidth: boundedWidth,
+                    targetWidth: boundedWidth,
+                };
+            });
+            if (
+                descriptors.some(
+                    (descriptor) =>
+                        descriptor.min === maxCols && rowGroup.placements.length > 1,
+                )
+            ) {
+                return null;
+            }
+            const minimumWidthTotal = descriptors.reduce(
+                (sum, descriptor) => sum + descriptor.min,
+                0,
+            );
+            if (minimumWidthTotal > maxCols + epsilon) {
+                return null;
+            }
+            const ratioTotal = descriptors.reduce(
+                (sum, descriptor) => sum + descriptor.ratioWidth,
+                0,
+            );
+            if (ratioTotal <= 0) {
+                return null;
+            }
+            for (const descriptor of descriptors) {
+                const rawTarget = (descriptor.ratioWidth / ratioTotal) * maxCols;
+                descriptor.targetWidth = Math.min(
+                    descriptor.max,
+                    Math.max(
+                        descriptor.min,
+                        Math.round(rawTarget / step) * step,
+                    ),
+                );
+            }
+
+            let currentTotal = descriptors.reduce(
+                (sum, descriptor) => sum + descriptor.targetWidth,
+                0,
+            );
+            let remaining = Math.round((maxCols - currentTotal) / step) * step;
+            let guard = 0;
+            while (remaining > epsilon && guard < 2000) {
+                guard++;
+                const candidate = descriptors
+                    .filter(
+                        (descriptor) =>
+                            descriptor.targetWidth + step <= descriptor.max + epsilon,
+                    )
+                    .sort((left, right) => {
+                        const rightDistance =
+                            right.targetWidth - right.ratioWidth;
+                        const leftDistance =
+                            left.targetWidth - left.ratioWidth;
+                        if (rightDistance !== leftDistance) {
+                            return rightDistance - leftDistance;
+                        }
+                        return right.ratioWidth - left.ratioWidth;
+                    })[0];
+                if (!candidate) {
+                    break;
+                }
+                candidate.targetWidth += step;
+                remaining = Math.round((remaining - step) / step) * step;
+            }
+            while (remaining < -epsilon && guard < 4000) {
+                guard++;
+                const candidate = descriptors
+                    .filter(
+                        (descriptor) =>
+                            descriptor.targetWidth - step >= descriptor.min - epsilon,
+                    )
+                    .sort((left, right) => {
+                        const rightDistance =
+                            right.targetWidth - right.ratioWidth;
+                        const leftDistance =
+                            left.targetWidth - left.ratioWidth;
+                        if (rightDistance !== leftDistance) {
+                            return rightDistance - leftDistance;
+                        }
+                        return right.targetWidth - left.targetWidth;
+                    })[0];
+                if (!candidate) {
+                    break;
+                }
+                candidate.targetWidth -= step;
+                remaining = Math.round((remaining + step) / step) * step;
+            }
+            if (Math.abs(remaining) > epsilon) {
+                return null;
+            }
+
+            let column = 0;
+            for (const descriptor of descriptors) {
+                if (column + descriptor.targetWidth > maxCols + epsilon) {
+                    return null;
+                }
+                const nextPlacement = {
+                    ...descriptor.placement,
+                    col: column,
+                    w: descriptor.targetWidth,
+                };
+                if (
+                    nextPlacement.col !== descriptor.placement.col ||
+                    nextPlacement.w !== descriptor.placement.w
+                ) {
+                    changed = true;
+                }
+                normalized.push(nextPlacement);
+                column += descriptor.targetWidth;
+            }
+        }
+
+        return changed ? normalized : sortedVisible;
+    }
+
     function syncLayoutToCurrentGridColumns() {
         if (!layout || !contentGrid) return;
         computeGridDimensions();
@@ -2904,6 +3092,13 @@ export function createPageComposer(
         const visible = layout.placements
             .filter((p) => !layout.hidden.includes(p.id))
             .sort((a, b) => a.row - b.row || a.col - b.col);
+        const normalizedRows = normalizePlacementRowsForGridWidth(
+            visible,
+            gridCols,
+        );
+        if (normalizedRows) {
+            return normalizedRows;
+        }
 
         const needsRepack = visible.some((p) => {
             if (p.col + p.w > gridCols) return true;
@@ -2929,6 +3124,14 @@ export function createPageComposer(
         const visible = state.layout.placements
             .filter((pl) => !state.layout.hidden.includes(pl.id))
             .sort((a, b) => a.row - b.row || a.col - b.col);
+        const normalizedRows = normalizePlacementRowsForGridWidth(
+            visible,
+            state.gridCols,
+            state.elements,
+        );
+        if (normalizedRows) {
+            return normalizedRows;
+        }
 
         const needsRepack = visible.some((pl) => {
             if (pl.col + pl.w > state.gridCols) return true;
