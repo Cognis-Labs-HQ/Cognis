@@ -260,7 +260,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.4.4",
+        version: "1.4.5",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs",
         required: true,
@@ -918,9 +918,7 @@ function createGatewayAdapterRoutes(
                             base,
                             sender.senderId,
                             {
-                                includeTest:
-                                    typeof gateway.getSender(sender.senderId)
-                                        ?.sendTestEmail === "function",
+                                includeTest: sender.supportsTest === true,
                             },
                         ),
                     })),

@@ -47,7 +47,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ---------------------------- | ------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.1` |
 | Authentication (auth) | `src/gateways/auth/`         | `1.3.5` |
-| Notification (notify) | `src/gateways/notify/`       | `1.4.4` |
+| Notification (notify) | `src/gateways/notify/`       | `1.4.5` |
 | Social                | `src/gateways/social/`       | `1.2.4` |
 | File Storage (files)  | `src/gateways/files/`        | `1.1.0` |
 | Registration          | `src/gateways/registration/` | `1.1.8` |
