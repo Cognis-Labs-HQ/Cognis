@@ -1,7 +1,0 @@
-{
-    "name": "@cognis/study-language-en",
-    "version": "1.2.1",
-    "private": true,
-    "type": "module",
-    "main": "index.ts"
-}

@@ -1,9 +1,0 @@
-[
-    { "id": "ja:def:nihon", "text": "Japan", "language": "en" },
-    {
-        "id": "ja:def:nihongo",
-        "text": "the Japanese language",
-        "language": "en"
-    },
-    { "id": "ja:def:hito", "text": "a person, someone", "language": "en" }
-]
