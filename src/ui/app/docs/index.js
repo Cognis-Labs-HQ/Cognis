@@ -8,6 +8,7 @@ import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 
 const DOCUMENT_TITLE_MAX_CH = 30;
+const DOCUMENT_HEADING_SELECTOR = "h1,h2,h3";
 
 const GROUP_KEYS = {
     "": "ui.app.docs.group.platform",
@@ -120,7 +121,7 @@ export async function mount(root, { signal } = {}) {
         const docEl = root.querySelector("#doc");
         if (!docEl || activeHtml === null) return;
         docEl.innerHTML = activeHtml;
-        docEl.querySelectorAll("h1,h2,h3").forEach((heading) => {
+        docEl.querySelectorAll(DOCUMENT_HEADING_SELECTOR).forEach((heading) => {
             const headingText = heading.textContent?.trim() ?? "";
             if (headingText.length > DOCUMENT_TITLE_MAX_CH) {
                 heading.setAttribute("title", headingText);
