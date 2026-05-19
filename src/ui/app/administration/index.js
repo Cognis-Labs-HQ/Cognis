@@ -16,6 +16,7 @@ import {
     getAdapterDisableContext,
     getGatewayAdapters,
     getGatewayEnableableAdapters,
+    shouldQueryGatewayAdapters,
 } from "./toggle-flows.js";
 
 let root = null;
@@ -69,6 +70,104 @@ async function loadGatewayAdapters(gatewayId) {
     if (!res.ok) return [];
     const payload = await res.json();
     return payload.data ?? [];
+}
+
+/**
+ * Resolves an adapter record either from the optional override or by matching
+ * the loaded adapter cache for a gateway/adapter pair.
+ *
+ * @param {string} gatewayId
+ * @param {string} adapterId
+ * @param {Record<string, unknown> | null} [adapterOverride]
+ * @returns {Record<string, unknown> | null} Matching adapter record from the
+ * override or adapter cache, or null when no adapter can be resolved.
+ */
+function findAdapterRecord(gatewayId, adapterId, adapterOverride = null) {
+    if (adapterOverride) {
+        return adapterOverride;
+    }
+    return (
+        allAdapters.find(
+            (adapter) =>
+                (adapter.senderId ?? adapter.id) === adapterId &&
+                adapter._gatewayId === gatewayId,
+        ) ?? null
+    );
+}
+
+/**
+ * Resolves the URL for an adapter control endpoint using announced metadata
+ * when present, with a standard gateway/adapter fallback path.
+ *
+ * @param {string} gatewayId
+ * @param {string} adapterId
+ * @param {string} controlName
+ * @param {Record<string, unknown> | null} [adapterOverride]
+ * @returns {string}
+ */
+function resolveAdapterControlUrl(
+    gatewayId,
+    adapterId,
+    controlName,
+    adapterOverride = null,
+) {
+    const adapter = findAdapterRecord(gatewayId, adapterId, adapterOverride);
+    const announcedUrl = adapter?.controls?.[controlName];
+    if (typeof announcedUrl === "string" && announcedUrl.length > 0) {
+        return announcedUrl;
+    }
+
+    const encodedGatewayId = encodeURIComponent(gatewayId);
+    const encodedAdapterId = encodeURIComponent(adapterId);
+    return `/api/v1/gateways/${encodedGatewayId}/adapters/${encodedAdapterId}/${controlName}`;
+}
+
+/**
+ * Synchronizes gateway and adapter toggle controls after UI refresh so checkbox
+ * state reflects the latest loaded gateway/adapter runtime status. This
+ * function queries the current DOM toggle nodes and should run after
+ * page-composer rerender/refresh operations.
+ */
+function syncGatewayAndAdapterToggles() {
+    const gatewayStateById = new Map(
+        gateways.map((gateway) => [gateway.id, gateway]),
+    );
+    root.querySelectorAll(
+        'input[type="checkbox"][data-gateway]:not(.adapter-toggle)',
+    ).forEach((toggle) => {
+        if (!(toggle instanceof HTMLInputElement)) return;
+        const gatewayId = toggle.dataset.gateway;
+        if (!gatewayId) return;
+        const gateway = gatewayStateById.get(gatewayId);
+        if (!gateway) return;
+        const isEnabled = (gateway.status ?? "active") !== "disabled";
+        toggle.checked = isEnabled;
+        toggle.defaultChecked = isEnabled;
+        toggle.disabled = gateway.required === true;
+    });
+
+    const adapterStateByKey = new Map(
+        allAdapters.map((adapter) => [
+            `${adapter._gatewayId}:${adapter.senderId ?? adapter.id}`,
+            adapter,
+        ]),
+    );
+    root.querySelectorAll(
+        ".adapter-toggle[data-adapter][data-gateway]",
+    ).forEach((toggle) => {
+        if (!(toggle instanceof HTMLInputElement)) return;
+        const adapterId = toggle.dataset.adapter;
+        const gatewayId = toggle.dataset.gateway;
+        if (!adapterId || !gatewayId) return;
+        const adapter = adapterStateByKey.get(`${gatewayId}:${adapterId}`);
+        if (!adapter) return;
+        const gateway = gatewayStateById.get(gatewayId);
+        const isGatewayDisabled = (gateway?.status ?? "active") === "disabled";
+        const isEnabled = !!(adapter.active ?? adapter.enabled);
+        toggle.checked = isEnabled;
+        toggle.defaultChecked = isEnabled;
+        toggle.disabled = isGatewayDisabled || Boolean(adapter.locked);
+    });
 }
 
 function getStatePill(status) {
@@ -547,10 +646,16 @@ function bindGatewayToggles() {
                             ),
                         ].map((input) => input.value);
                         for (const selectedAdapterId of selectedAdapterIds) {
+                            const selectedAdapter = enableableAdapters.find(
+                                (adapter) =>
+                                    (adapter.senderId ?? adapter.id) ===
+                                    selectedAdapterId,
+                            );
                             await toggleAdapter(
                                 gatewayId,
                                 selectedAdapterId,
                                 "enable",
+                                selectedAdapter ?? null,
                             );
                         }
                     }
@@ -593,6 +698,7 @@ function bindGatewayToggles() {
                             gatewayId,
                             currentAdapterId,
                             "disable",
+                            adapter,
                         );
                     }
                 }
@@ -667,9 +773,14 @@ function bindGatewayAdapterButtons() {
     // renderInlineAdapters + bindAdapterRows.
 }
 
-async function toggleAdapter(gatewayId, adapterId, action) {
+async function toggleAdapter(
+    gatewayId,
+    adapterId,
+    action,
+    adapterOverride = null,
+) {
     await apiFetch(
-        `/api/v1/gateways/${encodeURIComponent(gatewayId)}/adapters/${encodeURIComponent(adapterId)}/${action}`,
+        resolveAdapterControlUrl(gatewayId, adapterId, action, adapterOverride),
         { method: "POST" },
     );
 }
@@ -752,17 +863,29 @@ function bindAdapterToggles() {
                         await toggleGateway(depGwId, "enable");
                     }
                     for (const dep of disabledAdapterDeps) {
+                        const dependentAdapter = allAdapters.find(
+                            (adapter) =>
+                                (adapter.senderId ?? adapter.id) ===
+                                    dep.adapterId &&
+                                adapter._gatewayId === dep.gatewayId,
+                        );
                         await toggleAdapter(
                             dep.gatewayId,
                             dep.adapterId,
                             "enable",
+                            dependentAdapter ?? null,
                         );
                     }
                     gateways = await loadGateways();
                     allAdapters = await loadAllAdapters(gateways);
                 }
 
-                await toggleAdapter(gatewayId, adapterId, "enable");
+                await toggleAdapter(
+                    gatewayId,
+                    adapterId,
+                    "enable",
+                    adapter ?? null,
+                );
             }
 
             if (action === "disable") {
@@ -798,7 +921,12 @@ function bindAdapterToggles() {
                     return;
                 }
 
-                await toggleAdapter(gatewayId, adapterId, "disable");
+                await toggleAdapter(
+                    gatewayId,
+                    adapterId,
+                    "disable",
+                    targetAdapter ?? adapter ?? null,
+                );
 
                 if (isLastEnabled) {
                     await toggleGateway(gatewayId, "disable");
@@ -842,6 +970,7 @@ function bindAdapterRows() {
                 gatewayId,
                 adapterId,
                 adapter.name ?? adapterId,
+                adapter,
             );
             allAdapters = await loadAllAdapters(gateways);
             composer.refresh(elements);
@@ -1111,9 +1240,24 @@ function renderGenericAdapterForm(
   `;
 }
 
-async function openAdapterConfig(gatewayId, adapterId, name) {
-    const configUrl = `/api/v1/gateways/${encodeURIComponent(gatewayId)}/adapters/${encodeURIComponent(adapterId)}/config`;
-    const testUrl = `/api/v1/gateways/${encodeURIComponent(gatewayId)}/adapters/${encodeURIComponent(adapterId)}/test`;
+async function openAdapterConfig(
+    gatewayId,
+    adapterId,
+    name,
+    adapterOverride = null,
+) {
+    const configUrl = resolveAdapterControlUrl(
+        gatewayId,
+        adapterId,
+        "config",
+        adapterOverride,
+    );
+    const testUrl = resolveAdapterControlUrl(
+        gatewayId,
+        adapterId,
+        "test",
+        adapterOverride,
+    );
 
     const res = await apiFetch(configUrl);
     if (!res.ok) return;
@@ -1345,7 +1489,7 @@ async function openAdapterConfig(gatewayId, adapterId, name) {
 async function loadAllAdapters(gatewayList) {
     const results = await Promise.all(
         gatewayList
-            .filter((gw) => gw.hasAdapters === true)
+            .filter((gw) => shouldQueryGatewayAdapters(gw))
             .map(async (gw) => {
                 const adapters = await loadGatewayAdapters(gw.id);
                 return adapters.map((a) => ({ ...a, _gatewayId: gw.id }));
@@ -1438,6 +1582,7 @@ export async function mount(rootEl, { signal } = {}) {
                     bindSummarySliderClicks();
                     bindDependencyLinks();
                     restoreExpandedState();
+                    syncGatewayAndAdapterToggles();
                     bindExpandedStateListeners();
                 },
             },

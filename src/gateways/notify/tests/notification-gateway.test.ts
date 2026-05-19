@@ -92,6 +92,24 @@ test("CoreNotificationGateway.listSenders marks sender active when it has getCon
     assert.equal(configured?.active, true);
 });
 
+test("CoreNotificationGateway.listSenders exposes supportsTest from sender capability", () => {
+    const prefStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(prefStore);
+
+    class TestableSender extends ConfigurableSender {
+        async sendTestEmail(): Promise<void> {}
+    }
+
+    gateway.registerSender(new CapturingSender("plain", "Plain"));
+    gateway.registerSender(new TestableSender("smtp", "SMTP"));
+
+    const senders = gateway.listSenders();
+    const plain = senders.find((sender) => sender.senderId === "plain");
+    const smtp = senders.find((sender) => sender.senderId === "smtp");
+    assert.equal(plain?.supportsTest, false);
+    assert.equal(smtp?.supportsTest, true);
+});
+
 test("CoreNotificationGateway.getProviderConfig returns null for sender without getConfig", () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);

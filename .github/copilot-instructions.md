@@ -136,6 +136,12 @@ Routes must be granular enough that disabling or removing a gateway, adapter, or
 
 Adapters live under `src/adapters/<gateway-id>/<adapter-id>/`. For example, the SMTP notification adapter lives at `src/adapters/notify/smtp/`, and the MariaDB database adapter at `src/adapters/db/mariadb/`. This lets a gateway find all of its adapters consistently by scanning `src/adapters/<gateway-id>/`. Never nest an adapter under a flat path like `src/adapters/notify-smtp/`.
 
+### Adapter admin controls must always exist
+
+Any adapter that appears in Administration must expose a config contract even when it has no configurable fields. An empty config is still a real config surface: the adapter's gateway routes must serve `GET` and `PUT` config handling without returning 404.
+
+Administration-facing adapter metadata must also announce its control endpoints instead of relying on the UI to guess them. Always include the adapter's config, enable, and disable endpoints in the adapter listing payload; include a test endpoint when the adapter supports one.
+
 ### Versioned manifests for gateways, adapters, and modules
 
 Every gateway, adapter, and module must carry a `package.json` (or equivalent manifest) with a `version` field. Any change to the code, schema, or API within that component's scope must be accompanied by a version bump. This prevents silent drift between components that depend on each other. A higher-level versioning document at `src/docs/versions.en.md` tracks the current version of each component and serves as a changelog index.

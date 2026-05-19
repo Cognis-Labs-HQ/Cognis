@@ -85,7 +85,18 @@ export interface StudyAdapter {
     readonly adapterId: string;
     readonly adapterName: string;
     readonly requires?: string[];
+    /**
+     * Returns adapter-specific config fields only. The gateway reserves the
+     * `enabled` key for Administration runtime toggle state and injects it when
+     * serving adapter config responses.
+     */
     getConfig?(): Record<string, unknown>;
+    /**
+     * Receives adapter-specific config fields only. The gateway strips its
+     * reserved Administration `enabled` toggle before calling this hook. The
+     * gateway accepts both boolean and string forms ("true"/"false") of that
+     * toggle from UI payloads before stripping it.
+     */
     setConfig?(config: Record<string, unknown>): void;
     isConfigured?(): boolean;
 }
@@ -299,7 +310,41 @@ export class CoreStudyGateway {
     ): Promise<void> {
         const adapter = this.registeredAdapters.get(adapterId);
         if (!adapter || typeof adapter.setConfig !== "function") return;
-        await Promise.resolve(adapter.setConfig(config));
+        const { enabled, ...adapterConfig } = config;
+        if (enabled === false || enabled === "false") {
+            this.disabledAdapters.add(adapterId);
+        } else if (enabled === true || enabled === "true") {
+            this.disabledAdapters.delete(adapterId);
+        }
+        await Promise.resolve(adapter.setConfig(adapterConfig));
+    }
+
+    /**
+     * Enables a study adapter by removing it from the disabled set.
+     *
+     * @param {string} adapterId
+     * @returns {Promise<void>}
+     * @throws {Error} not_found when the adapter is unknown.
+     */
+    async enableAdapter(adapterId: string): Promise<void> {
+        if (!this.registeredAdapters.has(adapterId)) {
+            throw new Error("not_found");
+        }
+        this.disabledAdapters.delete(adapterId);
+    }
+
+    /**
+     * Disables a study adapter by adding it to the disabled set.
+     *
+     * @param {string} adapterId
+     * @returns {Promise<void>}
+     * @throws {Error} not_found when the adapter is unknown.
+     */
+    async disableAdapter(adapterId: string): Promise<void> {
+        if (!this.registeredAdapters.has(adapterId)) {
+            throw new Error("not_found");
+        }
+        this.disabledAdapters.add(adapterId);
     }
 
     async discoverAdapters(adaptersRoot: string): Promise<void> {
