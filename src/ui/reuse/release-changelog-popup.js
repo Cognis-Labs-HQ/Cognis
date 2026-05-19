@@ -87,7 +87,8 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
         releaseVersion.length > 0 &&
         releaseVersion !== String(prefs.releaseChangelogLastVersion ?? "");
     if (!versionChanged && unseenEntries.length === 0) return;
-    const entriesToRender = unseenEntries.length > 0 ? unseenEntries : releaseEntries;
+    const entriesToRender =
+        unseenEntries.length > 0 ? unseenEntries : releaseEntries;
 
     let neverShowAgainChecked = false;
     const action = await openPopup({

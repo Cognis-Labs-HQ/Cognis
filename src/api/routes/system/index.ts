@@ -16,12 +16,7 @@ import {
 } from "../../reuse/security-settings.js";
 
 const DEFAULT_DOC_LANGUAGE = "en";
-const CHANGELOG_DOCS_DIR = resolve(
-    process.cwd(),
-    "src",
-    "docs",
-    "changelog",
-);
+const CHANGELOG_DOCS_DIR = resolve(process.cwd(), "src", "docs", "changelog");
 const API_PACKAGE_JSON_FILE = resolve(
     process.cwd(),
     "src",

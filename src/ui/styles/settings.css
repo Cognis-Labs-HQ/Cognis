@@ -263,6 +263,14 @@ body[data-theme="light"] .email-badge-unverified {
     flex: 0 0 auto;
 }
 
+.settings-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0 0;
+    font-size: 0.9rem;
+}
+
 @media (max-width: 640px) {
     .email-add-row .btn-confirm,
     .email-verify-row .btn-confirm {
