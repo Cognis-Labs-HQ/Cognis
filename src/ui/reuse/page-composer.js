@@ -2913,11 +2913,19 @@ export function createPageComposer(
         let changed = false;
         for (const rowGroup of rowGroups) {
             if (rowGroup.placements.length < 2) {
-                normalized.push(...rowGroup.placements.map((placement) => ({ ...placement })));
+                normalized.push(
+                    ...rowGroup.placements.map((placement) => ({
+                        ...placement,
+                    })),
+                );
                 continue;
             }
             const descriptors = rowGroup.placements.map((placement) => {
-                const bounds = resolvePlacementWidthBounds(placement, maxCols, elems);
+                const bounds = resolvePlacementWidthBounds(
+                    placement,
+                    maxCols,
+                    elems,
+                );
                 const boundedWidth = Math.min(
                     bounds.max,
                     Math.max(bounds.min, placement.w),
@@ -2934,7 +2942,8 @@ export function createPageComposer(
             if (
                 descriptors.some(
                     (descriptor) =>
-                        descriptor.min === maxCols && rowGroup.placements.length > 1,
+                        descriptor.min === maxCols &&
+                        rowGroup.placements.length > 1,
                 )
             ) {
                 return null;
@@ -2954,7 +2963,8 @@ export function createPageComposer(
                 return null;
             }
             for (const descriptor of descriptors) {
-                const rawTarget = (descriptor.ratioWidth / ratioTotal) * maxCols;
+                const rawTarget =
+                    (descriptor.ratioWidth / ratioTotal) * maxCols;
                 descriptor.targetWidth = Math.min(
                     descriptor.max,
                     Math.max(
@@ -2975,13 +2985,13 @@ export function createPageComposer(
                 const candidate = descriptors
                     .filter(
                         (descriptor) =>
-                            descriptor.targetWidth + step <= descriptor.max + epsilon,
+                            descriptor.targetWidth + step <=
+                            descriptor.max + epsilon,
                     )
                     .sort((left, right) => {
                         const rightDistance =
                             right.targetWidth - right.ratioWidth;
-                        const leftDistance =
-                            left.targetWidth - left.ratioWidth;
+                        const leftDistance = left.targetWidth - left.ratioWidth;
                         if (rightDistance !== leftDistance) {
                             return rightDistance - leftDistance;
                         }
@@ -2998,13 +3008,13 @@ export function createPageComposer(
                 const candidate = descriptors
                     .filter(
                         (descriptor) =>
-                            descriptor.targetWidth - step >= descriptor.min - epsilon,
+                            descriptor.targetWidth - step >=
+                            descriptor.min - epsilon,
                     )
                     .sort((left, right) => {
                         const rightDistance =
                             right.targetWidth - right.ratioWidth;
-                        const leftDistance =
-                            left.targetWidth - left.ratioWidth;
+                        const leftDistance = left.targetWidth - left.ratioWidth;
                         if (rightDistance !== leftDistance) {
                             return rightDistance - leftDistance;
                         }
