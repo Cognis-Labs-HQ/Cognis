@@ -76,3 +76,25 @@ test("messages avatars fall back after failed image loads", () => {
         /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
     );
 });
+
+test("messages reaction chips render hover popup metadata and styles", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
+        "utf8",
+    );
+    const stylesheetSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
+        "utf8",
+    );
+
+    assert.match(appSource, /data-reaction-emoji-name=/);
+    assert.match(appSource, /data-reacted-by=/);
+    assert.match(appSource, /function showReactionHoverPopup/);
+    assert.match(appSource, /createAnchoredPopup/);
+    assert.doesNotMatch(
+        appSource,
+        /class="messages-reaction-chip[^"]*" title=/,
+    );
+    assert.match(stylesheetSource, /\.messages-reaction-hover-popup \{/);
+    assert.match(stylesheetSource, /\.messages-reaction-hover-popup-users \{/);
+});

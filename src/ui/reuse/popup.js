@@ -14,6 +14,8 @@
  *
  * Public exports:
  *   openPopup(options) — opens a modal and returns a Promise<string|null>.
+ *   createAnchoredPopup(options) — returns a controller for a non-modal popup
+ *     positioned beside an anchor element.
  *
  * Usage:
  *   import { openPopup } from '../../reuse/popup.js';
@@ -127,6 +129,109 @@ function ensureStylesheet() {
     });
     document.head.appendChild(link);
     return stylesheetReady;
+}
+
+function positionAnchoredPopup(anchorElement, popupElement) {
+    const anchorBounds = anchorElement.getBoundingClientRect();
+    popupElement.style.left = "0";
+    popupElement.style.top = "0";
+    popupElement.hidden = false;
+    const popupBounds = popupElement.getBoundingClientRect();
+    const viewportPadding = 8;
+    const popupGap = 8;
+    let leftPosition =
+        anchorBounds.left + anchorBounds.width / 2 - popupBounds.width / 2;
+    leftPosition = Math.max(
+        viewportPadding,
+        Math.min(
+            leftPosition,
+            window.innerWidth - popupBounds.width - viewportPadding,
+        ),
+    );
+    let topPosition = anchorBounds.bottom + popupGap;
+    if (
+        topPosition + popupBounds.height >
+        window.innerHeight - viewportPadding
+    ) {
+        topPosition = anchorBounds.top - popupBounds.height - popupGap;
+    }
+    topPosition = Math.max(
+        viewportPadding,
+        Math.min(
+            topPosition,
+            window.innerHeight - popupBounds.height - viewportPadding,
+        ),
+    );
+    popupElement.style.left = `${Math.round(leftPosition)}px`;
+    popupElement.style.top = `${Math.round(topPosition)}px`;
+}
+
+export function createAnchoredPopup({
+    className = "",
+    role = "tooltip",
+    tagName = "aside",
+} = {}) {
+    let popupElement = null;
+    let anchorElement = null;
+
+    function getPopupElement() {
+        if (popupElement instanceof HTMLElement) {
+            return popupElement;
+        }
+        void ensureStylesheet();
+        popupElement = document.createElement(tagName);
+        popupElement.className = className.trim();
+        popupElement.setAttribute("role", role);
+        popupElement.hidden = true;
+        document.body.appendChild(popupElement);
+        return popupElement;
+    }
+
+    function hide() {
+        anchorElement = null;
+        if (!(popupElement instanceof HTMLElement)) return;
+        popupElement.hidden = true;
+        popupElement.innerHTML = "";
+    }
+
+    return {
+        show(anchor, body) {
+            if (!(anchor instanceof HTMLElement)) return;
+            let resolvedBody = body ?? "";
+            if (typeof body === "function") {
+                try {
+                    resolvedBody = body();
+                } catch {
+                    hide();
+                    return;
+                }
+            }
+            if (!resolvedBody) {
+                hide();
+                return;
+            }
+            const element = getPopupElement();
+            anchorElement = anchor;
+            element.innerHTML = resolvedBody;
+            positionAnchoredPopup(anchor, element);
+        },
+        hide,
+        reposition() {
+            if (
+                !(anchorElement instanceof HTMLElement) ||
+                !(popupElement instanceof HTMLElement) ||
+                popupElement.hidden
+            ) {
+                return;
+            }
+            positionAnchoredPopup(anchorElement, popupElement);
+        },
+        destroy() {
+            hide();
+            popupElement?.remove();
+            popupElement = null;
+        },
+    };
 }
 
 export async function openPopup({

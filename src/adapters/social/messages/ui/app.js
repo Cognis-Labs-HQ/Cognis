@@ -15,7 +15,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer.js";
-import { openPopup } from "/static/reuse/popup.js";
+import { createAnchoredPopup, openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
     getInitialsText,
@@ -38,19 +38,110 @@ import {
 } from "/static/gateways/social/reuse/profile-avatar.js";
 
 const TEXT_ENCODER = new TextEncoder();
-const QUICK_REACTION_EMOJIS = ["👍", "❤", "😂", "🎉"];
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
-const EMOJI_NAMES = {
-    "👍": "Like",
-    "❤": "Heart",
-    "😂": "Haha",
-    "🎉": "Celebrate",
-};
+const MAX_EMOJI_GRID_SIZE = 80;
+
+let cachedEmojiList = null;
+let cachedEmojiUsage = [];
+const reactionHoverPopup = createAnchoredPopup({
+    className: "messages-reaction-hover-popup",
+});
+
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
 const LIVE_REFRESH_INTERVAL_MS = 2500;
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
+
+/**
+ * Fetches the full emoji list from the social gateway static asset, caching
+ * the result in memory. Falls back to an empty array on network failure.
+ *
+ * @returns {Promise<Array<{emoji: string, name: string}>>}
+ */
+async function loadAllEmojis() {
+    if (cachedEmojiList) return cachedEmojiList;
+    try {
+        const response = await fetch("/static/gateways/social/emojis.json");
+        if (response.ok) {
+            cachedEmojiList = await response.json();
+        }
+    } catch {
+        // fall through to empty list (lines below)
+    }
+    cachedEmojiList = cachedEmojiList ?? [];
+    return cachedEmojiList;
+}
+
+/**
+ * Fetches the top emoji usage records for the current user from the server and
+ * stores them in the module-level cache. Returns an empty array on failure so
+ * the quick strip falls back to the first five emojis in the loaded list.
+ *
+ * @returns {Promise<Array<{emoji: string, usageCount: number}>>}
+ */
+async function fetchEmojiUsage() {
+    try {
+        const response = await apiFetch("/api/v1/messages/emoji-usage");
+        if (!response.ok) return [];
+        const payload = await response.json();
+        return Array.isArray(payload?.data) ? payload.data : [];
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * Records an emoji pick: updates the module-level cache immediately so the
+ * quick strip reflects the choice at next render, then persists to the server.
+ * Failures are silent.
+ *
+ * @param {string} emoji
+ */
+function recordEmojiUsage(emoji) {
+    const normalized = normalizeReactionEmoji(emoji);
+    if (!normalized) return;
+    const existing = cachedEmojiUsage.find(
+        (entry) => normalizeReactionEmoji(entry.emoji) === normalized,
+    );
+    if (existing) {
+        existing.usageCount += 1;
+    } else {
+        cachedEmojiUsage.push({ emoji: normalized, usageCount: 1 });
+    }
+    cachedEmojiUsage.sort(
+        (entryA, entryB) => entryB.usageCount - entryA.usageCount,
+    );
+    apiFetch("/api/v1/messages/emoji-usage", {
+        method: "POST",
+        body: JSON.stringify({ emoji: normalized }),
+    }).catch(() => undefined);
+}
+
+/**
+ * Returns the five emojis to show in the quick-reaction strip.
+ * Emojis the user has used most are ranked first; remaining slots are filled
+ * from the first entries in the loaded emoji list (no hardcoded defaults).
+ *
+ * @returns {string[]}
+ */
+function getQuickReactionEmojis() {
+    const sortedByUsage = cachedEmojiUsage
+        .map((entry) => normalizeReactionEmoji(entry.emoji))
+        .filter(Boolean);
+
+    const result = [];
+    for (const emoji of sortedByUsage) {
+        if (result.length >= 5) break;
+        if (!result.includes(emoji)) result.push(emoji);
+    }
+    for (const entry of cachedEmojiList ?? []) {
+        if (result.length >= 5) break;
+        const normalized = normalizeReactionEmoji(entry.emoji);
+        if (normalized && !result.includes(normalized)) result.push(normalized);
+    }
+    return result;
+}
 
 function resolveMessageStyle() {
     const rootStyle = document.documentElement.dataset.messageStyle;
@@ -80,15 +171,24 @@ function normalizeReactionEmoji(emoji) {
 }
 
 /**
- * Returns a readable emoji label for known reactions, falling back to the
- * emoji token itself when no mapping exists.
+ * Returns a readable emoji label by resolving the entry's i18n name key.
+ * Falls back to the emoji token itself when no matching entry is found.
  *
  * @param {string} emoji
+ * @param {object} i18n
  * @returns {string}
  */
-function emojiDisplayName(emoji) {
+function emojiDisplayName(emoji, i18n) {
     const normalized = normalizeReactionEmoji(emoji);
-    return EMOJI_NAMES[normalized] ?? emoji;
+    let entry = null;
+    for (const item of cachedEmojiList ?? []) {
+        if (normalizeReactionEmoji(item.emoji) === normalized) {
+            entry = item;
+            break;
+        }
+    }
+    if (!entry) return emoji;
+    return i18n?.t(entry.name) ?? emoji;
 }
 
 async function encryptMessage(key, plaintext) {
@@ -521,7 +621,7 @@ function formatRoomEventText(message, i18n) {
     return null;
 }
 
-function renderReactionRow(message) {
+function renderReactionRow(message, i18n) {
     if (!message?.id) return "";
     const reactionRows = Array.isArray(message.reactions)
         ? message.reactions
@@ -558,39 +658,79 @@ function renderReactionRow(message) {
                 : [],
         });
     }
+    const hasChips = mergedByEmoji.size > 0;
     const chips = Array.from(mergedByEmoji.values())
         .map((reaction) => {
             const ownClass = reaction.reactedByMe
                 ? " messages-reaction-chip--active"
                 : "";
-            const reactedByLabel = reaction.reactedBy
-                .map(
-                    (reactor) =>
-                        reactor.displayName ||
-                        reactor.handle ||
-                        reactor.accountId,
-                )
-                .join(", ");
-            const titleLabel =
-                reactedByLabel || emojiDisplayName(reaction.emoji);
-            return `<button type="button" class="messages-reaction-chip${ownClass}" title="${escapeHtml(titleLabel)}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
+            const emojiName = emojiDisplayName(reaction.emoji, i18n);
+            const reactedByLabels = reaction.reactedBy
+                .map((reactor) => memberDisplayName(reactor))
+                .filter(Boolean);
+            const reactedByPayload = stableJson(reactedByLabels);
+            return `<button type="button" class="messages-reaction-chip${ownClass}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}" data-reaction-emoji-name="${escapeHtml(emojiName)}" data-reacted-by="${escapeHtml(reactedByPayload)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
         })
         .join("");
-    const quick = Array.from(
-        new Set(
-            QUICK_REACTION_EMOJIS.map((emoji) => normalizeReactionEmoji(emoji)),
-        ),
-    )
+    const quickEmojis = getQuickReactionEmojis();
+    const quick = Array.from(new Set(quickEmojis))
         .filter(
             (emoji) =>
                 emoji && !mergedByEmoji.has(normalizeReactionEmoji(emoji)),
         )
         .map(
             (emoji) =>
-                `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emojiDisplayName(emoji))}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
+                `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emojiDisplayName(emoji, i18n))}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
         )
         .join("");
-    return `<div class="messages-reactions-row">${chips}<span class="messages-reaction-add-wrap">${quick}</span></div>`;
+    const moreLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
+    const moreBtn = `<button type="button" class="messages-reaction-more-btn" title="${escapeHtml(moreLabel)}" data-message-id="${escapeHtml(message.id)}" data-reaction-more="1">···</button>`;
+    const rowClass = hasChips
+        ? "messages-reactions-row messages-reactions-row--has-chips"
+        : "messages-reactions-row";
+    return `<div class="${rowClass}">${chips}<span class="messages-reaction-add-wrap">${quick}${moreBtn}</span></div>`;
+}
+
+function hideReactionHoverPopup() {
+    reactionHoverPopup.hide();
+}
+
+function showReactionHoverPopup(reactionChipButton) {
+    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
+    const emojiName = String(
+        reactionChipButton.getAttribute("data-reaction-emoji-name") ?? "",
+    ).trim();
+    if (!emojiName) {
+        hideReactionHoverPopup();
+        return;
+    }
+    const rawReactedBy = String(
+        reactionChipButton.getAttribute("data-reacted-by") ?? "[]",
+    );
+    let reactedByLabels = [];
+    try {
+        const parsedReactedBy = JSON.parse(rawReactedBy);
+        reactedByLabels = Array.isArray(parsedReactedBy)
+            ? parsedReactedBy
+                  .map((label) => String(label ?? "").trim())
+                  .filter(Boolean)
+            : [];
+    } catch {
+        reactedByLabels = [];
+    }
+    const participantsMarkup =
+        reactedByLabels.length > 0
+            ? `<ul class="messages-reaction-hover-popup-users">${reactedByLabels
+                  .map(
+                      (participantLabel) =>
+                          `<li class="messages-reaction-hover-popup-user">${escapeHtml(participantLabel)}</li>`,
+                  )
+                  .join("")}</ul>`
+            : "";
+    reactionHoverPopup.show(
+        reactionChipButton,
+        `<h3 class="messages-reaction-hover-popup-title">${escapeHtml(emojiName)}</h3>${participantsMarkup}`,
+    );
 }
 
 function formatRoomListAvatar(room, displayedMember, titleSource) {
@@ -784,7 +924,7 @@ async function renderThread(
                     <span class="messages-message-body">${escapeHtml(msg.text ?? MESSAGE_UNAVAILABLE_PLACEHOLDER)}</span>
                     ${metadataRow}
                 </span>
-                ${renderReactionRow(msg)}
+                ${renderReactionRow(msg, i18n)}
             </div>
             ${statusBlock}
         </div>`;
@@ -793,6 +933,7 @@ async function renderThread(
 
     const hasMore = messageList.length === 50;
     const oldestCreatedAt = ordered[0]?.createdAt ?? null;
+    hideReactionHoverPopup();
 
     if (before) {
         const savedHeight = container.scrollHeight;
@@ -865,7 +1006,10 @@ async function loadRooms(i18n) {
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
-        componentStringBaseUrls: ["/static/adapters/social/messages/languages"],
+        componentStringBaseUrls: [
+            "/static/adapters/social/messages/languages",
+            "/static/gateways/social/languages",
+        ],
     });
     applyDocumentTitle(i18n, "ui.reuse.messages");
 
@@ -885,6 +1029,13 @@ export async function mount(root, { signal } = {}) {
     );
 
     const currentAccountId = localStorage.getItem("cognis_account") ?? "";
+
+    const [loadedEmojis, loadedUsage] = await Promise.all([
+        loadAllEmojis(),
+        fetchEmojiUsage(),
+    ]);
+    cachedEmojiList = loadedEmojis;
+    cachedEmojiUsage = loadedUsage;
 
     const initialPath = window.location.pathname;
     const initialRoomMatch = initialPath.match(/^\/messages\/([^/]+)$/);
@@ -1214,6 +1365,76 @@ export async function mount(root, { signal } = {}) {
             i18n,
             currentAccountId,
         );
+    }
+
+    async function openEmojiPickerPopup(messageId) {
+        const allEmojis = await loadAllEmojis();
+        const pickerPlaceholder = i18n.t(
+            "module.social.messages.emoji_search_placeholder",
+        );
+        const pickerTitle = i18n.t("module.social.messages.emoji_more");
+
+        function buildEmojiGridHtml(entries) {
+            return entries
+                .slice(0, MAX_EMOJI_GRID_SIZE)
+                .map((entry) => {
+                    const resolvedName = i18n.t(entry.name) ?? entry.name;
+                    return `<button type="button" class="messages-emoji-picker-btn" data-emoji="${escapeHtml(entry.emoji)}" title="${escapeHtml(resolvedName)}">${escapeHtml(entry.emoji)}</button>`;
+                })
+                .join("");
+        }
+
+        await openPopup({
+            title: pickerTitle,
+            maxWidth: "420px",
+            body: `<div class="messages-emoji-picker"><input type="text" class="messages-emoji-search" placeholder="${escapeHtml(pickerPlaceholder)}" autocomplete="off" /><div class="messages-emoji-grid">${buildEmojiGridHtml(allEmojis)}</div></div>`,
+            actions: [
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+            ],
+            onOpen: (overlay) => {
+                const searchInput = overlay.querySelector(
+                    ".messages-emoji-search",
+                );
+                const grid = overlay.querySelector(".messages-emoji-grid");
+
+                grid?.addEventListener("click", async (event) => {
+                    const btn = event.target.closest(
+                        ".messages-emoji-picker-btn",
+                    );
+                    if (!btn) return;
+                    const chosenEmoji = btn.dataset.emoji;
+                    overlay.querySelector("[data-popup-action]")?.click();
+                    recordEmojiUsage(chosenEmoji);
+                    await toggleReaction(messageId, chosenEmoji);
+                });
+
+                searchInput?.addEventListener("input", () => {
+                    const query = searchInput.value
+                        .normalize("NFC")
+                        .toLowerCase()
+                        .trim();
+                    const filtered = query
+                        ? allEmojis.filter((entry) => {
+                              const resolvedName = (
+                                  i18n.t(entry.name) ?? entry.name
+                              )
+                                  .normalize("NFC")
+                                  .toLowerCase();
+                              return resolvedName.includes(query);
+                          })
+                        : allEmojis;
+                    if (grid) {
+                        grid.innerHTML = buildEmojiGridHtml(filtered);
+                    }
+                });
+
+                searchInput?.focus();
+            },
+        });
     }
 
     async function refreshActiveConversation() {
@@ -1553,51 +1774,181 @@ export async function mount(root, { signal } = {}) {
                     "messages-thread-list",
                 );
                 const form = document.getElementById("messages-composer");
+                const reactionHoverEventOptions = signal
+                    ? { signal }
+                    : undefined;
 
-                threadList?.addEventListener("click", async (clickEvent) => {
-                    const reactionButton = clickEvent.target.closest(
-                        "[data-message-id][data-emoji]",
-                    );
-                    if (
-                        reactionButton &&
-                        reactionButton.classList.contains(
-                            "messages-reaction-chip",
-                        )
-                    ) {
-                        await toggleReaction(
-                            reactionButton.getAttribute("data-message-id"),
-                            reactionButton.getAttribute("data-emoji"),
+                threadList?.addEventListener(
+                    "click",
+                    async (clickEvent) => {
+                        hideReactionHoverPopup();
+                        const moreButton = clickEvent.target.closest(
+                            "[data-reaction-more]",
                         );
-                        return;
-                    }
-                    if (
-                        reactionButton &&
-                        reactionButton.classList.contains(
-                            "messages-reaction-add-btn",
-                        )
-                    ) {
-                        await toggleReaction(
-                            reactionButton.getAttribute("data-message-id"),
-                            reactionButton.getAttribute("data-emoji"),
+                        if (moreButton) {
+                            const messageId =
+                                moreButton.getAttribute("data-message-id");
+                            if (messageId)
+                                await openEmojiPickerPopup(messageId);
+                            return;
+                        }
+                        const reactionButton = clickEvent.target.closest(
+                            "[data-message-id][data-emoji]",
                         );
-                        return;
-                    }
-                    const button = clickEvent.target.closest(
-                        ".messages-load-earlier-btn",
-                    );
-                    if (!button || !selectedRoomId) return;
-                    const beforeTime = button.getAttribute("data-before-time");
-                    if (!beforeTime) return;
-                    const key = await getRoomKey(selectedRoomId);
-                    await renderThread(
-                        selectedRoomId,
-                        key,
-                        threadList,
-                        i18n,
-                        currentAccountId,
-                        beforeTime,
-                    );
-                });
+                        if (
+                            reactionButton &&
+                            reactionButton.classList.contains(
+                                "messages-reaction-chip",
+                            )
+                        ) {
+                            await toggleReaction(
+                                reactionButton.getAttribute("data-message-id"),
+                                reactionButton.getAttribute("data-emoji"),
+                            );
+                            return;
+                        }
+                        if (
+                            reactionButton &&
+                            reactionButton.classList.contains(
+                                "messages-reaction-add-btn",
+                            )
+                        ) {
+                            recordEmojiUsage(
+                                reactionButton.getAttribute("data-emoji"),
+                            );
+                            await toggleReaction(
+                                reactionButton.getAttribute("data-message-id"),
+                                reactionButton.getAttribute("data-emoji"),
+                            );
+                            return;
+                        }
+                        const button = clickEvent.target.closest(
+                            ".messages-load-earlier-btn",
+                        );
+                        if (!button || !selectedRoomId) return;
+                        const beforeTime =
+                            button.getAttribute("data-before-time");
+                        if (!beforeTime) return;
+                        const key = await getRoomKey(selectedRoomId);
+                        await renderThread(
+                            selectedRoomId,
+                            key,
+                            threadList,
+                            i18n,
+                            currentAccountId,
+                            beforeTime,
+                        );
+                    },
+                    reactionHoverEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "mouseover",
+                    (mouseEvent) => {
+                        const hoveredElement = mouseEvent.target;
+                        if (!(hoveredElement instanceof Element)) return;
+                        const reactionChipButton = hoveredElement.closest(
+                            ".messages-reaction-chip",
+                        );
+                        if (
+                            !(reactionChipButton instanceof HTMLButtonElement)
+                        ) {
+                            return;
+                        }
+                        const relatedElement = mouseEvent.relatedTarget;
+                        if (
+                            relatedElement instanceof Element &&
+                            reactionChipButton.contains(relatedElement)
+                        ) {
+                            return;
+                        }
+                        showReactionHoverPopup(reactionChipButton);
+                    },
+                    reactionHoverEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "mouseout",
+                    (mouseEvent) => {
+                        const originElement = mouseEvent.target;
+                        if (!(originElement instanceof Element)) return;
+                        const reactionChipButton = originElement.closest(
+                            ".messages-reaction-chip",
+                        );
+                        if (
+                            !(reactionChipButton instanceof HTMLButtonElement)
+                        ) {
+                            return;
+                        }
+                        const relatedElement = mouseEvent.relatedTarget;
+                        if (
+                            relatedElement instanceof Element &&
+                            reactionChipButton.contains(relatedElement)
+                        ) {
+                            return;
+                        }
+                        hideReactionHoverPopup();
+                    },
+                    reactionHoverEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "focusin",
+                    (focusEvent) => {
+                        const focusedElement = focusEvent.target;
+                        if (!(focusedElement instanceof Element)) return;
+                        const reactionChipButton = focusedElement.closest(
+                            ".messages-reaction-chip",
+                        );
+                        if (
+                            !(reactionChipButton instanceof HTMLButtonElement)
+                        ) {
+                            return;
+                        }
+                        showReactionHoverPopup(reactionChipButton);
+                    },
+                    reactionHoverEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "focusout",
+                    (focusEvent) => {
+                        const blurredElement = focusEvent.target;
+                        if (!(blurredElement instanceof Element)) return;
+                        const reactionChipButton = blurredElement.closest(
+                            ".messages-reaction-chip",
+                        );
+                        if (
+                            !(reactionChipButton instanceof HTMLButtonElement)
+                        ) {
+                            return;
+                        }
+                        const nextFocusedElement = focusEvent.relatedTarget;
+                        if (
+                            nextFocusedElement instanceof Element &&
+                            reactionChipButton.contains(nextFocusedElement)
+                        ) {
+                            return;
+                        }
+                        hideReactionHoverPopup();
+                    },
+                    reactionHoverEventOptions,
+                );
+
+                threadList?.addEventListener(
+                    "scroll",
+                    hideReactionHoverPopup,
+                    reactionHoverEventOptions,
+                );
+                window.addEventListener(
+                    "resize",
+                    () => {
+                        reactionHoverPopup.reposition();
+                    },
+                    {
+                        signal,
+                    },
+                );
 
                 form?.addEventListener("submit", async (event) => {
                     event.preventDefault();
@@ -1743,6 +2094,8 @@ export async function mount(root, { signal } = {}) {
     signal?.addEventListener(
         "abort",
         () => {
+            hideReactionHoverPopup();
+            reactionHoverPopup.destroy();
             if (typingSendTimeoutId) clearTimeout(typingSendTimeoutId);
             if (typingPollIntervalId) clearInterval(typingPollIntervalId);
             if (liveRefreshIntervalId) clearInterval(liveRefreshIntervalId);

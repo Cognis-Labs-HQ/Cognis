@@ -14,7 +14,8 @@
  *
  * Public exports:
  *   DbMessagesStore — the store class.
- *   ChatroomKind, MemberRole, MessageRow, RoomRow, MemberRow — types.
+ *   ChatroomKind, MemberRole, MessageRow, RoomRow, MemberRow,
+ *   EmojiUsageRow — types.
  *
  * Threat model: see docs/standard.en.md in this adapter.
  */
@@ -94,6 +95,12 @@ export interface MessageReactionRow {
     accountId: string;
     emoji: string;
     createdAt: string;
+}
+
+export interface EmojiUsageRow {
+    accountId: string;
+    emoji: string;
+    usageCount: number;
 }
 
 export class DbMessagesStore {
@@ -267,6 +274,27 @@ export class DbMessagesStore {
                 {
                     columns: ["chatroom_id", "message_id"],
                     name: "idx_message_reactions_room_message",
+                },
+            ],
+        });
+
+        await this.db.ensureTable({
+            name: "chat_emoji_usage",
+            columns: [
+                { name: "account_id", type: "text", notNull: true },
+                { name: "emoji", type: "text", notNull: true },
+                {
+                    name: "usage_count",
+                    type: "integer",
+                    notNull: true,
+                    default: 0,
+                },
+            ],
+            primaryKey: ["account_id", "emoji"],
+            indexes: [
+                {
+                    columns: ["account_id", "usage_count"],
+                    name: "idx_emoji_usage_account_count",
                 },
             ],
         });
@@ -1107,5 +1135,58 @@ export class DbMessagesStore {
         const plaintextHex = randomBytes(32).toString("hex");
         await this.storeWrappedRoomKey(roomId, plaintextHex);
         return plaintextHex;
+    }
+
+    async incrementEmojiUsage(accountId: string, emoji: string): Promise<void> {
+        await this.db.transaction(async (tx) => {
+            const existing = await tx.executeCommand({
+                option: "SELECT",
+                table: "chat_emoji_usage",
+                where: [
+                    { column: "account_id", value: accountId },
+                    { column: "emoji", value: emoji },
+                ],
+                limit: 1,
+            });
+            const currentRow = existing.rows?.[0];
+            if (currentRow) {
+                await tx.executeCommand({
+                    option: "UPDATE",
+                    table: "chat_emoji_usage",
+                    set: {
+                        usage_count: Number(currentRow.usage_count ?? 0) + 1,
+                    },
+                    where: [
+                        { column: "account_id", value: accountId },
+                        { column: "emoji", value: emoji },
+                    ],
+                });
+            } else {
+                await tx.executeCommand({
+                    option: "INSERT",
+                    table: "chat_emoji_usage",
+                    values: { account_id: accountId, emoji, usage_count: 1 },
+                    conflict: { action: "ignore" },
+                });
+            }
+        });
+    }
+
+    async getTopEmojiUsage(
+        accountId: string,
+        limit: number,
+    ): Promise<EmojiUsageRow[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "chat_emoji_usage",
+            where: [{ column: "account_id", value: accountId }],
+            orderBy: [{ column: "usage_count", direction: "DESC" }],
+            limit,
+        });
+        return (result.rows ?? []).map((row) => ({
+            accountId: String(row.account_id),
+            emoji: String(row.emoji),
+            usageCount: Number(row.usage_count ?? 0),
+        }));
     }
 }

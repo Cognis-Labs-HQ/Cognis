@@ -553,6 +553,48 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             return true;
         }
 
+        // GET /messages/emoji-usage — top emojis for the current user
+        if (
+            url.pathname === "/api/v1/messages/emoji-usage" &&
+            req.method === "GET"
+        ) {
+            const topEmojis = await messagesStore.getTopEmojiUsage(
+                accountId,
+                20,
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: topEmojis }));
+            return true;
+        }
+
+        // POST /messages/emoji-usage — record an emoji pick for the current user
+        if (
+            url.pathname === "/api/v1/messages/emoji-usage" &&
+            req.method === "POST"
+        ) {
+            const body = (await readJson(req)) as { emoji?: unknown };
+            const emoji = normalizeReactionEmoji(
+                typeof body.emoji === "string" ? body.emoji : "",
+            );
+            if (!emoji || emoji.length > 16) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message:
+                                "Invalid emoji: must be provided and no longer than 16 characters.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            await messagesStore.incrementEmojiUsage(accountId, emoji);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { ok: true } }));
+            return true;
+        }
+
         // GET /messages/requests
         if (
             url.pathname === "/api/v1/messages/requests" &&

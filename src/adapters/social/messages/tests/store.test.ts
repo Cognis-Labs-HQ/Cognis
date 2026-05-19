@@ -82,6 +82,7 @@ test("messages schema includes request typing and reaction tables", async () => 
     assert.ok(tableDefs.find((def) => def.name === "chat_message_requests"));
     assert.ok(tableDefs.find((def) => def.name === "chatroom_typing"));
     assert.ok(tableDefs.find((def) => def.name === "chat_message_reactions"));
+    assert.ok(tableDefs.find((def) => def.name === "chat_emoji_usage"));
 });
 
 test("messages setMuted uses executeCommand with integer muted value", async () => {
@@ -160,4 +161,76 @@ test("hasApprovedMessageRequestBetween checks both request directions", async ()
     assert.equal(approved, true);
     const selectCalls = commandCalls.filter((cmd) => cmd.option === "SELECT");
     assert.equal(selectCalls.length, 2);
+});
+
+test("incrementEmojiUsage inserts a new row when none exists", async () => {
+    const { db, commandCalls } = createRecordingExecutor();
+    const store = new DbMessagesStore(db);
+
+    await store.incrementEmojiUsage("account-1", "👍");
+
+    const insertCmd = commandCalls.find(
+        (cmd) => cmd.option === "INSERT" && cmd.table === "chat_emoji_usage",
+    );
+    assert.ok(insertCmd);
+    assert.equal(insertCmd.values.account_id, "account-1");
+    assert.equal(insertCmd.values.emoji, "👍");
+    assert.equal(insertCmd.values.usage_count, 1);
+});
+
+test("incrementEmojiUsage updates the count for an existing row", async () => {
+    const commandCalls: Array<StructuredDbCommand> = [];
+    const db: DbExecutor = {
+        async ensureTable() {},
+        async executeCommand(command: StructuredDbCommand) {
+            commandCalls.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "chat_emoji_usage"
+            ) {
+                return {
+                    rows: [
+                        {
+                            account_id: "account-1",
+                            emoji: "👍",
+                            usage_count: 3,
+                        },
+                    ],
+                };
+            }
+            return { rows: [] };
+        },
+        async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
+            return callback(db);
+        },
+    };
+    const store = new DbMessagesStore(db);
+
+    await store.incrementEmojiUsage("account-1", "👍");
+
+    const updateCmd = commandCalls.find(
+        (cmd): cmd is StructuredDbUpdateCommand =>
+            cmd.option === "UPDATE" && cmd.table === "chat_emoji_usage",
+    );
+    assert.ok(updateCmd);
+    assert.equal(updateCmd.set.usage_count, 4);
+});
+
+test("getTopEmojiUsage queries chat_emoji_usage by account", async () => {
+    const { db, commandCalls } = createRecordingExecutor();
+    const store = new DbMessagesStore(db);
+
+    await store.getTopEmojiUsage("account-1", 5);
+
+    const selectCmd = commandCalls.find(
+        (cmd) => cmd.option === "SELECT" && cmd.table === "chat_emoji_usage",
+    );
+    assert.ok(selectCmd);
+    assert.ok(
+        selectCmd.where?.some(
+            (clause) =>
+                clause.column === "account_id" && clause.value === "account-1",
+        ),
+    );
+    assert.equal(selectCmd.limit, 5);
 });
