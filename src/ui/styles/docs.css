@@ -14,15 +14,18 @@
     margin-bottom: 8px;
 }
 
-.docs-nav-link {
+.docs-nav .docs-nav-link {
     display: block;
+    inline-size: fit-content;
     max-inline-size: min(100%, 30ch);
+    min-inline-size: 0;
+    min-width: 0;
     text-align: left;
 }
 
 .docs-nav-label {
     display: block;
-    max-inline-size: min(100%, 30ch);
+    inline-size: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
