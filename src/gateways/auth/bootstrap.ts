@@ -695,7 +695,9 @@ function createAuthGatewayRoutes(
         ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const support = authGateway.getPasswordResetSupport(claims.providerId);
+            const support = authGateway.getPasswordResetSupport(
+                claims.providerId,
+            );
             log?.("debug", "Read password reset support.", {
                 ...logMeta,
                 accountId: claims.sub,
@@ -707,7 +709,10 @@ function createAuthGatewayRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/auth/reset-password" && req.method === "POST") {
+        if (
+            url.pathname === "/api/v1/auth/reset-password" &&
+            req.method === "POST"
+        ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const body = await readJson(req);
@@ -724,14 +729,20 @@ function createAuthGatewayRoutes(
                 );
                 return true;
             }
-            const support = authGateway.getPasswordResetSupport(claims.providerId);
+            const support = authGateway.getPasswordResetSupport(
+                claims.providerId,
+            );
             if (!support.supported) {
-                log?.("warn", "Blocked password reset for unsupported provider.", {
-                    ...logMeta,
-                    accountId: claims.sub,
-                    providerId: claims.providerId,
-                    reason: support.reason,
-                });
+                log?.(
+                    "warn",
+                    "Blocked password reset for unsupported provider.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                        providerId: claims.providerId,
+                        reason: support.reason,
+                    },
+                );
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({

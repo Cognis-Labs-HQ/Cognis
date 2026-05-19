@@ -20,8 +20,5 @@ test("oidc adapter password reset remains provider-managed", () => {
     const adapter = createAdapter();
     const support = adapter.getPasswordResetSupport?.();
     assert.equal(support?.supported, false);
-    assert.match(
-        support?.reason ?? "",
-        /OIDC identity provider/i,
-    );
+    assert.match(support?.reason ?? "", /OIDC identity provider/i);
 });

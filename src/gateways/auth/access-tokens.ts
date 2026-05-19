@@ -190,9 +190,12 @@ function getStoredAccessTokenRecord(token: string): {
     return null;
 }
 
-export function lookupAccessToken(
-    token: string,
-): { sub: string; role: AccessRole; providerId: string; revoked: boolean } | null {
+export function lookupAccessToken(token: string): {
+    sub: string;
+    role: AccessRole;
+    providerId: string;
+    revoked: boolean;
+} | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored) return null;
     return {

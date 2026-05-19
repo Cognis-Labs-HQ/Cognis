@@ -348,7 +348,9 @@ test("auth gateway bootstrap moves security UI to settings and removes auth admi
 
     const sections = uiRegistry.listAdminSections();
     const securitySection = sections.find((s) => s.id === "security");
-    const authenticationSection = sections.find((s) => s.id === "authentication");
+    const authenticationSection = sections.find(
+        (s) => s.id === "authentication",
+    );
     assert.ok(
         !securitySection,
         "auth gateway must NOT register a 'security' admin section",
@@ -647,14 +649,10 @@ test("POST /api/v1/auth/reset-password updates local account credentials", async
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
 
     await bootstrap({
-        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
-            execute: (
-                sql: string,
-                params?: unknown[],
-            ) => Promise<{ rows?: unknown[] }>;
-        },
+        dbExecutor: db,
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,

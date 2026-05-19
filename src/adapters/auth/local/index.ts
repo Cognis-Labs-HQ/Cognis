@@ -51,7 +51,10 @@ class LocalAuthAdapterImpl implements LocalAuthAdapter {
         nextPassword: string,
     ): Promise<{ updated: boolean; message?: string }> {
         if (!accountId || !nextPassword) {
-            return { updated: false, message: "Missing password reset payload." };
+            return {
+                updated: false,
+                message: "Missing password reset payload.",
+            };
         }
         await this.store.setPassword(accountId, nextPassword);
         return { updated: true };

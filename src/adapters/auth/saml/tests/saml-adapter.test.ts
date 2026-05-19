@@ -20,8 +20,5 @@ test("saml adapter password reset remains provider-managed", () => {
     const adapter = createAdapter();
     const support = adapter.getPasswordResetSupport?.();
     assert.equal(support?.supported, false);
-    assert.match(
-        support?.reason ?? "",
-        /SAML identity provider/i,
-    );
+    assert.match(support?.reason ?? "", /SAML identity provider/i);
 });

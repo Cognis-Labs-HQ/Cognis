@@ -7,7 +7,9 @@ export function createSettingsSection({ i18n }) {
     let capability = null;
 
     async function loadCapability() {
-        const response = await apiFetch("/api/v1/auth/password-reset-capability");
+        const response = await apiFetch(
+            "/api/v1/auth/password-reset-capability",
+        );
         if (!response.ok) {
             capability = {
                 adapterName: i18n.t("gateway.auth.security.unknown_provider"),
@@ -79,7 +81,9 @@ export function createSettingsSection({ i18n }) {
                 },
             ],
             onOpen: (overlay) => {
-                formElement = overlay.querySelector(".auth-password-reset-form");
+                formElement = overlay.querySelector(
+                    ".auth-password-reset-form",
+                );
             },
         });
         if (popupResult !== "save" || !formElement) {
@@ -92,7 +96,9 @@ export function createSettingsSection({ i18n }) {
             'input[name="confirmPassword"]',
         );
         const nextPassword = String(nextPasswordInput?.value ?? "").trim();
-        const confirmPassword = String(confirmPasswordInput?.value ?? "").trim();
+        const confirmPassword = String(
+            confirmPasswordInput?.value ?? "",
+        ).trim();
         if (!nextPassword || !confirmPassword) {
             showToast(i18n.t("gateway.auth.security.required"), {
                 variant: "warning",
