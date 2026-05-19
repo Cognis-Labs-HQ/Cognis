@@ -477,6 +477,7 @@ test("changelogs route requires login cookie and serves changelog entrypoint fro
     );
     assert.equal(authed.status, 200);
     assert.match(authed.body, /static\/app\/changelogs\/index\.js/);
+    assert.match(authed.body, /{{ui\.page\.title\.changelogs}}/);
     assert.match(authed.body, /id="app"/);
 });
 

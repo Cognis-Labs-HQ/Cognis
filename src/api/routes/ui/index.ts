@@ -164,6 +164,9 @@ async function serveHtmlPageWithReplacements(
 ) {
     try {
         let html = await readFile(filePath, "utf8");
+        // Replacements are literal string substitutions (no regex semantics).
+        // Keep replacement "from" values non-overlapping to avoid cascading
+        // substitutions across sequential replaceAll() calls.
         for (const replacement of replacements) {
             html = html.replaceAll(replacement.from, replacement.to);
         }

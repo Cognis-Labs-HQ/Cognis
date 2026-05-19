@@ -169,7 +169,7 @@ test("docs page keeps docs-specific stylesheet enabled", () => {
     assert.match(html, /\/static\/styles\/docs\.css/);
 });
 
-test("docs page includes shared stylesheet and entry script for docs and changelogs", () => {
+test("docs page template includes docs stylesheet and docs entry script", () => {
     const html = readFileSync(
         join(ROOT, "src/ui/public/pages/docs.html"),
         "utf8",
