@@ -7,8 +7,8 @@ import {
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 
-const DOCUMENT_TITLE_MAX_CH = 30;
 const DOCUMENT_HEADING_SELECTOR = "h1,h2,h3";
+const DOCUMENT_HEADING_CLASS = "docs-truncated-heading";
 
 const GROUP_KEYS = {
     "": "ui.app.docs.group.platform",
@@ -60,11 +60,9 @@ function docTitle(item) {
 function renderDocNavButton(item) {
     const title = docTitle(item);
     const safeTitle = escapeHtml(title);
-    const titleAttr =
-        title.length > DOCUMENT_TITLE_MAX_CH ? ` title="${safeTitle}"` : "";
     return `
         <li>
-            <button class="docs-nav-link" data-slug="${item.slug}"${titleAttr}>
+            <button class="docs-nav-link" data-slug="${item.slug}" title="${safeTitle}">
                 <span class="docs-nav-label">${safeTitle}</span>
             </button>
         </li>
@@ -122,6 +120,7 @@ export async function mount(root, { signal } = {}) {
         if (!docEl || activeHtml === null) return;
         docEl.innerHTML = activeHtml;
         docEl.querySelectorAll(DOCUMENT_HEADING_SELECTOR).forEach((heading) => {
+            heading.classList.add(DOCUMENT_HEADING_CLASS);
             const headingText = heading.textContent?.trim() ?? "";
             const isVisuallyTruncated =
                 heading.scrollWidth > heading.clientWidth;

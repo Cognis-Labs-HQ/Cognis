@@ -110,11 +110,16 @@ test("docs page truncates long navigation titles and document headings in the UI
     const styles = readFileSync(join(ROOT, "src/ui/styles/docs.css"), "utf8");
 
     assert.match(html, /\/static\/styles\/docs\.css/);
-    assert.match(source, /const DOCUMENT_TITLE_MAX_CH = 30;/);
     assert.match(source, /const DOCUMENT_HEADING_SELECTOR = "h1,h2,h3";/);
+    assert.match(
+        source,
+        /const DOCUMENT_HEADING_CLASS = "docs-truncated-heading";/,
+    );
     assert.match(source, /querySelectorAll\(DOCUMENT_HEADING_SELECTOR\)/);
+    assert.match(source, /heading\.classList\.add\(DOCUMENT_HEADING_CLASS\)/);
     assert.match(source, /heading\.scrollWidth > heading\.clientWidth/);
     assert.match(styles, /\.docs-nav-label\s*\{/);
+    assert.match(styles, /#doc \.docs-truncated-heading\s*\{/);
     assert.match(styles, /max-inline-size:\s*min\(100%, 30ch\)/);
     assert.match(styles, /text-overflow:\s*ellipsis/);
 });

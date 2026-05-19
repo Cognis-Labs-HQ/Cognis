@@ -27,9 +27,7 @@
     white-space: nowrap;
 }
 
-#doc h1,
-#doc h2,
-#doc h3 {
+#doc .docs-truncated-heading {
     max-inline-size: min(100%, 30ch);
     overflow: hidden;
     text-overflow: ellipsis;
