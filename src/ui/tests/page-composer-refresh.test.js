@@ -74,6 +74,34 @@ test("page composer includes mobile toolbar drawer behavior", () => {
     );
 });
 
+test("page composer resolves edit toggle from the active page root", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.match(source, /function getComposerEditToggleButton\(\)/);
+    assert.match(source, /root\.querySelector\("#composer-edit-toggle"\)/);
+    assert.match(source, /document\.getElementById\("composer-edit-toggle"\)/);
+    assert.match(source, /function ensureComposerEditToggleButton\(\)/);
+    assert.match(
+        source,
+        /const editBtn = allowCustomization[\s\S]*ensureComposerEditToggleButton\(\)/,
+    );
+    assert.match(
+        source,
+        /const editBtn = allowCustomization[\s\S]*getComposerEditToggleButton\(\)/,
+    );
+    assert.match(
+        source,
+        /const editBtn = state\.allowCustomization[\s\S]*ensureComposerEditToggleButton\(\)/,
+    );
+    assert.match(
+        source,
+        /const editBtn = state\.allowCustomization[\s\S]*getComposerEditToggleButton\(\)/,
+    );
+});
+
 test("page composer elements panels stay below header and use viewport top", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-composer.js"),

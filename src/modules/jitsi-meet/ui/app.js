@@ -1497,6 +1497,18 @@ export async function mount(root, { signal } = {}) {
 
     let bindController = null;
 
+    function syncMobileChatPaneWidth() {
+        const chatCard = root.querySelector(
+            '[data-composer-element="jitsi-chat"]',
+        );
+        if (!(chatCard instanceof HTMLElement)) return;
+        if (window.matchMedia("(max-width: 720px)").matches) {
+            chatCard.style.gridColumn = "1 / -1";
+            return;
+        }
+        chatCard.style.removeProperty("grid-column");
+    }
+
     function bindInteractiveHandlers() {
         if (bindController) {
             bindController.abort();
@@ -1514,6 +1526,7 @@ export async function mount(root, { signal } = {}) {
         }
         const bindSignal = bindController.signal;
         recoverMeetingSessionAfterComposerRender();
+        syncMobileChatPaneWidth();
         const container = root;
 
         const findButton = container.querySelector(

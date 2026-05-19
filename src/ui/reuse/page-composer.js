@@ -2720,7 +2720,9 @@ export function createPageComposer(
     }
 
     function syncSubEditToggle(state) {
-        const editBtn = document.getElementById("composer-edit-toggle");
+        const editBtn = state.allowCustomization
+            ? ensureComposerEditToggleButton()
+            : getComposerEditToggleButton();
         if (!editBtn) return;
         if (!state.allowCustomization) {
             editBtn.hidden = true;
@@ -2770,7 +2772,9 @@ export function createPageComposer(
     }
 
     function syncEditToggle() {
-        const editBtn = document.getElementById("composer-edit-toggle");
+        const editBtn = allowCustomization
+            ? ensureComposerEditToggleButton()
+            : getComposerEditToggleButton();
         if (!editBtn) return;
         if (!allowCustomization) {
             editBtn.hidden = true;
@@ -2812,6 +2816,33 @@ export function createPageComposer(
                 { signal },
             );
         }
+    }
+
+    function getComposerEditToggleButton() {
+        return (
+            root.querySelector("#composer-edit-toggle") ??
+            document.getElementById("composer-edit-toggle")
+        );
+    }
+
+    function ensureComposerEditToggleButton() {
+        const existingButton = getComposerEditToggleButton();
+        if (existingButton) return existingButton;
+        const fallbackButton = document.createElement("button");
+        fallbackButton.type = "button";
+        fallbackButton.id = "composer-edit-toggle";
+        fallbackButton.className = "composer-edit-toggle";
+        fallbackButton.setAttribute(
+            "aria-label",
+            i18n.t("ui.reuse.edit_layout"),
+        );
+        fallbackButton.setAttribute("role", "button");
+        fallbackButton.hidden = true;
+        // syncEditToggle/syncSubEditToggle bind title, icon, and click handlers
+        // immediately after this helper returns the fallback button.
+        const fallbackHost = root.querySelector(".workspace") ?? root;
+        fallbackHost.appendChild(fallbackButton);
+        return fallbackButton;
     }
 
     function repackPlacementsIntoColumns(
@@ -2905,7 +2936,7 @@ export function createPageComposer(
      *
      * @param {Array<{ id: string, col: number, row: number, w: number, h: number }>} sortedVisible
      * @param {number} maxCols
-     * @param {Array<{ id: string, gridSize?: object }>} [elems]
+     * @param {Array<{ id: string, gridSize?: object }>} [elems] Defaults to the composer's current elements array.
      * @returns {Array<{ id: string, col: number, row: number, w: number, h: number }>|null}
      */
     function normalizePlacementRowsForGridWidth(
@@ -2998,6 +3029,9 @@ export function createPageComposer(
             );
             let remaining = Math.round((maxCols - currentTotal) / step) * step;
             let guard = 0;
+            // Guard width redistribution loops using the maximum number of grid
+            // step changes across all panes in one growth pass plus one shrink
+            // pass to prevent infinite redistribution attempts.
             const maxIterations = Math.max(
                 1,
                 Math.ceil(maxCols / step) * descriptors.length * 2,
