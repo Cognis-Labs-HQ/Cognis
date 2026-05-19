@@ -158,12 +158,16 @@ export async function mount(root, { signal } = {}) {
 
     function resolveDefaultSlug(subpath, selectableDocs) {
         const mappedSlug = changelogRouteSubpathToSlug(subpath);
-        if (mappedSlug && selectableDocs.find((doc) => doc.slug === mappedSlug)) {
+        if (
+            mappedSlug &&
+            selectableDocs.find((doc) => doc.slug === mappedSlug)
+        ) {
             return mappedSlug;
         }
         return (
             selectableDocs.find((doc) => doc.slug === "changelog")?.slug ??
-            selectableDocs.find((doc) => doc.slug === "changelog/index")?.slug ??
+            selectableDocs.find((doc) => doc.slug === "changelog/index")
+                ?.slug ??
             selectableDocs[0]?.slug
         );
     }
@@ -262,7 +266,10 @@ export async function mount(root, { signal } = {}) {
     );
 
     const defaultDoc = (() => {
-        const subpath = window.location.pathname.replace(/^\/changelogs\/?/, "");
+        const subpath = window.location.pathname.replace(
+            /^\/changelogs\/?/,
+            "",
+        );
         return resolveDefaultSlug(subpath, changelogDocs);
     })();
     if (defaultDoc) await showDoc(defaultDoc, { pushHistory: false });

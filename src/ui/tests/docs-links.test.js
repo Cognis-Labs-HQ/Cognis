@@ -188,7 +188,7 @@ test("changelogs page keeps changelog-only navigation data", () => {
         "changelogs page navigation should include only changelog docs",
     );
     assert.ok(
-        source.includes("applyDocumentTitle(i18n, \"ui.page.title.changelogs\")"),
+        source.includes('applyDocumentTitle(i18n, "ui.page.title.changelogs")'),
         "changelogs page should apply the dedicated page title",
     );
 });
