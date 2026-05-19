@@ -16,10 +16,14 @@ async function loadRegistrationState() {
     }
 }
 
+function isAdminRole() {
+    const role = (localStorage.getItem("cognis_role") ?? "").trim();
+    return role === "admin" || role === "owner";
+}
+
 async function registerInviteMenuEntry() {
-    const role = localStorage.getItem("cognis_role");
     const isFounder = localStorage.getItem("cognis_is_founder") === "true";
-    if (role === "admin" || !isFounder) return;
+    if (isAdminRole() || !isFounder) return;
     const registrationState = await loadRegistrationState();
     if (!registrationState?.gatewayEnabled) return;
     if (registrationState.inviteEnabled !== true) return;
