@@ -92,6 +92,41 @@ test("localized docs stay in language lockstep", () => {
     assert.deepEqual(incompleteGroups, []);
 });
 
+test("unsuffixed markdown docs have localized variants", () => {
+    const trackedDocs = listTrackedDocFiles().filter((name) =>
+        name.endsWith(".md"),
+    );
+    const trackedDocSet = new Set(trackedDocs);
+    const unsuffixedDocs = trackedDocs.filter((name) =>
+        !/\.(de|en|id|ja)\.md$/.test(name),
+    );
+    const exemptUnsuffixedDocs = new Set([".github/copilot-instructions.md"]);
+    const missingLocalizedVariants = [];
+
+    for (const unsuffixedDoc of unsuffixedDocs) {
+        if (exemptUnsuffixedDocs.has(unsuffixedDoc)) {
+            continue;
+        }
+        const missingLanguages = ["de", "en", "id", "ja"].filter(
+            (languageCode) =>
+                !trackedDocSet.has(
+                    unsuffixedDoc.replace(
+                        /\.md$/,
+                        `.${languageCode}.md`,
+                    ),
+                ),
+        );
+        if (missingLanguages.length > 0) {
+            missingLocalizedVariants.push({
+                file: unsuffixedDoc,
+                missingLanguages,
+            });
+        }
+    }
+
+    assert.deepEqual(missingLocalizedVariants, []);
+});
+
 test("docs page strips pretty docs URL prefixes before loading document slugs", () => {
     const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
     assert.ok(
