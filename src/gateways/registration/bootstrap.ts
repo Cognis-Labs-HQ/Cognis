@@ -18,6 +18,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../api/reuse/route-context.js";
+import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
 import { CoreRegistrationGateway } from "./gateway.js";
 
 const PUBLIC_ROOT = path.resolve(process.cwd(), "src", "ui", "public");
@@ -219,7 +220,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "registration",
         name: "Registration Gateway",
-        version: "1.1.6",
+        version: "1.1.8",
         description:
             "Registration workflows via pluggable invite/public adapters.",
         publisher: "Cognis Labs",
@@ -726,7 +727,17 @@ function createGatewayAdapterRoutes(
         if (url.pathname === base && req.method === "GET") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: gateway.listAdapters() }));
+            res.end(
+                JSON.stringify({
+                    data: gateway.listAdapters().map((adapter) => ({
+                        ...adapter,
+                        controls: buildGatewayAdapterAdminControls(
+                            base,
+                            adapter.id,
+                        ),
+                    })),
+                }),
+            );
             return true;
         }
 
@@ -810,6 +821,59 @@ function createGatewayAdapterRoutes(
                     supportsTest: false,
                 }),
             );
+            return true;
+        }
+
+        if (configMatch && req.method === "PUT") {
+            if (!ctx.requireAuth(req, res, "admin")) return true;
+            const adapterId = decodeURIComponent(configMatch[1]);
+            const adapter = gateway
+                .listAdapters()
+                .find((candidate) => candidate.id === adapterId);
+            if (!adapter) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Adapter not found",
+                        },
+                    }),
+                );
+                return true;
+            }
+
+            const body = await readJson(req);
+            const config =
+                body != null && typeof body === "object" && !Array.isArray(body)
+                    ? (body as Record<string, unknown>)
+                    : {};
+            const enabledValue = config.enabled;
+
+            if (enabledValue === true || enabledValue === "true") {
+                const gatewayEntry = gatewayRegistry.get(gatewayId);
+                if (gatewayEntry?.status === "disabled") {
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "gateway_disabled",
+                                message:
+                                    "Cannot enable an adapter while its gateway is disabled",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                await gateway.enableAdapter(adapterId);
+            }
+
+            if (enabledValue === false || enabledValue === "false") {
+                await gateway.disableAdapter(adapterId);
+            }
+
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 

@@ -5,6 +5,8 @@ import {
     getGatewayAdapters,
     getGatewayEnableableAdapters,
     isAdapterActive,
+    isGatewayEnabled,
+    shouldQueryGatewayAdapters,
 } from "../app/administration/toggle-flows.js";
 
 const adapters = [
@@ -77,4 +79,25 @@ test("isAdapterActive respects active flag over enabled flag", () => {
     assert.equal(isAdapterActive({ active: true, enabled: false }), true);
     assert.equal(isAdapterActive({ active: false, enabled: true }), false);
     assert.equal(isAdapterActive({ enabled: true }), true);
+});
+
+test("isGatewayEnabled returns false for disabled gateways", () => {
+    assert.equal(isGatewayEnabled({ status: "disabled" }), false);
+    assert.equal(isGatewayEnabled({ status: "active" }), true);
+    assert.equal(isGatewayEnabled({}), true);
+});
+
+test("shouldQueryGatewayAdapters skips disabled gateways", () => {
+    assert.equal(
+        shouldQueryGatewayAdapters({ hasAdapters: true, status: "disabled" }),
+        false,
+    );
+    assert.equal(
+        shouldQueryGatewayAdapters({ hasAdapters: true, status: "active" }),
+        true,
+    );
+    assert.equal(
+        shouldQueryGatewayAdapters({ hasAdapters: false, status: "active" }),
+        false,
+    );
 });
