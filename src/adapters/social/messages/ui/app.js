@@ -669,8 +669,10 @@ function renderReactionRow(message, i18n) {
                         reactor.accountId,
                 )
                 .join(", ");
-            const titleLabel =
-                reactedByLabel || emojiDisplayName(reaction.emoji, i18n);
+            const emojiName = emojiDisplayName(reaction.emoji, i18n);
+            const titleLabel = reactedByLabel
+                ? `${emojiName} — ${reactedByLabel}`
+                : emojiName;
             return `<button type="button" class="messages-reaction-chip${ownClass}" title="${escapeHtml(titleLabel)}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
         })
         .join("");
