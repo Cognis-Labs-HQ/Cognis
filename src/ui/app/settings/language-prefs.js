@@ -1,4 +1,8 @@
 import { apiFetch } from "../../reuse/api-client.js";
+import {
+    sanitizeLanguagePriority,
+    readBrowserLocales,
+} from "../../reuse/i18n.js";
 
 async function loadLanguagesCatalog() {
     const response = await apiFetch("/api/v1/system/languages");
@@ -14,6 +18,11 @@ export function initLanguagePrefs(
     let languagePriority = [...initialPriority];
     let savedPriority = [...initialPriority];
     let catalog = [];
+    let pendingMode = null;
+
+    function getSupportedLanguageCodes() {
+        return catalog.map((item) => item.iso_code);
+    }
 
     function notifyDirty() {
         const dirty =
@@ -77,6 +86,16 @@ export function initLanguagePrefs(
         return row;
     }
 
+    function makeEmptyDropZoneRow() {
+        const row = document.createElement("tr");
+        const emptyCell = document.createElement("td");
+        emptyCell.setAttribute("colspan", "2");
+        emptyCell.className = "language-table-empty-cell";
+        emptyCell.textContent = "\u00A0";
+        row.append(emptyCell);
+        return row;
+    }
+
     function renderTables() {
         const preferred = root.querySelector("#preferred-languages");
         const available = root.querySelector("#available-languages");
@@ -91,12 +110,15 @@ export function initLanguagePrefs(
             }),
         );
 
+        const availableRows = catalog
+            .filter((item) => !preferredSet.has(item.iso_code))
+            .map((item) =>
+                makeRow(item.iso_code, `${item.name} (${item.iso_code})`),
+            );
         available.replaceChildren(
-            ...catalog
-                .filter((item) => !preferredSet.has(item.iso_code))
-                .map((item) =>
-                    makeRow(item.iso_code, `${item.name} (${item.iso_code})`),
-                ),
+            ...(availableRows.length
+                ? availableRows
+                : [makeEmptyDropZoneRow()]),
         );
     }
 
@@ -175,10 +197,13 @@ export function initLanguagePrefs(
                 );
         }
 
-        languagePriority = [...new Set(languagePriority)];
-        if (!languagePriority.includes("en")) languagePriority.push("en");
+        languagePriority = sanitizeLanguagePriority(
+            languagePriority,
+            getSupportedLanguageCodes(),
+        );
         renderTables();
         notifyDirty();
+        pendingMode = "manual";
     }
 
     let dragLanguage = null;
@@ -204,10 +229,22 @@ export function initLanguagePrefs(
         clearDropMarkers();
 
         const row = zone.closest("tr[data-lang-row]");
-        if (!row) return;
-        const rect = row.getBoundingClientRect();
-        const isAfter = event.clientY > rect.top + rect.height / 2;
-        row.classList.add(isAfter ? "drop-target-after" : "drop-target-before");
+        if (row) {
+            const rect = row.getBoundingClientRect();
+            const isAfter = event.clientY > rect.top + rect.height / 2;
+            row.classList.add(
+                isAfter ? "drop-target-after" : "drop-target-before",
+            );
+        } else {
+            // Zone is the table itself — available table is showing the empty placeholder row.
+            // fall through to placeholder highlight (lines below)
+            const placeholderRow = zone.querySelector(
+                "tr:not([data-lang-row])",
+            );
+            if (placeholderRow) {
+                placeholderRow.classList.add("drop-target-before");
+            }
+        }
     });
 
     root.addEventListener("drop", (event) => {
@@ -223,10 +260,12 @@ export function initLanguagePrefs(
 
     function commit() {
         savedPriority = [...languagePriority];
+        pendingMode = null;
     }
 
     function discard() {
         languagePriority = [...savedPriority];
+        pendingMode = null;
         renderTables();
         notifyDirty();
     }
@@ -235,12 +274,30 @@ export function initLanguagePrefs(
         catalog = await loadLanguagesCatalog().catch(() => [
             { iso_code: "en", name: "English" },
         ]);
+        languagePriority = sanitizeLanguagePriority(
+            languagePriority,
+            getSupportedLanguageCodes(),
+        );
+        savedPriority = sanitizeLanguagePriority(
+            savedPriority,
+            getSupportedLanguageCodes(),
+        );
         renderTables();
     }
 
     return {
         init,
         renderTables,
+        syncFromBrowser() {
+            languagePriority = sanitizeLanguagePriority(
+                readBrowserLocales(),
+                getSupportedLanguageCodes(),
+            );
+            renderTables();
+            notifyDirty();
+            pendingMode = "auto";
+        },
+        getPendingMode: () => pendingMode,
         getPriority: () => languagePriority,
         isDirty: () =>
             JSON.stringify(languagePriority) !== JSON.stringify(savedPriority),

@@ -3,6 +3,7 @@ import { apiFetch } from "../../reuse/api-client.js";
 import {
     applyDocumentTitle,
     createI18n,
+    readLanguagePriorityMode,
     readPreferredLanguages,
     setPreferredLanguages,
 } from "../../reuse/i18n.js";
@@ -78,11 +79,47 @@ function hasLanguagePriorityChanged(prev, next) {
     return next.some((lang, i) => lang !== prev[i]);
 }
 
+/**
+ * Resolves the language priority mode to persist when the user saves settings.
+ * If the language prefs have pending unsaved changes, the pending mode is used
+ * (so "sync from browser" correctly resets to "auto"). Otherwise the previously
+ * stored/loaded mode is preserved.
+ *
+ * @param {ReturnType<import('./language-prefs.js').initLanguagePrefs> | undefined} languagePrefsController
+ * @param {{ languagePriorityMode?: string } | null} existingPrefs
+ * @param {string} storedMode
+ * @returns {string}
+ */
+function resolveLanguagePriorityMode(
+    languagePrefsController,
+    existingPrefs,
+    storedMode,
+) {
+    if (languagePrefsController?.isDirty()) {
+        return languagePrefsController.getPendingMode() ?? "manual";
+    }
+    if (existingPrefs?.languagePriorityMode === "manual") return "manual";
+    return storedMode;
+}
+
 const LANGUAGE_RELOAD_DELAY_MS = 400;
 const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
 export async function mount(root, { signal } = {}) {
     let loadedPrefs = await loadPrefs().catch(() => null);
+    const storedLanguagePriorityMode = readLanguagePriorityMode();
+    const initialLanguagePriorityMode =
+        loadedPrefs?.languagePriorityMode === "manual"
+            ? "manual"
+            : storedLanguagePriorityMode;
+    if (
+        initialLanguagePriorityMode === "manual" &&
+        Array.isArray(loadedPrefs?.languagePriority)
+    ) {
+        setPreferredLanguages(loadedPrefs.languagePriority, {
+            mode: initialLanguagePriorityMode,
+        });
+    }
     let languagePriority = Array.isArray(loadedPrefs?.languagePriority)
         ? loadedPrefs.languagePriority
         : readPreferredLanguages();
@@ -337,7 +374,9 @@ export async function mount(root, { signal } = {}) {
                         id: "available-languages",
                         label: i18n.t("ui.app.settings.available_languages"),
                         render: () => `
-            <h3>${i18n.t("ui.app.settings.available_languages")}</h3>
+            <div class="settings-language-heading-row">
+              <h3>${i18n.t("ui.app.settings.available_languages")}</h3>
+            </div>
             <table id="available-languages" class="language-table"></table>
           `,
                     },
@@ -345,7 +384,10 @@ export async function mount(root, { signal } = {}) {
                         id: "preferred-languages",
                         label: i18n.t("ui.app.settings.preferred_languages"),
                         render: () => `
-            <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
+            <div class="settings-language-heading-row">
+              <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
+              <button id="pref-language-sync-from-browser" type="button" class="btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
+            </div>
             <table id="preferred-languages" class="language-table"></table>
           `,
                     },
@@ -363,6 +405,13 @@ export async function mount(root, { signal } = {}) {
                         languagePrefs.init();
                     } else {
                         languagePrefs.renderTables();
+                    }
+                    const syncButton = root.querySelector(
+                        "#pref-language-sync-from-browser",
+                    );
+                    if (syncButton) {
+                        syncButton.onclick = () =>
+                            languagePrefs?.syncFromBrowser();
                     }
                 },
             },
@@ -512,6 +561,11 @@ export async function mount(root, { signal } = {}) {
                     fontPrefs?.getFontSize() ?? loadedPrefs?.appFontSize,
                 languagePriority:
                     languagePrefs?.getPriority() ?? languagePriority,
+                languagePriorityMode: resolveLanguagePriorityMode(
+                    languagePrefs,
+                    loadedPrefs,
+                    storedLanguagePriorityMode,
+                ),
                 mode,
                 timezone:
                     datetimePrefs?.getTimezone() ??
@@ -525,7 +579,9 @@ export async function mount(root, { signal } = {}) {
             loadedPrefs = { ...loadedPrefs, ...prefs };
             persistTheme(mode);
             applyTheme(mode);
-            setPreferredLanguages(prefs.languagePriority);
+            setPreferredLanguages(prefs.languagePriority, {
+                mode: prefs.languagePriorityMode,
+            });
             applyTimezoneToLocalStorage(prefs.timezone ?? null, null);
             localStorage.setItem(
                 "cognis_ui_preferences",

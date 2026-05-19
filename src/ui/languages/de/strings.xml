@@ -282,6 +282,7 @@
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
   <string name="ui.app.settings.available_languages">Verfügbare Sprachen</string>
   <string name="ui.app.settings.preferred_languages">Bevorzugte Sprachen</string>
+  <string name="ui.app.settings.sync_from_browser">Mit Browser synchronisieren</string>
   <string name="ui.reuse.edit_layout">Layout bearbeiten</string>
   <string name="ui.reuse.elements">Elemente</string>
   <string name="ui.reuse.all_elements_visible">Alle Elemente sind sichtbar.</string>
