@@ -79,6 +79,10 @@ function isChangelogDoc(item) {
     return item.slug === "changelog" || item.slug.startsWith("changelog/");
 }
 
+/**
+ * Builds grouped docs navigation HTML from the docs that are allowed in nav.
+ * Changelog docs are excluded before calling this function.
+ */
 function buildGroupedNav(i18n, items) {
     const groups = new Map();
     for (const item of items) {
@@ -143,12 +147,17 @@ export async function mount(root, { signal } = {}) {
         });
     }
 
-    function resolveDefaultSlug(subpath, docs, fallbackDocs = docs) {
+    /**
+     * Resolves the default slug.
+     * - docs: full docs list used to honor direct subpath matches, including changelogs.
+     * - selectableDocs: docs eligible for default fallback selection in navigation.
+     */
+    function resolveDefaultSlug(subpath, docs, selectableDocs = docs) {
         if (subpath && docs.find((doc) => doc.slug === subpath)) return subpath;
         return (
-            fallbackDocs.find((doc) => doc.slug === "overview")?.slug ??
-            fallbackDocs.find((doc) => doc.slug === "index")?.slug ??
-            fallbackDocs[0]?.slug
+            selectableDocs.find((doc) => doc.slug === "overview")?.slug ??
+            selectableDocs.find((doc) => doc.slug === "index")?.slug ??
+            selectableDocs[0]?.slug
         );
     }
 

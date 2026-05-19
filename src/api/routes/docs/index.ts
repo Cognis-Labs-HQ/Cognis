@@ -84,6 +84,9 @@ function buildLogicalSlug(relFromSrc: string): string {
 function computeGroup(slug: string, isRootDocs: boolean): string {
     if (isRootDocs) {
         const rootSegments = slug.split("/");
+        // Root docs with nested paths stay grouped under their top-level segment
+        // so related docs remain together in one section. Top-level root docs use
+        // platform to avoid creating singleton groups for each standalone page.
         if (rootSegments.length > 1) return rootSegments[0];
         return "platform";
     }
