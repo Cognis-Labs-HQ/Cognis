@@ -720,7 +720,10 @@ function positionReactionHoverPopup(anchorButton, popupElement) {
         ),
     );
     let topPosition = anchorBounds.bottom + popupGap;
-    if (topPosition + popupBounds.height > window.innerHeight - viewportPadding) {
+    if (
+        topPosition + popupBounds.height >
+        window.innerHeight - viewportPadding
+    ) {
         topPosition = anchorBounds.top - popupBounds.height - popupGap;
     }
     topPosition = Math.max(
@@ -749,7 +752,10 @@ function showReactionHoverPopup(reactionChipButton) {
         reactionHoverPopupElement instanceof HTMLElement &&
         !reactionHoverPopupElement.hidden
     ) {
-        positionReactionHoverPopup(reactionChipButton, reactionHoverPopupElement);
+        positionReactionHoverPopup(
+            reactionChipButton,
+            reactionHoverPopupElement,
+        );
         return;
     }
     const emojiName = String(
@@ -1829,130 +1835,172 @@ export async function mount(root, { signal } = {}) {
                     "messages-thread-list",
                 );
                 const form = document.getElementById("messages-composer");
+                const reactionHoverEventOptions = signal
+                    ? { signal }
+                    : undefined;
 
-                threadList?.addEventListener("click", async (clickEvent) => {
-                    hideReactionHoverPopup();
-                    const moreButton = clickEvent.target.closest(
-                        "[data-reaction-more]",
-                    );
-                    if (moreButton) {
-                        const messageId =
-                            moreButton.getAttribute("data-message-id");
-                        if (messageId) await openEmojiPickerPopup(messageId);
-                        return;
-                    }
-                    const reactionButton = clickEvent.target.closest(
-                        "[data-message-id][data-emoji]",
-                    );
-                    if (
-                        reactionButton &&
-                        reactionButton.classList.contains(
-                            "messages-reaction-chip",
-                        )
-                    ) {
-                        await toggleReaction(
-                            reactionButton.getAttribute("data-message-id"),
-                            reactionButton.getAttribute("data-emoji"),
+                threadList?.addEventListener(
+                    "click",
+                    async (clickEvent) => {
+                        hideReactionHoverPopup();
+                        const moreButton = clickEvent.target.closest(
+                            "[data-reaction-more]",
                         );
-                        return;
-                    }
-                    if (
-                        reactionButton &&
-                        reactionButton.classList.contains(
-                            "messages-reaction-add-btn",
-                        )
-                    ) {
-                        recordEmojiUsage(
-                            reactionButton.getAttribute("data-emoji"),
+                        if (moreButton) {
+                            const messageId =
+                                moreButton.getAttribute("data-message-id");
+                            if (messageId)
+                                await openEmojiPickerPopup(messageId);
+                            return;
+                        }
+                        const reactionButton = clickEvent.target.closest(
+                            "[data-message-id][data-emoji]",
                         );
-                        await toggleReaction(
-                            reactionButton.getAttribute("data-message-id"),
-                            reactionButton.getAttribute("data-emoji"),
+                        if (
+                            reactionButton &&
+                            reactionButton.classList.contains(
+                                "messages-reaction-chip",
+                            )
+                        ) {
+                            await toggleReaction(
+                                reactionButton.getAttribute("data-message-id"),
+                                reactionButton.getAttribute("data-emoji"),
+                            );
+                            return;
+                        }
+                        if (
+                            reactionButton &&
+                            reactionButton.classList.contains(
+                                "messages-reaction-add-btn",
+                            )
+                        ) {
+                            recordEmojiUsage(
+                                reactionButton.getAttribute("data-emoji"),
+                            );
+                            await toggleReaction(
+                                reactionButton.getAttribute("data-message-id"),
+                                reactionButton.getAttribute("data-emoji"),
+                            );
+                            return;
+                        }
+                        const button = clickEvent.target.closest(
+                            ".messages-load-earlier-btn",
                         );
-                        return;
-                    }
-                    const button = clickEvent.target.closest(
-                        ".messages-load-earlier-btn",
-                    );
-                    if (!button || !selectedRoomId) return;
-                    const beforeTime = button.getAttribute("data-before-time");
-                    if (!beforeTime) return;
-                    const key = await getRoomKey(selectedRoomId);
-                    await renderThread(
-                        selectedRoomId,
-                        key,
-                        threadList,
-                        i18n,
-                        currentAccountId,
-                        beforeTime,
-                    );
-                });
+                        if (!button || !selectedRoomId) return;
+                        const beforeTime =
+                            button.getAttribute("data-before-time");
+                        if (!beforeTime) return;
+                        const key = await getRoomKey(selectedRoomId);
+                        await renderThread(
+                            selectedRoomId,
+                            key,
+                            threadList,
+                            i18n,
+                            currentAccountId,
+                            beforeTime,
+                        );
+                    },
+                    reactionHoverEventOptions,
+                );
 
-                threadList?.addEventListener("mouseover", (pointerEvent) => {
-                    const hoveredElement = pointerEvent.target;
-                    if (!(hoveredElement instanceof Element)) return;
-                    const reactionChipButton = hoveredElement.closest(
-                        ".messages-reaction-chip",
-                    );
-                    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
-                    const relatedElement = pointerEvent.relatedTarget;
-                    if (
-                        relatedElement instanceof Element &&
-                        reactionChipButton.contains(relatedElement)
-                    ) {
-                        return;
-                    }
-                    showReactionHoverPopup(reactionChipButton);
-                });
+                threadList?.addEventListener(
+                    "mouseover",
+                    (mouseEvent) => {
+                        const hoveredElement = mouseEvent.target;
+                        if (!(hoveredElement instanceof Element)) return;
+                        const reactionChipButton = hoveredElement.closest(
+                            ".messages-reaction-chip",
+                        );
+                        if (
+                            !(reactionChipButton instanceof HTMLButtonElement)
+                        ) {
+                            return;
+                        }
+                        const relatedElement = mouseEvent.relatedTarget;
+                        if (
+                            relatedElement instanceof Element &&
+                            reactionChipButton.contains(relatedElement)
+                        ) {
+                            return;
+                        }
+                        showReactionHoverPopup(reactionChipButton);
+                    },
+                    reactionHoverEventOptions,
+                );
 
-                threadList?.addEventListener("mouseout", (pointerEvent) => {
-                    const originElement = pointerEvent.target;
-                    if (!(originElement instanceof Element)) return;
-                    const reactionChipButton = originElement.closest(
-                        ".messages-reaction-chip",
-                    );
-                    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
-                    const relatedElement = pointerEvent.relatedTarget;
-                    if (
-                        relatedElement instanceof Element &&
-                        reactionChipButton.contains(relatedElement)
-                    ) {
-                        return;
-                    }
-                    hideReactionHoverPopup();
-                });
+                threadList?.addEventListener(
+                    "mouseout",
+                    (mouseEvent) => {
+                        const originElement = mouseEvent.target;
+                        if (!(originElement instanceof Element)) return;
+                        const reactionChipButton = originElement.closest(
+                            ".messages-reaction-chip",
+                        );
+                        if (
+                            !(reactionChipButton instanceof HTMLButtonElement)
+                        ) {
+                            return;
+                        }
+                        const relatedElement = mouseEvent.relatedTarget;
+                        if (
+                            relatedElement instanceof Element &&
+                            reactionChipButton.contains(relatedElement)
+                        ) {
+                            return;
+                        }
+                        hideReactionHoverPopup();
+                    },
+                    reactionHoverEventOptions,
+                );
 
-                threadList?.addEventListener("focusin", (focusEvent) => {
-                    const focusedElement = focusEvent.target;
-                    if (!(focusedElement instanceof Element)) return;
-                    const reactionChipButton = focusedElement.closest(
-                        ".messages-reaction-chip",
-                    );
-                    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
-                    showReactionHoverPopup(reactionChipButton);
-                });
+                threadList?.addEventListener(
+                    "focusin",
+                    (focusEvent) => {
+                        const focusedElement = focusEvent.target;
+                        if (!(focusedElement instanceof Element)) return;
+                        const reactionChipButton = focusedElement.closest(
+                            ".messages-reaction-chip",
+                        );
+                        if (
+                            !(reactionChipButton instanceof HTMLButtonElement)
+                        ) {
+                            return;
+                        }
+                        showReactionHoverPopup(reactionChipButton);
+                    },
+                    reactionHoverEventOptions,
+                );
 
-                threadList?.addEventListener("focusout", (focusEvent) => {
-                    const blurredElement = focusEvent.target;
-                    if (!(blurredElement instanceof Element)) return;
-                    const reactionChipButton = blurredElement.closest(
-                        ".messages-reaction-chip",
-                    );
-                    if (!(reactionChipButton instanceof HTMLButtonElement)) return;
-                    const nextFocusedElement = focusEvent.relatedTarget;
-                    if (
-                        nextFocusedElement instanceof Element &&
-                        reactionChipButton.contains(nextFocusedElement)
-                    ) {
-                        return;
-                    }
-                    hideReactionHoverPopup();
-                });
+                threadList?.addEventListener(
+                    "focusout",
+                    (focusEvent) => {
+                        const blurredElement = focusEvent.target;
+                        if (!(blurredElement instanceof Element)) return;
+                        const reactionChipButton = blurredElement.closest(
+                            ".messages-reaction-chip",
+                        );
+                        if (
+                            !(reactionChipButton instanceof HTMLButtonElement)
+                        ) {
+                            return;
+                        }
+                        const nextFocusedElement = focusEvent.relatedTarget;
+                        if (
+                            nextFocusedElement instanceof Element &&
+                            reactionChipButton.contains(nextFocusedElement)
+                        ) {
+                            return;
+                        }
+                        hideReactionHoverPopup();
+                    },
+                    reactionHoverEventOptions,
+                );
 
-                window.addEventListener("scroll", hideReactionHoverPopup, {
-                    capture: true,
-                    signal,
-                });
+                threadList?.addEventListener(
+                    "scroll",
+                    hideReactionHoverPopup,
+                    reactionHoverEventOptions,
+                );
                 window.addEventListener("resize", hideReactionHoverPopup, {
                     signal,
                 });

@@ -92,7 +92,7 @@ test("messages reaction chips render hover popup metadata and styles", () => {
     assert.match(appSource, /function showReactionHoverPopup/);
     assert.doesNotMatch(
         appSource,
-        /class="messages-reaction-chip\$\{ownClass\}" title=/,
+        /class="messages-reaction-chip[^"]*" title=/,
     );
     assert.match(stylesheetSource, /\.messages-reaction-hover-popup \{/);
     assert.match(stylesheetSource, /\.messages-reaction-hover-popup-users \{/);
