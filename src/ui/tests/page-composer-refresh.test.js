@@ -26,7 +26,10 @@ test("page composer refresh restores window scroll position after re-render", ()
 
     assert.match(source, /function restoreWindowScrollPosition\(left, top\)/);
     assert.match(source, /window\.requestAnimationFrame\(\(\) => \{/);
-    assert.match(source, /window\.scrollTo\(\{\s*left,\s*top,\s*behavior: "auto",\s*\}\);/m);
+    assert.match(
+        source,
+        /window\.scrollTo\(\{\s*left,\s*top,\s*behavior: "auto",\s*\}\);/m,
+    );
     assert.match(source, /const previousScrollLeft = window\.scrollX;/);
     assert.match(source, /const previousScrollTop = window\.scrollY;/);
     assert.match(
