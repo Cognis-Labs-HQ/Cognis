@@ -1,4 +1,4 @@
-# Require Adapter Admin Control Contracts
+# Require Admin Control Rules
 
 ## Summary
 

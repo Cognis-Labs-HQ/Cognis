@@ -1,4 +1,4 @@
-# Wajibkan Kontrak Kontrol Admin Adapter
+# Wajibkan Kontrak Kontrol Admin
 
 ## Ringkasan
 

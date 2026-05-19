@@ -1,4 +1,4 @@
-# Exclude Admins from Founder Invite Menu Entry
+# Exclude Admins from Invites
 
 ## Summary
 

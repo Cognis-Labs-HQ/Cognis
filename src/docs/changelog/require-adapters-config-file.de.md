@@ -1,4 +1,4 @@
-# Adapter-Verträge für Admin-Steuerungen erzwingen
+# Admin-Steuerverträge erzwingen
 
 ## Zusammenfassung
 
