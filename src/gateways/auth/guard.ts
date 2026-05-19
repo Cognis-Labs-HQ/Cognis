@@ -73,6 +73,7 @@ export function registerPageScriptOrigin(
 interface AuthClaims {
     sub: string;
     role: AccessRole;
+    providerId: string;
 }
 
 /**
@@ -93,7 +94,7 @@ export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
     const token = raw.slice("Bearer ".length);
     const access = verifyAccessToken(token);
     if (!access) return null;
-    return { sub: access.sub, role: access.role };
+    return { sub: access.sub, role: access.role, providerId: access.providerId };
 }
 
 export function requireAuth(
@@ -160,7 +161,7 @@ export function getCookieSession(req: IncomingMessage): AuthClaims | null {
     const token = decodeURIComponent(match[1]);
     const access = verifyAccessToken(token);
     if (!access) return null;
-    return { sub: access.sub, role: access.role };
+    return { sub: access.sub, role: access.role, providerId: access.providerId };
 }
 
 /**

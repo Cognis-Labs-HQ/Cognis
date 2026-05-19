@@ -15,4 +15,43 @@ test("ldap adapter config schema has required fields", () => {
     assert.ok(keys.includes("host"));
     assert.ok(keys.includes("bindDn"));
     assert.ok(keys.includes("baseDn"));
+    assert.ok(keys.includes("writebackEnabled"));
+    assert.ok(keys.includes("writebackBaseDn"));
+});
+
+test("ldap adapter password reset support requires opt-in writeback", async () => {
+    const adapter = createAdapter() as {
+        configure(config: Record<string, unknown>): void;
+        setClient(client: {
+            authenticate: (token: string) => Promise<null>;
+            updatePassword: (
+                accountId: string,
+                nextPassword: string,
+                options?: { baseDn?: string; userAttribute?: string },
+            ) => Promise<boolean>;
+        }): void;
+        getPasswordResetSupport: () => { supported: boolean; reason?: string };
+        resetPassword: (
+            accountId: string,
+            nextPassword: string,
+        ) => Promise<{ updated: boolean; message?: string }>;
+    };
+    assert.equal(adapter.getPasswordResetSupport().supported, false);
+    adapter.configure({
+        writebackEnabled: true,
+        writebackBaseDn: "ou=Users,dc=example,dc=org",
+        writebackUserAttribute: "uid",
+    });
+    adapter.setClient({
+        authenticate: async () => null,
+        updatePassword: async (_accountId, _nextPassword, options) => {
+            assert.equal(options?.baseDn, "ou=Users,dc=example,dc=org");
+            assert.equal(options?.userAttribute, "uid");
+            return true;
+        },
+    });
+    const support = adapter.getPasswordResetSupport();
+    assert.equal(support.supported, true);
+    const result = await adapter.resetPassword("alice", "next-pass");
+    assert.equal(result.updated, true);
 });

@@ -1,3 +1,16 @@
 <resources>
   <string name="gateway.auth.no_providers">Tidak ada adaptor autentikasi yang dikonfigurasi.</string>
+  <string name="gateway.auth.security.loading">Memuat pengaturan keamanan…</string>
+  <string name="gateway.auth.security.unknown_provider">Penyedia Tidak Dikenal</string>
+  <string name="gateway.auth.security.load_failed">Tidak dapat memuat kemampuan reset kata sandi.</string>
+  <string name="gateway.auth.security.unsupported_default">Reset kata sandi tidak didukung untuk penyedia ini.</string>
+  <string name="gateway.auth.security.reset_title">Reset Kata Sandi</string>
+  <string name="gateway.auth.security.provider_label">Penyedia Autentikasi:</string>
+  <string name="gateway.auth.security.reset_action">Reset Kata Sandi</string>
+  <string name="gateway.auth.security.popup_title">Reset Kata Sandi</string>
+  <string name="gateway.auth.security.new_password">Kata Sandi Baru</string>
+  <string name="gateway.auth.security.confirm_password">Konfirmasi Kata Sandi</string>
+  <string name="gateway.auth.security.required">Kedua kolom kata sandi wajib diisi.</string>
+  <string name="gateway.auth.security.reset_failed">Reset kata sandi gagal.</string>
+  <string name="gateway.auth.security.reset_success">Kata sandi diperbarui. Silakan masuk kembali.</string>
 </resources>

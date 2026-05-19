@@ -15,3 +15,13 @@ test("saml adapter config schema has required fields", () => {
     assert.ok(keys.includes("entryPoint"));
     assert.ok(keys.includes("certificate"));
 });
+
+test("saml adapter password reset remains provider-managed", () => {
+    const adapter = createAdapter();
+    const support = adapter.getPasswordResetSupport?.();
+    assert.equal(support?.supported, false);
+    assert.match(
+        support?.reason ?? "",
+        /SAML identity provider/i,
+    );
+});

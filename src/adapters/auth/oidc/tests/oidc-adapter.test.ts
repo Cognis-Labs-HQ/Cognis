@@ -15,3 +15,13 @@ test("oidc adapter config schema has required fields", () => {
     assert.ok(keys.includes("clientId"));
     assert.ok(keys.includes("discoveryUrl"));
 });
+
+test("oidc adapter password reset remains provider-managed", () => {
+    const adapter = createAdapter();
+    const support = adapter.getPasswordResetSupport?.();
+    assert.equal(support?.supported, false);
+    assert.match(
+        support?.reason ?? "",
+        /OIDC identity provider/i,
+    );
+});

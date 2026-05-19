@@ -1,3 +1,16 @@
 <resources>
   <string name="gateway.auth.no_providers">Keine Authentifizierungsadapter konfiguriert.</string>
+  <string name="gateway.auth.security.loading">Sicherheitseinstellungen werden geladen…</string>
+  <string name="gateway.auth.security.unknown_provider">Unbekannter Anbieter</string>
+  <string name="gateway.auth.security.load_failed">Die Funktion zum Zurücksetzen des Passworts konnte nicht geladen werden.</string>
+  <string name="gateway.auth.security.unsupported_default">Das Zurücksetzen des Passworts wird für diesen Anbieter nicht unterstützt.</string>
+  <string name="gateway.auth.security.reset_title">Passwort Zurücksetzen</string>
+  <string name="gateway.auth.security.provider_label">Authentifizierungsanbieter:</string>
+  <string name="gateway.auth.security.reset_action">Passwort Zurücksetzen</string>
+  <string name="gateway.auth.security.popup_title">Passwort Zurücksetzen</string>
+  <string name="gateway.auth.security.new_password">Neues Passwort</string>
+  <string name="gateway.auth.security.confirm_password">Passwort Bestätigen</string>
+  <string name="gateway.auth.security.required">Beide Passwortfelder sind erforderlich.</string>
+  <string name="gateway.auth.security.reset_failed">Zurücksetzen des Passworts fehlgeschlagen.</string>
+  <string name="gateway.auth.security.reset_success">Passwort aktualisiert. Bitte melden Sie sich erneut an.</string>
 </resources>

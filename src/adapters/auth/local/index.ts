@@ -42,6 +42,21 @@ class LocalAuthAdapterImpl implements LocalAuthAdapter {
         // Local adapter has no configurable fields
     }
 
+    getPasswordResetSupport(): { supported: boolean } {
+        return { supported: true };
+    }
+
+    async resetPassword(
+        accountId: string,
+        nextPassword: string,
+    ): Promise<{ updated: boolean; message?: string }> {
+        if (!accountId || !nextPassword) {
+            return { updated: false, message: "Missing password reset payload." };
+        }
+        await this.store.setPassword(accountId, nextPassword);
+        return { updated: true };
+    }
+
     async register(
         username: string,
         password: string,

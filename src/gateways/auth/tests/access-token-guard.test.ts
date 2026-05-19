@@ -57,7 +57,11 @@ test("token store persists tokens to disk across module reload", async () => {
         );
         const claims = secondLoad.verifyAccessToken(token);
 
-        assert.deepEqual(claims, { sub: "persisted-user", role: "user" });
+        assert.deepEqual(claims, {
+            sub: "persisted-user",
+            role: "user",
+            providerId: "local",
+        });
     } finally {
         delete process.env.COGNIS_ACCESS_TOKEN_STORE_PATH;
         rmSync(tempDir, { recursive: true, force: true });
@@ -76,6 +80,7 @@ test("revoking tokens by subject invalidates all issued tokens for that user", (
     assert.deepEqual(verifyAccessToken(otherToken), {
         sub: "subject-b",
         role: "user",
+        providerId: "local",
     });
 });
 
