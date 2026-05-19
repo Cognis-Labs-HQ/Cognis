@@ -41,6 +41,7 @@ const TEXT_ENCODER = new TextEncoder();
 const DEFAULT_QUICK_EMOJIS = ["👍", "❤", "😂", "🎉", "😮"];
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
 const EMOJI_USAGE_STORAGE_KEY = "cognis_messages_emoji_usage";
+const MAX_EMOJI_GRID_SIZE = 80;
 
 let cachedEmojiList = null;
 
@@ -1309,7 +1310,7 @@ export async function mount(root, { signal } = {}) {
 
         function buildEmojiGridHtml(entries) {
             return entries
-                .slice(0, 80)
+                .slice(0, MAX_EMOJI_GRID_SIZE)
                 .map(
                     (entry) =>
                         `<button type="button" class="messages-emoji-picker-btn" data-emoji="${escapeHtml(entry.emoji)}" title="${escapeHtml(entry.name)}">${escapeHtml(entry.emoji)}</button>`,
@@ -1349,7 +1350,7 @@ export async function mount(root, { signal } = {}) {
                     const query = searchInput.value.toLowerCase().trim();
                     const filtered = query
                         ? allEmojis.filter((entry) =>
-                              entry.name.includes(query),
+                              entry.name.toLowerCase().includes(query),
                           )
                         : allEmojis;
                     if (grid) {
