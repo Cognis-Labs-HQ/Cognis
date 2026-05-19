@@ -14,4 +14,5 @@ Registration ナビゲーションバーの Invite 項目の表示条件を更�
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/83c33b6
+- https://github.com/le-firehawk/Cognis/commit/041fdb8
+- https://github.com/le-firehawk/Cognis/commit/d47ee73

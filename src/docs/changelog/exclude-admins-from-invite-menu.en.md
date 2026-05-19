@@ -14,4 +14,5 @@ Admins and owners already have invite management through the Users page, so the 
 
 ## Commits
 
-- https://github.com/le-firehawk/Cognis/commit/83c33b6
+- https://github.com/le-firehawk/Cognis/commit/041fdb8
+- https://github.com/le-firehawk/Cognis/commit/d47ee73
