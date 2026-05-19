@@ -166,7 +166,8 @@ async function serveHtmlPageWithReplacements(
         let html = await readFile(filePath, "utf8");
         // Replacements are literal string substitutions (no regex semantics).
         // Keep replacement "from" values non-overlapping to avoid cascading
-        // substitutions across sequential replaceAll() calls.
+        // substitutions across sequential replaceAll() calls. This list is
+        // intentionally small (route-specific boilerplate adjustments only).
         for (const replacement of replacements) {
             html = html.replaceAll(replacement.from, replacement.to);
         }
@@ -183,11 +184,9 @@ async function serveHtmlPageWithReplacements(
             ...(logMeta ?? {}),
             error: error instanceof Error ? error.message : String(error),
         });
-        res.writeHead(404, { "content-type": "application/json" });
+        res.writeHead(404, { "content-type": "text/html; charset=utf-8" });
         res.end(
-            JSON.stringify({
-                error: { code: "not_found", message: "Asset not found." },
-            }),
+            "<!doctype html><html><body><h1>Not found</h1><p>Asset not found.</p></body></html>",
         );
     }
 }

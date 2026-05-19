@@ -178,7 +178,7 @@ test("docs page template includes docs stylesheet and docs entry script", () => 
     assert.match(html, /\/static\/app\/docs\/index\.js/);
 });
 
-test("changelogs page keeps changelog-only navigation data", () => {
+test("changelogs module keeps changelog-only navigation data", () => {
     const source = readFileSync(
         join(ROOT, "src/ui/app/changelogs/index.js"),
         "utf8",
