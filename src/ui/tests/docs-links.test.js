@@ -97,8 +97,8 @@ test("unsuffixed markdown docs have localized variants", () => {
         name.endsWith(".md"),
     );
     const trackedDocSet = new Set(trackedDocs);
-    const unsuffixedDocs = trackedDocs.filter((name) =>
-        !/\.(de|en|id|ja)\.md$/.test(name),
+    const unsuffixedDocs = trackedDocs.filter(
+        (name) => !/\.(de|en|id|ja)\.md$/.test(name),
     );
     const exemptUnsuffixedDocs = new Set([".github/copilot-instructions.md"]);
     const missingLocalizedVariants = [];
@@ -110,10 +110,7 @@ test("unsuffixed markdown docs have localized variants", () => {
         const missingLanguages = ["de", "en", "id", "ja"].filter(
             (languageCode) =>
                 !trackedDocSet.has(
-                    unsuffixedDoc.replace(
-                        /\.md$/,
-                        `.${languageCode}.md`,
-                    ),
+                    unsuffixedDoc.replace(/\.md$/, `.${languageCode}.md`),
                 ),
         );
         if (missingLanguages.length > 0) {
