@@ -123,10 +123,10 @@ export async function mount(root, { signal } = {}) {
         docEl.innerHTML = activeHtml;
         docEl.querySelectorAll(DOCUMENT_HEADING_SELECTOR).forEach((heading) => {
             const headingText = heading.textContent?.trim() ?? "";
-            if (headingText.length > DOCUMENT_TITLE_MAX_CH) {
+            const isVisuallyTruncated =
+                heading.scrollWidth > heading.clientWidth;
+            if (headingText && isVisuallyTruncated) {
                 heading.setAttribute("title", headingText);
-            } else {
-                heading.removeAttribute("title");
             }
         });
     }
