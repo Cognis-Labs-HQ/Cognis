@@ -173,6 +173,10 @@
     gap: 10px;
 }
 
+.release-notes-popup-item {
+    display: block;
+}
+
 .release-notes-popup-item-changes {
     margin: 6px 0 0;
     padding-left: 18px;

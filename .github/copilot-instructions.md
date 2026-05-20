@@ -153,6 +153,7 @@ Store changelog entries under `src/docs/changelog/` (one shared directory for al
 Every pull request change must add changelog files for that PR in every supported app language (de, en, id, ja). Use the filename pattern `<branch-name-without-copilot-prefix>.<lang>.md` for each language (for example, branch `copilot/cleanup-strings-and-codebase` produces `cleanup-strings-and-codebase.en.md`, `cleanup-strings-and-codebase.de.md`, `cleanup-strings-and-codebase.id.md`, and `cleanup-strings-and-codebase.ja.md`).
 
 Changelog entry structure is mandatory:
+
 - `# ...` — changelog title (release summary title)
 - `## ...` — one change point per heading (these are shown as dot-point summary items in release popups)
 - body content under each `##` — full details shown on the changelogs page only

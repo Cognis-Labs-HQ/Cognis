@@ -261,21 +261,18 @@ export async function mount(root, { signal } = {}) {
     }
 
     function initReleaseNotesPrefs({ onDirtyChange }) {
-        let savedShowReleaseChangelogs = loadedPrefs?.releaseChangelogShow !== false;
+        let savedShowReleaseChangelogs =
+            loadedPrefs?.releaseChangelogShow !== false;
         let currentShowReleaseChangelogs = savedShowReleaseChangelogs;
 
         function syncCheckboxState() {
-            const checkbox = root.querySelector(
-                "#pref-release-changelog-show",
-            );
+            const checkbox = root.querySelector("#pref-release-changelog-show");
             if (!(checkbox instanceof HTMLInputElement)) return;
             checkbox.checked = currentShowReleaseChangelogs;
         }
 
         function bindCheckboxEvents() {
-            const checkbox = root.querySelector(
-                "#pref-release-changelog-show",
-            );
+            const checkbox = root.querySelector("#pref-release-changelog-show");
             if (!(checkbox instanceof HTMLInputElement)) return;
             if (checkbox.dataset.dirtyHandlerBound === "true") return;
             checkbox.dataset.dirtyHandlerBound = "true";
@@ -321,7 +318,9 @@ export async function mount(root, { signal } = {}) {
                         id: "general-prefs",
                         label: i18n.t("ui.app.settings.general"),
                         render: () => {
-                            const tooltipAria = i18n.t("ui.reuse.more_information");
+                            const tooltipAria = i18n.t(
+                                "ui.reuse.more_information",
+                            );
                             return `
             <h3>${i18n.t("ui.app.settings.emails")}</h3>
             <ul id="email-list" class="email-list"></ul>
