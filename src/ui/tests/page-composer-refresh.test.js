@@ -204,6 +204,26 @@ test("page composer preserves form input values across grid re-renders", () => {
     );
 });
 
+test("page composer retains missing element placements and renders warning marker", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        "utf8",
+    );
+
+    assert.doesNotMatch(
+        source,
+        /layout\.placements = layout\.placements\.filter\(\(p\) =>\s*elements\.some\(\(e\) => e\.id === p\.id\)\s*\),/m,
+    );
+    assert.doesNotMatch(
+        source,
+        /state\.layout\.placements = state\.layout\.placements\.filter\(\(p\) =>\s*state\.elements\.some\(\(e\) => e\.id === p\.id\)\s*\),/m,
+    );
+    assert.match(source, /function createMissingElementMarker\(\)/);
+    assert.match(source, /className = "composer-missing-element-marker"/);
+    assert.match(source, /createMissingElementViewCard\(placement\)/);
+    assert.match(source, /createMissingElementEditCell\(placement\)/);
+});
+
 test("page composer persists drafts and renders large-form draft reset control", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-composer.js"),

@@ -948,12 +948,6 @@ export function createPageComposer(
     function initializePlacements() {
         if (!layout.placements) layout.placements = [];
         if (!layout.hidden) layout.hidden = [];
-        layout.placements = layout.placements.filter((p) =>
-            elements.some((e) => e.id === p.id),
-        );
-        layout.hidden = layout.hidden.filter((id) =>
-            elements.some((e) => e.id === id),
-        );
         for (const element of elements) {
             if (layout.hidden.includes(element.id)) continue;
             if (layout.placements.some((p) => p.id === element.id)) continue;
@@ -1028,6 +1022,38 @@ export function createPageComposer(
             }
         }
         return overlay;
+    }
+
+    function createMissingElementMarker() {
+        const marker = document.createElement("div");
+        marker.className = "composer-missing-element-marker";
+        marker.textContent = "❗";
+        marker.setAttribute("aria-hidden", "true");
+        return marker;
+    }
+
+    function createMissingElementViewCard(placement) {
+        const card = document.createElement("section");
+        card.className = "widget-card widget-card--missing-element";
+        card.dataset.composerElement = placement.id;
+        card.appendChild(createMissingElementMarker());
+        return card;
+    }
+
+    function createMissingElementEditCell(placement) {
+        const cell = document.createElement("div");
+        cell.className = "composer-cell composer-cell--missing";
+        cell.dataset.composerElement = placement.id;
+        cell.style.left = `${placement.col * UNIT}px`;
+        cell.style.top = `${placement.row * UNIT}px`;
+        cell.style.width = `${placement.w * UNIT}px`;
+        cell.style.height = `${placement.h * UNIT}px`;
+        const content = document.createElement("div");
+        content.className =
+            "widget-card composer-cell-content widget-card--missing-element";
+        content.appendChild(createMissingElementMarker());
+        cell.appendChild(content);
+        return cell;
     }
 
     function createCell(el, placement) {
@@ -1810,12 +1836,6 @@ export function createPageComposer(
     function initializeSubPlacements(state) {
         if (!state.layout.placements) state.layout.placements = [];
         if (!state.layout.hidden) state.layout.hidden = [];
-        state.layout.placements = state.layout.placements.filter((p) =>
-            state.elements.some((e) => e.id === p.id),
-        );
-        state.layout.hidden = state.layout.hidden.filter((id) =>
-            state.elements.some((e) => e.id === id),
-        );
         for (const element of state.elements) {
             if (state.layout.hidden.includes(element.id)) continue;
             if (state.layout.placements.some((p) => p.id === element.id))
@@ -2586,10 +2606,13 @@ export function createPageComposer(
                 const element = state.elements.find(
                     (e) => e.id === placement.id,
                 );
-                if (!element) continue;
-                state.container.appendChild(
-                    createSubCell(element, placement, state),
-                );
+                if (element) {
+                    state.container.appendChild(
+                        createSubCell(element, placement, state),
+                    );
+                    continue;
+                }
+                state.container.appendChild(createMissingElementEditCell(placement));
             }
         } else {
             state.container.classList.remove("composer-grid-active");
@@ -2606,11 +2629,14 @@ export function createPageComposer(
                 const element = state.elements.find(
                     (e) => e.id === placement.id,
                 );
-                if (!element) continue;
-                const card = document.createElement("div");
-                card.className = "widget-card";
-                card.dataset.composerElement = element.id;
-                card.innerHTML = element.render();
+                const card = element
+                    ? document.createElement("div")
+                    : createMissingElementViewCard(placement);
+                if (element) {
+                    card.className = "widget-card";
+                    card.dataset.composerElement = element.id;
+                    card.innerHTML = element.render();
+                }
                 state.container.appendChild(card);
             }
         }
@@ -3301,10 +3327,9 @@ export function createPageComposer(
             }
             for (const placement of visiblePlacements) {
                 const element = elements.find((e) => e.id === placement.id);
-                if (!element) continue;
-                const card = document.createElement("section");
-                card.className = "widget-card";
-                card.dataset.composerElement = element.id;
+                const card = element
+                    ? document.createElement("section")
+                    : createMissingElementViewCard(placement);
                 if (!frameless) {
                     const scaledCol = placement.col * scale;
                     const scaledRow = placement.row * scale;
@@ -3313,7 +3338,11 @@ export function createPageComposer(
                     card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
                     card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
                 }
-                card.innerHTML = element.render();
+                if (element) {
+                    card.className = "widget-card";
+                    card.dataset.composerElement = element.id;
+                    card.innerHTML = element.render();
+                }
                 section.appendChild(card);
             }
         }
@@ -3321,8 +3350,11 @@ export function createPageComposer(
         if (editing) {
             for (const placement of visiblePlacements) {
                 const element = elements.find((e) => e.id === placement.id);
-                if (!element) continue;
-                section.appendChild(createCell(element, placement));
+                if (element) {
+                    section.appendChild(createCell(element, placement));
+                    continue;
+                }
+                section.appendChild(createMissingElementEditCell(placement));
             }
         }
 

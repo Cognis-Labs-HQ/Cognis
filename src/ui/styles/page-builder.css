@@ -248,6 +248,20 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     border: 1px solid var(--border);
 }
 
+.widget-card--missing-element {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-danger-border);
+    background: color-mix(in srgb, var(--color-danger) 35%, transparent);
+}
+
+.composer-missing-element-marker {
+    color: var(--color-danger-text);
+    font-size: clamp(1.5rem, 6vw, 2.5rem);
+    line-height: 1;
+}
+
 pre {
     background: var(--code-bg);
     border: 0;
@@ -1358,6 +1372,11 @@ body:not(:has(#theme-toggle)) .composer-edit-toggle {
     display: flex;
     flex-direction: column;
     padding: 4px;
+}
+
+.composer-cell--missing {
+    cursor: not-allowed;
+    touch-action: auto;
 }
 
 .composer-cell-content {
