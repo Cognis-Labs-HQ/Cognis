@@ -416,7 +416,7 @@ test("register rejects usernames longer than 25 characters", async () => {
     assert.match(payload, /"username_too_long"/);
 });
 
-test("register normalizes username to lowercase and login works with original casing", async () => {
+test("register rejects non-lowercase usernames and login is case-insensitive", async () => {
     const accountStore = new VolatileLocalAccountStore();
     const gateway = makeGateway(accountStore);
     const route = createAuthRoutes(gateway, accountStore);
@@ -425,6 +425,22 @@ test("register normalizes username to lowercase and login works with original ca
 
     await route(
         requestWithBody("POST", { username: "Alice", password: "pw123" }),
+        {
+            writeHead(code: number) {
+                regStatus = code;
+            },
+            end(text: string) {
+                regPayload = text;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/auth/register"),
+    );
+
+    assert.equal(regStatus, 400);
+    assert.match(regPayload, /"username_not_lowercase"/);
+
+    await route(
+        requestWithBody("POST", { username: "alice", password: "pw123" }),
         {
             writeHead(code: number) {
                 regStatus = code;

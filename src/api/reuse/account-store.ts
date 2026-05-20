@@ -90,19 +90,22 @@ function hashPassword(input: string): string {
     );
 }
 
-/** Lowercases a username to enforce case-insensitive storage. */
-function normalizeUsername(username: string): string {
+/** Lowercases a username to enable case-insensitive lookups. */
+export function normalizeUsername(username: string): string {
     return username.toLowerCase();
 }
 
 /**
- * Validates username format: printable ASCII only, max 25 characters.
+ * Validates username format: printable ASCII only, max 25 characters,
+ * and must be all-lowercase (case-insensitive storage is enforced by
+ * requiring lower-case at input rather than silently normalizing).
  * Returns null when valid, or an error code string when invalid.
  */
 export function validateUsername(username: string): string | null {
     if (!username) return "username_required";
     if (username.length > 25) return "username_too_long";
     if (!/^[\x21-\x7E]+$/.test(username)) return "username_invalid";
+    if (username !== username.toLowerCase()) return "username_not_lowercase";
     return null;
 }
 
@@ -123,18 +126,17 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
     ) {
         const validationError = validateUsername(username);
         if (validationError) throw new Error(validationError);
-        const normalized = normalizeUsername(username);
-        if (this.accounts.has(normalized)) throw new Error("username_taken");
-        this.accounts.set(normalized, {
+        if (this.accounts.has(username)) throw new Error("username_taken");
+        this.accounts.set(username, {
             passwordHash: hashPassword(password),
             isFounder: false,
             enabled: true,
             lastLogin: null,
-            displayName: displayName?.trim() || normalized,
+            displayName: displayName?.trim() || username,
             role,
         });
         return {
-            username: normalized,
+            username,
             enabled: true,
             role,
         };
@@ -144,8 +146,8 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         username: string,
         password: string,
     ): Promise<AuthContext | null> {
-        const normalized = normalizeUsername(username);
-        const account = this.accounts.get(normalized);
+        const lowercaseUsername = normalizeUsername(username);
+        const account = this.accounts.get(lowercaseUsername);
         if (
             !account ||
             !account.enabled ||
@@ -154,9 +156,9 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             return null;
         }
         return {
-            accountId: normalized,
+            accountId: lowercaseUsername,
             provider: "local",
-            externalUserId: normalized,
+            externalUserId: lowercaseUsername,
             role: account.role,
         };
     }
@@ -229,10 +231,11 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         isFounder: boolean;
         role?: string;
     } | null> {
-        const account = this.accounts.get(normalizeUsername(username));
+        const lowercaseUsername = normalizeUsername(username);
+        const account = this.accounts.get(lowercaseUsername);
         if (!account) return null;
         return {
-            username: normalizeUsername(username),
+            username: lowercaseUsername,
             createdAt: null,
             lastLogin: account.lastLogin,
             enabled: account.enabled,

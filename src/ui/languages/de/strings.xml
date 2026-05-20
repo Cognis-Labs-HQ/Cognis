@@ -239,6 +239,7 @@
   <string name="ui.app.register.error.password_requires_special">Muss ein Sonderzeichen enthalten.</string>
   <string name="ui.app.register.error.username_invalid">Der Benutzername darf nur druckbare ASCII-Zeichen enthalten.</string>
   <string name="ui.app.register.error.username_too_long">Der Benutzername darf höchstens 25 Zeichen lang sein.</string>
+  <string name="ui.app.register.error.username_not_lowercase">Der Benutzername muss vollständig in Kleinbuchstaben geschrieben sein.</string>
   <string name="ui.app.register.submit">Konto erstellen</string>
   <string name="ui.app.register.closed">Die offene Registrierung ist derzeit deaktiviert.</string>
   <string name="ui.app.register.success">Konto erstellt. Weiterleitung zur Anmeldung…</string>
@@ -462,13 +463,6 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">Legen Sie fest, ob Benutzerkonten nach der Anmeldung validiert werden müssen.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Keine</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.password_policy_label">Passwortrichtlinie</string>
-  <string name="ui.app.admin.security.password_policy_hint">Legen Sie die Mindestanforderungen fest, die alle Passwörter bei der Registrierung und bei Passwortänderungen erfüllen müssen.</string>
-  <string name="ui.app.admin.security.password_min_length_label">Mindestlänge</string>
-  <string name="ui.app.admin.security.password_require_uppercase_label">Großbuchstaben erforderlich</string>
-  <string name="ui.app.admin.security.password_require_lowercase_label">Kleinbuchstaben erforderlich</string>
-  <string name="ui.app.admin.security.password_require_digit_label">Ziffer erforderlich</string>
-  <string name="ui.app.admin.security.password_require_special_label">Sonderzeichen erforderlich</string>
   <string name="ui.app.admin.security.saved">Sicherheitseinstellungen gespeichert.</string>
   <string name="ui.app.admin.security.save_failed">Fehler beim Speichern der Sicherheitseinstellungen.</string>
   <string name="ui.app.settings.emails_domain_blocked_body">Diese E-Mail-Adresse gehört zu einer Domain, die nicht in der Liste der vertrauenswürdigen Domains steht. Bitten Sie Ihren Administrator, die Sicherheitseinstellungen zu aktualisieren.</string>

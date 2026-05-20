@@ -116,6 +116,9 @@ export async function mount(root, { signal } = {}) {
     const knownErrorCodes = new Set([
         "invalid_token",
         "username_taken",
+        "username_invalid",
+        "username_too_long",
+        "username_not_lowercase",
         "username_and_password_required",
         "inviter_not_found",
         "generic",
@@ -652,9 +655,13 @@ export async function mount(root, { signal } = {}) {
                                                 ? i18n.t(
                                                       "ui.app.register.closed",
                                                   )
-                                                : i18n.t(
-                                                      "ui.app.register.error.generic",
-                                                  );
+                                                : knownErrorCodes.has(code)
+                                                  ? i18n.t(
+                                                        `ui.app.register.error.${code}`,
+                                                    )
+                                                  : i18n.t(
+                                                        "ui.app.register.error.generic",
+                                                    );
                                         showToast(message, {
                                             variant: "error",
                                         });

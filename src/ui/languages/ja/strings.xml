@@ -239,6 +239,7 @@
   <string name="ui.app.register.error.password_requires_special">特殊文字を含める必要があります。</string>
   <string name="ui.app.register.error.username_invalid">ユーザー名には印刷可能なASCII文字のみ使用できます。</string>
   <string name="ui.app.register.error.username_too_long">ユーザー名は25文字以内にしてください。</string>
+  <string name="ui.app.register.error.username_not_lowercase">ユーザー名はすべて小文字にしてください。</string>
   <string name="ui.app.register.submit">アカウントを作成</string>
   <string name="ui.app.register.closed">現在、一般登録は無効です。</string>
   <string name="ui.app.register.success">アカウントを作成しました。ログイン画面へ移動します…</string>
@@ -462,13 +463,6 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">ログイン後にユーザーアカウントの検証を必須にする方式を選択します。</string>
   <string name="ui.app.admin.security.user_validation_mode.none">なし</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.password_policy_label">パスワードポリシー</string>
-  <string name="ui.app.admin.security.password_policy_hint">登録およびパスワード変更時にすべてのパスワードが満たすべき最低要件を設定します。</string>
-  <string name="ui.app.admin.security.password_min_length_label">最小文字数</string>
-  <string name="ui.app.admin.security.password_require_uppercase_label">大文字を必須にする</string>
-  <string name="ui.app.admin.security.password_require_lowercase_label">小文字を必須にする</string>
-  <string name="ui.app.admin.security.password_require_digit_label">数字を必須にする</string>
-  <string name="ui.app.admin.security.password_require_special_label">特殊文字を必須にする</string>
   <string name="ui.app.admin.security.saved">セキュリティ設定を保存しました。</string>
   <string name="ui.app.admin.security.save_failed">セキュリティ設定の保存に失敗しました。</string>
   <string name="ui.app.settings.emails_domain_blocked_body">このメールアドレスは、信頼済みドメインリストに登録されていないドメインのものです。管理者にセキュリティ設定の更新を依頼してください。</string>

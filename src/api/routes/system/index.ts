@@ -12,7 +12,6 @@ import {
     defaultSecuritySettings,
     normalizeTrustedDomains,
     parseSecuritySettings,
-    parsePasswordPolicy,
     SECURITY_SETTINGS_KEY,
 } from "../../reuse/security-settings.js";
 import {
@@ -61,20 +60,12 @@ function serializeSecuritySettings(input: {
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
     requireTeacherManualApproval: boolean;
-    passwordPolicy: {
-        minLength: number;
-        requireUppercase: boolean;
-        requireLowercase: boolean;
-        requireDigit: boolean;
-        requireSpecial: boolean;
-    };
 }): string {
     return JSON.stringify({
         trustedDomains: input.trustedDomains,
         registrationsEnabled: input.registrationsEnabled,
         userValidationMode: input.userValidationMode,
         requireTeacherManualApproval: input.requireTeacherManualApproval,
-        passwordPolicy: input.passwordPolicy,
     });
 }
 
@@ -211,7 +202,6 @@ export function createSystemRoutes(
                 body.userValidationMode === "smtp" ? "smtp" : "none";
             const requireTeacherManualApproval =
                 body.requireTeacherManualApproval === false ? false : true;
-            const passwordPolicy = parsePasswordPolicy(body.passwordPolicy);
             if (preferenceStore) {
                 await preferenceStore.set(
                     "__system__",
@@ -221,7 +211,6 @@ export function createSystemRoutes(
                         registrationsEnabled,
                         userValidationMode,
                         requireTeacherManualApproval,
-                        passwordPolicy,
                     }),
                 );
             }

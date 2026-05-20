@@ -35,10 +35,10 @@ import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import { validateUsername } from "../../api/reuse/account-store.js";
 import {
-    parseSecuritySettings,
+    AUTH_PASSWORD_POLICY_KEY,
     defaultPasswordPolicy,
-    SECURITY_SETTINGS_KEY,
-} from "../../api/reuse/security-settings.js";
+    parsePasswordPolicy,
+} from "./password-policy.js";
 
 interface AuthAccountStore {
     ensureSchema(): Promise<void>;
@@ -170,6 +170,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const uiDir = path.resolve(process.cwd(), "src", "gateways", "auth", "ui");
     ctx.uiRegistry?.registerStaticDir("auth", uiDir);
+    ctx.uiRegistry?.registerAdminSection({
+        id: "authentication",
+        label: "Authentication",
+        scriptUrl: "/static/gateways/auth/admin-section.js",
+        stringsBaseUrl: "/static/gateways/auth/languages",
+    });
     ctx.uiRegistry?.registerSettingsSection({
         id: "security",
         label: "Security",
@@ -356,16 +362,45 @@ function createAuthGatewayRoutes(
             let policy = defaultPasswordPolicy();
             if (prefStore) {
                 const raw = await prefStore
-                    .get("__system__", SECURITY_SETTINGS_KEY)
+                    .get("__system__", AUTH_PASSWORD_POLICY_KEY)
                     .catch(() => null);
-                const settings = parseSecuritySettings(raw ?? null);
-                if (settings?.passwordPolicy) {
-                    policy = settings.passwordPolicy;
+                if (raw) {
+                    try {
+                        policy = parsePasswordPolicy(JSON.parse(raw));
+                    } catch {
+                        policy = defaultPasswordPolicy();
+                    }
                 }
             }
             log?.("debug", "Served password policy.", logMeta);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: policy }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/password-policy" &&
+            req.method === "PUT"
+        ) {
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const body = await readJson(req);
+            const policy = parsePasswordPolicy(body);
+            const prefStore =
+                capabilities.get<UserPreferenceStore>("preferences:store");
+            if (prefStore) {
+                await prefStore.set(
+                    "__system__",
+                    AUTH_PASSWORD_POLICY_KEY,
+                    JSON.stringify(policy),
+                );
+            }
+            log?.("info", "Updated password policy.", {
+                ...logMeta,
+                accountId: claims.sub,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 

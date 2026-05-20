@@ -239,6 +239,7 @@
   <string name="ui.app.register.error.password_requires_special">Must contain a special character.</string>
   <string name="ui.app.register.error.username_invalid">Username may only contain printable ASCII characters.</string>
   <string name="ui.app.register.error.username_too_long">Username must be 25 characters or fewer.</string>
+  <string name="ui.app.register.error.username_not_lowercase">Username must be all lowercase.</string>
   <string name="ui.app.register.submit">Create account</string>
   <string name="ui.app.register.closed">Open registration is currently disabled.</string>
   <string name="ui.app.register.success">Account created. Redirecting to login…</string>
@@ -462,13 +463,6 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">Choose whether user accounts must be validated after login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">None</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
-  <string name="ui.app.admin.security.password_policy_label">Password Policy</string>
-  <string name="ui.app.admin.security.password_policy_hint">Set the minimum requirements that all passwords must satisfy during registration and password changes.</string>
-  <string name="ui.app.admin.security.password_min_length_label">Minimum Length</string>
-  <string name="ui.app.admin.security.password_require_uppercase_label">Require Uppercase Letter</string>
-  <string name="ui.app.admin.security.password_require_lowercase_label">Require Lowercase Letter</string>
-  <string name="ui.app.admin.security.password_require_digit_label">Require Digit</string>
-  <string name="ui.app.admin.security.password_require_special_label">Require Special Character</string>
   <string name="ui.app.admin.security.saved">Security settings saved.</string>
   <string name="ui.app.admin.security.save_failed">Failed to save security settings.</string>
   <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
