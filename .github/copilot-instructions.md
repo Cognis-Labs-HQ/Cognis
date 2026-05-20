@@ -76,6 +76,8 @@ Promote code reactively: when writing a new feature in area B, if you notice sim
 
 Files inside a `reuse/` directory must also be generically named for the reusable abstraction they provide. If a file name needs a feature- or adapter-specific prefix (for example `social-...`), it does not belong in `reuse/`; keep it beside that feature instead.
 
+Any file that exists for one product surface (for example release-changelog popups or popup-only style bundles) is not true reuse and must live in a purpose-constrained directory outside `reuse/`.
+
 Do not create `reuse/` directories inside `src/adapters/*`. Adapters are already niche capabilities and should keep their implementation files local to the adapter root (for example `store.ts`, `db-store.ts`) instead of introducing adapter-internal reuse layers.
 
 DB adapters and the DB gateway must not own feature stores for other gateways/adapters (for example auth/profile/notify-specific stores). Feature-specific persistence code belongs to the owning gateway or owning adapter and is consumed through capabilities.
@@ -148,9 +150,17 @@ Every gateway, adapter, and module must carry a `package.json` (or equivalent ma
 
 ### Changelog entries
 
-Store changelog entries under `src/docs/changelog/` instead of a root `CHANGELOG.md`.
+Store changelog entries under `src/docs/changelog/` (one shared directory for all changelog files) instead of a root `CHANGELOG.md`.
 
-Every pull request must add changelog files for that PR in every supported app language (de, en, id, ja). Use the filename pattern `<branch-name-without-copilot-prefix>.<lang>.md` for each language (for example, branch `copilot/cleanup-strings-and-codebase` produces `cleanup-strings-and-codebase.en.md`, `cleanup-strings-and-codebase.de.md`, `cleanup-strings-and-codebase.id.md`, and `cleanup-strings-and-codebase.ja.md`). Each file must include: a short title, a summary section, a changed-files/components section, and commit links following `https://github.com/le-firehawk/Cognis/commit/<sha>`. Translate each file into the language it represents — do not copy English text into non-English files (the same exceptions listed under i18n apply: brand names, universal technical acronyms, and the Latin tagline are language-neutral).
+Every pull request change must add changelog files for that PR in every supported app language (de, en, id, ja). Use the filename pattern `<branch-name-without-copilot-prefix>.<lang>.md` for each language (for example, branch `copilot/cleanup-strings-and-codebase` produces `cleanup-strings-and-codebase.en.md`, `cleanup-strings-and-codebase.de.md`, `cleanup-strings-and-codebase.id.md`, and `cleanup-strings-and-codebase.ja.md`).
+
+Changelog entry structure is mandatory:
+
+- `# ...` — changelog title (release summary title)
+- `## ...` — one change point per heading (these are shown as dot-point summary items in release popups)
+- body content under each `##` — full details shown on the changelogs page only
+
+Translate each file into the language it represents — do not copy English text into non-English files (the same exceptions listed under i18n apply: brand names, universal technical acronyms, and the Latin tagline are language-neutral).
 
 Do not append to or recreate a global monolithic changelog file. Existing changelog entry files in `src/docs/changelog/` are historical records and should remain immutable except for factual corrections.
 

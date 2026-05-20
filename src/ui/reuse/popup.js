@@ -8,7 +8,7 @@
  * The action descriptor array mirrors the page-composer `elements` pattern:
  * each entry is a plain object with `id`, `label`, and an optional `variant`.
  *
- * This module lazily injects /static/styles/reuse/popup.css into the document
+ * This module lazily injects /static/styles/popup.css into the document
  * <head> on the first call to openPopup(), so callers do not need to include
  * that stylesheet explicitly in their page HTML.
  *
@@ -108,7 +108,7 @@ function ensureStylesheet() {
     if (stylesheetReady) return stylesheetReady;
 
     const existing = document.querySelector(
-        'link[href="/static/styles/reuse/popup.css"]',
+        'link[href="/static/styles/popup.css"]',
     );
     if (existing) {
         stylesheetReady = existing.sheet
@@ -122,7 +122,7 @@ function ensureStylesheet() {
 
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/static/styles/reuse/popup.css";
+    link.href = "/static/styles/popup.css";
     stylesheetReady = new Promise((resolve) => {
         link.addEventListener("load", resolve, { once: true });
         link.addEventListener("error", resolve, { once: true });

@@ -20,11 +20,16 @@ import {
 import { initLanguagePrefs } from "./language-prefs.js";
 import { initGeneralPrefs } from "./general-prefs.js";
 import { initDateTimePrefs } from "./datetime-prefs.js";
+import {
+    initReleaseChangelogPrefs,
+    shouldShowReleaseChangelog,
+} from "./release-changelog-prefs.js";
 import { applyTimezoneToLocalStorage } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { showToast } from "../../reuse/toast.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import {
     isValidMessageStyle,
     normalizeMessageStyle,
@@ -138,6 +143,7 @@ export async function mount(root, { signal } = {}) {
     let languagePrefs;
     let themePrefs;
     let messageStylePrefs;
+    let releaseNotesPrefs;
     let changesBar;
     let generalPrefs;
     let datetimePrefs;
@@ -270,14 +276,29 @@ export async function mount(root, { signal } = {}) {
                     {
                         id: "general-prefs",
                         label: i18n.t("ui.app.settings.general"),
-                        render: () => `
+                        render: () => {
+                            const tooltipAria = i18n.t(
+                                "ui.reuse.more_information",
+                            );
+                            return `
             <h3>${i18n.t("ui.app.settings.emails")}</h3>
             <ul id="email-list" class="email-list"></ul>
             <div class="email-add-row">
               <input id="email-add-input" type="email" placeholder="${i18n.t("ui.app.settings.emails_add_placeholder")}" />
               <button id="email-add-btn" class="btn-confirm btn-animated" type="button">${i18n.t("ui.app.settings.emails_add")}</button>
             </div>
-          `,
+            <div class="font-heading-row">
+              <h3>${escapeHtml(i18n.t("ui.app.settings.show_changelogs"))}</h3>
+              ${renderInfoTooltip(i18n.t("ui.app.settings.show_changelogs_hint"), tooltipAria)}
+            </div>
+            <div>
+              <label class="switch">
+                <input id="pref-release-changelog-show" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+            </div>
+          `;
+                        },
                     },
                 ],
                 onRender: () => {
@@ -291,6 +312,15 @@ export async function mount(root, { signal } = {}) {
                         generalPrefs.init();
                     } else {
                         generalPrefs.refresh();
+                    }
+                    if (!releaseNotesPrefs) {
+                        releaseNotesPrefs = initReleaseChangelogPrefs(root, {
+                            existingPrefs: loadedPrefs,
+                            onDirtyChange: (dirty) =>
+                                markDirty("release-notes", dirty),
+                        });
+                    } else {
+                        releaseNotesPrefs.refresh();
                     }
                 },
             },
@@ -574,6 +604,13 @@ export async function mount(root, { signal } = {}) {
                 messageStyle:
                     messageStylePrefs?.getMessageStyle() ??
                     normalizeMessageStyle(loadedPrefs?.messageStyle),
+                releaseChangelogShow:
+                    releaseNotesPrefs?.getShowReleaseChangelogs() ??
+                    shouldShowReleaseChangelog(loadedPrefs),
+                releaseChangelogSeenSlugs:
+                    loadedPrefs?.releaseChangelogSeenSlugs ?? [],
+                releaseChangelogLastVersion:
+                    loadedPrefs?.releaseChangelogLastVersion ?? null,
             };
             await savePrefs(prefs);
             loadedPrefs = { ...loadedPrefs, ...prefs };
@@ -591,6 +628,7 @@ export async function mount(root, { signal } = {}) {
             fontPrefs?.commit();
             themePrefs?.commit();
             messageStylePrefs?.commit();
+            releaseNotesPrefs?.commit();
             datetimePrefs?.commit();
             languagePrefs?.commit();
             for (const section of contributedSections) {
@@ -615,6 +653,7 @@ export async function mount(root, { signal } = {}) {
             languagePrefs?.discard();
             themePrefs?.discard();
             messageStylePrefs?.discard();
+            releaseNotesPrefs?.discard();
             datetimePrefs?.discard();
             for (const section of contributedSections) {
                 section.discard();

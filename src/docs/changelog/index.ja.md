@@ -12,12 +12,12 @@
   例: ブランチ `copilot/fix-auth-bug` は `fix-auth-bug.en.md`、
   `fix-auth-bug.de.md`、`fix-auth-bug.id.md`、`fix-auth-bug.ja.md` を生成します
 - PR ごとに 1 セットのファイル（言語ごとに 1 ファイル）
-- 含める内容:
-    - PR タイトル
-    - 要約
-    - 変更されたコンポーネント/ファイル
-    - コミットリンク
+- 各ファイルの必須構造:
+    - `# ...` — 変更履歴タイトル
+    - `## ...` — 見出しごとに 1 つの変更点（要約の箇条書きとして表示）
+    - 各 `##` 配下の本文 — 変更履歴ページで表示する詳細内容
 
 ## エントリー
 
+- [create-changelog-ingestion-system](/changelogs/create-changelog-ingestion-system)
 - [cleanup-strings-and-codebase](/changelogs/cleanup-strings-and-codebase)

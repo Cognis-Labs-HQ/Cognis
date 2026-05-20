@@ -12,6 +12,7 @@ import {
     applyUiPreferences,
     saveUiPreferences,
 } from "../reuse/ui-preferences.js";
+import { maybeShowReleaseChangelogPopup } from "./release-changelog/popup.js";
 import { initRouter, navigateTo } from "../reuse/app-router.js";
 import {
     capturePwaInstallPrompt,
@@ -280,6 +281,7 @@ export async function updateNavbarAvatar() {
 
 let navbarPluginsLoaded = false;
 let navbarPluginsLoadPromise = null;
+let releaseChangelogPopupChecked = false;
 
 async function loadNavbarPlugins() {
     if (navbarPluginsLoaded) return;
@@ -338,6 +340,12 @@ function scheduleNavbarEnhancements() {
         return;
     }
     setTimeout(runEnhancements, 0);
+}
+
+function ensureReleaseChangelogPopupChecked(i18n) {
+    if (releaseChangelogPopupChecked) return;
+    releaseChangelogPopupChecked = true;
+    maybeShowReleaseChangelogPopup(i18n).catch(() => {});
 }
 
 function applyCompactNav(root) {
@@ -560,6 +568,7 @@ export async function renderDashboardLayout(root, slots = {}) {
             scheduleNavbarEnhancements();
             initSearchBar(i18n);
             bindProfilePreviews(i18n);
+            ensureReleaseChangelogPopupChecked(i18n);
         }
         bindHeaderScrollState(root);
         return;
@@ -613,6 +622,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         initRouter(root);
         initSearchBar(i18n);
         bindProfilePreviews(i18n);
+        ensureReleaseChangelogPopupChecked(i18n);
     }
     bindHeaderScrollState(root);
     bindThemeToggle({ usePreferenceApi });

@@ -102,6 +102,8 @@
   <string name="ui.app.login.typing.sample.6">FOSS により提供</string>
   <string name="ui.app.login.typing.sample.7">今すぐアカウントを登録しましょう</string>
   <string name="ui.app.settings.page_subtitle">ユーザー設定を管理します。</string>
+  <string name="ui.app.settings.show_changelogs">変更履歴を表示</string>
+  <string name="ui.app.settings.show_changelogs_hint">リリースごとに変更履歴の要約を表示します。</string>
   <string name="ui.app.settings.font">フォント</string>
   <string name="ui.app.settings.font_size">フォントサイズ</string>
   <string name="ui.app.settings.save">設定を保存</string>
@@ -128,6 +130,10 @@
   <string name="ui.app.changelogs.page_title">変更履歴</string>
   <string name="ui.app.changelogs.page_subtitle">プロジェクトの変更履歴。</string>
   <string name="ui.app.changelogs.group.changelogs">変更履歴</string>
+  <string name="ui.reuse.release_notes_title">{version} の新着情報</string>
+  <string name="ui.reuse.release_notes_intro">リリース {version} の最新の変更履歴更新です。</string>
+  <string name="ui.reuse.release_notes_never_show_again">リリースノートを今後表示しない</string>
+  <string name="ui.reuse.release_notes_view_all">すべての変更履歴を見る</string>
   <string name="ui.app.license.page_title">ライセンス</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3 のライセンス条項。</string>
   <string name="ui.app.license.load_error">ライセンステキストを読み込めませんでした。</string>

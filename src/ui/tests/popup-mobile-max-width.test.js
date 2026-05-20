@@ -21,7 +21,7 @@ test("popup locks page scrolling while preserving popup overflow", () => {
         "utf8",
     );
     const stylesSource = readFileSync(
-        resolve(ROOT, "src/ui/styles/reuse/popup.css"),
+        resolve(ROOT, "src/ui/styles/popup.css"),
         "utf8",
     );
 

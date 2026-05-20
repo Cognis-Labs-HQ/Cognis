@@ -14,6 +14,10 @@ import {
     parseSecuritySettings,
     SECURITY_SETTINGS_KEY,
 } from "../../reuse/security-settings.js";
+import {
+    loadReleaseChangelogEntries,
+    readReleaseVersion,
+} from "../../reuse/release-changelog-feed.js";
 
 async function listLanguages(log?: BootstrapLog) {
     const root = join(process.cwd(), "src", "ui", "languages");
@@ -129,6 +133,27 @@ export function createSystemRoutes(
             res.end(
                 JSON.stringify({ data: { demoMode: parseDemoModeFromEnv() } }),
             );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/system/release-changelog" &&
+            req.method === "GET"
+        ) {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const [releaseVersion, entries] = await Promise.all([
+                readReleaseVersion(),
+                loadReleaseChangelogEntries(),
+            ]);
+            log?.("debug", "Served release changelog feed.", {
+                ...logMeta,
+                accountId: claims.sub,
+                releaseVersion,
+                entryCount: entries.length,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { releaseVersion, entries } }));
             return true;
         }
 

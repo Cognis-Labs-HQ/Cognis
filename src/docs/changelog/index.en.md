@@ -13,12 +13,12 @@ easy to audit.
   `fix-auth-bug.en.md`, `fix-auth-bug.de.md`, `fix-auth-bug.id.md`, and
   `fix-auth-bug.ja.md`
 - One set of files per PR (one per language)
-- Include:
-    - PR title
-    - Summary
-    - Changed components/files
-    - Commit links
+- Required structure in each file:
+    - `# ...` — changelog title
+    - `## ...` — one change point per heading (shown as summary dot points)
+    - body content under each `##` — detailed explanation for changelogs page
 
 ## Entries
 
+- [create-changelog-ingestion-system](/changelogs/create-changelog-ingestion-system)
 - [cleanup-strings-and-codebase](/changelogs/cleanup-strings-and-codebase)

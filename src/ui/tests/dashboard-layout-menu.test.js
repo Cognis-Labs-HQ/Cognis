@@ -108,3 +108,18 @@ test("dashboard layout refreshes the greeting from the profile display name", ()
         "dashboard layout should update the visible greeting immediately after storing the profile display name",
     );
 });
+
+test("dashboard layout checks release changelog popup in shell sessions", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.ok(
+        layoutSource.includes("maybeShowReleaseChangelogPopup"),
+        "dashboard layout should import release changelog popup logic",
+    );
+    assert.ok(
+        layoutSource.includes("ensureReleaseChangelogPopupChecked(i18n)"),
+        "dashboard layout should trigger the release changelog check after rendering shell navigation",
+    );
+});

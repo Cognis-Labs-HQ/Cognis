@@ -102,6 +102,8 @@
   <string name="ui.app.login.typing.sample.6">Powered by FOSS</string>
   <string name="ui.app.login.typing.sample.7">Register your account today</string>
   <string name="ui.app.settings.page_subtitle">Manage your user preferences.</string>
+  <string name="ui.app.settings.show_changelogs">Show Changelogs</string>
+  <string name="ui.app.settings.show_changelogs_hint">Present changelog summary on every release.</string>
   <string name="ui.app.settings.font">Font</string>
   <string name="ui.app.settings.font_size">Font size</string>
   <string name="ui.app.settings.save">Save Preferences</string>
@@ -128,6 +130,10 @@
   <string name="ui.app.changelogs.page_title">Changelogs</string>
   <string name="ui.app.changelogs.page_subtitle">Project change history.</string>
   <string name="ui.app.changelogs.group.changelogs">Changelogs</string>
+  <string name="ui.reuse.release_notes_title">What's New in {version}</string>
+  <string name="ui.reuse.release_notes_intro">Here are the latest changelog updates for release {version}.</string>
+  <string name="ui.reuse.release_notes_never_show_again">Never Show Release Notes Again</string>
+  <string name="ui.reuse.release_notes_view_all">View Full Changelogs</string>
   <string name="ui.app.license.page_title">License</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3 license terms.</string>
   <string name="ui.app.license.load_error">License text could not be loaded.</string>
