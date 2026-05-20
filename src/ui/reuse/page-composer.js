@@ -1028,7 +1028,11 @@ export function createPageComposer(
         const marker = document.createElement("div");
         marker.className = "composer-missing-element-marker";
         marker.textContent = "❗";
-        marker.setAttribute("aria-hidden", "true");
+        marker.setAttribute("role", "img");
+        marker.setAttribute(
+            "aria-label",
+            i18n.t("ui.reuse.missing_dashboard_element"),
+        );
         return marker;
     }
 
@@ -1037,6 +1041,17 @@ export function createPageComposer(
         card.className = "widget-card widget-card--missing-element";
         card.dataset.composerElement = placement.id;
         card.appendChild(createMissingElementMarker());
+        return card;
+    }
+
+    function createElementViewCard(element, placement, tagName = "section") {
+        if (!element) {
+            return createMissingElementViewCard(placement);
+        }
+        const card = document.createElement(tagName);
+        card.className = "widget-card";
+        card.dataset.composerElement = element.id;
+        card.innerHTML = element.render();
         return card;
     }
 
@@ -2631,14 +2646,7 @@ export function createPageComposer(
                 const element = state.elements.find(
                     (e) => e.id === placement.id,
                 );
-                const card = element
-                    ? document.createElement("div")
-                    : createMissingElementViewCard(placement);
-                if (element) {
-                    card.className = "widget-card";
-                    card.dataset.composerElement = element.id;
-                    card.innerHTML = element.render();
-                }
+                const card = createElementViewCard(element, placement, "div");
                 state.container.appendChild(card);
             }
         }
@@ -3329,9 +3337,7 @@ export function createPageComposer(
             }
             for (const placement of visiblePlacements) {
                 const element = elements.find((e) => e.id === placement.id);
-                const card = element
-                    ? document.createElement("section")
-                    : createMissingElementViewCard(placement);
+                const card = createElementViewCard(element, placement);
                 if (!frameless) {
                     const scaledCol = placement.col * scale;
                     const scaledRow = placement.row * scale;
@@ -3339,11 +3345,6 @@ export function createPageComposer(
                     const scaledHeight = placement.h * scale;
                     card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
                     card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
-                }
-                if (element) {
-                    card.className = "widget-card";
-                    card.dataset.composerElement = element.id;
-                    card.innerHTML = element.render();
                 }
                 section.appendChild(card);
             }

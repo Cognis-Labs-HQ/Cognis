@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
+import vm from "node:vm";
+import { createFakeDocument } from "./reuse/fake-dom.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -204,24 +206,97 @@ test("page composer preserves form input values across grid re-renders", () => {
     );
 });
 
-test("page composer retains missing element placements and renders warning marker", () => {
+test("missing element helpers render warning placeholders with accessibility labels", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-composer.js"),
         "utf8",
     );
 
-    assert.doesNotMatch(
-        source,
-        /layout\.placements = layout\.placements\.filter\(\(p\) =>\s*elements\.some\(\(e\) => e\.id === p\.id\)\s*\),/m,
+    function extractByBoundaries(startSignature, nextSignature) {
+        const startIndex = source.indexOf(startSignature);
+        assert.notEqual(startIndex, -1, `${startSignature} should exist`);
+        const nextIndex = nextSignature
+            ? source.indexOf(nextSignature, startIndex)
+            : -1;
+        if (!nextSignature || nextIndex === -1) {
+            return source.slice(startIndex);
+        }
+        return source.slice(startIndex, nextIndex);
+    }
+
+    const context = {
+        UNIT: 90,
+        document: createFakeDocument(),
+        i18n: {
+            t(key) {
+                return key;
+            },
+        },
+    };
+    vm.createContext(context);
+    vm.runInContext(
+        `${extractByBoundaries("function createMissingElementMarker()", "function createMissingElementViewCard(")}
+${extractByBoundaries("function createMissingElementViewCard(", "function createElementViewCard(")}
+${extractByBoundaries("function createElementViewCard(", "function createMissingElementEditCell(")}
+${extractByBoundaries("function createMissingElementEditCell(", "function createCell(")}
+this.missingExports = {
+    createMissingElementMarker,
+    createMissingElementViewCard,
+    createElementViewCard,
+    createMissingElementEditCell,
+};`,
+        context,
     );
-    assert.doesNotMatch(
-        source,
-        /state\.layout\.placements = state\.layout\.placements\.filter\(\(p\) =>\s*state\.elements\.some\(\(e\) => e\.id === p\.id\)\s*\),/m,
+
+    const marker = context.missingExports.createMissingElementMarker();
+    assert.equal(marker.className, "composer-missing-element-marker");
+    assert.equal(marker.textContent, "❗");
+    assert.equal(marker.getAttribute("role"), "img");
+    assert.equal(
+        marker.getAttribute("aria-label"),
+        "ui.reuse.missing_dashboard_element",
     );
-    assert.match(source, /function createMissingElementMarker\(\)/);
-    assert.match(source, /className = "composer-missing-element-marker"/);
-    assert.match(source, /createMissingElementViewCard\(placement\)/);
-    assert.match(source, /createMissingElementEditCell\(placement\)/);
+
+    const missingCard = context.missingExports.createElementViewCard(null, {
+        id: "missing-module",
+    });
+    assert.equal(
+        missingCard.className,
+        "widget-card widget-card--missing-element",
+    );
+    assert.equal(missingCard.dataset.composerElement, "missing-module");
+    assert.equal(missingCard.children[0].textContent, "❗");
+
+    const missingCell = context.missingExports.createMissingElementEditCell({
+        id: "missing-module",
+        col: 1,
+        row: 2,
+        w: 3,
+        h: 4,
+    });
+    assert.equal(missingCell.className, "composer-cell composer-cell--missing");
+    assert.equal(missingCell.style.left, "90px");
+    assert.equal(missingCell.style.top, "180px");
+    assert.equal(missingCell.style.width, "270px");
+    assert.equal(missingCell.style.height, "360px");
+    assert.equal(
+        missingCell.children[0].className,
+        "widget-card composer-cell-content widget-card--missing-element",
+    );
+
+    const liveCard = context.missingExports.createElementViewCard(
+        {
+            id: "provided-module",
+            render() {
+                return "<p>provided</p>";
+            },
+        },
+        { id: "provided-module" },
+        "div",
+    );
+    assert.equal(liveCard.className, "widget-card");
+    assert.equal(liveCard.dataset.composerElement, "provided-module");
+    assert.equal(liveCard.innerHTML, "<p>provided</p>");
 });
 
 test("page composer persists drafts and renders large-form draft reset control", () => {

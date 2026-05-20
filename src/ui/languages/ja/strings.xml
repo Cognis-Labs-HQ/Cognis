@@ -64,6 +64,7 @@
   <string name="ui.reuse.debug">デバッグ</string>
   <string name="ui.reuse.subject">件名</string>
   <string name="ui.reuse.message">メッセージ</string>
+  <string name="ui.reuse.missing_dashboard_element">欠落したダッシュボード要素</string>
   <string name="ui.reuse.email_placeholder">user@example.com</string>
 
   <string name="ui.reuse.role_user">ユーザー</string>
