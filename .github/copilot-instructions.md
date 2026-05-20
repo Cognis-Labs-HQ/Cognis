@@ -76,6 +76,8 @@ Promote code reactively: when writing a new feature in area B, if you notice sim
 
 Files inside a `reuse/` directory must also be generically named for the reusable abstraction they provide. If a file name needs a feature- or adapter-specific prefix (for example `social-...`), it does not belong in `reuse/`; keep it beside that feature instead.
 
+Any file that exists for one product surface (for example release-changelog popups or popup-only style bundles) is not true reuse and must live in a purpose-constrained directory outside `reuse/`.
+
 Do not create `reuse/` directories inside `src/adapters/*`. Adapters are already niche capabilities and should keep their implementation files local to the adapter root (for example `store.ts`, `db-store.ts`) instead of introducing adapter-internal reuse layers.
 
 DB adapters and the DB gateway must not own feature stores for other gateways/adapters (for example auth/profile/notify-specific stores). Feature-specific persistence code belongs to the owning gateway or owning adapter and is consumed through capabilities.

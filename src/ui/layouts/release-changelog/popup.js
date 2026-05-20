@@ -13,11 +13,14 @@
  * translation function returning plain text for each i18n key.
  * @returns {Promise<void>}
  */
-import { apiFetch } from "./api-client.js";
-import { escapeHtml } from "./escape-html.js";
-import { openPopup } from "./popup.js";
-import { navigateTo } from "./app-router.js";
-import { loadUiPreferences, saveUiPreferences } from "./ui-preferences.js";
+import { apiFetch } from "../../reuse/api-client.js";
+import { escapeHtml } from "../../reuse/escape-html.js";
+import { openPopup } from "../../reuse/popup.js";
+import { navigateTo } from "../../reuse/app-router.js";
+import {
+    loadUiPreferences,
+    saveUiPreferences,
+} from "../../reuse/ui-preferences.js";
 
 const MAX_VISIBLE_RELEASE_NOTES = 5;
 const MAX_VISIBLE_RELEASE_NOTE_BULLETS = 5;

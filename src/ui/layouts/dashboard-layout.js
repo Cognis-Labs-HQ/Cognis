@@ -12,7 +12,7 @@ import {
     applyUiPreferences,
     saveUiPreferences,
 } from "../reuse/ui-preferences.js";
-import { maybeShowReleaseChangelogPopup } from "../reuse/release-changelog-popup.js";
+import { maybeShowReleaseChangelogPopup } from "./release-changelog/popup.js";
 import { initRouter, navigateTo } from "../reuse/app-router.js";
 import {
     capturePwaInstallPrompt,
