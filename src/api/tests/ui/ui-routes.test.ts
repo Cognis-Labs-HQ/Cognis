@@ -500,7 +500,7 @@ test("GET /static/gateways/:id/:file serves file from registered static dir", as
     const handled = await route(
         { headers: {} } as any,
         recorder.res as any,
-        new URL("http://localhost/static/gateways/auth/admin-section.js"),
+        new URL("http://localhost/static/gateways/auth/security-prefs.js"),
     );
 
     assert.ok(handled);
@@ -509,7 +509,7 @@ test("GET /static/gateways/:id/:file serves file from registered static dir", as
         recorder.headers["content-type"],
         "text/javascript; charset=utf-8",
     );
-    assert.match(recorder.body, /createAdminSection/);
+    assert.match(recorder.body, /createSettingsSection/);
 });
 
 test("GET /static/gateways/:id/:file returns 404 when static dir not registered", async () => {
@@ -520,7 +520,7 @@ test("GET /static/gateways/:id/:file returns 404 when static dir not registered"
     const handled = await route(
         { headers: {} } as any,
         recorder.res as any,
-        new URL("http://localhost/static/gateways/auth/admin-section.js"),
+        new URL("http://localhost/static/gateways/auth/security-prefs.js"),
     );
 
     assert.ok(handled);

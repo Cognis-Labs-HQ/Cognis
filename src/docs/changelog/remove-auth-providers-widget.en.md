@@ -1,0 +1,21 @@
+# Auth and Password Policy
+
+## Removed duplicate auth providers widget from Administration
+
+The auth providers widget card has been removed from the Authentication section of Administration, since it already appears on the Components page. The Authentication admin section has been dropped entirely.
+
+## Password policy moved to Administration → Security
+
+The password policy configuration widget has moved from the old Authentication admin section into the Security section of Administration. It now integrates with the standard dirty-state tracker, so changes are saved or discarded via the unified changes bar rather than a dedicated Save button.
+
+## Password policy uses numeric minimums for character classes
+
+The uppercase letter, digit, and special character requirements now use numeric inputs instead of toggle switches. Setting the value to 0 (the default) disables the requirement; any positive integer sets the minimum count of that character class required in passwords.
+
+## Registration page: inline username validation
+
+The registration form now shows an inline warning beneath the username field as soon as the user types a character that is not a printable ASCII character or that is uppercase. The warning appears immediately on input rather than only at form submission.
+
+## Registration page: always-visible password policy dotpoints
+
+The password field on the registration page now shows all applicable policy requirements as a persistent bullet-point list below the field. Each dotpoint updates live as the user types, turning green with a checkmark when the requirement is met and red when it is not, so users can see exactly what remains before submitting.

@@ -194,10 +194,59 @@
     flex: 1;
 }
 
+.security-policy-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.security-policy-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.security-policy-row label {
+    flex: 1;
+    font-weight: 400;
+}
+
+.security-policy-number-input {
+    width: 80px;
+}
+
 .criteria-check-message {
     color: var(--color-error, #dc2626);
     font-size: 0.85em;
     margin: 2px 0 0 0;
+}
+
+.password-policy-list {
+    list-style: none;
+    margin: 4px 0 0 0;
+    padding: 0;
+    font-size: 0.85em;
+}
+
+.password-policy-item {
+    padding: 1px 0;
+    color: var(--color-text-muted, #64748b);
+}
+
+.password-policy-item::before {
+    content: "\2022 ";
+}
+
+.password-policy-item--met {
+    color: var(--color-success, #16a34a);
+}
+
+.password-policy-item--met::before {
+    content: "\2713 ";
+}
+
+.password-policy-item--unmet {
+    color: var(--color-error, #dc2626);
 }
 
 .components-section {

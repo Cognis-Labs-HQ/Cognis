@@ -10,9 +10,8 @@ import {
  * Security sub-module for the Administration page.
  *
  * Manages system-level security settings including trusted domains for email
- * validation and approved external HTTP(S) links such as broadcast redirects.
- * An empty list permits all email domains while external trusted-link checks
- * continue to require the current site origin.
+ * validation, approved external HTTP(S) links, open registration state, and
+ * the authentication password policy.
  *
  * Public exports:
  *   initSecuritySection(root, options) — initialises the security section.
@@ -29,10 +28,10 @@ import {
  * @returns {{ init: () => Promise<void>, save: () => Promise<void>, discard: () => void, renderContent: () => string }}
  *
  * Note: `save()` and `discard()` are only meaningful after `init()` resolves,
- * since `init()` sets `originalDomains` and binds the input element. They are
+ * since `init()` sets original state and binds the input elements. They are
  * always called from the floating unsaved-changes bar, which only becomes
- * visible after the user edits the input (which itself requires `init()` to
- * have completed), so this ordering constraint is satisfied naturally.
+ * visible after the user edits a field (which itself requires `init()` to have
+ * completed), so this ordering constraint is satisfied naturally.
  */
 export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalDomains = [];
@@ -40,6 +39,15 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalUserValidationMode = "none";
     let currentUserValidationMode = "none";
     let originalTeacherManualApproval = true;
+
+    let originalPolicy = {
+        minLength: 8,
+        requireUppercase: 0,
+        requireLowercase: false,
+        requireDigit: 0,
+        requireSpecial: 0,
+    };
+    let currentPolicy = { ...originalPolicy };
 
     async function loadSettings() {
         const res = await apiFetch("/api/v1/system/security");
@@ -55,6 +63,37 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         const adapters = Array.isArray(payload?.data) ? payload.data : [];
         const publicAdapter = adapters.find((entry) => entry.id === "public");
         return publicAdapter?.enabled === true;
+    }
+
+    async function loadPasswordPolicy() {
+        const res = await apiFetch("/api/v1/auth/password-policy").catch(
+            () => null,
+        );
+        if (!res?.ok) return { ...originalPolicy };
+        const payload = await res.json().catch(() => null);
+        const data = payload?.data;
+        if (!data || typeof data !== "object") return { ...originalPolicy };
+        return {
+            minLength:
+                typeof data.minLength === "number" && data.minLength >= 1
+                    ? data.minLength
+                    : 8,
+            requireUppercase:
+                typeof data.requireUppercase === "number" &&
+                data.requireUppercase >= 0
+                    ? data.requireUppercase
+                    : 0,
+            requireLowercase: data.requireLowercase === true,
+            requireDigit:
+                typeof data.requireDigit === "number" && data.requireDigit >= 0
+                    ? data.requireDigit
+                    : 0,
+            requireSpecial:
+                typeof data.requireSpecial === "number" &&
+                data.requireSpecial >= 0
+                    ? data.requireSpecial
+                    : 0,
+        };
     }
 
     async function persistSettings(
@@ -74,6 +113,15 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             }),
         });
         if (!res.ok) throw new Error("save_failed");
+    }
+
+    async function persistPasswordPolicy(policy) {
+        const res = await apiFetch("/api/v1/auth/password-policy", {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(policy),
+        });
+        if (!res.ok) throw new Error("policy_save_failed");
     }
 
     function parseDomains(raw) {
@@ -103,6 +151,47 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return input.checked;
     }
 
+    function readPolicyFromDom() {
+        const minLengthInput = root.querySelector("#policy-min-length");
+        const uppercaseInput = root.querySelector("#policy-require-uppercase");
+        const lowercaseInput = root.querySelector("#policy-require-lowercase");
+        const digitInput = root.querySelector("#policy-require-digit");
+        const specialInput = root.querySelector("#policy-require-special");
+        return {
+            minLength:
+                minLengthInput instanceof HTMLInputElement
+                    ? Math.max(1, parseInt(minLengthInput.value, 10) || 8)
+                    : currentPolicy.minLength,
+            requireUppercase:
+                uppercaseInput instanceof HTMLInputElement
+                    ? Math.max(0, parseInt(uppercaseInput.value, 10) || 0)
+                    : currentPolicy.requireUppercase,
+            requireLowercase:
+                lowercaseInput instanceof HTMLInputElement
+                    ? lowercaseInput.checked
+                    : currentPolicy.requireLowercase,
+            requireDigit:
+                digitInput instanceof HTMLInputElement
+                    ? Math.max(0, parseInt(digitInput.value, 10) || 0)
+                    : currentPolicy.requireDigit,
+            requireSpecial:
+                specialInput instanceof HTMLInputElement
+                    ? Math.max(0, parseInt(specialInput.value, 10) || 0)
+                    : currentPolicy.requireSpecial,
+        };
+    }
+
+    function isPolicyDirty() {
+        const dom = readPolicyFromDom();
+        return (
+            dom.minLength !== originalPolicy.minLength ||
+            dom.requireUppercase !== originalPolicy.requireUppercase ||
+            dom.requireLowercase !== originalPolicy.requireLowercase ||
+            dom.requireDigit !== originalPolicy.requireDigit ||
+            dom.requireSpecial !== originalPolicy.requireSpecial
+        );
+    }
+
     function markDirtyState() {
         const currentDomains = parseDomains(getInputValue()).join(",");
         const originalDomainsValue = originalDomains.join(",");
@@ -116,7 +205,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             currentDomains !== originalDomainsValue ||
                 modeChanged ||
                 registrationsChanged ||
-                teacherApprovalChanged,
+                teacherApprovalChanged ||
+                isPolicyDirty(),
         );
     }
 
@@ -168,14 +258,131 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         });
     }
 
+    function bindPasswordPolicyInputs() {
+        const policyFields = root.querySelectorAll(
+            "#policy-min-length, #policy-require-uppercase, #policy-require-lowercase, #policy-require-digit, #policy-require-special",
+        );
+        policyFields.forEach((field) => {
+            field.addEventListener("input", () => {
+                markDirtyState();
+            });
+            field.addEventListener("change", () => {
+                markDirtyState();
+            });
+        });
+    }
+
+    function applyPolicyToDom(policy) {
+        const minLengthInput = root.querySelector("#policy-min-length");
+        const uppercaseInput = root.querySelector("#policy-require-uppercase");
+        const lowercaseInput = root.querySelector("#policy-require-lowercase");
+        const digitInput = root.querySelector("#policy-require-digit");
+        const specialInput = root.querySelector("#policy-require-special");
+        if (minLengthInput instanceof HTMLInputElement) {
+            minLengthInput.value = String(policy.minLength);
+        }
+        if (uppercaseInput instanceof HTMLInputElement) {
+            uppercaseInput.value = String(policy.requireUppercase);
+        }
+        if (lowercaseInput instanceof HTMLInputElement) {
+            lowercaseInput.checked = policy.requireLowercase;
+        }
+        if (digitInput instanceof HTMLInputElement) {
+            digitInput.value = String(policy.requireDigit);
+        }
+        if (specialInput instanceof HTMLInputElement) {
+            specialInput.value = String(policy.requireSpecial);
+        }
+    }
+
+    function renderPasswordPolicy() {
+        const tooltipAria = i18n.t("ui.reuse.more_information");
+        return `
+      <div class="components-section">
+        <h3 class="components-section-heading">
+          ${escapeHtml(i18n.t("ui.app.admin.security.password_policy_heading"))}
+        </h3>
+        <div class="security-policy-fields">
+          <div class="security-policy-row">
+            <label for="policy-min-length">
+              ${escapeHtml(i18n.t("ui.app.admin.security.policy_min_length"))}
+            </label>
+            <input
+              id="policy-min-length"
+              type="number"
+              min="1"
+              max="128"
+              value="${escapeHtml(String(currentPolicy.minLength))}"
+              class="security-policy-number-input"
+            />
+          </div>
+          <div class="security-policy-row">
+            <label for="policy-require-uppercase">
+              ${escapeHtml(i18n.t("ui.app.admin.security.policy_require_uppercase"))}
+            </label>
+            <input
+              id="policy-require-uppercase"
+              type="number"
+              min="0"
+              max="128"
+              value="${escapeHtml(String(currentPolicy.requireUppercase))}"
+              class="security-policy-number-input"
+            />
+          </div>
+          <div class="security-policy-row">
+            <label for="policy-require-lowercase">
+              ${escapeHtml(i18n.t("ui.app.admin.security.policy_require_lowercase"))}
+            </label>
+            <input
+              id="policy-require-lowercase"
+              type="checkbox"
+              ${currentPolicy.requireLowercase ? "checked" : ""}
+            />
+          </div>
+          <div class="security-policy-row">
+            <label for="policy-require-digit">
+              ${escapeHtml(i18n.t("ui.app.admin.security.policy_require_digit"))}
+            </label>
+            <input
+              id="policy-require-digit"
+              type="number"
+              min="0"
+              max="128"
+              value="${escapeHtml(String(currentPolicy.requireDigit))}"
+              class="security-policy-number-input"
+            />
+          </div>
+          <div class="security-policy-row">
+            <label for="policy-require-special">
+              ${escapeHtml(i18n.t("ui.app.admin.security.policy_require_special"))}
+            </label>
+            <input
+              id="policy-require-special"
+              type="number"
+              min="0"
+              max="128"
+              value="${escapeHtml(String(currentPolicy.requireSpecial))}"
+              class="security-policy-number-input"
+            />
+          </div>
+        </div>
+      </div>
+    `;
+    }
+
     return {
         async init() {
-            const [settings, publicRegistrationEnabled] = await Promise.all([
-                loadSettings(),
-                loadPublicRegistrationAdapterState(),
-            ]);
+            const [settings, publicRegistrationEnabled, policy] =
+                await Promise.all([
+                    loadSettings(),
+                    loadPublicRegistrationAdapterState(),
+                    loadPasswordPolicy(),
+                ]);
             settings.registrationsEnabled = publicRegistrationEnabled;
+            originalPolicy = policy;
+            currentPolicy = { ...policy };
             bindInput(settings);
+            bindPasswordPolicyInputs();
         },
 
         async save() {
@@ -184,12 +391,18 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const registrationsEnabled = getRegistrationsEnabledValue();
             const requireTeacherManualApproval =
                 getTeacherManualApprovalValue();
-            await persistSettings(
-                domains,
-                registrationsEnabled,
-                validationMode,
-                requireTeacherManualApproval,
-            );
+            const policy = readPolicyFromDom();
+
+            await Promise.all([
+                persistSettings(
+                    domains,
+                    registrationsEnabled,
+                    validationMode,
+                    requireTeacherManualApproval,
+                ),
+                persistPasswordPolicy(policy),
+            ]);
+
             clearTrustedDomainsCache();
             if (registrationsEnabled !== currentPublicRegistrationEnabled) {
                 await apiFetch(
@@ -202,6 +415,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             currentUserValidationMode = validationMode;
             originalUserValidationMode = validationMode;
             originalTeacherManualApproval = requireTeacherManualApproval;
+            originalPolicy = { ...policy };
+            currentPolicy = { ...policy };
         },
 
         discard() {
@@ -227,6 +442,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             if (teacherApprovalToggle instanceof HTMLInputElement) {
                 teacherApprovalToggle.checked = originalTeacherManualApproval;
             }
+            applyPolicyToDom(originalPolicy);
+            currentPolicy = { ...originalPolicy };
             onDirtyChange?.(false);
         },
 
@@ -285,6 +502,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
               </select>
             </div>
           </div>
+          ${renderPasswordPolicy()}
         </div>
       `;
         },

@@ -70,12 +70,14 @@ export function createSettingsSection({ i18n, root }) {
                     .replace("{min}", String(minLen)),
             });
         }
-        if (policy.requireUppercase) {
+        if (policy.requireUppercase > 0) {
+            const minCount = policy.requireUppercase;
             criteria.push({
-                test: (value) => /[A-Z]/.test(value),
-                message: i18n.t(
-                    "gateway.auth.security.password_requires_uppercase",
-                ),
+                test: (value) =>
+                    (value.match(/[A-Z]/g) ?? []).length >= minCount,
+                message: i18n
+                    .t("gateway.auth.security.password_requires_uppercase")
+                    .replace("{count}", String(minCount)),
             });
         }
         if (policy.requireLowercase) {
@@ -86,20 +88,24 @@ export function createSettingsSection({ i18n, root }) {
                 ),
             });
         }
-        if (policy.requireDigit) {
+        if (policy.requireDigit > 0) {
+            const minCount = policy.requireDigit;
             criteria.push({
-                test: (value) => /[0-9]/.test(value),
-                message: i18n.t(
-                    "gateway.auth.security.password_requires_digit",
-                ),
+                test: (value) =>
+                    (value.match(/[0-9]/g) ?? []).length >= minCount,
+                message: i18n
+                    .t("gateway.auth.security.password_requires_digit")
+                    .replace("{count}", String(minCount)),
             });
         }
-        if (policy.requireSpecial) {
+        if (policy.requireSpecial > 0) {
+            const minCount = policy.requireSpecial;
             criteria.push({
-                test: (value) => /[^A-Za-z0-9]/.test(value),
-                message: i18n.t(
-                    "gateway.auth.security.password_requires_special",
-                ),
+                test: (value) =>
+                    (value.match(/[^A-Za-z0-9]/g) ?? []).length >= minCount,
+                message: i18n
+                    .t("gateway.auth.security.password_requires_special")
+                    .replace("{count}", String(minCount)),
             });
         }
         return criteria;

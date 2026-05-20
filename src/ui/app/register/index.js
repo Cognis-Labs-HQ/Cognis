@@ -41,8 +41,9 @@ async function resetAuthSessionForRegister() {
 
 /**
  * Builds a list of criteria for the criteria-check module from a password policy.
+ * Used for the confirm-password mismatch check and form submit validation.
  *
- * @param {{ minLength: number, requireUppercase: boolean, requireLowercase: boolean, requireDigit: boolean, requireSpecial: boolean }} policy
+ * @param {{ minLength: number, requireUppercase: number, requireLowercase: boolean, requireDigit: number, requireSpecial: number }} policy
  * @param {object} i18n
  * @returns {Array<{ test: (value: string) => boolean, message: string }>}
  */
@@ -57,12 +58,13 @@ function buildPasswordCriteria(policy, i18n) {
                 .replace("{min}", String(minLen)),
         });
     }
-    if (policy.requireUppercase) {
+    if (policy.requireUppercase > 0) {
+        const minCount = policy.requireUppercase;
         criteria.push({
-            test: (value) => /[A-Z]/.test(value),
-            message: i18n.t(
-                "ui.app.register.error.password_requires_uppercase",
-            ),
+            test: (value) => (value.match(/[A-Z]/g) ?? []).length >= minCount,
+            message: i18n
+                .t("ui.app.register.error.password_requires_uppercase")
+                .replace("{count}", String(minCount)),
         });
     }
     if (policy.requireLowercase) {
@@ -73,19 +75,96 @@ function buildPasswordCriteria(policy, i18n) {
             ),
         });
     }
-    if (policy.requireDigit) {
+    if (policy.requireDigit > 0) {
+        const minCount = policy.requireDigit;
         criteria.push({
-            test: (value) => /[0-9]/.test(value),
-            message: i18n.t("ui.app.register.error.password_requires_digit"),
+            test: (value) => (value.match(/[0-9]/g) ?? []).length >= minCount,
+            message: i18n
+                .t("ui.app.register.error.password_requires_digit")
+                .replace("{count}", String(minCount)),
         });
     }
-    if (policy.requireSpecial) {
+    if (policy.requireSpecial > 0) {
+        const minCount = policy.requireSpecial;
         criteria.push({
-            test: (value) => /[^A-Za-z0-9]/.test(value),
-            message: i18n.t("ui.app.register.error.password_requires_special"),
+            test: (value) =>
+                (value.match(/[^A-Za-z0-9]/g) ?? []).length >= minCount,
+            message: i18n
+                .t("ui.app.register.error.password_requires_special")
+                .replace("{count}", String(minCount)),
         });
     }
     return criteria;
+}
+
+/**
+ * Attaches an always-visible policy dotpoints list beneath the password input.
+ * Each dotpoint reflects a policy requirement and updates its met/unmet state
+ * as the user types.
+ *
+ * @param {HTMLInputElement} passwordInput
+ * @param {Array<{ test: (value: string) => boolean, message: string }>} criteria
+ * @param {object} i18n
+ * @param {{ signal?: AbortSignal }} [options]
+ * @param {object} i18n
+ * @returns {{ isValid: () => boolean, detach: () => void }}
+ */
+function attachPasswordPolicyList(passwordInput, criteria, i18n, options = {}) {
+    if (criteria.length === 0) {
+        return {
+            isValid: () => true,
+            detach: () => {},
+        };
+    }
+
+    const listEl = document.createElement("ul");
+    listEl.className = "password-policy-list";
+    listEl.setAttribute(
+        "aria-label",
+        i18n.t("ui.app.register.password_requirements"),
+    );
+
+    const itemEls = criteria.map((criterion) => {
+        const item = document.createElement("li");
+        item.className = "password-policy-item";
+        item.textContent = criterion.message;
+        listEl.appendChild(item);
+        return item;
+    });
+
+    passwordInput.insertAdjacentElement("afterend", listEl);
+
+    function update() {
+        const value = passwordInput.value;
+        criteria.forEach((criterion, index) => {
+            const met = criterion.test(value);
+            itemEls[index].classList.toggle("password-policy-item--met", met);
+            itemEls[index].classList.toggle(
+                "password-policy-item--unmet",
+                !met,
+            );
+        });
+    }
+
+    update();
+
+    const listenerOptions = options.signal
+        ? { signal: options.signal }
+        : undefined;
+    passwordInput.addEventListener("input", update, listenerOptions);
+
+    function isValid() {
+        return criteria.every((criterion) =>
+            criterion.test(passwordInput.value),
+        );
+    }
+
+    function detach() {
+        passwordInput.removeEventListener("input", update);
+        listEl.remove();
+    }
+
+    return { isValid, detach };
 }
 
 /**
@@ -133,10 +212,10 @@ export async function mount(root, { signal } = {}) {
     let selectedLanguage = DEFAULT_LOCALE;
     let passwordPolicy = {
         minLength: 8,
-        requireUppercase: false,
+        requireUppercase: 0,
         requireLowercase: false,
-        requireDigit: false,
-        requireSpecial: false,
+        requireDigit: 0,
+        requireSpecial: 0,
     };
 
     if (token) {
@@ -179,8 +258,31 @@ export async function mount(root, { signal } = {}) {
         const policyRes = await fetch("/api/v1/auth/password-policy");
         if (policyRes.ok) {
             const policyPayload = await policyRes.json();
-            if (policyPayload?.data) {
-                passwordPolicy = policyPayload.data;
+            const data = policyPayload?.data;
+            if (data && typeof data === "object") {
+                passwordPolicy = {
+                    minLength:
+                        typeof data.minLength === "number" &&
+                        data.minLength >= 1
+                            ? data.minLength
+                            : 8,
+                    requireUppercase:
+                        typeof data.requireUppercase === "number" &&
+                        data.requireUppercase >= 0
+                            ? data.requireUppercase
+                            : 0,
+                    requireLowercase: data.requireLowercase === true,
+                    requireDigit:
+                        typeof data.requireDigit === "number" &&
+                        data.requireDigit >= 0
+                            ? data.requireDigit
+                            : 0,
+                    requireSpecial:
+                        typeof data.requireSpecial === "number" &&
+                        data.requireSpecial >= 0
+                            ? data.requireSpecial
+                            : 0,
+                };
             }
         }
     } catch {
@@ -496,6 +598,39 @@ export async function mount(root, { signal } = {}) {
                         );
                     }
 
+                    const usernameInput = form.elements.namedItem("username");
+                    if (usernameInput instanceof HTMLInputElement) {
+                        const usernameController = attachCriteriaCheck(
+                            usernameInput,
+                            [
+                                {
+                                    test: (value) =>
+                                        value === "" ||
+                                        /^[\x21-\x7E]+$/.test(value),
+                                    message: i18n.t(
+                                        "ui.app.register.error.username_invalid",
+                                    ),
+                                },
+                                {
+                                    test: (value) =>
+                                        value === "" ||
+                                        value === value.toLowerCase(),
+                                    message: i18n.t(
+                                        "ui.app.register.error.username_not_lowercase",
+                                    ),
+                                },
+                            ],
+                            { signal: signal ?? undefined },
+                        );
+                        if (signal) {
+                            signal.addEventListener(
+                                "abort",
+                                () => usernameController.detach(),
+                                { once: true },
+                            );
+                        }
+                    }
+
                     const passwordInput = form.elements.namedItem("password");
                     const confirmPasswordInput =
                         form.elements.namedItem("confirmPassword");
@@ -508,15 +643,11 @@ export async function mount(root, { signal } = {}) {
                             passwordPolicy,
                             i18n,
                         );
-                        const criteriaCheckController = attachCriteriaCheck(
+                        const policyListController = attachPasswordPolicyList(
                             passwordInput,
                             passwordCriteria,
-                            {
-                                genericMessage: i18n.t(
-                                    "ui.app.register.error.password_policy",
-                                ),
-                                signal: signal ?? undefined,
-                            },
+                            i18n,
+                            { signal: signal ?? undefined },
                         );
 
                         const mismatchController = attachCriteriaCheck(
@@ -537,7 +668,7 @@ export async function mount(root, { signal } = {}) {
                             signal.addEventListener(
                                 "abort",
                                 () => {
-                                    criteriaCheckController.detach();
+                                    policyListController.detach();
                                     mismatchController.detach();
                                 },
                                 { once: true },

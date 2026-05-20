@@ -233,14 +233,15 @@
   <string name="ui.app.register.error.password_mismatch">Passwords do not match.</string>
   <string name="ui.app.register.error.password_policy">Password does not meet the requirements.</string>
   <string name="ui.app.register.error.password_too_short">Must be at least {min} characters.</string>
-  <string name="ui.app.register.error.password_requires_uppercase">Must contain an uppercase letter.</string>
+  <string name="ui.app.register.error.password_requires_uppercase">Must contain at least {count} uppercase letter(s).</string>
   <string name="ui.app.register.error.password_requires_lowercase">Must contain a lowercase letter.</string>
-  <string name="ui.app.register.error.password_requires_digit">Must contain a digit.</string>
-  <string name="ui.app.register.error.password_requires_special">Must contain a special character.</string>
+  <string name="ui.app.register.error.password_requires_digit">Must contain at least {count} digit(s).</string>
+  <string name="ui.app.register.error.password_requires_special">Must contain at least {count} special character(s).</string>
   <string name="ui.app.register.error.username_invalid">Username may only contain printable ASCII characters.</string>
   <string name="ui.app.register.error.username_too_long">Username must be 25 characters or fewer.</string>
   <string name="ui.app.register.error.username_not_lowercase">Username must be all lowercase.</string>
   <string name="ui.app.register.submit">Create account</string>
+  <string name="ui.app.register.password_requirements">Password requirements</string>
   <string name="ui.app.register.closed">Open registration is currently disabled.</string>
   <string name="ui.app.register.success">Account created. Redirecting to login…</string>
   <string name="ui.app.register.reason.session_cleared">Existing login session was cleared before loading registration.</string>
@@ -463,6 +464,12 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">Choose whether user accounts must be validated after login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">None</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
+  <string name="ui.app.admin.security.password_policy_heading">Password Policy</string>
+  <string name="ui.app.admin.security.policy_min_length">Minimum Length</string>
+  <string name="ui.app.admin.security.policy_require_uppercase">Minimum Uppercase Letters (0 = off)</string>
+  <string name="ui.app.admin.security.policy_require_lowercase">Require Lowercase Letter</string>
+  <string name="ui.app.admin.security.policy_require_digit">Minimum Digits (0 = off)</string>
+  <string name="ui.app.admin.security.policy_require_special">Minimum Special Characters (0 = off)</string>
   <string name="ui.app.admin.security.saved">Security settings saved.</string>
   <string name="ui.app.admin.security.save_failed">Failed to save security settings.</string>
   <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
