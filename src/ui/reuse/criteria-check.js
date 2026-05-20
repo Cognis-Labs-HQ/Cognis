@@ -33,10 +33,20 @@ export function attachCriteriaCheck(field, criteria, options = {}) {
     const genericMessage =
         options.genericMessage ?? "This field does not meet the requirements.";
 
+    const indicatorId = `criteria-check-${field.name || field.id || Math.random().toString(36).slice(2)}`;
     const indicator = document.createElement("p");
     indicator.className = "criteria-check-message";
+    indicator.id = indicatorId;
     indicator.setAttribute("aria-live", "polite");
     indicator.style.display = "none";
+
+    const existingDescribedBy = field.getAttribute("aria-describedby");
+    field.setAttribute(
+        "aria-describedby",
+        existingDescribedBy
+            ? `${existingDescribedBy} ${indicatorId}`
+            : indicatorId,
+    );
 
     field.insertAdjacentElement("afterend", indicator);
 
@@ -71,6 +81,16 @@ export function attachCriteriaCheck(field, criteria, options = {}) {
     function detach() {
         field.removeEventListener("input", runAndUpdate);
         field.removeEventListener("blur", runAndUpdate);
+        const described = field.getAttribute("aria-describedby") ?? "";
+        const remaining = described
+            .split(/\s+/)
+            .filter((part) => part !== indicatorId)
+            .join(" ");
+        if (remaining) {
+            field.setAttribute("aria-describedby", remaining);
+        } else {
+            field.removeAttribute("aria-describedby");
+        }
         indicator.remove();
     }
 

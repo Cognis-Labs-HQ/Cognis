@@ -192,9 +192,8 @@ export function createSettingsSection({ i18n, root }) {
                             confirmPasswordInput,
                             [
                                 {
-                                    test: () =>
-                                        confirmPasswordInput.value ===
-                                        nextPasswordInput.value,
+                                    test: (value) =>
+                                        value === nextPasswordInput.value,
                                     message: i18n.t(
                                         "ui.app.register.error.password_mismatch",
                                     ),

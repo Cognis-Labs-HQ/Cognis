@@ -520,9 +520,8 @@ export async function mount(root, { signal } = {}) {
                             confirmPasswordInput,
                             [
                                 {
-                                    test: () =>
-                                        confirmPasswordInput.value ===
-                                        passwordInput.value,
+                                    test: (value) =>
+                                        value === passwordInput.value,
                                     message: i18n.t(
                                         "ui.app.register.error.password_mismatch",
                                     ),
