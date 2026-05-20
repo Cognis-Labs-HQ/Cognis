@@ -6,6 +6,7 @@ export interface ModuleManifest {
     version: string;
     publisher?: string;
     class: ModuleClass;
+    enabledByDefault?: boolean;
     coreApiVersion: string;
     capabilities: string[];
     /**

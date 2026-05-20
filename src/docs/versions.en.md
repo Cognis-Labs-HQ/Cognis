@@ -72,5 +72,5 @@ Increment using [Semantic Versioning](https://semver.org/):
 | ---------------- | --------------------------------- | ------- |
 | Sample Analytics | `src/modules/sample-analytics/`   | `0.1.0` |
 | Jitsi Meet       | `src/modules/jitsi-meet/`         | `1.0.5` |
-| Cognis Japanese  | `src/modules/study/languages/ja/` | `1.2.3` |
-| Cognis English   | `src/modules/study/languages/en/` | `1.2.1` |
+| Cognis Japanese  | `src/modules/study/languages/ja/` | `1.2.4` |
+| Cognis English   | `src/modules/study/languages/en/` | `1.2.2` |
