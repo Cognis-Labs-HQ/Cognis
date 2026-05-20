@@ -128,7 +128,7 @@ function resolveAdapterControlUrl(
  * function queries the current DOM toggle nodes and should run after
  * page-composer rerender/refresh operations.
  */
-function syncGatewayAndAdapterToggles() {
+function syncRuntimeToggleControls() {
     const moduleStateById = new Map(
         modules.map((moduleRecord) => [moduleRecord.id, moduleRecord]),
     );
@@ -1599,7 +1599,7 @@ export async function mount(rootEl, { signal } = {}) {
                     bindSummarySliderClicks();
                     bindDependencyLinks();
                     restoreExpandedState();
-                    syncGatewayAndAdapterToggles();
+                    syncRuntimeToggleControls();
                     bindExpandedStateListeners();
                 },
             },
