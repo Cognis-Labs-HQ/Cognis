@@ -5,23 +5,23 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 
 export function createSettingsSection({ i18n, root }) {
     let capability = null;
+    let hasShownUnsupportedToast = false;
     const settingsRoot = root ?? document;
 
     async function loadCapability() {
         const response = await apiFetch(
-            "/api/v1/auth/password-reset-capability",
+            "/api/v1/auth/password-change-capability",
         );
         if (!response.ok) {
             const payload = await response.json().catch(() => null);
             console.warn(
-                "[settings:security] password reset capability lookup failed",
+                "[settings:security] password change capability lookup failed",
                 {
                     status: response.status,
                     message: payload?.error?.message,
                 },
             );
             capability = {
-                adapterName: i18n.t("gateway.auth.security.unknown_provider"),
                 supported: false,
                 reason:
                     payload?.error?.message ||
@@ -37,9 +37,6 @@ export function createSettingsSection({ i18n, root }) {
         if (!capability) {
             return `<p>${i18n.t("gateway.auth.security.loading")}</p>`;
         }
-        const providerName = capability.adapterName
-            ? escapeHtml(capability.adapterName)
-            : i18n.t("gateway.auth.security.unknown_provider");
         const disabled = capability?.supported === true ? "" : " disabled";
         const reason =
             capability?.supported === true
@@ -51,7 +48,6 @@ export function createSettingsSection({ i18n, root }) {
         return `
       <div class="settings-auth-password-reset">
         <h3>${i18n.t("gateway.auth.security.reset_title")}</h3>
-        <p>${i18n.t("gateway.auth.security.provider_label")} ${providerName}</p>
         ${reason}
         <button class="btn-animated" type="button" id="settings-reset-password-btn"${disabled}>${i18n.t("gateway.auth.security.reset_action")}</button>
       </div>
@@ -157,6 +153,16 @@ export function createSettingsSection({ i18n, root }) {
             );
             if (panel) {
                 panel.innerHTML = renderBody();
+            }
+            if (capability?.supported === false && !hasShownUnsupportedToast) {
+                hasShownUnsupportedToast = true;
+                showToast(
+                    capability.reason ||
+                        i18n.t("gateway.auth.security.unsupported_default"),
+                    {
+                        variant: "warning",
+                    },
+                );
             }
             const button = settingsRoot.querySelector(
                 "#settings-reset-password-btn",

@@ -10,12 +10,14 @@ Die Auth-Adapter wurden erweitert: mit Passwort-Reset-Fähigkeitsverträgen und 
 
 Der Laufzeitfehler im Sicherheitsbereich der Einstellungen wurde behoben, indem die Sektion korrekt an den Settings-Root gebunden wurde; zusätzlich wurden fehlende Security-Strings behoben, indem Settings-Sektionen ihre komponenteneigenen Sprachdateien zusammenführen.
 
+Die Meldung „Authentifizierungsanbieter“ wurde aus dem Sicherheitsbereich entfernt, und eine neue Passwortänderungs-Fähigkeitsroute steuert nun einen Warn-Toast beim Laden der Einstellungen, wenn der aktive Anbieter keine Passwortänderung unterstützt.
+
 ## Changed Files/Components
 
-- `src/gateways/auth/bootstrap.ts` (Settings-Sektion, Passwort-Reset-Routen, Provider-Bindung für Tokens)
+- `src/gateways/auth/bootstrap.ts` (Settings-Sektion, Passwort-Reset/Passwortänderungs-Fähigkeitsrouten, Provider-Bindung für Tokens)
 - `src/gateways/auth/gateway.ts` (Reset-Unterstützung und Gateway-Orchestrierung)
 - `src/gateways/auth/access-tokens.ts`, `src/gateways/auth/guard.ts` (providergebundene Token-Claims)
-- `src/gateways/auth/ui/security-prefs.js` und `src/gateways/auth/ui/languages/*/strings.xml` (neue Sicherheitsoberfläche in Einstellungen und Render-Fix)
+- `src/gateways/auth/ui/security-prefs.js` und `src/gateways/auth/ui/languages/*/strings.xml` (Bereinigung der Sicherheitsoberfläche und Warn-Toast bei nicht unterstütztem Anbieter)
 - `src/adapters/auth/local/*`, `src/adapters/auth/ldap/*`, `src/adapters/auth/oidc/*`, `src/adapters/auth/saml/*` (Adapter-Reifung und Fähigkeiten)
 - `src/gateways/auth/tests/*` und `src/adapters/auth/*/tests/*` (Testabdeckung)
 - Versionsmanifeste und `src/docs/versions.*.md`

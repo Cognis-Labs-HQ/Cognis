@@ -10,12 +10,14 @@ Adapter auth dimatangkan dengan kontrak kemampuan reset kata sandi dan pengatura
 
 Error runtime pada bagian Keamanan di halaman Settings diperbaiki dengan mengikat section ke root Settings yang benar; string keamanan yang hilang juga diperbaiki dengan menambahkan penggabungan i18n berbasis bundle komponen untuk settings section.
 
+Pesan “Penyedia Autentikasi” di panel Keamanan dihapus, dan route kemampuan ubah kata sandi baru sekarang memicu toast peringatan saat settings dimuat jika provider auth aktif tidak mendukung ubah kata sandi.
+
 ## Changed Files/Components
 
-- `src/gateways/auth/bootstrap.ts` (registrasi section settings, route reset kata sandi, pengikatan provider pada token)
+- `src/gateways/auth/bootstrap.ts` (registrasi section settings, route kemampuan reset/ubah kata sandi, pengikatan provider pada token)
 - `src/gateways/auth/gateway.ts` (kontrak dukungan reset adapter dan orkestrasi gateway)
 - `src/gateways/auth/access-tokens.ts`, `src/gateways/auth/guard.ts` (claim token terikat provider)
-- `src/gateways/auth/ui/security-prefs.js` dan `src/gateways/auth/ui/languages/*/strings.xml` (UI keamanan baru di settings dan perbaikan render)
+- `src/gateways/auth/ui/security-prefs.js` dan `src/gateways/auth/ui/languages/*/strings.xml` (pembersihan UI keamanan dan toast peringatan saat provider tidak mendukung)
 - `src/adapters/auth/local/*`, `src/adapters/auth/ldap/*`, `src/adapters/auth/oidc/*`, `src/adapters/auth/saml/*` (kematangan adapter dan kemampuan baru)
 - `src/gateways/auth/tests/*` dan `src/adapters/auth/*/tests/*` (pembaruan cakupan tes)
 - Manifest versi dan `src/docs/versions.*.md`

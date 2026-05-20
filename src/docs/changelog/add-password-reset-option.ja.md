@@ -10,12 +10,14 @@ Auth アダプターを拡張し、パスワードリセット機能契約と LD
 
 Settings の Security セクションで発生していた実行時エラーを、セクションを正しい Settings ルートに接続することで修正し、さらにコンポーネント文字列を settings section にマージする i18n 拡張で不足していた文字列表示も修正しました。
 
+Security パネルの「認証プロバイダー」表示を削除し、アクティブな認証プロバイダーがパスワード変更をサポートしない場合に、設定ページ読み込み時に警告トーストを出すためのパスワード変更可否ルートを追加しました。
+
 ## Changed Files/Components
 
-- `src/gateways/auth/bootstrap.ts`（設定セクション登録、パスワードリセットルート、トークンのプロバイダー紐付け）
+- `src/gateways/auth/bootstrap.ts`（設定セクション登録、パスワードリセット/変更可否ルート、トークンのプロバイダー紐付け）
 - `src/gateways/auth/gateway.ts`（アダプターのリセット対応契約とゲートウェイ制御）
 - `src/gateways/auth/access-tokens.ts`、`src/gateways/auth/guard.ts`（プロバイダー付きトークンクレーム）
-- `src/gateways/auth/ui/security-prefs.js` と `src/gateways/auth/ui/languages/*/strings.xml`（設定セキュリティ UI とレンダー修正）
+- `src/gateways/auth/ui/security-prefs.js` と `src/gateways/auth/ui/languages/*/strings.xml`（設定セキュリティ UI の整理と非対応プロバイダー警告トースト）
 - `src/adapters/auth/local/*`、`src/adapters/auth/ldap/*`、`src/adapters/auth/oidc/*`、`src/adapters/auth/saml/*`（アダプター機能拡張）
 - `src/gateways/auth/tests/*` と `src/adapters/auth/*/tests/*`（テスト更新）
 - バージョンマニフェストと `src/docs/versions.*.md`

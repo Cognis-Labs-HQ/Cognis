@@ -2,11 +2,9 @@
   <string name="gateway.auth.no_providers">認証アダプターが設定されていません。</string>
   <string name="gateway.auth.security.loading">セキュリティ設定を読み込み中…</string>
   <string name="gateway.auth.security.section_title">セキュリティ</string>
-  <string name="gateway.auth.security.unknown_provider">不明なプロバイダー</string>
-  <string name="gateway.auth.security.load_failed">パスワードリセット機能を読み込めませんでした。</string>
-  <string name="gateway.auth.security.unsupported_default">このプロバイダーではパスワードリセットはサポートされていません。</string>
+  <string name="gateway.auth.security.load_failed">パスワード変更機能を読み込めませんでした。</string>
+  <string name="gateway.auth.security.unsupported_default">このプロバイダーではパスワード変更はサポートされていません。</string>
   <string name="gateway.auth.security.reset_title">パスワードリセット</string>
-  <string name="gateway.auth.security.provider_label">認証プロバイダー:</string>
   <string name="gateway.auth.security.reset_action">パスワードをリセット</string>
   <string name="gateway.auth.security.popup_title">パスワードをリセット</string>
   <string name="gateway.auth.security.new_password">新しいパスワード</string>

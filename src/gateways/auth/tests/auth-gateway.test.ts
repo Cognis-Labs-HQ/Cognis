@@ -645,6 +645,48 @@ test("GET /api/v1/auth/password-reset-capability reports support for local accou
     assert.equal(payload.data.supported, true);
 });
 
+test("GET /api/v1/auth/password-change-capability reports support for local accounts", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const token = issueAccessToken("settings-user", "user", 60);
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as unknown as HttpIncomingMessage,
+        "/api/v1/auth/password-change-capability",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 200);
+    const payload = JSON.parse(res.payload) as {
+        data: {
+            adapterId: string;
+            adapterName: string;
+            supported: boolean;
+        };
+    };
+    assert.equal(payload.data.adapterId, "local");
+    assert.equal(payload.data.adapterName, "Local");
+    assert.equal(payload.data.supported, true);
+});
+
 test("POST /api/v1/auth/reset-password updates local account credentials", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
