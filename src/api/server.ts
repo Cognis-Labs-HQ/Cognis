@@ -5,6 +5,7 @@ import {
     ModuleService,
     type GatewayRegistry,
     type BootstrapLog,
+    type ModuleManifest,
     type ModuleRuntimeGateway,
 } from "@cognis/core";
 import { createModuleRoutes } from "./routes/modules/index.js";
@@ -77,6 +78,20 @@ export interface ApiDependencies {
     ) => Promise<void> | void;
     getModuleCapability?: <T>(capabilityId: string) => T | undefined;
     routeContext?: RouteContext;
+}
+
+/**
+ * Resolves a module's startup enabled state from highest to lowest priority:
+ * core-module requirement, persisted runtime override, then manifest default.
+ */
+export function resolveInitialModuleEnabledState(
+    manifest: Pick<ModuleManifest, "id" | "class" | "enabledByDefault">,
+    persistedState: boolean | undefined,
+): boolean {
+    if (manifest.class === "core") return true;
+    if (persistedState === true) return true;
+    if (persistedState === false) return false;
+    return manifest.enabledByDefault === true;
 }
 
 export function buildServer(deps: ApiDependencies) {
@@ -168,12 +183,12 @@ export function buildServer(deps: ApiDependencies) {
             );
             for (const manifest of manifests) {
                 const persisted = saved.get(manifest.id);
-                if (manifest.class === "core" || persisted === true)
-                    enabledModules.add(manifest.id);
-                deps.onModuleStateChanged?.(
-                    manifest.id,
-                    manifest.class === "core" || persisted === true,
+                const isEnabled = resolveInitialModuleEnabledState(
+                    manifest,
+                    persisted,
                 );
+                if (isEnabled) enabledModules.add(manifest.id);
+                deps.onModuleStateChanged?.(manifest.id, isEnabled);
             }
             const savedGateways = new Map(
                 savedGatewayStates.map((row) => [row.gatewayId, row.enabled]),

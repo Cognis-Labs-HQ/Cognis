@@ -16,6 +16,7 @@ import {
     getAdapterDisableContext,
     getGatewayAdapters,
     getGatewayEnableableAdapters,
+    isModuleEnabled,
     shouldQueryGatewayAdapters,
 } from "./toggle-flows.js";
 
@@ -123,12 +124,28 @@ function resolveAdapterControlUrl(
 }
 
 /**
- * Synchronizes gateway and adapter toggle controls after UI refresh so checkbox
- * state reflects the latest loaded gateway/adapter runtime status. This
+ * Synchronizes module, gateway, and adapter toggle controls after UI refresh so checkbox state reflects the latest loaded runtime status. This
  * function queries the current DOM toggle nodes and should run after
  * page-composer rerender/refresh operations.
  */
-function syncGatewayAndAdapterToggles() {
+function syncRuntimeToggleControls() {
+    const moduleStateById = new Map(
+        modules.map((moduleRecord) => [moduleRecord.id, moduleRecord]),
+    );
+    root.querySelectorAll('input[type="checkbox"][data-module]').forEach(
+        (toggle) => {
+            if (!(toggle instanceof HTMLInputElement)) return;
+            const moduleId = toggle.dataset.module;
+            if (!moduleId) return;
+            const moduleRecord = moduleStateById.get(moduleId);
+            if (!moduleRecord) return;
+            const isEnabled = isModuleEnabled(moduleRecord);
+            toggle.checked = isEnabled;
+            toggle.defaultChecked = isEnabled;
+            toggle.disabled = moduleRecord.class === "core";
+        },
+    );
+
     const gatewayStateById = new Map(
         gateways.map((gateway) => [gateway.id, gateway]),
     );
@@ -242,7 +259,7 @@ function renderModulesContent(modules) {
             <span class="module-row-title"><strong>${mod.name}</strong>${settingsButton}</span>
             <span class="state-pill ${pill.className}">${pill.label}</span>
             <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
-              <input type="checkbox" data-module="${mod.id}" ${mod.status === "enabled" ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
+              <input type="checkbox" data-module="${mod.id}" ${isModuleEnabled(mod) ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
               <span class="slider"></span>
             </label>
             <span class="module-chevron">▾</span>
@@ -1582,7 +1599,7 @@ export async function mount(rootEl, { signal } = {}) {
                     bindSummarySliderClicks();
                     bindDependencyLinks();
                     restoreExpandedState();
-                    syncGatewayAndAdapterToggles();
+                    syncRuntimeToggleControls();
                     bindExpandedStateListeners();
                 },
             },

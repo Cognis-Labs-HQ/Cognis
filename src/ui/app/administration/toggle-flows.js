@@ -6,6 +6,15 @@ export function isGatewayEnabled(gateway) {
     return (gateway?.status ?? "active") !== "disabled";
 }
 
+/**
+ * Returns whether a module record is currently enabled.
+ * @param {Record<string, unknown> | null | undefined} moduleRecord
+ * @returns {boolean}
+ */
+export function isModuleEnabled(moduleRecord) {
+    return moduleRecord?.status === "enabled";
+}
+
 export function shouldQueryGatewayAdapters(gateway) {
     return gateway?.hasAdapters === true && isGatewayEnabled(gateway);
 }

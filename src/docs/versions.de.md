@@ -52,5 +52,5 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | ---------------- | --------------------------------- | ------- |
 | Sample Analytics | `src/modules/sample-analytics/`   | `0.1.0` |
 | Jitsi Meet       | `src/modules/jitsi-meet/`         | `1.0.0` |
-| Cognis Japanisch | `src/modules/study/languages/ja/` | `1.2.2` |
-| Cognis Englisch  | `src/modules/study/languages/en/` | `1.2.0` |
+| Cognis Japanisch | `src/modules/study/languages/ja/` | `1.2.4` |
+| Cognis Englisch  | `src/modules/study/languages/en/` | `1.2.2` |

@@ -6,6 +6,7 @@ import {
     getGatewayEnableableAdapters,
     isAdapterActive,
     isGatewayEnabled,
+    isModuleEnabled,
     shouldQueryGatewayAdapters,
 } from "../app/administration/toggle-flows.js";
 
@@ -85,6 +86,13 @@ test("isGatewayEnabled returns false for disabled gateways", () => {
     assert.equal(isGatewayEnabled({ status: "disabled" }), false);
     assert.equal(isGatewayEnabled({ status: "active" }), true);
     assert.equal(isGatewayEnabled({}), true);
+});
+
+test("isModuleEnabled only enables toggles for enabled module status", () => {
+    assert.equal(isModuleEnabled({ status: "enabled" }), true);
+    assert.equal(isModuleEnabled({ status: "disabled" }), false);
+    assert.equal(isModuleEnabled({ status: "available" }), false);
+    assert.equal(isModuleEnabled({}), false);
 });
 
 test("shouldQueryGatewayAdapters skips disabled gateways", () => {
