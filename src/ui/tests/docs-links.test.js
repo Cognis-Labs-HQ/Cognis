@@ -1,8 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(fileURLToPath(import.meta.url), "../../../../");
@@ -22,24 +21,33 @@ const OLD_DOC_FILE_URL_PATTERNS = [
 ];
 
 function listTrackedDocFiles() {
-    return execFileSync(
-        "git",
-        [
-            "ls-files",
-            "--cached",
-            "--others",
-            "--exclude-standard",
-            "*.md",
-            "*.html",
-        ],
-        {
-            cwd: ROOT,
-            encoding: "utf8",
-        },
-    )
-        .trim()
-        .split("\n")
-        .filter(Boolean);
+    const discoveredFiles = [];
+    const pendingDirectories = [ROOT];
+
+    while (pendingDirectories.length > 0) {
+        const currentDirectory = pendingDirectories.pop();
+        for (const entry of readdirSync(currentDirectory, {
+            withFileTypes: true,
+        })) {
+            if (entry.name === ".git" || entry.name === "node_modules") {
+                continue;
+            }
+            const absolutePath = join(currentDirectory, entry.name);
+            if (entry.isDirectory()) {
+                pendingDirectories.push(absolutePath);
+                continue;
+            }
+            if (!entry.isFile()) {
+                continue;
+            }
+            if (!entry.name.endsWith(".md") && !entry.name.endsWith(".html")) {
+                continue;
+            }
+            discoveredFiles.push(relative(ROOT, absolutePath).replaceAll("\\", "/"));
+        }
+    }
+
+    return discoveredFiles.sort();
 }
 
 function lineNumberAt(content, index) {
