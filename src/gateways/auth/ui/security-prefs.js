@@ -5,6 +5,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 
 export function createSettingsSection({ i18n, root }) {
     let capability = null;
+    const settingsRoot = root ?? document;
 
     async function loadCapability() {
         const response = await apiFetch(
@@ -151,11 +152,15 @@ export function createSettingsSection({ i18n, root }) {
         renderContent,
         async onRender() {
             await loadCapability();
-            const panel = root.querySelector("#auth-security-reset-panel");
+            const panel = settingsRoot.querySelector(
+                "#auth-security-reset-panel",
+            );
             if (panel) {
                 panel.innerHTML = renderBody();
             }
-            const button = root.querySelector("#settings-reset-password-btn");
+            const button = settingsRoot.querySelector(
+                "#settings-reset-password-btn",
+            );
             if (!button) {
                 return;
             }

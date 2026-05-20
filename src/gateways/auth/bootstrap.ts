@@ -166,7 +166,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerStaticDir("auth", uiDir);
     ctx.uiRegistry?.registerSettingsSection({
         id: "security",
-        label: "gateway.auth.security.section_title",
+        label: "Security",
         scriptUrl: "/static/gateways/auth/security-prefs.js",
         stringsBaseUrl: "/static/gateways/auth/languages",
     });

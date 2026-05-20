@@ -4,7 +4,7 @@
 
 このドキュメントはCognisコードベース内のすべてのゲートウェイ、アダプター、モジュールの現在のバージョンを追跡します。Changelogインデックスと迅速なリファレンスとして機能します。
 
-すべてのゲートウェイ、アダプター、モジュールは `version` フィールドを持つ `package.json` を持ちます。コンポーネントを変更する際は、Semantic Versioningに従って `package.json` のバージョンを増分する必要があります。Changelogエントリーは `src/changelogs/` 配下のPRごとのファイルとして管理されます。
+すべてのゲートウェイ、アダプター、モジュールは `version` フィールドを持つ `package.json` を持ちます。コンポーネントを変更する際は、Semantic Versioningに従って `package.json` のバージョンを増分する必要があります。Changelogエントリーは `src/docs/changelog/` 配下のPRごとのファイルとして管理されます。
 
 ## アダプター
 
