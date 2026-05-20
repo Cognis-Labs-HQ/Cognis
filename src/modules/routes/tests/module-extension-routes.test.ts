@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createModuleExtensionRoutes } from "../module-extensions.js";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
+import { UIRegistry } from "../../../api/ui-registry.js";
 
 test("module extension routes expose module API endpoints", async () => {
     const extensions = createModuleExtensionRoutes(
@@ -120,4 +121,31 @@ test("module extension routes fail closed on invalid role access policies", asyn
     assert.equal(handled, true);
     assert.equal(status, 403);
     assert.match(body, /invalid access policy/i);
+});
+
+test("module extension routes register module dashboard page extensions", async () => {
+    const uiRegistry = new UIRegistry();
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "sample-analytics",
+                    entrypoints: { api: "./api/index.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        undefined,
+        { uiRegistry },
+    );
+    await extensions.refresh();
+
+    const dashboardExtensions = uiRegistry.listPageExtensions("dashboard");
+    assert.equal(dashboardExtensions.length, 1);
+    assert.equal(dashboardExtensions[0]?.id, "module-sample-analytics-dashboard");
+    assert.equal(
+        dashboardExtensions[0]?.scriptUrl,
+        "/static/modules/sample-analytics/dashboard-element.js",
+    );
+    assert.equal(dashboardExtensions[0]?.isEnabled?.(), true);
 });

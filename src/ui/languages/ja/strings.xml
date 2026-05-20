@@ -202,6 +202,9 @@
   <string name="ui.app.dashboard.never">なし</string>
   <string name="ui.app.dashboard.element.digital_clock.label">デジタル時計</string>
   <string name="ui.app.dashboard.element.analogue_clock.label">アナログ時計</string>
+  <string name="ui.app.dashboard.element.sample_analytics.label">サンプル分析</string>
+  <string name="ui.app.dashboard.element.sample_analytics.description">レイアウトのフォールバック検証用にモジュールが提供するダッシュボード要素です。</string>
+  <string name="ui.app.dashboard.element.sample_analytics.metric_suffix">サンプル訪問者</string>
   <string name="ui.app.dashboard.element.teacher_classes.label">担当クラス</string>
   <string name="ui.app.dashboard.element.teacher_classes.empty">まだクラスが割り当てられていません。</string>
 

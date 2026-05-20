@@ -68,6 +68,12 @@ interface ModuleUiRegistrationContext {
         access?: RoleAccessPolicy;
         stringsBaseUrl?: string;
     }): void;
+    registerPageExtension(pageId: string, extension: {
+        id: string;
+        label: string;
+        scriptUrl: string;
+        access?: RoleAccessPolicy;
+    }): void;
     registerStaticDir(urlPrefix: string, absoluteDir: string): void;
 }
 
@@ -195,6 +201,12 @@ export function createModuleExtensionRoutes(
                         },
                         registerAdminSection(section) {
                             options.uiRegistry?.registerAdminSection(section);
+                        },
+                        registerPageExtension(pageId, extension) {
+                            options.uiRegistry?.registerPageExtension(pageId, {
+                                ...extension,
+                                isEnabled: () => isModuleEnabled(manifest.id),
+                            });
                         },
                         registerStaticDir(urlPrefix, absoluteDir) {
                             const normalizedPrefix = String(urlPrefix ?? "")

@@ -1,3 +1,12 @@
+export function registerUi(ctx) {
+    ctx.registerPageExtension("dashboard", {
+        id: "module-sample-analytics-dashboard",
+        label: "Sample Analytics",
+        scriptUrl: "/static/modules/sample-analytics/dashboard-element.js",
+        access: { minRole: "user" },
+    });
+}
+
 export function registerApiRoutes(router) {
     router.get(
         "/api/v1/modules/sample-analytics/metrics",

@@ -202,6 +202,9 @@
   <string name="ui.app.dashboard.never">Tidak pernah</string>
   <string name="ui.app.dashboard.element.digital_clock.label">Jam Digital</string>
   <string name="ui.app.dashboard.element.analogue_clock.label">Jam Analog</string>
+  <string name="ui.app.dashboard.element.sample_analytics.label">Analitik Contoh</string>
+  <string name="ui.app.dashboard.element.sample_analytics.description">Elemen dasbor dari modul untuk menguji fallback tata letak.</string>
+  <string name="ui.app.dashboard.element.sample_analytics.metric_suffix">pengunjung contoh</string>
   <string name="ui.app.dashboard.element.teacher_classes.label">Kelas Saya</string>
   <string name="ui.app.dashboard.element.teacher_classes.empty">Belum ada kelas yang ditugaskan.</string>
 

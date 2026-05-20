@@ -202,6 +202,9 @@
   <string name="ui.app.dashboard.never">Never</string>
   <string name="ui.app.dashboard.element.digital_clock.label">Digital Clock</string>
   <string name="ui.app.dashboard.element.analogue_clock.label">Analogue Clock</string>
+  <string name="ui.app.dashboard.element.sample_analytics.label">Sample Analytics</string>
+  <string name="ui.app.dashboard.element.sample_analytics.description">Module-provided dashboard element for layout fallback testing.</string>
+  <string name="ui.app.dashboard.element.sample_analytics.metric_suffix">sample visitors</string>
   <string name="ui.app.dashboard.element.teacher_classes.label">My Classes</string>
   <string name="ui.app.dashboard.element.teacher_classes.empty">No classes assigned yet.</string>
 
