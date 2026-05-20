@@ -106,6 +106,10 @@ function resolveLanguagePriorityMode(
 const LANGUAGE_RELOAD_DELAY_MS = 400;
 const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
+function shouldShowReleaseChangelog(preferences) {
+    return preferences?.releaseChangelogShow !== false;
+}
+
 export async function mount(root, { signal } = {}) {
     let loadedPrefs = await loadPrefs().catch(() => null);
     const storedLanguagePriorityMode = readLanguagePriorityMode();
@@ -262,7 +266,7 @@ export async function mount(root, { signal } = {}) {
 
     function initReleaseNotesPrefs({ onDirtyChange }) {
         let savedShowReleaseChangelogs =
-            loadedPrefs?.releaseChangelogShow !== false;
+            shouldShowReleaseChangelog(loadedPrefs);
         let currentShowReleaseChangelogs = savedShowReleaseChangelogs;
 
         function syncCheckboxState() {
@@ -646,7 +650,7 @@ export async function mount(root, { signal } = {}) {
                     normalizeMessageStyle(loadedPrefs?.messageStyle),
                 releaseChangelogShow:
                     releaseNotesPrefs?.getShowReleaseChangelogs() ??
-                    loadedPrefs?.releaseChangelogShow !== false,
+                    shouldShowReleaseChangelog(loadedPrefs),
                 releaseChangelogSeenSlugs:
                     loadedPrefs?.releaseChangelogSeenSlugs ?? [],
                 releaseChangelogLastVersion:

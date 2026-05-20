@@ -9,7 +9,8 @@
  * Usage example:
  *   await maybeShowReleaseChangelogPopup(i18n);
  *
- * @param {{ t: (key: string) => string }} i18n
+ * @param {{ t: (key: string) => string }} i18n Localization instance with string
+ * translation function returning plain text for each i18n key.
  * @returns {Promise<void>}
  */
 import { apiFetch } from "./api-client.js";
@@ -131,7 +132,7 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
     });
 
     await saveUiPreferences({
-        releaseChangelogShow: neverShowAgainChecked ? false : true,
+        releaseChangelogShow: !neverShowAgainChecked,
         releaseChangelogSeenSlugs: releaseSlugs,
         releaseChangelogLastVersion: releaseVersion || null,
     });

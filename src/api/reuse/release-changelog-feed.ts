@@ -29,10 +29,12 @@ function truncateHeading(headingText: string): string {
     if (headingText.length <= RELEASE_NOTES_SUMMARY_MAX_LENGTH) {
         return headingText;
     }
-    return `${headingText.slice(0, RELEASE_NOTES_SUMMARY_MAX_LENGTH - 1).trimEnd()}…`;
+    return `${headingText
+        .slice(0, RELEASE_NOTES_SUMMARY_MAX_LENGTH - 1)
+        .trimEnd()}…`;
 }
 
-function extractChangelogChanges(markdown: string): string[] {
+function extractChangeHeadings(markdown: string): string[] {
     const headingMatches = [...markdown.matchAll(/^##\s+(.+)$/gm)];
     const headings = headingMatches
         .map((match) => truncateHeading(collapseWhitespace(match[1] ?? "")))
@@ -91,7 +93,7 @@ export async function loadReleaseChangelogEntries(): Promise<
                 return {
                     slug,
                     title: extractChangelogTitle(markdown, slug),
-                    changes: extractChangelogChanges(markdown),
+                    changes: extractChangeHeadings(markdown),
                     path: `/changelogs/${slug}`,
                     mtimeMs: metadata.mtimeMs,
                 };
