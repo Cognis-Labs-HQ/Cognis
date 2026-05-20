@@ -13,12 +13,12 @@ modular und gut prüfbar bleibt.
   ergibt `fix-auth-bug.en.md`, `fix-auth-bug.de.md`, `fix-auth-bug.id.md` und
   `fix-auth-bug.ja.md`
 - Ein Dateisatz pro PR (eine Datei je Sprache)
-- Enthält:
-    - PR-Titel
-    - Zusammenfassung
-    - Geänderte Komponenten/Dateien
-    - Commit-Links
+- Verbindliche Struktur in jeder Datei:
+    - `# ...` — Changelog-Titel
+    - `## ...` — ein Änderungspunkt pro Überschrift (als Stichpunkte in der Zusammenfassung)
+    - Inhalt unter jedem `##` — Details für die Changelog-Seite
 
 ## Einträge
 
+- [create-changelog-ingestion-system](/changelogs/create-changelog-ingestion-system)
 - [cleanup-strings-and-codebase](/changelogs/cleanup-strings-and-codebase)

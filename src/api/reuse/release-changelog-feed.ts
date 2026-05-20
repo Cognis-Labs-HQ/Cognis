@@ -10,11 +10,12 @@ const API_PACKAGE_JSON_FILE = resolve(
     "package.json",
 );
 const RELEASE_NOTES_SUMMARY_MAX_LENGTH = 260;
+const MAX_RELEASE_CHANGE_BULLETS = 8;
 
 export type ChangelogEntrySummary = {
     slug: string;
     title: string;
-    summary: string;
+    changes: string[];
     path: string;
 };
 
@@ -24,23 +25,19 @@ function collapseWhitespace(value: string): string {
     return value.replace(/\s+/g, " ").trim();
 }
 
-function truncateSummary(summary: string): string {
-    if (summary.length <= RELEASE_NOTES_SUMMARY_MAX_LENGTH) return summary;
-    return `${summary.slice(0, RELEASE_NOTES_SUMMARY_MAX_LENGTH - 1).trimEnd()}…`;
+function truncateHeading(headingText: string): string {
+    if (headingText.length <= RELEASE_NOTES_SUMMARY_MAX_LENGTH) {
+        return headingText;
+    }
+    return `${headingText.slice(0, RELEASE_NOTES_SUMMARY_MAX_LENGTH - 1).trimEnd()}…`;
 }
 
-function extractChangelogSummary(markdown: string): string {
-    const summaryBlockMatch = markdown.match(
-        /^##\s+Summary\s*$([\s\S]*?)(?=^##\s+|\Z)/im,
-    );
-    const candidateBlock = summaryBlockMatch?.[1] ?? markdown;
-    const summaryLines = candidateBlock
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter((line) => line.length > 0)
-        .filter((line) => !line.startsWith("#"));
-    const summaryText = collapseWhitespace(summaryLines.join(" "));
-    return truncateSummary(summaryText);
+function extractChangelogChanges(markdown: string): string[] {
+    const headingMatches = [...markdown.matchAll(/^##\s+(.+)$/gm)];
+    const headings = headingMatches
+        .map((match) => truncateHeading(collapseWhitespace(match[1] ?? "")))
+        .filter((headingText) => headingText.length > 0);
+    return headings.slice(0, MAX_RELEASE_CHANGE_BULLETS);
 }
 
 function extractChangelogTitle(markdown: string, fallbackSlug: string): string {
@@ -94,7 +91,7 @@ export async function loadReleaseChangelogEntries(): Promise<
                 return {
                     slug,
                     title: extractChangelogTitle(markdown, slug),
-                    summary: extractChangelogSummary(markdown),
+                    changes: extractChangelogChanges(markdown),
                     path: `/changelogs/${slug}`,
                     mtimeMs: metadata.mtimeMs,
                 };

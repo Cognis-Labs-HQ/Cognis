@@ -25,6 +25,7 @@ import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { showToast } from "../../reuse/toast.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import {
     isValidMessageStyle,
     normalizeMessageStyle,
@@ -260,30 +261,28 @@ export async function mount(root, { signal } = {}) {
     }
 
     function initReleaseNotesPrefs({ onDirtyChange }) {
-        let savedNeverShowReleaseNotes = Boolean(
-            loadedPrefs?.releaseChangelogNeverShow,
-        );
-        let currentNeverShowReleaseNotes = savedNeverShowReleaseNotes;
+        let savedShowReleaseChangelogs = loadedPrefs?.releaseChangelogShow !== false;
+        let currentShowReleaseChangelogs = savedShowReleaseChangelogs;
 
         function syncCheckboxState() {
             const checkbox = root.querySelector(
-                "#pref-release-notes-never-show",
+                "#pref-release-changelog-show",
             );
             if (!(checkbox instanceof HTMLInputElement)) return;
-            checkbox.checked = currentNeverShowReleaseNotes;
+            checkbox.checked = currentShowReleaseChangelogs;
         }
 
         function bindCheckboxEvents() {
             const checkbox = root.querySelector(
-                "#pref-release-notes-never-show",
+                "#pref-release-changelog-show",
             );
             if (!(checkbox instanceof HTMLInputElement)) return;
             if (checkbox.dataset.dirtyHandlerBound === "true") return;
             checkbox.dataset.dirtyHandlerBound = "true";
             checkbox.addEventListener("change", () => {
-                currentNeverShowReleaseNotes = checkbox.checked;
+                currentShowReleaseChangelogs = checkbox.checked;
                 onDirtyChange?.(
-                    currentNeverShowReleaseNotes !== savedNeverShowReleaseNotes,
+                    currentShowReleaseChangelogs !== savedShowReleaseChangelogs,
                 );
             });
         }
@@ -296,13 +295,13 @@ export async function mount(root, { signal } = {}) {
                 syncCheckboxState();
                 bindCheckboxEvents();
             },
-            getNeverShowReleaseNotes: () => currentNeverShowReleaseNotes,
+            getShowReleaseChangelogs: () => currentShowReleaseChangelogs,
             commit: () => {
-                savedNeverShowReleaseNotes = currentNeverShowReleaseNotes;
+                savedShowReleaseChangelogs = currentShowReleaseChangelogs;
                 onDirtyChange?.(false);
             },
             discard: () => {
-                currentNeverShowReleaseNotes = savedNeverShowReleaseNotes;
+                currentShowReleaseChangelogs = savedShowReleaseChangelogs;
                 syncCheckboxState();
                 onDirtyChange?.(false);
             },
@@ -321,19 +320,27 @@ export async function mount(root, { signal } = {}) {
                     {
                         id: "general-prefs",
                         label: i18n.t("ui.app.settings.general"),
-                        render: () => `
+                        render: () => {
+                            const tooltipAria = i18n.t("ui.reuse.more_information");
+                            return `
             <h3>${i18n.t("ui.app.settings.emails")}</h3>
             <ul id="email-list" class="email-list"></ul>
             <div class="email-add-row">
               <input id="email-add-input" type="email" placeholder="${i18n.t("ui.app.settings.emails_add_placeholder")}" />
               <button id="email-add-btn" class="btn-confirm btn-animated" type="button">${i18n.t("ui.app.settings.emails_add")}</button>
             </div>
-            <h3>${i18n.t("ui.reuse.changelogs")}</h3>
-            <label class="settings-checkbox-row">
-              <input id="pref-release-notes-never-show" type="checkbox" />
-              <span>${i18n.t("ui.reuse.release_notes_never_show_again")}</span>
-            </label>
-          `,
+            <h3 class="settings-heading-with-tooltip">
+              ${escapeHtml(i18n.t("ui.app.settings.show_changelogs"))}
+              ${renderInfoTooltip(i18n.t("ui.app.settings.show_changelogs_hint"), tooltipAria)}
+            </h3>
+            <div class="settings-switch-row">
+              <label class="switch">
+                <input id="pref-release-changelog-show" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+            </div>
+          `;
+                        },
                     },
                 ],
                 onRender: () => {
@@ -638,9 +645,9 @@ export async function mount(root, { signal } = {}) {
                 messageStyle:
                     messageStylePrefs?.getMessageStyle() ??
                     normalizeMessageStyle(loadedPrefs?.messageStyle),
-                releaseChangelogNeverShow:
-                    releaseNotesPrefs?.getNeverShowReleaseNotes() ??
-                    Boolean(loadedPrefs?.releaseChangelogNeverShow),
+                releaseChangelogShow:
+                    releaseNotesPrefs?.getShowReleaseChangelogs() ??
+                    loadedPrefs?.releaseChangelogShow !== false,
                 releaseChangelogSeenSlugs:
                     loadedPrefs?.releaseChangelogSeenSlugs ?? [],
                 releaseChangelogLastVersion:

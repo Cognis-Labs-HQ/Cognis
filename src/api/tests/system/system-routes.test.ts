@@ -110,7 +110,7 @@ test("system release changelog feed returns release version and entries", async 
     const [firstEntry] = parsed.data.entries;
     assert.equal(typeof firstEntry.slug, "string");
     assert.equal(typeof firstEntry.title, "string");
-    assert.equal(typeof firstEntry.summary, "string");
+    assert.ok(Array.isArray(firstEntry.changes));
     assert.equal(typeof firstEntry.path, "string");
     assert.ok(firstEntry.path.startsWith("/changelogs/"));
 });

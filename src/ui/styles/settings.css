@@ -263,12 +263,18 @@ body[data-theme="light"] .email-badge-unverified {
     flex: 0 0 auto;
 }
 
-.settings-checkbox-row {
-    display: flex;
+.settings-heading-with-tooltip {
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin: 10px 0 0;
-    font-size: 0.9rem;
+    margin: 14px 0 6px;
+}
+
+.settings-switch-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 2px 0 0;
 }
 
 @media (max-width: 640px) {

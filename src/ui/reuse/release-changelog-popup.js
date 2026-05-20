@@ -19,6 +19,7 @@ import { navigateTo } from "./app-router.js";
 import { loadUiPreferences, saveUiPreferences } from "./ui-preferences.js";
 
 const MAX_VISIBLE_RELEASE_NOTES = 5;
+const MAX_VISIBLE_RELEASE_NOTE_BULLETS = 5;
 
 function normalizeSeenSlugs(rawSlugs) {
     if (!Array.isArray(rawSlugs)) return [];
@@ -32,11 +33,19 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
         .slice(0, MAX_VISIBLE_RELEASE_NOTES)
         .map((entry) => {
             const safeTitle = escapeHtml(entry.title ?? "");
-            const safeSummary = escapeHtml(entry.summary ?? "");
+            const dotPoints = Array.isArray(entry.changes)
+                ? entry.changes
+                      .slice(0, MAX_VISIBLE_RELEASE_NOTE_BULLETS)
+                      .map(
+                          (changeHeading) =>
+                              `<li>${escapeHtml(changeHeading)}</li>`,
+                      )
+                      .join("")
+                : "";
             return `
         <li class="release-notes-popup-item">
           <strong>${safeTitle}</strong>
-          <p>${safeSummary}</p>
+          <ul class="release-notes-popup-item-changes">${dotPoints}</ul>
         </li>
       `;
         })
@@ -59,7 +68,7 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
     if (!accountId) return;
 
     const prefs = (await loadUiPreferences()) ?? {};
-    if (prefs.releaseChangelogNeverShow === true) return;
+    if (prefs.releaseChangelogShow === false) return;
 
     let changelogPayload;
     try {
@@ -122,8 +131,7 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
     });
 
     await saveUiPreferences({
-        releaseChangelogNeverShow:
-            neverShowAgainChecked || prefs.releaseChangelogNeverShow === true,
+        releaseChangelogShow: neverShowAgainChecked ? false : true,
         releaseChangelogSeenSlugs: releaseSlugs,
         releaseChangelogLastVersion: releaseVersion || null,
     });

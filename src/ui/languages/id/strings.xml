@@ -102,6 +102,8 @@
   <string name="ui.app.login.typing.sample.6">Didukung FOSS</string>
   <string name="ui.app.login.typing.sample.7">Daftarkan akun Anda hari ini</string>
   <string name="ui.app.settings.page_subtitle">Kelola preferensi pengguna Anda.</string>
+  <string name="ui.app.settings.show_changelogs">Tampilkan Log Perubahan</string>
+  <string name="ui.app.settings.show_changelogs_hint">Tampilkan ringkasan log perubahan pada setiap rilis.</string>
   <string name="ui.app.settings.font">Font</string>
   <string name="ui.app.settings.font_size">Ukuran font</string>
   <string name="ui.app.settings.save">Simpan Preferensi</string>

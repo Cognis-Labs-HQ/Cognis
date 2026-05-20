@@ -102,6 +102,8 @@
   <string name="ui.app.login.typing.sample.6">Betrieben mit FOSS</string>
   <string name="ui.app.login.typing.sample.7">Registrieren Sie Ihr Konto noch heute</string>
   <string name="ui.app.settings.page_subtitle">Verwalte deine Benutzereinstellungen.</string>
+  <string name="ui.app.settings.show_changelogs">Änderungsprotokolle Anzeigen</string>
+  <string name="ui.app.settings.show_changelogs_hint">Zeige bei jeder Veröffentlichung eine Zusammenfassung der Änderungen.</string>
   <string name="ui.app.settings.font">Schriftart</string>
   <string name="ui.app.settings.font_size">Schriftgröße</string>
   <string name="ui.app.settings.save">Einstellungen speichern</string>

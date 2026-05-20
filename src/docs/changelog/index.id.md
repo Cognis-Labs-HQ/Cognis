@@ -13,12 +13,12 @@ tetap modular dan mudah diaudit.
   menghasilkan `fix-auth-bug.en.md`, `fix-auth-bug.de.md`, `fix-auth-bug.id.md`,
   dan `fix-auth-bug.ja.md`
 - Satu set berkas per PR (satu berkas per bahasa)
-- Berisi:
-    - Judul PR
-    - Ringkasan
-    - Komponen/berkas yang diubah
-    - Tautan commit
+- Struktur wajib di setiap berkas:
+    - `# ...` — judul changelog
+    - `## ...` — satu poin perubahan per heading (ditampilkan sebagai poin ringkasan)
+    - isi di bawah setiap `##` — detail lengkap untuk halaman changelog
 
 ## Entri
 
+- [create-changelog-ingestion-system](/changelogs/create-changelog-ingestion-system)
 - [cleanup-strings-and-codebase](/changelogs/cleanup-strings-and-codebase)

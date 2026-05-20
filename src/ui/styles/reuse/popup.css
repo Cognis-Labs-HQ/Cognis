@@ -173,8 +173,9 @@
     gap: 10px;
 }
 
-.release-notes-popup-item p {
-    margin: 4px 0 0;
+.release-notes-popup-item-changes {
+    margin: 6px 0 0;
+    padding-left: 18px;
     color: var(--text-muted);
 }
 

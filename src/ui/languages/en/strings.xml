@@ -102,6 +102,8 @@
   <string name="ui.app.login.typing.sample.6">Powered by FOSS</string>
   <string name="ui.app.login.typing.sample.7">Register your account today</string>
   <string name="ui.app.settings.page_subtitle">Manage your user preferences.</string>
+  <string name="ui.app.settings.show_changelogs">Show Changelogs</string>
+  <string name="ui.app.settings.show_changelogs_hint">Present changelog summary on every release.</string>
   <string name="ui.app.settings.font">Font</string>
   <string name="ui.app.settings.font_size">Font size</string>
   <string name="ui.app.settings.save">Save Preferences</string>

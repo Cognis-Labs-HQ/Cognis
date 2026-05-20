@@ -102,6 +102,8 @@
   <string name="ui.app.login.typing.sample.6">FOSS により提供</string>
   <string name="ui.app.login.typing.sample.7">今すぐアカウントを登録しましょう</string>
   <string name="ui.app.settings.page_subtitle">ユーザー設定を管理します。</string>
+  <string name="ui.app.settings.show_changelogs">変更履歴を表示</string>
+  <string name="ui.app.settings.show_changelogs_hint">リリースごとに変更履歴の要約を表示します。</string>
   <string name="ui.app.settings.font">フォント</string>
   <string name="ui.app.settings.font_size">フォントサイズ</string>
   <string name="ui.app.settings.save">設定を保存</string>
