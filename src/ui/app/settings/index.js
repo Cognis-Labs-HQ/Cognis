@@ -20,6 +20,7 @@ import {
 import { initLanguagePrefs } from "./language-prefs.js";
 import { initGeneralPrefs } from "./general-prefs.js";
 import { initDateTimePrefs } from "./datetime-prefs.js";
+import { initReleaseChangelogPrefs } from "./release-changelog-prefs.js";
 import { applyTimezoneToLocalStorage } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
@@ -105,10 +106,6 @@ function resolveLanguagePriorityMode(
 
 const LANGUAGE_RELOAD_DELAY_MS = 400;
 const DIRTY_KEY_MESSAGE_STYLE = "message-style";
-
-function shouldShowReleaseChangelog(preferences) {
-    return preferences?.releaseChangelogShow !== false;
-}
 
 export async function mount(root, { signal } = {}) {
     let loadedPrefs = await loadPrefs().catch(() => null);
@@ -264,51 +261,6 @@ export async function mount(root, { signal } = {}) {
         };
     }
 
-    function initReleaseNotesPrefs({ onDirtyChange }) {
-        let savedShowReleaseChangelogs =
-            shouldShowReleaseChangelog(loadedPrefs);
-        let currentShowReleaseChangelogs = savedShowReleaseChangelogs;
-
-        function syncCheckboxState() {
-            const checkbox = root.querySelector("#pref-release-changelog-show");
-            if (!(checkbox instanceof HTMLInputElement)) return;
-            checkbox.checked = currentShowReleaseChangelogs;
-        }
-
-        function bindCheckboxEvents() {
-            const checkbox = root.querySelector("#pref-release-changelog-show");
-            if (!(checkbox instanceof HTMLInputElement)) return;
-            if (checkbox.dataset.dirtyHandlerBound === "true") return;
-            checkbox.dataset.dirtyHandlerBound = "true";
-            checkbox.addEventListener("change", () => {
-                currentShowReleaseChangelogs = checkbox.checked;
-                onDirtyChange?.(
-                    currentShowReleaseChangelogs !== savedShowReleaseChangelogs,
-                );
-            });
-        }
-
-        syncCheckboxState();
-        bindCheckboxEvents();
-
-        return {
-            refresh: () => {
-                syncCheckboxState();
-                bindCheckboxEvents();
-            },
-            getShowReleaseChangelogs: () => currentShowReleaseChangelogs,
-            commit: () => {
-                savedShowReleaseChangelogs = currentShowReleaseChangelogs;
-                onDirtyChange?.(false);
-            },
-            discard: () => {
-                currentShowReleaseChangelogs = savedShowReleaseChangelogs;
-                syncCheckboxState();
-                onDirtyChange?.(false);
-            },
-        };
-    }
-
     const elements = [
         {
             id: "general",
@@ -332,11 +284,11 @@ export async function mount(root, { signal } = {}) {
               <input id="email-add-input" type="email" placeholder="${i18n.t("ui.app.settings.emails_add_placeholder")}" />
               <button id="email-add-btn" class="btn-confirm btn-animated" type="button">${i18n.t("ui.app.settings.emails_add")}</button>
             </div>
-            <h3 class="settings-heading-with-tooltip">
+            <h3>
               ${escapeHtml(i18n.t("ui.app.settings.show_changelogs"))}
               ${renderInfoTooltip(i18n.t("ui.app.settings.show_changelogs_hint"), tooltipAria)}
             </h3>
-            <div class="settings-switch-row">
+            <div>
               <label class="switch">
                 <input id="pref-release-changelog-show" type="checkbox" />
                 <span class="slider"></span>
@@ -359,7 +311,8 @@ export async function mount(root, { signal } = {}) {
                         generalPrefs.refresh();
                     }
                     if (!releaseNotesPrefs) {
-                        releaseNotesPrefs = initReleaseNotesPrefs({
+                        releaseNotesPrefs = initReleaseChangelogPrefs(root, {
+                            existingPrefs: loadedPrefs,
                             onDirtyChange: (dirty) =>
                                 markDirty("release-notes", dirty),
                         });
@@ -650,7 +603,7 @@ export async function mount(root, { signal } = {}) {
                     normalizeMessageStyle(loadedPrefs?.messageStyle),
                 releaseChangelogShow:
                     releaseNotesPrefs?.getShowReleaseChangelogs() ??
-                    shouldShowReleaseChangelog(loadedPrefs),
+                    loadedPrefs?.releaseChangelogShow !== false,
                 releaseChangelogSeenSlugs:
                     loadedPrefs?.releaseChangelogSeenSlugs ?? [],
                 releaseChangelogLastVersion:

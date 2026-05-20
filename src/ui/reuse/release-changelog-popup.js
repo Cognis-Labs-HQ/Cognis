@@ -44,9 +44,9 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
                       .join("")
                 : "";
             return `
-        <li class="release-notes-popup-item">
+        <li class="popup-summary-item">
           <strong>${safeTitle}</strong>
-          <ul class="release-notes-popup-item-changes">${dotPoints}</ul>
+          <ul class="popup-summary-sublist">${dotPoints}</ul>
         </li>
       `;
         })
@@ -56,8 +56,8 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
         .replace("{version}", releaseVersion || i18n.t("ui.reuse.unknown"));
     return `
       <p>${escapeHtml(introText)}</p>
-      <ul class="release-notes-popup-list">${notesItems}</ul>
-      <label class="release-notes-popup-never-show">
+      <ul class="popup-summary-list">${notesItems}</ul>
+      <label class="popup-summary-checkbox-row">
         <input id="release-notes-never-show-checkbox" type="checkbox" />
         <span>${escapeHtml(i18n.t("ui.reuse.release_notes_never_show_again"))}</span>
       </label>

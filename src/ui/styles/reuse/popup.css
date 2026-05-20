@@ -166,24 +166,24 @@
     font-size: 0.86rem;
 }
 
-.release-notes-popup-list {
+.popup-summary-list {
     margin: 10px 0;
     padding-left: 18px;
     display: grid;
     gap: 10px;
 }
 
-.release-notes-popup-item {
+.popup-summary-item {
     display: block;
 }
 
-.release-notes-popup-item-changes {
+.popup-summary-sublist {
     margin: 6px 0 0;
     padding-left: 18px;
     color: var(--text-muted);
 }
 
-.release-notes-popup-never-show {
+.popup-summary-checkbox-row {
     display: inline-flex;
     align-items: center;
     gap: 8px;

@@ -119,7 +119,7 @@ test("dashboard layout checks release changelog popup in shell sessions", () => 
         "dashboard layout should import release changelog popup logic",
     );
     assert.ok(
-        layoutSource.includes("maybeCheckReleaseChangelog(i18n)"),
+        layoutSource.includes("ensureReleaseChangelogPopupChecked(i18n)"),
         "dashboard layout should trigger the release changelog check after rendering shell navigation",
     );
 });

@@ -342,7 +342,7 @@ function scheduleNavbarEnhancements() {
     setTimeout(runEnhancements, 0);
 }
 
-function maybeCheckReleaseChangelog(i18n) {
+function ensureReleaseChangelogPopupChecked(i18n) {
     if (releaseChangelogPopupChecked) return;
     releaseChangelogPopupChecked = true;
     maybeShowReleaseChangelogPopup(i18n).catch(() => {});
@@ -568,7 +568,7 @@ export async function renderDashboardLayout(root, slots = {}) {
             scheduleNavbarEnhancements();
             initSearchBar(i18n);
             bindProfilePreviews(i18n);
-            maybeCheckReleaseChangelog(i18n);
+            ensureReleaseChangelogPopupChecked(i18n);
         }
         bindHeaderScrollState(root);
         return;
@@ -622,7 +622,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         initRouter(root);
         initSearchBar(i18n);
         bindProfilePreviews(i18n);
-        maybeCheckReleaseChangelog(i18n);
+        ensureReleaseChangelogPopupChecked(i18n);
     }
     bindHeaderScrollState(root);
     bindThemeToggle({ usePreferenceApi });
