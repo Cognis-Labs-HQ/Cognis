@@ -2612,7 +2612,9 @@ export function createPageComposer(
                     );
                     continue;
                 }
-                state.container.appendChild(createMissingElementEditCell(placement));
+                state.container.appendChild(
+                    createMissingElementEditCell(placement),
+                );
             }
         } else {
             state.container.classList.remove("composer-grid-active");
