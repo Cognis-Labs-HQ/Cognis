@@ -43,7 +43,9 @@ function listTrackedDocFiles() {
             if (!entry.name.endsWith(".md") && !entry.name.endsWith(".html")) {
                 continue;
             }
-            discoveredFiles.push(relative(ROOT, absolutePath).replaceAll("\\", "/"));
+            discoveredFiles.push(
+                relative(ROOT, absolutePath).replaceAll("\\", "/"),
+            );
         }
     }
 
