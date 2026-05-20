@@ -84,6 +84,13 @@ class SamlAuthAdapter implements AuthProviderAdapter {
         }
     }
 
+    getPasswordResetSupport(): { supported: boolean; reason: string } {
+        return {
+            supported: false,
+            reason: "Password reset is managed by your SAML identity provider.",
+        };
+    }
+
     setClient(client: SamlClient): void {
         this.client = client;
     }

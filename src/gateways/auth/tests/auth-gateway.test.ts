@@ -326,7 +326,7 @@ test("auth gateway bootstrap registers correct static dir and admin-section.js e
     );
 });
 
-test("auth gateway bootstrap does not register a security admin section", async () => {
+test("auth gateway bootstrap registers security in settings and no auth admin section", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -348,9 +348,28 @@ test("auth gateway bootstrap does not register a security admin section", async 
 
     const sections = uiRegistry.listAdminSections();
     const securitySection = sections.find((s) => s.id === "security");
+    const authenticationSection = sections.find(
+        (s) => s.id === "authentication",
+    );
     assert.ok(
         !securitySection,
         "auth gateway must NOT register a 'security' admin section",
+    );
+    assert.ok(
+        !authenticationSection,
+        "auth gateway must NOT register an 'authentication' admin section",
+    );
+    const settingsSections = uiRegistry.listSettingsSections();
+    const settingsSecuritySection = settingsSections.find(
+        (section) => section.id === "security",
+    );
+    assert.ok(
+        settingsSecuritySection,
+        "auth gateway must register a security settings section",
+    );
+    assert.equal(
+        settingsSecuritySection?.scriptUrl,
+        "/static/gateways/auth/security-prefs.js",
     );
 
     const staticDir = uiRegistry.getStaticDir("auth");
@@ -582,6 +601,98 @@ test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
     assert.ok(handled, "verify endpoint should handle the request");
     assert.equal(res.status, 401);
     assert.match(res.payload, /unauthorized/);
+});
+
+test("GET /api/v1/auth/password-change-capability reports support for local accounts", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrap({
+        dbExecutor: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+            execute: (
+                sql: string,
+                params?: unknown[],
+            ) => Promise<{ rows?: unknown[] }>;
+        },
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const token = issueAccessToken("settings-user", "user", 60);
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as unknown as HttpIncomingMessage,
+        "/api/v1/auth/password-change-capability",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 200);
+    const payload = JSON.parse(res.payload) as {
+        data: {
+            adapterId: string;
+            adapterName: string;
+            supported: boolean;
+        };
+    };
+    assert.equal(payload.data.adapterId, "local");
+    assert.equal(payload.data.adapterName, "Local");
+    assert.equal(payload.data.supported, true);
+});
+
+test("POST /api/v1/auth/reset-password updates local account credentials", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const accountStore = capabilities.get<{
+        register: (username: string, password: string) => Promise<unknown>;
+        verify: (
+            username: string,
+            password: string,
+        ) => Promise<{ accountId: string } | null>;
+    }>("auth:accountStore");
+    assert.ok(accountStore, "auth account store capability should exist");
+    await accountStore?.register("password-user", "before-reset");
+
+    const resetToken = issueAccessToken("password-user", "user", 60);
+    const { handled, res } = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "POST",
+            { password: "after-reset" },
+            { authorization: `Bearer ${resetToken}` },
+        ),
+        "/api/v1/auth/reset-password",
+    );
+
+    assert.equal(handled, true);
+    assert.equal(res.status, 200);
+
+    const oldCredentials = await accountStore?.verify(
+        "password-user",
+        "before-reset",
+    );
+    const newCredentials = await accountStore?.verify(
+        "password-user",
+        "after-reset",
+    );
+    assert.equal(oldCredentials, null);
+    assert.equal(newCredentials?.accountId, "password-user");
 });
 
 test("POST /api/v1/auth/emergency-token requires admin auth", async () => {

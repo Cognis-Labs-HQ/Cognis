@@ -12,6 +12,14 @@ export interface LdapIdentity {
 
 export interface LdapClient {
     authenticate(accessToken: string): Promise<LdapIdentity | null>;
+    updatePassword?(
+        accountId: string,
+        nextPassword: string,
+        options?: {
+            baseDn?: string;
+            userAttribute?: string;
+        },
+    ): Promise<boolean>;
 }
 
 class LdapAuthAdapter implements AuthProviderAdapter {
@@ -20,6 +28,9 @@ class LdapAuthAdapter implements AuthProviderAdapter {
 
     private client: LdapClient | null = null;
     private adminGroups: Set<string> = new Set(["cognis-admins"]);
+    private writebackEnabled = false;
+    private writebackBaseDn = "";
+    private writebackUserAttribute = "uid";
 
     async authenticate(
         credentials: Record<string, unknown>,
@@ -58,6 +69,24 @@ class LdapAuthAdapter implements AuthProviderAdapter {
                 type: "text",
                 required: false,
             },
+            {
+                key: "writebackEnabled",
+                label: "Enable LDAP Password Writeback",
+                type: "boolean",
+                required: false,
+            },
+            {
+                key: "writebackBaseDn",
+                label: "Writeback Base DN",
+                type: "text",
+                required: false,
+            },
+            {
+                key: "writebackUserAttribute",
+                label: "Writeback User Attribute",
+                type: "text",
+                required: false,
+            },
         ];
     }
 
@@ -70,6 +99,65 @@ class LdapAuthAdapter implements AuthProviderAdapter {
                     .filter(Boolean),
             );
         }
+        this.writebackEnabled = config.writebackEnabled === true;
+        if (typeof config.writebackBaseDn === "string") {
+            this.writebackBaseDn = config.writebackBaseDn.trim();
+        }
+        if (
+            typeof config.writebackUserAttribute === "string" &&
+            config.writebackUserAttribute.trim()
+        ) {
+            this.writebackUserAttribute = config.writebackUserAttribute.trim();
+        }
+    }
+
+    getPasswordResetSupport(): { supported: boolean; reason?: string } {
+        if (!this.writebackEnabled) {
+            return {
+                supported: false,
+                reason: "LDAP writeback is disabled in adapter settings.",
+            };
+        }
+        if (!this.writebackBaseDn) {
+            return {
+                supported: false,
+                reason: "LDAP writeback base DN is not configured.",
+            };
+        }
+        if (!this.client || typeof this.client.updatePassword !== "function") {
+            return {
+                supported: false,
+                reason: "LDAP writeback client is unavailable.",
+            };
+        }
+        return { supported: true };
+    }
+
+    async resetPassword(
+        accountId: string,
+        nextPassword: string,
+    ): Promise<{ updated: boolean; message?: string }> {
+        const support = this.getPasswordResetSupport();
+        if (!support.supported) {
+            return { updated: false, message: support.reason };
+        }
+        if (!this.client || typeof this.client.updatePassword !== "function") {
+            return {
+                updated: false,
+                message: "LDAP writeback client is unavailable.",
+            };
+        }
+        const updated = await this.client.updatePassword(
+            accountId,
+            nextPassword,
+            {
+                baseDn: this.writebackBaseDn,
+                userAttribute: this.writebackUserAttribute,
+            },
+        );
+        return updated
+            ? { updated: true }
+            : { updated: false, message: "LDAP password writeback failed." };
     }
 
     setClient(client: LdapClient): void {

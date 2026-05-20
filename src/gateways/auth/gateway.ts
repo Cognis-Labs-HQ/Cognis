@@ -32,6 +32,11 @@ export interface AuthProviderAdapter {
     ): Promise<AuthContext | null>;
     getConfigSchema(): AuthConfigField[];
     configure(config: Record<string, unknown>): void;
+    getPasswordResetSupport?(): { supported: boolean; reason?: string };
+    resetPassword?(
+        accountId: string,
+        nextPassword: string,
+    ): Promise<{ updated: boolean; message?: string }>;
 }
 
 export interface AdapterInfo {
@@ -275,6 +280,67 @@ export class CoreAuthGateway {
         return Array.from(this.adapters.values()).filter((a) =>
             this.enabledAdapters.has(a.id),
         );
+    }
+
+    getPasswordResetSupport(adapterId: string): {
+        adapterId: string;
+        adapterName: string;
+        supported: boolean;
+        reason?: string;
+    } {
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) {
+            return {
+                adapterId,
+                adapterName: adapterId,
+                supported: false,
+                reason: "Auth provider not found",
+            };
+        }
+        if (typeof adapter.getPasswordResetSupport === "function") {
+            const support = adapter.getPasswordResetSupport();
+            return {
+                adapterId: adapter.id,
+                adapterName: adapter.name,
+                supported: support.supported,
+                reason: support.reason,
+            };
+        }
+        if (typeof adapter.resetPassword === "function") {
+            return {
+                adapterId: adapter.id,
+                adapterName: adapter.name,
+                supported: true,
+            };
+        }
+        return {
+            adapterId: adapter.id,
+            adapterName: adapter.name,
+            supported: false,
+            reason: "This auth provider does not support password reset.",
+        };
+    }
+
+    async resetPasswordForAccount(
+        adapterId: string,
+        accountId: string,
+        nextPassword: string,
+    ): Promise<void> {
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) {
+            throw new Error("password_reset_unsupported");
+        }
+        const support = this.getPasswordResetSupport(adapterId);
+        if (!support.supported) {
+            throw new Error(support.reason || "password_reset_unsupported");
+        }
+        if (typeof adapter.resetPassword !== "function") {
+            throw new Error("password_reset_unsupported");
+        }
+        const result = await adapter.resetPassword(accountId, nextPassword);
+        if (result.updated !== true) {
+            throw new Error(result.message || "password_reset_failed");
+        }
     }
 
     getLocalAdapter() {

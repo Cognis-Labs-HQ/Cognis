@@ -91,6 +91,13 @@ class OidcAuthAdapter implements AuthProviderAdapter {
         }
     }
 
+    getPasswordResetSupport(): { supported: boolean; reason: string } {
+        return {
+            supported: false,
+            reason: "Password reset is managed by your OIDC identity provider.",
+        };
+    }
+
     setClient(client: OidcClient): void {
         this.client = client;
     }

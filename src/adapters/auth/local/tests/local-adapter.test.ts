@@ -39,3 +39,24 @@ test("local adapter register creates account", async () => {
     const result = await adapter.register("charlie", "pass");
     assert.equal(result.username, "charlie");
 });
+
+test("local adapter supports password reset", async () => {
+    const store = new VolatileLocalAccountStore();
+    await store.register("delta", "start-pass");
+    const adapter = createAdapter(store);
+    assert.deepEqual(adapter.getPasswordResetSupport?.(), {
+        supported: true,
+    });
+    const result = await adapter.resetPassword?.("delta", "next-pass");
+    assert.equal(result?.updated, true);
+    const oldLogin = await adapter.authenticate({
+        username: "delta",
+        password: "start-pass",
+    });
+    const newLogin = await adapter.authenticate({
+        username: "delta",
+        password: "next-pass",
+    });
+    assert.equal(oldLogin, null);
+    assert.equal(newLogin?.accountId, "delta");
+});

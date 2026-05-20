@@ -155,7 +155,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.3.5",
+        version: "1.3.6",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -164,10 +164,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const uiDir = path.resolve(process.cwd(), "src", "gateways", "auth", "ui");
     ctx.uiRegistry?.registerStaticDir("auth", uiDir);
-    ctx.uiRegistry?.registerAdminSection({
-        id: "authentication",
-        label: "Authentication",
-        scriptUrl: "/static/gateways/auth/admin-section.js",
+    ctx.uiRegistry?.registerSettingsSection({
+        id: "security",
+        label: "Security",
+        scriptUrl: "/static/gateways/auth/security-prefs.js",
         stringsBaseUrl: "/static/gateways/auth/languages",
     });
 
@@ -567,6 +567,9 @@ function createAuthGatewayRoutes(
                 session.accountId,
                 role,
                 accessTokenTtlSeconds,
+                {
+                    providerId: adapter.id,
+                },
             );
             const localAdapter = authGateway.getLocalAdapter();
             if (localAdapter) {
@@ -625,6 +628,7 @@ function createAuthGatewayRoutes(
                         accountId: session.accountId,
                         displayName: accountDisplayName ?? session.accountId,
                         provider: session.provider,
+                        providerId: adapter.id,
                         role,
                         isFounder,
                         token: apiToken,
@@ -682,6 +686,122 @@ function createAuthGatewayRoutes(
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { verified: true } }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/password-change-capability" &&
+            req.method === "GET"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const support = authGateway.getPasswordResetSupport(
+                claims.providerId,
+            );
+            log?.("debug", "Read password change support.", {
+                ...logMeta,
+                accountId: claims.sub,
+                providerId: claims.providerId,
+                supported: support.supported,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: support }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/reset-password" &&
+            req.method === "POST"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const body = await readJson(req);
+            const nextPassword = String(body.password ?? "").trim();
+            if (!nextPassword) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "Password is required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (nextPassword.length < 8) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "password_too_short",
+                            message: "Password must be at least 8 characters",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const support = authGateway.getPasswordResetSupport(
+                claims.providerId,
+            );
+            if (!support.supported) {
+                log?.(
+                    "warn",
+                    "Blocked password reset for unsupported provider.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                        providerId: claims.providerId,
+                        reason: support.reason,
+                    },
+                );
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "provider_unsupported",
+                            message:
+                                support.reason ||
+                                "Password reset is not supported for this provider.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            try {
+                await authGateway.resetPasswordForAccount(
+                    claims.providerId,
+                    claims.sub,
+                    nextPassword,
+                );
+            } catch (error) {
+                const message =
+                    error instanceof Error ? error.message : String(error);
+                log?.("error", "Password reset failed.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    providerId: claims.providerId,
+                    error: message,
+                });
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "password_reset_failed",
+                            message,
+                        },
+                    }),
+                );
+                return true;
+            }
+            revokeAccessTokensForSubject(claims.sub);
+            log?.("info", "Password reset succeeded.", {
+                ...logMeta,
+                accountId: claims.sub,
+                providerId: claims.providerId,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { updated: true } }));
             return true;
         }
 

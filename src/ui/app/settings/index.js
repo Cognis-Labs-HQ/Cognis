@@ -3,6 +3,7 @@ import { apiFetch } from "../../reuse/api-client.js";
 import {
     applyDocumentTitle,
     createI18n,
+    extendI18n,
     readLanguagePriorityMode,
     readPreferredLanguages,
     setPreferredLanguages,
@@ -167,8 +168,12 @@ export async function mount(root, { signal } = {}) {
                             );
                             return null;
                         }
-                        return mod.createSettingsSection({
+                        const sectionI18n = await extendI18n(
                             i18n,
+                            descriptor.stringsBaseUrl,
+                        );
+                        return mod.createSettingsSection({
+                            i18n: sectionI18n,
                             root,
                             markDirty,
                         });

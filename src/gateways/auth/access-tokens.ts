@@ -14,6 +14,7 @@ export type AccessRole = "user" | "teacher" | "moderator" | "admin" | "owner";
 interface AccessTokenRecord {
     subject: string;
     role: AccessRole;
+    providerId: string;
     expiresAt: number | null;
     issuedAt?: number;
 }
@@ -100,10 +101,14 @@ function loadTokenStore(now = Date.now()) {
 
                 const subject = (record as { subject?: unknown }).subject;
                 const role = (record as { role?: unknown }).role;
+                const providerId = (record as { providerId?: unknown })
+                    .providerId;
                 const expiresAt = (record as { expiresAt?: unknown }).expiresAt;
                 const issuedAt = (record as { issuedAt?: unknown }).issuedAt;
 
                 if (typeof subject !== "string" || !isAccessRole(role))
+                    continue;
+                if (typeof providerId !== "string" || !providerId.trim())
                     continue;
                 if (expiresAt !== null && typeof expiresAt !== "number")
                     continue;
@@ -111,7 +116,13 @@ function loadTokenStore(now = Date.now()) {
                 if (issuedAt !== undefined && typeof issuedAt !== "number")
                     continue;
 
-                store.set(tokenHash, { subject, role, expiresAt, issuedAt });
+                store.set(tokenHash, {
+                    subject,
+                    role,
+                    providerId,
+                    expiresAt,
+                    issuedAt,
+                });
                 if (store.size >= MAX_TOKEN_STORE_SIZE) break;
             }
         };
@@ -179,24 +190,32 @@ function getStoredAccessTokenRecord(token: string): {
     return null;
 }
 
-export function lookupAccessToken(
-    token: string,
-): { sub: string; role: AccessRole; revoked: boolean } | null {
+export function lookupAccessToken(token: string): {
+    sub: string;
+    role: AccessRole;
+    providerId: string;
+    revoked: boolean;
+} | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored) return null;
     return {
         sub: stored.record.subject,
         role: stored.record.role,
+        providerId: stored.record.providerId,
         revoked: stored.revoked,
     };
 }
 
 export function verifyAccessToken(
     token: string,
-): { sub: string; role: AccessRole } | null {
+): { sub: string; role: AccessRole; providerId: string } | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored || stored.revoked) return null;
-    return { sub: stored.record.subject, role: stored.record.role };
+    return {
+        sub: stored.record.subject,
+        role: stored.record.role,
+        providerId: stored.record.providerId,
+    };
 }
 
 export function revokeAccessToken(rawToken: string): boolean {
@@ -238,7 +257,7 @@ export function issueAccessToken(
     subject: string,
     role: AccessRole,
     ttlSeconds: number | null,
-    options?: { issuedAt?: number },
+    options?: { issuedAt?: number; providerId?: string },
 ): string {
     pruneExpiredTokens();
     if (tokenStore.size >= MAX_TOKEN_STORE_SIZE) {
@@ -246,8 +265,19 @@ export function issueAccessToken(
     }
     const token = `cgs_${randomBytes(32).toString("base64url")}`;
     const issuedAt = options?.issuedAt ?? Date.now();
+    const normalizedProviderId =
+        typeof options?.providerId === "string"
+            ? options.providerId.trim()
+            : "";
+    const providerId = normalizedProviderId || "local";
     const expiresAt = ttlSeconds === null ? null : issuedAt + ttlSeconds * 1000;
-    tokenStore.set(hashToken(token), { subject, role, expiresAt, issuedAt });
+    tokenStore.set(hashToken(token), {
+        subject,
+        role,
+        providerId,
+        expiresAt,
+        issuedAt,
+    });
     persistTokenStore();
     return token;
 }

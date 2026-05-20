@@ -13,7 +13,10 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Notifikasi SMTP        | `src/adapters/notify/smtp/`         | `0.1.0` |
 | Notifikasi Internal    | `src/adapters/notify/internal/`     | `0.5.2` |
 | Penyimpanan File Lokal | `src/adapters/file/local/`          | `0.1.0` |
-| Autentikasi Lokal      | `src/adapters/auth/local/`          | `0.2.2` |
+| Autentikasi Lokal      | `src/adapters/auth/local/`          | `0.2.3` |
+| Autentikasi LDAP       | `src/adapters/auth/ldap/`           | `0.1.1` |
+| Autentikasi OIDC       | `src/adapters/auth/oidc/`           | `0.1.1` |
+| Autentikasi SAML       | `src/adapters/auth/saml/`           | `0.1.1` |
 | Database PostgreSQL    | `src/adapters/db/postgres/`         | `0.1.0` |
 | Database MariaDB       | `src/adapters/db/mariadb/`          | `0.1.0` |
 | Undangan Registrasi    | `src/adapters/registration/invite/` | `0.1.1` |
@@ -27,7 +30,7 @@ Setiap gateway, adapter, dan modul membawa `package.json` dengan field `version`
 | Komponen                 | Path                         | Versi   |
 | ------------------------ | ---------------------------- | ------- |
 | Database (db)            | `src/gateways/db/`           | `1.1.2` |
-| Autentikasi (auth)       | `src/gateways/auth/`         | `1.3.2` |
+| Autentikasi (auth)       | `src/gateways/auth/`         | `1.3.6` |
 | Notifikasi (notify)      | `src/gateways/notify/`       | `1.1.1` |
 | Sosial                   | `src/gateways/social/`       | `1.2.0` |
 | Penyimpanan File (files) | `src/gateways/files/`        | `1.1.0` |
