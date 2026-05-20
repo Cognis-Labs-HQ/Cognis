@@ -1,5 +1,11 @@
 <resources>
   <string name="gateway.auth.no_providers">Tidak ada adaptor autentikasi yang dikonfigurasi.</string>
+  <string name="gateway.auth.password_policy">Kebijakan Kata Sandi</string>
+  <string name="gateway.auth.policy_min_length">Panjang Minimum</string>
+  <string name="gateway.auth.policy_require_uppercase">Wajib Huruf Kapital</string>
+  <string name="gateway.auth.policy_require_lowercase">Wajib Huruf Kecil</string>
+  <string name="gateway.auth.policy_require_digit">Wajib Angka</string>
+  <string name="gateway.auth.policy_require_special">Wajib Karakter Khusus</string>
   <string name="gateway.auth.security.loading">Memuat pengaturan keamanan…</string>
   <string name="gateway.auth.security.section_title">Keamanan</string>
   <string name="gateway.auth.security.load_failed">Tidak dapat memuat kemampuan ubah kata sandi.</string>
@@ -12,4 +18,10 @@
   <string name="gateway.auth.security.required">Kedua kolom kata sandi wajib diisi.</string>
   <string name="gateway.auth.security.reset_failed">Reset kata sandi gagal.</string>
   <string name="gateway.auth.security.reset_success">Kata sandi diperbarui. Silakan masuk kembali.</string>
+  <string name="gateway.auth.security.password_policy">Kata sandi tidak memenuhi persyaratan.</string>
+  <string name="gateway.auth.security.password_too_short">Harus minimal {min} karakter.</string>
+  <string name="gateway.auth.security.password_requires_uppercase">Harus mengandung huruf kapital.</string>
+  <string name="gateway.auth.security.password_requires_lowercase">Harus mengandung huruf kecil.</string>
+  <string name="gateway.auth.security.password_requires_digit">Harus mengandung angka.</string>
+  <string name="gateway.auth.security.password_requires_special">Harus mengandung karakter khusus.</string>
 </resources>

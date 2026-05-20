@@ -2,6 +2,7 @@ import { apiFetch } from "/static/reuse/api-client.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { attachCriteriaCheck } from "/static/reuse/criteria-check.js";
 
 export function createSettingsSection({ i18n, root }) {
     let capability = null;
@@ -33,6 +34,77 @@ export function createSettingsSection({ i18n, root }) {
         capability = payload.data ?? null;
     }
 
+    async function loadPasswordPolicy() {
+        const response = await apiFetch("/api/v1/auth/password-policy").catch(
+            () => null,
+        );
+        if (!response?.ok) {
+            return {
+                minLength: 8,
+                requireUppercase: false,
+                requireLowercase: false,
+                requireDigit: false,
+                requireSpecial: false,
+            };
+        }
+        const payload = await response.json().catch(() => null);
+        return (
+            payload?.data ?? {
+                minLength: 8,
+                requireUppercase: false,
+                requireLowercase: false,
+                requireDigit: false,
+                requireSpecial: false,
+            }
+        );
+    }
+
+    function buildPasswordCriteria(policy) {
+        const criteria = [];
+        if (policy.minLength > 0) {
+            const minLen = policy.minLength;
+            criteria.push({
+                test: (value) => value.length >= minLen,
+                message: i18n
+                    .t("gateway.auth.security.password_too_short")
+                    .replace("{min}", String(minLen)),
+            });
+        }
+        if (policy.requireUppercase) {
+            criteria.push({
+                test: (value) => /[A-Z]/.test(value),
+                message: i18n.t(
+                    "gateway.auth.security.password_requires_uppercase",
+                ),
+            });
+        }
+        if (policy.requireLowercase) {
+            criteria.push({
+                test: (value) => /[a-z]/.test(value),
+                message: i18n.t(
+                    "gateway.auth.security.password_requires_lowercase",
+                ),
+            });
+        }
+        if (policy.requireDigit) {
+            criteria.push({
+                test: (value) => /[0-9]/.test(value),
+                message: i18n.t(
+                    "gateway.auth.security.password_requires_digit",
+                ),
+            });
+        }
+        if (policy.requireSpecial) {
+            criteria.push({
+                test: (value) => /[^A-Za-z0-9]/.test(value),
+                message: i18n.t(
+                    "gateway.auth.security.password_requires_special",
+                ),
+            });
+        }
+        return criteria;
+    }
+
     function renderBody() {
         if (!capability) {
             return `<p>${i18n.t("gateway.auth.security.loading")}</p>`;
@@ -59,7 +131,13 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     async function openPasswordResetPopup() {
+        const policy = await loadPasswordPolicy();
+        const passwordCriteria = buildPasswordCriteria(policy);
+
         let formElement = null;
+        let criteriaCheckController = null;
+        let mismatchController = null;
+
         const popupResult = await openPopup({
             title: i18n.t("gateway.auth.security.popup_title"),
             maxWidth: "420px",
@@ -91,8 +169,46 @@ export function createSettingsSection({ i18n, root }) {
                 formElement = overlay.querySelector(
                     ".auth-password-reset-form",
                 );
+                if (formElement) {
+                    const nextPasswordInput =
+                        formElement.elements.namedItem("nextPassword");
+                    const confirmPasswordInput =
+                        formElement.elements.namedItem("confirmPassword");
+                    if (
+                        nextPasswordInput instanceof HTMLInputElement &&
+                        confirmPasswordInput instanceof HTMLInputElement &&
+                        passwordCriteria.length > 0
+                    ) {
+                        criteriaCheckController = attachCriteriaCheck(
+                            nextPasswordInput,
+                            passwordCriteria,
+                            {
+                                genericMessage: i18n.t(
+                                    "gateway.auth.security.password_policy",
+                                ),
+                            },
+                        );
+                        mismatchController = attachCriteriaCheck(
+                            confirmPasswordInput,
+                            [
+                                {
+                                    test: (value) =>
+                                        value === nextPasswordInput.value,
+                                    message: i18n.t(
+                                        "ui.app.register.error.password_mismatch",
+                                    ),
+                                },
+                            ],
+                            {},
+                        );
+                    }
+                }
             },
         });
+
+        criteriaCheckController?.detach();
+        mismatchController?.detach();
+
         if (popupResult !== "save" || !formElement) {
             return;
         }

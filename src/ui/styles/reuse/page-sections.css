@@ -194,6 +194,12 @@
     flex: 1;
 }
 
+.criteria-check-message {
+    color: var(--color-error, #dc2626);
+    font-size: 0.85em;
+    margin: 2px 0 0 0;
+}
+
 .components-section {
     margin-bottom: 24px;
 }

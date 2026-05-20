@@ -1,5 +1,11 @@
 <resources>
   <string name="gateway.auth.no_providers">Keine Authentifizierungsadapter konfiguriert.</string>
+  <string name="gateway.auth.password_policy">Passwortrichtlinie</string>
+  <string name="gateway.auth.policy_min_length">Mindestlänge</string>
+  <string name="gateway.auth.policy_require_uppercase">Großbuchstaben erforderlich</string>
+  <string name="gateway.auth.policy_require_lowercase">Kleinbuchstaben erforderlich</string>
+  <string name="gateway.auth.policy_require_digit">Ziffer erforderlich</string>
+  <string name="gateway.auth.policy_require_special">Sonderzeichen erforderlich</string>
   <string name="gateway.auth.security.loading">Sicherheitseinstellungen werden geladen…</string>
   <string name="gateway.auth.security.section_title">Sicherheit</string>
   <string name="gateway.auth.security.load_failed">Die Funktion zur Passwortänderung konnte nicht geladen werden.</string>
@@ -12,4 +18,10 @@
   <string name="gateway.auth.security.required">Beide Passwortfelder sind erforderlich.</string>
   <string name="gateway.auth.security.reset_failed">Zurücksetzen des Passworts fehlgeschlagen.</string>
   <string name="gateway.auth.security.reset_success">Passwort aktualisiert. Bitte melden Sie sich erneut an.</string>
+  <string name="gateway.auth.security.password_policy">Das Passwort erfüllt die Anforderungen nicht.</string>
+  <string name="gateway.auth.security.password_too_short">Muss mindestens {min} Zeichen enthalten.</string>
+  <string name="gateway.auth.security.password_requires_uppercase">Muss einen Großbuchstaben enthalten.</string>
+  <string name="gateway.auth.security.password_requires_lowercase">Muss einen Kleinbuchstaben enthalten.</string>
+  <string name="gateway.auth.security.password_requires_digit">Muss eine Ziffer enthalten.</string>
+  <string name="gateway.auth.security.password_requires_special">Muss ein Sonderzeichen enthalten.</string>
 </resources>

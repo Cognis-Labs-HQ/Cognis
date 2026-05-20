@@ -231,6 +231,15 @@
   <string name="ui.app.register.password">Password</string>
   <string name="ui.app.register.confirm_password">Confirm Password</string>
   <string name="ui.app.register.error.password_mismatch">Passwords do not match.</string>
+  <string name="ui.app.register.error.password_policy">Password does not meet the requirements.</string>
+  <string name="ui.app.register.error.password_too_short">Must be at least {min} characters.</string>
+  <string name="ui.app.register.error.password_requires_uppercase">Must contain an uppercase letter.</string>
+  <string name="ui.app.register.error.password_requires_lowercase">Must contain a lowercase letter.</string>
+  <string name="ui.app.register.error.password_requires_digit">Must contain a digit.</string>
+  <string name="ui.app.register.error.password_requires_special">Must contain a special character.</string>
+  <string name="ui.app.register.error.username_invalid">Username may only contain printable ASCII characters.</string>
+  <string name="ui.app.register.error.username_too_long">Username must be 25 characters or fewer.</string>
+  <string name="ui.app.register.error.username_not_lowercase">Username must be all lowercase.</string>
   <string name="ui.app.register.submit">Create account</string>
   <string name="ui.app.register.closed">Open registration is currently disabled.</string>
   <string name="ui.app.register.success">Account created. Redirecting to login…</string>

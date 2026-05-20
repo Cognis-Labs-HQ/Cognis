@@ -4,6 +4,7 @@ import {
     isTrustedHttpUrl,
     matchesTrustedDomain,
     normalizeTrustedDomains,
+    parseSecuritySettings,
 } from "../reuse/security-settings.js";
 
 test("normalizeTrustedDomains trims, deduplicates, and strips surrounding dots", () => {
@@ -57,4 +58,12 @@ test("isTrustedHttpUrl allows same-origin and trusted external HTTP(S) URLs only
         }),
         false,
     );
+});
+
+test("parseSecuritySettings returns default settings when raw is null", () => {
+    const settings = parseSecuritySettings(null);
+    assert.deepEqual(settings?.trustedDomains, []);
+    assert.equal(settings?.registrationsEnabled, false);
+    assert.equal(settings?.userValidationMode, "none");
+    assert.equal(settings?.requireTeacherManualApproval, true);
 });

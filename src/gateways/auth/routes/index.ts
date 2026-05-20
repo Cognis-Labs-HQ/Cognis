@@ -8,6 +8,7 @@ import {
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthGateway } from "@cognis/core";
 import type { LocalAccountStore } from "../../../api/reuse/account-store.js";
+import { validateUsername } from "../../../api/reuse/account-store.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import { getAuthClaims } from "../guard.js";
 
@@ -77,13 +78,31 @@ export function createAuthRoutes(
                 );
                 return true;
             }
+            const usernameError = validateUsername(username);
+            if (usernameError) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: usernameError,
+                            message: "Invalid username format.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const result = await accountStore.register(
                 username,
                 password,
                 "user",
                 displayName,
             );
-            await createProfile?.(username, username, "user", displayName);
+            await createProfile?.(
+                result.username,
+                result.username,
+                "user",
+                displayName,
+            );
             const verifyToken = issueAccessToken(
                 result.username,
                 result.role ?? "user",

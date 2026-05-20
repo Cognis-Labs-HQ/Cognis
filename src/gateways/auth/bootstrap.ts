@@ -33,6 +33,12 @@ import type { AuthProviderAdapter } from "./gateway.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
+import { validateUsername } from "../../api/reuse/account-store.js";
+import {
+    AUTH_PASSWORD_POLICY_KEY,
+    defaultPasswordPolicy,
+    parsePasswordPolicy,
+} from "./password-policy.js";
 
 interface AuthAccountStore {
     ensureSchema(): Promise<void>;
@@ -164,6 +170,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const uiDir = path.resolve(process.cwd(), "src", "gateways", "auth", "ui");
     ctx.uiRegistry?.registerStaticDir("auth", uiDir);
+    ctx.uiRegistry?.registerAdminSection({
+        id: "authentication",
+        label: "Authentication",
+        scriptUrl: "/static/gateways/auth/admin-section.js",
+        stringsBaseUrl: "/static/gateways/auth/languages",
+    });
     ctx.uiRegistry?.registerSettingsSection({
         id: "security",
         label: "Security",
@@ -341,6 +353,57 @@ function createAuthGatewayRoutes(
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/auth/password-policy" &&
+            req.method === "GET"
+        ) {
+            const prefStore =
+                capabilities.get<UserPreferenceStore>("preferences:store");
+            let policy = defaultPasswordPolicy();
+            if (prefStore) {
+                const raw = await prefStore
+                    .get("__system__", AUTH_PASSWORD_POLICY_KEY)
+                    .catch(() => null);
+                if (raw) {
+                    try {
+                        policy = parsePasswordPolicy(JSON.parse(raw));
+                    } catch {
+                        policy = defaultPasswordPolicy();
+                    }
+                }
+            }
+            log?.("debug", "Served password policy.", logMeta);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: policy }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/password-policy" &&
+            req.method === "PUT"
+        ) {
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const body = await readJson(req);
+            const policy = parsePasswordPolicy(body);
+            const prefStore =
+                capabilities.get<UserPreferenceStore>("preferences:store");
+            if (prefStore) {
+                await prefStore.set(
+                    "__system__",
+                    AUTH_PASSWORD_POLICY_KEY,
+                    JSON.stringify(policy),
+                );
+            }
+            log?.("info", "Updated password policy.", {
+                ...logMeta,
+                accountId: claims.sub,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
+            return true;
+        }
+
         if (url.pathname === "/api/v1/auth/register" && req.method === "POST") {
             if (!(await registrationsEnabled())) {
                 log?.(
@@ -379,6 +442,24 @@ function createAuthGatewayRoutes(
                         error: {
                             code: "bad_request",
                             message: "username and password are required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const usernameError = validateUsername(username);
+            if (usernameError) {
+                log?.(
+                    "warn",
+                    "Rejected public registration with invalid username.",
+                    { ...logMeta, username, usernameError },
+                );
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: usernameError,
+                            message: "Invalid username format.",
                         },
                     }),
                 );

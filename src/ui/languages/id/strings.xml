@@ -231,6 +231,15 @@
   <string name="ui.app.register.password">Kata sandi</string>
   <string name="ui.app.register.confirm_password">Konfirmasi kata sandi</string>
   <string name="ui.app.register.error.password_mismatch">Kata sandi tidak cocok.</string>
+  <string name="ui.app.register.error.password_policy">Kata sandi tidak memenuhi persyaratan.</string>
+  <string name="ui.app.register.error.password_too_short">Harus minimal {min} karakter.</string>
+  <string name="ui.app.register.error.password_requires_uppercase">Harus mengandung huruf kapital.</string>
+  <string name="ui.app.register.error.password_requires_lowercase">Harus mengandung huruf kecil.</string>
+  <string name="ui.app.register.error.password_requires_digit">Harus mengandung angka.</string>
+  <string name="ui.app.register.error.password_requires_special">Harus mengandung karakter khusus.</string>
+  <string name="ui.app.register.error.username_invalid">Nama pengguna hanya boleh mengandung karakter ASCII yang dapat dicetak.</string>
+  <string name="ui.app.register.error.username_too_long">Nama pengguna maksimal 25 karakter.</string>
+  <string name="ui.app.register.error.username_not_lowercase">Nama pengguna harus seluruhnya huruf kecil.</string>
   <string name="ui.app.register.submit">Buat akun</string>
   <string name="ui.app.register.closed">Pendaftaran terbuka saat ini dinonaktifkan.</string>
   <string name="ui.app.register.success">Akun berhasil dibuat. Mengalihkan ke login…</string>

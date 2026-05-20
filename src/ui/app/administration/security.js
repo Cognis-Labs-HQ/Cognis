@@ -132,6 +132,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         originalUserValidationMode = currentUserValidationMode;
         originalTeacherManualApproval =
             settings.requireTeacherManualApproval !== false;
+
         input.value = originalDomains.join(", ");
         const validationSelect = root.querySelector(
             "#security-user-validation-mode",

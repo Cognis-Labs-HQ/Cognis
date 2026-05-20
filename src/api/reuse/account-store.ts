@@ -90,6 +90,25 @@ function hashPassword(input: string): string {
     );
 }
 
+/** Lowercases a username to enable case-insensitive lookups. */
+export function normalizeUsername(username: string): string {
+    return username.toLowerCase();
+}
+
+/**
+ * Validates username format: printable ASCII only, max 25 characters,
+ * and must be all-lowercase (case-insensitive storage is enforced by
+ * requiring lower-case at input rather than silently normalizing).
+ * Returns null when valid, or an error code string when invalid.
+ */
+export function validateUsername(username: string): string | null {
+    if (!username) return "username_required";
+    if (username.length > 25) return "username_too_long";
+    if (!/^[\x21-\x7E]+$/.test(username)) return "username_invalid";
+    if (username !== username.toLowerCase()) return "username_not_lowercase";
+    return null;
+}
+
 /**
  * In-memory implementation of LocalAccountStore for use in tests.
  * No persistence — state resets on every instantiation.
@@ -105,6 +124,8 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         role: "user" | "teacher" | "moderator" | "admin" = "user",
         displayName?: string,
     ) {
+        const validationError = validateUsername(username);
+        if (validationError) throw new Error(validationError);
         if (this.accounts.has(username)) throw new Error("username_taken");
         this.accounts.set(username, {
             passwordHash: hashPassword(password),
@@ -125,7 +146,8 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         username: string,
         password: string,
     ): Promise<AuthContext | null> {
-        const account = this.accounts.get(username);
+        const lowercaseUsername = normalizeUsername(username);
+        const account = this.accounts.get(lowercaseUsername);
         if (
             !account ||
             !account.enabled ||
@@ -134,15 +156,15 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             return null;
         }
         return {
-            accountId: username,
+            accountId: lowercaseUsername,
             provider: "local",
-            externalUserId: username,
+            externalUserId: lowercaseUsername,
             role: account.role,
         };
     }
 
     async has(username: string) {
-        return this.accounts.has(username);
+        return this.accounts.has(normalizeUsername(username));
     }
 
     async list() {
@@ -158,47 +180,47 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         username: string,
         role: "user" | "teacher" | "moderator" | "admin",
     ) {
-        const account = this.accounts.get(username);
+        const account = this.accounts.get(normalizeUsername(username));
         if (!account) throw new Error("not_found");
         account.role = role;
     }
 
     async setPassword(username: string, password: string) {
-        const account = this.accounts.get(username);
+        const account = this.accounts.get(normalizeUsername(username));
         if (!account) throw new Error("not_found");
         account.passwordHash = hashPassword(password);
     }
 
     async setFounder(username: string, isFounder: boolean) {
-        const account = this.accounts.get(username);
+        const account = this.accounts.get(normalizeUsername(username));
         if (!account) throw new Error("not_found");
         account.isFounder = isFounder;
     }
 
     async isFounder(username: string): Promise<boolean> {
-        const account = this.accounts.get(username);
+        const account = this.accounts.get(normalizeUsername(username));
         if (!account) return false;
         return account.isFounder;
     }
 
     async exists(username: string): Promise<boolean> {
-        return this.accounts.has(username);
+        return this.accounts.has(normalizeUsername(username));
     }
 
     async getDisplayName(username: string): Promise<string | null> {
-        const account = this.accounts.get(username);
+        const account = this.accounts.get(normalizeUsername(username));
         if (!account) return null;
         return account.displayName ?? username;
     }
 
     async setEnabled(username: string, enabled: boolean) {
-        const account = this.accounts.get(username);
+        const account = this.accounts.get(normalizeUsername(username));
         if (!account) throw new Error("not_found");
         account.enabled = enabled;
     }
 
     async delete(username: string) {
-        this.accounts.delete(username);
+        this.accounts.delete(normalizeUsername(username));
     }
 
     async getInfo(username: string): Promise<{
@@ -209,10 +231,11 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         isFounder: boolean;
         role?: string;
     } | null> {
-        const account = this.accounts.get(username);
+        const lowercaseUsername = normalizeUsername(username);
+        const account = this.accounts.get(lowercaseUsername);
         if (!account) return null;
         return {
-            username,
+            username: lowercaseUsername,
             createdAt: null,
             lastLogin: account.lastLogin,
             enabled: account.enabled,
@@ -222,7 +245,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
     }
 
     async updateLastLogin(username: string): Promise<void> {
-        const account = this.accounts.get(username);
+        const account = this.accounts.get(normalizeUsername(username));
         if (!account) return;
         account.lastLogin = new Date().toISOString();
     }

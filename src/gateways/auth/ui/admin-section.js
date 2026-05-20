@@ -1,7 +1,8 @@
 /**
  * Authentication gateway admin section.
  *
- * Contributes the Security panel to the Administration page.
+ * Contributes the Authentication panel to the Administration page, covering
+ * authentication adapter management and the password policy configuration.
  * Exported as a browser ES module; the admin page dynamically imports it
  * via the UIRegistry mechanism.
  *
@@ -25,12 +26,39 @@ export function createAdminSection({
     showToast,
 }) {
     let adapters = [];
+    let passwordPolicy = {
+        minLength: 8,
+        requireUppercase: false,
+        requireLowercase: false,
+        requireDigit: false,
+        requireSpecial: false,
+    };
 
-    const dataReady = apiFetch("/api/v1/gateways/auth/adapters")
-        .then((res) => (res.ok ? res.json() : { data: [] }))
-        .then((payload) => {
-            adapters = payload.data ?? [];
-        });
+    const dataReady = Promise.all([
+        apiFetch("/api/v1/gateways/auth/adapters")
+            .then((res) => (res.ok ? res.json() : { data: [] }))
+            .then((payload) => {
+                adapters = payload.data ?? [];
+            }),
+        apiFetch("/api/v1/auth/password-policy")
+            .then((res) => (res.ok ? res.json() : { data: {} }))
+            .then((payload) => {
+                if (payload.data && typeof payload.data === "object") {
+                    passwordPolicy = {
+                        minLength:
+                            typeof payload.data.minLength === "number"
+                                ? payload.data.minLength
+                                : 8,
+                        requireUppercase:
+                            payload.data.requireUppercase === true,
+                        requireLowercase:
+                            payload.data.requireLowercase === true,
+                        requireDigit: payload.data.requireDigit === true,
+                        requireSpecial: payload.data.requireSpecial === true,
+                    };
+                }
+            }),
+    ]).then(() => undefined);
 
     function renderAdapters() {
         if (!adapters.length) {
@@ -75,6 +103,48 @@ export function createAdminSection({
       `;
             })
             .join("");
+    }
+
+    function renderPasswordPolicy() {
+        return `
+      <div class="auth-password-policy">
+        <div class="auth-policy-field">
+          <label for="auth-policy-min-length">${i18n.t("gateway.auth.policy_min_length")}</label>
+          <input
+            id="auth-policy-min-length"
+            class="auth-policy-input"
+            type="number"
+            min="1"
+            max="128"
+            value="${escapeHtml(String(passwordPolicy.minLength))}"
+          />
+        </div>
+        <div class="auth-policy-toggles">
+          ${renderPolicyToggle("auth-policy-require-uppercase", "gateway.auth.policy_require_uppercase", "requireUppercase")}
+          ${renderPolicyToggle("auth-policy-require-lowercase", "gateway.auth.policy_require_lowercase", "requireLowercase")}
+          ${renderPolicyToggle("auth-policy-require-digit", "gateway.auth.policy_require_digit", "requireDigit")}
+          ${renderPolicyToggle("auth-policy-require-special", "gateway.auth.policy_require_special", "requireSpecial")}
+        </div>
+        <div class="auth-policy-actions">
+          <button class="btn-confirm btn-animated auth-policy-save-btn" type="button">
+            ${i18n.t("ui.reuse.save")}
+          </button>
+        </div>
+      </div>
+    `;
+    }
+
+    function renderPolicyToggle(id, labelKey, fieldName) {
+        const checked = passwordPolicy[fieldName] ? " checked" : "";
+        return `
+      <div class="auth-policy-toggle-row">
+        <label for="${escapeHtml(id)}">${i18n.t(labelKey)}</label>
+        <label class="switch">
+          <input id="${escapeHtml(id)}" type="checkbox" name="${escapeHtml(fieldName)}"${checked} />
+          <span class="slider"></span>
+        </label>
+      </div>
+    `;
     }
 
     async function openAdapterConfig(adapterId, adapterName, schema) {
@@ -193,7 +263,9 @@ export function createAdminSection({
             btn.addEventListener("click", async () => {
                 const adapterId = btn.dataset.adapterId;
                 const isEnabled = btn.dataset.enabled === "true";
-                const adapter = adapters.find((a) => a.id === adapterId);
+                const adapter = adapters.find(
+                    (adapter) => adapter.id === adapterId,
+                );
 
                 if (!isEnabled && adapter) {
                     const hasConfig =
@@ -230,7 +302,9 @@ export function createAdminSection({
         configBtns.forEach((btn) => {
             btn.addEventListener("click", async () => {
                 const adapterId = btn.dataset.adapterId;
-                const adapter = adapters.find((a) => a.id === adapterId);
+                const adapter = adapters.find(
+                    (adapter) => adapter.id === adapterId,
+                );
                 if (!adapter) return;
                 const result = await openAdapterConfig(
                     adapterId,
@@ -255,6 +329,58 @@ export function createAdminSection({
         });
     }
 
+    function bindPasswordPolicy(root) {
+        const saveBtn = root.querySelector(".auth-policy-save-btn");
+        if (!saveBtn) return;
+        saveBtn.addEventListener("click", async () => {
+            const minLengthInput = root.querySelector(
+                "#auth-policy-min-length",
+            );
+            const rawMin =
+                minLengthInput instanceof HTMLInputElement
+                    ? parseInt(minLengthInput.value, 10)
+                    : 8;
+            const updatedPolicy = {
+                minLength: Number.isFinite(rawMin) && rawMin >= 1 ? rawMin : 8,
+                requireUppercase: Boolean(
+                    root.querySelector(
+                        '#auth-policy-require-uppercase input[type="checkbox"]',
+                    )?.checked,
+                ),
+                requireLowercase: Boolean(
+                    root.querySelector(
+                        '#auth-policy-require-lowercase input[type="checkbox"]',
+                    )?.checked,
+                ),
+                requireDigit: Boolean(
+                    root.querySelector(
+                        '#auth-policy-require-digit input[type="checkbox"]',
+                    )?.checked,
+                ),
+                requireSpecial: Boolean(
+                    root.querySelector(
+                        '#auth-policy-require-special input[type="checkbox"]',
+                    )?.checked,
+                ),
+            };
+            const res = await apiFetch("/api/v1/auth/password-policy", {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(updatedPolicy),
+            });
+            if (res.ok) {
+                passwordPolicy = updatedPolicy;
+                showToast(i18n.t("ui.app.admin.settings_saved"), {
+                    variant: "success",
+                });
+            } else {
+                showToast(i18n.t("ui.app.admin.security.save_failed"), {
+                    variant: "error",
+                });
+            }
+        });
+    }
+
     return {
         id: "authentication",
         label: i18n.t("ui.reuse.authentication"),
@@ -271,9 +397,16 @@ export function createAdminSection({
                     render: () =>
                         `<div class="auth-providers-panel">${renderAdapters()}</div>`,
                 },
+                {
+                    id: "auth-password-policy",
+                    label: i18n.t("gateway.auth.password_policy"),
+                    pinned: true,
+                    render: () => renderPasswordPolicy(),
+                },
             ],
             onRender: (root) => {
                 bindAdapters(root);
+                bindPasswordPolicy(root);
             },
         },
     };
