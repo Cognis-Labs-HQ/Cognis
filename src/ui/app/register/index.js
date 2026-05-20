@@ -106,7 +106,6 @@ function buildPasswordCriteria(policy, i18n) {
  * @param {Array<{ test: (value: string) => boolean, message: string }>} criteria
  * @param {object} i18n
  * @param {{ signal?: AbortSignal }} [options]
- * @param {object} i18n
  * @returns {{ isValid: () => boolean, detach: () => void }}
  */
 function attachPasswordPolicyList(passwordInput, criteria, i18n, options = {}) {
@@ -613,7 +612,6 @@ export async function mount(root, { signal } = {}) {
                                 },
                                 {
                                     test: (value) =>
-                                        value === "" ||
                                         value === value.toLowerCase(),
                                     message: i18n.t(
                                         "ui.app.register.error.username_not_lowercase",
