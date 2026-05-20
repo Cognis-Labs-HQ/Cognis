@@ -264,7 +264,7 @@ export function createAdminSection({
                 const adapterId = btn.dataset.adapterId;
                 const isEnabled = btn.dataset.enabled === "true";
                 const adapter = adapters.find(
-                    (entry) => entry.id === adapterId,
+                    (adapter) => adapter.id === adapterId,
                 );
 
                 if (!isEnabled && adapter) {
@@ -303,7 +303,7 @@ export function createAdminSection({
             btn.addEventListener("click", async () => {
                 const adapterId = btn.dataset.adapterId;
                 const adapter = adapters.find(
-                    (entry) => entry.id === adapterId,
+                    (adapter) => adapter.id === adapterId,
                 );
                 if (!adapter) return;
                 const result = await openAdapterConfig(
