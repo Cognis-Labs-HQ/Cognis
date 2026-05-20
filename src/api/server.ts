@@ -80,6 +80,10 @@ export interface ApiDependencies {
     routeContext?: RouteContext;
 }
 
+/**
+ * Resolves a module's startup enabled state from highest to lowest priority:
+ * core-module requirement, persisted runtime override, then manifest default.
+ */
 export function resolveInitialModuleEnabledState(
     manifest: Pick<ModuleManifest, "id" | "class" | "enabledByDefault">,
     persistedState: boolean | undefined,

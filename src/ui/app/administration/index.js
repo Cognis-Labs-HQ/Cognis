@@ -124,8 +124,7 @@ function resolveAdapterControlUrl(
 }
 
 /**
- * Synchronizes module, gateway, and adapter toggle controls after UI refresh so
- * checkbox state reflects the latest loaded runtime status. This
+ * Synchronizes module, gateway, and adapter toggle controls after UI refresh so checkbox state reflects the latest loaded runtime status. This
  * function queries the current DOM toggle nodes and should run after
  * page-composer rerender/refresh operations.
  */
