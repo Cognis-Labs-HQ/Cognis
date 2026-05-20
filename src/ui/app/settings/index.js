@@ -20,7 +20,10 @@ import {
 import { initLanguagePrefs } from "./language-prefs.js";
 import { initGeneralPrefs } from "./general-prefs.js";
 import { initDateTimePrefs } from "./datetime-prefs.js";
-import { initReleaseChangelogPrefs } from "./release-changelog-prefs.js";
+import {
+    initReleaseChangelogPrefs,
+    shouldShowReleaseChangelog,
+} from "./release-changelog-prefs.js";
 import { applyTimezoneToLocalStorage } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
@@ -284,10 +287,10 @@ export async function mount(root, { signal } = {}) {
               <input id="email-add-input" type="email" placeholder="${i18n.t("ui.app.settings.emails_add_placeholder")}" />
               <button id="email-add-btn" class="btn-confirm btn-animated" type="button">${i18n.t("ui.app.settings.emails_add")}</button>
             </div>
-            <h3>
-              ${escapeHtml(i18n.t("ui.app.settings.show_changelogs"))}
+            <div class="font-heading-row">
+              <h3>${escapeHtml(i18n.t("ui.app.settings.show_changelogs"))}</h3>
               ${renderInfoTooltip(i18n.t("ui.app.settings.show_changelogs_hint"), tooltipAria)}
-            </h3>
+            </div>
             <div>
               <label class="switch">
                 <input id="pref-release-changelog-show" type="checkbox" />
@@ -603,7 +606,7 @@ export async function mount(root, { signal } = {}) {
                     normalizeMessageStyle(loadedPrefs?.messageStyle),
                 releaseChangelogShow:
                     releaseNotesPrefs?.getShowReleaseChangelogs() ??
-                    loadedPrefs?.releaseChangelogShow !== false,
+                    shouldShowReleaseChangelog(loadedPrefs),
                 releaseChangelogSeenSlugs:
                     loadedPrefs?.releaseChangelogSeenSlugs ?? [],
                 releaseChangelogLastVersion:

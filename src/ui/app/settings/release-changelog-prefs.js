@@ -4,8 +4,10 @@
  * Manages the release changelog visibility preference toggle.
  *
  * Public exports:
+ *   shouldShowReleaseChangelog(existingPrefs) — resolves the default-on
+ *     release changelog visibility state from persisted preferences.
  *   initReleaseChangelogPrefs(root, options) — initialises and manages the
- *   release-changelog settings control state within root.
+ *     release-changelog settings control state within root.
  *
  * Usage:
  *   const releasePrefs = initReleaseChangelogPrefs(root, {
@@ -18,12 +20,15 @@
  * @param {{ existingPrefs?: object|null, onDirtyChange?: (dirty: boolean) => void }} options
  * @returns {{ refresh: () => void, getShowReleaseChangelogs: () => boolean, commit: () => void, discard: () => void }}
  */
+export function shouldShowReleaseChangelog(existingPrefs) {
+    return existingPrefs?.releaseChangelogShow !== false;
+}
+
 export function initReleaseChangelogPrefs(
     root,
     { existingPrefs, onDirtyChange },
 ) {
-    let savedShowReleaseChangelogs =
-        existingPrefs?.releaseChangelogShow !== false;
+    let savedShowReleaseChangelogs = shouldShowReleaseChangelog(existingPrefs);
     let currentShowReleaseChangelogs = savedShowReleaseChangelogs;
 
     function syncCheckboxState() {
