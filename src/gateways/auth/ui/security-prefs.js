@@ -3,7 +3,7 @@ import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
-export function createSettingsSection({ i18n }) {
+export function createSettingsSection({ i18n, root }) {
     let capability = null;
 
     async function loadCapability() {
@@ -149,7 +149,7 @@ export function createSettingsSection({ i18n }) {
         heading: i18n.t("gateway.auth.security.section_title"),
         preferenceKey: "settings-security-layout",
         renderContent,
-        async onRender(root) {
+        async onRender() {
             await loadCapability();
             const panel = root.querySelector("#auth-security-reset-panel");
             if (panel) {

@@ -8,16 +8,21 @@ Registrasi section Administration → Authentication dihapus agar kontrol provid
 
 Adapter auth dimatangkan dengan kontrak kemampuan reset kata sandi dan pengaturan LDAP writeback opt-in melalui skema konfigurasi adapter.
 
+Error runtime pada bagian Keamanan di halaman Settings diperbaiki dengan mengikat section ke root Settings yang benar; string keamanan yang hilang juga diperbaiki dengan menambahkan penggabungan i18n berbasis bundle komponen untuk settings section.
+
 ## Changed Files/Components
 
 - `src/gateways/auth/bootstrap.ts` (registrasi section settings, route reset kata sandi, pengikatan provider pada token)
 - `src/gateways/auth/gateway.ts` (kontrak dukungan reset adapter dan orkestrasi gateway)
 - `src/gateways/auth/access-tokens.ts`, `src/gateways/auth/guard.ts` (claim token terikat provider)
-- `src/gateways/auth/ui/security-prefs.js` dan `src/gateways/auth/ui/languages/*/strings.xml` (UI keamanan baru di settings)
+- `src/gateways/auth/ui/security-prefs.js` dan `src/gateways/auth/ui/languages/*/strings.xml` (UI keamanan baru di settings dan perbaikan render)
 - `src/adapters/auth/local/*`, `src/adapters/auth/ldap/*`, `src/adapters/auth/oidc/*`, `src/adapters/auth/saml/*` (kematangan adapter dan kemampuan baru)
 - `src/gateways/auth/tests/*` dan `src/adapters/auth/*/tests/*` (pembaruan cakupan tes)
 - Manifest versi dan `src/docs/versions.*.md`
+- `src/ui/app/settings/index.js` (ekstensi i18n settings section untuk string komponen)
 
 ## Commit Links
 
-- https://github.com/le-firehawk/Cognis/commit/5943c6b5689c6a4ddc9fde487bc128f45bd1be25
+- https://github.com/le-firehawk/Cognis/commit/a33f0faa
+- https://github.com/le-firehawk/Cognis/commit/9490a011
+- https://github.com/le-firehawk/Cognis/commit/8ba1d8b2

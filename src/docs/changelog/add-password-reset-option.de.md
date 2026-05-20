@@ -8,16 +8,21 @@ Die Registrierung der Administration-Sektion „Authentication“ wurde entfernt
 
 Die Auth-Adapter wurden erweitert: mit Passwort-Reset-Fähigkeitsverträgen und optionalen LDAP-Writeback-Einstellungen im Adapter-Konfigurationsschema.
 
+Der Laufzeitfehler im Sicherheitsbereich der Einstellungen wurde behoben, indem die Sektion korrekt an den Settings-Root gebunden wurde; zusätzlich wurden fehlende Security-Strings behoben, indem Settings-Sektionen ihre komponenteneigenen Sprachdateien zusammenführen.
+
 ## Changed Files/Components
 
 - `src/gateways/auth/bootstrap.ts` (Settings-Sektion, Passwort-Reset-Routen, Provider-Bindung für Tokens)
 - `src/gateways/auth/gateway.ts` (Reset-Unterstützung und Gateway-Orchestrierung)
 - `src/gateways/auth/access-tokens.ts`, `src/gateways/auth/guard.ts` (providergebundene Token-Claims)
-- `src/gateways/auth/ui/security-prefs.js` und `src/gateways/auth/ui/languages/*/strings.xml` (neue Sicherheitsoberfläche in Einstellungen)
+- `src/gateways/auth/ui/security-prefs.js` und `src/gateways/auth/ui/languages/*/strings.xml` (neue Sicherheitsoberfläche in Einstellungen und Render-Fix)
 - `src/adapters/auth/local/*`, `src/adapters/auth/ldap/*`, `src/adapters/auth/oidc/*`, `src/adapters/auth/saml/*` (Adapter-Reifung und Fähigkeiten)
 - `src/gateways/auth/tests/*` und `src/adapters/auth/*/tests/*` (Testabdeckung)
 - Versionsmanifeste und `src/docs/versions.*.md`
+- `src/ui/app/settings/index.js` (i18n-Erweiterung für komponenteneigene Settings-Strings)
 
 ## Commit Links
 
-- https://github.com/le-firehawk/Cognis/commit/5943c6b5689c6a4ddc9fde487bc128f45bd1be25
+- https://github.com/le-firehawk/Cognis/commit/a33f0faa
+- https://github.com/le-firehawk/Cognis/commit/9490a011
+- https://github.com/le-firehawk/Cognis/commit/8ba1d8b2
