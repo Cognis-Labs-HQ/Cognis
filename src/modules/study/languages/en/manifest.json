@@ -1,7 +1,7 @@
 {
     "id": "study-language-en",
     "name": "Cognis English",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "class": "extension",
     "enabledByDefault": true,
     "coreApiVersion": "v1",
