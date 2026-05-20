@@ -40,6 +40,13 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalUserValidationMode = "none";
     let currentUserValidationMode = "none";
     let originalTeacherManualApproval = true;
+    let originalPasswordPolicy = {
+        minLength: 8,
+        requireUppercase: false,
+        requireLowercase: false,
+        requireDigit: false,
+        requireSpecial: false,
+    };
 
     async function loadSettings() {
         const res = await apiFetch("/api/v1/system/security");
@@ -62,6 +69,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         registrationsEnabled,
         userValidationMode,
         requireTeacherManualApproval,
+        passwordPolicy,
     ) {
         const res = await apiFetch("/api/v1/system/security", {
             method: "PUT",
@@ -71,6 +79,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 registrationsEnabled,
                 userValidationMode,
                 requireTeacherManualApproval,
+                passwordPolicy,
             }),
         });
         if (!res.ok) throw new Error("save_failed");
@@ -103,6 +112,47 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return input.checked;
     }
 
+    function getPasswordPolicyValue() {
+        const minLengthInput = root.querySelector(
+            "#security-password-min-length",
+        );
+        const requireUppercaseInput = root.querySelector(
+            "#security-password-require-uppercase",
+        );
+        const requireLowercaseInput = root.querySelector(
+            "#security-password-require-lowercase",
+        );
+        const requireDigitInput = root.querySelector(
+            "#security-password-require-digit",
+        );
+        const requireSpecialInput = root.querySelector(
+            "#security-password-require-special",
+        );
+        const rawMin =
+            minLengthInput instanceof HTMLInputElement
+                ? parseInt(minLengthInput.value, 10)
+                : 8;
+        return {
+            minLength: Number.isFinite(rawMin) && rawMin >= 1 ? rawMin : 8,
+            requireUppercase:
+                requireUppercaseInput instanceof HTMLInputElement
+                    ? requireUppercaseInput.checked
+                    : false,
+            requireLowercase:
+                requireLowercaseInput instanceof HTMLInputElement
+                    ? requireLowercaseInput.checked
+                    : false,
+            requireDigit:
+                requireDigitInput instanceof HTMLInputElement
+                    ? requireDigitInput.checked
+                    : false,
+            requireSpecial:
+                requireSpecialInput instanceof HTMLInputElement
+                    ? requireSpecialInput.checked
+                    : false,
+        };
+    }
+
     function markDirtyState() {
         const currentDomains = parseDomains(getInputValue()).join(",");
         const originalDomainsValue = originalDomains.join(",");
@@ -112,11 +162,23 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             getRegistrationsEnabledValue() !== currentPublicRegistrationEnabled;
         const teacherApprovalChanged =
             getTeacherManualApprovalValue() !== originalTeacherManualApproval;
+        const currentPolicy = getPasswordPolicyValue();
+        const policyChanged =
+            currentPolicy.minLength !== originalPasswordPolicy.minLength ||
+            currentPolicy.requireUppercase !==
+                originalPasswordPolicy.requireUppercase ||
+            currentPolicy.requireLowercase !==
+                originalPasswordPolicy.requireLowercase ||
+            currentPolicy.requireDigit !==
+                originalPasswordPolicy.requireDigit ||
+            currentPolicy.requireSpecial !==
+                originalPasswordPolicy.requireSpecial;
         onDirtyChange?.(
             currentDomains !== originalDomainsValue ||
                 modeChanged ||
                 registrationsChanged ||
-                teacherApprovalChanged,
+                teacherApprovalChanged ||
+                policyChanged,
         );
     }
 
@@ -132,6 +194,20 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         originalUserValidationMode = currentUserValidationMode;
         originalTeacherManualApproval =
             settings.requireTeacherManualApproval !== false;
+        if (settings.passwordPolicy) {
+            originalPasswordPolicy = {
+                minLength:
+                    typeof settings.passwordPolicy.minLength === "number"
+                        ? settings.passwordPolicy.minLength
+                        : 8,
+                requireUppercase:
+                    settings.passwordPolicy.requireUppercase === true,
+                requireLowercase:
+                    settings.passwordPolicy.requireLowercase === true,
+                requireDigit: settings.passwordPolicy.requireDigit === true,
+                requireSpecial: settings.passwordPolicy.requireSpecial === true,
+            };
+        }
         input.value = originalDomains.join(", ");
         const validationSelect = root.querySelector(
             "#security-user-validation-mode",
@@ -142,6 +218,21 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         const teacherApprovalToggle = root.querySelector(
             "#security-require-teacher-approval",
         );
+        const minLengthInput = root.querySelector(
+            "#security-password-min-length",
+        );
+        const requireUppercaseInput = root.querySelector(
+            "#security-password-require-uppercase",
+        );
+        const requireLowercaseInput = root.querySelector(
+            "#security-password-require-lowercase",
+        );
+        const requireDigitInput = root.querySelector(
+            "#security-password-require-digit",
+        );
+        const requireSpecialInput = root.querySelector(
+            "#security-password-require-special",
+        );
         if (validationSelect instanceof HTMLSelectElement) {
             validationSelect.value = currentUserValidationMode;
         }
@@ -150,6 +241,23 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         }
         if (teacherApprovalToggle instanceof HTMLInputElement) {
             teacherApprovalToggle.checked = originalTeacherManualApproval;
+        }
+        if (minLengthInput instanceof HTMLInputElement) {
+            minLengthInput.value = String(originalPasswordPolicy.minLength);
+        }
+        if (requireUppercaseInput instanceof HTMLInputElement) {
+            requireUppercaseInput.checked =
+                originalPasswordPolicy.requireUppercase;
+        }
+        if (requireLowercaseInput instanceof HTMLInputElement) {
+            requireLowercaseInput.checked =
+                originalPasswordPolicy.requireLowercase;
+        }
+        if (requireDigitInput instanceof HTMLInputElement) {
+            requireDigitInput.checked = originalPasswordPolicy.requireDigit;
+        }
+        if (requireSpecialInput instanceof HTMLInputElement) {
+            requireSpecialInput.checked = originalPasswordPolicy.requireSpecial;
         }
 
         input.addEventListener("input", () => {
@@ -163,6 +271,21 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             markDirtyState();
         });
         teacherApprovalToggle?.addEventListener("change", () => {
+            markDirtyState();
+        });
+        minLengthInput?.addEventListener("input", () => {
+            markDirtyState();
+        });
+        requireUppercaseInput?.addEventListener("change", () => {
+            markDirtyState();
+        });
+        requireLowercaseInput?.addEventListener("change", () => {
+            markDirtyState();
+        });
+        requireDigitInput?.addEventListener("change", () => {
+            markDirtyState();
+        });
+        requireSpecialInput?.addEventListener("change", () => {
             markDirtyState();
         });
     }
@@ -183,11 +306,13 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const registrationsEnabled = getRegistrationsEnabledValue();
             const requireTeacherManualApproval =
                 getTeacherManualApprovalValue();
+            const passwordPolicy = getPasswordPolicyValue();
             await persistSettings(
                 domains,
                 registrationsEnabled,
                 validationMode,
                 requireTeacherManualApproval,
+                passwordPolicy,
             );
             clearTrustedDomainsCache();
             if (registrationsEnabled !== currentPublicRegistrationEnabled) {
@@ -201,6 +326,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             currentUserValidationMode = validationMode;
             originalUserValidationMode = validationMode;
             originalTeacherManualApproval = requireTeacherManualApproval;
+            originalPasswordPolicy = passwordPolicy;
         },
 
         discard() {
@@ -225,6 +351,39 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             }
             if (teacherApprovalToggle instanceof HTMLInputElement) {
                 teacherApprovalToggle.checked = originalTeacherManualApproval;
+            }
+            const minLengthInput = root.querySelector(
+                "#security-password-min-length",
+            );
+            const requireUppercaseInput = root.querySelector(
+                "#security-password-require-uppercase",
+            );
+            const requireLowercaseInput = root.querySelector(
+                "#security-password-require-lowercase",
+            );
+            const requireDigitInput = root.querySelector(
+                "#security-password-require-digit",
+            );
+            const requireSpecialInput = root.querySelector(
+                "#security-password-require-special",
+            );
+            if (minLengthInput instanceof HTMLInputElement) {
+                minLengthInput.value = String(originalPasswordPolicy.minLength);
+            }
+            if (requireUppercaseInput instanceof HTMLInputElement) {
+                requireUppercaseInput.checked =
+                    originalPasswordPolicy.requireUppercase;
+            }
+            if (requireLowercaseInput instanceof HTMLInputElement) {
+                requireLowercaseInput.checked =
+                    originalPasswordPolicy.requireLowercase;
+            }
+            if (requireDigitInput instanceof HTMLInputElement) {
+                requireDigitInput.checked = originalPasswordPolicy.requireDigit;
+            }
+            if (requireSpecialInput instanceof HTMLInputElement) {
+                requireSpecialInput.checked =
+                    originalPasswordPolicy.requireSpecial;
             }
             onDirtyChange?.(false);
         },
@@ -282,6 +441,49 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.none"))}</option>
                 <option value="smtp">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.smtp"))}</option>
               </select>
+            </div>
+          </div>
+          <div class="components-section">
+            <h3 class="components-section-heading">
+              ${escapeHtml(i18n.t("ui.app.admin.security.password_policy_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.password_policy_hint"), tooltipAria)}
+            </h3>
+            <div class="security-field-row security-password-policy-row">
+              <label class="security-field-label" for="security-password-min-length">
+                ${escapeHtml(i18n.t("ui.app.admin.security.password_min_length_label"))}
+              </label>
+              <input
+                id="security-password-min-length"
+                type="number"
+                min="1"
+                max="128"
+                step="1"
+                class="security-number-input"
+              />
+            </div>
+            <div class="security-field-row">
+              <label class="security-checkbox-label">
+                <input id="security-password-require-uppercase" type="checkbox" />
+                ${escapeHtml(i18n.t("ui.app.admin.security.password_require_uppercase_label"))}
+              </label>
+            </div>
+            <div class="security-field-row">
+              <label class="security-checkbox-label">
+                <input id="security-password-require-lowercase" type="checkbox" />
+                ${escapeHtml(i18n.t("ui.app.admin.security.password_require_lowercase_label"))}
+              </label>
+            </div>
+            <div class="security-field-row">
+              <label class="security-checkbox-label">
+                <input id="security-password-require-digit" type="checkbox" />
+                ${escapeHtml(i18n.t("ui.app.admin.security.password_require_digit_label"))}
+              </label>
+            </div>
+            <div class="security-field-row">
+              <label class="security-checkbox-label">
+                <input id="security-password-require-special" type="checkbox" />
+                ${escapeHtml(i18n.t("ui.app.admin.security.password_require_special_label"))}
+              </label>
             </div>
           </div>
         </div>

@@ -12,4 +12,10 @@
   <string name="gateway.auth.security.required">Beide Passwortfelder sind erforderlich.</string>
   <string name="gateway.auth.security.reset_failed">Zurücksetzen des Passworts fehlgeschlagen.</string>
   <string name="gateway.auth.security.reset_success">Passwort aktualisiert. Bitte melden Sie sich erneut an.</string>
+  <string name="gateway.auth.security.password_policy">Das Passwort erfüllt die Anforderungen nicht.</string>
+  <string name="gateway.auth.security.password_too_short">Muss mindestens {min} Zeichen enthalten.</string>
+  <string name="gateway.auth.security.password_requires_uppercase">Muss einen Großbuchstaben enthalten.</string>
+  <string name="gateway.auth.security.password_requires_lowercase">Muss einen Kleinbuchstaben enthalten.</string>
+  <string name="gateway.auth.security.password_requires_digit">Muss eine Ziffer enthalten.</string>
+  <string name="gateway.auth.security.password_requires_special">Muss ein Sonderzeichen enthalten.</string>
 </resources>

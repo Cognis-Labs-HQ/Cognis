@@ -364,3 +364,91 @@ test("POST /api/v1/auth/logout succeeds with no cookie (idempotent)", async () =
 
     assert.equal(status, 200);
 });
+
+test("register rejects usernames with non-ASCII characters", async () => {
+    const accountStore = new VolatileLocalAccountStore();
+    const gateway = makeGateway(accountStore);
+    const route = createAuthRoutes(gateway, accountStore);
+    let status = 0;
+    let payload = "";
+
+    await route(
+        requestWithBody("POST", { username: "üser", password: "pass" }),
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(text: string) {
+                payload = text;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/auth/register"),
+    );
+
+    assert.equal(status, 400);
+    assert.match(payload, /"username_invalid"/);
+});
+
+test("register rejects usernames longer than 25 characters", async () => {
+    const accountStore = new VolatileLocalAccountStore();
+    const gateway = makeGateway(accountStore);
+    const route = createAuthRoutes(gateway, accountStore);
+    let status = 0;
+    let payload = "";
+
+    await route(
+        requestWithBody("POST", {
+            username: "abcdefghijklmnopqrstuvwxyz",
+            password: "pass",
+        }),
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(text: string) {
+                payload = text;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/auth/register"),
+    );
+
+    assert.equal(status, 400);
+    assert.match(payload, /"username_too_long"/);
+});
+
+test("register normalizes username to lowercase and login works with original casing", async () => {
+    const accountStore = new VolatileLocalAccountStore();
+    const gateway = makeGateway(accountStore);
+    const route = createAuthRoutes(gateway, accountStore);
+    let regStatus = 0;
+    let regPayload = "";
+
+    await route(
+        requestWithBody("POST", { username: "Alice", password: "pw123" }),
+        {
+            writeHead(code: number) {
+                regStatus = code;
+            },
+            end(text: string) {
+                regPayload = text;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/auth/register"),
+    );
+
+    assert.equal(regStatus, 201);
+    assert.match(regPayload, /"username":"alice"/);
+
+    let loginStatus = 0;
+    await route(
+        requestWithBody("POST", { username: "ALICE", password: "pw123" }),
+        {
+            writeHead(code: number) {
+                loginStatus = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/auth/login"),
+    );
+    assert.equal(loginStatus, 200);
+});

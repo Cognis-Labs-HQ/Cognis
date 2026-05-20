@@ -12,4 +12,10 @@
   <string name="gateway.auth.security.required">Kedua kolom kata sandi wajib diisi.</string>
   <string name="gateway.auth.security.reset_failed">Reset kata sandi gagal.</string>
   <string name="gateway.auth.security.reset_success">Kata sandi diperbarui. Silakan masuk kembali.</string>
+  <string name="gateway.auth.security.password_policy">Kata sandi tidak memenuhi persyaratan.</string>
+  <string name="gateway.auth.security.password_too_short">Harus minimal {min} karakter.</string>
+  <string name="gateway.auth.security.password_requires_uppercase">Harus mengandung huruf kapital.</string>
+  <string name="gateway.auth.security.password_requires_lowercase">Harus mengandung huruf kecil.</string>
+  <string name="gateway.auth.security.password_requires_digit">Harus mengandung angka.</string>
+  <string name="gateway.auth.security.password_requires_special">Harus mengandung karakter khusus.</string>
 </resources>

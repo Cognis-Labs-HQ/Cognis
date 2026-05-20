@@ -33,6 +33,12 @@ import type { AuthProviderAdapter } from "./gateway.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
+import { validateUsername } from "../../api/reuse/account-store.js";
+import {
+    parseSecuritySettings,
+    defaultPasswordPolicy,
+    SECURITY_SETTINGS_KEY,
+} from "../../api/reuse/security-settings.js";
 
 interface AuthAccountStore {
     ensureSchema(): Promise<void>;
@@ -341,6 +347,28 @@ function createAuthGatewayRoutes(
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/auth/password-policy" &&
+            req.method === "GET"
+        ) {
+            const prefStore =
+                capabilities.get<UserPreferenceStore>("preferences:store");
+            let policy = defaultPasswordPolicy();
+            if (prefStore) {
+                const raw = await prefStore
+                    .get("__system__", SECURITY_SETTINGS_KEY)
+                    .catch(() => null);
+                const settings = parseSecuritySettings(raw ?? null);
+                if (settings?.passwordPolicy) {
+                    policy = settings.passwordPolicy;
+                }
+            }
+            log?.("debug", "Served password policy.", logMeta);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: policy }));
+            return true;
+        }
+
         if (url.pathname === "/api/v1/auth/register" && req.method === "POST") {
             if (!(await registrationsEnabled())) {
                 log?.(
@@ -379,6 +407,24 @@ function createAuthGatewayRoutes(
                         error: {
                             code: "bad_request",
                             message: "username and password are required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const usernameError = validateUsername(username);
+            if (usernameError) {
+                log?.(
+                    "warn",
+                    "Rejected public registration with invalid username.",
+                    { ...logMeta, username, usernameError },
+                );
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: usernameError,
+                            message: "Invalid username format.",
                         },
                     }),
                 );

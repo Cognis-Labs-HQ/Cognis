@@ -21,6 +21,7 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { clearStoredAuthSession } from "../../reuse/auth-session.js";
+import { attachCriteriaCheck } from "../../reuse/criteria-check.js";
 
 async function resetAuthSessionForRegister() {
     const hadStoredSession =
@@ -36,6 +37,55 @@ async function resetAuthSessionForRegister() {
     }
     clearStoredAuthSession();
     return hadStoredSession;
+}
+
+/**
+ * Builds a list of criteria for the criteria-check module from a password policy.
+ *
+ * @param {{ minLength: number, requireUppercase: boolean, requireLowercase: boolean, requireDigit: boolean, requireSpecial: boolean }} policy
+ * @param {object} i18n
+ * @returns {Array<{ test: (value: string) => boolean, message: string }>}
+ */
+function buildPasswordCriteria(policy, i18n) {
+    const criteria = [];
+    if (policy.minLength > 0) {
+        const minLen = policy.minLength;
+        criteria.push({
+            test: (value) => value.length >= minLen,
+            message: i18n
+                .t("ui.app.register.error.password_too_short")
+                .replace("{min}", String(minLen)),
+        });
+    }
+    if (policy.requireUppercase) {
+        criteria.push({
+            test: (value) => /[A-Z]/.test(value),
+            message: i18n.t(
+                "ui.app.register.error.password_requires_uppercase",
+            ),
+        });
+    }
+    if (policy.requireLowercase) {
+        criteria.push({
+            test: (value) => /[a-z]/.test(value),
+            message: i18n.t(
+                "ui.app.register.error.password_requires_lowercase",
+            ),
+        });
+    }
+    if (policy.requireDigit) {
+        criteria.push({
+            test: (value) => /[0-9]/.test(value),
+            message: i18n.t("ui.app.register.error.password_requires_digit"),
+        });
+    }
+    if (policy.requireSpecial) {
+        criteria.push({
+            test: (value) => /[^A-Za-z0-9]/.test(value),
+            message: i18n.t("ui.app.register.error.password_requires_special"),
+        });
+    }
+    return criteria;
 }
 
 /**
@@ -78,6 +128,13 @@ export async function mount(root, { signal } = {}) {
     let invalidTokenToastToken = null;
     let availableLanguages = [];
     let selectedLanguage = DEFAULT_LOCALE;
+    let passwordPolicy = {
+        minLength: 8,
+        requireUppercase: false,
+        requireLowercase: false,
+        requireDigit: false,
+        requireSpecial: false,
+    };
 
     if (token) {
         try {
@@ -113,6 +170,18 @@ export async function mount(root, { signal } = {}) {
         } catch {
             openRegistrationsEnabled = false;
         }
+    }
+
+    try {
+        const policyRes = await fetch("/api/v1/auth/password-policy");
+        if (policyRes.ok) {
+            const policyPayload = await policyRes.json();
+            if (policyPayload?.data) {
+                passwordPolicy = policyPayload.data;
+            }
+        }
+    } catch {
+        // Use defaults when policy endpoint is unreachable.
     }
 
     try {
@@ -209,7 +278,7 @@ export async function mount(root, { signal } = {}) {
           </label>
           <label>
             <span>${escapeHtml(i18n.t("ui.app.register.username"))}</span>
-            <input name="username" required />
+            <input name="username" maxlength="25" required />
           </label>
           <label>
             <span>${escapeHtml(i18n.t("ui.app.register.display_name"))}</span>
@@ -423,6 +492,57 @@ export async function mount(root, { signal } = {}) {
                             signal ? { signal } : undefined,
                         );
                     }
+
+                    const passwordInput = form.elements.namedItem("password");
+                    const confirmPasswordInput =
+                        form.elements.namedItem("confirmPassword");
+
+                    if (
+                        passwordInput instanceof HTMLInputElement &&
+                        confirmPasswordInput instanceof HTMLInputElement
+                    ) {
+                        const passwordCriteria = buildPasswordCriteria(
+                            passwordPolicy,
+                            i18n,
+                        );
+                        const criteriaCheckController = attachCriteriaCheck(
+                            passwordInput,
+                            passwordCriteria,
+                            {
+                                genericMessage: i18n.t(
+                                    "ui.app.register.error.password_policy",
+                                ),
+                                signal: signal ?? undefined,
+                            },
+                        );
+
+                        const mismatchController = attachCriteriaCheck(
+                            confirmPasswordInput,
+                            [
+                                {
+                                    test: () =>
+                                        confirmPasswordInput.value ===
+                                        passwordInput.value,
+                                    message: i18n.t(
+                                        "ui.app.register.error.password_mismatch",
+                                    ),
+                                },
+                            ],
+                            { signal: signal ?? undefined },
+                        );
+
+                        if (signal) {
+                            signal.addEventListener(
+                                "abort",
+                                () => {
+                                    criteriaCheckController.detach();
+                                    mismatchController.detach();
+                                },
+                                { once: true },
+                            );
+                        }
+                    }
+
                     form.addEventListener(
                         "submit",
                         async (event) => {
