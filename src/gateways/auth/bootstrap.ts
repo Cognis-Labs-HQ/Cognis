@@ -710,26 +710,6 @@ function createAuthGatewayRoutes(
         }
 
         if (
-            url.pathname === "/api/v1/auth/password-reset-capability" &&
-            req.method === "GET"
-        ) {
-            const claims = requireAuth(req, res, "user");
-            if (!claims) return true;
-            const support = authGateway.getPasswordResetSupport(
-                claims.providerId,
-            );
-            log?.("debug", "Read password reset support.", {
-                ...logMeta,
-                accountId: claims.sub,
-                providerId: claims.providerId,
-                supported: support.supported,
-            });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: support }));
-            return true;
-        }
-
-        if (
             url.pathname === "/api/v1/auth/reset-password" &&
             req.method === "POST"
         ) {

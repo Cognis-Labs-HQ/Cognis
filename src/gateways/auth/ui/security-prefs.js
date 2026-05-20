@@ -5,7 +5,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 
 export function createSettingsSection({ i18n, root }) {
     let capability = null;
-    let hasShownUnsupportedToast = false;
+    let lastUnsupportedToastKey = null;
     const settingsRoot = root ?? document;
 
     async function loadCapability() {
@@ -154,8 +154,19 @@ export function createSettingsSection({ i18n, root }) {
             if (panel) {
                 panel.innerHTML = renderBody();
             }
-            if (capability?.supported === false && !hasShownUnsupportedToast) {
-                hasShownUnsupportedToast = true;
+            if (capability?.supported === true) {
+                lastUnsupportedToastKey = null;
+            }
+            const unsupportedToastKey =
+                capability?.supported === false
+                    ? `${capability.adapterId || "unknown"}:${capability.reason || ""}`
+                    : null;
+            if (
+                capability?.supported === false &&
+                unsupportedToastKey &&
+                unsupportedToastKey !== lastUnsupportedToastKey
+            ) {
+                lastUnsupportedToastKey = unsupportedToastKey;
                 showToast(
                     capability.reason ||
                         i18n.t("gateway.auth.security.unsupported_default"),
