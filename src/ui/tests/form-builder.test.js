@@ -60,6 +60,10 @@ test("register username criterion allows only letters, digits, hyphens, and unde
     const source = read("src/ui/app/register/index.js");
     assert.match(source, /id: "username-printable-ascii"/);
     assert.match(source, /\[a-zA-Z0-9_-\]/);
+    assert.match(
+        source,
+        /username-printable-ascii[\s\S]*?value\.length === 0/m,
+    );
 });
 
 test("register confirm password mismatch only fails when confirmPassword has a value", () => {

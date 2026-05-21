@@ -34,7 +34,7 @@ export function defaultPasswordPolicy(): PasswordPolicy {
  * Returns 0 when the input is missing, invalid, or negative.
  *
  * @param value - The raw value to parse and clamp.
- * @returns The clamped non-negative integer, or 0 if invalid.
+ * @returns The clamped non-negative integer (fractional values are floored), or 0 if invalid.
  */
 function parseCountField(value: unknown): number {
     if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
