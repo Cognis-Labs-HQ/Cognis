@@ -231,6 +231,7 @@
   <string name="ui.app.register.password">パスワード</string>
   <string name="ui.app.register.confirm_password">パスワードの確認</string>
   <string name="ui.app.register.error.password_mismatch">パスワードが一致しません。</string>
+  <string name="ui.app.register.passwords_match">パスワードが一致します。</string>
   <string name="ui.app.register.error.password_policy">パスワードが要件を満たしていません。</string>
   <string name="ui.app.register.error.password_too_short">{min}文字以上にしてください。</string>
   <string name="ui.app.register.error.password_requires_uppercase">大文字を{count}文字以上含める必要があります。</string>

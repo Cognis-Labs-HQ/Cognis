@@ -307,9 +307,14 @@ export async function mount(root, { signal } = {}) {
                     {
                         id: "confirm-password-match",
                         type: "custom",
-                        test: (value, values) =>
-                            value.length === 0 || value === values.password,
-                        messageKey: "ui.app.register.error.password_mismatch",
+                        test: (value, values) => {
+                            const passwordValue = String(values.password ?? "");
+                            if (passwordValue.length === 0 || value.length === 0) {
+                                return true;
+                            }
+                            return value === passwordValue;
+                        },
+                        messageKey: "ui.app.register.passwords_match",
                         mode: "live",
                     },
                 ],
@@ -580,6 +585,39 @@ export async function mount(root, { signal } = {}) {
                     const formController = registerFormBuilder.attach(form, {
                         signal: signal ?? undefined,
                     });
+                    const passwordInput = form.elements.namedItem("password");
+                    const confirmPasswordInput = form.elements.namedItem(
+                        "confirmPassword",
+                    );
+                    if (
+                        passwordInput instanceof HTMLInputElement &&
+                        confirmPasswordInput instanceof HTMLInputElement
+                    ) {
+                        const listenerOptions = signal ? { signal } : undefined;
+                        const revalidateConfirmPassword = () => {
+                            formController.validateField("confirmPassword");
+                        };
+                        passwordInput.addEventListener(
+                            "input",
+                            revalidateConfirmPassword,
+                            listenerOptions,
+                        );
+                        passwordInput.addEventListener(
+                            "change",
+                            revalidateConfirmPassword,
+                            listenerOptions,
+                        );
+                        confirmPasswordInput.addEventListener(
+                            "input",
+                            revalidateConfirmPassword,
+                            listenerOptions,
+                        );
+                        confirmPasswordInput.addEventListener(
+                            "change",
+                            revalidateConfirmPassword,
+                            listenerOptions,
+                        );
+                    }
                     const languageSelect = form.elements.namedItem("language");
                     if (languageSelect instanceof HTMLSelectElement) {
                         languageSelect.addEventListener(

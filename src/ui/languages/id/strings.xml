@@ -231,6 +231,7 @@
   <string name="ui.app.register.password">Kata sandi</string>
   <string name="ui.app.register.confirm_password">Konfirmasi kata sandi</string>
   <string name="ui.app.register.error.password_mismatch">Kata sandi tidak cocok.</string>
+  <string name="ui.app.register.passwords_match">Kata sandi cocok.</string>
   <string name="ui.app.register.error.password_policy">Kata sandi tidak memenuhi persyaratan.</string>
   <string name="ui.app.register.error.password_too_short">Harus minimal {min} karakter.</string>
   <string name="ui.app.register.error.password_requires_uppercase">Harus mengandung minimal {count} huruf kapital.</string>

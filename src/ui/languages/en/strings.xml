@@ -231,6 +231,7 @@
   <string name="ui.app.register.password">Password</string>
   <string name="ui.app.register.confirm_password">Confirm Password</string>
   <string name="ui.app.register.error.password_mismatch">Passwords do not match.</string>
+  <string name="ui.app.register.passwords_match">Passwords match.</string>
   <string name="ui.app.register.error.password_policy">Password does not meet the requirements.</string>
   <string name="ui.app.register.error.password_too_short">Must be at least {min} characters.</string>
   <string name="ui.app.register.error.password_requires_uppercase">Must contain at least {count} uppercase letter(s).</string>

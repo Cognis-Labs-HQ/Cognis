@@ -66,7 +66,18 @@ test("register username criterion allows only letters, digits, hyphens, and unde
     );
 });
 
-test("register confirm password mismatch only fails when confirmPassword has a value", () => {
+test("register confirm password criterion only evaluates after password input", () => {
     const source = read("src/ui/app/register/index.js");
-    assert.match(source, /value\.length === 0 \|\| value === values\.password/);
+    assert.match(source, /const passwordValue = String\(values\.password \?\? ""\)/);
+    assert.match(
+        source,
+        /passwordValue\.length === 0 \|\| value\.length === 0/,
+    );
+    assert.match(source, /messageKey: "ui\.app\.register\.passwords_match"/);
+});
+
+test("register confirm password revalidates reactively when password changes", () => {
+    const source = read("src/ui/app/register/index.js");
+    assert.match(source, /formController\.validateField\("confirmPassword"\)/);
+    assert.match(source, /passwordInput\.addEventListener\(\s*"input"/m);
 });
