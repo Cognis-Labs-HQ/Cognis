@@ -47,10 +47,7 @@ export function createSettingsSection({ i18n, root }) {
             return { ...DEFAULT_PASSWORD_POLICY };
         }
         const payload = await response.json().catch(() => null);
-        return normalizePasswordPolicy(
-            payload?.data,
-            DEFAULT_PASSWORD_POLICY,
-        );
+        return normalizePasswordPolicy(payload?.data, DEFAULT_PASSWORD_POLICY);
     }
 
     function buildPasswordCriteria(policy) {

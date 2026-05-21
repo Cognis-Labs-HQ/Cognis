@@ -35,25 +35,26 @@ export const DEFAULT_PASSWORD_POLICY = Object.freeze({
 
 export function normalizePasswordPolicy(raw, fallbackPolicy) {
     const defaults = { ...DEFAULT_PASSWORD_POLICY, ...(fallbackPolicy ?? {}) };
-    if (!raw || typeof raw !== 'object') {
+    if (!raw || typeof raw !== "object") {
         return { ...defaults };
     }
     return {
         minLength:
-            typeof raw.minLength === 'number' && raw.minLength >= 1
+            typeof raw.minLength === "number" && raw.minLength >= 1
                 ? Math.floor(raw.minLength)
                 : defaults.minLength,
         requireUppercase:
-            typeof raw.requireUppercase === 'number' && raw.requireUppercase >= 0
+            typeof raw.requireUppercase === "number" &&
+            raw.requireUppercase >= 0
                 ? Math.floor(raw.requireUppercase)
                 : defaults.requireUppercase,
         requireLowercase: raw.requireLowercase === true,
         requireDigit:
-            typeof raw.requireDigit === 'number' && raw.requireDigit >= 0
+            typeof raw.requireDigit === "number" && raw.requireDigit >= 0
                 ? Math.floor(raw.requireDigit)
                 : defaults.requireDigit,
         requireSpecial:
-            typeof raw.requireSpecial === 'number' && raw.requireSpecial >= 0
+            typeof raw.requireSpecial === "number" && raw.requireSpecial >= 0
                 ? Math.floor(raw.requireSpecial)
                 : defaults.requireSpecial,
     };
@@ -67,7 +68,7 @@ export function normalizePasswordPolicy(raw, fallbackPolicy) {
  * @returns {number}
  */
 export function countPatternMatches(value, pattern) {
-    if (typeof value !== 'string') {
+    if (typeof value !== "string") {
         return 0;
     }
     return (value.match(pattern) ?? []).length;
