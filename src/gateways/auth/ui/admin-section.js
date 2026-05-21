@@ -15,6 +15,14 @@ function loadAdminTemplate() {
     return adminTemplatePromise;
 }
 
+/**
+ * Parses a password-policy number field while enforcing a minimum bound.
+ *
+ * @param {string | number | null | undefined} value
+ * @param {number} minimumValue
+ * @param {number} fallbackValue
+ * @returns {number}
+ */
 function parsePolicyNumber(value, minimumValue, fallbackValue) {
     const parsedValue = Number.parseInt(String(value ?? ""), 10);
     if (!Number.isFinite(parsedValue) || parsedValue < minimumValue) {
