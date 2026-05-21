@@ -10,7 +10,8 @@ import {
  * Security sub-module for the Administration page.
  *
  * Manages system-level security settings for trusted domains, registration
- * controls, user-validation mode, and teacher approval requirements.
+ * controls, user-validation mode, teacher approval requirements, and password
+ * policy controls.
  *
  * Public exports:
  *   initSecuritySection(root, options) — initialises the security section.
@@ -31,18 +32,36 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalUserValidationMode = "none";
     let currentUserValidationMode = "none";
     let originalTeacherManualApproval = true;
+    let originalPasswordPolicy = {
+        minLength: 8,
+        requireUppercase: 0,
+        requireLowercase: false,
+        requireDigit: 0,
+        requireSpecial: 0,
+    };
 
     async function loadSettings() {
-        const res = await apiFetch("/api/v1/system/security");
-        if (!res.ok) return { trustedDomains: [] };
-        const payload = await res.json();
+        const response = await apiFetch("/api/v1/system/security");
+        if (!response.ok) return { trustedDomains: [] };
+        const payload = await response.json();
         return payload.data ?? { trustedDomains: [] };
     }
 
+    async function loadPasswordPolicy() {
+        const response = await apiFetch("/api/v1/auth/password-policy");
+        if (!response.ok) {
+            return { ...originalPasswordPolicy };
+        }
+        const payload = await response.json();
+        return normalizePasswordPolicy(payload?.data, originalPasswordPolicy);
+    }
+
     async function loadPublicRegistrationAdapterState() {
-        const res = await apiFetch("/api/v1/gateways/registration/adapters");
-        if (!res.ok) return false;
-        const payload = await res.json();
+        const response = await apiFetch(
+            "/api/v1/gateways/registration/adapters",
+        );
+        if (!response.ok) return false;
+        const payload = await response.json();
         const adapters = Array.isArray(payload?.data) ? payload.data : [];
         const publicAdapter = adapters.find((entry) => entry.id === "public");
         return publicAdapter?.enabled === true;
@@ -54,7 +73,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         userValidationMode,
         requireTeacherManualApproval,
     ) {
-        const res = await apiFetch("/api/v1/system/security", {
+        const response = await apiFetch("/api/v1/system/security", {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
@@ -64,7 +83,53 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 requireTeacherManualApproval,
             }),
         });
-        if (!res.ok) throw new Error("save_failed");
+        if (!response.ok) throw new Error("save_failed");
+    }
+
+    async function persistPasswordPolicy(passwordPolicy) {
+        const response = await apiFetch("/api/v1/auth/password-policy", {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(passwordPolicy),
+        });
+        if (!response.ok) throw new Error("save_failed");
+    }
+
+    function parsePolicyNumber(rawValue, minimumValue, fallbackValue) {
+        const parsedValue = Number.parseInt(String(rawValue ?? ""), 10);
+        if (!Number.isFinite(parsedValue) || parsedValue < minimumValue) {
+            return fallbackValue;
+        }
+        return parsedValue;
+    }
+
+    function normalizePasswordPolicy(rawPolicy, fallbackPolicy) {
+        if (!rawPolicy || typeof rawPolicy !== "object") {
+            return { ...fallbackPolicy };
+        }
+        return {
+            minLength:
+                typeof rawPolicy.minLength === "number" &&
+                rawPolicy.minLength >= 1
+                    ? Math.floor(rawPolicy.minLength)
+                    : fallbackPolicy.minLength,
+            requireUppercase:
+                typeof rawPolicy.requireUppercase === "number" &&
+                rawPolicy.requireUppercase >= 0
+                    ? Math.floor(rawPolicy.requireUppercase)
+                    : fallbackPolicy.requireUppercase,
+            requireLowercase: rawPolicy.requireLowercase === true,
+            requireDigit:
+                typeof rawPolicy.requireDigit === "number" &&
+                rawPolicy.requireDigit >= 0
+                    ? Math.floor(rawPolicy.requireDigit)
+                    : fallbackPolicy.requireDigit,
+            requireSpecial:
+                typeof rawPolicy.requireSpecial === "number" &&
+                rawPolicy.requireSpecial >= 0
+                    ? Math.floor(rawPolicy.requireSpecial)
+                    : fallbackPolicy.requireSpecial,
+        };
     }
 
     function parseDomains(raw) {
@@ -94,6 +159,76 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return input.checked;
     }
 
+    function getPasswordPolicyValue() {
+        const minLengthInput = root.querySelector(
+            "#security-policy-min-length",
+        );
+        const uppercaseInput = root.querySelector(
+            "#security-policy-require-uppercase",
+        );
+        const lowercaseInput = root.querySelector(
+            "#security-policy-require-lowercase",
+        );
+        const digitInput = root.querySelector("#security-policy-require-digit");
+        const specialInput = root.querySelector(
+            "#security-policy-require-special",
+        );
+
+        return {
+            minLength:
+                minLengthInput instanceof HTMLInputElement
+                    ? parsePolicyNumber(
+                          minLengthInput.value,
+                          1,
+                          originalPasswordPolicy.minLength,
+                      )
+                    : originalPasswordPolicy.minLength,
+            requireUppercase:
+                uppercaseInput instanceof HTMLInputElement
+                    ? parsePolicyNumber(
+                          uppercaseInput.value,
+                          0,
+                          originalPasswordPolicy.requireUppercase,
+                      )
+                    : originalPasswordPolicy.requireUppercase,
+            requireLowercase:
+                lowercaseInput instanceof HTMLInputElement
+                    ? lowercaseInput.checked
+                    : originalPasswordPolicy.requireLowercase,
+            requireDigit:
+                digitInput instanceof HTMLInputElement
+                    ? parsePolicyNumber(
+                          digitInput.value,
+                          0,
+                          originalPasswordPolicy.requireDigit,
+                      )
+                    : originalPasswordPolicy.requireDigit,
+            requireSpecial:
+                specialInput instanceof HTMLInputElement
+                    ? parsePolicyNumber(
+                          specialInput.value,
+                          0,
+                          originalPasswordPolicy.requireSpecial,
+                      )
+                    : originalPasswordPolicy.requireSpecial,
+        };
+    }
+
+    function isPasswordPolicyChanged() {
+        const currentPolicy = getPasswordPolicyValue();
+        return (
+            currentPolicy.minLength !== originalPasswordPolicy.minLength ||
+            currentPolicy.requireUppercase !==
+                originalPasswordPolicy.requireUppercase ||
+            currentPolicy.requireLowercase !==
+                originalPasswordPolicy.requireLowercase ||
+            currentPolicy.requireDigit !==
+                originalPasswordPolicy.requireDigit ||
+            currentPolicy.requireSpecial !==
+                originalPasswordPolicy.requireSpecial
+        );
+    }
+
     function markDirtyState() {
         const currentDomains = parseDomains(getInputValue()).join(",");
         const originalDomainsValue = originalDomains.join(",");
@@ -103,15 +238,17 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             getRegistrationsEnabledValue() !== currentPublicRegistrationEnabled;
         const teacherApprovalChanged =
             getTeacherManualApprovalValue() !== originalTeacherManualApproval;
+
         onDirtyChange?.(
             currentDomains !== originalDomainsValue ||
                 modeChanged ||
                 registrationsChanged ||
-                teacherApprovalChanged,
+                teacherApprovalChanged ||
+                isPasswordPolicyChanged(),
         );
     }
 
-    function bindInput(settings) {
+    function bindInput(settings, passwordPolicy) {
         const input = root.querySelector("#security-trusted-domains");
         if (!(input instanceof HTMLInputElement)) return;
 
@@ -123,6 +260,10 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         originalUserValidationMode = currentUserValidationMode;
         originalTeacherManualApproval =
             settings.requireTeacherManualApproval !== false;
+        originalPasswordPolicy = normalizePasswordPolicy(
+            passwordPolicy,
+            originalPasswordPolicy,
+        );
 
         input.value = originalDomains.join(", ");
         const validationSelect = root.querySelector(
@@ -134,6 +275,20 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         const teacherApprovalToggle = root.querySelector(
             "#security-require-teacher-approval",
         );
+        const minLengthInput = root.querySelector(
+            "#security-policy-min-length",
+        );
+        const uppercaseInput = root.querySelector(
+            "#security-policy-require-uppercase",
+        );
+        const lowercaseInput = root.querySelector(
+            "#security-policy-require-lowercase",
+        );
+        const digitInput = root.querySelector("#security-policy-require-digit");
+        const specialInput = root.querySelector(
+            "#security-policy-require-special",
+        );
+
         if (validationSelect instanceof HTMLSelectElement) {
             validationSelect.value = currentUserValidationMode;
         }
@@ -143,30 +298,45 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         if (teacherApprovalToggle instanceof HTMLInputElement) {
             teacherApprovalToggle.checked = originalTeacherManualApproval;
         }
+        if (minLengthInput instanceof HTMLInputElement) {
+            minLengthInput.value = String(originalPasswordPolicy.minLength);
+        }
+        if (uppercaseInput instanceof HTMLInputElement) {
+            uppercaseInput.value = String(
+                originalPasswordPolicy.requireUppercase,
+            );
+        }
+        if (lowercaseInput instanceof HTMLInputElement) {
+            lowercaseInput.checked = originalPasswordPolicy.requireLowercase;
+        }
+        if (digitInput instanceof HTMLInputElement) {
+            digitInput.value = String(originalPasswordPolicy.requireDigit);
+        }
+        if (specialInput instanceof HTMLInputElement) {
+            specialInput.value = String(originalPasswordPolicy.requireSpecial);
+        }
 
-        input.addEventListener("input", () => {
-            markDirtyState();
-        });
-
-        validationSelect?.addEventListener("change", () => {
-            markDirtyState();
-        });
-        registrationsToggle?.addEventListener("change", () => {
-            markDirtyState();
-        });
-        teacherApprovalToggle?.addEventListener("change", () => {
-            markDirtyState();
-        });
+        input.addEventListener("input", markDirtyState);
+        validationSelect?.addEventListener("change", markDirtyState);
+        registrationsToggle?.addEventListener("change", markDirtyState);
+        teacherApprovalToggle?.addEventListener("change", markDirtyState);
+        minLengthInput?.addEventListener("input", markDirtyState);
+        uppercaseInput?.addEventListener("input", markDirtyState);
+        lowercaseInput?.addEventListener("change", markDirtyState);
+        digitInput?.addEventListener("input", markDirtyState);
+        specialInput?.addEventListener("input", markDirtyState);
     }
 
     return {
         async init() {
-            const [settings, publicRegistrationEnabled] = await Promise.all([
-                loadSettings(),
-                loadPublicRegistrationAdapterState(),
-            ]);
+            const [settings, publicRegistrationEnabled, passwordPolicy] =
+                await Promise.all([
+                    loadSettings(),
+                    loadPublicRegistrationAdapterState(),
+                    loadPasswordPolicy(),
+                ]);
             settings.registrationsEnabled = publicRegistrationEnabled;
-            bindInput(settings);
+            bindInput(settings, passwordPolicy);
         },
 
         async save() {
@@ -175,12 +345,15 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const registrationsEnabled = getRegistrationsEnabledValue();
             const requireTeacherManualApproval =
                 getTeacherManualApprovalValue();
+            const passwordPolicy = getPasswordPolicyValue();
+
             await persistSettings(
                 domains,
                 registrationsEnabled,
                 validationMode,
                 requireTeacherManualApproval,
             );
+            await persistPasswordPolicy(passwordPolicy);
             clearTrustedDomainsCache();
             if (registrationsEnabled !== currentPublicRegistrationEnabled) {
                 await apiFetch(
@@ -193,6 +366,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             currentUserValidationMode = validationMode;
             originalUserValidationMode = validationMode;
             originalTeacherManualApproval = requireTeacherManualApproval;
+            originalPasswordPolicy = passwordPolicy;
         },
 
         discard() {
@@ -212,11 +386,47 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const teacherApprovalToggle = root.querySelector(
                 "#security-require-teacher-approval",
             );
+            const minLengthInput = root.querySelector(
+                "#security-policy-min-length",
+            );
+            const uppercaseInput = root.querySelector(
+                "#security-policy-require-uppercase",
+            );
+            const lowercaseInput = root.querySelector(
+                "#security-policy-require-lowercase",
+            );
+            const digitInput = root.querySelector(
+                "#security-policy-require-digit",
+            );
+            const specialInput = root.querySelector(
+                "#security-policy-require-special",
+            );
+
             if (registrationsToggle instanceof HTMLInputElement) {
                 registrationsToggle.checked = currentPublicRegistrationEnabled;
             }
             if (teacherApprovalToggle instanceof HTMLInputElement) {
                 teacherApprovalToggle.checked = originalTeacherManualApproval;
+            }
+            if (minLengthInput instanceof HTMLInputElement) {
+                minLengthInput.value = String(originalPasswordPolicy.minLength);
+            }
+            if (uppercaseInput instanceof HTMLInputElement) {
+                uppercaseInput.value = String(
+                    originalPasswordPolicy.requireUppercase,
+                );
+            }
+            if (lowercaseInput instanceof HTMLInputElement) {
+                lowercaseInput.checked =
+                    originalPasswordPolicy.requireLowercase;
+            }
+            if (digitInput instanceof HTMLInputElement) {
+                digitInput.value = String(originalPasswordPolicy.requireDigit);
+            }
+            if (specialInput instanceof HTMLInputElement) {
+                specialInput.value = String(
+                    originalPasswordPolicy.requireSpecial,
+                );
             }
             onDirtyChange?.(false);
         },
@@ -254,25 +464,53 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
           <div class="components-section">
             <h3 class="components-section-heading">
               ${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}
-              ${renderInfoTooltip(i18n.t("ui.app.admin.security.validation_mode_hint"), tooltipAria)}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.user_validation_mode_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
               <select id="security-user-validation-mode" class="theme-select">
-                <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.validation_mode_none"))}</option>
-                <option value="smtp">${escapeHtml(i18n.t("ui.app.admin.security.validation_mode_smtp"))}</option>
+                <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.none"))}</option>
+                <option value="smtp">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.smtp"))}</option>
               </select>
             </div>
           </div>
           <div class="components-section">
             <h3 class="components-section-heading">
               ${escapeHtml(i18n.t("ui.app.admin.security.require_teacher_approval_label"))}
-              ${renderInfoTooltip(i18n.t("ui.app.admin.security.teacher_approval_hint"), tooltipAria)}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.require_teacher_approval_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
               <label class="switch">
                 <input id="security-require-teacher-approval" type="checkbox" />
                 <span class="slider"></span>
               </label>
+            </div>
+          </div>
+          <div class="components-section">
+            <h3 class="components-section-heading">
+              ${escapeHtml(i18n.t("ui.app.admin.security.password_policy_heading"))}
+            </h3>
+            <div class="security-field-row">
+              <label for="security-policy-min-length">${escapeHtml(i18n.t("ui.app.admin.security.policy_min_length"))}</label>
+              <input id="security-policy-min-length" class="security-policy-number-input" type="number" min="1" max="128" />
+            </div>
+            <div class="security-field-row">
+              <label for="security-policy-require-uppercase">${escapeHtml(i18n.t("ui.app.admin.security.policy_require_uppercase"))}</label>
+              <input id="security-policy-require-uppercase" class="security-policy-number-input" type="number" min="0" max="128" />
+            </div>
+            <div class="security-field-row">
+              <label for="security-policy-require-lowercase">${escapeHtml(i18n.t("ui.app.admin.security.policy_require_lowercase"))}</label>
+              <label class="switch">
+                <input id="security-policy-require-lowercase" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="security-field-row">
+              <label for="security-policy-require-digit">${escapeHtml(i18n.t("ui.app.admin.security.policy_require_digit"))}</label>
+              <input id="security-policy-require-digit" class="security-policy-number-input" type="number" min="0" max="128" />
+            </div>
+            <div class="security-field-row">
+              <label for="security-policy-require-special">${escapeHtml(i18n.t("ui.app.admin.security.policy_require_special"))}</label>
+              <input id="security-policy-require-special" class="security-policy-number-input" type="number" min="0" max="128" />
             </div>
           </div>
         </div>`;

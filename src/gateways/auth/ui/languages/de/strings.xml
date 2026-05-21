@@ -1,12 +1,4 @@
 <resources>
-  <string name="gateway.auth.no_providers">Keine Authentifizierungsadapter konfiguriert.</string>
-  <string name="gateway.auth.password_policy">Passwortrichtlinie</string>
-  <string name="gateway.auth.policy_heading">Passwortrichtlinie</string>
-  <string name="gateway.auth.policy_min_length">Mindestlänge</string>
-  <string name="gateway.auth.policy_require_uppercase">Mindestanzahl Großbuchstaben (0 = aus)</string>
-  <string name="gateway.auth.policy_require_lowercase">Kleinbuchstaben erforderlich</string>
-  <string name="gateway.auth.policy_require_digit">Mindestanzahl Ziffern (0 = aus)</string>
-  <string name="gateway.auth.policy_require_special">Mindestanzahl Sonderzeichen (0 = aus)</string>
   <string name="gateway.auth.security.loading">Sicherheitseinstellungen werden geladen…</string>
   <string name="gateway.auth.security.section_title">Sicherheit</string>
   <string name="gateway.auth.security.load_failed">Die Funktion zur Passwortänderung konnte nicht geladen werden.</string>

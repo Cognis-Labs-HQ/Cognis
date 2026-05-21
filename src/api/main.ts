@@ -166,6 +166,11 @@ const routeRegistry = new RouteRegistry();
 const gatewayRegistry = new GatewayRegistry();
 const capabilities = new CapabilityStore();
 const uiRegistry = new UIRegistry();
+
+const routeContext = capabilities.get<RouteContext>("auth:routeContext");
+if (!routeContext) {
+    throw new Error("auth_route_context_missing");
+}
 const gatewayService = new GatewayService(gatewayRegistry);
 
 const gatewaysRoot =
@@ -355,7 +360,7 @@ const server = buildServer({
     >("modules:onStateChanged"),
     getModuleCapability: <T>(capabilityId: string) =>
         capabilities.get<T>(capabilityId),
-    routeContext: capabilities.get<RouteContext>("auth:routeContext"),
+    routeContext,
     loadModuleStates: async () => {
         const result = await dbExecutor.executeCommand({
             option: "SELECT",

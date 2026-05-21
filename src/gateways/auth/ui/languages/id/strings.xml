@@ -1,12 +1,4 @@
 <resources>
-  <string name="gateway.auth.no_providers">Tidak ada adaptor autentikasi yang dikonfigurasi.</string>
-  <string name="gateway.auth.password_policy">Kebijakan Kata Sandi</string>
-  <string name="gateway.auth.policy_heading">Kebijakan Kata Sandi</string>
-  <string name="gateway.auth.policy_min_length">Panjang Minimum</string>
-  <string name="gateway.auth.policy_require_uppercase">Minimum Huruf Kapital (0 = nonaktif)</string>
-  <string name="gateway.auth.policy_require_lowercase">Wajib Huruf Kecil</string>
-  <string name="gateway.auth.policy_require_digit">Minimum Angka (0 = nonaktif)</string>
-  <string name="gateway.auth.policy_require_special">Minimum Karakter Khusus (0 = nonaktif)</string>
   <string name="gateway.auth.security.loading">Memuat pengaturan keamanan…</string>
   <string name="gateway.auth.security.section_title">Keamanan</string>
   <string name="gateway.auth.security.load_failed">Tidak dapat memuat kemampuan ubah kata sandi.</string>

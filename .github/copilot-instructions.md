@@ -250,6 +250,19 @@ Repeatedly ignoring, hand-waving, or vainly dismissing valid review feedback is 
 
 Format all new or modified code for human readability. Do not compress logic, markup, or styles into dense one-liners when a multi-line structure is clearer. A statement that would naturally span 6+ lines in JavaScript should remain that way — humans must be able to eyeball the code meaningfully.
 
+### LOC discipline and consistency are mandatory
+
+Large diffs are not a success metric. Adding thousands of lines in a pull request is **not** an indicator of quality, velocity, or correctness. Prefer shrinking and simplifying code paths through consolidation and reusable abstractions whenever behavior remains unchanged.
+
+For every change:
+
+- Treat LOC reduction as a first-class objective whenever a safe reduction is possible.
+- Reuse existing generic utilities before introducing new feature-specific helpers.
+- Keep function names and CSS class names generic and role-based, not feature-branded.
+- Move code out of `reuse/` when it only serves one feature surface; keep `reuse/` strictly cross-cutting.
+- Keep HTML and JS/TS in separate files; do not embed page markup as feature-sized string templates in JS/TS modules.
+- Keep files at or below 1000 lines. If a file grows beyond that limit, convert it into a subdirectory with `index` as the entry point and split logic into focused sibling files.
+
 ### Variable naming
 
 Variable and binding names must be descriptive. Single-letter names are only acceptable in the roles listed below; all other one- or two-letter identifiers are forbidden in `const`, `let`, and `var` declarations and in `for-of` / `for-in` bindings:

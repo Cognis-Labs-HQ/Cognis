@@ -194,6 +194,10 @@
     flex: 1;
 }
 
+.security-policy-number-input {
+    width: 96px;
+}
+
 .criteria-check-message {
     color: var(--color-error, #dc2626);
     font-size: 0.85em;
