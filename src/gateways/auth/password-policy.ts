@@ -3,14 +3,18 @@
  *
  * Policy configuration is persisted by the auth gateway under its own
  * preference key and is served via /api/v1/auth/password-policy.
+ *
+ * requireUppercase, requireDigit, and requireSpecial are counts: 0 disables
+ * the requirement, a positive integer sets the minimum number of characters
+ * of that class that the password must contain.
  */
 
 export interface PasswordPolicy {
     minLength: number;
-    requireUppercase: boolean;
+    requireUppercase: number;
     requireLowercase: boolean;
-    requireDigit: boolean;
-    requireSpecial: boolean;
+    requireDigit: number;
+    requireSpecial: number;
 }
 
 export const AUTH_PASSWORD_POLICY_KEY = "auth-password-policy";
@@ -18,11 +22,25 @@ export const AUTH_PASSWORD_POLICY_KEY = "auth-password-policy";
 export function defaultPasswordPolicy(): PasswordPolicy {
     return {
         minLength: 8,
-        requireUppercase: false,
+        requireUppercase: 0,
         requireLowercase: false,
-        requireDigit: false,
-        requireSpecial: false,
+        requireDigit: 0,
+        requireSpecial: 0,
     };
+}
+
+/**
+ * Parses count-based policy fields and clamps them to non-negative integers.
+ * Returns 0 when the input is missing, invalid, or negative.
+ *
+ * @param value - The raw value to parse and clamp.
+ * @returns The clamped non-negative integer (fractional values are floored), or 0 if invalid.
+ */
+function parseCountField(value: unknown): number {
+    if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+        return Math.floor(value);
+    }
+    return 0;
 }
 
 export function parsePasswordPolicy(raw: unknown): PasswordPolicy {
@@ -37,11 +55,23 @@ export function parsePasswordPolicy(raw: unknown): PasswordPolicy {
             : defaults.minLength;
     return {
         minLength,
-        requireUppercase: policy.requireUppercase === true,
+        requireUppercase: parseCountField(policy.requireUppercase),
         requireLowercase: policy.requireLowercase === true,
-        requireDigit: policy.requireDigit === true,
-        requireSpecial: policy.requireSpecial === true,
+        requireDigit: parseCountField(policy.requireDigit),
+        requireSpecial: parseCountField(policy.requireSpecial),
     };
+}
+
+/**
+ * Counts non-overlapping occurrences of characters matching the given regex
+ * character class within the password string.
+ *
+ * @param password
+ * @param pattern
+ * @returns
+ */
+function countMatches(password: string, pattern: RegExp): number {
+    return (password.match(pattern) ?? []).length;
 }
 
 /**
@@ -54,13 +84,22 @@ export function checkPasswordPolicy(
 ): string | null {
     if (password.length < policy.minLength)
         return `password_too_short:${policy.minLength}`;
-    if (policy.requireUppercase && !/[A-Z]/.test(password))
-        return "password_requires_uppercase";
+    if (
+        policy.requireUppercase > 0 &&
+        countMatches(password, /[A-Z]/g) < policy.requireUppercase
+    )
+        return `password_requires_uppercase:${policy.requireUppercase}`;
     if (policy.requireLowercase && !/[a-z]/.test(password))
         return "password_requires_lowercase";
-    if (policy.requireDigit && !/[0-9]/.test(password))
-        return "password_requires_digit";
-    if (policy.requireSpecial && !/[^A-Za-z0-9]/.test(password))
-        return "password_requires_special";
+    if (
+        policy.requireDigit > 0 &&
+        countMatches(password, /[0-9]/g) < policy.requireDigit
+    )
+        return `password_requires_digit:${policy.requireDigit}`;
+    if (
+        policy.requireSpecial > 0 &&
+        countMatches(password, /[^A-Za-z0-9]/g) < policy.requireSpecial
+    )
+        return `password_requires_special:${policy.requireSpecial}`;
     return null;
 }

@@ -200,6 +200,116 @@
     margin: 2px 0 0 0;
 }
 
+.form-builder {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-builder-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    position: relative;
+}
+
+.form-builder-input {
+    width: 100%;
+}
+
+.form-builder-label-text {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.form-builder-required-flag {
+    color: var(--color-danger-outline-text);
+    font-weight: 700;
+    font-size: 0.9em;
+    line-height: 1;
+}
+
+.form-builder-field--invalid .form-builder-input,
+.form-builder-input--invalid {
+    background-color: rgba(220, 38, 38, 0.08);
+    border-color: var(--color-danger-outline-text);
+}
+
+.form-builder-field--required-empty .form-builder-required-flag {
+    opacity: 1;
+}
+
+.form-builder-floating-alert {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 7;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.form-builder-field:focus-within .form-builder-floating-alert {
+    display: block;
+}
+
+.form-builder-floating-title {
+    margin: 0 0 6px 0;
+    font-size: 0.82em;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.form-builder-criteria-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.85em;
+}
+
+.form-builder-criteria-list--inline {
+    margin-top: 2px;
+}
+
+.form-builder-criterion-item {
+    padding: 4px 8px;
+    border-radius: 5px;
+    color: var(--text-muted);
+    margin: 1px 0;
+}
+
+.form-builder-criterion-item::before {
+    content: "\2022 ";
+}
+
+.form-builder-criterion-item--met {
+    color: var(--color-success-outline-text);
+    background: var(--color-success-hover-bg);
+    font-weight: 600;
+}
+
+.form-builder-criterion-item--met::before {
+    content: "\2714 ";
+    font-size: 1.15em;
+}
+
+.form-builder-criterion-item--unmet {
+    color: var(--color-danger-outline-text);
+    background: var(--color-danger-hover-bg);
+    font-weight: 600;
+}
+
+.form-builder-criterion-item--unmet::before {
+    content: "\2718 ";
+    font-size: 1.15em;
+}
+
 .components-section {
     margin-bottom: 24px;
 }
@@ -233,6 +343,13 @@
     .security-domains-input {
         min-width: 0;
         width: 100%;
+    }
+
+    .form-builder-field:focus-within .form-builder-floating-alert {
+        position: static;
+        min-width: 0;
+        max-width: 100%;
+        margin-top: 4px;
     }
 }
 

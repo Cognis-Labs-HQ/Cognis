@@ -1,11 +1,12 @@
 <resources>
   <string name="gateway.auth.no_providers">No authentication adapters configured.</string>
   <string name="gateway.auth.password_policy">Password Policy</string>
+  <string name="gateway.auth.policy_heading">Password Policy</string>
   <string name="gateway.auth.policy_min_length">Minimum Length</string>
-  <string name="gateway.auth.policy_require_uppercase">Require Uppercase Letter</string>
+  <string name="gateway.auth.policy_require_uppercase">Minimum Uppercase Letters (0 = off)</string>
   <string name="gateway.auth.policy_require_lowercase">Require Lowercase Letter</string>
-  <string name="gateway.auth.policy_require_digit">Require Digit</string>
-  <string name="gateway.auth.policy_require_special">Require Special Character</string>
+  <string name="gateway.auth.policy_require_digit">Minimum Digits (0 = off)</string>
+  <string name="gateway.auth.policy_require_special">Minimum Special Characters (0 = off)</string>
   <string name="gateway.auth.security.loading">Loading security settings…</string>
   <string name="gateway.auth.security.section_title">Security</string>
   <string name="gateway.auth.security.load_failed">Unable to load password change capability.</string>
@@ -20,8 +21,8 @@
   <string name="gateway.auth.security.reset_success">Password updated. Please sign in again.</string>
   <string name="gateway.auth.security.password_policy">Password does not meet the requirements.</string>
   <string name="gateway.auth.security.password_too_short">Must be at least {min} characters.</string>
-  <string name="gateway.auth.security.password_requires_uppercase">Must contain an uppercase letter.</string>
+  <string name="gateway.auth.security.password_requires_uppercase">Must contain at least {count} uppercase letter(s).</string>
   <string name="gateway.auth.security.password_requires_lowercase">Must contain a lowercase letter.</string>
-  <string name="gateway.auth.security.password_requires_digit">Must contain a digit.</string>
-  <string name="gateway.auth.security.password_requires_special">Must contain a special character.</string>
+  <string name="gateway.auth.security.password_requires_digit">Must contain at least {count} digit(s).</string>
+  <string name="gateway.auth.security.password_requires_special">Must contain at least {count} special character(s).</string>
 </resources>

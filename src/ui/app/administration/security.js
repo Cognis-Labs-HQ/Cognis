@@ -9,10 +9,8 @@ import {
 /**
  * Security sub-module for the Administration page.
  *
- * Manages system-level security settings including trusted domains for email
- * validation and approved external HTTP(S) links such as broadcast redirects.
- * An empty list permits all email domains while external trusted-link checks
- * continue to require the current site origin.
+ * Manages system-level security settings for trusted domains, registration
+ * controls, user-validation mode, and teacher approval requirements.
  *
  * Public exports:
  *   initSecuritySection(root, options) — initialises the security section.
@@ -20,19 +18,12 @@ import {
  * Usage:
  *   const security = initSecuritySection(root, { i18n, onDirtyChange });
  *   await security.init();
- *   // Save and discard are invoked by the floating unsaved-changes bar.
  *   await security.save();
  *   security.discard();
  *
  * @param {Element} root
  * @param {{ i18n: object, onDirtyChange?: (dirty: boolean) => void }} options
  * @returns {{ init: () => Promise<void>, save: () => Promise<void>, discard: () => void, renderContent: () => string }}
- *
- * Note: `save()` and `discard()` are only meaningful after `init()` resolves,
- * since `init()` sets `originalDomains` and binds the input element. They are
- * always called from the floating unsaved-changes bar, which only becomes
- * visible after the user edits the input (which itself requires `init()` to
- * have completed), so this ordering constraint is satisfied naturally.
  */
 export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalDomains = [];
@@ -260,11 +251,22 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
               </label>
             </div>
           </div>
-
+          <div class="components-section">
+            <h3 class="components-section-heading">
+              ${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.validation_mode_hint"), tooltipAria)}
+            </h3>
+            <div class="security-field-row">
+              <select id="security-user-validation-mode" class="theme-select">
+                <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.validation_mode_none"))}</option>
+                <option value="smtp">${escapeHtml(i18n.t("ui.app.admin.security.validation_mode_smtp"))}</option>
+              </select>
+            </div>
+          </div>
           <div class="components-section">
             <h3 class="components-section-heading">
               ${escapeHtml(i18n.t("ui.app.admin.security.require_teacher_approval_label"))}
-              ${renderInfoTooltip(i18n.t("ui.app.admin.security.require_teacher_approval_hint"), tooltipAria)}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.teacher_approval_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
               <label class="switch">
@@ -273,20 +275,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
               </label>
             </div>
           </div>
-          <div class="components-section">
-            <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}
-              ${renderInfoTooltip(i18n.t("ui.app.admin.security.user_validation_mode_hint"), tooltipAria)}
-            </h3>
-            <div class="security-field-row">
-              <select id="security-user-validation-mode" class="security-domains-input theme-select">
-                <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.none"))}</option>
-                <option value="smtp">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode.smtp"))}</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      `;
+        </div>`;
         },
     };
 }

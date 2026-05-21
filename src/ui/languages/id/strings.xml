@@ -231,16 +231,20 @@
   <string name="ui.app.register.password">Kata sandi</string>
   <string name="ui.app.register.confirm_password">Konfirmasi kata sandi</string>
   <string name="ui.app.register.error.password_mismatch">Kata sandi tidak cocok.</string>
+  <string name="ui.app.register.passwords_match">Kata sandi cocok.</string>
   <string name="ui.app.register.error.password_policy">Kata sandi tidak memenuhi persyaratan.</string>
   <string name="ui.app.register.error.password_too_short">Harus minimal {min} karakter.</string>
-  <string name="ui.app.register.error.password_requires_uppercase">Harus mengandung huruf kapital.</string>
+  <string name="ui.app.register.error.password_requires_uppercase">Harus mengandung minimal {count} huruf kapital.</string>
   <string name="ui.app.register.error.password_requires_lowercase">Harus mengandung huruf kecil.</string>
-  <string name="ui.app.register.error.password_requires_digit">Harus mengandung angka.</string>
-  <string name="ui.app.register.error.password_requires_special">Harus mengandung karakter khusus.</string>
-  <string name="ui.app.register.error.username_invalid">Nama pengguna hanya boleh mengandung karakter ASCII yang dapat dicetak.</string>
+  <string name="ui.app.register.error.password_requires_digit">Harus mengandung minimal {count} angka.</string>
+  <string name="ui.app.register.error.password_requires_special">Harus mengandung minimal {count} karakter khusus.</string>
+  <string name="ui.app.register.error.username_invalid">Nama pengguna hanya boleh mengandung huruf, angka, tanda hubung, dan garis bawah.</string>
   <string name="ui.app.register.error.username_too_long">Nama pengguna maksimal 25 karakter.</string>
   <string name="ui.app.register.error.username_not_lowercase">Nama pengguna harus seluruhnya huruf kecil.</string>
+  <string name="ui.app.register.error.validation_failed">Silakan perbaiki kolom yang disorot sebelum melanjutkan.</string>
   <string name="ui.app.register.submit">Buat akun</string>
+  <string name="ui.app.register.password_requirements">Persyaratan kata sandi</string>
+  <string name="ui.app.register.username_requirements">Persyaratan nama pengguna</string>
   <string name="ui.app.register.closed">Pendaftaran terbuka saat ini dinonaktifkan.</string>
   <string name="ui.app.register.success">Akun berhasil dibuat. Mengalihkan ke login…</string>
   <string name="ui.app.register.reason.session_cleared">Sesi login yang ada telah dihapus sebelum memuat halaman pendaftaran.</string>
@@ -463,6 +467,12 @@
   <string name="ui.app.admin.security.user_validation_mode_hint">Pilih apakah akun pengguna harus divalidasi setelah login.</string>
   <string name="ui.app.admin.security.user_validation_mode.none">Tidak ada</string>
   <string name="ui.app.admin.security.user_validation_mode.smtp">SMTP</string>
+  <string name="ui.app.admin.security.password_policy_heading">Kebijakan Kata Sandi</string>
+  <string name="ui.app.admin.security.policy_min_length">Panjang Minimum</string>
+  <string name="ui.app.admin.security.policy_require_uppercase">Minimum Huruf Kapital (0 = nonaktif)</string>
+  <string name="ui.app.admin.security.policy_require_lowercase">Wajib Huruf Kecil</string>
+  <string name="ui.app.admin.security.policy_require_digit">Minimum Angka (0 = nonaktif)</string>
+  <string name="ui.app.admin.security.policy_require_special">Minimum Karakter Khusus (0 = nonaktif)</string>
   <string name="ui.app.admin.security.saved">Pengaturan keamanan disimpan.</string>
   <string name="ui.app.admin.security.save_failed">Gagal menyimpan pengaturan keamanan.</string>
   <string name="ui.app.settings.emails_domain_blocked_body">Alamat email ini berasal dari domain yang tidak ada dalam daftar domain tepercaya. Hubungi administrator Anda untuk memperbarui pengaturan keamanan.</string>

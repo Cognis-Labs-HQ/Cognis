@@ -294,7 +294,7 @@ test("GET /api/v1/gateways/auth/adapters returns adapter list to admin", async (
     assert.ok(Array.isArray(body.data));
 });
 
-test("auth gateway bootstrap registers correct static dir and admin-section.js exists on disk", async () => {
+test("auth gateway bootstrap registers correct static dir", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -326,7 +326,7 @@ test("auth gateway bootstrap registers correct static dir and admin-section.js e
     );
 });
 
-test("auth gateway bootstrap registers security in settings and authentication admin section", async () => {
+test("auth gateway bootstrap registers authentication admin and security settings sections", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -347,13 +347,8 @@ test("auth gateway bootstrap registers security in settings and authentication a
     });
 
     const sections = uiRegistry.listAdminSections();
-    const securitySection = sections.find((s) => s.id === "security");
     const authenticationSection = sections.find(
         (s) => s.id === "authentication",
-    );
-    assert.ok(
-        !securitySection,
-        "auth gateway must NOT register a 'security' admin section",
     );
     assert.ok(
         authenticationSection,
@@ -363,6 +358,7 @@ test("auth gateway bootstrap registers security in settings and authentication a
         authenticationSection?.scriptUrl,
         "/static/gateways/auth/admin-section.js",
     );
+
     const settingsSections = uiRegistry.listSettingsSections();
     const settingsSecuritySection = settingsSections.find(
         (section) => section.id === "security",

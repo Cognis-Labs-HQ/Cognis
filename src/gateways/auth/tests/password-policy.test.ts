@@ -9,21 +9,21 @@ import {
 test("defaultPasswordPolicy returns expected defaults", () => {
     const policy = defaultPasswordPolicy();
     assert.equal(policy.minLength, 8);
-    assert.equal(policy.requireUppercase, false);
+    assert.equal(policy.requireUppercase, 0);
     assert.equal(policy.requireLowercase, false);
-    assert.equal(policy.requireDigit, false);
-    assert.equal(policy.requireSpecial, false);
+    assert.equal(policy.requireDigit, 0);
+    assert.equal(policy.requireSpecial, 0);
 });
 
 test("parsePasswordPolicy coerces and clamps values", () => {
     const policy = parsePasswordPolicy({
         minLength: 12,
-        requireUppercase: true,
-        requireDigit: true,
+        requireUppercase: 2,
+        requireDigit: 1,
     });
     assert.equal(policy.minLength, 12);
-    assert.equal(policy.requireUppercase, true);
-    assert.equal(policy.requireDigit, true);
+    assert.equal(policy.requireUppercase, 2);
+    assert.equal(policy.requireDigit, 1);
     assert.equal(policy.requireLowercase, false);
 
     const tooLow = parsePasswordPolicy({ minLength: 0 });
@@ -31,6 +31,17 @@ test("parsePasswordPolicy coerces and clamps values", () => {
 
     const tooHigh = parsePasswordPolicy({ minLength: 999 });
     assert.equal(tooHigh.minLength, 8);
+});
+
+test("parsePasswordPolicy clamps negative count fields to 0", () => {
+    const policy = parsePasswordPolicy({
+        requireUppercase: -1,
+        requireDigit: -5,
+        requireSpecial: -2,
+    });
+    assert.equal(policy.requireUppercase, 0);
+    assert.equal(policy.requireDigit, 0);
+    assert.equal(policy.requireSpecial, 0);
 });
 
 test("checkPasswordPolicy returns null for a valid password", () => {
@@ -41,21 +52,21 @@ test("checkPasswordPolicy returns null for a valid password", () => {
 test("checkPasswordPolicy catches each failing criterion", () => {
     const base = {
         minLength: 10,
-        requireUppercase: true,
+        requireUppercase: 1,
         requireLowercase: true,
-        requireDigit: true,
-        requireSpecial: true,
+        requireDigit: 1,
+        requireSpecial: 1,
     };
     assert.match(
         checkPasswordPolicy("short", base) ?? "",
         /password_too_short/,
     );
-    assert.equal(
+    assert.match(
         checkPasswordPolicy("alllowercase1!", {
             ...base,
             minLength: 0,
-        }),
-        "password_requires_uppercase",
+        }) ?? "",
+        /password_requires_uppercase/,
     );
     assert.equal(
         checkPasswordPolicy("ALLUPPERCASE1!", {
@@ -64,18 +75,63 @@ test("checkPasswordPolicy catches each failing criterion", () => {
         }),
         "password_requires_lowercase",
     );
-    assert.equal(
+    assert.match(
         checkPasswordPolicy("NoDigitsHere!", {
             ...base,
             minLength: 0,
-        }),
-        "password_requires_digit",
+        }) ?? "",
+        /password_requires_digit/,
     );
-    assert.equal(
+    assert.match(
         checkPasswordPolicy("NoSpecial1aA", {
             ...base,
             minLength: 0,
-        }),
-        "password_requires_special",
+        }) ?? "",
+        /password_requires_special/,
     );
+});
+
+test("checkPasswordPolicy enforces minimum count for uppercase", () => {
+    const policy = {
+        minLength: 0,
+        requireUppercase: 2,
+        requireLowercase: false,
+        requireDigit: 0,
+        requireSpecial: 0,
+    };
+    assert.match(
+        checkPasswordPolicy("Aonly", policy) ?? "",
+        /password_requires_uppercase/,
+    );
+    assert.equal(checkPasswordPolicy("AAok", policy), null);
+});
+
+test("checkPasswordPolicy enforces minimum count for digit", () => {
+    const policy = {
+        minLength: 0,
+        requireUppercase: 0,
+        requireLowercase: false,
+        requireDigit: 3,
+        requireSpecial: 0,
+    };
+    assert.match(
+        checkPasswordPolicy("only12", policy) ?? "",
+        /password_requires_digit/,
+    );
+    assert.equal(checkPasswordPolicy("abc123", policy), null);
+});
+
+test("checkPasswordPolicy enforces minimum count for special", () => {
+    const policy = {
+        minLength: 0,
+        requireUppercase: 0,
+        requireLowercase: false,
+        requireDigit: 0,
+        requireSpecial: 2,
+    };
+    assert.match(
+        checkPasswordPolicy("only!", policy) ?? "",
+        /password_requires_special/,
+    );
+    assert.equal(checkPasswordPolicy("ok!!", policy), null);
 });
