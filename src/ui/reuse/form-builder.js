@@ -35,7 +35,7 @@
  *   const html = formBuilder.render();
  *   const controller = formBuilder.attach(document.querySelector('#register-form'));
  *
- * @param {{ i18n: { t: (key: string) => string }, escapeHtml: (value: string) => string } | undefined} ctx
+ * @param {{ i18n?: { t: (key: string) => string }, escapeHtml?: (value: string) => string } | undefined} ctx
  * @param {{
  *   formId: string,
  *   formClassName?: string,
@@ -157,7 +157,7 @@ export function createFormBuilder(ctx, options) {
 
         const floatingAlert =
             criteriaDisplay === "floating-alert" && criteriaItems
-                ? `<div class="form-builder-floating-alert" data-form-builder-floating="${escapeHtml(fieldName)}">${floatingTitle ? `<p class="form-builder-floating-title">${escapeHtml(floatingTitle)}</p>` : ""}<ul class="form-builder-criteria-list">${criteriaItems}</ul></div>`
+                ? `<div class="form-builder-floating-alert" data-form-builder-floating="${escapeHtml(fieldName)}" aria-live="polite">${floatingTitle ? `<p class="form-builder-floating-title">${escapeHtml(floatingTitle)}</p>` : ""}<ul class="form-builder-criteria-list">${criteriaItems}</ul></div>`
                 : "";
 
         const inlineCriteria =

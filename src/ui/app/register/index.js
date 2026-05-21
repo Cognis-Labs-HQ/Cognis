@@ -238,7 +238,7 @@ export async function mount(root, { signal } = {}) {
             .join(":");
     }
 
-    function buildRegisterFormBuilder({ emailValue, emailLocked }) {
+    function createRegisterFormBuilder({ emailValue, emailLocked }) {
         const passwordCriteria = buildPasswordCriteria(passwordPolicy);
         const registerFormFields = [
             {
@@ -370,7 +370,7 @@ export async function mount(root, { signal } = {}) {
             const countdownHtml = inviteData?.expiresAt
                 ? `<p id="register-countdown" class="auth-intro" style="font-size:1rem;margin-top:4px"></p>`
                 : "";
-            const registerFormBuilder = buildRegisterFormBuilder({
+            const registerFormBuilder = createRegisterFormBuilder({
                 emailValue,
                 emailLocked,
             });
@@ -570,7 +570,7 @@ export async function mount(root, { signal } = {}) {
                     const inviteEmail =
                         token && inviteData ? inviteData.inviteeEmail : "";
                     const lockedEmail = inviteEmail || prefilledEmail;
-                    const registerFormBuilder = buildRegisterFormBuilder({
+                    const registerFormBuilder = createRegisterFormBuilder({
                         emailValue: lockedEmail || "",
                         emailLocked: Boolean(lockedEmail),
                     });

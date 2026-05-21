@@ -33,8 +33,8 @@ export function defaultPasswordPolicy(): PasswordPolicy {
  * Parses count-based policy fields and clamps them to non-negative integers.
  * Returns 0 when the input is missing, invalid, or negative.
  *
- * @param value
- * @returns
+ * @param value - The raw value to parse and clamp.
+ * @returns The clamped non-negative integer, or 0 if invalid.
  */
 function parseCountField(value: unknown): number {
     if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
