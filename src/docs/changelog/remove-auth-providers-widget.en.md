@@ -55,3 +55,15 @@ Each validation criterion row now highlights its full background in green when s
 ## Password confirmation mismatch only shown when a value is entered
 
 The confirm-password mismatch error no longer shows prematurely. It remains neutral until the user types into the confirm password field, preventing false-failure indicators when the field is still empty.
+
+## Password match criterion timing
+
+The password confirmation criterion now stays neutral until text is entered in the password field. This prevents the match check from showing early while the primary password is still empty.
+
+## Reactive confirmation mismatch state
+
+The confirm-password field now revalidates immediately when either password input changes, so mismatch state turns red as the user types.
+
+## Positive criterion wording
+
+The confirmation criterion label now uses “Passwords match.” so the same line reads naturally in both success and failure states via green/red criterion styling.

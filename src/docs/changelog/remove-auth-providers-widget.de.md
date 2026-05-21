@@ -55,3 +55,15 @@ Jede Validierungskriterienzeile hebt jetzt den gesamten Hintergrund in Grün her
 ## Passwortbestätigungsfehler wird nur angezeigt, wenn ein Wert eingegeben wurde
 
 Der Hinweis auf abweichende Passwörter erscheint nicht mehr zu früh. Er bleibt neutral, bis der Benutzer etwas in das Bestätigungsfeld eingibt, und vermeidet so falsche Fehlermeldungen, solange das Feld noch leer ist.
+
+## Zeitpunkt der Passwort-Übereinstimmung
+
+Das Kriterium für die Passwortbestätigung bleibt nun neutral, bis im Passwortfeld Text eingegeben wurde. Dadurch wird die Übereinstimmungsprüfung nicht mehr zu früh angezeigt, solange das primäre Passwort noch leer ist.
+
+## Reaktiver Status bei Bestätigungsabweichung
+
+Das Bestätigungsfeld wird jetzt sofort neu validiert, wenn sich eines der beiden Passwortfelder ändert, sodass ein abweichender Zustand während der Eingabe direkt rot markiert wird.
+
+## Positive Formulierung des Kriteriums
+
+Die Beschriftung des Bestätigungskriteriums lautet jetzt „Passwörter stimmen überein.“, damit dieselbe Zeile sowohl im grünen als auch im roten Zustand verständlich bleibt.

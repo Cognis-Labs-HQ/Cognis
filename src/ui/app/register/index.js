@@ -309,7 +309,10 @@ export async function mount(root, { signal } = {}) {
                         type: "custom",
                         test: (value, values) => {
                             const passwordValue = String(values.password ?? "");
-                            if (passwordValue.length === 0 || value.length === 0) {
+                            if (
+                                passwordValue.length === 0 ||
+                                value.length === 0
+                            ) {
                                 return true;
                             }
                             return value === passwordValue;
@@ -586,9 +589,8 @@ export async function mount(root, { signal } = {}) {
                         signal: signal ?? undefined,
                     });
                     const passwordInput = form.elements.namedItem("password");
-                    const confirmPasswordInput = form.elements.namedItem(
-                        "confirmPassword",
-                    );
+                    const confirmPasswordInput =
+                        form.elements.namedItem("confirmPassword");
                     if (
                         passwordInput instanceof HTMLInputElement &&
                         confirmPasswordInput instanceof HTMLInputElement

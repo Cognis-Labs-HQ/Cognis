@@ -68,10 +68,13 @@ test("register username criterion allows only letters, digits, hyphens, and unde
 
 test("register confirm password criterion only evaluates after password input", () => {
     const source = read("src/ui/app/register/index.js");
-    assert.match(source, /const passwordValue = String\(values\.password \?\? ""\)/);
     assert.match(
         source,
-        /passwordValue\.length === 0 \|\| value\.length === 0/,
+        /const passwordValue = String\(values\.password \?\? ""\)/,
+    );
+    assert.match(
+        source,
+        /passwordValue\.length === 0[\s\S]*\|\|[\s\S]*value\.length === 0/m,
     );
     assert.match(source, /messageKey: "ui\.app\.register\.passwords_match"/);
 });

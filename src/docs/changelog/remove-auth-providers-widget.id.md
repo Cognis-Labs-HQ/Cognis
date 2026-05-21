@@ -55,3 +55,15 @@ Setiap baris kriteria validasi kini menyorot seluruh latar belakang dengan warna
 ## Ketidakcocokan konfirmasi kata sandi hanya ditampilkan saat ada nilai yang dimasukkan
 
 Pesan ketidakcocokan konfirmasi kata sandi tidak lagi muncul terlalu dini. Kolom tetap dalam status netral hingga pengguna mengetik sesuatu di kolom konfirmasi, sehingga tidak ada indikator gagal palsu saat kolom masih kosong.
+
+## Waktu evaluasi kecocokan kata sandi
+
+Kriteria konfirmasi kata sandi kini tetap netral sampai ada teks yang dimasukkan ke kolom kata sandi. Ini mencegah pemeriksaan kecocokan muncul terlalu dini saat kata sandi utama masih kosong.
+
+## Status konfirmasi tidak cocok yang reaktif
+
+Kolom konfirmasi kata sandi sekarang langsung divalidasi ulang saat salah satu kolom kata sandi berubah, sehingga status tidak cocok langsung berubah merah saat pengguna mengetik.
+
+## Frasa kriteria bernada positif
+
+Label kriteria konfirmasi kini menggunakan “Kata sandi cocok.” agar baris yang sama tetap jelas baik pada kondisi berhasil maupun gagal melalui gaya kriteria hijau/merah.
