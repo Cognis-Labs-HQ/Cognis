@@ -149,7 +149,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             minLength:
                 minLengthInput instanceof HTMLInputElement
                     ? Math.max(1, parseInt(minLengthInput.value, 10) || 8)
-                    : originalPolicy.minLength,
+                    : currentPolicy.minLength,
             requireUppercase:
                 uppercaseInput instanceof HTMLInputElement
                     ? Math.max(0, parseInt(uppercaseInput.value, 10) || 0)

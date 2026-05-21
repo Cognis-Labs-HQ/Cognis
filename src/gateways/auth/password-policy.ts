@@ -32,6 +32,9 @@ export function defaultPasswordPolicy(): PasswordPolicy {
 /**
  * Parses count-based policy fields and clamps them to non-negative integers.
  * Returns 0 when the input is missing, invalid, or negative.
+ *
+ * @param value
+ * @returns
  */
 function parseCountField(value: unknown): number {
     if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
@@ -62,6 +65,10 @@ export function parsePasswordPolicy(raw: unknown): PasswordPolicy {
 /**
  * Counts non-overlapping occurrences of characters matching the given regex
  * character class within the password string.
+ *
+ * @param password
+ * @param pattern
+ * @returns
  */
 function countMatches(password: string, pattern: RegExp): number {
     return (password.match(pattern) ?? []).length;

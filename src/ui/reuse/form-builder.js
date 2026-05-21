@@ -35,7 +35,7 @@
  *   const html = formBuilder.render();
  *   const controller = formBuilder.attach(document.querySelector('#register-form'));
  *
- * @param {{ i18n: { t: (key: string) => string }, escapeHtml: (value: string) => string }} ctx
+ * @param {{ i18n: { t: (key: string) => string }, escapeHtml: (value: string) => string } | undefined} ctx
  * @param {{
  *   formId: string,
  *   formClassName?: string,

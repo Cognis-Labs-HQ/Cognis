@@ -48,7 +48,7 @@ async function resetAuthSessionForRegister() {
  * Builds structured form-builder criteria for password validation.
  *
  * @param {{ minLength: number, requireUppercase: number, requireLowercase: boolean, requireDigit: number, requireSpecial: number }} policy
- * @returns {Array<{ id: string, type: 'custom', test: (value: string) => boolean, messageKey: string, messageParams?: Record<string, number>, mode: 'live' }>}
+ * @returns {Array<{ id: string, type: 'custom', test: (value: string, fieldValues?: Record<string, string>) => boolean, messageKey: string, messageParams?: Record<string, number>, mode: 'live' }>}
  */
 function buildPasswordCriteria(policy) {
     const criteria = [];

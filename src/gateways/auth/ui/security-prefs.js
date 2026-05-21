@@ -62,13 +62,13 @@ export function createSettingsSection({ i18n, root }) {
             });
         }
         if (policy.requireUppercase > 0) {
-            const minCount = policy.requireUppercase;
             criteria.push({
                 test: (value) =>
-                    countPatternMatches(value, /[A-Z]/g) >= minCount,
+                    countPatternMatches(value, /[A-Z]/g) >=
+                    policy.requireUppercase,
                 message: i18n
                     .t("gateway.auth.security.password_requires_uppercase")
-                    .replace("{count}", String(minCount)),
+                    .replace("{count}", String(policy.requireUppercase)),
             });
         }
         if (policy.requireLowercase) {
@@ -80,23 +80,22 @@ export function createSettingsSection({ i18n, root }) {
             });
         }
         if (policy.requireDigit > 0) {
-            const minCount = policy.requireDigit;
             criteria.push({
                 test: (value) =>
-                    countPatternMatches(value, /[0-9]/g) >= minCount,
+                    countPatternMatches(value, /[0-9]/g) >= policy.requireDigit,
                 message: i18n
                     .t("gateway.auth.security.password_requires_digit")
-                    .replace("{count}", String(minCount)),
+                    .replace("{count}", String(policy.requireDigit)),
             });
         }
         if (policy.requireSpecial > 0) {
-            const minCount = policy.requireSpecial;
             criteria.push({
                 test: (value) =>
-                    countPatternMatches(value, /[^A-Za-z0-9]/g) >= minCount,
+                    countPatternMatches(value, /[^A-Za-z0-9]/g) >=
+                    policy.requireSpecial,
                 message: i18n
                     .t("gateway.auth.security.password_requires_special")
-                    .replace("{count}", String(minCount)),
+                    .replace("{count}", String(policy.requireSpecial)),
             });
         }
         return criteria;
