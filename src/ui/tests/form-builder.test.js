@@ -21,10 +21,10 @@ test("form builder reuse utility exports createFormBuilder", () => {
 });
 
 test("register page uses form builder instead of hardcoded maxlength for username", () => {
-    const source = read("src/ui/app/register/index.js");
+    const source = read("src/gateways/auth/ui/register.js");
     assert.match(
         source,
-        /import \{ createFormBuilder \} from "\.\.\/\.\.\/reuse\/form-builder\.js";/,
+        /import \{ createFormBuilder \} from "\/static\/reuse\/form-builder\.js";/,
     );
     assert.doesNotMatch(source, /maxlength="25"/);
     assert.match(
@@ -34,7 +34,7 @@ test("register page uses form builder instead of hardcoded maxlength for usernam
 });
 
 test("register password criteria use floating alert in form builder config", () => {
-    const source = read("src/ui/app/register/index.js");
+    const source = read("src/gateways/auth/ui/register.js");
     assert.match(source, /criteriaDisplay: "floating-alert"/);
     assert.match(
         source,
@@ -43,7 +43,7 @@ test("register password criteria use floating alert in form builder config", () 
 });
 
 test("register username criteria use floating alert in form builder config", () => {
-    const source = read("src/ui/app/register/index.js");
+    const source = read("src/gateways/auth/ui/register.js");
     assert.match(
         source,
         /floatingTitleKey: "ui\.app\.register\.username_requirements"/,
@@ -51,13 +51,13 @@ test("register username criteria use floating alert in form builder config", () 
 });
 
 test("register submit blocks when form builder marks fields invalid", () => {
-    const source = read("src/ui/app/register/index.js");
+    const source = read("src/gateways/auth/ui/register.js");
     assert.match(source, /formController\.validateAll\(true\)/);
     assert.match(source, /ui\.app\.register\.error\.validation_failed/);
 });
 
 test("register username criterion allows only letters, digits, hyphens, and underscores", () => {
-    const source = read("src/ui/app/register/index.js");
+    const source = read("src/gateways/auth/ui/register.js");
     assert.match(source, /id: "username-printable-ascii"/);
     assert.match(source, /\[a-zA-Z0-9_-\]/);
     assert.match(
@@ -67,7 +67,7 @@ test("register username criterion allows only letters, digits, hyphens, and unde
 });
 
 test("register confirm password criterion only evaluates after password input", () => {
-    const source = read("src/ui/app/register/index.js");
+    const source = read("src/gateways/auth/ui/register.js");
     assert.match(
         source,
         /const passwordValue = String\([\s\S]*values\?\.password \?\? ""[\s\S]*\)/m,
@@ -92,7 +92,7 @@ test("form builder supports neutral custom criterion state via null", () => {
 });
 
 test("register confirm password revalidates reactively when password changes", () => {
-    const source = read("src/ui/app/register/index.js");
+    const source = read("src/gateways/auth/ui/register.js");
     assert.match(source, /formController\.validateField\("confirmPassword"\)/);
     assert.match(source, /passwordInput\.addEventListener\(\s*"input"/m);
 });

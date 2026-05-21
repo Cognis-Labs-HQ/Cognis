@@ -326,7 +326,7 @@ test("auth gateway bootstrap registers correct static dir", async () => {
     );
 });
 
-test("auth gateway bootstrap registers security settings section and no authentication admin section", async () => {
+test("auth gateway bootstrap registers authentication admin and security settings sections", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -351,8 +351,12 @@ test("auth gateway bootstrap registers security settings section and no authenti
         (s) => s.id === "authentication",
     );
     assert.ok(
-        !authenticationSection,
-        "auth gateway must NOT register an 'authentication' admin section",
+        authenticationSection,
+        "auth gateway must register an 'authentication' admin section",
+    );
+    assert.equal(
+        authenticationSection?.scriptUrl,
+        "/static/gateways/auth/admin-section.js",
     );
 
     const settingsSections = uiRegistry.listSettingsSections();

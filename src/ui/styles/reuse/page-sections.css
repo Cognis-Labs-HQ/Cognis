@@ -194,26 +194,6 @@
     flex: 1;
 }
 
-.security-policy-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.security-policy-row {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.security-policy-row label {
-    flex: 1;
-    font-weight: 400;
-}
-
-.security-policy-number-input {
-    width: 80px;
-}
 
 .criteria-check-message {
     color: var(--color-error, #dc2626);

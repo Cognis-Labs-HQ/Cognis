@@ -1,4 +1,4 @@
-import { createPageComposer } from "../../reuse/page-composer.js";
+import { createPageComposer } from "/static/reuse/page-composer.js";
 import {
     DEFAULT_LOCALE,
     createI18n,
@@ -7,26 +7,26 @@ import {
     sanitizeLanguagePriority,
     selectSupportedLanguage,
     setPreferredLanguages,
-} from "../../reuse/i18n.js";
-import { escapeHtml } from "../../reuse/escape-html.js";
-import { showToast } from "../../reuse/toast.js";
-import { openPopup } from "../../reuse/popup.js";
-import { renderInPageCallout } from "../../reuse/in-page-callout.js";
+} from "/static/reuse/i18n.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { showToast } from "/static/reuse/toast.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { renderInPageCallout } from "/static/reuse/in-page-callout.js";
 import {
     loadAuthTypingSamples,
     runTypingShowcase,
-} from "../../reuse/auth-typing.js";
+} from "/static/reuse/auth-typing.js";
 import {
     renderAuthBrandline,
     renderAuthLayout,
-} from "../../reuse/auth-layout.js";
-import { clearStoredAuthSession } from "../../reuse/auth-session.js";
-import { createFormBuilder } from "../../reuse/form-builder.js";
+} from "/static/reuse/auth-layout.js";
+import { clearStoredAuthSession } from "/static/reuse/auth-session.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 import {
     DEFAULT_PASSWORD_POLICY,
     countPatternMatches,
     normalizePasswordPolicy,
-} from "../../reuse/password-policy.js";
+} from "/static/gateways/auth/password-policy.js";
 
 async function resetAuthSessionForRegister() {
     const hadStoredSession =
