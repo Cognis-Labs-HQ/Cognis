@@ -92,7 +92,7 @@ export function createFormBuilder(ctx, options) {
     function resolveMessage(messageKey, messageParams = {}) {
         let translatedMessage = i18n.t(messageKey);
         for (const [parameterKey, parameterValue] of Object.entries(
-            messageParams ?? {},
+            messageParams,
         )) {
             translatedMessage = translatedMessage.replace(
                 `{${parameterKey}}`,

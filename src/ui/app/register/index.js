@@ -259,8 +259,7 @@ export async function mount(root, { signal } = {}) {
                     {
                         id: "username-printable-ascii",
                         type: "custom",
-                        test: (value) =>
-                            value === "" || /^[\x21-\x7E]+$/.test(value),
+                        test: (value) => /^[\x21-\x7E]+$/.test(value),
                         messageKey: "ui.app.register.error.username_invalid",
                         mode: "live",
                     },

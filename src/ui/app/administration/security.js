@@ -127,12 +127,24 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return input.checked;
     }
 
+    function getPasswordPolicyInputs() {
+        return {
+            minLengthInput: root.querySelector("#policy-min-length"),
+            uppercaseInput: root.querySelector("#policy-require-uppercase"),
+            lowercaseInput: root.querySelector("#policy-require-lowercase"),
+            digitInput: root.querySelector("#policy-require-digit"),
+            specialInput: root.querySelector("#policy-require-special"),
+        };
+    }
+
     function readPolicyFromDom() {
-        const minLengthInput = root.querySelector("#policy-min-length");
-        const uppercaseInput = root.querySelector("#policy-require-uppercase");
-        const lowercaseInput = root.querySelector("#policy-require-lowercase");
-        const digitInput = root.querySelector("#policy-require-digit");
-        const specialInput = root.querySelector("#policy-require-special");
+        const {
+            minLengthInput,
+            uppercaseInput,
+            lowercaseInput,
+            digitInput,
+            specialInput,
+        } = getPasswordPolicyInputs();
         return {
             minLength:
                 minLengthInput instanceof HTMLInputElement
@@ -249,11 +261,13 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     }
 
     function applyPolicyToDom(policy) {
-        const minLengthInput = root.querySelector("#policy-min-length");
-        const uppercaseInput = root.querySelector("#policy-require-uppercase");
-        const lowercaseInput = root.querySelector("#policy-require-lowercase");
-        const digitInput = root.querySelector("#policy-require-digit");
-        const specialInput = root.querySelector("#policy-require-special");
+        const {
+            minLengthInput,
+            uppercaseInput,
+            lowercaseInput,
+            digitInput,
+            specialInput,
+        } = getPasswordPolicyInputs();
         if (minLengthInput instanceof HTMLInputElement) {
             minLengthInput.value = String(policy.minLength);
         }
