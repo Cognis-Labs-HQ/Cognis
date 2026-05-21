@@ -19,3 +19,19 @@ Das Registrierungsformular zeigt nun sofort eine Warnung unter dem Benutzernamen
 ## Registrierungsseite: Immer sichtbare Passwortrichtlinie als Aufzählungspunkte
 
 Das Passwortfeld auf der Registrierungsseite zeigt nun alle zutreffenden Richtlinienanforderungen als ständige Aufzählungsliste unterhalb des Felds an. Jeder Aufzählungspunkt aktualisiert sich live, wenn der Benutzer tippt: erfüllte Anforderungen werden grün mit einem Häkchen dargestellt, nicht erfüllte in Rot.
+
+## Form-Builder-Utility für strukturierte Kriterien
+
+Ein neues wiederverwendbares Form-Builder-Utility steuert jetzt das Rendern und die Validierung des Registrierungsformulars über strukturierte Feld- und Kriterien-Definitionen, die über einen gemeinsamen Kontext (`ctx`) übergeben werden. Dadurch können zukünftige Formulare Kriterien deklarativ als Daten statt als verstreute DOM-Sonderlogik definieren.
+
+## Benutzername-Limit warnt statt Eingabe zu blockieren
+
+Das Benutzername-Feld stoppt die Eingabe nicht mehr hart bei 25 Zeichen. Benutzer können weiter tippen; sobald der Wert über 25 Zeichen liegt, wird eine Inline-Warnung angezeigt.
+
+## Pflichtfelder und Validierung mit visuellem Fehlerstatus
+
+Pflichtfelder zeigen jetzt unter dem Eingabefeld ein Sternchen und erhalten eine rote Fehlerhinterlegung, wenn sie leer bleiben oder Kriterien nicht erfüllen.
+
+## Passwortkriterien in schwebendem Hinweisfeld
+
+Passwortanforderungen werden jetzt in einem schwebenden Kriterien-Hinweis direkt am Passwortfeld angezeigt. Jede Anforderung wird grün dargestellt, wenn sie erfüllt ist, und rot, wenn sie nicht erfüllt ist.

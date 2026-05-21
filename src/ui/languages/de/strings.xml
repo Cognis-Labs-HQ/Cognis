@@ -240,6 +240,7 @@
   <string name="ui.app.register.error.username_invalid">Der Benutzername darf nur druckbare ASCII-Zeichen enthalten.</string>
   <string name="ui.app.register.error.username_too_long">Der Benutzername darf höchstens 25 Zeichen lang sein.</string>
   <string name="ui.app.register.error.username_not_lowercase">Der Benutzername muss vollständig in Kleinbuchstaben geschrieben sein.</string>
+  <string name="ui.app.register.error.validation_failed">Bitte korrigieren Sie die markierten Felder, bevor Sie fortfahren.</string>
   <string name="ui.app.register.submit">Konto erstellen</string>
   <string name="ui.app.register.password_requirements">Passwortanforderungen</string>
   <string name="ui.app.register.closed">Die offene Registrierung ist derzeit deaktiviert.</string>

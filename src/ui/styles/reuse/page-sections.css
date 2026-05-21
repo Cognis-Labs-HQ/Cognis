@@ -221,31 +221,91 @@
     margin: 2px 0 0 0;
 }
 
-.password-policy-list {
+.form-builder {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-builder-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    position: relative;
+}
+
+.form-builder-input {
+    width: 100%;
+}
+
+.form-builder-required-flag {
+    color: var(--color-error, #dc2626);
+    font-size: 0.85em;
+    line-height: 1;
+    margin: 2px 0 0 0;
+}
+
+.form-builder-field--invalid .form-builder-input,
+.form-builder-input--invalid {
+    background-color: rgba(220, 38, 38, 0.08);
+    border-color: var(--color-error, #dc2626);
+}
+
+.form-builder-field--required-empty .form-builder-required-flag {
+    font-weight: 700;
+}
+
+.form-builder-floating-alert {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 7;
+    min-width: 260px;
+    max-width: min(420px, calc(100vw - 32px));
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--color-border, #cbd5e1);
+    background: var(--color-surface, #ffffff);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+}
+
+.form-builder-floating-title {
+    margin: 0 0 6px 0;
+    font-size: 0.82em;
+    font-weight: 700;
+    color: var(--color-text-muted, #64748b);
+}
+
+.form-builder-criteria-list {
     list-style: none;
-    margin: 4px 0 0 0;
+    margin: 0;
     padding: 0;
     font-size: 0.85em;
 }
 
-.password-policy-item {
-    padding: 1px 0;
+.form-builder-criteria-list--inline {
+    margin-top: 2px;
+}
+
+.form-builder-criterion-item {
+    padding: 2px 0;
     color: var(--color-text-muted, #64748b);
 }
 
-.password-policy-item::before {
+.form-builder-criterion-item::before {
     content: "\2022 ";
 }
 
-.password-policy-item--met {
+.form-builder-criterion-item--met {
     color: var(--color-success, #16a34a);
 }
 
-.password-policy-item--met::before {
+.form-builder-criterion-item--met::before {
     content: "\2713 ";
 }
 
-.password-policy-item--unmet {
+.form-builder-criterion-item--unmet {
     color: var(--color-error, #dc2626);
 }
 
@@ -282,6 +342,13 @@
     .security-domains-input {
         min-width: 0;
         width: 100%;
+    }
+
+    .form-builder-floating-alert {
+        position: static;
+        min-width: 0;
+        max-width: 100%;
+        margin-top: 4px;
     }
 }
 

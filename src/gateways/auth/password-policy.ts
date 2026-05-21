@@ -29,6 +29,10 @@ export function defaultPasswordPolicy(): PasswordPolicy {
     };
 }
 
+/**
+ * Parses count-based policy fields and clamps them to non-negative integers.
+ * Returns 0 when the input is missing, invalid, or negative.
+ */
 function parseCountField(value: unknown): number {
     if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
         return Math.floor(value);

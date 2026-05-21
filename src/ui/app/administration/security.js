@@ -5,6 +5,10 @@ import {
     clearTrustedDomainsCache,
     normalizeTrustedDomains,
 } from "../../reuse/trusted-domains.js";
+import {
+    DEFAULT_PASSWORD_POLICY,
+    normalizePasswordPolicy,
+} from "../../reuse/password-policy.js";
 
 /**
  * Security sub-module for the Administration page.
@@ -40,13 +44,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let currentUserValidationMode = "none";
     let originalTeacherManualApproval = true;
 
-    let originalPolicy = {
-        minLength: 8,
-        requireUppercase: 0,
-        requireLowercase: false,
-        requireDigit: 0,
-        requireSpecial: 0,
-    };
+    let originalPolicy = { ...DEFAULT_PASSWORD_POLICY };
     let currentPolicy = { ...originalPolicy };
 
     async function loadSettings() {
@@ -69,31 +67,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         const res = await apiFetch("/api/v1/auth/password-policy").catch(
             () => null,
         );
-        if (!res?.ok) return { ...originalPolicy };
+        if (!res?.ok) return { ...DEFAULT_PASSWORD_POLICY };
         const payload = await res.json().catch(() => null);
-        const data = payload?.data;
-        if (!data || typeof data !== "object") return { ...originalPolicy };
-        return {
-            minLength:
-                typeof data.minLength === "number" && data.minLength >= 1
-                    ? data.minLength
-                    : 8,
-            requireUppercase:
-                typeof data.requireUppercase === "number" &&
-                data.requireUppercase >= 0
-                    ? data.requireUppercase
-                    : 0,
-            requireLowercase: data.requireLowercase === true,
-            requireDigit:
-                typeof data.requireDigit === "number" && data.requireDigit >= 0
-                    ? data.requireDigit
-                    : 0,
-            requireSpecial:
-                typeof data.requireSpecial === "number" &&
-                data.requireSpecial >= 0
-                    ? data.requireSpecial
-                    : 0,
-        };
+        return normalizePasswordPolicy(payload?.data, DEFAULT_PASSWORD_POLICY);
     }
 
     async function persistSettings(
@@ -161,7 +137,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             minLength:
                 minLengthInput instanceof HTMLInputElement
                     ? Math.max(1, parseInt(minLengthInput.value, 10) || 8)
-                    : currentPolicy.minLength,
+                    : originalPolicy.minLength,
             requireUppercase:
                 uppercaseInput instanceof HTMLInputElement
                     ? Math.max(0, parseInt(uppercaseInput.value, 10) || 0)

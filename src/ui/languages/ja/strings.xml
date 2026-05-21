@@ -240,6 +240,7 @@
   <string name="ui.app.register.error.username_invalid">ユーザー名には印刷可能なASCII文字のみ使用できます。</string>
   <string name="ui.app.register.error.username_too_long">ユーザー名は25文字以内にしてください。</string>
   <string name="ui.app.register.error.username_not_lowercase">ユーザー名はすべて小文字にしてください。</string>
+  <string name="ui.app.register.error.validation_failed">続行する前に、強調表示された項目を修正してください。</string>
   <string name="ui.app.register.submit">アカウントを作成</string>
   <string name="ui.app.register.password_requirements">パスワード要件</string>
   <string name="ui.app.register.closed">現在、一般登録は無効です。</string>

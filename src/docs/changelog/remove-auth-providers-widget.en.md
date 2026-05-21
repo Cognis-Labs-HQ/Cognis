@@ -19,3 +19,19 @@ The registration form now shows an inline warning beneath the username field as 
 ## Registration page: always-visible password policy dotpoints
 
 The password field on the registration page now shows all applicable policy requirements as a persistent bullet-point list below the field. Each dotpoint updates live as the user types, turning green with a checkmark when the requirement is met and red when it is not, so users can see exactly what remains before submitting.
+
+## Form builder utility for structured criteria
+
+A new reusable form builder utility now drives register-form rendering and validation using structured field and criterion definitions passed through a shared context (`ctx`). This establishes a reusable pattern for future forms to declare validation criteria in data rather than hardcoded per-field DOM logic.
+
+## Username limit now warns instead of blocking input
+
+The username input no longer hard-stops at 25 characters. Users can keep typing, and an inline validation warning appears as soon as the value goes beyond 25 characters.
+
+## Required fields and validation now use visual invalid states
+
+Required fields now show an asterisk marker under the input and apply red invalid shading when left empty or when criteria are not satisfied.
+
+## Password criteria moved to floating alert status panel
+
+Password requirements now render in a floating criteria alert attached to the password field, with each criterion shown in green when satisfied and red when unsatisfied.

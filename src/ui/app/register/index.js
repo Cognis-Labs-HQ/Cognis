@@ -21,7 +21,12 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { clearStoredAuthSession } from "../../reuse/auth-session.js";
-import { attachCriteriaCheck } from "../../reuse/criteria-check.js";
+import { createFormBuilder } from "../../reuse/form-builder.js";
+import {
+    DEFAULT_PASSWORD_POLICY,
+    countPatternMatches,
+    normalizePasswordPolicy,
+} from "../../reuse/password-policy.js";
 
 async function resetAuthSessionForRegister() {
     const hadStoredSession =
@@ -40,130 +45,70 @@ async function resetAuthSessionForRegister() {
 }
 
 /**
- * Builds a list of criteria for the criteria-check module from a password policy.
- * Used for the confirm-password mismatch check and form submit validation.
+ * Builds structured form-builder criteria for password validation.
  *
  * @param {{ minLength: number, requireUppercase: number, requireLowercase: boolean, requireDigit: number, requireSpecial: number }} policy
- * @param {object} i18n
- * @returns {Array<{ test: (value: string) => boolean, message: string }>}
+ * @returns {Array<{ id: string, type: 'custom', test: (value: string) => boolean, messageKey: string, messageParams?: Record<string, number>, mode: 'live' }>}
  */
-function buildPasswordCriteria(policy, i18n) {
+function buildPasswordCriteria(policy) {
     const criteria = [];
     if (policy.minLength > 0) {
-        const minLen = policy.minLength;
+        const minLength = policy.minLength;
         criteria.push({
-            test: (value) => value.length >= minLen,
-            message: i18n
-                .t("ui.app.register.error.password_too_short")
-                .replace("{min}", String(minLen)),
+            id: "password-min-length",
+            type: "custom",
+            test: (value) => value.length >= minLength,
+            messageKey: "ui.app.register.error.password_too_short",
+            messageParams: { min: minLength },
+            mode: "live",
         });
     }
     if (policy.requireUppercase > 0) {
-        const minCount = policy.requireUppercase;
+        const minUppercaseCount = policy.requireUppercase;
         criteria.push({
-            test: (value) => (value.match(/[A-Z]/g) ?? []).length >= minCount,
-            message: i18n
-                .t("ui.app.register.error.password_requires_uppercase")
-                .replace("{count}", String(minCount)),
+            id: "password-uppercase-count",
+            type: "custom",
+            test: (value) =>
+                countPatternMatches(value, /[A-Z]/g) >= minUppercaseCount,
+            messageKey: "ui.app.register.error.password_requires_uppercase",
+            messageParams: { count: minUppercaseCount },
+            mode: "live",
         });
     }
     if (policy.requireLowercase) {
         criteria.push({
+            id: "password-lowercase-required",
+            type: "custom",
             test: (value) => /[a-z]/.test(value),
-            message: i18n.t(
-                "ui.app.register.error.password_requires_lowercase",
-            ),
+            messageKey: "ui.app.register.error.password_requires_lowercase",
+            mode: "live",
         });
     }
     if (policy.requireDigit > 0) {
-        const minCount = policy.requireDigit;
+        const minDigitCount = policy.requireDigit;
         criteria.push({
-            test: (value) => (value.match(/[0-9]/g) ?? []).length >= minCount,
-            message: i18n
-                .t("ui.app.register.error.password_requires_digit")
-                .replace("{count}", String(minCount)),
+            id: "password-digit-count",
+            type: "custom",
+            test: (value) =>
+                countPatternMatches(value, /[0-9]/g) >= minDigitCount,
+            messageKey: "ui.app.register.error.password_requires_digit",
+            messageParams: { count: minDigitCount },
+            mode: "live",
         });
     }
     if (policy.requireSpecial > 0) {
-        const minCount = policy.requireSpecial;
+        const minSpecialCount = policy.requireSpecial;
         criteria.push({
+            id: "password-special-count",
+            type: "custom",
             test: (value) =>
-                (value.match(/[^A-Za-z0-9]/g) ?? []).length >= minCount,
-            message: i18n
-                .t("ui.app.register.error.password_requires_special")
-                .replace("{count}", String(minCount)),
+                countPatternMatches(value, /[^A-Za-z0-9]/g) >= minSpecialCount,
+            messageKey: "ui.app.register.error.password_requires_special",
+            messageParams: { count: minSpecialCount },
+            mode: "live",
         });
     }
     return criteria;
-}
-
-/**
- * Attaches an always-visible policy dotpoints list beneath the password input.
- * Each dotpoint reflects a policy requirement and updates its met/unmet state
- * as the user types.
- *
- * @param {HTMLInputElement} passwordInput
- * @param {Array<{ test: (value: string) => boolean, message: string }>} criteria
- * @param {object} i18n
- * @param {{ signal?: AbortSignal }} [options]
- * @returns {{ isValid: () => boolean, detach: () => void }}
- */
-function attachPasswordPolicyList(passwordInput, criteria, i18n, options = {}) {
-    if (criteria.length === 0) {
-        return {
-            isValid: () => true,
-            detach: () => {},
-        };
-    }
-
-    const listEl = document.createElement("ul");
-    listEl.className = "password-policy-list";
-    listEl.setAttribute(
-        "aria-label",
-        i18n.t("ui.app.register.password_requirements"),
-    );
-
-    const itemEls = criteria.map((criterion) => {
-        const item = document.createElement("li");
-        item.className = "password-policy-item";
-        item.textContent = criterion.message;
-        listEl.appendChild(item);
-        return item;
-    });
-
-    passwordInput.insertAdjacentElement("afterend", listEl);
-
-    function update() {
-        const value = passwordInput.value;
-        criteria.forEach((criterion, index) => {
-            const met = criterion.test(value);
-            itemEls[index].classList.toggle("password-policy-item--met", met);
-            itemEls[index].classList.toggle(
-                "password-policy-item--unmet",
-                !met,
-            );
-        });
-    }
-
-    update();
-
-    const listenerOptions = options.signal
-        ? { signal: options.signal }
-        : undefined;
-    passwordInput.addEventListener("input", update, listenerOptions);
-
-    function isValid() {
-        return criteria.every((criterion) =>
-            criterion.test(passwordInput.value),
-        );
-    }
-
-    function detach() {
-        passwordInput.removeEventListener("input", update);
-        listEl.remove();
-    }
-
-    return { isValid, detach };
 }
 
 /**
@@ -209,13 +154,7 @@ export async function mount(root, { signal } = {}) {
     let invalidTokenToastToken = null;
     let availableLanguages = [];
     let selectedLanguage = DEFAULT_LOCALE;
-    let passwordPolicy = {
-        minLength: 8,
-        requireUppercase: 0,
-        requireLowercase: false,
-        requireDigit: 0,
-        requireSpecial: 0,
-    };
+    let passwordPolicy = { ...DEFAULT_PASSWORD_POLICY };
 
     if (token) {
         try {
@@ -257,32 +196,10 @@ export async function mount(root, { signal } = {}) {
         const policyRes = await fetch("/api/v1/auth/password-policy");
         if (policyRes.ok) {
             const policyPayload = await policyRes.json();
-            const data = policyPayload?.data;
-            if (data && typeof data === "object") {
-                passwordPolicy = {
-                    minLength:
-                        typeof data.minLength === "number" &&
-                        data.minLength >= 1
-                            ? data.minLength
-                            : 8,
-                    requireUppercase:
-                        typeof data.requireUppercase === "number" &&
-                        data.requireUppercase >= 0
-                            ? data.requireUppercase
-                            : 0,
-                    requireLowercase: data.requireLowercase === true,
-                    requireDigit:
-                        typeof data.requireDigit === "number" &&
-                        data.requireDigit >= 0
-                            ? data.requireDigit
-                            : 0,
-                    requireSpecial:
-                        typeof data.requireSpecial === "number" &&
-                        data.requireSpecial >= 0
-                            ? data.requireSpecial
-                            : 0,
-                };
-            }
+            passwordPolicy = normalizePasswordPolicy(
+                policyPayload?.data,
+                passwordPolicy,
+            );
         }
     } catch {
         // Use defaults when policy endpoint is unreachable.
@@ -321,6 +238,103 @@ export async function mount(root, { signal } = {}) {
             .join(":");
     }
 
+    function buildRegisterFormBuilder({ emailValue, emailLocked }) {
+        const passwordCriteria = buildPasswordCriteria(passwordPolicy);
+        const registerFormFields = [
+            {
+                name: "email",
+                labelKey: "ui.app.register.email",
+                type: "email",
+                value: emailValue,
+                disabled: emailLocked,
+                required: true,
+                className: emailLocked ? "auth-input--locked" : "",
+            },
+            {
+                name: "username",
+                labelKey: "ui.app.register.username",
+                type: "text",
+                required: true,
+                criteria: [
+                    {
+                        id: "username-printable-ascii",
+                        type: "custom",
+                        test: (value) =>
+                            value === "" || /^[\x21-\x7E]+$/.test(value),
+                        messageKey: "ui.app.register.error.username_invalid",
+                        mode: "live",
+                    },
+                    {
+                        id: "username-lowercase",
+                        type: "custom",
+                        test: (value) => value === value.toLowerCase(),
+                        messageKey:
+                            "ui.app.register.error.username_not_lowercase",
+                        mode: "live",
+                    },
+                    {
+                        id: "username-max-length",
+                        type: "maxLength",
+                        value: 25,
+                        messageKey: "ui.app.register.error.username_too_long",
+                        mode: "live",
+                    },
+                ],
+            },
+            {
+                name: "displayName",
+                labelKey: "ui.app.register.display_name",
+                type: "text",
+            },
+            {
+                name: "password",
+                labelKey: "ui.app.register.password",
+                type: "password",
+                required: true,
+                criteria: passwordCriteria,
+                criteriaDisplay: "floating-alert",
+                floatingTitleKey: "ui.app.register.password_requirements",
+            },
+            {
+                name: "confirmPassword",
+                labelKey: "ui.app.register.confirm_password",
+                type: "password",
+                required: true,
+                criteria: [
+                    {
+                        id: "confirm-password-match",
+                        type: "custom",
+                        test: (value, values) => value === values.password,
+                        messageKey: "ui.app.register.error.password_mismatch",
+                        mode: "live",
+                    },
+                ],
+            },
+        ];
+        if (availableLanguages.length > 1) {
+            registerFormFields.push({
+                name: "language",
+                labelKey: "ui.reuse.language",
+                type: "select",
+                value: selectedLanguage,
+                options: availableLanguages.map((languageOption) => ({
+                    value: languageOption.key,
+                    label: languageOption.name,
+                })),
+            });
+        }
+        return createFormBuilder(
+            { i18n, escapeHtml },
+            {
+                formId: "register-form",
+                formClassName: "auth-form",
+                submitButtonClassName: "btn-confirm btn-animated",
+                submitLabelKey: "ui.app.register.submit",
+                fields: registerFormFields,
+            },
+        );
+    }
+
     function renderRegisterShell() {
         const isInviteFlow = Boolean(token);
         const isInvalid =
@@ -352,53 +366,19 @@ export async function mount(root, { signal } = {}) {
             const lockedEmail = inviteEmail || prefilledEmail;
             const emailValue = lockedEmail || "";
             const emailLocked = Boolean(lockedEmail);
-            const emailReadonly = emailLocked ? "disabled" : "";
-            const emailLockedClass = emailLocked ? " auth-input--locked" : "";
             const countdownHtml = inviteData?.expiresAt
                 ? `<p id="register-countdown" class="auth-intro" style="font-size:1rem;margin-top:4px"></p>`
                 : "";
-            const langOptionsHtml = availableLanguages
-                .map(
-                    (lang) =>
-                        `<option value="${escapeHtml(lang.key)}"${lang.key === selectedLanguage ? " selected" : ""}>${escapeHtml(lang.name)}</option>`,
-                )
-                .join("");
-            const langSelectHtml =
-                availableLanguages.length > 1
-                    ? `<label>
-            <span>${escapeHtml(i18n.t("ui.reuse.language"))}</span>
-            <select name="language" class="theme-select">${langOptionsHtml}</select>
-          </label>`
-                    : "";
+            const registerFormBuilder = buildRegisterFormBuilder({
+                emailValue,
+                emailLocked,
+            });
             formHtml = `
       ${invitedText ? `<p class="auth-intro">${escapeHtml(invitedText)}</p>` : ""}
       ${countdownHtml}
       ${!isInviteFlow ? renderInPageCallout({ variant: "info", body: i18n.t("ui.app.register.email_verify_notice") }) : ""}
       <div class="auth-form-shell">
-        <form id="register-form" class="stack auth-form">
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.register.email"))}</span>
-            <input name="email" type="email" value="${escapeHtml(emailValue)}" ${emailReadonly} class="${emailLockedClass.trim()}" required />
-          </label>
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.register.username"))}</span>
-            <input name="username" maxlength="25" required />
-          </label>
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.register.display_name"))}</span>
-            <input name="displayName" />
-          </label>
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.register.password"))}</span>
-            <input name="password" type="password" required />
-          </label>
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.register.confirm_password"))}</span>
-            <input name="confirmPassword" type="password" required />
-          </label>
-          ${langSelectHtml}
-          <button type="submit" class="btn-confirm btn-animated">${escapeHtml(i18n.t("ui.app.register.submit"))}</button>
-        </form>
+        ${registerFormBuilder.render()}
       </div>
     `;
         }
@@ -586,6 +566,16 @@ export async function mount(root, { signal } = {}) {
 
                     const form = root.querySelector("#register-form");
                     if (!(form instanceof HTMLFormElement)) return;
+                    const inviteEmail =
+                        token && inviteData ? inviteData.inviteeEmail : "";
+                    const lockedEmail = inviteEmail || prefilledEmail;
+                    const registerFormBuilder = buildRegisterFormBuilder({
+                        emailValue: lockedEmail || "",
+                        emailLocked: Boolean(lockedEmail),
+                    });
+                    const formController = registerFormBuilder.attach(form, {
+                        signal: signal ?? undefined,
+                    });
                     const languageSelect = form.elements.namedItem("language");
                     if (languageSelect instanceof HTMLSelectElement) {
                         languageSelect.addEventListener(
@@ -597,87 +587,19 @@ export async function mount(root, { signal } = {}) {
                         );
                     }
 
-                    const usernameInput = form.elements.namedItem("username");
-                    if (usernameInput instanceof HTMLInputElement) {
-                        const usernameController = attachCriteriaCheck(
-                            usernameInput,
-                            [
-                                {
-                                    test: (value) =>
-                                        value === "" ||
-                                        /^[\x21-\x7E]+$/.test(value),
-                                    message: i18n.t(
-                                        "ui.app.register.error.username_invalid",
-                                    ),
-                                },
-                                {
-                                    test: (value) =>
-                                        value === value.toLowerCase(),
-                                    message: i18n.t(
-                                        "ui.app.register.error.username_not_lowercase",
-                                    ),
-                                },
-                            ],
-                            { signal: signal ?? undefined },
-                        );
-                        if (signal) {
-                            signal.addEventListener(
-                                "abort",
-                                () => usernameController.detach(),
-                                { once: true },
-                            );
-                        }
-                    }
-
-                    const passwordInput = form.elements.namedItem("password");
-                    const confirmPasswordInput =
-                        form.elements.namedItem("confirmPassword");
-
-                    if (
-                        passwordInput instanceof HTMLInputElement &&
-                        confirmPasswordInput instanceof HTMLInputElement
-                    ) {
-                        const passwordCriteria = buildPasswordCriteria(
-                            passwordPolicy,
-                            i18n,
-                        );
-                        const policyListController = attachPasswordPolicyList(
-                            passwordInput,
-                            passwordCriteria,
-                            i18n,
-                            { signal: signal ?? undefined },
-                        );
-
-                        const mismatchController = attachCriteriaCheck(
-                            confirmPasswordInput,
-                            [
-                                {
-                                    test: (value) =>
-                                        value === passwordInput.value,
-                                    message: i18n.t(
-                                        "ui.app.register.error.password_mismatch",
-                                    ),
-                                },
-                            ],
-                            { signal: signal ?? undefined },
-                        );
-
-                        if (signal) {
-                            signal.addEventListener(
-                                "abort",
-                                () => {
-                                    policyListController.detach();
-                                    mismatchController.detach();
-                                },
-                                { once: true },
-                            );
-                        }
-                    }
-
                     form.addEventListener(
                         "submit",
                         async (event) => {
                             event.preventDefault();
+                            if (!formController.validateAll(true)) {
+                                showToast(
+                                    i18n.t(
+                                        "ui.app.register.error.validation_failed",
+                                    ),
+                                    { variant: "error" },
+                                );
+                                return;
+                            }
                             const email = String(form.email.value ?? "")
                                 .trim()
                                 .toLowerCase();

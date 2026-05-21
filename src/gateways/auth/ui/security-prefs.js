@@ -3,6 +3,11 @@ import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { attachCriteriaCheck } from "/static/reuse/criteria-check.js";
+import {
+    DEFAULT_PASSWORD_POLICY,
+    countPatternMatches,
+    normalizePasswordPolicy,
+} from "/static/reuse/password-policy.js";
 
 export function createSettingsSection({ i18n, root }) {
     let capability = null;
@@ -39,23 +44,12 @@ export function createSettingsSection({ i18n, root }) {
             () => null,
         );
         if (!response?.ok) {
-            return {
-                minLength: 8,
-                requireUppercase: false,
-                requireLowercase: false,
-                requireDigit: false,
-                requireSpecial: false,
-            };
+            return { ...DEFAULT_PASSWORD_POLICY };
         }
         const payload = await response.json().catch(() => null);
-        return (
-            payload?.data ?? {
-                minLength: 8,
-                requireUppercase: false,
-                requireLowercase: false,
-                requireDigit: false,
-                requireSpecial: false,
-            }
+        return normalizePasswordPolicy(
+            payload?.data,
+            DEFAULT_PASSWORD_POLICY,
         );
     }
 
@@ -74,7 +68,7 @@ export function createSettingsSection({ i18n, root }) {
             const minCount = policy.requireUppercase;
             criteria.push({
                 test: (value) =>
-                    (value.match(/[A-Z]/g) ?? []).length >= minCount,
+                    countPatternMatches(value, /[A-Z]/g) >= minCount,
                 message: i18n
                     .t("gateway.auth.security.password_requires_uppercase")
                     .replace("{count}", String(minCount)),
@@ -92,7 +86,7 @@ export function createSettingsSection({ i18n, root }) {
             const minCount = policy.requireDigit;
             criteria.push({
                 test: (value) =>
-                    (value.match(/[0-9]/g) ?? []).length >= minCount,
+                    countPatternMatches(value, /[0-9]/g) >= minCount,
                 message: i18n
                     .t("gateway.auth.security.password_requires_digit")
                     .replace("{count}", String(minCount)),
@@ -102,7 +96,7 @@ export function createSettingsSection({ i18n, root }) {
             const minCount = policy.requireSpecial;
             criteria.push({
                 test: (value) =>
-                    (value.match(/[^A-Za-z0-9]/g) ?? []).length >= minCount,
+                    countPatternMatches(value, /[^A-Za-z0-9]/g) >= minCount,
                 message: i18n
                     .t("gateway.auth.security.password_requires_special")
                     .replace("{count}", String(minCount)),
