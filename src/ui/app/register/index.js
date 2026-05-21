@@ -279,6 +279,8 @@ export async function mount(root, { signal } = {}) {
                         mode: "live",
                     },
                 ],
+                criteriaDisplay: "floating-alert",
+                floatingTitleKey: "ui.app.register.username_requirements",
             },
             {
                 name: "displayName",

@@ -243,6 +243,7 @@
   <string name="ui.app.register.error.validation_failed">Silakan perbaiki kolom yang disorot sebelum melanjutkan.</string>
   <string name="ui.app.register.submit">Buat akun</string>
   <string name="ui.app.register.password_requirements">Persyaratan kata sandi</string>
+  <string name="ui.app.register.username_requirements">Persyaratan nama pengguna</string>
   <string name="ui.app.register.closed">Pendaftaran terbuka saat ini dinonaktifkan.</string>
   <string name="ui.app.register.success">Akun berhasil dibuat. Mengalihkan ke login…</string>
   <string name="ui.app.register.reason.session_cleared">Sesi login yang ada telah dihapus sebelum memuat halaman pendaftaran.</string>

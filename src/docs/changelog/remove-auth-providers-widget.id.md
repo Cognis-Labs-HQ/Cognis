@@ -28,10 +28,18 @@ Utilitas form builder reusable baru sekarang menangani render dan validasi formu
 
 Kolom nama pengguna tidak lagi berhenti paksa di 25 karakter. Pengguna tetap bisa mengetik, dan peringatan inline langsung muncul saat nilai melewati 25 karakter.
 
-## Field wajib dan validasi kini memakai status visual invalid
+## Field wajib menampilkan tanda bintang merah di samping judul field
 
-Field wajib sekarang menampilkan tanda bintang di bawah input dan menerapkan bayangan merah saat dibiarkan kosong atau saat kriteria tidak terpenuhi.
+Field wajib kini menampilkan tanda bintang merah langsung di samping judul label field, bukan di bawah input. Warna bintang menggunakan variabel tema yang sesuai agar terlihat jelas di tema terang dan gelap.
 
-## Kriteria kata sandi dipindahkan ke panel alert mengambang
+## Kriteria nama pengguna tampil di panel mengambang saat fokus
 
-Persyaratan kata sandi kini ditampilkan dalam panel alert kriteria yang mengambang di dekat kolom kata sandi, dengan warna hijau untuk kriteria yang terpenuhi dan merah untuk yang belum terpenuhi.
+Persyaratan nama pengguna kini ditampilkan dalam panel mengambang yang sama seperti kriteria kata sandi. Panel muncul langsung di bawah kolom nama pengguna saat kolom tersebut difokuskan dan tersembunyi saat fokus berpindah.
+
+## Panel kriteria mengikuti lebar kolom
+
+Panel kriteria mengambang kini menyesuaikan lebar penuh kolom input yang bersangkutan, bukan mengambang di tepi kanan. Di perangkat kecil, panel tampil sebagai blok di bawah kolom saat difokuskan.
+
+## Panel kriteria menggunakan warna tema yang tepat
+
+Panel kriteria mengambang kini menggunakan variabel CSS tema yang benar (`--surface`, `--border`, `--text-muted`, `--color-success-outline-text`, `--color-danger-outline-text`) agar warna tampil akurat di tema terang maupun gelap.

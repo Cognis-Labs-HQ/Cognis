@@ -239,42 +239,52 @@
     width: 100%;
 }
 
+.form-builder-label-text {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
 .form-builder-required-flag {
-    color: var(--color-error, #dc2626);
-    font-size: 0.85em;
+    color: var(--color-danger-outline-text);
+    font-weight: 700;
+    font-size: 0.9em;
     line-height: 1;
-    margin: 2px 0 0 0;
 }
 
 .form-builder-field--invalid .form-builder-input,
 .form-builder-input--invalid {
     background-color: rgba(220, 38, 38, 0.08);
-    border-color: var(--color-error, #dc2626);
+    border-color: var(--color-danger-outline-text);
 }
 
 .form-builder-field--required-empty .form-builder-required-flag {
-    font-weight: 700;
+    opacity: 1;
 }
 
 .form-builder-floating-alert {
+    display: none;
     position: absolute;
-    top: calc(100% + 6px);
+    top: calc(100% + 4px);
+    left: 0;
     right: 0;
     z-index: 7;
-    min-width: 260px;
-    max-width: min(420px, calc(100vw - 32px));
     padding: 10px 12px;
     border-radius: 10px;
-    border: 1px solid var(--color-border, #cbd5e1);
-    background: var(--color-surface, #ffffff);
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.form-builder-field:focus-within .form-builder-floating-alert {
+    display: block;
 }
 
 .form-builder-floating-title {
     margin: 0 0 6px 0;
     font-size: 0.82em;
     font-weight: 700;
-    color: var(--color-text-muted, #64748b);
+    color: var(--text-muted);
 }
 
 .form-builder-criteria-list {
@@ -290,7 +300,7 @@
 
 .form-builder-criterion-item {
     padding: 2px 0;
-    color: var(--color-text-muted, #64748b);
+    color: var(--text-muted);
 }
 
 .form-builder-criterion-item::before {
@@ -298,7 +308,7 @@
 }
 
 .form-builder-criterion-item--met {
-    color: var(--color-success, #16a34a);
+    color: var(--color-success-outline-text);
 }
 
 .form-builder-criterion-item--met::before {
@@ -306,7 +316,7 @@
 }
 
 .form-builder-criterion-item--unmet {
-    color: var(--color-error, #dc2626);
+    color: var(--color-danger-outline-text);
 }
 
 .components-section {
@@ -344,7 +354,7 @@
         width: 100%;
     }
 
-    .form-builder-floating-alert {
+    .form-builder-field:focus-within .form-builder-floating-alert {
         position: static;
         min-width: 0;
         max-width: 100%;

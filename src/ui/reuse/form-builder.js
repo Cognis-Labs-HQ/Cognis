@@ -139,8 +139,8 @@ export function createFormBuilder(ctx, options) {
             attributes.push(renderAttribute("disabled", true));
         }
 
-        const requiredFlag = required
-            ? `<p class="form-builder-required-flag" data-form-builder-required="${escapeHtml(fieldName)}">*</p>`
+        const requiredFlagInline = required
+            ? `<span class="form-builder-required-flag" data-form-builder-required="${escapeHtml(fieldName)}" aria-hidden="true"> *</span>`
             : "";
 
         const criteriaItems = (
@@ -189,9 +189,8 @@ export function createFormBuilder(ctx, options) {
 
         return `
       <label class="${fieldClassName}" data-form-builder-field="${escapeHtml(fieldName)}">
-        <span>${escapeHtml(label)}</span>
+        <span class="form-builder-label-text">${escapeHtml(label)}${requiredFlagInline}</span>
         ${inputMarkup}
-        ${requiredFlag}
         ${inlineCriteria}
         ${floatingAlert}
       </label>

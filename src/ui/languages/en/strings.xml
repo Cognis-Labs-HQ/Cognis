@@ -243,6 +243,7 @@
   <string name="ui.app.register.error.validation_failed">Please fix the highlighted fields before continuing.</string>
   <string name="ui.app.register.submit">Create account</string>
   <string name="ui.app.register.password_requirements">Password requirements</string>
+  <string name="ui.app.register.username_requirements">Username requirements</string>
   <string name="ui.app.register.closed">Open registration is currently disabled.</string>
   <string name="ui.app.register.success">Account created. Redirecting to login…</string>
   <string name="ui.app.register.reason.session_cleared">Existing login session was cleared before loading registration.</string>

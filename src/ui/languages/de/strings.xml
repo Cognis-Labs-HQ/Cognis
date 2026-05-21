@@ -243,6 +243,7 @@
   <string name="ui.app.register.error.validation_failed">Bitte korrigieren Sie die markierten Felder, bevor Sie fortfahren.</string>
   <string name="ui.app.register.submit">Konto erstellen</string>
   <string name="ui.app.register.password_requirements">Passwortanforderungen</string>
+  <string name="ui.app.register.username_requirements">Benutzernamenanforderungen</string>
   <string name="ui.app.register.closed">Die offene Registrierung ist derzeit deaktiviert.</string>
   <string name="ui.app.register.success">Konto erstellt. Weiterleitung zur Anmeldung…</string>
   <string name="ui.app.register.reason.session_cleared">Eine bestehende Anmeldesitzung wurde vor dem Laden der Registrierung gelöscht.</string>

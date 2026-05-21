@@ -15,6 +15,9 @@ test("form builder reuse utility exports createFormBuilder", () => {
     assert.match(source, /export function createFormBuilder\(/);
     assert.match(source, /data-form-builder-floating=/);
     assert.match(source, /form-builder-criterion-item--met/);
+    assert.match(source, /form-builder-required-flag/);
+    assert.match(source, /form-builder-label-text/);
+    assert.match(source, /aria-hidden="true"/);
 });
 
 test("register page uses form builder instead of hardcoded maxlength for username", () => {
@@ -36,6 +39,14 @@ test("register password criteria use floating alert in form builder config", () 
     assert.match(
         source,
         /floatingTitleKey: "ui\.app\.register\.password_requirements"/,
+    );
+});
+
+test("register username criteria use floating alert in form builder config", () => {
+    const source = read("src/ui/app/register/index.js");
+    assert.match(
+        source,
+        /floatingTitleKey: "ui\.app\.register\.username_requirements"/,
     );
 });
 

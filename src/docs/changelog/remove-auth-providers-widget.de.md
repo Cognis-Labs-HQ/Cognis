@@ -28,10 +28,18 @@ Ein neues wiederverwendbares Form-Builder-Utility steuert jetzt das Rendern und 
 
 Das Benutzername-Feld stoppt die Eingabe nicht mehr hart bei 25 Zeichen. Benutzer können weiter tippen; sobald der Wert über 25 Zeichen liegt, wird eine Inline-Warnung angezeigt.
 
-## Pflichtfelder und Validierung mit visuellem Fehlerstatus
+## Pflichtfelder zeigen roten Stern neben dem Feldtitel
 
-Pflichtfelder zeigen jetzt unter dem Eingabefeld ein Sternchen und erhalten eine rote Fehlerhinterlegung, wenn sie leer bleiben oder Kriterien nicht erfüllen.
+Pflichtfelder zeigen jetzt einen roten Stern direkt neben dem Feldtitel, nicht mehr unterhalb des Eingabefelds. Der Stern nutzt die themesichere Fehlerfarbe und ist sowohl in Hell- als auch Dunkelmodus gut lesbar.
 
-## Passwortkriterien in schwebendem Hinweisfeld
+## Benutzernamenkriterien in fokusaktiviertem schwebendem Panel
 
-Passwortanforderungen werden jetzt in einem schwebenden Kriterien-Hinweis direkt am Passwortfeld angezeigt. Jede Anforderung wird grün dargestellt, wenn sie erfüllt ist, und rot, wenn sie nicht erfüllt ist.
+Die Anforderungen an den Benutzernamen werden nun im selben schwebenden Panel wie die Passwortkriterien angezeigt. Das Panel erscheint direkt unterhalb des Benutzernamensfelds, wenn dieses fokussiert wird, und verschwindet wieder, wenn der Fokus das Feld verlässt.
+
+## Kriterien-Panels verfolgen die Feldbreite
+
+Die schwebenden Kriterien-Panels passen sich jetzt der vollen Breite des jeweiligen Eingabefelds an, statt an der rechten Kante auszurichten. Auf kleinen Bildschirmen fließt das Panel beim Fokussieren inline unter das Feld.
+
+## Kriterien-Panels nutzen korrekte Theme-Farben
+
+Die schwebenden Kriterien-Panels verwenden jetzt die richtigen CSS-Theme-Variablen (`--surface`, `--border`, `--text-muted`, `--color-success-outline-text`, `--color-danger-outline-text`), damit die Farben im Hell- und Dunkelmodus korrekt dargestellt werden.

@@ -28,10 +28,18 @@ A new reusable form builder utility now drives register-form rendering and valid
 
 The username input no longer hard-stops at 25 characters. Users can keep typing, and an inline validation warning appears as soon as the value goes beyond 25 characters.
 
-## Required fields and validation now use visual invalid states
+## Required fields show red asterisk next to field label
 
-Required fields now show an asterisk marker under the input and apply red invalid shading when left empty or when criteria are not satisfied.
+Required fields now display a red asterisk directly beside the field title label rather than below the input. The asterisk uses theme-aware danger colour so it is clearly readable in both light and dark themes.
 
-## Password criteria moved to floating alert status panel
+## Username criteria shown in focus-activated floating panel
 
-Password requirements now render in a floating criteria alert attached to the password field, with each criterion shown in green when satisfied and red when unsatisfied.
+Username requirements are now displayed in the same floating panel format as password criteria. The panel appears directly below the username field when that field is focused and hides when focus leaves, keeping the form uncluttered when not interacting with that field.
+
+## Password and username criteria panels track field width
+
+The floating criteria panels now snap directly under their respective input fields and match the full width of the field rather than floating to the right edge. On mobile the panel falls inline below the field when focused.
+
+## Criteria panels use correct theme colours
+
+The floating criteria panels now use the correct CSS theme variables (`--surface`, `--border`, `--text-muted`, `--color-success-outline-text`, `--color-danger-outline-text`) so colours are accurate and readable in both light and dark themes.
