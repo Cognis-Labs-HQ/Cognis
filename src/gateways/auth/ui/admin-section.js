@@ -365,13 +365,15 @@ export function createAdminSection({
                     minLengthInput instanceof HTMLInputElement
                         ? parsePolicyNumber(
                               minLengthInput.value,
+                              1,
                               passwordPolicy.minLength,
                           )
                         : passwordPolicy.minLength,
                 requireUppercase:
                     uppercaseInput instanceof HTMLInputElement
-                        ? parsePolicyCount(
+                        ? parsePolicyNumber(
                               uppercaseInput.value,
+                              0,
                               passwordPolicy.requireUppercase,
                           )
                         : passwordPolicy.requireUppercase,
@@ -381,15 +383,17 @@ export function createAdminSection({
                         : passwordPolicy.requireLowercase,
                 requireDigit:
                     digitInput instanceof HTMLInputElement
-                        ? parsePolicyCount(
+                        ? parsePolicyNumber(
                               digitInput.value,
+                              0,
                               passwordPolicy.requireDigit,
                           )
                         : passwordPolicy.requireDigit,
                 requireSpecial:
                     specialInput instanceof HTMLInputElement
-                        ? parsePolicyCount(
+                        ? parsePolicyNumber(
                               specialInput.value,
+                              0,
                               passwordPolicy.requireSpecial,
                           )
                         : passwordPolicy.requireSpecial,
