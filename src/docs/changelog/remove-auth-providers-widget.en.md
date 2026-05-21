@@ -43,3 +43,15 @@ The floating criteria panels now snap directly under their respective input fiel
 ## Criteria panels use correct theme colours
 
 The floating criteria panels now use the correct CSS theme variables (`--surface`, `--border`, `--text-muted`, `--color-success-outline-text`, `--color-danger-outline-text`) so colours are accurate and readable in both light and dark themes.
+
+## Username restricted to letters, digits, hyphens, and underscores
+
+Username validation now only accepts alphanumeric characters, hyphens, and underscores. Special characters such as `!@#$%^&*()` are no longer permitted. The validation message updates accordingly.
+
+## Criteria rows show full-line colour with prominent icons
+
+Each validation criterion row now highlights its full background in green when satisfied and red when unmet, replacing the previous plain-text colour change. The status icons are upgraded to a heavy check mark (✔) and heavy ballot X (✘) for clear at-a-glance feedback.
+
+## Password confirmation mismatch only shown when a value is entered
+
+The confirm-password mismatch error no longer shows prematurely. It remains neutral until the user types into the confirm password field, preventing false-failure indicators when the field is still empty.

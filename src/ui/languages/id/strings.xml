@@ -237,7 +237,7 @@
   <string name="ui.app.register.error.password_requires_lowercase">Harus mengandung huruf kecil.</string>
   <string name="ui.app.register.error.password_requires_digit">Harus mengandung minimal {count} angka.</string>
   <string name="ui.app.register.error.password_requires_special">Harus mengandung minimal {count} karakter khusus.</string>
-  <string name="ui.app.register.error.username_invalid">Nama pengguna hanya boleh mengandung karakter ASCII yang dapat dicetak.</string>
+  <string name="ui.app.register.error.username_invalid">Nama pengguna hanya boleh mengandung huruf, angka, tanda hubung, dan garis bawah.</string>
   <string name="ui.app.register.error.username_too_long">Nama pengguna maksimal 25 karakter.</string>
   <string name="ui.app.register.error.username_not_lowercase">Nama pengguna harus seluruhnya huruf kecil.</string>
   <string name="ui.app.register.error.validation_failed">Silakan perbaiki kolom yang disorot sebelum melanjutkan.</string>

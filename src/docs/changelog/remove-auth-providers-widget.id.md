@@ -43,3 +43,15 @@ Panel kriteria mengambang kini menyesuaikan lebar penuh kolom input yang bersang
 ## Panel kriteria menggunakan warna tema yang tepat
 
 Panel kriteria mengambang kini menggunakan variabel CSS tema yang benar (`--surface`, `--border`, `--text-muted`, `--color-success-outline-text`, `--color-danger-outline-text`) agar warna tampil akurat di tema terang maupun gelap.
+
+## Nama pengguna dibatasi hanya huruf, angka, tanda hubung, dan garis bawah
+
+Validasi nama pengguna kini hanya menerima karakter alfanumerik, tanda hubung, dan garis bawah. Karakter khusus seperti `!@#$%^&*()` tidak lagi diizinkan. Pesan validasi telah diperbarui sesuai perubahan ini.
+
+## Baris kriteria menampilkan warna penuh dengan ikon yang mencolok
+
+Setiap baris kriteria validasi kini menyorot seluruh latar belakang dengan warna hijau saat terpenuhi dan merah saat tidak terpenuhi, menggantikan perubahan warna teks biasa sebelumnya. Ikon status ditingkatkan menjadi tanda centang tebal (✔) dan tanda silang tebal (✘) agar status mudah terlihat sekilas.
+
+## Ketidakcocokan konfirmasi kata sandi hanya ditampilkan saat ada nilai yang dimasukkan
+
+Pesan ketidakcocokan konfirmasi kata sandi tidak lagi muncul terlalu dini. Kolom tetap dalam status netral hingga pengguna mengetik sesuatu di kolom konfirmasi, sehingga tidak ada indikator gagal palsu saat kolom masih kosong.

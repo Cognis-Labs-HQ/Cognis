@@ -259,7 +259,7 @@ export async function mount(root, { signal } = {}) {
                     {
                         id: "username-printable-ascii",
                         type: "custom",
-                        test: (value) => /^[\x21-\x7E]+$/.test(value),
+                        test: (value) => /^[a-zA-Z0-9_-]+$/.test(value),
                         messageKey: "ui.app.register.error.username_invalid",
                         mode: "live",
                     },
@@ -305,7 +305,8 @@ export async function mount(root, { signal } = {}) {
                     {
                         id: "confirm-password-match",
                         type: "custom",
-                        test: (value, values) => value === values.password,
+                        test: (value, values) =>
+                            value.length === 0 || value === values.password,
                         messageKey: "ui.app.register.error.password_mismatch",
                         mode: "live",
                     },

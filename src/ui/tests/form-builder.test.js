@@ -55,3 +55,14 @@ test("register submit blocks when form builder marks fields invalid", () => {
     assert.match(source, /formController\.validateAll\(true\)/);
     assert.match(source, /ui\.app\.register\.error\.validation_failed/);
 });
+
+test("register username criterion allows only letters, digits, hyphens, and underscores", () => {
+    const source = read("src/ui/app/register/index.js");
+    assert.match(source, /id: "username-printable-ascii"/);
+    assert.match(source, /\[a-zA-Z0-9_-\]/);
+});
+
+test("register confirm password mismatch only fails when confirmPassword has a value", () => {
+    const source = read("src/ui/app/register/index.js");
+    assert.match(source, /value\.length === 0 \|\| value === values\.password/);
+});

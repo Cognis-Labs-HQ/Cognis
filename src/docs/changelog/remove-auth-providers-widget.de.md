@@ -43,3 +43,15 @@ Die schwebenden Kriterien-Panels passen sich jetzt der vollen Breite des jeweili
 ## Kriterien-Panels nutzen korrekte Theme-Farben
 
 Die schwebenden Kriterien-Panels verwenden jetzt die richtigen CSS-Theme-Variablen (`--surface`, `--border`, `--text-muted`, `--color-success-outline-text`, `--color-danger-outline-text`), damit die Farben im Hell- und Dunkelmodus korrekt dargestellt werden.
+
+## Benutzername auf Buchstaben, Ziffern, Bindestriche und Unterstriche beschränkt
+
+Die Benutzernamen-Validierung akzeptiert ab sofort nur noch alphanumerische Zeichen, Bindestriche und Unterstriche. Sonderzeichen wie `!@#$%^&*()` sind nicht mehr erlaubt. Die Validierungsmeldung wurde entsprechend aktualisiert.
+
+## Kriterienzeilen mit vollflächiger Farbe und auffälligen Symbolen
+
+Jede Validierungskriterienzeile hebt jetzt den gesamten Hintergrund in Grün hervor, wenn das Kriterium erfüllt ist, und in Rot, wenn es nicht erfüllt ist. Die Status-Symbole wurden auf ein schweres Häkchen (✔) und ein schweres X (✘) umgestellt, damit der Status auf einen Blick erkennbar ist.
+
+## Passwortbestätigungsfehler wird nur angezeigt, wenn ein Wert eingegeben wurde
+
+Der Hinweis auf abweichende Passwörter erscheint nicht mehr zu früh. Er bleibt neutral, bis der Benutzer etwas in das Bestätigungsfeld eingibt, und vermeidet so falsche Fehlermeldungen, solange das Feld noch leer ist.

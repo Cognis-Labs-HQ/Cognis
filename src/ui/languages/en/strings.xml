@@ -237,7 +237,7 @@
   <string name="ui.app.register.error.password_requires_lowercase">Must contain a lowercase letter.</string>
   <string name="ui.app.register.error.password_requires_digit">Must contain at least {count} digit(s).</string>
   <string name="ui.app.register.error.password_requires_special">Must contain at least {count} special character(s).</string>
-  <string name="ui.app.register.error.username_invalid">Username may only contain printable ASCII characters.</string>
+  <string name="ui.app.register.error.username_invalid">Username may only contain letters, digits, hyphens, and underscores.</string>
   <string name="ui.app.register.error.username_too_long">Username must be 25 characters or fewer.</string>
   <string name="ui.app.register.error.username_not_lowercase">Username must be all lowercase.</string>
   <string name="ui.app.register.error.validation_failed">Please fix the highlighted fields before continuing.</string>
