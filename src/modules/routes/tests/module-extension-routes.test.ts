@@ -1,71 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createModuleExtensionRoutes } from "../module-extensions.js";
-import {
-    issueAccessToken,
-    lookupAccessToken,
-} from "../../../gateways/auth/access-tokens.js";
+import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
+import { createDefaultRouteContext } from "../../../api/reuse/route-context.js";
 
-const ROLE_PRIORITY = [
-    "user",
-    "teacher",
-    "moderator",
-    "admin",
-    "owner",
-] as const;
-
-function hasMinRole(role: string, minRole: string): boolean {
-    return (
-        ROLE_PRIORITY.indexOf(role as (typeof ROLE_PRIORITY)[number]) >=
-        ROLE_PRIORITY.indexOf(minRole as (typeof ROLE_PRIORITY)[number])
-    );
-}
-
-function requireRoleAccess(
-    req: { headers?: Record<string, string> },
-    res: any,
-    policy: { minRole?: string; onlyRole?: string },
-) {
-    const rawAuthorization = req.headers?.authorization;
-    if (!rawAuthorization?.startsWith("Bearer ")) {
-        res.writeHead(401);
-        res.end(JSON.stringify({ error: { code: "unauthorized" } }));
-        return null;
-    }
-    const token = rawAuthorization.slice("Bearer ".length);
-    const claims = lookupAccessToken(token);
-    if (!claims || claims.revoked) {
-        res.writeHead(401);
-        res.end(JSON.stringify({ error: { code: "unauthorized" } }));
-        return null;
-    }
-    const minRole = policy.minRole ?? "user";
-    if (!hasMinRole(claims.role, minRole)) {
-        res.writeHead(403);
-        res.end(
-            JSON.stringify({
-                error: {
-                    code: "forbidden",
-                    message: `Requires ${minRole} scope`,
-                },
-            }),
-        );
-        return null;
-    }
-    if (policy.onlyRole && claims.role !== policy.onlyRole) {
-        res.writeHead(403);
-        res.end(
-            JSON.stringify({
-                error: {
-                    code: "forbidden",
-                    message: `Requires ${policy.onlyRole} role`,
-                },
-            }),
-        );
-        return null;
-    }
-    return claims;
-}
+const { requireRoleAccess } = createDefaultRouteContext();
 
 test("module extension routes expose module API endpoints", async () => {
     const extensions = createModuleExtensionRoutes(

@@ -19,6 +19,8 @@ function walk(directoryPath) {
     return files;
 }
 
+// Legacy over-limit files kept as a temporary allowlist while they are
+// incrementally split into directory-based entrypoints. New oversized files are forbidden.
 const GRANDFATHERED_LARGE_FILES = new Set([
     "src/adapters/social/messages/routes.ts",
     "src/adapters/social/messages/store.ts",

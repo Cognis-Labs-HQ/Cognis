@@ -88,7 +88,11 @@ interface ModulePlugin {
 export interface ModuleExtensionOptions {
     uiRegistry?: UIRegistry;
     getCapability?: <T>(capabilityId: string) => T | undefined;
-    requireRoleAccess?: RouteContext["requireRoleAccess"];
+    /**
+     * Required auth gate injected from server route context. This is mandatory
+     * and has no fallback path.
+     */
+    requireRoleAccess: RouteContext["requireRoleAccess"];
 }
 
 export interface ModuleExtensionRoutes {
@@ -107,20 +111,10 @@ export function createModuleExtensionRoutes(
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
     let handlers: RouteHandler[] = [];
-    const requireRoleAccess =
-        options?.requireRoleAccess ??
-        ((_req, res) => {
-            res.writeHead(503, { "content-type": "application/json" });
-            res.end(
-                JSON.stringify({
-                    error: {
-                        code: "auth_unavailable",
-                        message: "Route auth context is unavailable",
-                    },
-                }),
-            );
-            return null;
-        });
+    if (!options?.requireRoleAccess) {
+        throw new Error("module_extension_require_role_access_missing");
+    }
+    const { requireRoleAccess } = options;
     const staticDirsRegisteredByModule = new Set<string>();
     const uiHooksRegisteredByModule = new Set<string>();
     const modulesRoot =

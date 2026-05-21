@@ -6,6 +6,14 @@ import {
     normalizeTrustedDomains,
 } from "../../reuse/trusted-domains.js";
 
+const DEFAULT_PASSWORD_POLICY = Object.freeze({
+    minLength: 8,
+    requireUppercase: 0,
+    requireLowercase: false,
+    requireDigit: 0,
+    requireSpecial: 0,
+});
+
 /**
  * Security sub-module for the Administration page.
  *
@@ -32,13 +40,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalUserValidationMode = "none";
     let currentUserValidationMode = "none";
     let originalTeacherManualApproval = true;
-    let originalPasswordPolicy = {
-        minLength: 8,
-        requireUppercase: 0,
-        requireLowercase: false,
-        requireDigit: 0,
-        requireSpecial: 0,
-    };
+    let originalPasswordPolicy = { ...DEFAULT_PASSWORD_POLICY };
 
     async function loadSettings() {
         const response = await apiFetch("/api/v1/system/security");
@@ -248,7 +250,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         );
     }
 
-    function bindInput(settings, passwordPolicy) {
+    function bindSecurityInputs(settings, passwordPolicy) {
         const input = root.querySelector("#security-trusted-domains");
         if (!(input instanceof HTMLInputElement)) return;
 
@@ -336,7 +338,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                     loadPasswordPolicy(),
                 ]);
             settings.registrationsEnabled = publicRegistrationEnabled;
-            bindInput(settings, passwordPolicy);
+            bindSecurityInputs(settings, passwordPolicy);
         },
 
         async save() {
