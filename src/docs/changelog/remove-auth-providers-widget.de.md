@@ -67,3 +67,7 @@ Das Bestätigungsfeld wird jetzt sofort neu validiert, wenn sich eines der beide
 ## Positive Formulierung des Kriteriums
 
 Die Beschriftung des Bestätigungskriteriums lautet jetzt „Passwörter stimmen überein.“, damit dieselbe Zeile sowohl im grünen als auch im roten Zustand verständlich bleibt.
+
+## Korrektur des leeren Bestätigungsfelds
+
+Die Kriterien zur Passwortbestätigung bei der Registrierung wurden korrigiert, sodass ein leeres Bestätigungsfeld nicht mehr als passend gilt, wenn im Hauptpasswort bereits Eingaben vorhanden sind.

@@ -67,3 +67,7 @@ Kolom konfirmasi kata sandi sekarang langsung divalidasi ulang saat salah satu k
 ## Frasa kriteria bernada positif
 
 Label kriteria konfirmasi kini menggunakan “Kata sandi cocok.” agar baris yang sama tetap jelas baik pada kondisi berhasil maupun gagal melalui gaya kriteria hijau/merah.
+
+## Perbaikan Kondisi Konfirmasi Kosong
+
+Kriteria konfirmasi kata sandi pada pendaftaran diperbaiki agar nilai konfirmasi yang kosong tidak lagi dianggap cocok ketika kolom kata sandi utama sudah berisi.

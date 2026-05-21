@@ -309,10 +309,7 @@ export async function mount(root, { signal } = {}) {
                         type: "custom",
                         test: (value, values) => {
                             const passwordValue = String(values.password ?? "");
-                            if (
-                                passwordValue.length === 0 ||
-                                value.length === 0
-                            ) {
+                            if (passwordValue.length === 0) {
                                 return true;
                             }
                             return value === passwordValue;

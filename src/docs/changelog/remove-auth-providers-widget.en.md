@@ -67,3 +67,7 @@ The confirm-password field now revalidates immediately when either password inpu
 ## Positive criterion wording
 
 The confirmation criterion label now uses “Passwords match.” so the same line reads naturally in both success and failure states via green/red criterion styling.
+
+## Confirm Password Empty-State Fix
+
+Fixed register password confirmation criteria so an empty confirmation value is no longer treated as matched when the main password already has input.
