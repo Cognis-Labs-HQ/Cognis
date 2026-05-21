@@ -1,62 +1,77 @@
 <div class="auth-admin-section">
-  <div class="components-section">
-    <h3 class="components-section-heading">{{policyHeading}}</h3>
-    <div class="auth-policy-fields">
-      <div class="auth-policy-row">
-        <label for="auth-policy-min-length">{{minLengthLabel}}</label>
-        <input
-          id="auth-policy-min-length"
-          class="auth-policy-number-input"
-          type="number"
-          min="1"
-          max="128"
-          value="{{minLengthValue}}"
-        />
-      </div>
-      <div class="auth-policy-row">
-        <label for="auth-policy-require-uppercase">{{uppercaseLabel}}</label>
-        <input
-          id="auth-policy-require-uppercase"
-          class="auth-policy-number-input"
-          type="number"
-          min="0"
-          max="128"
-          value="{{uppercaseValue}}"
-        />
-      </div>
-      <div class="auth-policy-row">
-        <label for="auth-policy-require-lowercase">{{lowercaseLabel}}</label>
-        <input id="auth-policy-require-lowercase" type="checkbox"{{lowercaseChecked}} />
-      </div>
-      <div class="auth-policy-row">
-        <label for="auth-policy-require-digit">{{digitLabel}}</label>
-        <input
-          id="auth-policy-require-digit"
-          class="auth-policy-number-input"
-          type="number"
-          min="0"
-          max="128"
-          value="{{digitValue}}"
-        />
-      </div>
-      <div class="auth-policy-row">
-        <label for="auth-policy-require-special">{{specialLabel}}</label>
-        <input
-          id="auth-policy-require-special"
-          class="auth-policy-number-input"
-          type="number"
-          min="0"
-          max="128"
-          value="{{specialValue}}"
-        />
-      </div>
-      <div class="auth-policy-actions">
-        <button class="btn-confirm btn-animated auth-policy-save-btn" type="button">{{saveLabel}}</button>
-      </div>
+    <div class="components-section">
+        <h3 class="components-section-heading">{{policyHeading}}</h3>
+        <div class="auth-policy-fields">
+            <div class="auth-policy-row">
+                <label for="auth-policy-min-length">{{minLengthLabel}}</label>
+                <input
+                    id="auth-policy-min-length"
+                    class="auth-policy-number-input"
+                    type="number"
+                    min="1"
+                    max="128"
+                    value="{{minLengthValue}}"
+                />
+            </div>
+            <div class="auth-policy-row">
+                <label for="auth-policy-require-uppercase"
+                    >{{uppercaseLabel}}</label
+                >
+                <input
+                    id="auth-policy-require-uppercase"
+                    class="auth-policy-number-input"
+                    type="number"
+                    min="0"
+                    max="128"
+                    value="{{uppercaseValue}}"
+                />
+            </div>
+            <div class="auth-policy-row">
+                <label for="auth-policy-require-lowercase"
+                    >{{lowercaseLabel}}</label
+                >
+                <input
+                    id="auth-policy-require-lowercase"
+                    type="checkbox"
+                    {{lowercaseChecked}}
+                />
+            </div>
+            <div class="auth-policy-row">
+                <label for="auth-policy-require-digit">{{digitLabel}}</label>
+                <input
+                    id="auth-policy-require-digit"
+                    class="auth-policy-number-input"
+                    type="number"
+                    min="0"
+                    max="128"
+                    value="{{digitValue}}"
+                />
+            </div>
+            <div class="auth-policy-row">
+                <label for="auth-policy-require-special"
+                    >{{specialLabel}}</label
+                >
+                <input
+                    id="auth-policy-require-special"
+                    class="auth-policy-number-input"
+                    type="number"
+                    min="0"
+                    max="128"
+                    value="{{specialValue}}"
+                />
+            </div>
+            <div class="auth-policy-actions">
+                <button
+                    class="btn-confirm btn-animated auth-policy-save-btn"
+                    type="button"
+                >
+                    {{saveLabel}}
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="components-section">
-    <h3 class="components-section-heading">{{providersHeading}}</h3>
-    <div class="auth-providers-panel">{{providers}}</div>
-  </div>
+    <div class="components-section">
+        <h3 class="components-section-heading">{{providersHeading}}</h3>
+        <div class="auth-providers-panel">{{providers}}</div>
+    </div>
 </div>

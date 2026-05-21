@@ -1,10 +1,10 @@
-import { apiFetch } from '../../reuse/api-client.js';
-import { escapeHtml } from '../../reuse/escape-html.js';
-import { renderInfoTooltip } from '../../reuse/info-tooltip.js';
+import { apiFetch } from "../../reuse/api-client.js";
+import { escapeHtml } from "../../reuse/escape-html.js";
+import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import {
     clearTrustedDomainsCache,
     normalizeTrustedDomains,
-} from '../../reuse/trusted-domains.js';
+} from "../../reuse/trusted-domains.js";
 
 /**
  * Security sub-module for the Administration page.
@@ -30,23 +30,23 @@ import {
 export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalDomains = [];
     let currentPublicRegistrationEnabled = false;
-    let originalUserValidationMode = 'none';
-    let currentUserValidationMode = 'none';
+    let originalUserValidationMode = "none";
+    let currentUserValidationMode = "none";
     let originalTeacherManualApproval = true;
 
     async function loadSettings() {
-        const res = await apiFetch('/api/v1/system/security');
+        const res = await apiFetch("/api/v1/system/security");
         if (!res.ok) return { trustedDomains: [] };
         const payload = await res.json();
         return payload.data ?? { trustedDomains: [] };
     }
 
     async function loadPublicRegistrationAdapterState() {
-        const res = await apiFetch('/api/v1/gateways/registration/adapters');
+        const res = await apiFetch("/api/v1/gateways/registration/adapters");
         if (!res.ok) return false;
         const payload = await res.json();
         const adapters = Array.isArray(payload?.data) ? payload.data : [];
-        const publicAdapter = adapters.find((entry) => entry.id === 'public');
+        const publicAdapter = adapters.find((entry) => entry.id === "public");
         return publicAdapter?.enabled === true;
     }
 
@@ -56,9 +56,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         userValidationMode,
         requireTeacherManualApproval,
     ) {
-        const res = await apiFetch('/api/v1/system/security', {
-            method: 'PUT',
-            headers: { 'content-type': 'application/json' },
+        const res = await apiFetch("/api/v1/system/security", {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
             body: JSON.stringify({
                 trustedDomains,
                 registrationsEnabled,
@@ -66,39 +66,39 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 requireTeacherManualApproval,
             }),
         });
-        if (!res.ok) throw new Error('save_failed');
+        if (!res.ok) throw new Error("save_failed");
     }
 
     function parseDomains(raw) {
-        return normalizeTrustedDomains(raw.split(','));
+        return normalizeTrustedDomains(raw.split(","));
     }
 
     function getInputValue() {
-        const input = root.querySelector('#security-trusted-domains');
-        return input instanceof HTMLInputElement ? input.value : '';
+        const input = root.querySelector("#security-trusted-domains");
+        return input instanceof HTMLInputElement ? input.value : "";
     }
 
     function getValidationModeValue() {
-        const select = root.querySelector('#security-user-validation-mode');
-        if (!(select instanceof HTMLSelectElement)) return 'none';
-        return select.value === 'smtp' ? 'smtp' : 'none';
+        const select = root.querySelector("#security-user-validation-mode");
+        if (!(select instanceof HTMLSelectElement)) return "none";
+        return select.value === "smtp" ? "smtp" : "none";
     }
 
     function getRegistrationsEnabledValue() {
-        const input = root.querySelector('#security-enable-registrations');
+        const input = root.querySelector("#security-enable-registrations");
         if (!(input instanceof HTMLInputElement)) return false;
         return input.checked;
     }
 
     function getTeacherManualApprovalValue() {
-        const input = root.querySelector('#security-require-teacher-approval');
+        const input = root.querySelector("#security-require-teacher-approval");
         if (!(input instanceof HTMLInputElement)) return true;
         return input.checked;
     }
 
     function markDirtyState() {
-        const currentDomains = parseDomains(getInputValue()).join(',');
-        const originalDomainsValue = originalDomains.join(',');
+        const currentDomains = parseDomains(getInputValue()).join(",");
+        const originalDomainsValue = originalDomains.join(",");
         const modeChanged =
             getValidationModeValue() !== originalUserValidationMode;
         const registrationsChanged =
@@ -114,27 +114,27 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     }
 
     function bindInput(settings) {
-        const input = root.querySelector('#security-trusted-domains');
+        const input = root.querySelector("#security-trusted-domains");
         if (!(input instanceof HTMLInputElement)) return;
 
         originalDomains = settings.trustedDomains ?? [];
         currentPublicRegistrationEnabled =
             settings.registrationsEnabled === true;
         currentUserValidationMode =
-            settings.userValidationMode === 'smtp' ? 'smtp' : 'none';
+            settings.userValidationMode === "smtp" ? "smtp" : "none";
         originalUserValidationMode = currentUserValidationMode;
         originalTeacherManualApproval =
             settings.requireTeacherManualApproval !== false;
 
-        input.value = originalDomains.join(', ');
+        input.value = originalDomains.join(", ");
         const validationSelect = root.querySelector(
-            '#security-user-validation-mode',
+            "#security-user-validation-mode",
         );
         const registrationsToggle = root.querySelector(
-            '#security-enable-registrations',
+            "#security-enable-registrations",
         );
         const teacherApprovalToggle = root.querySelector(
-            '#security-require-teacher-approval',
+            "#security-require-teacher-approval",
         );
         if (validationSelect instanceof HTMLSelectElement) {
             validationSelect.value = currentUserValidationMode;
@@ -146,17 +146,17 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             teacherApprovalToggle.checked = originalTeacherManualApproval;
         }
 
-        input.addEventListener('input', () => {
+        input.addEventListener("input", () => {
             markDirtyState();
         });
 
-        validationSelect?.addEventListener('change', () => {
+        validationSelect?.addEventListener("change", () => {
             markDirtyState();
         });
-        registrationsToggle?.addEventListener('change', () => {
+        registrationsToggle?.addEventListener("change", () => {
             markDirtyState();
         });
-        teacherApprovalToggle?.addEventListener('change', () => {
+        teacherApprovalToggle?.addEventListener("change", () => {
             markDirtyState();
         });
     }
@@ -186,8 +186,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             clearTrustedDomainsCache();
             if (registrationsEnabled !== currentPublicRegistrationEnabled) {
                 await apiFetch(
-                    `/api/v1/gateways/registration/adapters/public/${registrationsEnabled ? 'enable' : 'disable'}`,
-                    { method: 'POST' },
+                    `/api/v1/gateways/registration/adapters/public/${registrationsEnabled ? "enable" : "disable"}`,
+                    { method: "POST" },
                 );
             }
             originalDomains = domains;
@@ -198,21 +198,21 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         },
 
         discard() {
-            const input = root.querySelector('#security-trusted-domains');
+            const input = root.querySelector("#security-trusted-domains");
             if (input instanceof HTMLInputElement) {
-                input.value = originalDomains.join(', ');
+                input.value = originalDomains.join(", ");
             }
             const validationSelect = root.querySelector(
-                '#security-user-validation-mode',
+                "#security-user-validation-mode",
             );
             if (validationSelect instanceof HTMLSelectElement) {
                 validationSelect.value = originalUserValidationMode;
             }
             const registrationsToggle = root.querySelector(
-                '#security-enable-registrations',
+                "#security-enable-registrations",
             );
             const teacherApprovalToggle = root.querySelector(
-                '#security-require-teacher-approval',
+                "#security-require-teacher-approval",
             );
             if (registrationsToggle instanceof HTMLInputElement) {
                 registrationsToggle.checked = currentPublicRegistrationEnabled;
@@ -224,27 +224,27 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         },
 
         renderContent() {
-            const tooltipAria = i18n.t('ui.reuse.more_information');
+            const tooltipAria = i18n.t("ui.reuse.more_information");
             return `
         <div class="security-settings-form">
           <div class="components-section">
             <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t('ui.app.admin.security.trusted_domains_label'))}
-              ${renderInfoTooltip(i18n.t('ui.app.admin.security.trusted_domains_hint'), tooltipAria)}
+              ${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.trusted_domains_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
               <input
                 id="security-trusted-domains"
                 type="text"
                 class="security-domains-input"
-                placeholder="${escapeHtml(i18n.t('ui.app.admin.security.trusted_domains_placeholder'))}"
+                placeholder="${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_placeholder"))}"
               />
             </div>
           </div>
           <div class="components-section">
             <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t('ui.app.admin.security.enable_registrations_label'))}
-              ${renderInfoTooltip(i18n.t('ui.app.admin.security.enable_registrations_hint'), tooltipAria)}
+              ${escapeHtml(i18n.t("ui.app.admin.security.enable_registrations_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.enable_registrations_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
               <label class="switch">
@@ -255,20 +255,20 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
           </div>
           <div class="components-section">
             <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t('ui.app.admin.security.validation_mode_label'))}
-              ${renderInfoTooltip(i18n.t('ui.app.admin.security.validation_mode_hint'), tooltipAria)}
+              ${escapeHtml(i18n.t("ui.app.admin.security.validation_mode_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.validation_mode_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
               <select id="security-user-validation-mode" class="theme-select">
-                <option value="none">${escapeHtml(i18n.t('ui.app.admin.security.validation_mode_none'))}</option>
-                <option value="smtp">${escapeHtml(i18n.t('ui.app.admin.security.validation_mode_smtp'))}</option>
+                <option value="none">${escapeHtml(i18n.t("ui.app.admin.security.validation_mode_none"))}</option>
+                <option value="smtp">${escapeHtml(i18n.t("ui.app.admin.security.validation_mode_smtp"))}</option>
               </select>
             </div>
           </div>
           <div class="components-section">
             <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t('ui.app.admin.security.teacher_approval_label'))}
-              ${renderInfoTooltip(i18n.t('ui.app.admin.security.teacher_approval_hint'), tooltipAria)}
+              ${escapeHtml(i18n.t("ui.app.admin.security.teacher_approval_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.teacher_approval_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
               <label class="switch">

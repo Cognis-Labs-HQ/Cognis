@@ -105,15 +105,16 @@ test("register page renders invalid-token intro message instead of disabled form
     );
 });
 
-
-
 test("register page HTML loads the auth gateway script", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/public/pages/register.html"),
         "utf8",
     );
 
-    assert.match(source, /<script type="module" src="\/static\/gateways\/auth\/register\.js"><\/script>/);
+    assert.match(
+        source,
+        /<script type="module" src="\/static\/gateways\/auth\/register\.js"><\/script>/,
+    );
 });
 
 test("typing showcase keeps each full message visible for one minute before delete animation", () => {
