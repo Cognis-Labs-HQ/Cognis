@@ -15,17 +15,9 @@ function loadAdminTemplate() {
     return adminTemplatePromise;
 }
 
-function parsePolicyCount(value, fallbackValue = 0) {
+function parsePolicyNumber(value, minimumValue, fallbackValue) {
     const parsedValue = Number.parseInt(String(value ?? ""), 10);
-    if (!Number.isFinite(parsedValue) || parsedValue < 0) {
-        return fallbackValue;
-    }
-    return parsedValue;
-}
-
-function parsePolicyMinLength(value, fallbackValue = 8) {
-    const parsedValue = Number.parseInt(String(value ?? ""), 10);
-    if (!Number.isFinite(parsedValue) || parsedValue < 1) {
+    if (!Number.isFinite(parsedValue) || parsedValue < minimumValue) {
         return fallbackValue;
     }
     return parsedValue;
@@ -133,8 +125,10 @@ export function createAdminSection({
                 escapeHtml(i18n.t("gateway.auth.policy_require_lowercase")),
             )
             .replaceAll(
-                "{{lowercaseChecked}}",
-                passwordPolicy.requireLowercase ? " checked" : "",
+                "{{lowercaseToggle}}",
+                passwordPolicy.requireLowercase
+                    ? '<input id="auth-policy-require-lowercase" type="checkbox" checked />'
+                    : '<input id="auth-policy-require-lowercase" type="checkbox" />',
             )
             .replaceAll(
                 "{{digitLabel}}",
@@ -369,7 +363,7 @@ export function createAdminSection({
             const updatedPolicy = {
                 minLength:
                     minLengthInput instanceof HTMLInputElement
-                        ? parsePolicyMinLength(
+                        ? parsePolicyNumber(
                               minLengthInput.value,
                               passwordPolicy.minLength,
                           )

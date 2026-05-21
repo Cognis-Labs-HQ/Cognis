@@ -9,10 +9,8 @@ import {
 /**
  * Security sub-module for the Administration page.
  *
- * Manages system-level security settings including trusted domains for email
- * validation and approved external HTTP(S) links such as broadcast redirects.
- * An empty list permits all email domains while external trusted-link checks
- * continue to require the current site origin.
+ * Manages system-level security settings for trusted domains, registration
+ * controls, user-validation mode, and teacher approval requirements.
  *
  * Public exports:
  *   initSecuritySection(root, options) — initialises the security section.
@@ -255,7 +253,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
           </div>
           <div class="components-section">
             <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t("ui.app.admin.security.validation_mode_label"))}
+              ${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}
               ${renderInfoTooltip(i18n.t("ui.app.admin.security.validation_mode_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
@@ -267,7 +265,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
           </div>
           <div class="components-section">
             <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t("ui.app.admin.security.teacher_approval_label"))}
+              ${escapeHtml(i18n.t("ui.app.admin.security.require_teacher_approval_label"))}
               ${renderInfoTooltip(i18n.t("ui.app.admin.security.teacher_approval_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
