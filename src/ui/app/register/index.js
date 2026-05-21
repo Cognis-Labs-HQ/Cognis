@@ -308,7 +308,9 @@ export async function mount(root, { signal } = {}) {
                         id: "confirm-password-match",
                         type: "custom",
                         test: (value, values) => {
-                            const passwordValue = String(values.password ?? "");
+                            const passwordValue = String(
+                                values?.password ?? "",
+                            );
                             if (passwordValue.length === 0) {
                                 return null;
                             }

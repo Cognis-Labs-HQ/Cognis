@@ -70,7 +70,7 @@ test("register confirm password criterion only evaluates after password input", 
     const source = read("src/ui/app/register/index.js");
     assert.match(
         source,
-        /const passwordValue = String\(values\.password \?\? ""\)/,
+        /const passwordValue = String\([\s\S]*values\?\.password \?\? ""[\s\S]*\)/m,
     );
     assert.match(source, /if \(passwordValue\.length === 0\)/);
     assert.match(source, /return null/);
