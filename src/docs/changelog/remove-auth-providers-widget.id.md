@@ -71,3 +71,7 @@ Label kriteria konfirmasi kini menggunakan “Kata sandi cocok.” agar baris ya
 ## Perbaikan Kondisi Konfirmasi Kosong
 
 Kriteria konfirmasi kata sandi pada pendaftaran diperbaiki agar nilai konfirmasi yang kosong tidak lagi dianggap cocok ketika kolom kata sandi utama sudah berisi.
+
+## Status netral sebelum pemeriksaan
+
+Kriteria kecocokan kata sandi kini tetap netral (bukan terpenuhi atau tidak terpenuhi) sampai kolom kata sandi berisi, sehingga umpan balik “cocok” tidak muncul terlalu dini.

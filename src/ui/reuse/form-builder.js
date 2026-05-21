@@ -248,7 +248,11 @@ export function createFormBuilder(ctx, options) {
             criterionConfig?.type === "custom" ||
             typeof criterionConfig?.test === "function"
         ) {
-            return criterionConfig.test?.(value, fieldValues) !== false;
+            const criterionResult = criterionConfig.test?.(value, fieldValues);
+            if (criterionResult === null) {
+                return null;
+            }
+            return criterionResult !== false;
         }
         return true;
     }
@@ -288,16 +292,16 @@ export function createFormBuilder(ctx, options) {
                           fieldValue,
                           fieldValues,
                       )
-                    : true;
+                    : null;
                 criterionElement.classList.toggle(
                     "form-builder-criterion-item--met",
-                    criterionValid,
+                    criterionValid === true,
                 );
                 criterionElement.classList.toggle(
                     "form-builder-criterion-item--unmet",
-                    !criterionValid,
+                    criterionValid === false,
                 );
-                if (!criterionValid) {
+                if (criterionValid === false) {
                     allCriteriaValid = false;
                 }
             }

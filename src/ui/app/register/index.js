@@ -310,7 +310,7 @@ export async function mount(root, { signal } = {}) {
                         test: (value, values) => {
                             const passwordValue = String(values.password ?? "");
                             if (passwordValue.length === 0) {
-                                return true;
+                                return null;
                             }
                             return value === passwordValue;
                         },

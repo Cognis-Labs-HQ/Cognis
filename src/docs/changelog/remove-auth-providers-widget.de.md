@@ -71,3 +71,7 @@ Die Beschriftung des Bestätigungskriteriums lautet jetzt „Passwörter stimmen
 ## Korrektur des leeren Bestätigungsfelds
 
 Die Kriterien zur Passwortbestätigung bei der Registrierung wurden korrigiert, sodass ein leeres Bestätigungsfeld nicht mehr als passend gilt, wenn im Hauptpasswort bereits Eingaben vorhanden sind.
+
+## Neutraler Vorprüfungszustand
+
+Das Passwortabgleich-Kriterium bleibt nun neutral (weder erfüllt noch unerfüllt), bis im Passwortfeld eine Eingabe vorhanden ist, um verfrühtes „Übereinstimmung“-Feedback zu verhindern.

@@ -71,3 +71,7 @@ The confirmation criterion label now uses “Passwords match.” so the same lin
 ## Confirm Password Empty-State Fix
 
 Fixed register password confirmation criteria so an empty confirmation value is no longer treated as matched when the main password already has input.
+
+## Neutral pre-check criterion state
+
+The password-match criterion now stays neutral (neither met nor unmet) until the password field has input, preventing premature “matched” feedback.

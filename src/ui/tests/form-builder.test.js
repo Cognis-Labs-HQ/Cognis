@@ -73,8 +73,22 @@ test("register confirm password criterion only evaluates after password input", 
         /const passwordValue = String\(values\.password \?\? ""\)/,
     );
     assert.match(source, /if \(passwordValue\.length === 0\)/);
+    assert.match(source, /return null/);
     assert.match(source, /return value === passwordValue/);
     assert.match(source, /messageKey: "ui\.app\.register\.passwords_match"/);
+});
+
+test("form builder supports neutral custom criterion state via null", () => {
+    const source = read("src/ui/reuse/form-builder.js");
+    assert.match(source, /if \(criterionResult === null\)/);
+    assert.match(
+        source,
+        /"form-builder-criterion-item--met",[\s\S]*criterionValid === true/m,
+    );
+    assert.match(
+        source,
+        /"form-builder-criterion-item--unmet",[\s\S]*criterionValid === false/m,
+    );
 });
 
 test("register confirm password revalidates reactively when password changes", () => {
