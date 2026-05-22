@@ -8,7 +8,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
 test("page composer refresh preserves existing elements when called without args", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
     );
 
@@ -20,7 +20,7 @@ test("page composer refresh preserves existing elements when called without args
 
 test("page composer refresh restores window scroll position after re-render", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
     );
 
@@ -40,7 +40,7 @@ test("page composer refresh restores window scroll position after re-render", ()
 
 test("page composer invokes element-level onRender callbacks", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
     );
 
@@ -49,7 +49,7 @@ test("page composer invokes element-level onRender callbacks", () => {
 
 test("page composer includes mobile toolbar drawer behavior", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
     );
 
@@ -76,7 +76,7 @@ test("page composer includes mobile toolbar drawer behavior", () => {
 
 test("page composer resolves edit toggle from the active page root", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
     );
 
@@ -89,7 +89,7 @@ test("page composer resolves edit toggle from the active page root", () => {
 
 test("page composer expands compact single-pane rows to full width", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
     );
 
@@ -108,7 +108,7 @@ test("page composer expands compact single-pane rows to full width", () => {
 
 test("page composer elements panels stay below header and use viewport top", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
     );
 
@@ -141,7 +141,7 @@ test("page composer elements panels stay below header and use viewport top", () 
 
 test("page composer persists separate layout profiles per grid size", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
     );
 
@@ -158,7 +158,7 @@ test("page composer persists separate layout profiles per grid size", () => {
 
 test("page composer does not block initial render on async layout loading", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
     );
 
@@ -172,7 +172,7 @@ test("page composer does not block initial render on async layout loading", () =
 
 test("page composer preserves form input values across grid re-renders", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
     );
 
@@ -206,7 +206,7 @@ test("page composer preserves form input values across grid re-renders", () => {
 
 test("page composer persists drafts and renders large-form draft reset control", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/page-composer.js"),
+        resolve(ROOT, "src/ui/reuse/page-composer/init.js"),
         "utf8",
     );
 

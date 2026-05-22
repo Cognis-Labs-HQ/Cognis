@@ -28,7 +28,7 @@
 - `src/gateways/study/ui/study.css` — スタイル更新：モジュールサブナビ構成、有効言語ドロップダウン、50/50 言語設定パネル
 - `src/gateways/study/ui/languages/*/strings.xml` — `gateway.study.available_languages` と `gateway.study.active_languages` キーを追加（全4言語）
 - `src/ui/reuse/app-router.js` — `/study`、`/study/welcome`、`/study/settings` のみを学習ハブにルーティングし、モジュールページは専用ハンドラーを使用
-- `src/ui/reuse/page-composer.js` — サイドツールバーと分離した Composer の新規サブナビゲーションスロットを追加
+- `src/ui/reuse/page-composer/init.js` — サイドツールバーと分離した Composer の新規サブナビゲーションスロットを追加
 - `src/ui/layouts/dashboard-layout.js` — レイアウトの `subNavigation` スロット配線を追加
 - `src/ui/public/templates/dashboard-layout.html` — グローバルナビゲーション直下にサブナビゲーション行プレースホルダーを追加
 - `src/modules/study/languages/ja/components/hiragana-alphabet/ui/index.html` — グローバルスタイルシート（`page-builder.css`、`reuse/page-sections.css`、`study.css`）と完全な PWA メタタグを追加し、ハードリロード時にも正しく表示されるようにした

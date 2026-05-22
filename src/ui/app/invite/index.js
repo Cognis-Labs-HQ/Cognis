@@ -1,6 +1,6 @@
 import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
-import { createPageComposer } from "../../reuse/page-composer.js";
+import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { showToast } from "../../reuse/toast.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";

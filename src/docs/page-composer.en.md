@@ -102,7 +102,7 @@ Cards with larger forms (6 or more persistable fields) include a **Reset Draft**
 ### Usage example
 
 ```js
-import { createPageComposer } from "../../reuse/page-composer.js";
+import { createPageComposer } from "../../reuse/page-composer/init.js";
 
 const composer = createPageComposer(document.querySelector("#app"), {
     allowCustomization: true,
@@ -130,4 +130,4 @@ document
     ?.addEventListener("click", handleToolbarClick);
 ```
 
-Source: `src/ui/reuse/page-composer.js`
+Source: `src/ui/reuse/page-composer/init.js`

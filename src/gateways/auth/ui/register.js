@@ -1,4 +1,4 @@
-import { createPageComposer } from "/static/reuse/page-composer.js";
+import { createPageComposer } from "/static/reuse/page-composer/init.js";
 import {
     DEFAULT_LOCALE,
     createI18n,
@@ -26,7 +26,7 @@ import {
     DEFAULT_PASSWORD_POLICY,
     countPatternMatches,
     normalizePasswordPolicy,
-} from "/static/reuse/password-policy.js";
+} from "/static/gateways/auth/ui/password-policy.js";
 
 async function resetAuthSessionForRegister() {
     const hadStoredSession =

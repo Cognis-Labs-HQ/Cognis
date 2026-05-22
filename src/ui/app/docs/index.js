@@ -5,7 +5,7 @@ import {
     readPreferredLanguages,
 } from "../../reuse/i18n.js";
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
-import { createPageComposer } from "../../reuse/page-composer.js";
+import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { navigateTo } from "../../reuse/app-router.js";
 
 // platform is the fallback group for ungrouped root-level docs.

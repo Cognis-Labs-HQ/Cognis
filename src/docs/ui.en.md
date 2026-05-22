@@ -36,7 +36,7 @@ Each page entry point lives in its own subdirectory under `src/ui/app/` as `inde
 
 ### Page composer
 
-The `createPageComposer` utility in `src/ui/reuse/page-composer.js` handles widget grid layout, persistence, sub-page navigation, toolbar slots, and floating menus. Pages declare an array of `elements` with `id`, `label`, `render`, and optional `gridSize`; the composer handles everything else. See `src/docs/page-composer.en.md` for full API reference.
+The `createPageComposer` utility in `src/ui/reuse/page-composer/init.js` handles widget grid layout, persistence, sub-page navigation, toolbar slots, and floating menus. Pages declare an array of `elements` with `id`, `label`, `render`, and optional `gridSize`; the composer handles everything else. See `src/docs/page-composer.en.md` for full API reference.
 
 ### UIRegistry
 

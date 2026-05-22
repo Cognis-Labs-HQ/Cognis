@@ -74,7 +74,7 @@ const LEGACY_LARGE_FILES = new Set([
     "src/modules/jitsi-meet/ui/app.js",
     "src/tooling/cli/index.ts",
     "src/ui/app/administration/index.js",
-    "src/ui/reuse/page-composer.js",
+    "src/ui/reuse/page-composer/init.js",
     "src/ui/styles/page-builder.css",
 ]);
 
@@ -114,6 +114,44 @@ test("source files stay under the 1000-line guardrail", () => {
         hits,
         [],
         `Files above 1000 lines must be split into subdirectories:\n${hits.join("\n")}`,
+    );
+});
+
+test("anti-monolith guardrail warns above 1250 LOC and fails above 1750 LOC", () => {
+    const warningHits = [];
+    const failureHits = [];
+
+    for (const filePath of walk(resolve(ROOT, "src"))) {
+        if (!hasSourceExtension(filePath)) continue;
+        const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
+        if (LEGACY_LARGE_FILES.has(repoPath)) continue;
+        const lineCount = readFileSync(filePath, "utf8").split("\n").length;
+        if (lineCount > 1250) {
+            warningHits.push(`${repoPath} (${lineCount} lines)`);
+        }
+        if (lineCount > 1750) {
+            failureHits.push(`${repoPath} (${lineCount} lines)`);
+        }
+    }
+
+    if (warningHits.length > 0) {
+        console.warn(
+            [
+                "Anti-monolith warning: files above 1250 LOC should be split.",
+                "Create a directory with index.js and break logic into purpose-named files.",
+                ...warningHits,
+            ].join("\n"),
+        );
+    }
+
+    assert.deepEqual(
+        failureHits,
+        [],
+        [
+            "Anti-monolith guardrail failure: files above 1750 LOC are forbidden.",
+            "Create a directory with index.js and break logic into purpose-named files.",
+            ...failureHits,
+        ].join("\n"),
     );
 });
 

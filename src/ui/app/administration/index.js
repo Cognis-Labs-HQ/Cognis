@@ -4,7 +4,7 @@ import {
     createI18n,
     extendI18n,
 } from "../../reuse/i18n.js";
-import { createPageComposer } from "../../reuse/page-composer.js";
+import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { resolveModuleConfigScriptUrl } from "./module-config.js";

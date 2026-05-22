@@ -7,7 +7,7 @@ import {
     DEFAULT_PASSWORD_POLICY,
     countPatternMatches,
     normalizePasswordPolicy,
-} from "/static/reuse/password-policy.js";
+} from "/static/gateways/auth/ui/password-policy.js";
 
 export function createSettingsSection({ i18n, root }) {
     let capability = null;

@@ -60,7 +60,7 @@ ersetzt wurden und von nirgendwo importiert wurden.
     - `src/ui/tests/app-router.test.js`
 - Shell-/Layout-Performance:
     - `src/ui/layouts/dashboard-layout.js`
-    - `src/ui/reuse/page-composer.js`
+    - `src/ui/reuse/page-composer/init.js`
     - `src/ui/tests/page-composer-refresh.test.js`
 - Seiten-Einstiegspunkte:
     - `src/ui/app/invite/index.js`

@@ -9,7 +9,7 @@ Page composer sekarang mengatur prompt penyegaran bersama yang sudah diterjemahk
 ## File / Komponen yang Diubah
 
 - `src/ui/reuse/api-client.js` — Menambahkan penanganan toast pemulihan koneksi bersama dan konfigurasi prompt.
-- `src/ui/reuse/page-composer.js` — Mendaftarkan prompt pemulihan koneksi terjemahan saat bootstrap halaman.
+- `src/ui/reuse/page-composer/init.js` — Mendaftarkan prompt pemulihan koneksi terjemahan saat bootstrap halaman.
 - `src/ui/languages/en/strings.xml`
 - `src/ui/languages/de/strings.xml`
 - `src/ui/languages/id/strings.xml`

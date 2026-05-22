@@ -7,7 +7,7 @@ import {
     halfGrid,
     snapGridFloor,
     snapGridRound,
-} from "../reuse/page-composer-grid-math.js";
+} from "../reuse/page-composer/grid-math.js";
 
 test("grid math handles even and odd dimensions", () => {
     assert.equal(gridStep(8), 1);

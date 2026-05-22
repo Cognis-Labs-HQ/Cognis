@@ -1,6 +1,6 @@
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
-import { createPageComposer } from "/static/reuse/page-composer.js";
+import { createPageComposer } from "/static/reuse/page-composer/init.js";
 import {
     loadStudySubNavigationModel,
     renderStudySubNavigation,

@@ -14,7 +14,7 @@
 
 ## Geänderte Dateien/Komponenten
 
-- `src/ui/reuse/page-composer.js`
+- `src/ui/reuse/page-composer/init.js`
 - `src/ui/tests/page-composer-refresh.test.js`
 - `src/ui/styles/page-builder.css`
 - `src/ui/languages/{en,de,id,ja}/strings.xml`

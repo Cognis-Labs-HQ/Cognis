@@ -101,10 +101,10 @@
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
 
-import { apiFetch, configureConnectionRecoveryPrompt } from "./api-client.js";
-import { renderDashboardLayout } from "../layouts/dashboard-layout.js";
-import { prefersReducedMotion } from "./motion.js";
-import { showToast, configureToastDismissLabel } from "./toast.js";
+import { apiFetch, configureConnectionRecoveryPrompt } from "../api-client.js";
+import { renderDashboardLayout } from "../../layouts/dashboard-layout.js";
+import { prefersReducedMotion } from "../motion.js";
+import { showToast, configureToastDismissLabel } from "../toast.js";
 import {
     PAGE_COMPOSER_GRID_UNIT,
     buildOccupiedSet,
@@ -113,7 +113,7 @@ import {
     halfGrid,
     snapGridFloor,
     snapGridRound,
-} from "./page-composer-grid-math.js";
+} from "./grid-math.js";
 
 const TOOLBAR_TOGGLE_OPEN_SVG =
     '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 3L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
