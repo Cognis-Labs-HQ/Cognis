@@ -42,6 +42,19 @@ const GRANDFATHERED_LARGE_FILES = new Set([
 
 const SOURCE_EXTENSIONS = new Set([".js", ".ts", ".css", ".html"]);
 
+const GRANDFATHERED_FLAT_UI_APP_ENTRIES = new Set([
+    "src/adapters/social/messages/ui/app.js",
+    "src/adapters/social/profile/ui/app.js",
+    "src/adapters/study/classes/ui/app.js",
+    "src/modules/jitsi-meet/ui/app.js",
+    "src/modules/study/languages/en/components/alphabet/ui/app.js",
+    "src/modules/study/languages/en/components/classroom/ui/app.js",
+    "src/modules/study/languages/en/components/library/ui/app.js",
+    "src/modules/study/languages/ja/components/classroom/ui/app.js",
+    "src/modules/study/languages/ja/components/hiragana-alphabet/ui/app.js",
+    "src/modules/study/languages/ja/components/library/ui/app.js",
+]);
+
 function hasSourceExtension(filePath) {
     return Array.from(SOURCE_EXTENSIONS).some((extension) =>
         filePath.endsWith(extension),
@@ -139,6 +152,30 @@ test("api route handlers use domain/index.ts structure", () => {
         violations,
         [],
         `API route structure violations found:\n${violations.join("\n")}`,
+    );
+});
+
+test("module and adapter ui app entries use ui/app/index.js structure", () => {
+    const scanRoots = [
+        resolve(ROOT, "src/modules"),
+        resolve(ROOT, "src/adapters"),
+    ];
+    const violations = [];
+
+    for (const scanRoot of scanRoots) {
+        for (const filePath of walk(scanRoot)) {
+            const normalizedFilePath = filePath.replace(/\\/g, "/");
+            if (!normalizedFilePath.endsWith("/ui/app.js")) continue;
+            const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
+            if (GRANDFATHERED_FLAT_UI_APP_ENTRIES.has(repoPath)) continue;
+            violations.push(`flat ui app entry is not allowed: ${repoPath}`);
+        }
+    }
+
+    assert.deepEqual(
+        violations,
+        [],
+        `Module/adapter UI entry violations found:\n${violations.join("\n")}`,
     );
 });
 

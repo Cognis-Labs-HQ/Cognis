@@ -105,6 +105,15 @@ import { apiFetch, configureConnectionRecoveryPrompt } from "./api-client.js";
 import { renderDashboardLayout } from "../layouts/dashboard-layout.js";
 import { prefersReducedMotion } from "./motion.js";
 import { showToast, configureToastDismissLabel } from "./toast.js";
+import {
+    PAGE_COMPOSER_GRID_UNIT,
+    buildOccupiedSet,
+    checkPlacement,
+    gridStep,
+    halfGrid,
+    snapGridFloor,
+    snapGridRound,
+} from "./page-composer-grid-math.js";
 
 const TOOLBAR_TOGGLE_OPEN_SVG =
     '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 3L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
@@ -160,62 +169,13 @@ export function createPageComposer(
     let editToggleAbortController = null;
     let layoutProfiles = { layoutsByGrid: {} };
 
-    const UNIT = 90; // grid cell size in pixels
+    const UNIT = PAGE_COMPOSER_GRID_UNIT; // grid cell size in pixels
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
     // Treat narrow grids as compact so single-pane rows expand and avoid
     // visibly wasted horizontal space on small screens.
     const COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS = 10;
     const FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft";
     const LARGE_FORM_RESET_FIELD_THRESHOLD = 6;
-
-    function gridStep(dim) {
-        return dim % 2 === 1 ? 0.5 : 1;
-    }
-
-    function halfGrid(dim) {
-        return dim % 2 === 1 ? dim / 2 : Math.floor(dim / 2);
-    }
-
-    function snapGridFloor(px, dim) {
-        const step = gridStep(dim);
-        return Math.floor(px / (UNIT * step)) * step;
-    }
-
-    function snapGridRound(raw, dim) {
-        const step = gridStep(dim);
-        return Math.round(raw / step) * step;
-    }
-
-    function buildOccupiedSet(placements, hidden, excludeId) {
-        const cells = new Set();
-        for (const placement of placements) {
-            if (placement.id === excludeId) continue;
-            if (hidden.includes(placement.id)) continue;
-            for (
-                let r = placement.row * 2;
-                r < (placement.row + placement.h) * 2;
-                r++
-            ) {
-                for (
-                    let c = placement.col * 2;
-                    c < (placement.col + placement.w) * 2;
-                    c++
-                ) {
-                    cells.add(`${c},${r}`);
-                }
-            }
-        }
-        return cells;
-    }
-
-    function checkPlacement(cells, col, row, w, h) {
-        for (let r = row * 2; r < (row + h) * 2; r++) {
-            for (let c = col * 2; c < (col + w) * 2; c++) {
-                if (cells.has(`${c},${r}`)) return false;
-            }
-        }
-        return true;
-    }
 
     function handleBeforeUnload(e) {
         e.preventDefault();
