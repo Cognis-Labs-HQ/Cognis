@@ -3,6 +3,7 @@ export const ACTIVE_MEETINGS_REFRESH_INTERVAL_MS = 10_000;
 export const PROBE_SUCCESS_DISPLAY_MS = 600;
 export const STATE_REFRESH_INTERVAL_MS = 5_000;
 export const CHAT_REFRESH_INTERVAL_MS = 2_500;
+export const ALONE_PROMPT_GRACE_PERIOD_MS = 60_000;
 export const SESSION_ID_STORAGE_KEY = "jitsi-meet:session-id";
 export const TEXT_ENCODER = new TextEncoder();
 export const MEETING_SUBJECT = "Cognis Classroom";

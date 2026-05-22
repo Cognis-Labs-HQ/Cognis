@@ -346,7 +346,8 @@
     text-decoration: none;
 }
 
-.jitsi-participant-avatar-bubble {
+.jitsi-participant-avatar-bubble,
+.jitsi-participant-avatar-img {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -362,7 +363,14 @@
         box-shadow 0.15s ease;
 }
 
-.jitsi-participant-avatar:hover .jitsi-participant-avatar-bubble {
+.jitsi-participant-avatar-img {
+    display: block;
+    object-fit: cover;
+    background: rgba(15, 23, 42, 0.2);
+}
+
+.jitsi-participant-avatar:hover .jitsi-participant-avatar-bubble,
+.jitsi-participant-avatar:hover .jitsi-participant-avatar-img {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
@@ -386,7 +394,8 @@
     margin-bottom: 0.5rem;
 }
 
-.jitsi-staged-participants .jitsi-participant-avatar-bubble {
+.jitsi-staged-participants .jitsi-participant-avatar-bubble,
+.jitsi-staged-participants .jitsi-participant-avatar-img {
     width: 2.25rem;
     height: 2.25rem;
     font-size: 0.85rem;
@@ -435,6 +444,9 @@ body[data-theme="light"] .jitsi-chat-message-own {
     background: rgba(191, 219, 254, 0.95);
 }
 
+body[data-theme="light"]
+    .jitsi-staged-participants
+    .jitsi-participant-avatar-img,
 body[data-theme="light"]
     .jitsi-staged-participants
     .jitsi-participant-avatar-bubble {

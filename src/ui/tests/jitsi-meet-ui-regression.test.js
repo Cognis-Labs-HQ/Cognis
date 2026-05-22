@@ -19,6 +19,35 @@ test("meetings search popup adds confirmed users directly to meeting participant
         source,
         /onSelectMultiple:\s*\(results\)\s*=>[\s\S]*state\.availableParticipants\.push/,
     );
+    assert.match(
+        source,
+        /avatarKey:\s*typeof result\?\.avatarKey === "string"/,
+    );
+});
+
+test("jitsi participant avatars reuse social avatar hydration and hide staged avatars while active", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    const cssSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /buildProfileAvatarMarkup[\s\S]*handleProfileAvatarError[\s\S]*hydrateProfileAvatars/,
+    );
+    assert.match(
+        source,
+        /root\.addEventListener\("error", handleProfileAvatarError/,
+    );
+    assert.match(
+        source,
+        /const stagedEntries = isMeetingActive\(\)\s*\?\s*\[\]\s*:\s*state\.selectedParticipants;/,
+    );
+    assert.match(source, /void hydrateProfileAvatars\(availablePool\);/);
+    assert.match(cssSource, /\.jitsi-participant-avatar-img/);
 });
 
 test("jitsi meeting group chats include the meeting date in their title", () => {
@@ -257,18 +286,50 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
         resolve(ROOT, "src/modules/jitsi-meet/ui/markup.js"),
         "utf8",
     );
+    const constantsSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/constants.js"),
+        "utf8",
+    );
     assert.match(markupSource, /id="jitsi-leave-alone-btn"/);
     assert.match(markupSource, /id="jitsi-remain-alone-btn"/);
+    assert.match(constantsSource, /ALONE_PROMPT_GRACE_PERIOD_MS = 60_000/);
+    assert.match(source, /function deferAloneParticipantPrompt\(/);
+    assert.match(
+        source,
+        /state\.alonePromptBlockedUntil = Date\.now\(\) \+ delayMs;/,
+    );
     assert.match(
         source,
         /function shouldPromptLocalUserAlone\(activeParticipants\)/,
     );
+    assert.match(source, /Date\.now\(\) < state\.alonePromptBlockedUntil/);
     assert.match(
         source,
         /function updateAloneParticipantPrompt\(activeParticipants\)/,
     );
     assert.match(source, /module\.jitsi_meet\.overlay\.alone_prompt/);
     assert.match(source, /alonePromptDismissedMeetingId/);
+    assert.match(
+        source,
+        /const joinPayload = await joinResponse\.json\(\);\n\s*state\.meeting = joinPayload\?\.data \?\? state\.meeting;\n\s*deferAloneParticipantPrompt\(\);/,
+    );
+    assert.match(
+        source,
+        /state\.meeting = joinPayload\?\.data \?\? state\.meeting;/,
+    );
+    assert.match(source, /authButton\.addEventListener\(/);
+    assert.match(
+        source,
+        /if \(!state\.meeting\?\.id\) return;\n\s*deferAloneParticipantPrompt\(\);/,
+    );
+    assert.match(
+        source,
+        /apiInstance\.addEventListener\("passwordRequired", \(\) => \{/,
+    );
+    assert.match(
+        source,
+        /deferAloneParticipantPrompt\(\);\n\s*submitMeetingPassword\(\);/,
+    );
 
     const loadMeetingStateMatch = source.match(
         /async function loadMeetingState\(\) \{([\s\S]*?)\n    async function keepPresenceAlive/,

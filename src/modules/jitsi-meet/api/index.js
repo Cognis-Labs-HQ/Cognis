@@ -470,6 +470,7 @@ export function registerApiRoutes(router, ctx) {
                 .map((profile) => ({
                     handle: profile.handle,
                     displayName: profile.displayName ?? profile.handle,
+                    avatarKey: profile.avatarKey ?? null,
                 }));
             sendJson(res, 200, { data: results });
         },

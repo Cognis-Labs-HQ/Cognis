@@ -14,10 +14,16 @@ import {
     pickInitialsColor,
 } from "/static/reuse/avatar-utils.js";
 import {
+    buildProfileAvatarMarkup,
+    handleProfileAvatarError,
+    hydrateProfileAvatars,
+} from "/static/gateways/social/reuse/profile-avatar.js";
+import {
     normalizeUsername,
     resolveUrlHost,
 } from "/static/reuse/value-normalizers.js";
 import {
+    ALONE_PROMPT_GRACE_PERIOD_MS,
     ACTIVE_MEETINGS_REFRESH_INTERVAL_MS,
     CHAT_REFRESH_INTERVAL_MS,
     HEARTBEAT_INTERVAL_MS,
@@ -87,32 +93,27 @@ async function fetchCurrentProfile() {
     };
 }
 
-function createParticipantAvatarEl(username, displayName) {
+function createParticipantAvatarEl({ username, displayName, avatarKey }) {
     const wrapper = document.createElement("div");
     wrapper.className = "jitsi-participant-avatar";
     wrapper.setAttribute("draggable", "true");
     wrapper.setAttribute("data-username", username);
     wrapper.setAttribute("role", "listitem");
-
-    const link = document.createElement("a");
-    link.href = `/profile/${encodeURIComponent(username)}`;
-    link.className = "jitsi-participant-avatar-link";
-    link.tabIndex = -1;
-    link.setAttribute("aria-label", displayName || username);
-
-    const color = pickInitialsColor(username);
-    const initials = getInitialsText(displayName || username);
-    const bubble = document.createElement("span");
-    bubble.className = "jitsi-participant-avatar-bubble";
-    bubble.style.setProperty("--initials-bg", color);
-    bubble.textContent = initials;
-    link.appendChild(bubble);
+    const labelText = displayName || username;
+    wrapper.innerHTML = buildProfileAvatarMarkup({
+        avatarKey,
+        label: labelText,
+        colorSeed: username,
+        avatarClass: "jitsi-participant-avatar-link",
+        imageClass: "jitsi-participant-avatar-img",
+        fallbackClass: "jitsi-participant-avatar-bubble",
+        profileHandle: username,
+    });
 
     const label = document.createElement("span");
     label.className = "jitsi-participant-avatar-label";
     label.textContent = `@${username}`;
 
-    wrapper.appendChild(link);
     wrapper.appendChild(label);
     return wrapper;
 }
@@ -170,6 +171,7 @@ export async function mount(root, { signal } = {}) {
         jitsiThemeMode: resolveThemeMode(),
         alonePromptMeetingId: "",
         alonePromptDismissedMeetingId: "",
+        alonePromptBlockedUntil: 0,
         recoveringMeetingSession: false,
     };
 
@@ -205,7 +207,17 @@ export async function mount(root, { signal } = {}) {
         }
     }
 
+    function deferAloneParticipantPrompt(
+        delayMs = ALONE_PROMPT_GRACE_PERIOD_MS,
+    ) {
+        state.alonePromptBlockedUntil = Date.now() + delayMs;
+    }
+
     if (signal) {
+        root.addEventListener("error", handleProfileAvatarError, {
+            capture: true,
+            signal,
+        });
         signal.addEventListener("abort", () => {
             clearTimers();
             stopActiveMeetingsPolling();
@@ -571,6 +583,7 @@ export async function mount(root, { signal } = {}) {
         closeMeetingEmbed();
         state.alonePromptMeetingId = "";
         state.alonePromptDismissedMeetingId = "";
+        state.alonePromptBlockedUntil = 0;
         state.meeting = null;
         state.chatRoomId = "";
         state.chatRoomKey = null;
@@ -635,6 +648,7 @@ export async function mount(root, { signal } = {}) {
         if (state.meeting?.id !== meetingPayload.data.id) {
             state.alonePromptMeetingId = "";
             state.alonePromptDismissedMeetingId = "";
+            state.alonePromptBlockedUntil = 0;
         }
         state.meeting = meetingPayload.data;
         await updateNativeChat();
@@ -718,6 +732,7 @@ export async function mount(root, { signal } = {}) {
         closeMeetingEmbed();
         state.alonePromptMeetingId = "";
         state.alonePromptDismissedMeetingId = "";
+        state.alonePromptBlockedUntil = 0;
         state.meeting = null;
         state.chatRoomId = "";
         state.chatRoomKey = null;
@@ -763,8 +778,12 @@ export async function mount(root, { signal } = {}) {
     }
 
     function shouldPromptLocalUserAlone(activeParticipants) {
-        if (!isMeetingActive() || !state.meeting?.id) return false;
-        if (state.alonePromptDismissedMeetingId === state.meeting.id) {
+        if (
+            !isMeetingActive() ||
+            !state.meeting?.id ||
+            state.alonePromptDismissedMeetingId === state.meeting.id ||
+            Date.now() < state.alonePromptBlockedUntil
+        ) {
             return false;
         }
         const localUsername = normalizeUsername(
@@ -905,15 +924,18 @@ export async function mount(root, { signal } = {}) {
 
         availablePool.replaceChildren(
             ...state.availableParticipants.map((entry) =>
-                createParticipantAvatarEl(entry.username, entry.displayName),
+                createParticipantAvatarEl(entry),
             ),
         );
+        void hydrateProfileAvatars(availablePool);
 
+        const stagedEntries = isMeetingActive()
+            ? []
+            : state.selectedParticipants;
         stagedArea.replaceChildren(
-            ...state.selectedParticipants.map((entry) =>
-                createParticipantAvatarEl(entry.username, entry.displayName),
-            ),
+            ...stagedEntries.map((entry) => createParticipantAvatarEl(entry)),
         );
+        void hydrateProfileAvatars(stagedArea);
 
         const participantSelectionLocked = isMeetingActive();
         if (participantsPane instanceof HTMLElement) {
@@ -1342,6 +1364,7 @@ export async function mount(root, { signal } = {}) {
             applyPrivilegedMeetingSettings();
         });
         apiInstance.addEventListener("passwordRequired", () => {
+            deferAloneParticipantPrompt();
             submitMeetingPassword();
             applyPrivilegedMeetingSettings();
         });
@@ -1392,6 +1415,7 @@ export async function mount(root, { signal } = {}) {
 
         const joinPayload = await joinResponse.json();
         state.meeting = joinPayload?.data ?? state.meeting;
+        deferAloneParticipantPrompt();
         await updateNativeChat();
 
         if (state.meeting.requiresReclaim) {
@@ -1565,6 +1589,10 @@ export async function mount(root, { signal } = {}) {
                                 const participantEntry = {
                                     username,
                                     displayName,
+                                    avatarKey:
+                                        typeof result?.avatarKey === "string"
+                                            ? result.avatarKey
+                                            : null,
                                 };
                                 state.availableParticipants =
                                     state.availableParticipants.filter(
@@ -1785,6 +1813,7 @@ export async function mount(root, { signal } = {}) {
                 "click",
                 async () => {
                     if (!state.meeting?.id) return;
+                    deferAloneParticipantPrompt();
                     await apiFetch(
                         "/api/v1/modules/jitsi-meet/meetings/auth-start",
                         {
@@ -2001,6 +2030,8 @@ export async function mount(root, { signal } = {}) {
         .map((entry) => ({
             username: normalizeUsername(entry?.handle ?? entry?.username ?? ""),
             displayName: String(entry?.displayName ?? entry?.handle ?? ""),
+            avatarKey:
+                typeof entry?.avatarKey === "string" ? entry.avatarKey : null,
         }))
         .filter((entry) => Boolean(entry.username))
         .sort((a, b) => a.username.localeCompare(b.username));
