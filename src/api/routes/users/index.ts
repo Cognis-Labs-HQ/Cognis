@@ -50,6 +50,7 @@ export function createUserRoutes(
         visibility: "friends",
     ) => Promise<void>,
     routeContext?: RouteContext,
+    resetEmailTfaForUser?: (accountId: string) => Promise<void>,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -145,7 +146,7 @@ export function createUserRoutes(
         }
 
         const match = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)(?:\/(role|password|enable|disable|isfounder|preferences\/clear))?$/,
+            /^\/api\/v1\/users\/([^/]+)(?:\/(role|password|enable|disable|isfounder|preferences\/clear|tfa\/reset))?$/,
         );
         if (!match) return false;
         const adminClaims = ctx.requireAuth(req, res, "admin");
@@ -173,6 +174,7 @@ export function createUserRoutes(
             "disable",
             "isfounder",
             "preferences/clear",
+            "tfa/reset",
         ]);
         const isProtectedManagementAction =
             (req.method === "POST" &&
@@ -243,6 +245,7 @@ export function createUserRoutes(
             "password",
             "disable",
             "isfounder",
+            "tfa/reset",
         ]);
         const isFounderProtectedRequest =
             (req.method === "POST" &&
@@ -469,6 +472,18 @@ export function createUserRoutes(
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { cleared: true } }));
+            return true;
+        }
+
+        if (req.method === "POST" && action === "tfa/reset") {
+            await resetEmailTfaForUser?.(username);
+            log?.("warn", "Reset user email TFA state.", {
+                ...logMeta,
+                accountId: adminClaims.sub,
+                targetAccountId: username,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { reset: true } }));
             return true;
         }
 

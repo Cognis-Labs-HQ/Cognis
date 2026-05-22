@@ -1,0 +1,6 @@
+{
+    "id": "email-tfa",
+    "name": "Email TFA",
+    "version": "0.1.0",
+    "requires": ["notify:smtp"]
+}

@@ -219,6 +219,63 @@ export async function mount(root) {
         }
     }
 
+    async function promptEmailTfaCode() {
+        let inputEl = null;
+        const action = await openPopup({
+            title: i18n.t("ui.app.login.email_tfa.title"),
+            body: `
+      <p>${escapeHtml(i18n.t("ui.app.login.email_tfa.prompt"))}</p>
+      <label class="stack">
+        <span>${escapeHtml(i18n.t("ui.app.login.email_tfa.code_label"))}</span>
+        <input id="login-email-tfa-code-input" type="text" inputmode="numeric" maxlength="6" />
+      </label>
+    `,
+            actions: [
+                {
+                    id: "confirm",
+                    label: i18n.t("ui.app.login.email_tfa.submit"),
+                    variant: "confirm",
+                },
+            ],
+            onOpen: (overlay) => {
+                inputEl = overlay.querySelector("#login-email-tfa-code-input");
+            },
+        });
+        if (action !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
+            return null;
+        }
+        return inputEl.value.trim();
+    }
+
+    async function completeEmailTfaLogin(challengeId) {
+        while (true) {
+            const code = await promptEmailTfaCode();
+            if (!code) continue;
+            const response = await fetch("/api/v1/auth/email-tfa/verify-login", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ challengeId, code }),
+            });
+            const body = await response.json().catch(() => null);
+            if (response.ok && body?.data) {
+                return body.data;
+            }
+            if (response.status === 401) {
+                showToast(i18n.t("ui.app.login.email_tfa.invalid_code"), {
+                    variant: "error",
+                });
+                continue;
+            }
+            showToast(
+                body?.error?.message || i18n.t("ui.app.login.email_tfa.failed"),
+                {
+                    variant: "error",
+                },
+            );
+            return null;
+        }
+    }
+
     async function enforceRequiredEmailSetup(accountId) {
         while (true) {
             const emails = await loadUserEmails(accountId);
@@ -384,27 +441,40 @@ export async function mount(root) {
                             const body = await response
                                 .json()
                                 .catch(() => null);
+                            let loginData = null;
                             if (response.ok && body?.data) {
+                                loginData = body.data;
+                            } else if (
+                                response.status === 202 &&
+                                body?.data?.requiresEmailTfa === true &&
+                                body?.data?.challengeId
+                            ) {
+                                loginData = await completeEmailTfaLogin(
+                                    body.data.challengeId,
+                                );
+                                if (!loginData) return;
+                            }
+                            if (loginData) {
                                 localStorage.setItem(
                                     "cognis_access_token",
-                                    body.data.token,
+                                    loginData.token,
                                 );
                                 localStorage.setItem(
                                     "cognis_account",
-                                    body.data.accountId,
+                                    loginData.accountId,
                                 );
                                 localStorage.setItem(
                                     "cognis_display_name",
-                                    body.data.displayName ||
-                                        body.data.accountId,
+                                    loginData.displayName ||
+                                        loginData.accountId,
                                 );
                                 localStorage.setItem(
                                     "cognis_role",
-                                    body.data.role || "user",
+                                    loginData.role || "user",
                                 );
                                 localStorage.setItem(
                                     "cognis_is_founder",
-                                    body.data.isFounder ? "true" : "false",
+                                    loginData.isFounder ? "true" : "false",
                                 );
                                 localStorage.setItem(
                                     "cognis_login_time",
@@ -412,17 +482,17 @@ export async function mount(root) {
                                 );
                                 localStorage.setItem(
                                     "cognis_user_validation_mode",
-                                    body.data.userValidationMode || "none",
+                                    loginData.userValidationMode || "none",
                                 );
                                 const requiresUserValidation =
-                                    body.data.requiredUserValidation === true &&
-                                    body.data.userValidationMode === "smtp";
+                                    loginData.requiredUserValidation === true &&
+                                    loginData.userValidationMode === "smtp";
                                 if (requiresUserValidation) {
                                     await enforceRequiredEmailSetup(
-                                        body.data.accountId,
+                                        loginData.accountId,
                                     );
                                 }
-                                await syncTimezoneOnLogin(body.data.accountId);
+                                await syncTimezoneOnLogin(loginData.accountId);
                                 window.location.href = "/dashboard";
                                 return;
                             }

@@ -69,6 +69,7 @@ export interface ApiDependencies {
         accountId: string,
         visibility: "friends",
     ) => Promise<void>;
+    resetEmailTfaForUser?: (accountId: string) => Promise<void>;
     onModuleStateChanged?: (
         moduleId: string,
         enabled: boolean,
@@ -161,6 +162,7 @@ export function buildServer(deps: ApiDependencies) {
               deps.getProfileVisibility,
               deps.setProfileVisibility,
               routeContext,
+              deps.resetEmailTfaForUser,
           )
         : null;
     const gatewayRoutes = deps.gatewayRegistry

@@ -184,6 +184,12 @@
   <string name="ui.app.login.not_registered.title">Not Registered?</string>
   <string name="ui.app.login.not_registered.body">Create a free account and get started today.</string>
   <string name="ui.app.login.not_registered.link">Sign Up!</string>
+  <string name="ui.app.login.email_tfa.title">Email TFA Verification</string>
+  <string name="ui.app.login.email_tfa.prompt">Enter the verification code sent to your verified email address.</string>
+  <string name="ui.app.login.email_tfa.code_label">Verification code</string>
+  <string name="ui.app.login.email_tfa.submit">Verify and Sign In</string>
+  <string name="ui.app.login.email_tfa.invalid_code">Invalid or expired verification code.</string>
+  <string name="ui.app.login.email_tfa.failed">Email TFA verification failed.</string>
   <string name="ui.app.demo.switched">Demo: switched to sandbox page.</string>
   <string name="ui.app.demo.added">Demo: added a learning progress widget.</string>
   <string name="ui.app.demo.tweaked">Demo: tweaked the first widget configuration.</string>
@@ -276,8 +282,10 @@
   <string name="ui.app.users.founder_disabled">Founder status removed.</string>
   <string name="ui.app.users.action_menu_help">Select an action.</string>
   <string name="ui.app.users.reset_password">Reset password</string>
+  <string name="ui.app.users.reset_tfa">Reset email TFA</string>
   <string name="ui.app.users.new_password">New password</string>
   <string name="ui.app.users.password_reset_done">Password updated.</string>
+  <string name="ui.app.users.tfa_reset_done">Email TFA reset.</string>
   <string name="ui.app.users.resend_verification">Resend verification email</string>
   <string name="ui.app.users.verification_resent">Verification email request sent.</string>
   <string name="ui.app.users.delete_user">Delete user</string>

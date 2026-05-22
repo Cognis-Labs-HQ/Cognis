@@ -29,7 +29,7 @@ import {
 } from "./access-tokens.js";
 import { CoreAuthGateway } from "./gateway.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { AuthProviderAdapter } from "./gateway.js";
+import type { AuthPendingSession, AuthProviderAdapter } from "./gateway.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { UserPreferenceStore } from "../../api/reuse/preference-store.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
@@ -87,6 +87,52 @@ function resolveRole(sessionRole: string | undefined): AccessRole {
     return "user";
 }
 
+function isCredentialLoginAdapter(adapter: AuthProviderAdapter): boolean {
+    return adapter.supportsCredentialLogin !== false;
+}
+
+function isEmailTfaAdapter(
+    adapter: AuthProviderAdapter | null,
+): adapter is AuthProviderAdapter & {
+    shouldRequireEmailTfa(accountId: string): Promise<boolean>;
+    beginEmailTfaLoginChallenge(
+        session: AuthPendingSession,
+    ): Promise<{ challengeId: string }>;
+    completeEmailTfaLoginChallenge(
+        challengeId: string,
+        code: string,
+    ): Promise<AuthPendingSession | null>;
+    getEmailTfaState(accountId: string): Promise<{
+        enabled: boolean;
+        enforced: boolean;
+        available: boolean;
+    }>;
+    setEmailTfaEnabled(accountId: string, enabled: boolean): Promise<void>;
+} {
+    return Boolean(
+        adapter &&
+            typeof adapter.shouldRequireEmailTfa === "function" &&
+            typeof adapter.beginEmailTfaLoginChallenge === "function" &&
+            typeof adapter.completeEmailTfaLoginChallenge === "function" &&
+            typeof adapter.getEmailTfaState === "function" &&
+            typeof adapter.setEmailTfaEnabled === "function",
+    );
+}
+
+function hasEmailTfaRegistrationHook(
+    adapter: AuthProviderAdapter,
+): adapter is AuthProviderAdapter & {
+    onAccountRegistered(accountId: string): Promise<void>;
+} {
+    return typeof adapter.onAccountRegistered === "function";
+}
+
+function hasEmailTfaResetHook(
+    adapter: AuthProviderAdapter | null,
+): adapter is AuthProviderAdapter & { resetEmailTfa(accountId: string): Promise<void> } {
+    return Boolean(adapter && typeof adapter.resetEmailTfa === "function");
+}
+
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor =
         ctx.capabilities.get<DbExecutor>("db:executor") ?? ctx.dbExecutor;
@@ -133,7 +179,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     }
 
     const authAdaptersRoot = path.join(ctx.adaptersRoot, "auth");
-    await authGateway.discoverAdapters(authAdaptersRoot);
+    await authGateway.discoverAdapters(authAdaptersRoot, {
+        capabilities: ctx.capabilities,
+        log: ctx.log,
+    });
     await authGateway.loadPersistedConfigs();
     ctx.log?.("info", "Authentication adapters discovered and configured.", {
         component: "auth-gateway",
@@ -213,7 +262,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute("auth:getLoginMethods", () =>
         authGateway
             .getEnabledAdapters()
+            .filter((a) => isCredentialLoginAdapter(a))
             .map((a) => ({ id: a.id, name: a.name })),
+    );
+    ctx.capabilities.contribute(
+        "auth:resetEmailTfaForUser",
+        async (accountId: string) => {
+            const adapter =
+                authGateway.getEnabledAdapter("email-tfa") ??
+                authGateway.getAdapter("email-tfa");
+            if (!hasEmailTfaResetHook(adapter)) return;
+            await adapter.resetEmailTfa(accountId);
+        },
     );
     /**
      * auth:issueAccessToken — issues an access token using the auth gateway's
@@ -300,6 +360,58 @@ function createAuthGatewayRoutes(
         return Boolean(isPublicRegistrationEnabled?.());
     }
 
+    function getEnabledEmailTfaAdapter() {
+        const adapter = authGateway.getEnabledAdapter("email-tfa");
+        return isEmailTfaAdapter(adapter) ? adapter : null;
+    }
+
+    const parsedTtlSeconds = Number.parseInt(
+        process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? "43200",
+        10,
+    );
+    const accessTokenTtlSeconds =
+        Number.isFinite(parsedTtlSeconds) && parsedTtlSeconds >= 1
+            ? parsedTtlSeconds
+            : 43200;
+
+    function respondWithAuthSession(
+        req: IncomingMessage,
+        res: ServerResponse,
+        session: AuthPendingSession,
+    ) {
+        const apiToken = issueAccessToken(
+            session.accountId,
+            session.role,
+            accessTokenTtlSeconds,
+            {
+                providerId: session.providerId,
+            },
+        );
+        res.writeHead(200, {
+            "content-type": "application/json",
+            "set-cookie": buildAccessTokenCookie(
+                apiToken,
+                accessTokenTtlSeconds,
+                shouldSetSecureCookie(req),
+            ),
+        });
+        res.end(
+            JSON.stringify({
+                data: {
+                    accountId: session.accountId,
+                    displayName: session.displayName,
+                    provider: session.provider,
+                    providerId: session.providerId,
+                    role: session.role,
+                    isFounder: session.isFounder,
+                    token: apiToken,
+                    userValidationMode: session.userValidationMode,
+                    requiredUserValidation: session.requiredUserValidation,
+                },
+            }),
+        );
+    }
+
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -314,10 +426,13 @@ function createAuthGatewayRoutes(
             url.pathname === "/api/v1/auth/login-methods" &&
             req.method === "GET"
         ) {
-            const methods = authGateway.getEnabledAdapters().map((a) => ({
-                id: a.id,
-                name: a.name,
-            }));
+            const methods = authGateway
+                .getEnabledAdapters()
+                .filter((a) => isCredentialLoginAdapter(a))
+                .map((a) => ({
+                    id: a.id,
+                    name: a.name,
+                }));
             log?.("debug", "Listed login methods.", {
                 ...logMeta,
                 count: methods.length,
@@ -494,6 +609,12 @@ function createAuthGatewayRoutes(
                 email,
                 displayName: displayName || undefined,
             });
+            const emailTfaAdapter =
+                authGateway.getEnabledAdapter("email-tfa") ??
+                authGateway.getAdapter("email-tfa");
+            if (emailTfaAdapter && hasEmailTfaRegistrationHook(emailTfaAdapter)) {
+                await emailTfaAdapter.onAccountRegistered(result.username);
+            }
             const verifyToken = issueAccessToken(
                 result.username,
                 result.role ?? "user",
@@ -550,12 +671,131 @@ function createAuthGatewayRoutes(
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/auth/email-tfa/settings" &&
+            req.method === "GET"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const adapter = getEnabledEmailTfaAdapter();
+            if (!adapter) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        data: { enabled: false, enforced: false, available: false },
+                    }),
+                );
+                return true;
+            }
+            const state = await adapter.getEmailTfaState(claims.sub);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: state }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/email-tfa/settings" &&
+            req.method === "PUT"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const adapter = getEnabledEmailTfaAdapter();
+            if (!adapter) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Email TFA adapter is not enabled",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const body = await readJson(req);
+            await adapter.setEmailTfaEnabled(claims.sub, body.enabled === true);
+            const state = await adapter.getEmailTfaState(claims.sub);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: state }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/email-tfa/verify-login" &&
+            req.method === "POST"
+        ) {
+            const adapter = getEnabledEmailTfaAdapter();
+            if (!adapter) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Email TFA adapter is not enabled",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const body = await readJson(req);
+            const challengeId = String(body.challengeId ?? "").trim();
+            const code = String(body.code ?? "").trim();
+            if (!challengeId || !code) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "challengeId and code are required",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const pendingSession = await adapter.completeEmailTfaLoginChallenge(
+                challengeId,
+                code,
+            );
+            if (!pendingSession) {
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_credentials",
+                            message: "Invalid or expired login verification code",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const localAdapter = authGateway.getLocalAdapter();
+            if (localAdapter) {
+                await localAdapter
+                    .updateLastLogin(pendingSession.accountId)
+                    .catch(() => undefined);
+            }
+            log?.("info", "Login succeeded after email TFA challenge.", {
+                ...logMeta,
+                accountId: pendingSession.accountId,
+                provider: pendingSession.provider,
+                role: pendingSession.role,
+            });
+            respondWithAuthSession(req, res, pendingSession);
+            return true;
+        }
+
         if (url.pathname === "/api/v1/auth/login" && req.method === "POST") {
             const body = await readJson(req);
             const provider = String(body.provider ?? "local");
+            const requestedAdapter = authGateway.getEnabledAdapter(provider);
+            const fallbackAdapter = authGateway.getEnabledAdapter("local");
             const adapter =
-                authGateway.getEnabledAdapter(provider) ??
-                authGateway.getEnabledAdapter("local");
+                (requestedAdapter && isCredentialLoginAdapter(requestedAdapter)
+                    ? requestedAdapter
+                    : null) ??
+                (fallbackAdapter && isCredentialLoginAdapter(fallbackAdapter)
+                    ? fallbackAdapter
+                    : null);
             if (!adapter) {
                 log?.(
                     "warn",
@@ -630,28 +870,6 @@ function createAuthGatewayRoutes(
             if (isFounder && (role === "admin" || role === "owner")) {
                 role = "owner";
             }
-            const parsedTtlSeconds = Number.parseInt(
-                process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? "43200",
-                10,
-            );
-            const accessTokenTtlSeconds =
-                Number.isFinite(parsedTtlSeconds) && parsedTtlSeconds >= 1
-                    ? parsedTtlSeconds
-                    : 43200;
-            const apiToken = issueAccessToken(
-                session.accountId,
-                role,
-                accessTokenTtlSeconds,
-                {
-                    providerId: adapter.id,
-                },
-            );
-            const localAdapter = authGateway.getLocalAdapter();
-            if (localAdapter) {
-                await localAdapter
-                    .updateLastLogin(session.accountId)
-                    .catch(() => undefined);
-            }
             const createProfile = capabilities.get<
                 (
                     accountId: string,
@@ -682,6 +900,66 @@ function createAuthGatewayRoutes(
             const requiresUserValidation = shouldRequireSmtpValidation
                 ? Boolean(canSendVerificationEmail?.())
                 : false;
+            const pendingSession: AuthPendingSession = {
+                accountId: session.accountId,
+                provider: session.provider,
+                providerId: adapter.id,
+                role,
+                isFounder,
+                displayName: accountDisplayName ?? session.accountId,
+                userValidationMode: securitySettings.userValidationMode,
+                requiredUserValidation: requiresUserValidation,
+                accountDisplayName,
+            };
+            const emailTfaAdapter = getEnabledEmailTfaAdapter();
+            if (
+                emailTfaAdapter &&
+                (await emailTfaAdapter.shouldRequireEmailTfa(
+                    session.accountId,
+                ))
+            ) {
+                try {
+                    const challenge =
+                        await emailTfaAdapter.beginEmailTfaLoginChallenge(
+                            pendingSession,
+                        );
+                    log?.("info", "Login requires email TFA challenge.", {
+                        ...logMeta,
+                        accountId: session.accountId,
+                        provider: session.provider,
+                    });
+                    res.writeHead(202, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            data: {
+                                requiresEmailTfa: true,
+                                challengeId: challenge.challengeId,
+                                accountId: session.accountId,
+                            },
+                        }),
+                    );
+                    return true;
+                } catch (error) {
+                    log?.(
+                        "warn",
+                        "Email TFA challenge failed to initialize; continuing without challenge.",
+                        {
+                            ...logMeta,
+                            accountId: session.accountId,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                }
+            }
+            const localAdapter = authGateway.getLocalAdapter();
+            if (localAdapter) {
+                await localAdapter
+                    .updateLastLogin(session.accountId)
+                    .catch(() => undefined);
+            }
             log?.("info", "Login succeeded.", {
                 ...logMeta,
                 accountId: session.accountId,
@@ -689,29 +967,7 @@ function createAuthGatewayRoutes(
                 role,
                 requiresUserValidation,
             });
-            res.writeHead(200, {
-                "content-type": "application/json",
-                "set-cookie": buildAccessTokenCookie(
-                    apiToken,
-                    accessTokenTtlSeconds,
-                    shouldSetSecureCookie(req),
-                ),
-            });
-            res.end(
-                JSON.stringify({
-                    data: {
-                        accountId: session.accountId,
-                        displayName: accountDisplayName ?? session.accountId,
-                        provider: session.provider,
-                        providerId: adapter.id,
-                        role,
-                        isFounder,
-                        token: apiToken,
-                        userValidationMode: securitySettings.userValidationMode,
-                        requiredUserValidation: requiresUserValidation,
-                    },
-                }),
-            );
+            respondWithAuthSession(req, res, pendingSession);
             return true;
         }
 

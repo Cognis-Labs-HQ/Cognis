@@ -24,9 +24,35 @@ export interface AuthConfigField {
     envVar?: string;
 }
 
+export interface AuthAdapterContext {
+    capabilities: {
+        get<T>(capabilityId: string): T | undefined;
+    };
+    log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
+}
+
+export interface AuthPendingSession {
+    accountId: string;
+    provider: string;
+    providerId: string;
+    role: "owner" | "admin" | "teacher" | "moderator" | "user";
+    isFounder: boolean;
+    displayName: string;
+    userValidationMode: "none" | "smtp";
+    requiredUserValidation: boolean;
+    accountDisplayName?: string;
+}
+
+export interface AuthEmailTfaState {
+    enabled: boolean;
+    enforced: boolean;
+    available: boolean;
+}
+
 export interface AuthProviderAdapter {
     readonly id: string;
     readonly name: string;
+    readonly supportsCredentialLogin?: boolean;
     authenticate(
         credentials: Record<string, unknown>,
     ): Promise<AuthContext | null>;
@@ -37,6 +63,18 @@ export interface AuthProviderAdapter {
         accountId: string,
         nextPassword: string,
     ): Promise<{ updated: boolean; message?: string }>;
+    shouldRequireEmailTfa?(accountId: string): Promise<boolean>;
+    beginEmailTfaLoginChallenge?(
+        session: AuthPendingSession,
+    ): Promise<{ challengeId: string }>;
+    completeEmailTfaLoginChallenge?(
+        challengeId: string,
+        code: string,
+    ): Promise<AuthPendingSession | null>;
+    getEmailTfaState?(accountId: string): Promise<AuthEmailTfaState>;
+    setEmailTfaEnabled?(accountId: string, enabled: boolean): Promise<void>;
+    resetEmailTfa?(accountId: string): Promise<void>;
+    onAccountRegistered?(accountId: string): Promise<void>;
 }
 
 export interface AdapterInfo {
@@ -347,7 +385,10 @@ export class CoreAuthGateway {
         return this.localAdapter;
     }
 
-    async discoverAdapters(authAdaptersRoot: string): Promise<void> {
+    async discoverAdapters(
+        authAdaptersRoot: string,
+        adapterContext?: AuthAdapterContext,
+    ): Promise<void> {
         let entries: string[];
         try {
             entries = await readdir(authAdaptersRoot);
@@ -385,7 +426,9 @@ export class CoreAuthGateway {
                 );
                 const mod = await import(`${entryPath}?t=${Date.now()}`);
                 if (typeof mod.createAdapter === "function") {
-                    const adapter = mod.createAdapter() as AuthProviderAdapter;
+                    const adapter = mod.createAdapter(
+                        adapterContext,
+                    ) as AuthProviderAdapter;
                     if (adapter.id !== "local") {
                         this.registerAdapter(adapter, requires);
                     }

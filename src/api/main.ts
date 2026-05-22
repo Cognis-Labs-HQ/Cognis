@@ -358,6 +358,9 @@ const server = buildServer({
               await profileStore.updateProfile(accountId, { visibility });
           }
         : undefined,
+    resetEmailTfaForUser: capabilities.get<
+        (accountId: string) => Promise<void>
+    >("auth:resetEmailTfaForUser"),
     onModuleStateChanged: capabilities.get<
         (moduleId: string, enabled: boolean) => Promise<void> | void
     >("modules:onStateChanged"),

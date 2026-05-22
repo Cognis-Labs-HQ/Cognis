@@ -11,6 +11,7 @@ import {
 
 export function createSettingsSection({ i18n, root }) {
     let capability = null;
+    let emailTfaState = null;
     let lastUnsupportedToastKey = null;
     const settingsRoot = root ?? document;
 
@@ -48,6 +49,41 @@ export function createSettingsSection({ i18n, root }) {
         }
         const payload = await response.json().catch(() => null);
         return normalizePasswordPolicy(payload?.data, DEFAULT_PASSWORD_POLICY);
+    }
+
+    async function loadEmailTfaState() {
+        const response = await apiFetch("/api/v1/auth/email-tfa/settings").catch(
+            () => null,
+        );
+        if (!response?.ok) {
+            emailTfaState = {
+                enabled: false,
+                enforced: false,
+                available: false,
+            };
+            return;
+        }
+        const payload = await response.json().catch(() => null);
+        emailTfaState = {
+            enabled: payload?.data?.enabled === true,
+            enforced: payload?.data?.enforced === true,
+            available: payload?.data?.available === true,
+        };
+    }
+
+    async function saveEmailTfaState(enabled) {
+        const response = await apiFetch("/api/v1/auth/email-tfa/settings", {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ enabled }),
+        });
+        if (!response.ok) throw new Error("save_failed");
+        const payload = await response.json().catch(() => null);
+        emailTfaState = {
+            enabled: payload?.data?.enabled === true,
+            enforced: payload?.data?.enforced === true,
+            available: payload?.data?.available === true,
+        };
     }
 
     function buildPasswordCriteria(policy) {
@@ -115,11 +151,28 @@ export function createSettingsSection({ i18n, root }) {
                       capability?.reason ||
                           i18n.t("gateway.auth.security.unsupported_default"),
                   )}</p>`;
+        const tfaChecked = emailTfaState?.enabled === true ? " checked" : "";
+        const tfaEnforced = emailTfaState?.enforced === true;
+        const tfaUnavailable = emailTfaState?.available !== true;
+        const tfaDisabled = tfaEnforced || tfaUnavailable ? " disabled" : "";
+        const tfaHint = tfaEnforced
+            ? i18n.t("gateway.auth.security.email_tfa_enforced")
+            : tfaUnavailable
+              ? i18n.t("gateway.auth.security.email_tfa_unavailable")
+              : i18n.t("gateway.auth.security.email_tfa_hint");
         return `
       <div class="settings-auth-password-reset">
         <h3>${i18n.t("gateway.auth.security.reset_title")}</h3>
         ${reason}
         <button class="btn-animated" type="button" id="settings-reset-password-btn"${disabled}>${i18n.t("gateway.auth.security.reset_action")}</button>
+      </div>
+      <div class="settings-auth-password-reset">
+        <h3>${i18n.t("gateway.auth.security.email_tfa_title")}</h3>
+        <p>${escapeHtml(tfaHint)}</p>
+        <label class="switch">
+          <input id="settings-email-tfa-toggle" type="checkbox"${tfaChecked}${tfaDisabled} />
+          <span class="slider"></span>
+        </label>
       </div>
     `;
     }
@@ -261,7 +314,7 @@ export function createSettingsSection({ i18n, root }) {
         preferenceKey: "settings-security-layout",
         renderContent,
         async onRender() {
-            await loadCapability();
+            await Promise.all([loadCapability(), loadEmailTfaState()]);
             const panel = settingsRoot.querySelector(
                 "#auth-security-reset-panel",
             );
@@ -298,6 +351,27 @@ export function createSettingsSection({ i18n, root }) {
             button.onclick = () => {
                 openPasswordResetPopup();
             };
+            const tfaToggle = settingsRoot.querySelector(
+                "#settings-email-tfa-toggle",
+            );
+            if (tfaToggle instanceof HTMLInputElement) {
+                tfaToggle.onchange = async () => {
+                    try {
+                        await saveEmailTfaState(tfaToggle.checked);
+                        showToast(i18n.t("gateway.auth.security.email_tfa_saved"), {
+                            variant: "success",
+                        });
+                    } catch {
+                        tfaToggle.checked = !tfaToggle.checked;
+                        showToast(
+                            i18n.t("gateway.auth.security.email_tfa_save_failed"),
+                            {
+                                variant: "error",
+                            },
+                        );
+                    }
+                };
+            }
         },
         isDirty: () => false,
         save: async () => undefined,
