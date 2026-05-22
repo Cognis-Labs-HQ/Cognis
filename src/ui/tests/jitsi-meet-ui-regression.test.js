@@ -257,18 +257,36 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
         resolve(ROOT, "src/modules/jitsi-meet/ui/markup.js"),
         "utf8",
     );
+    const constantsSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/constants.js"),
+        "utf8",
+    );
     assert.match(markupSource, /id="jitsi-leave-alone-btn"/);
     assert.match(markupSource, /id="jitsi-remain-alone-btn"/);
+    assert.match(
+        constantsSource,
+        /ALONE_PROMPT_GRACE_PERIOD_MS = 60_000/,
+    );
+    assert.match(source, /function deferAloneParticipantPrompt\(/);
     assert.match(
         source,
         /function shouldPromptLocalUserAlone\(activeParticipants\)/,
     );
+    assert.match(source, /Date\.now\(\) < state\.alonePromptBlockedUntil/);
     assert.match(
         source,
         /function updateAloneParticipantPrompt\(activeParticipants\)/,
     );
     assert.match(source, /module\.jitsi_meet\.overlay\.alone_prompt/);
     assert.match(source, /alonePromptDismissedMeetingId/);
+    assert.match(
+        source,
+        /state\.meeting = joinPayload\?\.data \?\? state\.meeting;[\s\S]*deferAloneParticipantPrompt\(\);/,
+    );
+    assert.match(
+        source,
+        /addEventListener\(\s*"passwordRequired", \(\) => \{[\s\S]*deferAloneParticipantPrompt\(\);/,
+    );
 
     const loadMeetingStateMatch = source.match(
         /async function loadMeetingState\(\) \{([\s\S]*?)\n    async function keepPresenceAlive/,

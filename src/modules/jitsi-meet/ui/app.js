@@ -18,6 +18,7 @@ import {
     resolveUrlHost,
 } from "/static/reuse/value-normalizers.js";
 import {
+    ALONE_PROMPT_GRACE_PERIOD_MS,
     ACTIVE_MEETINGS_REFRESH_INTERVAL_MS,
     CHAT_REFRESH_INTERVAL_MS,
     HEARTBEAT_INTERVAL_MS,
@@ -170,6 +171,7 @@ export async function mount(root, { signal } = {}) {
         jitsiThemeMode: resolveThemeMode(),
         alonePromptMeetingId: "",
         alonePromptDismissedMeetingId: "",
+        alonePromptBlockedUntil: 0,
         recoveringMeetingSession: false,
     };
 
@@ -203,6 +205,12 @@ export async function mount(root, { signal } = {}) {
             clearInterval(state.chatRefreshTimer);
             state.chatRefreshTimer = null;
         }
+    }
+
+    function deferAloneParticipantPrompt(
+        delayMs = ALONE_PROMPT_GRACE_PERIOD_MS,
+    ) {
+        state.alonePromptBlockedUntil = Date.now() + delayMs;
     }
 
     if (signal) {
@@ -571,6 +579,7 @@ export async function mount(root, { signal } = {}) {
         closeMeetingEmbed();
         state.alonePromptMeetingId = "";
         state.alonePromptDismissedMeetingId = "";
+        state.alonePromptBlockedUntil = 0;
         state.meeting = null;
         state.chatRoomId = "";
         state.chatRoomKey = null;
@@ -635,6 +644,7 @@ export async function mount(root, { signal } = {}) {
         if (state.meeting?.id !== meetingPayload.data.id) {
             state.alonePromptMeetingId = "";
             state.alonePromptDismissedMeetingId = "";
+            state.alonePromptBlockedUntil = 0;
         }
         state.meeting = meetingPayload.data;
         await updateNativeChat();
@@ -718,6 +728,7 @@ export async function mount(root, { signal } = {}) {
         closeMeetingEmbed();
         state.alonePromptMeetingId = "";
         state.alonePromptDismissedMeetingId = "";
+        state.alonePromptBlockedUntil = 0;
         state.meeting = null;
         state.chatRoomId = "";
         state.chatRoomKey = null;
@@ -765,6 +776,9 @@ export async function mount(root, { signal } = {}) {
     function shouldPromptLocalUserAlone(activeParticipants) {
         if (!isMeetingActive() || !state.meeting?.id) return false;
         if (state.alonePromptDismissedMeetingId === state.meeting.id) {
+            return false;
+        }
+        if (Date.now() < state.alonePromptBlockedUntil) {
             return false;
         }
         const localUsername = normalizeUsername(
@@ -1342,6 +1356,7 @@ export async function mount(root, { signal } = {}) {
             applyPrivilegedMeetingSettings();
         });
         apiInstance.addEventListener("passwordRequired", () => {
+            deferAloneParticipantPrompt();
             submitMeetingPassword();
             applyPrivilegedMeetingSettings();
         });
@@ -1392,6 +1407,7 @@ export async function mount(root, { signal } = {}) {
 
         const joinPayload = await joinResponse.json();
         state.meeting = joinPayload?.data ?? state.meeting;
+        deferAloneParticipantPrompt();
         await updateNativeChat();
 
         if (state.meeting.requiresReclaim) {
@@ -1785,6 +1801,7 @@ export async function mount(root, { signal } = {}) {
                 "click",
                 async () => {
                     if (!state.meeting?.id) return;
+                    deferAloneParticipantPrompt();
                     await apiFetch(
                         "/api/v1/modules/jitsi-meet/meetings/auth-start",
                         {
