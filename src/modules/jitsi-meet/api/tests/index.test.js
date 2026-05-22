@@ -44,6 +44,7 @@ test("jitsi participant lookup lets admins include hidden profiles", () => {
 
     assert.match(source, /includeHidden = hasMinRole\(claims\.role, "admin"\)/);
     assert.match(source, /searchProfiles\(query, 50, \{\s*includeHidden,/);
+    assert.match(source, /avatarKey: profile\.avatarKey \?\? null/);
 });
 
 test("jitsi meeting creation resolves hidden participants only for admins", () => {

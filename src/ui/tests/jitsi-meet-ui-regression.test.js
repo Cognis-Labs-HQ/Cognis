@@ -19,6 +19,26 @@ test("meetings search popup adds confirmed users directly to meeting participant
         source,
         /onSelectMultiple:\s*\(results\)\s*=>[\s\S]*state\.availableParticipants\.push/,
     );
+    assert.match(source, /avatarKey:\s*typeof result\?\.avatarKey === "string"/);
+});
+
+test("jitsi participant avatars reuse social avatar hydration and hide staged avatars while active", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    const cssSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /buildProfileAvatarMarkup[\s\S]*handleProfileAvatarError[\s\S]*hydrateProfileAvatars/,
+    );
+    assert.match(source, /root\.addEventListener\("error", handleProfileAvatarError/);
+    assert.match(source, /const stagedEntries = isMeetingActive\(\) \? \[\] : state\.selectedParticipants;/);
+    assert.match(source, /void hydrateProfileAvatars\(availablePool\);/);
+    assert.match(cssSource, /\.jitsi-participant-avatar-img/);
 });
 
 test("jitsi meeting group chats include the meeting date in their title", () => {

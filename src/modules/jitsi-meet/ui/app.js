@@ -14,6 +14,11 @@ import {
     pickInitialsColor,
 } from "/static/reuse/avatar-utils.js";
 import {
+    buildProfileAvatarMarkup,
+    handleProfileAvatarError,
+    hydrateProfileAvatars,
+} from "/static/gateways/social/reuse/profile-avatar.js";
+import {
     normalizeUsername,
     resolveUrlHost,
 } from "/static/reuse/value-normalizers.js";
@@ -88,32 +93,27 @@ async function fetchCurrentProfile() {
     };
 }
 
-function createParticipantAvatarEl(username, displayName) {
+function createParticipantAvatarEl({ username, displayName, avatarKey }) {
     const wrapper = document.createElement("div");
     wrapper.className = "jitsi-participant-avatar";
     wrapper.setAttribute("draggable", "true");
     wrapper.setAttribute("data-username", username);
     wrapper.setAttribute("role", "listitem");
-
-    const link = document.createElement("a");
-    link.href = `/profile/${encodeURIComponent(username)}`;
-    link.className = "jitsi-participant-avatar-link";
-    link.tabIndex = -1;
-    link.setAttribute("aria-label", displayName || username);
-
-    const color = pickInitialsColor(username);
-    const initials = getInitialsText(displayName || username);
-    const bubble = document.createElement("span");
-    bubble.className = "jitsi-participant-avatar-bubble";
-    bubble.style.setProperty("--initials-bg", color);
-    bubble.textContent = initials;
-    link.appendChild(bubble);
+    const labelText = displayName || username;
+    wrapper.innerHTML = buildProfileAvatarMarkup({
+        avatarKey,
+        label: labelText,
+        colorSeed: username,
+        avatarClass: "jitsi-participant-avatar-link",
+        imageClass: "jitsi-participant-avatar-img",
+        fallbackClass: "jitsi-participant-avatar-bubble",
+        profileHandle: username,
+    });
 
     const label = document.createElement("span");
     label.className = "jitsi-participant-avatar-label";
     label.textContent = `@${username}`;
 
-    wrapper.appendChild(link);
     wrapper.appendChild(label);
     return wrapper;
 }
@@ -214,6 +214,10 @@ export async function mount(root, { signal } = {}) {
     }
 
     if (signal) {
+        root.addEventListener("error", handleProfileAvatarError, {
+            capture: true,
+            signal,
+        });
         signal.addEventListener("abort", () => {
             clearTimers();
             stopActiveMeetingsPolling();
@@ -920,15 +924,18 @@ export async function mount(root, { signal } = {}) {
 
         availablePool.replaceChildren(
             ...state.availableParticipants.map((entry) =>
-                createParticipantAvatarEl(entry.username, entry.displayName),
+                createParticipantAvatarEl(entry),
             ),
         );
+        void hydrateProfileAvatars(availablePool);
 
+        const stagedEntries = isMeetingActive() ? [] : state.selectedParticipants;
         stagedArea.replaceChildren(
-            ...state.selectedParticipants.map((entry) =>
-                createParticipantAvatarEl(entry.username, entry.displayName),
+            ...stagedEntries.map((entry) =>
+                createParticipantAvatarEl(entry),
             ),
         );
+        void hydrateProfileAvatars(stagedArea);
 
         const participantSelectionLocked = isMeetingActive();
         if (participantsPane instanceof HTMLElement) {
@@ -1582,6 +1589,10 @@ export async function mount(root, { signal } = {}) {
                                 const participantEntry = {
                                     username,
                                     displayName,
+                                    avatarKey:
+                                        typeof result?.avatarKey === "string"
+                                            ? result.avatarKey
+                                            : null,
                                 };
                                 state.availableParticipants =
                                     state.availableParticipants.filter(
@@ -2019,6 +2030,8 @@ export async function mount(root, { signal } = {}) {
         .map((entry) => ({
             username: normalizeUsername(entry?.handle ?? entry?.username ?? ""),
             displayName: String(entry?.displayName ?? entry?.handle ?? ""),
+            avatarKey:
+                typeof entry?.avatarKey === "string" ? entry.avatarKey : null,
         }))
         .filter((entry) => Boolean(entry.username))
         .sort((a, b) => a.username.localeCompare(b.username));
