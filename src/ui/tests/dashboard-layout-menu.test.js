@@ -123,3 +123,14 @@ test("dashboard layout checks release changelog popup in shell sessions", () => 
         "dashboard layout should trigger the release changelog check after rendering shell navigation",
     );
 });
+
+test("dashboard layout keeps active avatar blob URL during SPA refresh", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.ok(
+        layoutSource.includes("prevBlobSrc && prevBlobSrc !== avatarBlobUrl"),
+        "dashboard layout should not revoke a blob URL when it is still the active avatar source",
+    );
+});

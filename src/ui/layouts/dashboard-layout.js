@@ -267,7 +267,8 @@ export async function updateNavbarAvatar() {
         img.alt = "";
         img.src = avatarBlobUrl;
         avatarBtn.replaceChildren(img);
-        if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
+        if (prevBlobSrc && prevBlobSrc !== avatarBlobUrl)
+            URL.revokeObjectURL(prevBlobSrc);
         return;
     }
 
