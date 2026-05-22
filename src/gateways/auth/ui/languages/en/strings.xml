@@ -14,7 +14,7 @@
   <string name="gateway.auth.security.password_policy">Password does not meet the requirements.</string>
   <string name="gateway.auth.security.password_too_short">Must be at least {min} characters.</string>
   <string name="gateway.auth.security.password_requires_uppercase">Must contain at least {count} uppercase letter(s).</string>
-  <string name="gateway.auth.security.password_requires_lowercase">Must contain a lowercase letter.</string>
+  <string name="gateway.auth.security.password_requires_lowercase">Must contain at least {count} lowercase characters.</string>
   <string name="gateway.auth.security.password_requires_digit">Must contain at least {count} digit(s).</string>
   <string name="gateway.auth.security.password_requires_special">Must contain at least {count} special character(s).</string>
 </resources>

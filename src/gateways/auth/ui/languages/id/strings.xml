@@ -14,7 +14,7 @@
   <string name="gateway.auth.security.password_policy">Kata sandi tidak memenuhi persyaratan.</string>
   <string name="gateway.auth.security.password_too_short">Harus minimal {min} karakter.</string>
   <string name="gateway.auth.security.password_requires_uppercase">Harus mengandung minimal {count} huruf kapital.</string>
-  <string name="gateway.auth.security.password_requires_lowercase">Harus mengandung huruf kecil.</string>
+  <string name="gateway.auth.security.password_requires_lowercase">Harus mengandung setidaknya {count} huruf kecil.</string>
   <string name="gateway.auth.security.password_requires_digit">Harus mengandung minimal {count} angka.</string>
   <string name="gateway.auth.security.password_requires_special">Harus mengandung minimal {count} karakter khusus.</string>
 </resources>

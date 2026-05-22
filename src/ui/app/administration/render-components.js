@@ -1,4 +1,4 @@
-function getAdapterId(adapter) {
+function resolveAdapterId(adapter) {
     return adapter.senderId ?? adapter.id;
 }
 
@@ -161,7 +161,7 @@ function renderAdapterToggle(
     i18n,
     escapeHtml,
 ) {
-    const adapterId = getAdapterId(adapter);
+    const adapterId = resolveAdapterId(adapter);
     const isEnabled = isAdapterEnabled(adapter);
     const isLocked = Boolean(adapter.locked);
     return `<label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
@@ -184,7 +184,7 @@ function renderInlineAdapters(
     if (!adapters || adapters.length === 0) return "";
     const rows = adapters
         .map((adapter) => {
-            const adapterId = getAdapterId(adapter);
+            const adapterId = resolveAdapterId(adapter);
             const isActive = isAdapterEnabled(adapter);
             const statePillClass = isActive ? "pill-active" : "pill-available";
             const stateLabel = isActive

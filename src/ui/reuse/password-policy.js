@@ -7,6 +7,8 @@
  *
  * Public exports:
  *   DEFAULT_PASSWORD_POLICY — shared default browser-side password policy.
+ *   parsePolicyCount(rawValue, minimumValue, fallbackValue) — parses a count
+ *     field from form input.
  *   normalizePasswordPolicy(raw, fallbackPolicy) — parses a raw API payload
  *     into a safe password-policy object.
  *   countPatternMatches(value, pattern) — returns the number of regex matches.
@@ -15,23 +17,39 @@
  *   const policy = normalizePasswordPolicy(payload.data, {
  *     minLength: 8,
  *     requireUppercase: 0,
- *     requireLowercase: false,
+ *     requireLowercase: 0,
  *     requireDigit: 0,
  *     requireSpecial: 0,
  *   });
  *   const uppercaseCount = countPatternMatches('AbC', /[A-Z]/g);
  *
  * @param {unknown} raw
- * @param {{ minLength: number, requireUppercase: number, requireLowercase: boolean, requireDigit: number, requireSpecial: number }} fallbackPolicy
- * @returns {{ minLength: number, requireUppercase: number, requireLowercase: boolean, requireDigit: number, requireSpecial: number }}
+ * @param {{ minLength: number, requireUppercase: number, requireLowercase: number, requireDigit: number, requireSpecial: number }} fallbackPolicy
+ * @returns {{ minLength: number, requireUppercase: number, requireLowercase: number, requireDigit: number, requireSpecial: number }}
  */
 export const DEFAULT_PASSWORD_POLICY = Object.freeze({
     minLength: 8,
     requireUppercase: 0,
-    requireLowercase: false,
+    requireLowercase: 0,
     requireDigit: 0,
     requireSpecial: 0,
 });
+
+/**
+ * Parses a count-based password-policy field.
+ *
+ * @param {unknown} rawValue
+ * @param {number} minimumValue
+ * @param {number} fallbackValue
+ * @returns {number}
+ */
+export function parsePolicyCount(rawValue, minimumValue, fallbackValue) {
+    const parsedValue = Number.parseInt(String(rawValue ?? ""), 10);
+    if (Number.isNaN(parsedValue) || parsedValue < minimumValue) {
+        return fallbackValue;
+    }
+    return parsedValue;
+}
 
 export function normalizePasswordPolicy(raw, fallbackPolicy) {
     const defaults = { ...DEFAULT_PASSWORD_POLICY, ...(fallbackPolicy ?? {}) };
@@ -48,7 +66,11 @@ export function normalizePasswordPolicy(raw, fallbackPolicy) {
             raw.requireUppercase >= 0
                 ? Math.floor(raw.requireUppercase)
                 : defaults.requireUppercase,
-        requireLowercase: raw.requireLowercase === true,
+        requireLowercase:
+            typeof raw.requireLowercase === "number" &&
+            raw.requireLowercase >= 0
+                ? Math.floor(raw.requireLowercase)
+                : defaults.requireLowercase,
         requireDigit:
             typeof raw.requireDigit === "number" && raw.requireDigit >= 0
                 ? Math.floor(raw.requireDigit)

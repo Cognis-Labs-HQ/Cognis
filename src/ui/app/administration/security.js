@@ -2,17 +2,14 @@ import { apiFetch } from "../../reuse/api-client.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import {
+    DEFAULT_PASSWORD_POLICY,
+    normalizePasswordPolicy,
+    parsePolicyCount,
+} from "../../reuse/password-policy.js";
+import {
     clearTrustedDomainsCache,
     normalizeTrustedDomains,
 } from "../../reuse/trusted-domains.js";
-
-const DEFAULT_PASSWORD_POLICY = Object.freeze({
-    minLength: 8,
-    requireUppercase: 0,
-    requireLowercase: false,
-    requireDigit: 0,
-    requireSpecial: 0,
-});
 
 /**
  * Security sub-module for the Administration page.
@@ -97,43 +94,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         if (!response.ok) throw new Error("save_failed");
     }
 
-    function parsePolicyNumber(rawValue, minimumValue, fallbackValue) {
-        const parsedValue = Number.parseInt(String(rawValue ?? ""), 10);
-        if (!Number.isFinite(parsedValue) || parsedValue < minimumValue) {
-            return fallbackValue;
-        }
-        return parsedValue;
-    }
-
-    function normalizePasswordPolicy(rawPolicy, fallbackPolicy) {
-        if (!rawPolicy || typeof rawPolicy !== "object") {
-            return { ...fallbackPolicy };
-        }
-        return {
-            minLength:
-                typeof rawPolicy.minLength === "number" &&
-                rawPolicy.minLength >= 1
-                    ? Math.floor(rawPolicy.minLength)
-                    : fallbackPolicy.minLength,
-            requireUppercase:
-                typeof rawPolicy.requireUppercase === "number" &&
-                rawPolicy.requireUppercase >= 0
-                    ? Math.floor(rawPolicy.requireUppercase)
-                    : fallbackPolicy.requireUppercase,
-            requireLowercase: rawPolicy.requireLowercase === true,
-            requireDigit:
-                typeof rawPolicy.requireDigit === "number" &&
-                rawPolicy.requireDigit >= 0
-                    ? Math.floor(rawPolicy.requireDigit)
-                    : fallbackPolicy.requireDigit,
-            requireSpecial:
-                typeof rawPolicy.requireSpecial === "number" &&
-                rawPolicy.requireSpecial >= 0
-                    ? Math.floor(rawPolicy.requireSpecial)
-                    : fallbackPolicy.requireSpecial,
-        };
-    }
-
     function parseDomains(raw) {
         return normalizeTrustedDomains(raw.split(","));
     }
@@ -179,7 +139,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return {
             minLength:
                 minLengthInput instanceof HTMLInputElement
-                    ? parsePolicyNumber(
+                    ? parsePolicyCount(
                           minLengthInput.value,
                           1,
                           originalPasswordPolicy.minLength,
@@ -187,7 +147,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                     : originalPasswordPolicy.minLength,
             requireUppercase:
                 uppercaseInput instanceof HTMLInputElement
-                    ? parsePolicyNumber(
+                    ? parsePolicyCount(
                           uppercaseInput.value,
                           0,
                           originalPasswordPolicy.requireUppercase,
@@ -195,11 +155,15 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                     : originalPasswordPolicy.requireUppercase,
             requireLowercase:
                 lowercaseInput instanceof HTMLInputElement
-                    ? lowercaseInput.checked
+                    ? parsePolicyCount(
+                          lowercaseInput.value,
+                          0,
+                          originalPasswordPolicy.requireLowercase,
+                      )
                     : originalPasswordPolicy.requireLowercase,
             requireDigit:
                 digitInput instanceof HTMLInputElement
-                    ? parsePolicyNumber(
+                    ? parsePolicyCount(
                           digitInput.value,
                           0,
                           originalPasswordPolicy.requireDigit,
@@ -207,7 +171,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                     : originalPasswordPolicy.requireDigit,
             requireSpecial:
                 specialInput instanceof HTMLInputElement
-                    ? parsePolicyNumber(
+                    ? parsePolicyCount(
                           specialInput.value,
                           0,
                           originalPasswordPolicy.requireSpecial,
@@ -309,7 +273,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             );
         }
         if (lowercaseInput instanceof HTMLInputElement) {
-            lowercaseInput.checked = originalPasswordPolicy.requireLowercase;
+            lowercaseInput.value = String(
+                originalPasswordPolicy.requireLowercase,
+            );
         }
         if (digitInput instanceof HTMLInputElement) {
             digitInput.value = String(originalPasswordPolicy.requireDigit);
@@ -324,7 +290,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         teacherApprovalToggle?.addEventListener("change", markDirtyState);
         minLengthInput?.addEventListener("input", markDirtyState);
         uppercaseInput?.addEventListener("input", markDirtyState);
-        lowercaseInput?.addEventListener("change", markDirtyState);
+        lowercaseInput?.addEventListener("input", markDirtyState);
         digitInput?.addEventListener("input", markDirtyState);
         specialInput?.addEventListener("input", markDirtyState);
     }
@@ -419,8 +385,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 );
             }
             if (lowercaseInput instanceof HTMLInputElement) {
-                lowercaseInput.checked =
-                    originalPasswordPolicy.requireLowercase;
+                lowercaseInput.value = String(
+                    originalPasswordPolicy.requireLowercase,
+                );
             }
             if (digitInput instanceof HTMLInputElement) {
                 digitInput.value = String(originalPasswordPolicy.requireDigit);
@@ -501,10 +468,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             </div>
             <div class="security-field-row">
               <label for="security-policy-require-lowercase">${escapeHtml(i18n.t("ui.app.admin.security.policy_require_lowercase"))}</label>
-              <label class="switch">
-                <input id="security-policy-require-lowercase" type="checkbox" />
-                <span class="slider"></span>
-              </label>
+              <input id="security-policy-require-lowercase" class="security-policy-number-input" type="number" min="0" max="128" />
             </div>
             <div class="security-field-row">
               <label for="security-policy-require-digit">${escapeHtml(i18n.t("ui.app.admin.security.policy_require_digit"))}</label>

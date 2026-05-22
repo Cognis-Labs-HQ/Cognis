@@ -4,15 +4,15 @@
  * Policy configuration is persisted by the auth gateway under its own
  * preference key and is served via /api/v1/auth/password-policy.
  *
- * requireUppercase, requireDigit, and requireSpecial are counts: 0 disables
- * the requirement, a positive integer sets the minimum number of characters
- * of that class that the password must contain.
+ * requireUppercase, requireLowercase, requireDigit, and requireSpecial are
+ * counts: 0 disables the requirement, a positive integer sets the minimum
+ * number of characters of that class that the password must contain.
  */
 
 export interface PasswordPolicy {
     minLength: number;
     requireUppercase: number;
-    requireLowercase: boolean;
+    requireLowercase: number;
     requireDigit: number;
     requireSpecial: number;
 }
@@ -23,7 +23,7 @@ export function defaultPasswordPolicy(): PasswordPolicy {
     return {
         minLength: 8,
         requireUppercase: 0,
-        requireLowercase: false,
+        requireLowercase: 0,
         requireDigit: 0,
         requireSpecial: 0,
     };
@@ -56,7 +56,7 @@ export function parsePasswordPolicy(raw: unknown): PasswordPolicy {
     return {
         minLength,
         requireUppercase: parseCountField(policy.requireUppercase),
-        requireLowercase: policy.requireLowercase === true,
+        requireLowercase: parseCountField(policy.requireLowercase),
         requireDigit: parseCountField(policy.requireDigit),
         requireSpecial: parseCountField(policy.requireSpecial),
     };
@@ -89,8 +89,11 @@ export function checkPasswordPolicy(
         countMatches(password, /[A-Z]/g) < policy.requireUppercase
     )
         return `password_requires_uppercase:${policy.requireUppercase}`;
-    if (policy.requireLowercase && !/[a-z]/.test(password))
-        return "password_requires_lowercase";
+    if (
+        policy.requireLowercase > 0 &&
+        countMatches(password, /[a-z]/g) < policy.requireLowercase
+    )
+        return `password_requires_lowercase:${policy.requireLowercase}`;
     if (
         policy.requireDigit > 0 &&
         countMatches(password, /[0-9]/g) < policy.requireDigit

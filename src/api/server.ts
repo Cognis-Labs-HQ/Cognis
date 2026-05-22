@@ -95,9 +95,7 @@ export function buildServer(deps: ApiDependencies) {
     const log = deps.log ?? (() => undefined);
     const routeContext = deps.routeContext;
     if (!routeContext) {
-        throw new Error(
-            "Route context with auth capabilities must be provided during server initialization",
-        );
+        throw new Error("route_context_missing");
     }
     const moduleService = new ModuleService(deps.moduleRuntimeGateway);
     const healthService = new HealthService();

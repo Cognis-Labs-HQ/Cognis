@@ -7,7 +7,7 @@ import {
     DEFAULT_PASSWORD_POLICY,
     countPatternMatches,
     normalizePasswordPolicy,
-} from "/static/gateways/auth/password-policy.js";
+} from "/static/reuse/password-policy.js";
 
 export function createSettingsSection({ i18n, root }) {
     let capability = null;
@@ -71,12 +71,14 @@ export function createSettingsSection({ i18n, root }) {
                     .replace("{count}", String(policy.requireUppercase)),
             });
         }
-        if (policy.requireLowercase) {
+        if (policy.requireLowercase > 0) {
+            const minLowercaseCount = policy.requireLowercase;
             criteria.push({
-                test: (value) => /[a-z]/.test(value),
-                message: i18n.t(
-                    "gateway.auth.security.password_requires_lowercase",
-                ),
+                test: (value) =>
+                    countPatternMatches(value, /[a-z]/g) >= minLowercaseCount,
+                message: i18n
+                    .t("gateway.auth.security.password_requires_lowercase")
+                    .replace("{count}", String(minLowercaseCount)),
             });
         }
         if (policy.requireDigit > 0) {
