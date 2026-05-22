@@ -13,7 +13,7 @@ test("administration security section renders password policy controls", () => {
 
     assert.match(
         source,
-        /from "\/static\/gateways\/auth\/ui\/password-policy\.js"/,
+        /from "\/static\/gateways\/auth\/password-policy\.js"/,
     );
     assert.match(source, /id: "security-policy-min-length"/);
     assert.match(source, /id: "security-policy-require-uppercase"/);
