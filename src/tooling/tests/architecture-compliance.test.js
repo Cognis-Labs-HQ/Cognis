@@ -4,7 +4,10 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
 const ROOT = process.cwd();
-const COPILOT_INSTRUCTIONS_PATH = resolve(ROOT, ".github/copilot-instructions.md");
+const COPILOT_INSTRUCTIONS_PATH = resolve(
+    ROOT,
+    ".github/copilot-instructions.md",
+);
 
 function walk(directoryPath) {
     const files = [];
@@ -266,7 +269,10 @@ test("runtime extension modules follow a consistent directory contract", () => {
             continue;
         }
 
-        const apiIndexPaths = [join(apiPath, "index.js"), join(apiPath, "index.ts")];
+        const apiIndexPaths = [
+            join(apiPath, "index.js"),
+            join(apiPath, "index.ts"),
+        ];
         const hasApiIndex = apiIndexPaths.some((apiIndexPath) => {
             try {
                 return statSync(apiIndexPath).isFile();
