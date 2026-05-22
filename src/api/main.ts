@@ -200,7 +200,9 @@ const log = contributedLog ?? bootstrapLog;
 
 const routeContext = capabilities.get<RouteContext>("auth:routeContext");
 if (!routeContext) {
-    throw new Error("auth_route_context_missing");
+    throw new Error(
+        "auth_route_context_missing: auth gateway must register auth:routeContext during bootstrap",
+    );
 }
 
 const cliAccessToken = issueAccessToken("cognis-cli", "owner", null);

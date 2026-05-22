@@ -95,7 +95,9 @@ export function buildServer(deps: ApiDependencies) {
     const log = deps.log ?? (() => undefined);
     const routeContext = deps.routeContext;
     if (!routeContext) {
-        throw new Error("route_context_missing");
+        throw new Error(
+            "route_context_missing: auth route context is required in ApiDependencies",
+        );
     }
     const moduleService = new ModuleService(deps.moduleRuntimeGateway);
     const healthService = new HealthService();

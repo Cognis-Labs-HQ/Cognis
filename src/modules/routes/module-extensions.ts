@@ -113,7 +113,7 @@ export function createModuleExtensionRoutes(
     let handlers: RouteHandler[] = [];
     if (!options?.requireRoleAccess) {
         throw new Error(
-            "module_extension_require_role_access_missing: pass requireRoleAccess from route context",
+            "module_extension_require_role_access_missing: createModuleExtensionRoutes requires requireRoleAccess from route context for all module routes",
         );
     }
     const { requireRoleAccess } = options;

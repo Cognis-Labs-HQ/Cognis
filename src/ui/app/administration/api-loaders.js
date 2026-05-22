@@ -69,6 +69,13 @@ export async function loadAdminSections() {
     return payload.data ?? [];
 }
 
+/**
+ * Loads and initializes a gateway-contributed administration section module.
+ *
+ * @param {{ scriptUrl: string, stringsBaseUrl?: string }} section
+ * @param {{ i18n: object, extendI18n: (baseI18n: object, stringsBaseUrl?: string) => Promise<object>, escapeHtml: (value: string) => string, openPopup: (...args: unknown[]) => Promise<unknown>, showToast: (...args: unknown[]) => void }} deps
+ * @returns {Promise<object | null>}
+ */
 export async function loadGatewaySection(
     section,
     { i18n, extendI18n, escapeHtml, openPopup, showToast },

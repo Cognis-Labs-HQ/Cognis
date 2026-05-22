@@ -1,11 +1,31 @@
+/**
+ * Resolves the stable adapter identifier used across rendered data attributes
+ * and toggle flows.
+ *
+ * @param {{ senderId?: string, id?: string }} adapter
+ * @returns {string | undefined}
+ */
 function resolveAdapterId(adapter) {
     return adapter.senderId ?? adapter.id;
 }
 
+/**
+ * Normalizes adapter enabled state across legacy and current payload shapes.
+ *
+ * @param {{ active?: boolean, enabled?: boolean }} adapter
+ * @returns {boolean}
+ */
 function isAdapterEnabled(adapter) {
     return Boolean(adapter.active ?? adapter.enabled);
 }
 
+/**
+ * Builds the display pill metadata for a runtime status value.
+ *
+ * @param {string} status
+ * @param {{ t: (key: string) => string }} i18n
+ * @returns {{ label: string, className: string }}
+ */
 function getStatePill(status, i18n) {
     if (status === "active" || status === "enabled") {
         return {

@@ -51,6 +51,14 @@ export function parsePolicyCount(rawValue, minimumValue, fallbackValue) {
     return parsedValue;
 }
 
+/**
+ * Normalizes a raw password-policy payload into numeric count fields and a
+ * bounded minimum length.
+ *
+ * @param {unknown} raw
+ * @param {{ minLength: number, requireUppercase: number, requireLowercase: number, requireDigit: number, requireSpecial: number }} fallbackPolicy
+ * @returns {{ minLength: number, requireUppercase: number, requireLowercase: number, requireDigit: number, requireSpecial: number }}
+ */
 export function normalizePasswordPolicy(raw, fallbackPolicy) {
     const defaults = { ...DEFAULT_PASSWORD_POLICY, ...(fallbackPolicy ?? {}) };
     if (!raw || typeof raw !== "object") {

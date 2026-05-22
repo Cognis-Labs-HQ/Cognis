@@ -11,6 +11,8 @@ import {
     normalizeTrustedDomains,
 } from "../../reuse/trusted-domains.js";
 
+const PASSWORD_POLICY_KEYS = Object.keys(DEFAULT_PASSWORD_POLICY);
+
 /**
  * Security sub-module for the Administration page.
  *
@@ -181,9 +183,10 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     }
 
     function isPasswordPolicyChanged() {
-        return (
-            JSON.stringify(getPasswordPolicyValue()) !==
-            JSON.stringify(originalPasswordPolicy)
+        const currentPolicy = getPasswordPolicyValue();
+        return PASSWORD_POLICY_KEYS.some(
+            (fieldName) =>
+                currentPolicy[fieldName] !== originalPasswordPolicy[fieldName],
         );
     }
 
