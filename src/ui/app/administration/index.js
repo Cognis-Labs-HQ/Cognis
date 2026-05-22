@@ -1,9 +1,5 @@
 import { apiFetch } from "../../reuse/api-client.js";
-import {
-    applyDocumentTitle,
-    createI18n,
-    extendI18n,
-} from "../../reuse/i18n.js";
+import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
@@ -12,6 +8,21 @@ import { initSecuritySection } from "./security.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { updateNavbarAvatar } from "../../layouts/dashboard-layout.js";
 import { showToast } from "../../reuse/toast.js";
+import {
+    loadAdminSections,
+    loadAllAdapters,
+    loadGatewayAdapters,
+    loadGatewaySection,
+    loadGateways,
+    loadIntegrity,
+    loadModules,
+    toggleGateway,
+    toggleModule,
+} from "./api-loaders.js";
+import {
+    renderComponentsContent,
+    renderIntegrityContent,
+} from "./render-components.js";
 import {
     getAdapterDisableContext,
     getGatewayAdapters,
@@ -31,46 +42,9 @@ let changesBar = null;
 let securitySection = null;
 let elements = [];
 
-async function loadModules() {
-    const response = await apiFetch("/api/v1/modules");
-    const payload = await response.json();
-    return payload.data ?? [];
-}
-
-async function loadIntegrity() {
-    const response = await apiFetch("/api/v1/modules/integrity");
-    const payload = await response.json();
-    return payload.data ?? [];
-}
-
-async function toggleModule(moduleId, action) {
-    await apiFetch(
-        `/api/v1/modules/${encodeURIComponent(moduleId)}/${action}`,
-        { method: "POST" },
-    );
-}
-
-async function toggleGateway(gatewayId, action) {
-    await apiFetch(
-        `/api/v1/gateways/${encodeURIComponent(gatewayId)}/${action}`,
-        { method: "POST" },
-    );
-}
-
-async function loadGateways() {
-    const res = await apiFetch("/api/v1/gateways");
-    if (!res.ok) return [];
-    const payload = await res.json();
-    return payload.data ?? [];
-}
-
-async function loadGatewayAdapters(gatewayId) {
-    const res = await apiFetch(
-        `/api/v1/gateways/${encodeURIComponent(gatewayId)}/adapters`,
-    );
-    if (!res.ok) return [];
-    const payload = await res.json();
-    return payload.data ?? [];
+async function extendSectionI18n(baseI18n, stringsBaseUrl) {
+    const { extendI18n } = await import("../../reuse/i18n.js");
+    return extendI18n(baseI18n, stringsBaseUrl);
 }
 
 /**
@@ -185,263 +159,6 @@ function syncRuntimeToggleControls() {
         toggle.defaultChecked = isEnabled;
         toggle.disabled = isGatewayDisabled || Boolean(adapter.locked);
     });
-}
-
-function getStatePill(status) {
-    if (status === "active" || status === "enabled")
-        return {
-            label: i18n.t("ui.app.admin.state.active"),
-            className: "pill-active",
-        };
-    if (status === "available")
-        return {
-            label: i18n.t("ui.app.admin.state.available"),
-            className: "pill-available",
-        };
-    return {
-        label: i18n.t("ui.app.admin.state.disabled"),
-        className: "pill-disabled",
-    };
-}
-
-function renderDetailsList(mod) {
-    const details = [
-        [i18n.t("ui.reuse.id"), mod.id],
-        [i18n.t("ui.reuse.version"), mod.version],
-        [
-            i18n.t("ui.app.admin.publisher"),
-            mod.publisher || i18n.t("ui.app.admin.unknown"),
-        ],
-        [i18n.t("ui.reuse.class"), mod.class],
-        [
-            i18n.t("ui.app.admin.capabilities"),
-            (mod.capabilities || []).join(", ") || i18n.t("ui.app.admin.none"),
-        ],
-    ];
-
-    const rows = details
-        .map(
-            ([key, value]) =>
-                `<li class="module-detail-item"><span class="module-detail-key">${key}</span><span class="module-detail-value">${value}</span></li>`,
-        )
-        .join("");
-
-    if (mod.requires && mod.requires.length > 0) {
-        const depsHtml = renderDependencyLinks(
-            mod.requires,
-            "gateway-",
-            gateways,
-        );
-        return (
-            rows +
-            `<li class="module-detail-item"><span class="module-detail-key">${i18n.t("ui.app.admin.gateway.dependencies")}</span><span class="module-detail-value">${depsHtml}</span></li>`
-        );
-    }
-
-    return rows;
-}
-
-function renderModulesContent(modules) {
-    return modules
-        .map((mod) => {
-            const pill = getStatePill(mod.status);
-            const disableBlocked = mod.class === "core";
-            const toggleTitle = i18n.t("ui.app.admin.toggle_module");
-            const componentConfigScriptUrl = resolveModuleConfigScriptUrl(mod);
-            const hasConfigButton = componentConfigScriptUrl.length > 0;
-            const settingsButton = hasConfigButton
-                ? `<button type="button" class="module-config-settings-button" data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}" data-module-id="${escapeHtml(mod.id)}" aria-label="${escapeHtml(i18n.t("ui.reuse.settings"))}" title="${escapeHtml(i18n.t("ui.reuse.settings"))}">⚙</button>`
-                : "";
-
-            return `
-        <details class="module-row" data-module="${mod.id}">
-          <summary class="module-row-summary">
-            <span class="module-row-title"><strong>${mod.name}</strong>${settingsButton}</span>
-            <span class="state-pill ${pill.className}">${pill.label}</span>
-            <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
-              <input type="checkbox" data-module="${mod.id}" ${isModuleEnabled(mod) ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
-              <span class="slider"></span>
-            </label>
-            <span class="module-chevron">▾</span>
-          </summary>
-          <div class="module-meta">
-            <ul class="module-details">${renderDetailsList(mod)}</ul>
-          </div>
-        </details>
-      `;
-        })
-        .join("");
-}
-
-function renderDependencyLinks(ids, scrollPrefix, gateways = []) {
-    if (!ids || ids.length === 0) {
-        return i18n.t("ui.app.admin.gateway.no_dependencies");
-    }
-    const gwById = new Map(gateways.map((g) => [g.id, g]));
-    return ids
-        .map((id) => {
-            const dep = gwById.get(id);
-            const label = dep ? escapeHtml(dep.name) : escapeHtml(id);
-            return `<a class="dependency-link" href="#" data-scroll-to="${escapeHtml(scrollPrefix)}${escapeHtml(id)}">${label}</a>`;
-        })
-        .join(", ");
-}
-
-function renderGatewayDetailsList(gw, gateways) {
-    const requiredLabel = gw.required
-        ? i18n.t("ui.reuse.true")
-        : i18n.t("ui.reuse.false");
-
-    const details = [
-        [i18n.t("ui.reuse.id"), escapeHtml(gw.id)],
-        [i18n.t("ui.reuse.version"), escapeHtml(gw.version ?? "")],
-        [
-            i18n.t("ui.app.admin.publisher"),
-            escapeHtml(gw.publisher || i18n.t("ui.app.admin.unknown")),
-        ],
-        [i18n.t("ui.app.admin.gateway.required"), requiredLabel],
-    ];
-    if (gw.description) {
-        details.push([
-            i18n.t("ui.app.admin.description"),
-            escapeHtml(gw.description),
-        ]);
-    }
-    const detailsRows = details
-        .map(
-            ([key, value]) =>
-                `<li class="module-detail-item"><span class="module-detail-key">${key}</span><span class="module-detail-value">${value}</span></li>`,
-        )
-        .join("");
-    const depsHtml = renderDependencyLinks(gw.requires, "gateway-", gateways);
-    const depsRow = `<li class="module-detail-item"><span class="module-detail-key">${i18n.t("ui.app.admin.gateway.dependencies")}</span><span class="module-detail-value">${depsHtml}</span></li>`;
-    return detailsRows + depsRow;
-}
-
-function renderAdapterToggle(adapter, gatewayId, isGatewayDisabled) {
-    const adapterId = adapter.senderId ?? adapter.id;
-    const isEnabled = !!(adapter.active ?? adapter.enabled);
-    const isLocked = !!adapter.locked;
-    return `<label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
-      <input type="checkbox" class="adapter-toggle"
-        data-adapter="${escapeHtml(adapterId)}"
-        data-gateway="${escapeHtml(gatewayId)}"
-        ${isEnabled ? "checked" : ""}
-        ${isGatewayDisabled || isLocked ? "disabled" : ""} />
-      <span class="slider"></span>
-    </label>`;
-}
-
-function renderInlineAdapters(adapters, gatewayId, isGatewayDisabled) {
-    if (!adapters || adapters.length === 0) return "";
-    const rows = adapters
-        .map((adapter) => {
-            const adapterId = adapter.senderId ?? adapter.id;
-            const isActive = !!(adapter.active ?? adapter.enabled);
-            const statePillClass = isActive ? "pill-active" : "pill-available";
-            const stateLabel = isActive
-                ? i18n.t("ui.app.admin.state.active")
-                : i18n.t("ui.app.admin.state.available");
-            return `
-        <div class="adapter-inline-row" role="button" tabindex="0"
-          data-adapter-id="${escapeHtml(adapterId)}"
-          data-gateway-id="${escapeHtml(gatewayId)}">
-          <span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapterId)}</strong></span>
-          <span class="state-pill ${statePillClass}">${stateLabel}</span>
-          ${renderAdapterToggle(adapter, gatewayId, isGatewayDisabled)}
-        </div>
-      `;
-        })
-        .join("");
-    return `
-      <div class="gateway-adapters-section">
-        <span class="gateway-adapters-label">${i18n.t("ui.app.admin.adapters")}</span>
-        <div class="gateway-adapters-inline">${rows}</div>
-      </div>
-    `;
-}
-
-function renderGatewaysContent(gateways, allAdapters) {
-    if (!gateways.length) {
-        return `<p>${i18n.t("ui.app.admin.no_gateways")}</p>`;
-    }
-    const toggleTitle = i18n.t("ui.app.admin.toggle_gateway");
-    return gateways
-        .map((gw) => {
-            const pill = getStatePill(gw.status ?? "active");
-            const isEnabled = (gw.status ?? "active") !== "disabled";
-            const isGatewayDisabled = !isEnabled;
-            const gwAdapters = gw.hasAdapters
-                ? allAdapters.filter((a) => a._gatewayId === gw.id)
-                : [];
-
-            return `
-        <details class="module-row" data-gateway="${escapeHtml(gw.id)}">
-          <summary class="module-row-summary">
-            <span class="module-row-title"><strong>${escapeHtml(gw.name)}</strong></span>
-            <span class="state-pill ${pill.className}">${pill.label}</span>
-            <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
-              <input type="checkbox" data-gateway="${escapeHtml(gw.id)}" ${isEnabled ? "checked" : ""} ${gw.required ? "disabled" : ""} />
-              <span class="slider"></span>
-            </label>
-            <span class="module-chevron">▾</span>
-          </summary>
-          <div class="module-meta">
-            <ul class="module-details">${renderGatewayDetailsList(gw, gateways)}</ul>
-            ${renderInlineAdapters(gwAdapters, gw.id, isGatewayDisabled)}
-          </div>
-        </details>
-      `;
-        })
-        .join("");
-}
-
-function renderComponentsContent(modules, gateways, allAdapters) {
-    return `
-    <div class="components-section">
-      <h3 class="components-section-heading">${i18n.t("ui.reuse.modules")}</h3>
-      <div class="components-section-body">
-        ${renderModulesContent(modules)}
-      </div>
-    </div>
-    <div class="components-section">
-      <h3 class="components-section-heading">${i18n.t("ui.app.admin.gateways")}</h3>
-      <div class="components-section-body">
-        ${renderGatewaysContent(gateways, allAdapters)}
-      </div>
-    </div>
-  `;
-}
-
-function renderIntegrityContent(integrityRows) {
-    if (!integrityRows.length)
-        return `<p>${i18n.t("ui.app.admin.no_integrity")}</p>`;
-
-    const byModule = new Map();
-    for (const row of integrityRows) {
-        if (!byModule.has(row.moduleId)) byModule.set(row.moduleId, []);
-        byModule.get(row.moduleId).push(row);
-    }
-
-    const sections = [];
-    for (const [moduleId, rows] of byModule) {
-        const items = rows
-            .map((row) => {
-                const mismatchDetails =
-                    row.status !== "ok"
-                        ? ` (${i18n.t("ui.app.admin.expected")} ${row.expected}, ${i18n.t("ui.app.admin.got")} ${row.actual ?? i18n.t("ui.app.admin.missing")})`
-                        : "";
-                return `<li class="integrity-${row.status}">${row.file}: ${row.status}${mismatchDetails}</li>`;
-            })
-            .join("");
-        sections.push(`
-      <div class="integrity-module">
-        <h3>${moduleId}</h3>
-        <ul class="integrity-list">${items}</ul>
-      </div>
-    `);
-    }
-    return sections.join("");
 }
 
 function bindModuleToggles() {
@@ -1038,32 +755,6 @@ function bindDependencyLinks() {
     );
 }
 
-async function loadAdminSections() {
-    const res = await apiFetch("/api/v1/admin/sections");
-    if (!res.ok) return [];
-    const payload = await res.json();
-    return payload.data ?? [];
-}
-
-async function loadGatewaySection(section) {
-    try {
-        const mod = await import(section.scriptUrl);
-        if (typeof mod.createAdminSection !== "function") return null;
-        const sectionI18n = await extendI18n(i18n, section.stringsBaseUrl);
-        const def = mod.createAdminSection({
-            i18n: sectionI18n,
-            apiFetch,
-            escapeHtml,
-            openPopup,
-            showToast,
-        });
-        if (def.dataReady) await def.dataReady;
-        return def;
-    } catch {
-        return null;
-    }
-}
-
 /**
  * Maps a raw backend field name to a human-readable label using existing
  * i18n keys. Falls back to converting camelCase to Title Case for unknown
@@ -1503,18 +1194,6 @@ async function openAdapterConfig(
     }
 }
 
-async function loadAllAdapters(gatewayList) {
-    const results = await Promise.all(
-        gatewayList
-            .filter((gw) => shouldQueryGatewayAdapters(gw))
-            .map(async (gw) => {
-                const adapters = await loadGatewayAdapters(gw.id);
-                return adapters.map((a) => ({ ...a, _gatewayId: gw.id }));
-            }),
-    );
-    return results.flat();
-}
-
 async function guardSubPageSwitch() {
     if (!changesBar?.isAnyDirty()) return true;
     const result = await openPopup({
@@ -1566,7 +1245,17 @@ export async function mount(rootEl, { signal } = {}) {
 
     const sectionMeta = await loadAdminSections();
     const gatewaySections = (
-        await Promise.all(sectionMeta.map(loadGatewaySection))
+        await Promise.all(
+            sectionMeta.map((section) =>
+                loadGatewaySection(section, {
+                    i18n,
+                    extendI18n: extendSectionI18n,
+                    escapeHtml,
+                    openPopup,
+                    showToast,
+                }),
+            ),
+        )
     ).filter(Boolean);
 
     const baseElements = [
@@ -1587,6 +1276,12 @@ export async function mount(rootEl, { signal } = {}) {
                                 modules,
                                 gateways,
                                 allAdapters,
+                                {
+                                    i18n,
+                                    escapeHtml,
+                                    resolveModuleConfigScriptUrl,
+                                    isModuleEnabled,
+                                },
                             ),
                     },
                 ],
@@ -1620,7 +1315,7 @@ export async function mount(rootEl, { signal } = {}) {
             <div class="integrity-header">
               <button id="rerun-integrity" class="btn-confirm btn-animated" type="button">${i18n.t("ui.reuse.refresh")}</button>
             </div>
-            ${renderIntegrityContent(integrityRows)}
+            ${renderIntegrityContent(integrityRows, i18n)}
           `,
                     },
                 ],
