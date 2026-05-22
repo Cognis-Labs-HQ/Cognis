@@ -909,7 +909,15 @@ export function createPageComposer(
         if (!layout.placements) layout.placements = [];
         if (!layout.hidden) layout.hidden = [];
         layout.placements = layout.placements.filter(
-            (p) => p && typeof p.id === "string",
+            (p) =>
+                p &&
+                typeof p.id === "string" &&
+                Number.isFinite(p.col) &&
+                Number.isFinite(p.row) &&
+                Number.isFinite(p.w) &&
+                Number.isFinite(p.h) &&
+                p.w > 0 &&
+                p.h > 0,
         );
         layout.hidden = layout.hidden.filter(
             (id) => id && typeof id === "string",
@@ -964,7 +972,7 @@ export function createPageComposer(
 
     function renderMissingElementContent(elementId) {
         return `
-      <div class="composer-missing-element" role="status" aria-label="${escapeHtml(`${i18n.t("ui.reuse.unknown")}: ${elementId}`)}">
+      <div class="composer-missing-element" role="status">
         <div class="composer-missing-element-icon" aria-hidden="true">❗</div>
         <p class="composer-missing-element-label">${escapeHtml(i18n.t("ui.reuse.unknown"))}</p>
         <p class="composer-missing-element-id">${escapeHtml(elementId)}</p>

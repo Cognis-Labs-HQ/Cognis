@@ -247,7 +247,7 @@ test("page composer preserves missing placements and shows warning placeholders"
     );
     assert.match(
         source,
-        /layout\.placements = layout\.placements\.filter\(\s*\(p\) => p && typeof p\.id === "string",\s*\)/m,
+        /layout\.placements = layout\.placements\.filter\(\s*\(p\) =>[\s\S]*?typeof p\.id === "string"[\s\S]*?Number\.isFinite\(p\.col\)[\s\S]*?Number\.isFinite\(p\.row\)[\s\S]*?Number\.isFinite\(p\.w\)[\s\S]*?Number\.isFinite\(p\.h\)[\s\S]*?p\.w > 0[\s\S]*?p\.h > 0,/m,
     );
     assert.match(
         source,
