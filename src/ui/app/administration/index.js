@@ -50,6 +50,14 @@ async function extendSectionI18n(baseI18n, stringsBaseUrl) {
     return extendI18n(baseI18n, stringsBaseUrl);
 }
 
+/**
+ * Returns the canonical `${gatewayId}:${adapterId}` key used by adapter lookup
+ * indexes across administration toggle/render flows.
+ *
+ * @param {string} gatewayId
+ * @param {string} adapterId
+ * @returns {string}
+ */
 function adapterCompositeKey(gatewayId, adapterId) {
     return `${gatewayId}:${adapterId}`;
 }
