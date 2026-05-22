@@ -4,6 +4,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
 const ROOT = process.cwd();
+const COPILOT_INSTRUCTIONS_PATH = resolve(ROOT, ".github/copilot-instructions.md");
 
 function walk(directoryPath) {
     const files = [];
@@ -17,6 +18,37 @@ function walk(directoryPath) {
         files.push(entryPath);
     }
     return files;
+}
+
+function collectMissingIndexViolations({
+    rootPath,
+    indexFileName,
+    flatEntryViolation,
+    missingIndexViolation,
+}) {
+    const violations = [];
+    for (const entryName of readdirSync(rootPath)) {
+        const entryPath = join(rootPath, entryName);
+        const entryStats = statSync(entryPath);
+
+        if (entryStats.isFile() && flatEntryViolation) {
+            const violation = flatEntryViolation(entryName);
+            if (violation) violations.push(violation);
+            continue;
+        }
+
+        if (!entryStats.isDirectory()) continue;
+
+        const indexPath = join(entryPath, indexFileName);
+        try {
+            if (!statSync(indexPath).isFile()) {
+                violations.push(missingIndexViolation(entryName));
+            }
+        } catch {
+            violations.push(missingIndexViolation(entryName));
+        }
+    }
+    return violations;
 }
 
 // Legacy over-limit files kept as a temporary allowlist while they are
@@ -81,35 +113,16 @@ test("source files stay under the 1000-line guardrail", () => {
 
 test("ui app page entries use folder/index.js structure", () => {
     const appRoot = resolve(ROOT, "src/ui/app");
-    const violations = [];
-
-    for (const entryName of readdirSync(appRoot)) {
-        const entryPath = join(appRoot, entryName);
-        const entryStats = statSync(entryPath);
-
-        if (entryStats.isFile() && entryName.endsWith(".js")) {
-            violations.push(
-                `flat page entry is not allowed: src/ui/app/${entryName}`,
-            );
-            continue;
-        }
-
-        if (!entryStats.isDirectory()) continue;
-
-        const indexPath = join(entryPath, "index.js");
-        try {
-            const indexStats = statSync(indexPath);
-            if (!indexStats.isFile()) {
-                violations.push(
-                    `missing index.js page entry: src/ui/app/${entryName}`,
-                );
-            }
-        } catch {
-            violations.push(
-                `missing index.js page entry: src/ui/app/${entryName}`,
-            );
-        }
-    }
+    const violations = collectMissingIndexViolations({
+        rootPath: appRoot,
+        indexFileName: "index.js",
+        flatEntryViolation: (entryName) =>
+            entryName.endsWith(".js")
+                ? `flat page entry is not allowed: src/ui/app/${entryName}`
+                : null,
+        missingIndexViolation: (entryName) =>
+            `missing index.js page entry: src/ui/app/${entryName}`,
+    });
 
     assert.deepEqual(
         violations,
@@ -120,33 +133,14 @@ test("ui app page entries use folder/index.js structure", () => {
 
 test("api route handlers use domain/index.ts structure", () => {
     const routesRoot = resolve(ROOT, "src/api/routes");
-    const violations = [];
-
-    for (const entryName of readdirSync(routesRoot)) {
-        const entryPath = join(routesRoot, entryName);
-        const entryStats = statSync(entryPath);
-
-        if (!entryStats.isDirectory()) {
-            violations.push(
-                `route entry must be directory: src/api/routes/${entryName}`,
-            );
-            continue;
-        }
-
-        const indexPath = join(entryPath, "index.ts");
-        try {
-            const indexStats = statSync(indexPath);
-            if (!indexStats.isFile()) {
-                violations.push(
-                    `missing route index.ts: src/api/routes/${entryName}`,
-                );
-            }
-        } catch {
-            violations.push(
-                `missing route index.ts: src/api/routes/${entryName}`,
-            );
-        }
-    }
+    const violations = collectMissingIndexViolations({
+        rootPath: routesRoot,
+        indexFileName: "index.ts",
+        flatEntryViolation: (entryName) =>
+            `route entry must be directory: src/api/routes/${entryName}`,
+        missingIndexViolation: (entryName) =>
+            `missing route index.ts: src/api/routes/${entryName}`,
+    });
 
     assert.deepEqual(
         violations,
@@ -214,5 +208,126 @@ test("api and core avoid new direct gateway imports", () => {
         violations,
         [],
         `Direct gateway imports in api/core must be removed and replaced by ctx/capabilities:\n${violations.join("\n")}`,
+    );
+});
+
+const REQUIRED_INSTRUCTION_SNIPPETS = [
+    "Use `ctx` as the only cross-component import surface for both core-to-component and inter-component interactions.",
+    "Adding thousands of lines in a pull request is **not** an indicator of quality, velocity, or correctness.",
+    "Any safe opportunity to reduce LOC through consolidation and reusable abstractions should be taken",
+    "Move code out of `reuse/` when it only serves one feature surface; keep `reuse/` strictly cross-cutting.",
+    "Keep HTML and JS/TS in separate files; do not embed page markup as feature-sized string templates in JS/TS modules.",
+    "Runtime extension modules must use a consistent root layout:",
+];
+
+test("ai instructions keep the compliance guardrails explicit", () => {
+    const source = readFileSync(COPILOT_INSTRUCTIONS_PATH, "utf8");
+    for (const snippet of REQUIRED_INSTRUCTION_SNIPPETS) {
+        assert.ok(
+            source.includes(snippet),
+            `missing required instruction snippet: ${snippet}`,
+        );
+    }
+});
+
+const MODULE_STRUCTURE_EXEMPTIONS = new Set([
+    "docs",
+    "routes",
+    "sample-analytics-invalid-policy",
+    "study",
+]);
+
+test("runtime extension modules follow a consistent directory contract", () => {
+    const modulesRoot = resolve(ROOT, "src/modules");
+    const violations = [];
+
+    for (const entryName of readdirSync(modulesRoot)) {
+        if (MODULE_STRUCTURE_EXEMPTIONS.has(entryName)) continue;
+        const modulePath = join(modulesRoot, entryName);
+        const moduleStats = statSync(modulePath);
+        if (!moduleStats.isDirectory()) continue;
+
+        const requiredEntries = ["manifest.json", "routes.json", "ui"];
+        for (const requiredEntry of requiredEntries) {
+            const requiredPath = join(modulePath, requiredEntry);
+            try {
+                statSync(requiredPath);
+            } catch {
+                violations.push(
+                    `module ${entryName} is missing ${requiredEntry} at src/modules/${entryName}/${requiredEntry}`,
+                );
+            }
+        }
+
+        const apiPath = join(modulePath, "api");
+        try {
+            if (!statSync(apiPath).isDirectory()) continue;
+        } catch {
+            continue;
+        }
+
+        const apiIndexPaths = [join(apiPath, "index.js"), join(apiPath, "index.ts")];
+        const hasApiIndex = apiIndexPaths.some((apiIndexPath) => {
+            try {
+                return statSync(apiIndexPath).isFile();
+            } catch {
+                return false;
+            }
+        });
+        if (!hasApiIndex) {
+            violations.push(
+                `module ${entryName} api directory must include index.js or index.ts`,
+            );
+        }
+    }
+
+    assert.deepEqual(
+        violations,
+        [],
+        `Module structure violations found:\n${violations.join("\n")}`,
+    );
+});
+
+test("adapter directories do not introduce internal reuse folders", () => {
+    const adaptersRoot = resolve(ROOT, "src/adapters");
+    const violations = [];
+
+    for (const filePath of walk(adaptersRoot)) {
+        const normalizedFilePath = filePath.replace(/\\/g, "/");
+        if (!normalizedFilePath.includes("/reuse/")) continue;
+        violations.push(relative(ROOT, filePath).replace(/\\/g, "/"));
+    }
+
+    assert.deepEqual(
+        violations,
+        [],
+        `Adapters must keep adapter-local logic at adapter root instead of reuse/:\n${violations.join("\n")}`,
+    );
+});
+
+test("html files keep scripts in external JS/TS files", () => {
+    const violations = [];
+    const scriptBlockRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+
+    for (const filePath of walk(resolve(ROOT, "src"))) {
+        if (!filePath.endsWith(".html")) continue;
+        const source = readFileSync(filePath, "utf8");
+        let match;
+        scriptBlockRe.lastIndex = 0;
+        while ((match = scriptBlockRe.exec(source))) {
+            const attributes = match[1] ?? "";
+            const body = match[2] ?? "";
+            if (/\bsrc\s*=/.test(attributes)) continue;
+            if (!body.trim()) continue;
+            const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
+            violations.push(repoPath);
+            break;
+        }
+    }
+
+    assert.deepEqual(
+        violations,
+        [],
+        `Inline html script blocks are forbidden; move logic to JS/TS files:\n${violations.join("\n")}`,
     );
 });
