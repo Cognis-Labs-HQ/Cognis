@@ -315,7 +315,7 @@ test("adapter directories do not introduce internal reuse folders", () => {
 
 test("html files keep scripts in external JS/TS files", () => {
     const violations = [];
-    const scriptBlockRe = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+    const scriptBlockRe = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi;
 
     for (const filePath of walk(resolve(ROOT, "src"))) {
         if (!filePath.endsWith(".html")) continue;
