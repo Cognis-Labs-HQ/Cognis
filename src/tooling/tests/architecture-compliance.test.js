@@ -54,29 +54,77 @@ function collectMissingIndexViolations({
     return violations;
 }
 
-// Legacy over-limit files kept as a temporary allowlist while they are
-// incrementally split into directory-based entrypoints. The list must only
-// shrink over time; do not add entries unless an explicit migration plan exists.
-// Target milestone: clear this allowlist before the first v0.2.0 release.
-// New oversized files are forbidden.
-const LEGACY_LARGE_FILES = new Set([
-    "src/adapters/social/messages/routes.ts",
-    "src/adapters/social/messages/store.ts",
-    "src/adapters/social/messages/ui/app.js",
-    "src/adapters/social/profile/ui/app.js",
-    "src/adapters/social/profile/ui/profile.css",
-    "src/adapters/study/classes/store.ts",
-    "src/api/tests/ui/ui-routes.test.ts",
-    "src/gateways/auth/bootstrap.ts",
-    "src/gateways/auth/tests/auth-gateway.test.ts",
-    "src/gateways/notify/bootstrap.ts",
-    "src/modules/jitsi-meet/api/index.js",
-    "src/modules/jitsi-meet/ui/app.js",
-    "src/tooling/cli/index.ts",
-    "src/ui/app/administration/index.js",
-    "src/ui/reuse/page-composer/init.js",
-    "src/ui/styles/page-builder.css",
+// Legacy over-limit files are temporary exceptions while they are split into
+// directory/index entrypoints and focused modules. Keep this list shrinking;
+// once a file is compliant, remove it from this section immediately.
+const LEGACY_LARGE_FILE_STRATEGIES = new Map([
+    [
+        "src/adapters/social/messages/routes.ts",
+        "Split route handlers by endpoint family under routes/ with index.ts composition.",
+    ],
+    [
+        "src/adapters/social/messages/store.ts",
+        "Extract persistence, mapping, and query logic into store/ modules with an index.ts facade.",
+    ],
+    [
+        "src/adapters/social/messages/ui/app.js",
+        "Move compose, thread, and attachment flows into ui/app/ feature modules wired by index.js.",
+    ],
+    [
+        "src/adapters/social/profile/ui/app.js",
+        "Split profile rendering, actions, and dialogs into ui/app/ modules and keep index.js as coordinator.",
+    ],
+    [
+        "src/adapters/social/profile/ui/profile.css",
+        "Break styles by feature area (layout, cards, controls) into imported CSS partials.",
+    ],
+    [
+        "src/adapters/study/classes/store.ts",
+        "Split class CRUD, membership flows, and serializers into store/ modules with shared types.",
+    ],
+    [
+        "src/api/tests/ui/ui-routes.test.ts",
+        "Split route tests by domain under ui-routes/ and keep a lightweight index test bootstrap.",
+    ],
+    [
+        "src/gateways/auth/bootstrap.ts",
+        "Extract route registration, capability wiring, and service setup into bootstrap/ modules.",
+    ],
+    [
+        "src/gateways/auth/tests/auth-gateway.test.ts",
+        "Split auth gateway tests by API surface and behavior area under tests/auth-gateway/.",
+    ],
+    [
+        "src/gateways/notify/bootstrap.ts",
+        "Split notifier route wiring, preference handlers, and provider setup into bootstrap/ modules.",
+    ],
+    [
+        "src/modules/jitsi-meet/api/index.js",
+        "Split API handlers by capability into api/ modules and keep index.js as the entrypoint.",
+    ],
+    [
+        "src/modules/jitsi-meet/ui/app.js",
+        "Split UI state, rendering, and event handlers into ui/app/ modules coordinated by index.js.",
+    ],
+    [
+        "src/tooling/cli/index.ts",
+        "Move command handlers into cli/commands/ and keep index.ts as command registry composition.",
+    ],
+    [
+        "src/ui/app/administration/index.js",
+        "Split administration sections into app/administration/* modules with index.js orchestration only.",
+    ],
+    [
+        "src/ui/reuse/page-composer/init.js",
+        "Break page composer into focused modules (state, grid, controls, persistence) with index entrypoint.",
+    ],
+    [
+        "src/ui/styles/page-builder.css",
+        "Split page-builder styles into imported partials by surface (layout, widgets, responsive).",
+    ],
 ]);
+
+const LEGACY_LARGE_FILES = new Set(LEGACY_LARGE_FILE_STRATEGIES.keys());
 
 const SOURCE_EXTENSIONS = new Set([".js", ".ts", ".css", ".html"]);
 
@@ -99,6 +147,27 @@ function hasSourceExtension(filePath) {
     );
 }
 
+test("legacy LOC exceptions include split strategies and self-prune", () => {
+    const staleEntries = [];
+    for (const [repoPath, strategy] of LEGACY_LARGE_FILE_STRATEGIES.entries()) {
+        assert.ok(strategy.trim().length > 0, `missing split strategy: ${repoPath}`);
+        const filePath = resolve(ROOT, repoPath);
+        const lineCount = readFileSync(filePath, "utf8").split("\n").length;
+        if (lineCount <= 1000) {
+            staleEntries.push(`${repoPath} (${lineCount} lines)`);
+        }
+    }
+
+    assert.deepEqual(
+        staleEntries,
+        [],
+        [
+            "Remove completed legacy LOC exceptions from LEGACY_LARGE_FILE_STRATEGIES.",
+            ...staleEntries,
+        ].join("\n"),
+    );
+});
+
 test("source files stay under the 1000-line guardrail", () => {
     const hits = [];
     for (const filePath of walk(resolve(ROOT, "src"))) {
@@ -120,12 +189,22 @@ test("source files stay under the 1000-line guardrail", () => {
 test("anti-monolith guardrail warns above 1250 LOC and fails above 1750 LOC", () => {
     const warningHits = [];
     const failureHits = [];
+    const legacyWarningHits = [];
+    const legacyFailureHits = [];
 
     for (const filePath of walk(resolve(ROOT, "src"))) {
         if (!hasSourceExtension(filePath)) continue;
         const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
-        if (LEGACY_LARGE_FILES.has(repoPath)) continue;
         const lineCount = readFileSync(filePath, "utf8").split("\n").length;
+
+        if (LEGACY_LARGE_FILES.has(repoPath)) {
+            const strategy = LEGACY_LARGE_FILE_STRATEGIES.get(repoPath);
+            const label = `${repoPath} (${lineCount} lines) — ${strategy}`;
+            if (lineCount > 1250) legacyWarningHits.push(label);
+            if (lineCount > 1750) legacyFailureHits.push(label);
+            continue;
+        }
+
         if (lineCount > 1250) {
             warningHits.push(`${repoPath} (${lineCount} lines)`);
         }
@@ -140,6 +219,17 @@ test("anti-monolith guardrail warns above 1250 LOC and fails above 1750 LOC", ()
                 "Anti-monolith warning: files above 1250 LOC should be split.",
                 "Create a directory with index.js and break logic into purpose-named files.",
                 ...warningHits,
+            ].join("\n"),
+        );
+    }
+
+    if (legacyWarningHits.length > 0 || legacyFailureHits.length > 0) {
+        console.warn(
+            [
+                "Legacy LOC exceptions still exceed anti-monolith thresholds.",
+                "Split these files and then delete their entries from LEGACY_LARGE_FILE_STRATEGIES.",
+                ...legacyWarningHits,
+                ...legacyFailureHits,
             ].join("\n"),
         );
     }
