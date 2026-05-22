@@ -167,10 +167,6 @@ const gatewayRegistry = new GatewayRegistry();
 const capabilities = new CapabilityStore();
 const uiRegistry = new UIRegistry();
 
-const routeContext = capabilities.get<RouteContext>("auth:routeContext");
-if (!routeContext) {
-    throw new Error("auth_route_context_missing");
-}
 const gatewayService = new GatewayService(gatewayRegistry);
 
 const gatewaysRoot =
@@ -201,6 +197,11 @@ if (contributedLog) {
     setAppLogger(contributedLog);
 }
 const log = contributedLog ?? bootstrapLog;
+
+const routeContext = capabilities.get<RouteContext>("auth:routeContext");
+if (!routeContext) {
+    throw new Error("auth_route_context_missing");
+}
 
 const cliAccessToken = issueAccessToken("cognis-cli", "owner", null);
 try {
