@@ -52,9 +52,9 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     async function loadEmailTfaState() {
-        const response = await apiFetch("/api/v1/auth/email-tfa/settings").catch(
-            () => null,
-        );
+        const response = await apiFetch(
+            "/api/v1/auth/email-tfa/settings",
+        ).catch(() => null);
         if (!response?.ok) {
             emailTfaState = {
                 enabled: false,
@@ -358,13 +358,18 @@ export function createSettingsSection({ i18n, root }) {
                 tfaToggle.onchange = async () => {
                     try {
                         await saveEmailTfaState(tfaToggle.checked);
-                        showToast(i18n.t("gateway.auth.security.email_tfa_saved"), {
-                            variant: "success",
-                        });
+                        showToast(
+                            i18n.t("gateway.auth.security.email_tfa_saved"),
+                            {
+                                variant: "success",
+                            },
+                        );
                     } catch {
                         tfaToggle.checked = !tfaToggle.checked;
                         showToast(
-                            i18n.t("gateway.auth.security.email_tfa_save_failed"),
+                            i18n.t(
+                                "gateway.auth.security.email_tfa_save_failed",
+                            ),
                             {
                                 variant: "error",
                             },

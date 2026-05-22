@@ -3,6 +3,9 @@
     "files": [],
     "references": [
         {
+            "path": "./src/adapters/auth/email-tfa"
+        },
+        {
             "path": "./src/adapters/auth/ldap"
         },
         {

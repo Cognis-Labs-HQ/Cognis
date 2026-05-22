@@ -707,3 +707,41 @@ test("teacher role change sets profile visibility to friends", async () => {
     assert.equal(status, 200);
     assert.deepEqual(appliedVisibilityUpdates, ["friends"]);
 });
+
+test("admin can reset user email TFA state", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "pw", "admin");
+    await accounts.register("alice", "pw", "user");
+    const prefs = new VolatileUserPreferenceStore();
+    let status = 0;
+    let resetTarget: string | null = null;
+    const route = createUserRoutes(
+        accounts,
+        prefs,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        async (accountId) => {
+            resetTarget = accountId;
+        },
+    );
+
+    await route(
+        {
+            method: "POST",
+            headers,
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/alice/tfa/reset"),
+    );
+
+    assert.equal(status, 200);
+    assert.equal(resetTarget, "alice");
+});

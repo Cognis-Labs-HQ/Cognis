@@ -17,4 +17,10 @@
   <string name="gateway.auth.security.password_requires_lowercase">Harus mengandung setidaknya {count} huruf kecil.</string>
   <string name="gateway.auth.security.password_requires_digit">Harus mengandung minimal {count} angka.</string>
   <string name="gateway.auth.security.password_requires_special">Harus mengandung minimal {count} karakter khusus.</string>
+  <string name="gateway.auth.security.email_tfa_title">Autentikasi Dua Faktor Email</string>
+  <string name="gateway.auth.security.email_tfa_hint">Aktifkan tantangan kode email saat login.</string>
+  <string name="gateway.auth.security.email_tfa_unavailable">Email TFA tersedia setelah Anda memiliki email utama terverifikasi dan SMTP dikonfigurasi.</string>
+  <string name="gateway.auth.security.email_tfa_enforced">Email TFA dipaksakan oleh administrator untuk semua pengguna.</string>
+  <string name="gateway.auth.security.email_tfa_saved">Preferensi Email TFA diperbarui.</string>
+  <string name="gateway.auth.security.email_tfa_save_failed">Gagal memperbarui preferensi Email TFA.</string>
 </resources>

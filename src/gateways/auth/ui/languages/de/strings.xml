@@ -17,4 +17,10 @@
   <string name="gateway.auth.security.password_requires_lowercase">Muss mindestens {count} Kleinbuchstaben enthalten.</string>
   <string name="gateway.auth.security.password_requires_digit">Muss mindestens {count} Ziffer(n) enthalten.</string>
   <string name="gateway.auth.security.password_requires_special">Muss mindestens {count} Sonderzeichen enthalten.</string>
+  <string name="gateway.auth.security.email_tfa_title">E-Mail-Zwei-Faktor-Authentifizierung</string>
+  <string name="gateway.auth.security.email_tfa_hint">Aktivieren Sie bei der Anmeldung eine E-Mail-Code-Abfrage.</string>
+  <string name="gateway.auth.security.email_tfa_unavailable">E-Mail-TFA ist erst verfügbar, wenn eine verifizierte primäre E-Mail vorhanden ist und SMTP konfiguriert wurde.</string>
+  <string name="gateway.auth.security.email_tfa_enforced">E-Mail-TFA wird von einem Administrator für alle Benutzer erzwungen.</string>
+  <string name="gateway.auth.security.email_tfa_saved">E-Mail-TFA-Einstellung aktualisiert.</string>
+  <string name="gateway.auth.security.email_tfa_save_failed">E-Mail-TFA-Einstellung konnte nicht aktualisiert werden.</string>
 </resources>

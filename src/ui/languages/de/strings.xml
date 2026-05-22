@@ -184,6 +184,12 @@
   <string name="ui.app.login.not_registered.title">Noch nicht registriert?</string>
   <string name="ui.app.login.not_registered.body">Erstelle ein kostenloses Konto und leg noch heute los.</string>
   <string name="ui.app.login.not_registered.link">Jetzt anmelden!</string>
+  <string name="ui.app.login.email_tfa.title">E-Mail-TFA-Verifizierung</string>
+  <string name="ui.app.login.email_tfa.prompt">Geben Sie den Verifizierungscode ein, der an Ihre verifizierte E-Mail-Adresse gesendet wurde.</string>
+  <string name="ui.app.login.email_tfa.code_label">Verifizierungscode</string>
+  <string name="ui.app.login.email_tfa.submit">Verifizieren und anmelden</string>
+  <string name="ui.app.login.email_tfa.invalid_code">Ungültiger oder abgelaufener Verifizierungscode.</string>
+  <string name="ui.app.login.email_tfa.failed">E-Mail-TFA-Verifizierung fehlgeschlagen.</string>
   <string name="ui.app.demo.switched">Demo: zur Sandbox-Seite gewechselt.</string>
   <string name="ui.app.demo.added">Demo: ein Lernfortschritts-Widget hinzugefügt.</string>
   <string name="ui.app.demo.tweaked">Demo: die erste Widget-Konfiguration angepasst.</string>
@@ -276,8 +282,10 @@
   <string name="ui.app.users.founder_disabled">Gründerstatus entfernt.</string>
   <string name="ui.app.users.action_menu_help">Wählen Sie eine Aktion aus.</string>
   <string name="ui.app.users.reset_password">Passwort zurücksetzen</string>
+  <string name="ui.app.users.reset_tfa">E-Mail-TFA zurücksetzen</string>
   <string name="ui.app.users.new_password">Neues Passwort</string>
   <string name="ui.app.users.password_reset_done">Passwort aktualisiert.</string>
+  <string name="ui.app.users.tfa_reset_done">E-Mail-TFA zurückgesetzt.</string>
   <string name="ui.app.users.resend_verification">Bestätigungs-E-Mail erneut senden</string>
   <string name="ui.app.users.verification_resent">Bestätigungs-E-Mail erneut angefordert.</string>
   <string name="ui.app.users.delete_user">Benutzer löschen</string>

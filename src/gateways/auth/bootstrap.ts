@@ -111,11 +111,11 @@ function isEmailTfaAdapter(
 } {
     return Boolean(
         adapter &&
-            typeof adapter.shouldRequireEmailTfa === "function" &&
-            typeof adapter.beginEmailTfaLoginChallenge === "function" &&
-            typeof adapter.completeEmailTfaLoginChallenge === "function" &&
-            typeof adapter.getEmailTfaState === "function" &&
-            typeof adapter.setEmailTfaEnabled === "function",
+        typeof adapter.shouldRequireEmailTfa === "function" &&
+        typeof adapter.beginEmailTfaLoginChallenge === "function" &&
+        typeof adapter.completeEmailTfaLoginChallenge === "function" &&
+        typeof adapter.getEmailTfaState === "function" &&
+        typeof adapter.setEmailTfaEnabled === "function",
     );
 }
 
@@ -129,7 +129,9 @@ function hasEmailTfaRegistrationHook(
 
 function hasEmailTfaResetHook(
     adapter: AuthProviderAdapter | null,
-): adapter is AuthProviderAdapter & { resetEmailTfa(accountId: string): Promise<void> } {
+): adapter is AuthProviderAdapter & {
+    resetEmailTfa(accountId: string): Promise<void>;
+} {
     return Boolean(adapter && typeof adapter.resetEmailTfa === "function");
 }
 
@@ -612,7 +614,10 @@ function createAuthGatewayRoutes(
             const emailTfaAdapter =
                 authGateway.getEnabledAdapter("email-tfa") ??
                 authGateway.getAdapter("email-tfa");
-            if (emailTfaAdapter && hasEmailTfaRegistrationHook(emailTfaAdapter)) {
+            if (
+                emailTfaAdapter &&
+                hasEmailTfaRegistrationHook(emailTfaAdapter)
+            ) {
                 await emailTfaAdapter.onAccountRegistered(result.username);
             }
             const verifyToken = issueAccessToken(
@@ -682,7 +687,11 @@ function createAuthGatewayRoutes(
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
-                        data: { enabled: false, enforced: false, available: false },
+                        data: {
+                            enabled: false,
+                            enforced: false,
+                            available: false,
+                        },
                     }),
                 );
                 return true;
@@ -762,7 +771,8 @@ function createAuthGatewayRoutes(
                     JSON.stringify({
                         error: {
                             code: "invalid_credentials",
-                            message: "Invalid or expired login verification code",
+                            message:
+                                "Invalid or expired login verification code",
                         },
                     }),
                 );
@@ -914,9 +924,7 @@ function createAuthGatewayRoutes(
             const emailTfaAdapter = getEnabledEmailTfaAdapter();
             if (
                 emailTfaAdapter &&
-                (await emailTfaAdapter.shouldRequireEmailTfa(
-                    session.accountId,
-                ))
+                (await emailTfaAdapter.shouldRequireEmailTfa(session.accountId))
             ) {
                 try {
                     const challenge =

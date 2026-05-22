@@ -17,4 +17,10 @@
   <string name="gateway.auth.security.password_requires_lowercase">少なくとも {count} 個の小文字を含める必要があります。</string>
   <string name="gateway.auth.security.password_requires_digit">数字を{count}文字以上含める必要があります。</string>
   <string name="gateway.auth.security.password_requires_special">特殊文字を{count}文字以上含める必要があります。</string>
+  <string name="gateway.auth.security.email_tfa_title">メール二要素認証</string>
+  <string name="gateway.auth.security.email_tfa_hint">ログイン時にメール認証コードの確認を有効にします。</string>
+  <string name="gateway.auth.security.email_tfa_unavailable">確認済みの主メールアドレスがあり、SMTP が設定されるまでメール TFA は利用できません。</string>
+  <string name="gateway.auth.security.email_tfa_enforced">メール TFA は管理者により全ユーザーに強制されています。</string>
+  <string name="gateway.auth.security.email_tfa_saved">メール TFA 設定を更新しました。</string>
+  <string name="gateway.auth.security.email_tfa_save_failed">メール TFA 設定の更新に失敗しました。</string>
 </resources>

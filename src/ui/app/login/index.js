@@ -250,12 +250,15 @@ export async function mount(root) {
     async function completeEmailTfaLogin(challengeId) {
         while (true) {
             const code = await promptEmailTfaCode();
-            if (!code) continue;
-            const response = await fetch("/api/v1/auth/email-tfa/verify-login", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ challengeId, code }),
-            });
+            if (!code) return null;
+            const response = await fetch(
+                "/api/v1/auth/email-tfa/verify-login",
+                {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ challengeId, code }),
+                },
+            );
             const body = await response.json().catch(() => null);
             if (response.ok && body?.data) {
                 return body.data;

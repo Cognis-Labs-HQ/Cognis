@@ -184,6 +184,12 @@
   <string name="ui.app.login.not_registered.title">Belum Terdaftar?</string>
   <string name="ui.app.login.not_registered.body">Buat akun gratis dan mulai hari ini.</string>
   <string name="ui.app.login.not_registered.link">Daftar Sekarang!</string>
+  <string name="ui.app.login.email_tfa.title">Verifikasi Email TFA</string>
+  <string name="ui.app.login.email_tfa.prompt">Masukkan kode verifikasi yang dikirim ke alamat email terverifikasi Anda.</string>
+  <string name="ui.app.login.email_tfa.code_label">Kode verifikasi</string>
+  <string name="ui.app.login.email_tfa.submit">Verifikasi dan Masuk</string>
+  <string name="ui.app.login.email_tfa.invalid_code">Kode verifikasi tidak valid atau kedaluwarsa.</string>
+  <string name="ui.app.login.email_tfa.failed">Verifikasi Email TFA gagal.</string>
   <string name="ui.app.demo.switched">Demo: berpindah ke halaman sandbox.</string>
   <string name="ui.app.demo.added">Demo: menambahkan widget progres belajar.</string>
   <string name="ui.app.demo.tweaked">Demo: menyesuaikan konfigurasi widget pertama.</string>
@@ -276,8 +282,10 @@
   <string name="ui.app.users.founder_disabled">Status pendiri dihapus.</string>
   <string name="ui.app.users.action_menu_help">Pilih tindakan.</string>
   <string name="ui.app.users.reset_password">Reset kata sandi</string>
+  <string name="ui.app.users.reset_tfa">Reset Email TFA</string>
   <string name="ui.app.users.new_password">Kata sandi baru</string>
   <string name="ui.app.users.password_reset_done">Kata sandi diperbarui.</string>
+  <string name="ui.app.users.tfa_reset_done">Email TFA direset.</string>
   <string name="ui.app.users.resend_verification">Kirim ulang verifikasi email</string>
   <string name="ui.app.users.verification_resent">Permintaan verifikasi email dikirim.</string>
   <string name="ui.app.users.delete_user">Hapus pengguna</string>

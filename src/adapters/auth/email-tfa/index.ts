@@ -6,7 +6,10 @@ import type {
     AuthPendingSession,
     AuthEmailTfaState,
 } from "../../../gateways/auth/gateway.js";
-import { InMemoryTfaStore, TfaCodeService } from "../../../api/reuse/tfa-code.js";
+import {
+    InMemoryTfaStore,
+    TfaCodeService,
+} from "../../../api/reuse/tfa-code.js";
 
 const EMAIL_TFA_PREF_KEY = "auth-email-tfa";
 const CHALLENGE_EXPIRY_MS = 10 * 60 * 1000;
@@ -88,7 +91,9 @@ export class EmailTfaAuthAdapter implements AuthProviderAdapter {
         );
     }
 
-    private getHasVerifiedEmail(): ((accountId: string) => Promise<boolean>) | null {
+    private getHasVerifiedEmail():
+        | ((accountId: string) => Promise<boolean>)
+        | null {
         return (
             this.adapterContext?.capabilities.get<
                 (accountId: string) => Promise<boolean>
@@ -96,7 +101,9 @@ export class EmailTfaAuthAdapter implements AuthProviderAdapter {
         );
     }
 
-    private async readPreference(accountId: string): Promise<EmailTfaPrefValue> {
+    private async readPreference(
+        accountId: string,
+    ): Promise<EmailTfaPrefValue> {
         const prefStore = this.getPreferenceStore();
         if (!prefStore) return { enabled: false };
         const raw = await prefStore.get(accountId, EMAIL_TFA_PREF_KEY);
@@ -115,7 +122,11 @@ export class EmailTfaAuthAdapter implements AuthProviderAdapter {
     ): Promise<void> {
         const prefStore = this.getPreferenceStore();
         if (!prefStore) return;
-        await prefStore.set(accountId, EMAIL_TFA_PREF_KEY, JSON.stringify(value));
+        await prefStore.set(
+            accountId,
+            EMAIL_TFA_PREF_KEY,
+            JSON.stringify(value),
+        );
     }
 
     private canDispatchEmailCodes(): boolean {
@@ -153,7 +164,10 @@ export class EmailTfaAuthAdapter implements AuthProviderAdapter {
         }
 
         const challengeId = randomUUID();
-        const code = this.tfaService.issue(`login:${challengeId}`, CHALLENGE_EXPIRY_MS);
+        const code = this.tfaService.issue(
+            `login:${challengeId}`,
+            CHALLENGE_EXPIRY_MS,
+        );
 
         const sendResult = await dispatch({
             category: "system",
@@ -164,7 +178,10 @@ export class EmailTfaAuthAdapter implements AuthProviderAdapter {
                 source: "auth-email-tfa",
             },
         });
-        if (!Array.isArray(sendResult?.dispatched) || sendResult.dispatched.length < 1) {
+        if (
+            !Array.isArray(sendResult?.dispatched) ||
+            sendResult.dispatched.length < 1
+        ) {
             throw new Error("smtp_unavailable");
         }
 
@@ -205,7 +222,10 @@ export class EmailTfaAuthAdapter implements AuthProviderAdapter {
         };
     }
 
-    async setEmailTfaEnabled(accountId: string, enabled: boolean): Promise<void> {
+    async setEmailTfaEnabled(
+        accountId: string,
+        enabled: boolean,
+    ): Promise<void> {
         await this.writePreference(accountId, { enabled });
     }
 

@@ -5,6 +5,7 @@ import path from "node:path";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../api/route-registry.js";
 import { UIRegistry } from "../../../api/ui-registry.js";
+import { VolatileUserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../access-tokens.js";
 import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
@@ -1082,4 +1083,123 @@ test("auth bootstrap contributes page script origin registration capability", as
         ]),
         ["https://meetings.example.test"],
     );
+});
+
+test("email TFA adapter enforces login challenge and issues token after verification", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = new InMemoryTestExecutor();
+    const preferenceStore = new VolatileUserPreferenceStore();
+    let dispatchedCode = "";
+
+    capabilities.contribute("preferences:store", preferenceStore);
+    capabilities.contribute("notify:canSendVerificationEmail", () => true);
+    capabilities.contribute("notify:hasVerifiedEmail", async () => true);
+    capabilities.contribute(
+        "notify:dispatch",
+        async ({ body }: { body: string }) => {
+            const match = body.match(/(\d{6})/);
+            dispatchedCode = match?.[1] ?? "";
+            return { dispatched: ["smtp"] };
+        },
+    );
+    capabilities.contribute("registration:public:isEnabled", () => true);
+    capabilities.contribute(
+        "registration:public:register",
+        async ({
+            username,
+            password,
+        }: {
+            username: string;
+            password: string;
+        }) => {
+            const accountStore = capabilities.get<{
+                register: (
+                    accountId: string,
+                    accountPassword: string,
+                    role?: "user" | "teacher" | "moderator" | "admin",
+                ) => Promise<{
+                    username: string;
+                    role?: string;
+                    enabled: boolean;
+                }>;
+            }>("auth:accountStore");
+            return accountStore!.register(username, password, "user");
+        },
+    );
+
+    await bootstrap({
+        dbExecutor: db,
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+    });
+
+    const configureResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest(
+            "PUT",
+            { enabled: true, enforceForAll: true },
+            { authorization: `Bearer ${adminToken}` },
+        ),
+        "/api/v1/gateways/auth/adapters/email-tfa/config",
+    );
+    assert.equal(configureResult.handled, true);
+    assert.equal(configureResult.res.status, 200);
+
+    const registerResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", { username: "tfa-user", password: "pw12345" }),
+        "/api/v1/auth/register",
+    );
+    assert.equal(registerResult.handled, true);
+    assert.equal(registerResult.res.status, 201);
+
+    const loginResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "tfa-user",
+            password: "pw12345",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.equal(loginResult.handled, true);
+    assert.equal(loginResult.res.status, 202);
+    assert.ok(dispatchedCode);
+    const loginPayload = JSON.parse(loginResult.res.payload) as {
+        data: { challengeId: string; requiresEmailTfa: boolean };
+    };
+    assert.equal(loginPayload.data.requiresEmailTfa, true);
+    assert.ok(loginPayload.data.challengeId);
+
+    const invalidVerifyResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            challengeId: loginPayload.data.challengeId,
+            code: "000000",
+        }),
+        "/api/v1/auth/email-tfa/verify-login",
+    );
+    assert.equal(invalidVerifyResult.handled, true);
+    assert.equal(invalidVerifyResult.res.status, 401);
+
+    const verifyResult = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            challengeId: loginPayload.data.challengeId,
+            code: dispatchedCode,
+        }),
+        "/api/v1/auth/email-tfa/verify-login",
+    );
+    assert.equal(verifyResult.handled, true);
+    assert.equal(verifyResult.res.status, 200);
+    const verifyPayload = JSON.parse(verifyResult.res.payload) as {
+        data: { token: string; accountId: string };
+    };
+    assert.equal(verifyPayload.data.accountId, "tfa-user");
+    assert.equal(typeof verifyPayload.data.token, "string");
+    assert.ok(verifyPayload.data.token.startsWith("cgs_"));
 });

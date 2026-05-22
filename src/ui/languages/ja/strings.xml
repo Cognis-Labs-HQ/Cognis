@@ -184,6 +184,12 @@
   <string name="ui.app.login.not_registered.title">まだ登録していませんか？</string>
   <string name="ui.app.login.not_registered.body">無料アカウントを作成して今日から始めましょう。</string>
   <string name="ui.app.login.not_registered.link">サインアップ！</string>
+  <string name="ui.app.login.email_tfa.title">メールTFA認証</string>
+  <string name="ui.app.login.email_tfa.prompt">確認済みメールアドレスに送信された認証コードを入力してください。</string>
+  <string name="ui.app.login.email_tfa.code_label">認証コード</string>
+  <string name="ui.app.login.email_tfa.submit">認証してログイン</string>
+  <string name="ui.app.login.email_tfa.invalid_code">認証コードが無効か期限切れです。</string>
+  <string name="ui.app.login.email_tfa.failed">メールTFA認証に失敗しました。</string>
   <string name="ui.app.demo.switched">デモ: サンドボックスページに切り替えました。</string>
   <string name="ui.app.demo.added">デモ: 学習進捗ウィジェットを追加しました。</string>
   <string name="ui.app.demo.tweaked">デモ: 最初のウィジェット設定を調整しました。</string>
@@ -276,8 +282,10 @@
   <string name="ui.app.users.founder_disabled">創設者設定を解除しました。</string>
   <string name="ui.app.users.action_menu_help">操作を選択してください。</string>
   <string name="ui.app.users.reset_password">パスワードをリセット</string>
+  <string name="ui.app.users.reset_tfa">メールTFAをリセット</string>
   <string name="ui.app.users.new_password">新しいパスワード</string>
   <string name="ui.app.users.password_reset_done">パスワードを更新しました。</string>
+  <string name="ui.app.users.tfa_reset_done">メールTFAをリセットしました。</string>
   <string name="ui.app.users.resend_verification">認証メールを再送</string>
   <string name="ui.app.users.verification_resent">認証メールを再送しました。</string>
   <string name="ui.app.users.delete_user">ユーザーを削除</string>
