@@ -12,11 +12,36 @@ import {
 } from "../../reuse/trusted-domains.js";
 
 const POLICY_FIELDS = [
-    { key: "minLength", id: "security-policy-min-length", min: 1, i18nSuffix: "policy_min_length" },
-    { key: "requireUppercase", id: "security-policy-require-uppercase", min: 0, i18nSuffix: "policy_require_uppercase" },
-    { key: "requireLowercase", id: "security-policy-require-lowercase", min: 0, i18nSuffix: "policy_require_lowercase" },
-    { key: "requireDigit", id: "security-policy-require-digit", min: 0, i18nSuffix: "policy_require_digit" },
-    { key: "requireSpecial", id: "security-policy-require-special", min: 0, i18nSuffix: "policy_require_special" },
+    {
+        key: "minLength",
+        id: "security-policy-min-length",
+        min: 1,
+        i18nSuffix: "policy_min_length",
+    },
+    {
+        key: "requireUppercase",
+        id: "security-policy-require-uppercase",
+        min: 0,
+        i18nSuffix: "policy_require_uppercase",
+    },
+    {
+        key: "requireLowercase",
+        id: "security-policy-require-lowercase",
+        min: 0,
+        i18nSuffix: "policy_require_lowercase",
+    },
+    {
+        key: "requireDigit",
+        id: "security-policy-require-digit",
+        min: 0,
+        i18nSuffix: "policy_require_digit",
+    },
+    {
+        key: "requireSpecial",
+        id: "security-policy-require-special",
+        min: 0,
+        i18nSuffix: "policy_require_special",
+    },
 ];
 
 /**
@@ -132,11 +157,15 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     function getPasswordPolicyValue() {
         return Object.fromEntries(
             POLICY_FIELDS.map(({ key, id, min }) => {
-                const el = root.querySelector(`#${id}`);
+                const policyInput = root.querySelector(`#${id}`);
                 return [
                     key,
-                    el instanceof HTMLInputElement
-                        ? parsePolicyCount(el.value, min, originalPasswordPolicy[key])
+                    policyInput instanceof HTMLInputElement
+                        ? parsePolicyCount(
+                              policyInput.value,
+                              min,
+                              originalPasswordPolicy[key],
+                          )
                         : originalPasswordPolicy[key],
                 ];
             }),
@@ -206,10 +235,10 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             teacherApprovalToggle.checked = originalTeacherManualApproval;
         }
         for (const { key, id } of POLICY_FIELDS) {
-            const el = root.querySelector(`#${id}`);
-            if (el instanceof HTMLInputElement) {
-                el.value = String(originalPasswordPolicy[key]);
-                el.addEventListener("input", markDirtyState);
+            const policyInput = root.querySelector(`#${id}`);
+            if (policyInput instanceof HTMLInputElement) {
+                policyInput.value = String(originalPasswordPolicy[key]);
+                policyInput.addEventListener("input", markDirtyState);
             }
         }
 
@@ -286,9 +315,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 teacherApprovalToggle.checked = originalTeacherManualApproval;
             }
             for (const { key, id } of POLICY_FIELDS) {
-                const el = root.querySelector(`#${id}`);
-                if (el instanceof HTMLInputElement) {
-                    el.value = String(originalPasswordPolicy[key]);
+                const policyInput = root.querySelector(`#${id}`);
+                if (policyInput instanceof HTMLInputElement) {
+                    policyInput.value = String(originalPasswordPolicy[key]);
                 }
             }
             onDirtyChange?.(false);
@@ -352,11 +381,13 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             <h3 class="components-section-heading">
               ${escapeHtml(i18n.t("ui.app.admin.security.password_policy_heading"))}
             </h3>
-            ${POLICY_FIELDS.map(({ id, min, i18nSuffix }) => `
+            ${POLICY_FIELDS.map(
+                ({ id, min, i18nSuffix }) => `
             <div class="security-field-row">
               <label for="${id}">${escapeHtml(i18n.t(`ui.app.admin.security.${i18nSuffix}`))}</label>
               <input id="${id}" class="security-policy-number-input" type="number" min="${min}" max="128" />
-            </div>`).join("")}
+            </div>`,
+            ).join("")}
           </div>
         </div>`;
         },

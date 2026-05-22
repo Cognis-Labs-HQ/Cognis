@@ -27,8 +27,9 @@ function getStatePill(status, i18n) {
 
 function renderDetailRows(pairs) {
     return pairs
-        .map(([key, value]) =>
-            `<li class="module-detail-item"><span class="module-detail-key">${key}</span><span class="module-detail-value">${value}</span></li>`,
+        .map(
+            ([key, value]) =>
+                `<li class="module-detail-item"><span class="module-detail-key">${key}</span><span class="module-detail-value">${value}</span></li>`,
         )
         .join("");
 }
@@ -55,13 +56,29 @@ function renderDetailsList(moduleRecord, gateways, i18n, escapeHtml) {
     const pairs = [
         [i18n.t("ui.reuse.id"), moduleRecord.id],
         [i18n.t("ui.reuse.version"), moduleRecord.version],
-        [i18n.t("ui.app.admin.publisher"), moduleRecord.publisher || i18n.t("ui.app.admin.unknown")],
+        [
+            i18n.t("ui.app.admin.publisher"),
+            moduleRecord.publisher || i18n.t("ui.app.admin.unknown"),
+        ],
         [i18n.t("ui.reuse.class"), moduleRecord.class],
-        [i18n.t("ui.app.admin.capabilities"), (moduleRecord.capabilities || []).join(", ") || i18n.t("ui.app.admin.none")],
+        [
+            i18n.t("ui.app.admin.capabilities"),
+            (moduleRecord.capabilities || []).join(", ") ||
+                i18n.t("ui.app.admin.none"),
+        ],
     ];
     const depsKey = i18n.t("ui.app.admin.gateway.dependencies");
     if (moduleRecord.requires && moduleRecord.requires.length > 0) {
-        pairs.push([depsKey, renderDependencyLinks(moduleRecord.requires, "gateway-", gateways, i18n, escapeHtml)]);
+        pairs.push([
+            depsKey,
+            renderDependencyLinks(
+                moduleRecord.requires,
+                "gateway-",
+                gateways,
+                i18n,
+                escapeHtml,
+            ),
+        ]);
     }
     return renderDetailRows(pairs);
 }
@@ -105,17 +122,43 @@ function renderGatewayDetailsList(gateway, gateways, i18n, escapeHtml) {
     const pairs = [
         [i18n.t("ui.reuse.id"), escapeHtml(gateway.id)],
         [i18n.t("ui.reuse.version"), escapeHtml(gateway.version ?? "")],
-        [i18n.t("ui.app.admin.publisher"), escapeHtml(gateway.publisher || i18n.t("ui.app.admin.unknown"))],
-        [i18n.t("ui.app.admin.gateway.required"), gateway.required ? i18n.t("ui.reuse.true") : i18n.t("ui.reuse.false")],
+        [
+            i18n.t("ui.app.admin.publisher"),
+            escapeHtml(gateway.publisher || i18n.t("ui.app.admin.unknown")),
+        ],
+        [
+            i18n.t("ui.app.admin.gateway.required"),
+            gateway.required
+                ? i18n.t("ui.reuse.true")
+                : i18n.t("ui.reuse.false"),
+        ],
     ];
     if (gateway.description) {
-        pairs.push([i18n.t("ui.app.admin.description"), escapeHtml(gateway.description)]);
+        pairs.push([
+            i18n.t("ui.app.admin.description"),
+            escapeHtml(gateway.description),
+        ]);
     }
-    pairs.push([i18n.t("ui.app.admin.gateway.dependencies"), renderDependencyLinks(gateway.requires, "gateway-", gateways, i18n, escapeHtml)]);
+    pairs.push([
+        i18n.t("ui.app.admin.gateway.dependencies"),
+        renderDependencyLinks(
+            gateway.requires,
+            "gateway-",
+            gateways,
+            i18n,
+            escapeHtml,
+        ),
+    ]);
     return renderDetailRows(pairs);
 }
 
-function renderInlineAdapters(adapters, gatewayId, isGatewayDisabled, i18n, escapeHtml) {
+function renderInlineAdapters(
+    adapters,
+    gatewayId,
+    isGatewayDisabled,
+    i18n,
+    escapeHtml,
+) {
     if (!adapters || adapters.length === 0) return "";
     const rows = adapters
         .map((adapter) => {
