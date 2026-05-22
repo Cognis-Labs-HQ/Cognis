@@ -9,7 +9,7 @@ The page composer now configures a translated shared refresh prompt so the warni
 ## Changed Files / Components
 
 - `src/ui/reuse/api-client.js` — Adds shared connection-recovery toast handling and prompt configuration.
-- `src/ui/reuse/page-composer.js` — Registers the translated connection-recovery prompt at page bootstrap.
+- `src/ui/reuse/page-composer/init.js` — Registers the translated connection-recovery prompt at page bootstrap.
 - `src/ui/languages/en/strings.xml`
 - `src/ui/languages/de/strings.xml`
 - `src/ui/languages/id/strings.xml`

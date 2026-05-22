@@ -1,4 +1,4 @@
-import { createPageComposer } from "/static/reuse/page-composer.js";
+import { createPageComposer } from "/static/reuse/page-composer/init.js";
 import {
     DEFAULT_LOCALE,
     createI18n,
@@ -26,7 +26,7 @@ import {
     DEFAULT_PASSWORD_POLICY,
     countPatternMatches,
     normalizePasswordPolicy,
-} from "/static/gateways/auth/password-policy.js";
+} from "/static/gateways/auth/ui/password-policy.js";
 
 async function resetAuthSessionForRegister() {
     const hadStoredSession =
@@ -47,7 +47,7 @@ async function resetAuthSessionForRegister() {
 /**
  * Builds structured form-builder criteria for password validation.
  *
- * @param {{ minLength: number, requireUppercase: number, requireLowercase: boolean, requireDigit: number, requireSpecial: number }} policy
+ * @param {{ minLength: number, requireUppercase: number, requireLowercase: number, requireDigit: number, requireSpecial: number }} policy
  * @returns {Array<{ id: string, type: 'custom', test: (value: string, fieldValues?: Record<string, string>) => boolean, messageKey: string, messageParams?: Record<string, number>, mode: 'live' }>}
  */
 function buildPasswordCriteria(policy) {
@@ -75,12 +75,15 @@ function buildPasswordCriteria(policy) {
             mode: "live",
         });
     }
-    if (policy.requireLowercase) {
+    if (policy.requireLowercase > 0) {
+        const minLowercaseCount = policy.requireLowercase;
         criteria.push({
             id: "password-lowercase-required",
             type: "custom",
-            test: (value) => /[a-z]/.test(value),
+            test: (value) =>
+                countPatternMatches(value, /[a-z]/g) >= minLowercaseCount,
             messageKey: "ui.app.register.error.password_requires_lowercase",
+            messageParams: { count: minLowercaseCount },
             mode: "live",
         });
     }

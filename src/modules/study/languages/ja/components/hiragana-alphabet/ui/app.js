@@ -1,31 +1,6 @@
-import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
-import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { createPageComposer } from "/static/reuse/page-composer.js";
-import {
-    loadStudySubNavigationModel,
-    renderStudySubNavigation,
-} from "/static/modules/study/languages/reuse/study-sub-navigation.js";
-
-async function loadHiraganaCharacters() {
-    try {
-        const response = await apiFetch(
-            "/api/v1/study/languages/ja/library/characters?characterClass=hiragana",
-        );
-        if (!response.ok) return [];
-        const payload = await response.json();
-        const rows = Array.isArray(payload?.data) ? payload.data : [];
-        return rows
-            .map((row) => ({
-                id: row.id,
-                symbol: row.symbol,
-                romanization: row.romanization,
-            }))
-            .sort((leftRow, rightRow) => leftRow.id.localeCompare(rightRow.id));
-    } catch {
-        return [];
-    }
-}
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
+import { mountStudyAlphabetPage } from "/static/modules/study/languages/reuse/alphabet-page.js";
 
 function chunkRows(rows, chunkSize) {
     const chunks = [];
@@ -58,69 +33,26 @@ function renderCharacterGrid(characters) {
 }
 
 export async function mount(root) {
-    const i18n = await createI18n({
-        componentStringBaseUrls: ["/static/gateways/study/languages"],
-    });
-    applyDocumentTitle(i18n, "ui.shared.brand.name");
-
-    const currentPath = window.location.pathname;
-    const [subNavigationModel, hiraganaCharacters] = await Promise.all([
-        loadStudySubNavigationModel({
-            fallbackLanguageCode: "ja",
-        }),
-        loadHiraganaCharacters(),
-    ]);
-
-    function renderSubNavigation() {
-        return renderStudySubNavigation({
-            model: subNavigationModel,
-            currentPath,
-            i18n,
-        });
-    }
-
-    const composer = createPageComposer(root, {
-        allowCustomization: false,
-        elements: [
-            {
-                id: "study-ja-hiragana",
-                label: i18n.t("gateway.study.hiragana_page_title"),
-                pinned: true,
-                gridSize: { default: [12, 8], min: [4, 4], max: "full" },
-                render: () => `
+    await mountStudyAlphabetPage(root, {
+        languageCode: "ja",
+        fallbackLanguageCode: "ja",
+        characterClass: "hiragana",
+        pageElementId: "study-ja-hiragana",
+        pageLabel: "Hiragana",
+        preferenceKey: "study-ja-hiragana-layout",
+        pageTitleKey: "gateway.study.hiragana_page_title",
+        pageSubtitleKey: "gateway.study.hiragana_subtitle",
+        renderSection: ({ i18n, alphabetCharacters }) => `
                     <section class="hiragana-alphabet-section">
                         <h2>${i18n.t("gateway.study.hiragana_section_heading")}</h2>
                         <p>${i18n.t("gateway.study.hiragana_description")}</p>
                         <div class="hiragana-grid">
-                            ${renderCharacterGrid(hiraganaCharacters)}
+                            ${renderCharacterGrid(alphabetCharacters)}
                         </div>
                     </section>
                 `,
-            },
-        ],
-        preferenceKey: "study-ja-hiragana-layout",
-        i18n,
-        pageContext: {
-            title: i18n.t("gateway.study.hiragana_page_title"),
-            subtitle: i18n.t("gateway.study.hiragana_subtitle"),
-        },
-        toolbar: [],
-        subNavigation: [
-            {
-                id: "study-ja-hiragana-subnav",
-                label: "Study",
-                render: renderSubNavigation,
-            },
-        ],
     });
-
-    await composer.init();
 }
-
-if (!globalThis.__spaRouter) {
-    try {
-        await mount(document.querySelector("#app"));
-    } catch (error) {
-        console.error("[study-ja] hiragana mount failed", error);
-    }
-}
+await mountWhenDirect(mount).catch((error) =>
+    console.error("[study-ja] hiragana mount failed", error),
+);

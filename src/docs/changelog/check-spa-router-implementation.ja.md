@@ -60,7 +60,7 @@ I/O 処理を並列化し、Node.js がブラウザリクエストを処理で�
     - `src/ui/tests/app-router.test.js`
 - シェル/レイアウト性能:
     - `src/ui/layouts/dashboard-layout.js`
-    - `src/ui/reuse/page-composer.js`
+    - `src/ui/reuse/page-composer/init.js`
     - `src/ui/tests/page-composer-refresh.test.js`
 - ページエントリーポイント:
     - `src/ui/app/invite/index.js`

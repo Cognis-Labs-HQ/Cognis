@@ -53,7 +53,7 @@ imported from anywhere.
     - `src/ui/tests/app-router.test.js`
 - Shell/layout performance:
     - `src/ui/layouts/dashboard-layout.js`
-    - `src/ui/reuse/page-composer.js`
+    - `src/ui/reuse/page-composer/init.js`
     - `src/ui/tests/page-composer-refresh.test.js`
 - Page entrypoints:
     - `src/ui/app/invite/index.js`

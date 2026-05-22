@@ -1,12 +1,4 @@
 <resources>
-  <string name="gateway.auth.no_providers">認証アダプターが設定されていません。</string>
-  <string name="gateway.auth.password_policy">パスワードポリシー</string>
-  <string name="gateway.auth.policy_heading">パスワードポリシー</string>
-  <string name="gateway.auth.policy_min_length">最小文字数</string>
-  <string name="gateway.auth.policy_require_uppercase">大文字の最小数（0 = 無効）</string>
-  <string name="gateway.auth.policy_require_lowercase">小文字を必須にする</string>
-  <string name="gateway.auth.policy_require_digit">数字の最小数（0 = 無効）</string>
-  <string name="gateway.auth.policy_require_special">特殊文字の最小数（0 = 無効）</string>
   <string name="gateway.auth.security.loading">セキュリティ設定を読み込み中…</string>
   <string name="gateway.auth.security.section_title">セキュリティ</string>
   <string name="gateway.auth.security.load_failed">パスワード変更機能を読み込めませんでした。</string>
@@ -22,7 +14,7 @@
   <string name="gateway.auth.security.password_policy">パスワードが要件を満たしていません。</string>
   <string name="gateway.auth.security.password_too_short">{min}文字以上にしてください。</string>
   <string name="gateway.auth.security.password_requires_uppercase">大文字を{count}文字以上含める必要があります。</string>
-  <string name="gateway.auth.security.password_requires_lowercase">小文字を含める必要があります。</string>
+  <string name="gateway.auth.security.password_requires_lowercase">少なくとも {count} 個の小文字を含める必要があります。</string>
   <string name="gateway.auth.security.password_requires_digit">数字を{count}文字以上含める必要があります。</string>
   <string name="gateway.auth.security.password_requires_special">特殊文字を{count}文字以上含める必要があります。</string>
 </resources>

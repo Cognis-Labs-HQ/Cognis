@@ -27,7 +27,7 @@ import {
 } from "./release-changelog-prefs.js";
 import { applyTimezoneToLocalStorage } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
-import { createPageComposer } from "../../reuse/page-composer.js";
+import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { showToast } from "../../reuse/toast.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
@@ -35,6 +35,7 @@ import {
     isValidMessageStyle,
     normalizeMessageStyle,
 } from "../../reuse/message-style-options.js";
+import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
 
 async function loadPrefs() {
     const account = localStorage.getItem("cognis_account");
@@ -157,36 +158,23 @@ export async function mount(root, { signal } = {}) {
 
     let contributedSections = [];
     try {
-        contributedSections = (
-            await Promise.all(
-                sectionDescriptors.map(async (descriptor) => {
-                    try {
-                        const mod = await import(descriptor.scriptUrl);
-                        if (typeof mod.createSettingsSection !== "function") {
-                            console.warn(
-                                `[settings] No createSettingsSection in ${descriptor.scriptUrl}`,
-                            );
-                            return null;
-                        }
-                        const sectionI18n = await extendI18n(
-                            i18n,
-                            descriptor.stringsBaseUrl,
-                        );
-                        return mod.createSettingsSection({
-                            i18n: sectionI18n,
-                            root,
-                            markDirty,
-                        });
-                    } catch (error) {
-                        console.warn(
-                            `[settings] Failed loading ${descriptor.scriptUrl}:`,
-                            error,
-                        );
-                        return null;
-                    }
+        contributedSections = await loadDynamicContributions(
+            sectionDescriptors,
+            {
+                exportName: "createSettingsSection",
+                buildArgs: async (descriptor) => ({
+                    i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
+                    root,
+                    markDirty,
                 }),
-            )
-        ).filter(Boolean);
+                onError: (error, descriptor) => {
+                    console.warn(
+                        `[settings] Failed loading ${descriptor?.scriptUrl}:`,
+                        error,
+                    );
+                },
+            },
+        );
     } catch (error) {
         console.warn(`[settings] sections-load-failed:`, error);
         contributedSections = [];

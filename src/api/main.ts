@@ -166,6 +166,7 @@ const routeRegistry = new RouteRegistry();
 const gatewayRegistry = new GatewayRegistry();
 const capabilities = new CapabilityStore();
 const uiRegistry = new UIRegistry();
+
 const gatewayService = new GatewayService(gatewayRegistry);
 
 const gatewaysRoot =
@@ -196,6 +197,13 @@ if (contributedLog) {
     setAppLogger(contributedLog);
 }
 const log = contributedLog ?? bootstrapLog;
+
+const routeContext = capabilities.get<RouteContext>("auth:routeContext");
+if (!routeContext) {
+    throw new Error(
+        "auth_route_context_missing: auth gateway must register auth:routeContext during bootstrap",
+    );
+}
 
 const cliAccessToken = issueAccessToken("cognis-cli", "owner", null);
 try {
@@ -355,7 +363,7 @@ const server = buildServer({
     >("modules:onStateChanged"),
     getModuleCapability: <T>(capabilityId: string) =>
         capabilities.get<T>(capabilityId),
-    routeContext: capabilities.get<RouteContext>("auth:routeContext"),
+    routeContext,
     loadModuleStates: async () => {
         const result = await dbExecutor.executeCommand({
             option: "SELECT",

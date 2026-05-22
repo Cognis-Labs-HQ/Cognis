@@ -30,7 +30,7 @@ Prefer gateway/adapter abstractions at every seam where a concrete implementatio
 
 ### Ctx is the capability backbone
 
-Use `ctx` as the only cross-component import surface. When a gateway, adapter, module, or route needs something owned elsewhere, it must obtain that capability through `ctx` (or a request/route context built from `ctx`) instead of importing another component's internals or receiving ad-hoc side-channel references.
+Use `ctx` as the only cross-component import surface for both core-to-component and inter-component interactions. When core, a gateway, an adapter, a module, or a route needs something owned elsewhere, it must obtain that capability through `ctx` (or a request/route context built from `ctx`) instead of importing another component's internals or receiving ad-hoc side-channel references.
 
 - Register exported capabilities through `ctx.capabilities`.
 - Consume capabilities by querying `ctx`/`ctx.capabilities`, including optional dependency checks.
@@ -137,6 +137,17 @@ Routes must be granular enough that disabling or removing a gateway, adapter, or
 ### Adapter directory structure
 
 Adapters live under `src/adapters/<gateway-id>/<adapter-id>/`. For example, the SMTP notification adapter lives at `src/adapters/notify/smtp/`, and the MariaDB database adapter at `src/adapters/db/mariadb/`. This lets a gateway find all of its adapters consistently by scanning `src/adapters/<gateway-id>/`. Never nest an adapter under a flat path like `src/adapters/notify-smtp/`.
+
+### Module directory structure
+
+Runtime extension modules must use a consistent root layout:
+
+- `src/modules/<module-id>/manifest.json`
+- `src/modules/<module-id>/routes.json`
+- `src/modules/<module-id>/ui/`
+- `src/modules/<module-id>/api/index.js` (or `index.ts`) when the module exposes server handlers
+
+Files in `src/modules/` that are framework internals (for example `study` language packs or route-runtime internals) may use their own documented structure, but must not be mixed with extension-module roots.
 
 ### Adapter admin controls must always exist
 
@@ -249,6 +260,19 @@ Repeatedly ignoring, hand-waving, or vainly dismissing valid review feedback is 
 ### Readability over terseness
 
 Format all new or modified code for human readability. Do not compress logic, markup, or styles into dense one-liners when a multi-line structure is clearer. A statement that would naturally span 6+ lines in JavaScript should remain that way — humans must be able to eyeball the code meaningfully.
+
+### LOC discipline and consistency are mandatory
+
+Large diffs are not a success metric. Adding thousands of lines in a pull request is **not** an indicator of quality, velocity, or correctness. Any safe opportunity to reduce LOC through consolidation and reusable abstractions should be taken whenever behavior remains unchanged.
+
+For every change:
+
+- Treat LOC reduction as a first-class objective whenever a safe reduction is possible.
+- Reuse existing generic utilities before introducing new feature-specific helpers.
+- Keep function names and CSS class names generic and role-based, not feature-branded.
+- Move code out of `reuse/` when it only serves one feature surface; keep `reuse/` strictly cross-cutting.
+- Keep HTML and JS/TS in separate files; do not embed page markup as feature-sized string templates in JS/TS modules.
+- Keep files at or below 1000 lines. If a file grows beyond that limit, convert it into a subdirectory with `index` as the entry point and split logic into focused sibling files.
 
 ### Variable naming
 

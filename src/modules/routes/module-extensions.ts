@@ -5,8 +5,8 @@ import type {
     RoleAccessPolicy,
 } from "@cognis/core";
 import path from "node:path";
-import { createDefaultRouteContext } from "../../api/reuse/route-context.js";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
+import type { RouteContext } from "../../api/reuse/route-context.js";
 import type { UIRegistry } from "../../api/ui-registry.js";
 
 interface RouteHandler {
@@ -88,9 +88,11 @@ interface ModulePlugin {
 export interface ModuleExtensionOptions {
     uiRegistry?: UIRegistry;
     getCapability?: <T>(capabilityId: string) => T | undefined;
-    requireRoleAccess?: ReturnType<
-        typeof createDefaultRouteContext
-    >["requireRoleAccess"];
+    /**
+     * Required auth gate injected from server route context. This is mandatory
+     * and has no fallback path.
+     */
+    requireRoleAccess: RouteContext["requireRoleAccess"];
 }
 
 export interface ModuleExtensionRoutes {
@@ -109,9 +111,12 @@ export function createModuleExtensionRoutes(
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
     let handlers: RouteHandler[] = [];
-    const requireRoleAccess =
-        options?.requireRoleAccess ??
-        createDefaultRouteContext().requireRoleAccess;
+    if (!options?.requireRoleAccess) {
+        throw new Error(
+            "module_extension_require_role_access_missing: createModuleExtensionRoutes requires requireRoleAccess from route context for all module routes",
+        );
+    }
+    const { requireRoleAccess } = options;
     const staticDirsRegisteredByModule = new Set<string>();
     const uiHooksRegisteredByModule = new Set<string>();
     const modulesRoot =

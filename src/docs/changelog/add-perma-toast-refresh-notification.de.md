@@ -9,7 +9,7 @@ Der Page Composer setzt nun einen übersetzten gemeinsamen Aktualisierungshinwei
 ## Geänderte Dateien / Komponenten
 
 - `src/ui/reuse/api-client.js` — Fügt die gemeinsame Connection-Recovery-Toast-Logik und Prompt-Konfiguration hinzu.
-- `src/ui/reuse/page-composer.js` — Registriert den übersetzten Connection-Recovery-Prompt beim Seitenstart.
+- `src/ui/reuse/page-composer/init.js` — Registriert den übersetzten Connection-Recovery-Prompt beim Seitenstart.
 - `src/ui/languages/en/strings.xml`
 - `src/ui/languages/de/strings.xml`
 - `src/ui/languages/id/strings.xml`

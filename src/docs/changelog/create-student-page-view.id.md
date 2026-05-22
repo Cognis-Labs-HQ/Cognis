@@ -28,7 +28,7 @@ Label peran di halaman Pengguna dan Dasbor kini sepenuhnya terlokalisasi.
 - `src/gateways/study/ui/study.css` — Gaya diperbarui: tata letak sub-navigasi modul, dropdown bahasa aktif, dan panel pengaturan bahasa 50/50
 - `src/gateways/study/ui/languages/*/strings.xml` — Kunci `gateway.study.available_languages` dan `gateway.study.active_languages` ditambahkan (semua 4 bahasa)
 - `src/ui/reuse/app-router.js` — Hanya `/study`, `/study/welcome`, dan `/study/settings` diarahkan ke hub belajar; halaman modul tetap memakai handler sendiri
-- `src/ui/reuse/page-composer.js` — Menambahkan slot sub-navigasi composer yang terpisah dari toolbar samping
+- `src/ui/reuse/page-composer/init.js` — Menambahkan slot sub-navigasi composer yang terpisah dari toolbar samping
 - `src/ui/layouts/dashboard-layout.js` — Menambahkan wiring slot layout `subNavigation`
 - `src/ui/public/templates/dashboard-layout.html` — Menambahkan placeholder baris sub-navigasi di bawah navigasi global
 - `src/modules/study/languages/ja/components/hiragana-alphabet/ui/index.html` — Menambahkan stylesheet global (`page-builder.css`, `reuse/page-sections.css`, `study.css`) dan boilerplate meta PWA lengkap agar halaman tampil benar saat hard refresh

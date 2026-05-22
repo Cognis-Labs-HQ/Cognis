@@ -1,6 +1,6 @@
 import { apiFetch } from "../../reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
-import { createPageComposer } from "../../reuse/page-composer.js";
+import { createPageComposer } from "../../reuse/page-composer/init.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import {
     buildAnalogueClockMarkup,
@@ -9,6 +9,7 @@ import {
     mountLiveClock,
 } from "../../reuse/clock-display.js";
 import { getRoleLabel } from "../../reuse/access-role.js";
+import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
 
 async function loadAccountInfo(account) {
     if (!account) return null;
@@ -29,27 +30,15 @@ async function loadDashboardExtensions({ i18n, account, role }) {
         const response = await apiFetch("/api/v1/ui/page-extensions/dashboard");
         if (!response.ok) return [];
         const payload = await response.json();
-        const extensions = Array.isArray(payload?.data) ? payload.data : [];
-        const loadedElements = await Promise.all(
-            extensions.map(async (extension) => {
-                if (!extension?.scriptUrl) return null;
-                try {
-                    const module = await import(extension.scriptUrl);
-                    if (typeof module.createPageElement !== "function") {
-                        return null;
-                    }
-                    const pageElement = module.createPageElement({
-                        i18n,
-                        account,
-                        role,
-                    });
-                    return pageElement;
-                } catch {
-                    return null;
-                }
+        return loadDynamicContributions(payload?.data, {
+            exportName: "createPageElement",
+            buildArgs: () => ({
+                i18n,
+                account,
+                role,
             }),
-        );
-        return loadedElements.filter(Boolean);
+            onError: () => {},
+        });
     } catch {
         return [];
     }

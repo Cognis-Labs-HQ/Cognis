@@ -44,7 +44,7 @@ const CHILD_COMPONENTS: LanguageChildComponent[] = [
         label: "Library",
         pageUrl: LIBRARY_PAGE_URL,
         scriptUrl: `${LIBRARY_COMPONENT_STATIC_BASE}/app.js`,
-        stylesheets: [`${LIBRARY_COMPONENT_STATIC_BASE}/library.css`],
+        stylesheets: ["/static/modules/study/languages/reuse/library-page.css"],
         minRole: "admin",
         order: 100,
     },

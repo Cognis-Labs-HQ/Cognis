@@ -58,7 +58,7 @@ bersama dan tidak diimpor dari mana pun.
     - `src/ui/tests/app-router.test.js`
 - Performa shell/layout:
     - `src/ui/layouts/dashboard-layout.js`
-    - `src/ui/reuse/page-composer.js`
+    - `src/ui/reuse/page-composer/init.js`
     - `src/ui/tests/page-composer-refresh.test.js`
 - Entrypoint halaman:
     - `src/ui/app/invite/index.js`

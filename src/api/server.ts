@@ -15,10 +15,7 @@ import { createUiRoutes } from "./routes/ui/index.js";
 import { createModuleExtensionRoutes } from "../modules/routes/module-extensions.js";
 import type { LocalAccountStore } from "./reuse/account-store.js";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
-import {
-    createDefaultRouteContext,
-    type RouteContext,
-} from "./reuse/route-context.js";
+import type { RouteContext } from "./reuse/route-context.js";
 import { createUserRoutes } from "./routes/users/index.js";
 import type { RouteRegistry } from "./route-registry.js";
 import { createGatewayRoutes } from "./routes/gateways/index.js";
@@ -96,7 +93,12 @@ export function resolveInitialModuleEnabledState(
 
 export function buildServer(deps: ApiDependencies) {
     const log = deps.log ?? (() => undefined);
-    const routeContext = deps.routeContext ?? createDefaultRouteContext();
+    const routeContext = deps.routeContext;
+    if (!routeContext) {
+        throw new Error(
+            "route_context_missing: auth route context is required in ApiDependencies",
+        );
+    }
     const moduleService = new ModuleService(deps.moduleRuntimeGateway);
     const healthService = new HealthService();
     const enabledModules = new Set<string>();

@@ -10,6 +10,7 @@ import {
 } from "../../api/reuse/route-context.js";
 import { DbAdapterConfigStore } from "./adapter-config-store.js";
 import { CoreSocialGateway } from "./gateway.js";
+import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
 
 export type { SocialAdapterBootstrapCtx, SocialAdapter } from "./gateway.js";
 export {
@@ -188,18 +189,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     await gateway.bootstrapAdapters(adaptersRoot, {
+        ...createGatewayUiRegistryHooks(ctx.uiRegistry, "social"),
         gateway,
         capabilities: ctx.capabilities,
         gatewayRegistry: ctx.gatewayRegistry,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId ?? "social"),
-        registerNavbarPlugin: (scriptUrl, isEnabled) =>
-            ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl, isEnabled }),
-        registerSpaRoute: (route) => ctx.uiRegistry?.registerSpaRoute(route),
-        registerStaticDir: (prefix, dir) =>
-            ctx.uiRegistry?.registerStaticDir(prefix, dir),
-        registerAdapterStaticDir: (gw, ad, dir) =>
-            ctx.uiRegistry?.registerAdapterStaticDir(gw, ad, dir),
+        registerAdapterStaticDir: (gatewayId, adapterId, absoluteDir) =>
+            ctx.uiRegistry?.registerAdapterStaticDir(
+                gatewayId,
+                adapterId,
+                absoluteDir,
+            ),
         registerAuthTypingMessage: (message) =>
             ctx.uiRegistry?.registerAuthTypingMessage(message),
         log: ctx.log,

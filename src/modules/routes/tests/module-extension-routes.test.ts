@@ -2,6 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createModuleExtensionRoutes } from "../module-extensions.js";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
+import { createDefaultRouteContext } from "../../../api/reuse/route-context.js";
+
+const { requireRoleAccess } = createDefaultRouteContext();
 
 test("module extension routes expose module API endpoints", async () => {
     const extensions = createModuleExtensionRoutes(
@@ -14,6 +17,8 @@ test("module extension routes expose module API endpoints", async () => {
             ],
         } as any,
         () => true,
+        undefined,
+        { requireRoleAccess },
     );
     await extensions.refresh();
 
@@ -53,6 +58,8 @@ test("module extension routes enforce declared minimum role policies", async () 
             ],
         } as any,
         () => true,
+        undefined,
+        { requireRoleAccess },
     );
     await extensions.refresh();
 
@@ -92,6 +99,8 @@ test("module extension routes fail closed on invalid role access policies", asyn
             ],
         } as any,
         () => true,
+        undefined,
+        { requireRoleAccess },
     );
     await extensions.refresh();
 

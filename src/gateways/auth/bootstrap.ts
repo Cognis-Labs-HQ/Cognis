@@ -161,7 +161,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.3.6",
+        version: "1.3.7",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs",
         required: true,
@@ -170,12 +170,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const uiDir = path.resolve(process.cwd(), "src", "gateways", "auth", "ui");
     ctx.uiRegistry?.registerStaticDir("auth", uiDir);
-    ctx.uiRegistry?.registerAdminSection({
-        id: "authentication",
-        label: "Authentication",
-        scriptUrl: "/static/gateways/auth/admin-section.js",
-        stringsBaseUrl: "/static/gateways/auth/languages",
-    });
     ctx.uiRegistry?.registerSettingsSection({
         id: "security",
         label: "Security",

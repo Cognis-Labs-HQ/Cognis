@@ -27,7 +27,7 @@ Additionally, role labels in the Users page and Dashboard are now fully localise
 - `src/gateways/study/ui/study.css` — Updated styles: module sub-navigation layout, active-language dropdown, and 50/50 split language settings panels
 - `src/gateways/study/ui/languages/*/strings.xml` — Added `gateway.study.available_languages` and `gateway.study.active_languages` keys (all 4 languages)
 - `src/ui/reuse/app-router.js` — Routes only `/study`, `/study/welcome`, and `/study/settings` to the study hub; module pages keep their own handlers
-- `src/ui/reuse/page-composer.js` — Added a new composer sub-navigation slot rendered separately from the aside toolbar
+- `src/ui/reuse/page-composer/init.js` — Added a new composer sub-navigation slot rendered separately from the aside toolbar
 - `src/ui/layouts/dashboard-layout.js` — Added `subNavigation` layout slot wiring
 - `src/ui/public/templates/dashboard-layout.html` — Added the sub-navigation row placeholder below the global nav
 - `src/gateways/study/ui/navbar.js` — Fetches registered languages on load; greys out the Study nav link (sets `aria-disabled`, removes `href`) when no language modules are registered on the instance

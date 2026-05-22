@@ -43,6 +43,28 @@ const STUDY_BASE_STYLESHEETS = [
     "/static/styles/reuse/page-sections.css",
     "/static/gateways/study/study.css",
 ];
+const ROUTE_STYLE_BUNDLES = {
+    pageSections: [
+        "/static/styles/page-builder.css",
+        "/static/styles/reuse/page-sections.css",
+    ],
+    settings: [
+        "/static/styles/page-builder.css",
+        "/static/styles/reuse/page-sections.css",
+        "/static/styles/settings.css",
+    ],
+    docs: [
+        "/static/styles/page-builder.css",
+        "/static/styles/reuse/page-sections.css",
+        "/static/styles/docs.css",
+    ],
+    license: [
+        "/static/styles/page-builder.css",
+        "/static/styles/reuse/page-sections.css",
+        "/static/styles/license.css",
+    ],
+    study: STUDY_BASE_STYLESHEETS,
+};
 
 const STUDY_CHILD_ROUTE_PATTERN = /^\/study\/(?!welcome$|settings$)[^/]+$/;
 const STUDY_CHILD_COMPONENT_CACHE_TTL_MS = 30_000;
@@ -193,89 +215,61 @@ const STATIC_ROUTES = [
     {
         pattern: /^\/dashboard$/,
         base: "/dashboard",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-        ],
+        stylesheets: ROUTE_STYLE_BUNDLES.pageSections,
         load: () => import("../app/dashboard/index.js"),
     },
     {
         pattern: /^\/settings/,
         base: "/settings",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/styles/settings.css",
-        ],
+        stylesheets: ROUTE_STYLE_BUNDLES.settings,
         load: () => import("../app/settings/index.js"),
     },
     {
         pattern: /^\/users/,
         base: "/users",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-        ],
+        stylesheets: ROUTE_STYLE_BUNDLES.pageSections,
         load: () => import("../app/users/index.js"),
     },
     {
         pattern: /^\/invite$/,
         base: "/invite",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-        ],
+        stylesheets: ROUTE_STYLE_BUNDLES.pageSections,
         load: () => import("../app/invite/index.js"),
     },
     {
         pattern: /^\/administration/,
         base: "/administration",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-        ],
+        stylesheets: ROUTE_STYLE_BUNDLES.pageSections,
         load: () => import("../app/administration/index.js"),
     },
     {
         pattern: /^\/docs/,
         base: "/docs",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/styles/docs.css",
-        ],
+        stylesheets: ROUTE_STYLE_BUNDLES.docs,
         load: () => import("../app/docs/index.js"),
     },
     {
         pattern: /^\/changelogs/,
         base: "/changelogs",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/styles/docs.css",
-        ],
+        stylesheets: ROUTE_STYLE_BUNDLES.docs,
         load: () => import("../app/changelogs/index.js"),
     },
     {
         pattern: /^\/license$/,
         base: "/license",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/styles/license.css",
-        ],
+        stylesheets: ROUTE_STYLE_BUNDLES.license,
         load: () => import("../app/license/index.js"),
     },
     {
         pattern: /^\/study(?:\/welcome|\/settings)?$/,
         base: "/study",
-        stylesheets: STUDY_BASE_STYLESHEETS,
+        stylesheets: ROUTE_STYLE_BUNDLES.study,
         load: () => import("/static/gateways/study/study.js"),
     },
     {
         pattern: STUDY_CHILD_ROUTE_PATTERN,
         base: "/study",
-        stylesheets: STUDY_BASE_STYLESHEETS,
+        stylesheets: ROUTE_STYLE_BUNDLES.study,
         load: (path) => loadStudyChildRouteModule(path),
     },
 ];

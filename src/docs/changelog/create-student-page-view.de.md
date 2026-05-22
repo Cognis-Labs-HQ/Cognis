@@ -28,7 +28,7 @@ Darüber hinaus sind Rollenbezeichnungen auf der Benutzerseite und im Dashboard 
 - `src/gateways/study/ui/study.css` — Aktualisierte Stile: Modul-Subnavigation, Dropdown für aktive Sprachen und 50/50-Spracheinstellungspanels
 - `src/gateways/study/ui/languages/*/strings.xml` — Schlüssel `gateway.study.available_languages` und `gateway.study.active_languages` hinzugefügt (alle 4 Sprachen)
 - `src/ui/reuse/app-router.js` — Nur `/study`, `/study/welcome` und `/study/settings` werden dem Studiehub zugeordnet; Modulseiten behalten ihre eigenen Handler
-- `src/ui/reuse/page-composer.js` — Neuer Composer-Slot für eine Sub-Navigation, getrennt von der seitlichen Toolbar
+- `src/ui/reuse/page-composer/init.js` — Neuer Composer-Slot für eine Sub-Navigation, getrennt von der seitlichen Toolbar
 - `src/ui/layouts/dashboard-layout.js` — `subNavigation`-Slot in das Layout verdrahtet
 - `src/ui/public/templates/dashboard-layout.html` — Platzhalter für die Sub-Navigationszeile unter der globalen Navigation ergänzt
 - `src/modules/study/languages/ja/components/hiragana-alphabet/ui/index.html` — Globale Stylesheets (`page-builder.css`, `reuse/page-sections.css`, `study.css`) und vollständige PWA-Meta-Elemente ergänzt, damit die Seite auch bei Hartneulade korrekt dargestellt wird

@@ -9,7 +9,7 @@
 ## 変更ファイル / コンポーネント
 
 - `src/ui/reuse/api-client.js` — 共通の接続復旧トースト処理とプロンプト設定を追加。
-- `src/ui/reuse/page-composer.js` — ページ初期化時に翻訳済み接続復旧プロンプトを登録。
+- `src/ui/reuse/page-composer/init.js` — ページ初期化時に翻訳済み接続復旧プロンプトを登録。
 - `src/ui/languages/en/strings.xml`
 - `src/ui/languages/de/strings.xml`
 - `src/ui/languages/id/strings.xml`

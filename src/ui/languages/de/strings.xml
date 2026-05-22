@@ -235,7 +235,7 @@
   <string name="ui.app.register.error.password_policy">Das Passwort erfüllt die Anforderungen nicht.</string>
   <string name="ui.app.register.error.password_too_short">Muss mindestens {min} Zeichen enthalten.</string>
   <string name="ui.app.register.error.password_requires_uppercase">Muss mindestens {count} Großbuchstaben enthalten.</string>
-  <string name="ui.app.register.error.password_requires_lowercase">Muss einen Kleinbuchstaben enthalten.</string>
+  <string name="ui.app.register.error.password_requires_lowercase">Muss mindestens {count} Kleinbuchstaben enthalten.</string>
   <string name="ui.app.register.error.password_requires_digit">Muss mindestens {count} Ziffer(n) enthalten.</string>
   <string name="ui.app.register.error.password_requires_special">Muss mindestens {count} Sonderzeichen enthalten.</string>
   <string name="ui.app.register.error.username_invalid">Der Benutzername darf nur Buchstaben, Ziffern, Bindestriche und Unterstriche enthalten.</string>
@@ -470,7 +470,7 @@
   <string name="ui.app.admin.security.password_policy_heading">Passwortrichtlinie</string>
   <string name="ui.app.admin.security.policy_min_length">Mindestlänge</string>
   <string name="ui.app.admin.security.policy_require_uppercase">Mindestanzahl Großbuchstaben (0 = aus)</string>
-  <string name="ui.app.admin.security.policy_require_lowercase">Kleinbuchstaben erforderlich</string>
+  <string name="ui.app.admin.security.policy_require_lowercase">Mindestzahl Kleinbuchstaben</string>
   <string name="ui.app.admin.security.policy_require_digit">Mindestanzahl Ziffern (0 = aus)</string>
   <string name="ui.app.admin.security.policy_require_special">Mindestanzahl Sonderzeichen (0 = aus)</string>
   <string name="ui.app.admin.security.saved">Sicherheitseinstellungen gespeichert.</string>
