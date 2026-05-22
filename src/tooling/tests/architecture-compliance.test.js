@@ -150,7 +150,10 @@ function hasSourceExtension(filePath) {
 test("legacy LOC exceptions include split strategies and self-prune", () => {
     const staleEntries = [];
     for (const [repoPath, strategy] of LEGACY_LARGE_FILE_STRATEGIES.entries()) {
-        assert.ok(strategy.trim().length > 0, `missing split strategy: ${repoPath}`);
+        assert.ok(
+            strategy.trim().length > 0,
+            `missing split strategy: ${repoPath}`,
+        );
         const filePath = resolve(ROOT, repoPath);
         const lineCount = readFileSync(filePath, "utf8").split("\n").length;
         if (lineCount <= 1000) {
