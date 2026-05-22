@@ -408,17 +408,25 @@ test("meetings UI keeps Jitsi theme and active-meeting table responsive", () => 
 });
 
 test("jitsi API exposes user active meetings endpoint", () => {
-    const source = readFileSync(
+    const indexSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
         "utf8",
     );
-    assert.match(source, /"\/api\/v1\/modules\/jitsi-meet\/meetings\/active"/);
+    const meetingsRoutesSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/meetings-routes.js"),
+        "utf8",
+    );
+    assert.match(indexSource, /registerMeetingRoutes\(/);
     assert.match(
-        source,
+        meetingsRoutesSource,
+        /"\/api\/v1\/modules\/jitsi-meet\/meetings\/active"/,
+    );
+    assert.match(
+        meetingsRoutesSource,
         /const activeMeetings = await store\.listActiveMeetings\(\)/,
     );
     assert.match(
-        source,
+        meetingsRoutesSource,
         /if \(state\.authRequired && !state\.authCompletedAt\) continue;/,
     );
 });

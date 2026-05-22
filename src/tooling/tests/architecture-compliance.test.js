@@ -70,7 +70,6 @@ const LEGACY_LARGE_FILES = new Set([
     "src/gateways/auth/bootstrap.ts",
     "src/gateways/auth/tests/auth-gateway.test.ts",
     "src/gateways/notify/bootstrap.ts",
-    "src/modules/jitsi-meet/api/index.js",
     "src/modules/jitsi-meet/ui/app.js",
     "src/tooling/cli/index.ts",
     "src/ui/app/administration/index.js",

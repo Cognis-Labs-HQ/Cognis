@@ -26,7 +26,7 @@ import {
     DEFAULT_PASSWORD_POLICY,
     countPatternMatches,
     normalizePasswordPolicy,
-} from "/static/gateways/auth/ui/password-policy.js";
+} from "/static/gateways/auth/password-policy.js";
 
 async function resetAuthSessionForRegister() {
     const hadStoredSession =
