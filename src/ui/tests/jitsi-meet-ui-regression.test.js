@@ -19,7 +19,10 @@ test("meetings search popup adds confirmed users directly to meeting participant
         source,
         /onSelectMultiple:\s*\(results\)\s*=>[\s\S]*state\.availableParticipants\.push/,
     );
-    assert.match(source, /avatarKey:\s*typeof result\?\.avatarKey === "string"/);
+    assert.match(
+        source,
+        /avatarKey:\s*typeof result\?\.avatarKey === "string"/,
+    );
 });
 
 test("jitsi participant avatars reuse social avatar hydration and hide staged avatars while active", () => {
@@ -35,8 +38,14 @@ test("jitsi participant avatars reuse social avatar hydration and hide staged av
         source,
         /buildProfileAvatarMarkup[\s\S]*handleProfileAvatarError[\s\S]*hydrateProfileAvatars/,
     );
-    assert.match(source, /root\.addEventListener\("error", handleProfileAvatarError/);
-    assert.match(source, /const stagedEntries = isMeetingActive\(\) \? \[\] : state\.selectedParticipants;/);
+    assert.match(
+        source,
+        /root\.addEventListener\("error", handleProfileAvatarError/,
+    );
+    assert.match(
+        source,
+        /const stagedEntries = isMeetingActive\(\)\s*\?\s*\[\]\s*:\s*state\.selectedParticipants;/,
+    );
     assert.match(source, /void hydrateProfileAvatars\(availablePool\);/);
     assert.match(cssSource, /\.jitsi-participant-avatar-img/);
 });

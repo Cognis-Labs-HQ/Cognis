@@ -929,11 +929,11 @@ export async function mount(root, { signal } = {}) {
         );
         void hydrateProfileAvatars(availablePool);
 
-        const stagedEntries = isMeetingActive() ? [] : state.selectedParticipants;
+        const stagedEntries = isMeetingActive()
+            ? []
+            : state.selectedParticipants;
         stagedArea.replaceChildren(
-            ...stagedEntries.map((entry) =>
-                createParticipantAvatarEl(entry),
-            ),
+            ...stagedEntries.map((entry) => createParticipantAvatarEl(entry)),
         );
         void hydrateProfileAvatars(stagedArea);
 
