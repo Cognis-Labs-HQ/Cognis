@@ -267,6 +267,10 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     assert.match(source, /function deferAloneParticipantPrompt\(/);
     assert.match(
         source,
+        /state\.alonePromptBlockedUntil = Date\.now\(\) \+ delayMs;/,
+    );
+    assert.match(
+        source,
         /function shouldPromptLocalUserAlone\(activeParticipants\)/,
     );
     assert.match(source, /Date\.now\(\) < state\.alonePromptBlockedUntil/);
@@ -279,6 +283,10 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     assert.match(
         source,
         /state\.meeting = joinPayload\?\.data \?\? state\.meeting;[\s\S]*deferAloneParticipantPrompt\(\);/,
+    );
+    assert.match(
+        source,
+        /authButton\.addEventListener\([\s\S]*deferAloneParticipantPrompt\(\);/,
     );
     assert.match(
         source,
