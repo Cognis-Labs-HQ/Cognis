@@ -55,7 +55,9 @@ function collectMissingIndexViolations({
 }
 
 // Legacy over-limit files kept as a temporary allowlist while they are
-// incrementally split into directory-based entrypoints. New oversized files are forbidden.
+// incrementally split into directory-based entrypoints. The list must only
+// shrink over time; do not add entries unless an explicit migration plan exists.
+// New oversized files are forbidden.
 const LEGACY_LARGE_FILES = new Set([
     "src/adapters/social/messages/routes.ts",
     "src/adapters/social/messages/store.ts",
