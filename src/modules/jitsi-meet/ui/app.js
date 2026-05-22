@@ -774,11 +774,12 @@ export async function mount(root, { signal } = {}) {
     }
 
     function shouldPromptLocalUserAlone(activeParticipants) {
-        if (!isMeetingActive() || !state.meeting?.id) return false;
-        if (state.alonePromptDismissedMeetingId === state.meeting.id) {
-            return false;
-        }
-        if (Date.now() < state.alonePromptBlockedUntil) {
+        if (
+            !isMeetingActive() ||
+            !state.meeting?.id ||
+            state.alonePromptDismissedMeetingId === state.meeting.id ||
+            Date.now() < state.alonePromptBlockedUntil
+        ) {
             return false;
         }
         const localUsername = normalizeUsername(

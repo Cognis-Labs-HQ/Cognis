@@ -280,16 +280,23 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     );
     assert.match(source, /module\.jitsi_meet\.overlay\.alone_prompt/);
     assert.match(source, /alonePromptDismissedMeetingId/);
-    const joinMeetingMatch = source.match(
-        /async function joinMeeting\(\) \{([\s\S]*?)\n    async function prepareMeetingStart/,
+    assert.match(
+        source,
+        /const joinPayload = await joinResponse\.json\(\);\n\s*state\.meeting = joinPayload\?\.data \?\? state\.meeting;\n\s*deferAloneParticipantPrompt\(\);/,
     );
-    assert.ok(joinMeetingMatch);
-    const joinMeetingSource = joinMeetingMatch[1];
-    assert.match(joinMeetingSource, /state\.meeting = joinPayload\?\.data \?\? state\.meeting;/);
-    assert.match(joinMeetingSource, /deferAloneParticipantPrompt\(\);/);
+    assert.match(
+        source,
+        /state\.meeting = joinPayload\?\.data \?\? state\.meeting;/,
+    );
     assert.match(source, /authButton\.addEventListener\(/);
-    assert.match(source, /if \(!state\.meeting\?\.id\) return;\n\s*deferAloneParticipantPrompt\(\);/);
-    assert.match(source, /apiInstance\.addEventListener\("passwordRequired", \(\) => \{/);
+    assert.match(
+        source,
+        /if \(!state\.meeting\?\.id\) return;\n\s*deferAloneParticipantPrompt\(\);/,
+    );
+    assert.match(
+        source,
+        /apiInstance\.addEventListener\("passwordRequired", \(\) => \{/,
+    );
     assert.match(
         source,
         /deferAloneParticipantPrompt\(\);\n\s*submitMeetingPassword\(\);/,
