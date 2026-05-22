@@ -130,3 +130,46 @@ test("module extension routes fail closed on invalid role access policies", asyn
     assert.equal(status, 403);
     assert.match(body, /invalid access policy/i);
 });
+
+test("module extension routes register module page extensions with enable hooks", async () => {
+    const pageExtensions: Array<{
+        pageId: string;
+        element: {
+            id: string;
+            label: string;
+            scriptUrl: string;
+            isEnabled?: () => boolean;
+        };
+    }> = [];
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "sample-analytics",
+                    entrypoints: { api: "./api/index.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        undefined,
+        {
+            requireRoleAccess,
+            uiRegistry: {
+                registerModuleStaticDir() {},
+                registerPageExtension(pageId: string, element: any) {
+                    pageExtensions.push({ pageId, element });
+                },
+            } as any,
+        },
+    );
+    await extensions.refresh();
+
+    assert.equal(pageExtensions.length, 1);
+    assert.equal(pageExtensions[0].pageId, "dashboard");
+    assert.equal(pageExtensions[0].element.id, "sample-analytics-dashboard");
+    assert.equal(
+        pageExtensions[0].element.scriptUrl,
+        "/static/modules/sample-analytics/dashboard-element.js",
+    );
+    assert.equal(pageExtensions[0].element.isEnabled?.(), true);
+});
