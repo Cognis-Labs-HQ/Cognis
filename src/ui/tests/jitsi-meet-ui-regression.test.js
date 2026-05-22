@@ -263,10 +263,7 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     );
     assert.match(markupSource, /id="jitsi-leave-alone-btn"/);
     assert.match(markupSource, /id="jitsi-remain-alone-btn"/);
-    assert.match(
-        constantsSource,
-        /ALONE_PROMPT_GRACE_PERIOD_MS = 60_000/,
-    );
+    assert.match(constantsSource, /ALONE_PROMPT_GRACE_PERIOD_MS = 60_000/);
     assert.match(source, /function deferAloneParticipantPrompt\(/);
     assert.match(
         source,
