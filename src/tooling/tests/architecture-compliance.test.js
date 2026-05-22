@@ -56,7 +56,7 @@ function collectMissingIndexViolations({
 
 // Legacy over-limit files kept as a temporary allowlist while they are
 // incrementally split into directory-based entrypoints. New oversized files are forbidden.
-const GRANDFATHERED_LARGE_FILES = new Set([
+const LEGACY_LARGE_FILES = new Set([
     "src/adapters/social/messages/routes.ts",
     "src/adapters/social/messages/store.ts",
     "src/adapters/social/messages/ui/app.js",
@@ -77,7 +77,7 @@ const GRANDFATHERED_LARGE_FILES = new Set([
 
 const SOURCE_EXTENSIONS = new Set([".js", ".ts", ".css", ".html"]);
 
-const GRANDFATHERED_FLAT_UI_APP_ENTRIES = new Set([
+const LEGACY_FLAT_UI_APP_ENTRIES = new Set([
     "src/adapters/social/messages/ui/app.js",
     "src/adapters/social/profile/ui/app.js",
     "src/adapters/study/classes/ui/app.js",
@@ -103,7 +103,7 @@ test("source files stay under the 1000-line guardrail", () => {
         const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
         const lineCount = readFileSync(filePath, "utf8").split("\n").length;
         if (lineCount <= 1000) continue;
-        if (GRANDFATHERED_LARGE_FILES.has(repoPath)) continue;
+        if (LEGACY_LARGE_FILES.has(repoPath)) continue;
         hits.push(`${repoPath} (${lineCount} lines)`);
     }
 
@@ -164,7 +164,7 @@ test("module and adapter ui app entries use ui/app/index.js structure", () => {
             const normalizedFilePath = filePath.replace(/\\/g, "/");
             if (!normalizedFilePath.endsWith("/ui/app.js")) continue;
             const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
-            if (GRANDFATHERED_FLAT_UI_APP_ENTRIES.has(repoPath)) continue;
+            if (LEGACY_FLAT_UI_APP_ENTRIES.has(repoPath)) continue;
             violations.push(`flat ui app entry is not allowed: ${repoPath}`);
         }
     }
