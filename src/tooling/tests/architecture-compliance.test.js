@@ -83,10 +83,6 @@ const LEGACY_LARGE_FILE_STRATEGIES = new Map([
         "Split class CRUD, membership flows, and serializers into store/ modules with shared types.",
     ],
     [
-        "src/api/tests/ui/ui-routes.test.ts",
-        "Split route tests by domain under ui-routes/ and keep a lightweight index test bootstrap.",
-    ],
-    [
         "src/gateways/auth/bootstrap.ts",
         "Extract route registration, capability wiring, and service setup into bootstrap/ modules.",
     ],

@@ -5,7 +5,7 @@ import {
     DEFAULT_PASSWORD_POLICY,
     normalizePasswordPolicy,
     parsePolicyCount,
-} from "/static/gateways/auth/ui/password-policy.js";
+} from "../../reuse/password-policy.js";
 import {
     clearTrustedDomainsCache,
     normalizeTrustedDomains,
