@@ -49,10 +49,6 @@ let changesBar = null;
 let securitySection = null;
 let elements = [];
 
-async function extendSectionI18n(baseI18n, stringsBaseUrl) {
-    return extendI18n(baseI18n, stringsBaseUrl);
-}
-
 /**
  * Returns the canonical `${gatewayId}:${adapterId}` key used by adapter lookup
  * indexes across administration render, toggle, and follow-up action flows.
@@ -1286,7 +1282,7 @@ export async function mount(rootEl, { signal } = {}) {
             sectionMeta.map((section) =>
                 loadGatewaySection(section, {
                     i18n,
-                    extendI18n: extendSectionI18n,
+                    extendI18n,
                     escapeHtml,
                     openPopup,
                     showToast,

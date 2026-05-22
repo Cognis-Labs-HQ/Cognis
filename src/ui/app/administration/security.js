@@ -11,7 +11,13 @@ import {
     normalizeTrustedDomains,
 } from "../../reuse/trusted-domains.js";
 
-const PASSWORD_POLICY_KEYS = Object.keys(DEFAULT_PASSWORD_POLICY);
+const POLICY_FIELDS = [
+    { key: "minLength", id: "security-policy-min-length", min: 1, i18nSuffix: "policy_min_length" },
+    { key: "requireUppercase", id: "security-policy-require-uppercase", min: 0, i18nSuffix: "policy_require_uppercase" },
+    { key: "requireLowercase", id: "security-policy-require-lowercase", min: 0, i18nSuffix: "policy_require_lowercase" },
+    { key: "requireDigit", id: "security-policy-require-digit", min: 0, i18nSuffix: "policy_require_digit" },
+    { key: "requireSpecial", id: "security-policy-require-special", min: 0, i18nSuffix: "policy_require_special" },
+];
 
 /**
  * Security sub-module for the Administration page.
@@ -124,69 +130,23 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     }
 
     function getPasswordPolicyValue() {
-        const minLengthInput = root.querySelector(
-            "#security-policy-min-length",
+        return Object.fromEntries(
+            POLICY_FIELDS.map(({ key, id, min }) => {
+                const el = root.querySelector(`#${id}`);
+                return [
+                    key,
+                    el instanceof HTMLInputElement
+                        ? parsePolicyCount(el.value, min, originalPasswordPolicy[key])
+                        : originalPasswordPolicy[key],
+                ];
+            }),
         );
-        const uppercaseInput = root.querySelector(
-            "#security-policy-require-uppercase",
-        );
-        const lowercaseInput = root.querySelector(
-            "#security-policy-require-lowercase",
-        );
-        const digitInput = root.querySelector("#security-policy-require-digit");
-        const specialInput = root.querySelector(
-            "#security-policy-require-special",
-        );
-
-        return {
-            minLength:
-                minLengthInput instanceof HTMLInputElement
-                    ? parsePolicyCount(
-                          minLengthInput.value,
-                          1,
-                          originalPasswordPolicy.minLength,
-                      )
-                    : originalPasswordPolicy.minLength,
-            requireUppercase:
-                uppercaseInput instanceof HTMLInputElement
-                    ? parsePolicyCount(
-                          uppercaseInput.value,
-                          0,
-                          originalPasswordPolicy.requireUppercase,
-                      )
-                    : originalPasswordPolicy.requireUppercase,
-            requireLowercase:
-                lowercaseInput instanceof HTMLInputElement
-                    ? parsePolicyCount(
-                          lowercaseInput.value,
-                          0,
-                          originalPasswordPolicy.requireLowercase,
-                      )
-                    : originalPasswordPolicy.requireLowercase,
-            requireDigit:
-                digitInput instanceof HTMLInputElement
-                    ? parsePolicyCount(
-                          digitInput.value,
-                          0,
-                          originalPasswordPolicy.requireDigit,
-                      )
-                    : originalPasswordPolicy.requireDigit,
-            requireSpecial:
-                specialInput instanceof HTMLInputElement
-                    ? parsePolicyCount(
-                          specialInput.value,
-                          0,
-                          originalPasswordPolicy.requireSpecial,
-                      )
-                    : originalPasswordPolicy.requireSpecial,
-        };
     }
 
     function isPasswordPolicyChanged() {
         const currentPolicy = getPasswordPolicyValue();
-        return PASSWORD_POLICY_KEYS.some(
-            (fieldName) =>
-                currentPolicy[fieldName] !== originalPasswordPolicy[fieldName],
+        return POLICY_FIELDS.some(
+            ({ key }) => currentPolicy[key] !== originalPasswordPolicy[key],
         );
     }
 
@@ -236,20 +196,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         const teacherApprovalToggle = root.querySelector(
             "#security-require-teacher-approval",
         );
-        const minLengthInput = root.querySelector(
-            "#security-policy-min-length",
-        );
-        const uppercaseInput = root.querySelector(
-            "#security-policy-require-uppercase",
-        );
-        const lowercaseInput = root.querySelector(
-            "#security-policy-require-lowercase",
-        );
-        const digitInput = root.querySelector("#security-policy-require-digit");
-        const specialInput = root.querySelector(
-            "#security-policy-require-special",
-        );
-
         if (validationSelect instanceof HTMLSelectElement) {
             validationSelect.value = currentUserValidationMode;
         }
@@ -259,35 +205,18 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         if (teacherApprovalToggle instanceof HTMLInputElement) {
             teacherApprovalToggle.checked = originalTeacherManualApproval;
         }
-        if (minLengthInput instanceof HTMLInputElement) {
-            minLengthInput.value = String(originalPasswordPolicy.minLength);
-        }
-        if (uppercaseInput instanceof HTMLInputElement) {
-            uppercaseInput.value = String(
-                originalPasswordPolicy.requireUppercase,
-            );
-        }
-        if (lowercaseInput instanceof HTMLInputElement) {
-            lowercaseInput.value = String(
-                originalPasswordPolicy.requireLowercase,
-            );
-        }
-        if (digitInput instanceof HTMLInputElement) {
-            digitInput.value = String(originalPasswordPolicy.requireDigit);
-        }
-        if (specialInput instanceof HTMLInputElement) {
-            specialInput.value = String(originalPasswordPolicy.requireSpecial);
+        for (const { key, id } of POLICY_FIELDS) {
+            const el = root.querySelector(`#${id}`);
+            if (el instanceof HTMLInputElement) {
+                el.value = String(originalPasswordPolicy[key]);
+                el.addEventListener("input", markDirtyState);
+            }
         }
 
         input.addEventListener("input", markDirtyState);
         validationSelect?.addEventListener("change", markDirtyState);
         registrationsToggle?.addEventListener("change", markDirtyState);
         teacherApprovalToggle?.addEventListener("change", markDirtyState);
-        minLengthInput?.addEventListener("input", markDirtyState);
-        uppercaseInput?.addEventListener("input", markDirtyState);
-        lowercaseInput?.addEventListener("input", markDirtyState);
-        digitInput?.addEventListener("input", markDirtyState);
-        specialInput?.addEventListener("input", markDirtyState);
     }
 
     return {
@@ -349,21 +278,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const teacherApprovalToggle = root.querySelector(
                 "#security-require-teacher-approval",
             );
-            const minLengthInput = root.querySelector(
-                "#security-policy-min-length",
-            );
-            const uppercaseInput = root.querySelector(
-                "#security-policy-require-uppercase",
-            );
-            const lowercaseInput = root.querySelector(
-                "#security-policy-require-lowercase",
-            );
-            const digitInput = root.querySelector(
-                "#security-policy-require-digit",
-            );
-            const specialInput = root.querySelector(
-                "#security-policy-require-special",
-            );
 
             if (registrationsToggle instanceof HTMLInputElement) {
                 registrationsToggle.checked = currentPublicRegistrationEnabled;
@@ -371,26 +285,11 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             if (teacherApprovalToggle instanceof HTMLInputElement) {
                 teacherApprovalToggle.checked = originalTeacherManualApproval;
             }
-            if (minLengthInput instanceof HTMLInputElement) {
-                minLengthInput.value = String(originalPasswordPolicy.minLength);
-            }
-            if (uppercaseInput instanceof HTMLInputElement) {
-                uppercaseInput.value = String(
-                    originalPasswordPolicy.requireUppercase,
-                );
-            }
-            if (lowercaseInput instanceof HTMLInputElement) {
-                lowercaseInput.value = String(
-                    originalPasswordPolicy.requireLowercase,
-                );
-            }
-            if (digitInput instanceof HTMLInputElement) {
-                digitInput.value = String(originalPasswordPolicy.requireDigit);
-            }
-            if (specialInput instanceof HTMLInputElement) {
-                specialInput.value = String(
-                    originalPasswordPolicy.requireSpecial,
-                );
+            for (const { key, id } of POLICY_FIELDS) {
+                const el = root.querySelector(`#${id}`);
+                if (el instanceof HTMLInputElement) {
+                    el.value = String(originalPasswordPolicy[key]);
+                }
             }
             onDirtyChange?.(false);
         },
@@ -453,26 +352,11 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             <h3 class="components-section-heading">
               ${escapeHtml(i18n.t("ui.app.admin.security.password_policy_heading"))}
             </h3>
+            ${POLICY_FIELDS.map(({ id, min, i18nSuffix }) => `
             <div class="security-field-row">
-              <label for="security-policy-min-length">${escapeHtml(i18n.t("ui.app.admin.security.policy_min_length"))}</label>
-              <input id="security-policy-min-length" class="security-policy-number-input" type="number" min="1" max="128" />
-            </div>
-            <div class="security-field-row">
-              <label for="security-policy-require-uppercase">${escapeHtml(i18n.t("ui.app.admin.security.policy_require_uppercase"))}</label>
-              <input id="security-policy-require-uppercase" class="security-policy-number-input" type="number" min="0" max="128" />
-            </div>
-            <div class="security-field-row">
-              <label for="security-policy-require-lowercase">${escapeHtml(i18n.t("ui.app.admin.security.policy_require_lowercase"))}</label>
-              <input id="security-policy-require-lowercase" class="security-policy-number-input" type="number" min="0" max="128" />
-            </div>
-            <div class="security-field-row">
-              <label for="security-policy-require-digit">${escapeHtml(i18n.t("ui.app.admin.security.policy_require_digit"))}</label>
-              <input id="security-policy-require-digit" class="security-policy-number-input" type="number" min="0" max="128" />
-            </div>
-            <div class="security-field-row">
-              <label for="security-policy-require-special">${escapeHtml(i18n.t("ui.app.admin.security.policy_require_special"))}</label>
-              <input id="security-policy-require-special" class="security-policy-number-input" type="number" min="0" max="128" />
-            </div>
+              <label for="${id}">${escapeHtml(i18n.t(`ui.app.admin.security.${i18nSuffix}`))}</label>
+              <input id="${id}" class="security-policy-number-input" type="number" min="${min}" max="128" />
+            </div>`).join("")}
           </div>
         </div>`;
         },

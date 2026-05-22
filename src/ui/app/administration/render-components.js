@@ -1,31 +1,11 @@
-/**
- * Resolves the stable adapter identifier used across rendered data attributes
- * and toggle flows.
- *
- * @param {{ senderId?: string, id?: string }} adapter
- * @returns {string | undefined}
- */
 function resolveAdapterId(adapter) {
     return adapter.senderId ?? adapter.id;
 }
 
-/**
- * Normalizes adapter enabled state across legacy and current payload shapes.
- *
- * @param {{ active?: boolean, enabled?: boolean }} adapter
- * @returns {boolean}
- */
 function isAdapterEnabled(adapter) {
     return Boolean(adapter.active ?? adapter.enabled);
 }
 
-/**
- * Builds the display pill metadata for a runtime status value.
- *
- * @param {string} status
- * @param {{ t: (key: string) => string }} i18n
- * @returns {{ label: string, className: string }}
- */
 function getStatePill(status, i18n) {
     if (status === "active" || status === "enabled") {
         return {
@@ -43,6 +23,14 @@ function getStatePill(status, i18n) {
         label: i18n.t("ui.app.admin.state.disabled"),
         className: "pill-disabled",
     };
+}
+
+function renderDetailRows(pairs) {
+    return pairs
+        .map(([key, value]) =>
+            `<li class="module-detail-item"><span class="module-detail-key">${key}</span><span class="module-detail-value">${value}</span></li>`,
+        )
+        .join("");
 }
 
 function renderDependencyLinks(ids, scrollPrefix, gateways, i18n, escapeHtml) {
@@ -64,43 +52,18 @@ function renderDependencyLinks(ids, scrollPrefix, gateways, i18n, escapeHtml) {
 }
 
 function renderDetailsList(moduleRecord, gateways, i18n, escapeHtml) {
-    const details = [
+    const pairs = [
         [i18n.t("ui.reuse.id"), moduleRecord.id],
         [i18n.t("ui.reuse.version"), moduleRecord.version],
-        [
-            i18n.t("ui.app.admin.publisher"),
-            moduleRecord.publisher || i18n.t("ui.app.admin.unknown"),
-        ],
+        [i18n.t("ui.app.admin.publisher"), moduleRecord.publisher || i18n.t("ui.app.admin.unknown")],
         [i18n.t("ui.reuse.class"), moduleRecord.class],
-        [
-            i18n.t("ui.app.admin.capabilities"),
-            (moduleRecord.capabilities || []).join(", ") ||
-                i18n.t("ui.app.admin.none"),
-        ],
+        [i18n.t("ui.app.admin.capabilities"), (moduleRecord.capabilities || []).join(", ") || i18n.t("ui.app.admin.none")],
     ];
-
-    const rows = details
-        .map(
-            ([key, value]) =>
-                `<li class="module-detail-item"><span class="module-detail-key">${key}</span><span class="module-detail-value">${value}</span></li>`,
-        )
-        .join("");
-
+    const depsKey = i18n.t("ui.app.admin.gateway.dependencies");
     if (moduleRecord.requires && moduleRecord.requires.length > 0) {
-        const depsHtml = renderDependencyLinks(
-            moduleRecord.requires,
-            "gateway-",
-            gateways,
-            i18n,
-            escapeHtml,
-        );
-        return (
-            rows +
-            `<li class="module-detail-item"><span class="module-detail-key">${i18n.t("ui.app.admin.gateway.dependencies")}</span><span class="module-detail-value">${depsHtml}</span></li>`
-        );
+        pairs.push([depsKey, renderDependencyLinks(moduleRecord.requires, "gateway-", gateways, i18n, escapeHtml)]);
     }
-
-    return rows;
+    return renderDetailRows(pairs);
 }
 
 function renderModulesContent(modules, gateways, deps) {
@@ -139,84 +102,40 @@ function renderModulesContent(modules, gateways, deps) {
 }
 
 function renderGatewayDetailsList(gateway, gateways, i18n, escapeHtml) {
-    const requiredLabel = gateway.required
-        ? i18n.t("ui.reuse.true")
-        : i18n.t("ui.reuse.false");
-    const details = [
+    const pairs = [
         [i18n.t("ui.reuse.id"), escapeHtml(gateway.id)],
         [i18n.t("ui.reuse.version"), escapeHtml(gateway.version ?? "")],
-        [
-            i18n.t("ui.app.admin.publisher"),
-            escapeHtml(gateway.publisher || i18n.t("ui.app.admin.unknown")),
-        ],
-        [i18n.t("ui.app.admin.gateway.required"), requiredLabel],
+        [i18n.t("ui.app.admin.publisher"), escapeHtml(gateway.publisher || i18n.t("ui.app.admin.unknown"))],
+        [i18n.t("ui.app.admin.gateway.required"), gateway.required ? i18n.t("ui.reuse.true") : i18n.t("ui.reuse.false")],
     ];
     if (gateway.description) {
-        details.push([
-            i18n.t("ui.app.admin.description"),
-            escapeHtml(gateway.description),
-        ]);
+        pairs.push([i18n.t("ui.app.admin.description"), escapeHtml(gateway.description)]);
     }
-    const detailRows = details
-        .map(
-            ([key, value]) =>
-                `<li class="module-detail-item"><span class="module-detail-key">${key}</span><span class="module-detail-value">${value}</span></li>`,
-        )
-        .join("");
-    const depsHtml = renderDependencyLinks(
-        gateway.requires,
-        "gateway-",
-        gateways,
-        i18n,
-        escapeHtml,
-    );
-    const depsRow = `<li class="module-detail-item"><span class="module-detail-key">${i18n.t("ui.app.admin.gateway.dependencies")}</span><span class="module-detail-value">${depsHtml}</span></li>`;
-    return detailRows + depsRow;
+    pairs.push([i18n.t("ui.app.admin.gateway.dependencies"), renderDependencyLinks(gateway.requires, "gateway-", gateways, i18n, escapeHtml)]);
+    return renderDetailRows(pairs);
 }
 
-function renderAdapterToggle(
-    adapter,
-    gatewayId,
-    isGatewayDisabled,
-    i18n,
-    escapeHtml,
-) {
-    const adapterId = resolveAdapterId(adapter);
-    const isEnabled = isAdapterEnabled(adapter);
-    const isLocked = Boolean(adapter.locked);
-    return `<label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
-      <input type="checkbox" class="adapter-toggle"
-        data-adapter="${escapeHtml(adapterId)}"
-        data-gateway="${escapeHtml(gatewayId)}"
-        ${isEnabled ? "checked" : ""}
-        ${isGatewayDisabled || isLocked ? "disabled" : ""} />
-      <span class="slider"></span>
-    </label>`;
-}
-
-function renderInlineAdapters(
-    adapters,
-    gatewayId,
-    isGatewayDisabled,
-    i18n,
-    escapeHtml,
-) {
+function renderInlineAdapters(adapters, gatewayId, isGatewayDisabled, i18n, escapeHtml) {
     if (!adapters || adapters.length === 0) return "";
     const rows = adapters
         .map((adapter) => {
             const adapterId = resolveAdapterId(adapter);
             const isActive = isAdapterEnabled(adapter);
-            const statePillClass = isActive ? "pill-active" : "pill-available";
-            const stateLabel = isActive
-                ? i18n.t("ui.app.admin.state.active")
-                : i18n.t("ui.app.admin.state.available");
+            const isLocked = Boolean(adapter.locked);
             return `
         <div class="adapter-inline-row" role="button" tabindex="0"
           data-adapter-id="${escapeHtml(adapterId)}"
           data-gateway-id="${escapeHtml(gatewayId)}">
           <span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapterId)}</strong></span>
-          <span class="state-pill ${statePillClass}">${stateLabel}</span>
-          ${renderAdapterToggle(adapter, gatewayId, isGatewayDisabled, i18n, escapeHtml)}
+          <span class="state-pill ${isActive ? "pill-active" : "pill-available"}">${isActive ? i18n.t("ui.app.admin.state.active") : i18n.t("ui.app.admin.state.available")}</span>
+          <label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
+            <input type="checkbox" class="adapter-toggle"
+              data-adapter="${escapeHtml(adapterId)}"
+              data-gateway="${escapeHtml(gatewayId)}"
+              ${isActive ? "checked" : ""}
+              ${isGatewayDisabled || isLocked ? "disabled" : ""} />
+            <span class="slider"></span>
+          </label>
         </div>
       `;
         })
