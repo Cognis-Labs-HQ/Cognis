@@ -42,7 +42,8 @@ export function registerMeetingRoutes({
                 ]);
                 if (state.endedAt) continue;
                 if (state.authRequired && !state.authCompletedAt) continue;
-                const startedByUsername = state.firstJoinedBy ?? meeting.createdBy ?? "";
+                const startedByUsername =
+                    state.firstJoinedBy ?? meeting.createdBy ?? "";
                 const startedByProfile = startedByUsername
                     ? await profileStore
                           .getProfileByHandle(startedByUsername)
@@ -75,7 +76,9 @@ export function registerMeetingRoutes({
                     chatRoomId: meeting.chatRoomId,
                     createdAt: meeting.createdAt,
                     participantCount: participants.length,
-                    activeSessionCount: Number(activeMeeting.activeSessionCount),
+                    activeSessionCount: Number(
+                        activeMeeting.activeSessionCount,
+                    ),
                     state: {
                         authRequired: state.authRequired,
                         authCompletedAt: state.authCompletedAt,
