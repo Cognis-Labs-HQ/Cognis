@@ -10,6 +10,7 @@ import {
     type RouteContext,
 } from "../../api/reuse/route-context.js";
 import { CoreStudyGateway } from "./gateway.js";
+import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
 
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
 const MODULES_ROOT =
@@ -246,22 +247,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         if (!languageModule) return false;
         return gateway.isLanguageModuleEnabled(languageModule.moduleId);
     };
+    const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "study");
 
     await Promise.all([
         gateway.bootstrapAdapters(adaptersRoot, {
+            ...uiHooks,
             gateway,
             capabilities: ctx.capabilities,
             gatewayRegistry: ctx.gatewayRegistry,
             registerRoute: (handler, gatewayId) =>
                 ctx.routeRegistry.register(handler, gatewayId ?? "study"),
-            registerNavbarPlugin: (scriptUrl, isEnabled) =>
-                ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl, isEnabled }),
-            registerSpaRoute: (route) =>
-                ctx.uiRegistry?.registerSpaRoute(route),
-            registerPageExtension: (pageId, element) =>
-                ctx.uiRegistry?.registerPageExtension(pageId, element),
-            registerStaticDir: (prefix, dir) =>
-                ctx.uiRegistry?.registerStaticDir(prefix, dir),
             registerAdapterStaticDir: (gatewayId, adapterId, dir) => {
                 if (!ctx.uiRegistry?.registerAdapterStaticDir) {
                     ctx.log?.(

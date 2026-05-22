@@ -1,4 +1,5 @@
 import { mountStudyClassroomPage } from "/static/modules/study/languages/reuse/classroom-page.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
 
 export async function mount(root, { signal } = {}) {
     await mountStudyClassroomPage(root, {
@@ -7,10 +8,6 @@ export async function mount(root, { signal } = {}) {
     });
 }
 
-if (!globalThis.__spaRouter) {
-    try {
-        await mount(document.querySelector("#app"));
-    } catch (error) {
-        console.error("[study-en] classroom mount failed", error);
-    }
-}
+await mountWhenDirect(mount).catch((error) =>
+    console.error("[study-en] classroom mount failed", error),
+);
