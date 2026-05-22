@@ -112,7 +112,9 @@ export function createModuleExtensionRoutes(
 ): ModuleExtensionRoutes {
     let handlers: RouteHandler[] = [];
     if (!options?.requireRoleAccess) {
-        throw new Error("module_extension_require_role_access_missing");
+        throw new Error(
+            "module_extension_require_role_access_missing: pass requireRoleAccess from route context",
+        );
     }
     const { requireRoleAccess } = options;
     const staticDirsRegisteredByModule = new Set<string>();

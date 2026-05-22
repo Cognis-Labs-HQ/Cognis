@@ -49,7 +49,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     async function loadPasswordPolicy() {
         const response = await apiFetch("/api/v1/auth/password-policy");
         if (!response.ok) {
-            return { ...originalPasswordPolicy };
+            return { ...DEFAULT_PASSWORD_POLICY };
         }
         const payload = await response.json();
         return normalizePasswordPolicy(payload?.data, originalPasswordPolicy);
@@ -181,17 +181,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     }
 
     function isPasswordPolicyChanged() {
-        const currentPolicy = getPasswordPolicyValue();
         return (
-            currentPolicy.minLength !== originalPasswordPolicy.minLength ||
-            currentPolicy.requireUppercase !==
-                originalPasswordPolicy.requireUppercase ||
-            currentPolicy.requireLowercase !==
-                originalPasswordPolicy.requireLowercase ||
-            currentPolicy.requireDigit !==
-                originalPasswordPolicy.requireDigit ||
-            currentPolicy.requireSpecial !==
-                originalPasswordPolicy.requireSpecial
+            JSON.stringify(getPasswordPolicyValue()) !==
+            JSON.stringify(originalPasswordPolicy)
         );
     }
 

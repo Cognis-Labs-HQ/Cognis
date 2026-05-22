@@ -1,5 +1,9 @@
 import { apiFetch } from "../../reuse/api-client.js";
-import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
+import {
+    applyDocumentTitle,
+    createI18n,
+    extendI18n,
+} from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
@@ -46,13 +50,14 @@ let securitySection = null;
 let elements = [];
 
 async function extendSectionI18n(baseI18n, stringsBaseUrl) {
-    const { extendI18n } = await import("../../reuse/i18n.js");
     return extendI18n(baseI18n, stringsBaseUrl);
 }
 
 /**
  * Returns the canonical `${gatewayId}:${adapterId}` key used by adapter lookup
- * indexes across administration toggle/render flows.
+ * indexes across administration render, toggle, and follow-up action flows.
+ * This format must remain stable because multiple maps and data attributes rely
+ * on it matching exactly.
  *
  * @param {string} gatewayId
  * @param {string} adapterId

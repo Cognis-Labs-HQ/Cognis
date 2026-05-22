@@ -326,7 +326,7 @@ test("auth gateway bootstrap registers correct static dir", async () => {
     );
 });
 
-test("auth gateway bootstrap registers security settings section and no authentication admin section", async () => {
+test("auth gateway bootstrap registers security section without redundant authentication admin section", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
