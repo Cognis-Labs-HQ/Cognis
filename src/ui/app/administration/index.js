@@ -37,6 +37,9 @@ let modules = [];
 let integrityRows = [];
 let gateways = [];
 let allAdapters = [];
+let moduleById = new Map();
+let gatewayById = new Map();
+let adapterByCompositeKey = new Map();
 let composer = null;
 let changesBar = null;
 let securitySection = null;
@@ -45,6 +48,52 @@ let elements = [];
 async function extendSectionI18n(baseI18n, stringsBaseUrl) {
     const { extendI18n } = await import("../../reuse/i18n.js");
     return extendI18n(baseI18n, stringsBaseUrl);
+}
+
+function adapterCompositeKey(gatewayId, adapterId) {
+    return `${gatewayId}:${adapterId}`;
+}
+
+function setModules(nextModules) {
+    modules = nextModules;
+    moduleById = new Map(
+        nextModules.map((moduleRecord) => [moduleRecord.id, moduleRecord]),
+    );
+}
+
+function setGateways(nextGateways) {
+    gateways = nextGateways;
+    gatewayById = new Map(nextGateways.map((gateway) => [gateway.id, gateway]));
+}
+
+function setAllAdapters(nextAdapters) {
+    allAdapters = nextAdapters;
+    adapterByCompositeKey = new Map(
+        nextAdapters.map((adapter) => [
+            adapterCompositeKey(
+                adapter._gatewayId,
+                adapter.senderId ?? adapter.id,
+            ),
+            adapter,
+        ]),
+    );
+}
+
+async function reloadModules() {
+    setModules(await loadModules());
+}
+
+async function reloadGateways() {
+    setGateways(await loadGateways());
+}
+
+async function reloadAdapters() {
+    setAllAdapters(await loadAllAdapters(gateways));
+}
+
+async function reloadGatewaysAndAdapters() {
+    await reloadGateways();
+    await reloadAdapters();
 }
 
 /**
@@ -62,11 +111,8 @@ function findAdapterRecord(gatewayId, adapterId, adapterOverride = null) {
         return adapterOverride;
     }
     return (
-        allAdapters.find(
-            (adapter) =>
-                (adapter.senderId ?? adapter.id) === adapterId &&
-                adapter._gatewayId === gatewayId,
-        ) ?? null
+        adapterByCompositeKey.get(adapterCompositeKey(gatewayId, adapterId)) ??
+        null
     );
 }
 
@@ -103,15 +149,12 @@ function resolveAdapterControlUrl(
  * page-composer rerender/refresh operations.
  */
 function syncRuntimeToggleControls() {
-    const moduleStateById = new Map(
-        modules.map((moduleRecord) => [moduleRecord.id, moduleRecord]),
-    );
     root.querySelectorAll('input[type="checkbox"][data-module]').forEach(
         (toggle) => {
             if (!(toggle instanceof HTMLInputElement)) return;
             const moduleId = toggle.dataset.module;
             if (!moduleId) return;
-            const moduleRecord = moduleStateById.get(moduleId);
+            const moduleRecord = moduleById.get(moduleId);
             if (!moduleRecord) return;
             const isEnabled = isModuleEnabled(moduleRecord);
             toggle.checked = isEnabled;
@@ -120,16 +163,13 @@ function syncRuntimeToggleControls() {
         },
     );
 
-    const gatewayStateById = new Map(
-        gateways.map((gateway) => [gateway.id, gateway]),
-    );
     root.querySelectorAll(
         'input[type="checkbox"][data-gateway]:not(.adapter-toggle)',
     ).forEach((toggle) => {
         if (!(toggle instanceof HTMLInputElement)) return;
         const gatewayId = toggle.dataset.gateway;
         if (!gatewayId) return;
-        const gateway = gatewayStateById.get(gatewayId);
+        const gateway = gatewayById.get(gatewayId);
         if (!gateway) return;
         const isEnabled = (gateway.status ?? "active") !== "disabled";
         toggle.checked = isEnabled;
@@ -137,12 +177,6 @@ function syncRuntimeToggleControls() {
         toggle.disabled = gateway.required === true;
     });
 
-    const adapterStateByKey = new Map(
-        allAdapters.map((adapter) => [
-            `${adapter._gatewayId}:${adapter.senderId ?? adapter.id}`,
-            adapter,
-        ]),
-    );
     root.querySelectorAll(
         ".adapter-toggle[data-adapter][data-gateway]",
     ).forEach((toggle) => {
@@ -150,9 +184,11 @@ function syncRuntimeToggleControls() {
         const adapterId = toggle.dataset.adapter;
         const gatewayId = toggle.dataset.gateway;
         if (!adapterId || !gatewayId) return;
-        const adapter = adapterStateByKey.get(`${gatewayId}:${adapterId}`);
+        const adapter = adapterByCompositeKey.get(
+            adapterCompositeKey(gatewayId, adapterId),
+        );
         if (!adapter) return;
-        const gateway = gatewayStateById.get(gatewayId);
+        const gateway = gatewayById.get(gatewayId);
         const isGatewayDisabled = (gateway?.status ?? "active") === "disabled";
         const isEnabled = !!(adapter.active ?? adapter.enabled);
         toggle.checked = isEnabled;
@@ -170,16 +206,16 @@ function bindModuleToggles() {
                 const action = toggle.checked ? "enable" : "disable";
 
                 if (action === "enable") {
-                    const mod = modules.find((m) => m.id === moduleId);
+                    const mod = moduleById.get(moduleId);
                     const disabledDeps = (mod?.requires ?? []).filter(
                         (depId) => {
-                            const dep = gateways.find((g) => g.id === depId);
+                            const dep = gatewayById.get(depId);
                             return dep && dep.status === "disabled";
                         },
                     );
                     if (disabledDeps.length > 0) {
                         const depNames = disabledDeps.map((depId) => {
-                            const dep = gateways.find((g) => g.id === depId);
+                            const dep = gatewayById.get(depId);
                             return dep ? dep.name : depId;
                         });
                         const result = await openPopup({
@@ -205,7 +241,7 @@ function bindModuleToggles() {
                         for (const depId of disabledDeps) {
                             await toggleGateway(depId, "enable");
                         }
-                        gateways = await loadGateways();
+                        await reloadGateways();
                     }
                 }
 
@@ -234,7 +270,7 @@ function bindModuleToggles() {
                 }
 
                 await toggleModule(moduleId, action);
-                modules = await loadModules();
+                await reloadModules();
                 composer.refresh(elements);
             });
         },
@@ -265,7 +301,7 @@ function bindModuleConfigureButtons() {
                         moduleId,
                     });
                     if (didSave) {
-                        modules = await loadModules();
+                        await reloadModules();
                         composer.refresh(elements);
                     }
                 } catch (error) {
@@ -287,18 +323,18 @@ function bindGatewayToggles() {
             const gatewayId = toggle.dataset.gateway;
             const previousState = !toggle.checked;
             const action = toggle.checked ? "enable" : "disable";
-            const gateway = gateways.find((g) => g.id === gatewayId);
+            const gateway = gatewayById.get(gatewayId);
 
             if (action === "enable") {
                 const disabledDeps = (gateway?.requires ?? []).filter(
                     (depId) => {
-                        const dep = gateways.find((g) => g.id === depId);
+                        const dep = gatewayById.get(depId);
                         return dep && dep.status === "disabled";
                     },
                 );
                 if (disabledDeps.length > 0) {
                     const depNames = disabledDeps.map((depId) => {
-                        const dep = gateways.find((g) => g.id === depId);
+                        const dep = gatewayById.get(depId);
                         return dep ? dep.name : depId;
                     });
                     const result = await openPopup({
@@ -324,13 +360,11 @@ function bindGatewayToggles() {
                     for (const depId of disabledDeps) {
                         await toggleGateway(depId, "enable");
                     }
-                    gateways = await loadGateways();
-                    allAdapters = await loadAllAdapters(gateways);
+                    await reloadGatewaysAndAdapters();
                 }
                 await toggleGateway(gatewayId, action);
 
-                gateways = await loadGateways();
-                allAdapters = await loadAllAdapters(gateways);
+                await reloadGatewaysAndAdapters();
 
                 const enableableAdapters = getGatewayEnableableAdapters(
                     allAdapters,
@@ -440,8 +474,7 @@ function bindGatewayToggles() {
                 await toggleGateway(gatewayId, action);
             }
 
-            gateways = await loadGateways();
-            allAdapters = await loadAllAdapters(gateways);
+            await reloadGatewaysAndAdapters();
             window.dispatchEvent(new Event("cognis:navbar-plugins-refresh"));
             window.dispatchEvent(new Event("cognis:navbar-refresh"));
             composer.refresh(elements);
@@ -532,10 +565,8 @@ function bindAdapterToggles() {
             const action = toggle.checked ? "enable" : "disable";
 
             if (action === "enable") {
-                const adapter = allAdapters.find(
-                    (a) =>
-                        (a.senderId ?? a.id) === adapterId &&
-                        a._gatewayId === gatewayId,
+                const adapter = adapterByCompositeKey.get(
+                    adapterCompositeKey(gatewayId, adapterId),
                 );
                 const requires = adapter?.requires ?? [];
                 const disabledDepNames = [];
@@ -546,10 +577,8 @@ function bindAdapterToggles() {
                     const parts = req.split(":");
                     if (parts.length === 2) {
                         const [depGwId, depAdapterId] = parts;
-                        const depAdapter = allAdapters.find(
-                            (a) =>
-                                (a.senderId ?? a.id) === depAdapterId &&
-                                a._gatewayId === depGwId,
+                        const depAdapter = adapterByCompositeKey.get(
+                            adapterCompositeKey(depGwId, depAdapterId),
                         );
                         if (
                             depAdapter &&
@@ -564,7 +593,7 @@ function bindAdapterToggles() {
                             );
                         }
                     } else {
-                        const depGw = gateways.find((g) => g.id === req);
+                        const depGw = gatewayById.get(req);
                         if (depGw && depGw.status === "disabled") {
                             disabledGatewayDeps.push(req);
                             disabledDepNames.push(depGw.name ?? req);
@@ -597,11 +626,8 @@ function bindAdapterToggles() {
                         await toggleGateway(depGwId, "enable");
                     }
                     for (const dep of disabledAdapterDeps) {
-                        const dependentAdapter = allAdapters.find(
-                            (adapter) =>
-                                (adapter.senderId ?? adapter.id) ===
-                                    dep.adapterId &&
-                                adapter._gatewayId === dep.gatewayId,
+                        const dependentAdapter = adapterByCompositeKey.get(
+                            adapterCompositeKey(dep.gatewayId, dep.adapterId),
                         );
                         await toggleAdapter(
                             dep.gatewayId,
@@ -610,8 +636,7 @@ function bindAdapterToggles() {
                             dependentAdapter ?? null,
                         );
                     }
-                    gateways = await loadGateways();
-                    allAdapters = await loadAllAdapters(gateways);
+                    await reloadGatewaysAndAdapters();
                 }
 
                 await toggleAdapter(
@@ -664,11 +689,11 @@ function bindAdapterToggles() {
 
                 if (isLastEnabled) {
                     await toggleGateway(gatewayId, "disable");
-                    gateways = await loadGateways();
+                    await reloadGateways();
                 }
             }
 
-            allAdapters = await loadAllAdapters(gateways);
+            await reloadAdapters();
             window.dispatchEvent(new Event("cognis:navbar-plugins-refresh"));
             window.dispatchEvent(new Event("cognis:navbar-refresh"));
             composer.refresh(elements);
@@ -685,10 +710,8 @@ function bindAdapterRows() {
         const gatewayId = row.dataset.gatewayId;
         if (!adapterId || !gatewayId) return;
 
-        const adapter = allAdapters.find(
-            (a) =>
-                (a.senderId ?? a.id) === adapterId &&
-                a._gatewayId === gatewayId,
+        const adapter = adapterByCompositeKey.get(
+            adapterCompositeKey(gatewayId, adapterId),
         ) ?? { senderId: adapterId, name: adapterId };
 
         if (adapter.locked) return;
@@ -706,7 +729,7 @@ function bindAdapterRows() {
                 adapter.name ?? adapterId,
                 adapter,
             );
-            allAdapters = await loadAllAdapters(gateways);
+            await reloadAdapters();
             composer.refresh(elements);
         }
 
@@ -1186,7 +1209,7 @@ async function openAdapterConfig(
             headers: { "content-type": "application/json" },
             body: JSON.stringify(config),
         });
-        allAdapters = await loadAllAdapters(gateways);
+        await reloadAdapters();
         composer.refresh(elements);
         showToast(i18n.t("ui.app.admin.settings_saved"), {
             variant: "success",
@@ -1226,17 +1249,18 @@ export async function mount(rootEl, { signal } = {}) {
     i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.administration");
 
-    modules = [];
+    setModules([]);
     integrityRows = [];
-    gateways = [];
-    allAdapters = [];
+    setGateways([]);
+    setAllAdapters([]);
 
-    [modules, integrityRows] = await Promise.all([
+    const [loadedModules, loadedIntegrityRows] = await Promise.all([
         loadModules(),
         loadIntegrity(),
     ]);
-    gateways = await loadGateways();
-    allAdapters = await loadAllAdapters(gateways);
+    setModules(loadedModules);
+    integrityRows = loadedIntegrityRows;
+    await reloadGatewaysAndAdapters();
 
     securitySection = initSecuritySection(root, {
         i18n,
@@ -1412,8 +1436,7 @@ export async function mount(rootEl, { signal } = {}) {
             try {
                 await securitySection.save();
                 changesBar.markDirty("security", false);
-                gateways = await loadGateways();
-                allAdapters = await loadAllAdapters(gateways);
+                await reloadGatewaysAndAdapters();
                 composer.refresh(elements);
                 showToast(i18n.t("ui.app.admin.security.saved"), {
                     variant: "success",
